@@ -1,8 +1,9 @@
 import type { Page } from "@playwright/test";
-import { readPluginData, settleSettings } from "@real1ty-obsidian-plugins/testing/e2e";
+import { settleSettings } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { expect, test } from "../../fixtures/electron";
 import { openCalendarViewViaRibbon } from "../../fixtures/helpers";
+import { readDefaultCalendar } from "../../fixtures/plugin-data";
 
 // Exercises shared `createPageHeader` mutation → persistence → render pipeline.
 // Uses the chevron up/down buttons inside the action-manager modal to reorder
@@ -21,30 +22,26 @@ const MANAGER_MODAL = '[data-testid="prisma-action-manager-modal"]';
 // top level of data.json. Prisma's view reads it via
 // `bundle.settingsStore.currentSettings.pageHeaderState`, which resolves to
 // `data.calendars.find(c => c.id === bundleId).pageHeaderState`.
-type PageHeaderData = {
-	calendars?: Array<{
-		id: string;
-		pageHeaderState?: {
-			visibleActionIds?: string[];
-		};
-	}>;
+type PageHeaderState = {
+	pageHeaderState?: {
+		visibleActionIds?: string[];
+	};
 };
-
-function readDefaultCalendarPageHeaderState(vaultDir: string): { visibleActionIds?: string[] } | undefined {
-	const data = readPluginData(vaultDir, PLUGIN_ID) as PageHeaderData;
-	const cal = data.calendars?.find((c) => c.id === "default") ?? data.calendars?.[0];
-	return cal?.pageHeaderState;
-}
 
 async function waitForHeaderReady(page: Page): Promise<void> {
 	// The page header is rendered via a leaf-state apply; wait for the manage
 	// button as a stable signal that `createPageHeader.apply()` has run.
-	await page.locator(MANAGE_BTN).first().waitFor({ state: "visible", timeout: 10_000 });
+	await page.locator(MANAGE_BTN).first().waitFor({ state: "visible" });
 }
 
 async function openActionManager(page: Page): Promise<void> {
 	await page.locator(MANAGE_BTN).first().click();
-	await page.locator(MANAGER_MODAL).waitFor({ state: "visible", timeout: 5_000 });
+	await page.locator(MANAGER_MODAL).waitFor({ state: "visible" });
+}
+
+async function closeActionManager(page: Page): Promise<void> {
+	await page.keyboard.press("Escape");
+	await page.locator(MANAGER_MODAL).waitFor({ state: "hidden" });
 }
 
 async function readVisibleOrder(page: Page): Promise<string[]> {
@@ -69,23 +66,20 @@ test.describe("shared: page header reorder + persistence", () => {
 
 		await openActionManager(obsidian.page);
 		const upBtn = obsidian.page.locator(`[data-testid="prisma-action-manager-up-${targetId}"]`).first();
-		await upBtn.waitFor({ state: "visible", timeout: 5_000 });
+		await upBtn.waitFor({ state: "visible" });
 		await upBtn.click();
 
-		await obsidian.page.keyboard.press("Escape");
-		await obsidian.page.locator(MANAGER_MODAL).waitFor({ state: "hidden", timeout: 5_000 });
+		await closeActionManager(obsidian.page);
 
 		// DOM truth: target should now sit where predecessor was.
 		const newOrder = await readVisibleOrder(obsidian.page);
-		const newTargetIdx = newOrder.indexOf(targetId);
-		const newPredecessorIdx = newOrder.indexOf(predecessorId);
-		expect(newTargetIdx).toBeLessThan(newPredecessorIdx);
+		expect(newOrder.indexOf(targetId)).toBeLessThan(newOrder.indexOf(predecessorId));
 
 		// File-on-disk truth: force-flush the debounced settingsStore.updateSettings
 		// → saveData, then assert the persisted order matches the DOM order.
 		await settleSettings(obsidian.page, { pluginId: PLUGIN_ID });
-		const state = readDefaultCalendarPageHeaderState(obsidian.vaultDir);
-		expect(state?.visibleActionIds).toEqual(newOrder);
+		const cal = readDefaultCalendar<PageHeaderState>(obsidian.vaultDir);
+		expect(cal?.pageHeaderState?.visibleActionIds).toEqual(newOrder);
 	});
 
 	test("hiding an action removes it from the toolbar and from data.json", async ({ obsidian }) => {
@@ -100,11 +94,10 @@ test.describe("shared: page header reorder + persistence", () => {
 
 		await openActionManager(obsidian.page);
 		const hideBtn = obsidian.page.locator(`[data-testid="prisma-action-manager-toggle-${targetId}"]`).first();
-		await hideBtn.waitFor({ state: "visible", timeout: 5_000 });
+		await hideBtn.waitFor({ state: "visible" });
 		await hideBtn.click();
 
-		await obsidian.page.keyboard.press("Escape");
-		await obsidian.page.locator(MANAGER_MODAL).waitFor({ state: "hidden", timeout: 5_000 });
+		await closeActionManager(obsidian.page);
 
 		// DOM: the toolbar button for the target is no longer rendered.
 		const newOrder = await readVisibleOrder(obsidian.page);
@@ -112,7 +105,7 @@ test.describe("shared: page header reorder + persistence", () => {
 
 		// Disk: the id is absent from pageHeaderState.visibleActionIds.
 		await settleSettings(obsidian.page, { pluginId: PLUGIN_ID });
-		const state = readDefaultCalendarPageHeaderState(obsidian.vaultDir);
-		expect(state?.visibleActionIds ?? []).not.toContain(targetId);
+		const cal = readDefaultCalendar<PageHeaderState>(obsidian.vaultDir);
+		expect(cal?.pageHeaderState?.visibleActionIds ?? []).not.toContain(targetId);
 	});
 });

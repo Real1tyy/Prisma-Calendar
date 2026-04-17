@@ -1,8 +1,9 @@
 import type { Page } from "@playwright/test";
-import { readPluginData, settleSettings } from "@real1ty-obsidian-plugins/testing/e2e";
+import { settleSettings } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { expect, test } from "../../fixtures/electron";
 import { openCalendarViewViaRibbon } from "../../fixtures/helpers";
+import { readDefaultCalendar } from "../../fixtures/plugin-data";
 
 // Exercises shared `createTabbedContainer`'s manager modal reorder flow.
 // Persistence lives at calendars[0].activeTab (same per-calendar pattern as
@@ -13,19 +14,22 @@ const PLUGIN_ID = "prisma-calendar";
 const MANAGE_BTN = '[data-testid="prisma-tabbed-container-manage"]';
 const MANAGER_MODAL = '[data-testid="prisma-tab-manager-modal"]';
 
-type TabData = {
-	calendars?: Array<{
-		id: string;
-		activeTab?: {
-			visibleTabIds?: string[];
-		};
-	}>;
+type ActiveTabVisible = {
+	activeTab?: {
+		visibleTabIds?: string[];
+	};
 };
 
-function readDefaultCalendarTabState(vaultDir: string): { visibleTabIds?: string[] } | undefined {
-	const data = readPluginData(vaultDir, PLUGIN_ID) as TabData;
-	const cal = data.calendars?.find((c) => c.id === "default") ?? data.calendars?.[0];
-	return cal?.activeTab;
+async function openTabManager(page: Page): Promise<void> {
+	const manageBtn = page.locator(MANAGE_BTN).first();
+	await manageBtn.waitFor({ state: "visible" });
+	await manageBtn.click();
+	await page.locator(MANAGER_MODAL).waitFor({ state: "visible" });
+}
+
+async function closeTabManager(page: Page): Promise<void> {
+	await page.keyboard.press("Escape");
+	await page.locator(MANAGER_MODAL).waitFor({ state: "hidden" });
 }
 
 async function readTabOrder(page: Page): Promise<string[]> {
@@ -39,8 +43,7 @@ async function readTabOrder(page: Page): Promise<string[]> {
 test.describe("shared: tabbed container reorder + persistence", () => {
 	test("chevron-up in the tab manager reorders tabs and persists", async ({ obsidian }) => {
 		await openCalendarViewViaRibbon(obsidian.page);
-		const manageBtn = obsidian.page.locator(MANAGE_BTN).first();
-		await manageBtn.waitFor({ state: "visible", timeout: 10_000 });
+		await obsidian.page.locator(MANAGE_BTN).first().waitFor({ state: "visible" });
 
 		const initialOrder = await readTabOrder(obsidian.page);
 		expect(initialOrder.length).toBeGreaterThan(2);
@@ -49,32 +52,29 @@ test.describe("shared: tabbed container reorder + persistence", () => {
 		const targetId = initialOrder[2];
 		const predecessorId = initialOrder[1];
 
-		await manageBtn.click();
-		await obsidian.page.locator(MANAGER_MODAL).waitFor({ state: "visible", timeout: 5_000 });
+		await openTabManager(obsidian.page);
 
 		const upBtn = obsidian.page.locator(`[data-testid="prisma-tab-manager-up-${targetId}"]`).first();
-		await upBtn.waitFor({ state: "visible", timeout: 5_000 });
+		await upBtn.waitFor({ state: "visible" });
 		await upBtn.click();
 
-		await obsidian.page.keyboard.press("Escape");
-		await obsidian.page.locator(MANAGER_MODAL).waitFor({ state: "hidden", timeout: 5_000 });
+		await closeTabManager(obsidian.page);
 
 		const newOrder = await readTabOrder(obsidian.page);
-		const newTargetIdx = newOrder.indexOf(targetId);
-		const newPredIdx = newOrder.indexOf(predecessorId);
-		expect(newTargetIdx).toBeLessThan(newPredIdx);
+		expect(newOrder.indexOf(targetId)).toBeLessThan(newOrder.indexOf(predecessorId));
 
 		await settleSettings(obsidian.page, { pluginId: PLUGIN_ID });
-		const state = readDefaultCalendarTabState(obsidian.vaultDir);
+		const cal = readDefaultCalendar<ActiveTabVisible>(obsidian.vaultDir);
 		// The shared container only persists visibleTabIds when the order differs
 		// from the default — after our swap it MUST be populated.
-		expect(state?.visibleTabIds?.indexOf(targetId)).toBeLessThan(state?.visibleTabIds?.indexOf(predecessorId) ?? -1);
+		expect(cal?.activeTab?.visibleTabIds?.indexOf(targetId)).toBeLessThan(
+			cal?.activeTab?.visibleTabIds?.indexOf(predecessorId) ?? -1
+		);
 	});
 
 	test("hiding a tab via the manager toggle removes it from the tab bar and persists", async ({ obsidian }) => {
 		await openCalendarViewViaRibbon(obsidian.page);
-		const manageBtn = obsidian.page.locator(MANAGE_BTN).first();
-		await manageBtn.waitFor({ state: "visible", timeout: 10_000 });
+		await obsidian.page.locator(MANAGE_BTN).first().waitFor({ state: "visible" });
 
 		const initialOrder = await readTabOrder(obsidian.page);
 		// Hide the last tab so the hide-toggle is always enabled (first tab may
@@ -82,21 +82,19 @@ test.describe("shared: tabbed container reorder + persistence", () => {
 		// active target makes the DOM assertion simpler).
 		const targetId = initialOrder[initialOrder.length - 1];
 
-		await manageBtn.click();
-		await obsidian.page.locator(MANAGER_MODAL).waitFor({ state: "visible", timeout: 5_000 });
+		await openTabManager(obsidian.page);
 
 		const toggleBtn = obsidian.page.locator(`[data-testid="prisma-tab-manager-toggle-${targetId}"]`).first();
-		await toggleBtn.waitFor({ state: "visible", timeout: 5_000 });
+		await toggleBtn.waitFor({ state: "visible" });
 		await toggleBtn.click();
 
-		await obsidian.page.keyboard.press("Escape");
-		await obsidian.page.locator(MANAGER_MODAL).waitFor({ state: "hidden", timeout: 5_000 });
+		await closeTabManager(obsidian.page);
 
 		const newOrder = await readTabOrder(obsidian.page);
 		expect(newOrder).not.toContain(targetId);
 
 		await settleSettings(obsidian.page, { pluginId: PLUGIN_ID });
-		const state = readDefaultCalendarTabState(obsidian.vaultDir);
-		expect(state?.visibleTabIds ?? []).not.toContain(targetId);
+		const cal = readDefaultCalendar<ActiveTabVisible>(obsidian.vaultDir);
+		expect(cal?.activeTab?.visibleTabIds ?? []).not.toContain(targetId);
 	});
 });

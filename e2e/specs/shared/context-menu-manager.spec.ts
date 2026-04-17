@@ -1,4 +1,4 @@
-import { readPluginData, settleSettings } from "@real1ty-obsidian-plugins/testing/e2e";
+import { settleSettings } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { isoLocal } from "../../fixtures/dates";
 import { expect, test } from "../../fixtures/electron";
@@ -9,6 +9,7 @@ import {
 	rightClickEvent,
 	waitForNoticesClear,
 } from "../../fixtures/helpers";
+import { readDefaultCalendar } from "../../fixtures/plugin-data";
 
 // Exercises shared `createContextMenu`'s item-manager modal end-to-end:
 // right-click → "Manage menu items..." → the shared manager modal opens with
@@ -19,13 +20,10 @@ import {
 const PLUGIN_ID = "prisma-calendar";
 const MANAGER_MODAL = '[data-testid="prisma-item-manager-modal"]';
 
-type CtxMenuData = {
-	calendars?: Array<{
-		id: string;
-		contextMenuState?: {
-			visibleItemIds?: string[];
-		};
-	}>;
+type ContextMenuState = {
+	contextMenuState?: {
+		visibleItemIds?: string[];
+	};
 };
 
 test.describe("shared: context menu item manager", () => {
@@ -44,16 +42,16 @@ test.describe("shared: context menu item manager", () => {
 		await clickContextMenuItem(obsidian.page, "__manage");
 
 		const modal = obsidian.page.locator(MANAGER_MODAL);
-		await modal.waitFor({ state: "visible", timeout: 5_000 });
+		await modal.waitFor({ state: "visible" });
 
 		// `duplicateEvent` is always registered and visible in the default state.
 		const targetId = "duplicateEvent";
 		const hideBtn = modal.locator(`[data-testid="prisma-item-manager-toggle-${targetId}"]`).first();
-		await hideBtn.waitFor({ state: "visible", timeout: 5_000 });
+		await hideBtn.waitFor({ state: "visible" });
 		await hideBtn.click();
 
 		await obsidian.page.keyboard.press("Escape");
-		await modal.waitFor({ state: "hidden", timeout: 5_000 });
+		await modal.waitFor({ state: "hidden" });
 		// The underlying event context menu stays open because the manager is a
 		// modal above it — dismiss it too before re-opening.
 		await obsidian.page.keyboard.press("Escape");
@@ -65,8 +63,7 @@ test.describe("shared: context menu item manager", () => {
 
 		// Disk: the visibleItemIds list excludes the hidden id.
 		await settleSettings(obsidian.page, { pluginId: PLUGIN_ID });
-		const data = readPluginData(obsidian.vaultDir, PLUGIN_ID) as CtxMenuData;
-		const cal = data.calendars?.find((c) => c.id === "default") ?? data.calendars?.[0];
+		const cal = readDefaultCalendar<ContextMenuState>(obsidian.vaultDir);
 		expect(cal?.contextMenuState?.visibleItemIds ?? []).not.toContain(targetId);
 	});
 });
