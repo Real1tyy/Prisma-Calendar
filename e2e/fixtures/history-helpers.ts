@@ -21,6 +21,7 @@ import {
 	waitForNewEventFiles,
 } from "../specs/events/events-helpers";
 import { fillEventModal, saveEventModal } from "../specs/events/fill-event-modal";
+import { runCommand } from "./commands";
 
 const ACTIVE_CALENDAR_LEAF = ".workspace-leaf.mod-active";
 
@@ -173,32 +174,15 @@ export async function confirmBatchAction(page: Page): Promise<void> {
 	await confirm.waitFor({ state: "hidden" });
 }
 
-/**
- * Run a plugin command through the command palette — Ctrl+P, type, Enter.
- * Exactly how a user triggers `Prisma Calendar: Undo` / `Redo`: the plugin
- * exposes no toolbar button for these.
- */
-export async function runCommandFromPalette(page: Page, commandName: string): Promise<void> {
-	const isMac = process.platform === "darwin";
-	await page.keyboard.press(isMac ? "Meta+P" : "Control+P");
-	const input = page.locator(".prompt-input").first();
-	await input.waitFor({ state: "visible" });
-	await input.fill(commandName);
-	await page.locator(".suggestion-item").first().waitFor({ state: "visible" });
-	await page.keyboard.press("Enter");
-	await page
-		.locator(".prompt-input")
-		.first()
-		.waitFor({ state: "hidden" })
-		.catch(() => {});
-}
+/** Back-compat alias for specs that still import the old name. */
+export const runCommandFromPalette = runCommand;
 
 export async function undoViaPalette(page: Page, times = 1): Promise<void> {
-	for (let i = 0; i < times; i++) await runCommandFromPalette(page, "Prisma Calendar: Undo");
+	for (let i = 0; i < times; i++) await runCommand(page, "Prisma Calendar: Undo");
 }
 
 export async function redoViaPalette(page: Page, times = 1): Promise<void> {
-	for (let i = 0; i < times; i++) await runCommandFromPalette(page, "Prisma Calendar: Redo");
+	for (let i = 0; i < times; i++) await runCommand(page, "Prisma Calendar: Redo");
 }
 
 // ── Disk waiters ─────────────────────────────────────────────────────────
@@ -230,11 +214,4 @@ export async function waitForFileExists(vaultDir: string, filePath: string, shou
 		.toBe(shouldExist);
 }
 
-/** ISO local string for a date N days ahead at the given HH:mm. */
-export function isoLocal(daysFromToday: number, hh = 10, mm = 0): string {
-	const d = new Date();
-	d.setDate(d.getDate() + daysFromToday);
-	d.setHours(hh, mm, 0, 0);
-	const pad = (n: number): string => String(n).padStart(2, "0");
-	return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
+export { isoLocal } from "./dates";

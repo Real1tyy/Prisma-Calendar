@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
-import type { Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 
 import { PLUGIN_ID } from "../specs/events/events-helpers";
 
@@ -139,6 +139,20 @@ export async function updateCalendarSettings(page: Page, patch: Record<string, u
 		},
 		{ p: patch, pid: PLUGIN_ID }
 	);
+}
+
+/**
+ * Wait until the indexer has caught up to at least `minCount` events. Large
+ * seeded datasets take measurably longer than the 500ms refresh sleep to
+ * ingest; polling here avoids flaky "expected N got <N" races.
+ */
+export async function waitForEventCount(page: Page, minCount: number, timeout = 30_000): Promise<void> {
+	await expect
+		.poll(() => getEventCount(page), {
+			timeout,
+			message: `indexer never reached ${minCount} events`,
+		})
+		.toBeGreaterThanOrEqual(minCount);
 }
 
 /** Count events the plugin currently sees via the event store. */

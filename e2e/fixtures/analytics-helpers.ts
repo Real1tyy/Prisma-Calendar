@@ -1,19 +1,6 @@
 import type { Page } from "@playwright/test";
 
-/**
- * Format a `YYYY-MM-DDTHH:mm` string anchored to today's local date. Used by
- * analytics specs to seed events at deterministic times without coupling to
- * timezones or Luxon.
- */
-export function todayStamp(hours: number, minutes = 0): string {
-	const d = new Date();
-	const yyyy = d.getFullYear();
-	const mm = String(d.getMonth() + 1).padStart(2, "0");
-	const dd = String(d.getDate()).padStart(2, "0");
-	const hh = String(hours).padStart(2, "0");
-	const mi = String(minutes).padStart(2, "0");
-	return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
-}
+export { todayStamp } from "./dates";
 
 /**
  * Dismiss the topmost modal via Escape and wait for the modal count to drop.
