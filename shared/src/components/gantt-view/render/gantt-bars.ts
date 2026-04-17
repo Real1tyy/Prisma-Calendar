@@ -14,7 +14,10 @@ export function renderBars(
 		const task = taskMap.get(bar.taskId);
 		if (!task) continue;
 
-		const barEl = container.createDiv({ cls: cls("gantt-bar") });
+		const barEl = container.createDiv({
+			cls: cls("gantt-bar"),
+			attr: { "data-testid": "prisma-gantt-bar", "data-task-id": task.id, "data-task-title": task.title },
+		});
 		barEl.style.left = `${bar.x}px`;
 		barEl.style.top = `${bar.y}px`;
 		barEl.style.width = `${bar.width}px`;

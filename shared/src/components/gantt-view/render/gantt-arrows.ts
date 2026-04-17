@@ -27,7 +27,11 @@ export function renderArrows(
 	ensureArrowheadMarker(svg, markerId, cls);
 
 	for (const arrow of arrows) {
-		const group = svg.group().addClass(cls("gantt-arrow-group"));
+		const group = svg.group().addClass(cls("gantt-arrow-group")).attr({
+			"data-testid": "prisma-gantt-arrow",
+			"data-arrow-from": arrow.fromTaskId,
+			"data-arrow-to": arrow.toTaskId,
+		});
 
 		group.path(arrow.path).addClass(cls("gantt-arrow-hit"));
 		group
