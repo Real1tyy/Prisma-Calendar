@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { expectFrontmatter, readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
-import { expect, test } from "../../fixtures/electron";
+import { expect, testWithNotifications as test } from "../../fixtures/electron";
 import {
 	chipsForField,
 	EVENT_MODAL_SELECTOR,
@@ -25,6 +25,9 @@ test.describe("edit event — all fields", () => {
 		// Pre-bake the ZettelID so ensureZettelIdOnSave is a no-op on save; the
 		// rename-then-write path otherwise races the file indexer.
 		const seedPath = "Events/Editable Event-20250101000000.md";
+		// `Already Notified: true` keeps the notification-manager modal from
+		// popping up when wall-clock is within MAX_PAST_NOTIFICATION_THRESHOLD
+		// of the 09:00 start — that modal would intercept the right-click below.
 		const seed = `---
 Start Date: ${today}T09:00
 End Date: ${today}T10:00
@@ -37,6 +40,7 @@ Icon: calendar
 Break: 5
 Minutes Before: 10
 Priority: high
+Already Notified: true
 ---
 
 # Editable Event

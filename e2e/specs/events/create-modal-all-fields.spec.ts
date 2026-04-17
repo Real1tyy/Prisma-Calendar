@@ -1,6 +1,6 @@
 import { expectFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
-import { expect, test } from "../../fixtures/electron";
+import { expect, testWithNotifications as test } from "../../fixtures/electron";
 import {
 	createEventViaModal,
 	expectEventVisible,
@@ -14,7 +14,8 @@ import { fillEventModal } from "./fill-event-modal";
 // One big UI-driven happy-path test — a real user clicking Create, typing into
 // every field, then clicking Save. Mirrors the workflow we expect end users
 // to hit, validates that every modal input round-trips to frontmatter, and
-// confirms the saved block renders in the calendar grid.
+// confirms the saved block renders in the calendar grid. Uses the
+// notifications-on fixture so the "Notify minutes before" input renders.
 test.describe("create event — all fields", () => {
 	test("every field lands in frontmatter on save and renders in calendar", async ({ obsidian }) => {
 		await openCalendarReady(obsidian.page);

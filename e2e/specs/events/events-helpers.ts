@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { type Locator, type Page } from "@playwright/test";
@@ -15,6 +15,10 @@ export const TOOLBAR_VIEW_WEEK_SELECTOR = '[data-testid="prisma-cal-toolbar-view
 export const TOOLBAR_VIEW_DAY_SELECTOR = '[data-testid="prisma-cal-toolbar-view-day"]';
 export const TOOLBAR_NEXT_SELECTOR = '[data-testid="prisma-cal-toolbar-next"]';
 export const TOOLBAR_PREV_SELECTOR = '[data-testid="prisma-cal-toolbar-prev"]';
+export const UNTRACKED_BUTTON_SELECTOR = '[data-testid="prisma-untracked-dropdown-button"]';
+export const UNTRACKED_DROPDOWN_SELECTOR = '[data-testid="prisma-untracked-dropdown"]';
+export const UNTRACKED_ITEM_SELECTOR = '[data-testid="prisma-untracked-dropdown-item"]';
+export const CANCEL_BUTTON_SELECTOR = '[data-testid="prisma-event-btn-cancel"]';
 
 const NEW_FILE_POLL_INTERVAL_MS = 100;
 const NEW_FILE_TIMEOUT_MS = 10_000;
@@ -27,32 +31,33 @@ export interface ObsidianHandle {
 	vaultDir: string;
 }
 
-/** Snapshot the Events/ directory so we can diff the new files after a create. */
-export function snapshotEventFiles(vaultDir: string): Set<string> {
-	return new Set(listEventFiles(vaultDir, "Events"));
+/** Snapshot an events directory so we can diff the new files after a create. */
+export function snapshotEventFiles(vaultDir: string, subdir = "Events"): Set<string> {
+	return new Set(listEventFiles(vaultDir, subdir));
 }
 
 /**
- * Wait until `count` new files exist under Events/ compared to the baseline.
- * Polling disk because the plugin's file creation is async — modal close is
- * not a signal that the file has been written and indexed.
+ * Wait until `count` new files exist under the events subdir compared to the
+ * baseline. Polling disk because the plugin's file creation is async — modal
+ * close is not a signal that the file has been written and indexed.
  */
 export async function waitForNewEventFiles(
 	vaultDir: string,
 	baseline: Set<string>,
 	count = 1,
-	timeoutMs = NEW_FILE_TIMEOUT_MS
+	timeoutMs = NEW_FILE_TIMEOUT_MS,
+	subdir = "Events"
 ): Promise<string[]> {
 	const deadline = Date.now() + timeoutMs;
 	for (;;) {
-		const current = listEventFiles(vaultDir, "Events");
+		const current = listEventFiles(vaultDir, subdir);
 		const added = current.filter((p) => !baseline.has(p));
 		if (added.length >= count) {
 			return added.map((absolute) => absolute.slice(vaultDir.length + 1));
 		}
 		if (Date.now() > deadline) {
 			throw new Error(
-				`timed out waiting for ${count} new event file(s); baseline=${baseline.size}, current=${current.length}, added=${added.length}`
+				`timed out waiting for ${count} new event file(s) in ${subdir}; baseline=${baseline.size}, current=${current.length}, added=${added.length}`
 			);
 		}
 		await new Promise((resolve) => setTimeout(resolve, NEW_FILE_POLL_INTERVAL_MS));
@@ -113,8 +118,16 @@ export async function openCalendarView(page: Page, calendarId = "default"): Prom
 		},
 		{ id: calendarId, pid: PLUGIN_ID }
 	);
-	await page.locator(".fc").waitFor({ state: "visible", timeout: MODAL_WAIT_TIMEOUT_MS });
-	await page.locator(TOOLBAR_CREATE_SELECTOR).waitFor({ state: "visible", timeout: MODAL_WAIT_TIMEOUT_MS });
+	// Scope the post-reveal waits to the active leaf so multi-calendar specs
+	// (with two tabs mounted) don't trip Playwright's strict-mode multi-match.
+	await page
+		.locator(".workspace-leaf.mod-active .fc")
+		.first()
+		.waitFor({ state: "visible", timeout: MODAL_WAIT_TIMEOUT_MS });
+	await page
+		.locator(`.workspace-leaf.mod-active ${TOOLBAR_CREATE_SELECTOR}`)
+		.first()
+		.waitFor({ state: "visible", timeout: MODAL_WAIT_TIMEOUT_MS });
 }
 
 /** Open the calendar and wait for the toolbar to be interactive. */
@@ -127,6 +140,114 @@ export async function openCalendarReady(page: Page): Promise<void> {
 export async function switchToWeekView(page: Page): Promise<void> {
 	await page.locator(TOOLBAR_VIEW_WEEK_SELECTOR).click();
 	await page.locator(".fc-timegrid").waitFor({ state: "visible", timeout: 10_000 });
+}
+
+/** Switch to the FullCalendar month grid by clicking the toolbar button. */
+export async function switchToMonthView(page: Page): Promise<void> {
+	await page.locator(TOOLBAR_VIEW_MONTH_SELECTOR).click();
+	await page.locator(".fc-daygrid").waitFor({ state: "visible", timeout: 10_000 });
+}
+
+/** Wait for at least one `.fc-event` block whose label contains `title` to be visible. */
+export async function expectEventVisible(page: Page, title: string, timeoutMs = 15_000): Promise<void> {
+	await page.locator(".fc-event", { hasText: title }).first().waitFor({ state: "visible", timeout: timeoutMs });
+}
+
+/**
+ * Locator for all event blocks rendered in the calendar grid matching a title.
+ * Scope is explicitly `.fc-view-harness .fc-event` so the match excludes items
+ * in the untracked dropdown, which reuses the `.fc-event` class for FC's
+ * external draggable contract.
+ */
+export function eventBlockLocator(page: Page, title: string): Locator {
+	return page.locator(".fc-view-harness .fc-event", { hasText: title });
+}
+
+/** Drag from one bounding-box center to another, 10 intermediate steps. */
+export async function dragByCenter(
+	page: Page,
+	fromBox: { x: number; y: number; width: number; height: number },
+	toPoint: { x: number; y: number }
+): Promise<void> {
+	const fromX = fromBox.x + fromBox.width / 2;
+	const fromY = fromBox.y + fromBox.height / 2;
+	await page.mouse.move(fromX, fromY);
+	await page.mouse.down();
+	await page.mouse.move(toPoint.x, toPoint.y, { steps: 10 });
+	await page.mouse.up();
+}
+
+export interface BoundingBox {
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+}
+
+/**
+ * Resolve a locator's bounding box or throw — saves callers from the
+ * `expect(box).not.toBeNull(); if (!box) return;` dance that Playwright's
+ * nullable return type forces.
+ */
+export async function boundingBoxOrThrow(locator: Locator, name = "locator"): Promise<BoundingBox> {
+	const box = await locator.boundingBox();
+	if (!box) throw new Error(`${name} has no bounding box (detached or not visible)`);
+	return box;
+}
+
+export interface JitteredDragOptions {
+	jitterDx?: number;
+	jitterDy?: number;
+	jitterSteps?: number;
+	dragSteps?: number;
+	preDragPauseMs?: number;
+	preReleasePauseMs?: number;
+}
+
+/**
+ * Drag from one point to another with a small initial jitter so FC's
+ * `eventDragMinDistance` is crossed and `dragstart` fires. Without the
+ * jitter the interaction degrades to a click and `eventDrop` / external-
+ * draggable handlers never run.
+ */
+export async function dragWithJitter(
+	page: Page,
+	from: { x: number; y: number },
+	to: { x: number; y: number },
+	opts: JitteredDragOptions = {}
+): Promise<void> {
+	const {
+		jitterDx = 8,
+		jitterDy = 0,
+		jitterSteps = 4,
+		dragSteps = 25,
+		preDragPauseMs = 50,
+		preReleasePauseMs = 100,
+	} = opts;
+	await page.mouse.move(from.x, from.y);
+	await page.mouse.down();
+	await page.waitForTimeout(preDragPauseMs);
+	await page.mouse.move(from.x + jitterDx, from.y + jitterDy, { steps: jitterSteps });
+	await page.mouse.move(to.x, to.y, { steps: dragSteps });
+	await page.waitForTimeout(preReleasePauseMs);
+	await page.mouse.up();
+}
+
+const SEED_ZETTEL_ID = "20250101000000";
+
+/**
+ * Write a minimal event markdown file under `Events/` with the given
+ * frontmatter. The filename embeds a fixed ZettelID so tests can predict
+ * the path, and the H1 mirrors the title so calendar-block text matching
+ * works the same way the real plugin produces files.
+ */
+export function seedEventFile(vaultDir: string, title: string, frontmatter: Record<string, string | boolean>): string {
+	const relativePath = `Events/${title}-${SEED_ZETTEL_ID}.md`;
+	const fmBody = Object.entries(frontmatter)
+		.map(([key, value]) => `${key}: ${value}`)
+		.join("\n");
+	writeFileSync(join(vaultDir, relativePath), `---\n${fmBody}\n---\n\n# ${title}\n`, "utf8");
+	return relativePath;
 }
 
 /**
@@ -147,11 +268,6 @@ export function monthsFromTodayTo(isoDate: string): number {
 	const today = new Date();
 	const target = new Date(isoDate);
 	return (target.getFullYear() - today.getFullYear()) * 12 + (target.getMonth() - today.getMonth());
-}
-
-/** Wait for at least one `.fc-event` block whose label contains `title` to be visible. */
-export async function expectEventVisible(page: Page, title: string, timeoutMs = 15_000): Promise<void> {
-	await page.locator(".fc-event", { hasText: title }).first().waitFor({ state: "visible", timeout: timeoutMs });
 }
 
 /**

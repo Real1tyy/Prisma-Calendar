@@ -12,6 +12,63 @@ const E2E_ROOT = resolve(__dirname, "..");
 const PLUGIN_ROOT = resolve(E2E_ROOT, "..");
 const PLUGIN_ID = "prisma-calendar";
 
+// Batch buttons seeded into every calendar so specs can exercise ones the
+// production default hides (batchCloneNext / batchMoveNext / etc. — see
+// DEFAULT_BATCH_ACTION_BUTTONS in src/constants.ts). Kept inline rather than
+// imported from src to keep the fixture build-free.
+const ALL_BATCH_BUTTONS = [
+	"batchSelectAll",
+	"batchClear",
+	"batchDuplicate",
+	"batchMoveBy",
+	"batchMarkAsDone",
+	"batchMarkAsNotDone",
+	"batchCategories",
+	"batchFrontmatter",
+	"batchCloneNext",
+	"batchClonePrev",
+	"batchMoveNext",
+	"batchMovePrev",
+	"batchOpenAll",
+	"batchSkip",
+	"batchMakeVirtual",
+	"batchMakeReal",
+	"batchDelete",
+];
+
+const DEFAULT_CALENDAR = {
+	id: "default",
+	name: "Main Calendar",
+	enabled: true,
+	directory: "Events",
+	enableNotifications: false,
+	batchActionButtons: ALL_BATCH_BUTTONS,
+};
+
+const DEFAULT_PAGE_HEADER_STATE = {
+	visibleActionIds: [
+		"create-event",
+		"create-untracked",
+		"go-to-today",
+		"scroll-to-now",
+		"navigate-back",
+		"navigate-forward",
+		"global-search",
+		"toggle-batch",
+		"daily-stats",
+		"weekly-stats",
+		"monthly-stats",
+		"alltime-stats",
+		"toggle-prerequisites",
+		"refresh",
+	],
+};
+
+export interface BootstrapOverrides {
+	calendars?: Array<Record<string, unknown>>;
+	keepDirs?: string[];
+}
+
 const CACHE_ROOT = join(E2E_ROOT, ".cache");
 const VAULTS_ROOT = join(CACHE_ROOT, "vaults");
 const LOG_FILE = join(CACHE_ROOT, "last-run.log");
@@ -72,11 +129,16 @@ export const demoMode = {
 	enabled: DEMO_SLOW_MO_MS > 0,
 };
 
-export async function bootstrapObsidian(options: { prefix?: string } = {}): Promise<BootstrappedObsidian> {
+export async function bootstrapObsidian(
+	options: { prefix?: string; overrides?: BootstrapOverrides } = {}
+): Promise<BootstrappedObsidian> {
 	const version = JSON.parse(readFileSync(VERSION_FILE, "utf8")) as {
 		appVersion: string;
 		installerVersion: string;
 	};
+
+	const calendars = options.overrides?.calendars ?? [DEFAULT_CALENDAR];
+	const keepDirs = options.overrides?.keepDirs ?? ["Events"];
 
 	return sharedBootstrap({
 		version,
@@ -86,10 +148,11 @@ export async function bootstrapObsidian(options: { prefix?: string } = {}): Prom
 		prefix: options.prefix ?? "run",
 		plugin: { id: PLUGIN_ID, rootDir: PLUGIN_ROOT },
 		logger: log,
-		// Retained vaults are trimmed to just the events folder and the plugin's
-		// data.json on close — everything else (seeded Obsidian config, staged
-		// plugin artifacts) is regeneratable and bloats the cache.
-		leanVaultOnClose: { keep: ["Events"] },
+		// Retained vaults are trimmed to just the events folder(s) and the
+		// plugin's data.json on close — everything else (seeded Obsidian
+		// config, staged plugin artifacts) is regeneratable and bloats the
+		// cache.
+		leanVaultOnClose: { keep: keepDirs },
 		env: {
 			PRISMA_LOG_LEVEL: VERBOSE ? "debug" : "warn",
 		},
@@ -137,61 +200,22 @@ export async function bootstrapObsidian(options: { prefix?: string } = {}): Prom
 			);
 
 			const manifestVersion = manifest["version"] as string;
-			// Enable every batch-action button up front so specs can exercise ones that
-			// the production default hides (batchCloneNext / batchMoveNext / etc. are
-			// off by default — see DEFAULT_BATCH_ACTION_BUTTONS in src/constants.ts).
-			// Kept inline rather than imported from src to keep the fixture build-free.
-			const ALL_BATCH_BUTTONS = [
-				"batchSelectAll",
-				"batchClear",
-				"batchDuplicate",
-				"batchMoveBy",
-				"batchMarkAsDone",
-				"batchMarkAsNotDone",
-				"batchCategories",
-				"batchFrontmatter",
-				"batchCloneNext",
-				"batchClonePrev",
-				"batchMoveNext",
-				"batchMovePrev",
-				"batchOpenAll",
-				"batchSkip",
-				"batchMakeVirtual",
-				"batchMakeReal",
-				"batchDelete",
-			];
+			// Notifications default to ON in production. Tests seed events at wall-
+			// clock-relative times (e.g. `today T09:00`) which fire the
+			// notification-manager modal whenever the test runs within
+			// MAX_PAST_NOTIFICATION_THRESHOLD (5h timed / 1d all-day) of the start.
+			// That modal steals pointer events and breaks any right-click / click
+			// flow the spec tries next. Flipping `enableNotifications: false` here
+			// mutes the whole feature by default. Specs that specifically exercise
+			// notifications must re-enable it (e.g. via the settings tab or by
+			// rewriting data.json in the spec).
 			writeFileSync(
 				join(pluginDir, "data.json"),
 				JSON.stringify(
 					{
 						version: manifestVersion,
-						calendars: [
-							{
-								id: "default",
-								name: "Main Calendar",
-								enabled: true,
-								directory: "Events",
-								batchActionButtons: ALL_BATCH_BUTTONS,
-							},
-						],
-						pageHeaderState: {
-							visibleActionIds: [
-								"create-event",
-								"create-untracked",
-								"go-to-today",
-								"scroll-to-now",
-								"navigate-back",
-								"navigate-forward",
-								"global-search",
-								"toggle-batch",
-								"daily-stats",
-								"weekly-stats",
-								"monthly-stats",
-								"alltime-stats",
-								"toggle-prerequisites",
-								"refresh",
-							],
-						},
+						calendars,
+						pageHeaderState: DEFAULT_PAGE_HEADER_STATE,
 					},
 					null,
 					2
@@ -242,42 +266,105 @@ export async function bootstrapObsidian(options: { prefix?: string } = {}): Prom
 	});
 }
 
+type UseObsidian = (handle: BootstrappedObsidian) => Promise<void>;
+
+async function runWithObsidianHandle(
+	options: { prefix: string; overrides?: BootstrapOverrides },
+	use: UseObsidian
+): Promise<void> {
+	const handle = await bootstrapObsidian(options);
+	// Surface renderer-side failures as spec failures. `console.error` is
+	// kept live by the onRendererReady silencer (only log/info/debug are
+	// nooped), and uncaught exceptions reach us via `pageerror`. Collecting
+	// both here replaces the standalone plugin-load "no console errors"
+	// smoke test with a guard that fires on every spec.
+	const consoleErrors: string[] = [];
+	const onConsole = (msg: ConsoleMessage): void => {
+		if (msg.type() === "error") consoleErrors.push(msg.text());
+	};
+	const onPageError = (err: Error): void => {
+		consoleErrors.push(`pageerror: ${err.message}`);
+	};
+	handle.page.on("console", onConsole);
+	handle.page.on("pageerror", onPageError);
+
+	await use(handle);
+	// Demo mode: hold the window open so a human can poke around the vault
+	// state before teardown. If the user closes Obsidian manually during the
+	// hold the subsequent `handle.close()` no-ops (browser/process `close()`
+	// already tolerates a dead target).
+	if (DEMO_HOLD_MS > 0) {
+		log.info(
+			`demo hold: keeping Obsidian open for ${DEMO_HOLD_MS / 1000}s — inspect the vault, close manually to skip`
+		);
+		await handle.page.waitForTimeout(DEMO_HOLD_MS).catch(() => {});
+	}
+	handle.page.off("console", onConsole);
+	handle.page.off("pageerror", onPageError);
+	await handle.close();
+	if (consoleErrors.length > 0) {
+		throw new Error(`renderer emitted ${consoleErrors.length} error(s):\n${consoleErrors.join("\n")}`);
+	}
+}
+
 export const test = base.extend<{ obsidian: BootstrappedObsidian }>({
 	// eslint-disable-next-line no-empty-pattern
 	obsidian: async ({}, use) => {
-		const handle = await bootstrapObsidian({ prefix: "spec" });
-		// Surface renderer-side failures as spec failures. `console.error` is
-		// kept live by the onRendererReady silencer (only log/info/debug are
-		// nooped), and uncaught exceptions reach us via `pageerror`. Collecting
-		// both here replaces the standalone plugin-load "no console errors"
-		// smoke test with a guard that fires on every spec.
-		const consoleErrors: string[] = [];
-		const onConsole = (msg: ConsoleMessage): void => {
-			if (msg.type() === "error") consoleErrors.push(msg.text());
-		};
-		const onPageError = (err: Error): void => {
-			consoleErrors.push(`pageerror: ${err.message}`);
-		};
-		handle.page.on("console", onConsole);
-		handle.page.on("pageerror", onPageError);
+		await runWithObsidianHandle({ prefix: "spec" }, use);
+	},
+});
 
-		await use(handle);
-		// Demo mode: hold the window open so a human can poke around the vault
-		// state before teardown. If the user closes Obsidian manually during the
-		// hold the subsequent `handle.close()` no-ops (browser/process `close()`
-		// already tolerates a dead target).
-		if (DEMO_HOLD_MS > 0) {
-			log.info(
-				`demo hold: keeping Obsidian open for ${DEMO_HOLD_MS / 1000}s — inspect the vault, close manually to skip`
-			);
-			await handle.page.waitForTimeout(DEMO_HOLD_MS).catch(() => {});
-		}
-		handle.page.off("console", onConsole);
-		handle.page.off("pageerror", onPageError);
-		await handle.close();
-		if (consoleErrors.length > 0) {
-			throw new Error(`renderer emitted ${consoleErrors.length} error(s):\n${consoleErrors.join("\n")}`);
-		}
+const NOTIFICATIONS_ON_OVERRIDES: BootstrapOverrides = {
+	calendars: [{ ...DEFAULT_CALENDAR, enableNotifications: true }],
+};
+
+/**
+ * Variant of `test` that seeds `enableNotifications: true` in data.json
+ * before the plugin loads. Use for specs that exercise notification-bound UI
+ * (e.g. "Notify minutes before" field in the event modal, or the notification
+ * settings tab). Bypasses the pointer-event-stealing notification modal by
+ * setting the toggle at bootstrap time rather than via the settings UI.
+ */
+export const testWithNotifications = base.extend<{ obsidian: BootstrappedObsidian }>({
+	// eslint-disable-next-line no-empty-pattern
+	obsidian: async ({}, use) => {
+		await runWithObsidianHandle({ prefix: "notif-spec", overrides: NOTIFICATIONS_ON_OVERRIDES }, use);
+	},
+});
+
+export const MULTI_CALENDAR_PRIMARY_ID = "primary";
+export const MULTI_CALENDAR_SECONDARY_ID = "secondary";
+export const MULTI_CALENDAR_PRIMARY_DIR = "EventsPrimary";
+export const MULTI_CALENDAR_SECONDARY_DIR = "EventsSecondary";
+
+const MULTI_CALENDAR_OVERRIDES: BootstrapOverrides = {
+	calendars: [
+		{
+			...DEFAULT_CALENDAR,
+			id: MULTI_CALENDAR_PRIMARY_ID,
+			name: "Primary Calendar",
+			directory: MULTI_CALENDAR_PRIMARY_DIR,
+		},
+		{
+			...DEFAULT_CALENDAR,
+			id: MULTI_CALENDAR_SECONDARY_ID,
+			name: "Secondary Calendar",
+			directory: MULTI_CALENDAR_SECONDARY_DIR,
+		},
+	],
+	keepDirs: [MULTI_CALENDAR_PRIMARY_DIR, MULTI_CALENDAR_SECONDARY_DIR],
+};
+
+/**
+ * Variant of `test` that seeds two independent calendar bundles so specs can
+ * exercise cross-calendar semantics — undo-stack isolation, last-used bundle
+ * resolution, etc. Use `openCalendarView(page, "primary"|"secondary")` to
+ * switch between them.
+ */
+export const testMultiCalendar = base.extend<{ obsidian: BootstrappedObsidian }>({
+	// eslint-disable-next-line no-empty-pattern
+	obsidian: async ({}, use) => {
+		await runWithObsidianHandle({ prefix: "multi-cal-spec", overrides: MULTI_CALENDAR_OVERRIDES }, use);
 	},
 });
 
