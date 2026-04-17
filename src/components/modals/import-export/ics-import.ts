@@ -30,7 +30,7 @@ function renderICSImportForm(
 	fileSection.createEl("label", { text: "Select .ics file" });
 	const fileInput = fileSection.createEl("input", {
 		type: "file",
-		attr: { accept: ".ics,.ical" },
+		attr: { accept: ".ics,.ical", "data-testid": "prisma-ics-import-file" },
 	});
 
 	const optionsContainer = formEl.createDiv();
@@ -61,6 +61,8 @@ function renderICSImportForm(
 
 	const { submitButton: importButton } = createModalButtons(formEl, {
 		submitText: "Import",
+		submitTestId: "prisma-ics-import-submit",
+		cancelTestId: "prisma-ics-import-cancel",
 		onSubmit: () => {
 			const values = handle.getValues();
 			const selectedBundle = calendars.find((b) => b.calendarId === values["calendar"]);

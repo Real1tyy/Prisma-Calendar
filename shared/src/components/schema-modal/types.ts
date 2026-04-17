@@ -180,6 +180,8 @@ export interface SchemaFormModalConfig<S extends ZodRawShape = ZodRawShape> {
 	existing?: Partial<z.infer<z.ZodObject<S>>> | undefined;
 	extraFields?: ((el: HTMLElement, values: Record<string, unknown>) => void) | undefined;
 	submitText?: string | undefined;
+	submitTestId?: string | undefined;
+	cancelTestId?: string | undefined;
 	onSubmit: (values: z.infer<z.ZodObject<S>>) => void | Promise<void>;
 	nameField?: boolean | { placeholder?: string } | undefined;
 }
@@ -189,7 +191,9 @@ export interface SchemaFormModalConfig<S extends ZodRawShape = ZodRawShape> {
 export interface ModalButtonOptions {
 	prefix: string;
 	submitText: string;
-	submitCls?: string;
+	submitCls?: string | undefined;
+	submitTestId?: string | undefined;
+	cancelTestId?: string | undefined;
 	onSubmit: () => void;
 	onCancel: () => void;
 }

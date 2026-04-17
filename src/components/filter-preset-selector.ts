@@ -41,6 +41,7 @@ export class FilterPresetSelector {
 
 		this.select = document.createElement("select");
 		this.select.className = `${cls("fc-filter-preset-select")} fc-button fc-button-primary`;
+		this.select.setAttribute("data-testid", "prisma-fc-filter-preset-select");
 
 		// Hidden placeholder option that shows the arrow
 		const placeholderOption = document.createElement("option");

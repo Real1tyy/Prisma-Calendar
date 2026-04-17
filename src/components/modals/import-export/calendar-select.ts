@@ -23,6 +23,8 @@ export function showCalendarSelectModal(
 		title: "Export calendar",
 		shape: CalendarSelectShape,
 		submitText: "Export",
+		submitTestId: "prisma-ics-export-submit",
+		cancelTestId: "prisma-ics-export-cancel",
 		existing: {
 			calendar: calendars[0]?.calendarId ?? "",
 			timezone: "UTC",

@@ -29,6 +29,8 @@ export function isPointInsideElement(x: number, y: number, el: Element | null | 
 interface ModalButtonOptions {
 	submitText: string;
 	submitCls?: string;
+	submitTestId?: string;
+	cancelTestId?: string;
 	onSubmit: () => void;
 	onCancel: () => void;
 }

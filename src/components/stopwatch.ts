@@ -66,6 +66,7 @@ export class Stopwatch {
 		this.displayEl = mainDisplay.createSpan({
 			text: "00:00:00",
 			cls: cls("stopwatch-time"),
+			attr: { "data-testid": "prisma-stopwatch-time" },
 		});
 
 		// Break time display

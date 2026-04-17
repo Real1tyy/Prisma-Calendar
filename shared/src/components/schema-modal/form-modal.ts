@@ -72,6 +72,8 @@ export function showSchemaFormModal<S extends ZodRawShape>(config: SchemaFormMod
 			createModalButtons(el, {
 				prefix: config.prefix,
 				submitText,
+				submitTestId: config.submitTestId,
+				cancelTestId: config.cancelTestId,
 				onSubmit: submit,
 				onCancel: () => ctx.close(),
 			});

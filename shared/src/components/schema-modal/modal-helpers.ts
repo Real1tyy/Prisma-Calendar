@@ -2,17 +2,19 @@ import type { ModalButtonOptions } from "./types";
 
 export function createModalButtons(
 	container: HTMLElement,
-	{ prefix, submitText, submitCls, onSubmit, onCancel }: ModalButtonOptions
+	{ prefix, submitText, submitCls, submitTestId, cancelTestId, onSubmit, onCancel }: ModalButtonOptions
 ): { submitButton: HTMLButtonElement; cancelButton: HTMLButtonElement } {
 	const buttonContainer = container.createDiv(`${prefix}modal-button-container`);
 
 	const cancelButton = buttonContainer.createEl("button", { text: "Cancel" });
+	if (cancelTestId) cancelButton.setAttribute("data-testid", cancelTestId);
 	cancelButton.addEventListener("click", onCancel);
 
 	const submitButton = buttonContainer.createEl("button", {
 		text: submitText,
 		cls: submitCls ?? "mod-cta",
 	});
+	if (submitTestId) submitButton.setAttribute("data-testid", submitTestId);
 	submitButton.addEventListener("click", onSubmit);
 
 	return { submitButton, cancelButton };
