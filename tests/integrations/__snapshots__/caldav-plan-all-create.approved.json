@@ -1,0 +1,23 @@
+{
+  "actions": [
+    {
+      "kind": "create",
+      "uid": "u-1",
+      "url": "https://dav.example.com/acc-local/work/u-1.ics",
+      "etag": "\"etag-v1\""
+    },
+    {
+      "kind": "create",
+      "uid": "u-2",
+      "url": "https://dav.example.com/acc-local/work/u-2.ics",
+      "etag": "\"etag-v1\""
+    }
+  ],
+  "summary": {
+    "create": 2,
+    "update": 0,
+    "skipUnchanged": 0,
+    "skipMissingUid": 0,
+    "skipForeignUid": 0
+  }
+}

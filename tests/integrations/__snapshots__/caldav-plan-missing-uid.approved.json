@@ -1,0 +1,15 @@
+{
+  "actions": [
+    {
+      "kind": "skip-missing-uid",
+      "url": "https://dav.example.com/acc-local/work/mangled.ics"
+    }
+  ],
+  "summary": {
+    "create": 0,
+    "update": 0,
+    "skipUnchanged": 0,
+    "skipMissingUid": 1,
+    "skipForeignUid": 0
+  }
+}

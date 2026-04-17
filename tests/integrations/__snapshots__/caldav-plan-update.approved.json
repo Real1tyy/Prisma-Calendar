@@ -1,0 +1,18 @@
+{
+  "actions": [
+    {
+      "kind": "update",
+      "uid": "u-1",
+      "filePath": "Events/event-u-1.md",
+      "url": "https://dav.example.com/acc-local/work/u-1.ics",
+      "etag": "\"etag-v2\""
+    }
+  ],
+  "summary": {
+    "create": 0,
+    "update": 1,
+    "skipUnchanged": 0,
+    "skipMissingUid": 0,
+    "skipForeignUid": 0
+  }
+}

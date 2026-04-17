@@ -1,0 +1,26 @@
+{
+  "actions": [
+    {
+      "kind": "skip-unchanged",
+      "uid": "u-1",
+      "filePath": "Events/u-1.md"
+    },
+    {
+      "kind": "skip-unchanged",
+      "uid": "u-2",
+      "filePath": "Events/u-2.md"
+    },
+    {
+      "kind": "skip-unchanged",
+      "uid": "u-3",
+      "filePath": "Events/u-3.md"
+    }
+  ],
+  "summary": {
+    "create": 0,
+    "update": 0,
+    "skipUnchanged": 3,
+    "skipMissingUid": 0,
+    "skipForeignUid": 0
+  }
+}

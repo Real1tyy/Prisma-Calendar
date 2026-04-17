@@ -1,0 +1,41 @@
+{
+  "actions": [
+    {
+      "kind": "skip-unchanged",
+      "uid": "u-same-etag",
+      "filePath": "Events/same.md"
+    },
+    {
+      "kind": "update",
+      "uid": "u-changed",
+      "filePath": "Events/changed.md",
+      "url": "https://dav.example.com/acc-local/work/u-changed.ics",
+      "etag": "\"new\""
+    },
+    {
+      "kind": "create",
+      "uid": "u-brand-new",
+      "url": "https://dav.example.com/acc-local/work/u-brand-new.ics",
+      "etag": "\"fresh\""
+    },
+    {
+      "kind": "skip-foreign-uid",
+      "uid": "u-foreign",
+      "ownedBy": {
+        "accountId": "acc-other",
+        "calendarHref": "https://dav.example.com/acc-other/work/"
+      }
+    },
+    {
+      "kind": "skip-missing-uid",
+      "url": "https://dav.example.com/acc-local/work/broken.ics"
+    }
+  ],
+  "summary": {
+    "create": 1,
+    "update": 1,
+    "skipUnchanged": 1,
+    "skipMissingUid": 1,
+    "skipForeignUid": 1
+  }
+}
