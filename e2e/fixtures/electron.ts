@@ -274,7 +274,7 @@ export async function bootstrapObsidian(
 type UseObsidian = (handle: BootstrappedObsidian) => Promise<void>;
 
 async function runWithObsidianHandle(
-	options: { prefix: string; overrides?: BootstrapOverrides },
+	options: { prefix: string; overrides?: BootstrapOverrides; expectedErrorPatterns?: readonly RegExp[] },
 	use: UseObsidian
 ): Promise<void> {
 	const handle = await bootstrapObsidian(options);
@@ -292,14 +292,23 @@ async function runWithObsidianHandle(
 	// else still fails loudly.
 	const isTransientEventFileEnoent = (text: string): boolean =>
 		text.includes("ENOENT") && text.includes("/Events") && text.endsWith(".md'");
+	// Resilience specs deliberately induce broken on-disk state (corrupt
+	// data.json, unreadable files) to prove the plugin recovers. Those flows
+	// DO legitimately emit console.errors from Obsidian's own JSON reader /
+	// EACCES read. Specs that target recovery can pass a list of RegExps via
+	// the `testWithExpectedErrors` fixture to whitelist the expected shapes.
+	const expectedErrorPatterns = options.expectedErrorPatterns ?? [];
+	const isExpectedError = (text: string): boolean => expectedErrorPatterns.some((re) => re.test(text));
 	const onConsole = (msg: ConsoleMessage): void => {
 		if (msg.type() !== "error") return;
 		const text = msg.text();
 		if (isTransientEventFileEnoent(text)) return;
+		if (isExpectedError(text)) return;
 		consoleErrors.push(text);
 	};
 	const onPageError = (err: Error): void => {
 		if (isTransientEventFileEnoent(err.message)) return;
+		if (isExpectedError(err.message)) return;
 		consoleErrors.push(`pageerror: ${err.message}`);
 	};
 	handle.page.on("console", onConsole);
@@ -328,6 +337,30 @@ export const test = base.extend<{ obsidian: BootstrappedObsidian }>({
 	// eslint-disable-next-line no-empty-pattern
 	obsidian: async ({}, use) => {
 		await runWithObsidianHandle({ prefix: "spec" }, use);
+	},
+});
+
+/**
+ * Patterns the resilience suite expects to see in the renderer console during
+ * recovery paths. Kept as module-level consts so the list stays explicit —
+ * every entry needs a matching spec scenario, or it should be deleted.
+ */
+export const RESILIENCE_EXPECTED_ERRORS: readonly RegExp[] = [
+	// corrupt-data-json.spec.ts: truncated / schema-incompatible data.json
+	/failed to read JSON.*prisma-calendar\/data\.json/,
+	// unreadable-event-file.spec.ts: chmod 000 under Events/
+	/EACCES.*\/Events\/.*\.md/,
+];
+
+/**
+ * Variant of `test` that whitelists the resilience suite's expected recovery-
+ * path renderer errors. Every spec under `specs/resilience/` should import
+ * from here instead of the default `test`.
+ */
+export const testResilience = base.extend<{ obsidian: BootstrappedObsidian }>({
+	// eslint-disable-next-line no-empty-pattern
+	obsidian: async ({}, use) => {
+		await runWithObsidianHandle({ prefix: "resilience-spec", expectedErrorPatterns: RESILIENCE_EXPECTED_ERRORS }, use);
 	},
 });
 

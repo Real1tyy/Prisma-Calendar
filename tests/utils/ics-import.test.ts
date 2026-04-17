@@ -751,7 +751,10 @@ END:VCALENDAR`;
 
 			const fm = buildFrontmatterFromImportedEvent(event, settings as SingleCalendarConfig, "UTC");
 
-			expect(fm["Participants"]).toEqual(["Alice"]);
+			// `assignListToFrontmatter` flattens single-item lists to a scalar so
+			// the stored frontmatter round-trips cleanly (no YAML-array wrapper
+			// around a lone value).
+			expect(fm["Participants"]).toBe("Alice");
 		});
 
 		it("should not include participants when not present", () => {

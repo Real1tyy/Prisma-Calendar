@@ -394,6 +394,28 @@ export async function seedEvents(page: Page, events: CreateEventInput[]): Promis
 }
 
 /**
+ * Drive the full "assign prerequisite" flow through the calendar UI: right-click
+ * the dependant, open its context menu, hit "Assign prerequisites", then click
+ * the prerequisite tile in the calendar. Both tiles must be visible in the
+ * current view at the same time, so the caller usually switches to month view
+ * before calling.
+ */
+export async function assignPrerequisiteViaUI(page: Page, dependant: string, prerequisite: string): Promise<void> {
+	await rightClickEvent(page, { title: dependant });
+	await clickContextMenuItem(page, "assignPrerequisites");
+	const prereqTile = page
+		.locator(`${ACTIVE_CALENDAR_LEAF} [data-testid="prisma-cal-event"][data-event-title="${prerequisite}"]`)
+		.first();
+	await prereqTile.waitFor({ state: "visible", timeout: 5_000 });
+	await prereqTile.click();
+	await page
+		.locator(".prisma-prereq-selection-banner")
+		.first()
+		.waitFor({ state: "detached", timeout: 5_000 })
+		.catch(() => {});
+}
+
+/**
  * Flip the Prisma-Calendar license into Pro mode for the current session via
  * the license-manager's `__setProForTesting` public seam (guarded by
  * `window.E2E === true`, which the bootstrap sets). No user path for this —
@@ -434,34 +456,6 @@ export async function rightClickGanttBar(page: Page, title: string): Promise<voi
 	const bar = ganttBarLocator(page, title);
 	await bar.waitFor({ state: "visible", timeout: 5_000 });
 	await bar.click({ button: "right" });
-}
-
-/**
- * Drive the calendar-event prerequisite-assignment flow through the UI:
- * right-click the dependant event → "Assign prerequisites" → click the
- * prerequisite event tile. Both events must already be rendered on the
- * calendar. Kicks the plugin into `isConnected` state for the Gantt chart.
- */
-export async function assignPrerequisiteViaUI(page: Page, dependant: string, prerequisite: string): Promise<void> {
-	await rightClickEvent(page, { title: dependant });
-	await clickContextMenuItem(page, "assignPrerequisites");
-
-	const prereqTile = page
-		.locator(`${ACTIVE_CALENDAR_LEAF} [data-testid="prisma-cal-event"][data-event-title="${prerequisite}"]`)
-		.first();
-	await prereqTile.waitFor({ state: "visible", timeout: 5_000 });
-	await prereqTile.click();
-
-	// Sticky "Click an event to assign it as a prerequisite" banner detaches
-	// once the selection resolves. Waiting for it keeps follow-up clicks from
-	// racing the in-flight frontmatter update.
-	await page
-		.locator(".prisma-prereq-selection-banner")
-		.first()
-		.waitFor({ state: "detached", timeout: 5_000 })
-		.catch(() => {
-			/* best-effort */
-		});
 }
 
 // ── Phase 2: category assignment + list modals + untracked dropdown ─────────
