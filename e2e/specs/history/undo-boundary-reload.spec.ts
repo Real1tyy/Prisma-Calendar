@@ -1,5 +1,11 @@
 import { test } from "../../fixtures/electron";
-import { createEventViaToolbar, isoLocal, undoViaPalette, waitForFileExists } from "../../fixtures/history-helpers";
+import {
+	createEventViaToolbar,
+	expectEventsVisibleByTitle,
+	isoLocal,
+	undoViaPalette,
+	waitForFileExists,
+} from "../../fixtures/history-helpers";
 import { openCalendarReady } from "../events/events-helpers";
 
 // The undo stack lives only in memory. Its behaviour across a renderer
@@ -28,8 +34,10 @@ test.describe("undo boundary: reload (UI-driven)", () => {
 
 		await undoViaPalette(obsidian.page);
 		await waitForFileExists(obsidian.vaultDir, path, true);
+		await expectEventsVisibleByTitle(obsidian.page, ["Reload Probe"]);
 
 		await undoViaPalette(obsidian.page);
 		await waitForFileExists(obsidian.vaultDir, path, true);
+		await expectEventsVisibleByTitle(obsidian.page, ["Reload Probe"]);
 	});
 });

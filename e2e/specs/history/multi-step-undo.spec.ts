@@ -6,6 +6,8 @@ import {
 	createEventViaToolbar,
 	enterBatchMode,
 	exitBatchMode,
+	expectEventsNotVisibleByTitle,
+	expectEventsVisibleByTitle,
 	isoLocal,
 	redoViaPalette,
 	toggleEventInBatch,
@@ -20,7 +22,7 @@ import { fillEventModal, saveEventModal } from "../events/fill-event-modal";
 // History bugs usually manifest in chains, not single actions. These specs
 // walk heterogenous sequences — all via real UI (toolbar, context menu,
 // edit modal, batch toolbar, palette) — and assert each step reverses
-// under undo.
+// under undo, checking both the file-on-disk and the calendar DOM.
 //
 // Note: the plugin's redo-of-create path regenerates the zettel-id suffix,
 // so 4× undo followed by 4× redo cannot guarantee byte-for-byte path
@@ -42,6 +44,7 @@ test.describe("undo/redo: multi-step chains (UI-driven)", () => {
 			start: isoLocal(1, 9),
 			end: isoLocal(1, 10),
 		});
+		await expectEventsVisibleByTitle(obsidian.page, ["Chain Alpha"]);
 
 		// Step 2: Edit A's end time via context menu + modal.
 		await rightClickEventMenu(obsidian.page, "Chain Alpha", "editEvent");
@@ -52,6 +55,9 @@ test.describe("undo/redo: multi-step chains (UI-driven)", () => {
 		const beforeDup = listEventFiles(obsidian.vaultDir).length;
 		await rightClickEventMenu(obsidian.page, "Chain Alpha", "duplicateEvent");
 		await waitForEventFileCount(obsidian.vaultDir, beforeDup + 1);
+		await expect
+			.poll(() => obsidian.page.locator('[data-testid="prisma-cal-event"][data-event-title="Chain Alpha"]').count())
+			.toBe(2);
 		const after = listEventFiles(obsidian.vaultDir);
 		const dupAbs = after.find((f) => !f.endsWith(`/${pathA}`));
 		const dupPath = dupAbs!.slice(obsidian.vaultDir.length + 1);
@@ -64,10 +70,15 @@ test.describe("undo/redo: multi-step chains (UI-driven)", () => {
 			.click({ button: "right" });
 		await obsidian.page.locator('[data-testid="prisma-context-menu-item-deleteEvent"]').first().click();
 		await waitForFileExists(obsidian.vaultDir, dupPath, false);
+		// One "Chain Alpha" left in the DOM.
+		await expect
+			.poll(() => obsidian.page.locator('[data-testid="prisma-cal-event"][data-event-title="Chain Alpha"]').count())
+			.toBe(1);
 
 		// Undo 4× reverses in order: delete → duplicate → edit → create.
 		await undoViaPalette(obsidian.page, 4);
 		await expect.poll(() => listEventFiles(obsidian.vaultDir).length).toBe(baseline);
+		await expectEventsNotVisibleByTitle(obsidian.page, ["Chain Alpha"]);
 	});
 
 	test("undo 2 + redo 1 + undo 3: stack stays consistent across direction changes", async ({ obsidian }) => {
@@ -77,27 +88,33 @@ test.describe("undo/redo: multi-step chains (UI-driven)", () => {
 			start: isoLocal(1, 9),
 			end: isoLocal(1, 10),
 		});
+		await expectEventsVisibleByTitle(obsidian.page, ["Step Alpha"]);
 
 		await rightClickEventMenu(obsidian.page, "Step Alpha", "markDone");
 		await waitForFrontmatter(obsidian.vaultDir, pathA, "Status", (v) => v === "Done");
 
 		await rightClickEventMenu(obsidian.page, "Step Alpha", "skipEvent");
 		await waitForFrontmatter(obsidian.vaultDir, pathA, "Skip", (v) => v === true);
+		// Skip hides the event from the main calendar.
+		await expectEventsNotVisibleByTitle(obsidian.page, ["Step Alpha"]);
 
 		// Undo 2: skip then mark-done.
 		await undoViaPalette(obsidian.page, 2);
 		await waitForFrontmatter(obsidian.vaultDir, pathA, "Skip", (v) => v === undefined || v === false);
 		await waitForFrontmatter(obsidian.vaultDir, pathA, "Status", (v) => v !== "Done");
+		await expectEventsVisibleByTitle(obsidian.page, ["Step Alpha"]);
 
 		// Redo 1: re-apply mark-done.
 		await redoViaPalette(obsidian.page, 1);
 		await waitForFrontmatter(obsidian.vaultDir, pathA, "Status", (v) => v === "Done");
 		await waitForFrontmatter(obsidian.vaultDir, pathA, "Skip", (v) => v === undefined || v === false);
+		await expectEventsVisibleByTitle(obsidian.page, ["Step Alpha"]);
 
 		// Undo 3: mark-done → create (file gone), stack consistent.
 		await undoViaPalette(obsidian.page, 3);
 		await waitForFileExists(obsidian.vaultDir, pathA, false);
 		await expect.poll(() => listEventFiles(obsidian.vaultDir).length).toBe(baseline);
+		await expectEventsNotVisibleByTitle(obsidian.page, ["Step Alpha"]);
 	});
 
 	test("heterogenous ops (edit modal × batch × context menu) chain cleanly under undo", async ({ obsidian }) => {
@@ -111,6 +128,7 @@ test.describe("undo/redo: multi-step chains (UI-driven)", () => {
 			start: isoLocal(1, 11),
 			end: isoLocal(1, 12),
 		});
+		await expectEventsVisibleByTitle(obsidian.page, ["Alice Sync", "Bob Sync"]);
 
 		// Order matters: Prisma hides skipped events from the calendar, so skip must
 		// come *last* — otherwise later clicks can't find the hidden event. Undo
@@ -134,11 +152,14 @@ test.describe("undo/redo: multi-step chains (UI-driven)", () => {
 		// after this clicks on Alice).
 		await rightClickEventMenu(obsidian.page, "Alice Sync", "skipEvent");
 		await waitForFrontmatter(obsidian.vaultDir, pathA, "Skip", (v) => v === true);
+		await expectEventsNotVisibleByTitle(obsidian.page, ["Alice Sync"]);
+		await expectEventsVisibleByTitle(obsidian.page, ["Bob Sync"]);
 
 		// Undo 3× reverses everything: skip → edit → batch mark-done.
 		await undoViaPalette(obsidian.page, 3);
 		await waitForFrontmatter(obsidian.vaultDir, pathA, "Skip", (v) => v === undefined || v === false);
 		await waitForFrontmatter(obsidian.vaultDir, pathA, "Status", (v) => v !== "Done");
 		await waitForFrontmatter(obsidian.vaultDir, pathB, "Status", (v) => v !== "Done");
+		await expectEventsVisibleByTitle(obsidian.page, ["Alice Sync", "Bob Sync"]);
 	});
 });

@@ -11,7 +11,7 @@
 // If any of these grow to be reused outside `specs/history/`, hoist them into
 // `fixtures/helpers.ts` and delete the duplicate here.
 
-import { expect, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 import { listEventFiles, readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { openCreateModal, snapshotEventFiles, waitForNewEventFiles } from "../specs/events/events-helpers";
@@ -23,6 +23,79 @@ const BATCH_SELECT_BUTTON = `${ACTIVE_CALENDAR_LEAF} [data-testid="prisma-cal-to
 const BATCH_EXIT_BUTTON = `${ACTIVE_CALENDAR_LEAF} [data-testid="prisma-cal-toolbar-batch-exit"]`;
 const BATCH_COUNTER = `${ACTIVE_CALENDAR_LEAF} [data-testid="prisma-cal-batch-counter"]`;
 const BATCH_CONFIRM_SUBMIT = '[data-testid="prisma-batch-confirm-submit"]';
+
+const EVENT_IN_LEAF = `${ACTIVE_CALENDAR_LEAF} [data-testid="prisma-cal-event"]`;
+const SELECTED_EVENT_IN_LEAF = `${EVENT_IN_LEAF}.prisma-batch-selected`;
+
+// ── DOM locators / assertions ─────────────────────────────────────────────
+// Every batch op changes two things at once: the vault (frontmatter / file
+// existence) AND the calendar's rendered events. Specs assert against both —
+// a regression that writes correct frontmatter but fails to refresh the DOM
+// (or vice versa) is the kind of partial failure these helpers catch.
+
+/** Locator for a calendar event in the active leaf, matched by its title. */
+export function eventByTitle(page: Page, title: string): Locator {
+	return page.locator(`${EVENT_IN_LEAF}[data-event-title="${title}"]`).first();
+}
+
+/** Locator for a calendar event in the active leaf, matched by its vault-relative path. */
+export function eventByPath(page: Page, vaultRelativePath: string): Locator {
+	return page.locator(`${EVENT_IN_LEAF}[data-event-file-path="${vaultRelativePath}"]`).first();
+}
+
+/** Locator for the batch-mode counter button ("N selected"). */
+export function batchCounter(page: Page): Locator {
+	return page.locator(BATCH_COUNTER).first();
+}
+
+/** Count of events currently marked with the `prisma-batch-selected` class. */
+export function selectedCount(page: Page): Promise<number> {
+	return page.locator(SELECTED_EVENT_IN_LEAF).count();
+}
+
+/** Count of all visible events in the active calendar leaf. */
+export function visibleEventCount(page: Page): Promise<number> {
+	return page.locator(EVENT_IN_LEAF).count();
+}
+
+/** Assert the batch counter reads `N selected` AND the DOM has exactly N `batch-selected` events. */
+export async function expectSelectedCount(page: Page, n: number): Promise<void> {
+	await expect(batchCounter(page)).toHaveText(new RegExp(`${n} selected`));
+	await expect.poll(() => selectedCount(page), { message: `expected ${n} events in batch selection` }).toBe(n);
+}
+
+/** Assert every given title is currently rendered in the active calendar leaf. */
+export async function expectEventsVisibleByTitle(page: Page, titles: readonly string[]): Promise<void> {
+	for (const title of titles) {
+		await expect(eventByTitle(page, title)).toBeVisible();
+	}
+}
+
+/** Assert none of the given titles are rendered in the active calendar leaf. */
+export async function expectEventsNotVisibleByTitle(page: Page, titles: readonly string[]): Promise<void> {
+	for (const title of titles) {
+		await expect(eventByTitle(page, title)).toHaveCount(0);
+	}
+}
+
+/** Assert the active leaf shows exactly `n` events (any title). */
+export async function expectVisibleEventCount(page: Page, n: number): Promise<void> {
+	await expect.poll(() => visibleEventCount(page), { message: `expected ${n} visible events` }).toBe(n);
+}
+
+/**
+ * Assert exactly `n` events with the given title are rendered in the active
+ * leaf. Per-title counts are more stable than aggregate counts: FC month-view
+ * injects overflow / "+N more" clones that inflate `[data-testid="prisma-cal-event"]`
+ * totals, but each clone still carries its original `data-event-title`.
+ */
+export async function expectTitleCount(page: Page, title: string, n: number): Promise<void> {
+	await expect
+		.poll(() => page.locator(`${EVENT_IN_LEAF}[data-event-title="${title}"]`).count(), {
+			message: `expected ${n} events titled "${title}"`,
+		})
+		.toBe(n);
+}
 
 /**
  * Create a single event via the toolbar → modal flow and return its
@@ -47,6 +120,21 @@ export async function createEventViaToolbar(
 export async function enterBatchMode(page: Page): Promise<void> {
 	await page.locator(BATCH_SELECT_BUTTON).first().click();
 	await page.locator(BATCH_COUNTER).first().waitFor({ state: "visible" });
+}
+
+/**
+ * Wait until every given title is not just rendered but flagged as
+ * batch-selectable (the `.prisma-batch-selectable` class is added during
+ * `addSelectionStylingToEvents`, which means the event is registered with the
+ * BatchSelectionManager AND has `data-event-id`). Useful right after
+ * `enterBatchMode` when a spec is about to click "Select All" — without this
+ * guard, the click can race the mount of the most-recently-created event and
+ * leave it unselected.
+ */
+export async function waitForBatchSelectable(page: Page, titles: readonly string[]): Promise<void> {
+	for (const title of titles) {
+		await expect(eventByTitle(page, title)).toHaveClass(/prisma-batch-selectable/);
+	}
 }
 
 export async function exitBatchMode(page: Page): Promise<void> {
