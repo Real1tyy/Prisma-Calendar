@@ -1,10 +1,11 @@
-import { expectFrontmatter, listEventFiles, readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
+import { expectFrontmatter, readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { expect, test } from "../../fixtures/electron";
 import {
 	CANCEL_BUTTON_SELECTOR,
 	EVENT_MODAL_SELECTOR,
 	formatLocalDate,
+	listEventFiles,
 	openCalendarReady,
 	openCreateModal,
 	rightClickEventMenu,
