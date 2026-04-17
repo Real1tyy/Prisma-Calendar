@@ -71,6 +71,47 @@ test.describe("event context menu", () => {
 		expect(entries.some((f) => f.startsWith("Ctx Dup"))).toBe(true);
 	});
 
+	test("clicking Assign categories opens the picker and writes Category frontmatter", async ({ obsidian }) => {
+		// The assign-categories flow goes through a separate modal (category
+		// assignment) stacked on top of the calendar view — the context menu
+		// item just launches it. Drive it end-to-end: search, create a new
+		// category (none seeded by default), submit, then assert the event's
+		// `Category` frontmatter lists it.
+		const { page, vaultDir } = obsidian;
+		const file = seedEvent(vaultDir, todayTimedEvent("Ctx Assign Cat", 15, 16));
+
+		await openCalendar(page);
+		await refreshCalendar(page);
+		await gotoToday(page);
+		await waitForEvent(page, "Ctx Assign Cat");
+
+		await rightClickEventByTitle(page, "Ctx Assign Cat");
+		await clickContextMenuItem(page, "assignCategories");
+
+		const assignModal = page.locator('.modal:has([data-testid="prisma-assign-search"])').first();
+		await assignModal.waitFor({ state: "visible", timeout: 10_000 });
+
+		const search = assignModal.locator('[data-testid="prisma-assign-search"]');
+		await search.fill("Fitness");
+		const createNew = assignModal.locator('[data-testid="prisma-assign-create-new"]');
+		await createNew.waitFor({ state: "visible", timeout: 5_000 });
+		await createNew.click();
+
+		await assignModal.locator('[data-testid="prisma-assign-submit"]').click();
+		await assignModal.waitFor({ state: "hidden", timeout: 5_000 });
+
+		await expect
+			.poll(
+				() => {
+					const v = readEventFrontmatter(vaultDir, file)["Category"];
+					const arr = Array.isArray(v) ? v : v ? [v] : [];
+					return arr.map(String).includes("Fitness");
+				},
+				{ timeout: 8_000, message: `Category frontmatter did not include "Fitness" in ${file}` }
+			)
+			.toBe(true);
+	});
+
 	test("clicking Mark as done/undone flips Status; Delete removes the file", async ({ obsidian }) => {
 		const { page, vaultDir } = obsidian;
 		const file = seedEvent(vaultDir, todayTimedEvent("Ctx Menu C", 13, 14));

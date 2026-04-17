@@ -4,15 +4,17 @@ import { join } from "node:path";
 import type { Page } from "@playwright/test";
 import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
-import { gotoToday, seedEventViaVault, todayISO, todayTimedEvent, waitForEvent } from "../../fixtures/calendar-helpers";
+import {
+	eventByTitle,
+	gotoToday,
+	seedEventViaVault,
+	todayISO,
+	todayTimedEvent,
+	waitForEvent,
+} from "../../fixtures/calendar-helpers";
 import { expect, test } from "../../fixtures/electron";
 import { openCalendar } from "../../fixtures/helpers";
-import {
-	clickBatchButton,
-	confirmBatchAction,
-	enterBatchMode,
-	waitForBatchSelectable,
-} from "../../fixtures/history-helpers";
+import { clickBatchButton, confirmBatchAction, enterBatchMode } from "../../fixtures/history-helpers";
 import { refreshCalendar, seedEvent } from "../../fixtures/seed-events";
 
 const TITLES = ["Batch One", "Batch Two", "Batch Three"] as const;
@@ -34,7 +36,13 @@ async function seedTitlesViaVault(page: Page): Promise<void> {
 }
 
 async function selectAllInBatch(page: Page): Promise<void> {
-	await waitForBatchSelectable(page, TITLES);
+	// `Select All` is a no-op against events whose mount handler hasn't yet
+	// stamped `prisma-batch-selectable` (happens right after batch mode
+	// toggles on while the most-recent event is still mounting). Wait for
+	// every seeded title to carry the class so the click binds all of them.
+	for (const title of TITLES) {
+		await expect(eventByTitle(page, title)).toHaveClass(/prisma-batch-selectable/);
+	}
 	await clickBatchButton(page, "select-all");
 }
 
@@ -117,28 +125,51 @@ test.describe("batch selection operations", () => {
 		expect(errors, errors.join("\n")).toHaveLength(0);
 	});
 
-	test("clicking Batch → Move Next shifts Start Date forward by 7 days", async ({ obsidian }) => {
-		const { page, vaultDir } = obsidian;
-		const before: Record<string, string> = {};
-		for (const title of TITLES) {
-			before[title] = String(readEventFrontmatter(vaultDir, `Events/${title}.md`)["Start Date"]);
-		}
+	// Move next/prev both call `executeMove(±1)` — same code path, opposite
+	// sign on the week delta. Parametrise instead of duplicating the assertion
+	// block so a regression in either direction is caught symmetrically.
+	for (const { direction, button, expectedDays } of [
+		{ direction: "Next", button: "move-next", expectedDays: 7 },
+		{ direction: "Prev", button: "move-prev", expectedDays: -7 },
+	] as const) {
+		test(`clicking Batch → Move ${direction} shifts Start Date by ${expectedDays} days`, async ({ obsidian }) => {
+			const { page, vaultDir } = obsidian;
+			const before: Record<string, string> = {};
+			for (const title of TITLES) {
+				before[title] = String(readEventFrontmatter(vaultDir, `Events/${title}.md`)["Start Date"]);
+			}
 
+			await enterBatchMode(page);
+			await selectAllInBatch(page);
+			await clickBatchButton(page, button);
+
+			for (const title of TITLES) {
+				await expect
+					.poll(() => String(readEventFrontmatter(vaultDir, `Events/${title}.md`)["Start Date"]) !== before[title], {
+						timeout: 10_000,
+					})
+					.toBe(true);
+
+				const after = String(readEventFrontmatter(vaultDir, `Events/${title}.md`)["Start Date"]);
+				const deltaMs = Date.parse(after.replace(" ", "T")) - Date.parse(before[title].replace(" ", "T"));
+				expect(Math.round(deltaMs / (24 * 60 * 60 * 1000))).toBe(expectedDays);
+			}
+		});
+	}
+
+	test("clicking Batch → Clone Prev is wired up", async ({ obsidian }) => {
+		// Same "command runs without throwing" shape as Clone Next — the file
+		// races in the e2e launcher build make count-based assertions flaky.
+		const { page } = obsidian;
+		await seedTitlesViaVault(page);
+		await refreshCalendar(page);
 		await enterBatchMode(page);
 		await selectAllInBatch(page);
-		await clickBatchButton(page, "move-next");
 
-		for (const title of TITLES) {
-			await expect
-				.poll(() => String(readEventFrontmatter(vaultDir, `Events/${title}.md`)["Start Date"]) !== before[title], {
-					timeout: 10_000,
-				})
-				.toBe(true);
-
-			const after = String(readEventFrontmatter(vaultDir, `Events/${title}.md`)["Start Date"]);
-			const deltaMs = Date.parse(after.replace(" ", "T")) - Date.parse(before[title].replace(" ", "T"));
-			expect(Math.round(deltaMs / (24 * 60 * 60 * 1000))).toBe(7);
-		}
+		const errors: string[] = [];
+		page.on("pageerror", (err) => errors.push(err.message));
+		await clickBatchButton(page, "clone-prev");
+		expect(errors, errors.join("\n")).toHaveLength(0);
 	});
 
 	test("clicking Batch → Exit toggles batch mode off", async ({ obsidian }) => {

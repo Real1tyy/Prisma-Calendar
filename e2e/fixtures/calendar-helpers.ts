@@ -1,6 +1,5 @@
 import type { Locator, Page } from "@playwright/test";
 
-import { todayStamp } from "./dates";
 import type { SeedEventInput } from "./seed-events";
 
 // Prisma-calendar-specific helpers — thin UI wrappers that don't belong in the
@@ -8,20 +7,26 @@ import type { SeedEventInput } from "./seed-events";
 // `seed-events.ts`; this file only adds helpers that touch the rendered
 // FullCalendar DOM or drive vault-backed APIs.
 
+const PLUGIN_ID = "prisma-calendar";
 const ACTIVE_CALENDAR_LEAF = ".workspace-leaf.mod-active";
 const EVENT_IN_LEAF = `${ACTIVE_CALENDAR_LEAF} [data-testid="prisma-cal-event"]`;
 
-export { todayISO } from "./dates";
+/** Today's date as `YYYY-MM-DD` (local TZ). */
+export function todayISO(): string {
+	const d = new Date();
+	return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
 
 /**
  * Convenience builder for seeding a timed event anchored to today. Produces a
  * `SeedEventInput` compatible with `seedEvent()` from `seed-events.ts`.
  */
 export function todayTimedEvent(title: string, startHour: number, endHour: number): SeedEventInput {
+	const date = todayISO();
 	return {
 		title,
-		startDate: todayStamp(startHour),
-		endDate: todayStamp(endHour),
+		startDate: `${date}T${String(startHour).padStart(2, "0")}:00`,
+		endDate: `${date}T${String(endHour).padStart(2, "0")}:00`,
 	};
 }
 
@@ -128,3 +133,5 @@ export async function rightClickEventByTitle(page: Page, title: string): Promise
 	await block.click({ button: "right" });
 	return page.locator(".menu").last();
 }
+
+void PLUGIN_ID;
