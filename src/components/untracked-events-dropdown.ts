@@ -105,6 +105,7 @@ export class UntrackedEventsDropdown {
 		this.buttonEl.className = `${cls("untracked-dropdown-button")} fc-button fc-button-primary`;
 		this.buttonEl.textContent = "⋮";
 		this.buttonEl.title = "Untracked events";
+		this.buttonEl.setAttribute("data-testid", "prisma-untracked-dropdown-button");
 
 		this.buttonEl.addEventListener("click", (e) => {
 			e.stopPropagation();
@@ -127,6 +128,7 @@ export class UntrackedEventsDropdown {
 	private createDropdown(wrapper: HTMLElement): void {
 		this.dropdownEl = document.createElement("div");
 		this.dropdownEl.className = cls("untracked-dropdown");
+		this.dropdownEl.setAttribute("data-testid", "prisma-untracked-dropdown");
 		addCls(this.dropdownEl, "hidden");
 
 		const createBtnEl = this.dropdownEl.createEl("button", {
@@ -295,6 +297,7 @@ export class UntrackedEventsDropdown {
 			const eventRow = this.eventsListEl.createDiv(cls("untracked-dropdown-item"));
 			eventRow.classList.add("fc-event"); // FullCalendar draggable class
 			eventRow.setAttribute("data-file-path", event.ref.filePath);
+			eventRow.setAttribute("data-testid", "prisma-untracked-dropdown-item");
 
 			// Apply color
 			const normalizedFrontmatter = normalizeFrontmatterForColorEvaluation(
