@@ -6,6 +6,7 @@ import {
 	registerPageHeaderCommands,
 	registerTabCommands,
 	type TabbedContainerHandle,
+	type TabbedContainerState,
 	type ViewActivator,
 } from "@real1ty-obsidian-plugins";
 
@@ -19,8 +20,22 @@ import { createDualDailyTabDefinition } from "./dual-daily-tab";
 import { createGanttTabDefinition } from "./gantt-tab";
 import { createHeatmapMonthlyStatsTabDefinition } from "./heatmap-monthly-stats-tab";
 import { createHeatmapTabDefinition } from "./heatmap-tab";
+import { createMonthlyCalendarStatsTabDefinition } from "./monthly-calendar-stats-tab";
 import { buildPageHeaderActions, DEFAULT_ACTION_IDS } from "./page-header-actions";
 import { createTimelineTabDefinition } from "./timeline-tab";
+
+const DEFAULT_VISIBLE_TAB_IDS: readonly string[] = [
+	"calendar",
+	"timeline",
+	"heatmap",
+	"gantt",
+	"daily-stats",
+	"monthly-calendar-stats",
+	"dual-daily",
+	"dashboard",
+	// heatmap-monthly-stats intentionally omitted — superseded by monthly-calendar-stats,
+	// users can re-enable it via the tab manager.
+];
 
 export interface PrismaViewRef {
 	calendarComponent: CalendarComponent | null;
@@ -62,6 +77,7 @@ export function registerPrismaCalendarView(
 			const timelineTab = createTimelineTabDefinition(app, bundle);
 			const heatmapTab = createHeatmapTabDefinition(app, bundle);
 			const dailyStatsTab = createDailyStatsTabDefinition(app, bundle);
+			const monthlyCalendarStatsTab = createMonthlyCalendarStatsTabDefinition(app, bundle);
 			const heatmapMonthlyStatsTab = createHeatmapMonthlyStatsTabDefinition(app, bundle);
 			const dualDailyTab = createDualDailyTabDefinition(app, bundle);
 			const dashboardTab = createDashboardTabDefinition(app, bundle);
@@ -71,12 +87,16 @@ export function registerPrismaCalendarView(
 				calendarTab,
 				timelineTab,
 				heatmapTab,
+				ganttTab,
 				dailyStatsTab,
-				heatmapMonthlyStatsTab,
+				monthlyCalendarStatsTab,
 				dualDailyTab,
 				dashboardTab,
-				ganttTab,
+				heatmapMonthlyStatsTab,
 			];
+
+			const savedTabState = bundle.settingsStore.currentSettings.activeTab;
+			const defaultTabState: TabbedContainerState = { visibleTabIds: [...DEFAULT_VISIBLE_TAB_IDS] };
 
 			ref.tabbedHandle = createTabbedContainer(el, {
 				tabs,
@@ -85,9 +105,7 @@ export function registerPrismaCalendarView(
 				...(titleContainer ? { tabBarInsertBefore: titleContainer } : {}),
 				editable: true,
 				app,
-				...(bundle.settingsStore.currentSettings.activeTab
-					? { initialState: bundle.settingsStore.currentSettings.activeTab }
-					: {}),
+				initialState: savedTabState ?? defaultTabState,
 				onStateChange: (state) => {
 					void bundle.settingsStore.updateSettings((s) => ({ ...s, activeTab: state }));
 					tabCommandUpdater.updateLabels(ref.tabbedHandle!.getVisibleLabels());

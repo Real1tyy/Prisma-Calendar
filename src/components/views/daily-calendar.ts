@@ -58,9 +58,13 @@ export interface DailyCalendarHandle {
 	next: () => void;
 }
 
+export type EmbeddedCalendarView = "timeGridDay" | "dayGridMonth";
+
 export interface DailyCalendarConfig {
 	onDateChange?: (date: Date) => void;
 	sharedDragState?: DailyDragState;
+	/** FullCalendar view to lock the embedded calendar into. Defaults to `timeGridDay`. */
+	initialView?: EmbeddedCalendarView;
 }
 
 /**
@@ -118,7 +122,7 @@ export function createDailyCalendar(
 	const calendar = new Calendar(calendarContainer, {
 		...coreOptions,
 		plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
-		initialView: "timeGridDay",
+		initialView: config?.initialView ?? "timeGridDay",
 
 		headerToolbar: {
 			left: "prev,next today",

@@ -36,9 +36,13 @@ A GitHub-style contribution heatmap showing event density over time.
 
 A two-column resizable layout with a daily calendar on the left and live statistics on the right.
 
+## [Monthly + Stats](./monthly-calendar-stats.md)
+
+A two-column resizable layout pairing a month-locked calendar on the left with monthly statistics on the right. The monthly analogue of Daily + Stats.
+
 ## [Heatmap Monthly + Stats](./heatmap-monthly-stats.md) (Pro)
 
-A two-column resizable layout pairing a month-locked heatmap on the left with a monthly pie chart and breakdown table on the right. The monthly analogue of Daily + Stats.
+A two-column resizable layout pairing a month-locked heatmap on the left with a monthly pie chart and breakdown table on the right. Hidden by default in favor of Monthly + Stats; restore via the tab manager.
 
 ## [Dual Daily](./dual-daily.md)
 

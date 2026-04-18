@@ -4,13 +4,14 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.13.0 - 4/17/2026
+## 2.13.0 - 4/18/2026
 
-> **TLDR:** New **Heatmap Monthly + Stats** tab pairs a month-locked heatmap with a live monthly pie chart. Also fixes negative stats totals from malformed crossing-midnight events, plus a Duplicate current event command and a handful of recurrence, sort-date, and navigation fixes.
+> **TLDR:** New **Monthly + Stats** tab — a month-locked calendar paired with live monthly stats. New **Heatmap Monthly + Stats** showing heatmap motnhly with stats.
 
 ### Added
 - **Event title validation**: The create/edit event modal now blocks saves when the title contains filename-illegal characters (`/`, `\`, `:`, `*`, `?`, `"`, `<`, `>`, `|`). A notice explains which character(s) to remove and the modal stays open so you don't lose your work. See [Title Autocomplete](./features/events/title-autocomplete.md#filename-illegal-characters).
-- **Heatmap Monthly + Stats tab (Pro)**: New tab pairing a month-locked heatmap on the left with a live monthly pie chart and breakdown table on the right. Navigating a month on the heatmap re-aggregates the stats panel instantly, giving you "when" and "what" in one view for monthly retrospectives. See [Heatmap Monthly + Stats](./features/views/heatmap-monthly-stats.md).
+- **Monthly + Stats tab**: New tab pairing a month-locked calendar on the left with a live monthly pie chart and breakdown table on the right. Drag events between days, navigate months with the prev/next/today toolbar or arrow keys, and the stats panel re-aggregates instantly. See [Monthly + Stats](./features/views/monthly-calendar-stats.md).
+- **Heatmap Monthly + Stats tab (Pro)**: New tab pairing a month-locked heatmap on the left with a live monthly pie chart and breakdown table on the right. Navigating a month on the heatmap re-aggregates the stats panel instantly, giving you "when" and "what" in one view for monthly retrospectives. Hidden by default — restore it via the tab manager. See [Heatmap Monthly + Stats](./features/views/heatmap-monthly-stats.md).
 - **Duplicate current event command**: Duplicate any event note from the command palette or a hotkey — no need to open the calendar. Works on untracked events too. See [Hotkeys](./features/advanced/hotkeys.md#duplicate-current-event).
 - **Make untracked context menu action**: Right-click any event and pick "Make untracked" to clear its date/time and move it into the untracked events dropdown — the same result as dragging it there. See [Untracked Events](./features/events/untracked-events.md).
 - **Drag events between Dual Daily panes**: Drag an event from one daily pane onto the other to reschedule it to that day. The drop time becomes the event's new start time and both panes refresh automatically. See [Dual Daily](./features/views/dual-daily.md).

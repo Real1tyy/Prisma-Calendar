@@ -8102,6 +8102,33 @@ div.vis-tooltip {
   min-height: 0;
 }
 
+/* ─── Monthly Calendar + Stats Grid Overrides ────────────────── */
+/* The left cell embeds the full month calendar. Because the cell is roughly
+ * half the usual calendar width, FullCalendar's month grid would crush day
+ * cells to unreadable sizes. We let the cell scroll vertically and give the
+ * inner FullCalendar a generous minimum height so rows stay usable even when
+ * the grid has 6 visible weeks. Horizontal overflow is clipped — widths
+ * shrink to fit the cell. */
+.prisma-monthly-calendar-stats-grid {
+  flex: 1;
+  min-height: 0;
+}
+
+.prisma-monthly-calendar-stats-grid-cell {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.prisma-monthly-calendar-stats-grid-cell .prisma-calendar-container {
+  flex: 1;
+  min-height: 0;
+}
+.prisma-monthly-calendar-stats-grid-cell .prisma-calendar-container .fc {
+  min-height: 560px;
+}
+.prisma-monthly-calendar-stats-grid-cell .prisma-calendar-container .fc-daygrid-day-frame {
+  min-height: 72px;
+}
+
 /* ─── Capacity Tracking ──────────────────────────────────────── */
 .prisma-capacity-indicator {
   display: inline-flex;

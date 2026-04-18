@@ -43,6 +43,7 @@ const sidebars: SidebarsConfig = {
 						"features/views/timeline",
 						"features/views/heatmap",
 						"features/views/daily-stats",
+						"features/views/monthly-calendar-stats",
 						"features/views/heatmap-monthly-stats",
 						"features/views/dual-daily",
 						"features/views/dashboard",

@@ -1,0 +1,65 @@
+import { createGridLayout, type GridLayoutHandle, type TabDefinition } from "@real1ty-obsidian-plugins";
+import type { App } from "obsidian";
+
+import type { CalendarBundle } from "../../core/calendar-bundle";
+import { createDailyCalendar, type DailyCalendarHandle } from "./daily-calendar";
+import { type MonthlyStatsHandle, renderMonthlyStatsInto } from "./monthly-stats-renderer";
+
+export function createMonthlyCalendarStatsTabDefinition(app: App, bundle: CalendarBundle): TabDefinition {
+	let gridHandle: GridLayoutHandle | null = null;
+	let calendarHandle: DailyCalendarHandle | null = null;
+	let statsHandle: MonthlyStatsHandle | null = null;
+
+	return {
+		id: "monthly-calendar-stats",
+		label: "Monthly + Stats",
+		keyHandlers: {
+			ArrowLeft: () => calendarHandle?.prev(),
+			ArrowRight: () => calendarHandle?.next(),
+		},
+		render: (el) => {
+			gridHandle = createGridLayout(el, {
+				cssPrefix: "prisma-monthly-calendar-stats-",
+				columns: 2,
+				rows: 1,
+				gap: "12px",
+				dividers: true,
+				cells: [
+					{
+						id: "calendar",
+						label: "Calendar",
+						row: 0,
+						col: 0,
+						render: (cellEl) => {
+							calendarHandle = createDailyCalendar(cellEl, app, bundle, {
+								initialView: "dayGridMonth",
+								onDateChange: (date) => statsHandle?.setDate(date),
+							});
+						},
+						cleanup: () => {
+							calendarHandle?.destroy();
+							calendarHandle = null;
+						},
+					},
+					{
+						id: "stats",
+						label: "Statistics",
+						row: 0,
+						col: 1,
+						render: (cellEl) => {
+							statsHandle = renderMonthlyStatsInto(cellEl, bundle);
+						},
+						cleanup: () => {
+							statsHandle?.destroy();
+							statsHandle = null;
+						},
+					},
+				],
+			});
+		},
+		cleanup: () => {
+			gridHandle?.destroy();
+			gridHandle = null;
+		},
+	};
+}
