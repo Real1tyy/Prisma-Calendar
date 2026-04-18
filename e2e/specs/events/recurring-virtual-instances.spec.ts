@@ -4,7 +4,7 @@ import { join } from "node:path";
 import type { Page } from "@playwright/test";
 
 import { expect, test } from "../../fixtures/electron";
-import { refreshCalendar } from "../../fixtures/seed-events";
+import { refreshCalendar, setFrontmatterField } from "../../fixtures/seed-events";
 import { sel, TID } from "../../fixtures/testids";
 import { createEventViaModal, formatLocalDate, openCalendarReady, switchToMonthView } from "./events-helpers";
 import { addDays, collectInstanceDates, toYMD } from "./robustness-helpers";
@@ -42,37 +42,6 @@ function todayMidnight(): Date {
 	const t = new Date();
 	t.setHours(0, 0, 0, 0);
 	return t;
-}
-
-/**
- * Set a frontmatter field through Obsidian's `processFrontMatter` — the only
- * write path that atomically updates bytes AND the metadata cache in a single
- * step. The older pattern (raw `writeFileSync` + a no-op `processFrontMatter`
- * "nudge") raced: if the vault watcher hadn't ingested the raw write yet, the
- * nudge would read stale cached YAML, no-op the mutator, and rewrite the file
- * from the stale cache — silently clobbering the change.
- */
-async function setFrontmatterField(page: Page, relativePath: string, field: string, value: unknown): Promise<void> {
-	await page.evaluate(
-		async ({ path, key, val }) => {
-			const w = window as unknown as {
-				app: {
-					vault: {
-						getAbstractFileByPath: (p: string) => unknown;
-					};
-					fileManager: {
-						processFrontMatter: (file: unknown, fn: (fm: Record<string, unknown>) => void) => Promise<void>;
-					};
-				};
-			};
-			const file = w.app.vault.getAbstractFileByPath(path);
-			if (!file) throw new Error(`setFrontmatterField: no file at ${path}`);
-			await w.app.fileManager.processFrontMatter(file, (fm) => {
-				fm[key] = val;
-			});
-		},
-		{ path: relativePath, key: field, val: value }
-	);
 }
 
 test.describe("recurring events — physical vs virtual instances", () => {
