@@ -804,6 +804,12 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.applyMobileControlsCollapsedState();
 		this.scheduleStickyOffsetsUpdate();
 
+		// Best-effort sync stamp so E2E selectors don't race the rAF-deferred
+		// authoritative pass below. Additive only (no clear) — if FC hasn't
+		// re-rendered yet, leaving stale testids in place is better than blanking
+		// the toolbar. The deferred pass below clears + restamps once FC settles.
+		this.stampToolbarTestIds({ clearStale: false });
+
 		void afterRender().then(() => {
 			if (!inSelectionMode) {
 				this.applyFilteredEventsButtonState();
@@ -815,23 +821,27 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		});
 	}
 
-	private stampToolbarTestIds(): void {
+	private stampToolbarTestIds(opts: { clearStale?: boolean } = {}): void {
 		const root = this.container;
 		if (!root) return;
 		// FullCalendar v6 recycles button DOM elements across `setOption("headerToolbar")`
 		// calls and rewrites their `fc-<name>-button` class. A button that used to be
 		// `.fc-filteredEvents-button` can become `.fc-batchCounter-button` on the next
-		// render, so any `data-testid` we stamped earlier would now be wrong. Clear the
-		// stale testids before re-stamping so the map below is authoritative.
+		// render, so any `data-testid` we stamped earlier would now be wrong. The
+		// authoritative pass clears stale testids before re-stamping so the map below
+		// is unambiguous; the synchronous best-effort pass skips the clear so the DOM
+		// never goes momentarily un-stamped between the two passes.
 		//
 		// Also note: the `className` field on CustomButtonInput is IGNORED by FC v6 —
 		// only `fc-<buttonName>-button` is applied. Stamping must key off those, never
 		// off the prisma-prefixed class names passed to `customButtons`.
-		const toolbar = root.querySelector(".fc-header-toolbar");
-		if (toolbar) {
-			toolbar
-				.querySelectorAll<HTMLElement>('[data-testid^="prisma-cal-toolbar-"], [data-testid^="prisma-cal-batch-"]')
-				.forEach((el) => el.removeAttribute("data-testid"));
+		if (opts.clearStale !== false) {
+			const toolbar = root.querySelector(".fc-header-toolbar");
+			if (toolbar) {
+				toolbar
+					.querySelectorAll<HTMLElement>('[data-testid^="prisma-cal-toolbar-"], [data-testid^="prisma-cal-batch-"]')
+					.forEach((el) => el.removeAttribute("data-testid"));
+			}
 		}
 		const map: Array<[string, string]> = [
 			[".fc-prev-button", "prisma-cal-toolbar-prev"],

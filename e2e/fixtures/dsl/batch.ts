@@ -22,10 +22,6 @@ export interface BatchHandle {
 const BATCH_SELECT_BTN = `${ACTIVE_CALENDAR_LEAF} ${sel(TID.toolbar("batch-select"))}`;
 const BATCH_EXIT_BTN = `${ACTIVE_CALENDAR_LEAF} ${sel(TID.toolbar("batch-exit"))}`;
 const BATCH_COUNTER = `${ACTIVE_CALENDAR_LEAF} ${sel(TID.batchCounter)}`;
-// FC native class — present synchronously after `setOption("headerToolbar")`.
-// The prisma testid above is stamped in a deferred `afterRender()` pass, so
-// wait on the native class first to dodge the rAF race when entering batch mode.
-const BATCH_COUNTER_FC = `${ACTIVE_CALENDAR_LEAF} .fc-batchCounter-button`;
 
 /**
  * Enter batch mode, toggle each given event into selection, return a handle
@@ -34,11 +30,6 @@ const BATCH_COUNTER_FC = `${ACTIVE_CALENDAR_LEAF} .fc-batchCounter-button`;
  */
 export async function openBatch(page: Page, events: readonly EventHandle[]): Promise<BatchHandle> {
 	await page.locator(BATCH_SELECT_BTN).first().click();
-	// Wait for FC's native button class first — it lands the moment FC rebuilds
-	// the toolbar. The prisma testid is stamped one rAF later by
-	// `stampToolbarTestIds()`; if we waited on the testid alone we'd race the
-	// stamp pass under load and time out.
-	await page.locator(BATCH_COUNTER_FC).first().waitFor({ state: "visible" });
 	await page.locator(BATCH_COUNTER).first().waitFor({ state: "visible" });
 
 	for (const e of events) {
