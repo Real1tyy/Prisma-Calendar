@@ -1,6 +1,6 @@
 import { anchorDayISO, fromAnchor } from "../../fixtures/dates";
 import { expect, test } from "../../fixtures/electron";
-import { sel, TID } from "../../fixtures/testids";
+import { sel } from "../../fixtures/testids";
 
 // Monthly + Stats is the new default tab — a month-locked FullCalendar on the
 // left paired with the monthly stats renderer on the right. This spec covers:
@@ -18,8 +18,10 @@ test.describe("analytics: monthly + stats (populated)", () => {
 	test("seeded anchor-month events surface in the stats panel", async ({ calendar }) => {
 		// Three events on the anchor day (mid-month Wednesday) — the monthly
 		// aggregator rolls them into one entry with count=3 (default Event
-		// Name grouping).
-		await calendar.seedMany([
+		// Name grouping). `seedOnDiskMany` writes all three files and fires a
+		// single refresh, skipping the modal round-trip `seedMany` would pay
+		// per event.
+		await calendar.seedOnDiskMany([
 			{ title: "Morning Standup", start: fromAnchor(0, 9, 0), end: fromAnchor(0, 9, 30) },
 			{ title: "Design Review", start: fromAnchor(0, 13, 0), end: fromAnchor(0, 14, 0) },
 			{ title: "Workout", start: fromAnchor(0, 18, 0), end: fromAnchor(0, 19, 0) },
@@ -49,7 +51,7 @@ test.describe("analytics: monthly + stats (populated)", () => {
 		// non-zero counts in both halves avoids depending on the renderer's
 		// "empty" state and makes the navigation wire the sole variable.
 		const nextMonthOffsetDays = 30;
-		await calendar.seedMany([
+		await calendar.seedOnDiskMany([
 			{ title: "Anchor Event", start: fromAnchor(0, 10, 0), end: fromAnchor(0, 11, 0) },
 			{
 				title: "Next Month Event",
