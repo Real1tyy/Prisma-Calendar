@@ -11,7 +11,7 @@ import {
 import { type EventModalInput, fillEventModal, saveEventModal } from "../../specs/events/fill-event-modal";
 import { runCommand } from "../commands";
 import { ACTIVE_CALENDAR_LEAF, PLUGIN_ID } from "../constants";
-import { isoLocal } from "../dates";
+import { anchorISO, isoLocal } from "../dates";
 import { refreshCalendar } from "../seed-events";
 import { sel, TID, type ToolbarActionKey, type ViewMode, type ViewTabKey } from "../testids";
 import { type BatchHandle, openBatch } from "./batch";
@@ -76,6 +76,22 @@ export interface CalendarHandle {
 	/** Click the FullCalendar view-mode button (month/week/day/list). */
 	switchMode(mode: ViewMode): Promise<void>;
 
+	/**
+	 * Navigate the active calendar view to `iso` (`YYYY-MM-DD`) via
+	 * FullCalendar's `gotoDate`. Boot-time viewport is whatever FC picks
+	 * from `new Date()` at mount — specs that seed relative to a fixed
+	 * reference should call this to pin the viewport.
+	 */
+	goToDate(iso: string): Promise<void>;
+
+	/**
+	 * Shorthand for `goToDate(anchorISO())`. Non-recurring specs should call
+	 * this after `switchMode(...)` so the rendered week contains the
+	 * `fromAnchor(...)` seeds regardless of what day-of-week the suite runs
+	 * on — see `docs/specs/e2e-date-anchor-robustness.md`.
+	 */
+	goToAnchor(): Promise<void>;
+
 	/** Flip the license to Pro via the `__setProForTesting` seam (guarded by `window.E2E`). */
 	unlockPro(): Promise<void>;
 
@@ -134,6 +150,34 @@ interface CalendarHandleDeps {
  */
 function blockByTitle(page: Page, title: string): Locator {
 	return page.locator(`${ACTIVE_CALENDAR_LEAF} ${sel(TID.block)}[data-event-title="${title}"]`).first();
+}
+
+/**
+ * Drive FullCalendar's `gotoDate(iso)` on the active calendar leaf's view.
+ * `view.calendar` is already public on `CalendarView` — no new production
+ * seam required. Throws if no calendar leaf is active.
+ */
+async function navigateCalendarTo(page: Page, iso: string): Promise<void> {
+	await page.evaluate((dateIso) => {
+		const w = window as unknown as {
+			app: {
+				workspace: {
+					iterateAllLeaves: (
+						fn: (leaf: { view?: { getViewType?: () => string; calendar?: { gotoDate: (d: string) => void } } }) => void
+					) => void;
+				};
+			};
+		};
+		let navigated = false;
+		w.app.workspace.iterateAllLeaves((leaf) => {
+			const type = leaf?.view?.getViewType?.();
+			if (typeof type === "string" && type.startsWith("custom-calendar-view-")) {
+				leaf.view?.calendar?.gotoDate(dateIso);
+				navigated = true;
+			}
+		});
+		if (!navigated) throw new Error("goToDate: no active calendar view to navigate");
+	}, iso);
 }
 
 export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
@@ -244,6 +288,14 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 			const btn = page.locator(`${ACTIVE_CALENDAR_LEAF} ${sel(TID.toolbar(`view-${mode}`))}`).first();
 			await btn.waitFor({ state: "visible" });
 			await btn.click();
+		},
+
+		async goToDate(iso) {
+			await navigateCalendarTo(page, iso);
+		},
+
+		async goToAnchor() {
+			await navigateCalendarTo(page, anchorISO());
 		},
 
 		async unlockPro() {
