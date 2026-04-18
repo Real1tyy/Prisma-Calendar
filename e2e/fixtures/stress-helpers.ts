@@ -1,4 +1,4 @@
-import { rmSync } from "node:fs";
+import { readdirSync, rmSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 import { expect, type Page } from "@playwright/test";
@@ -53,6 +53,59 @@ export async function raiseRenderCapsForStress(page: Page): Promise<void> {
 		eventMaxStack: 10,
 		desktopMaxEventsPerDay: 0,
 	});
+}
+
+/**
+ * Race-safe event-file count. The shared `listEventFiles` helper walks the
+ * Events/ tree with a `readdirSync` + per-entry `statSync`; under bulk undo
+ * or batch delete the plugin deletes files in quick succession, and a stat
+ * on an entry that vanished between readdir and stat throws ENOENT. This
+ * wrapper tolerates that race by retrying once after a short pause —
+ * callers are already polling via `expect.poll` so an occasional retry is
+ * cheap.
+ */
+export function safeEventFileCount(vaultDir: string, subdir = "Events"): number {
+	for (let attempt = 0; attempt < 3; attempt++) {
+		try {
+			return countMdFilesRecursive(join(vaultDir, subdir));
+		} catch (err) {
+			if (!isEnoent(err)) throw err;
+			// tight retry — the race window is sub-ms; poll caller provides the outer timing
+		}
+	}
+	// Final attempt — let the error propagate if the vault is truly broken.
+	return countMdFilesRecursive(join(vaultDir, subdir));
+}
+
+function countMdFilesRecursive(dir: string): number {
+	let total = 0;
+	let entries: string[];
+	try {
+		entries = readdirSync(dir);
+	} catch (err) {
+		if (isEnoent(err)) return 0;
+		throw err;
+	}
+	for (const entry of entries) {
+		const full = join(dir, entry);
+		let stat;
+		try {
+			stat = statSync(full);
+		} catch (err) {
+			if (isEnoent(err)) continue;
+			throw err;
+		}
+		if (stat.isDirectory()) {
+			total += countMdFilesRecursive(full);
+		} else if (stat.isFile() && entry.endsWith(".md") && entry !== "Virtual Events.md") {
+			total += 1;
+		}
+	}
+	return total;
+}
+
+function isEnoent(err: unknown): boolean {
+	return typeof err === "object" && err !== null && "code" in err && (err as { code: unknown }).code === "ENOENT";
 }
 
 /**
