@@ -1,9 +1,9 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { runCommand } from "../../fixtures/commands";
 import { expect, test } from "../../fixtures/electron";
 import { refreshCalendar, type SeedEventInput, seedEvents } from "../../fixtures/seed-events";
+import { ICS_EXPORT_SUBMIT_TID, sel } from "../../fixtures/testids";
 
 // Exports go through the `showCalendarSelectModal` → ics-export writer. The
 // modal submit button is stamped `data-testid="prisma-ics-export-submit"` so
@@ -11,7 +11,7 @@ import { refreshCalendar, type SeedEventInput, seedEvents } from "../../fixtures
 // .ics under the vault's `Prisma-Exports/` folder.
 
 const EXPORTS_DIR = "Prisma-Exports";
-const EXPORT_SUBMIT = '[data-testid="prisma-ics-export-submit"]';
+const EXPORT_SUBMIT = sel(ICS_EXPORT_SUBMIT_TID);
 
 const SEED: readonly SeedEventInput[] = [
 	{
@@ -48,19 +48,19 @@ const SEED: readonly SeedEventInput[] = [
 ];
 
 test.describe("ICS export", () => {
-	test.beforeEach(async ({ obsidian }) => {
-		seedEvents(obsidian.vaultDir, SEED);
-		await refreshCalendar(obsidian.page);
+	test.beforeEach(async ({ calendar }) => {
+		seedEvents(calendar.vaultDir, SEED);
+		await refreshCalendar(calendar.page);
 	});
 
-	test("writer produces five VEVENTs with correct SUMMARY / DTSTART / CATEGORIES / LOCATION", async ({ obsidian }) => {
-		await runCommand(obsidian.page, "Prisma Calendar: Export calendar as .ics");
+	test("writer produces five VEVENTs with correct SUMMARY / DTSTART / CATEGORIES / LOCATION", async ({ calendar }) => {
+		await calendar.runCommand("Prisma Calendar: Export calendar as .ics");
 
-		const submit = obsidian.page.locator(EXPORT_SUBMIT).first();
+		const submit = calendar.page.locator(EXPORT_SUBMIT).first();
 		await submit.waitFor({ state: "visible" });
 		await submit.click();
 
-		const exportsDir = join(obsidian.vaultDir, EXPORTS_DIR);
+		const exportsDir = join(calendar.vaultDir, EXPORTS_DIR);
 		await expect
 			.poll(() => (existsSync(exportsDir) ? readdirSync(exportsDir).filter((f) => f.endsWith(".ics")) : []))
 			.toHaveLength(1);

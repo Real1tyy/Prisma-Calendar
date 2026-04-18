@@ -176,7 +176,7 @@ export function seedBulkEvents(vaultDir: string, count: number, options: BulkSee
  */
 export async function uniqueVisibleEventCount(page: Page): Promise<number> {
 	return page.evaluate((selector) => {
-		const elements = document.querySelectorAll(selector);
+		const elements = Array.from(document.querySelectorAll(selector));
 		const paths = new Set<string>();
 		let untitledWithoutPath = 0;
 		for (const el of elements) {

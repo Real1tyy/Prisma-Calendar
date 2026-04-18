@@ -2,7 +2,6 @@ import { expect } from "@playwright/test";
 import { isPluginLoaded } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { testResilience as test } from "../../fixtures/electron";
-import { openCalendarViewViaRibbon } from "../../fixtures/helpers";
 import {
 	PLUGIN_ID,
 	reloadAndWaitForPrisma,
@@ -61,23 +60,22 @@ const MALFORMED: MalformedFile[] = [
 ];
 
 test.describe("malformed frontmatter", () => {
-	test("plugin survives every broken-file flavour alongside a valid event", async ({ obsidian }) => {
+	test("plugin survives every broken-file flavour alongside a valid event", async ({ calendar }) => {
 		for (const m of MALFORMED) {
-			writeRawEventFile(obsidian.vaultDir, m.fileName, m.content);
+			writeRawEventFile(calendar.vaultDir, m.fileName, m.content);
 		}
-		seedEvent(obsidian.vaultDir, {
+		seedEvent(calendar.vaultDir, {
 			title: "Still Valid",
 			startDate: "2026-07-10T09:00",
 			endDate: "2026-07-10T10:00",
 			category: "Work",
 		});
 
-		await reloadAndWaitForPrisma(obsidian.page);
+		await reloadAndWaitForPrisma(calendar.page);
 
-		expect(await isPluginLoaded(obsidian.page, PLUGIN_ID)).toBe(true);
+		expect(await isPluginLoaded(calendar.page, PLUGIN_ID)).toBe(true);
 
-		await openCalendarViewViaRibbon(obsidian.page);
-		await expect(obsidian.page.locator(".workspace-leaf").first()).toBeVisible();
+		await expect(calendar.page.locator(".workspace-leaf").first()).toBeVisible();
 
 		// The valid event lands months outside the default visible window, so
 		// assert against Obsidian's vault API rather than the rendered DOM. The
@@ -85,7 +83,7 @@ test.describe("malformed frontmatter", () => {
 		// the vault is the product contract we care about — broken files were
 		// skipped, not crashed.
 		await expect
-			.poll(async () => (await vaultHasFilesEndingWith(obsidian.page, ["Still Valid.md"]))[0], {
+			.poll(async () => (await vaultHasFilesEndingWith(calendar.page, ["Still Valid.md"]))[0], {
 				message: "valid event should remain tracked by the vault",
 			})
 			.toBe(true);

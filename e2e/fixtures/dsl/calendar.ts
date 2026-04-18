@@ -32,8 +32,15 @@ export interface CalendarHandle {
 	readonly page: Page;
 	readonly vaultDir: string;
 
-	/** Create a timed event via the toolbar → modal flow. Returns a handle pinned to the new path. */
-	createEvent(input: EventCreate): Promise<EventHandle>;
+	/**
+	 * Create a timed event via the toolbar → modal flow. Returns a handle
+	 * pinned to the new path.
+	 *
+	 * Pass `subdir` when driving a calendar whose bundle writes to a directory
+	 * other than the default `Events/` — multi-calendar specs need this so
+	 * the snapshot / wait-for-new-file loop looks in the right folder.
+	 */
+	createEvent(input: EventCreate, options?: { subdir?: string }): Promise<EventHandle>;
 
 	/** Seed N events with auto-generated titles. Stable titles: `<prefix> 1` … `<prefix> N`. */
 	seedEvents(count: number, options?: SeedOptions): Promise<EventHandle[]>;
@@ -184,13 +191,14 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 	const page = deps.obsidian.page;
 	const vaultDir = deps.obsidian.vaultDir;
 
-	const createEvent: CalendarHandle["createEvent"] = async (input) => {
-		const baseline = snapshotEventFiles(vaultDir);
+	const createEvent: CalendarHandle["createEvent"] = async (input, options = {}) => {
+		const subdir = options.subdir ?? "Events";
+		const baseline = snapshotEventFiles(vaultDir, subdir);
 		await openCreateModal(page);
 		await fillEventModal(page, input);
 		await saveEventModal(page);
-		const [newPath] = await waitForNewEventFiles(vaultDir, baseline);
-		if (!newPath) throw new Error(`createEvent(${input.title}): no new event file appeared`);
+		const [newPath] = await waitForNewEventFiles(vaultDir, baseline, 1, undefined, subdir);
+		if (!newPath) throw new Error(`createEvent(${input.title}): no new event file appeared in ${subdir}`);
 		return createEventHandle({ page, vaultDir }, newPath, input.title);
 	};
 

@@ -3,7 +3,6 @@ import { join } from "node:path";
 
 import { openNote } from "@real1ty-obsidian-plugins/testing/e2e";
 
-import { runCommand } from "../../fixtures/commands";
 import { expect, test } from "../../fixtures/electron";
 import { seedEvent } from "../../fixtures/seed-events";
 
@@ -20,28 +19,28 @@ function listEvents(vaultDir: string): string[] {
 test.describe("zettel ID", () => {
 	let originalRelative: string;
 
-	test.beforeEach(async ({ obsidian }) => {
-		originalRelative = seedEvent(obsidian.vaultDir, {
+	test.beforeEach(async ({ calendar }) => {
+		originalRelative = seedEvent(calendar.vaultDir, {
 			title: "Stand-up",
 			startDate: "2026-05-10T09:00",
 			endDate: "2026-05-10T09:15",
 		});
 	});
 
-	test("adds a 14-digit ID to filename and re-running is idempotent", async ({ obsidian }) => {
-		await openNote(obsidian.page, originalRelative.replace(/\.md$/, ""));
+	test("adds a 14-digit ID to filename and re-running is idempotent", async ({ calendar }) => {
+		await openNote(calendar.page, originalRelative.replace(/\.md$/, ""));
 
-		await runCommand(obsidian.page, "Prisma Calendar: Add ZettelID to current note");
+		await calendar.runCommand("Prisma Calendar: Add ZettelID to current note");
 
-		await expect.poll(() => listEvents(obsidian.vaultDir).find((f) => /^Stand-up-\d{14}\.md$/.test(f))).toBeDefined();
+		await expect.poll(() => listEvents(calendar.vaultDir).find((f) => /^Stand-up-\d{14}\.md$/.test(f))).toBeDefined();
 
-		const renamed = listEvents(obsidian.vaultDir).find((f) => /^Stand-up-\d{14}\.md$/.test(f))!;
+		const renamed = listEvents(calendar.vaultDir).find((f) => /^Stand-up-\d{14}\.md$/.test(f))!;
 		const newId = renamed.match(/-(\d{14})\.md$/)![1];
 
-		await openNote(obsidian.page, `${EVENTS_DIR}/${renamed.replace(/\.md$/, "")}`);
-		await runCommand(obsidian.page, "Prisma Calendar: Add ZettelID to current note");
+		await openNote(calendar.page, `${EVENTS_DIR}/${renamed.replace(/\.md$/, "")}`);
+		await calendar.runCommand("Prisma Calendar: Add ZettelID to current note");
 
-		const filesAfter = listEvents(obsidian.vaultDir);
+		const filesAfter = listEvents(calendar.vaultDir);
 		expect(filesAfter.filter((f) => f.startsWith("Stand-up-"))).toHaveLength(1);
 		expect(filesAfter).toContain(`Stand-up-${newId}.md`);
 	});

@@ -5,6 +5,7 @@ import { type Locator, type Page } from "@playwright/test";
 import { listEventFiles as listAllMarkdownFiles } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { PLUGIN_ID } from "../../fixtures/constants";
+import { sel, TID, UNTRACKED_BUTTON_TID, UNTRACKED_DROPDOWN_TID, UNTRACKED_ITEM_TID } from "../../fixtures/testids";
 import { type EventModalInput, fillEventModal, saveEventModal } from "./fill-event-modal";
 
 export { PLUGIN_ID };
@@ -27,17 +28,21 @@ export function listEventFiles(vaultDir: string, subdir = "Events"): string[] {
 	return listAllMarkdownFiles(vaultDir, subdir).filter((p) => !p.endsWith(`/${VIRTUAL_EVENTS_FILE}`));
 }
 
-export const EVENT_MODAL_SELECTOR = '[data-testid="prisma-event-field-title"]';
-export const TOOLBAR_CREATE_SELECTOR = '[data-testid="prisma-cal-toolbar-create"]';
-export const TOOLBAR_VIEW_MONTH_SELECTOR = '[data-testid="prisma-cal-toolbar-view-month"]';
-export const TOOLBAR_VIEW_WEEK_SELECTOR = '[data-testid="prisma-cal-toolbar-view-week"]';
-export const TOOLBAR_VIEW_DAY_SELECTOR = '[data-testid="prisma-cal-toolbar-view-day"]';
-export const TOOLBAR_NEXT_SELECTOR = '[data-testid="prisma-cal-toolbar-next"]';
-export const TOOLBAR_PREV_SELECTOR = '[data-testid="prisma-cal-toolbar-prev"]';
-export const UNTRACKED_BUTTON_SELECTOR = '[data-testid="prisma-untracked-dropdown-button"]';
-export const UNTRACKED_DROPDOWN_SELECTOR = '[data-testid="prisma-untracked-dropdown"]';
-export const UNTRACKED_ITEM_SELECTOR = '[data-testid="prisma-untracked-dropdown-item"]';
-export const CANCEL_BUTTON_SELECTOR = '[data-testid="prisma-event-btn-cancel"]';
+// Back-compat selector constants — every new `[data-testid="..."]` should go
+// through `sel(TID.*)` directly, but these aliases let existing call sites
+// keep working while they get migrated. All values derive from the TID
+// registry so a plugin-side rename only needs one edit.
+export const EVENT_MODAL_SELECTOR = sel(TID.event.field("title"));
+export const TOOLBAR_CREATE_SELECTOR = sel(TID.toolbar("create"));
+export const TOOLBAR_VIEW_MONTH_SELECTOR = sel(TID.toolbar("view-month"));
+export const TOOLBAR_VIEW_WEEK_SELECTOR = sel(TID.toolbar("view-week"));
+export const TOOLBAR_VIEW_DAY_SELECTOR = sel(TID.toolbar("view-day"));
+export const TOOLBAR_NEXT_SELECTOR = sel(TID.toolbar("next"));
+export const TOOLBAR_PREV_SELECTOR = sel(TID.toolbar("prev"));
+export const UNTRACKED_BUTTON_SELECTOR = sel(UNTRACKED_BUTTON_TID);
+export const UNTRACKED_DROPDOWN_SELECTOR = sel(UNTRACKED_DROPDOWN_TID);
+export const UNTRACKED_ITEM_SELECTOR = sel(UNTRACKED_ITEM_TID);
+export const CANCEL_BUTTON_SELECTOR = sel(TID.event.btn("cancel"));
 
 const NEW_FILE_POLL_INTERVAL_MS = 100;
 const NEW_FILE_TIMEOUT_MS = 10_000;
@@ -248,10 +253,14 @@ export async function openCreateModal(page: Page): Promise<void> {
  */
 export async function rightClickEventMenu(page: Page, eventTitle: string, menuItemId: string): Promise<void> {
 	const eventBlock = page.locator(".fc-event", { hasText: eventTitle }).first();
-	await eventBlock.waitFor({ state: "visible", timeout: 10_000 });
+	await eventBlock.waitFor({ state: "visible" });
 	await eventBlock.click({ button: "right" });
+	// `menuItemId` is typed as plain string here because this helper is a
+	// legacy entry point for specs that pass both registry-valid ids and
+	// out-of-registry ones (e.g. `__manage`). The full typed path is
+	// `calendar.eventByTitle(...).rightClick(key)` in the DSL.
 	const menuItem = page.locator(`[data-testid="prisma-context-menu-item-${menuItemId}"]`);
-	await menuItem.waitFor({ state: "visible", timeout: 5_000 });
+	await menuItem.waitFor({ state: "visible" });
 	await menuItem.click();
 }
 

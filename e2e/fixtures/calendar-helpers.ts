@@ -3,13 +3,14 @@ import type { Locator, Page } from "@playwright/test";
 import { ACTIVE_CALENDAR_LEAF } from "./constants";
 import { todayISO } from "./dates";
 import type { SeedEventInput } from "./seed-events";
+import { sel, TID, type ViewMode } from "./testids";
 
 // Prisma-calendar-specific helpers — thin UI wrappers that don't belong in the
 // generic `helpers.ts`. Disk-level event seeding + refresh live in
 // `seed-events.ts`; this file only adds helpers that touch the rendered
 // FullCalendar DOM or drive vault-backed APIs.
 
-const EVENT_IN_LEAF = `${ACTIVE_CALENDAR_LEAF} [data-testid="prisma-cal-event"]`;
+const EVENT_IN_LEAF = `${ACTIVE_CALENDAR_LEAF} ${sel(TID.block)}`;
 
 // Re-exported from `./dates` (single source of truth for local-TZ builders)
 // so existing consumers importing `todayISO` from here keep working.
@@ -95,11 +96,11 @@ export { dragByDelta } from "./dsl/drag";
  * already today, so we only click it when it's enabled.
  */
 export async function gotoToday(page: Page): Promise<void> {
-	const dayBtn = page.locator('[data-testid="prisma-cal-toolbar-view-day"]').first();
-	await dayBtn.waitFor({ state: "visible", timeout: 10_000 });
+	const dayBtn = page.locator(sel(TID.toolbar("view-day"))).first();
+	await dayBtn.waitFor({ state: "visible" });
 	await dayBtn.click();
-	await page.locator(".fc-timegrid").first().waitFor({ state: "visible", timeout: 5_000 });
-	const todayBtn = page.locator('[data-testid="prisma-cal-toolbar-today"]').first();
+	await page.locator(".fc-timegrid").first().waitFor({ state: "visible" });
+	const todayBtn = page.locator(sel(TID.toolbar("today"))).first();
 	if (await todayBtn.isEnabled().catch(() => false)) {
 		await todayBtn.click();
 	}
@@ -113,19 +114,10 @@ export async function rightClickEventByTitle(page: Page, title: string): Promise
 	return page.locator(".menu").last();
 }
 
-type CalendarViewName = "day" | "week" | "month" | "list";
-
-const VIEW_BUTTON_TESTID: Record<CalendarViewName, string> = {
-	day: "prisma-cal-toolbar-view-day",
-	week: "prisma-cal-toolbar-view-week",
-	month: "prisma-cal-toolbar-view-month",
-	list: "prisma-cal-toolbar-view-list",
-};
-
 // FullCalendar applies `.fc-{viewType}-view` on the outer view container. We
 // also accept the generic `.fc-timegrid` / `.fc-daygrid` / `.fc-list` fallback
 // because the specific class isn't always stamped until the first paint cycle.
-const VIEW_READY_SELECTOR: Record<CalendarViewName, string> = {
+const VIEW_READY_SELECTOR: Record<ViewMode, string> = {
 	day: ".fc-timeGridDay-view, .fc-timegrid",
 	week: ".fc-timeGridWeek-view, .fc-timegrid",
 	month: ".fc-dayGridMonth-view, .fc-daygrid",
@@ -137,11 +129,11 @@ const VIEW_READY_SELECTOR: Record<CalendarViewName, string> = {
  * view container to render. Mirrors the four registered view types in
  * `calendar-view.ts` (`dayGridMonth`, `timeGridWeek`, `timeGridDay`, `listWeek`).
  */
-export async function switchToView(page: Page, view: CalendarViewName): Promise<void> {
-	const btn = page.locator(`[data-testid="${VIEW_BUTTON_TESTID[view]}"]`).first();
-	await btn.waitFor({ state: "visible", timeout: 10_000 });
+export async function switchToView(page: Page, view: ViewMode): Promise<void> {
+	const btn = page.locator(sel(TID.toolbar(`view-${view}`))).first();
+	await btn.waitFor({ state: "visible" });
 	await btn.click();
-	await page.locator(VIEW_READY_SELECTOR[view]).first().waitFor({ state: "visible", timeout: 5_000 });
+	await page.locator(VIEW_READY_SELECTOR[view]).first().waitFor({ state: "visible" });
 }
 
 /**

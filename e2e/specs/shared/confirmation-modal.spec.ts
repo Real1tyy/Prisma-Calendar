@@ -1,5 +1,7 @@
 import { readPluginData, settleSettings } from "@real1ty-obsidian-plugins/testing/e2e";
 
+import { PLUGIN_ID } from "../../fixtures/constants";
+import { expectConfirmationModal } from "../../fixtures/dsl";
 import {
 	expect,
 	SEEDED_ICS_SUBSCRIPTION_ID,
@@ -19,12 +21,6 @@ import { openPrismaSettings, switchSettingsTab, unlockPro } from "../../fixtures
 // Two branches the shared component guarantees:
 //   • cancel → `onCancel` fires, caller's work is NOT executed, modal closes.
 //   • confirm → `onConfirm` fires, modal closes once the promise resolves.
-
-const PLUGIN_ID = "prisma-calendar";
-
-const CONFIRMATION_MODAL = '[data-testid="confirmation-modal"]';
-const CONFIRM_BUTTON = '[data-testid="confirmation-modal-confirm"]';
-const CANCEL_BUTTON = '[data-testid="confirmation-modal-cancel"]';
 
 function subscriptionCount(vaultDir: string): number {
 	const data = readPluginData(vaultDir, PLUGIN_ID) as {
@@ -50,23 +46,21 @@ test.describe("shared: confirmation-modal", () => {
 			.first()
 			.click();
 
-		const modal = obsidian.page.locator(CONFIRMATION_MODAL).first();
-		await modal.waitFor({ state: "visible" });
+		const modal = await expectConfirmationModal(obsidian.page);
 
 		// Title + caller's `Delete`/`Cancel` button labels flow through the shared
 		// component unchanged — the test proves the `confirmButton: { text: "Delete",
 		// warning: true }` config from showConfirmDeleteModal propagated to DOM.
-		await expect(modal).toContainText(`Delete subscription`);
-		await expect(modal).toContainText(SEEDED_ICS_SUBSCRIPTION_NAME);
-		await expect(modal.locator(CONFIRM_BUTTON)).toHaveText("Delete");
-		await expect(modal.locator(CANCEL_BUTTON)).toHaveText("Cancel");
+		await expect(modal.root).toContainText(`Delete subscription`);
+		await expect(modal.root).toContainText(SEEDED_ICS_SUBSCRIPTION_NAME);
+		await expect(modal.confirmBtn).toHaveText("Delete");
+		await expect(modal.cancelBtn).toHaveText("Cancel");
 		// `warning: true` resolves to mod-warning on the confirm button (see
 		// resolveButton in confirmation.ts) — the visual distinction users rely
 		// on for destructive actions.
-		await expect(modal.locator(CONFIRM_BUTTON)).toHaveClass(/mod-warning/);
+		await expect(modal.confirmBtn).toHaveClass(/mod-warning/);
 
-		await modal.locator(CANCEL_BUTTON).click();
-		await modal.waitFor({ state: "detached" });
+		await modal.cancel();
 
 		await settleSettings(obsidian.page, { pluginId: PLUGIN_ID });
 		expect(subscriptionCount(obsidian.vaultDir)).toBe(1);
@@ -80,10 +74,8 @@ test.describe("shared: confirmation-modal", () => {
 			.first()
 			.click();
 
-		const modal = obsidian.page.locator(CONFIRMATION_MODAL).first();
-		await modal.waitFor({ state: "visible" });
-		await modal.locator(CONFIRM_BUTTON).click();
-		await modal.waitFor({ state: "detached" });
+		const modal = await expectConfirmationModal(obsidian.page);
+		await modal.confirm();
 
 		await settleSettings(obsidian.page, { pluginId: PLUGIN_ID });
 		await expect.poll(() => subscriptionCount(obsidian.vaultDir)).toBe(0);

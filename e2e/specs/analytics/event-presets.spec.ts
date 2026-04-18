@@ -27,7 +27,7 @@ test.describe("event presets", () => {
 
 		await createEventViaToolbar(calendar.page);
 
-		const select = calendar.page.locator(".modal [data-testid='prisma-event-control-preset']").first();
+		const select = calendar.page.locator(`.modal ${sel(TID.event.control("preset"))}`).first();
 		await expect(select).toBeVisible();
 		await select.selectOption({ value: "preset-standup" });
 

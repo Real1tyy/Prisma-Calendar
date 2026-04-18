@@ -41,7 +41,9 @@ export type EventControlKey =
 	| "rrule"
 	| "rrule-type"
 	| "custom-freq"
-	| "custom-interval";
+	| "custom-interval"
+	| "preset"
+	| "participants";
 
 export type EventFieldKey = "title" | "categories" | "prerequisites" | "participants";
 
@@ -132,6 +134,90 @@ export type BatchBtnKey =
 export const EVENT_BLOCK_TID = "prisma-cal-event";
 export const BATCH_COUNTER_TID = "prisma-cal-batch-counter";
 export const BATCH_CONFIRM_TID = "prisma-batch-confirm-submit";
+
+// ── Shared-library testids ─────────────────────────────────────────────────
+// The shared/ package stamps its own testids, distinct from the Prisma-Calendar
+// family above. Every `prisma-` here was added by the shared component, not
+// by plugin code — renaming any of them would require a shared-library update
+// and an audit across every plugin that consumes it.
+
+/** Page header manage-actions modal — sub-parts keyed off the host `prisma-page-header-*` root. */
+export const PAGE_HEADER_MANAGE_BTN = "prisma-page-header-manage";
+export const ACTION_MANAGER_MODAL = "prisma-action-manager-modal";
+/** Tabbed-container tab-manager modal parts. */
+export const TABBED_CONTAINER_MANAGE_BTN = "prisma-tabbed-container-manage";
+export const TAB_MANAGER_MODAL = "prisma-tab-manager-modal";
+/** Context-menu item-manager modal (shown via the menu's "Manage items…" entry). */
+export const ITEM_MANAGER_MODAL = "prisma-item-manager-modal";
+/** Generic assignment picker (used by Assign Categories / Assign Prerequisites). */
+export const ASSIGN_MODAL_ROOT = ".prisma-assignment-modal";
+/** Plugin-agnostic shared confirmation modal (unprefixed by design). */
+export const CONFIRMATION_MODAL_TID = "confirmation-modal";
+export const CONFIRMATION_MODAL_CONFIRM_TID = "confirmation-modal-confirm";
+export const CONFIRMATION_MODAL_CANCEL_TID = "confirmation-modal-cancel";
+/** Shared progress modal used by ICS import and other batched flows. */
+export const PROGRESS_MODAL_TID = "prisma-progress-modal";
+export const PROGRESS_STATUS_TID = "prisma-progress-status";
+export const PROGRESS_BAR_TID = "prisma-progress-bar";
+export const PROGRESS_DETAILS_TID = "prisma-progress-details";
+
+/**
+ * Row-ID-scoped shared testids. Each function returns the full testid for a
+ * specific row inside its manager/component. Using these instead of inlining
+ * template strings means a shared-library rename only needs one edit here.
+ */
+/** Prefix constants for shared-library row testids — useful for "list every row" queries. */
+export const SHARED_ROW_PREFIX = {
+	actionRow: "prisma-action-manager-row-",
+	actionUp: "prisma-action-manager-up-",
+	actionToggle: "prisma-action-manager-toggle-",
+	tabManagerUp: "prisma-tab-manager-up-",
+	tabManagerToggle: "prisma-tab-manager-toggle-",
+	tabManagerRename: "prisma-tab-manager-rename-",
+	itemManagerToggle: "prisma-item-manager-toggle-",
+	collapsibleHeader: "prisma-collapsible-header-",
+	collapsibleBody: "prisma-collapsible-body-",
+	collapsibleToggle: "prisma-collapsible-toggle-",
+	pageHeaderToolbar: "prisma-toolbar-",
+	viewTab: "prisma-view-tab-",
+} as const;
+
+export const sharedTID = {
+	actionRow: (id: string): string => `${SHARED_ROW_PREFIX.actionRow}${id}`,
+	actionUp: (id: string): string => `${SHARED_ROW_PREFIX.actionUp}${id}`,
+	actionToggle: (id: string): string => `${SHARED_ROW_PREFIX.actionToggle}${id}`,
+	tabManagerUp: (id: string): string => `${SHARED_ROW_PREFIX.tabManagerUp}${id}`,
+	tabManagerToggle: (id: string): string => `${SHARED_ROW_PREFIX.tabManagerToggle}${id}`,
+	tabManagerRename: (id: string): string => `${SHARED_ROW_PREFIX.tabManagerRename}${id}`,
+	itemManagerToggle: (id: string): string => `${SHARED_ROW_PREFIX.itemManagerToggle}${id}`,
+	collapsibleHeader: (id: string): string => `${SHARED_ROW_PREFIX.collapsibleHeader}${id}`,
+	collapsibleBody: (id: string): string => `${SHARED_ROW_PREFIX.collapsibleBody}${id}`,
+	collapsibleToggle: (id: string): string => `${SHARED_ROW_PREFIX.collapsibleToggle}${id}`,
+	assignSearch: (): string => "prisma-assign-search",
+	assignItem: (): string => "prisma-assign-item",
+	assignCreateNew: (): string => "prisma-assign-create-new",
+	assignSubmit: (): string => "prisma-assign-submit",
+} as const;
+
+// ── Plugin-specific integration + filter + stopwatch + ICS testids ──────────
+// These aren't "shared" — they live in Prisma source — but they're referenced
+// outside the existing TID families, so collect them here so specs don't
+// scatter raw literals across suites.
+
+export const FILTER_SEARCH_TID = "prisma-filter-search";
+export const FILTER_EXPRESSION_TID = "prisma-filter-expression";
+export const FILTER_PRESET_TID = "prisma-filter-preset";
+export const FC_FILTER_PRESET_SELECT_TID = "prisma-fc-filter-preset-select";
+
+export const STOPWATCH_TIME_TID = "prisma-stopwatch-time";
+
+export const ICS_EXPORT_SUBMIT_TID = "prisma-ics-export-submit";
+export const ICS_IMPORT_FILE_TID = "prisma-ics-import-file";
+export const ICS_IMPORT_SUBMIT_TID = "prisma-ics-import-submit";
+
+export const UNTRACKED_BUTTON_TID = "prisma-untracked-dropdown-button";
+export const UNTRACKED_DROPDOWN_TID = "prisma-untracked-dropdown";
+export const UNTRACKED_ITEM_TID = "prisma-untracked-dropdown-item";
 
 export const TID = {
 	event: {

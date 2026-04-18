@@ -2,6 +2,7 @@ import type { Page } from "@playwright/test";
 
 import type { RecurrenceFreq, RecurrencePreset } from "../../../src/types/recurring-event";
 import type { Weekday } from "../../../src/types/weekday";
+import { ASSIGN_MODAL_ROOT, sel, sharedTID, TID } from "../../fixtures/testids";
 
 // UI-driven event-modal helpers. Every field is interacted with the same way
 // a real user would — click the stamped testid, type, press Enter. No reach-ins
@@ -11,7 +12,7 @@ import type { Weekday } from "../../../src/types/weekday";
 
 const SAVE_BUTTON_SCROLL_TIMEOUT_MS = 5_000;
 const MODAL_CLOSE_TIMEOUT_MS = 15_000;
-const ASSIGN_MODAL_SELECTOR = ".prisma-assignment-modal";
+const ASSIGN_MODAL_SELECTOR = ASSIGN_MODAL_ROOT;
 
 export type RRuleType = RecurrencePreset | "custom";
 
@@ -84,8 +85,8 @@ async function selectTestIdOption(page: Page, testId: string, value: string): Pr
 }
 
 async function openAssignModal(page: Page, buttonTestId: string): Promise<void> {
-	await page.locator(`[data-testid="${buttonTestId}"]`).click();
-	await page.locator(`${ASSIGN_MODAL_SELECTOR} [data-testid="prisma-assign-search"]`).waitFor({
+	await page.locator(sel(buttonTestId)).click();
+	await page.locator(`${ASSIGN_MODAL_SELECTOR} ${sel(sharedTID.assignSearch())}`).waitFor({
 		state: "visible",
 		timeout: 10_000,
 	});
@@ -105,18 +106,18 @@ async function driveAssignModal(
 ): Promise<void> {
 	const allowCreateNew = options.allowCreateNew ?? true;
 	await openAssignModal(page, buttonTestId);
-	const search = page.locator(`${ASSIGN_MODAL_SELECTOR} [data-testid="prisma-assign-search"]`);
+	const search = page.locator(`${ASSIGN_MODAL_SELECTOR} ${sel(sharedTID.assignSearch())}`);
 
 	for (const value of values) {
 		await search.fill(value);
 		const existing = page.locator(
-			`${ASSIGN_MODAL_SELECTOR} [data-testid="prisma-assign-item"][data-assign-name="${value}"]`
+			`${ASSIGN_MODAL_SELECTOR} ${sel(sharedTID.assignItem())}[data-assign-name="${value}"]`
 		);
 		const existingCount = await existing.count();
 		if (existingCount > 0) {
 			await existing.first().click();
 		} else if (allowCreateNew) {
-			const create = page.locator(`${ASSIGN_MODAL_SELECTOR} [data-testid="prisma-assign-create-new"]`);
+			const create = page.locator(`${ASSIGN_MODAL_SELECTOR} ${sel(sharedTID.assignCreateNew())}`);
 			await create.waitFor({ state: "visible", timeout: 5_000 });
 			await create.click();
 		} else {
@@ -124,14 +125,14 @@ async function driveAssignModal(
 		}
 		await search.fill("");
 	}
-	await page.locator(`${ASSIGN_MODAL_SELECTOR} [data-testid="prisma-assign-submit"]`).click();
+	await page.locator(`${ASSIGN_MODAL_SELECTOR} ${sel(sharedTID.assignSubmit())}`).click();
 	await page.locator(ASSIGN_MODAL_SELECTOR).waitFor({ state: "hidden", timeout: 5_000 });
 
 	// Sanity: the parent event modal must still be open after assign modal
 	// closes. If it's gone, something in the interaction tore it down — fail
 	// loudly here with the DOM state rather than propagating into a confusing
 	// "field not visible" timeout on the next step.
-	const eventModalStillOpen = await page.locator('[data-testid="prisma-event-field-title"]').count();
+	const eventModalStillOpen = await page.locator(sel(TID.event.field("title"))).count();
 	if (eventModalStillOpen === 0) {
 		throw new Error(
 			`Event modal closed unexpectedly after driveAssignModal(${buttonTestId}). ` +
@@ -141,11 +142,11 @@ async function driveAssignModal(
 }
 
 async function addParticipant(page: Page, value: string): Promise<void> {
-	const input = page.locator('[data-testid="prisma-event-control-participants"]');
+	const input = page.locator(sel(TID.event.control("participants")));
 	const count = await input.count();
 	if (count === 0) {
-		const modalCount = await page.locator('[data-testid="prisma-event-field-title"]').count();
-		const allParticipantsFields = await page.locator('[data-testid="prisma-event-field-participants"]').count();
+		const modalCount = await page.locator(sel(TID.event.field("title"))).count();
+		const allParticipantsFields = await page.locator(sel(TID.event.field("participants"))).count();
 		throw new Error(
 			`addParticipant("${value}"): input not in DOM. ` +
 				`event-modal-title count=${modalCount}, participants-field count=${allParticipantsFields}. ` +
@@ -159,7 +160,7 @@ async function addParticipant(page: Page, value: string): Promise<void> {
 }
 
 async function addCustomProperty(page: Page, key: string, value: string): Promise<void> {
-	await page.locator('[data-testid="prisma-event-btn-add-custom-prop-other"]').click();
+	await page.locator(sel(TID.event.btn("add-custom-prop-other"))).click();
 	// The new row is appended — find the last key/value inputs in the "other" section.
 	const keyInputs = page.locator('[data-testid="prisma-event-custom-prop-key-other"]');
 	const valueInputs = page.locator('[data-testid="prisma-event-custom-prop-value-other"]');
@@ -245,13 +246,13 @@ export async function fillEventModal(page: Page, data: EventModalInput): Promise
  */
 export async function saveEventModal(page: Page, options: { waitForClose?: boolean } = {}): Promise<void> {
 	const { waitForClose = true } = options;
-	const saveBtn = page.locator('[data-testid="prisma-event-btn-save"]').first();
+	const saveBtn = page.locator(sel(TID.event.btn("save"))).first();
 	await saveBtn.scrollIntoViewIfNeeded({ timeout: SAVE_BUTTON_SCROLL_TIMEOUT_MS }).catch(() => {});
 	await saveBtn.click();
 	if (waitForClose) {
 		await page.waitForFunction(
-			() => document.querySelectorAll('[data-testid="prisma-event-field-title"]').length === 0,
-			undefined,
+			(selector) => document.querySelectorAll(selector).length === 0,
+			sel(TID.event.field("title")),
 			{ timeout: MODAL_CLOSE_TIMEOUT_MS }
 		);
 	}

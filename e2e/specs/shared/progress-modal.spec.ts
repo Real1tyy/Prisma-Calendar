@@ -1,8 +1,9 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { runCommand } from "../../fixtures/commands";
+import { expectProgressModal } from "../../fixtures/dsl";
 import { expect, test } from "../../fixtures/electron";
+import { ICS_IMPORT_FILE_TID, ICS_IMPORT_SUBMIT_TID, sel } from "../../fixtures/testids";
 
 // Exercises `showProgressModal` from shared/src/components/primitives/
 // progress-modal.ts. Prisma consumes it from `showICSImportProgressModal`
@@ -12,12 +13,6 @@ import { expect, test } from "../../fixtures/electron";
 // `prisma-progress-bar`, `prisma-progress-details`; this spec asserts the
 // modal appears, progresses to 100%, and then auto-closes per the
 // `successCloseDelay` contract.
-
-const IMPORT_FILE_INPUT = '[data-testid="prisma-ics-import-file"]';
-const IMPORT_SUBMIT = '[data-testid="prisma-ics-import-submit"]';
-const PROGRESS_MODAL = '[data-testid="prisma-progress-modal"]';
-const PROGRESS_STATUS = '[data-testid="prisma-progress-status"]';
-const PROGRESS_DETAILS = '[data-testid="prisma-progress-details"]';
 
 function buildICS(count: number): string {
 	const header = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Prisma E2E//Progress Spec//EN", "CALSCALE:GREGORIAN"];
@@ -39,36 +34,32 @@ function buildICS(count: number): string {
 }
 
 test.describe("shared: progress-modal", () => {
-	test("shows modal during ICS import, reaches 100%, auto-closes on success", async ({ obsidian }) => {
-		const icsDir = join(obsidian.vaultDir, "ICS-Inbox");
+	test("shows modal during ICS import, reaches 100%, auto-closes on success", async ({ calendar }) => {
+		const icsDir = join(calendar.vaultDir, "ICS-Inbox");
 		mkdirSync(icsDir, { recursive: true });
 		const icsPath = join(icsDir, "progress-spec.ics");
 		writeFileSync(icsPath, buildICS(8), "utf8");
 
-		await runCommand(obsidian.page, "Prisma Calendar: Import .ics file");
-		await obsidian.page.locator(IMPORT_FILE_INPUT).first().setInputFiles(icsPath);
-		const submit = obsidian.page.locator(IMPORT_SUBMIT).first();
+		await calendar.runCommand("Prisma Calendar: Import .ics file");
+		await calendar.page.locator(sel(ICS_IMPORT_FILE_TID)).first().setInputFiles(icsPath);
+		const submit = calendar.page.locator(sel(ICS_IMPORT_SUBMIT_TID)).first();
 		await expect(submit).toBeEnabled();
 		await submit.click();
 
-		const modal = obsidian.page.locator(PROGRESS_MODAL).first();
-		await modal.waitFor({ state: "visible" });
-
-		const status = obsidian.page.locator(PROGRESS_STATUS).first();
-		const details = obsidian.page.locator(PROGRESS_DETAILS).first();
-		await expect(status).toBeVisible();
-		await expect(details).toBeVisible();
+		const progress = await expectProgressModal(calendar.page);
+		await expect(progress.status).toBeVisible();
+		await expect(progress.details).toBeVisible();
 
 		// The shared modal rewrites status to "Importing events complete" after
 		// `showComplete` fires. Polling that transition verifies the progress
 		// updates actually flowed through the shared component (not just the
 		// initial render).
-		await expect(status).toContainText(/complete/i);
+		await expect(progress.status).toContainText(/complete/i);
 		// Summary line format comes from ics-import-progress.ts: "✓ N imported".
-		await expect(details).toContainText(/imported/i);
+		await expect(progress.details).toContainText(/imported/i);
 
 		// The shared modal auto-closes after `successCloseDelay` (2000ms by
 		// default). Assert the user-visible contract — no lingering overlay.
-		await modal.waitFor({ state: "detached" });
+		await progress.waitForClose();
 	});
 });

@@ -1,6 +1,5 @@
 import type { Page } from "@playwright/test";
 
-import { runCommand } from "../../fixtures/commands";
 import { expect, test } from "../../fixtures/electron";
 
 // The "Open virtual events file" command is per-bundle. VirtualEventStore
@@ -21,7 +20,7 @@ function activeFilePath(page: Page): Promise<string | null> {
 	});
 }
 
-test("virtual events: command opens the auto-created file", async ({ obsidian }) => {
-	await runCommand(obsidian.page, "Prisma Calendar: Open virtual events file (Main Calendar)");
-	await expect.poll(() => activeFilePath(obsidian.page)).toBe(VIRTUAL_EVENTS_PATH);
+test("virtual events: command opens the auto-created file", async ({ calendar }) => {
+	await calendar.runCommand("Prisma Calendar: Open virtual events file (Main Calendar)");
+	await expect.poll(() => activeFilePath(calendar.page)).toBe(VIRTUAL_EVENTS_PATH);
 });

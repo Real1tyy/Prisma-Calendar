@@ -20,6 +20,7 @@ import {
 	seedBulkEvents,
 	waitForIndexerToReach,
 } from "../../fixtures/stress-helpers";
+import { sel, TID } from "../../fixtures/testids";
 
 // Maximum-load boundary: a vault holding 5000 events the indexer must pick
 // up, plus 50 "active" events in the current week the user actually
@@ -46,8 +47,8 @@ import {
 // plugin bug (make the drain throttle / yield so it doesn't starve user
 // ops) is outside the scope of this test file.
 
-const TOOLBAR_NEXT = '[data-testid="prisma-cal-toolbar-next"]';
-const TOOLBAR_PREV = '[data-testid="prisma-cal-toolbar-prev"]';
+const TOOLBAR_NEXT = sel(TID.toolbar("next"));
+const TOOLBAR_PREV = sel(TID.toolbar("prev"));
 
 const BACKGROUND_COUNT = 5000;
 const ACTIVE_COUNT = 50;

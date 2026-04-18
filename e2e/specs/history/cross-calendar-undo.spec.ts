@@ -1,6 +1,8 @@
 import type { Page } from "@playwright/test";
 import { listEventFiles } from "@real1ty-obsidian-plugins/testing/e2e";
 
+import { PLUGIN_ID } from "../../fixtures/constants";
+import { isoLocal } from "../../fixtures/dates";
 import {
 	expect,
 	MULTI_CALENDAR_PRIMARY_DIR,
@@ -9,19 +11,7 @@ import {
 	MULTI_CALENDAR_SECONDARY_ID,
 	testMultiCalendar as test,
 } from "../../fixtures/electron";
-import { isoLocal, redoViaPalette, undoViaPalette } from "../../fixtures/history-helpers";
-import {
-	EVENT_MODAL_SELECTOR,
-	openCalendarView,
-	PLUGIN_ID,
-	snapshotEventFiles,
-	TOOLBAR_CREATE_SELECTOR,
-	waitForNewEventFiles,
-	waitForWorkspaceReady,
-} from "../events/events-helpers";
-import { fillEventModal, saveEventModal } from "../events/fill-event-modal";
-
-const ACTIVE_LEAF = ".workspace-leaf.mod-active";
+import { openCalendarView, waitForWorkspaceReady } from "../events/events-helpers";
 
 // Every calendar directory contains a `Virtual Events.md` sentinel created on
 // bundle init by `VirtualEventStore` (`createIfMissing: true`). That file is
@@ -69,29 +59,6 @@ async function ensureLastUsedCalendar(page: Page, calendarId: string): Promise<v
 // If any of these break, the symptom in prod is "my undo didn't undo the
 // right thing" — the worst class of history bug.
 
-async function createInCalendar(
-	page: Page,
-	vaultDir: string,
-	calendarId: string,
-	subdir: string,
-	input: { title: string; start: string; end: string }
-): Promise<string> {
-	await openCalendarView(page, calendarId);
-	await ensureLastUsedCalendar(page, calendarId);
-	const baseline = snapshotEventFiles(vaultDir, subdir);
-	// Scope the Create click + modal wait to the active leaf — with two
-	// calendars rendered, an unscoped locator matches both toolbars and
-	// trips Playwright's strict-mode check.
-	const activeToolbarCreate = page.locator(`${ACTIVE_LEAF} ${TOOLBAR_CREATE_SELECTOR}`).first();
-	await activeToolbarCreate.waitFor({ state: "visible" });
-	await activeToolbarCreate.click();
-	await page.locator(EVENT_MODAL_SELECTOR).first().waitFor({ state: "visible" });
-	await fillEventModal(page, input);
-	await saveEventModal(page);
-	const [newPath] = await waitForNewEventFiles(vaultDir, baseline, 1, undefined, subdir);
-	return newPath!;
-}
-
 async function switchToCalendar(page: Page, calendarId: string): Promise<void> {
 	await openCalendarView(page, calendarId);
 	await ensureLastUsedCalendar(page, calendarId);
@@ -102,73 +69,67 @@ test.describe("cross-calendar undo boundary (UI-driven)", () => {
 		await waitForWorkspaceReady(obsidian.page);
 	});
 
-	test("undo routes to last-used bundle; each stack stays isolated", async ({ obsidian }) => {
-		const primaryPath = await createInCalendar(
-			obsidian.page,
-			obsidian.vaultDir,
-			MULTI_CALENDAR_PRIMARY_ID,
-			MULTI_CALENDAR_PRIMARY_DIR,
-			{ title: "Primary Probe", start: isoLocal(1, 9), end: isoLocal(1, 10) }
+	test("undo routes to last-used bundle; each stack stays isolated", async ({ calendar }) => {
+		await switchToCalendar(calendar.page, MULTI_CALENDAR_PRIMARY_ID);
+		const primary = await calendar.createEvent(
+			{ title: "Primary Probe", start: isoLocal(1, 9), end: isoLocal(1, 10) },
+			{ subdir: MULTI_CALENDAR_PRIMARY_DIR }
 		);
-		expect(primaryPath.startsWith(MULTI_CALENDAR_PRIMARY_DIR)).toBe(true);
+		expect(primary.path.startsWith(MULTI_CALENDAR_PRIMARY_DIR)).toBe(true);
 
-		const secondaryPath = await createInCalendar(
-			obsidian.page,
-			obsidian.vaultDir,
-			MULTI_CALENDAR_SECONDARY_ID,
-			MULTI_CALENDAR_SECONDARY_DIR,
-			{ title: "Secondary Probe", start: isoLocal(1, 11), end: isoLocal(1, 12) }
+		await switchToCalendar(calendar.page, MULTI_CALENDAR_SECONDARY_ID);
+		const secondary = await calendar.createEvent(
+			{ title: "Secondary Probe", start: isoLocal(1, 11), end: isoLocal(1, 12) },
+			{ subdir: MULTI_CALENDAR_SECONDARY_DIR }
 		);
-		expect(secondaryPath.startsWith(MULTI_CALENDAR_SECONDARY_DIR)).toBe(true);
+		expect(secondary.path.startsWith(MULTI_CALENDAR_SECONDARY_DIR)).toBe(true);
 
 		// Secondary was most recently activated, so Undo must pop *its* stack.
 		// Primary's file must stay on disk.
-		await undoViaPalette(obsidian.page);
-		await expect.poll(() => countRealEvents(obsidian.vaultDir, MULTI_CALENDAR_SECONDARY_DIR)).toBe(0);
-		await expect.poll(() => countRealEvents(obsidian.vaultDir, MULTI_CALENDAR_PRIMARY_DIR)).toBe(1);
+		await calendar.undo();
+		await expect.poll(() => countRealEvents(calendar.vaultDir, MULTI_CALENDAR_SECONDARY_DIR)).toBe(0);
+		await expect.poll(() => countRealEvents(calendar.vaultDir, MULTI_CALENDAR_PRIMARY_DIR)).toBe(1);
 
 		// A second Undo with secondary still "active" is a no-op — its stack is
 		// empty, and primary's stack must not be touched.
-		await undoViaPalette(obsidian.page);
-		await expect.poll(() => countRealEvents(obsidian.vaultDir, MULTI_CALENDAR_PRIMARY_DIR)).toBe(1);
+		await calendar.undo();
+		await expect.poll(() => countRealEvents(calendar.vaultDir, MULTI_CALENDAR_PRIMARY_DIR)).toBe(1);
 
 		// Switching to primary re-routes Undo to its stack.
-		await switchToCalendar(obsidian.page, MULTI_CALENDAR_PRIMARY_ID);
-		await undoViaPalette(obsidian.page);
-		await expect.poll(() => countRealEvents(obsidian.vaultDir, MULTI_CALENDAR_PRIMARY_DIR)).toBe(0);
+		await switchToCalendar(calendar.page, MULTI_CALENDAR_PRIMARY_ID);
+		await calendar.undo();
+		await expect.poll(() => countRealEvents(calendar.vaultDir, MULTI_CALENDAR_PRIMARY_DIR)).toBe(0);
 	});
 
-	test("redo targets the activated bundle's stack, not the other calendar's", async ({ obsidian }) => {
-		await createInCalendar(obsidian.page, obsidian.vaultDir, MULTI_CALENDAR_PRIMARY_ID, MULTI_CALENDAR_PRIMARY_DIR, {
-			title: "Primary Redo Probe",
-			start: isoLocal(1, 9),
-			end: isoLocal(1, 10),
-		});
-		await createInCalendar(
-			obsidian.page,
-			obsidian.vaultDir,
-			MULTI_CALENDAR_SECONDARY_ID,
-			MULTI_CALENDAR_SECONDARY_DIR,
-			{ title: "Secondary Redo Probe", start: isoLocal(1, 11), end: isoLocal(1, 12) }
+	test("redo targets the activated bundle's stack, not the other calendar's", async ({ calendar }) => {
+		await switchToCalendar(calendar.page, MULTI_CALENDAR_PRIMARY_ID);
+		await calendar.createEvent(
+			{ title: "Primary Redo Probe", start: isoLocal(1, 9), end: isoLocal(1, 10) },
+			{ subdir: MULTI_CALENDAR_PRIMARY_DIR }
+		);
+		await switchToCalendar(calendar.page, MULTI_CALENDAR_SECONDARY_ID);
+		await calendar.createEvent(
+			{ title: "Secondary Redo Probe", start: isoLocal(1, 11), end: isoLocal(1, 12) },
+			{ subdir: MULTI_CALENDAR_SECONDARY_DIR }
 		);
 
 		// Undo on secondary (last-used) → secondary's create is now on its redo
 		// stack. Switch to primary *without* undoing, then redo — primary's redo
 		// stack is empty, so the secondary file must NOT reappear.
-		await undoViaPalette(obsidian.page);
-		await expect.poll(() => countRealEvents(obsidian.vaultDir, MULTI_CALENDAR_SECONDARY_DIR)).toBe(0);
+		await calendar.undo();
+		await expect.poll(() => countRealEvents(calendar.vaultDir, MULTI_CALENDAR_SECONDARY_DIR)).toBe(0);
 
-		await switchToCalendar(obsidian.page, MULTI_CALENDAR_PRIMARY_ID);
-		await redoViaPalette(obsidian.page);
+		await switchToCalendar(calendar.page, MULTI_CALENDAR_PRIMARY_ID);
+		await calendar.redo();
 		// Primary's redo stack was never built → secondary's undone create must
 		// still be absent on disk.
-		await expect.poll(() => countRealEvents(obsidian.vaultDir, MULTI_CALENDAR_SECONDARY_DIR)).toBe(0);
-		await expect.poll(() => countRealEvents(obsidian.vaultDir, MULTI_CALENDAR_PRIMARY_DIR)).toBe(1);
+		await expect.poll(() => countRealEvents(calendar.vaultDir, MULTI_CALENDAR_SECONDARY_DIR)).toBe(0);
+		await expect.poll(() => countRealEvents(calendar.vaultDir, MULTI_CALENDAR_PRIMARY_DIR)).toBe(1);
 
 		// Switch back to secondary and redo — now the secondary create should
 		// be reinstated because the stack was preserved across the switch.
-		await switchToCalendar(obsidian.page, MULTI_CALENDAR_SECONDARY_ID);
-		await redoViaPalette(obsidian.page);
-		await expect.poll(() => countRealEvents(obsidian.vaultDir, MULTI_CALENDAR_SECONDARY_DIR)).toBe(1);
+		await switchToCalendar(calendar.page, MULTI_CALENDAR_SECONDARY_ID);
+		await calendar.redo();
+		await expect.poll(() => countRealEvents(calendar.vaultDir, MULTI_CALENDAR_SECONDARY_DIR)).toBe(1);
 	});
 });

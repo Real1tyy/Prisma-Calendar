@@ -13,6 +13,7 @@ import {
 	seedEvents,
 	waitForEventCount,
 } from "../../fixtures/seed-events";
+import { ICS_EXPORT_SUBMIT_TID, ICS_IMPORT_FILE_TID, ICS_IMPORT_SUBMIT_TID, sel } from "../../fixtures/testids";
 
 // Full ICS roundtrip. The contract we verify:
 //
@@ -29,9 +30,9 @@ import {
 
 const EVENTS_DIR = "Events";
 const EXPORTS_DIR = "Prisma-Exports";
-const EXPORT_SUBMIT = '[data-testid="prisma-ics-export-submit"]';
-const IMPORT_FILE_INPUT = '[data-testid="prisma-ics-import-file"]';
-const IMPORT_SUBMIT = '[data-testid="prisma-ics-import-submit"]';
+const EXPORT_SUBMIT = sel(ICS_EXPORT_SUBMIT_TID);
+const IMPORT_FILE_INPUT = sel(ICS_IMPORT_FILE_TID);
+const IMPORT_SUBMIT = sel(ICS_IMPORT_SUBMIT_TID);
 
 function listEventMarkdown(vaultDir: string): string[] {
 	const dir = join(vaultDir, EVENTS_DIR);
