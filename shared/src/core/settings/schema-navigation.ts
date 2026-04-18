@@ -18,26 +18,35 @@ export function getNestedValue(obj: Record<string, unknown>, key: string): unkno
 }
 
 /**
- * Sets a nested property value using dot notation and returns the updated object (deep clone).
+ * Sets a nested property value using dot notation and returns a new object
+ * with the change applied. Copy-on-write along the dotted path — only
+ * ancestors of the changed key are shallow-cloned; sibling branches keep
+ * their references, which avoids the O(size) cost of a full deep clone.
+ *
+ * Intended for JSON-shaped settings (Zod-parsed, round-trips through
+ * `loadData` / `saveData`). Missing ancestors are created as `{}`. Arrays
+ * may only appear as terminal values — a path that crosses an array
+ * mid-way is outside the intended use and will silently overwrite it.
  */
 export function setNestedValue<T extends Record<string, unknown>>(obj: T, key: string, value: unknown): T {
 	const keys = key.split(".");
-	const newObj = JSON.parse(JSON.stringify(obj)) as Record<string, unknown>;
+	const newRoot: Record<string, unknown> = { ...obj };
 
-	let current: Record<string, unknown> = newObj;
-
+	let current: Record<string, unknown> = newRoot;
 	for (let i = 0; i < keys.length - 1; i++) {
 		const k = keys[i];
-		if (!(k in current)) {
-			current[k] = {};
-		}
-		current = current[k] as Record<string, unknown>;
+		const existing = current[k];
+		const nextLevel: Record<string, unknown> =
+			existing && typeof existing === "object" && !Array.isArray(existing)
+				? { ...(existing as Record<string, unknown>) }
+				: {};
+		current[k] = nextLevel;
+		current = nextLevel;
 	}
 
-	const lastKey = keys[keys.length - 1];
-	current[lastKey] = value;
+	current[keys[keys.length - 1]] = value;
 
-	return newObj as T;
+	return newRoot as T;
 }
 
 /**

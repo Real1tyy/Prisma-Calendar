@@ -3,6 +3,8 @@ import { join } from "node:path";
 
 import { parse as parseYaml } from "yaml";
 
+import { deepEqualJsonLike } from "../../utils/deep-equal";
+
 // File-on-disk truth helpers. Every E2E assertion that touches persistent
 // state should validate the file too — the DOM lies, the vault is truth.
 
@@ -32,7 +34,7 @@ export function expectFrontmatter(vaultDir: string, relativePath: string, expect
 	const misses: string[] = [];
 	for (const [key, want] of Object.entries(expected)) {
 		const got = actual[key];
-		if (!deepEqual(got, want)) {
+		if (!deepEqualJsonLike(got, want)) {
 			misses.push(`  ${key}: expected ${JSON.stringify(want)}, got ${JSON.stringify(got)}`);
 		}
 	}
@@ -80,7 +82,7 @@ export function expectPluginData(vaultDir: string, pluginId: string, expected: R
 		const got = path.includes(".")
 			? getByPath(actual as Record<string, unknown>, path)
 			: (actual as Record<string, unknown>)[path];
-		if (!deepEqual(got, want)) {
+		if (!deepEqualJsonLike(got, want)) {
 			misses.push(`  ${path}: expected ${JSON.stringify(want)}, got ${JSON.stringify(got)}`);
 		}
 	}
@@ -96,20 +98,4 @@ function getByPath(root: Record<string, unknown>, path: string): unknown {
 		cur = (cur as Record<string, unknown>)[segment];
 	}
 	return cur;
-}
-
-function deepEqual(a: unknown, b: unknown): boolean {
-	if (a === b) return true;
-	if (a === null || b === null || typeof a !== typeof b) return false;
-	if (typeof a !== "object") return false;
-	if (Array.isArray(a) !== Array.isArray(b)) return false;
-	if (Array.isArray(a) && Array.isArray(b)) {
-		if (a.length !== b.length) return false;
-		return a.every((v, i) => deepEqual(v, b[i]));
-	}
-	const ao = a as Record<string, unknown>;
-	const bo = b as Record<string, unknown>;
-	const keys = new Set([...Object.keys(ao), ...Object.keys(bo)]);
-	for (const k of keys) if (!deepEqual(ao[k], bo[k])) return false;
-	return true;
 }

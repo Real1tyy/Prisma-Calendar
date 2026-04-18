@@ -261,6 +261,91 @@ describe("CodeBlockRepository", () => {
 			});
 		});
 
+		describe("bulk operations", () => {
+			it("createMany persists once and emits row-created per item", async () => {
+				const { repo, mockApp } = loadedCrudRepo();
+				const events: VaultTableEvent<TestItem, DataRow<TestItem>>[] = [];
+				const sub = repo.events$.subscribe((e) => events.push(e));
+
+				await repo.createMany([
+					{ id: "c", value: 3 },
+					{ id: "d", value: 4 },
+				]);
+
+				expect(mockApp.vault.modify).toHaveBeenCalledTimes(1);
+				expect(
+					allItems(repo)
+						.map((i) => i.id)
+						.sort()
+				).toEqual(["a", "b", "c", "d"]);
+				expect(events.filter((e) => e.type === "row-created").map((e) => e.id)).toEqual(["c", "d"]);
+				sub.unsubscribe();
+			});
+
+			it("createMany rejects duplicate ids without persisting", async () => {
+				const { repo, mockApp } = loadedCrudRepo();
+				await expect(
+					repo.createMany([
+						{ id: "c", value: 3 },
+						{ id: "a", value: 99 },
+					])
+				).rejects.toThrow(/already exists/);
+				expect(mockApp.vault.modify).not.toHaveBeenCalled();
+			});
+
+			it("updateMany applies all changes with a single persist", async () => {
+				const { repo, mockApp } = loadedCrudRepo();
+				await repo.updateMany([
+					["a", { value: 10 }],
+					["b", { value: 20 }],
+				]);
+
+				expect(mockApp.vault.modify).toHaveBeenCalledTimes(1);
+				expect(repo.get("a")?.data.value).toBe(10);
+				expect(repo.get("b")?.data.value).toBe(20);
+			});
+
+			it("deleteMany removes every listed id in a single persist", async () => {
+				const { repo, mockApp } = loadedCrudRepo();
+				const events: VaultTableEvent<TestItem, DataRow<TestItem>>[] = [];
+				const sub = repo.events$.subscribe((e) => events.push(e));
+
+				await repo.deleteMany(["a", "b"]);
+
+				expect(mockApp.vault.modify).toHaveBeenCalledTimes(1);
+				expect(allItems(repo)).toEqual([]);
+				expect(
+					events
+						.filter((e) => e.type === "row-deleted")
+						.map((e) => e.id)
+						.sort()
+				).toEqual(["a", "b"]);
+				sub.unsubscribe();
+			});
+
+			it("deleteMany silently skips unknown ids and still persists when at least one matches", async () => {
+				const { repo, mockApp } = loadedCrudRepo();
+				await repo.deleteMany(["a", "missing"]);
+
+				expect(mockApp.vault.modify).toHaveBeenCalledTimes(1);
+				expect(allItems(repo).map((i) => i.id)).toEqual(["b"]);
+			});
+
+			it("deleteMany no-ops when nothing matches", async () => {
+				const { repo, mockApp } = loadedCrudRepo();
+				await repo.deleteMany(["missing-1", "missing-2"]);
+				expect(mockApp.vault.modify).not.toHaveBeenCalled();
+			});
+
+			it("empty batch calls are no-ops", async () => {
+				const { repo, mockApp } = loadedCrudRepo();
+				await repo.createMany([]);
+				await repo.updateMany([]);
+				await repo.deleteMany([]);
+				expect(mockApp.vault.modify).not.toHaveBeenCalled();
+			});
+		});
+
 		describe("sort determinism", () => {
 			it("should maintain order through mixed mutations", async () => {
 				const { repo } = loadedCrudRepo();

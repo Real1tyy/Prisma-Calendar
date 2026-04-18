@@ -1,4 +1,4 @@
-import type { BehaviorSubject, Subscription } from "rxjs";
+import { type BehaviorSubject, Subject, takeUntil } from "rxjs";
 
 import { buildPropertyMapping, extractExpressionIdentifiers, sanitizeExpression } from "../../utils/expression-utils";
 
@@ -17,10 +17,10 @@ export abstract class BaseEvaluator<TRule extends BaseRule, TSettings> {
 	private compiledFunctions = new Map<string, ((...args: unknown[]) => boolean) | null>();
 	private expressionIdCache = new Map<string, string[]>();
 	private propertyMapping = new Map<string, string>();
-	private subscription: Subscription | null = null;
+	private readonly destroy$ = new Subject<void>();
 
 	constructor(settingsStore: BehaviorSubject<TSettings>) {
-		this.subscription = settingsStore.subscribe((settings) => {
+		settingsStore.pipe(takeUntil(this.destroy$)).subscribe((settings) => {
 			this.rules = this.extractRules(settings);
 			this.compiledFunctions.clear();
 			this.expressionIdCache.clear();
@@ -31,7 +31,8 @@ export abstract class BaseEvaluator<TRule extends BaseRule, TSettings> {
 	protected abstract extractRules(settings: TSettings): TRule[];
 
 	destroy(): void {
-		this.subscription?.unsubscribe();
+		this.destroy$.next();
+		this.destroy$.complete();
 		this.compiledFunctions.clear();
 		this.expressionIdCache.clear();
 		this.propertyMapping.clear();

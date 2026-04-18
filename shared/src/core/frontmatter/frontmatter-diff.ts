@@ -1,3 +1,5 @@
+import { deepEqualJsonLike } from "../../utils/deep-equal";
+
 export type Frontmatter = Record<string, unknown>;
 
 export interface FrontmatterChange {
@@ -64,7 +66,7 @@ export function compareFrontmatter(
 
 			changes.push(change);
 			deleted.push(change);
-		} else if (!deepEqual(oldValue, newValue)) {
+		} else if (!deepEqualJsonLike(oldValue, newValue)) {
 			const change: FrontmatterChange = {
 				key,
 				oldValue,
@@ -84,42 +86,6 @@ export function compareFrontmatter(
 		modified,
 		deleted,
 	};
-}
-
-/**
- * Deep equality check for frontmatter values.
- * Handles primitives, arrays, and objects.
- */
-function deepEqual(a: unknown, b: unknown): boolean {
-	if (a === b) return true;
-
-	if (a === null || b === null || a === undefined || b === undefined) {
-		return a === b;
-	}
-
-	if (typeof a !== typeof b) return false;
-
-	if (a instanceof Date && b instanceof Date) {
-		return a.getTime() === b.getTime();
-	}
-
-	if (Array.isArray(a) && Array.isArray(b)) {
-		if (a.length !== b.length) return false;
-		return a.every((val, idx) => deepEqual(val, b[idx]));
-	}
-
-	if (typeof a === "object" && typeof b === "object") {
-		const objA = a as Record<string, unknown>;
-		const objB = b as Record<string, unknown>;
-		const keysA = Object.keys(objA);
-		const keysB = Object.keys(objB);
-
-		if (keysA.length !== keysB.length) return false;
-
-		return keysA.every((key) => key in objB && deepEqual(objA[key], objB[key]));
-	}
-
-	return false;
 }
 
 /**
@@ -161,7 +127,7 @@ export function mergeFrontmatterDiffs(diffs: FrontmatterDiff[]): FrontmatterDiff
 					existing.changeType = change.changeType;
 				}
 
-				if (changesByKey.has(change.key) && deepEqual(existing.oldValue, existing.newValue)) {
+				if (changesByKey.has(change.key) && deepEqualJsonLike(existing.oldValue, existing.newValue)) {
 					changesByKey.delete(change.key);
 				}
 			}

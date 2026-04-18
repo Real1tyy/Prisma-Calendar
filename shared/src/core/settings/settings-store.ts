@@ -1,6 +1,9 @@
 import type { Plugin } from "obsidian";
+import type { Observable } from "rxjs";
 import { BehaviorSubject, distinctUntilChanged, map, skip } from "rxjs";
 import type { z } from "zod";
+
+import { deepEqualJsonLike } from "../../utils/deep-equal";
 
 export interface WatchOptions<R = unknown> {
 	immediate?: boolean;
@@ -17,11 +20,21 @@ export class SettingsStore<TSchema extends z.ZodTypeAny> {
 	private plugin: Plugin;
 	private schema: TSchema;
 	public readonly settings$: BehaviorSubject<z.infer<TSchema>>;
+	public readonly hasCustomizations$: Observable<boolean>;
+
+	// Defaults are derived from the schema, which is fixed for the lifetime of
+	// the store — cache them so `hasCustomizations` isn't paying to re-parse on
+	// every call.
+	private cachedDefaults: z.infer<TSchema> | null = null;
 
 	constructor(plugin: Plugin, schema: TSchema) {
 		this.plugin = plugin;
 		this.schema = schema;
-		this.settings$ = new BehaviorSubject<z.infer<TSchema>>(schema.parse({}));
+		this.settings$ = new BehaviorSubject<z.infer<TSchema>>(this.getDefaults());
+		this.hasCustomizations$ = this.settings$.pipe(
+			map((settings) => !deepEqualJsonLike(settings, this.getDefaults())),
+			distinctUntilChanged()
+		);
 	}
 
 	get currentSettings(): z.infer<TSchema> {
@@ -38,13 +51,12 @@ export class SettingsStore<TSchema extends z.ZodTypeAny> {
 			const sanitized = this.schema.parse(data ?? {});
 			this.settings$.next(sanitized);
 
-			// Save back if data was sanitized/normalized
-			if (JSON.stringify(sanitized) !== JSON.stringify(data ?? {})) {
+			if (!deepEqualJsonLike(sanitized, data ?? {})) {
 				await this.saveSettings();
 			}
 		} catch (error) {
 			console.error("Failed to load settings, using defaults:", error);
-			this.settings$.next(this.schema.parse({}));
+			this.settings$.next(this.getDefaults());
 			await this.saveSettings();
 		}
 	}
@@ -67,7 +79,7 @@ export class SettingsStore<TSchema extends z.ZodTypeAny> {
 	}
 
 	async resetSettings(): Promise<void> {
-		this.settings$.next(this.schema.parse({}));
+		this.settings$.next(this.getDefaults());
 		await this.saveSettings();
 	}
 
@@ -80,22 +92,32 @@ export class SettingsStore<TSchema extends z.ZodTypeAny> {
 		});
 	}
 
+	// No defensive clone of `updates` — `updateSettings` feeds the result
+	// through `schema.parse()`, which rebuilds the object tree for strict /
+	// default / `.catchall()` schemas, so stored state shares no references
+	// with the caller's input. This assumption breaks if a schema uses
+	// `.passthrough()`: Zod keeps unknown keys as-is, and a caller that
+	// retains `updates` could then mutate stored state through them. No
+	// schema in this monorepo uses `.passthrough()` — revisit this if one
+	// does.
 	async updateProperties(updates: Partial<z.infer<TSchema>>): Promise<void> {
 		await this.updateSettings((settings) => {
 			return {
-				...(structuredClone(settings) as Record<string, unknown>),
-				...(structuredClone(updates) as Record<string, unknown>),
+				...(settings as object),
+				...(updates as object),
 			} as z.infer<TSchema>;
 		});
 	}
 
 	getDefaults(): z.infer<TSchema> {
-		return this.schema.parse({});
+		if (this.cachedDefaults === null) {
+			this.cachedDefaults = this.schema.parse({});
+		}
+		return this.cachedDefaults;
 	}
 
 	hasCustomizations(): boolean {
-		const defaults = this.getDefaults();
-		return JSON.stringify(this.currentSettings) !== JSON.stringify(defaults);
+		return !deepEqualJsonLike(this.currentSettings, this.getDefaults());
 	}
 
 	watch<R>(

@@ -3,6 +3,7 @@ import type { Observable } from "rxjs";
 import { Subject } from "rxjs";
 import type { z } from "zod";
 
+import { deepEqualJsonLike } from "../../utils/deep-equal";
 import { ReactiveGroupBy, ReactiveMultiGroupBy } from "../vault-table/reactive-group-by";
 import { ReadableTableMixin } from "../vault-table/readable-table";
 import type { DataRow, VaultTableEvent } from "../vault-table/types";
@@ -137,8 +138,11 @@ export class CodeBlockRepository<T> extends ReadableTableMixin<T, DataRow<T>> {
 			}
 		});
 
+		let detached = false;
 		return {
 			unsubscribe: () => {
+				if (detached) return;
+				detached = true;
 				app.vault.offref(vaultRef);
 			},
 		};
@@ -214,6 +218,96 @@ export class CodeBlockRepository<T> extends ReadableTableMixin<T, DataRow<T>> {
 		this.eventsSubject.next({ type: "row-deleted", id, filePath: "", oldRow: existingRow });
 	}
 
+	/**
+	 * Batch-creates items with a single persist() at the end. Emits one
+	 * `row-created` event per item. Rolls back the in-memory state if any id
+	 * collides before any disk write.
+	 */
+	async createMany(items: T[]): Promise<T[]> {
+		if (items.length === 0) return [];
+
+		const newRows: DataRow<T>[] = [];
+		for (const item of items) {
+			const key = this.extractId(item);
+			if (this.rowMap.has(key) || newRows.some((r) => r.id === key)) {
+				throw new Error(`Item with ID "${key}" already exists`);
+			}
+			newRows.push({ id: key, data: item });
+		}
+
+		for (const row of newRows) this.rowMap.set(row.id, row);
+		this.sortedDirty = true;
+		await this.persist();
+
+		for (const row of newRows) {
+			this.eventsSubject.next({ type: "row-created", id: row.id, filePath: "", row });
+		}
+		return newRows.map((r) => r.data);
+	}
+
+	/**
+	 * Batch-updates multiple items with a single persist() at the end. Each
+	 * entry is an [id, partial] tuple. Emits one `row-updated` per id.
+	 */
+	async updateMany(updates: ReadonlyArray<readonly [string, Partial<T>]>): Promise<T[]> {
+		if (updates.length === 0) return [];
+
+		const rowUpdates: { id: string; existingRow: DataRow<T>; newRow: DataRow<T> }[] = [];
+		for (const [id, partial] of updates) {
+			const existingRow = this.rowMap.get(id);
+			if (!existingRow) {
+				throw new Error(`Item with ID "${id}" not found`);
+			}
+			const updated = { ...existingRow.data, ...partial };
+			const newKey = this.extractId(updated);
+			rowUpdates.push({ id, existingRow, newRow: { id: newKey, data: updated } });
+		}
+
+		for (const { id, newRow } of rowUpdates) {
+			if (newRow.id !== id) {
+				this.rowMap.delete(id);
+			}
+			this.rowMap.set(newRow.id, newRow);
+		}
+		this.sortedDirty = true;
+		await this.persist();
+
+		for (const { existingRow, newRow } of rowUpdates) {
+			this.eventsSubject.next({
+				type: "row-updated",
+				id: newRow.id,
+				filePath: "",
+				oldRow: existingRow,
+				newRow,
+				contentChanged: false,
+			});
+		}
+		return rowUpdates.map((u) => u.newRow.data);
+	}
+
+	/**
+	 * Batch-deletes items with a single persist() at the end. Missing ids are
+	 * silently skipped. Emits one `row-deleted` per successfully-removed id.
+	 */
+	async deleteMany(ids: readonly string[]): Promise<void> {
+		if (ids.length === 0) return;
+
+		const removed: { id: string; oldRow: DataRow<T> }[] = [];
+		for (const id of ids) {
+			const existingRow = this.rowMap.get(id);
+			if (!existingRow) continue;
+			this.rowMap.delete(id);
+			removed.push({ id, oldRow: existingRow });
+		}
+		if (removed.length === 0) return;
+
+		this.sortedDirty = true;
+		await this.persist();
+		for (const { id, oldRow } of removed) {
+			this.eventsSubject.next({ type: "row-deleted", id, filePath: "", oldRow });
+		}
+	}
+
 	// =========================================================================
 	// File I/O pass-through (kept for external callers like host plugin file-open hooks)
 	// =========================================================================
@@ -266,7 +360,7 @@ export class CodeBlockRepository<T> extends ReadableTableMixin<T, DataRow<T>> {
 	}
 
 	private itemsEqual(a: T, b: T): boolean {
-		return JSON.stringify(a) === JSON.stringify(b);
+		return deepEqualJsonLike(a, b);
 	}
 
 	private extractId(item: T): string {

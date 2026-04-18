@@ -10,7 +10,7 @@ import type {
 	NumberFieldDescriptor,
 	SchemaFieldDescriptor,
 } from "../../components/schema-modal/types";
-import { getNestedValue } from "./schema-navigation";
+import { getNestedValue, setNestedValue } from "./schema-navigation";
 import type {
 	ArrayFieldOverride,
 	DropdownFieldOverride,
@@ -55,16 +55,9 @@ function renderFieldFromDescriptor(
 	if (override?.render && settingsStore) {
 		const value = getNestedValue(settingsStore.currentSettings, prefixedKey);
 		override.render(containerEl, value, (v) => {
-			void settingsStore.updateSettings((current) => {
-				const clone = JSON.parse(JSON.stringify(current)) as Record<string, unknown>;
-				const keys = prefixedKey.split(".");
-				let target: Record<string, unknown> = clone;
-				for (let i = 0; i < keys.length - 1; i++) {
-					target = target[keys[i]] as Record<string, unknown>;
-				}
-				target[keys[keys.length - 1]] = v;
-				return clone;
-			});
+			void settingsStore.updateSettings(
+				(current) => setNestedValue(current as unknown as Record<string, unknown>, prefixedKey, v) as typeof current
+			);
 		});
 		return;
 	}
