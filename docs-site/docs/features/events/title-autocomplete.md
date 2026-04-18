@@ -46,3 +46,7 @@ Configure in **Settings → General → Parsing → Title autocomplete** (enable
 - Up to 10 suggestions are shown at a time
 - Matching is case-insensitive substring (typing "meet" matches "Team Meeting")
 - Only the title field is filled — selecting a preset name fills the title, not all preset fields (use the preset dropdown in the modal header for that)
+
+## Filename-illegal characters
+
+The title becomes part of the event's filename, so characters that aren't valid in filenames are rejected at save time. If your title contains `/`, `\`, `:`, `*`, `?`, `"`, `<`, `>`, or `|`, the save is blocked and a notice tells you which character(s) to remove. The modal stays open so you don't lose other fields while fixing the title.
