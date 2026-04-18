@@ -23,7 +23,6 @@ test.describe("title autocomplete", () => {
 			end: todayStamp(10, 0),
 			categories: ["Deep Work"],
 		});
-		await calendar.waitForNoticesClear();
 
 		await createEventViaToolbar(calendar.page);
 

@@ -15,7 +15,6 @@ test.describe("event preview modal", () => {
 			start: todayStamp(9, 0),
 			end: todayStamp(10, 0),
 		});
-		await calendar.waitForNoticesClear();
 
 		await evt.rightClick("enlarge");
 

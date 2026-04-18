@@ -38,7 +38,6 @@ async function setupTwoConnectedEvents(calendar: CalendarHandle): Promise<void> 
 	]);
 
 	await assignPrerequisiteViaUI(calendar.page, "Downstream Task", "Upstream Task");
-	await calendar.waitForNoticesClear();
 
 	await calendar.unlockPro();
 	await calendar.switchView("gantt");

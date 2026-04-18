@@ -29,7 +29,6 @@ test.describe("analytics: prerequisite connections on calendar view", () => {
 		]);
 
 		await assignPrerequisiteViaUI(calendar.page, "Downstream Task", "Upstream Task");
-		await calendar.waitForNoticesClear();
 
 		await calendar.unlockPro();
 		await calendar.clickToolbar("toggle-prerequisites");
@@ -48,7 +47,6 @@ test.describe("analytics: prerequisite connections on calendar view", () => {
 		]);
 
 		await assignPrerequisiteViaUI(calendar.page, "Downstream Task", "Upstream Task");
-		await calendar.waitForNoticesClear();
 
 		// Back to week view anchored on the upstream — with 10 days between the
 		// two events, at most one is visible at a time, so the renderer must

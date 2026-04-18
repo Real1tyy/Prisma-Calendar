@@ -177,6 +177,17 @@ export async function bootstrapObsidian(
 				({ verbose }) => {
 					const w = window as unknown as { E2E?: boolean };
 					w.E2E = true;
+					// Obsidian success/error toasts (`.notice`) stack in a top-right
+					// container and intercept clicks on the calendar toolbar for
+					// several seconds after each create/edit/delete. Under E2E they
+					// carry no signal — we assert against disk state, not toast
+					// text — so neutralise pointer events on the whole container.
+					// Notices still render for anyone watching a headed run, they
+					// just never block a click, which lets every spec skip the
+					// "wait for notices to drain" step.
+					const style = document.createElement("style");
+					style.textContent = ".notice-container, .notice-container .notice { pointer-events: none !important; }";
+					document.head.appendChild(style);
 					if (verbose) return;
 					// Silence Prisma's raw `console.log/info/debug` under the default
 					// E2E run; they drown out Playwright's summary. `warn`/`error`

@@ -20,7 +20,6 @@ test.describe("categories assignment", () => {
 			end: todayStamp(10, 0),
 			categories: ["Work"],
 		});
-		await calendar.waitForNoticesClear();
 		await evt.expectVisible();
 
 		// The category property name is configurable but defaults to "Category".

@@ -110,7 +110,8 @@ export type ViewTabKey =
 	| "dashboard-recurring"
 	| "daily-stats"
 	| "dual-daily"
-	| "heatmap-monthly-stats";
+	| "heatmap-monthly-stats"
+	| "monthly-calendar-stats";
 
 export type BatchBtnKey =
 	| "select-all"

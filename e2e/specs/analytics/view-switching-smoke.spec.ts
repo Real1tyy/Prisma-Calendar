@@ -13,8 +13,8 @@ const LEAF_TABS: ReadonlyArray<ViewTabKey> = [
 	"calendar",
 	"timeline",
 	"daily-stats",
+	"monthly-calendar-stats",
 	"dual-daily",
-	"heatmap-monthly-stats",
 	"heatmap",
 	"gantt",
 ];

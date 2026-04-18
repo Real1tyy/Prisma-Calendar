@@ -27,7 +27,6 @@ test.describe("shared: context menu item manager", () => {
 			start: isoLocal(0, 9, 0),
 			end: isoLocal(0, 10, 0),
 		});
-		await calendar.waitForNoticesClear();
 
 		// Right-click the event to surface the shared context menu, then click
 		// "Manage menu items..." — both are testid-stamped by shared.

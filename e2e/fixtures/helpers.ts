@@ -373,16 +373,10 @@ export async function createEventViaUI(page: Page, input: CreateEventInput): Pro
 	await saveEventModal(page);
 }
 
-/**
- * Seed a batch of events through the UI and drain the resulting stack of
- * "Event created successfully" notices so they don't intercept subsequent
- * toolbar clicks.
- */
 export async function seedEvents(page: Page, events: CreateEventInput[]): Promise<void> {
 	for (const input of events) {
 		await createEventViaUI(page, input);
 	}
-	await waitForNoticesClear(page);
 }
 
 /**
@@ -527,22 +521,6 @@ export async function pickSeriesBasesView(
 	const btn = page.locator(`[data-testid="prisma-event-series-bases-${viewType}"]`).first();
 	await btn.waitFor({ state: "visible", timeout: 5_000 });
 	await btn.click();
-}
-
-/**
- * Wait for all Obsidian `.notice` overlays to clear so they don't intercept
- * subsequent clicks. Useful after a batch of `createEventViaUI` calls that
- * each emit a success notice — notices can stack and block clicks on the
- * calendar toolbar for multiple seconds.
- */
-export async function waitForNoticesClear(page: Page, timeoutMs = 10_000): Promise<void> {
-	await page
-		.locator(".notice-container .notice")
-		.first()
-		.waitFor({ state: "detached", timeout: timeoutMs })
-		.catch(() => {
-			/* nothing to wait for */
-		});
 }
 
 /** Click the calendar toolbar's Untracked-events "⋮" button to open the dropdown. */

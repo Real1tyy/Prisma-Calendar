@@ -31,7 +31,6 @@ test.describe("color rules", () => {
 			end: todayStamp(10, 0),
 			categories: ["Urgent"],
 		});
-		await calendar.waitForNoticesClear();
 
 		const tile = calendar.page.locator(`${sel(TID.block)}[data-event-title="Urgent Ticket"]`).first();
 		await expect(tile).toBeVisible();
