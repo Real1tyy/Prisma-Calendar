@@ -1,5 +1,5 @@
 import type { App, TFile } from "obsidian";
-import { BehaviorSubject, filter, firstValueFrom, type Observable, Subject, type Subscription } from "rxjs";
+import { BehaviorSubject, filter, firstValueFrom, type Observable, Subject, type Subscription, take } from "rxjs";
 
 import { CommandManager } from "../commands/command-manager";
 import type { Repository } from "../data-access/repository";
@@ -10,6 +10,8 @@ import { correctFrontmatter, deleteInvalidFile } from "../frontmatter/frontmatte
 import { createFileContentWithFrontmatter } from "../frontmatter/frontmatter-serialization";
 import { Indexer, type IndexerConfig, type IndexerEvent } from "../indexer";
 import type { SerializableSchema } from "./create-mapped-schema";
+import type { IdbFactory, PersistenceConfig, PersistentEntry } from "./persistence";
+import { PersistentTableCache } from "./persistence";
 import { ReadableTableMixin } from "./readable-table";
 import {
 	HISTORY_MAX_SIZE,
@@ -73,6 +75,11 @@ export class VaultTable<
 	private readonly rowByFileName = new Map<string, VaultRow<TData>>();
 	private rows: VaultRow<TData>[] = [];
 	private rowsDirty = false;
+
+	private readonly persistenceConfig: PersistenceConfig | undefined;
+	private readonly persistenceIdbFactory: IdbFactory | undefined;
+	private persistentCache: PersistentTableCache<TData> | null = null;
+	private hydratedByPath: Map<string, PersistentEntry<TData>> | null = null;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	private readonly childCacheByPath = new Map<string, Map<string, VaultTable<any, any, any>>>();
 
@@ -128,6 +135,9 @@ export class VaultTable<
 		});
 
 		this.indexer = new Indexer(this.app, this.indexerConfigStore);
+
+		this.persistenceConfig = config.persistence;
+		this.persistenceIdbFactory = config.persistenceIdbFactory;
 	}
 
 	// =========================================================================
@@ -166,14 +176,27 @@ export class VaultTable<
 	async start(): Promise<void> {
 		await ensureDirectory(this.app, this.directory);
 
+		if (this.persistenceConfig) {
+			this.persistentCache = await PersistentTableCache.create<TData>({
+				config: this.persistenceConfig,
+				directoryPrefix: this.directory,
+				...(this.persistenceIdbFactory ? { idbFactory: this.persistenceIdbFactory } : {}),
+			});
+			if (this.persistentCache) {
+				this.hydratedByPath = await this.persistentCache.hydrate();
+			}
+		}
+
 		this.indexerSub = this.indexer.events$.subscribe((event) => {
 			this.handleIndexerEvent(event);
 		});
 
-		this.readySub = this.indexer.indexingComplete$.subscribe((complete) => {
-			if (complete) {
-				this.readySubject.next(true);
-			}
+		// Fire once when the initial scan completes: free the hydration snapshot
+		// (never needed after scan — every later event either misses by mtime or
+		// is a brand-new file) and signal ready.
+		this.readySub = this.indexer.indexingComplete$.pipe(filter(Boolean), take(1)).subscribe(() => {
+			this.hydratedByPath = null;
+			this.readySubject.next(true);
 		});
 
 		await this.indexer.start();
@@ -192,8 +215,26 @@ export class VaultTable<
 		this.indexer.stop();
 	}
 
+	/**
+	 * Await any pending persistent-cache writes and close the underlying
+	 * IndexedDB connection. Prefer this over {@link destroy} when callers
+	 * depend on cached data surviving a reload that happens immediately
+	 * after the final write (e.g. plugin unload).
+	 */
+	async destroyAsync(): Promise<void> {
+		await this.persistentCache?.flush();
+		this.destroy();
+	}
+
 	destroy(): void {
 		this.stop();
+		this.persistentCache?.close();
+		this.persistentCache = null;
+		this.finalizeDestroy();
+	}
+
+	private finalizeDestroy(): void {
+		this.hydratedByPath = null;
 		this.commandManager?.clearHistory();
 		for (const cache of this.childCacheByPath.values()) {
 			for (const table of cache.values()) {
@@ -581,13 +622,10 @@ export class VaultTable<
 
 		const filePath = event.filePath;
 		const id = extractFileName(filePath);
-		const raw = event.source.frontmatter;
-		const result = this.schema.safeParse(raw);
+		const mtime = event.source.mtime;
 
-		if (!result.success) {
-			this.handleInvalidFrontmatter(filePath, raw);
-			return;
-		}
+		const parsed = this.resolveParsedData(filePath, mtime, event.source.frontmatter);
+		if (parsed === null) return;
 
 		const existingRow = this.rowByFileName.get(id);
 
@@ -599,20 +637,23 @@ export class VaultTable<
 		// - Creates: row was eagerly inserted → indexer would see it as update, not create
 		// - Deletes: row was eagerly removed → indexer finds nothing to emit
 		// - The mtime dedup here prevents double-emission from the indexer path.
-		if (existingRow && existingRow.mtime === event.source.mtime) {
+		if (existingRow && existingRow.mtime === mtime) {
 			return;
 		}
 
-		void this.buildAndUpsertRow(id, filePath, result.data as TData, event);
+		void this.buildAndUpsertRow(id, filePath, parsed, event);
 	}
 
 	private async buildAndUpsertRow(id: string, filePath: string, data: TData, event: IndexerEvent): Promise<void> {
 		const file = event.source!.file;
 		const fullContent = await this.app.vault.cachedRead(file);
 		const content = extractContentAfterFrontmatter(fullContent);
+		const mtime = event.source?.mtime ?? Date.now();
 
 		const oldRow = this.rowByFileName.get(id);
-		const newRow = this.buildRow(id, file, filePath, data, content, event.source?.mtime ?? Date.now());
+		const newRow = this.buildRow(id, file, filePath, data, content, mtime);
+
+		this.persistentCache?.put(filePath, data, mtime);
 
 		if (oldRow) {
 			this.removeRow(oldRow.id);
@@ -636,6 +677,8 @@ export class VaultTable<
 	}
 
 	private handleFileDeleted(filePath: string): void {
+		this.persistentCache?.delete(filePath);
+
 		const existing = this.rowByFileName.get(extractFileName(filePath));
 		if (!existing) return;
 
@@ -643,9 +686,27 @@ export class VaultTable<
 		this.eventsSubject.next({ type: "row-deleted", id: existing.id, filePath, oldRow: existing });
 	}
 
+	/**
+	 * Fast path: reuse hydrated (already-parsed) data when mtime matches, else
+	 * run the Zod parse. Returns `null` when the frontmatter is invalid — the
+	 * invalid-frontmatter handling has already been dispatched in that case.
+	 */
+	private resolveParsedData(filePath: string, mtime: number, raw: Record<string, unknown>): TData | null {
+		const hydrated = this.hydratedByPath?.get(filePath);
+		if (hydrated && hydrated.mtime === mtime) return hydrated.data;
+
+		const result = this.schema.safeParse(raw);
+		if (!result.success) {
+			this.handleInvalidFrontmatter(filePath, raw);
+			return null;
+		}
+		return result.data as TData;
+	}
+
 	private handleInvalidFrontmatter(filePath: string, raw: Record<string, unknown>): void {
 		switch (this.invalidStrategy) {
 			case "skip": {
+				this.persistentCache?.delete(filePath);
 				const existing = this.rowByFileName.get(extractFileName(filePath));
 				if (existing) {
 					this.removeRow(existing.id);

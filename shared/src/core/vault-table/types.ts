@@ -3,6 +3,7 @@ import type { App, TFile } from "obsidian";
 import type { CommandManager } from "../commands/command-manager";
 import type { FrontmatterDiff } from "../frontmatter/frontmatter-diff";
 import type { SerializableSchema } from "./create-mapped-schema";
+import type { IdbFactory, PersistenceConfig } from "./persistence";
 
 export type InvalidStrategy = "skip" | "correct" | "delete";
 
@@ -77,6 +78,18 @@ export type VaultTableConfig<
 	 * Enable this when consumers subscribe to events$ for reactivity.
 	 */
 	emitCrudEvents?: boolean;
+	/**
+	 * When provided, the table hydrates parsed rows from IndexedDB on start
+	 * and writes them through on every indexer event. On cold start the Zod
+	 * parse is skipped for files whose mtime matches the cached entry.
+	 * One IDB database per `namespace`, isolated across plugins.
+	 */
+	persistence?: PersistenceConfig;
+	/**
+	 * Test-only IDB factory override. Leave unset in production — it defaults
+	 * to the browser's `indexedDB`.
+	 */
+	persistenceIdbFactory?: IdbFactory;
 };
 
 /**

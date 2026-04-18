@@ -150,6 +150,9 @@ importers:
       esbuild:
         specifier: 0.25.11
         version: 0.25.11
+      fake-indexeddb:
+        specifier: ^6.0.0
+        version: 6.2.5
       fast-check:
         specifier: ^4.3.0
         version: 4.6.0
@@ -247,6 +250,9 @@ importers:
       chart.js:
         specifier: ^4.5.1
         version: 4.5.1
+      fake-indexeddb:
+        specifier: ^6.0.0
+        version: 6.2.5
       fast-check:
         specifier: ^4.3.0
         version: 4.6.0
@@ -1605,6 +1611,10 @@ packages:
     resolution: {integrity: sha512-GDhU9ntwuKyGXdZBUgTIe+vXnWj0fppUEtMDL0+idd5Sta8TGpHssn/eusA9mrPr9qNDym6SxAYZjNvCn/9RBg==}
     engines: {node: '>= 10.17.0'}
     hasBin: true
+
+  fake-indexeddb@6.2.5:
+    resolution: {integrity: sha512-CGnyrvbhPlWYMngksqrSSUT1BAVP49dZocrHuK0SvtR0D5TMs5wP0o3j7jexDJW01KSadjBp1M/71o/KR3nD1w==}
+    engines: {node: '>=18'}
 
   fast-check@4.6.0:
     resolution: {integrity: sha512-h7H6Dm0Fy+H4ciQYFxFjXnXkzR2kr9Fb22c0UBpHnm59K2zpr2t13aPTHlltFiNT6zuxp6HMPAVVvgur4BLdpA==}
@@ -4053,6 +4063,8 @@ snapshots:
       '@types/yauzl': 2.10.3
     transitivePeerDependencies:
       - supports-color
+
+  fake-indexeddb@6.2.5: {}
 
   fast-check@4.6.0:
     dependencies:

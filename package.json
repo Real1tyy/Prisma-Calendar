@@ -66,6 +66,7 @@
 		"@vitest/coverage-v8": "^2.1.9",
 		"builtin-modules": "5.0.0",
 		"esbuild": "0.25.11",
+		"fake-indexeddb": "^6.0.0",
 		"fast-check": "^4.3.0",
 		"jsdom": "^27.4.0",
 		"knip": "^5.81.0",

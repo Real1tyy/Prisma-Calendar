@@ -1,6 +1,7 @@
 export * from "./create-mapped-schema";
 export * from "./live-query";
 export * from "./note-decorator";
+export * from "./persistence";
 export * from "./reactive-group-by";
 export * from "./readable-table";
 export * from "./table-view";
