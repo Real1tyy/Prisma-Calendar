@@ -1,15 +1,24 @@
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { TextareaInput } from "../../src/components/setting-controls";
 import { renderReact } from "../helpers/render-react";
 
-function ControlledHarness({ initial = "", onCommit }: { initial?: string; onCommit?: (v: string) => void }) {
+function ControlledHarness({
+	initial = "",
+	onCommit,
+	debounceMs,
+}: {
+	initial?: string;
+	onCommit?: (v: string) => void;
+	debounceMs?: number;
+}) {
 	const [value, setValue] = useState(initial);
 	return (
 		<TextareaInput
 			value={value}
+			debounceMs={debounceMs ?? 300}
 			onChange={(v) => {
 				setValue(v);
 				onCommit?.(v);
@@ -37,17 +46,33 @@ describe("TextareaInput", () => {
 		expect(screen.getByRole("textbox")).toHaveAttribute("placeholder", "write something");
 	});
 
-	it("fires onChange on every keystroke", async () => {
+	it("emits a single onChange with the final value after the debounce window", async () => {
 		const onCommit = vi.fn();
-		const { user } = renderReact(<ControlledHarness onCommit={onCommit} />);
+		const { user } = renderReact(<ControlledHarness onCommit={onCommit} debounceMs={20} />);
 
 		await user.type(screen.getByRole("textbox"), "abc");
 
-		expect(onCommit).toHaveBeenCalledTimes(3);
-		expect(onCommit).toHaveBeenLastCalledWith("abc");
+		await waitFor(() => {
+			expect(onCommit).toHaveBeenCalledTimes(1);
+		});
+		expect(onCommit).toHaveBeenCalledWith("abc");
 	});
 
-	it("reflects external `value` updates from the parent (no stale state)", () => {
+	it("commits immediately on Ctrl+Enter, not plain Enter", async () => {
+		const onCommit = vi.fn();
+		const { user } = renderReact(<ControlledHarness onCommit={onCommit} debounceMs={5_000} />);
+		const textarea = screen.getByRole("textbox");
+
+		await user.type(textarea, "abc");
+		await user.keyboard("{Enter}");
+		// Plain Enter inserts a newline — no commit.
+		expect(onCommit).not.toHaveBeenCalled();
+
+		await user.keyboard("{Control>}{Enter}{/Control}");
+		expect(onCommit).toHaveBeenCalledTimes(1);
+	});
+
+	it("reflects external `value` updates from the parent when no edit is pending", () => {
 		const { rerender } = renderReact(<TextareaInput value="first" onChange={vi.fn()} />);
 		expect(screen.getByRole("textbox")).toHaveValue("first");
 

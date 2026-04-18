@@ -28,6 +28,8 @@ export { SettingHeading, SettingItem } from "./components/setting-item";
 export { AppContext, useApp } from "./contexts/app-context";
 export type { ActivatableProps } from "./hooks/use-activatable";
 export { useActivatable } from "./hooks/use-activatable";
+export type { DebouncedCommitHandle, UseDebouncedCommitOptions } from "./hooks/use-debounced-commit";
+export { DEBOUNCED_COMMIT_DEFAULT_MS, useDebouncedCommit } from "./hooks/use-debounced-commit";
 export { useDomEvent } from "./hooks/use-dom-event";
 export { useEnterKey, type UseEnterKeyOptions } from "./hooks/use-enter-key";
 export { useEscapeKey } from "./hooks/use-escape-key";
