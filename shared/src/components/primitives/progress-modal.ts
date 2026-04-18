@@ -159,15 +159,20 @@ export function showProgressModal(config: ProgressModalConfig): ProgressModalHan
 		render: (el, ctx) => {
 			closeModal = ctx.close;
 
+			el.setAttribute("data-testid", `${cssPrefix}progress-modal`);
+
 			el.createEl("h2", { text: title });
 
 			statusText = el.createDiv(css.cls(STATUS_SUFFIX));
+			statusText.setAttribute("data-testid", `${cssPrefix}progress-status`);
 			statusText.setText(formatStatus(0));
 
 			const progressContainer = el.createDiv(css.cls(CONTAINER_SUFFIX));
 			progressBar = progressContainer.createDiv(css.cls(BAR_SUFFIX));
+			progressBar.setAttribute("data-testid", `${cssPrefix}progress-bar`);
 
 			detailsText = el.createDiv(css.cls(DETAILS_SUFFIX));
+			detailsText.setAttribute("data-testid", `${cssPrefix}progress-details`);
 			detailsText.setText(initialDetails);
 
 			if (!dismissibleDuringProgress && ctx.type === "modal") {

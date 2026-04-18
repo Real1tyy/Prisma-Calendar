@@ -16,6 +16,8 @@ export interface CollapsibleSectionConfig {
 	stateMap?: Map<string, boolean>;
 	/** Optional extra elements to render in the header (e.g. action buttons). Rendered after the label, pushed right via flex. */
 	renderHeaderActions?: (header: HTMLElement) => void;
+	/** Optional slug used to stamp data-testid attributes (e.g. `time-tracker` → `${cssPrefix}collapsible-{header,body,toggle}-time-tracker`). Stamped only when provided. */
+	testIdSlug?: string;
 }
 
 export interface CollapsibleSectionHandle {
@@ -97,7 +99,7 @@ export function renderCollapsibleSection(
 	container: HTMLElement,
 	config: CollapsibleSectionConfig
 ): CollapsibleSectionHandle {
-	const { cssPrefix, label, renderBody, startCollapsed = false, stateMap, renderHeaderActions } = config;
+	const { cssPrefix, label, renderBody, startCollapsed = false, stateMap, renderHeaderActions, testIdSlug } = config;
 
 	const css = createCssUtils(cssPrefix);
 	injectStyleSheet(`${cssPrefix}collapsible-styles`, buildCollapsibleStyles(cssPrefix));
@@ -109,11 +111,20 @@ export function renderCollapsibleSection(
 	const toggleIcon = header.createSpan({ cls: css.cls(TOGGLE_SUFFIX), text: collapsed ? "▶" : "▼" });
 	header.createSpan({ cls: css.cls(LABEL_SUFFIX), text: label });
 
+	if (testIdSlug) {
+		section.setAttribute("data-testid", `${cssPrefix}collapsible-${testIdSlug}`);
+		header.setAttribute("data-testid", `${cssPrefix}collapsible-header-${testIdSlug}`);
+		toggleIcon.setAttribute("data-testid", `${cssPrefix}collapsible-toggle-${testIdSlug}`);
+	}
+
 	if (renderHeaderActions) {
 		renderHeaderActions(header);
 	}
 
 	const body = section.createDiv({ cls: css.cls(BODY_SUFFIX) });
+	if (testIdSlug) {
+		body.setAttribute("data-testid", `${cssPrefix}collapsible-body-${testIdSlug}`);
+	}
 	if (collapsed) css.addCls(body, HIDDEN_SUFFIX);
 	renderBody(body);
 

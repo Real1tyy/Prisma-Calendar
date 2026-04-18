@@ -50,6 +50,7 @@ export class Stopwatch {
 			cssPrefix: CSS_PREFIX,
 			label: "Time tracker",
 			startCollapsed: true,
+			testIdSlug: "time-tracker",
 			renderBody: (body) => this.renderBody(body),
 		});
 

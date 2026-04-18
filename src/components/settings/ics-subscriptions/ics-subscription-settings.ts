@@ -135,6 +135,7 @@ export class ICSSubscriptionSettings {
 		const deleteButton = controlsEl.createEl("button", {
 			text: "Delete",
 			cls: `${cls("caldav-account-btn")} ${cls("caldav-account-btn-delete")}`,
+			attr: { "data-testid": `prisma-settings-ics-sub-delete-${subscription.id}` },
 		});
 		deleteButton.addEventListener("click", () => {
 			this.handleDeleteSubscription(subscription, container);
