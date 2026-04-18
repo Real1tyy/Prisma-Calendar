@@ -70,6 +70,11 @@ const DEFAULT_PAGE_HEADER_STATE = {
 export interface BootstrapOverrides {
 	calendars?: Array<Record<string, unknown>>;
 	keepDirs?: string[];
+	/**
+	 * Top-level data.json keys merged over the default seed (e.g. `caldav`,
+	 * `icsSubscriptions`). Per-calendar fields still go under `calendars`.
+	 */
+	settings?: Record<string, unknown>;
 }
 
 const CACHE_ROOT = join(E2E_ROOT, ".cache");
@@ -146,6 +151,7 @@ export async function bootstrapObsidian(
 
 	const calendars = options.overrides?.calendars ?? [DEFAULT_CALENDAR];
 	const keepDirs = options.overrides?.keepDirs ?? ["Events"];
+	const extraSettings = options.overrides?.settings ?? {};
 
 	return sharedBootstrap({
 		version,
@@ -224,6 +230,7 @@ export async function bootstrapObsidian(
 						version: manifestVersion,
 						calendars,
 						pageHeaderState: DEFAULT_PAGE_HEADER_STATE,
+						...extraSettings,
 					},
 					null,
 					2
@@ -409,6 +416,39 @@ const NOTIFICATIONS_ON_OVERRIDES: BootstrapOverrides = {
 	calendars: [{ ...DEFAULT_CALENDAR, enableNotifications: true }],
 };
 
+export const SEEDED_ICS_SUBSCRIPTION_ID = "seeded-sub";
+export const SEEDED_ICS_SUBSCRIPTION_NAME = "Team Holidays";
+
+const SEEDED_ICS_SUBSCRIPTION_OVERRIDES: BootstrapOverrides = {
+	settings: {
+		// `icsSubscriptions` lives at the data.json top level (alongside
+		// `calendars`), not per-calendar — settings-store reads it via
+		// mainSettingsStore.currentSettings.icsSubscriptions. See
+		// CustomCalendarSettingsSchema in src/types/settings.ts.
+		icsSubscriptions: {
+			subscriptions: [
+				{
+					id: SEEDED_ICS_SUBSCRIPTION_ID,
+					name: SEEDED_ICS_SUBSCRIPTION_NAME,
+					urlSecretName: "",
+					enabled: true,
+					calendarId: DEFAULT_CALENDAR.id,
+					syncIntervalMinutes: 1440,
+					timezone: "UTC",
+					createdAt: 1_700_000_000_000,
+				},
+			],
+			// Every sync flag off so bootstrap doesn't attempt network I/O
+			// for the seeded subscription. The delete path we exercise runs
+			// entirely in-process.
+			enableAutoSync: false,
+			syncOnStartup: false,
+			notifyOnSync: false,
+			integrationEventColor: "#8b5cf6",
+		},
+	},
+};
+
 /**
  * Variant of `test` that seeds `enableNotifications: true` in data.json
  * before the plugin loads. Use for specs that exercise notification-bound UI
@@ -429,6 +469,19 @@ export const testWithNotifications = base.extend<{
 	calendar: async ({ obsidian }, use) => {
 		await openCalendarReady(obsidian.page);
 		await use(createCalendarHandle({ obsidian }));
+	},
+});
+
+/**
+ * Variant of `test` that seeds a single ICS subscription on the default
+ * calendar so specs can exercise the subscription-list UI without going
+ * through the (network-bound) add-subscription modal. Sync flags are all off
+ * so bootstrap doesn't try to fetch the URL.
+ */
+export const testWithSeededICSSubscription = base.extend<{ obsidian: BootstrappedObsidian }>({
+	// eslint-disable-next-line no-empty-pattern
+	obsidian: async ({}, use) => {
+		await runWithObsidianHandle({ prefix: "ics-sub-spec", overrides: SEEDED_ICS_SUBSCRIPTION_OVERRIDES }, use);
 	},
 });
 
