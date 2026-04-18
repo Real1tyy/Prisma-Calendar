@@ -145,6 +145,7 @@ export function showCategoryRenameModal(
 			new Setting(el).setName("New name").addText((text) => {
 				text.setValue(newCategoryName);
 				text.setPlaceholder("Enter new category name");
+				text.inputEl.setAttribute("data-testid", "prisma-category-rename-input");
 				text.onChange((value) => {
 					newCategoryName = value.trim();
 					const actionBtn = el.querySelector<HTMLButtonElement>(".mod-cta:last-of-type");

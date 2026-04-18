@@ -474,6 +474,8 @@ export class CategoriesSettings {
 
 		categoriesInfo.forEach((categoryInfo) => {
 			const categoryItem = container.createDiv(cls("category-settings-item"));
+			categoryItem.setAttribute("data-testid", "prisma-category-settings-item");
+			categoryItem.setAttribute("data-category", categoryInfo.name);
 
 			const rgb = hexToRgb(categoryInfo.color);
 			if (rgb) {
@@ -511,6 +513,7 @@ export class CategoriesSettings {
 			});
 			setIcon(editButton, "pencil");
 			editButton.setAttribute("aria-label", "Rename category");
+			editButton.setAttribute("data-testid", "prisma-category-settings-rename-button");
 			editButton.addEventListener("click", () => {
 				void this.handleRenameCategory(categoryInfo.name);
 			});
@@ -520,6 +523,7 @@ export class CategoriesSettings {
 			});
 			setIcon(deleteButton, "trash");
 			deleteButton.setAttribute("aria-label", "Delete category");
+			deleteButton.setAttribute("data-testid", "prisma-category-settings-delete-button");
 			deleteButton.addEventListener("click", () => {
 				void this.handleDeleteCategory(categoryInfo.name);
 			});
