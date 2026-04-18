@@ -74,6 +74,44 @@ export function seedEvents(vaultDir: string, events: readonly SeedEventInput[]):
 	return events.map((e) => seedEvent(vaultDir, e));
 }
 
+/**
+ * Mutate a single frontmatter field on an already-indexed vault file through
+ * Obsidian's `processFrontMatter`. This is the ONLY write path that atomically
+ * updates bytes AND the metadata cache in one step.
+ *
+ * Do NOT replace this with `writeFileSync` + a refresh/nudge. That older
+ * pattern raced: if the vault watcher hadn't ingested the raw write yet, the
+ * plugin's own background writes (or a "nudge" `processFrontMatter` call)
+ * would read stale cached YAML and rewrite the file from the stale cache —
+ * silently clobbering the change. Use raw `writeFileSync` only for SEEDING
+ * (before the plugin indexes the file) where cache can't be stale.
+ */
+export async function setFrontmatterField(
+	page: Page,
+	relativePath: string,
+	field: string,
+	value: unknown
+): Promise<void> {
+	await page.evaluate(
+		async ({ path, key, val }) => {
+			const w = window as unknown as {
+				app: {
+					vault: { getAbstractFileByPath: (p: string) => unknown };
+					fileManager: {
+						processFrontMatter: (file: unknown, fn: (fm: Record<string, unknown>) => void) => Promise<void>;
+					};
+				};
+			};
+			const file = w.app.vault.getAbstractFileByPath(path);
+			if (!file) throw new Error(`setFrontmatterField: no file at ${path}`);
+			await w.app.fileManager.processFrontMatter(file, (fm) => {
+				fm[key] = val;
+			});
+		},
+		{ path: relativePath, key: field, val: value }
+	);
+}
+
 /** Force Prisma's indexer to pick up on-disk changes via the refresh command. */
 export async function refreshCalendar(page: Page): Promise<void> {
 	await page.evaluate(async () => {

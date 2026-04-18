@@ -1,10 +1,7 @@
-import { readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
-
 import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { expect, test } from "../../fixtures/electron";
-import { refreshCalendar, updateCalendarSettings } from "../../fixtures/seed-events";
+import { refreshCalendar, setFrontmatterField, updateCalendarSettings } from "../../fixtures/seed-events";
 import { createEventViaModal, formatLocalDate, openCalendarReady } from "./events-helpers";
 import { collectInstanceFiles } from "./robustness-helpers";
 
@@ -19,13 +16,6 @@ const PROPAGATION_TIMEOUT_MS = 20_000;
 // Wait past PROPAGATION_DEBOUNCE_MS (3s) to let any scheduled (but disabled)
 // propagation fire.
 const DEBOUNCE_DRAIN_MS = 6_000;
-
-function rewriteFrontmatterField(vaultDir: string, relativePath: string, field: string, newValue: string): void {
-	const absolute = join(vaultDir, relativePath);
-	const original = readFileSync(absolute, "utf8");
-	const rewritten = original.replace(new RegExp(`^${field}:.*$`, "m"), `${field}: ${newValue}`);
-	writeFileSync(absolute, rewritten, "utf8");
-}
 
 test.describe("recurring event propagation", () => {
 	test("with propagation OFF, source edits do not reach physical instances", async ({ obsidian }) => {
@@ -57,7 +47,7 @@ test.describe("recurring event propagation", () => {
 			expect(readEventFrontmatter(obsidian.vaultDir, relative)["Location"]).toBe("Room A");
 		}
 
-		rewriteFrontmatterField(obsidian.vaultDir, sourcePath, "Location", "Room B");
+		await setFrontmatterField(obsidian.page, sourcePath, "Location", "Room B");
 		await refreshCalendar(obsidian.page);
 
 		// The source file itself reflects the direct edit.
