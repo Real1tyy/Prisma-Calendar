@@ -1,14 +1,8 @@
 import { expectFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { expect, testWithNotifications as test } from "../../fixtures/electron";
-import {
-	createEventViaModal,
-	expectEventVisible,
-	monthsFromTodayTo,
-	navigateCalendar,
-	openCalendarReady,
-	openCreateModal,
-} from "./events-helpers";
+import { sel, TID } from "../../fixtures/testids";
+import { monthsFromTodayTo, navigateCalendar, openCreateModal } from "./events-helpers";
 import { fillEventModal } from "./fill-event-modal";
 
 // One big UI-driven happy-path test — a real user clicking Create, typing into
@@ -17,11 +11,9 @@ import { fillEventModal } from "./fill-event-modal";
 // confirms the saved block renders in the calendar grid. Uses the
 // notifications-on fixture so the "Notify minutes before" input renders.
 test.describe("create event — all fields", () => {
-	test("every field lands in frontmatter on save and renders in calendar", async ({ obsidian }) => {
-		await openCalendarReady(obsidian.page);
-
+	test("every field lands in frontmatter on save and renders in calendar", async ({ calendar }) => {
 		const date = "2026-05-10";
-		const relativePath = await createEventViaModal(obsidian, {
+		const evt = await calendar.createEvent({
 			title: "Team Meeting",
 			allDay: false,
 			start: `${date}T09:00`,
@@ -36,9 +28,9 @@ test.describe("create event — all fields", () => {
 			minutesBefore: 15,
 			customProperties: { Priority: "high" },
 		});
-		expect(relativePath).toMatch(/^Events\/Team Meeting.*\.md$/);
+		expect(evt.path).toMatch(/^Events\/Team Meeting.*\.md$/);
 
-		expectFrontmatter(obsidian.vaultDir, relativePath, {
+		expectFrontmatter(calendar.vaultDir, evt.path, {
 			"Start Date": `${date}T09:00:00.000Z`,
 			"End Date": `${date}T10:30:00.000Z`,
 			Category: ["Work", "Personal"],
@@ -50,25 +42,23 @@ test.describe("create event — all fields", () => {
 			Priority: "high",
 		});
 
-		await navigateCalendar(obsidian.page, monthsFromTodayTo(date));
-		await expectEventVisible(obsidian.page, "Team Meeting");
+		await navigateCalendar(calendar.page, monthsFromTodayTo(date));
+		await evt.expectVisible();
 	});
 
-	test("duration field recomputes when end changes", async ({ obsidian }) => {
-		await openCalendarReady(obsidian.page);
-		await openCreateModal(obsidian.page);
+	test("duration field recomputes when end changes", async ({ calendar }) => {
+		await openCreateModal(calendar.page);
 
-		await fillEventModal(obsidian.page, {
+		await fillEventModal(calendar.page, {
 			title: "Workout",
 			start: "2026-05-10T09:00",
 			end: "2026-05-10T10:00",
 		});
 
-		const duration60 = await obsidian.page.locator('[data-testid="prisma-event-control-duration"]').inputValue();
-		expect(duration60).toBe("60");
+		const duration = calendar.page.locator(sel(TID.event.control("duration")));
+		await expect(duration).toHaveValue("60");
 
-		await fillEventModal(obsidian.page, { end: "2026-05-10T10:45" });
-		const duration105 = await obsidian.page.locator('[data-testid="prisma-event-control-duration"]').inputValue();
-		expect(duration105).toBe("105");
+		await fillEventModal(calendar.page, { end: "2026-05-10T10:45" });
+		await expect(duration).toHaveValue("105");
 	});
 });

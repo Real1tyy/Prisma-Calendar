@@ -1,17 +1,12 @@
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { expectFrontmatter, readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
+import { expectFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
+import { createEventHandle } from "../../fixtures/dsl";
 import { expect, testWithNotifications as test } from "../../fixtures/electron";
-import {
-	chipsForField,
-	EVENT_MODAL_SELECTOR,
-	formatLocalDate,
-	openCalendarReady,
-	removeChip,
-	rightClickEventMenu,
-} from "./events-helpers";
+import { refreshCalendar } from "../../fixtures/seed-events";
+import { chipsForField, EVENT_MODAL_SELECTOR, formatLocalDate, removeChip } from "./events-helpers";
 import { fillEventModal, saveEventModal } from "./fill-event-modal";
 
 // Edit-side parity: seed a fully-populated event on disk so FullCalendar
@@ -19,7 +14,7 @@ import { fillEventModal, saveEventModal } from "./fill-event-modal";
 // the context menu → mutate every field → save → re-read frontmatter.
 // Drives the full "real user edits an existing event" flow.
 test.describe("edit event — all fields", () => {
-	test("right-click → Edit event reads fields, saves mutations", async ({ obsidian }) => {
+	test("right-click → Edit event reads fields, saves mutations", async ({ calendar }) => {
 		// Anchor today so FullCalendar's default month view contains the block.
 		const today = formatLocalDate(new Date());
 		// Pre-bake the ZettelID so ensureZettelIdOnSave is a no-op on save; the
@@ -45,33 +40,30 @@ Already Notified: true
 
 # Editable Event
 `;
-		writeFileSync(join(obsidian.vaultDir, seedPath), seed, "utf8");
+		writeFileSync(join(calendar.vaultDir, seedPath), seed, "utf8");
+		await refreshCalendar(calendar.page);
 
-		await openCalendarReady(obsidian.page);
+		const evt = createEventHandle(calendar, seedPath, "Editable Event");
+		await evt.expectVisible();
 
-		await obsidian.page
-			.locator(".fc-event", { hasText: "Editable Event" })
-			.first()
-			.waitFor({ state: "visible", timeout: 15_000 });
+		await evt.rightClick("editEvent");
+		await calendar.page.locator(EVENT_MODAL_SELECTOR).waitFor({ state: "visible" });
 
-		await rightClickEventMenu(obsidian.page, "Editable Event", "editEvent");
-		await obsidian.page.locator(EVENT_MODAL_SELECTOR).waitFor({ state: "visible", timeout: 15_000 });
-
-		const categoryChips = chipsForField(obsidian.page, "prisma-event-field-categories");
+		const categoryChips = chipsForField(calendar.page, "prisma-event-field-categories");
 		await expect(categoryChips).toHaveCount(1);
 		await expect(categoryChips.first()).toHaveAttribute("data-chip-value", "Work");
 
 		// A real user replacing chip-list values clicks × on each existing chip
 		// before adding new ones — that's what we drive here.
-		await removeChip(obsidian.page, "prisma-event-field-categories", "Work");
+		await removeChip(calendar.page, "prisma-event-field-categories", "Work");
 		await expect(categoryChips).toHaveCount(0);
 
-		const participantChips = chipsForField(obsidian.page, "prisma-event-field-participants");
-		await removeChip(obsidian.page, "prisma-event-field-participants", "Alice");
+		const participantChips = chipsForField(calendar.page, "prisma-event-field-participants");
+		await removeChip(calendar.page, "prisma-event-field-participants", "Alice");
 		await expect(participantChips).toHaveCount(0);
 
 		// Mutate every field except title (title rename races the indexer).
-		await fillEventModal(obsidian.page, {
+		await fillEventModal(calendar.page, {
 			start: `${today}T14:00`,
 			end: `${today}T15:30`,
 			categories: ["Personal", "Fitness"],
@@ -83,13 +75,11 @@ Already Notified: true
 			customProperties: { Priority: "low" },
 		});
 
-		await saveEventModal(obsidian.page);
+		await saveEventModal(calendar.page);
 
-		await expect
-			.poll(() => readEventFrontmatter(obsidian.vaultDir, seedPath)["Location"], { timeout: 10_000 })
-			.toBe("Room B");
+		await evt.expectFrontmatter("Location", (v) => v === "Room B");
 
-		expectFrontmatter(obsidian.vaultDir, seedPath, {
+		expectFrontmatter(calendar.vaultDir, seedPath, {
 			"Start Date": `${today}T14:00:00.000Z`,
 			"End Date": `${today}T15:30:00.000Z`,
 			Category: ["Personal", "Fitness"],

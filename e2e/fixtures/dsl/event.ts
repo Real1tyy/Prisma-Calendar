@@ -29,6 +29,9 @@ export interface EventHandle {
 
 	expectExists(yes: boolean): Promise<void>;
 	expectFrontmatter(key: string, matcher: (v: unknown) => boolean, message?: string): Promise<void>;
+
+	/** Wait for (or assert the absence of) the event block in the active calendar leaf. */
+	expectVisible(yes?: boolean): Promise<void>;
 }
 
 interface EventHandleDeps {
@@ -84,6 +87,11 @@ export function createEventHandle(deps: EventHandleDeps, path: string, title: st
 					message: message ?? `frontmatter ${key} did not match in ${path}`,
 				})
 				.toBe(true);
+		},
+
+		async expectVisible(yes = true) {
+			if (yes) await block().waitFor({ state: "visible" });
+			else await expect(block()).toHaveCount(0);
 		},
 	};
 }

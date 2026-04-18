@@ -1,111 +1,83 @@
-import { todayStamp } from "../../fixtures/analytics-helpers";
+import { todayStamp } from "../../fixtures/dates";
 import { expect, test } from "../../fixtures/electron";
-import {
-	clickContextMenuItem,
-	createEventViaUI,
-	openCalendarViewViaRibbon,
-	rightClickEvent,
-	waitForNoticesClear,
-} from "../../fixtures/helpers";
+import { sel, TID } from "../../fixtures/testids";
 
 // Each context-menu entry has a stable id stamped as `prisma-context-menu-item-<id>`.
 // These specs exercise the high-value single-event actions: edit, duplicate,
 // mark-done, skip, delete. Each creates a fresh event so side effects don't
 // bleed across tests.
 
-const tileSelector = '[data-testid="prisma-cal-event"]';
-
 test.describe("analytics: event context menu (full)", () => {
-	test.beforeEach(async ({ obsidian }) => {
-		await openCalendarViewViaRibbon(obsidian.page);
+	test("'Edit event' opens the edit modal prefilled with the tile's title", async ({ calendar }) => {
+		const evt = await calendar.createEvent({ title: "Edit Target", start: todayStamp(9, 0), end: todayStamp(10, 0) });
+		await calendar.waitForNoticesClear();
+
+		await evt.rightClick("editEvent");
+		await expect(calendar.page.locator(sel(TID.event.control("title"))).first()).toHaveValue("Edit Target");
+		await calendar.page
+			.locator(sel(TID.event.btn("cancel")))
+			.first()
+			.click();
 	});
 
-	test("'Edit event' opens the edit modal prefilled with the tile's title", async ({ obsidian }) => {
-		await createEventViaUI(obsidian.page, {
-			title: "Edit Target",
-			start: todayStamp(9, 0),
-			end: todayStamp(10, 0),
-		});
-		await waitForNoticesClear(obsidian.page);
-
-		await rightClickEvent(obsidian.page, { title: "Edit Target" });
-		await clickContextMenuItem(obsidian.page, "editEvent");
-
-		await expect(obsidian.page.locator('[data-testid="prisma-event-control-title"]').first()).toHaveValue(
-			"Edit Target",
-			{ timeout: 5_000 }
-		);
-		await obsidian.page.locator('[data-testid="prisma-event-btn-cancel"]').first().click();
-	});
-
-	test("'Duplicate' clones the tile so two tiles with the same title coexist", async ({ obsidian }) => {
-		await createEventViaUI(obsidian.page, {
+	test("'Duplicate' clones the tile so two tiles with the same title coexist", async ({ calendar }) => {
+		const evt = await calendar.createEvent({
 			title: "Duplicate Target",
 			start: todayStamp(9, 0),
 			end: todayStamp(10, 0),
 		});
-		await waitForNoticesClear(obsidian.page);
+		await calendar.waitForNoticesClear();
 
-		const selector = `${tileSelector}[data-event-title="Duplicate Target"]`;
-		await expect(obsidian.page.locator(selector)).toHaveCount(1, { timeout: 5_000 });
+		const tiles = calendar.page.locator(`${sel(TID.block)}[data-event-title="Duplicate Target"]`);
+		await expect(tiles).toHaveCount(1);
 
-		await rightClickEvent(obsidian.page, { title: "Duplicate Target" });
-		await clickContextMenuItem(obsidian.page, "duplicateEvent");
-
-		await expect(obsidian.page.locator(selector)).toHaveCount(2, { timeout: 10_000 });
+		await evt.rightClick("duplicateEvent");
+		await expect(tiles).toHaveCount(2);
 	});
 
-	test("'Delete event' removes the tile from the calendar", async ({ obsidian }) => {
-		await createEventViaUI(obsidian.page, {
+	test("'Delete event' removes the tile from the calendar", async ({ calendar }) => {
+		const evt = await calendar.createEvent({
 			title: "Delete Target",
 			start: todayStamp(9, 0),
 			end: todayStamp(10, 0),
 		});
-		await waitForNoticesClear(obsidian.page);
+		await calendar.waitForNoticesClear();
 
-		const selector = `${tileSelector}[data-event-title="Delete Target"]`;
-		await expect(obsidian.page.locator(selector)).toHaveCount(1, { timeout: 5_000 });
-
-		await rightClickEvent(obsidian.page, { title: "Delete Target" });
-		await clickContextMenuItem(obsidian.page, "deleteEvent");
-
-		await expect(obsidian.page.locator(selector)).toHaveCount(0, { timeout: 10_000 });
+		await evt.expectVisible();
+		await evt.rightClick("deleteEvent");
+		await evt.expectVisible(false);
 	});
 
-	test("'Mark as done' flips the menu label to 'Mark as undone' on re-open", async ({ obsidian }) => {
-		await createEventViaUI(obsidian.page, {
+	test("'Mark as done' flips the menu label to 'Mark as undone' on re-open", async ({ calendar }) => {
+		const evt = await calendar.createEvent({
 			title: "Done Target",
 			start: todayStamp(9, 0),
 			end: todayStamp(10, 0),
 		});
-		await waitForNoticesClear(obsidian.page);
+		await calendar.waitForNoticesClear();
 
-		await rightClickEvent(obsidian.page, { title: "Done Target" });
-		await clickContextMenuItem(obsidian.page, "markDone");
-		await waitForNoticesClear(obsidian.page);
+		await evt.rightClick("markDone");
+		await calendar.waitForNoticesClear();
 
 		// Re-open the menu — the `markDone` row now carries the undone title override.
-		await rightClickEvent(obsidian.page, { title: "Done Target" });
-		const markDoneItem = obsidian.page.locator('[data-testid="prisma-context-menu-item-markDone"]').first();
-		await expect(markDoneItem).toContainText("undone", { timeout: 5_000 });
-		await obsidian.page.keyboard.press("Escape");
+		const block = calendar.page.locator(`${sel(TID.block)}[data-event-title="Done Target"]`).first();
+		await block.click({ button: "right" });
+		const markDoneItem = calendar.page.locator(sel(TID.ctxMenu("markDone"))).first();
+		await expect(markDoneItem).toContainText("undone");
+		await calendar.page.keyboard.press("Escape");
 	});
 
-	test("'Skip event' hides the tile from the calendar (skipped events are filtered)", async ({ obsidian }) => {
-		await createEventViaUI(obsidian.page, {
+	test("'Skip event' hides the tile from the calendar (skipped events are filtered)", async ({ calendar }) => {
+		const evt = await calendar.createEvent({
 			title: "Skip Target",
 			start: todayStamp(9, 0),
 			end: todayStamp(10, 0),
 		});
-		await waitForNoticesClear(obsidian.page);
+		await calendar.waitForNoticesClear();
 
-		const selector = `${tileSelector}[data-event-title="Skip Target"]`;
-		await expect(obsidian.page.locator(selector)).toHaveCount(1, { timeout: 5_000 });
-
-		await rightClickEvent(obsidian.page, { title: "Skip Target" });
-		await clickContextMenuItem(obsidian.page, "skipEvent");
-
+		await evt.expectVisible();
+		await evt.rightClick("skipEvent");
 		// `eventStore.getEvents` returns non-skipped only, so the tile must vanish.
-		await expect(obsidian.page.locator(selector)).toHaveCount(0, { timeout: 10_000 });
+		await evt.expectVisible(false);
 	});
 });

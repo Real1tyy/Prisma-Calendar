@@ -1,20 +1,18 @@
-import { todayStamp } from "../../fixtures/analytics-helpers";
+import { todayStamp } from "../../fixtures/dates";
 import { expect, test } from "../../fixtures/electron";
-import { openCalendarViewViaRibbon, seedEvents, switchView } from "../../fixtures/helpers";
+import { sel } from "../../fixtures/testids";
 
 test.describe("analytics: stats (populated)", () => {
-	test("daily-stats surfaces events created through the UI", async ({ obsidian }) => {
-		await openCalendarViewViaRibbon(obsidian.page);
-
-		await seedEvents(obsidian.page, [
+	test("daily-stats surfaces events created through the UI", async ({ calendar }) => {
+		await calendar.seedMany([
 			{ title: "Work Session A", start: todayStamp(9, 0), end: todayStamp(10, 0) },
 			{ title: "Work Session B", start: todayStamp(14, 0), end: todayStamp(14, 30) },
 		]);
 
-		await switchView(obsidian.page, "daily-stats");
+		await calendar.switchView("daily-stats");
 
-		await expect(obsidian.page.locator('[data-testid="prisma-stats-empty"]')).toHaveCount(0, { timeout: 5_000 });
-		await expect(obsidian.page.locator(".prisma-stats-content")).toContainText("Work Session A", { timeout: 5_000 });
-		await expect(obsidian.page.locator(".prisma-stats-content")).toContainText("Work Session B");
+		await expect(calendar.page.locator(sel("prisma-stats-empty"))).toHaveCount(0);
+		await expect(calendar.page.locator(".prisma-stats-content")).toContainText("Work Session A");
+		await expect(calendar.page.locator(".prisma-stats-content")).toContainText("Work Session B");
 	});
 });

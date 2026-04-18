@@ -1,12 +1,6 @@
-import { todayStamp } from "../../fixtures/analytics-helpers";
+import { todayStamp } from "../../fixtures/dates";
 import { expect, test } from "../../fixtures/electron";
-import {
-	clickContextMenuItem,
-	createEventViaUI,
-	openCalendarViewViaRibbon,
-	rightClickEvent,
-	waitForNoticesClear,
-} from "../../fixtures/helpers";
+import { sel } from "../../fixtures/testids";
 
 // The "Enlarge" context-menu item opens a read-only preview modal via
 // `showEventPreviewModal` (the "Preview" item is Obsidian's hover card,
@@ -15,21 +9,18 @@ import {
 // don't depend on CSS class names.
 
 test.describe("event preview modal", () => {
-	test("right-click → Enlarge opens a modal with the event title", async ({ obsidian }) => {
-		await openCalendarViewViaRibbon(obsidian.page);
-
-		await createEventViaUI(obsidian.page, {
+	test("right-click → Enlarge opens a modal with the event title", async ({ calendar }) => {
+		const evt = await calendar.createEvent({
 			title: "Preview Target",
 			start: todayStamp(9, 0),
 			end: todayStamp(10, 0),
 		});
-		await waitForNoticesClear(obsidian.page);
+		await calendar.waitForNoticesClear();
 
-		await rightClickEvent(obsidian.page, { title: "Preview Target" });
-		await clickContextMenuItem(obsidian.page, "enlarge");
+		await evt.rightClick("enlarge");
 
-		const modal = obsidian.page.locator('[data-testid="prisma-event-preview-modal"]').first();
+		const modal = calendar.page.locator(sel("prisma-event-preview-modal")).first();
 		await expect(modal).toBeVisible();
-		await expect(modal.locator('[data-testid="prisma-event-preview-title"]')).toHaveText("Preview Target");
+		await expect(modal.locator(sel("prisma-event-preview-title"))).toHaveText("Preview Target");
 	});
 });

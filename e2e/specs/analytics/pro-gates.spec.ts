@@ -1,5 +1,5 @@
 import { expect, test } from "../../fixtures/electron";
-import { openCalendarViewViaRibbon, switchToGroupChild, switchView } from "../../fixtures/helpers";
+import { sel } from "../../fixtures/testids";
 
 // Heatmap / Gantt / Dashboard are Pro-gated. One spec walks all three in
 // sequence on an unlicensed vault — each should swap its UI for the upgrade
@@ -9,22 +9,14 @@ import { openCalendarViewViaRibbon, switchToGroupChild, switchView } from "../..
 // last-resort E2E that proves the real user path still surfaces the gate.
 
 test.describe("analytics: pro gates (unlicensed)", () => {
-	test("every pro-gated analytics view shows its upgrade banner", async ({ obsidian }) => {
-		await openCalendarViewViaRibbon(obsidian.page);
+	test("every pro-gated analytics view shows its upgrade banner", async ({ calendar }) => {
+		await calendar.switchView("heatmap");
+		await expect(calendar.page.locator(sel("prisma-pro-gate-HEATMAP")).first()).toBeVisible();
 
-		await switchView(obsidian.page, "heatmap");
-		await expect(obsidian.page.locator('[data-testid="prisma-pro-gate-HEATMAP"]').first()).toBeVisible({
-			timeout: 5_000,
-		});
+		await calendar.switchView("gantt");
+		await expect(calendar.page.locator(sel("prisma-pro-gate-GANTT")).first()).toBeVisible();
 
-		await switchView(obsidian.page, "gantt");
-		await expect(obsidian.page.locator('[data-testid="prisma-pro-gate-GANTT"]').first()).toBeVisible({
-			timeout: 5_000,
-		});
-
-		await switchToGroupChild(obsidian.page, "dashboard", "dashboard-by-name");
-		await expect(obsidian.page.locator('[data-testid="prisma-pro-gate-DASHBOARD"]').first()).toBeVisible({
-			timeout: 5_000,
-		});
+		await calendar.switchToGroupChild("dashboard", "dashboard-by-name");
+		await expect(calendar.page.locator(sel("prisma-pro-gate-DASHBOARD")).first()).toBeVisible();
 	});
 });

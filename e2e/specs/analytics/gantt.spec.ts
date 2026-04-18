@@ -1,20 +1,9 @@
-import type { Page } from "@playwright/test";
-
 import { isoLocal } from "../../fixtures/dates";
+import { type CalendarHandle } from "../../fixtures/dsl";
 import { expect, test } from "../../fixtures/electron";
-import {
-	assignPrerequisiteViaUI,
-	clickContextMenuItem,
-	ganttBarLocator,
-	openCalendarViewViaRibbon,
-	rightClickGanttBar,
-	seedEvents,
-	switchCalendarViewMode,
-	switchView,
-	unlockPro,
-	waitForNoticesClear,
-} from "../../fixtures/helpers";
+import { assignPrerequisiteViaUI, ganttBarLocator, rightClickGanttBar } from "../../fixtures/helpers";
 import { updateCalendarSettings } from "../../fixtures/seed-events";
+import { sel, TID } from "../../fixtures/testids";
 
 // Gantt filters events to only those connected in the prerequisite graph
 // (`normalize-events.ts`: `tracker.isConnected(filePath)`), so standalone
@@ -34,64 +23,65 @@ import { updateCalendarSettings } from "../../fixtures/seed-events";
 
 const GANTT_SCOPE = ".prisma-gantt-wrapper";
 
-async function openGantt(page: Page): Promise<void> {
-	await openCalendarViewViaRibbon(page);
-	await unlockPro(page);
-	await switchView(page, "gantt");
-	await expect(page.locator('[data-testid="prisma-gantt-create"]').first()).toBeVisible();
+async function openGantt(calendar: CalendarHandle): Promise<void> {
+	await calendar.unlockPro();
+	await calendar.switchView("gantt");
+	await expect(calendar.page.locator(sel("prisma-gantt-create")).first()).toBeVisible();
 }
 
-async function setupTwoConnectedEvents(page: Page): Promise<void> {
-	await openCalendarViewViaRibbon(page);
-	await switchCalendarViewMode(page, "month");
+async function setupTwoConnectedEvents(calendar: CalendarHandle): Promise<void> {
+	await calendar.switchMode("month");
 
-	await seedEvents(page, [
+	await calendar.seedMany([
 		{ title: "Upstream Task", start: isoLocal(0, 9, 0), end: isoLocal(0, 10, 0) },
 		{ title: "Downstream Task", start: isoLocal(10, 14, 0), end: isoLocal(10, 15, 0) },
 	]);
 
-	await assignPrerequisiteViaUI(page, "Downstream Task", "Upstream Task");
-	await waitForNoticesClear(page);
+	await assignPrerequisiteViaUI(calendar.page, "Downstream Task", "Upstream Task");
+	await calendar.waitForNoticesClear();
 
-	await unlockPro(page);
-	await switchView(page, "gantt");
+	await calendar.unlockPro();
+	await calendar.switchView("gantt");
 }
 
 test.describe("analytics: gantt", () => {
-	test("renders toolbar chrome (create, nav, filter bar) when Pro is unlocked", async ({ obsidian }) => {
-		await openGantt(obsidian.page);
+	test("renders toolbar chrome (create, nav, filter bar) when Pro is unlocked", async ({ calendar }) => {
+		await openGantt(calendar);
 
-		await expect(obsidian.page.locator('[data-testid="prisma-pro-gate-GANTT"]')).toHaveCount(0);
+		await expect(calendar.page.locator(sel("prisma-pro-gate-GANTT"))).toHaveCount(0);
 
-		const nav = obsidian.page.locator(".prisma-gantt-nav");
+		const nav = calendar.page.locator(".prisma-gantt-nav");
 		await expect(nav.locator('button[aria-label="Back 1 month"]')).toBeVisible();
 		await expect(nav.locator('button[aria-label="Back 1 week"]')).toBeVisible();
 		await expect(nav.locator(".prisma-gantt-today-btn")).toBeVisible();
 		await expect(nav.locator('button[aria-label="Forward 1 week"]')).toBeVisible();
 		await expect(nav.locator('button[aria-label="Forward 1 month"]')).toBeVisible();
 
-		await expect(obsidian.page.locator(`${GANTT_SCOPE} [data-testid="prisma-filter-search"]`)).toBeVisible();
-		await expect(obsidian.page.locator(`${GANTT_SCOPE} [data-testid="prisma-filter-preset"]`)).toBeVisible();
-		await expect(obsidian.page.locator(`${GANTT_SCOPE} [data-testid="prisma-filter-expression"]`)).toBeVisible();
+		await expect(calendar.page.locator(`${GANTT_SCOPE} ${sel("prisma-filter-search")}`)).toBeVisible();
+		await expect(calendar.page.locator(`${GANTT_SCOPE} ${sel("prisma-filter-preset")}`)).toBeVisible();
+		await expect(calendar.page.locator(`${GANTT_SCOPE} ${sel("prisma-filter-expression")}`)).toBeVisible();
 	});
 
-	test("Create button opens the event create modal", async ({ obsidian }) => {
-		await openGantt(obsidian.page);
+	test("Create button opens the event create modal", async ({ calendar }) => {
+		await openGantt(calendar);
 
-		await obsidian.page.locator('[data-testid="prisma-gantt-create"]').first().click();
+		await calendar.page.locator(sel("prisma-gantt-create")).first().click();
 
-		const titleInput = obsidian.page.locator('.modal [data-testid="prisma-event-control-title"]').first();
+		const titleInput = calendar.page.locator(`.modal ${sel(TID.event.control("title"))}`).first();
 		await expect(titleInput).toBeVisible();
 		await expect(titleInput).toHaveValue("");
 
-		await obsidian.page.locator('.modal [data-testid="prisma-event-btn-cancel"]').first().click();
+		await calendar.page
+			.locator(`.modal ${sel(TID.event.btn("cancel"))}`)
+			.first()
+			.click();
 	});
 
-	test("nav buttons shift the viewport; Today returns to the current month", async ({ obsidian }) => {
-		await openGantt(obsidian.page);
+	test("nav buttons shift the viewport; Today returns to the current month", async ({ calendar }) => {
+		await openGantt(calendar);
 
-		const nav = obsidian.page.locator(".prisma-gantt-nav");
-		const firstMonth = obsidian.page.locator(".prisma-gantt-month-label").first();
+		const nav = calendar.page.locator(".prisma-gantt-nav");
+		const firstMonth = calendar.page.locator(".prisma-gantt-month-label").first();
 
 		const todayLabel = (await firstMonth.innerText()).trim();
 
@@ -115,66 +105,68 @@ test.describe("analytics: gantt", () => {
 		await expect(firstMonth).toHaveText(todayLabel);
 	});
 
-	test("prerequisite arrow renders between two connected events", async ({ obsidian }) => {
-		await setupTwoConnectedEvents(obsidian.page);
+	test("prerequisite arrow renders between two connected events", async ({ calendar }) => {
+		await setupTwoConnectedEvents(calendar);
 
-		await expect(ganttBarLocator(obsidian.page, "Upstream Task")).toBeVisible();
-		await expect(ganttBarLocator(obsidian.page, "Downstream Task")).toBeVisible();
+		await expect(ganttBarLocator(calendar.page, "Upstream Task")).toBeVisible();
+		await expect(ganttBarLocator(calendar.page, "Downstream Task")).toBeVisible();
 
-		await expect(obsidian.page.locator('[data-testid="prisma-gantt-bar"]')).toHaveCount(2);
-		await expect(obsidian.page.locator('[data-testid="prisma-gantt-arrow"]')).toHaveCount(1);
+		await expect(calendar.page.locator(sel("prisma-gantt-bar"))).toHaveCount(2);
+		await expect(calendar.page.locator(sel("prisma-gantt-arrow"))).toHaveCount(1);
 	});
 
-	test("right-clicking a bar opens the shared context menu; 'edit' opens the edit modal", async ({ obsidian }) => {
-		await setupTwoConnectedEvents(obsidian.page);
+	test("right-clicking a bar opens the shared context menu; 'edit' opens the edit modal", async ({ calendar }) => {
+		await setupTwoConnectedEvents(calendar);
 
-		await rightClickGanttBar(obsidian.page, "Upstream Task");
-		await obsidian.page.locator(".menu").first().waitFor({ state: "visible" });
+		await rightClickGanttBar(calendar.page, "Upstream Task");
+		await calendar.page.locator(".menu").first().waitFor({ state: "visible" });
 
 		// Gantt bar menu uses bare `edit` — calendar-tile menu uses `editEvent`.
-		await clickContextMenuItem(obsidian.page, "edit");
+		// `edit` isn't in ContextMenuItemKey so click by raw testid.
+		await calendar.page.locator(sel("prisma-context-menu-item-edit")).first().click();
 
-		await expect(obsidian.page.locator('[data-testid="prisma-event-control-title"]').first()).toHaveValue(
-			"Upstream Task"
-		);
+		await expect(calendar.page.locator(sel(TID.event.control("title"))).first()).toHaveValue("Upstream Task");
 
-		await obsidian.page.locator('[data-testid="prisma-event-btn-cancel"]').first().click();
+		await calendar.page
+			.locator(sel(TID.event.btn("cancel")))
+			.first()
+			.click();
 	});
 
-	test("search input filters bars; arrow disappears when one endpoint is hidden", async ({ obsidian }) => {
-		await setupTwoConnectedEvents(obsidian.page);
+	test("search input filters bars; arrow disappears when one endpoint is hidden", async ({ calendar }) => {
+		await setupTwoConnectedEvents(calendar);
 
-		await expect(obsidian.page.locator('[data-testid="prisma-gantt-bar"]')).toHaveCount(2);
-		await expect(obsidian.page.locator('[data-testid="prisma-gantt-arrow"]')).toHaveCount(1);
+		await expect(calendar.page.locator(sel("prisma-gantt-bar"))).toHaveCount(2);
+		await expect(calendar.page.locator(sel("prisma-gantt-arrow"))).toHaveCount(1);
 
-		const search = obsidian.page.locator(`${GANTT_SCOPE} [data-testid="prisma-filter-search"]`);
+		const search = calendar.page.locator(`${GANTT_SCOPE} ${sel("prisma-filter-search")}`);
 		await search.fill("Upstream");
 		await search.press("Enter");
 
 		// Only Upstream survives — Downstream is filtered out, so the arrow's
 		// target endpoint is gone and the arrow isn't laid out at all.
-		await expect(obsidian.page.locator('[data-testid="prisma-gantt-bar"]')).toHaveCount(1);
-		await expect(ganttBarLocator(obsidian.page, "Upstream Task")).toBeVisible();
-		await expect(obsidian.page.locator('[data-testid="prisma-gantt-arrow"]')).toHaveCount(0);
+		await expect(calendar.page.locator(sel("prisma-gantt-bar"))).toHaveCount(1);
+		await expect(ganttBarLocator(calendar.page, "Upstream Task")).toBeVisible();
+		await expect(calendar.page.locator(sel("prisma-gantt-arrow"))).toHaveCount(0);
 
 		await search.fill("");
 		await search.press("Enter");
-		await expect(obsidian.page.locator('[data-testid="prisma-gantt-bar"]')).toHaveCount(2);
-		await expect(obsidian.page.locator('[data-testid="prisma-gantt-arrow"]')).toHaveCount(1);
+		await expect(calendar.page.locator(sel("prisma-gantt-bar"))).toHaveCount(2);
+		await expect(calendar.page.locator(sel("prisma-gantt-arrow"))).toHaveCount(1);
 	});
 
-	test("filter preset dropdown populates and clears the expression input", async ({ obsidian }) => {
-		await updateCalendarSettings(obsidian.page, {
+	test("filter preset dropdown populates and clears the expression input", async ({ calendar }) => {
+		await updateCalendarSettings(calendar.page, {
 			filterPresets: [
 				{ name: "Work only", expression: "Category === 'Work'" },
 				{ name: "Fitness", expression: "Category === 'Fitness'" },
 			],
 		});
 
-		await openGantt(obsidian.page);
+		await openGantt(calendar);
 
-		const presetSelect = obsidian.page.locator(`${GANTT_SCOPE} [data-testid="prisma-filter-preset"]`);
-		const expressionInput = obsidian.page.locator(`${GANTT_SCOPE} [data-testid="prisma-filter-expression"]`);
+		const presetSelect = calendar.page.locator(`${GANTT_SCOPE} ${sel("prisma-filter-preset")}`);
+		const expressionInput = calendar.page.locator(`${GANTT_SCOPE} ${sel("prisma-filter-expression")}`);
 
 		await expect(presetSelect.locator("option")).toContainText(["Clear", "Work only", "Fitness"]);
 		await expect(expressionInput).toHaveValue("");

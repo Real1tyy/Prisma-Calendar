@@ -1,5 +1,5 @@
 import { expect, test } from "../../fixtures/electron";
-import { openCalendarViewViaRibbon, switchToGroupChild, unlockPro } from "../../fixtures/helpers";
+import { sel } from "../../fixtures/testids";
 
 // Dashboard is a group tab: the top-level `dashboard` button opens a dropdown
 // of children (`dashboard-by-name` / `-by-category` / `-recurring`). Only the
@@ -9,16 +9,13 @@ import { openCalendarViewViaRibbon, switchToGroupChild, unlockPro } from "../../
 
 test.describe("analytics: dashboard layout", () => {
 	test("dashboard 'By Name' child renders the chart / ranking / table cells when Pro is unlocked", async ({
-		obsidian,
+		calendar,
 	}) => {
-		await openCalendarViewViaRibbon(obsidian.page);
-		await unlockPro(obsidian.page);
-		await switchToGroupChild(obsidian.page, "dashboard", "dashboard-by-name");
+		await calendar.unlockPro();
+		await calendar.switchToGroupChild("dashboard", "dashboard-by-name");
 
-		await expect(obsidian.page.locator('[data-testid="prisma-dashboard-cell-chart"]').first()).toBeVisible({
-			timeout: 5_000,
-		});
-		await expect(obsidian.page.locator('[data-testid="prisma-dashboard-cell-ranking"]').first()).toBeVisible();
-		await expect(obsidian.page.locator('[data-testid="prisma-dashboard-cell-table"]').first()).toBeVisible();
+		await expect(calendar.page.locator(sel("prisma-dashboard-cell-chart")).first()).toBeVisible();
+		await expect(calendar.page.locator(sel("prisma-dashboard-cell-ranking")).first()).toBeVisible();
+		await expect(calendar.page.locator(sel("prisma-dashboard-cell-table")).first()).toBeVisible();
 	});
 });

@@ -1,32 +1,24 @@
-import { todayStamp } from "../../fixtures/analytics-helpers";
+import { todayStamp } from "../../fixtures/dates";
 import { expect, test } from "../../fixtures/electron";
-import {
-	clickContextMenuItem,
-	createEventViaUI,
-	openCalendarViewViaRibbon,
-	rightClickEvent,
-} from "../../fixtures/helpers";
+import { sel, TID } from "../../fixtures/testids";
 
 test.describe("analytics: event context menu", () => {
 	test("right-clicking an event then picking Edit opens the edit modal prefilled with the event's data", async ({
-		obsidian,
+		calendar,
 	}) => {
-		await openCalendarViewViaRibbon(obsidian.page);
-
-		await createEventViaUI(obsidian.page, {
+		const evt = await calendar.createEvent({
 			title: "Context Menu Target",
 			start: todayStamp(10, 0),
 			end: todayStamp(11, 0),
 		});
 
-		await rightClickEvent(obsidian.page, { title: "Context Menu Target" });
-		await clickContextMenuItem(obsidian.page, "editEvent");
+		await evt.rightClick("editEvent");
 
-		await expect(obsidian.page.locator('[data-testid="prisma-event-control-title"]').first()).toHaveValue(
-			"Context Menu Target",
-			{ timeout: 5_000 }
-		);
+		await expect(calendar.page.locator(sel(TID.event.control("title"))).first()).toHaveValue("Context Menu Target");
 
-		await obsidian.page.locator('[data-testid="prisma-event-btn-cancel"]').first().click();
+		await calendar.page
+			.locator(sel(TID.event.btn("cancel")))
+			.first()
+			.click();
 	});
 });

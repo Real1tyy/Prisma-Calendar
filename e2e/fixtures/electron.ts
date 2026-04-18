@@ -415,11 +415,20 @@ const NOTIFICATIONS_ON_OVERRIDES: BootstrapOverrides = {
  * (e.g. "Notify minutes before" field in the event modal, or the notification
  * settings tab). Bypasses the pointer-event-stealing notification modal by
  * setting the toggle at bootstrap time rather than via the settings UI.
+ *
+ * Exposes the same opt-in `calendar` DSL fixture as the default `test`.
  */
-export const testWithNotifications = base.extend<{ obsidian: BootstrappedObsidian }>({
+export const testWithNotifications = base.extend<{
+	obsidian: BootstrappedObsidian;
+	calendar: CalendarHandle;
+}>({
 	// eslint-disable-next-line no-empty-pattern
 	obsidian: async ({}, use) => {
 		await runWithObsidianHandle({ prefix: "notif-spec", overrides: NOTIFICATIONS_ON_OVERRIDES }, use);
+	},
+	calendar: async ({ obsidian }, use) => {
+		await openCalendarReady(obsidian.page);
+		await use(createCalendarHandle({ obsidian }));
 	},
 });
 

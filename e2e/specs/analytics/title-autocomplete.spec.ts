@@ -1,12 +1,7 @@
-import { todayStamp } from "../../fixtures/analytics-helpers";
+import { todayStamp } from "../../fixtures/dates";
 import { expect, test } from "../../fixtures/electron";
-import {
-	createEventViaToolbar,
-	createEventViaUI,
-	openCalendarViewViaRibbon,
-	saveEventModal,
-	waitForNoticesClear,
-} from "../../fixtures/helpers";
+import { createEventViaToolbar } from "../../fixtures/helpers";
+import { sel, TID } from "../../fixtures/testids";
 
 // `TitleInputSuggest` surfaces matches from three sources: categories,
 // event presets, and past event-name series. It renders inside Obsidian's
@@ -15,32 +10,29 @@ import {
 // suggestion — categories are deterministic (created on the fly by the
 // first event) unlike name-series which relies on frequency history.
 
-const TITLE_INPUT = '.modal [data-testid="prisma-event-control-title"]';
-const SUGGEST_ITEM = '[data-testid="prisma-title-suggest-item"]';
+const SUGGEST_ITEM = sel("prisma-title-suggest-item");
 
 test.describe("title autocomplete", () => {
 	test("typing a category prefix surfaces the category suggestion and fills the input on click", async ({
-		obsidian,
+		calendar,
 	}) => {
-		await openCalendarViewViaRibbon(obsidian.page);
-
 		// Seed the categoryTracker by creating an event that uses the category.
-		await createEventViaUI(obsidian.page, {
+		await calendar.createEvent({
 			title: "Focus Block",
 			start: todayStamp(9, 0),
 			end: todayStamp(10, 0),
 			categories: ["Deep Work"],
 		});
-		await waitForNoticesClear(obsidian.page);
+		await calendar.waitForNoticesClear();
 
-		await createEventViaToolbar(obsidian.page);
+		await createEventViaToolbar(calendar.page);
 
-		const titleInput = obsidian.page.locator(TITLE_INPUT).first();
+		const titleInput = calendar.page.locator(`.modal ${sel(TID.event.control("title"))}`).first();
 		await titleInput.focus();
 		await titleInput.fill("Deep");
 		await titleInput.dispatchEvent("input");
 
-		const suggestion = obsidian.page
+		const suggestion = calendar.page
 			.locator(`${SUGGEST_ITEM}[data-suggest-source="category"][data-suggest-text="Deep Work"]`)
 			.first();
 		await expect(suggestion).toBeVisible();
@@ -48,6 +40,9 @@ test.describe("title autocomplete", () => {
 
 		await expect(titleInput).toHaveValue("Deep Work");
 
-		await obsidian.page.locator('.modal [data-testid="prisma-event-btn-cancel"]').first().click();
+		await calendar.page
+			.locator(`.modal ${sel(TID.event.btn("cancel"))}`)
+			.first()
+			.click();
 	});
 });

@@ -1,14 +1,7 @@
 import { isoLocal } from "../../fixtures/dates";
 import { expect, test } from "../../fixtures/electron";
-import {
-	assignPrerequisiteViaUI,
-	clickToolbar,
-	openCalendarViewViaRibbon,
-	seedEvents,
-	switchCalendarViewMode,
-	unlockPro,
-	waitForNoticesClear,
-} from "../../fixtures/helpers";
+import { assignPrerequisiteViaUI } from "../../fixtures/helpers";
+import { sel } from "../../fixtures/testids";
 
 // Prerequisite connections are a Pro feature. The calendar view draws SVG
 // arrows between dependent/prerequisite events via `ConnectionRenderer`:
@@ -17,50 +10,45 @@ import {
 // (full arrow) and cross-week (stub arrow, because the prereq lives in a
 // different week than the dependant).
 
-const ARROW_SELECTOR = '[data-testid="prisma-connection-arrow"]';
-const STUB_SELECTOR = '[data-testid="prisma-connection-arrow"][data-arrow-stub="true"]';
+const ARROW = sel("prisma-connection-arrow");
+const STUB = `${sel("prisma-connection-arrow")}[data-arrow-stub="true"]`;
 
 test.describe("analytics: prerequisite connections on calendar view", () => {
-	test("full arrow renders when both events sit in the same week", async ({ obsidian }) => {
-		await openCalendarViewViaRibbon(obsidian.page);
-		await switchCalendarViewMode(obsidian.page, "week");
+	test("full arrow renders when both events sit in the same week", async ({ calendar }) => {
+		await calendar.switchMode("week");
 
-		await seedEvents(obsidian.page, [
+		await calendar.seedMany([
 			{ title: "Upstream Task", start: isoLocal(0, 9, 0), end: isoLocal(0, 10, 0) },
 			{ title: "Downstream Task", start: isoLocal(1, 14, 0), end: isoLocal(1, 15, 0) },
 		]);
 
-		await assignPrerequisiteViaUI(obsidian.page, "Downstream Task", "Upstream Task");
-		await waitForNoticesClear(obsidian.page);
+		await assignPrerequisiteViaUI(calendar.page, "Downstream Task", "Upstream Task");
+		await calendar.waitForNoticesClear();
 
-		await unlockPro(obsidian.page);
-		await clickToolbar(obsidian.page, "toggle-prerequisites");
+		await calendar.unlockPro();
+		await calendar.clickToolbar("toggle-prerequisites");
 
-		const arrows = obsidian.page.locator(ARROW_SELECTOR);
-		await expect(arrows).toHaveCount(1, { timeout: 10_000 });
-		await expect(obsidian.page.locator(STUB_SELECTOR)).toHaveCount(0);
+		await expect(calendar.page.locator(ARROW)).toHaveCount(1);
+		await expect(calendar.page.locator(STUB)).toHaveCount(0);
 	});
 
-	test("stub arrow renders when prerequisite lives in a different week", async ({ obsidian }) => {
-		await openCalendarViewViaRibbon(obsidian.page);
-
+	test("stub arrow renders when prerequisite lives in a different week", async ({ calendar }) => {
 		// Month view first so both tiles are clickable while wiring the prereq.
-		await switchCalendarViewMode(obsidian.page, "month");
-		await seedEvents(obsidian.page, [
+		await calendar.switchMode("month");
+		await calendar.seedMany([
 			{ title: "Upstream Task", start: isoLocal(0, 9, 0), end: isoLocal(0, 10, 0) },
 			{ title: "Downstream Task", start: isoLocal(10, 14, 0), end: isoLocal(10, 15, 0) },
 		]);
 
-		await assignPrerequisiteViaUI(obsidian.page, "Downstream Task", "Upstream Task");
-		await waitForNoticesClear(obsidian.page);
+		await assignPrerequisiteViaUI(calendar.page, "Downstream Task", "Upstream Task");
+		await calendar.waitForNoticesClear();
 
 		// Back to week view — with 10 days between the two events, at most one
 		// is visible at a time, so the renderer must draw a dashed stub.
-		await switchCalendarViewMode(obsidian.page, "week");
-		await unlockPro(obsidian.page);
-		await clickToolbar(obsidian.page, "toggle-prerequisites");
+		await calendar.switchMode("week");
+		await calendar.unlockPro();
+		await calendar.clickToolbar("toggle-prerequisites");
 
-		const stubs = obsidian.page.locator(STUB_SELECTOR);
-		await expect(stubs).toHaveCount(1, { timeout: 10_000 });
+		await expect(calendar.page.locator(STUB)).toHaveCount(1);
 	});
 });

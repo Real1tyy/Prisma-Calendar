@@ -59,6 +59,50 @@ export type ToolbarKey =
 	| "batch-select"
 	| "batch-exit";
 
+/** Calendar "view mode" for FullCalendar — picks the toolbar view-<mode> button. */
+export type ViewMode = "month" | "week" | "day" | "list";
+
+/**
+ * Page-header toolbar action ids. Every entry in `buildPageHeaderActions()`
+ * stamps a `data-testid="prisma-toolbar-<id>"` on its button. Specs reach for
+ * these via `calendar.clickToolbar(id)`.
+ */
+export type ToolbarActionKey =
+	| "create-event"
+	| "create-untracked"
+	| "go-to-today"
+	| "scroll-to-now"
+	| "navigate-back"
+	| "navigate-forward"
+	| "global-search"
+	| "toggle-batch"
+	| "daily-stats"
+	| "weekly-stats"
+	| "monthly-stats"
+	| "alltime-stats"
+	| "toggle-prerequisites"
+	| "refresh"
+	| "show-recurring";
+
+/**
+ * Analytics view-tab ids stamped as `data-testid="prisma-view-tab-<id>"`.
+ * Leaf tabs (calendar / timeline / heatmap / gantt / …) activate directly;
+ * group tabs (`dashboard`) open a dropdown whose children use the same
+ * testid pattern — see `switchToGroupChild`.
+ */
+export type ViewTabKey =
+	| "calendar"
+	| "timeline"
+	| "heatmap"
+	| "gantt"
+	| "dashboard"
+	| "dashboard-by-name"
+	| "dashboard-by-category"
+	| "dashboard-recurring"
+	| "daily-stats"
+	| "dual-daily"
+	| "heatmap-monthly-stats";
+
 export type BatchBtnKey =
 	| "select-all"
 	| "clear"
@@ -89,6 +133,10 @@ export const TID = {
 		btn: (key: EventBtnKey): string => `prisma-event-btn-${key}`,
 	},
 	toolbar: (key: ToolbarKey): string => `prisma-cal-toolbar-${key}`,
+	/** Page-header toolbar action (create-event, daily-stats, refresh, …). */
+	pageHeader: (key: ToolbarActionKey): string => `prisma-toolbar-${key}`,
+	/** Analytics view tab — leaf or group child. */
+	viewTab: (key: ViewTabKey): string => `prisma-view-tab-${key}`,
 	batch: (key: BatchBtnKey): string => `prisma-cal-batch-${key}`,
 	batchCounter: BATCH_COUNTER_TID,
 	batchConfirm: BATCH_CONFIRM_TID,

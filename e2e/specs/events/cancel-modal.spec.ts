@@ -1,15 +1,12 @@
 import { expectFrontmatter, readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { expect, test } from "../../fixtures/electron";
+import { sel, TID } from "../../fixtures/testids";
 import {
-	CANCEL_BUTTON_SELECTOR,
 	EVENT_MODAL_SELECTOR,
 	formatLocalDate,
 	listEventFiles,
-	openCalendarReady,
 	openCreateModal,
-	rightClickEventMenu,
-	seedEventFile,
 	snapshotEventFiles,
 	waitForModalClosed,
 } from "./events-helpers";
@@ -21,65 +18,63 @@ const QUIESCE_MS = 1_000;
 // expects the vault to be exactly what it was before — no stray files, no
 // partial frontmatter writes, no indexer drift.
 test.describe("cancel / escape", () => {
-	test("Cancel on create modal writes no new file", async ({ obsidian }) => {
-		await openCalendarReady(obsidian.page);
-		const baseline = snapshotEventFiles(obsidian.vaultDir);
+	test("Cancel on create modal writes no new file", async ({ calendar }) => {
+		const baseline = snapshotEventFiles(calendar.vaultDir);
 
-		await openCreateModal(obsidian.page);
-		await fillEventModal(obsidian.page, {
+		await openCreateModal(calendar.page);
+		await fillEventModal(calendar.page, {
 			title: "Abandoned Draft",
 			start: "2026-05-10T09:00",
 			end: "2026-05-10T10:00",
 		});
-		await obsidian.page.locator(CANCEL_BUTTON_SELECTOR).click();
-		await waitForModalClosed(obsidian.page);
+		await calendar.page.locator(sel(TID.event.btn("cancel"))).click();
+		await waitForModalClosed(calendar.page);
 
-		await obsidian.page.waitForTimeout(QUIESCE_MS);
-		const current = new Set(listEventFiles(obsidian.vaultDir, "Events"));
+		await calendar.page.waitForTimeout(QUIESCE_MS);
+		const current = new Set(listEventFiles(calendar.vaultDir, "Events"));
 		const added = [...current].filter((p) => !baseline.has(p));
 		expect(added, "cancel path must not produce any new event files").toEqual([]);
 	});
 
-	test("Escape on create modal writes no new file", async ({ obsidian }) => {
-		await openCalendarReady(obsidian.page);
-		const baseline = snapshotEventFiles(obsidian.vaultDir);
+	test("Escape on create modal writes no new file", async ({ calendar }) => {
+		const baseline = snapshotEventFiles(calendar.vaultDir);
 
-		await openCreateModal(obsidian.page);
-		await fillEventModal(obsidian.page, { title: "Escaped Draft", start: "2026-05-10T09:00", end: "2026-05-10T10:00" });
-		await obsidian.page.keyboard.press("Escape");
-		await waitForModalClosed(obsidian.page);
+		await openCreateModal(calendar.page);
+		await fillEventModal(calendar.page, {
+			title: "Escaped Draft",
+			start: "2026-05-10T09:00",
+			end: "2026-05-10T10:00",
+		});
+		await calendar.page.keyboard.press("Escape");
+		await waitForModalClosed(calendar.page);
 
-		await obsidian.page.waitForTimeout(QUIESCE_MS);
-		const current = new Set(listEventFiles(obsidian.vaultDir, "Events"));
+		await calendar.page.waitForTimeout(QUIESCE_MS);
+		const current = new Set(listEventFiles(calendar.vaultDir, "Events"));
 		const added = [...current].filter((p) => !baseline.has(p));
 		expect(added, "escape must not persist any event file").toEqual([]);
 	});
 
-	test("Cancel on edit modal leaves frontmatter unchanged", async ({ obsidian }) => {
+	test("Cancel on edit modal leaves frontmatter unchanged", async ({ calendar }) => {
 		const today = formatLocalDate(new Date());
-		const seedPath = seedEventFile(obsidian.vaultDir, "Original Event", {
+		const evt = await calendar.seedOnDisk("Original Event", {
 			"Start Date": `${today}T09:00`,
 			"End Date": `${today}T10:00`,
 			Location: "Room A",
 		});
 
-		await openCalendarReady(obsidian.page);
-		await obsidian.page
-			.locator(".fc-event", { hasText: "Original Event" })
-			.first()
-			.waitFor({ state: "visible", timeout: 15_000 });
+		await evt.expectVisible();
 
-		const originalFm = readEventFrontmatter(obsidian.vaultDir, seedPath);
+		const originalFm = readEventFrontmatter(calendar.vaultDir, evt.path);
 
-		await rightClickEventMenu(obsidian.page, "Original Event", "editEvent");
-		await obsidian.page.locator(EVENT_MODAL_SELECTOR).waitFor({ state: "visible", timeout: 15_000 });
+		await evt.rightClick("editEvent");
+		await calendar.page.locator(EVENT_MODAL_SELECTOR).waitFor({ state: "visible" });
 
-		await fillEventModal(obsidian.page, { location: "Room Z — canceled change" });
-		await obsidian.page.locator(CANCEL_BUTTON_SELECTOR).click();
-		await waitForModalClosed(obsidian.page);
+		await fillEventModal(calendar.page, { location: "Room Z — canceled change" });
+		await calendar.page.locator(sel(TID.event.btn("cancel"))).click();
+		await waitForModalClosed(calendar.page);
 
-		await obsidian.page.waitForTimeout(QUIESCE_MS);
-		expectFrontmatter(obsidian.vaultDir, seedPath, {
+		await calendar.page.waitForTimeout(QUIESCE_MS);
+		expectFrontmatter(calendar.vaultDir, evt.path, {
 			Location: String(originalFm["Location"] ?? ""),
 		});
 	});

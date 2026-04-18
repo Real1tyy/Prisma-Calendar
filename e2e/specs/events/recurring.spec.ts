@@ -1,18 +1,7 @@
-import { writeFileSync } from "node:fs";
-import { join } from "node:path";
-
 import { expectFrontmatter, readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { expect, test } from "../../fixtures/electron";
-import {
-	createEventViaModal,
-	expectEventVisible,
-	formatLocalDate,
-	listEventFiles,
-	monthsFromTodayTo,
-	navigateCalendar,
-	openCalendarReady,
-} from "./events-helpers";
+import { formatLocalDate, listEventFiles, monthsFromTodayTo, navigateCalendar } from "./events-helpers";
 
 const INSTANCE_FILE_TIMEOUT_MS = 10_000;
 const DEFAULT_FUTURE_INSTANCES = 2;
@@ -38,14 +27,12 @@ function collectInstanceFiles(vaultDir: string, title: string): string[] {
 }
 
 test.describe("recurring events", () => {
-	test("weekly Mon/Wed/Fri generates physical instances on the right weekdays", async ({ obsidian }) => {
-		await openCalendarReady(obsidian.page);
-
+	test("weekly Mon/Wed/Fri generates physical instances on the right weekdays", async ({ calendar }) => {
 		const tomorrow = new Date();
 		tomorrow.setDate(tomorrow.getDate() + 1);
 		const tomorrowStr = formatLocalDate(tomorrow);
 
-		const relativePath = await createEventViaModal(obsidian, {
+		const evt = await calendar.createEvent({
 			title: "Weekly Review",
 			start: `${tomorrowStr}T09:00`,
 			end: `${tomorrowStr}T10:00`,
@@ -55,7 +42,7 @@ test.describe("recurring events", () => {
 			},
 		});
 
-		const fm = readEventFrontmatter(obsidian.vaultDir, relativePath);
+		const fm = readEventFrontmatter(calendar.vaultDir, evt.path);
 		expect(fm["RRule"]).toBe("weekly");
 		const spec = String(fm["RRuleSpec"] ?? "");
 		expect(spec).toContain("monday");
@@ -63,12 +50,12 @@ test.describe("recurring events", () => {
 		expect(spec).toContain("friday");
 
 		await expect
-			.poll(() => collectInstanceFiles(obsidian.vaultDir, "Weekly Review").length, {
+			.poll(() => collectInstanceFiles(calendar.vaultDir, "Weekly Review").length, {
 				timeout: INSTANCE_FILE_TIMEOUT_MS,
 			})
 			.toBeGreaterThanOrEqual(DEFAULT_FUTURE_INSTANCES);
 
-		const instances = collectInstanceFiles(obsidian.vaultDir, "Weekly Review");
+		const instances = collectInstanceFiles(calendar.vaultDir, "Weekly Review");
 		const allowedWeekdays = new Set([1, 3, 5]);
 		for (const file of instances) {
 			const match = file.match(instanceFileRegex("Weekly Review"));
@@ -77,14 +64,12 @@ test.describe("recurring events", () => {
 			expect(allowedWeekdays, `instance ${file} weekday=${weekday}`).toContain(weekday);
 		}
 
-		await expectEventVisible(obsidian.page, "Weekly Review");
+		await evt.expectVisible();
 	});
 
-	test("custom interval every 2 days generates instances 2 days apart", async ({ obsidian }) => {
-		await openCalendarReady(obsidian.page);
-
+	test("custom interval every 2 days generates instances 2 days apart", async ({ calendar }) => {
 		const date = "2026-05-10";
-		const relativePath = await createEventViaModal(obsidian, {
+		const evt = await calendar.createEvent({
 			title: "Workout",
 			start: `${date}T07:00`,
 			end: `${date}T07:30`,
@@ -95,56 +80,44 @@ test.describe("recurring events", () => {
 			},
 		});
 
-		const fm = readEventFrontmatter(obsidian.vaultDir, relativePath);
+		const fm = readEventFrontmatter(calendar.vaultDir, evt.path);
 		expect(String(fm["RRule"] ?? "")).toMatch(/2/);
 
 		await expect
-			.poll(() => collectInstanceFiles(obsidian.vaultDir, "Workout").length, {
+			.poll(() => collectInstanceFiles(calendar.vaultDir, "Workout").length, {
 				timeout: INSTANCE_FILE_TIMEOUT_MS,
 			})
 			.toBeGreaterThanOrEqual(DEFAULT_FUTURE_INSTANCES);
 
-		const instanceDates = collectInstanceFiles(obsidian.vaultDir, "Workout")
+		const instanceDates = collectInstanceFiles(calendar.vaultDir, "Workout")
 			.map((p) => p.match(instanceFileRegex("Workout")))
 			.filter((m): m is RegExpMatchArray => m !== null)
 			.map(parseInstanceDate)
 			.sort((a, b) => a.getTime() - b.getTime());
 
 		for (let i = 1; i < instanceDates.length; i++) {
-			const diffDays = Math.round((instanceDates[i]!.getTime() - instanceDates[i - 1]!.getTime()) / 86_400_000);
-			expect(
-				diffDays,
-				`gap between ${instanceDates[i - 1]!.toISOString()} and ${instanceDates[i]!.toISOString()}`
-			).toBe(2);
+			const diffDays = Math.round((instanceDates[i].getTime() - instanceDates[i - 1].getTime()) / 86_400_000);
+			expect(diffDays, `gap between ${instanceDates[i - 1].toISOString()} and ${instanceDates[i].toISOString()}`).toBe(
+				2
+			);
 		}
 
-		await navigateCalendar(obsidian.page, monthsFromTodayTo(date));
-		await expectEventVisible(obsidian.page, "Workout");
+		await navigateCalendar(calendar.page, monthsFromTodayTo(date));
+		await evt.expectVisible();
 	});
 
-	test("Skip toggled on a physical instance hides it from render", async ({ obsidian }) => {
-		const today = new Date();
-		today.setDate(today.getDate() + 1);
-		const instanceDate = formatLocalDate(today);
-		const instancePath = "Events/Skipped Instance.md";
-		writeFileSync(
-			join(obsidian.vaultDir, instancePath),
-			`---
-Start Date: ${instanceDate}T09:00
-End Date: ${instanceDate}T10:00
-Skip: true
----
+	test("Skip toggled on a physical instance hides it from render", async ({ calendar }) => {
+		const tomorrow = new Date();
+		tomorrow.setDate(tomorrow.getDate() + 1);
+		const instanceDate = formatLocalDate(tomorrow);
 
-# Skipped Instance
-`,
-			"utf8"
-		);
+		const evt = await calendar.seedOnDisk("Skipped Instance", {
+			"Start Date": `${instanceDate}T09:00`,
+			"End Date": `${instanceDate}T10:00`,
+			Skip: true,
+		});
 
-		await openCalendarReady(obsidian.page);
-
-		expectFrontmatter(obsidian.vaultDir, instancePath, { Skip: true });
-
-		const skippedBlock = obsidian.page.locator(".fc-event", { hasText: "Skipped Instance" });
-		await expect(skippedBlock).toHaveCount(0);
+		expectFrontmatter(calendar.vaultDir, evt.path, { Skip: true });
+		await evt.expectVisible(false);
 	});
 });

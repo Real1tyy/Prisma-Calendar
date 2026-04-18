@@ -1,6 +1,6 @@
-import { todayStamp } from "../../fixtures/analytics-helpers";
+import { todayStamp } from "../../fixtures/dates";
 import { expect, test } from "../../fixtures/electron";
-import { openCalendarViewViaRibbon, seedEvents, switchView } from "../../fixtures/helpers";
+import { sel } from "../../fixtures/testids";
 
 // Timeline tab renders events via vis-timeline. Individual day markers are
 // drawn by the library on a continuous axis — there's no per-day DOM element
@@ -8,23 +8,21 @@ import { openCalendarViewViaRibbon, seedEvents, switchView } from "../../fixture
 // the axis, so we assert on item count once the container is ready.
 
 test.describe("analytics: timeline (populated)", () => {
-	test("seeded events render as timeline items inside the container", async ({ obsidian }) => {
-		await openCalendarViewViaRibbon(obsidian.page);
-
-		await seedEvents(obsidian.page, [
+	test("seeded events render as timeline items inside the container", async ({ calendar }) => {
+		await calendar.seedMany([
 			{ title: "Morning Standup", start: todayStamp(9, 0), end: todayStamp(9, 30) },
 			{ title: "Design Review", start: todayStamp(13, 0), end: todayStamp(14, 0) },
 			{ title: "Workout", start: todayStamp(18, 0), end: todayStamp(19, 0) },
 		]);
 
-		await switchView(obsidian.page, "timeline");
+		await calendar.switchView("timeline");
 
-		const container = obsidian.page.locator('[data-testid="prisma-timeline-container"]').first();
-		await expect(container).toBeVisible({ timeout: 10_000 });
+		const container = calendar.page.locator(sel("prisma-timeline-container")).first();
+		await expect(container).toBeVisible();
 
 		// vis-timeline copies our `className` onto each rendered `.vis-item`.
 		// At least the three seeded events must be present.
 		const items = container.locator(".prisma-timeline-item");
-		await expect(items).toHaveCount(3, { timeout: 15_000 });
+		await expect(items).toHaveCount(3);
 	});
 });

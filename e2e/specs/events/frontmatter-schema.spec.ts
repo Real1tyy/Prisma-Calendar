@@ -1,17 +1,14 @@
 import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { expect, testWithNotifications as test } from "../../fixtures/electron";
-import { createEventViaModal, openCalendarReady } from "./events-helpers";
 
 // Schema drift canary: a UI-driven create with every field populated must
 // land exactly the expected set of keys — nothing extra, nothing missing.
 // Uses the notifications-on fixture so the "Minutes Before" field renders in
 // the create modal.
 test.describe("frontmatter schema", () => {
-	test("create via toolbar writes exactly the expected key set", async ({ obsidian }) => {
-		await openCalendarReady(obsidian.page);
-
-		const relativePath = await createEventViaModal(obsidian, {
+	test("create via toolbar writes exactly the expected key set", async ({ calendar }) => {
+		const evt = await calendar.createEvent({
 			title: "Team Meeting",
 			start: "2026-05-10T09:00",
 			end: "2026-05-10T10:00",
@@ -25,7 +22,7 @@ test.describe("frontmatter schema", () => {
 			customProperties: { Priority: "high" },
 		});
 
-		const fm = readEventFrontmatter(obsidian.vaultDir, relativePath);
+		const fm = readEventFrontmatter(calendar.vaultDir, evt.path);
 		const actualKeys = new Set(Object.keys(fm));
 
 		// The plugin writes a consistent schema regardless of user input — it
@@ -52,7 +49,7 @@ test.describe("frontmatter schema", () => {
 
 		expect(
 			{ extra, missing },
-			`schema drift in ${relativePath}:\n  extra: ${JSON.stringify(extra)}\n  missing: ${JSON.stringify(missing)}`
+			`schema drift in ${evt.path}:\n  extra: ${JSON.stringify(extra)}\n  missing: ${JSON.stringify(missing)}`
 		).toEqual({ extra: [], missing: [] });
 	});
 });

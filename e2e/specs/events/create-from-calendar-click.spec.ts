@@ -1,12 +1,6 @@
 import { expect, test } from "../../fixtures/electron";
-import {
-	EVENT_MODAL_SELECTOR,
-	expectEventVisible,
-	openCalendarReady,
-	snapshotEventFiles,
-	switchToWeekView,
-	waitForNewEventFiles,
-} from "./events-helpers";
+import { sel, TID } from "../../fixtures/testids";
+import { EVENT_MODAL_SELECTOR, snapshotEventFiles, waitForNewEventFiles } from "./events-helpers";
 import { fillEventModal, saveEventModal } from "./fill-event-modal";
 
 // Drag-select on FullCalendar's time grid must open the event modal with the
@@ -14,41 +8,38 @@ import { fillEventModal, saveEventModal } from "./fill-event-modal";
 // into the grid. The drag path is a real workflow — users drag across slots
 // to pick a time range, not type dates into inputs.
 test.describe("create event — from calendar drag", () => {
-	test("drag on time grid pre-fills start/end and renders saved block", async ({ obsidian }) => {
-		await openCalendarReady(obsidian.page);
-		await switchToWeekView(obsidian.page);
+	test("drag on time grid pre-fills start/end and renders saved block", async ({ calendar }) => {
+		await calendar.switchMode("week");
 
-		const slot = obsidian.page.locator(".fc-timegrid-slot-lane").first();
-		await slot.waitFor({ state: "visible", timeout: 15_000 });
+		const slot = calendar.page.locator(".fc-timegrid-slot-lane").first();
+		await slot.waitFor({ state: "visible" });
 
 		const slotBox = await slot.boundingBox();
 		expect(slotBox).not.toBeNull();
 		if (!slotBox) return;
 
-		const baseline = snapshotEventFiles(obsidian.vaultDir);
+		const baseline = snapshotEventFiles(calendar.vaultDir);
 		const startX = slotBox.x + slotBox.width / 2;
 		const startY = slotBox.y + 2;
 		const endY = slotBox.y + slotBox.height * 2;
 
-		await obsidian.page.mouse.move(startX, startY);
-		await obsidian.page.mouse.down();
-		await obsidian.page.mouse.move(startX, endY, { steps: 10 });
-		await obsidian.page.mouse.up();
+		await calendar.page.mouse.move(startX, startY);
+		await calendar.page.mouse.down();
+		await calendar.page.mouse.move(startX, endY, { steps: 10 });
+		await calendar.page.mouse.up();
 
-		const modal = obsidian.page.locator(EVENT_MODAL_SELECTOR);
-		await modal.waitFor({ state: "attached", timeout: 15_000 });
-		await modal.waitFor({ state: "visible", timeout: 15_000 });
+		const modal = calendar.page.locator(EVENT_MODAL_SELECTOR);
+		await modal.waitFor({ state: "attached" });
+		await modal.waitFor({ state: "visible" });
 
-		const start = await obsidian.page.locator('[data-testid="prisma-event-control-start"]').inputValue();
-		expect(start).not.toBe("");
+		await expect(calendar.page.locator(sel(TID.event.control("start")))).not.toHaveValue("");
+		await expect(calendar.page.locator(sel(TID.event.control("end")))).not.toHaveValue("");
 
-		const end = await obsidian.page.locator('[data-testid="prisma-event-control-end"]').inputValue();
-		expect(end).not.toBe("");
+		await fillEventModal(calendar.page, { title: "Dragged Event" });
+		await saveEventModal(calendar.page);
+		await waitForNewEventFiles(calendar.vaultDir, baseline, 1);
 
-		await fillEventModal(obsidian.page, { title: "Dragged Event" });
-		await saveEventModal(obsidian.page);
-		await waitForNewEventFiles(obsidian.vaultDir, baseline, 1);
-
-		await expectEventVisible(obsidian.page, "Dragged Event");
+		const evt = await calendar.eventByTitle("Dragged Event");
+		await evt.expectVisible();
 	});
 });
