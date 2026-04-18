@@ -1,6 +1,7 @@
 import type { App, TFile } from "obsidian";
 import { BehaviorSubject, filter, firstValueFrom, type Observable, Subject, type Subscription, take } from "rxjs";
 
+import { deepEqualJsonLike } from "../../utils/deep-equal";
 import { CommandManager } from "../commands/command-manager";
 import type { Repository } from "../data-access/repository";
 import { extractFileName, getFolderPath, isDirectChildOrFolderNote, toDisplayLink } from "../file/file";
@@ -629,15 +630,22 @@ export class VaultTable<
 
 		const existingRow = this.rowByFileName.get(id);
 
-		// Suppress indexer events for self-initiated CRUD writes (mtime dedup).
-		// CRUD methods eagerly update the in-memory row with the new mtime from disk.
-		// When the indexer later detects the same file change, the mtime matches → skip.
+		// Suppress indexer events for self-initiated CRUD writes — they
+		// eagerly updated the in-memory row to the new mtime/data, so the
+		// indexer's follow-up event contributes no new state. Both mtime and
+		// parsed data must match for dedup to fire:
+		//
+		// - mtime-only dedup was unsafe: same-second external writes (bulk
+		//   category rename via processFrontMatter on 1s-granularity fs)
+		//   share an mtime with the existing row but carry new frontmatter.
+		// - data-only dedup was unsafe: content-only edits leave parsed data
+		//   identical but change body text, which must still propagate.
 		//
 		// When emitCrudEvents is true, CRUD methods emit events directly because:
 		// - Creates: row was eagerly inserted → indexer would see it as update, not create
 		// - Deletes: row was eagerly removed → indexer finds nothing to emit
-		// - The mtime dedup here prevents double-emission from the indexer path.
-		if (existingRow && existingRow.mtime === mtime) {
+		// - The dedup here prevents double-emission from the indexer path.
+		if (existingRow && existingRow.mtime === mtime && deepEqualJsonLike(existingRow.data, parsed)) {
 			return;
 		}
 
@@ -649,11 +657,12 @@ export class VaultTable<
 		const fullContent = await this.app.vault.cachedRead(file);
 		const content = extractContentAfterFrontmatter(fullContent);
 		const mtime = event.source?.mtime ?? Date.now();
+		const raw = event.source?.frontmatter;
 
 		const oldRow = this.rowByFileName.get(id);
 		const newRow = this.buildRow(id, file, filePath, data, content, mtime);
 
-		this.persistentCache?.put(filePath, data, mtime);
+		this.persistentCache?.put(filePath, data, mtime, raw);
 
 		if (oldRow) {
 			this.removeRow(oldRow.id);
@@ -687,13 +696,23 @@ export class VaultTable<
 	}
 
 	/**
-	 * Fast path: reuse hydrated (already-parsed) data when mtime matches, else
-	 * run the Zod parse. Returns `null` when the frontmatter is invalid — the
-	 * invalid-frontmatter handling has already been dispatched in that case.
+	 * Fast path: reuse hydrated (already-parsed) data when mtime matches AND
+	 * the current raw frontmatter structurally matches the raw we cached.
+	 * Otherwise run the Zod parse. Returns `null` when the frontmatter is
+	 * invalid — the invalid-frontmatter handling has already been dispatched
+	 * in that case.
+	 *
+	 * Checking raw (not just mtime) closes the same-second-write hole: if a
+	 * previous session's bulk rename updated content without bumping mtime,
+	 * the cached entry may still be keyed by a now-matching mtime even though
+	 * its parsed data is stale. Entries written before `raw` was stored are
+	 * treated as cache misses (re-parse) — safe default.
 	 */
 	private resolveParsedData(filePath: string, mtime: number, raw: Record<string, unknown>): TData | null {
 		const hydrated = this.hydratedByPath?.get(filePath);
-		if (hydrated && hydrated.mtime === mtime) return hydrated.data;
+		if (hydrated && hydrated.mtime === mtime && hydrated.raw !== undefined && deepEqualJsonLike(hydrated.raw, raw)) {
+			return hydrated.data;
+		}
 
 		const result = this.schema.safeParse(raw);
 		if (!result.success) {

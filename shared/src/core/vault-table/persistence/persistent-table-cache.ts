@@ -87,14 +87,14 @@ export class PersistentTableCache<TData> {
 		return out;
 	}
 
-	put(filePath: string, data: TData, mtime: number): void {
-		this.conn.put(this.prefix + filePath, this.makeEntry(data, mtime));
+	put(filePath: string, data: TData, mtime: number, raw?: Record<string, unknown>): void {
+		this.conn.put(this.prefix + filePath, this.makeEntry(data, mtime, raw));
 	}
 
-	async putBatch(entries: Iterable<[string, TData, number]>): Promise<void> {
+	async putBatch(entries: Iterable<[string, TData, number, Record<string, unknown>?]>): Promise<void> {
 		const records: Array<[string, unknown]> = [];
-		for (const [filePath, data, mtime] of entries) {
-			records.push([this.prefix + filePath, this.makeEntry(data, mtime)]);
+		for (const [filePath, data, mtime, raw] of entries) {
+			records.push([this.prefix + filePath, this.makeEntry(data, mtime, raw)]);
 		}
 		await this.swallow("putBatch", () => this.conn.putBatch(records));
 	}
@@ -103,9 +103,9 @@ export class PersistentTableCache<TData> {
 		this.conn.delete(this.prefix + filePath);
 	}
 
-	rename(oldPath: string, newPath: string, data: TData, mtime: number): void {
+	rename(oldPath: string, newPath: string, data: TData, mtime: number, raw?: Record<string, unknown>): void {
 		this.delete(oldPath);
-		this.put(newPath, data, mtime);
+		this.put(newPath, data, mtime, raw);
 	}
 
 	async flush(): Promise<void> {
@@ -122,8 +122,8 @@ export class PersistentTableCache<TData> {
 
 	// ─── Private ─────────────────────────────────────────────────
 
-	private makeEntry(data: TData, mtime: number): PersistentEntry<TData> {
-		return { data, mtime };
+	private makeEntry(data: TData, mtime: number, raw?: Record<string, unknown>): PersistentEntry<TData> {
+		return raw === undefined ? { data, mtime } : { data, mtime, raw };
 	}
 
 	private async swallow(op: string, work: () => Promise<unknown>): Promise<void> {

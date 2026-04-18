@@ -277,4 +277,48 @@ describe("VaultTable + persistence (integration)", () => {
 		expect(parseSpy).toHaveBeenCalled();
 		await t2.destroyAsync();
 	});
+
+	// Regression: if a same-second write updated the file during the previous
+	// session (category rename, bulk frontmatter edit) but the live-session
+	// dedup swallowed the update, IDB may hold stale parsed data tagged with
+	// the CURRENT file's mtime. On cold start the fs-reported mtime still
+	// matches, so a blind mtime-equality fast path would return the stale
+	// data. Hydration must verify that raw frontmatter still matches before
+	// trusting the cache — otherwise re-parse and overwrite.
+	it("hydration re-parses when raw frontmatter diverges from cache despite matching mtime", async () => {
+		const idb = makeFakeIdb();
+		const app = makeApp();
+
+		const t1 = new VaultTable({
+			app,
+			directory: "events",
+			schema: TestSchema,
+			persistence: { namespace: "plg-int-stale", schemaVersion: 1 },
+			persistenceIdbFactory: idb,
+		});
+		await t1.start();
+		events$.next(fileChanged("events/a.md", { title: "stale", priority: 1 }, 100));
+		currentComplete$.next(true);
+		await new Promise((r) => setTimeout(r, 20));
+		await t1.destroyAsync();
+
+		const t2 = new VaultTable({
+			app,
+			directory: "events",
+			schema: TestSchema,
+			persistence: { namespace: "plg-int-stale", schemaVersion: 1 },
+			persistenceIdbFactory: idb,
+		});
+		await t2.start();
+
+		// Same mtime, different raw frontmatter — simulates a same-second
+		// processFrontMatter write that the previous session's live dedup
+		// dropped before it could persist.
+		events$.next(fileChanged("events/a.md", { title: "fresh", priority: 9 }, 100));
+		await new Promise((r) => setTimeout(r, 20));
+
+		expect(t2.get("a")?.data.title).toBe("fresh");
+		expect(t2.get("a")?.data.priority).toBe(9);
+		await t2.destroyAsync();
+	});
 });

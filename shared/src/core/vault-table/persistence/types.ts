@@ -28,12 +28,20 @@ export interface PersistenceConfig {
  * (plain JSON objects — no class instances, functions, Maps, Sets, or cycles).
  * Zod-inferred types satisfy this naturally.
  *
+ * `raw` is the original frontmatter object the entry was parsed from — stored
+ * so hydration can verify cache freshness by comparing it to the current file
+ * frontmatter. Mtime alone is unsafe as a freshness key because same-second
+ * writes (bulk rename, processFrontMatter on 1s-granularity filesystems) can
+ * change file content without ticking mtime. Entries written before this
+ * field existed may be missing it — treat as a cache miss and re-parse.
+ *
  * Schema version is tracked once at the DB level (meta store); on mismatch
  * the entire namespace DB is dropped, so there is no per-entry version field.
  */
 export interface PersistentEntry<TData> {
 	data: TData;
 	mtime: number;
+	raw?: Record<string, unknown>;
 }
 
 /**

@@ -394,6 +394,43 @@ describe("VaultTable", () => {
 
 			table.destroy();
 		});
+
+		// Regression: same-second writes (e.g. bulk category rename via
+		// fileManager.processFrontMatter on a 1s-granularity fs) deliver an
+		// indexer event whose mtime matches the existing row but whose
+		// frontmatter is genuinely new. Dedup must not fire in that case.
+		it("should re-emit when frontmatter differs but mtime is unchanged", async () => {
+			const { config, fileStore } = createTestConfig();
+			const table = new VaultTable(config);
+			fileStore.set("test-table/note.md", createMockTFile("test-table/note.md", 100));
+
+			await table.start();
+
+			emitIndexerEvent(
+				createFileChangedEvent("test-table/note.md", { title: "Task", priority: 0, category: "work" }, 100)
+			);
+
+			await vi.waitFor(() => expect(table.count()).toBe(1));
+			expect(table.get("note")!.data.category).toBe("work");
+
+			const events: VaultTableEvent<TestData>[] = [];
+			table.events$.subscribe((e) => events.push(e));
+
+			emitIndexerEvent(
+				createFileChangedEvent("test-table/note.md", { title: "Task", priority: 0, category: "personal" }, 100, {
+					title: "Task",
+					priority: 0,
+					category: "work",
+				})
+			);
+
+			await vi.waitFor(() => expect(table.get("note")!.data.category).toBe("personal"));
+
+			expect(events).toHaveLength(1);
+			expect(events[0].type).toBe("row-updated");
+
+			table.destroy();
+		});
 	});
 
 	describe("invalid frontmatter", () => {
