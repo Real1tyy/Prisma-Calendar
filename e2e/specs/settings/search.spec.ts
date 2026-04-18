@@ -18,7 +18,7 @@ test.describe("settings: search", () => {
 		await switchSettingsTab(obsidian.page, "calendar");
 
 		const searchInput = obsidian.page.locator(".prisma-settings-search-input").first();
-		await searchInput.waitFor({ state: "visible", timeout: 5_000 });
+		await searchInput.waitFor({ state: "visible" });
 
 		const visibleSettings = obsidian.page.locator(".setting-item:visible");
 		const baselineCount = await visibleSettings.count();
@@ -31,13 +31,13 @@ test.describe("settings: search", () => {
 		await searchInput.fill("zzzznomatch");
 		await searchInput.press("Enter");
 
-		await expect.poll(async () => visibleSettings.count(), { timeout: 5_000 }).toBeLessThan(baselineCount);
+		await expect.poll(async () => visibleSettings.count()).toBeLessThan(baselineCount);
 		await expect(obsidian.page.locator(".prisma-settings-search-no-results").first()).toBeVisible();
 
 		// Clear → visible count returns to at least the baseline.
 		await searchInput.fill("");
 		await searchInput.press("Enter");
 
-		await expect.poll(async () => visibleSettings.count(), { timeout: 5_000 }).toBeGreaterThanOrEqual(baselineCount);
+		await expect.poll(async () => visibleSettings.count()).toBeGreaterThanOrEqual(baselineCount);
 	});
 });

@@ -45,7 +45,13 @@ export type EventControlKey =
 
 export type EventFieldKey = "title" | "categories" | "prerequisites" | "participants";
 
-export type EventBtnKey = "save" | "cancel" | "assign-categories" | "assign-prerequisites" | "add-custom-prop-other";
+export type EventBtnKey =
+	| "save"
+	| "cancel"
+	| "minimize"
+	| "assign-categories"
+	| "assign-prerequisites"
+	| "add-custom-prop-other";
 
 export type ToolbarKey =
 	| "create"
@@ -56,6 +62,7 @@ export type ToolbarKey =
 	| "next"
 	| "prev"
 	| "today"
+	| "goto-now"
 	| "batch-select"
 	| "batch-exit";
 

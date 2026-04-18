@@ -343,6 +343,18 @@ async function runWithObsidianHandle(
 	}
 }
 
+// Opt-in DSL fixture shared across every `test*` variant. Factored out so each
+// variant can mount the same `calendar` handle without duplicating the body.
+// Each variant still owns its own `obsidian` fixture (different prefixes,
+// overrides, error whitelists).
+const calendarFixture = async (
+	{ obsidian }: { obsidian: BootstrappedObsidian },
+	use: (handle: CalendarHandle) => Promise<void>
+): Promise<void> => {
+	await openCalendarReady(obsidian.page);
+	await use(createCalendarHandle({ obsidian }));
+};
+
 export const test = base.extend<{
 	obsidian: BootstrappedObsidian;
 	calendar: CalendarHandle;
@@ -355,10 +367,7 @@ export const test = base.extend<{
 	// `{ obsidian }` to get a CalendarHandle with the calendar view already
 	// open. Classic `{ obsidian }`-only specs are unaffected — this fixture
 	// only runs when a spec actually references `calendar`.
-	calendar: async ({ obsidian }, use) => {
-		await openCalendarReady(obsidian.page);
-		await use(createCalendarHandle({ obsidian }));
-	},
+	calendar: calendarFixture,
 });
 
 /**
@@ -378,11 +387,15 @@ export const RESILIENCE_EXPECTED_ERRORS: readonly RegExp[] = [
  * path renderer errors. Every spec under `specs/resilience/` should import
  * from here instead of the default `test`.
  */
-export const testResilience = base.extend<{ obsidian: BootstrappedObsidian }>({
+export const testResilience = base.extend<{
+	obsidian: BootstrappedObsidian;
+	calendar: CalendarHandle;
+}>({
 	// eslint-disable-next-line no-empty-pattern
 	obsidian: async ({}, use) => {
 		await runWithObsidianHandle({ prefix: "resilience-spec", expectedErrorPatterns: RESILIENCE_EXPECTED_ERRORS }, use);
 	},
+	calendar: calendarFixture,
 });
 
 /**
@@ -402,7 +415,10 @@ export const ICS_SUBSCRIPTION_EXPECTED_ERRORS: readonly RegExp[] = [
  * the plugin legitimately logs to the renderer console. Use for ICS
  * subscription and (future) CalDAV specs.
  */
-export const testIntegrations = base.extend<{ obsidian: BootstrappedObsidian }>({
+export const testIntegrations = base.extend<{
+	obsidian: BootstrappedObsidian;
+	calendar: CalendarHandle;
+}>({
 	// eslint-disable-next-line no-empty-pattern
 	obsidian: async ({}, use) => {
 		await runWithObsidianHandle(
@@ -410,6 +426,7 @@ export const testIntegrations = base.extend<{ obsidian: BootstrappedObsidian }>(
 			use
 		);
 	},
+	calendar: calendarFixture,
 });
 
 const NOTIFICATIONS_ON_OVERRIDES: BootstrapOverrides = {
@@ -466,10 +483,7 @@ export const testWithNotifications = base.extend<{
 	obsidian: async ({}, use) => {
 		await runWithObsidianHandle({ prefix: "notif-spec", overrides: NOTIFICATIONS_ON_OVERRIDES }, use);
 	},
-	calendar: async ({ obsidian }, use) => {
-		await openCalendarReady(obsidian.page);
-		await use(createCalendarHandle({ obsidian }));
-	},
+	calendar: calendarFixture,
 });
 
 /**
@@ -478,11 +492,15 @@ export const testWithNotifications = base.extend<{
  * through the (network-bound) add-subscription modal. Sync flags are all off
  * so bootstrap doesn't try to fetch the URL.
  */
-export const testWithSeededICSSubscription = base.extend<{ obsidian: BootstrappedObsidian }>({
+export const testWithSeededICSSubscription = base.extend<{
+	obsidian: BootstrappedObsidian;
+	calendar: CalendarHandle;
+}>({
 	// eslint-disable-next-line no-empty-pattern
 	obsidian: async ({}, use) => {
 		await runWithObsidianHandle({ prefix: "ics-sub-spec", overrides: SEEDED_ICS_SUBSCRIPTION_OVERRIDES }, use);
 	},
+	calendar: calendarFixture,
 });
 
 export const MULTI_CALENDAR_PRIMARY_ID = "primary";
@@ -514,11 +532,19 @@ const MULTI_CALENDAR_OVERRIDES: BootstrapOverrides = {
  * resolution, etc. Use `openCalendarView(page, "primary"|"secondary")` to
  * switch between them.
  */
-export const testMultiCalendar = base.extend<{ obsidian: BootstrappedObsidian }>({
+export const testMultiCalendar = base.extend<{
+	obsidian: BootstrappedObsidian;
+	calendar: CalendarHandle;
+}>({
 	// eslint-disable-next-line no-empty-pattern
 	obsidian: async ({}, use) => {
 		await runWithObsidianHandle({ prefix: "multi-cal-spec", overrides: MULTI_CALENDAR_OVERRIDES }, use);
 	},
+	// Auto-opens the primary bundle (the `openCalendarView` fallback path picks
+	// `calendarBundles[0]` when the default "default" id isn't present). Specs
+	// that need to act on the secondary calendar call `openCalendarView(page,
+	// "secondary")` themselves before using the handle.
+	calendar: calendarFixture,
 });
 
 export const expect = test.expect;

@@ -1,16 +1,15 @@
 import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
-import { dragByDelta, eventByTitle, gotoToday, todayTimedEvent, waitForEvent } from "../../fixtures/calendar-helpers";
+import { eventByTitle, gotoToday, todayTimedEvent, waitForEvent } from "../../fixtures/calendar-helpers";
+import { dragByDelta } from "../../fixtures/dsl";
 import { expect, test } from "../../fixtures/electron";
-import { openCalendar } from "../../fixtures/helpers";
 import { refreshCalendar, seedEvent } from "../../fixtures/seed-events";
 
 test.describe("drag to reschedule", () => {
-	test("dragging a timed block down shifts Start/End Date and preserves duration", async ({ obsidian }) => {
-		const { page, vaultDir } = obsidian;
+	test("dragging a timed block down shifts Start/End Date and preserves duration", async ({ calendar }) => {
+		const { page, vaultDir } = calendar;
 		const file = seedEvent(vaultDir, todayTimedEvent("Drag Me", 10, 11));
 
-		await openCalendar(page);
 		await refreshCalendar(page);
 		await gotoToday(page);
 		await waitForEvent(page, "Drag Me");
@@ -20,7 +19,6 @@ test.describe("drag to reschedule", () => {
 
 		await expect
 			.poll(() => String(readEventFrontmatter(vaultDir, file)["Start Date"]) !== String(before["Start Date"]), {
-				timeout: 8_000,
 				message: `Start Date did not change after drag of ${file}`,
 			})
 			.toBe(true);

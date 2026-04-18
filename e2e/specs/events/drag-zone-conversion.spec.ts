@@ -1,8 +1,9 @@
 import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { anchorISO } from "../../fixtures/dates";
+import { boundingBoxOrThrow } from "../../fixtures/dsl";
 import { expect, test } from "../../fixtures/electron";
-import { boundingBoxOrThrow, eventBlockLocator } from "./events-helpers";
+import { eventBlockLocator } from "./events-helpers";
 
 // FullCalendar's timeGridWeek splits the visible area into two drop zones: an
 // all-day strip at the top and the timed slot column below. Dragging an event

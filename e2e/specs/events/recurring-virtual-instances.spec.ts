@@ -5,6 +5,7 @@ import type { Page } from "@playwright/test";
 
 import { expect, test } from "../../fixtures/electron";
 import { refreshCalendar } from "../../fixtures/seed-events";
+import { sel, TID } from "../../fixtures/testids";
 import { createEventViaModal, formatLocalDate, openCalendarReady, switchToMonthView } from "./events-helpers";
 import { addDays, collectInstanceDates, toYMD } from "./robustness-helpers";
 
@@ -32,9 +33,7 @@ const RENDER_TIMEOUT_MS = 10_000;
  */
 async function countPhysicalBlocks(page: Page, title: string): Promise<number> {
 	return page
-		.locator(
-			`.workspace-leaf.mod-active [data-testid="prisma-cal-event"][data-event-title="${title}"][data-event-file-path]`
-		)
+		.locator(`.workspace-leaf.mod-active ${sel(TID.block)}[data-event-title="${title}"][data-event-file-path]`)
 		.count();
 }
 

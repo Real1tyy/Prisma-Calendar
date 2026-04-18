@@ -64,7 +64,7 @@ test.describe("settings: calendar CRUD", () => {
 		await obsidian.page.locator('[data-testid="prisma-settings-calendar-rename"]').click();
 
 		const renameInput = obsidian.page.locator('[data-testid="prisma-settings-calendar-rename-input"]').first();
-		await renameInput.waitFor({ state: "visible", timeout: 5_000 });
+		await renameInput.waitFor({ state: "visible" });
 		// Obsidian's TextComponent wires its onChange to the input event, which
 		// fill() fires natively — the `newName` closure inside the rename modal
 		// only updates via that listener, so no extra change dispatch is needed.
@@ -119,11 +119,7 @@ test.describe("settings: calendar CRUD", () => {
 		await fillEventModalMinimal(obsidian.page, { title: titleB });
 		await saveEventModal(obsidian.page);
 
-		await expect
-			.poll(() => listEventFiles(obsidian.vaultDir, "CalendarB").some((f) => f.includes(titleB)), {
-				timeout: 5_000,
-			})
-			.toBe(true);
+		await expect.poll(() => listEventFiles(obsidian.vaultDir, "CalendarB").some((f) => f.includes(titleB))).toBe(true);
 		expect(listEventFiles(obsidian.vaultDir, "CalendarA").some((f) => f.includes(titleB))).toBe(false);
 
 		// 4. Open CalendarA via its ribbon icon and repeat.
@@ -133,10 +129,6 @@ test.describe("settings: calendar CRUD", () => {
 		await fillEventModalMinimal(obsidian.page, { title: titleA });
 		await saveEventModal(obsidian.page);
 
-		await expect
-			.poll(() => listEventFiles(obsidian.vaultDir, "CalendarA").some((f) => f.includes(titleA)), {
-				timeout: 5_000,
-			})
-			.toBe(true);
+		await expect.poll(() => listEventFiles(obsidian.vaultDir, "CalendarA").some((f) => f.includes(titleA))).toBe(true);
 	});
 });

@@ -15,6 +15,7 @@ import {
 	expectUniqueVisibleEventCount,
 	seedBulkEvents,
 } from "../../fixtures/stress-helpers";
+import { sel, TID } from "../../fixtures/testids";
 
 // Rapid-fire mutations: exercise the RAF-coalesced refresh (`scheduleRefreshEvents`
 // in calendar-view.ts) by firing multiple mutations back-to-back faster than
@@ -23,8 +24,8 @@ import {
 // snapshots of the vault. This is exactly the scenario the user reported —
 // "calendar doesn't refresh itself, stays stale" — scaled up.
 
-const TOOLBAR_NEXT = '[data-testid="prisma-cal-toolbar-next"]';
-const TOOLBAR_PREV = '[data-testid="prisma-cal-toolbar-prev"]';
+const TOOLBAR_NEXT = sel(TID.toolbar("next"));
+const TOOLBAR_PREV = sel(TID.toolbar("prev"));
 
 test.describe.configure({ mode: "serial" });
 

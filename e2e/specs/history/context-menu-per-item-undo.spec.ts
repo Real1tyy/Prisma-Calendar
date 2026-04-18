@@ -1,4 +1,5 @@
 import { isoLocal } from "../../fixtures/dates";
+import { undoRedoRoundTrip } from "../../fixtures/dsl";
 import { test } from "../../fixtures/electron";
 import { listEventFiles } from "../events/events-helpers";
 
@@ -7,6 +8,9 @@ import { listEventFiles } from "../events/events-helpers";
 // through the full undo+redo round-trip via the DSL). This file fills the
 // remaining mutating items that the DSL-based spec doesn't cover — the
 // move/clone-by-week family plus the moveBy custom-offset modal.
+//
+// Every test runs through `undoRedoRoundTrip` so undo AND redo symmetry are
+// verified in one pass (the original shape only undid).
 //
 // Items not covered here:
 //   - editEvent / duplicateEvent / markDone / skipEvent / deleteEvent —
@@ -24,67 +28,46 @@ import { listEventFiles } from "../events/events-helpers";
 //     event regression spec; those items have dedicated coverage.
 
 test.describe("context menu: per-item undo (UI-driven)", () => {
-	test("moveToNextWeek — undo reverts the Start Date", async ({ calendar }) => {
-		const event = await calendar.createEvent({
-			title: "MoveNext Probe",
-			start: isoLocal(1, 9),
-			end: isoLocal(1, 10),
+	// Per-spec boilerplate differs only in:
+	//   - the context-menu item to invoke
+	//   - whether the action mutates an existing file (Start Date) or clones
+	//     a new one (file count).
+	// The move/clone table drives the first four tests — moveBy (modal-driven)
+	// is a separate test body.
+
+	for (const { title, item } of [
+		{ title: "MoveNext Probe", item: "moveToNextWeek" as const },
+		{ title: "MovePrev Probe", item: "moveToPreviousWeek" as const },
+	]) {
+		test(`${item} — undo/redo reverts Start Date`, async ({ calendar }) => {
+			const event = await calendar.createEvent({ title, start: isoLocal(1, 9), end: isoLocal(1, 10) });
+			const originalStart = event.readFrontmatter("Start Date");
+
+			await undoRedoRoundTrip(calendar, {
+				mutate: () => event.rightClick(item),
+				mutated: () => event.expectFrontmatter("Start Date", (v) => v !== originalStart),
+				baseline: () => event.expectFrontmatter("Start Date", (v) => v === originalStart),
+			});
 		});
-		const originalStart = event.readFrontmatter("Start Date");
+	}
 
-		await event.rightClick("moveToNextWeek");
-		await event.expectFrontmatter("Start Date", (v) => v !== originalStart);
+	for (const { title, item } of [
+		{ title: "CloneNext Probe", item: "cloneToNextWeek" as const },
+		{ title: "ClonePrev Probe", item: "cloneToPreviousWeek" as const },
+	]) {
+		test(`${item} — undo/redo toggles the clone`, async ({ calendar }) => {
+			const event = await calendar.createEvent({ title, start: isoLocal(1, 9), end: isoLocal(1, 10) });
+			const before = listEventFiles(calendar.vaultDir).length;
 
-		await calendar.undo();
-		await event.expectFrontmatter("Start Date", (v) => v === originalStart);
-	});
-
-	test("moveToPreviousWeek — undo reverts the Start Date", async ({ calendar }) => {
-		const event = await calendar.createEvent({
-			title: "MovePrev Probe",
-			start: isoLocal(1, 9),
-			end: isoLocal(1, 10),
+			await undoRedoRoundTrip(calendar, {
+				mutate: () => event.rightClick(item),
+				mutated: () => calendar.expectEventCount(before + 1),
+				baseline: () => calendar.expectEventCount(before),
+			});
 		});
-		const originalStart = event.readFrontmatter("Start Date");
+	}
 
-		await event.rightClick("moveToPreviousWeek");
-		await event.expectFrontmatter("Start Date", (v) => v !== originalStart);
-
-		await calendar.undo();
-		await event.expectFrontmatter("Start Date", (v) => v === originalStart);
-	});
-
-	test("cloneToNextWeek — undo removes the clone", async ({ calendar }) => {
-		const event = await calendar.createEvent({
-			title: "CloneNext Probe",
-			start: isoLocal(1, 9),
-			end: isoLocal(1, 10),
-		});
-		const before = listEventFiles(calendar.vaultDir).length;
-
-		await event.rightClick("cloneToNextWeek");
-		await calendar.expectEventCount(before + 1);
-
-		await calendar.undo();
-		await calendar.expectEventCount(before);
-	});
-
-	test("cloneToPreviousWeek — undo removes the clone", async ({ calendar }) => {
-		const event = await calendar.createEvent({
-			title: "ClonePrev Probe",
-			start: isoLocal(1, 9),
-			end: isoLocal(1, 10),
-		});
-		const before = listEventFiles(calendar.vaultDir).length;
-
-		await event.rightClick("cloneToPreviousWeek");
-		await calendar.expectEventCount(before + 1);
-
-		await calendar.undo();
-		await calendar.expectEventCount(before);
-	});
-
-	test("moveBy — undo reverts the custom-offset move", async ({ calendar }) => {
+	test("moveBy — undo/redo reverts the custom-offset move", async ({ calendar }) => {
 		const event = await calendar.createEvent({
 			title: "MoveBy Probe",
 			start: isoLocal(1, 9),
@@ -92,18 +75,20 @@ test.describe("context menu: per-item undo (UI-driven)", () => {
 		});
 		const originalStart = event.readFrontmatter("Start Date");
 
-		await event.rightClick("moveBy");
-		const modal = calendar.page.locator(".prisma-move-by-modal").first();
-		await modal.waitFor({ state: "visible" });
-		await modal.locator(".prisma-move-by-input").first().fill("30");
-		// Unit is selected via text-labeled buttons; default is "minutes" — no
-		// change needed. Submit via the "Move" button rendered by the shared
-		// createModalButtons helper (no testid, text is stable).
-		await modal.locator("button", { hasText: /^Move$/ }).click();
-		await modal.waitFor({ state: "hidden" });
-		await event.expectFrontmatter("Start Date", (v) => v !== originalStart);
-
-		await calendar.undo();
-		await event.expectFrontmatter("Start Date", (v) => v === originalStart);
+		await undoRedoRoundTrip(calendar, {
+			mutate: async () => {
+				await event.rightClick("moveBy");
+				const modal = calendar.page.locator(".prisma-move-by-modal").first();
+				await modal.waitFor({ state: "visible" });
+				await modal.locator(".prisma-move-by-input").first().fill("30");
+				// Unit is selected via text-labeled buttons; default is "minutes" — no
+				// change needed. Submit via the "Move" button rendered by the shared
+				// createModalButtons helper (no testid, text is stable).
+				await modal.locator("button", { hasText: /^Move$/ }).click();
+				await modal.waitFor({ state: "hidden" });
+			},
+			mutated: () => event.expectFrontmatter("Start Date", (v) => v !== originalStart),
+			baseline: () => event.expectFrontmatter("Start Date", (v) => v === originalStart),
+		});
 	});
 });

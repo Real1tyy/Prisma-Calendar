@@ -10,6 +10,7 @@ import {
 	seedBulkEvents,
 	waitForIndexerToReach,
 } from "../../fixtures/stress-helpers";
+import { sel, TID } from "../../fixtures/testids";
 import { listEventFiles } from "../events/events-helpers";
 
 // Reproduces the "stale calendar after batch move" scenario the user reported:
@@ -24,8 +25,8 @@ import { listEventFiles } from "../events/events-helpers";
 // one-per-(day, hour) across the 7 days of the current week so no
 // eventMaxStack / dayMaxEvents limit kicks in.
 
-const TOOLBAR_NEXT = '[data-testid="prisma-cal-toolbar-next"]';
-const TOOLBAR_PREV = '[data-testid="prisma-cal-toolbar-prev"]';
+const TOOLBAR_NEXT = sel(TID.toolbar("next"));
+const TOOLBAR_PREV = sel(TID.toolbar("prev"));
 
 test.describe.configure({ mode: "serial" });
 
@@ -142,7 +143,7 @@ test.describe("stress: batch move reactivity", () => {
 		);
 		for (const title of selectedTitles) {
 			await page
-				.locator(`.workspace-leaf.mod-active [data-testid="prisma-cal-event"][data-event-title="${title}"]`)
+				.locator(`.workspace-leaf.mod-active ${sel(TID.block)}[data-event-title="${title}"]`)
 				.first()
 				.click();
 		}

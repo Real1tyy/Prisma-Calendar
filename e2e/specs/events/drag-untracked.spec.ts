@@ -1,9 +1,8 @@
 import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
+import { boundingBoxOrThrow, centerOf, drag } from "../../fixtures/dsl";
 import { expect, test } from "../../fixtures/electron";
 import {
-	boundingBoxOrThrow,
-	dragWithJitter,
 	eventBlockLocator,
 	formatLocalDate,
 	UNTRACKED_BUTTON_SELECTOR,
@@ -41,11 +40,7 @@ test.describe("drag event ↔ untracked dropdown", () => {
 		// `isDraggingCalendarEvent` only flips true inside FC's dragstart, and
 		// the pointerup handler that moves the event to untracked returns early
 		// when that flag is false — so the jitter move is load-bearing here.
-		await dragWithJitter(
-			calendar.page,
-			{ x: blockBox.x + blockBox.width / 2, y: blockBox.y + blockBox.height / 2 },
-			{ x: btnBox.x + btnBox.width / 2, y: btnBox.y + btnBox.height / 2 }
-		);
+		await drag(calendar.page, centerOf(blockBox), centerOf(btnBox), { mode: "jitter" });
 
 		await evt.expectFrontmatter("Start Date", (v) => String(v ?? "") === "");
 
@@ -83,11 +78,11 @@ test.describe("drag event ↔ untracked dropdown", () => {
 		const slotBox = await boundingBoxOrThrow(timedSlot, "10:00 slot lane");
 		const colBox = await boundingBoxOrThrow(timedColumn, "timed column for today");
 
-		await dragWithJitter(
+		await drag(
 			calendar.page,
-			{ x: itemBox.x + itemBox.width / 2, y: itemBox.y + itemBox.height / 2 },
+			centerOf(itemBox),
 			{ x: colBox.x + colBox.width / 2, y: slotBox.y + slotBox.height / 2 },
-			{ jitterDx: 10 }
+			{ mode: "jitter", jitterDx: 10 }
 		);
 
 		await expect

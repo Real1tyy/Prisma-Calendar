@@ -1,55 +1,48 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { runCommand } from "../../fixtures/commands";
 import { expect, test } from "../../fixtures/electron";
+import { sel, TID } from "../../fixtures/testids";
 import {
 	createEventViaModal,
 	EVENT_MODAL_SELECTOR,
 	formatLocalDate,
 	listEventFiles,
-	openCalendarReady,
 	openCreateModal,
 	rightClickEventMenu,
 	snapshotEventFiles,
 } from "./events-helpers";
 import { fillEventModal, saveEventModal } from "./fill-event-modal";
 
-const MINIMIZE_BUTTON = '[data-testid="prisma-event-btn-minimize"]';
-
 test.describe("event modal UX", () => {
-	test("minimize then Restore minimized event modal preserves title and start time", async ({ obsidian }) => {
-		await openCalendarReady(obsidian.page);
-
+	test("minimize then Restore minimized event modal preserves title and start time", async ({ calendar }) => {
 		const today = formatLocalDate(new Date());
-		await openCreateModal(obsidian.page);
-		await fillEventModal(obsidian.page, {
+		await openCreateModal(calendar.page);
+		await fillEventModal(calendar.page, {
 			title: "Minimize Roundtrip",
 			start: `${today}T09:00`,
 			end: `${today}T10:00`,
 		});
 
-		await obsidian.page.locator(MINIMIZE_BUTTON).first().click();
+		await calendar.page
+			.locator(sel(TID.event.btn("minimize")))
+			.first()
+			.click();
 		// Modal hides — the Title input disappears from DOM because the modal
 		// is unmounted on minimize (state is held in MinimizedModalManager).
-		await obsidian.page.locator(EVENT_MODAL_SELECTOR).waitFor({ state: "detached", timeout: 10_000 });
+		await calendar.page.locator(EVENT_MODAL_SELECTOR).waitFor({ state: "detached" });
 
-		await runCommand(obsidian.page, "Prisma Calendar: Restore minimized event modal");
+		await calendar.runCommand("Prisma Calendar: Restore minimized event modal");
 
-		await obsidian.page.locator(EVENT_MODAL_SELECTOR).waitFor({ state: "visible", timeout: 10_000 });
-		await expect(obsidian.page.locator('[data-testid="prisma-event-control-title"]').first()).toHaveValue(
-			"Minimize Roundtrip"
-		);
-		await expect(obsidian.page.locator('[data-testid="prisma-event-control-start"]').first()).toHaveValue(
-			`${today}T09:00`
-		);
+		await calendar.page.locator(EVENT_MODAL_SELECTOR).waitFor({ state: "visible" });
+		await expect(calendar.page.locator(sel(TID.event.control("title"))).first()).toHaveValue("Minimize Roundtrip");
+		await expect(calendar.page.locator(sel(TID.event.control("start"))).first()).toHaveValue(`${today}T09:00`);
 	});
 
-	test("creating two events with the same title yields two distinct files", async ({ obsidian }) => {
-		await openCalendarReady(obsidian.page);
+	test("creating two events with the same title yields two distinct files", async ({ calendar, obsidian }) => {
 		const today = formatLocalDate(new Date());
 
-		const baseline = snapshotEventFiles(obsidian.vaultDir);
+		const baseline = snapshotEventFiles(calendar.vaultDir);
 		await createEventViaModal(obsidian, {
 			title: "Duplicate Title",
 			start: `${today}T09:00`,
@@ -61,7 +54,7 @@ test.describe("event modal UX", () => {
 			end: `${today}T12:00`,
 		});
 
-		const allFiles = listEventFiles(obsidian.vaultDir).filter((p) => !baseline.has(p));
+		const allFiles = listEventFiles(calendar.vaultDir).filter((p) => !baseline.has(p));
 		expect(allFiles.length).toBe(2);
 		expect(new Set(allFiles).size).toBe(2);
 
@@ -72,38 +65,39 @@ test.describe("event modal UX", () => {
 	});
 
 	test("toggling All Day on a timed event hides Start/End and shows Date; toggling off restores timed controls", async ({
+		calendar,
 		obsidian,
 	}) => {
 		const today = formatLocalDate(new Date());
-		const relativePath = await (async () => {
-			await openCalendarReady(obsidian.page);
-			return createEventViaModal(obsidian, {
-				title: "Mode Toggle",
-				start: `${today}T09:00`,
-				end: `${today}T10:00`,
-			});
-		})();
+		const relativePath = await createEventViaModal(obsidian, {
+			title: "Mode Toggle",
+			start: `${today}T09:00`,
+			end: `${today}T10:00`,
+		});
 
-		await rightClickEventMenu(obsidian.page, "Mode Toggle", "editEvent");
-		await obsidian.page.locator(EVENT_MODAL_SELECTOR).waitFor({ state: "visible", timeout: 15_000 });
+		await rightClickEventMenu(calendar.page, "Mode Toggle", "editEvent");
+		await calendar.page.locator(EVENT_MODAL_SELECTOR).waitFor({ state: "visible" });
 
 		// Flip All Day ON → Start/End become non-functional; Date input appears.
-		await fillEventModal(obsidian.page, { allDay: true, date: today });
-		await obsidian.page.locator('[data-testid="prisma-event-control-date"]').first().waitFor({ state: "visible" });
-		await saveEventModal(obsidian.page);
+		await fillEventModal(calendar.page, { allDay: true, date: today });
+		await calendar.page
+			.locator(sel(TID.event.control("date")))
+			.first()
+			.waitFor({ state: "visible" });
+		await saveEventModal(calendar.page);
 
 		await expect
-			.poll(() => String(readFileSync(join(obsidian.vaultDir, relativePath), "utf8")), { timeout: 10_000 })
+			.poll(() => String(readFileSync(join(calendar.vaultDir, relativePath), "utf8")))
 			.toContain("All Day: true");
 
 		// Reopen and flip All Day OFF.
-		await rightClickEventMenu(obsidian.page, "Mode Toggle", "editEvent");
-		await obsidian.page.locator(EVENT_MODAL_SELECTOR).waitFor({ state: "visible", timeout: 15_000 });
+		await rightClickEventMenu(calendar.page, "Mode Toggle", "editEvent");
+		await calendar.page.locator(EVENT_MODAL_SELECTOR).waitFor({ state: "visible" });
 
-		await fillEventModal(obsidian.page, { allDay: false, start: `${today}T14:00`, end: `${today}T15:00` });
-		await saveEventModal(obsidian.page);
+		await fillEventModal(calendar.page, { allDay: false, start: `${today}T14:00`, end: `${today}T15:00` });
+		await saveEventModal(calendar.page);
 
-		const after = readFileSync(join(obsidian.vaultDir, relativePath), "utf8");
+		const after = readFileSync(join(calendar.vaultDir, relativePath), "utf8");
 		expect(after).toContain(`${today}T14:00`);
 		expect(after).toContain(`${today}T15:00`);
 	});

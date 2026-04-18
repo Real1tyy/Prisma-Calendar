@@ -78,9 +78,7 @@ test.describe("settings: Properties tab", () => {
 		await fillEventModalMinimal(obsidian.page, { title });
 		await saveEventModal(obsidian.page);
 
-		await expect
-			.poll(() => listEventFiles(obsidian.vaultDir).some((f) => f.includes(title)), { timeout: 5_000 })
-			.toBe(true);
+		await expect.poll(() => listEventFiles(obsidian.vaultDir).some((f) => f.includes(title))).toBe(true);
 
 		const files = listEventFiles(obsidian.vaultDir);
 		const match = files.find((f) => f.includes(title));

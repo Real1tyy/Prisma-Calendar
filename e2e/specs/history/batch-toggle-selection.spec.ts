@@ -10,6 +10,7 @@ import {
 	toggleEventInBatch,
 	waitForBatchSelectable,
 } from "../../fixtures/history-helpers";
+import { sel, TID } from "../../fixtures/testids";
 
 // Selection-state commands don't mutate events — they only flip UI state.
 // These specs verify that clicking the batch toolbar button enters selection
@@ -55,7 +56,7 @@ test.describe("batch selection (UI-driven)", () => {
 		// Count every batch-selectable event (our 3 + any seeded into the vault)
 		// so the counter assertion survives a richer seed.
 		const batchSelectableTotal = await calendar.page
-			.locator('.workspace-leaf.mod-active [data-testid="prisma-cal-event"].prisma-batch-selectable')
+			.locator(`.workspace-leaf.mod-active ${sel(TID.block)}.prisma-batch-selectable`)
 			.count();
 
 		await clickBatchButton(calendar.page, "select-all");

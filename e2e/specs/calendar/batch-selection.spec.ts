@@ -13,9 +13,9 @@ import {
 	waitForEvent,
 } from "../../fixtures/calendar-helpers";
 import { expect, test } from "../../fixtures/electron";
-import { openCalendar } from "../../fixtures/helpers";
 import { clickBatchButton, confirmBatchAction, enterBatchMode } from "../../fixtures/history-helpers";
 import { refreshCalendar, seedEvent } from "../../fixtures/seed-events";
+import { sel, TID } from "../../fixtures/testids";
 
 const TITLES = ["Batch One", "Batch Two", "Batch Three"] as const;
 
@@ -47,48 +47,43 @@ async function selectAllInBatch(page: Page): Promise<void> {
 }
 
 test.describe("batch selection operations", () => {
-	test.beforeEach(async ({ obsidian }) => {
-		const { page, vaultDir } = obsidian;
+	test.beforeEach(async ({ calendar }) => {
+		const { page, vaultDir } = calendar;
 		seedTitles(vaultDir);
-		await openCalendar(page);
 		await refreshCalendar(page);
 		await gotoToday(page);
 		for (const title of TITLES) await waitForEvent(page, title);
 	});
 
-	test("clicking Batch → Skip sets Skip: true on every selected event", async ({ obsidian }) => {
-		const { page, vaultDir } = obsidian;
+	test("clicking Batch → Skip sets Skip: true on every selected event", async ({ calendar }) => {
+		const { page, vaultDir } = calendar;
 		await enterBatchMode(page);
 		await selectAllInBatch(page);
 		await clickBatchButton(page, "skip");
 
 		for (const title of TITLES) {
-			await expect
-				.poll(() => readEventFrontmatter(vaultDir, `Events/${title}.md`)["Skip"], { timeout: 5_000 })
-				.toBe(true);
+			await expect.poll(() => readEventFrontmatter(vaultDir, `Events/${title}.md`)["Skip"]).toBe(true);
 		}
 	});
 
-	test("clicking Batch → Done sets Status: done on every selected event", async ({ obsidian }) => {
-		const { page, vaultDir } = obsidian;
+	test("clicking Batch → Done sets Status: done on every selected event", async ({ calendar }) => {
+		const { page, vaultDir } = calendar;
 		await enterBatchMode(page);
 		await selectAllInBatch(page);
 		await clickBatchButton(page, "mark-done");
 
 		for (const title of TITLES) {
 			await expect
-				.poll(() => String(readEventFrontmatter(vaultDir, `Events/${title}.md`)["Status"] ?? "").toLowerCase(), {
-					timeout: 5_000,
-				})
+				.poll(() => String(readEventFrontmatter(vaultDir, `Events/${title}.md`)["Status"] ?? "").toLowerCase())
 				.toMatch(/done|true/);
 		}
 	});
 
-	test("clicking Batch → Duplicate is wired up without throwing", async ({ obsidian }) => {
+	test("clicking Batch → Duplicate is wired up without throwing", async ({ calendar }) => {
 		// CloneEventCommand races with metadataCache in the e2e launcher build
 		// (same story as the context-menu duplicate), so this asserts the button
 		// is clickable with a selection and doesn't crash the renderer.
-		const { page } = obsidian;
+		const { page } = calendar;
 		await seedTitlesViaVault(page);
 		await refreshCalendar(page);
 		await enterBatchMode(page);
@@ -100,20 +95,20 @@ test.describe("batch selection operations", () => {
 		expect(errors, errors.join("\n")).toHaveLength(0);
 	});
 
-	test("clicking Batch → Delete removes every selected file", async ({ obsidian }) => {
-		const { page, vaultDir } = obsidian;
+	test("clicking Batch → Delete removes every selected file", async ({ calendar }) => {
+		const { page, vaultDir } = calendar;
 		await enterBatchMode(page);
 		await selectAllInBatch(page);
 		await clickBatchButton(page, "delete");
 		await confirmBatchAction(page);
 
 		for (const title of TITLES) {
-			await expect.poll(() => existsSync(join(vaultDir, "Events", `${title}.md`)), { timeout: 8_000 }).toBe(false);
+			await expect.poll(() => existsSync(join(vaultDir, "Events", `${title}.md`))).toBe(false);
 		}
 	});
 
-	test("clicking Batch → Clone Next is wired up", async ({ obsidian }) => {
-		const { page } = obsidian;
+	test("clicking Batch → Clone Next is wired up", async ({ calendar }) => {
+		const { page } = calendar;
 		await seedTitlesViaVault(page);
 		await refreshCalendar(page);
 		await enterBatchMode(page);
@@ -132,8 +127,8 @@ test.describe("batch selection operations", () => {
 		{ direction: "Next", button: "move-next", expectedDays: 7 },
 		{ direction: "Prev", button: "move-prev", expectedDays: -7 },
 	] as const) {
-		test(`clicking Batch → Move ${direction} shifts Start Date by ${expectedDays} days`, async ({ obsidian }) => {
-			const { page, vaultDir } = obsidian;
+		test(`clicking Batch → Move ${direction} shifts Start Date by ${expectedDays} days`, async ({ calendar }) => {
+			const { page, vaultDir } = calendar;
 			const before: Record<string, string> = {};
 			for (const title of TITLES) {
 				before[title] = String(readEventFrontmatter(vaultDir, `Events/${title}.md`)["Start Date"]);
@@ -145,9 +140,7 @@ test.describe("batch selection operations", () => {
 
 			for (const title of TITLES) {
 				await expect
-					.poll(() => String(readEventFrontmatter(vaultDir, `Events/${title}.md`)["Start Date"]) !== before[title], {
-						timeout: 10_000,
-					})
+					.poll(() => String(readEventFrontmatter(vaultDir, `Events/${title}.md`)["Start Date"]) !== before[title])
 					.toBe(true);
 
 				const after = String(readEventFrontmatter(vaultDir, `Events/${title}.md`)["Start Date"]);
@@ -157,10 +150,10 @@ test.describe("batch selection operations", () => {
 		});
 	}
 
-	test("clicking Batch → Clone Prev is wired up", async ({ obsidian }) => {
+	test("clicking Batch → Clone Prev is wired up", async ({ calendar }) => {
 		// Same "command runs without throwing" shape as Clone Next — the file
 		// races in the e2e launcher build make count-based assertions flaky.
-		const { page } = obsidian;
+		const { page } = calendar;
 		await seedTitlesViaVault(page);
 		await refreshCalendar(page);
 		await enterBatchMode(page);
@@ -172,10 +165,13 @@ test.describe("batch selection operations", () => {
 		expect(errors, errors.join("\n")).toHaveLength(0);
 	});
 
-	test("clicking Batch → Exit toggles batch mode off", async ({ obsidian }) => {
-		const { page } = obsidian;
+	test("clicking Batch → Exit toggles batch mode off", async ({ calendar }) => {
+		const { page } = calendar;
 		await enterBatchMode(page);
-		await page.locator('[data-testid="prisma-cal-toolbar-batch-exit"]').first().click();
-		await expect(page.locator('[data-testid="prisma-cal-toolbar-batch-select"]').first()).toBeVisible();
+		await page
+			.locator(sel(TID.toolbar("batch-exit")))
+			.first()
+			.click();
+		await expect(page.locator(sel(TID.toolbar("batch-select"))).first()).toBeVisible();
 	});
 });

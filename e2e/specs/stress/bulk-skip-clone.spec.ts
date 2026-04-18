@@ -11,6 +11,7 @@ import {
 	expectUniqueVisibleEventCount,
 	seedBulkEvents,
 } from "../../fixtures/stress-helpers";
+import { sel, TID } from "../../fixtures/testids";
 import { listEventFiles } from "../events/events-helpers";
 
 // Skip and clone are the remaining user-reported stress paths. Skip writes a
@@ -88,7 +89,10 @@ test.describe("stress: batch skip + batch clone reactivity", () => {
 		// Source week still shows the originals (not the clones).
 		await expectCalendarConsistent(page, { indexer: startingCount * 2, visible: startingCount });
 
-		await page.locator('[data-testid="prisma-cal-toolbar-next"]').first().click();
+		await page
+			.locator(sel(TID.toolbar("next")))
+			.first()
+			.click();
 		// Target week now shows the clones.
 		await expectUniqueVisibleEventCount(page, startingCount);
 
@@ -98,7 +102,10 @@ test.describe("stress: batch skip + batch clone reactivity", () => {
 		await expect.poll(() => listEventFiles(vaultDir).length).toBe(startingCount);
 		// Target week is now empty (clones gone).
 		await expectUniqueVisibleEventCount(page, 0);
-		await page.locator('[data-testid="prisma-cal-toolbar-prev"]').first().click();
+		await page
+			.locator(sel(TID.toolbar("prev")))
+			.first()
+			.click();
 		await expectCalendarConsistent(page, { indexer: startingCount, visible: startingCount });
 	});
 });

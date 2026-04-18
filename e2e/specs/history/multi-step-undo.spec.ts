@@ -1,7 +1,6 @@
 import { isoLocal } from "../../fixtures/dates";
-import { openBatch } from "../../fixtures/dsl";
+import { expectAllHidden, expectAllVisible, openBatch } from "../../fixtures/dsl";
 import { expect, test } from "../../fixtures/electron";
-import { expectEventsNotVisibleByTitle, expectEventsVisibleByTitle } from "../../fixtures/history-helpers";
 import { sel, TID } from "../../fixtures/testids";
 import { listEventFiles } from "../events/events-helpers";
 
@@ -26,7 +25,7 @@ test.describe("undo/redo: multi-step chains (UI-driven)", () => {
 			start: isoLocal(1, 9),
 			end: isoLocal(1, 10),
 		});
-		await expectEventsVisibleByTitle(calendar.page, ["Chain Alpha"]);
+		await expectAllVisible(calendar.page, [alpha]);
 
 		// Step 2: Edit A's end time via context menu + modal.
 		await alpha.edit({ end: isoLocal(1, 11) });
@@ -57,7 +56,7 @@ test.describe("undo/redo: multi-step chains (UI-driven)", () => {
 		// Undo 4× reverses in order: delete → duplicate → edit → create.
 		await calendar.undo(4);
 		await calendar.expectEventCount(baseline);
-		await expectEventsNotVisibleByTitle(calendar.page, ["Chain Alpha"]);
+		await expectAllHidden(calendar.page, [alpha]);
 	});
 
 	test("undo 2 + redo 1 + undo 3: stack stays consistent across direction changes", async ({ calendar }) => {
@@ -67,7 +66,7 @@ test.describe("undo/redo: multi-step chains (UI-driven)", () => {
 			start: isoLocal(1, 9),
 			end: isoLocal(1, 10),
 		});
-		await expectEventsVisibleByTitle(calendar.page, ["Step Alpha"]);
+		await expectAllVisible(calendar.page, [alpha]);
 
 		await alpha.rightClick("markDone");
 		await alpha.expectFrontmatter("Status", (v) => v === "Done");
@@ -75,25 +74,25 @@ test.describe("undo/redo: multi-step chains (UI-driven)", () => {
 		await alpha.rightClick("skipEvent");
 		await alpha.expectFrontmatter("Skip", (v) => v === true);
 		// Skip hides the event from the main calendar.
-		await expectEventsNotVisibleByTitle(calendar.page, ["Step Alpha"]);
+		await expectAllHidden(calendar.page, [alpha]);
 
 		// Undo 2: skip then mark-done.
 		await calendar.undo(2);
 		await alpha.expectFrontmatter("Skip", (v) => v === undefined || v === false);
 		await alpha.expectFrontmatter("Status", (v) => v !== "Done");
-		await expectEventsVisibleByTitle(calendar.page, ["Step Alpha"]);
+		await expectAllVisible(calendar.page, [alpha]);
 
 		// Redo 1: re-apply mark-done.
 		await calendar.redo(1);
 		await alpha.expectFrontmatter("Status", (v) => v === "Done");
 		await alpha.expectFrontmatter("Skip", (v) => v === undefined || v === false);
-		await expectEventsVisibleByTitle(calendar.page, ["Step Alpha"]);
+		await expectAllVisible(calendar.page, [alpha]);
 
 		// Undo 3: mark-done → create (file gone), stack consistent.
 		await calendar.undo(3);
 		await alpha.expectExists(false);
 		await calendar.expectEventCount(baseline);
-		await expectEventsNotVisibleByTitle(calendar.page, ["Step Alpha"]);
+		await expectAllHidden(calendar.page, [alpha]);
 	});
 
 	test("heterogenous ops (edit modal × batch × context menu) chain cleanly under undo", async ({ calendar }) => {
@@ -107,17 +106,17 @@ test.describe("undo/redo: multi-step chains (UI-driven)", () => {
 			start: isoLocal(1, 11),
 			end: isoLocal(1, 12),
 		});
-		await expectEventsVisibleByTitle(calendar.page, ["Alice Sync", "Bob Sync"]);
+		const both = [alice, bob];
+		await expectAllVisible(calendar.page, both);
 
 		// Order matters: Prisma hides skipped events from the calendar, so skip must
 		// come *last* — otherwise later clicks can't find the hidden event. Undo
 		// stacks still exercise the heterogenous-op chain the same way in reverse.
 
 		// 1: Batch mark-done on both via toolbar.
-		const batch = await openBatch(calendar.page, [alice, bob]);
+		const batch = await openBatch(calendar.page, both);
 		await batch.do("mark-done");
-		await alice.expectFrontmatter("Status", (v) => v === "Done");
-		await bob.expectFrontmatter("Status", (v) => v === "Done");
+		for (const evt of both) await evt.expectFrontmatter("Status", (v) => v === "Done");
 		await batch.exit();
 
 		// 2: Edit-modal bump of B's end time.
@@ -127,14 +126,13 @@ test.describe("undo/redo: multi-step chains (UI-driven)", () => {
 		// after this clicks on Alice).
 		await alice.rightClick("skipEvent");
 		await alice.expectFrontmatter("Skip", (v) => v === true);
-		await expectEventsNotVisibleByTitle(calendar.page, ["Alice Sync"]);
-		await expectEventsVisibleByTitle(calendar.page, ["Bob Sync"]);
+		await expectAllHidden(calendar.page, [alice]);
+		await expectAllVisible(calendar.page, [bob]);
 
 		// Undo 3× reverses everything: skip → edit → batch mark-done.
 		await calendar.undo(3);
 		await alice.expectFrontmatter("Skip", (v) => v === undefined || v === false);
-		await alice.expectFrontmatter("Status", (v) => v !== "Done");
-		await bob.expectFrontmatter("Status", (v) => v !== "Done");
-		await expectEventsVisibleByTitle(calendar.page, ["Alice Sync", "Bob Sync"]);
+		for (const evt of both) await evt.expectFrontmatter("Status", (v) => v !== "Done");
+		await expectAllVisible(calendar.page, both);
 	});
 });

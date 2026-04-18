@@ -86,27 +86,8 @@ export async function waitForEvent(page: Page, title: string, timeout = 10_000):
 	await eventByTitle(page, title).waitFor({ state: "visible", timeout });
 }
 
-/**
- * Drag a FullCalendar event block by delta pixels. FullCalendar's drag handlers
- * debounce synthetic moves arriving in the same frame, so the gesture is split
- * into ~15 staged mouse-moves with a one-frame delay between each.
- */
-export async function dragByDelta(page: Page, source: Locator, dx: number, dy: number): Promise<void> {
-	const box = await source.boundingBox();
-	if (!box) throw new Error("source not on screen");
-	const startX = box.x + box.width / 2;
-	const startY = box.y + box.height / 2;
-	await page.mouse.move(startX, startY);
-	await page.mouse.down();
-	const steps = 15;
-	for (let i = 1; i <= steps; i++) {
-		await page.mouse.move(startX + (dx * i) / steps, startY + (dy * i) / steps);
-		// 15ms ≥ 1 frame at 60 Hz so every intermediate position is observed.
-		await page.waitForTimeout(15);
-	}
-	await page.mouse.move(startX + dx, startY + dy);
-	await page.mouse.up();
-}
+// Re-exported from the canonical location in `fixtures/dsl/drag.ts`.
+export { dragByDelta } from "./dsl/drag";
 
 /**
  * Click the Day view button in the calendar toolbar so events seeded for today
