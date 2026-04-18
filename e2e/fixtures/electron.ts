@@ -302,6 +302,14 @@ async function runWithObsidianHandle(
 	// else still fails loudly.
 	const isTransientEventFileEnoent = (text: string): boolean =>
 		text.includes("ENOENT") && text.includes("/Events") && text.endsWith(".md'");
+	// `page.reload()` races with Obsidian's own workspace-flush: on startup the
+	// renderer reads `.obsidian/app.json`, occasionally catching the file mid-
+	// rewrite (empty bytes) and logging `failed to read JSON .obsidian/app.json
+	// SyntaxError: Unexpected end of JSON input`. Obsidian recovers by falling
+	// back to defaults — plugin state isn't affected. Not a plugin bug, so
+	// filter it out; every other "failed to read JSON" still fails loudly.
+	const isTransientAppJsonReadError = (text: string): boolean =>
+		text.includes("failed to read JSON") && text.includes(".obsidian/app.json");
 	// Resilience specs deliberately induce broken on-disk state (corrupt
 	// data.json, unreadable files) to prove the plugin recovers. Those flows
 	// DO legitimately emit console.errors from Obsidian's own JSON reader /
@@ -313,11 +321,13 @@ async function runWithObsidianHandle(
 		if (msg.type() !== "error") return;
 		const text = msg.text();
 		if (isTransientEventFileEnoent(text)) return;
+		if (isTransientAppJsonReadError(text)) return;
 		if (isExpectedError(text)) return;
 		consoleErrors.push(text);
 	};
 	const onPageError = (err: Error): void => {
 		if (isTransientEventFileEnoent(err.message)) return;
+		if (isTransientAppJsonReadError(err.message)) return;
 		if (isExpectedError(err.message)) return;
 		consoleErrors.push(`pageerror: ${err.message}`);
 	};

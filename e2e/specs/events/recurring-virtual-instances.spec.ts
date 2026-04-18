@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import type { Page } from "@playwright/test";
@@ -44,41 +44,35 @@ function todayMidnight(): Date {
 	return t;
 }
 
-function rewriteFrontmatterField(vaultDir: string, relativePath: string, field: string, value: string): void {
-	const absolute = join(vaultDir, relativePath);
-	const original = readFileSync(absolute, "utf8");
-	const re = new RegExp(`^${field}:.*$`, "m");
-	const rewritten = re.test(original)
-		? original.replace(re, `${field}: ${value}`)
-		: original.replace(/^---\n/, `---\n${field}: ${value}\n`);
-	writeFileSync(absolute, rewritten, "utf8");
-}
-
 /**
- * Force Obsidian's metadata cache to pick up an on-disk frontmatter change.
- * Node-level writes don't always trigger the vault watcher promptly; calling
- * `fileManager.processFrontMatter` with a no-op on the same key nudges the
- * cache to re-read and fires the plugin's `recurring-event-found` listener.
+ * Set a frontmatter field through Obsidian's `processFrontMatter` — the only
+ * write path that atomically updates bytes AND the metadata cache in a single
+ * step. The older pattern (raw `writeFileSync` + a no-op `processFrontMatter`
+ * "nudge") raced: if the vault watcher hadn't ingested the raw write yet, the
+ * nudge would read stale cached YAML, no-op the mutator, and rewrite the file
+ * from the stale cache — silently clobbering the change.
  */
-async function nudgeIndexer(page: Page, relativePath: string): Promise<void> {
-	await page.evaluate(async (path: string) => {
-		const w = window as unknown as {
-			app: {
-				vault: {
-					getAbstractFileByPath: (p: string) => unknown;
-				};
-				fileManager: {
-					processFrontMatter: (file: unknown, fn: (fm: Record<string, unknown>) => void) => Promise<void>;
+async function setFrontmatterField(page: Page, relativePath: string, field: string, value: unknown): Promise<void> {
+	await page.evaluate(
+		async ({ path, key, val }) => {
+			const w = window as unknown as {
+				app: {
+					vault: {
+						getAbstractFileByPath: (p: string) => unknown;
+					};
+					fileManager: {
+						processFrontMatter: (file: unknown, fn: (fm: Record<string, unknown>) => void) => Promise<void>;
+					};
 				};
 			};
-		};
-		const file = w.app.vault.getAbstractFileByPath(path);
-		if (!file) throw new Error(`nudge: no file at ${path}`);
-		await w.app.fileManager.processFrontMatter(file, () => {
-			// no-op mutation — processFrontMatter always re-writes the block,
-			// which refreshes the metadata cache entry and fires listeners.
-		});
-	}, relativePath);
+			const file = w.app.vault.getAbstractFileByPath(path);
+			if (!file) throw new Error(`setFrontmatterField: no file at ${path}`);
+			await w.app.fileManager.processFrontMatter(file, (fm) => {
+				fm[key] = val;
+			});
+		},
+		{ path: relativePath, key: field, val: value }
+	);
 }
 
 test.describe("recurring events — physical vs virtual instances", () => {
@@ -138,9 +132,8 @@ test.describe("recurring events — physical vs virtual instances", () => {
 		// with a diff → the plugin re-evaluates virtual cadence, leaves the
 		// existing physicals alone. After the switch, futureInstances already
 		// satisfies target=2, so no new physicals get created.
-		rewriteFrontmatterField(obsidian.vaultDir, sourcePath, "RRule", "daily");
-		rewriteFrontmatterField(obsidian.vaultDir, sourcePath, "RRuleSpec", "1");
-		await nudgeIndexer(obsidian.page, sourcePath);
+		await setFrontmatterField(obsidian.page, sourcePath, "RRule", "daily");
+		await setFrontmatterField(obsidian.page, sourcePath, "RRuleSpec", "1");
 		await refreshCalendar(obsidian.page);
 		await obsidian.page.waitForTimeout(2_000);
 
@@ -178,8 +171,7 @@ test.describe("recurring events — physical vs virtual instances", () => {
 			.poll(() => collectInstanceDates(obsidian.vaultDir, "Capacity Bump"), { timeout: INSTANCE_TIMEOUT_MS })
 			.toEqual(beforeDates);
 
-		rewriteFrontmatterField(obsidian.vaultDir, sourcePath, "Future Instances Count", "3");
-		await nudgeIndexer(obsidian.page, sourcePath);
+		await setFrontmatterField(obsidian.page, sourcePath, "Future Instances Count", 3);
 		await refreshCalendar(obsidian.page);
 
 		await expect
@@ -226,8 +218,7 @@ test.describe("recurring events — physical vs virtual instances", () => {
 			.toEqual(futureDates);
 
 		// Enable past-event generation and re-trigger the manager.
-		rewriteFrontmatterField(obsidian.vaultDir, sourcePath, "Generate Past Events", "true");
-		await nudgeIndexer(obsidian.page, sourcePath);
+		await setFrontmatterField(obsidian.page, sourcePath, "Generate Past Events", true);
 		await refreshCalendar(obsidian.page);
 
 		await expect
