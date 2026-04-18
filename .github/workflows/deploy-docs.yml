@@ -32,7 +32,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: docs-site
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-workspace
 
       - name: Build site
         working-directory: docs-site
