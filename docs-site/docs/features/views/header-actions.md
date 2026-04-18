@@ -28,7 +28,7 @@ Every aspect of header actions is fully customizable and all changes are persist
 
 When you open a Prisma Calendar view, the header bar displays a row of icon buttons. Each button triggers the same command as its corresponding [hotkey](../advanced/hotkeys.md) — every command registered by Prisma Calendar is available as a header action.
 
-By default, 19 commonly used actions are shown (event creation, navigation, search, statistics, category highlighting, undo/redo, AI chat, and more). The remaining 35+ actions are hidden but can be enabled at any time.
+By default, a set of commonly used actions is shown — including event creation, navigation, search, statistics, category highlighting, undo/redo, refresh calendar, and AI chat. The remaining actions are hidden but can be enabled at any time.
 
 Header action state is persisted **per calendar** — each calendar bundle remembers its own header configuration independently.
 

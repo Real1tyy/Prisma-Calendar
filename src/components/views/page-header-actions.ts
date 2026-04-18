@@ -23,6 +23,7 @@ export const DEFAULT_ACTION_IDS = new Set([
 	"show-recurring",
 	"show-filtered",
 	"show-interval-bases",
+	"refresh",
 ]);
 
 const ACTION_SPECS: CommandActionSpec[] = [
