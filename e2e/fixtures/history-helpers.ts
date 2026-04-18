@@ -21,6 +21,7 @@ import {
 	waitForNewEventFiles,
 } from "../specs/events/events-helpers";
 import { fillEventModal, saveEventModal } from "../specs/events/fill-event-modal";
+import { eventByTitle } from "./calendar-helpers";
 import { runCommand } from "./commands";
 import { ACTIVE_CALENDAR_LEAF } from "./constants";
 
@@ -38,10 +39,9 @@ const SELECTED_EVENT_IN_LEAF = `${EVENT_IN_LEAF}.prisma-batch-selected`;
 // a regression that writes correct frontmatter but fails to refresh the DOM
 // (or vice versa) is the kind of partial failure these helpers catch.
 
-/** Locator for a calendar event in the active leaf, matched by its title. */
-export function eventByTitle(page: Page, title: string): Locator {
-	return page.locator(`${EVENT_IN_LEAF}[data-event-title="${title}"]`).first();
-}
+// Re-exported so history specs can import from one module; canonical
+// definition lives in `./calendar-helpers`.
+export { eventByTitle };
 
 /** Locator for a calendar event in the active leaf, matched by its vault-relative path. */
 export function eventByPath(page: Page, vaultRelativePath: string): Locator {

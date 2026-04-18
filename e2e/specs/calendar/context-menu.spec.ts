@@ -130,6 +130,9 @@ test.describe("event context menu", () => {
 
 		await refreshCalendar(page);
 		await rightClickEventByTitle(page, "Ctx Menu C");
+		// With Status: Done already on disk, the markDone row rewrites its
+		// label to "Mark as undone". Assert the live override before deleting.
+		await expect(page.locator('[data-testid="prisma-context-menu-item-markDone"]').first()).toContainText("undone");
 		await clickContextMenuItem(page, "deleteEvent");
 
 		const confirm = page.locator(".modal-container button", { hasText: /delete|remove|yes/i }).first();

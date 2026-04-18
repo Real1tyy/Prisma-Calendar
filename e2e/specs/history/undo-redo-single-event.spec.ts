@@ -142,16 +142,4 @@ test.describe("undo/redo: single event (UI-driven)", () => {
 			},
 		});
 	});
-
-	test("right-click exposes every expected context-menu item", async ({ calendar }) => {
-		await calendar.createEvent({
-			title: "Menu Probe",
-			start: isoLocal(1, 9),
-			end: isoLocal(1, 10),
-		});
-		await calendar.page.locator(".fc-event", { hasText: "Menu Probe" }).first().click({ button: "right" });
-		for (const id of ["editEvent", "duplicateEvent", "deleteEvent", "skipEvent", "markDone"] as const) {
-			await expect(calendar.page.locator(sel(TID.ctxMenu(id)))).toBeVisible();
-		}
-	});
 });

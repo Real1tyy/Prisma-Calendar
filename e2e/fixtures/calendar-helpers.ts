@@ -1,6 +1,7 @@
 import type { Locator, Page } from "@playwright/test";
 
 import { ACTIVE_CALENDAR_LEAF } from "./constants";
+import { todayISO } from "./dates";
 import type { SeedEventInput } from "./seed-events";
 
 // Prisma-calendar-specific helpers — thin UI wrappers that don't belong in the
@@ -10,11 +11,9 @@ import type { SeedEventInput } from "./seed-events";
 
 const EVENT_IN_LEAF = `${ACTIVE_CALENDAR_LEAF} [data-testid="prisma-cal-event"]`;
 
-/** Today's date as `YYYY-MM-DD` (local TZ). */
-export function todayISO(): string {
-	const d = new Date();
-	return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
+// Re-exported from `./dates` (single source of truth for local-TZ builders)
+// so existing consumers importing `todayISO` from here keep working.
+export { todayISO };
 
 /**
  * Convenience builder for seeding a timed event anchored to today. Produces a
