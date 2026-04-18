@@ -22,8 +22,7 @@ import {
 } from "../specs/events/events-helpers";
 import { fillEventModal, saveEventModal } from "../specs/events/fill-event-modal";
 import { runCommand } from "./commands";
-
-const ACTIVE_CALENDAR_LEAF = ".workspace-leaf.mod-active";
+import { ACTIVE_CALENDAR_LEAF } from "./constants";
 
 const BATCH_SELECT_BUTTON = `${ACTIVE_CALENDAR_LEAF} [data-testid="prisma-cal-toolbar-batch-select"]`;
 const BATCH_EXIT_BUTTON = `${ACTIVE_CALENDAR_LEAF} [data-testid="prisma-cal-toolbar-batch-exit"]`;
@@ -173,9 +172,6 @@ export async function confirmBatchAction(page: Page): Promise<void> {
 	await confirm.click();
 	await confirm.waitFor({ state: "hidden" });
 }
-
-/** Back-compat alias for specs that still import the old name. */
-export const runCommandFromPalette = runCommand;
 
 export async function undoViaPalette(page: Page, times = 1): Promise<void> {
 	for (let i = 0; i < times; i++) await runCommand(page, "Prisma Calendar: Undo");

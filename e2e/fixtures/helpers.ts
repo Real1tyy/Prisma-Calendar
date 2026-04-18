@@ -1,7 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 
-const PLUGIN_ID = "prisma-calendar";
-const DEFAULT_CALENDAR_ID = "default";
+import { ACTIVE_CALENDAR_LEAF, DEFAULT_CALENDAR_ID, PLUGIN_ID } from "./constants";
 
 // ── Schema-field accessors ──────────────────────────────────────────────────
 // Fields rendered via SchemaSection stamp the outer `.setting-item` wrapper
@@ -173,13 +172,6 @@ export async function openCalendarView(page: Page, calendarId = DEFAULT_CALENDAR
 
 /** Back-compat alias; older specs imported `openCalendar`. */
 export const openCalendar = openCalendarView;
-
-// Multiple calendar views can be open in parallel tabs. Obsidian renders the
-// inactive leaves' DOM but keeps them visually hidden, so a bare `.first()`
-// match can land on an inactive tab's button. Scoping the locator to the
-// active workspace leaf keeps the click pointed at the view the user is
-// looking at.
-const ACTIVE_CALENDAR_LEAF = ".workspace-leaf.mod-active";
 
 /**
  * Click the calendar toolbar's "Create Event" button and wait for the event

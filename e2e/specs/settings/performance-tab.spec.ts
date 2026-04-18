@@ -1,9 +1,8 @@
 import { expectPluginData, settleSettings } from "@real1ty-obsidian-plugins/testing/e2e";
 
+import { PLUGIN_ID } from "../../fixtures/constants";
 import { test } from "../../fixtures/electron";
 import { openPrismaSettings, setSchemaNumberInput, setSchemaToggle, switchSettingsTab } from "../../fixtures/helpers";
-
-const PLUGIN_ID = "prisma-calendar";
 
 test.describe("settings: Performance tab", () => {
 	test("writes cache/concurrency fields to data.json", async ({ obsidian }) => {

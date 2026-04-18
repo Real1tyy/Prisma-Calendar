@@ -1,17 +1,15 @@
+import { isoLocal } from "../../fixtures/dates";
 import { expect, test } from "../../fixtures/electron";
 import {
 	batchCounter,
 	clickBatchButton,
-	createEventViaToolbar,
 	enterBatchMode,
 	eventByTitle,
 	exitBatchMode,
 	expectSelectedCount,
-	isoLocal,
 	toggleEventInBatch,
 	waitForBatchSelectable,
 } from "../../fixtures/history-helpers";
-import { openCalendarReady } from "../events/events-helpers";
 
 // Selection-state commands don't mutate events — they only flip UI state.
 // These specs verify that clicking the batch toolbar button enters selection
@@ -21,82 +19,78 @@ import { openCalendarReady } from "../events/events-helpers";
 // without the other is exactly the kind of partial failure these catch.
 
 test.describe("batch selection (UI-driven)", () => {
-	test.beforeEach(async ({ obsidian }) => {
-		await openCalendarReady(obsidian.page);
-	});
-
-	test("toolbar batch-select button enters selection mode and exits on Exit click", async ({ obsidian }) => {
-		await createEventViaToolbar(obsidian.page, obsidian.vaultDir, {
+	test("toolbar batch-select button enters selection mode and exits on Exit click", async ({ calendar }) => {
+		await calendar.createEvent({
 			title: "Batch Probe",
 			start: isoLocal(1, 9),
 			end: isoLocal(1, 10),
 		});
 
-		await enterBatchMode(obsidian.page);
-		await expect(batchCounter(obsidian.page)).toBeVisible();
-		await expectSelectedCount(obsidian.page, 0);
+		await enterBatchMode(calendar.page);
+		await expect(batchCounter(calendar.page)).toBeVisible();
+		await expectSelectedCount(calendar.page, 0);
 
-		await exitBatchMode(obsidian.page);
-		await expect(batchCounter(obsidian.page)).toBeHidden();
+		await exitBatchMode(calendar.page);
+		await expect(batchCounter(calendar.page)).toBeHidden();
 	});
 
-	test("Select All / Clear batch buttons populate and empty the selection", async ({ obsidian }) => {
+	test("Select All / Clear batch buttons populate and empty the selection", async ({ calendar }) => {
 		const titles = ["Alice", "Bob", "Charlie"];
 		for (const [i, title] of titles.entries()) {
-			await createEventViaToolbar(obsidian.page, obsidian.vaultDir, {
+			await calendar.createEvent({
 				title,
 				start: isoLocal(1, 9 + i),
 				end: isoLocal(1, 10 + i),
 			});
 		}
 
-		await enterBatchMode(obsidian.page);
+		await enterBatchMode(calendar.page);
 		// Guard against the last-created event racing with its mount callback:
 		// Select All iterates `calendar.getEvents()` and only selects events
 		// that are already file-backed AND have their DOM mount data attached.
 		// Wait for every title to be classed `batch-selectable` before firing.
-		await waitForBatchSelectable(obsidian.page, titles);
-		await expectSelectedCount(obsidian.page, 0);
+		await waitForBatchSelectable(calendar.page, titles);
+		await expectSelectedCount(calendar.page, 0);
 
 		// Count every batch-selectable event (our 3 + any seeded into the vault)
 		// so the counter assertion survives a richer seed.
-		const batchSelectableTotal = await obsidian.page
+		const batchSelectableTotal = await calendar.page
 			.locator('.workspace-leaf.mod-active [data-testid="prisma-cal-event"].prisma-batch-selectable')
 			.count();
 
-		await clickBatchButton(obsidian.page, "select-all");
+		await clickBatchButton(calendar.page, "select-all");
 		for (const title of titles) {
-			await expect(eventByTitle(obsidian.page, title)).toHaveClass(/batch-selected/);
+			await expect(eventByTitle(calendar.page, title)).toHaveClass(/batch-selected/);
 		}
-		await expectSelectedCount(obsidian.page, batchSelectableTotal);
+		await expectSelectedCount(calendar.page, batchSelectableTotal);
 
-		await clickBatchButton(obsidian.page, "clear");
+		await clickBatchButton(calendar.page, "clear");
 		for (const title of titles) {
-			await expect(eventByTitle(obsidian.page, title)).not.toHaveClass(/batch-selected/);
+			await expect(eventByTitle(calendar.page, title)).not.toHaveClass(/batch-selected/);
 		}
-		await expectSelectedCount(obsidian.page, 0);
+		await expectSelectedCount(calendar.page, 0);
 
-		await exitBatchMode(obsidian.page);
+		await exitBatchMode(calendar.page);
 	});
 
-	test("clicking an event while in batch mode toggles its selection", async ({ obsidian }) => {
-		await createEventViaToolbar(obsidian.page, obsidian.vaultDir, {
+	test("clicking an event while in batch mode toggles its selection", async ({ calendar }) => {
+		await calendar.createEvent({
 			title: "Toggle Probe",
 			start: isoLocal(1, 9),
 			end: isoLocal(1, 10),
 		});
 
-		await enterBatchMode(obsidian.page);
-		await expectSelectedCount(obsidian.page, 0);
+		await enterBatchMode(calendar.page);
+		await expectSelectedCount(calendar.page, 0);
 
-		await toggleEventInBatch(obsidian.page, "Toggle Probe");
-		await expect(eventByTitle(obsidian.page, "Toggle Probe")).toHaveClass(/batch-selected/);
-		await expectSelectedCount(obsidian.page, 1);
+		await toggleEventInBatch(calendar.page, "Toggle Probe");
+		await expect(eventByTitle(calendar.page, "Toggle Probe")).toHaveClass(/batch-selected/);
+		await expectSelectedCount(calendar.page, 1);
 
-		await toggleEventInBatch(obsidian.page, "Toggle Probe");
-		await expect(eventByTitle(obsidian.page, "Toggle Probe")).not.toHaveClass(/batch-selected/);
-		await expectSelectedCount(obsidian.page, 0);
+		await toggleEventInBatch(calendar.page, "Toggle Probe");
+		await expect(eventByTitle(calendar.page, "Toggle Probe")).not.toHaveClass(/batch-selected/);
+		await expectSelectedCount(calendar.page, 0);
 
-		await exitBatchMode(obsidian.page);
+		await exitBatchMode(calendar.page);
 	});
 });

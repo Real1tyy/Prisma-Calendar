@@ -4,9 +4,10 @@ import { join } from "node:path";
 import { type Locator, type Page } from "@playwright/test";
 import { listEventFiles as listAllMarkdownFiles } from "@real1ty-obsidian-plugins/testing/e2e";
 
+import { PLUGIN_ID } from "../../fixtures/constants";
 import { type EventModalInput, fillEventModal, saveEventModal } from "./fill-event-modal";
 
-export const PLUGIN_ID = "prisma-calendar";
+export { PLUGIN_ID };
 
 // Prisma-Calendar seeds `Virtual Events.md` into every calendar directory on
 // bundle init (via `VirtualEventStore` with `createIfMissing: true`). That

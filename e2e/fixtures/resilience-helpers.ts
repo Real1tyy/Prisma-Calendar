@@ -3,9 +3,8 @@ import { join } from "node:path";
 
 import type { Page } from "@playwright/test";
 
+import { PLUGIN_ID } from "./constants";
 import { seedEvent, type SeedEventInput } from "./seed-events";
-
-const PLUGIN_ID = "prisma-calendar";
 
 export function dataJsonPath(vaultDir: string): string {
 	return join(vaultDir, ".obsidian", "plugins", PLUGIN_ID, "data.json");

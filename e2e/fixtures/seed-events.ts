@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 
 import { expect, type Page } from "@playwright/test";
 
-import { PLUGIN_ID } from "../specs/events/events-helpers";
+import { PLUGIN_ID } from "./constants";
 
 // Disk-level event seeding + runtime introspection. These utilities bypass
 // the create-event modal so specs that focus on integrations (ICS export,

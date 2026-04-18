@@ -1,11 +1,7 @@
+import { PLUGIN_ID } from "../../fixtures/constants";
+import { isoLocal } from "../../fixtures/dates";
 import { test } from "../../fixtures/electron";
-import {
-	createEventViaToolbar,
-	expectEventsVisibleByTitle,
-	isoLocal,
-	undoViaPalette,
-	waitForFileExists,
-} from "../../fixtures/history-helpers";
+import { expectEventsVisibleByTitle } from "../../fixtures/history-helpers";
 import { openCalendarReady } from "../events/events-helpers";
 
 // The undo stack lives only in memory. Its behaviour across a renderer
@@ -14,30 +10,28 @@ import { openCalendarReady } from "../events/events-helpers";
 // future change forces the spec to be updated explicitly.
 
 test.describe("undo boundary: reload (UI-driven)", () => {
-	test("undo after renderer reload is a no-op — the created file stays", async ({ obsidian }) => {
-		await openCalendarReady(obsidian.page);
-
-		const path = await createEventViaToolbar(obsidian.page, obsidian.vaultDir, {
+	test("undo after renderer reload is a no-op — the created file stays", async ({ calendar }) => {
+		const event = await calendar.createEvent({
 			title: "Reload Probe",
 			start: isoLocal(1, 9),
 			end: isoLocal(1, 10),
 		});
 
-		await obsidian.page.reload();
-		await obsidian.page.waitForFunction(() => {
+		await calendar.page.reload();
+		await calendar.page.waitForFunction((pid) => {
 			const w = window as unknown as {
 				app?: { plugins?: { plugins?: Record<string, { calendarBundles?: unknown[] }> } };
 			};
-			return Boolean(w.app?.plugins?.plugins?.["prisma-calendar"]?.calendarBundles?.length);
-		});
-		await openCalendarReady(obsidian.page);
+			return Boolean(w.app?.plugins?.plugins?.[pid]?.calendarBundles?.length);
+		}, PLUGIN_ID);
+		await openCalendarReady(calendar.page);
 
-		await undoViaPalette(obsidian.page);
-		await waitForFileExists(obsidian.vaultDir, path, true);
-		await expectEventsVisibleByTitle(obsidian.page, ["Reload Probe"]);
+		await calendar.undo();
+		await event.expectExists(true);
+		await expectEventsVisibleByTitle(calendar.page, ["Reload Probe"]);
 
-		await undoViaPalette(obsidian.page);
-		await waitForFileExists(obsidian.vaultDir, path, true);
-		await expectEventsVisibleByTitle(obsidian.page, ["Reload Probe"]);
+		await calendar.undo();
+		await event.expectExists(true);
+		await expectEventsVisibleByTitle(calendar.page, ["Reload Probe"]);
 	});
 });

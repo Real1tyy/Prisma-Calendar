@@ -1,5 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 
+import { ACTIVE_CALENDAR_LEAF } from "./constants";
 import type { SeedEventInput } from "./seed-events";
 
 // Prisma-calendar-specific helpers — thin UI wrappers that don't belong in the
@@ -7,8 +8,6 @@ import type { SeedEventInput } from "./seed-events";
 // `seed-events.ts`; this file only adds helpers that touch the rendered
 // FullCalendar DOM or drive vault-backed APIs.
 
-const PLUGIN_ID = "prisma-calendar";
-const ACTIVE_CALENDAR_LEAF = ".workspace-leaf.mod-active";
 const EVENT_IN_LEAF = `${ACTIVE_CALENDAR_LEAF} [data-testid="prisma-cal-event"]`;
 
 /** Today's date as `YYYY-MM-DD` (local TZ). */
@@ -178,5 +177,3 @@ export function listEventRow(page: Page, title: string): Locator {
 export function monthCellForDate(page: Page, isoDate: string): Locator {
 	return page.locator(`${ACTIVE_CALENDAR_LEAF} .fc-daygrid-day[data-date="${isoDate}"]`).first();
 }
-
-void PLUGIN_ID;

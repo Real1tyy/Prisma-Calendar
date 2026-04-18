@@ -5,6 +5,7 @@ import {
 	settleSettings,
 } from "@real1ty-obsidian-plugins/testing/e2e";
 
+import { PLUGIN_ID } from "../../fixtures/constants";
 import { expect, test } from "../../fixtures/electron";
 import {
 	closeSettings,
@@ -18,8 +19,6 @@ import {
 	waitForPluginReady,
 } from "../../fixtures/helpers";
 import { listEventFiles } from "../events/events-helpers";
-
-const PLUGIN_ID = "prisma-calendar";
 
 // One representative key per category — don't iterate 47. Timing, identity,
 // recurrence, state, metadata.

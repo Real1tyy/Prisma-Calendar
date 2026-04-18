@@ -1,5 +1,6 @@
 import { readPluginData, setTextInput, settleSettings } from "@real1ty-obsidian-plugins/testing/e2e";
 
+import { PLUGIN_ID } from "../../fixtures/constants";
 import { expect, test } from "../../fixtures/electron";
 import {
 	closeSettings,
@@ -12,8 +13,6 @@ import {
 	switchSettingsTab,
 } from "../../fixtures/helpers";
 import { listEventFiles } from "../events/events-helpers";
-
-const PLUGIN_ID = "prisma-calendar";
 
 type CalendarRow = { id: string; name: string; directory?: string };
 type PluginData = { calendars: CalendarRow[] };

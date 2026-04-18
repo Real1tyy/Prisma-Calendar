@@ -8,9 +8,12 @@ import {
 	createFileLogger,
 } from "@real1ty-obsidian-plugins/testing/e2e";
 
+import { openCalendarReady } from "../specs/events/events-helpers";
+import { PLUGIN_ID } from "./constants";
+import { type CalendarHandle, createCalendarHandle } from "./dsl/calendar";
+
 const E2E_ROOT = resolve(__dirname, "..");
 const PLUGIN_ROOT = resolve(E2E_ROOT, "..");
-const PLUGIN_ID = "prisma-calendar";
 
 // Batch buttons seeded into every calendar so specs can exercise ones the
 // production default hides (batchCloneNext / batchMoveNext / etc. — see
@@ -333,10 +336,21 @@ async function runWithObsidianHandle(
 	}
 }
 
-export const test = base.extend<{ obsidian: BootstrappedObsidian }>({
+export const test = base.extend<{
+	obsidian: BootstrappedObsidian;
+	calendar: CalendarHandle;
+}>({
 	// eslint-disable-next-line no-empty-pattern
 	obsidian: async ({}, use) => {
 		await runWithObsidianHandle({ prefix: "spec" }, use);
+	},
+	// Opt-in DSL fixture: destructure `{ calendar }` instead of (or alongside)
+	// `{ obsidian }` to get a CalendarHandle with the calendar view already
+	// open. Classic `{ obsidian }`-only specs are unaffected — this fixture
+	// only runs when a spec actually references `calendar`.
+	calendar: async ({ obsidian }, use) => {
+		await openCalendarReady(obsidian.page);
+		await use(createCalendarHandle({ obsidian }));
 	},
 });
 

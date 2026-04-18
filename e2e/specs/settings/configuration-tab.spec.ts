@@ -1,9 +1,8 @@
 import { readPluginData, settleSettings, setToggle } from "@real1ty-obsidian-plugins/testing/e2e";
 
+import { PLUGIN_ID } from "../../fixtures/constants";
 import { expect, test } from "../../fixtures/electron";
 import { openPrismaSettings, switchSettingsTab } from "../../fixtures/helpers";
-
-const PLUGIN_ID = "prisma-calendar";
 
 type CalendarData = { calendars: Array<Record<string, unknown>> };
 
