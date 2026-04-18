@@ -377,10 +377,26 @@ export async function createEventViaUI(page: Page, input: CreateEventInput): Pro
  * Seed a batch of events through the UI and drain the resulting stack of
  * "Event created successfully" notices so they don't intercept subsequent
  * toolbar clicks.
+ *
+ * After each create, wait for the new tile to land in FC's render — modal
+ * close means the file was written, NOT that the calendar redrew. Without
+ * this gate, downstream right-clicks race FC's reactive index refresh.
  */
 export async function seedEvents(page: Page, events: CreateEventInput[]): Promise<void> {
+	const calendarOpen = await page
+		.locator(`${ACTIVE_CALENDAR_LEAF} .fc-view-harness`)
+		.first()
+		.isVisible()
+		.catch(() => false);
+
 	for (const input of events) {
 		await createEventViaUI(page, input);
+		if (calendarOpen) {
+			await page
+				.locator(`${ACTIVE_CALENDAR_LEAF} [data-testid="prisma-cal-event"][data-event-title="${input.title}"]`)
+				.first()
+				.waitFor({ state: "visible" });
+		}
 	}
 	await waitForNoticesClear(page);
 }
