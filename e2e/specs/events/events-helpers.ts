@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { type Locator, type Page } from "@playwright/test";
 import { listEventFiles as listAllMarkdownFiles } from "@real1ty-obsidian-plugins/testing/e2e";
 
-import { PLUGIN_ID } from "../../fixtures/constants";
+import { ACTIVE_CALENDAR_LEAF, PLUGIN_ID } from "../../fixtures/constants";
 import { sel, TID, UNTRACKED_BUTTON_TID, UNTRACKED_DROPDOWN_TID, UNTRACKED_ITEM_TID } from "../../fixtures/testids";
 import { type EventModalInput, fillEventModal, saveEventModal } from "./fill-event-modal";
 
@@ -230,7 +230,12 @@ export function monthsFromTodayTo(isoDate: string): number {
  * diagnosable from the failure log alone.
  */
 export async function openCreateModal(page: Page): Promise<void> {
-	await page.locator(TOOLBAR_CREATE_SELECTOR).click();
+	// Scoped to the active leaf so multi-calendar specs (which mount two
+	// toolbars, both carrying the same `prisma-cal-toolbar-create` testid)
+	// don't trip Playwright's strict-mode ambiguity check. `openCalendarView`
+	// activates the target leaf before creates, so `.mod-active` resolves to
+	// the intended calendar.
+	await page.locator(`${ACTIVE_CALENDAR_LEAF} ${TOOLBAR_CREATE_SELECTOR}`).first().click();
 	const title = page.locator(EVENT_MODAL_SELECTOR);
 	try {
 		await title.waitFor({ state: "attached", timeout: MODAL_WAIT_TIMEOUT_MS });
