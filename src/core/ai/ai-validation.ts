@@ -1,7 +1,7 @@
 import { calculateDurationMinutes, intoDate, toLocalISOString } from "@real1ty-obsidian-plugins";
 
 import type { AIMode } from "../../types/ai";
-import { stripISOSuffix } from "../../utils/event-frontmatter";
+import { stripZ } from "../../utils/iso";
 import type { AIEventSummary } from "./ai-context-builder";
 
 // ─── Types ──────────────────────────────────────────────────────────
@@ -61,8 +61,8 @@ export function buildDayMap(ops: TimedCreateOp[], currentEvents?: AIEventSummary
 			title,
 			start: startDate,
 			end: endDate,
-			startRaw: stripISOSuffix(start),
-			endRaw: stripISOSuffix(end),
+			startRaw: stripZ(start),
+			endRaw: stripZ(end),
 		};
 		const existing = byDay.get(dayKey);
 		if (existing) {

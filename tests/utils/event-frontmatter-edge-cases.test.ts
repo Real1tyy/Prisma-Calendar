@@ -4,7 +4,9 @@ import { describe, expect, it } from "vitest";
 import { markInstanceStatusIfPast } from "../../src/core/recurring-event-manager";
 import type { Frontmatter } from "../../src/types";
 import type { SingleCalendarConfig } from "../../src/types/settings";
-import { computeSortDateValue, isAllDayEvent, parseCustomDoneProperty } from "../../src/utils/event-frontmatter";
+import { computeSortDateValue } from "../../src/utils/frontmatter/basics";
+import { isAllDayFrontmatterValue } from "../../src/utils/frontmatter/predicates";
+import { parseCustomDoneProperty } from "../../src/utils/frontmatter/props";
 import { createMockSingleCalendarSettings } from "../setup";
 
 function createSettings(overrides: Partial<SingleCalendarConfig> = {}): SingleCalendarConfig {
@@ -164,24 +166,24 @@ describe("computeSortDateValue edge cases", () => {
 	});
 });
 
-describe("isAllDayEvent edge cases", () => {
+describe("isAllDayFrontmatterValue edge cases", () => {
 	it("should handle boolean true", () => {
-		expect(isAllDayEvent(true)).toBe(true);
+		expect(isAllDayFrontmatterValue(true)).toBe(true);
 	});
 
 	it('should handle string "true" (case-insensitive)', () => {
-		expect(isAllDayEvent("true")).toBe(true);
-		expect(isAllDayEvent("True")).toBe(true);
-		expect(isAllDayEvent("TRUE")).toBe(true);
+		expect(isAllDayFrontmatterValue("true")).toBe(true);
+		expect(isAllDayFrontmatterValue("True")).toBe(true);
+		expect(isAllDayFrontmatterValue("TRUE")).toBe(true);
 	});
 
 	it("should reject other values", () => {
-		expect(isAllDayEvent(false)).toBe(false);
-		expect(isAllDayEvent("false")).toBe(false);
-		expect(isAllDayEvent(null)).toBe(false);
-		expect(isAllDayEvent(undefined)).toBe(false);
-		expect(isAllDayEvent(1)).toBe(false);
-		expect(isAllDayEvent("yes")).toBe(false);
+		expect(isAllDayFrontmatterValue(false)).toBe(false);
+		expect(isAllDayFrontmatterValue("false")).toBe(false);
+		expect(isAllDayFrontmatterValue(null)).toBe(false);
+		expect(isAllDayFrontmatterValue(undefined)).toBe(false);
+		expect(isAllDayFrontmatterValue(1)).toBe(false);
+		expect(isAllDayFrontmatterValue("yes")).toBe(false);
 	});
 });
 

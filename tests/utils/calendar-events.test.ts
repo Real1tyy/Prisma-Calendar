@@ -1,23 +1,18 @@
 import type { App } from "obsidian";
 import { describe, expect, it, vi } from "vitest";
 
+import { getCommonCategories, isEventDone } from "../../src/utils/event-frontmatter";
+import { ensureFileHasZettelId, generateUniqueEventPath, generateUniqueZettelId } from "../../src/utils/event-naming";
+import { extractNotesCoreName } from "../../src/utils/events/naming";
 import {
-	getCommonCategories,
-	isEventDone,
-	isPhysicalRecurringEvent,
-	parseCustomDoneProperty,
-} from "../../src/utils/event-frontmatter";
-import {
-	ensureFileHasZettelId,
-	extractNotesCoreName,
 	extractZettelId,
-	generateUniqueEventPath,
-	generateUniqueZettelId,
 	hashRRuleIdToZettelFormat,
 	hasTimestamp,
 	rebuildPhysicalInstanceWithNewDate,
 	removeZettelId,
-} from "../../src/utils/event-naming";
+} from "../../src/utils/events/zettel-id";
+import { isPhysicalRecurringEvent } from "../../src/utils/frontmatter/predicates";
+import { parseCustomDoneProperty } from "../../src/utils/frontmatter/props";
 import { createMockTimedEvent } from "../fixtures/event-fixtures";
 import { createMockApp, createMockFile } from "../setup";
 

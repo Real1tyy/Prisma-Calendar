@@ -1,16 +1,13 @@
 import { describe, expect, it } from "vitest";
 
+import { cleanupTitle, extractNotesCoreName, getEventName, removeInstanceDate } from "../../src/utils/events/naming";
 import {
-	cleanupTitle,
 	extractInstanceDate,
-	extractNotesCoreName,
 	extractZettelId,
-	getEventName,
 	hashRRuleIdToZettelFormat,
 	rebuildPhysicalInstanceWithNewDate,
-	removeInstanceDate,
 	removeZettelId,
-} from "../../src/utils/event-naming";
+} from "../../src/utils/events/zettel-id";
 
 describe("extractZettelId", () => {
 	it("should extract zettel ID from hyphen-separated format", () => {

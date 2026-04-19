@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { CalendarBundle } from "../../src/core/calendar-bundle";
 import type { CalendarEvent } from "../../src/types/calendar";
-import type { AggregationMode, Stats } from "../../src/utils/weekly-stats";
+import type { AggregationMode, Stats } from "../../src/utils/stats";
 import { createMockTimedEvent } from "../fixtures/event-fixtures";
 import { createMockSingleCalendarSettings } from "../setup";
 

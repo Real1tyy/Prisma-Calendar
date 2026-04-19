@@ -3,7 +3,7 @@ import { type App, normalizePath, Notice, TFile } from "obsidian";
 import type { Subscription } from "rxjs";
 
 import type { Frontmatter, PrismaCalendarSettingsStore } from "../../types";
-import { extractZettelId, removeZettelId } from "../../utils/event-naming";
+import { extractZettelId, removeZettelId } from "../../utils/events/zettel-id";
 import type { CalendarBundle } from "../calendar-bundle";
 import { buildFrontmatterFromImportedEvent, createEventNoteFromImportedEvent, type ImportedEvent } from "./ics-import";
 

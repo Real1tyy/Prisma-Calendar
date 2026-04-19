@@ -6,7 +6,7 @@ import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { CalendarEvent } from "../../../types/calendar";
 import type { SingleCalendarConfig } from "../../../types/settings";
 import { resolveEventColor } from "../../../utils/event-color";
-import { cleanupTitle } from "../../../utils/event-naming";
+import { cleanupTitle } from "../../../utils/events/naming";
 import { emitHover } from "../../../utils/obsidian";
 import { getDisplayProperties, renderPropertyValue } from "../../../utils/property-display";
 import { buildHeatmapDataset, type HeatmapDataset } from "../../heatmap/heatmap-data";

@@ -24,7 +24,7 @@ import { PRO_FEATURES } from "../../core/license";
 import type { CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { isEventDone } from "../../utils/event-frontmatter";
-import { extractCleanDisplayName } from "../../utils/event-naming";
+import { extractCleanDisplayName } from "../../utils/events/naming";
 import { getFileAndFrontmatter, openFileInNewWindow } from "../../utils/obsidian";
 import type {
 	BarLayout,

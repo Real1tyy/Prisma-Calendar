@@ -3,7 +3,7 @@ import { Notice } from "obsidian";
 
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { addPrerequisite } from "../core/commands";
-import { extractCleanDisplayName } from "../utils/event-naming";
+import { extractCleanDisplayName } from "../utils/events/naming";
 import { getFilePath } from "../utils/extended-props";
 import { createStickyBanner, type StickyBannerHandle } from "./sticky-banner";
 

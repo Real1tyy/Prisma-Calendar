@@ -1,7 +1,7 @@
-import { cls, generateColors } from "@real1ty-obsidian-plugins";
+import { type ChartDataItem, cls, generateColors, PieChartBuilder } from "@real1ty-obsidian-plugins";
 
-import { type ChartDataItem, createChartCanvas, PieChartBuilder } from "../../utils/chart-utils";
-import { formatDuration, type WeeklyStatEntry } from "../../utils/weekly-stats";
+import { createChartCanvas } from "../../utils/chart-utils";
+import { formatDuration, type WeeklyStatEntry } from "../../utils/stats";
 
 const MAX_LABELS = 25; // to prevent label overflow
 

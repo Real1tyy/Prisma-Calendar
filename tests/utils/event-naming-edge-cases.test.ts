@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { hashRRuleIdToZettelFormat } from "../../src/utils/event-naming";
+import { hashRRuleIdToZettelFormat } from "../../src/utils/events/zettel-id";
 
 describe("hashRRuleIdToZettelFormat", () => {
 	it("should produce a 14-digit string", () => {

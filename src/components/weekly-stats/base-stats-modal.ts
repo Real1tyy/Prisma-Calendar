@@ -4,7 +4,7 @@ import { Modal } from "obsidian";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent } from "../../types/calendar";
-import type { AggregationMode } from "../../utils/weekly-stats";
+import type { AggregationMode } from "../../utils/stats";
 import type { ChartComponent } from "./chart-component";
 import type { TableComponent } from "./table-component";
 

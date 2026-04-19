@@ -3,7 +3,7 @@ import { minsToTimeStr, parseTimeToMins, toLocalISOString } from "@real1ty-obsid
 import type { CalendarEvent } from "../../types/calendar";
 import { isTimedEvent } from "../../types/calendar";
 import type { CategoryAssignmentPreset } from "../../types/settings";
-import { aggregateStats, formatDuration, formatPercentage, type Stats } from "../../utils/weekly-stats";
+import { aggregateStats, formatDuration, formatPercentage, type Stats } from "../../utils/stats";
 
 export interface CalendarContext {
 	calendarName: string;

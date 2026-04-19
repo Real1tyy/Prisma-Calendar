@@ -11,7 +11,7 @@ import type { App } from "obsidian";
 import type { Frontmatter } from "../../../types";
 import type { SingleCalendarConfig } from "../../../types/settings";
 import { createTextDiv } from "../../../utils/dom-utils";
-import { removeZettelId } from "../../../utils/event-naming";
+import { removeZettelId } from "../../../utils/events/zettel-id";
 import { categorizeProperties } from "../../../utils/format";
 
 export interface NotificationEventData {

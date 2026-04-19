@@ -3,7 +3,7 @@ import { merge, type Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { calculateCapacityFromEvents, formatBoundaryRange, formatCapacityLabel } from "../utils/capacity";
-import { formatDuration, formatDurationAsDecimalHours, getDayBounds } from "../utils/weekly-stats";
+import { formatDuration, formatDurationAsDecimalHours, getDayBounds } from "../utils/stats";
 
 export interface CapacityIndicatorHandle {
 	setRange: (start: Date, end: Date) => void;

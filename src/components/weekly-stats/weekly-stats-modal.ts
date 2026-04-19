@@ -1,4 +1,4 @@
-import { aggregateWeeklyStats, getWeekBounds } from "../../utils/weekly-stats";
+import { aggregateWeeklyStats, getWeekBounds } from "../../utils/stats";
 import type { IntervalConfig } from "./interval-stats-modal";
 import { createNavigationConfig, IntervalStatsModal } from "./interval-stats-modal";
 

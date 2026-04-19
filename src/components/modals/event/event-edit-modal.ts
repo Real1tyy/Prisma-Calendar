@@ -9,7 +9,7 @@ import { MinimizedModalManager } from "../../../core/minimized-modal-manager";
 import type { EventSaveData, UpdateEventData } from "../../../types/event-save";
 import { isWeekdaySupported } from "../../../types/recurring-event";
 import type { Weekday } from "../../../utils/date-recurrence";
-import { extractInstanceDate, extractZettelId, removeZettelId } from "../../../utils/event-naming";
+import { extractInstanceDate, extractZettelId, removeZettelId } from "../../../utils/events/zettel-id";
 import { categorizeProperties, formatDateOnly, formatDateTimeForInput } from "../../../utils/format";
 import { BaseEventModal } from "./base-event-modal";
 import { loadSimpleFieldValues } from "./event-frontmatter-mapper";

@@ -1,5 +1,5 @@
 import type { CalendarBundle } from "../../core/calendar-bundle";
-import { aggregateMonthlyStats, getMonthBounds } from "../../utils/weekly-stats";
+import { aggregateMonthlyStats, getMonthBounds } from "../../utils/stats";
 import { type IntervalStatsViewHandle, renderIntervalStatsInto } from "./interval-stats-view";
 
 export type MonthlyStatsHandle = IntervalStatsViewHandle;

@@ -2,7 +2,7 @@ import type { FrontmatterDiff } from "@real1ty-obsidian-plugins";
 import { describe, expect, it } from "vitest";
 
 import type { SingleCalendarConfig } from "../../src/types/settings";
-import { extractTimeDiffFromFrontmatterDiff, stripISOSuffix } from "../../src/utils/event-frontmatter";
+import { extractTimeDiffFromFrontmatterDiff } from "../../src/utils/frontmatter/diff";
 
 const mockSettings = {
 	startProp: "Start",
@@ -19,24 +19,6 @@ function createDiff(overrides: Partial<FrontmatterDiff> = {}): FrontmatterDiff {
 		...overrides,
 	};
 }
-
-describe("stripISOSuffix", () => {
-	it("should strip .000Z suffix", () => {
-		expect(stripISOSuffix("2026-03-06T09:00:00.000Z")).toBe("2026-03-06T09:00:00");
-	});
-
-	it("should strip standalone Z suffix", () => {
-		expect(stripISOSuffix("2026-03-06T09:00:00Z")).toBe("2026-03-06T09:00:00");
-	});
-
-	it("should leave string unchanged when no suffix", () => {
-		expect(stripISOSuffix("2026-03-06T09:00:00")).toBe("2026-03-06T09:00:00");
-	});
-
-	it("should handle milliseconds with Z", () => {
-		expect(stripISOSuffix("2026-03-06T14:30:00.000Z")).toBe("2026-03-06T14:30:00");
-	});
-});
 
 describe("extractTimeDiffFromFrontmatterDiff", () => {
 	it("should return null when no time properties changed", () => {

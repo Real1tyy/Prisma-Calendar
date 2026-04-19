@@ -1,6 +1,6 @@
-import { addCls, cls, generateColors, hexToRgb } from "@real1ty-obsidian-plugins";
+import { addCls, type ChartDataItem, cls, generateColors, hexToRgb, PieChartBuilder } from "@real1ty-obsidian-plugins";
 
-import { type ChartDataItem, createChartCanvas, PieChartBuilder } from "../../utils/chart-utils";
+import { createChartCanvas } from "../../utils/chart-utils";
 
 type SortDirection = "asc" | "desc";
 

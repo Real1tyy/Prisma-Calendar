@@ -1,7 +1,7 @@
 import { cls } from "@real1ty-obsidian-plugins";
 
-import type { WeeklyStatEntry } from "../../utils/weekly-stats";
-import { formatDuration, formatDurationAsDecimalHours, formatPercentage } from "../../utils/weekly-stats";
+import type { WeeklyStatEntry } from "../../utils/stats";
+import { formatDuration, formatDurationAsDecimalHours, formatPercentage } from "../../utils/stats";
 
 const ENTRIES_PER_PAGE = 20;
 

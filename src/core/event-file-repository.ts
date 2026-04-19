@@ -13,8 +13,10 @@ import type { Frontmatter, PrismaSyncDataSchema, SingleCalendarConfig } from "..
 import { parseEventMetadata } from "../types/event";
 import type { CalendarEventSource, IndexerEvent, RawEventSource } from "../types/event-source";
 import { type NodeRecurringEvent, parseRRuleFromFrontmatter } from "../types/recurring-event";
-import { shouldEventBeMarkedAsDone } from "../utils/event-frontmatter";
-import { cleanupTitle, ensureFileHasZettelId, generateUniqueRruleId, hasTimestamp } from "../utils/event-naming";
+import { ensureFileHasZettelId } from "../utils/event-naming";
+import { cleanupTitle } from "../utils/events/naming";
+import { generateUniqueRruleId, hasTimestamp } from "../utils/events/zettel-id";
+import { shouldEventBeMarkedAsDone } from "../utils/frontmatter/predicates";
 import { createEventSchema } from "./event-schema";
 
 /**

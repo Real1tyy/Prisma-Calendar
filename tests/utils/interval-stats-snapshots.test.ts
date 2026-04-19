@@ -8,7 +8,7 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { aggregateStats } from "../../src/utils/weekly-stats";
+import { aggregateStats } from "../../src/utils/stats";
 import { createMockAllDayEvent, createMockTimedEvent } from "../fixtures/event-fixtures";
 
 function asSnapshot(stats: ReturnType<typeof aggregateStats>): string {

@@ -11,8 +11,10 @@ import type { App } from "obsidian";
 import { getFrontMatterInfo, parseYaml, TFile } from "obsidian";
 
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
-import { applyStartEndOffsets, removeNonCloneableProperties } from "../../utils/event-frontmatter";
-import { ensureFileHasZettelId, generateUniqueEventPath, removeZettelId } from "../../utils/event-naming";
+import { ensureFileHasZettelId, generateUniqueEventPath } from "../../utils/event-naming";
+import { removeZettelId } from "../../utils/events/zettel-id";
+import { applyStartEndOffsets } from "../../utils/frontmatter/basics";
+import { removeNonCloneableProperties } from "../../utils/frontmatter/props";
 import type { CalendarBundle } from "../calendar-bundle";
 import type { EventFileRepository, FrontmatterSnapshot } from "../event-file-repository";
 

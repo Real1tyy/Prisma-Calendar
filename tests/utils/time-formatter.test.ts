@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatEventTimeInfo } from "../../src/utils/time-formatter";
+import { formatEventTimeInfo } from "../../src/utils/format";
 import { createDefaultMetadata, createMockAllDayEvent, createMockTimedEvent } from "../fixtures/event-fixtures";
 
 describe("formatEventTimeInfo", () => {

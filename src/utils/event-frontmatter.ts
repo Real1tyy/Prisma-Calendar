@@ -1,111 +1,17 @@
 import {
-	ensureISOSuffix,
 	type FrontmatterDiff,
-	parseAsLocalDate,
 	parseIntoList,
 	serializeFrontmatterValue,
-	toSafeString,
 	withFrontmatter,
 } from "@real1ty-obsidian-plugins";
-import type { DurationLike } from "luxon";
-import { DateTime } from "luxon";
 import { type App, TFile } from "obsidian";
 
-import { INTERNAL_FRONTMATTER_PROPERTIES } from "../constants";
 import type { CalendarEvent, Frontmatter, SingleCalendarConfig } from "../types";
-import { stripZ } from "../types/event";
-import {
-	DEDICATED_UI_PROP_KEYS,
-	NOTIFICATION_DEDICATED_UI_PROP_KEYS,
-	NOTIFICATION_SYSTEM_PROP_KEYS,
-	SYSTEM_PROP_KEYS,
-} from "../types/settings";
+import { computeSortDateValue } from "./frontmatter/basics";
+import { getBatchFrontmatterExcludedProps } from "./frontmatter/props";
 import { getFileAndFrontmatter, getFileByPathOrThrow } from "./obsidian";
 
-export const isAllDayEvent = (allDayValue: unknown): boolean => {
-	return allDayValue === true || (typeof allDayValue === "string" && allDayValue.toLowerCase() === "true");
-};
-
-/**
- * Decides whether a file-change observer should auto-mark an event as done.
- *
- * CRITICAL PROTECTION: Don't mark source recurring events as done.
- * Source recurring events (identified by the presence of rruleProp) are templates
- * that generate virtual and physical instances. Marking them as done would:
- * 1. Break the recurring event system
- * 2. Prevent generation of future instances
- * 3. Cause all instances to appear as "done" since they inherit from the source
- */
-export const shouldEventBeMarkedAsDone = (frontmatter: Frontmatter, settings: SingleCalendarConfig): boolean => {
-	if (!settings.markPastInstancesAsDone) return false;
-	if (frontmatter[settings.rruleProp]) return false;
-	if (frontmatter[settings.statusProperty] === settings.doneValue) return false;
-	return isEventPastFromFrontmatter(frontmatter, settings);
-};
-
-/**
- * Parses a frontmatter value as a local-time Date. Prisma writes local datetimes with
- * a `.000Z` suffix for sortability — they must not be interpreted as UTC when compared
- * against `new Date()` (local now). Returns null if the value is missing or unparseable.
- */
-const frontmatterValueAsLocalDate = (value: unknown): Date | null => {
-	const raw = toSafeString(value);
-	return raw ? parseAsLocalDate(raw) : null;
-};
-
-/**
- * Returns true when the event represented by the given frontmatter is entirely in the past.
- * All-day events use end-of-day on the Date property; timed events use the End property.
- */
-export const isEventPastFromFrontmatter = (frontmatter: Frontmatter, settings: SingleCalendarConfig): boolean => {
-	const isAllDay = isAllDayEvent(frontmatter[settings.allDayProp]);
-	const date = frontmatterValueAsLocalDate(frontmatter[isAllDay ? settings.dateProp : settings.endProp]);
-	if (!date) return false;
-	if (isAllDay) date.setHours(23, 59, 59, 999);
-	return date < new Date();
-};
-
-/**
- * Strips the milliseconds and Z suffix from an ISO datetime string.
- * Converts "2024-01-15T09:00:00.000Z" to "2024-01-15T09:00:00"
- * This creates cleaner, more sortable datetime values for external tools.
- */
-export const stripISOSuffix = (iso: string): string => {
-	return stripZ(iso);
-};
-
-const normalizesTimedEvents = (mode: string): boolean =>
-	["startDate", "endDate", "allStartDate", "allEndDate"].includes(mode);
-
-const normalizesAllDayEvents = (mode: string): boolean => ["allDayOnly", "allStartDate", "allEndDate"].includes(mode);
-
-/**
- * Computes the normalized sort date value for an event.
- * Returns the target property name and the expected value, or undefined if sorting doesn't apply.
- */
-export const computeSortDateValue = (
-	settings: SingleCalendarConfig,
-	start: string,
-	end?: string,
-	allDay?: boolean
-): { targetProp: string; value: string } | undefined => {
-	const mode = settings.sortingStrategy;
-	if (mode === "none") return undefined;
-
-	const targetProp = settings.sortDateProp;
-	if (!targetProp) return undefined;
-
-	if (allDay) {
-		if (!normalizesAllDayEvents(mode)) return undefined;
-		const dateOnly = start.split("T")[0];
-		return { targetProp, value: `${dateOnly}T00:00:00` };
-	}
-
-	if (!normalizesTimedEvents(mode)) return undefined;
-
-	const value = mode === "startDate" || mode === "allStartDate" ? stripISOSuffix(start) : stripISOSuffix(end || start);
-	return { targetProp, value };
-};
+// ─── Side-effectful vault operations ────────────────────────────────
 
 /**
  * Applies sort date normalization to a file on disk if the value differs from expected.
@@ -148,79 +54,6 @@ export const applyDateNormalizationToFile = async (
 	}
 };
 
-const shiftISO = (iso: unknown, duration?: DurationLike) => {
-	if (!iso || typeof iso !== "string" || !duration) return iso;
-	const stripped = stripZ(iso);
-	const dt = DateTime.fromISO(stripped);
-	if (!dt.isValid) return iso;
-	const shifted = dt.plus(duration);
-	if (!stripped.includes("T")) {
-		return shifted.toISODate();
-	}
-	const bare = shifted.toISO({ suppressMilliseconds: true, includeOffset: false });
-	return iso.endsWith("Z") ? ensureISOSuffix(bare ?? "") : bare;
-};
-
-export const applyStartEndOffsets = (
-	fm: Frontmatter,
-	settings: SingleCalendarConfig,
-	startOffset?: DurationLike,
-	endOffset?: DurationLike
-) => {
-	const { startProp, endProp, dateProp, allDayProp } = settings;
-
-	if (isAllDayEvent(fm[allDayProp])) {
-		if (fm[dateProp]) {
-			fm[dateProp] = shiftISO(fm[dateProp], startOffset);
-		}
-	} else {
-		if (fm[startProp]) fm[startProp] = shiftISO(fm[startProp], startOffset);
-		if (fm[endProp]) fm[endProp] = shiftISO(fm[endProp], endOffset);
-	}
-};
-
-export const setEventBasics = (
-	fm: Frontmatter,
-	settings: SingleCalendarConfig,
-	data: {
-		title?: string | undefined;
-		start: string;
-		end?: string | undefined;
-		allDay?: boolean | undefined;
-		zettelId?: number | undefined;
-	}
-) => {
-	const { titleProp, startProp, endProp, dateProp, allDayProp, zettelIdProp } = settings;
-
-	if (titleProp && data.title) fm[titleProp] = data.title;
-
-	if (data.allDay !== undefined) fm[allDayProp] = data.allDay;
-
-	const dateOnly = data.start.split("T")[0];
-
-	if (data.allDay) {
-		fm[dateProp] = dateOnly;
-		fm[startProp] = "";
-		fm[endProp] = "";
-	} else {
-		fm[startProp] = ensureISOSuffix(data.start);
-		if (data.end) fm[endProp] = ensureISOSuffix(data.end);
-		fm[dateProp] = "";
-	}
-
-	const sortResult = computeSortDateValue(settings, data.start, data.end, data.allDay);
-	if (sortResult) fm[sortResult.targetProp] = sortResult.value;
-
-	if (zettelIdProp && data.zettelId) fm[zettelIdProp] = data.zettelId;
-};
-
-export const setUntrackedEventBasics = (fm: Frontmatter, settings: SingleCalendarConfig): void => {
-	fm[settings.startProp] = "";
-	fm[settings.endProp] = "";
-	fm[settings.dateProp] = "";
-	fm[settings.allDayProp] = "";
-};
-
 export const isEventDone = (app: App, filePath: string, statusProperty: string, doneValue: string): boolean => {
 	try {
 		const { frontmatter } = getFileAndFrontmatter(app, filePath);
@@ -229,100 +62,6 @@ export const isEventDone = (app: App, filePath: string, statusProperty: string, 
 	} catch {
 		return false;
 	}
-};
-
-/**
- * Parses a custom done property DSL expression.
- * Format: "propertyName value" (e.g., "archived true", "status completed", "priority 1")
- * Values are auto-parsed: "true"/"false" → boolean, numeric strings → number, rest → string.
- */
-export const parseCustomDoneProperty = (expression: string): { key: string; value: unknown } | null => {
-	const trimmed = expression.trim();
-	if (!trimmed) return null;
-
-	const spaceIndex = trimmed.indexOf(" ");
-	if (spaceIndex === -1) return null;
-
-	const key = trimmed.substring(0, spaceIndex).trim();
-	const rawValue = trimmed.substring(spaceIndex + 1).trim();
-
-	if (!key || !rawValue) return null;
-
-	if (rawValue === "true") return { key, value: true };
-	if (rawValue === "false") return { key, value: false };
-
-	const num = Number(rawValue);
-	if (!Number.isNaN(num)) return { key, value: num };
-
-	return { key, value: rawValue };
-};
-
-const resolveKeys = (settings: SingleCalendarConfig, keys: readonly string[]): string[] =>
-	keys.map((key) => String(settings[key as keyof SingleCalendarConfig] ?? "")).filter((v) => v !== "");
-
-/**
- * Returns per-instance system properties that should NOT be copied from a source
- * recurring event to its physical instances. These are fields Prisma sets or
- * recalculates for each instance (timing, identity, recurrence metadata).
- *
- */
-const getRecurringInstanceSystemProps = (settings: SingleCalendarConfig): Set<string> => {
-	return new Set([...resolveKeys(settings, SYSTEM_PROP_KEYS), ...resolveKeys(settings, NOTIFICATION_SYSTEM_PROP_KEYS)]);
-};
-
-/**
- * Returns ALL Prisma-managed internal properties that should not be displayed
- * in UI as regular display properties. Combines the recurring-instance system
- * props with user-facing props that have their own dedicated rendering.
- *
- * Driven by DEDICATED_UI_PROP_KEYS and NOTIFICATION_DEDICATED_UI_PROP_KEYS in settings.ts.
- */
-export function getInternalProperties(settings: SingleCalendarConfig): Set<string> {
-	const systemProps = getRecurringInstanceSystemProps(settings);
-	const dedicatedProps = [
-		...resolveKeys(settings, DEDICATED_UI_PROP_KEYS),
-		...resolveKeys(settings, NOTIFICATION_DEDICATED_UI_PROP_KEYS),
-		...INTERNAL_FRONTMATTER_PROPERTIES,
-	];
-
-	return new Set([...systemProps, ...dedicatedProps]);
-}
-
-/**
- * Returns properties excluded from propagation.
- * Uses the per-instance system props as the base, plus any user-configured exclusions.
- */
-export const getExcludedProps = (settings: SingleCalendarConfig, userExcludedCsv: string): Set<string> => {
-	const systemProps = getRecurringInstanceSystemProps(settings);
-
-	if (userExcludedCsv) {
-		const userExcludedProps = userExcludedCsv
-			.split(",")
-			.map((prop) => prop.trim())
-			.filter((prop) => prop !== "");
-		return new Set([...systemProps, ...userExcludedProps]);
-	}
-	return systemProps;
-};
-
-/**
- * Filters a frontmatter diff to remove excluded properties based on settings.
- * Returns a new diff with only non-excluded properties.
- */
-export const filterExcludedPropsFromDiff = (diff: FrontmatterDiff, excludedProps: Set<string>): FrontmatterDiff => {
-	const filteredAdded = diff.added.filter((change) => !excludedProps.has(change.key));
-	const filteredModified = diff.modified.filter((change) => !excludedProps.has(change.key));
-	const filteredDeleted = diff.deleted.filter((change) => !excludedProps.has(change.key));
-
-	const hasChanges = filteredAdded.length > 0 || filteredModified.length > 0 || filteredDeleted.length > 0;
-
-	return {
-		...diff,
-		added: filteredAdded,
-		modified: filteredModified,
-		deleted: filteredDeleted,
-		hasChanges,
-	};
 };
 
 /**
@@ -361,26 +100,6 @@ export const applyFrontmatterChangesToInstance = async (
 	} catch (error) {
 		console.error(`[CalendarEvents] Error applying frontmatter changes to instance ${filePath}:`, error);
 	}
-};
-
-/**
- * Returns a smaller exclusion set for batch frontmatter operations.
- * Only excludes core scheduling properties and Obsidian internals,
- * allowing user-facing properties like location, participants, and icon to be shown.
- */
-export const getBatchFrontmatterExcludedProps = (settings: SingleCalendarConfig): Set<string> => {
-	return new Set(
-		[
-			settings.startProp,
-			settings.endProp,
-			settings.dateProp,
-			settings.sortDateProp,
-			settings.allDayProp,
-			settings.categoryProp,
-			settings.calendarTitleProp,
-			"position",
-		].filter((prop): prop is string => prop !== undefined && prop !== "")
-	);
 };
 
 /**
@@ -443,7 +162,6 @@ export const getAllFrontmatterProperties = (
 
 	const result = new Map<string, string>();
 
-	// Collect all unique keys across all events
 	const allKeys = new Set<string>();
 	for (const fm of allEventFrontmatters) {
 		for (const key of Object.keys(fm)) {
@@ -455,7 +173,6 @@ export const getAllFrontmatterProperties = (
 	}
 
 	for (const key of allKeys) {
-		// Check if all events that have this key share the same value
 		const values: string[] = [];
 		for (const fm of allEventFrontmatters) {
 			if (key in fm) {
@@ -470,70 +187,4 @@ export const getAllFrontmatterProperties = (
 	}
 
 	return result;
-};
-
-export const assignListToFrontmatter = (fm: Frontmatter, prop: string, items: string[]): void => {
-	if (items.length === 0) {
-		fm[prop] = "";
-	} else if (items.length === 1) {
-		fm[prop] = items[0];
-	} else {
-		fm[prop] = items;
-	}
-};
-
-/**
- * Removes properties from frontmatter that should not be cloned/duplicated.
- * These include recurring event metadata and notification status that are specific
- * to the original event and should not carry over to clones.
- */
-export const removeNonCloneableProperties = (frontmatter: Frontmatter, settings: SingleCalendarConfig): void => {
-	delete frontmatter[settings.rruleIdProp];
-	delete frontmatter[settings.instanceDateProp];
-	delete frontmatter[settings.sourceProp];
-	delete frontmatter[settings.alreadyNotifiedProp];
-};
-
-export interface TimePropagationDiff {
-	startChange?: { oldValue: string; newValue: string } | undefined;
-	endChange?: { oldValue: string; newValue: string } | undefined;
-}
-
-interface StringChange {
-	oldValue: string;
-	newValue: string;
-}
-
-function findStringChange(diff: FrontmatterDiff, prop: string): StringChange | undefined {
-	for (const c of diff.modified) {
-		if (c.key === prop && typeof c.oldValue === "string" && typeof c.newValue === "string") {
-			return { oldValue: c.oldValue, newValue: c.newValue };
-		}
-	}
-	return undefined;
-}
-
-export function extractTimeDiffFromFrontmatterDiff(
-	diff: FrontmatterDiff,
-	settings: SingleCalendarConfig
-): TimePropagationDiff | null {
-	const startChange = findStringChange(diff, settings.startProp);
-	const endChange = findStringChange(diff, settings.endProp);
-
-	if (!startChange && !endChange) return null;
-
-	return { startChange, endChange };
-}
-
-/**
- * Checks if an event is a physical recurring event (has rruleId and instanceDate, but no rrule).
- */
-export const isPhysicalRecurringEvent = (
-	frontmatter: Frontmatter | undefined,
-	rruleIdProp: string,
-	rruleProp: string,
-	instanceDateProp: string
-): boolean => {
-	if (!frontmatter) return false;
-	return Boolean(frontmatter[rruleIdProp] && frontmatter[instanceDateProp] && !frontmatter[rruleProp]);
 };

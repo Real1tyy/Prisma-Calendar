@@ -3,7 +3,8 @@ import { ensureISOSuffix, parseFrontmatterRecord, parseIntoList, toDisplayLink }
 import type { DurationLike } from "luxon";
 
 import type { Frontmatter } from "../../types";
-import { applyStartEndOffsets, assignListToFrontmatter, parseCustomDoneProperty } from "../../utils/event-frontmatter";
+import { applyStartEndOffsets } from "../../utils/frontmatter/basics";
+import { assignListToFrontmatter, parseCustomDoneProperty } from "../../utils/frontmatter/props";
 import type { CalendarBundle } from "../calendar-bundle";
 import type { EventFileRepository, FrontmatterSnapshot } from "../event-file-repository";
 

@@ -9,7 +9,7 @@ import type { Frontmatter } from "../types";
 import type { IndexerEvent } from "../types/event-source";
 import type { EventPreset } from "../types/settings";
 import type { StopwatchSnapshot } from "../types/stopwatch";
-import { getEventName } from "../utils/event-naming";
+import { getEventName } from "../utils/events/naming";
 import { getCategoriesFromFilePath } from "../utils/obsidian";
 import type { CalendarBundle } from "./calendar-bundle";
 import { assignCategories } from "./commands/frontmatter-update-command";

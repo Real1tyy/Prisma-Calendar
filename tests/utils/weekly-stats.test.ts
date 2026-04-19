@@ -13,7 +13,7 @@ import {
 	getEventsInRange,
 	getMonthBounds,
 	getWeekBounds,
-} from "../../src/utils/weekly-stats";
+} from "../../src/utils/stats";
 import { createDefaultMetadata, createMockAllDayEvent, createMockTimedEvent } from "../fixtures/event-fixtures";
 
 describe("getEventDuration", () => {

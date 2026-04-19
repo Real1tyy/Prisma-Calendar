@@ -8,7 +8,7 @@ import type { CalendarEvent } from "../../types/calendar";
 import { formatRecurrenceLabel, isWeekdaySupported } from "../../types/recurring-event";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { resolveEventColor } from "../../utils/event-color";
-import { removeZettelId } from "../../utils/event-naming";
+import { removeZettelId } from "../../utils/events/zettel-id";
 import {
 	type EventSeriesBasesViewConfig,
 	showEventSeriesBasesViewModal,

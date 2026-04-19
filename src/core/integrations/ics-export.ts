@@ -5,7 +5,7 @@ import { type App, Notice, TFile } from "obsidian";
 import type { CalendarEvent } from "../../types/calendar";
 import { isAllDayEvent, isTimedEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
-import { extractZettelId, removeZettelId } from "../../utils/event-naming";
+import { extractZettelId, removeZettelId } from "../../utils/events/zettel-id";
 import { appendZ } from "../../utils/iso";
 
 interface NotificationSettings {

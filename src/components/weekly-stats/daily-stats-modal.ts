@@ -1,7 +1,7 @@
 import type { App } from "obsidian";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
-import { aggregateDailyStats, getDayBounds, getMonthBounds, getWeekBounds } from "../../utils/weekly-stats";
+import { aggregateDailyStats, getDayBounds, getMonthBounds, getWeekBounds } from "../../utils/stats";
 import type { IntervalConfig } from "./interval-stats-modal";
 import { createNavigationConfig, IntervalStatsModal } from "./interval-stats-modal";
 

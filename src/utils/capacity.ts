@@ -1,6 +1,6 @@
 import type { CalendarEvent } from "../types/calendar";
 import { isTimedEvent } from "../types/calendar";
-import { formatDuration, formatDurationAsDecimalHours, getEventDuration } from "./weekly-stats";
+import { formatDuration, formatDurationAsDecimalHours, getEventDuration } from "./stats";
 
 export interface CapacityResult {
 	capacityMs: number;

@@ -10,8 +10,10 @@ import {
 import type { App, TFile } from "obsidian";
 
 import type { EventDateTime, Frontmatter, SingleCalendarConfig } from "../../types";
-import { isPhysicalRecurringEvent, setEventBasics } from "../../utils/event-frontmatter";
-import { ensureFileHasZettelId, extractZettelId, rebuildPhysicalInstanceWithNewDate } from "../../utils/event-naming";
+import { ensureFileHasZettelId } from "../../utils/event-naming";
+import { extractZettelId, rebuildPhysicalInstanceWithNewDate } from "../../utils/events/zettel-id";
+import { setEventBasics } from "../../utils/frontmatter/basics";
+import { isPhysicalRecurringEvent } from "../../utils/frontmatter/predicates";
 import type { CalendarBundle } from "../calendar-bundle";
 import type { EventFileRepository, FrontmatterSnapshot } from "../event-file-repository";
 import type { EventData } from "./lifecycle-commands";

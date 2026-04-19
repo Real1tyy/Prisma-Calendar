@@ -3,8 +3,8 @@ import { cls, toLocalISOString } from "@real1ty-obsidian-plugins";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent } from "../../types/calendar";
 import { calculateCapacityFromEvents, formatBoundaryRange, formatCapacityLabel } from "../../utils/capacity";
-import type { AggregationMode, Stats } from "../../utils/weekly-stats";
-import { formatDuration, formatDurationAsDecimalHours } from "../../utils/weekly-stats";
+import type { AggregationMode, Stats } from "../../utils/stats";
+import { formatDuration, formatDurationAsDecimalHours } from "../../utils/stats";
 import { ChartComponent } from "../weekly-stats/chart-component";
 import { TableComponent } from "../weekly-stats/table-component";
 

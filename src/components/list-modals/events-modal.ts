@@ -11,7 +11,8 @@ import {
 	type NodeRecurringEvent,
 	RECURRENCE_TYPE_OPTIONS,
 } from "../../types/recurring-event";
-import { getEventName, removeZettelId } from "../../utils/event-naming";
+import { getEventName } from "../../utils/events/naming";
+import { removeZettelId } from "../../utils/events/zettel-id";
 import { getCategoriesFromFilePath, openFileInNewTab } from "../../utils/obsidian";
 import { getStartDateTime } from "../../utils/recurring-utils";
 import type { CalendarComponent } from "../calendar-view";

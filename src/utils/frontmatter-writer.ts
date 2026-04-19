@@ -1,6 +1,6 @@
 import type { Frontmatter, SingleCalendarConfig } from "../types";
 import type { EventEditableFields } from "../types/event-fields";
-import { assignListToFrontmatter, parseCustomDoneProperty } from "./event-frontmatter";
+import { assignListToFrontmatter, parseCustomDoneProperty } from "./frontmatter/props";
 
 export interface WriteMetadataOptions {
 	initialMarkAsDone?: boolean;

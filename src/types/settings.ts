@@ -5,6 +5,7 @@ import {
 	type SettingsStore,
 	TabbedContainerStateSchema,
 } from "@real1ty-obsidian-plugins";
+import { ColorSchema } from "@real1ty-obsidian-plugins";
 import { z } from "zod";
 
 import {
@@ -27,7 +28,6 @@ import {
 	DEFAULT_ZOOM_LEVELS,
 	PROP_DEFAULTS,
 } from "../constants";
-import { ColorSchema } from "../utils/validation";
 import { AI_DEFAULTS } from "./ai";
 import { CalDAVSettingsSchema, ICSSubscriptionSettingsSchema } from "./integrations";
 import { CalendarViewTypeSchema, ContextMenuItemSchema, LOCALE_KEYS, ToolbarButtonSchema } from "./view";

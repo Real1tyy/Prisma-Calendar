@@ -4,7 +4,7 @@ import type { App } from "obsidian";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { isTimedEvent } from "../../../types/calendar";
 import { createModalButtons } from "../../../utils/dom-utils";
-import { cleanupTitle } from "../../../utils/event-naming";
+import { cleanupTitle } from "../../../utils/events/naming";
 
 export interface AssignmentItem {
 	name: string;

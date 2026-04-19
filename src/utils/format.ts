@@ -1,12 +1,26 @@
-import { calculateDuration, intoDate, isNotEmpty } from "@real1ty-obsidian-plugins";
+import { calculateDuration, formatDurationHumanReadable, intoDate, isNotEmpty } from "@real1ty-obsidian-plugins";
+import { DateTime } from "luxon";
 
 import type { Frontmatter } from "../types";
-import type { CalendarEvent, CalendarEventData } from "../types/calendar";
+import { type CalendarEvent, type CalendarEventData, isAllDayEvent, isTimedEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/settings";
-import { getInternalProperties } from "./event-frontmatter";
-import { cleanupTitle } from "./event-naming";
+import { cleanupTitle } from "./events/naming";
+import { getInternalProperties } from "./frontmatter/props";
 import { stripZ } from "./iso";
 import { extractPropertyText, getDisplayProperties } from "./property-display";
+
+export function formatEventTimeInfo(event: CalendarEvent): string {
+	const startTime = DateTime.fromISO(event.start);
+	if (isAllDayEvent(event)) {
+		return `All Day - ${startTime.toFormat("MMM d, yyyy")}`;
+	}
+	const endTime = isTimedEvent(event) ? DateTime.fromISO(event.end) : null;
+	if (endTime && endTime > startTime) {
+		const durationText = formatDurationHumanReadable(startTime, endTime);
+		return `${startTime.toFormat("MMM d, yyyy - h:mm a")} (${durationText})`;
+	}
+	return startTime.toFormat("MMM d, yyyy - h:mm a");
+}
 
 /**
  * Formats a date/datetime for HTML datetime-local input fields.

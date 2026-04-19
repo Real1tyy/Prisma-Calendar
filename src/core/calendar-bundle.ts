@@ -11,11 +11,12 @@ import { type App, Notice, TFile } from "obsidian";
 import { distinctUntilChanged, filter, firstValueFrom, type Subscription } from "rxjs";
 
 import { type PrismaViewRef, registerPrismaCalendarView } from "../components/views/prisma-view";
+import { getCalendarViewType } from "../constants";
 import type CustomCalendarPlugin from "../main";
 import type { PrismaCalendarSettingsStore } from "../types";
 import type { CreateEventData, UpdateEventData } from "../types/event-save";
-import { getCalendarViewType } from "../utils/calendar-view-type";
-import { extractZettelId, generateUniqueEventPath, removeZettelId } from "../utils/event-naming";
+import { generateUniqueEventPath } from "../utils/event-naming";
+import { extractZettelId, removeZettelId } from "../utils/events/zettel-id";
 import { CalendarViewStateManager } from "./calendar-view-state-manager";
 import type { CategoryTracker } from "./category-tracker";
 import {

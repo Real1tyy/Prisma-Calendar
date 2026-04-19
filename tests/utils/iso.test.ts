@@ -1,8 +1,8 @@
 import { DateTime } from "luxon";
 import { describe, expect, it } from "vitest";
 
+import { formatEventTimeInfo } from "../../src/utils/format";
 import { appendZ, stripZ, toInternalISO } from "../../src/utils/iso";
-import { formatEventTimeInfo } from "../../src/utils/time-formatter";
 import { createMockAllDayEvent, createMockTimedEvent } from "../fixtures/event-fixtures";
 
 describe("stripZ", () => {

@@ -24,7 +24,7 @@ import { isBatchSelectable, isHolidayEvent } from "../../types/event-classificat
 import type { SingleCalendarConfig } from "../../types/settings";
 import { resolveAllEventColors, resolveEventColor } from "../../utils/event-color";
 import { hashFrontmatter } from "../../utils/event-diff";
-import { cleanupTitle } from "../../utils/event-naming";
+import { cleanupTitle } from "../../utils/events/naming";
 import { parseFCExtendedProps } from "../../utils/extended-props";
 import { stripZ } from "../../utils/iso";
 import { emitHover } from "../../utils/obsidian";

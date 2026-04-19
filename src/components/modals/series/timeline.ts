@@ -7,7 +7,7 @@ import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { CalendarEvent } from "../../../types/calendar";
 import type { SingleCalendarConfig } from "../../../types/settings";
 import { createTextColorResolver, resolveEventColor } from "../../../utils/event-color";
-import { cleanupTitle } from "../../../utils/event-naming";
+import { cleanupTitle } from "../../../utils/events/naming";
 import { buildEventTooltip } from "../../../utils/format";
 import { type PreviewEventData, showEventPreviewModal } from "../preview/event-preview";
 

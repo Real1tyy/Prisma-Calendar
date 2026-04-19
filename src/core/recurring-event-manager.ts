@@ -30,14 +30,11 @@ import type { CalendarEventSource, IndexerEvent } from "../types/event-source";
 import type { NodeRecurringEvent, RecurringEventSeries } from "../types/recurring-event";
 import type { SingleCalendarConfig } from "../types/settings";
 import { getNextOccurrence } from "../utils/date-recurrence";
-import {
-	applyFrontmatterChangesToInstance,
-	filterExcludedPropsFromDiff,
-	getExcludedProps,
-	setEventBasics,
-	type TimePropagationDiff,
-} from "../utils/event-frontmatter";
-import { hashRRuleIdToZettelFormat, removeZettelId } from "../utils/event-naming";
+import { applyFrontmatterChangesToInstance } from "../utils/event-frontmatter";
+import { hashRRuleIdToZettelFormat, removeZettelId } from "../utils/events/zettel-id";
+import { setEventBasics } from "../utils/frontmatter/basics";
+import { type TimePropagationDiff } from "../utils/frontmatter/diff";
+import { filterExcludedPropsFromDiff, getExcludedProps } from "../utils/frontmatter/props";
 import {
 	batchedPromiseAll,
 	deleteFilesByPaths,

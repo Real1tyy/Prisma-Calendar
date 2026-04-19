@@ -4,7 +4,7 @@ import { Notice, TFile } from "obsidian";
 import { EventCreateModal, EventEditModal, showUntrackedEventCreateModal } from "../../components/modals";
 import type CustomCalendarPlugin from "../../main";
 import type { Frontmatter } from "../../types";
-import { isAllDayEvent } from "../../utils/event-frontmatter";
+import { isAllDayFrontmatterValue } from "../../utils/frontmatter/predicates";
 import { openFileInNewTab } from "../../utils/obsidian";
 import type { CalendarBundle } from "../calendar-bundle";
 import { CloneEventCommand } from "../commands/lifecycle-commands";
@@ -147,7 +147,7 @@ export async function openEditActiveNoteModal(
 
 		const metadata = plugin.app.metadataCache.getFileCache(activeFile);
 		const frontmatter = (metadata?.frontmatter as Frontmatter) ?? {};
-		const allDay = isAllDayEvent(frontmatter[settings.allDayProp]);
+		const allDay = isAllDayFrontmatterValue(frontmatter[settings.allDayProp]);
 
 		const now = new Date();
 		const roundedStart = roundToNearestHour(now);

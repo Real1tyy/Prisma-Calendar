@@ -45,8 +45,8 @@ import {
 import type { EventPreset } from "../../../types/settings";
 import type { Weekday } from "../../../utils/date-recurrence";
 import { autoAssignCategories, findAdjacentEvent } from "../../../utils/event-matching";
-import { extractCleanDisplayName } from "../../../utils/event-naming";
 import { validateEventTitle } from "../../../utils/event-title-validation";
+import { extractCleanDisplayName } from "../../../utils/events/naming";
 import { getVirtualKind } from "../../../utils/extended-props";
 import { formatDateOnly, formatDateTimeForInput } from "../../../utils/format";
 import { writeMetadataToFrontmatter } from "../../../utils/frontmatter-writer";

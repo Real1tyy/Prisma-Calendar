@@ -9,7 +9,7 @@ import type { Frontmatter, PrismaSyncDataSchema } from "../types";
 import type { EventMetadata } from "../types/event";
 import type { CalendarEventSource, IndexerEvent } from "../types/event-source";
 import type { SingleCalendarConfig } from "../types/settings";
-import { getEventName } from "../utils/event-naming";
+import { getEventName } from "../utils/events/naming";
 import { getFileByPathOrThrow, openFileInNewTab } from "../utils/obsidian";
 
 interface NotificationEntry {

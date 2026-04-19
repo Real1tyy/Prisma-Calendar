@@ -12,7 +12,8 @@ import { PROPAGATION_DEBOUNCE_MS } from "../constants";
 import type { Frontmatter } from "../types";
 import type { CalendarEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/index";
-import { applyFrontmatterChangesToInstance, getExcludedProps } from "../utils/event-frontmatter";
+import { applyFrontmatterChangesToInstance } from "../utils/event-frontmatter";
+import { getExcludedProps } from "../utils/frontmatter/props";
 import type { EventFileRepository } from "./event-file-repository";
 import type { EventStore } from "./event-store";
 

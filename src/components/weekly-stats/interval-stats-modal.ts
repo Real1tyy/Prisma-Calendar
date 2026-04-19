@@ -3,8 +3,8 @@ import type { App } from "obsidian";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent } from "../../types/calendar";
-import type { AggregationMode, Stats } from "../../utils/weekly-stats";
-import { formatDuration, formatDurationAsDecimalHours } from "../../utils/weekly-stats";
+import type { AggregationMode, Stats } from "../../utils/stats";
+import { formatDuration, formatDurationAsDecimalHours } from "../../utils/stats";
 import { renderIntervalStatsBody } from "../views/interval-stats-view";
 import { StatsModal } from "./base-stats-modal";
 

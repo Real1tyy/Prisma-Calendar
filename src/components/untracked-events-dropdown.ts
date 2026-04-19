@@ -9,7 +9,7 @@ import type { CalendarBundle } from "../core/calendar-bundle";
 import { MinimizedModalManager } from "../core/minimized-modal-manager";
 import type { ParsedEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/settings";
-import { removeZettelId } from "../utils/event-naming";
+import { removeZettelId } from "../utils/events/zettel-id";
 import { normalizeFrontmatterForColorEvaluation } from "../utils/expression-utils";
 import { getDisplayProperties, renderPropertyValue } from "../utils/property-display";
 

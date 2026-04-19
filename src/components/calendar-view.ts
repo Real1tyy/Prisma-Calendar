@@ -51,7 +51,7 @@ import { getEventRenderingKey } from "../utils/calendar-settings";
 import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
 import { resolveAllEventColors, resolveEventColor } from "../utils/event-color";
 import { diffEvents, eventFingerprint, hashFrontmatter } from "../utils/event-diff";
-import { getCommonCategories, stripISOSuffix } from "../utils/event-frontmatter";
+import { getCommonCategories } from "../utils/event-frontmatter";
 import { findAdjacentEvent, getSourceEventInfoFromVirtual } from "../utils/event-matching";
 import { invalidatePropertyExtractionCache } from "../utils/expression-utils";
 import { getFilePath, getVirtualKind } from "../utils/extended-props";
@@ -2384,11 +2384,11 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 		const adjustedStart = new Date(view.currentStart);
 		adjustedStart.setMinutes(adjustedStart.getMinutes() - 1);
-		const startDate = stripISOSuffix(toLocalISOString(adjustedStart));
+		const startDate = stripZ(toLocalISOString(adjustedStart));
 
 		const adjustedEnd = new Date(view.currentEnd);
 		adjustedEnd.setMinutes(adjustedEnd.getMinutes() - 1);
-		const endDate = stripISOSuffix(toLocalISOString(adjustedEnd));
+		const endDate = stripZ(toLocalISOString(adjustedEnd));
 
 		const settings = this.bundle.settingsStore.currentSettings;
 		const intervalLabel = this.formatIntervalLabel(viewType, view.currentStart, view.currentEnd, settings.locale);

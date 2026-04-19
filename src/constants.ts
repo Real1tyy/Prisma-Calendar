@@ -4,6 +4,13 @@ const PLUGIN_ID = "prisma-calendar";
 export const CSS_PREFIX = "prisma-";
 
 export const { cls, addCls, removeCls, toggleCls, hasCls } = createCssUtils(CSS_PREFIX);
+
+const CALENDAR_VIEW_TYPE = "custom-calendar-view";
+
+export function getCalendarViewType(calendarId: string): string {
+	return `${CALENDAR_VIEW_TYPE}-${calendarId}`;
+}
+
 // Concurrency control for parallel file processing
 // Higher values = faster initial scan but more memory/CPU usage
 export const SCAN_CONCURRENCY = 10;

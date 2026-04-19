@@ -13,7 +13,7 @@ import { type App, TFile } from "obsidian";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { Frontmatter } from "../../../types";
 import { createTextDiv } from "../../../utils/dom-utils";
-import { removeZettelId } from "../../../utils/event-naming";
+import { removeZettelId } from "../../../utils/events/zettel-id";
 import { categorizeProperties, formatDateOnlyDisplay, formatDateTimeDisplay } from "../../../utils/format";
 
 export interface PreviewEventData {

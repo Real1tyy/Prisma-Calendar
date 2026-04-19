@@ -11,7 +11,7 @@ import {
 	getDayBounds,
 	getMonthBounds,
 	getWeekBounds,
-} from "../../utils/weekly-stats";
+} from "../../utils/stats";
 import type { CalendarBundle } from "../calendar-bundle";
 import { resolveBundle, resolveBundleOrNotice } from "./bundle-resolver";
 import type { PrismaCalendarInfo, PrismaStatEntry, PrismaStatisticsOutput } from "./types";

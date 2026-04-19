@@ -39,10 +39,11 @@ import { isTimedEvent } from "../types";
 import type { CalendarEvent } from "../types/calendar";
 import { type EventKind, getEventKind, isRecurringEventKind } from "../types/event-classification";
 import { isTimeUnitAllowedForAllDay } from "../types/move-by";
-import { isEventDone, parseCustomDoneProperty } from "../utils/event-frontmatter";
+import { isEventDone } from "../utils/event-frontmatter";
 import { findAdjacentEvent } from "../utils/event-matching";
-import { getEventName } from "../utils/event-naming";
+import { getEventName } from "../utils/events/naming";
 import { getVirtualKind } from "../utils/extended-props";
+import { parseCustomDoneProperty } from "../utils/frontmatter/props";
 import {
 	emitHover,
 	getCategoriesFromFilePath,

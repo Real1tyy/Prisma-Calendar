@@ -12,7 +12,7 @@ import { parseEventFrontmatter, toInternalISO } from "../types/event";
 import type { RawEventSource } from "../types/event-source";
 import type { Frontmatter, ISO, SingleCalendarConfig } from "../types/index";
 import { applyDateNormalizationToFile } from "../utils/event-frontmatter";
-import { getEventName } from "../utils/event-naming";
+import { getEventName } from "../utils/events/naming";
 
 export class Parser {
 	private settings: SingleCalendarConfig;

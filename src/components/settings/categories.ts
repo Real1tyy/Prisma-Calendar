@@ -1,4 +1,5 @@
 import { cls, hexToRgb, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
+import { type ChartDataItem, PieChartBuilder } from "@real1ty-obsidian-plugins";
 import { nanoid } from "nanoid";
 import { setIcon, Setting } from "obsidian";
 import { debounceTime, type Subscription } from "rxjs";
@@ -10,7 +11,7 @@ import type CustomCalendarPlugin from "../../main";
 import { isAllDayEvent, isTimedEvent } from "../../types/calendar";
 import type { CategoryAssignmentPreset } from "../../types/settings";
 import { SingleCalendarConfigSchema } from "../../types/settings";
-import { type ChartDataItem, createChartCanvas, PieChartBuilder } from "../../utils/chart-utils";
+import { createChartCanvas } from "../../utils/chart-utils";
 import { showCategoryDeleteModal, showCategoryEventsModal, showCategoryRenameModal } from "../modals";
 import { renderProUpgradeBanner } from "./pro-upgrade-banner";
 

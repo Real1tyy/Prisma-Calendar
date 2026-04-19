@@ -6,8 +6,8 @@ import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { resolveEventColor } from "../../utils/event-color";
-import { removeZettelId } from "../../utils/event-naming";
-import { formatEventTimeInfo } from "../../utils/time-formatter";
+import { removeZettelId } from "../../utils/events/zettel-id";
+import { formatEventTimeInfo } from "../../utils/format";
 
 export interface EventListItem {
 	id?: string; // Optional unique identifier (used for skipped events)

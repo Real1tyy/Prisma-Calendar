@@ -1,6 +1,3 @@
-import { z } from "zod";
-
-import { isAllDayEvent } from "../utils/event-frontmatter";
 import {
 	optionalDateTimeTransform,
 	optionalListTransform,
@@ -11,7 +8,10 @@ import {
 	requiredDateTransform,
 	strictBooleanOptional,
 	titleTransform,
-} from "../utils/validation";
+} from "@real1ty-obsidian-plugins";
+import { z } from "zod";
+
+import { isAllDayFrontmatterValue } from "../utils/frontmatter/predicates";
 import { METADATA_FIELD_MAP } from "./event-field-registry";
 import type { Frontmatter, SingleCalendarConfig } from "./index";
 
@@ -90,7 +90,7 @@ export function parseEventFrontmatter(
 	const { startProp, endProp, dateProp, allDayProp, titleProp } = settings;
 	const metadata = parseEventMetadata(frontmatter, settings);
 
-	if (isAllDayEvent(frontmatter[allDayProp])) {
+	if (isAllDayFrontmatterValue(frontmatter[allDayProp])) {
 		// ALL-DAY EVENT: Only use dateProp, ignore startProp/endProp
 		const candidateData = {
 			date: frontmatter[dateProp],
