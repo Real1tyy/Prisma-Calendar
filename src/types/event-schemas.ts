@@ -28,8 +28,8 @@ function makeId(filePath: string): string {
 }
 
 function makeTitle(parsed: ParsedEventFrontmatter, filePath: string): string {
-	if (parsed.calendarTitle) return extractDisplayName(parsed.calendarTitle);
 	if (parsed.title) return parsed.title;
+	if (parsed.calendarTitle) return extractDisplayName(parsed.calendarTitle);
 	const basename = removeMarkdownExtension(getFilenameFromPath(filePath));
 	return basename ? cleanupTitle(basename) : "";
 }
