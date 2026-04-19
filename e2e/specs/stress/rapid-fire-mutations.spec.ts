@@ -5,6 +5,7 @@ import {
 	confirmBatchAction,
 	enterBatchMode,
 	exitBatchMode,
+	expectSelectedCount,
 	undoViaPalette,
 } from "../../fixtures/history-helpers";
 import { refreshCalendar, waitForEventCount } from "../../fixtures/seed-events";
@@ -50,16 +51,36 @@ test.describe("stress: rapid-fire mutations against coalesced refresh", () => {
 		// Three mutations in quick succession — each leaves the calendar
 		// in a different state (next week, prev week, next week). The
 		// refresh queue must serialize them without dropping events.
+		//
+		// Two gates guard this sequence, each for a distinct race:
+		//   1. `expectUniqueVisibleEventCount` after a navigation waits for
+		//      FC's event store to reach the expected count in the new
+		//      window. `select-all` iterates `calendar.getEvents()`, which is
+		//      scoped to the current view range via `buildCalendarEvents`.
+		//      Firing select-all before the post-move refresh has finished
+		//      populating the new window picks up a partial set — the
+		//      remaining events stay stranded on the other week. Selection
+		//      never auto-grows when later events mount, so this can't be
+		//      rescued by polling on the selection count alone.
+		//   2. `expectSelectedCount` between `select-all` and the move gates
+		//      the DOM-styling race (events in FC's store but not yet marked
+		//      `.prisma-batch-selected`) so the move-click reads a fully
+		//      materialized selection.
 		await enterBatchMode(page);
 		await clickBatchButton(page, "select-all");
+		await expectSelectedCount(page, EVENT_COUNT);
 		await clickBatchButton(page, "move-next");
 		await exitBatchMode(page);
+		await expectUniqueVisibleEventCount(page, 0);
 
 		await page.locator(TOOLBAR_NEXT).first().click();
+		await expectUniqueVisibleEventCount(page, EVENT_COUNT);
 		await enterBatchMode(page);
 		await clickBatchButton(page, "select-all");
+		await expectSelectedCount(page, EVENT_COUNT);
 		await clickBatchButton(page, "move-prev");
 		await exitBatchMode(page);
+		await expectUniqueVisibleEventCount(page, 0);
 		await page.locator(TOOLBAR_PREV).first().click();
 
 		// Source week has the events back.
@@ -67,6 +88,7 @@ test.describe("stress: rapid-fire mutations against coalesced refresh", () => {
 
 		await enterBatchMode(page);
 		await clickBatchButton(page, "select-all");
+		await expectSelectedCount(page, EVENT_COUNT);
 		await clickBatchButton(page, "move-next");
 		await exitBatchMode(page);
 		await expectUniqueVisibleEventCount(page, 0);
