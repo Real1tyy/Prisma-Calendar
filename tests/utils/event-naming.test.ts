@@ -30,6 +30,16 @@ describe("extractZettelId", () => {
 	it("should not match fewer than 14 digits", () => {
 		expect(extractZettelId("Meeting-1234567890123")).toBeNull();
 	});
+
+	it("tolerates a trailing .md extension so full file paths work", () => {
+		// Regression: the ICS export path previously passed `event.ref.filePath`
+		// (which includes `.md`). The old regex required digits at end-of-string,
+		// so `.md` paths never matched and DTSTAMP fell back to a non-deterministic
+		// wall-clock time. See docs/specs/testing-sprints-log.md.
+		expect(extractZettelId("Events/Meeting-20250203140530.md")).toBe("20250203140530");
+		expect(extractZettelId("Meeting-20250203140530.md")).toBe("20250203140530");
+		expect(extractZettelId("Events/Team Standup 2025-02-03-00001125853328.md")).toBe("00001125853328");
+	});
 });
 
 describe("removeZettelId", () => {

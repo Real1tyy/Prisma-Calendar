@@ -1,10 +1,7 @@
 import { generateZettelId, isFolderNote, withFrontmatter } from "@real1ty-obsidian-plugins";
-import type { TFile } from "obsidian";
-import type { App } from "obsidian";
+import type { App, TFile } from "obsidian";
 
 import { extractZettelId, hasTimestamp, removeZettelId } from "./events/zettel-id";
-
-// ─── Vault-dependent path generation ────────────────────────────────
 
 /**
  * Generates a unique ZettelID by checking if the resulting path already exists.

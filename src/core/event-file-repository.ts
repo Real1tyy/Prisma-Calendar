@@ -495,17 +495,23 @@ export class EventFileRepository implements CalendarEventSource {
 	private enqueueFrontmatterWrite(file: TFile, fn: (fm: Frontmatter) => void): Promise<void> {
 		const path = file.path;
 		const prev = this.fmLocks.get(path) ?? Promise.resolve();
-		const next = prev
+		// A rejected `prev` would skip `.then` for every downstream write, silently
+		// no-opping the rest of the queue. The lock map holds a rejection-proof
+		// `chain`; callers still observe rejections via `result`.
+		const result = prev
+			.catch(() => {})
 			.then(() => {
 				const current = this.app.vault.getAbstractFileByPath(path);
 				if (!(current instanceof TFile)) return;
 				return this.app.fileManager.processFrontMatter(current, fn);
-			})
-			.finally(() => {
-				if (this.fmLocks.get(path) === next) this.fmLocks.delete(path);
 			});
-		this.fmLocks.set(path, next);
-		return next;
+		const chain: Promise<void> = result
+			.catch(() => {})
+			.finally(() => {
+				if (this.fmLocks.get(path) === chain) this.fmLocks.delete(path);
+			});
+		this.fmLocks.set(path, chain);
+		return result;
 	}
 
 	protected createTable(settings: SingleCalendarConfig): EventTable {

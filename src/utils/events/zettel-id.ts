@@ -1,6 +1,9 @@
 import { nanoid } from "nanoid";
 
-export const ZETTEL_ID_PATTERN = /[-\s](\d{14})$/;
+// Optional trailing `.md` lets callers pass a full file path
+// (`Events/Foo-20250101000000.md`) or a bare basename/title — the ID anchor is
+// the 14 digits, not end-of-string.
+export const ZETTEL_ID_PATTERN = /[-\s](\d{14})(?:\.md)?$/;
 export const PHYSICAL_INSTANCE_PATTERN = /^(.+)\s+(\d{4}-\d{2}-\d{2})-(\d{14})$/;
 
 /**

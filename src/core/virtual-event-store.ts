@@ -20,6 +20,8 @@ export class VirtualEventStore {
 	private settingsSubscription: Subscription | null = null;
 	private directory: string;
 	private fileName: string;
+	private bindEpoch = 0;
+	private destroyed = false;
 
 	constructor(
 		private app: App,
@@ -35,12 +37,20 @@ export class VirtualEventStore {
 			this.directory = newSettings.directory;
 			this.fileName = newSettings.virtualEventsFileName;
 			if ((dirChanged || nameChanged) && this.binding) {
+				const epoch = ++this.bindEpoch;
 				void this.repo
 					.rebind(this.binding, this.app, this.getFilePath(), {
 						onChange: () => this.emit(),
 						createIfMissing: true,
 					})
 					.then((b) => {
+						// Drop stale rebinds: if another rebind (or destroy) ran after us,
+						// unsubscribe this fresh binding rather than let it leak or shadow
+						// the newer one.
+						if (this.destroyed || epoch !== this.bindEpoch) {
+							b.unsubscribe();
+							return;
+						}
 						this.binding = b;
 					});
 			}
@@ -59,6 +69,8 @@ export class VirtualEventStore {
 	}
 
 	destroy(): void {
+		this.destroyed = true;
+		this.bindEpoch++;
 		this.binding?.unsubscribe();
 		this.binding = null;
 		this.settingsSubscription?.unsubscribe();

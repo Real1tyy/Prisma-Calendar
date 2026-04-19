@@ -6,10 +6,13 @@
  * to structure, property order, or default values will surface in the diff.
  *
  * Determinism note: `parsedEventToVEvent` extracts a zettel-ID from
- * `event.ref.filePath` to seed DTSTAMP/CREATED/LAST-MODIFIED. In practice the
- * extractor's regex anchors at the end of the string and `.md` paths never match,
- * so it falls back to `ICAL.Time.now()`. We pin system time per test to keep
- * snapshots stable.
+ * `event.ref.filePath` to seed DTSTAMP/CREATED/LAST-MODIFIED. When the path
+ * contains a zettel-ID (e.g., `Events/foo-20250101000000.md`), DTSTAMP is
+ * derived deterministically. When it doesn't (as in these tests, which use
+ * simple basenames like `Events/team-meeting.md`), the code falls back to
+ * `ICAL.Time.now()` — so we pin system time per test to keep snapshots stable.
+ * The `zettel-id seeds DTSTAMP deterministically without fake timers` case
+ * below exercises the zettel-ID-bearing-path branch directly.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -164,5 +167,31 @@ describe("createICSFromEvents — approval snapshots", () => {
 		const result = createICSFromEvents([], createICSExportOptions());
 		expect(result.success).toBe(false);
 		expect(result.error?.message).toBe("No events to export");
+	});
+
+	it("zettel-id in the file path seeds DTSTAMP deterministically without fake timers", () => {
+		// Regression test for the extractZettelId `.md`-path bug: previously,
+		// events with zettel-IDs in their filenames couldn't have their ID
+		// extracted because the regex anchored at end-of-string and `.md`
+		// prevented the match. Now that the regex tolerates `.md`, two exports
+		// of the same event produce byte-identical output without any time
+		// mocking — DTSTAMP/CREATED/LAST-MODIFIED are derived from the zettel-ID.
+		vi.useRealTimers();
+
+		const event = createMockTimedEvent({
+			id: "stable-event",
+			title: "Project Kickoff",
+			start: "2026-04-15T10:00:00",
+			end: "2026-04-15T11:00:00",
+			ref: { filePath: "Events/project-kickoff-20260415100000.md" },
+		});
+
+		const first = exportOrFail([event], { calendarName: "My Calendar" });
+		const second = exportOrFail([event], { calendarName: "My Calendar" });
+
+		expect(first).toBe(second);
+		// And crucially, the DTSTAMP reflects the zettel-ID's timestamp (2026-04-15 10:00:00),
+		// not wall-clock.
+		expect(first).toMatch(/DTSTAMP:20260415T100000Z/);
 	});
 });
