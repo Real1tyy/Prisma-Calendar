@@ -17,6 +17,14 @@ import { shouldEventBeMarkedAsDone } from "../utils/event-frontmatter";
 import { cleanupTitle, ensureFileHasZettelId, generateUniqueRruleId, hasTimestamp } from "../utils/event-naming";
 import { createEventSchema } from "./event-schema";
 
+/**
+ * Namespace for the IndexedDB cache. One DB per plugin — isolated from other
+ * plugins on the same origin. Bump {@link PRISMA_CACHE_SCHEMA_VERSION} when
+ * the parsed event shape changes in a backwards-incompatible way.
+ */
+const PRISMA_CACHE_NAMESPACE = "prisma-calendar";
+const PRISMA_CACHE_SCHEMA_VERSION = 2;
+
 export type FrontmatterSnapshot = {
 	key: string;
 	data: Frontmatter;
@@ -475,12 +483,22 @@ export class EventFileRepository implements CalendarEventSource {
 	/**
 	 * Serialize processFrontMatter calls per file to prevent interleaving writes
 	 * and suppress the resulting file-changed events from our own writebacks.
+	 *
+	 * Queued writes can outlive the file: background updates on a freshly-created
+	 * event race with the user undoing the create (or any other delete). When the
+	 * queued write finally dequeues, the TFile is stale and processFrontMatter
+	 * throws ENOENT. Re-resolve the path at dequeue time and no-op if the file is
+	 * gone — the deletion already rendered the write moot.
 	 */
 	private enqueueFrontmatterWrite(file: TFile, fn: (fm: Frontmatter) => void): Promise<void> {
 		const path = file.path;
 		const prev = this.fmLocks.get(path) ?? Promise.resolve();
 		const next = prev
-			.then(() => this.app.fileManager.processFrontMatter(file, fn))
+			.then(() => {
+				const current = this.app.vault.getAbstractFileByPath(path);
+				if (!(current instanceof TFile)) return;
+				return this.app.fileManager.processFrontMatter(current, fn);
+			})
 			.finally(() => {
 				if (this.fmLocks.get(path) === next) this.fmLocks.delete(path);
 			});
@@ -496,6 +514,10 @@ export class EventFileRepository implements CalendarEventSource {
 			invalidStrategy: "skip",
 			debounceMs: 100,
 			emitCrudEvents: true,
+			persistence: {
+				namespace: PRISMA_CACHE_NAMESPACE,
+				schemaVersion: PRISMA_CACHE_SCHEMA_VERSION,
+			},
 		});
 	}
 }

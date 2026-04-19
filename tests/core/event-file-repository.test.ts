@@ -8,7 +8,7 @@ import {
 	createTimedFrontmatter,
 	TestableEventFileRepository,
 } from "../fixtures/event-file-repository-fixtures";
-import { createMockApp } from "../setup";
+import { createMockApp, createMockFile } from "../setup";
 
 describe("EventFileRepository", () => {
 	let repo: TestableEventFileRepository;
@@ -403,7 +403,7 @@ describe("EventFileRepository", () => {
 
 		it("should seed data without emitting events", () => {
 			const events: any[] = [];
-			repo.mockTable.events$.subscribe((e) => events.push(e));
+			repo.mockTable.events$.subscribe((e: any) => events.push(e));
 
 			repo.mockTable.seed("event-1", createTimedFrontmatter());
 
@@ -419,6 +419,50 @@ describe("EventFileRepository", () => {
 
 			expect(repo.mockTable.count()).toBe(3);
 			expect(repo.mockTable.getOperations()).toHaveLength(0);
+		});
+	});
+
+	// ─── enqueueFrontmatterWrite race with delete ────────────────
+
+	describe("enqueueFrontmatterWrite race with file deletion", () => {
+		// Regression: cloning an event fires background frontmatter writes async.
+		// If the user hits undo before the queued write dequeues, processFrontMatter
+		// opens a stale TFile and throws ENOENT. The write must no-op silently when
+		// the file has been deleted in the meantime — nothing to update, no error
+		// to surface.
+		it("skips processFrontMatter when the file was deleted while queued", async () => {
+			const file = createMockFile("Events/CloneNext Probe-20260419144053.md");
+			mockApp.vault.getAbstractFileByPath.mockReturnValue(null);
+
+			const updater = vi.fn();
+
+			await expect((repo as any).enqueueFrontmatterWrite(file, updater)).resolves.toBeUndefined();
+
+			expect(mockApp.fileManager.processFrontMatter).not.toHaveBeenCalled();
+			expect(updater).not.toHaveBeenCalled();
+		});
+
+		it("invokes processFrontMatter when the file still exists at dequeue time", async () => {
+			const file = createMockFile("Events/meeting.md");
+			mockApp.vault.getAbstractFileByPath.mockReturnValue(file);
+
+			const updater = vi.fn();
+
+			await (repo as any).enqueueFrontmatterWrite(file, updater);
+
+			expect(mockApp.fileManager.processFrontMatter).toHaveBeenCalledWith(file, updater);
+		});
+
+		it("resolves silently when the path resolves to a folder instead of a file", async () => {
+			const file = createMockFile("Events/note.md");
+			// Simulate a folder occupying the path (TFolder, not TFile)
+			mockApp.vault.getAbstractFileByPath.mockReturnValue({ path: "Events/note.md" });
+
+			const updater = vi.fn();
+
+			await expect((repo as any).enqueueFrontmatterWrite(file, updater)).resolves.toBeUndefined();
+
+			expect(mockApp.fileManager.processFrontMatter).not.toHaveBeenCalled();
 		});
 	});
 
