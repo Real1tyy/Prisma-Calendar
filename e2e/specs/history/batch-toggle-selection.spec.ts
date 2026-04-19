@@ -1,4 +1,4 @@
-import { isoLocal } from "../../fixtures/dates";
+import { fromAnchor } from "../../fixtures/dates";
 import { expect, test } from "../../fixtures/electron";
 import {
 	batchCounter,
@@ -21,10 +21,11 @@ import { sel, TID } from "../../fixtures/testids";
 
 test.describe("batch selection (UI-driven)", () => {
 	test("toolbar batch-select button enters selection mode and exits on Exit click", async ({ calendar }) => {
+		await calendar.goToAnchor();
 		await calendar.createEvent({
 			title: "Batch Probe",
-			start: isoLocal(1, 9),
-			end: isoLocal(1, 10),
+			start: fromAnchor(1, 9),
+			end: fromAnchor(1, 10),
 		});
 
 		await enterBatchMode(calendar.page);
@@ -36,12 +37,13 @@ test.describe("batch selection (UI-driven)", () => {
 	});
 
 	test("Select All / Clear batch buttons populate and empty the selection", async ({ calendar }) => {
+		await calendar.goToAnchor();
 		const titles = ["Alice", "Bob", "Charlie"];
 		for (const [i, title] of titles.entries()) {
 			await calendar.createEvent({
 				title,
-				start: isoLocal(1, 9 + i),
-				end: isoLocal(1, 10 + i),
+				start: fromAnchor(1, 9 + i),
+				end: fromAnchor(1, 10 + i),
 			});
 		}
 
@@ -75,10 +77,11 @@ test.describe("batch selection (UI-driven)", () => {
 	});
 
 	test("clicking an event while in batch mode toggles its selection", async ({ calendar }) => {
+		await calendar.goToAnchor();
 		await calendar.createEvent({
 			title: "Toggle Probe",
-			start: isoLocal(1, 9),
-			end: isoLocal(1, 10),
+			start: fromAnchor(1, 9),
+			end: fromAnchor(1, 10),
 		});
 
 		await enterBatchMode(calendar.page);

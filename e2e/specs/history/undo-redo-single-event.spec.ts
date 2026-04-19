@@ -1,4 +1,4 @@
-import { isoLocal } from "../../fixtures/dates";
+import { fromAnchor } from "../../fixtures/dates";
 import { expectAllHidden, expectAllVisible, undoRedoRoundTrip } from "../../fixtures/dsl";
 import { expect, test } from "../../fixtures/electron";
 import { eventByTitle } from "../../fixtures/history-helpers";
@@ -13,12 +13,13 @@ import { listEventFiles } from "../events/events-helpers";
 
 test.describe("undo/redo: single event (UI-driven)", () => {
 	test("create via toolbar → undo removes → redo restores (count)", async ({ calendar }) => {
+		await calendar.goToAnchor();
 		const before = listEventFiles(calendar.vaultDir).length;
 
 		const event = await calendar.createEvent({
 			title: "Alice Sync",
-			start: isoLocal(1, 9),
-			end: isoLocal(1, 10),
+			start: fromAnchor(1, 9),
+			end: fromAnchor(1, 10),
 		});
 		const present = [event];
 		await calendar.expectEventCount(before + 1);
@@ -37,14 +38,15 @@ test.describe("undo/redo: single event (UI-driven)", () => {
 	});
 
 	test("edit via context menu: bump end time → undo reverts → redo re-applies", async ({ calendar }) => {
+		await calendar.goToAnchor();
 		const event = await calendar.createEvent({
 			title: "Workout",
-			start: isoLocal(1, 7),
-			end: isoLocal(1, 8),
+			start: fromAnchor(1, 7),
+			end: fromAnchor(1, 8),
 		});
 		const endBefore = event.readFrontmatter<string>("End Date");
 
-		await event.edit({ end: isoLocal(1, 9) });
+		await event.edit({ end: fromAnchor(1, 9) });
 		await event.expectFrontmatter("End Date", (v) => v !== endBefore);
 		const endAfter = event.readFrontmatter<string>("End Date");
 		await expectAllVisible(calendar.page, [event]);
@@ -59,10 +61,11 @@ test.describe("undo/redo: single event (UI-driven)", () => {
 	});
 
 	test("context menu: duplicate event → undo removes → redo restores (count)", async ({ calendar }) => {
+		await calendar.goToAnchor();
 		const event = await calendar.createEvent({
 			title: "Team Sync",
-			start: isoLocal(1, 10),
-			end: isoLocal(1, 11),
+			start: fromAnchor(1, 10),
+			end: fromAnchor(1, 11),
 		});
 		const before = listEventFiles(calendar.vaultDir).length;
 		const titleLocator = calendar.page.locator(`${sel(TID.block)}[data-event-title="Team Sync"]`);
@@ -84,10 +87,11 @@ test.describe("undo/redo: single event (UI-driven)", () => {
 	});
 
 	test("context menu: skip toggle writes/removes Skip frontmatter symmetrically", async ({ calendar }) => {
+		await calendar.goToAnchor();
 		const event = await calendar.createEvent({
 			title: "Standup",
-			start: isoLocal(1, 9),
-			end: isoLocal(1, 10),
+			start: fromAnchor(1, 9),
+			end: fromAnchor(1, 10),
 		});
 		await expectAllVisible(calendar.page, [event]);
 
@@ -106,10 +110,11 @@ test.describe("undo/redo: single event (UI-driven)", () => {
 	});
 
 	test("context menu: mark done → undo clears → redo re-sets", async ({ calendar }) => {
+		await calendar.goToAnchor();
 		const event = await calendar.createEvent({
 			title: "Task Item",
-			start: isoLocal(1, 9),
-			end: isoLocal(1, 10),
+			start: fromAnchor(1, 9),
+			end: fromAnchor(1, 10),
 		});
 
 		await undoRedoRoundTrip(calendar, {
@@ -123,10 +128,11 @@ test.describe("undo/redo: single event (UI-driven)", () => {
 	});
 
 	test("context menu: delete event → undo restores → redo removes", async ({ calendar }) => {
+		await calendar.goToAnchor();
 		const event = await calendar.createEvent({
 			title: "Alice One-on-One",
-			start: isoLocal(1, 9),
-			end: isoLocal(1, 10),
+			start: fromAnchor(1, 9),
+			end: fromAnchor(1, 10),
 		});
 		await expectAllVisible(calendar.page, [event]);
 

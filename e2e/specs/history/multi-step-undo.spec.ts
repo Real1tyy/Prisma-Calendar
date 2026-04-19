@@ -1,4 +1,4 @@
-import { isoLocal } from "../../fixtures/dates";
+import { fromAnchor } from "../../fixtures/dates";
 import { expectAllHidden, expectAllVisible, openBatch } from "../../fixtures/dsl";
 import { expect, test } from "../../fixtures/electron";
 import { sel, TID } from "../../fixtures/testids";
@@ -17,18 +17,19 @@ import { listEventFiles } from "../events/events-helpers";
 
 test.describe("undo/redo: multi-step chains (UI-driven)", () => {
 	test("create → edit → duplicate → delete: 4x undo empties the vault", async ({ calendar }) => {
+		await calendar.goToAnchor();
 		const baseline = listEventFiles(calendar.vaultDir).length;
 
 		// Step 1: Create A via toolbar.
 		const alpha = await calendar.createEvent({
 			title: "Chain Alpha",
-			start: isoLocal(1, 9),
-			end: isoLocal(1, 10),
+			start: fromAnchor(1, 9),
+			end: fromAnchor(1, 10),
 		});
 		await expectAllVisible(calendar.page, [alpha]);
 
 		// Step 2: Edit A's end time via context menu + modal.
-		await alpha.edit({ end: isoLocal(1, 11) });
+		await alpha.edit({ end: fromAnchor(1, 11) });
 
 		// Step 3: Duplicate A via context menu.
 		const beforeDup = listEventFiles(calendar.vaultDir).length;
@@ -60,11 +61,12 @@ test.describe("undo/redo: multi-step chains (UI-driven)", () => {
 	});
 
 	test("undo 2 + redo 1 + undo 3: stack stays consistent across direction changes", async ({ calendar }) => {
+		await calendar.goToAnchor();
 		const baseline = listEventFiles(calendar.vaultDir).length;
 		const alpha = await calendar.createEvent({
 			title: "Step Alpha",
-			start: isoLocal(1, 9),
-			end: isoLocal(1, 10),
+			start: fromAnchor(1, 9),
+			end: fromAnchor(1, 10),
 		});
 		await expectAllVisible(calendar.page, [alpha]);
 
@@ -96,15 +98,16 @@ test.describe("undo/redo: multi-step chains (UI-driven)", () => {
 	});
 
 	test("heterogenous ops (edit modal × batch × context menu) chain cleanly under undo", async ({ calendar }) => {
+		await calendar.goToAnchor();
 		const alice = await calendar.createEvent({
 			title: "Alice Sync",
-			start: isoLocal(1, 9),
-			end: isoLocal(1, 10),
+			start: fromAnchor(1, 9),
+			end: fromAnchor(1, 10),
 		});
 		const bob = await calendar.createEvent({
 			title: "Bob Sync",
-			start: isoLocal(1, 11),
-			end: isoLocal(1, 12),
+			start: fromAnchor(1, 11),
+			end: fromAnchor(1, 12),
 		});
 		const both = [alice, bob];
 		await expectAllVisible(calendar.page, both);
@@ -120,7 +123,7 @@ test.describe("undo/redo: multi-step chains (UI-driven)", () => {
 		await batch.exit();
 
 		// 2: Edit-modal bump of B's end time.
-		await bob.edit({ end: isoLocal(1, 14) });
+		await bob.edit({ end: fromAnchor(1, 14) });
 
 		// 3: Context-menu skip on A (hides it from the view — that's fine, nothing
 		// after this clicks on Alice).

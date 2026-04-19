@@ -431,10 +431,12 @@ export async function unlockPro(page: Page): Promise<void> {
 	}, PLUGIN_ID);
 }
 
-/** Locate a Gantt bar whose label matches `title`. */
+/** Locate a Gantt bar whose label matches `title`, scoped to the active calendar leaf. */
 export function ganttBarLocator(page: Page, title: string): Locator {
 	return page
-		.locator(`.prisma-gantt-bar:has(.prisma-gantt-bar-label:text-is("${title.replace(/"/g, '\\"')}"))`)
+		.locator(
+			`${ACTIVE_CALENDAR_LEAF} .prisma-gantt-bar:has(.prisma-gantt-bar-label:text-is("${title.replace(/"/g, '\\"')}"))`
+		)
 		.first();
 }
 

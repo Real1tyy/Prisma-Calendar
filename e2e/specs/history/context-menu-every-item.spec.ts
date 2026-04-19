@@ -1,4 +1,4 @@
-import { isoLocal } from "../../fixtures/dates";
+import { fromAnchor } from "../../fixtures/dates";
 import { expect, test } from "../../fixtures/electron";
 import { type ContextMenuItemKey, sel, TID } from "../../fixtures/testids";
 
@@ -27,10 +27,11 @@ const EXPECTED_ITEMS: readonly ContextMenuItemKey[] = [
 
 test.describe("context menu: item coverage (UI-driven)", () => {
 	test("every expected item is reachable by right-click on a normal event", async ({ calendar }) => {
+		await calendar.goToAnchor();
 		await calendar.createEvent({
 			title: "Menu Probe",
-			start: isoLocal(1, 9),
-			end: isoLocal(1, 10),
+			start: fromAnchor(1, 9),
+			end: fromAnchor(1, 10),
 		});
 
 		await calendar.page.locator(".fc-event", { hasText: "Menu Probe" }).first().click({ button: "right" });

@@ -1,4 +1,4 @@
-import { isoLocal } from "../../fixtures/dates";
+import { fromAnchor } from "../../fixtures/dates";
 import { type CalendarHandle } from "../../fixtures/dsl";
 import { expect, test } from "../../fixtures/electron";
 import { assignPrerequisiteViaUI, ganttBarLocator, rightClickGanttBar } from "../../fixtures/helpers";
@@ -23,6 +23,22 @@ import { sel, TID } from "../../fixtures/testids";
 
 const GANTT_SCOPE = ".prisma-gantt-wrapper";
 
+/**
+ * Collapse Obsidian's left sidebar so the file-explorer pane doesn't overlap
+ * the gantt canvas — in headless runs the sidebar stays open by default and
+ * intercepts right-clicks on bars rendered near the left edge.
+ */
+async function collapseLeftSidebar(calendar: CalendarHandle): Promise<void> {
+	await calendar.page.evaluate(() => {
+		const w = window as unknown as {
+			app: { workspace: { leftSplit?: { collapse: () => void; collapsed?: boolean } } };
+		};
+		if (w.app.workspace.leftSplit && !w.app.workspace.leftSplit.collapsed) {
+			w.app.workspace.leftSplit.collapse();
+		}
+	});
+}
+
 async function openGantt(calendar: CalendarHandle): Promise<void> {
 	await calendar.unlockPro();
 	await calendar.switchView("gantt");
@@ -30,11 +46,19 @@ async function openGantt(calendar: CalendarHandle): Promise<void> {
 }
 
 async function setupTwoConnectedEvents(calendar: CalendarHandle): Promise<void> {
+	// Headless Obsidian keeps the left file-explorer sidebar open, and its
+	// fixed position can overlap the gantt canvas — right-clicks on bars near
+	// the left edge get absorbed by the sidebar. Collapse it up-front so the
+	// gantt pane owns the full width.
+	await collapseLeftSidebar(calendar);
 	await calendar.switchMode("month");
+	// Pin the month viewport to the anchor so both tiles (anchor + anchor+10)
+	// are rendered regardless of what day-of-week the suite runs on.
+	await calendar.goToAnchor();
 
 	await calendar.seedMany([
-		{ title: "Upstream Task", start: isoLocal(0, 9, 0), end: isoLocal(0, 10, 0) },
-		{ title: "Downstream Task", start: isoLocal(10, 14, 0), end: isoLocal(10, 15, 0) },
+		{ title: "Upstream Task", start: fromAnchor(0, 9, 0), end: fromAnchor(0, 10, 0) },
+		{ title: "Downstream Task", start: fromAnchor(10, 14, 0), end: fromAnchor(10, 15, 0) },
 	]);
 
 	await assignPrerequisiteViaUI(calendar.page, "Downstream Task", "Upstream Task");

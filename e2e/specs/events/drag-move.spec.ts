@@ -1,12 +1,8 @@
-import { writeFileSync } from "node:fs";
-import { join } from "node:path";
-
 import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 import { DateTime } from "luxon";
 
 import { anchorISO } from "../../fixtures/dates";
 import { expect, test } from "../../fixtures/electron";
-import { refreshCalendar } from "../../fixtures/seed-events";
 import { eventBlockLocator } from "./events-helpers";
 
 // Drag a timed block in week view from its 09:00 slot to the 14:00 slot in
@@ -23,27 +19,22 @@ import { eventBlockLocator } from "./events-helpers";
 test.describe("drag event → move", () => {
 	test("drag a timed block 5 hours down shifts Start/End by exactly that delta", async ({ calendar }) => {
 		const anchor = anchorISO();
-		const seedPath = "Events/Movable Event-20250101000000.md";
-		// Seed with the exact storage format the plugin emits after a drag so
-		// the written Start/End strings match byte-for-byte without format
-		// churn through `ensureISOSuffix`.
-		writeFileSync(
-			join(calendar.vaultDir, seedPath),
-			`---
-Start Date: ${anchor}T09:00:00.000Z
-End Date: ${anchor}T10:00:00.000Z
----
-
-# Movable Event
-`,
-			"utf8"
-		);
-		await refreshCalendar(calendar.page);
 
 		await calendar.switchMode("week");
 		await calendar.goToAnchor();
-		const movable = await calendar.eventByTitle("Movable Event");
-		await movable.expectVisible();
+
+		// Seed with the exact storage format the plugin emits after a drag so
+		// the written Start/End strings match byte-for-byte without format
+		// churn through `ensureISOSuffix`. `seedOnDisk` waits for the block to
+		// paint before returning so the subsequent drag lands on a real hit.
+		const movable = await calendar.seedOnDisk(
+			"Movable Event",
+			{
+				"Start Date": `${anchor}T09:00:00.000Z`,
+				"End Date": `${anchor}T10:00:00.000Z`,
+			},
+			{ awaitRender: true }
+		);
 
 		const block = eventBlockLocator(calendar.page, "Movable Event").first();
 		const blockBox = await block.boundingBox();
@@ -79,7 +70,7 @@ End Date: ${anchor}T10:00:00.000Z
 
 		await movable.expectFrontmatter("Start Date", (v) => v === `${anchor}T14:00:00.000Z`);
 
-		const fm = readEventFrontmatter(calendar.vaultDir, seedPath);
+		const fm = readEventFrontmatter(calendar.vaultDir, movable.path);
 		expect(String(fm["Start Date"]), "Start Date must be exactly the drop slot time").toBe(`${anchor}T14:00:00.000Z`);
 		expect(String(fm["End Date"]), "End Date must be drop slot time + original 60 min duration").toBe(
 			`${anchor}T15:00:00.000Z`

@@ -1,10 +1,10 @@
 import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
-import { boundingBoxOrThrow, centerOf, drag } from "../../fixtures/dsl";
+import { anchorISO } from "../../fixtures/dates";
+import { boundingBoxOrThrow, drag } from "../../fixtures/dsl";
 import { expect, test } from "../../fixtures/electron";
 import {
 	eventBlockLocator,
-	formatLocalDate,
 	UNTRACKED_BUTTON_SELECTOR,
 	UNTRACKED_DROPDOWN_SELECTOR,
 	UNTRACKED_ITEM_SELECTOR,
@@ -20,14 +20,15 @@ const UNTRACKED_SYNC_TIMEOUT_MS = 10_000;
 
 test.describe("drag event ↔ untracked dropdown", () => {
 	test("dragging a timed block onto the untracked button strips its schedule", async ({ calendar }) => {
-		const today = formatLocalDate(new Date());
+		const anchor = anchorISO();
 		const evt = await calendar.seedOnDisk("Parked Event", {
-			"Start Date": `${today}T09:00`,
-			"End Date": `${today}T10:00`,
+			"Start Date": `${anchor}T09:00`,
+			"End Date": `${anchor}T10:00`,
 			"All Day": false,
 		});
 
 		await calendar.switchMode("week");
+		await calendar.goToAnchor();
 		await evt.expectVisible();
 
 		const block = eventBlockLocator(calendar.page, "Parked Event").first();
@@ -40,7 +41,12 @@ test.describe("drag event ↔ untracked dropdown", () => {
 		// `isDraggingCalendarEvent` only flips true inside FC's dragstart, and
 		// the pointerup handler that moves the event to untracked returns early
 		// when that flag is false — so the jitter move is load-bearing here.
-		await drag(calendar.page, centerOf(blockBox), centerOf(btnBox), { mode: "jitter" });
+		await drag(
+			calendar.page,
+			{ x: blockBox.x + blockBox.width / 2, y: blockBox.y + blockBox.height / 2 },
+			{ x: btnBox.x + btnBox.width / 2, y: btnBox.y + btnBox.height / 2 },
+			{ mode: "jitter" }
+		);
 
 		await evt.expectFrontmatter("Start Date", (v) => String(v ?? "") === "");
 
@@ -57,12 +63,13 @@ test.describe("drag event ↔ untracked dropdown", () => {
 	});
 
 	test("dragging an untracked item onto a time slot promotes it to a timed event", async ({ calendar }) => {
-		const today = formatLocalDate(new Date());
+		const anchor = anchorISO();
 		const evt = await calendar.seedOnDisk("Unscheduled Task", {
 			Location: "Home Office",
 		});
 
 		await calendar.switchMode("week");
+		await calendar.goToAnchor();
 
 		await calendar.openUntrackedDropdown();
 		const dropdown = calendar.page.locator(UNTRACKED_DROPDOWN_SELECTOR);
@@ -73,14 +80,14 @@ test.describe("drag event ↔ untracked dropdown", () => {
 		const itemBox = await boundingBoxOrThrow(item, "Unscheduled Task dropdown item");
 
 		const timedSlot = calendar.page.locator('.fc-timegrid-slot-lane[data-time="10:00:00"]').first();
-		const timedColumn = calendar.page.locator(`.fc-timegrid-col[data-date="${today}"]`).first();
+		const timedColumn = calendar.page.locator(`.fc-timegrid-col[data-date="${anchor}"]`).first();
 		await timedSlot.waitFor({ state: "visible" });
 		const slotBox = await boundingBoxOrThrow(timedSlot, "10:00 slot lane");
-		const colBox = await boundingBoxOrThrow(timedColumn, "timed column for today");
+		const colBox = await boundingBoxOrThrow(timedColumn, "timed column for anchor day");
 
 		await drag(
 			calendar.page,
-			centerOf(itemBox),
+			{ x: itemBox.x + itemBox.width / 2, y: itemBox.y + itemBox.height / 2 },
 			{ x: colBox.x + colBox.width / 2, y: slotBox.y + slotBox.height / 2 },
 			{ mode: "jitter", jitterDx: 10 }
 		);
@@ -92,20 +99,21 @@ test.describe("drag event ↔ untracked dropdown", () => {
 			.not.toBe("");
 
 		const fm = readEventFrontmatter(calendar.vaultDir, evt.path);
-		expect(String(fm["Start Date"] ?? "").startsWith(today), "Start Date should be on today").toBe(true);
-		expect(String(fm["End Date"] ?? "").startsWith(today), "End Date should be on today").toBe(true);
+		expect(String(fm["Start Date"] ?? "").startsWith(anchor), "Start Date should be on anchor day").toBe(true);
+		expect(String(fm["End Date"] ?? "").startsWith(anchor), "End Date should be on anchor day").toBe(true);
 		expect(String(fm["All Day"] ?? "")).toBe("false");
 
 		await evt.expectVisible();
 	});
 
 	test("dragging an untracked item onto the all-day row promotes it to an all-day event", async ({ calendar }) => {
-		const today = formatLocalDate(new Date());
+		const anchor = anchorISO();
 		const evt = await calendar.seedOnDisk("Unscheduled AllDay", {
 			Location: "Nowhere",
 		});
 
 		await calendar.switchMode("week");
+		await calendar.goToAnchor();
 
 		await calendar.openUntrackedDropdown();
 		await calendar.page.locator(UNTRACKED_DROPDOWN_SELECTOR).waitFor({ state: "visible" });
@@ -113,9 +121,9 @@ test.describe("drag event ↔ untracked dropdown", () => {
 		const item = calendar.page.locator(UNTRACKED_ITEM_SELECTOR, { hasText: "Unscheduled AllDay" }).first();
 		const itemBox = await boundingBoxOrThrow(item, "Unscheduled AllDay dropdown item");
 
-		const allDayCell = calendar.page.locator(`.fc-timegrid .fc-daygrid-body .fc-day[data-date="${today}"]`).first();
+		const allDayCell = calendar.page.locator(`.fc-timegrid .fc-daygrid-body .fc-day[data-date="${anchor}"]`).first();
 		await allDayCell.waitFor({ state: "visible" });
-		const cellBox = await boundingBoxOrThrow(allDayCell, "all-day cell for today");
+		const cellBox = await boundingBoxOrThrow(allDayCell, "all-day cell for anchor day");
 
 		// The untracked dropdown overlays the calendar header + all-day row,
 		// so a straight drag from the dropdown item to the all-day cell drops
@@ -136,7 +144,7 @@ test.describe("drag event ↔ untracked dropdown", () => {
 			.poll(() => String(readEventFrontmatter(calendar.vaultDir, evt.path)["Date"] ?? ""), {
 				timeout: UNTRACKED_SYNC_TIMEOUT_MS,
 			})
-			.toBe(today);
+			.toBe(anchor);
 
 		const fm = readEventFrontmatter(calendar.vaultDir, evt.path);
 		expect(String(fm["All Day"] ?? "")).toBe("true");

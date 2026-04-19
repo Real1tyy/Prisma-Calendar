@@ -1,4 +1,4 @@
-import { isoLocal } from "../../fixtures/dates";
+import { fromAnchor } from "../../fixtures/dates";
 import { undoRedoRoundTrip } from "../../fixtures/dsl";
 import { test } from "../../fixtures/electron";
 import { listEventFiles } from "../events/events-helpers";
@@ -40,7 +40,8 @@ test.describe("context menu: per-item undo (UI-driven)", () => {
 		{ title: "MovePrev Probe", item: "moveToPreviousWeek" as const },
 	]) {
 		test(`${item} — undo/redo reverts Start Date`, async ({ calendar }) => {
-			const event = await calendar.createEvent({ title, start: isoLocal(1, 9), end: isoLocal(1, 10) });
+			await calendar.goToAnchor();
+			const event = await calendar.createEvent({ title, start: fromAnchor(1, 9), end: fromAnchor(1, 10) });
 			const originalStart = event.readFrontmatter("Start Date");
 
 			await undoRedoRoundTrip(calendar, {
@@ -56,7 +57,8 @@ test.describe("context menu: per-item undo (UI-driven)", () => {
 		{ title: "ClonePrev Probe", item: "cloneToPreviousWeek" as const },
 	]) {
 		test(`${item} — undo/redo toggles the clone`, async ({ calendar }) => {
-			const event = await calendar.createEvent({ title, start: isoLocal(1, 9), end: isoLocal(1, 10) });
+			await calendar.goToAnchor();
+			const event = await calendar.createEvent({ title, start: fromAnchor(1, 9), end: fromAnchor(1, 10) });
 			const before = listEventFiles(calendar.vaultDir).length;
 
 			await undoRedoRoundTrip(calendar, {
@@ -68,10 +70,11 @@ test.describe("context menu: per-item undo (UI-driven)", () => {
 	}
 
 	test("moveBy — undo/redo reverts the custom-offset move", async ({ calendar }) => {
+		await calendar.goToAnchor();
 		const event = await calendar.createEvent({
 			title: "MoveBy Probe",
-			start: isoLocal(1, 9),
-			end: isoLocal(1, 10),
+			start: fromAnchor(1, 9),
+			end: fromAnchor(1, 10),
 		});
 		const originalStart = event.readFrontmatter("Start Date");
 

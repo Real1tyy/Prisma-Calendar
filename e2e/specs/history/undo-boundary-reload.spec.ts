@@ -1,5 +1,5 @@
 import { PLUGIN_ID } from "../../fixtures/constants";
-import { isoLocal } from "../../fixtures/dates";
+import { fromAnchor } from "../../fixtures/dates";
 import { test } from "../../fixtures/electron";
 import { expectEventsVisibleByTitle } from "../../fixtures/history-helpers";
 import { openCalendarReady } from "../events/events-helpers";
@@ -11,10 +11,11 @@ import { openCalendarReady } from "../events/events-helpers";
 
 test.describe("undo boundary: reload (UI-driven)", () => {
 	test("undo after renderer reload is a no-op — the created file stays", async ({ calendar }) => {
+		await calendar.goToAnchor();
 		const event = await calendar.createEvent({
 			title: "Reload Probe",
-			start: isoLocal(1, 9),
-			end: isoLocal(1, 10),
+			start: fromAnchor(1, 9),
+			end: fromAnchor(1, 10),
 		});
 
 		await calendar.page.reload();

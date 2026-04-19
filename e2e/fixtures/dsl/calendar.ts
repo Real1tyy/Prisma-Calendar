@@ -53,8 +53,16 @@ export interface CalendarHandle {
 	 * the indexer so the plugin picks it up. Prefer this over hand-rolled
 	 * `writeFileSync` + `openCalendarReady` sequences — the refresh step is
 	 * required for the file to appear in the calendar view.
+	 *
+	 * Pass `awaitRender: true` to wait for the seeded block to paint in the
+	 * active calendar leaf before returning — only safe when the seeded date
+	 * is actually inside the currently-visible FC viewport.
 	 */
-	seedOnDisk(title: string, frontmatter: Record<string, string | boolean>): Promise<EventHandle>;
+	seedOnDisk(
+		title: string,
+		frontmatter: Record<string, string | boolean>,
+		options?: { awaitRender?: boolean }
+	): Promise<EventHandle>;
 
 	/**
 	 * Bulk version of `seedOnDisk` for the common "seed N events, assert on
@@ -68,8 +76,12 @@ export interface CalendarHandle {
 	 * require the full modal flow — use `seedMany` for those. All titles in a
 	 * single call must be unique: `seedOnDisk` uses a fixed ZettelID suffix so
 	 * duplicate titles collide on disk.
+	 *
+	 * Like `seedOnDisk`, pass `awaitRender: true` to wait for every seeded
+	 * tile to paint in the active calendar leaf — only safe when every
+	 * seeded date sits inside the currently-visible FC viewport.
 	 */
-	seedOnDiskMany(events: readonly EventOnDisk[]): Promise<EventHandle[]>;
+	seedOnDiskMany(events: readonly EventOnDisk[], options?: { awaitRender?: boolean }): Promise<EventHandle[]>;
 
 	batch(events: readonly EventHandle[]): Promise<BatchHandle>;
 
@@ -116,9 +128,6 @@ export interface CalendarHandle {
 
 	/** Flip the license to Pro via the `__setProForTesting` seam (guarded by `window.E2E`). */
 	unlockPro(): Promise<void>;
-
-	/** Wait for stacked success/error `.notice` overlays to clear so they stop intercepting clicks. */
-	waitForNoticesClear(): Promise<void>;
 
 	/** Click the untracked-events dropdown toggle in the toolbar. */
 	openUntrackedDropdown(): Promise<void>;
@@ -195,31 +204,44 @@ function blockByTitle(page: Page, title: string): Locator {
 }
 
 /**
- * Drive FullCalendar's `gotoDate(iso)` on the active calendar leaf's view.
- * `view.calendar` is already public on `CalendarView` — no new production
- * seam required. Throws if no calendar leaf is active.
+ * Drive FullCalendar's `gotoDate(iso)` on every registered calendar bundle.
+ * Reaches the FC instance through `plugin.calendarBundles[].viewRef.calendarComponent.calendar`
+ * — the old `leaf.view.calendar` path broke when the CalendarView was wrapped
+ * in a tabbed ComponentView (see `prisma-view.ts`). Throws if no bundle has a
+ * live calendar component.
  */
 async function navigateCalendarTo(page: Page, iso: string): Promise<void> {
-	await page.evaluate((dateIso) => {
-		const w = window as unknown as {
-			app: {
-				workspace: {
-					iterateAllLeaves: (
-						fn: (leaf: { view?: { getViewType?: () => string; calendar?: { gotoDate: (d: string) => void } } }) => void
-					) => void;
+	await page.evaluate(
+		({ dateIso, pid }) => {
+			const w = window as unknown as {
+				app: {
+					plugins: {
+						plugins: Record<
+							string,
+							{
+								calendarBundles?: Array<{
+									viewRef?: {
+										calendarComponent?: { calendar?: { gotoDate: (d: string) => void } } | null;
+									};
+								}>;
+							}
+						>;
+					};
 				};
 			};
-		};
-		let navigated = false;
-		w.app.workspace.iterateAllLeaves((leaf) => {
-			const type = leaf?.view?.getViewType?.();
-			if (typeof type === "string" && type.startsWith("custom-calendar-view-")) {
-				leaf.view?.calendar?.gotoDate(dateIso);
-				navigated = true;
+			const bundles = w.app.plugins.plugins[pid]?.calendarBundles ?? [];
+			let navigated = false;
+			for (const bundle of bundles) {
+				const cal = bundle.viewRef?.calendarComponent?.calendar;
+				if (cal) {
+					cal.gotoDate(dateIso);
+					navigated = true;
+				}
 			}
-		});
-		if (!navigated) throw new Error("goToDate: no active calendar view to navigate");
-	}, iso);
+			if (!navigated) throw new Error("goToDate: no active calendar component to navigate");
+		},
+		{ dateIso: iso, pid: PLUGIN_ID }
+	);
 }
 
 export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
@@ -235,16 +257,6 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 		const [newPath] = await waitForNewEventFiles(vaultDir, baseline, 1, undefined, subdir);
 		if (!newPath) throw new Error(`createEvent(${input.title}): no new event file appeared in ${subdir}`);
 		return createEventHandle({ page, vaultDir }, newPath, input.title);
-	};
-
-	const waitForNoticesClear: CalendarHandle["waitForNoticesClear"] = async () => {
-		await page
-			.locator(".notice-container .notice")
-			.first()
-			.waitFor({ state: "detached", timeout: 10_000 })
-			.catch(() => {
-				// nothing to drain
-			});
 	};
 
 	return {
@@ -272,17 +284,18 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 		async seedMany(inputs) {
 			const out: EventHandle[] = [];
 			for (const input of inputs) out.push(await createEvent(input));
-			await waitForNoticesClear();
 			return out;
 		},
 
-		async seedOnDisk(title, frontmatter) {
+		async seedOnDisk(title, frontmatter, options = {}) {
 			const relPath = seedEventFile(vaultDir, title, frontmatter);
 			await refreshCalendar(page);
-			return createEventHandle({ page, vaultDir }, relPath, title);
+			const handle = createEventHandle({ page, vaultDir }, relPath, title);
+			if (options.awaitRender === true) await handle.expectVisible();
+			return handle;
 		},
 
-		async seedOnDiskMany(events) {
+		async seedOnDiskMany(events, options = {}) {
 			const out: EventHandle[] = [];
 			for (const input of events) {
 				const fm: Record<string, string | boolean> = {};
@@ -295,6 +308,9 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 				out.push(createEventHandle({ page, vaultDir }, relPath, input.title));
 			}
 			await refreshCalendar(page);
+			if (options.awaitRender === true) {
+				for (const handle of out) await handle.expectVisible();
+			}
 			return out;
 		},
 
@@ -380,8 +396,6 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 				lm.__setProForTesting(true);
 			}, PLUGIN_ID);
 		},
-
-		waitForNoticesClear,
 
 		async openUntrackedDropdown() {
 			const toggle = page.locator(`${ACTIVE_CALENDAR_LEAF} [data-testid="prisma-untracked-dropdown-button"]`).first();
