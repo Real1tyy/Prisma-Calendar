@@ -4,13 +4,8 @@ import { filter } from "rxjs/operators";
 
 import type { CalendarEventSource, IndexerEvent, RawEventSource } from "../../types/event-source";
 
-export interface CacheEntry<T> {
-	template: T;
-	mtime: number;
-}
-
 export abstract class IndexedCacheStore<TTemplate> extends DebouncedNotifier {
-	protected cache = new Map<string, CacheEntry<TTemplate>>();
+	protected cache = new Map<string, TTemplate>();
 	private subscription: Subscription | null = null;
 
 	constructor(
@@ -48,19 +43,19 @@ export abstract class IndexedCacheStore<TTemplate> extends DebouncedNotifier {
 		const template = this.buildTemplate(source);
 
 		if (template) {
-			this.upsert(source.filePath, template, source.mtime);
+			this.upsert(source.filePath, template);
 		} else {
 			this.invalidate(source.filePath);
 		}
 	}
 
-	protected upsert(filePath: string, template: TTemplate, mtime: number): void {
+	protected upsert(filePath: string, template: TTemplate): void {
 		const oldCached = this.cache.get(filePath);
 		if (oldCached) {
-			this.onBeforeRemove(oldCached.template);
+			this.onBeforeRemove(oldCached);
 		}
 
-		this.cache.set(filePath, { template, mtime });
+		this.cache.set(filePath, template);
 		this.onAfterUpsert(template);
 		this.scheduleRefresh();
 	}
@@ -69,31 +64,22 @@ export abstract class IndexedCacheStore<TTemplate> extends DebouncedNotifier {
 		const cached = this.cache.get(filePath);
 
 		if (cached && this.cache.delete(filePath)) {
-			this.onBeforeRemove(cached.template);
+			this.onBeforeRemove(cached);
 			this.notifyChange();
 		}
 	}
 
-	isUpToDate(filePath: string, mtime: number): boolean {
-		const cached = this.cache.get(filePath);
-		return cached ? cached.mtime === mtime : false;
-	}
-
 	getByPath(filePath: string): TTemplate | null {
-		return this.cache.get(filePath)?.template ?? null;
+		return this.cache.get(filePath) ?? null;
 	}
 
 	getAll(): TTemplate[] {
-		const results: TTemplate[] = [];
-		for (const cached of this.cache.values()) {
-			results.push(cached.template);
-		}
-		return results;
+		return Array.from(this.cache.values());
 	}
 
 	clear(): void {
 		for (const cached of this.cache.values()) {
-			this.onBeforeRemove(cached.template);
+			this.onBeforeRemove(cached);
 		}
 		this.cache.clear();
 		this.notifyChange();

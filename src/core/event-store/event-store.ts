@@ -77,7 +77,6 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 			} else {
 				// Indexing restarted (e.g., filter expressions changed or directory changed).
 				// Clear the cache so events are re-parsed with updated settings.
-				// Without this, isUpToDate() would skip files whose mtime hasn't changed.
 				this.clearWithoutNotify();
 			}
 		});
@@ -105,7 +104,7 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	 */
 	clearWithoutNotify(): void {
 		for (const cached of this.cache.values()) {
-			this.onBeforeRemove(cached.template);
+			this.onBeforeRemove(cached);
 		}
 		this.cache.clear();
 		this.clearAllTrees();
@@ -210,8 +209,8 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 		return this.getByPath(filePath);
 	}
 
-	updateEvent(filePath: string, template: CalendarEvent, mtime: number): void {
-		this.upsert(filePath, template, mtime);
+	updateEvent(filePath: string, template: CalendarEvent): void {
+		this.upsert(filePath, template);
 	}
 
 	/**
@@ -424,8 +423,7 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 		const doneValue = this.settings.doneValue;
 		const minimizedFilePath = MinimizedModalManager.getState()?.filePath ?? null;
 
-		for (const cached of this.cache.values()) {
-			const event = cached.template;
+		for (const event of this.cache.values()) {
 			if (isAnyVirtual(event.virtualKind)) continue;
 			if (event.metadata.rruleType) continue;
 			if (event.metadata.status === doneValue) continue;

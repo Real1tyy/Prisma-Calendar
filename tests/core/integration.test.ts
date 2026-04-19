@@ -81,7 +81,7 @@ describe("Integration: EventFileRepository → EventStore", () => {
 			metadata: {} as any,
 			virtualKind: "none" as const,
 		};
-		eventStore.updateEvent("Events/meeting.md", cachedEvent, 999);
+		eventStore.updateEvent("Events/meeting.md", cachedEvent);
 		expect(eventStore.getEventByPath("Events/meeting.md")).toBeDefined();
 
 		await repo.mockTable.delete("meeting");

@@ -66,8 +66,8 @@ describe("EventStore", () => {
 			const event1 = createMockEvent({ title: "Original Title" });
 			const event2 = createMockEvent({ title: "Updated Title" });
 
-			eventStore.updateEvent("Events/meeting.md", event1, 1642204800000);
-			eventStore.updateEvent("Events/meeting.md", event2, 1642204801000);
+			eventStore.updateEvent("Events/meeting.md", event1);
+			eventStore.updateEvent("Events/meeting.md", event2);
 
 			const query: EventQuery = {
 				start: "2024-01-15T00:00:00",
@@ -77,15 +77,6 @@ describe("EventStore", () => {
 			const events = await eventStore.getEvents(query);
 			expect(events).toHaveLength(1);
 			expect(events[0].title).toBe("Updated Title");
-		});
-
-		it("should check if events are up to date", () => {
-			const event = createMockEvent();
-			eventStore.updateEvent("Events/meeting.md", event, 1642204800000);
-
-			expect(eventStore.isUpToDate("Events/meeting.md", 1642204800000)).toBe(true);
-			expect(eventStore.isUpToDate("Events/meeting.md", 1642204801000)).toBe(false);
-			expect(eventStore.isUpToDate("Events/other.md", 1642204800000)).toBe(false);
 		});
 	});
 
@@ -175,10 +166,10 @@ describe("EventStore", () => {
 				allDay: true,
 			});
 
-			eventStore.updateEvent("Events/meeting1.md", event1, 1642204800000);
-			eventStore.updateEvent("Events/lunch.md", event2, 1642204800001);
-			eventStore.updateEvent("Events/meeting2.md", event3, 1642204800002);
-			eventStore.updateEvent("Events/holiday.md", allDayEvent, 1642204800003);
+			eventStore.updateEvent("Events/meeting1.md", event1);
+			eventStore.updateEvent("Events/lunch.md", event2);
+			eventStore.updateEvent("Events/meeting2.md", event3);
+			eventStore.updateEvent("Events/holiday.md", allDayEvent);
 		});
 
 		it("should return events within date range", async () => {
@@ -257,7 +248,7 @@ describe("EventStore", () => {
 			const subscription = eventStore.subscribe(subscriber);
 
 			const event = createMockEvent();
-			eventStore.updateEvent("Events/meeting.md", event, 1642204800000);
+			eventStore.updateEvent("Events/meeting.md", event);
 
 			// Advance time to trigger debounced notification
 			vi.advanceTimersByTime(150);
@@ -268,7 +259,7 @@ describe("EventStore", () => {
 
 		it("should notify subscribers when events are invalidated", () => {
 			const event = createMockEvent();
-			eventStore.updateEvent("Events/meeting.md", event, 1642204800000);
+			eventStore.updateEvent("Events/meeting.md", event);
 			vi.advanceTimersByTime(150);
 
 			const subscriber = vi.fn();
@@ -283,7 +274,7 @@ describe("EventStore", () => {
 
 		it("should notify subscribers when cache is cleared", () => {
 			const event = createMockEvent();
-			eventStore.updateEvent("Events/meeting.md", event, 1642204800000);
+			eventStore.updateEvent("Events/meeting.md", event);
 
 			const subscriber = vi.fn();
 			const subscription = eventStore.subscribe(subscriber);
@@ -313,7 +304,7 @@ describe("EventStore", () => {
 			const subscription2 = eventStore.subscribe(subscriber2);
 
 			const event = createMockEvent();
-			eventStore.updateEvent("Events/meeting.md", event, 1642204800000);
+			eventStore.updateEvent("Events/meeting.md", event);
 			vi.advanceTimersByTime(150);
 
 			expect(subscriber1).toHaveBeenCalled();
@@ -328,13 +319,13 @@ describe("EventStore", () => {
 			const subscription = eventStore.subscribe(subscriber);
 
 			const event = createMockEvent();
-			eventStore.updateEvent("Events/meeting.md", event, 1642204800000);
+			eventStore.updateEvent("Events/meeting.md", event);
 			vi.advanceTimersByTime(150);
 
 			expect(subscriber).toHaveBeenCalledTimes(1);
 
 			subscription.unsubscribe();
-			eventStore.updateEvent("Events/meeting2.md", event, 1642204800001);
+			eventStore.updateEvent("Events/meeting2.md", event);
 			vi.advanceTimersByTime(150);
 
 			// Should still be 1, not called again after unsubscribe
@@ -349,7 +340,7 @@ describe("EventStore", () => {
 			const subscription2 = eventStore.subscribe(subscriber2);
 
 			const event = createMockEvent();
-			eventStore.updateEvent("Events/meeting.md", event, 1642204800000);
+			eventStore.updateEvent("Events/meeting.md", event);
 			vi.advanceTimersByTime(150);
 
 			expect(subscriber1).toHaveBeenCalled();
@@ -377,7 +368,7 @@ describe("EventStore", () => {
 				meta: { folder: "Events" },
 			});
 
-			eventStore.updateEvent("Events/test.md", parsedEvent, 1642204800000);
+			eventStore.updateEvent("Events/test.md", parsedEvent);
 
 			const query: EventQuery = {
 				start: "2024-01-15T00:00:00",
@@ -417,9 +408,9 @@ describe("EventStore", () => {
 			const event2 = createMockEvent({ id: "event-2", title: "Event 2" });
 			const event3 = createMockEvent({ id: "event-3", title: "Event 3" });
 
-			eventStore.updateEvent("Events/event1.md", event1, 1642204800000);
-			eventStore.updateEvent("Events/event2.md", event2, 1642204800001);
-			eventStore.updateEvent("Events/event3.md", event3, 1642204800002);
+			eventStore.updateEvent("Events/event1.md", event1);
+			eventStore.updateEvent("Events/event2.md", event2);
+			eventStore.updateEvent("Events/event3.md", event3);
 
 			// Without indexing complete, notifications would be debounced
 			// Advance time only slightly (less than debounce timeout)
@@ -456,7 +447,7 @@ describe("EventStore", () => {
 
 			// First batch of events
 			const event1 = createMockEvent({ id: "event-1" });
-			eventStore.updateEvent("Events/event1.md", event1, 1642204800000);
+			eventStore.updateEvent("Events/event1.md", event1);
 
 			// First indexing complete
 			indexingCompleteSubject.next(true);
@@ -466,7 +457,7 @@ describe("EventStore", () => {
 
 			// Second batch of events
 			const event2 = createMockEvent({ id: "event-2" });
-			eventStore.updateEvent("Events/event2.md", event2, 1642204800001);
+			eventStore.updateEvent("Events/event2.md", event2);
 
 			// Second indexing complete
 			indexingCompleteSubject.next(true);
@@ -482,7 +473,7 @@ describe("EventStore", () => {
 			// Add events rapidly
 			for (let i = 0; i < 5; i++) {
 				const event = createMockEvent({ id: `event-${i}`, title: `Event ${i}` });
-				eventStore.updateEvent(`Events/event${i}.md`, event, 1642204800000 + i);
+				eventStore.updateEvent(`Events/event${i}.md`, event);
 			}
 
 			// Trigger indexing complete - should flush immediately
@@ -493,7 +484,7 @@ describe("EventStore", () => {
 
 			// Add more events after indexing complete
 			const newEvent = createMockEvent({ id: "new-event" });
-			eventStore.updateEvent("Events/new.md", newEvent, 1642204810000);
+			eventStore.updateEvent("Events/new.md", newEvent);
 
 			// This should follow normal debouncing
 			vi.advanceTimersByTime(150);

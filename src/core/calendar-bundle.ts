@@ -359,9 +359,9 @@ export class CalendarBundle {
 	}
 
 	refreshCalendar(): void {
-		// Clear caches before resync to ensure full rebuild
-		// Without this, EventStore's isUpToDate() check would skip files
-		// whose mtime hasn't changed, causing the refresh to have no effect
+		// Clear caches before resync so the rebuild sees empty state — otherwise
+		// queries during the resync would read stale templates before the new
+		// indexer events land.
 		this.eventStore.clearWithoutNotify();
 		this.recurringEventManager.clearWithoutNotify();
 		this.fileRepository.resync();
