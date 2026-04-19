@@ -129,6 +129,12 @@ export function renderIntervalStatsInto(
 
 	const contentContainer = container.createDiv(cls("stats-content"));
 
+	// Monotonic token bumped on every renderContent() call. A render whose
+	// async getEvents resolves after a newer render has started must bail
+	// before writing to the DOM — otherwise stale entries from the old
+	// month/day can overwrite the newer render's result.
+	let renderToken = 0;
+
 	function destroyComponents(): void {
 		chart?.destroy();
 		chart = null;
@@ -137,6 +143,7 @@ export function renderIntervalStatsInto(
 	}
 
 	async function renderContent(): Promise<void> {
+		const token = ++renderToken;
 		destroyComponents();
 		contentContainer.empty();
 
@@ -145,6 +152,7 @@ export function renderIntervalStatsInto(
 
 		const query = { start: toLocalISOString(start), end: toLocalISOString(end) };
 		const events = await bundle.eventStore.getEvents(query);
+		if (token !== renderToken) return;
 		const filteredEvents = includeSkippedEvents ? [...events, ...bundle.eventStore.getSkippedEvents(query)] : events;
 
 		const categoryProp = bundle.settingsStore.currentSettings.categoryProp || "Category";
