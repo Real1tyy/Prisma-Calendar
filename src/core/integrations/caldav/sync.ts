@@ -177,9 +177,10 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 			lastSyncedAt: Date.now(),
 		};
 
-		return await this.updateNoteFromImportedEvent(filePath, importedEvent, this.account.timezone, {
+		const { wasUpdated } = await this.updateNoteFromImportedEvent(filePath, importedEvent, this.account.timezone, {
 			[caldavProp]: syncMeta,
 		});
+		return wasUpdated;
 	}
 
 	override destroy(): void {

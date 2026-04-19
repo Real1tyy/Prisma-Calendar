@@ -54,10 +54,10 @@ export abstract class BaseSyncService<TResult extends BaseSyncResult> {
 		event: ImportedEvent,
 		timezone: string,
 		additionalFrontmatter: Record<string, unknown>
-	): Promise<void> {
+	): Promise<TFile> {
 		const folderPath = this.getSyncFolderPath();
 
-		await createEventNoteFromImportedEvent(this.app, this.bundle, event, {
+		return await createEventNoteFromImportedEvent(this.app, this.bundle, event, {
 			targetDirectory: folderPath,
 			timezone,
 			additionalFrontmatter,
@@ -69,7 +69,7 @@ export abstract class BaseSyncService<TResult extends BaseSyncResult> {
 		event: ImportedEvent,
 		timezone: string,
 		additionalFrontmatter: Record<string, unknown>
-	): Promise<boolean> {
+	): Promise<{ wasUpdated: boolean; filePath: string }> {
 		let file = this.app.vault.getAbstractFileByPath(filePath);
 		if (!(file instanceof TFile)) {
 			throw new Error(`File not found: ${filePath}`);
@@ -105,7 +105,7 @@ export abstract class BaseSyncService<TResult extends BaseSyncResult> {
 		if (!titleChanged) {
 			const existingFm = this.app.metadataCache.getFileCache(file)?.frontmatter;
 			if (existingFm && !this.hasFrontmatterChanges(eventFm, existingFm)) {
-				return false;
+				return { wasUpdated: false, filePath: file.path };
 			}
 		}
 
@@ -114,7 +114,7 @@ export abstract class BaseSyncService<TResult extends BaseSyncResult> {
 			Object.assign(fm, additionalFrontmatter);
 		});
 
-		return true;
+		return { wasUpdated: true, filePath: file.path };
 	}
 
 	private hasFrontmatterChanges(eventFm: Frontmatter, existingFm: Record<string, unknown>): boolean {

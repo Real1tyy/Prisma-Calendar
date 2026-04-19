@@ -49,6 +49,21 @@ export abstract class BaseSyncStateManager<TMetadata> {
 	protected abstract clearState(): void;
 	protected abstract trackEvent(filePath: string, metadata: TMetadata): void;
 	protected abstract untrackByPath(filePath: string): boolean;
+
+	/**
+	 * Synchronous prime for the tracked-state map. Sync services call this
+	 * immediately after writing a file so the next sync can see it without
+	 * waiting for the reactive indexer pipeline. Without this, a second sync
+	 * triggered before `eventSource.events$` has drained races with an empty
+	 * state map and spuriously re-creates / fails to delete tracked events.
+	 */
+	registerTracked(filePath: string, metadata: TMetadata): void {
+		this.trackEvent(filePath, metadata);
+	}
+
+	unregisterTracked(filePath: string): boolean {
+		return this.untrackByPath(filePath);
+	}
 	protected tryTrackInGlobalIndex(
 		globalUidIndex: Map<string, TrackedSyncEvent<TMetadata>>,
 		uid: string,

@@ -108,6 +108,7 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 						const file = this.app.vault.getAbstractFileByPath(action.filePath);
 						if (file instanceof TFile) {
 							await this.app.fileManager.trashFile(file);
+							this.syncStateManager.unregisterTracked(action.filePath);
 							result.deleted++;
 						}
 					}
@@ -149,9 +150,10 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 			lastSyncedAt: Date.now(),
 		};
 
-		await this.createNoteFromImportedEvent(event, this.subscription.timezone, {
+		const file = await this.createNoteFromImportedEvent(event, this.subscription.timezone, {
 			[icsSubscriptionProp]: syncMeta,
 		});
+		this.syncStateManager.registerTracked(file.path, syncMeta);
 	}
 
 	private async updateNoteFromEvent(filePath: string, event: ImportedEvent, uid: string): Promise<boolean> {
@@ -164,8 +166,19 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 			lastSyncedAt: Date.now(),
 		};
 
-		return await this.updateNoteFromImportedEvent(filePath, event, this.subscription.timezone, {
-			[icsSubscriptionProp]: syncMeta,
-		});
+		const { wasUpdated, filePath: newFilePath } = await this.updateNoteFromImportedEvent(
+			filePath,
+			event,
+			this.subscription.timezone,
+			{ [icsSubscriptionProp]: syncMeta }
+		);
+		// File may have been renamed when the title changed. Drop the stale
+		// entry so `tryTrackInGlobalIndex` doesn't flag the new path as a dup
+		// of its own predecessor and trash it.
+		if (newFilePath !== filePath) {
+			this.syncStateManager.unregisterTracked(filePath);
+		}
+		this.syncStateManager.registerTracked(newFilePath, syncMeta);
+		return wasUpdated;
 	}
 }
