@@ -39,9 +39,10 @@ export interface ReadableTable<TData, TRow extends DataRow<TData> = VaultRow<TDa
  * Mixin that implements all ReadableTable query methods.
  * Generic over the row type — concrete classes provide getRows() and getRowById().
  */
-export abstract class ReadableTableMixin<TData, TRow extends DataRow<TData> = VaultRow<TData>>
-	implements ReadableTable<TData, TRow>
-{
+export abstract class ReadableTableMixin<TData, TRow extends DataRow<TData> = VaultRow<TData>> implements ReadableTable<
+	TData,
+	TRow
+> {
 	abstract readonly events$: Observable<VaultTableEvent<TData, TRow>>;
 
 	protected abstract getRowById(): ReadonlyMap<string, TRow>;

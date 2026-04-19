@@ -39,7 +39,12 @@ export default defineConfig({
 	timeout: TEST_TIMEOUT,
 	expect: { timeout: EXPECT_TIMEOUT },
 	forbidOnly: !!process.env.CI,
-	retries: 0,
+	// Bootstrap runs inside the per-test 30s setup budget (see electron.ts). When
+	// the full suite runs serially, tmp/disk/process pressure accumulates and
+	// Obsidian spawn can tail-spike past that cap — a pure environmental flake.
+	// One retry locally / two on CI absorbs that without masking real spec-body
+	// hangs (those fail the same way on retry).
+	retries: process.env.CI ? 2 : 1,
 	// `line` keeps output to one line per test (not per attempt) so the summary
 	// is readable even when several specs run. Full detail still lands in the
 	// HTML report + `.cache/last-run.log`.
