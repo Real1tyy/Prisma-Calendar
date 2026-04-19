@@ -5,7 +5,7 @@ sidebar_label: Heatmap Monthly + Stats
 # Heatmap Monthly + Stats (Pro)
 
 :::info Pro Feature
-The Heatmap Monthly + Stats tab requires [Prisma Calendar Pro](../free-vs-pro.md). It shares the same license entitlement as the standalone [Heatmap](./heatmap.md).
+The Heatmap Monthly + Stats tab requires [Prisma Calendar Pro](../free-vs-pro.md).
 :::
 
 A two-column resizable layout pairing a month-locked activity heatmap on the left with a live monthly breakdown on the right. Navigate a month on the heatmap and the statistics panel re-aggregates instantly — see both where your time went and when at a glance.
