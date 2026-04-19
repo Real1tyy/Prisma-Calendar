@@ -2,9 +2,19 @@
 sidebar_label: Monthly + Stats
 ---
 
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
 # Monthly + Stats
 
 A two-column resizable layout with a month-locked calendar on the left and live monthly statistics on the right. The monthly analogue of [Daily + Stats](./daily-stats.md).
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/MonthlyStatsView.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/MonthlyStatsView.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 ## Monthly Calendar (Left Column)
 
