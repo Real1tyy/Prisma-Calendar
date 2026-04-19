@@ -723,6 +723,15 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
+### [Virtual Events](features/events/virtual-events) — Virtual ↔ Real Conversions
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/VirtualToRealConversions.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/VirtualToRealConversions.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 ### [Statistics](features/organization/statistics) — Piechart Graph + Categories Statistics
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video

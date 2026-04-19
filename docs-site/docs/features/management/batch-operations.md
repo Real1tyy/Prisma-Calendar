@@ -225,6 +225,14 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
 
 ### Make Virtual / Make Real
 
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/VirtualToRealConversions.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/VirtualToRealConversions.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 - **Make Virtual**: Converts selected file-backed events into manual virtual events. The backing `.md` files are moved to trash, and event metadata (title, dates, properties) is stored in the virtual events file. Only applies to file-backed events in the selection — virtual events are skipped.
 - **Make Real**: Converts selected manual virtual events back into file-backed events. Creates new `.md` files with the stored metadata and removes the virtual entries. Only applies to virtual events in the selection — file-backed events are skipped.
 - Both operations are fully undoable

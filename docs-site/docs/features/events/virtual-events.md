@@ -85,6 +85,14 @@ Each virtual event stores: title, start/end datetime, all-day flag, and frontmat
 
 ### Converting Between Virtual and Physical
 
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/VirtualToRealConversions.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/VirtualToRealConversions.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 - **Right-click a physical event → "Make virtual"**: Deletes the backing file and stores the event metadata as a virtual entry. Title, dates, and properties are preserved.
 - **Right-click a virtual event → "Make real"**: Creates a backing `.md` file from the stored metadata and removes the virtual entry.
 - **Edit modal**: Toggle the **Virtual** pill in the modal header to convert in either direction.
