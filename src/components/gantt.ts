@@ -8,6 +8,31 @@ import type { CalendarEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/settings";
 import { resolveEventColor } from "../utils/event-color";
 
+export type {
+	ArrowLayout,
+	BarLayout,
+	GanttConfig,
+	GanttInteractionHooks,
+	GanttRenderData,
+	GanttRendererConfig,
+	GanttRendererHandle,
+	GanttTask,
+	LayoutFn,
+	PackedTask,
+	Viewport,
+} from "@real1ty-obsidian-plugins";
+export {
+	buildViewport,
+	centerViewportOnTasks,
+	createGanttRenderer,
+	GANTT_DEFAULTS,
+	layoutArrows,
+	layoutBars,
+	MS_PER_DAY,
+	packRows,
+	visualEndTime,
+} from "@real1ty-obsidian-plugins";
+
 export function sanitizeGanttId(filePath: string): string {
 	return filePath.replace(/[^a-zA-Z0-9]/g, "_");
 }

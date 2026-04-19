@@ -21,6 +21,11 @@ import {
 } from "../../core/commands/frontmatter-update-command";
 import { CloneEventCommand, DeleteEventCommand } from "../../core/commands/lifecycle-commands";
 import { PRO_FEATURES } from "../../core/license";
+import type { CalendarEvent } from "../../types/calendar";
+import type { SingleCalendarConfig } from "../../types/settings";
+import { isEventDone } from "../../utils/event-frontmatter";
+import { extractCleanDisplayName } from "../../utils/event-naming";
+import { getFileAndFrontmatter, openFileInNewWindow } from "../../utils/obsidian";
 import type {
 	BarLayout,
 	GanttInteractionHooks,
@@ -28,7 +33,7 @@ import type {
 	GanttRendererHandle,
 	PackedTask,
 	Viewport,
-} from "../../gantt";
+} from "../gantt";
 import {
 	createGanttRenderer,
 	GANTT_DEFAULTS,
@@ -37,12 +42,7 @@ import {
 	normalizeEvents,
 	packRows,
 	sanitizeGanttId,
-} from "../../gantt";
-import type { CalendarEvent } from "../../types/calendar";
-import type { SingleCalendarConfig } from "../../types/settings";
-import { isEventDone } from "../../utils/event-frontmatter";
-import { extractCleanDisplayName } from "../../utils/event-naming";
-import { getFileAndFrontmatter, openFileInNewWindow } from "../../utils/obsidian";
+} from "../gantt";
 import { showEventPreviewModal } from "../modals";
 import { openCategoryAssignModal } from "../modals/category/assignment";
 import { EventCreateModal } from "../modals/event/event-create-modal";

@@ -9,7 +9,7 @@ import {
 } from "@real1ty-obsidian-plugins";
 import { describe, expect, it } from "vitest";
 
-import { sanitizeGanttId } from "../../src/gantt/normalize-events";
+import { sanitizeGanttId } from "../../src/components/gantt";
 
 function makeTask(id: string, start: string, end: string, deps: string[] = [], title = "Event"): GanttTask {
 	return {
