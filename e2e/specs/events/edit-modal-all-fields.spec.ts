@@ -5,9 +5,12 @@ import { expectFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { createEventHandle } from "../../fixtures/dsl";
 import { expect, testWithNotifications as test } from "../../fixtures/electron";
-import { refreshCalendar } from "../../fixtures/seed-events";
+import { refreshCalendar, updateCalendarSettings } from "../../fixtures/seed-events";
 import { chipsForField, EVENT_MODAL_SELECTOR, formatLocalDate, removeChip } from "./events-helpers";
 import { fillEventModal, saveEventModal } from "./fill-event-modal";
+
+const WORK_COLOR = "#228855";
+const PERSONAL_COLOR = "#dd5599";
 
 // Edit-side parity: seed a fully-populated event on disk so FullCalendar
 // renders a block for it, then right-click the block → click Edit event in
@@ -41,10 +44,19 @@ Already Notified: true
 # Editable Event
 `;
 		writeFileSync(join(calendar.vaultDir, seedPath), seed, "utf8");
+		await updateCalendarSettings(calendar.page, {
+			colorRules: [
+				{ id: "rule-work", expression: "Category.includes('Work')", color: WORK_COLOR, enabled: true },
+				{ id: "rule-personal", expression: "Category.includes('Personal')", color: PERSONAL_COLOR, enabled: true },
+			],
+		});
 		await refreshCalendar(calendar.page);
 
 		const evt = createEventHandle(calendar, seedPath, "Editable Event");
 		await evt.expectVisible();
+
+		// Pre-edit the tile pulls the Work rule's colour.
+		await evt.expectColor(WORK_COLOR);
 
 		await evt.rightClick("editEvent");
 		await calendar.page.locator(EVENT_MODAL_SELECTOR).waitFor({ state: "visible" });
@@ -90,5 +102,10 @@ Already Notified: true
 			"Minutes Before": 30,
 			Priority: "low",
 		});
+
+		// Editing the category chip must re-evaluate the colour rule: Work
+		// no longer matches, Personal does, so the tile flips to the
+		// Personal rule's colour.
+		await evt.expectColor(PERSONAL_COLOR);
 	});
 });

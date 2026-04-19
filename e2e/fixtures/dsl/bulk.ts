@@ -20,6 +20,15 @@ export async function expectAllFrontmatter(
 	for (const e of events) await e.expectFrontmatter(key, matcher);
 }
 
+/**
+ * Assert every event's rendered tile carries the given `--event-color`.
+ * Runs the polled reads in parallel so a full-batch repaint check stays
+ * quick even at 20+ tiles.
+ */
+export async function expectAllColors(events: readonly EventHandle[], color: string): Promise<void> {
+	await Promise.all(events.map((e) => e.expectColor(color)));
+}
+
 export async function expectAllVisible(page: Page, events: readonly EventHandle[]): Promise<void> {
 	await expectEventsVisibleByTitle(
 		page,

@@ -1,5 +1,12 @@
 export { type BatchHandle, openBatch } from "./batch";
-export { expectAllExist, expectAllFrontmatter, expectAllHidden, expectAllTitleCount, expectAllVisible } from "./bulk";
+export {
+	expectAllColors,
+	expectAllExist,
+	expectAllFrontmatter,
+	expectAllHidden,
+	expectAllTitleCount,
+	expectAllVisible,
+} from "./bulk";
 export {
 	type CalendarHandle,
 	createCalendarHandle,
