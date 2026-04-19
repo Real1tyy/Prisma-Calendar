@@ -8,5 +8,6 @@ export * from "./frontmatter";
 export * from "./indexer";
 export * from "./license";
 export * from "./settings";
+export * from "./storage";
 export * from "./validation";
 export * from "./vault-table";
