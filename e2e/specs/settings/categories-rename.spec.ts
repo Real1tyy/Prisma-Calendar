@@ -1,13 +1,9 @@
-import { readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
-
-import { expect, type Locator } from "@playwright/test";
+import { expect } from "@playwright/test";
 
 import { todayStamp } from "../../fixtures/dates";
 import { test } from "../../fixtures/electron";
 import { closeSettings, openPrismaSettings, switchSettingsTab } from "../../fixtures/helpers";
 import { updateCalendarSettings } from "../../fixtures/seed-events";
-import { sel, TID } from "../../fixtures/testids";
 
 // Regression: renaming a category through the Categories settings tab used to
 // leave the calendar's in-memory cache pointing at the old name even though
@@ -19,19 +15,6 @@ import { sel, TID } from "../../fixtures/testids";
 // via the color rule that was rewritten in the same settings transaction.
 
 const RULE_COLOR = "#ff00aa";
-
-async function readCategoryFromFile(vaultDir: string, titlePrefix: string): Promise<string> {
-	const eventsDir = join(vaultDir, "Events");
-	const match = readdirSync(eventsDir).find((f) => f.startsWith(titlePrefix) && f.endsWith(".md"));
-	expect(match, `${titlePrefix} file not written`).toBeDefined();
-	const content = readFileSync(join(eventsDir, match!), "utf8");
-	const line = content.split("\n").find((l) => /^Category:/.test(l));
-	return line ? line.replace(/^Category:\s*/, "").trim() : "";
-}
-
-async function readEventColor(tile: Locator): Promise<string> {
-	return tile.evaluate((el) => (el as HTMLElement).style.getPropertyValue("--event-color").trim());
-}
 
 test.describe("settings: Categories rename propagation", () => {
 	test("renames the category on disk, refreshes the settings list, and re-colors calendar tiles", async ({
@@ -65,6 +48,7 @@ test.describe("settings: Categories rename propagation", () => {
 			categories: ["Renamable"],
 		});
 		await evt1.expectVisible();
+		await evt1.expectColor(RULE_COLOR);
 
 		const evt2 = await calendar.createEvent({
 			title: "Rename Target Beta",
@@ -73,11 +57,7 @@ test.describe("settings: Categories rename propagation", () => {
 			categories: ["Renamable"],
 		});
 		await evt2.expectVisible();
-
-		const tileAlpha = calendar.page.locator(`${sel(TID.block)}[data-event-title="Rename Target Alpha"]`).first();
-		const tileBeta = calendar.page.locator(`${sel(TID.block)}[data-event-title="Rename Target Beta"]`).first();
-		await expect.poll(() => readEventColor(tileAlpha)).toBe(RULE_COLOR);
-		await expect.poll(() => readEventColor(tileBeta)).toBe(RULE_COLOR);
+		await evt2.expectColor(RULE_COLOR);
 
 		await openPrismaSettings(obsidian.page);
 		await switchSettingsTab(obsidian.page, "categories");
@@ -98,8 +78,8 @@ test.describe("settings: Categories rename propagation", () => {
 		await submit.click();
 
 		// Files on disk must carry the new category value.
-		await expect.poll(() => readCategoryFromFile(calendar.vaultDir, "Rename Target Alpha")).toBe("Renamed");
-		await expect.poll(() => readCategoryFromFile(calendar.vaultDir, "Rename Target Beta")).toBe("Renamed");
+		await expect.poll(() => evt1.readCategory()).toEqual(["Renamed"]);
+		await expect.poll(() => evt2.readCategory()).toEqual(["Renamed"]);
 
 		// The Categories settings list (driven by CategoryTracker, which sits
 		// on top of the VaultTable cache we fixed) must reflect the new name.
@@ -116,7 +96,7 @@ test.describe("settings: Categories rename propagation", () => {
 		// flowed through the event store for the match to hold. If EventStore
 		// kept the old category, the rule no longer matches and --event-color
 		// drops to empty/default.
-		await expect.poll(() => readEventColor(tileAlpha)).toBe(RULE_COLOR);
-		await expect.poll(() => readEventColor(tileBeta)).toBe(RULE_COLOR);
+		await evt1.expectColor(RULE_COLOR);
+		await evt2.expectColor(RULE_COLOR);
 	});
 });

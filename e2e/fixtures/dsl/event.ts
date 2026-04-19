@@ -27,8 +27,30 @@ export interface EventHandle {
 
 	readFrontmatter<T = unknown>(key: string): T;
 
+	/**
+	 * Read the `Category` frontmatter key normalised to a string array —
+	 * Obsidian stores single-value assignments as scalars and multi-value
+	 * as YAML lists, and downstream callers always want the list shape.
+	 * Returns an empty array when the key is absent.
+	 */
+	readCategory(): string[];
+
+	/**
+	 * Read the `--event-color` CSS variable the renderer paints on the tile.
+	 * Empty string means "no color rule matched and no inline color override"
+	 * — the tile falls back to the default theme colour.
+	 */
+	readColor(): Promise<string>;
+
 	expectExists(yes: boolean): Promise<void>;
 	expectFrontmatter(key: string, matcher: (v: unknown) => boolean, message?: string): Promise<void>;
+
+	/**
+	 * Polled assertion that `--event-color` equals `expected` (typically a hex
+	 * string from a color rule). The DSL owns the colour read so specs don't
+	 * rethread `style.getPropertyValue` and the locator query themselves.
+	 */
+	expectColor(expected: string, message?: string): Promise<void>;
 
 	/** Wait for (or assert the absence of) the event block in the active calendar leaf. */
 	expectVisible(yes?: boolean): Promise<void>;
@@ -71,6 +93,23 @@ export function createEventHandle(deps: EventHandleDeps, path: string, title: st
 
 		readFrontmatter<T>(key: string): T {
 			return readEventFrontmatter(vaultDir, path)[key] as T;
+		},
+
+		readCategory() {
+			const raw = readEventFrontmatter(vaultDir, path).Category;
+			if (raw == null) return [];
+			if (Array.isArray(raw)) return raw.map((v) => String(v));
+			return [String(raw)];
+		},
+
+		async readColor() {
+			return block().evaluate((el) => (el as HTMLElement).style.getPropertyValue("--event-color").trim());
+		},
+
+		async expectColor(expected, message) {
+			await expect
+				.poll(() => this.readColor(), { message: message ?? `${title}: --event-color != ${expected}` })
+				.toBe(expected);
 		},
 
 		async expectExists(yes) {
