@@ -12,12 +12,12 @@ test.describe("analytics: stats (populated, numeric)", () => {
 	test.beforeEach(async ({ calendar }) => {
 		// Seed: 3× "Work" (30m each) + 2× "Personal" (45m each). Work total = 1h
 		// 30m, Personal total = 1h 30m — easy to eyeball.
-		await calendar.seedMany([
-			{ title: "Work Block A", start: todayStamp(9, 0), end: todayStamp(9, 30), categories: ["Work"] },
-			{ title: "Work Block B", start: todayStamp(10, 0), end: todayStamp(10, 30), categories: ["Work"] },
-			{ title: "Work Block C", start: todayStamp(11, 0), end: todayStamp(11, 30), categories: ["Work"] },
-			{ title: "Personal Block A", start: todayStamp(14, 0), end: todayStamp(14, 45), categories: ["Personal"] },
-			{ title: "Personal Block B", start: todayStamp(15, 0), end: todayStamp(15, 45), categories: ["Personal"] },
+		await calendar.seedOnDiskMany([
+			{ title: "Work Block A", start: todayStamp(9, 0), end: todayStamp(9, 30), category: "Work" },
+			{ title: "Work Block B", start: todayStamp(10, 0), end: todayStamp(10, 30), category: "Work" },
+			{ title: "Work Block C", start: todayStamp(11, 0), end: todayStamp(11, 30), category: "Work" },
+			{ title: "Personal Block A", start: todayStamp(14, 0), end: todayStamp(14, 45), category: "Personal" },
+			{ title: "Personal Block B", start: todayStamp(15, 0), end: todayStamp(15, 45), category: "Personal" },
 		]);
 	});
 

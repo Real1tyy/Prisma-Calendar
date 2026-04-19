@@ -9,9 +9,7 @@ import { sel } from "../../fixtures/testids";
 
 test.describe("analytics: global search modal", () => {
 	test("opens on toolbar click, lists events, filters on typed query", async ({ calendar }) => {
-		// `seedMany` drains the notice stack — waiting for notices lets the
-		// event-store finish indexing before the search modal opens.
-		await calendar.seedMany([
+		await calendar.seedOnDiskMany([
 			{ title: "Project Planning", start: todayStamp(9, 0), end: todayStamp(10, 0) },
 			{ title: "Weekly Review", start: todayStamp(11, 0), end: todayStamp(12, 0) },
 		]);

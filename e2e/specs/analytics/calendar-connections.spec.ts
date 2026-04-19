@@ -23,12 +23,13 @@ test.describe("analytics: prerequisite connections on calendar view", () => {
 		await calendar.switchMode("week");
 		await calendar.goToAnchor();
 
-		await calendar.seedMany([
+		await calendar.seedOnDiskMany([
 			{ title: "Upstream Task", start: fromAnchor(0, 9, 0), end: fromAnchor(0, 10, 0) },
 			{ title: "Downstream Task", start: fromAnchor(1, 14, 0), end: fromAnchor(1, 15, 0) },
 		]);
 
 		await assignPrerequisiteViaUI(calendar.page, "Downstream Task", "Upstream Task");
+		await calendar.waitForNoticesClear();
 
 		await calendar.unlockPro();
 		await calendar.clickToolbar("toggle-prerequisites");
@@ -41,12 +42,13 @@ test.describe("analytics: prerequisite connections on calendar view", () => {
 		// Month view first so both tiles are clickable while wiring the prereq.
 		await calendar.switchMode("month");
 		await calendar.goToAnchor();
-		await calendar.seedMany([
+		await calendar.seedOnDiskMany([
 			{ title: "Upstream Task", start: fromAnchor(0, 9, 0), end: fromAnchor(0, 10, 0) },
 			{ title: "Downstream Task", start: fromAnchor(10, 14, 0), end: fromAnchor(10, 15, 0) },
 		]);
 
 		await assignPrerequisiteViaUI(calendar.page, "Downstream Task", "Upstream Task");
+		await calendar.waitForNoticesClear();
 
 		// Back to week view anchored on the upstream — with 10 days between the
 		// two events, at most one is visible at a time, so the renderer must

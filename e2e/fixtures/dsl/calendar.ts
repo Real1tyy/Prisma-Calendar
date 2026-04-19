@@ -57,13 +57,17 @@ export interface CalendarHandle {
 	seedOnDisk(title: string, frontmatter: Record<string, string | boolean>): Promise<EventHandle>;
 
 	/**
-	 * Bulk version of `seedOnDisk` for the common "seed N events, assert
-	 * downstream" shape. Writes every file, then refreshes **once** — the
-	 * singular version refreshes per call, which costs ~500ms each. Input
-	 * mirrors `seedMany`'s `{title, start, end, allDay, date}` shape so specs
-	 * don't have to spell out `"Start Date"` / `"End Date"` frontmatter keys.
-	 * Richer fields (categories, prerequisites, custom properties) still
-	 * require the full modal flow — use `seedMany` for those.
+	 * Bulk version of `seedOnDisk` for the common "seed N events, assert on
+	 * downstream rendering" shape (analytics tabs, stats modals, search, etc.).
+	 * Writes every markdown file, then refreshes the indexer **once** at the
+	 * end — the singular `seedOnDisk` refreshes per call (~500ms each), so
+	 * looping it over N events is wasteful. Input mirrors `seedMany`'s
+	 * `{title, start, end, allDay, date, category}` shape so specs don't have
+	 * to spell out `"Start Date"` / `"End Date"` frontmatter keys. Richer
+	 * fields (prerequisites, participants, recurring, custom properties) still
+	 * require the full modal flow — use `seedMany` for those. All titles in a
+	 * single call must be unique: `seedOnDisk` uses a fixed ZettelID suffix so
+	 * duplicate titles collide on disk.
 	 */
 	seedOnDiskMany(events: readonly EventOnDisk[]): Promise<EventHandle[]>;
 
@@ -113,6 +117,9 @@ export interface CalendarHandle {
 	/** Flip the license to Pro via the `__setProForTesting` seam (guarded by `window.E2E`). */
 	unlockPro(): Promise<void>;
 
+	/** Wait for stacked success/error `.notice` overlays to clear so they stop intercepting clicks. */
+	waitForNoticesClear(): Promise<void>;
+
 	/** Click the untracked-events dropdown toggle in the toolbar. */
 	openUntrackedDropdown(): Promise<void>;
 
@@ -151,7 +158,7 @@ export type EventCreate = Pick<
  * Minimal event shape supported by `seedOnDiskMany`. Maps straight onto
  * Prisma's frontmatter keys — nothing goes through the modal or Zod roundtrip.
  * Use `seedMany` (which accepts the full `EventCreate`) for events that need
- * categories, prerequisites, participants, or recurring rules.
+ * prerequisites, participants, or recurring rules.
  */
 export interface EventOnDisk {
 	title: string;
@@ -163,6 +170,8 @@ export interface EventOnDisk {
 	date?: string;
 	/** Maps to the `All Day` frontmatter key. */
 	allDay?: boolean;
+	/** Single-category assignment — maps to the `Category` frontmatter key. */
+	category?: string;
 }
 
 export interface SeedOptions {
@@ -228,6 +237,16 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 		return createEventHandle({ page, vaultDir }, newPath, input.title);
 	};
 
+	const waitForNoticesClear: CalendarHandle["waitForNoticesClear"] = async () => {
+		await page
+			.locator(".notice-container .notice")
+			.first()
+			.waitFor({ state: "detached", timeout: 10_000 })
+			.catch(() => {
+				// nothing to drain
+			});
+	};
+
 	return {
 		page,
 		vaultDir,
@@ -253,6 +272,7 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 		async seedMany(inputs) {
 			const out: EventHandle[] = [];
 			for (const input of inputs) out.push(await createEvent(input));
+			await waitForNoticesClear();
 			return out;
 		},
 
@@ -270,6 +290,7 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 				if (input.end !== undefined) fm["End Date"] = input.end;
 				if (input.date !== undefined) fm["Date"] = input.date;
 				if (input.allDay !== undefined) fm["All Day"] = input.allDay;
+				if (input.category !== undefined) fm["Category"] = input.category;
 				const relPath = seedEventFile(vaultDir, input.title, fm);
 				out.push(createEventHandle({ page, vaultDir }, relPath, input.title));
 			}
@@ -359,6 +380,8 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 				lm.__setProForTesting(true);
 			}, PLUGIN_ID);
 		},
+
+		waitForNoticesClear,
 
 		async openUntrackedDropdown() {
 			const toggle = page.locator(`${ACTIVE_CALENDAR_LEAF} [data-testid="prisma-untracked-dropdown-button"]`).first();

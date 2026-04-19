@@ -4,7 +4,7 @@ import { sel } from "../../fixtures/testids";
 
 test.describe("analytics: stats (populated)", () => {
 	test("daily-stats surfaces events created through the UI", async ({ calendar }) => {
-		await calendar.seedMany([
+		await calendar.seedOnDiskMany([
 			{ title: "Work Session A", start: todayStamp(9, 0), end: todayStamp(10, 0) },
 			{ title: "Work Session B", start: todayStamp(14, 0), end: todayStamp(14, 30) },
 		]);

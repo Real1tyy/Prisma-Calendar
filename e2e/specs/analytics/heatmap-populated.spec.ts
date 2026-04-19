@@ -8,7 +8,7 @@ import { sel } from "../../fixtures/testids";
 
 test.describe("analytics: heatmap (populated)", () => {
 	test("seeded events accumulate on today's cell", async ({ calendar }) => {
-		await calendar.seedMany([
+		await calendar.seedOnDiskMany([
 			{ title: "Morning Standup", start: todayStamp(9, 0), end: todayStamp(9, 30) },
 			{ title: "Design Review", start: todayStamp(13, 0), end: todayStamp(14, 0) },
 			{ title: "Workout", start: todayStamp(18, 0), end: todayStamp(19, 0) },
