@@ -32,13 +32,13 @@ Skipping preserves files and history while hiding events from calendar view. Use
 
 ## How to Skip
 
-**Individual:** Right-click event → "Skip Event"
+**Individual:** Right-click event → "Skip event"
 
 **Batch:** Enter selection mode → Select events → Click "Skip" button
 
 ## Viewing and Restoring
 
-**View skipped:** Calendar menu → "View Skipped Events"
+**View skipped:** Calendar menu → "Show Skipped Events"
 
 ![Skipped Events Modal](/img/skip.png)
 
@@ -46,7 +46,7 @@ Skipping preserves files and history while hiding events from calendar view. Use
 
 The dialog shows all skipped events with options to restore them. Each row is tinted with the event's category color and a colored left border for quick visual identification.
 
-**Restore:** Open dialog → Click "Restore" next to event(s)
+**Restore:** Open dialog → Click "Un-skip" next to event(s)
 
 ## Technical
 
