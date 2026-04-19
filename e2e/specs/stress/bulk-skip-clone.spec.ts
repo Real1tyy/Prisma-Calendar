@@ -2,7 +2,13 @@ import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { expect, test } from "../../fixtures/electron";
 import { openCalendar, switchCalendarViewMode } from "../../fixtures/helpers";
-import { clickBatchButton, enterBatchMode, exitBatchMode, undoViaPalette } from "../../fixtures/history-helpers";
+import {
+	clickBatchButton,
+	enterBatchMode,
+	exitBatchMode,
+	expectSelectedCount,
+	undoViaPalette,
+} from "../../fixtures/history-helpers";
 import { refreshCalendar, waitForEventCount } from "../../fixtures/seed-events";
 import {
 	clearVaultSeedEvents,
@@ -41,6 +47,7 @@ test.describe("stress: batch skip + batch clone reactivity", () => {
 
 		await enterBatchMode(page);
 		await clickBatchButton(page, "select-all");
+		await expectSelectedCount(page, EVENT_COUNT);
 		await clickBatchButton(page, "skip");
 		await exitBatchMode(page);
 
@@ -81,6 +88,7 @@ test.describe("stress: batch skip + batch clone reactivity", () => {
 
 		await enterBatchMode(page);
 		await clickBatchButton(page, "select-all");
+		await expectSelectedCount(page, startingCount);
 		await clickBatchButton(page, "clone-next");
 		await exitBatchMode(page);
 

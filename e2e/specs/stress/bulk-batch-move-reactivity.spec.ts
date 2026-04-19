@@ -97,6 +97,7 @@ test.describe("stress: batch move reactivity", () => {
 
 		await enterBatchMode(page);
 		await clickBatchButton(page, "select-all");
+		await expectSelectedCount(page, EVENT_COUNT);
 		await clickBatchButton(page, "move-next");
 		await exitBatchMode(page);
 		await expectUniqueVisibleEventCount(page, 0);
@@ -107,6 +108,7 @@ test.describe("stress: batch move reactivity", () => {
 
 		await enterBatchMode(page);
 		await clickBatchButton(page, "select-all");
+		await expectSelectedCount(page, EVENT_COUNT);
 		await clickBatchButton(page, "move-prev");
 		await exitBatchMode(page);
 		await expectUniqueVisibleEventCount(page, 0);

@@ -118,6 +118,7 @@ test.describe("stress: rapid-fire mutations against coalesced refresh", () => {
 		for (let cycle = 0; cycle < 2; cycle++) {
 			await enterBatchMode(page);
 			await clickBatchButton(page, "select-all");
+			await expectSelectedCount(page, EVENT_COUNT);
 			await clickBatchButton(page, "delete");
 			await confirmBatchAction(page);
 			await exitBatchMode(page);

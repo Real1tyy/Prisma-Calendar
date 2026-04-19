@@ -7,6 +7,7 @@ import {
 	confirmBatchAction,
 	enterBatchMode,
 	exitBatchMode,
+	expectSelectedCount,
 	redoViaPalette,
 	undoViaPalette,
 } from "../../fixtures/history-helpers";
@@ -124,6 +125,7 @@ test.describe("stress: huge 5000-event vault with focused mutations", () => {
 		// ── Op 1: batch move-next on the 50 active events ───────────────
 		await enterBatchMode(page);
 		await clickBatchButton(page, "select-all");
+		await expectSelectedCount(page, ACTIVE_COUNT);
 		await clickBatchButton(page, "move-next");
 		await exitBatchMode(page);
 
@@ -208,6 +210,7 @@ test.describe("stress: huge 5000-event vault with focused mutations", () => {
 		// less (stale DOM event still counted).
 		await enterBatchMode(page);
 		await clickBatchButton(page, "select-all");
+		await expectSelectedCount(page, ACTIVE_COUNT);
 		await clickBatchButton(page, "delete");
 		await confirmBatchAction(page);
 		await exitBatchMode(page);

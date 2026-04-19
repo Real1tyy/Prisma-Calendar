@@ -5,6 +5,7 @@ import {
 	confirmBatchAction,
 	enterBatchMode,
 	exitBatchMode,
+	expectSelectedCount,
 	redoViaPalette,
 	undoViaPalette,
 } from "../../fixtures/history-helpers";
@@ -50,6 +51,7 @@ test.describe("stress: batch delete undo/redo", () => {
 
 		await enterBatchMode(page);
 		await clickBatchButton(page, "select-all");
+		await expectSelectedCount(page, EVENT_COUNT);
 		await clickBatchButton(page, "delete");
 		await confirmBatchAction(page);
 
@@ -92,6 +94,7 @@ test.describe("stress: batch delete undo/redo", () => {
 		// must land back at the starting state.
 		await enterBatchMode(page);
 		await clickBatchButton(page, "select-all");
+		await expectSelectedCount(page, EVENT_COUNT);
 		await clickBatchButton(page, "move-next");
 		await exitBatchMode(page);
 		await expectUniqueVisibleEventCount(page, 0);
@@ -101,6 +104,7 @@ test.describe("stress: batch delete undo/redo", () => {
 
 		await enterBatchMode(page);
 		await clickBatchButton(page, "select-all");
+		await expectSelectedCount(page, EVENT_COUNT);
 		await clickBatchButton(page, "move-next");
 		await exitBatchMode(page);
 		await expectUniqueVisibleEventCount(page, 0);
