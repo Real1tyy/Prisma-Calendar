@@ -195,7 +195,9 @@ function parsedEventToVEvent(
 			options.categoryProp,
 			options.locationProp,
 			options.participantsProp,
-			// Internal parser metadata (added by parser.ts, not user frontmatter)
+			// Internal parser metadata (added by event-schemas, not user frontmatter).
+			// originalStart/End/Date are legacy parser shadow copies — kept here so
+			// any older frontmatter that still carries them stays excluded.
 			"folder",
 			"isAllDay",
 			"originalStart",

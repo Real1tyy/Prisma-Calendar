@@ -7,12 +7,12 @@ import { v5 as uuidv5 } from "uuid";
 import { PRISMA_CALENDAR_NAMESPACE } from "../constants";
 import type { AllDayEvent, CalendarEvent, TimedEvent } from "../types/calendar";
 import { eventDefaults } from "../types/calendar";
-import type { EventMetadata } from "../types/event";
-import { parseEventFrontmatter, toInternalISO } from "../types/event";
+import type { EventMetadata } from "../types/event-metadata";
 import type { RawEventSource } from "../types/event-source";
 import type { Frontmatter, ISO, SingleCalendarConfig } from "../types/index";
-import { applyDateNormalizationToFile } from "../utils/event-frontmatter";
-import { getEventName } from "../utils/events/naming";
+import { applyDateNormalizationToFile, parseEventFrontmatter } from "../utils/event-frontmatter";
+import { getEventName } from "../utils/event-naming";
+import { toInternalISO } from "../utils/iso";
 
 export class Parser {
 	private settings: SingleCalendarConfig;
@@ -123,9 +123,6 @@ export class Parser {
 		return {
 			folder,
 			isAllDay,
-			originalStart: frontmatter[this.settings.startProp],
-			originalEnd: frontmatter[this.settings.endProp],
-			originalDate: frontmatter[this.settings.dateProp],
 			...frontmatter,
 		};
 	}
