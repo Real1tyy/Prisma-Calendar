@@ -7,20 +7,15 @@ import { PRO_FEATURES } from "../../core/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
 import { BasesSettingsReact } from "../../react/settings/bases-settings";
+import { CalendarSettingsReact } from "../../react/settings/calendar-settings";
 import { ConfigurationSettingsReact } from "../../react/settings/configuration-settings";
+import { EventGroupsSettingsReact } from "../../react/settings/event-groups-settings";
 import { GeneralSettingsReact } from "../../react/settings/general-settings";
 import { NotificationsSettingsReact } from "../../react/settings/notifications-settings";
 import { PerformanceSettingsReact } from "../../react/settings/performance-settings";
 import { PropertiesSettingsReact } from "../../react/settings/properties-settings";
 import type { PrismaCalendarSettingsStore } from "../../types";
-import {
-	AISettings,
-	CalendarSettings,
-	CategoriesSettings,
-	EventGroupsSettings,
-	IntegrationsSettings,
-	RulesSettings,
-} from ".";
+import { AISettings, CategoriesSettings, IntegrationsSettings, RulesSettings } from ".";
 import { renderProUpgradeBanner } from "./pro-upgrade-banner";
 
 export class SingleCalendarSettings {
@@ -33,8 +28,6 @@ export class SingleCalendarSettings {
 		mainSettingsStore: PrismaCalendarSettingsStore
 	) {
 		const settingsInstances = {
-			calendar: new CalendarSettings(settingsStore),
-			eventGroups: new EventGroupsSettings(settingsStore),
 			rules: new RulesSettings(settingsStore),
 			categories: new CategoriesSettings(settingsStore, plugin),
 			integrations: new IntegrationsSettings(settingsStore, app, plugin, mainSettingsStore),
@@ -56,8 +49,20 @@ export class SingleCalendarSettings {
 					renderReactInline(el, createElement(PropertiesSettingsReact, { settingsStore }), app);
 				},
 			},
-			{ id: "calendar", label: "Calendar", display: (el) => settingsInstances.calendar.display(el) },
-			{ id: "event-groups", label: "Event Groups", display: (el) => settingsInstances.eventGroups.display(el) },
+			{
+				id: "calendar",
+				label: "Calendar",
+				display: (el) => {
+					renderReactInline(el, createElement(CalendarSettingsReact, { settingsStore }), app);
+				},
+			},
+			{
+				id: "event-groups",
+				label: "Event Groups",
+				display: (el) => {
+					renderReactInline(el, createElement(EventGroupsSettingsReact, { settingsStore }), app);
+				},
+			},
 			{
 				id: "configuration",
 				label: "Configuration",

@@ -10,6 +10,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // used by both the jsdom project's `include` and the node project's `exclude`.
 const JSDOM_PATTERNS = [
 	"tests/components/**/*.test.ts",
+	"tests/components/**/*.test.tsx",
 	"tests/integrations/calendar-bundle.test.ts",
 	"tests/core/minimized-modal-manager.test.ts",
 	"tests/core/notification-manager.test.ts",

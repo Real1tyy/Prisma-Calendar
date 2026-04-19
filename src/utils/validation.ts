@@ -68,7 +68,8 @@ export const ColorSchema = z
 	.refine(
 		(color) => (typeof CSS !== "undefined" && typeof CSS.supports === "function" ? CSS.supports("color", color) : true),
 		"Invalid CSS color format"
-	);
+	)
+	.meta({ widget: "color" });
 
 export const booleanTransform = z.preprocess((value) => {
 	if (typeof value === "boolean") return value;
