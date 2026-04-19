@@ -8,6 +8,7 @@ import basesViewPreview from "../../docs-site/static/img/pro-previews/bases-view
 import dashboardPreview from "../../docs-site/static/img/pro-previews/dashboard.png";
 import ganttPreview from "../../docs-site/static/img/pro-previews/gantt.png";
 import heatmapPreview from "../../docs-site/static/img/pro-previews/heatmap.png";
+import heatmapMonthlyPreview from "../../docs-site/static/img/pro-previews/heatmap_monthly.png";
 import { type PRO_FEATURES, PRO_PURCHASE_URL } from "./license";
 
 export type ProFeatureKey = keyof typeof PRO_FEATURES;
@@ -28,6 +29,7 @@ const PRO_FEATURE_CONFIG: Record<ProFeatureKey, ProFeatureConfig> = {
 	UNLIMITED_CALENDARS: { docPath: "features/calendar/multiple-calendars" },
 	UNLIMITED_EVENT_PRESETS: { docPath: "features/events/event-presets" },
 	HEATMAP: { docPath: "features/views/heatmap", preview: heatmapPreview },
+	HEATMAP_MONTHLY: { docPath: "features/views/heatmap-monthly-stats", preview: heatmapMonthlyPreview },
 	BASES_VIEW: { docPath: "features/views/bases-calendar-view", preview: basesViewPreview },
 	PREREQUISITE_CONNECTIONS: { docPath: "features/advanced/prerequisite-connections" },
 	GANTT: { docPath: "features/views/gantt", preview: ganttPreview },

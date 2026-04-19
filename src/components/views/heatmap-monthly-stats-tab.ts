@@ -13,10 +13,10 @@ export function createHeatmapMonthlyStatsTabDefinition(app: App, bundle: Calenda
 	let heatmapHandle: HeatmapHandle | null = null;
 
 	const gate = createProGatedContent(bundle, {
-		featureName: PRO_FEATURES.HEATMAP,
+		featureName: PRO_FEATURES.HEATMAP_MONTHLY,
 		description:
 			"Pair a monthly activity heatmap with a breakdown pie chart — spot patterns and where your time actually went in one view.",
-		previewKey: "HEATMAP",
+		previewKey: "HEATMAP_MONTHLY",
 		render: (el) => {
 			let gridHandle: GridLayoutHandle | null = null;
 			let statsHandle: IntervalStatsViewHandle | null = null;
