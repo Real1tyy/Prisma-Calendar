@@ -148,4 +148,80 @@ describe("useDebouncedCommit", () => {
 	it("uses 300ms as the documented default debounce", () => {
 		expect(DEBOUNCED_COMMIT_DEFAULT_MS).toBe(300);
 	});
+
+	it("routes a pending draft to the onCommit active at edit time, not at timer fire", () => {
+		// Simulates a settings pane that re-binds `onCommit` to a different entity
+		// while a debounced draft is still pending — e.g. user types in calendar A's
+		// directory field, then the pane switches to calendar B mid-debounce. The
+		// pending write must land on A, not B.
+		const onCommitA = vi.fn();
+		const onCommitB = vi.fn();
+		const { result, rerender } = renderHook(
+			({ onCommit }: { onCommit: (v: string) => void }) => useDebouncedCommit({ value: "", onCommit, debounceMs: 300 }),
+			{ initialProps: { onCommit: onCommitA } }
+		);
+
+		act(() => result.current.setDraft("CalendarA"));
+		rerender({ onCommit: onCommitB });
+
+		act(() => {
+			vi.advanceTimersByTime(300);
+		});
+
+		expect(onCommitA).toHaveBeenCalledTimes(1);
+		expect(onCommitA).toHaveBeenCalledWith("CalendarA");
+		expect(onCommitB).not.toHaveBeenCalled();
+	});
+
+	it("routes a flushed draft to the onCommit active at edit time", () => {
+		const onCommitA = vi.fn();
+		const onCommitB = vi.fn();
+		const { result, rerender } = renderHook(
+			({ onCommit }: { onCommit: (v: string) => void }) =>
+				useDebouncedCommit({ value: "", onCommit, debounceMs: 5_000 }),
+			{ initialProps: { onCommit: onCommitA } }
+		);
+
+		act(() => result.current.setDraft("draft"));
+		rerender({ onCommit: onCommitB });
+		act(() => result.current.flush());
+
+		expect(onCommitA).toHaveBeenCalledTimes(1);
+		expect(onCommitA).toHaveBeenCalledWith("draft");
+		expect(onCommitB).not.toHaveBeenCalled();
+	});
+
+	it("unmount flush routes to the onCommit active at edit time", () => {
+		const onCommitA = vi.fn();
+		const onCommitB = vi.fn();
+		const { result, rerender, unmount } = renderHook(
+			({ onCommit }: { onCommit: (v: string) => void }) =>
+				useDebouncedCommit({ value: "", onCommit, debounceMs: 5_000 }),
+			{ initialProps: { onCommit: onCommitA } }
+		);
+
+		act(() => result.current.setDraft("draft"));
+		rerender({ onCommit: onCommitB });
+		unmount();
+
+		expect(onCommitA).toHaveBeenCalledTimes(1);
+		expect(onCommitA).toHaveBeenCalledWith("draft");
+		expect(onCommitB).not.toHaveBeenCalled();
+	});
+
+	it("commitImmediate uses the latest onCommit (fresh explicit action, not deferred edit)", () => {
+		const onCommitA = vi.fn();
+		const onCommitB = vi.fn();
+		const { result, rerender } = renderHook(
+			({ onCommit }: { onCommit: (v: string) => void }) => useDebouncedCommit({ value: "", onCommit, debounceMs: 300 }),
+			{ initialProps: { onCommit: onCommitA } }
+		);
+
+		rerender({ onCommit: onCommitB });
+		act(() => result.current.commitImmediate("now"));
+
+		expect(onCommitB).toHaveBeenCalledTimes(1);
+		expect(onCommitB).toHaveBeenCalledWith("now");
+		expect(onCommitA).not.toHaveBeenCalled();
+	});
 });

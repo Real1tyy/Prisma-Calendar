@@ -26,20 +26,28 @@ export async function setToggle(page: Page, testId: string, on: boolean): Promis
 	}
 }
 
-/** Replace the contents of a text input / textarea. */
+/**
+ * Replace the contents of a text input / textarea. Blurs after filling so the
+ * `useDebouncedCommit`-backed `TextInput`/`TextareaInput` controls flush their
+ * pending draft to the store — those controls only commit on blur, Enter, or
+ * after 300ms of inactivity, so a `change` event alone is swallowed.
+ */
 export async function setTextInput(page: Page, testId: string, value: string): Promise<void> {
 	const locator = fieldLocator(page, testId);
 	await ensureVisible(locator);
 	await locator.fill(value);
-	await locator.dispatchEvent("change");
+	await locator.blur();
 }
 
-/** Replace the contents of a numeric input. Obsidian reads `valueAsNumber`. */
+/**
+ * Replace the contents of a numeric input. Obsidian reads `valueAsNumber`.
+ * Blurs after filling for the same debounced-commit reason as `setTextInput`.
+ */
 export async function setNumberInput(page: Page, testId: string, value: number): Promise<void> {
 	const locator = fieldLocator(page, testId);
 	await ensureVisible(locator);
 	await locator.fill(String(value));
-	await locator.dispatchEvent("change");
+	await locator.blur();
 }
 
 /** Select an option in a native `<select>`. Value must be the option value, not the label. */
@@ -100,21 +108,24 @@ export async function expectFieldValue(page: Page, testId: string): Promise<stri
 }
 
 export type SettleOptions = {
-	/** If provided, force-flush the plugin's pending saveData() after the wait. */
+	/** If provided, force-flush the plugin's pending saveData(). Skips the debounce wait entirely. */
 	pluginId?: string;
-	/** Milliseconds to wait for the debounce to fire. Defaults to 500. */
+	/** Milliseconds to wait for the debounce to fire. Defaults to 500. Ignored when `pluginId` is set. */
 	ms?: number;
 };
 
 /**
- * Wait for settings autosave to hit disk. Prisma's store debounces writes by
- * ~300ms; 500ms default gives a margin. When `pluginId` is supplied and the
- * plugin exposes `saveData()`, this also force-flushes so assertions against
- * `data.json` don't race the debounce window.
+ * Wait for settings autosave to hit disk. Two modes:
+ *
+ * - `pluginId` supplied (preferred): calls `plugin.saveData(plugin.settings)`
+ *   synchronously, bypassing the store's ~300ms debounce. Input helpers now
+ *   commit into the store synchronously (`setTextInput` blurs, `setDropdown`
+ *   fires `change`), so the in-memory settings always reflect the intended
+ *   state by the time we get here — no wait needed.
+ * - No `pluginId` (legacy): falls back to a blind `ms`-millisecond wait for
+ *   the debounce to fire naturally. Always pass `pluginId` in new code.
  */
 export async function settleSettings(page: Page, options: SettleOptions = {}): Promise<void> {
-	const ms = options.ms ?? 500;
-	await new Promise((resolve) => setTimeout(resolve, ms));
 	if (options.pluginId) {
 		await page.evaluate(async (id) => {
 			const w = window as unknown as {
@@ -129,5 +140,8 @@ export async function settleSettings(page: Page, options: SettleOptions = {}): P
 				await plugin.saveData(plugin.settings).catch(() => {});
 			}
 		}, options.pluginId);
+		return;
 	}
+	const ms = options.ms ?? 500;
+	await new Promise((resolve) => setTimeout(resolve, ms));
 }

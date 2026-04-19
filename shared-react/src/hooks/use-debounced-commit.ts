@@ -40,6 +40,14 @@ export interface DebouncedCommitHandle<T> {
  * pending — otherwise a mid-typing re-render from the store would clobber the
  * user's in-flight input. The hook flushes any pending commit on unmount so
  * work-in-progress isn't lost if the parent unmounts the input.
+ *
+ * `onCommit` is snapshotted on every `setDraft` call. Trailing-timer, `flush`,
+ * and unmount commits all invoke the snapshotted callback — NOT the one live
+ * at commit time. Without this, a parent re-render that swaps `onCommit` to a
+ * new target (e.g. a settings pane re-bound to a different entity mid-type)
+ * would route the pending draft to the new target, silently corrupting the
+ * wrong record. `commitImmediate` still uses the latest `onCommit` because
+ * it represents a fresh explicit action, not a deferred older edit.
  */
 export function useDebouncedCommit<T>({
 	value,
@@ -50,6 +58,7 @@ export function useDebouncedCommit<T>({
 
 	const pendingRef = useRef(false);
 	const pendingValueRef = useRef<T>(value);
+	const pendingCommitRef = useRef<((next: T) => void) | null>(null);
 	const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const onCommitRef = useRef(onCommit);
 	onCommitRef.current = onCommit;
@@ -71,8 +80,10 @@ export function useDebouncedCommit<T>({
 		clearTimer();
 		if (pendingRef.current) {
 			const next = pendingValueRef.current;
+			const commit = pendingCommitRef.current ?? onCommitRef.current;
 			pendingRef.current = false;
-			onCommitRef.current(next);
+			pendingCommitRef.current = null;
+			commit(next);
 		}
 	}, [clearTimer]);
 
@@ -81,12 +92,15 @@ export function useDebouncedCommit<T>({
 			setDraftState(next);
 			pendingValueRef.current = next;
 			pendingRef.current = true;
+			pendingCommitRef.current = onCommitRef.current;
 			clearTimer();
 			timeoutRef.current = setTimeout(() => {
 				timeoutRef.current = null;
 				if (pendingRef.current) {
+					const commit = pendingCommitRef.current ?? onCommitRef.current;
 					pendingRef.current = false;
-					onCommitRef.current(pendingValueRef.current);
+					pendingCommitRef.current = null;
+					commit(pendingValueRef.current);
 				}
 			}, debounceMs);
 		},
@@ -97,6 +111,7 @@ export function useDebouncedCommit<T>({
 		(next: T) => {
 			clearTimer();
 			pendingRef.current = false;
+			pendingCommitRef.current = null;
 			pendingValueRef.current = next;
 			setDraftState(next);
 			onCommitRef.current(next);
@@ -111,8 +126,10 @@ export function useDebouncedCommit<T>({
 				timeoutRef.current = null;
 			}
 			if (pendingRef.current) {
+				const commit = pendingCommitRef.current ?? onCommitRef.current;
 				pendingRef.current = false;
-				onCommitRef.current(pendingValueRef.current);
+				pendingCommitRef.current = null;
+				commit(pendingValueRef.current);
 			}
 		};
 	}, []);
