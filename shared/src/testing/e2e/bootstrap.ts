@@ -441,6 +441,17 @@ export async function bootstrapObsidian(options: BootstrapOptions): Promise<Boot
 			} else {
 				log.debug(`vault kept at ${join(vaultsRoot, id)} (set E2E_CLEANUP=1 to delete)`);
 			}
+			// XDG_RUNTIME_DIR holds only transient Chromium/Wayland sockets — safe
+			// to always drop. Leaving these behind across a 242-spec serial run
+			// accumulates hundreds of /tmp/o-e2e-* dirs and contributes to the
+			// tail-end bootstrap slowdown we otherwise paper over with retries.
+			rmSync(xdgRuntimeDir, { recursive: true, force: true });
+			log.debug(`xdg runtime dir cleaned: ${xdgRuntimeDir}`);
+			// userDataDir is obsidian-launcher's per-run config dir (~26 MB, mostly
+			// a copied asar). It's fully reproducible from the same {vault,
+			// appVersion, installerVersion} inputs, so dropping it has no cost.
+			rmSync(userDataDir, { recursive: true, force: true });
+			log.debug(`user data dir cleaned: ${userDataDir}`);
 		},
 	};
 }
