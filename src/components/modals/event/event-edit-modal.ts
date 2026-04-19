@@ -242,10 +242,19 @@ export class EventEditModal extends BaseEventModal {
 	public saveEvent(): void {
 		this.applyAutoCategories();
 
-		// Reconstruct the title with instance date and ZettelID before saving.
-		// Physical recurring instances have filenames like "Title YYYY-MM-DD-ZETTELID".
-		// When the title was cleaned (instance date stripped by cleanupTitle),
-		// we must re-inject the instance date to prevent an unwanted rename.
+		// Filename identity: physical recurring instances sit under
+		// "<Title> <YYYY-MM-DD>-<ZettelID>.md", and regular events under
+		// "<Title>-<ZettelID>.md". `cleanupTitle` strips both suffixes for
+		// display, so the modal's title input only shows the user-facing
+		// portion. For the downstream rename we need to restore the full
+		// filename-shaped title — but only on `eventData.title`, never on the
+		// frontmatter. Mutating `titleInput.value` before `buildEventData()`
+		// used to poison `fm[titleProp]` with the ZettelID (and the instance
+		// date, for recurring instances). Building event data against the
+		// clean input and only overwriting `eventData.title` afterwards keeps
+		// the two concerns separate: the frontmatter property records what
+		// the user typed, the rename pipeline still sees the filename-shaped
+		// title it needs.
 		const userTitle = this.titleInput.value;
 		let finalTitle = userTitle;
 
@@ -257,14 +266,8 @@ export class EventEditModal extends BaseEventModal {
 			}
 		}
 
-		// Temporarily update the input value with the full title for building event data
-		const originalInputValue = this.titleInput.value;
-		this.titleInput.value = finalTitle;
-
 		const eventData = this.buildEventData();
-
-		// Restore the input value
-		this.titleInput.value = originalInputValue;
+		eventData.title = finalTitle;
 
 		const wasManualVirtual = this.event.extendedProps?.["virtualKind"] === "manual";
 		const virtualEventId = this.event.extendedProps?.["virtualEventId"] as string | undefined;

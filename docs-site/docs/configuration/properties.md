@@ -8,8 +8,18 @@ Tell Prisma Calendar which frontmatter keys you use.
 - **End property** (optional): default `End Date`
 - **All-day property** (optional): default `All Day`
 - **Date property** (optional): default `Date` (for all-day events)
-- **Title property** (optional): default `Title` (falls back to file name when missing)
+- **Title property** (optional): default `Title` (falls back to file name when missing). See [Title property](#title-property) below for details.
 - **Skip property**: property name to skip/hide event from calendar (default: `Skip`)
+
+### Title property
+
+When the **Title property** is set, Prisma Calendar uses its value as the event's display name everywhere — the calendar grid, the edit modal, the Gantt bars, the Timeline, the Heatmap day-detail panel, and the events lists. The filename still stores the event and keeps its ZettelID, but the visible title comes from the frontmatter key you configured.
+
+Editing the title in the modal writes the exact text you typed back into that property. ZettelID suffixes and recurring-instance date prefixes live on the filename only — they are never mixed into the property value. This means a title like `After Edit` stays `After Edit` in frontmatter, not `After Edit-20250101000000`.
+
+If **Title property** is blank, the event's title is derived from the filename (with any ZettelID or instance-date suffix stripped for display).
+
+Priority when resolving an event's display title: `Title property` (user-controlled) → `Calendar title property` (auto-computed back-link) → filename.
 
 ## Sorting Normalization
 

@@ -129,6 +129,6 @@ The property is automatically maintained — it updates on creation, rename, or 
 | **Purpose** | Auto-computed clean display name | Manual override for event name |
 | **Value** | Wiki link (e.g., `[[path\|Clean Name]]`) | Plain text (e.g., `My Custom Name`) |
 | **Updated** | Automatically on every index | Manually by the user |
-| **Priority** | Used first when available | Fallback if Calendar Title is missing |
+| **Priority** | Fallback when Title Property is missing | Used first when set |
 
-Both properties can coexist. Calendar Title takes priority for display; the Title property serves as a fallback.
+Both properties can coexist. When the Title Property is configured and populated, it wins — it reflects what you explicitly chose as the display name. Calendar Title is the auto-computed safety net that takes over when Title Property is blank, and continues to power Bases view rendering regardless.

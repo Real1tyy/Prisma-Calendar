@@ -488,6 +488,71 @@ describe("EventEditModal - Custom Properties", () => {
 			const savedData = updateEventMock.mock.calls[0][0]!;
 			expect(savedData.title).toBe("Regular Event-20250203140530");
 		});
+
+		// `eventData.title` drives the file rename — it must keep the
+		// "<title><ZettelID>" (or "<title> <instanceDate>-<ZettelID>") shape the
+		// vault stores. `preservedFrontmatter[titleProp]` drives the visible
+		// title — it must be exactly what the user typed. These two values
+		// share a source (`titleInput.value`) but live in different columns of
+		// the save payload; `saveEvent` used to mutate the input so both
+		// columns ended up with the filename-shaped string, which leaked the
+		// ZettelID into the frontmatter. The tests below pin the split so a
+		// regression shows up at the unit-test level, not only in E2E.
+		it("writes the clean user title to fm[titleProp] while eventData.title keeps the ZettelID", async () => {
+			const event = {
+				title: "Regular Event",
+				start: "2025-10-07T10:15:00",
+				extendedProps: { filePath: "Events/Regular Event-20250203140530.md" },
+			};
+
+			const modal = new EventEditModal(mockApp, mockBundle, event);
+			await (modal as any).initialize();
+			modal.originalFrontmatter = {
+				"Start Date": "2025-10-07T10:15:00.000Z",
+			};
+
+			modal.getCustomProperties = vi.fn().mockReturnValue({});
+			modal.titleInput = { value: "After Edit" } as HTMLInputElement;
+			modal.allDayCheckbox = { checked: false } as HTMLInputElement;
+			modal.startInput = { value: "2025-10-07T10:15" } as HTMLInputElement;
+			modal.endInput = { value: "2025-10-07T11:15" } as HTMLInputElement;
+			modal.recurringCheckbox = { checked: false } as HTMLInputElement;
+
+			modal.saveEvent();
+
+			expect(updateEventMock).toHaveBeenCalled();
+			const savedData = updateEventMock.mock.calls[0][0]!;
+			expect(savedData.title).toBe("After Edit-20250203140530");
+			expect(savedData.preservedFrontmatter.Title).toBe("After Edit");
+		});
+
+		it("writes the clean user title to fm[titleProp] for physical recurring instances", async () => {
+			const event = {
+				title: "Team Meeting",
+				start: "2025-10-07T10:15:00",
+				extendedProps: { filePath: "Events/Team Meeting 2025-10-07-00001125853328.md" },
+			};
+
+			const modal = new EventEditModal(mockApp, mockBundle, event);
+			await (modal as any).initialize();
+			modal.originalFrontmatter = {
+				"Start Date": "2025-10-07T10:15:00.000Z",
+			};
+
+			modal.getCustomProperties = vi.fn().mockReturnValue({});
+			modal.titleInput = { value: "Weekly Standup" } as HTMLInputElement;
+			modal.allDayCheckbox = { checked: false } as HTMLInputElement;
+			modal.startInput = { value: "2025-10-07T10:15" } as HTMLInputElement;
+			modal.endInput = { value: "2025-10-07T11:15" } as HTMLInputElement;
+			modal.recurringCheckbox = { checked: false } as HTMLInputElement;
+
+			modal.saveEvent();
+
+			expect(updateEventMock).toHaveBeenCalled();
+			const savedData = updateEventMock.mock.calls[0][0]!;
+			expect(savedData.title).toBe("Weekly Standup 2025-10-07-00001125853328");
+			expect(savedData.preservedFrontmatter.Title).toBe("Weekly Standup");
+		});
 	});
 
 	describe("Category saving", () => {

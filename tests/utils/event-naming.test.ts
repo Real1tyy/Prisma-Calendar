@@ -5,6 +5,7 @@ import {
 	extractInstanceDate,
 	extractNotesCoreName,
 	extractZettelId,
+	getEventName,
 	hashRRuleIdToZettelFormat,
 	rebuildPhysicalInstanceWithNewDate,
 	removeInstanceDate,
@@ -152,5 +153,52 @@ describe("extractNotesCoreName", () => {
 
 	it("should strip full day name", () => {
 		expect(extractNotesCoreName("Meeting Monday")).toBe("Meeting");
+	});
+});
+
+describe("getEventName", () => {
+	// Priority order: titleProp > calendarTitleProp > filename. These tests
+	// pin the order so a swap is caught at the unit layer, not only in E2E.
+
+	it("returns the titleProp value when set, even if calendarTitleProp is also populated", () => {
+		const result = getEventName(
+			"Title",
+			{
+				Title: "User-chosen Name",
+				"Calendar Title": "[[Events/auto-backlink-20250101000000|auto-backlink]]",
+			},
+			"Events/auto-backlink-20250101000000.md",
+			"Calendar Title"
+		);
+		expect(result).toBe("User-chosen Name");
+	});
+
+	it("falls back to calendarTitleProp when titleProp is unset", () => {
+		const result = getEventName(
+			undefined,
+			{ "Calendar Title": "[[Events/meeting-20250101000000|Meeting]]" },
+			"Events/meeting-20250101000000.md",
+			"Calendar Title"
+		);
+		expect(result).toBe("Meeting");
+	});
+
+	it("falls back to calendarTitleProp when titleProp is configured but the frontmatter key is missing", () => {
+		const result = getEventName(
+			"Title",
+			{ "Calendar Title": "[[Events/workout-20250101000000|Workout]]" },
+			"Events/workout-20250101000000.md",
+			"Calendar Title"
+		);
+		expect(result).toBe("Workout");
+	});
+
+	it("falls back to the cleaned filename when neither property resolves", () => {
+		const result = getEventName("Title", {}, "Events/Team Review-20250101000000.md", "Calendar Title");
+		expect(result).toBe("Team Review");
+	});
+
+	it("returns undefined when there is no frontmatter and no filePath", () => {
+		expect(getEventName("Title", {}, null, "Calendar Title")).toBeUndefined();
 	});
 });

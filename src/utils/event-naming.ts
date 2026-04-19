@@ -63,8 +63,13 @@ export const extractCleanDisplayName = (pathOrLink: string): string => {
 };
 
 /**
- * Gets the event name from the calendar title property, title property, or the filename.
- * Priority: calendarTitleProp (auto-computed wiki link) > titleProp (manual) > filename derived from filePath.
+ * Gets the event name from the title property, calendar title property, or the filename.
+ * Priority: titleProp (user-controlled) > calendarTitleProp (auto-computed wiki link) > filename derived from filePath.
+ *
+ * `titleProp` wins because it reflects an explicit user choice ("use this
+ * frontmatter key as the visible name"). `calendarTitleProp` is an
+ * auto-regenerated back-link — useful as a default when titleProp is empty or
+ * unpopulated, but it should never override what the user typed.
  */
 export const getEventName = (
 	titleProp: string | undefined,
@@ -72,12 +77,12 @@ export const getEventName = (
 	filePath: string | null | undefined,
 	calendarTitleProp?: string
 ): string | undefined => {
-	if (calendarTitleProp && frontmatter[calendarTitleProp]) {
-		return extractDisplayName(String(frontmatter[calendarTitleProp]));
-	}
-
 	if (titleProp && frontmatter[titleProp]) {
 		return frontmatter[titleProp] as string;
+	}
+
+	if (calendarTitleProp && frontmatter[calendarTitleProp]) {
+		return extractDisplayName(String(frontmatter[calendarTitleProp]));
 	}
 
 	if (filePath) {

@@ -33,15 +33,14 @@ import { fillEventModal } from "../events/fill-event-modal";
 
 const TITLE_PROP = "EventName";
 
-// `calendarTitleProp` (default "Calendar Title") outranks `titleProp` inside
-// `getEventName`, and the plugin auto-writes that key as a back-link on every
-// indexed event file — so any test that wants titleProp to win must also blank
-// `calendarTitleProp` first. Leaving it set would mask the behaviour we're
-// trying to assert.
+// `titleProp` wins over the auto-populated `calendarTitleProp` inside
+// `getEventName`, so we only need to set the one value we're asserting on.
+// The auto-written `Calendar Title` back-link stays on every indexed file
+// (the plugin regenerates it on save) but no longer masks the titleProp
+// value at render time.
 async function configureTitleProp(page: Page, value: string): Promise<void> {
 	await openPrismaSettings(page);
 	await switchSettingsTab(page, "properties");
-	await setSchemaTextInput(page, "calendarTitleProp", "");
 	await setSchemaTextInput(page, "titleProp", value);
 	await settleSettings(page, { pluginId: PLUGIN_ID });
 	await closeSettings(page);
@@ -107,12 +106,12 @@ test.describe("settings: titleProp — frontmatter title drives every view", () 
 		await fillEventModal(calendar.page, { title: "After Edit" });
 		await saveEventModal(calendar.page);
 
-		// The resolver writes the new title to the configured property key — we
-		// only care that the user's text landed there. The edit path also
-		// appends the ZettelID suffix to the saved value (a pre-existing quirk
-		// of `event-edit-modal.saveEvent`), so match on substring rather than
-		// equality to keep this spec focused on the titleProp contract itself.
-		await event.expectFrontmatter(TITLE_PROP, (v) => typeof v === "string" && v.startsWith("After Edit"));
+		// Exact equality: saving must write the user's clean title into the
+		// configured property key — no ZettelID suffix, no instance-date
+		// prefix. The filename-shaped title lives on `eventData.title` and
+		// only drives the rename pipeline; it must not leak into
+		// `fm[titleProp]`.
+		await event.expectFrontmatter(TITLE_PROP, (v) => v === "After Edit");
 	});
 
 	test("gantt bars render the titleProp value for connected events", async ({ calendar }) => {
