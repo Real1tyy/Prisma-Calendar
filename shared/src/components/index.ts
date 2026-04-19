@@ -1,3 +1,4 @@
+export * from "./charts";
 export * from "./code-editor";
 export * from "./component-renderer";
 export * from "./context-menu";
