@@ -2,6 +2,8 @@
 sidebar_label: Heatmap Monthly + Stats
 ---
 
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
 # Heatmap Monthly + Stats (Pro)
 
 :::info Pro Feature
@@ -9,6 +11,14 @@ The Heatmap Monthly + Stats tab requires [Prisma Calendar Pro](../free-vs-pro.md
 :::
 
 A two-column resizable layout pairing a month-locked activity heatmap on the left with a live monthly breakdown on the right. Navigate a month on the heatmap and the statistics panel re-aggregates instantly — see both where your time went and when at a glance.
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/HeatmapMonthlyStatsView.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/HeatmapMonthlyStatsView.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 ## Monthly Heatmap (Left Column)
 
