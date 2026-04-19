@@ -279,7 +279,7 @@ To rename a category across all your events:
    - Updates the category property in all affected event files
    - Adjusts the associated color rule to use the new category name
    - Shows a progress indicator during the operation
-6. **Restart Obsidian** after renaming for changes to fully propagate across all calendar views and settings
+   - Refreshes the calendar, the Categories list, and statistics so every view shows the new name immediately — no restart needed
 
 **Example**: Renaming "Work" to "Business" will update all events with `Category: Work` to `Category: Business` and update the color rule from `Category.includes('Work')` to `Category.includes('Business')`.
 
@@ -298,13 +298,9 @@ To remove a category from all your events:
    - Removes the category from all affected event files
    - Deletes the associated color rule
    - Shows a progress indicator during the operation
-6. **Restart Obsidian** after deleting for changes to fully propagate across all calendar views and settings
+   - Refreshes the calendar, the Categories list, and statistics so the old name disappears everywhere immediately — no restart needed
 
 **Example**: Deleting the "Work" category will remove it from all events that have `Category: Work` or `Category: [Work, Meeting]`, and delete the `Category.includes('Work')` color rule.
-
-:::note Important
-After renaming or deleting categories, restart Obsidian for changes to fully propagate across all calendar views and settings. This ensures the category tracker, color rules, and all UI components are properly synchronized.
-:::
 
 #### Pie Chart Visualization
 

@@ -73,12 +73,6 @@ export class CategoriesSettings {
 			text: `Categories are automatically detected from the "${this.categoryProp}" property in your events. Configure colors for each category below.`,
 		});
 
-		const noticeEl = containerEl.createDiv({
-			cls: cls("category-restart-notice"),
-		});
-		noticeEl.createEl("strong", { text: "Note: " });
-		noticeEl.appendText("Restart Obsidian after renaming or deleting categories for changes to fully propagate.");
-
 		this.statsContainer = containerEl.createDiv(cls("categories-stats-container"));
 		this.renderEventStats(this.statsContainer, bundle);
 

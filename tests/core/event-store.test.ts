@@ -3,8 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { type EventQuery, EventStore } from "../../src/core/event-store";
 import type { CalendarEvent } from "../../src/types/calendar";
-import type { IndexerEvent } from "../../src/types/event-source";
-import { createMockAllDayEvent, createMockTimedEvent } from "../fixtures";
+import type { IndexerEvent, RawEventSource } from "../../src/types/event-source";
+import { createMockAllDayEvent, createMockTimedEvent, createRawEventSource } from "../fixtures";
 import { createMockSingleCalendarSettingsStore } from "../setup";
 
 describe("EventStore", () => {
@@ -86,6 +86,61 @@ describe("EventStore", () => {
 			expect(eventStore.isUpToDate("Events/meeting.md", 1642204800000)).toBe(true);
 			expect(eventStore.isUpToDate("Events/meeting.md", 1642204801000)).toBe(false);
 			expect(eventStore.isUpToDate("Events/other.md", 1642204800000)).toBe(false);
+		});
+	});
+
+	describe("indexer event handling", () => {
+		it("rebuilds the cached event when a file-changed event arrives with the same mtime but different frontmatter", async () => {
+			// Regression: `app.fileManager.processFrontMatter` can rewrite a file's
+			// frontmatter without bumping mtime. Bulk category renames trigger
+			// exactly that — the VaultTable layer now emits a row-updated event
+			// in this case, but EventStore's mtime-based early return used to
+			// swallow the resulting file-changed event, so the calendar kept
+			// rendering the old category name and color.
+			const filePath = "Events/meeting.md";
+			const sharedMtime = 1642204800000;
+
+			mockParser.parseEventSource.mockImplementation((source: RawEventSource) =>
+				createMockTimedEvent({
+					id: filePath,
+					ref: { filePath },
+					title: "Team Meeting",
+					start: "2024-01-15T10:00:00",
+					end: "2024-01-15T11:00:00",
+					meta: { ...source.frontmatter, folder: "Events" },
+				})
+			);
+
+			eventsSubject.next({
+				type: "file-changed",
+				filePath,
+				source: createRawEventSource({
+					filePath,
+					mtime: sharedMtime,
+					folder: "Events",
+					frontmatter: { Category: "Work" },
+				}),
+			});
+
+			eventsSubject.next({
+				type: "file-changed",
+				filePath,
+				source: createRawEventSource({
+					filePath,
+					mtime: sharedMtime,
+					folder: "Events",
+					frontmatter: { Category: "Job" },
+				}),
+			});
+
+			const query: EventQuery = {
+				start: "2024-01-15T00:00:00",
+				end: "2024-01-16T00:00:00",
+			};
+
+			const events = await eventStore.getEvents(query);
+			expect(events).toHaveLength(1);
+			expect(events[0].meta).toMatchObject({ Category: "Job" });
 		});
 	});
 

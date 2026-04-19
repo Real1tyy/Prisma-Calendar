@@ -28,6 +28,7 @@ All notable changes to this project will be documented here.
 - **Removing last participant in edit modal not saving**: Clearing all participants from an event and saving did not remove them from frontmatter — the old value persisted. See [Participants](./features/events/participants.md).
 - **Back/forward navigation losing forward history**: Navigating back and then performing any view change permanently destroyed forward history, making the forward button unusable. Both back and forward navigation now work reliably.
 - **Imported all-day events off by one day outside UTC**: Importing an ICS feed on any non-UTC machine shifted all-day events back by a day (e.g. 2026-06-04 arrived as 2026-06-03 in GMT+2). Imported dates now survive the round-trip regardless of your system timezone. See [Integrations](./features/advanced/integrations.md).
+- **Renaming or deleting a category not propagating to the calendar**: Bulk renames and deletes from the Categories settings rewrote the event files on disk but the calendar and Categories list kept showing the old name, even after restart. Now you no longer have to restart the plugin after renaming or deleting a category. See [Categories](./features/organization/categories.md).
 
 ---
 

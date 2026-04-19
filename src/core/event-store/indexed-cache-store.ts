@@ -41,10 +41,10 @@ export abstract class IndexedCacheStore<TTemplate> extends DebouncedNotifier {
 	}
 
 	protected processFileChange(source: RawEventSource): void {
-		if (this.isUpToDate(source.filePath, source.mtime)) {
-			return;
-		}
-
+		// Always rebuild when a file-changed event arrives. VaultTable already
+		// dedupes on structural frontmatter equality, so any event that reaches
+		// us reflects a real content change — even if mtime happens to match
+		// (e.g. processFrontMatter during bulk category renames).
 		const template = this.buildTemplate(source);
 
 		if (template) {
