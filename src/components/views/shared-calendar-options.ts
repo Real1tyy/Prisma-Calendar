@@ -20,8 +20,8 @@ import type {
 	FCPrismaEventInput,
 } from "../../types/calendar";
 import { isAnyVirtual, isTimedEvent } from "../../types/calendar";
-import { isBatchSelectable, isHolidayEvent } from "../../types/event-classification";
 import type { SingleCalendarConfig } from "../../types/settings";
+import { isBatchSelectable, isHolidayEvent } from "../../utils/event-classification";
 import { resolveAllEventColors, resolveEventColor } from "../../utils/event-color";
 import { hashFrontmatter } from "../../utils/event-diff";
 import { cleanupTitle } from "../../utils/events/naming";

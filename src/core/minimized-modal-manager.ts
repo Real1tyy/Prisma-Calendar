@@ -5,10 +5,10 @@ import type { Subscription } from "rxjs";
 
 import { EventCreateModal, EventEditModal, type EventModalData, openCategoryAssignModal } from "../components/modals";
 import type { EventFormState } from "../components/modals/event/event-form-state";
+import type { StopwatchSnapshot } from "../components/stopwatch";
 import type { Frontmatter } from "../types";
 import type { IndexerEvent } from "../types/event-source";
 import type { EventPreset } from "../types/settings";
-import type { StopwatchSnapshot } from "../types/stopwatch";
 import { getEventName } from "../utils/events/naming";
 import { getCategoriesFromFilePath } from "../utils/obsidian";
 import type { CalendarBundle } from "./calendar-bundle";

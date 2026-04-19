@@ -1,4 +1,4 @@
-import type { VirtualEventData } from "../../src/types/virtual-event";
+import type { VirtualEventData } from "../../src/types/calendar";
 
 export function createVirtualEventData(overrides: Partial<VirtualEventData> = {}): VirtualEventData {
 	return {

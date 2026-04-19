@@ -5,9 +5,9 @@ import { BehaviorSubject, type Subscription } from "rxjs";
 import { v4 as uuidv4 } from "uuid";
 
 import { VIRTUAL_EVENTS_CODE_FENCE } from "../constants";
-import type { EventSaveData } from "../types/event-save";
+import { type VirtualEventData, VirtualEventDataSchema } from "../types/calendar";
+import type { EventSaveData } from "../types/event-boundaries";
 import type { SingleCalendarConfig } from "../types/settings";
-import { type VirtualEventData, VirtualEventDataSchema } from "../types/virtual-event";
 
 export class VirtualEventStore {
 	private readonly repo = new CodeBlockRepository<VirtualEventData>({

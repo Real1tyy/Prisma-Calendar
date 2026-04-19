@@ -11,8 +11,8 @@ import {
 import { type App, TFile } from "obsidian";
 
 import type { CalendarEventData } from "../types/calendar";
-import { isHolidayEvent } from "../types/event-classification";
 import type { SingleCalendarConfig } from "../types/settings";
+import { isHolidayEvent } from "../utils/event-classification";
 import { cleanupTitle } from "../utils/events/naming";
 import { buildEventTooltip } from "../utils/format";
 import { getDisplayProperties, renderPropertyValue } from "../utils/property-display";

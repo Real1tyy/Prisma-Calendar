@@ -9,11 +9,10 @@ import { DateTime } from "luxon";
 import type { App, TFile } from "obsidian";
 
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
-import type { RecurrenceType } from "../../types/recurring-event";
+import type { RecurrenceType } from "../../types/recurring";
+import { assignListToFrontmatter, setEventBasics } from "../../utils/event-frontmatter";
 import { generateUniqueEventPath } from "../../utils/event-naming";
 import { extractZettelId, removeZettelId } from "../../utils/events/zettel-id";
-import { setEventBasics } from "../../utils/frontmatter/basics";
-import { assignListToFrontmatter } from "../../utils/frontmatter/props";
 import type { CalendarBundle } from "../calendar-bundle";
 
 const MINUTES_PER_DAY = 24 * 60;

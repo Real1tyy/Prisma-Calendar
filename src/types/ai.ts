@@ -1,9 +1,11 @@
 import { z } from "zod";
 
-export const AIModeSchema = z.enum(["query", "manipulation", "planning"]);
+// ─── AI Modes & Providers ────────────────────────────────────────────
+
+const AIModeSchema = z.enum(["query", "manipulation", "planning"]);
 export type AIMode = z.infer<typeof AIModeSchema>;
 
-export const AIProviderSchema = z.enum(["openai", "anthropic"]);
+const AIProviderSchema = z.enum(["openai", "anthropic"]);
 export type AIProvider = z.infer<typeof AIProviderSchema>;
 
 export interface AIModelOption {
@@ -31,3 +33,35 @@ export const AI_DEFAULTS = {
 		"gpt-5-nano": { label: "GPT-5 Nano (ultra cheap)", provider: "openai" },
 	} as Record<string, AIModelOption>,
 } as const;
+
+// ─── AI Operation Schemas ────────────────────────────────────────────
+
+const ISODatetimeSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/);
+
+const EventFieldsSchema = z.object({
+	title: z.string().min(1),
+	start: ISODatetimeSchema,
+	end: ISODatetimeSchema,
+	allDay: z.boolean().optional(),
+	categories: z.array(z.string()).optional(),
+	location: z.string().optional(),
+	participants: z.array(z.string()).optional(),
+});
+
+export const CreateOpSchema = EventFieldsSchema.extend({
+	type: z.literal("create"),
+});
+
+export const EditOpSchema = EventFieldsSchema.partial().extend({
+	type: z.literal("edit"),
+	filePath: z.string().min(1),
+});
+
+export const DeleteOpSchema = z.object({
+	type: z.literal("delete"),
+	filePath: z.string().min(1),
+});
+
+export const AIOperationsSchema = z.array(z.discriminatedUnion("type", [CreateOpSchema, EditOpSchema, DeleteOpSchema]));
+
+export type AIOperation = z.infer<typeof AIOperationsSchema>[number];

@@ -1,7 +1,12 @@
 import { parseIntoList } from "@real1ty-obsidian-plugins";
 import { z } from "zod";
 
-import { EventEditableFormFieldsSchema, NonNegativeInt, PositiveFloat, PositiveInt } from "../../../types/event-fields";
+import {
+	EventEditableFormFieldsSchema,
+	NonNegativeInt,
+	PositiveFloat,
+	PositiveInt,
+} from "../../../types/event-boundaries";
 import type { EventPreset } from "../../../types/settings";
 
 export const RecurringFormStateSchema = z.object({

@@ -6,7 +6,16 @@ import {
 } from "@real1ty-obsidian-plugins";
 
 import { CSS_PREFIX } from "../constants";
-import type { StopwatchSnapshot, StopwatchState } from "../types/stopwatch";
+
+export type StopwatchState = "idle" | "running" | "paused" | "stopped";
+
+export interface StopwatchSnapshot {
+	state: StopwatchState;
+	startTime: number | null;
+	breakStartTime: number | null;
+	sessionStartTime: number | null;
+	totalBreakMs: number;
+}
 
 interface StopwatchCallbacks {
 	onStart: (startTime: Date) => void;

@@ -1,5 +1,5 @@
-import type { ChartDataItem } from "@real1ty-obsidian-plugins";
 import {
+	type ChartDataItem,
 	createGridLayout,
 	type GridLayoutHandle,
 	type GroupTabDefinition,
@@ -10,9 +10,9 @@ import { debounceTime, distinctUntilChanged, merge, skip, type Subscription } fr
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { PRO_FEATURES } from "../../core/license";
-import { formatRecurrenceLabel, isPresetType } from "../../types/recurring-event";
 import { removeZettelId } from "../../utils/events/zettel-id";
 import { getCategoriesFromFilePath } from "../../utils/obsidian";
+import { formatRecurrenceLabel, isPresetType } from "../../utils/recurring-utils";
 import { EventSeriesModal } from "../list-modals/event-series-modal";
 import { renderProUpgradeBanner } from "../settings/pro-upgrade-banner";
 import {

@@ -18,8 +18,7 @@ import { type SemanticValidationContext, validateOperationsSemantically } from "
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { PRO_FEATURES } from "../core/license";
 import type CustomCalendarPlugin from "../main";
-import { AI_DEFAULTS, type AIMode } from "../types/ai";
-import type { AIOperation } from "../types/ai-operation-schemas";
+import { AI_DEFAULTS, type AIMode, type AIOperation } from "../types/ai";
 import { renderProUpgradeBanner } from "./settings/pro-upgrade-banner";
 
 interface RetryResult<T> {

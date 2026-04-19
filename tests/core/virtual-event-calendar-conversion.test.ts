@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { toCalendarEvent } from "../../src/core/event-store/event-store";
 import { toVirtualInput } from "../../src/core/virtual-event-store";
-import type { EventSaveData } from "../../src/types/event-save";
+import type { EventSaveData } from "../../src/types/event-boundaries";
 import { createAllDayVirtualEventData, createVirtualEventData } from "../fixtures";
 
 const VIRTUAL_FILE_PATH = "calendar/Virtual Events.md";

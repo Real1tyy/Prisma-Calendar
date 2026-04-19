@@ -3,10 +3,10 @@ export {
 	type CustomCalendarSettings,
 	CustomCalendarSettingsSchema,
 	type PrismaCalendarSettingsStore,
+	PrismaSyncDataSchema,
 	type SingleCalendarConfig,
 	SingleCalendarConfigSchema,
 } from "./settings";
-export { PrismaSyncDataSchema } from "./sync-store";
 export {
 	CALENDAR_VIEW_OPTIONS,
 	type CalendarViewType,
@@ -16,6 +16,6 @@ export {
 	DENSITY_OPTIONS,
 	FIRST_DAY_OPTIONS,
 } from "./view";
-export type { ISO } from "@real1ty-obsidian-plugins";
+export { type ISO } from "@real1ty-obsidian-plugins";
 
 export type Frontmatter = Record<string, unknown>;

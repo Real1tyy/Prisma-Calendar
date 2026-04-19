@@ -45,10 +45,10 @@ import type {
 	FCPrismaEventInput,
 } from "../types/calendar";
 import { isAnyVirtual, isTimedEvent } from "../types/calendar";
-import { isBatchSelectable, isFileBackedEvent } from "../types/event-classification";
 import type { SingleCalendarConfig } from "../types/index";
 import { getEventRenderingKey } from "../utils/calendar-settings";
 import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
+import { isBatchSelectable, isFileBackedEvent } from "../utils/event-classification";
 import { resolveAllEventColors, resolveEventColor } from "../utils/event-color";
 import { diffEvents, eventFingerprint, hashFrontmatter } from "../utils/event-diff";
 import { getCommonCategories } from "../utils/event-frontmatter";

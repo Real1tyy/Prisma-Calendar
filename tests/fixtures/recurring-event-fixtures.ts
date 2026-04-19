@@ -3,8 +3,8 @@ import { BehaviorSubject, Subject } from "rxjs";
 import { vi } from "vitest";
 
 import type { RecurringEventManager } from "../../src/core/recurring-event-manager";
-import type { EventMetadata } from "../../src/types/event";
-import type { Weekday } from "../../src/types/weekday";
+import type { EventMetadata } from "../../src/types/event-metadata";
+import type { Weekday } from "../../src/types/recurring";
 import { createDefaultMetadata } from "./event-fixtures";
 
 export type RecurringManagerApp = {

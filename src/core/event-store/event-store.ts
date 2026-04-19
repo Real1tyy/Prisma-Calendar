@@ -4,13 +4,12 @@ import type { BehaviorSubject, Subscription } from "rxjs";
 import BTree from "sorted-btree";
 
 import { MARK_DONE_SCAN_INTERVAL_MS } from "../../constants";
-import type { AllDayEvent, CalendarEvent, TimedEvent } from "../../types/calendar";
+import type { AllDayEvent, CalendarEvent, TimedEvent, VirtualEventData } from "../../types/calendar";
 import { eventDefaults, isAnyVirtual, isTimedEvent } from "../../types/calendar";
-import { stripZ } from "../../types/event";
 import type { CalendarEventSource, IndexerEvent, RawEventSource } from "../../types/event-source";
 import type { ISO } from "../../types/index";
 import type { SingleCalendarConfig } from "../../types/settings";
-import type { VirtualEventData } from "../../types/virtual-event";
+import { stripZ } from "../../utils/iso";
 import type { HolidayStore } from "../holidays";
 import { MinimizedModalManager } from "../minimized-modal-manager";
 import type { Parser } from "../parser";

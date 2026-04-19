@@ -2,10 +2,10 @@ import { Subject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createDefaultState } from "../../src/components/modals/event/event-form-state";
+import type { StopwatchSnapshot } from "../../src/components/stopwatch";
 import type { CalendarBundle } from "../../src/core/calendar-bundle";
 import { MinimizedModalManager, type MinimizedModalState } from "../../src/core/minimized-modal-manager";
 import type { IndexerEvent } from "../../src/types/event-source";
-import type { StopwatchSnapshot } from "../../src/types/stopwatch";
 
 describe("MinimizedModalManager", () => {
 	let mockBundle: Partial<CalendarBundle>;

@@ -1,7 +1,7 @@
 import { DateTime } from "luxon";
 import { describe, expect, it } from "vitest";
 
-import type { RRuleFrontmatter } from "../../src/types/recurring-event";
+import type { RRuleFrontmatter } from "../../src/types/recurring";
 import {
 	calculateTargetInstanceCount,
 	findFirstValidStartDate,

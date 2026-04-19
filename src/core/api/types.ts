@@ -1,10 +1,9 @@
 import { z } from "zod";
 
 import type { ParsedEvent } from "../../types";
-import type { AIMode } from "../../types/ai";
-import type { AIOperation } from "../../types/ai-operation-schemas";
+import type { AIMode, AIOperation } from "../../types/ai";
 
-export type { AIOperation as PrismaAIOperation } from "../../types/ai-operation-schemas";
+export type { AIOperation as PrismaAIOperation } from "../../types/ai";
 
 // ─── Navigation ─────────────────────────────────────────────────────
 

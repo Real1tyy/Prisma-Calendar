@@ -5,10 +5,10 @@ import { type App, Modal, Setting } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { PRO_FEATURES } from "../../core/license";
 import type { CalendarEvent } from "../../types/calendar";
-import { formatRecurrenceLabel, isWeekdaySupported } from "../../types/recurring-event";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { resolveEventColor } from "../../utils/event-color";
 import { removeZettelId } from "../../utils/events/zettel-id";
+import { formatRecurrenceLabel, isWeekdaySupported } from "../../utils/recurring-utils";
 import {
 	type EventSeriesBasesViewConfig,
 	showEventSeriesBasesViewModal,

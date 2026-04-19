@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { RRuleFrontmatterSchema } from "../../src/types/recurring-event";
+import { RRuleFrontmatterSchema } from "../../src/types/recurring";
 
 describe("RRuleFrontmatterSchema validation", () => {
 	describe("allDay and time field validation", () => {

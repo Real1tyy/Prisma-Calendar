@@ -1,5 +1,41 @@
-import type { EventMetadata } from "./event";
+import {
+	optionalListTransform,
+	optionalNumber,
+	optionalPositiveNumber,
+	optionalTrimmedString,
+	strictBooleanOptional,
+} from "@real1ty-obsidian-plugins";
+import { z } from "zod";
+
 import type { SingleCalendarConfig } from "./settings";
+
+// ─── Event Metadata Schema ───────────────────────────────────────────
+// Structured fields extracted from frontmatter via settings-based property names.
+// Parsed through Zod at the boundary so consumers get clean, validated data.
+
+export const EventMetadataSchema = z.object({
+	skip: strictBooleanOptional.optional().describe("Hide event from calendar"),
+	location: optionalTrimmedString.describe("Event location"),
+	participants: optionalListTransform.describe("Comma-separated list of participants"),
+	categories: optionalListTransform.describe("Event categories"),
+	breakMinutes: optionalPositiveNumber.describe("Time to subtract from duration in statistics"),
+	icon: optionalTrimmedString.describe("Event icon (emoji or text)"),
+	status: optionalTrimmedString.describe("Event status"),
+	minutesBefore: optionalNumber.describe("Notify minutes before"),
+	daysBefore: optionalNumber.describe("Notify days before"),
+	alreadyNotified: strictBooleanOptional.optional(),
+	rruleType: optionalTrimmedString,
+	rruleSpec: optionalTrimmedString,
+	rruleId: optionalTrimmedString,
+	instanceDate: optionalTrimmedString,
+	source: optionalTrimmedString,
+	futureInstancesCount: optionalPositiveNumber,
+	generatePastEvents: strictBooleanOptional.optional(),
+	caldav: z.unknown().optional(),
+	icsSubscription: z.unknown().optional(),
+});
+
+export type EventMetadata = z.infer<typeof EventMetadataSchema>;
 
 // ─── Metadata Field Registry ─────────────────────────────────────────
 // Maps EventMetadata keys to their corresponding settings prop keys.
@@ -41,31 +77,29 @@ export const METADATA_FIELD_MAP = defineMetadataFieldMap([
 ]);
 
 // ─── Compile-Time Assertions ─────────────────────────────────────────
-// If you add a field to EventMetadataSchema without a registry entry (or vice versa),
-// TypeScript will produce a compile error on the corresponding line below.
+// If you add a field to EventMetadataSchema without a registry entry (or vice
+// versa), TypeScript raises a compile error on the line below.
 
 type RegistryMetadataKeys = (typeof METADATA_FIELD_MAP)[number]["metadataKey"];
 
-// Utility: resolves to `never` if A is not a subtype of B
+// Resolves to `never` if A is not a subtype of B, breaking the compile
 type Assert<A, B> = [A] extends [B] ? A : never;
 
-// Every EventMetadata key must appear in the registry
 type _SchemaFullyCovered = Assert<MetadataKey, RegistryMetadataKeys>;
-// Every registry key must exist in EventMetadata
 type _RegistryFullyValid = Assert<RegistryMetadataKeys, MetadataKey>;
 
-// These functions force TypeScript to evaluate the assertions.
-// If the types diverge, the parameter type becomes `never` and no value satisfies it.
+// These calls force TypeScript to evaluate the assertions — if the types
+// diverge the parameter type becomes `never` and no value satisfies it.
 export function checkSchemaKeys(_k: _SchemaFullyCovered): void {}
 export function checkRegistryKeys(_k: _RegistryFullyValid): void {}
 checkSchemaKeys("skip" as MetadataKey);
 checkRegistryKeys("skip" as RegistryMetadataKeys);
 
 // ─── Settings Prop Classification ────────────────────────────────────
-// Tags for each settings prop key that controls how it's treated during
-// recurring event propagation and edit modal rendering.
+// Tags each settings prop key for how it's treated during recurring event
+// propagation and edit modal rendering.
 
-interface PropClassification {
+export interface PropClassification {
 	settingsProp: SettingsPropKey;
 	system: boolean;
 	dedicatedUI: boolean;
@@ -278,22 +312,3 @@ export const PROP_CLASSIFICATIONS: readonly PropClassification[] = [
 		notificationDedicatedUI: true,
 	},
 ] as const;
-
-// ─── Derived Arrays ──────────────────────────────────────────────────
-// These replace the hand-maintained arrays in settings.ts.
-
-export function computeSystemPropKeys(): SettingsPropKey[] {
-	return PROP_CLASSIFICATIONS.filter((c) => c.system).map((c) => c.settingsProp);
-}
-
-export function computeDedicatedUIPropKeys(): SettingsPropKey[] {
-	return PROP_CLASSIFICATIONS.filter((c) => c.dedicatedUI).map((c) => c.settingsProp);
-}
-
-export function computeNotificationSystemPropKeys(): SettingsPropKey[] {
-	return PROP_CLASSIFICATIONS.filter((c) => c.notificationSystem).map((c) => c.settingsProp);
-}
-
-export function computeNotificationDedicatedUIPropKeys(): SettingsPropKey[] {
-	return PROP_CLASSIFICATIONS.filter((c) => c.notificationDedicatedUI).map((c) => c.settingsProp);
-}

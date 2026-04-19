@@ -36,14 +36,13 @@ import {
 import { weekDuration } from "../core/commands/batch-commands";
 import { MinimizedModalManager } from "../core/minimized-modal-manager";
 import { isTimedEvent } from "../types";
-import type { CalendarEvent } from "../types/calendar";
-import { type EventKind, getEventKind, isRecurringEventKind } from "../types/event-classification";
-import { isTimeUnitAllowedForAllDay } from "../types/move-by";
-import { isEventDone } from "../utils/event-frontmatter";
+import type { CalendarEvent, EventKind } from "../types/calendar";
+import { isTimeUnitAllowedForAllDay } from "../types/calendar";
+import { getEventKind, isRecurringEventKind } from "../utils/event-classification";
+import { isEventDone, parseCustomDoneProperty } from "../utils/event-frontmatter";
 import { findAdjacentEvent } from "../utils/event-matching";
 import { getEventName } from "../utils/events/naming";
 import { getVirtualKind } from "../utils/extended-props";
-import { parseCustomDoneProperty } from "../utils/frontmatter/props";
 import {
 	emitHover,
 	getCategoriesFromFilePath,

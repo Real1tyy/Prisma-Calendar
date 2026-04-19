@@ -12,7 +12,7 @@ import {
 	buildEditEventCommand,
 } from "../../src/core/api/command-builders";
 import type { CalendarBundle } from "../../src/core/calendar-bundle";
-import type { AIOperation } from "../../src/types/ai-operation-schemas";
+import type { AIOperation } from "../../src/types/ai";
 
 vi.mock("../../src/core/api/command-builders", () => ({
 	buildCreateEventCommand: vi.fn(),

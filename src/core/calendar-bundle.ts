@@ -14,7 +14,7 @@ import { type PrismaViewRef, registerPrismaCalendarView } from "../components/vi
 import { getCalendarViewType } from "../constants";
 import type CustomCalendarPlugin from "../main";
 import type { PrismaCalendarSettingsStore } from "../types";
-import type { CreateEventData, UpdateEventData } from "../types/event-save";
+import type { CreateEventData, UpdateEventData } from "../types/event-boundaries";
 import { generateUniqueEventPath } from "../utils/event-naming";
 import { extractZettelId, removeZettelId } from "../utils/events/zettel-id";
 import { CalendarViewStateManager } from "./calendar-view-state-manager";

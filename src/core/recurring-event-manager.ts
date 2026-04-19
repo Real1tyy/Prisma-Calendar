@@ -24,17 +24,20 @@ import type { BehaviorSubject, Subscription } from "rxjs";
 
 import { PROPAGATION_DEBOUNCE_MS } from "../constants";
 import { type CalendarEvent, eventDefaults, type Frontmatter, type PrismaSyncDataSchema } from "../types";
-import type { EventMetadata } from "../types/event";
-import { stripZ, toInternalISO } from "../types/event";
+import type { EventMetadata } from "../types/event-metadata";
 import type { CalendarEventSource, IndexerEvent } from "../types/event-source";
-import type { NodeRecurringEvent, RecurringEventSeries } from "../types/recurring-event";
+import type { NodeRecurringEvent, RecurringEventSeries } from "../types/recurring";
 import type { SingleCalendarConfig } from "../types/settings";
 import { getNextOccurrence } from "../utils/date-recurrence";
-import { applyFrontmatterChangesToInstance } from "../utils/event-frontmatter";
+import {
+	applyFrontmatterChangesToInstance,
+	filterExcludedPropsFromDiff,
+	getExcludedProps,
+	setEventBasics,
+	type TimePropagationDiff,
+} from "../utils/event-frontmatter";
 import { hashRRuleIdToZettelFormat, removeZettelId } from "../utils/events/zettel-id";
-import { setEventBasics } from "../utils/frontmatter/basics";
-import { type TimePropagationDiff } from "../utils/frontmatter/diff";
-import { filterExcludedPropsFromDiff, getExcludedProps } from "../utils/frontmatter/props";
+import { stripZ, toInternalISO } from "../utils/iso";
 import {
 	batchedPromiseAll,
 	deleteFilesByPaths,

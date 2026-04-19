@@ -1,7 +1,6 @@
 import type { Page } from "@playwright/test";
 
-import type { RecurrenceFreq, RecurrencePreset } from "../../../src/types/recurring-event";
-import type { Weekday } from "../../../src/types/weekday";
+import type { RecurrenceFreq, RecurrencePreset, Weekday } from "../../../src/types/recurring";
 import { ASSIGN_MODAL_ROOT, sel, sharedTID, TID } from "../../fixtures/testids";
 
 // UI-driven event-modal helpers. Every field is interacted with the same way

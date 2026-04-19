@@ -1,9 +1,9 @@
 import type { FrontmatterDiff } from "@real1ty-obsidian-plugins";
 import type { Observable } from "rxjs";
 
-import type { EventMetadata } from "./event";
+import type { EventMetadata } from "./event-metadata";
 import type { Frontmatter } from "./index";
-import type { NodeRecurringEvent } from "./recurring-event";
+import type { NodeRecurringEvent } from "./recurring";
 
 export interface RawEventSource {
 	filePath: string;

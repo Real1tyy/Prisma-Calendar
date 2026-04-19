@@ -1,6 +1,5 @@
 import type CustomCalendarPlugin from "../../main";
-import { AI_DEFAULTS, type AIMode } from "../../types/ai";
-import type { AIOperation } from "../../types/ai-operation-schemas";
+import { AI_DEFAULTS, type AIMode, type AIOperation } from "../../types/ai";
 import { AIChatManager, ChatStore } from "../ai";
 import type { ManipulationContext, PlanningContext } from "../ai/ai-context-builder";
 import {

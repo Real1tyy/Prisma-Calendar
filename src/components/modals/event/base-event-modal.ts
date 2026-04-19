@@ -30,20 +30,14 @@ import {
 } from "../../../core/minimized-modal-manager";
 import type { Frontmatter } from "../../../types";
 import { isTimedEvent } from "../../../types/calendar";
-import { FormToFieldsSchema, PositiveFloat } from "../../../types/event-fields";
-import { EventEditableFormFieldsSchema } from "../../../types/event-fields";
-import type { EventSaveData } from "../../../types/event-save";
 import {
-	buildCustomIntervalDSL,
-	isPresetType,
-	isWeekdaySupported,
-	parseRecurrenceType,
-	RECURRENCE_TYPE_OPTIONS,
-	WEEKDAY_OPTIONS,
-	WEEKDAY_PRESET_DAYS,
-} from "../../../types/recurring-event";
+	EventEditableFormFieldsSchema,
+	type EventSaveData,
+	FormToFieldsSchema,
+	PositiveFloat,
+} from "../../../types/event-boundaries";
+import { RECURRENCE_TYPE_OPTIONS, type Weekday, WEEKDAY_OPTIONS, WEEKDAY_PRESET_DAYS } from "../../../types/recurring";
 import type { EventPreset } from "../../../types/settings";
-import type { Weekday } from "../../../utils/date-recurrence";
 import { autoAssignCategories, findAdjacentEvent } from "../../../utils/event-matching";
 import { validateEventTitle } from "../../../utils/event-title-validation";
 import { extractCleanDisplayName } from "../../../utils/events/naming";
@@ -51,6 +45,12 @@ import { getVirtualKind } from "../../../utils/extended-props";
 import { formatDateOnly, formatDateTimeForInput } from "../../../utils/format";
 import { writeMetadataToFrontmatter } from "../../../utils/frontmatter-writer";
 import { getCategoriesFromFilePath, getFileAndFrontmatter } from "../../../utils/obsidian";
+import {
+	buildCustomIntervalDSL,
+	isPresetType,
+	isWeekdaySupported,
+	parseRecurrenceType,
+} from "../../../utils/recurring-utils";
 import { Stopwatch } from "../../stopwatch";
 import { TitleInputSuggest } from "../../title-input-suggest";
 import { openCategoryAssignModal, openPrerequisiteAssignModal } from "../category/assignment";

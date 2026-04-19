@@ -5,15 +5,11 @@ import { type App, Modal, Notice } from "obsidian";
 import { FULL_COMMAND_IDS } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { assignCategories, toggleSkip } from "../../core/commands";
-import {
-	formatRecurrenceLabel,
-	isPresetType,
-	type NodeRecurringEvent,
-	RECURRENCE_TYPE_OPTIONS,
-} from "../../types/recurring-event";
+import { type NodeRecurringEvent, RECURRENCE_TYPE_OPTIONS } from "../../types/recurring";
 import { getEventName } from "../../utils/events/naming";
 import { removeZettelId } from "../../utils/events/zettel-id";
 import { getCategoriesFromFilePath, openFileInNewTab } from "../../utils/obsidian";
+import { formatRecurrenceLabel, isPresetType } from "../../utils/recurring-utils";
 import { getStartDateTime } from "../../utils/recurring-utils";
 import type { CalendarComponent } from "../calendar-view";
 import { openCategoryAssignModal } from "../modals";

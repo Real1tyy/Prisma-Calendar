@@ -1,11 +1,11 @@
 import {
+	ColorSchema,
 	ContextMenuStateSchema,
 	normalizeDirectoryPath,
 	PageHeaderStateSchema,
 	type SettingsStore,
 	TabbedContainerStateSchema,
 } from "@real1ty-obsidian-plugins";
-import { ColorSchema } from "@real1ty-obsidian-plugins";
 import { z } from "zod";
 
 import {
@@ -28,6 +28,12 @@ import {
 	DEFAULT_ZOOM_LEVELS,
 	PROP_DEFAULTS,
 } from "../constants";
+import {
+	computeDedicatedUIPropKeys,
+	computeNotificationDedicatedUIPropKeys,
+	computeNotificationSystemPropKeys,
+	computeSystemPropKeys,
+} from "../utils/prop-classifications";
 import { AI_DEFAULTS } from "./ai";
 import { CalDAVSettingsSchema, ICSSubscriptionSettingsSchema } from "./integrations";
 import { CalendarViewTypeSchema, ContextMenuItemSchema, LOCALE_KEYS, ToolbarButtonSchema } from "./view";
@@ -331,23 +337,16 @@ const PropsSettingsSchema = z
 	})
 	.strip();
 
-import {
-	computeDedicatedUIPropKeys,
-	computeNotificationDedicatedUIPropKeys,
-	computeNotificationSystemPropKeys,
-	computeSystemPropKeys,
-} from "./event-field-registry";
-
 /**
  * Settings keys for per-instance system properties (timing, identity, recurrence).
- * Derived from PROP_CLASSIFICATIONS in event-field-registry.ts.
+ * Derived from PROP_CLASSIFICATIONS in event-metadata.ts.
  * When adding a new frontmatter property, add it to the registry instead.
  */
 export const SYSTEM_PROP_KEYS = computeSystemPropKeys();
 
 /**
  * Settings keys for properties that have dedicated UI controls in the edit modal.
- * Derived from PROP_CLASSIFICATIONS in event-field-registry.ts.
+ * Derived from PROP_CLASSIFICATIONS in event-metadata.ts.
  * When adding a new property with its own modal control, add it to the registry instead.
  */
 export const DEDICATED_UI_PROP_KEYS = computeDedicatedUIPropKeys();
@@ -391,7 +390,7 @@ const NotificationsSettingsSchema = z
 	.strip();
 
 /**
- * Notification settings keys derived from PROP_CLASSIFICATIONS in event-field-registry.ts.
+ * Notification settings keys derived from PROP_CLASSIFICATIONS in event-metadata.ts.
  */
 export const NOTIFICATION_SYSTEM_PROP_KEYS = computeNotificationSystemPropKeys();
 export const NOTIFICATION_DEDICATED_UI_PROP_KEYS = computeNotificationDedicatedUIPropKeys();
@@ -817,3 +816,12 @@ export type EventPreset = z.infer<typeof EventPresetSchema>;
 export type SingleCalendarConfig = z.infer<typeof SingleCalendarConfigSchema>;
 export type CustomCalendarSettings = z.infer<typeof CustomCalendarSettingsSchema>;
 export type PrismaCalendarSettingsStore = SettingsStore<typeof CustomCalendarSettingsSchema>;
+
+// ─── Sync-Persisted Plugin State ─────────────────────────────────────
+
+export const PrismaSyncDataSchema = z
+	.object({
+		readOnly: z.boolean().catch(false),
+		lastUsedCalendarId: z.string().optional(),
+	})
+	.strip();

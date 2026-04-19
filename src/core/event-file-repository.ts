@@ -10,13 +10,13 @@ import { type App, TFile } from "obsidian";
 import { BehaviorSubject, type Observable, Subject, type Subscription } from "rxjs";
 
 import type { Frontmatter, PrismaSyncDataSchema, SingleCalendarConfig } from "../types";
-import { parseEventMetadata } from "../types/event";
 import type { CalendarEventSource, IndexerEvent, RawEventSource } from "../types/event-source";
-import { type NodeRecurringEvent, parseRRuleFromFrontmatter } from "../types/recurring-event";
+import type { NodeRecurringEvent } from "../types/recurring";
+import { parseEventMetadata, shouldEventBeMarkedAsDone } from "../utils/event-frontmatter";
 import { ensureFileHasZettelId } from "../utils/event-naming";
 import { cleanupTitle } from "../utils/events/naming";
 import { generateUniqueRruleId, hasTimestamp } from "../utils/events/zettel-id";
-import { shouldEventBeMarkedAsDone } from "../utils/frontmatter/predicates";
+import { parseRRuleFromFrontmatter } from "../utils/recurring-utils";
 import { createEventSchema } from "./event-schema";
 
 /**

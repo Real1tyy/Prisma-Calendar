@@ -6,11 +6,11 @@ import {
 } from "@real1ty-obsidian-plugins";
 
 import { MinimizedModalManager } from "../../../core/minimized-modal-manager";
-import type { EventSaveData, UpdateEventData } from "../../../types/event-save";
-import { isWeekdaySupported } from "../../../types/recurring-event";
-import type { Weekday } from "../../../utils/date-recurrence";
+import type { EventSaveData, UpdateEventData } from "../../../types/event-boundaries";
+import type { Weekday } from "../../../types/recurring";
 import { extractInstanceDate, extractZettelId, removeZettelId } from "../../../utils/events/zettel-id";
 import { categorizeProperties, formatDateOnly, formatDateTimeForInput } from "../../../utils/format";
+import { isWeekdaySupported } from "../../../utils/recurring-utils";
 import { BaseEventModal } from "./base-event-modal";
 import { loadSimpleFieldValues } from "./event-frontmatter-mapper";
 

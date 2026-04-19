@@ -6,7 +6,7 @@ import type { BehaviorSubject, Subscription } from "rxjs";
 import { showNotificationModal } from "../components/modals";
 import { MAX_PAST_NOTIFICATION_THRESHOLD, NOTIFICATION_CHECK_INTERVAL_MS } from "../constants";
 import type { Frontmatter, PrismaSyncDataSchema } from "../types";
-import type { EventMetadata } from "../types/event";
+import type { EventMetadata } from "../types/event-metadata";
 import type { CalendarEventSource, IndexerEvent } from "../types/event-source";
 import type { SingleCalendarConfig } from "../types/settings";
 import { getEventName } from "../utils/events/naming";

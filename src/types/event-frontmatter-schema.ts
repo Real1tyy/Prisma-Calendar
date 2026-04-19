@@ -6,7 +6,10 @@ import {
 	optionalNumber,
 	optionalPositiveNumber,
 	optionalTrimmedString,
+	requiredDateTimeTransform,
+	requiredDateTransform,
 	strictBooleanOptional,
+	titleTransform,
 } from "@real1ty-obsidian-plugins";
 import { z } from "zod";
 
@@ -93,3 +96,27 @@ export function createEventFrontmatterSchema(settings: SingleCalendarConfig) {
 }
 
 export type ParsedEventFrontmatter = ReturnType<typeof createEventFrontmatterSchema>["_output"];
+
+// ─── Validated Event Frontmatter Schemas ────────────────────────────
+// Strict discriminated schemas used by `parseEventFrontmatter` to distinguish
+// timed vs all-day events after reading the raw frontmatter values. Unlike the
+// mapped schema above, these fail parsing when required fields are missing.
+
+const BaseEventFrontmatterSchema = z.object({
+	title: titleTransform,
+});
+
+export const TimedEventFrontmatterSchema = BaseEventFrontmatterSchema.extend({
+	startTime: requiredDateTimeTransform,
+	endTime: optionalDateTimeTransform,
+	allDay: z.literal(false).optional().nullable(),
+}).strict();
+
+export const AllDayEventFrontmatterSchema = BaseEventFrontmatterSchema.extend({
+	date: requiredDateTransform,
+	allDay: z.literal(true),
+}).strict();
+
+export type CalendarEventFrontmatter =
+	| z.infer<typeof TimedEventFrontmatterSchema>
+	| z.infer<typeof AllDayEventFrontmatterSchema>;

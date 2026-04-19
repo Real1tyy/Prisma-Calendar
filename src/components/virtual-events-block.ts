@@ -3,7 +3,7 @@ import { MarkdownRenderChild, Notice } from "obsidian";
 
 import type { CalendarBundle } from "../core/calendar-bundle";
 import type CustomCalendarPlugin from "../main";
-import { type VirtualEventData, VirtualEventsFileSchema } from "../types/virtual-event";
+import { type VirtualEventData, VirtualEventsFileSchema } from "../types/calendar";
 import { formatDateOnlyDisplay, formatDateTimeDisplay } from "../utils/format";
 import { extractPropertyText } from "../utils/property-display";
 

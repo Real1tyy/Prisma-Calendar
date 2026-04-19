@@ -1,12 +1,8 @@
-import { z } from "zod";
-
-import { getDisplayData, getVirtualKind } from "../utils/extended-props";
-import { isAnyVirtual } from "./calendar";
-import type { Frontmatter } from "./index";
-import type { SingleCalendarConfig } from "./settings";
-
-export const EventKindSchema = z.enum(["normal", "source", "physical", "virtual", "manual", "holiday"]);
-export type EventKind = z.infer<typeof EventKindSchema>;
+import type { EventKind, VirtualKind } from "../types/calendar";
+import { isAnyVirtual } from "../types/calendar";
+import type { Frontmatter } from "../types/index";
+import type { SingleCalendarConfig } from "../types/settings";
+import { getDisplayData, getVirtualKind } from "./extended-props";
 
 interface ClassifiableEvent {
 	extendedProps?: {
@@ -16,10 +12,11 @@ interface ClassifiableEvent {
 	};
 }
 
-type RecurrenceSettings = Pick<SingleCalendarConfig, "rruleProp" | "rruleIdProp">;
-
-export function getEventKind(event: ClassifiableEvent, settings: RecurrenceSettings): EventKind {
-	const virtualKind = getVirtualKind(event);
+export function getEventKind(
+	event: ClassifiableEvent,
+	settings: Pick<SingleCalendarConfig, "rruleProp" | "rruleIdProp">
+): EventKind {
+	const virtualKind: VirtualKind = getVirtualKind(event);
 	if (virtualKind === "holiday") return "holiday";
 	if (virtualKind === "manual") return "manual";
 	if (virtualKind === "recurring") return "virtual";

@@ -1,13 +1,11 @@
 import type { DateTime } from "luxon";
 
-import type { RecurrenceType } from "../types/recurring-event";
-import { parseRecurrenceType } from "../types/recurring-event";
-import type { Weekday } from "../types/weekday";
-import { WEEKDAY_TO_NUMBER } from "../types/weekday";
+import type { RecurrenceType, Weekday } from "../types/recurring";
+import { WEEKDAY_TO_NUMBER } from "../types/recurring";
+import { parseRecurrenceType } from "./recurring-utils";
 
-export type { Weekday } from "../types/weekday";
+export type { RecurrenceType, Weekday } from "../types/recurring";
 export { WEEKDAY_TO_NUMBER };
-export type { RecurrenceType };
 
 /**
  * Checks if a given date matches any of the specified weekdays

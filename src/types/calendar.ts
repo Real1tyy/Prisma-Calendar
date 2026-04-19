@@ -2,7 +2,9 @@ import type { CustomButtonInput, EventInput } from "@fullcalendar/core";
 import { z } from "zod";
 
 import type { FCExtendedProps } from "../utils/extended-props";
-import { EventMetadataSchema } from "./event";
+import { EventMetadataSchema } from "./event-metadata";
+
+// ─── Virtual Kind ────────────────────────────────────────────────────
 
 export const VirtualKindSchema = z.enum(["none", "recurring", "manual", "holiday"]);
 export type VirtualKind = z.infer<typeof VirtualKindSchema>;
@@ -11,7 +13,8 @@ export function isAnyVirtual(kind: VirtualKind | undefined): boolean {
 	return kind !== undefined && kind !== "none";
 }
 
-// Base properties shared by all event types
+// ─── Event Domain Schemas ────────────────────────────────────────────
+
 const BaseEventSchema = z.object({
 	id: z.string(),
 	ref: z.object({
@@ -21,7 +24,6 @@ const BaseEventSchema = z.object({
 	metadata: EventMetadataSchema,
 });
 
-// Timed Event: has start and end, can be skipped, can be virtual
 export const TimedEventSchema = BaseEventSchema.extend({
 	type: z.literal("timed"),
 	start: z.string(),
@@ -33,7 +35,6 @@ export const TimedEventSchema = BaseEventSchema.extend({
 	meta: z.record(z.string(), z.unknown()),
 });
 
-// All-Day Event: has start (no end), can be skipped, can be virtual
 export const AllDayEventSchema = BaseEventSchema.extend({
 	type: z.literal("allDay"),
 	start: z.string(),
@@ -44,7 +45,6 @@ export const AllDayEventSchema = BaseEventSchema.extend({
 	meta: z.record(z.string(), z.unknown()),
 });
 
-// Untracked Event: no start/end/allDay, cannot be virtual, cannot be skipped
 export const UntrackedEventSchema = BaseEventSchema.extend({
 	type: z.literal("untracked"),
 	virtualKind: z.literal("none"),
@@ -53,19 +53,15 @@ export const UntrackedEventSchema = BaseEventSchema.extend({
 	meta: z.record(z.string(), z.unknown()),
 });
 
-export const CalendarEventSchema = z.discriminatedUnion("type", [TimedEventSchema, AllDayEventSchema]);
+const CalendarEventSchema = z.discriminatedUnion("type", [TimedEventSchema, AllDayEventSchema]);
 
-export const ParsedEventSchema = z.discriminatedUnion("type", [
-	TimedEventSchema,
-	AllDayEventSchema,
-	UntrackedEventSchema,
-]);
+const ParsedEventSchema = z.discriminatedUnion("type", [TimedEventSchema, AllDayEventSchema, UntrackedEventSchema]);
 
 export type TimedEvent = z.infer<typeof TimedEventSchema>;
 export type AllDayEvent = z.infer<typeof AllDayEventSchema>;
 export type UntrackedEvent = z.infer<typeof UntrackedEventSchema>;
-export type CalendarEvent = z.infer<typeof CalendarEventSchema>; // TimedEvent | AllDayEvent
-export type ParsedEvent = z.infer<typeof ParsedEventSchema>; // TimedEvent | AllDayEvent | UntrackedEvent
+export type CalendarEvent = z.infer<typeof CalendarEventSchema>;
+export type ParsedEvent = z.infer<typeof ParsedEventSchema>;
 
 export function eventDefaults(): {
 	virtualKind: "none";
@@ -84,18 +80,23 @@ export function isAllDayEvent(event: ParsedEvent): event is AllDayEvent {
 	return event.type === "allDay";
 }
 
+// ─── Event Classification ────────────────────────────────────────────
+
+const EventKindSchema = z.enum(["normal", "source", "physical", "virtual", "manual", "holiday"]);
+export type EventKind = z.infer<typeof EventKindSchema>;
+
+// ─── FullCalendar Adapter Types ──────────────────────────────────────
+
 export interface FCPrismaEventInput extends EventInput {
 	extendedProps: FCExtendedProps;
 }
-
-export type FlexibleExtendedProps = Partial<Omit<FCExtendedProps, "frontmatterHash">>;
 
 export interface CalendarEventData {
 	title: string;
 	start: Date | null;
 	end: Date | null;
 	allDay: boolean;
-	extendedProps: FlexibleExtendedProps;
+	extendedProps: Partial<Omit<FCExtendedProps, "frontmatterHash">>;
 }
 
 export interface EventMountInfo {
@@ -117,7 +118,36 @@ export interface EventUpdateInfo {
 	revert: () => void;
 }
 
-// Extended button input with className support (FullCalendar accepts it at runtime but doesn't type it)
 export interface ExtendedButtonInput extends CustomButtonInput {
 	className?: string;
 }
+
+// ─── Move-By Operation (batch move) ──────────────────────────────────
+
+export const TIME_UNITS = ["minutes", "hours", "days", "weeks", "months", "years"] as const;
+
+export type TimeUnit = (typeof TIME_UNITS)[number];
+
+const ALL_DAY_UNITS = new Set<TimeUnit>(["days", "weeks", "months", "years"]);
+
+export const isTimeUnitAllowedForAllDay = (unit: TimeUnit): boolean => ALL_DAY_UNITS.has(unit);
+
+export interface MoveByResult {
+	value: number;
+	unit: TimeUnit;
+}
+
+// ─── Virtual Events File ─────────────────────────────────────────────
+
+export const VirtualEventDataSchema = z.object({
+	id: z.string(),
+	title: z.string(),
+	start: z.string(),
+	end: z.string().nullable(),
+	allDay: z.boolean(),
+	properties: z.record(z.string(), z.unknown()).default({}),
+});
+
+export const VirtualEventsFileSchema = z.array(VirtualEventDataSchema);
+
+export type VirtualEventData = z.infer<typeof VirtualEventDataSchema>;

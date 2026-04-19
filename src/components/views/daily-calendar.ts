@@ -8,8 +8,8 @@ import { merge, type Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { FCPrismaEventInput } from "../../types/calendar";
-import { isFileBackedEvent } from "../../types/event-classification";
 import type { SingleCalendarConfig } from "../../types/settings";
+import { isFileBackedEvent } from "../../utils/event-classification";
 import { parseFCExtendedProps } from "../../utils/extended-props";
 import type { CalendarHost } from "../calendar-host";
 import { EventContextMenu } from "../event-context-menu";

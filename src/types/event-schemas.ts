@@ -6,9 +6,9 @@ import { cleanupTitle } from "../utils/events/naming";
 import { toInternalISO } from "../utils/iso";
 import type { AllDayEvent, ParsedEvent, TimedEvent, UntrackedEvent } from "./calendar";
 import { eventDefaults } from "./calendar";
-import type { EventMetadata } from "./event-metadata";
 import type { ParsedEventFrontmatter } from "./event-frontmatter-schema";
 import { createEventFrontmatterSchema } from "./event-frontmatter-schema";
+import type { EventMetadata } from "./event-metadata";
 import type { Frontmatter, SingleCalendarConfig } from "./index";
 
 /**
