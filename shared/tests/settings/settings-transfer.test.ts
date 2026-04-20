@@ -15,7 +15,13 @@ interface TestSettings {
 		theme: "light" | "dark";
 		timeout: number;
 	};
-	calendars: Array<{ id: string; name: string; enabled: boolean }>;
+	calendars: Array<{
+		id: string;
+		name: string;
+		enabled: boolean;
+		templatePath?: string;
+		tabState?: Record<string, unknown>;
+	}>;
 	licenseKeySecretName: string;
 	[key: string]: unknown;
 }
@@ -138,6 +144,52 @@ describe("applyTransferredSettings", () => {
 			calendars: [
 				{ id: "a", name: "Home", enabled: true },
 				{ id: "b", name: "Work", enabled: false },
+			],
+		};
+		const snapshot = createTransferableSettingsSnapshot(settings, DEFAULTS);
+		const restored = applyTransferredSettings(DEFAULTS, snapshot, DEFAULTS);
+		expect(restored).toEqual(settings);
+	});
+
+	it("preserves optional fields absent from defaults during export and import", () => {
+		const settings: TestSettings = {
+			...DEFAULTS,
+			calendars: [
+				{
+					id: "a",
+					name: "Home",
+					enabled: true,
+					templatePath: "Templates/Event.md",
+					tabState: { visibleTabs: ["calendar", "timeline"], renames: { calendar: "Cal" } },
+				},
+			],
+		};
+		const snapshot = createTransferableSettingsSnapshot(settings, DEFAULTS);
+		const cal = (snapshot.calendars as Array<Record<string, unknown>>)[0];
+		expect(cal?.templatePath).toBe("Templates/Event.md");
+		expect(cal?.tabState).toEqual({ visibleTabs: ["calendar", "timeline"], renames: { calendar: "Cal" } });
+
+		const restored = applyTransferredSettings(DEFAULTS, snapshot, DEFAULTS);
+		expect(restored.calendars[0]?.templatePath).toBe("Templates/Event.md");
+		expect(restored.calendars[0]?.tabState).toEqual({
+			visibleTabs: ["calendar", "timeline"],
+			renames: { calendar: "Cal" },
+		});
+	});
+
+	it("round-trips settings with optional fields not present in defaults", () => {
+		const settings: TestSettings = {
+			...DEFAULTS,
+			enabled: false,
+			maxItems: 25,
+			calendars: [
+				{
+					id: "a",
+					name: "Home",
+					enabled: true,
+					templatePath: "Templates/Event.md",
+					tabState: { active: "timeline" },
+				},
 			],
 		};
 		const snapshot = createTransferableSettingsSnapshot(settings, DEFAULTS);

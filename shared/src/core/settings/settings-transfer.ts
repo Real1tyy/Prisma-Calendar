@@ -32,10 +32,19 @@ function coerceToShape(template: unknown, incoming: unknown): unknown {
 	if (isRecord(template)) {
 		if (!isRecord(incoming)) return template;
 		const out: Record<string, unknown> = {};
-		for (const key of Object.keys(template)) {
-			out[key] = key in incoming ? coerceToShape(template[key], incoming[key]) : template[key];
+		const allKeys = new Set([...Object.keys(template), ...Object.keys(incoming)]);
+		for (const key of allKeys) {
+			if (key in incoming) {
+				out[key] = key in template ? coerceToShape(template[key], incoming[key]) : incoming[key];
+			} else {
+				out[key] = template[key];
+			}
 		}
 		return out;
+	}
+
+	if (template === undefined) {
+		return incoming;
 	}
 
 	if (incoming !== undefined && typeof incoming === typeof template) {
@@ -52,7 +61,8 @@ export function createTransferableSettingsSnapshot<T extends Record<string, unkn
 ): Record<string, unknown> {
 	const block = toBlockSet(opts?.nonTransferableKeys);
 	const out: Record<string, unknown> = {};
-	for (const key of Object.keys(defaults)) {
+	const allKeys = new Set([...Object.keys(defaults), ...Object.keys(settings)]);
+	for (const key of allKeys) {
 		if (block.has(key)) continue;
 		out[key] = coerceToShape(defaults[key], settings[key]);
 	}
@@ -68,10 +78,12 @@ export function applyTransferredSettings<T extends Record<string, unknown>>(
 	if (!isRecord(transferData)) {
 		throw new Error("Settings import must be a JSON object.");
 	}
+	const block = toBlockSet(opts?.nonTransferableKeys);
 	const defaultsSnapshot = createTransferableSettingsSnapshot(defaults, defaults, opts);
 	const merged = coerceToShape(defaultsSnapshot, transferData) as Record<string, unknown>;
 	const next = { ...current } as Record<string, unknown>;
-	for (const key of Object.keys(defaultsSnapshot)) {
+	for (const key of Object.keys(merged)) {
+		if (block.has(key)) continue;
 		next[key] = merged[key];
 	}
 	return next as T;
