@@ -500,10 +500,15 @@ export class EventFileRepository implements CalendarEventSource {
 		// `chain`; callers still observe rejections via `result`.
 		const result = prev
 			.catch(() => {})
-			.then(() => {
+			.then(async () => {
 				const current = this.app.vault.getAbstractFileByPath(path);
 				if (!(current instanceof TFile)) return;
-				return this.app.fileManager.processFrontMatter(current, fn);
+				try {
+					await this.app.fileManager.processFrontMatter(current, fn);
+				} catch (err: unknown) {
+					if (err instanceof Error && err.message.includes("ENOENT")) return;
+					throw err;
+				}
 			});
 		const chain: Promise<void> = result
 			.catch(() => {})
