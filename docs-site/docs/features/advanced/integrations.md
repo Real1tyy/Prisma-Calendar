@@ -368,7 +368,7 @@ Configure automatic synchronization behavior:
    - **New event**: Creates markdown note with event data and sync metadata
    - **Changed event** (lastModified differs): Updates frontmatter, renames file if title changed
    - **Unchanged event**: Skipped for efficiency
-4. **Deleted events**: Events present locally but missing from the remote ICS are deleted
+4. **Deleted events**: Events present locally but missing from the remote ICS are removed cleanly, even when background metadata updates are in-flight
 
 #### Event Metadata
 

@@ -36,6 +36,8 @@ async function collapseLeftSidebar(calendar: CalendarHandle): Promise<void> {
 		if (w.app.workspace.leftSplit && !w.app.workspace.leftSplit.collapsed) {
 			w.app.workspace.leftSplit.collapse();
 		}
+		// Collapsed ribbon strip still overlaps the gantt canvas left edge
+		document.querySelector(".workspace-ribbon.mod-left")?.remove();
 	});
 }
 

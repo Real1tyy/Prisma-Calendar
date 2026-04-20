@@ -122,3 +122,13 @@ Break: 60  # 1 hour lunch break
 - Exclude lunch breaks from work sessions
 - Track actual meeting time excluding breaks
 - Accurate time tracking for billing purposes
+
+## Settings Transfer
+
+At the bottom of the General tab, the **Settings transfer** row provides three buttons:
+
+- **Export** opens a modal pre-filled with your plugin settings as JSON. Only fields you changed from defaults are included. **Download** saves a `prisma-calendar-settings.json` file; **Copy to clipboard** is also available. You can edit the JSON before downloading.
+- **Import** opens a modal where you can upload a previously exported JSON file or paste one directly. Clicking **Import** replaces all transferable settings at once. Anything missing from the payload is reset to its default — import is a full state restore, not a patch.
+- **Reset to defaults** asks for confirmation and then restores every transferable setting to its default value. Use it as a quick "start over" when you've experimented yourself into a corner.
+
+The **license key secret name** is local to each vault and is never exported, overwritten on import, or cleared on reset. The exported JSON has no version field: forward- and backward-compatibility is handled by a type-coercing merge on import plus the plugin's own schema fallbacks.

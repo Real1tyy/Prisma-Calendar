@@ -1792,6 +1792,29 @@
   border-color: var(--text-error);
 }
 
+.prisma-settings-transfer-modal .settings-transfer-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-3);
+}
+.prisma-settings-transfer-modal .settings-transfer-description {
+  margin: 0;
+  color: var(--text-muted);
+}
+.prisma-settings-transfer-modal .settings-transfer-editor {
+  width: 100%;
+  min-height: 18em;
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-small);
+  resize: vertical;
+}
+.prisma-settings-transfer-modal .settings-transfer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-4-2);
+  justify-content: flex-end;
+}
+
 /* Categories settings */
 .prisma-categories-empty-state {
   padding: 16px;

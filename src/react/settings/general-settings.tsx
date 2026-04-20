@@ -4,6 +4,7 @@ import {
 	NumberInput,
 	SettingHeading,
 	SettingItem,
+	SettingsTransferButtons,
 	TextInput,
 	Toggle,
 	useSettingsStore,
@@ -14,8 +15,10 @@ import { renderProUpgradeBanner } from "../../components/settings/pro-upgrade-ba
 import { FREE_MAX_EVENT_PRESETS } from "../../core/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
-import type { SingleCalendarConfig } from "../../types/settings";
+import type { CustomCalendarSettings, SingleCalendarConfig } from "../../types/settings";
 import { LOCALE_OPTIONS } from "../../types/view";
+
+const PRISMA_NON_TRANSFERABLE_SETTINGS: ReadonlyArray<keyof CustomCalendarSettings> = ["licenseKeySecretName"];
 
 interface GeneralSettingsProps {
 	settingsStore: CalendarSettingsStore;
@@ -56,6 +59,27 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 			<StopwatchSection settings={settings} updateField={updateField} />
 			<StatisticsSection settings={settings} updateField={updateField} />
 			<EventPresetsSection settings={settings} updateField={updateField} plugin={plugin} />
+			<SettingsTransferSection plugin={plugin} />
+		</>
+	);
+});
+
+interface SettingsTransferSectionProps {
+	plugin: CustomCalendarPlugin;
+}
+
+const SettingsTransferSection = memo(function SettingsTransferSection({ plugin }: SettingsTransferSectionProps) {
+	return (
+		<>
+			<SettingHeading name="Settings transfer" />
+			<SettingsTransferButtons
+				store={plugin.settingsStore}
+				defaults={plugin.settingsStore.getDefaults()}
+				nonTransferableKeys={PRISMA_NON_TRANSFERABLE_SETTINGS}
+				filename="prisma-calendar-settings.json"
+				modalClass="prisma-settings-transfer-modal"
+				testIdPrefix="prisma-settings-transfer"
+			/>
 		</>
 	);
 });

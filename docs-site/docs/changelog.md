@@ -6,9 +6,10 @@ All notable changes to this project will be documented here.
 
 ## 2.14.0 - 4/19/2026
 
-> **TLDR:** Your **Title property** now wins over the auto-generated **Calendar Title** everywhere, and edits to it save cleanly without the ZettelID tacked on. **CalDAV subscriptions** now pick up deletions from the server — remove an event in iCloud / Google / Nextcloud and it disappears from your vault on the next sync.
+> **TLDR:** New **Settings transfer** — export your plugin config as JSON and re-import it on another vault. Your **Title property** now wins over the auto-generated **Calendar Title** everywhere, and edits save cleanly without the ZettelID tacked on. **CalDAV subscriptions** now pick up deletions from the server.
 
 ### Added
+- **Settings transfer (import / export / reset)**: New **Settings transfer** row at the bottom of **General** — export your plugin settings as JSON (only fields you changed from defaults are included), re-import them on another vault, or reset every setting to its default with one click (protected by a confirmation dialog). Local-only keys (license secret reference) are never touched. See [General Settings → Settings Transfer](./configuration/general.md#settings-transfer).
 - **CalDAV picks up server-side deletions (Pro)**: Delete an event in iCloud, Google, Nextcloud, Fastmail, or Zimbra and Prisma now removes the local note on the next sync. Previously, deletions stayed stuck on the server. No setup needed — it just works after the update. See [CalDAV integration](./features/advanced/integrations.md#caldav-integration).
 
 ### Improved
