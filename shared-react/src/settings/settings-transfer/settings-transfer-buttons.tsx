@@ -9,6 +9,7 @@ import { Notice } from "obsidian";
 import type { ReactNode } from "react";
 import { memo, useCallback } from "react";
 
+import { Button } from "../../components/button";
 import { SettingItem } from "../../components/setting-item";
 import { useApp } from "../../contexts/app-context";
 import type { SettingsStorelike } from "../../hooks/use-settings-store";
@@ -121,20 +122,20 @@ function SettingsTransferButtonsInner<T extends Record<string, unknown>>({
 		resetSuccessMessage,
 	]);
 
-	const tid = (suffix: string) => (testIdPrefix ? `${testIdPrefix}-${suffix}` : undefined);
+	const tid = (suffix: string): string => (testIdPrefix ? `${testIdPrefix}-${suffix}` : suffix);
 
 	return (
 		<SettingItem name={name} description={description} testId={tid("row")}>
-			<button type="button" onClick={openImport} data-testid={tid("import-button")}>
+			<Button testId={tid("import-button")} onClick={openImport}>
 				{importButtonText}
-			</button>
-			<button type="button" onClick={openExport} data-testid={tid("export-button")}>
+			</Button>
+			<Button testId={tid("export-button")} onClick={openExport}>
 				{exportButtonText}
-			</button>
+			</Button>
 			{!hideResetButton && (
-				<button type="button" className="mod-warning" onClick={handleReset} data-testid={tid("reset-button")}>
+				<Button testId={tid("reset-button")} variant="warning" onClick={handleReset}>
 					{resetButtonText}
-				</button>
+				</Button>
 			)}
 		</SettingItem>
 	);

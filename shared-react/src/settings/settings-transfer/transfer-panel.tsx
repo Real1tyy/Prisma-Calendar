@@ -2,6 +2,8 @@ import { Notice } from "obsidian";
 import type { ChangeEvent } from "react";
 import { useCallback, useRef, useState } from "react";
 
+import { Button } from "../../components/button";
+import { Textarea } from "../../components/textarea";
 import { downloadTransferFile } from "./download-file";
 
 export type TransferMode = "export" | "import";
@@ -33,7 +35,7 @@ export interface TransferPanelProps {
 	strings: SettingsTransferStrings;
 	onImport: (parsed: unknown) => Promise<void>;
 	close: () => void;
-	testIdPrefix?: string;
+	testIdPrefix?: string | undefined;
 }
 
 function format(template: string, message: string): string {
@@ -57,7 +59,7 @@ export function TransferPanel({
 	const [isBusy, setIsBusy] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
-	const testId = (suffix: string) => (testIdPrefix ? `${testIdPrefix}-${suffix}` : undefined);
+	const tid = (suffix: string): string => (testIdPrefix ? `${testIdPrefix}-${suffix}` : suffix);
 
 	const handleCopy = useCallback(async () => {
 		try {
@@ -113,51 +115,45 @@ export function TransferPanel({
 	return (
 		<div className="settings-transfer-panel">
 			<p className="settings-transfer-description">{description}</p>
-			<textarea
+			<Textarea
+				testId={tid("editor")}
 				className="settings-transfer-editor"
 				value={value}
-				onChange={(e) => setValue(e.target.value)}
+				onChange={setValue}
 				spellCheck={false}
 				rows={14}
-				data-testid={testId("editor")}
 			/>
 			<div className="settings-transfer-actions">
 				{mode === "export" ? (
 					<>
-						<button type="button" className="mod-cta" onClick={handleDownload} data-testid={testId("download")}>
+						<Button testId={tid("download")} variant="primary" onClick={handleDownload}>
 							{strings.downloadButton}
-						</button>
-						<button type="button" onClick={handleCopy} data-testid={testId("copy")}>
+						</Button>
+						<Button testId={tid("copy")} onClick={handleCopy}>
 							{strings.copyButton}
-						</button>
+						</Button>
 					</>
 				) : (
 					<>
-						<button type="button" onClick={handlePickFile} disabled={isBusy} data-testid={testId("pick-file")}>
+						<Button testId={tid("pick-file")} onClick={handlePickFile} disabled={isBusy}>
 							{strings.importFromFileButton}
-						</button>
+						</Button>
 						<input
 							ref={fileInputRef}
 							type="file"
 							accept=".json,application/json,text/json"
 							style={{ display: "none" }}
 							onChange={handleFileChange}
-							data-testid={testId("file-input")}
+							data-testid={tid("file-input")}
 						/>
-						<button
-							type="button"
-							className="mod-cta"
-							onClick={handleImport}
-							disabled={isBusy}
-							data-testid={testId("apply")}
-						>
+						<Button testId={tid("apply")} variant="primary" onClick={handleImport} disabled={isBusy}>
 							{strings.applyImportButton}
-						</button>
+						</Button>
 					</>
 				)}
-				<button type="button" onClick={close} data-testid={testId("close")}>
+				<Button testId={tid("close")} onClick={close}>
 					{strings.closeButton}
-				</button>
+				</Button>
 			</div>
 		</div>
 	);

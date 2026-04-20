@@ -1,3 +1,5 @@
+export type { ButtonProps, ButtonVariant } from "./components/button";
+export { Button } from "./components/button";
 export type { ChipProps } from "./components/chip";
 export { Chip } from "./components/chip";
 export type { ChipListProps } from "./components/chip-list";
@@ -25,6 +27,8 @@ export {
 	Toggle,
 } from "./components/setting-controls";
 export { SettingHeading, SettingItem } from "./components/setting-item";
+export type { TextareaProps } from "./components/textarea";
+export { Textarea } from "./components/textarea";
 export { AppContext, useApp } from "./contexts/app-context";
 export type { ActivatableProps } from "./hooks/use-activatable";
 export { useActivatable } from "./hooks/use-activatable";
