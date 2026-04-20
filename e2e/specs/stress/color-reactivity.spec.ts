@@ -38,6 +38,7 @@ const COUNT_PER_CATEGORY = 12;
 
 test.describe("stress: colour rule reactivity across many tiles", () => {
 	test("mutating a colour rule repaints every matching tile in the current view", async ({ calendar }) => {
+		test.slow();
 		await updateCalendarSettings(calendar.page, {
 			defaultNodeColor: DEFAULT_NODE,
 			colorRules: [

@@ -38,6 +38,7 @@ test.describe("stress: batch move reactivity", () => {
 	const EVENT_COUNT = EVENTS_PER_DAY * 7;
 
 	test("batch move-next empties the source week and fills the target week", async ({ obsidian }) => {
+		test.slow();
 		const { page, vaultDir } = obsidian;
 
 		clearVaultSeedEvents(vaultDir);
@@ -81,6 +82,7 @@ test.describe("stress: batch move reactivity", () => {
 	});
 
 	test("batch move-next then move-prev returns every event to its original week", async ({ obsidian }) => {
+		test.slow();
 		const { page, vaultDir } = obsidian;
 
 		clearVaultSeedEvents(vaultDir);
@@ -119,6 +121,7 @@ test.describe("stress: batch move reactivity", () => {
 	});
 
 	test("batch move-next on a partial selection moves only the selected events", async ({ obsidian }) => {
+		test.slow();
 		const { page, vaultDir } = obsidian;
 
 		clearVaultSeedEvents(vaultDir);

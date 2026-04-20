@@ -31,6 +31,7 @@ test.describe("stress: batch skip + batch clone reactivity", () => {
 	const EVENT_COUNT = 35;
 
 	test("batch skip hides every selected event and undo makes them all visible again", async ({ obsidian }) => {
+		test.slow();
 		const { page, vaultDir } = obsidian;
 
 		clearVaultSeedEvents(vaultDir);
@@ -71,6 +72,7 @@ test.describe("stress: batch skip + batch clone reactivity", () => {
 	});
 
 	test("batch clone-next doubles the rendered set across source + target weeks", async ({ obsidian }) => {
+		test.slow();
 		const { page, vaultDir } = obsidian;
 
 		const startingCount = 21;

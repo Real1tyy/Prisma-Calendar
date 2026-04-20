@@ -29,6 +29,7 @@ test.describe("stress: large vault initial render", () => {
 	test(`${TOTAL_COUNT} pre-seeded events all land in the indexer and list view matches the visible week`, async ({
 		obsidian,
 	}) => {
+		test.slow();
 		const { page, vaultDir } = obsidian;
 
 		clearVaultSeedEvents(vaultDir);

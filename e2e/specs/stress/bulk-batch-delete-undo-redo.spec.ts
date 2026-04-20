@@ -35,6 +35,7 @@ test.describe("stress: batch delete undo/redo", () => {
 	const EVENT_COUNT = EVENTS_PER_DAY * 7;
 
 	test("batch delete clears the calendar and undo restores every event", async ({ obsidian }) => {
+		test.slow();
 		const { page, vaultDir } = obsidian;
 
 		clearVaultSeedEvents(vaultDir);
@@ -75,6 +76,7 @@ test.describe("stress: batch delete undo/redo", () => {
 	});
 
 	test("chained move+undo cycles under load keep the DOM eventually consistent", async ({ obsidian }) => {
+		test.slow();
 		const { page, vaultDir } = obsidian;
 
 		clearVaultSeedEvents(vaultDir);

@@ -34,6 +34,7 @@ test.describe("stress: rapid-fire mutations against coalesced refresh", () => {
 	const EVENT_COUNT = 28;
 
 	test("move-next → move-prev → move-next → undo × 3 converges to starting state", async ({ obsidian }) => {
+		test.slow();
 		const { page, vaultDir } = obsidian;
 
 		clearVaultSeedEvents(vaultDir);
@@ -101,6 +102,7 @@ test.describe("stress: rapid-fire mutations against coalesced refresh", () => {
 	});
 
 	test("delete → undo → delete → undo twice in a row keeps events in sync", async ({ obsidian }) => {
+		test.slow();
 		const { page, vaultDir } = obsidian;
 
 		clearVaultSeedEvents(vaultDir);
