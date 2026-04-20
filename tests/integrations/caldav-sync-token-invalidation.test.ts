@@ -36,6 +36,27 @@ describe("isSyncTokenInvalidated — positive signals we must catch", () => {
 	});
 });
 
+describe("isSyncTokenInvalidated — structured status field (preferred over regex)", () => {
+	it("catches status: 410 as a numeric field even when the message is inert", () => {
+		const error = Object.assign(new Error("request failed"), { status: 410 });
+		expect(isSyncTokenInvalidated(error)).toBe(true);
+	});
+
+	it("catches status: '410' as a string field (some fetch wrappers stringify)", () => {
+		const error = Object.assign(new Error("request failed"), { status: "410" });
+		expect(isSyncTokenInvalidated(error)).toBe(true);
+	});
+
+	it("works on plain objects that aren't Error instances", () => {
+		expect(isSyncTokenInvalidated({ status: 410, message: "anything" })).toBe(true);
+	});
+
+	it("ignores non-410 structured statuses and falls through to the text check", () => {
+		const error = Object.assign(new Error("internal server error"), { status: 500 });
+		expect(isSyncTokenInvalidated(error)).toBe(false);
+	});
+});
+
 describe("isSyncTokenInvalidated — benign messages we must NOT trip on", () => {
 	it("does not false-positive on a bare 'gone' in an unrelated error", () => {
 		expect(isSyncTokenInvalidated(new Error("the file is gone from disk"))).toBe(false);
