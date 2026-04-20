@@ -172,9 +172,9 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 			this.subscription.timezone,
 			{ [icsSubscriptionProp]: syncMeta }
 		);
-		// File may have been renamed when the title changed. Drop the stale
-		// entry so `tryTrackInGlobalIndex` doesn't flag the new path as a dup
-		// of its own predecessor and trash it.
+		// Drop the stale entry before re-registering — otherwise the global
+		// UID index's duplicate-detection guard trashes the new file when a
+		// rename moves the note to a different path.
 		if (newFilePath !== filePath) {
 			this.syncStateManager.unregisterTracked(filePath);
 		}

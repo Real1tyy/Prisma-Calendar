@@ -13,10 +13,11 @@ export interface TrackedSyncEvent<TMetadata> {
 	metadata: TMetadata;
 }
 
-export abstract class BaseSyncStateManager<TMetadata> {
+export abstract class BaseSyncStateManager<TMetadata extends { uid: string }> {
 	private indexerSubscription: Subscription | null = null;
 	private settingsSubscription: Subscription | null = null;
 	protected frontmatterProp: string;
+	protected readonly byUid: Map<string, TrackedSyncEvent<TMetadata>> = new Map();
 
 	constructor(
 		protected app: App,
@@ -46,9 +47,9 @@ export abstract class BaseSyncStateManager<TMetadata> {
 		this.clearState();
 	}
 
-	protected abstract clearState(): void;
-	protected abstract trackEvent(filePath: string, metadata: TMetadata): void;
-	protected abstract untrackByPath(filePath: string): boolean;
+	findByUidGlobal(uid: string): TrackedSyncEvent<TMetadata> | null {
+		return this.byUid.get(uid) ?? null;
+	}
 
 	/**
 	 * Synchronous prime for the tracked-state map. Sync services call this
@@ -64,37 +65,35 @@ export abstract class BaseSyncStateManager<TMetadata> {
 	unregisterTracked(filePath: string): boolean {
 		return this.untrackByPath(filePath);
 	}
-	protected tryTrackInGlobalIndex(
-		globalUidIndex: Map<string, TrackedSyncEvent<TMetadata>>,
-		uid: string,
-		filePath: string,
-		tracked: TrackedSyncEvent<TMetadata>,
-		duplicateLabel: string
-	): boolean {
-		const existing = globalUidIndex.get(uid);
+
+	/**
+	 * Human-readable label used when trashing a duplicate-UID file (e.g.
+	 * `"CalDAV"`, `"ICS"`). Subclass hook so the warning surfaces which
+	 * integration raised the duplicate.
+	 */
+	protected abstract getIntegrationLabel(): string;
+
+	protected trackEvent(filePath: string, metadata: TMetadata): void {
+		const existing = this.byUid.get(metadata.uid);
 		if (existing && existing.filePath !== filePath) {
-			trashDuplicateFile(this.app, filePath, duplicateLabel);
-			return false;
+			trashDuplicateFile(this.app, filePath, `${this.getIntegrationLabel()} event (UID: ${metadata.uid})`);
+			return;
 		}
-		globalUidIndex.set(uid, tracked);
-		return true;
+		this.byUid.set(metadata.uid, { filePath, metadata });
 	}
 
-	protected untrackByPathFromMaps(
-		outerMap: Map<string, Map<string, TrackedSyncEvent<TMetadata>>>,
-		globalUidIndex: Map<string, TrackedSyncEvent<TMetadata>>,
-		filePath: string
-	): boolean {
-		for (const innerMap of outerMap.values()) {
-			for (const [uid, tracked] of innerMap.entries()) {
-				if (tracked.filePath === filePath) {
-					innerMap.delete(uid);
-					globalUidIndex.delete(uid);
-					return true;
-				}
+	protected untrackByPath(filePath: string): boolean {
+		for (const [uid, tracked] of this.byUid.entries()) {
+			if (tracked.filePath === filePath) {
+				this.byUid.delete(uid);
+				return true;
 			}
 		}
 		return false;
+	}
+
+	protected clearState(): void {
+		this.byUid.clear();
 	}
 
 	private handleIndexerEvent(event: IndexerEvent): void {

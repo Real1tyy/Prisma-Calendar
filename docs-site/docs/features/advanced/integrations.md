@@ -170,9 +170,11 @@ CalDAV integration enables read-only synchronization from external CalDAV server
 - Automatic one-way sync (server → Obsidian)
 - Create Obsidian notes for external events
 - Incremental sync using ETags for efficiency
+- **Server-side deletions propagate to your vault** via RFC 6578 sync-tokens — removing an event on the server removes the note locally on the next sync
+- Transparent fallback to full refetch when a stored sync-token is invalidated by the server
 - No manual import/export required
 
-**Important**: CalDAV sync is currently **read-only**. Events created or modified in Obsidian are not synced back to the CalDAV server.
+**Important**: CalDAV sync is **read-only**. Events created or modified in Obsidian are not synced back to the CalDAV server.
 
 ### Setting Up CalDAV
 
@@ -237,13 +239,30 @@ Configure automatic synchronization behavior:
    - Generates [Zettel ID](../management/zettelid-naming) for conflict-free filename
    - Populates frontmatter with event data
    - Adds CalDAV metadata for tracking
+3. Stores a **sync-token** returned by the server — future syncs only fetch changes since this cursor
 
 #### Incremental Updates
 
-On subsequent syncs:
-1. **ETag comparison**: Check if server event changed
-2. **If unchanged**: Skip processing (efficient)
-3. **If changed**: Update frontmatter, rename file if title changed (preserve Zettel ID), update timestamps
+On subsequent syncs (RFC 6578 `sync-collection`):
+1. Sends the stored sync-token to the server
+2. Server returns only the delta: created, updated, and deleted events since the token
+3. **ETag comparison** on updated events: skips frontmatter rewrites when nothing changed
+4. **Server-reported deletions**: the local note for each tombstoned event is moved to trash and removed from the tracking index
+5. Stores the new sync-token for the next run
+
+Renames are handled transparently — a title change on the server renames the local file while preserving its Zettel ID.
+
+#### Sync-Token Invalidation Recovery
+
+If the server expires or rejects the stored sync-token (common on iCloud / Nextcloud after long offline periods, major server upgrades, or user-initiated cache resets), Prisma detects the error signal, clears the stored token, and falls back to a **full refetch**. The full refetch intentionally does **not** propagate deletions (absence from a refetch is not a reliable delete signal); the next successful sync will again store a fresh token and resume incremental delete tracking.
+
+This recovery is automatic — no user action required — and surfaces a single console warning so you can audit recoveries in the dev tools if needed.
+
+#### Where the Sync-Token Lives
+
+The sync-token is a **per-device** cursor — each machine you open the vault on tracks its own view of the server. Tokens are stored in the browser's `localStorage` (keyed by account ID + calendar URL), **not** in `data.json`, so they do not replicate across devices via iCloud / Syncthing / OneDrive / git. If tokens roamed with the vault, device B would unknowingly present device A's cursor and silently miss every change that happened between the two syncs.
+
+Losing localStorage (incognito mode, manual clear) triggers a single free full refetch on the next sync — never data loss.
 
 #### Event Metadata
 

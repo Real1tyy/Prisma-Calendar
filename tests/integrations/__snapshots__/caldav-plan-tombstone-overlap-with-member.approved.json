@@ -4,12 +4,18 @@
       "kind": "skip-unchanged",
       "uid": "u-1",
       "filePath": "Events/event-u-1.md"
+    },
+    {
+      "kind": "delete",
+      "uid": "u-1",
+      "filePath": "Events/event-u-1.md",
+      "objectHref": "https://dav.example.com/acc-local/work/u-1.ics"
     }
   ],
   "summary": {
     "create": 0,
     "update": 0,
-    "delete": 0,
+    "delete": 1,
     "skipUnchanged": 1,
     "skipMissingUid": 0,
     "skipTombstoneUntracked": 0,

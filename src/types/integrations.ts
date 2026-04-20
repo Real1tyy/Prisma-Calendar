@@ -84,6 +84,24 @@ export const CALDAV_PRESETS = {
 	},
 } as const;
 
+/**
+ * Per-(account, calendar) sync-collection state. Deliberately NOT part of the
+ * settings schema — the sync-token is a per-device server cursor, and routing
+ * it through `data.json` would replicate it via vault-sync (iCloud / Syncthing
+ * / OneDrive) to every machine the vault is open on. Device B would then send
+ * device A's cursor, the server would accept it, and B would silently miss
+ * everything that changed in between. Persisted via `LocalKV` in
+ * `src/core/integrations/caldav/sync.ts` (device-local `localStorage`).
+ */
+export const CalDAVCalendarSyncStateSchema = z
+	.object({
+		syncToken: z.string().optional(),
+		lastSuccessfulSyncAt: z.number().int().optional(),
+	})
+	.loose();
+
+export type CalDAVCalendarSyncState = z.infer<typeof CalDAVCalendarSyncStateSchema>;
+
 export const CalDAVSettingsSchema = z
 	.object({
 		accounts: z.array(CalDAVAccountSchema).catch([]),

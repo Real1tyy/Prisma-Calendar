@@ -1,0 +1,17 @@
+{
+  "actions": [
+    {
+      "kind": "skip-tombstone-untracked",
+      "objectHref": "https://dav.example.com/acc-local/work/ghost.ics"
+    }
+  ],
+  "summary": {
+    "create": 0,
+    "update": 0,
+    "delete": 0,
+    "skipUnchanged": 0,
+    "skipMissingUid": 0,
+    "skipTombstoneUntracked": 1,
+    "skipForeignUid": 0
+  }
+}

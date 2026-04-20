@@ -1,16 +1,17 @@
 {
   "actions": [
     {
-      "kind": "skip-unchanged",
-      "uid": "u-1",
-      "filePath": "Events/event-u-1.md"
+      "kind": "create",
+      "uid": "u-2",
+      "url": "https://dav.example.com/acc-local/work/u-2.ics",
+      "etag": "\"e2\""
     }
   ],
   "summary": {
-    "create": 0,
+    "create": 1,
     "update": 0,
     "delete": 0,
-    "skipUnchanged": 1,
+    "skipUnchanged": 0,
     "skipMissingUid": 0,
     "skipTombstoneUntracked": 0,
     "skipForeignUid": 0

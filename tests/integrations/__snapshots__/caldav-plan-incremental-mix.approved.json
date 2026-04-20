@@ -1,0 +1,32 @@
+{
+  "actions": [
+    {
+      "kind": "update",
+      "uid": "u-stable",
+      "filePath": "Events/stable.md",
+      "url": "https://dav.example.com/acc-local/work/u-stable.ics",
+      "etag": "\"e-stable-v2\""
+    },
+    {
+      "kind": "create",
+      "uid": "u-new",
+      "url": "https://dav.example.com/acc-local/work/u-new.ics",
+      "etag": "\"e-new\""
+    },
+    {
+      "kind": "delete",
+      "uid": "u-doomed",
+      "filePath": "Events/doomed.md",
+      "objectHref": "https://dav.example.com/acc-local/work/u-doomed.ics"
+    }
+  ],
+  "summary": {
+    "create": 1,
+    "update": 1,
+    "delete": 1,
+    "skipUnchanged": 0,
+    "skipMissingUid": 0,
+    "skipTombstoneUntracked": 0,
+    "skipForeignUid": 0
+  }
+}

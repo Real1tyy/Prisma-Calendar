@@ -8,63 +8,37 @@ import { type ICSSubscriptionSyncMetadata, ICSSubscriptionSyncMetadataSchema } f
 
 type TrackedICSSubscriptionEvent = TrackedSyncEvent<ICSSubscriptionSyncMetadata>;
 
+/**
+ * Tracks every locally-synced ICS URL subscription event under a single
+ * UID-keyed map (inherited from `BaseSyncStateManager`). Per-subscription
+ * views (`getAllForSubscription`) scan the map once per sync rather than
+ * maintaining parallel nested indexes — the storage cost of one O(n) scan
+ * during sync is much smaller than the invariant burden of keeping two maps
+ * in lockstep.
+ */
 export class ICSSubscriptionSyncStateManager extends BaseSyncStateManager<ICSSubscriptionSyncMetadata> {
-	/**
-	 * Maps: subscriptionId -> uid -> TrackedICSSubscriptionEvent
-	 */
-	private syncState: Map<string, Map<string, TrackedICSSubscriptionEvent>> = new Map();
-
-	/**
-	 * Global uid index for cross-subscription dedup: uid -> TrackedICSSubscriptionEvent
-	 */
-	private globalUidIndex: Map<string, TrackedICSSubscriptionEvent> = new Map();
-
 	constructor(app: App, eventSource: CalendarEventSource, settings$: BehaviorSubject<SingleCalendarConfig>) {
 		super(app, eventSource, settings$, (s) => s.icsSubscriptionProp, ICSSubscriptionSyncMetadataSchema);
 	}
 
 	findByUid(subscriptionId: string, uid: string): TrackedICSSubscriptionEvent | null {
-		return this.syncState.get(subscriptionId)?.get(uid) || null;
-	}
-
-	findByUidGlobal(uid: string): TrackedICSSubscriptionEvent | null {
-		return this.globalUidIndex.get(uid) || null;
+		const tracked = this.byUid.get(uid);
+		if (!tracked) return null;
+		if (tracked.metadata.subscriptionId !== subscriptionId) return null;
+		return tracked;
 	}
 
 	getAllForSubscription(subscriptionId: string): TrackedICSSubscriptionEvent[] {
-		const subscriptionState = this.syncState.get(subscriptionId);
-		return subscriptionState ? Array.from(subscriptionState.values()) : [];
-	}
-
-	protected trackEvent(filePath: string, metadata: ICSSubscriptionSyncMetadata): void {
-		const tracked = { filePath, metadata };
-		if (
-			!this.tryTrackInGlobalIndex(
-				this.globalUidIndex,
-				metadata.uid,
-				filePath,
-				tracked,
-				`ICS event (UID: ${metadata.uid})`
-			)
-		) {
-			return;
+		const out: TrackedICSSubscriptionEvent[] = [];
+		for (const tracked of this.byUid.values()) {
+			if (tracked.metadata.subscriptionId === subscriptionId) {
+				out.push(tracked);
+			}
 		}
-
-		let subscriptionState = this.syncState.get(metadata.subscriptionId);
-		if (!subscriptionState) {
-			subscriptionState = new Map();
-			this.syncState.set(metadata.subscriptionId, subscriptionState);
-		}
-
-		subscriptionState.set(metadata.uid, tracked);
+		return out;
 	}
 
-	protected untrackByPath(filePath: string): boolean {
-		return this.untrackByPathFromMaps(this.syncState, this.globalUidIndex, filePath);
-	}
-
-	protected clearState(): void {
-		this.syncState.clear();
-		this.globalUidIndex.clear();
+	protected getIntegrationLabel(): string {
+		return "ICS";
 	}
 }

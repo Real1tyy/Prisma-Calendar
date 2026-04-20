@@ -3,16 +3,17 @@
  *
  * The planner is the pure decision function at the heart of CalDAV sync.
  * Given the remote CalDAV payload (VEVENTs fetched via the tsdav client) +
- * current tracked state, it decides which events to create, update,
- * skip-unchanged (etag match), skip-foreign-uid (tracked by another
- * account/calendar), and skip-missing-uid. Pinning the plan per scenario
- * makes every branch of the decision tree a diffable test case — the same
- * pattern the ICS subscription planner uses.
+ * current tracked state + RFC 6578 tombstones, it decides which events to
+ * create, update, delete, skip-unchanged (etag match), skip-foreign-uid
+ * (tracked by another account/calendar), skip-missing-uid, and
+ * skip-tombstone-untracked. Pinning the plan per scenario makes every
+ * branch of the decision tree a diffable test case — the same pattern the
+ * ICS subscription planner uses.
  *
- * Deletion is deliberately not covered here: the planner does not emit
- * `delete` actions because plain REPORT responses don't carry tombstones.
- * When sync-token tracking lands (RFC 6578), deletion becomes a new branch
- * and gets its own snapshots.
+ * The last block of tests covers the sync-collection (RFC 6578) paths:
+ * tombstone-driven deletion, stale tombstones, the full-refetch fallback,
+ * and the pathological "member + tombstone for the same href" edge case
+ * servers occasionally emit.
  */
 import { describe, expect, it } from "vitest";
 
@@ -68,12 +69,21 @@ function summarizeAction(action: ReturnType<typeof computeCaldavSyncPlan>["actio
 				url: action.event.url,
 				etag: action.event.etag,
 			};
+		case "delete":
+			return {
+				kind: action.kind,
+				uid: action.uid,
+				filePath: action.filePath,
+				objectHref: action.objectHref,
+			};
 		case "skip-unchanged":
 			return { kind: action.kind, uid: action.uid, filePath: action.filePath };
 		case "skip-foreign-uid":
 			return { kind: action.kind, uid: action.uid, ownedBy: action.ownedBy };
 		case "skip-missing-uid":
 			return { kind: action.kind, url: action.url };
+		case "skip-tombstone-untracked":
+			return { kind: action.kind, objectHref: action.objectHref };
 	}
 }
 
@@ -100,6 +110,7 @@ describe("computeCaldavSyncPlan — approval snapshots", () => {
 			remoteEvents: [],
 			findByUid: () => null,
 			findByUidGlobal: () => null,
+			findByObjectHref: () => null,
 		});
 		await expect(asSnapshot(plan)).toMatchFileSnapshot("__snapshots__/caldav-plan-empty.approved.json");
 	});
@@ -111,6 +122,7 @@ describe("computeCaldavSyncPlan — approval snapshots", () => {
 			remoteEvents: [makeRemote({ uid: "u-1", etag: '"etag-v1"' }), makeRemote({ uid: "u-2", etag: '"etag-v1"' })],
 			findByUid: () => null,
 			findByUidGlobal: () => null,
+			findByObjectHref: () => null,
 		});
 		await expect(asSnapshot(plan)).toMatchFileSnapshot("__snapshots__/caldav-plan-all-create.approved.json");
 	});
@@ -122,6 +134,7 @@ describe("computeCaldavSyncPlan — approval snapshots", () => {
 			remoteEvents: [makeRemote({ uid: "u-1", etag: '"etag-stable"' })],
 			findByUid: (uid) => (uid === "u-1" ? makeTracked(uid, "Events/event-u-1.md", { etag: '"etag-stable"' }) : null),
 			findByUidGlobal: () => null,
+			findByObjectHref: () => null,
 		});
 		await expect(asSnapshot(plan)).toMatchFileSnapshot("__snapshots__/caldav-plan-skip-unchanged.approved.json");
 	});
@@ -133,6 +146,7 @@ describe("computeCaldavSyncPlan — approval snapshots", () => {
 			remoteEvents: [makeRemote({ uid: "u-1", etag: '"etag-v2"' })],
 			findByUid: (uid) => (uid === "u-1" ? makeTracked(uid, "Events/event-u-1.md", { etag: '"etag-v1"' }) : null),
 			findByUidGlobal: () => null,
+			findByObjectHref: () => null,
 		});
 		await expect(asSnapshot(plan)).toMatchFileSnapshot("__snapshots__/caldav-plan-update.approved.json");
 	});
@@ -148,6 +162,7 @@ describe("computeCaldavSyncPlan — approval snapshots", () => {
 			remoteEvents: [makeRemote({ uid: "u-1", etag: '"etag-v1"' })],
 			findByUid: () => null,
 			findByUidGlobal: (uid) => (uid === "u-1" ? foreign : null),
+			findByObjectHref: () => null,
 		});
 		await expect(asSnapshot(plan)).toMatchFileSnapshot("__snapshots__/caldav-plan-skip-foreign.approved.json");
 	});
@@ -159,6 +174,7 @@ describe("computeCaldavSyncPlan — approval snapshots", () => {
 			remoteEvents: [makeRemote({ url: `${CALENDAR_HREF}mangled.ics`, etag: '"e"' })],
 			findByUid: () => null,
 			findByUidGlobal: () => null,
+			findByObjectHref: () => null,
 		});
 		await expect(asSnapshot(plan)).toMatchFileSnapshot("__snapshots__/caldav-plan-missing-uid.approved.json");
 	});
@@ -185,6 +201,7 @@ describe("computeCaldavSyncPlan — approval snapshots", () => {
 			],
 			findByUid: (uid) => tracked.get(uid) ?? null,
 			findByUidGlobal: (uid) => (uid === "u-foreign" ? foreign : null),
+			findByObjectHref: () => null,
 		});
 		await expect(asSnapshot(plan)).toMatchFileSnapshot("__snapshots__/caldav-plan-mixed.approved.json");
 	});
@@ -205,6 +222,7 @@ describe("computeCaldavSyncPlan — approval snapshots", () => {
 			],
 			findByUid: (uid) => tracked.get(uid) ?? null,
 			findByUidGlobal: () => null,
+			findByObjectHref: () => null,
 		});
 		await expect(asSnapshot(plan)).toMatchFileSnapshot("__snapshots__/caldav-plan-idle-refetch.approved.json");
 	});
@@ -222,7 +240,107 @@ describe("computeCaldavSyncPlan — approval snapshots", () => {
 			remoteEvents: [makeRemote({ uid: "u-1", etag: '"mine"' })],
 			findByUid: (uid) => (uid === "u-1" ? own : null),
 			findByUidGlobal: (uid) => (uid === "u-1" ? globalSameRef : null),
+			findByObjectHref: () => null,
 		});
 		await expect(asSnapshot(plan)).toMatchFileSnapshot("__snapshots__/caldav-plan-own-scope-wins.approved.json");
+	});
+
+	// ─── RFC 6578 sync-collection tombstone scenarios ────────────
+
+	it("tombstone for a tracked object → delete action with filePath + uid", async () => {
+		const tracked = makeTracked("u-1", "Events/event-u-1.md");
+		const deletedHref = tracked.metadata.objectHref;
+
+		const plan = computeCaldavSyncPlan({
+			accountId: ACCOUNT_ID,
+			calendarHref: CALENDAR_HREF,
+			remoteEvents: [],
+			tombstonedObjectHrefs: [deletedHref],
+			findByUid: (uid) => (uid === "u-1" ? tracked : null),
+			findByUidGlobal: () => null,
+			findByObjectHref: (href) => (href === deletedHref ? tracked : null),
+		});
+		await expect(asSnapshot(plan)).toMatchFileSnapshot("__snapshots__/caldav-plan-tombstone-delete.approved.json");
+	});
+
+	it("tombstone for an href we never tracked → skip-tombstone-untracked, no file IO", async () => {
+		const plan = computeCaldavSyncPlan({
+			accountId: ACCOUNT_ID,
+			calendarHref: CALENDAR_HREF,
+			remoteEvents: [],
+			tombstonedObjectHrefs: [`${CALENDAR_HREF}ghost.ics`],
+			findByUid: () => null,
+			findByUidGlobal: () => null,
+			findByObjectHref: () => null,
+		});
+		await expect(asSnapshot(plan)).toMatchFileSnapshot("__snapshots__/caldav-plan-tombstone-unknown.approved.json");
+	});
+
+	it("incremental sync: new + update + delete in a single plan", async () => {
+		const stable = makeTracked("u-stable", "Events/stable.md", { etag: '"e-stable"' });
+		const doomed = makeTracked("u-doomed", "Events/doomed.md", { etag: '"e-doomed"' });
+		const tracked = new Map<string, TrackedRef>([
+			["u-stable", stable],
+			["u-doomed", doomed],
+		]);
+		const byHref = new Map<string, TrackedRef>([
+			[stable.metadata.objectHref, stable],
+			[doomed.metadata.objectHref, doomed],
+		]);
+
+		const plan = computeCaldavSyncPlan({
+			accountId: ACCOUNT_ID,
+			calendarHref: CALENDAR_HREF,
+			// Server returns updated stable (new etag) + brand-new event.
+			remoteEvents: [
+				makeRemote({ uid: "u-stable", etag: '"e-stable-v2"' }),
+				makeRemote({ uid: "u-new", etag: '"e-new"' }),
+			],
+			tombstonedObjectHrefs: [doomed.metadata.objectHref],
+			findByUid: (uid) => tracked.get(uid) ?? null,
+			findByUidGlobal: () => null,
+			findByObjectHref: (href) => byHref.get(href) ?? null,
+		});
+		await expect(asSnapshot(plan)).toMatchFileSnapshot("__snapshots__/caldav-plan-incremental-mix.approved.json");
+	});
+
+	it("full refetch semantics: no tombstones → no delete actions even if local state diverges", async () => {
+		// Simulates the first-ever sync (no token) or a token-invalidated
+		// fallback. The caller must not pass tombstones here — absence from a
+		// windowed REPORT is not a delete signal, so the planner must never
+		// invent deletes.
+		const tracked = makeTracked("u-1", "Events/event-u-1.md");
+		const plan = computeCaldavSyncPlan({
+			accountId: ACCOUNT_ID,
+			calendarHref: CALENDAR_HREF,
+			remoteEvents: [makeRemote({ uid: "u-2", etag: '"e2"' })], // "u-1" absent
+			// tombstonedObjectHrefs omitted on purpose
+			findByUid: (uid) => (uid === "u-1" ? tracked : null),
+			findByUidGlobal: () => null,
+			findByObjectHref: () => null,
+		});
+		await expect(asSnapshot(plan)).toMatchFileSnapshot(
+			"__snapshots__/caldav-plan-full-refetch-no-deletes.approved.json"
+		);
+	});
+
+	it("tombstone overlapping with own-scope remote event → both actions fire; delete wins the file", async () => {
+		// Pathological but legal server behaviour: the same href is reported
+		// as both a member and a tombstone. Planner must emit an action for
+		// both; the sync service applies them in order and the tombstone
+		// authoritatively removes the file.
+		const tracked = makeTracked("u-1", "Events/event-u-1.md", { etag: '"e1"' });
+		const plan = computeCaldavSyncPlan({
+			accountId: ACCOUNT_ID,
+			calendarHref: CALENDAR_HREF,
+			remoteEvents: [makeRemote({ uid: "u-1", etag: '"e1"' })],
+			tombstonedObjectHrefs: [tracked.metadata.objectHref],
+			findByUid: (uid) => (uid === "u-1" ? tracked : null),
+			findByUidGlobal: () => null,
+			findByObjectHref: (href) => (href === tracked.metadata.objectHref ? tracked : null),
+		});
+		await expect(asSnapshot(plan)).toMatchFileSnapshot(
+			"__snapshots__/caldav-plan-tombstone-overlap-with-member.approved.json"
+		);
 	});
 });

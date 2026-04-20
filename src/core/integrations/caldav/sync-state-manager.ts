@@ -8,86 +8,62 @@ import { type CalDAVSyncMetadata, CalDAVSyncMetadataSchema } from "./types";
 
 type TrackedCalDAVEvent = TrackedSyncEvent<CalDAVSyncMetadata>;
 
+/**
+ * Tracks every locally-synced CalDAV event under a single UID-keyed map
+ * (inherited from `BaseSyncStateManager`). UID is the only field guaranteed
+ * to be O(1)-lookup hot — it's consulted per-remote-event by the planner.
+ * All other lookups (scoped by account + calendar, or keyed by object href
+ * for tombstone resolution) fire a handful of times per sync, so a linear
+ * scan over the single map is cheaper overall than maintaining parallel
+ * indexes that would need to stay in sync on every track / untrack / rename.
+ */
 export class CalDAVSyncStateManager extends BaseSyncStateManager<CalDAVSyncMetadata> {
-	/**
-	 * Maps: accountId -> calendarHref -> uid -> TrackedCalDAVEvent
-	 * This structure allows efficient lookups during sync
-	 */
-	private syncState: Map<string, Map<string, Map<string, TrackedCalDAVEvent>>> = new Map();
-
-	/**
-	 * Global uid index for cross-account/calendar dedup: uid -> TrackedCalDAVEvent
-	 */
-	private globalUidIndex: Map<string, TrackedCalDAVEvent> = new Map();
-
 	constructor(app: App, eventSource: CalendarEventSource, settings$: BehaviorSubject<SingleCalendarConfig>) {
 		super(app, eventSource, settings$, (s) => s.caldavProp, CalDAVSyncMetadataSchema);
 	}
 
 	findByUid(accountId: string, calendarHref: string, uid: string): TrackedCalDAVEvent | null {
-		return this.syncState.get(accountId)?.get(calendarHref)?.get(uid) || null;
+		const tracked = this.byUid.get(uid);
+		if (!tracked) return null;
+		if (tracked.metadata.accountId !== accountId) return null;
+		if (tracked.metadata.calendarHref !== calendarHref) return null;
+		return tracked;
 	}
 
-	findByUidGlobal(uid: string): TrackedCalDAVEvent | null {
-		return this.globalUidIndex.get(uid) || null;
+	findByObjectHref(accountId: string, calendarHref: string, objectHref: string): TrackedCalDAVEvent | null {
+		for (const tracked of this.byUid.values()) {
+			if (
+				tracked.metadata.accountId === accountId &&
+				tracked.metadata.calendarHref === calendarHref &&
+				tracked.metadata.objectHref === objectHref
+			) {
+				return tracked;
+			}
+		}
+		return null;
 	}
 
 	getAllForCalendar(accountId: string, calendarHref: string): TrackedCalDAVEvent[] {
-		const calendarState = this.syncState.get(accountId)?.get(calendarHref);
-		return calendarState ? Array.from(calendarState.values()) : [];
+		const out: TrackedCalDAVEvent[] = [];
+		for (const tracked of this.byUid.values()) {
+			if (tracked.metadata.accountId === accountId && tracked.metadata.calendarHref === calendarHref) {
+				out.push(tracked);
+			}
+		}
+		return out;
 	}
 
 	getAllForAccount(accountId: string): TrackedCalDAVEvent[] {
-		const accountState = this.syncState.get(accountId);
-		if (!accountState) return [];
-
-		const events: TrackedCalDAVEvent[] = [];
-		for (const calendarState of accountState.values()) {
-			events.push(...Array.from(calendarState.values()));
-		}
-		return events;
-	}
-
-	protected trackEvent(filePath: string, metadata: CalDAVSyncMetadata): void {
-		const tracked = { filePath, metadata };
-		if (
-			!this.tryTrackInGlobalIndex(
-				this.globalUidIndex,
-				metadata.uid,
-				filePath,
-				tracked,
-				`CalDAV event (UID: ${metadata.uid})`
-			)
-		) {
-			return;
-		}
-
-		let accountState = this.syncState.get(metadata.accountId);
-		if (!accountState) {
-			accountState = new Map();
-			this.syncState.set(metadata.accountId, accountState);
-		}
-
-		let calendarState = accountState.get(metadata.calendarHref);
-		if (!calendarState) {
-			calendarState = new Map();
-			accountState.set(metadata.calendarHref, calendarState);
-		}
-
-		calendarState.set(metadata.uid, tracked);
-	}
-
-	protected untrackByPath(filePath: string): boolean {
-		for (const accountState of this.syncState.values()) {
-			if (this.untrackByPathFromMaps(accountState, this.globalUidIndex, filePath)) {
-				return true;
+		const out: TrackedCalDAVEvent[] = [];
+		for (const tracked of this.byUid.values()) {
+			if (tracked.metadata.accountId === accountId) {
+				out.push(tracked);
 			}
 		}
-		return false;
+		return out;
 	}
 
-	protected clearState(): void {
-		this.syncState.clear();
-		this.globalUidIndex.clear();
+	protected getIntegrationLabel(): string {
+		return "CalDAV";
 	}
 }

@@ -16,8 +16,10 @@
   "summary": {
     "create": 2,
     "update": 0,
+    "delete": 0,
     "skipUnchanged": 0,
     "skipMissingUid": 0,
+    "skipTombstoneUntracked": 0,
     "skipForeignUid": 0
   }
 }

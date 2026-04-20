@@ -6,13 +6,16 @@ All notable changes to this project will be documented here.
 
 ## 2.14.0 - 4/19/2026
 
-> **TLDR:** The **Title property** now wins over the auto-computed **Calendar Title** for event display — your chosen frontmatter key drives the name everywhere. The same property also round-trips cleanly through the edit modal, with no ZettelID suffix leaking in.
+> **TLDR:** Your **Title property** now wins over the auto-generated **Calendar Title** everywhere, and edits to it save cleanly without the ZettelID tacked on. **CalDAV subscriptions** now pick up deletions from the server — remove an event in iCloud / Google / Nextcloud and it disappears from your vault on the next sync.
+
+### Added
+- **CalDAV picks up server-side deletions (Pro)**: Delete an event in iCloud, Google, Nextcloud, Fastmail, or Zimbra and Prisma now removes the local note on the next sync. Previously, deletions stayed stuck on the server. No setup needed — it just works after the update. See [CalDAV integration](./features/advanced/integrations.md#caldav-integration).
 
 ### Improved
-- **Title property takes priority over Calendar Title**: When both are configured, the **Title property** now wins in the calendar, edit modal, Gantt bars, Timeline items, Heatmap day detail, context menus, notifications, and event lists. Previously the auto-computed **Calendar Title** back-link silently overrode your chosen key. **Calendar Title** remains the fallback when the Title property is empty, and still powers the Bases view back-link rendering. See [Properties](./configuration/properties.md#title-property) and [ZettelID Naming](./features/management/zettelid-naming.md#calendar-title-vs-title-property).
+- **Title property takes priority over Calendar Title**: When both are set, your **Title property** now shows everywhere — calendar, edit modal, Gantt, Timeline, Heatmap, context menus, notifications, event lists. Before, the auto-generated **Calendar Title** quietly overrode it. **Calendar Title** still fills in when the Title property is empty. See [Properties](./configuration/properties.md#title-property) and [ZettelID Naming](./features/management/zettelid-naming.md#calendar-title-vs-title-property).
 
 ### Fixed
-- **Title property frontmatter polluted with ZettelID on edit**: Editing an event's title with a **Title property** configured saved the filename-shaped title (e.g. `After Edit-20250101000000`) into the frontmatter key instead of the clean user text. The property now stores exactly what you typed. See [Properties](./configuration/properties.md#title-property).
+- **Title property saved with ZettelID suffix on edit**: Editing an event's title saved something like `After Edit-20250101000000` into your Title property instead of the clean text you typed. Fixed — it now stores exactly what you typed. See [Properties](./configuration/properties.md#title-property).
 
 ---
 
