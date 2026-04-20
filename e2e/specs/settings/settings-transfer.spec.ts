@@ -1,7 +1,15 @@
 import { readFileSync } from "node:fs";
 
 import { expect } from "@playwright/test";
-import { expectPluginData, setTextInput, settleSettings, setToggle } from "@real1ty-obsidian-plugins/testing/e2e";
+import {
+	expectPluginData,
+	readPluginData,
+	setDropdown,
+	setNumberInput,
+	setTextInput,
+	settleSettings,
+	setToggle,
+} from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { PLUGIN_ID } from "../../fixtures/constants";
 import { test } from "../../fixtures/electron";
@@ -99,5 +107,86 @@ test.describe("settings: transfer (import/export)", () => {
 		expectPluginData(obsidian.vaultDir, PLUGIN_ID, {
 			"calendars.0.showRibbonIcon": true,
 		});
+	});
+
+	test("full roundtrip: mutate many settings → export → reset → import → verify identical", async ({ obsidian }) => {
+		await openPrismaSettings(obsidian.page);
+		await switchSettingsTab(obsidian.page, "general");
+
+		await setTextInput(obsidian.page, "prisma-settings-control-directory", "RoundtripEvents");
+		await setTextInput(obsidian.page, "prisma-settings-control-templatePath", "Templates/Roundtrip.md");
+		await setDropdown(obsidian.page, "prisma-settings-control-locale", "de");
+		await setToggle(obsidian.page, "prisma-settings-control-showRibbonIcon", false);
+		await setToggle(obsidian.page, "prisma-settings-control-enableKeyboardNavigation", false);
+		await setDropdown(obsidian.page, "prisma-settings-control-autoAssignZettelId", "calendarEvents");
+		await setNumberInput(obsidian.page, "prisma-settings-control-defaultDurationMinutes", 45);
+		await setToggle(obsidian.page, "prisma-settings-control-showDurationField", false);
+		await setToggle(obsidian.page, "prisma-settings-control-markPastInstancesAsDone", true);
+		await setToggle(obsidian.page, "prisma-settings-control-titleAutocomplete", false);
+		await setToggle(obsidian.page, "prisma-settings-control-showStopwatch", true);
+		await setToggle(obsidian.page, "prisma-settings-control-showDecimalHours", true);
+		await setDropdown(obsidian.page, "prisma-settings-control-defaultAggregationMode", "name");
+
+		await settleSettings(obsidian.page, { pluginId: PLUGIN_ID });
+
+		const snapshotBefore = readPluginData(obsidian.vaultDir, PLUGIN_ID) as Record<string, unknown>;
+		expect(snapshotBefore).toBeTruthy();
+
+		await obsidian.page.locator(EXPORT_BUTTON).scrollIntoViewIfNeeded();
+		await obsidian.page.locator(EXPORT_BUTTON).click();
+		const editor = obsidian.page.locator(EDITOR);
+		await editor.waitFor({ state: "visible" });
+		const exportedJson = await editor.inputValue();
+		await obsidian.page.locator(CLOSE_BUTTON).click();
+		await editor.waitFor({ state: "detached" });
+
+		await obsidian.page.locator(RESET_BUTTON).scrollIntoViewIfNeeded();
+		await obsidian.page.locator(RESET_BUTTON).click();
+		await obsidian.page.locator(CONFIRM_MODAL_CONFIRM).click();
+		await obsidian.page.locator(CONFIRM_MODAL_CONFIRM).waitFor({ state: "detached" });
+		await settleSettings(obsidian.page, { pluginId: PLUGIN_ID });
+
+		expectPluginData(obsidian.vaultDir, PLUGIN_ID, {
+			"calendars.0.showRibbonIcon": true,
+			"calendars.0.showDecimalHours": false,
+		});
+
+		await obsidian.page.locator(IMPORT_BUTTON).scrollIntoViewIfNeeded();
+		await obsidian.page.locator(IMPORT_BUTTON).click();
+		const importEditor = obsidian.page.locator(EDITOR);
+		await importEditor.waitFor({ state: "visible" });
+		await importEditor.fill(exportedJson);
+		await obsidian.page.locator(APPLY_BUTTON).click();
+		await importEditor.waitFor({ state: "detached" });
+		await settleSettings(obsidian.page, { pluginId: PLUGIN_ID });
+
+		const snapshotAfter = readPluginData(obsidian.vaultDir, PLUGIN_ID) as Record<string, unknown>;
+
+		const calendarsAfter = (snapshotAfter as { calendars: Array<Record<string, unknown>> }).calendars[0];
+		const calendarsBefore = (snapshotBefore as { calendars: Array<Record<string, unknown>> }).calendars[0];
+
+		expect(calendarsAfter?.directory).toBe("RoundtripEvents");
+		expect(calendarsAfter?.templatePath).toBe("Templates/Roundtrip.md");
+		expect(calendarsAfter?.locale).toBe("de");
+		expect(calendarsAfter?.showRibbonIcon).toBe(false);
+		expect(calendarsAfter?.enableKeyboardNavigation).toBe(false);
+		expect(calendarsAfter?.autoAssignZettelId).toBe("calendarEvents");
+		expect(calendarsAfter?.defaultDurationMinutes).toBe(45);
+		expect(calendarsAfter?.showDurationField).toBe(false);
+		expect(calendarsAfter?.markPastInstancesAsDone).toBe(true);
+		expect(calendarsAfter?.titleAutocomplete).toBe(false);
+		expect(calendarsAfter?.showStopwatch).toBe(true);
+		expect(calendarsAfter?.showDecimalHours).toBe(true);
+		expect(calendarsAfter?.defaultAggregationMode).toBe("name");
+
+		expect(snapshotAfter).toHaveProperty("version", (snapshotBefore as Record<string, unknown>).version);
+		expect(snapshotAfter).toHaveProperty(
+			"licenseKeySecretName",
+			(snapshotBefore as Record<string, unknown>).licenseKeySecretName
+		);
+
+		for (const key of Object.keys(calendarsBefore ?? {})) {
+			expect(calendarsAfter).toHaveProperty(key);
+		}
 	});
 });
