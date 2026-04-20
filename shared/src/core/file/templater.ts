@@ -316,7 +316,17 @@ export async function createFileAtPathAtomic(
 	if (parentDir) await ensureDirectory(app, parentDir);
 
 	const releaseGuard = guardFromTemplater(app, filePath);
-	const sentinelFile = await app.vault.create(filePath, PENDING_WRITE_SENTINEL);
+	let sentinelFile: TFile;
+	try {
+		sentinelFile = await app.vault.create(filePath, PENDING_WRITE_SENTINEL);
+	} catch (err) {
+		releaseGuard();
+		if (err instanceof Error && err.message.includes("File already exists")) {
+			const raced = app.vault.getAbstractFileByPath(filePath);
+			if (raced instanceof TFile) return raced;
+		}
+		throw err;
+	}
 
 	try {
 		const renderedContent = await renderTemplateContent(app, templatePath!, sentinelFile, frontmatter);
@@ -373,7 +383,15 @@ export async function createFileAtPath(
 	// Prevent Templater's folder-template handler from overwriting our file.
 	guardFromTemplater(app, filePath);
 
-	return app.vault.create(filePath, fileContent);
+	try {
+		return await app.vault.create(filePath, fileContent);
+	} catch (err) {
+		if (err instanceof Error && err.message.includes("File already exists")) {
+			const raced = app.vault.getAbstractFileByPath(filePath);
+			if (raced instanceof TFile) return raced;
+		}
+		throw err;
+	}
 }
 
 /**
