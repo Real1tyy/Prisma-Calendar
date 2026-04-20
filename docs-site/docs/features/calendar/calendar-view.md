@@ -17,7 +17,7 @@ Prisma Calendar offers five view modes, switchable from the toolbar:
 
 | View | Description |
 |------|-------------|
-| **Year** (`multiMonthYear`) | Twelve months laid out in a compact grid. Events appear as chips in each day cell — click an event to open it, click a day to create one. Prev/Next step a year at a time. Use this when you want the whole calendar on one screen. |
+| **Year** (`multiMonthYear`) | Twelve months laid out in a compact grid. Events appear as compact chips with automatic "+more" overflow, color dots show event colors at the top of each day, and the palette matches your Obsidian theme. Click an event to open it, click a day to create one. Prev/Next step a year at a time. |
 | **Month** (`dayGridMonth`) | Full month grid with event chips. Color dots indicate events on each day. |
 | **Week** (`timeGridWeek`) | Seven-day time grid with hourly slots. Events display at their exact times. |
 | **Day** (`timeGridDay`) | Single-day time grid for detailed scheduling. |
@@ -151,7 +151,7 @@ Configure both in **Settings → Calendar → Visual Appearance**.
 
 - **All-day event height**: Maximum pixel height for all-day events before they scroll internally (30–500px, default: 75px)
 - **Past event contrast**: Dims past events (0% = invisible, 100% = normal, default: 70%)
-- **Show color dots**: Color indicator dots in monthly view cells (enabled by default)
+- **Show color dots**: Color indicator dots in month and year view cells (enabled by default)
 - **Thicker hour lines**: Bolder full-hour dividers in day/week views (enabled by default)
 - **Show duration in event title**: Appends duration in parentheses after the title for timed events, e.g., "Meeting (2h 30m)" (enabled by default)
 - **Show decimal hours**: Displays durations as decimal hours (e.g., 2.5h) instead of formatted (e.g., 2h 30m)

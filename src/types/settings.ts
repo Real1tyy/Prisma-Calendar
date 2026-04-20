@@ -580,7 +580,10 @@ const CalendarSettingsSchema = z
 			.max(20)
 			.catch(4)
 			.describe("Maximum events to show per day on mobile before showing '+more' link (0 = unlimited)"),
-		showColorDots: z.boolean().catch(true).describe("Show color indicator dots at the top of each day in monthly view"),
+		showColorDots: z
+			.boolean()
+			.catch(true)
+			.describe("Show color indicator dots at the top of each day in month and year views"),
 		skipUnderscoreProperties: z
 			.boolean()
 			.catch(true)

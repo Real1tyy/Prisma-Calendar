@@ -3,6 +3,7 @@ import allLocales from "@fullcalendar/core/locales-all";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin, { type DropArg } from "@fullcalendar/interaction";
 import listPlugin from "@fullcalendar/list";
+import multiMonthPlugin from "@fullcalendar/multimonth";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import {
 	afterRender,
@@ -321,7 +322,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.rebuildCalendarIconCache();
 
 		this.calendar = new Calendar(container, {
-			plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
+			plugins: [dayGridPlugin, timeGridPlugin, listPlugin, multiMonthPlugin, interactionPlugin],
 
 			locales: allLocales,
 			locale: settings.locale,
@@ -848,6 +849,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			[".fc-next-button", "prisma-cal-toolbar-next"],
 			[".fc-today-button", "prisma-cal-toolbar-today"],
 			[".fc-now-button", "prisma-cal-toolbar-goto-now"],
+			[".fc-multiMonthYear-button", "prisma-cal-toolbar-view-year"],
 			[".fc-dayGridMonth-button", "prisma-cal-toolbar-view-month"],
 			[".fc-timeGridWeek-button", "prisma-cal-toolbar-view-week"],
 			[".fc-timeGridDay-button", "prisma-cal-toolbar-view-day"],
@@ -896,7 +898,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		headerToolbar: { left: string; center: string; right: string };
 		customButtons: Record<string, ExtendedButtonInput>;
 	} {
-		const viewSwitchers = "dayGridMonth,timeGridWeek,timeGridDay,listWeek";
+		const viewSwitchers = "multiMonthYear,dayGridMonth,timeGridWeek,timeGridDay,listWeek";
 
 		if (inSelectionMode) {
 			const left = "prev,next today";
@@ -1586,7 +1588,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 		const settings = this.bundle.settingsStore.currentSettings;
 		const viewType = this.calendar.view?.type;
-		const shouldRender = settings.showColorDots && viewType === "dayGridMonth";
+		const shouldRender = settings.showColorDots && (viewType === "dayGridMonth" || viewType === "multiMonthYear");
 
 		// Build a snapshot string from the index to detect changes cheaply
 		const snapshot = shouldRender ? this.buildColorDotSnapshot() : "";
@@ -2032,7 +2034,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		if (!this.calendar || !this.container) return;
 
 		const viewType = this.calendar.view.type;
-		if (viewType === "dayGridMonth" || viewType === "listWeek") {
+		if (viewType === "dayGridMonth" || viewType === "listWeek" || viewType === "multiMonthYear") {
 			return;
 		}
 
@@ -2118,8 +2120,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		if (currentView === "timeGridWeek" || currentView === "timeGridDay") {
 			// For time grid views, find the now indicator line
 			targetElement = this.container.querySelector(".fc-timegrid-now-indicator-line");
-		} else if (currentView === "dayGridMonth") {
-			// For month view, find today's cell
+		} else if (currentView === "dayGridMonth" || currentView === "multiMonthYear") {
+			// For month/year views, find today's cell
 			targetElement = this.container.querySelector(".fc-day-today");
 		}
 

@@ -1166,6 +1166,181 @@
   white-space: nowrap;
 }
 
+/* Multi-Month Year View — theme integration with Obsidian variables */
+.prisma-calendar-container {
+  /* Override FullCalendar's injected CSS variables for multimonth only */
+}
+.prisma-calendar-container .fc-multimonth {
+  --fc-page-bg-color: var(--background-primary);
+  --fc-border-color: var(--background-modifier-border);
+  --fc-highlight-color: var(--background-modifier-hover);
+  --fc-today-bg-color: var(--background-modifier-form-field);
+  --fc-non-business-color: var(--background-secondary-alt);
+  --fc-event-border-color: var(--background-modifier-border);
+  overflow-y: hidden;
+}
+.prisma-calendar-container {
+  /* Month title headers */
+}
+.prisma-calendar-container .fc-multimonth-title {
+  color: var(--text-normal);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-ui-medium);
+  padding: 8px 12px;
+}
+.prisma-calendar-container {
+  /* Column headers (Mon, Tue, ...) */
+}
+.prisma-calendar-container .fc-multimonth-header .fc-col-header-cell {
+  background-color: var(--background-secondary);
+  color: var(--text-muted);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-ui-smaller);
+  padding: 4px 0;
+}
+.prisma-calendar-container {
+  /* Day cells — match monthly view */
+}
+.prisma-calendar-container .fc-multimonth-daygrid .fc-daygrid-day {
+  background-color: var(--background-primary);
+}
+.prisma-calendar-container .fc-multimonth-daygrid .fc-daygrid-day:hover {
+  background-color: var(--background-modifier-hover);
+}
+.prisma-calendar-container {
+  /* Today highlight — match monthly view */
+}
+.prisma-calendar-container .fc-multimonth-daygrid .fc-day-today {
+  background-color: var(--background-modifier-form-field);
+}
+.prisma-calendar-container {
+  /* Other-month overflow days */
+}
+.prisma-calendar-container .fc-multimonth-daygrid .fc-day-other {
+  background-color: var(--background-secondary-alt);
+  color: var(--text-faint);
+}
+.prisma-calendar-container {
+  /* Day number styling */
+}
+.prisma-calendar-container .fc-multimonth-daygrid .fc-daygrid-day-number {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  padding: 2px 4px;
+}
+.prisma-calendar-container {
+  /* Override FullCalendar's default highlight (white) with subtle gray */
+}
+.prisma-calendar-container .fc-multimonth-daygrid .fc-highlight {
+  background: var(--background-modifier-hover);
+}
+.prisma-calendar-container {
+  /* Month grid borders */
+}
+.prisma-calendar-container .fc-multimonth-month {
+  border-color: var(--background-modifier-border);
+}
+.prisma-calendar-container {
+  /* Scrollgrid borders */
+}
+.prisma-calendar-container .fc-multimonth .fc-scrollgrid {
+  border-color: var(--background-modifier-border);
+}
+.prisma-calendar-container .fc-multimonth th,
+.prisma-calendar-container .fc-multimonth td {
+  border-color: var(--background-modifier-border);
+}
+.prisma-calendar-container {
+  /* "+more" link in year view — smaller to fit compact cells */
+}
+.prisma-calendar-container .fc-multimonth-daygrid .fc-daygrid-more-link {
+  font-size: 10px;
+  padding: 1px 4px;
+  margin-top: 1px;
+}
+.prisma-calendar-container {
+  /* Day cell rows — enough height for 1-2 events before "+more" auto-limit */
+}
+.prisma-calendar-container .fc-multimonth-daygrid .fc-daygrid-day-frame {
+  min-height: 3.5em;
+}
+.prisma-calendar-container {
+  /* Events in year view — compact styling */
+}
+.prisma-calendar-container .fc-multimonth-daygrid .fc-daygrid-event {
+  font-size: 10px;
+  padding: 0 2px;
+  margin-bottom: 1px;
+  border-radius: var(--radius-s);
+}
+.prisma-calendar-container {
+  /* Color dots — smaller for year view compact cells */
+}
+.prisma-calendar-container .fc-multimonth-daygrid .prisma-day-color-dots {
+  gap: 2px;
+  padding-left: 2px;
+}
+.prisma-calendar-container .fc-multimonth-daygrid .prisma-day-color-dot {
+  width: 6px;
+  height: 6px;
+}
+.prisma-calendar-container {
+  /* Day cell coloring — uniform mode */
+}
+.prisma-calendar-container.prisma-uniform-day-color .fc-multimonth-daygrid .fc-daygrid-day {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--month-even-color) 25%, transparent) 0%, color-mix(in srgb, var(--month-even-color) 12%, transparent) 100%);
+}
+.prisma-calendar-container.prisma-uniform-day-color .fc-multimonth-daygrid .fc-day-other {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--month-even-color) 38%, transparent) 0%, color-mix(in srgb, var(--month-even-color) 22%, transparent) 100%);
+}
+.prisma-calendar-container.prisma-uniform-day-color .fc-multimonth-daygrid .fc-day-today {
+  background: var(--background-modifier-form-field);
+}
+.prisma-calendar-container.prisma-uniform-day-color .fc-multimonth-daygrid .fc-daygrid-day:hover {
+  background: var(--background-modifier-hover);
+}
+.prisma-calendar-container {
+  /* Day cell coloring — boundary mode */
+}
+.prisma-calendar-container.prisma-month-boundary-colors .fc-multimonth-daygrid .fc-daygrid-day.prisma-month-even {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--month-even-color) 25%, transparent) 0%, color-mix(in srgb, var(--month-even-color) 12%, transparent) 100%);
+}
+.prisma-calendar-container.prisma-month-boundary-colors .fc-multimonth-daygrid .fc-daygrid-day.prisma-month-odd {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--month-odd-color) 25%, transparent) 0%, color-mix(in srgb, var(--month-odd-color) 12%, transparent) 100%);
+}
+.prisma-calendar-container.prisma-month-boundary-colors .fc-multimonth-daygrid .fc-day-other.prisma-month-even {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--month-even-color) 38%, transparent) 0%, color-mix(in srgb, var(--month-even-color) 22%, transparent) 100%);
+}
+.prisma-calendar-container.prisma-month-boundary-colors .fc-multimonth-daygrid .fc-day-other.prisma-month-odd {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--month-odd-color) 38%, transparent) 0%, color-mix(in srgb, var(--month-odd-color) 22%, transparent) 100%);
+}
+.prisma-calendar-container.prisma-month-boundary-colors .fc-multimonth-daygrid .fc-day-today.prisma-month-even,
+.prisma-calendar-container.prisma-month-boundary-colors .fc-multimonth-daygrid .fc-day-today.prisma-month-odd {
+  background: var(--background-modifier-form-field);
+}
+.prisma-calendar-container.prisma-month-boundary-colors .fc-multimonth-daygrid .fc-daygrid-day.prisma-month-even:hover,
+.prisma-calendar-container.prisma-month-boundary-colors .fc-multimonth-daygrid .fc-daygrid-day.prisma-month-odd:hover {
+  background: var(--background-modifier-hover);
+}
+
+/* Year view responsive — even more compact on mobile */
+@media (width <= 768px) {
+  .prisma-calendar-container .fc-multimonth-title {
+    font-size: var(--font-ui-small);
+    padding: 4px 8px;
+  }
+  .prisma-calendar-container .fc-multimonth-daygrid .fc-daygrid-event {
+    font-size: 9px;
+  }
+  .prisma-calendar-container .fc-multimonth-daygrid .fc-daygrid-more-link {
+    font-size: 9px;
+    padding: 0 2px;
+  }
+  .prisma-calendar-container .fc-multimonth-daygrid .prisma-day-color-dot {
+    width: 4px;
+    height: 4px;
+  }
+}
 /* Loading state */
 @keyframes prisma-calendar-spin {
   0% {

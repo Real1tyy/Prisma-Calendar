@@ -27,7 +27,7 @@ export interface EventRenderContext {
 export function renderEventContent(arg: EventContentArg, context: EventRenderContext): { domNodes: HTMLElement[] } {
 	const event = arg.event;
 	const { settings, isMobile, calendarIconCache } = context;
-	const isMonthView = arg.view.type === "dayGridMonth";
+	const isMonthView = arg.view.type === "dayGridMonth" || arg.view.type === "multiMonthYear";
 
 	const container = document.createElement("div");
 	container.className = cls("fc-event-content-wrapper");
