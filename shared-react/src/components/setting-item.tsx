@@ -6,7 +6,7 @@ interface SettingItemProps {
 	description?: ReactNode;
 	children: ReactNode;
 	/** When set, stamps `data-testid` on the outer `.setting-item` for E2E. */
-	testId?: string;
+	testId?: string | undefined;
 }
 
 export const SettingItem = memo(function SettingItem({ name, description, children, testId }: SettingItemProps) {
