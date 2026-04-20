@@ -6,6 +6,7 @@ import type { Weekday } from "./recurring";
 import { WEEKDAY_OPTIONS, WEEKDAY_TO_NUMBER } from "./recurring";
 
 export const CALENDAR_VIEW_OPTIONS = {
+	multiMonthYear: "Year",
 	dayGridMonth: "Month",
 	timeGridWeek: "Week (Time)",
 	timeGridDay: "Day (Time)",

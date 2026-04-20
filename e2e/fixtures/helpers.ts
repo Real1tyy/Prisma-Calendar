@@ -185,10 +185,13 @@ export async function createEventViaToolbar(page: Page): Promise<void> {
 }
 
 /**
- * Switch the calendar view mode by clicking the month/week/day/list toolbar
- * button. Pass "month" | "week" | "day" | "list".
+ * Switch the calendar view mode by clicking the year/month/week/day/list toolbar
+ * button. Pass "year" | "month" | "week" | "day" | "list".
  */
-export async function switchCalendarViewMode(page: Page, mode: "month" | "week" | "day" | "list"): Promise<void> {
+export async function switchCalendarViewMode(
+	page: Page,
+	mode: "year" | "month" | "week" | "day" | "list"
+): Promise<void> {
 	const btn = page.locator(`${ACTIVE_CALENDAR_LEAF} [data-testid="prisma-cal-toolbar-view-${mode}"]`).first();
 	await btn.waitFor({ state: "visible", timeout: 10_000 });
 	await btn.click();

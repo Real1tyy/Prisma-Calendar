@@ -13,10 +13,11 @@ The calendar view is the main interface for viewing and interacting with your ev
 
 ## View Modes
 
-Prisma Calendar offers four view modes, switchable from the toolbar:
+Prisma Calendar offers five view modes, switchable from the toolbar:
 
 | View | Description |
 |------|-------------|
+| **Year** (`multiMonthYear`) | Twelve months laid out in a compact grid. Events appear as chips in each day cell — click an event to open it, click a day to create one. Prev/Next step a year at a time. Use this when you want the whole calendar on one screen. |
 | **Month** (`dayGridMonth`) | Full month grid with event chips. Color dots indicate events on each day. |
 | **Week** (`timeGridWeek`) | Seven-day time grid with hourly slots. Events display at their exact times. |
 | **Day** (`timeGridDay`) | Single-day time grid for detailed scheduling. |
@@ -38,10 +39,10 @@ The toolbar sits at the top of the calendar and provides quick access to navigat
 
 | Button | Action |
 |--------|--------|
-| **Left** (◀) | Navigate to the previous period (previous month, week, or day depending on current view) |
+| **Left** (◀) | Navigate to the previous period (previous year, month, week, or day depending on current view) |
 | **Right** (▶) | Navigate to the next period |
 | **Today** | Jump to today's date |
-| **Now** | Scroll to the current time in day and week views. Not available in month or list views. |
+| **Now** | Scroll to the current time in day and week views. In year and month views, scrolls to today's cell. Not available in list view. |
 
 ### Event Creation
 

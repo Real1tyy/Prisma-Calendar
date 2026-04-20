@@ -4,18 +4,20 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.14.0 - 4/19/2026
+## 2.14.0 - 4/20/2026
 
-> **TLDR:** New **Settings transfer** — export your plugin config as JSON and re-import it on another vault. Your **Title property** now wins over the auto-generated **Calendar Title** everywhere, and edits save cleanly without the ZettelID tacked on. **CalDAV subscriptions** now pick up deletions from the server.
+> **TLDR:** New **Settings transfer** and **Year view**. Export your plugin config as JSON and re-import it on another vault. See all twelve months at once with the new Year toolbar button. **CalDAV subscriptions** now pick up server-side deletions. **Title property** wins over **Calendar Title** everywhere.
 
 ### Added
 - **Settings transfer (import / export / reset)**: New **Settings transfer** row at the bottom of **General** — export your plugin settings as JSON (only fields you changed from defaults are included), re-import them on another vault, or reset every setting to its default with one click (protected by a confirmation dialog). Local-only keys (license secret reference) are never touched. See [General Settings → Settings Transfer](./configuration/general.md#settings-transfer).
+- **Year view**: New **Year** toolbar button in the main calendar tab shows all twelve months in a compact grid with event chips in each day cell. Click an event to open it, click a day to create one, use prev/next to step by year. Set it as the default in **Settings → Calendar → View Configuration → Default view**. See [Calendar View](./features/calendar/calendar-view.md#view-modes).
 - **CalDAV picks up server-side deletions (Pro)**: Delete an event in iCloud, Google, Nextcloud, Fastmail, or Zimbra and Prisma now removes the local note on the next sync. Previously, deletions stayed stuck on the server. No setup needed — it just works after the update. See [CalDAV integration](./features/advanced/integrations.md#caldav-integration).
 
 ### Improved
 - **Title property takes priority over Calendar Title**: When both are set, your **Title property** now shows everywhere — calendar, edit modal, Gantt, Timeline, Heatmap, context menus, notifications, event lists. Before, the auto-generated **Calendar Title** quietly overrode it. **Calendar Title** still fills in when the Title property is empty. See [Properties](./configuration/properties.md#title-property) and [ZettelID Naming](./features/management/zettelid-naming.md#calendar-title-vs-title-property).
 
 ### Fixed
+- **Settings transfer dropping optional fields**: Exporting and re-importing settings silently dropped optional fields like **Template path**, **Tab state**, **Context menu state**, and **ZettelID property** — any field whose default is undefined. See [General Settings → Settings Transfer](./configuration/general.md#settings-transfer).
 - **Title property saved with ZettelID suffix on edit**: Editing an event's title saved something like `After Edit-20250101000000` into your Title property instead of the clean text you typed. Fixed — it now stores exactly what you typed. See [Properties](./configuration/properties.md#title-property).
 
 ---

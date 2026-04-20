@@ -108,6 +108,7 @@ function mapEventBase(event: CalendarEvent): AIEventSummary {
 }
 
 const VIEW_TYPE_LABELS: Record<string, string> = {
+	multiMonthYear: "Yearly View",
 	dayGridMonth: "Monthly View",
 	timeGridWeek: "Weekly View",
 	timeGridDay: "Daily View",

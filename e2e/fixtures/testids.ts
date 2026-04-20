@@ -57,6 +57,7 @@ export type EventBtnKey =
 
 export type ToolbarKey =
 	| "create"
+	| "view-year"
 	| "view-month"
 	| "view-week"
 	| "view-day"
@@ -69,7 +70,7 @@ export type ToolbarKey =
 	| "batch-exit";
 
 /** Calendar "view mode" for FullCalendar — picks the toolbar view-<mode> button. */
-export type ViewMode = "month" | "week" | "day" | "list";
+export type ViewMode = "year" | "month" | "week" | "day" | "list";
 
 /**
  * Page-header toolbar action ids. Every entry in `buildPageHeaderActions()`
