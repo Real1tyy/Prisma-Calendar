@@ -114,6 +114,12 @@ export function generateColors(count: number): string[] {
 	});
 }
 
+export function buildColorGradient(colors: string[]): string {
+	const segmentSize = 100 / colors.length;
+	const stops = colors.map((color, i) => `${color} ${i * segmentSize}%, ${color} ${(i + 1) * segmentSize}%`).join(", ");
+	return `linear-gradient(90deg, ${stops})`;
+}
+
 export function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
 	const short = /^#?([a-f\d])([a-f\d])([a-f\d])$/i.exec(hex);
 	if (short) {

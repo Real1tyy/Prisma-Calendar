@@ -8,6 +8,7 @@ export interface GanttTask {
 	dependencies: string[];
 	filePath: string;
 	color?: string;
+	allColors?: string[];
 }
 
 export interface PackedTask extends GanttTask {
