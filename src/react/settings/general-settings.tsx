@@ -18,7 +18,10 @@ import type CustomCalendarPlugin from "../../main";
 import type { CustomCalendarSettings, SingleCalendarConfig } from "../../types/settings";
 import { LOCALE_OPTIONS } from "../../types/view";
 
-const PRISMA_NON_TRANSFERABLE_SETTINGS: ReadonlyArray<keyof CustomCalendarSettings> = ["licenseKeySecretName"];
+const PRISMA_NON_TRANSFERABLE_SETTINGS: ReadonlyArray<keyof CustomCalendarSettings> = [
+	"licenseKeySecretName",
+	"version",
+];
 
 interface GeneralSettingsProps {
 	settingsStore: CalendarSettingsStore;
