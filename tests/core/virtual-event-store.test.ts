@@ -714,6 +714,54 @@ describe("VirtualEventStore", () => {
 		});
 	});
 
+	describe("empty directory guard", () => {
+		it("should not bind or create a file when directory is empty on initialize", async () => {
+			const emptyDirStore = createStore(vault, createMockSingleCalendarSettingsStore({ directory: "" }));
+			await emptyDirStore.initialize();
+
+			expect(vault.create).not.toHaveBeenCalled();
+			expect(vault.on).not.toHaveBeenCalled();
+			expect(emptyDirStore.getAll()).toEqual([]);
+			emptyDirStore.destroy();
+		});
+
+		it("should unbind and clear events when directory changes to empty", async () => {
+			const settings = createMockSingleCalendarSettingsStore({ directory: "calendar" });
+			const guardStore = createStore(vault, settings);
+			vault.getAbstractFileByPath.mockReturnValue(null);
+			await guardStore.initialize();
+
+			await guardStore.add({
+				title: "Existing",
+				start: "2025-03-15T09:00:00",
+				end: null,
+				allDay: false,
+				properties: {},
+			});
+			expect(guardStore.getAll()).toHaveLength(1);
+
+			settings.next({ ...settings.value, directory: "" });
+
+			expect(guardStore.getAll()).toEqual([]);
+			guardStore.destroy();
+		});
+
+		it("should bind when directory changes from empty to non-empty", async () => {
+			const settings = createMockSingleCalendarSettingsStore({ directory: "" });
+			const guardStore = createStore(vault, settings);
+			await guardStore.initialize();
+
+			expect(vault.create).not.toHaveBeenCalled();
+
+			settings.next({ ...settings.value, directory: "events" });
+
+			await vi.waitFor(() => {
+				expect(vault.create).toHaveBeenCalled();
+			});
+			guardStore.destroy();
+		});
+	});
+
 	describe("destroy", () => {
 		it("should unregister vault listener", async () => {
 			await store.initialize();

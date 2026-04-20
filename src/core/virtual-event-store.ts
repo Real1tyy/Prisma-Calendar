@@ -36,7 +36,18 @@ export class VirtualEventStore {
 			const nameChanged = this.fileName !== newSettings.virtualEventsFileName;
 			this.directory = newSettings.directory;
 			this.fileName = newSettings.virtualEventsFileName;
-			if ((dirChanged || nameChanged) && this.binding) {
+			if (!dirChanged && !nameChanged) return;
+
+			if (!this.directory) {
+				if (this.binding) {
+					this.binding.unsubscribe();
+					this.binding = null;
+					this.events$.next([]);
+				}
+				return;
+			}
+
+			if (this.binding) {
 				const epoch = ++this.bindEpoch;
 				void this.repo
 					.rebind(this.binding, this.app, this.getFilePath(), {
@@ -53,6 +64,8 @@ export class VirtualEventStore {
 						}
 						this.binding = b;
 					});
+			} else {
+				void this.initialize();
 			}
 		});
 	}
@@ -62,6 +75,7 @@ export class VirtualEventStore {
 	}
 
 	async initialize(): Promise<void> {
+		if (!this.directory) return;
 		this.binding = await this.repo.bind(this.app, this.getFilePath(), {
 			onChange: () => this.emit(),
 			createIfMissing: true,

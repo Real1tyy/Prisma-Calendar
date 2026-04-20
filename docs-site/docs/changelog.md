@@ -18,6 +18,7 @@ All notable changes to this project will be documented here.
 
 ### Fixed
 - **Settings transfer dropping optional fields**: Exporting and re-importing settings silently dropped optional fields like **Template path**, **Tab state**, **Context menu state**, and **ZettelID property** — any field whose default is undefined. See [General Settings → Settings Transfer](./configuration/general.md#settings-transfer).
+- **Virtual events file created at vault root when directory is empty**: With no calendar directory configured, the plugin created a `Virtual Events.md` file at the vault root on startup. It now skips binding until a directory is set. See [Virtual Events](./features/events/virtual-events.md).
 - **Title property saved with ZettelID suffix on edit**: Editing an event's title saved something like `After Edit-20250101000000` into your Title property instead of the clean text you typed. Fixed — it now stores exactly what you typed. See [Properties](./configuration/properties.md#title-property).
 
 ---
