@@ -203,9 +203,7 @@ export async function duplicateCurrentEvent(plugin: CustomCalendarPlugin, calend
 		const createdPath = command.getCreatedFilePath();
 		if (createdPath) {
 			new Notice("Note duplicated");
-			if (!isCalendarViewFocused(plugin)) {
-				await openFileInNewTab(plugin.app, createdPath);
-			}
+			await openFileInNewTab(plugin.app, createdPath);
 		}
 
 		return true;
