@@ -694,6 +694,40 @@ describe("group tabs", () => {
 	});
 });
 
+describe("tab icons", () => {
+	it("renders icon span when tab has icon", () => {
+		const container = document.createElement("div");
+		const tabs = [
+			{ id: "tab-0", label: "Tab 0", icon: "calendar", render: vi.fn() },
+			{ id: "tab-1", label: "Tab 1", render: vi.fn() },
+		];
+		createTabbedContainer(container, { tabs, cssPrefix: "test-" });
+
+		const buttons = container.querySelectorAll<HTMLElement>(".test-tab-bar button");
+		expect(buttons[0].querySelector(".test-tab-icon")).toBeTruthy();
+		expect(buttons[1].querySelector(".test-tab-icon")).toBeNull();
+	});
+
+	it("tab label text is preserved when icon is present", () => {
+		const container = document.createElement("div");
+		const tabs = [{ id: "tab-0", label: "Tab 0", icon: "calendar", render: vi.fn() }];
+		createTabbedContainer(container, { tabs, cssPrefix: "test-" });
+
+		const button = container.querySelector(".test-tab-bar button") as HTMLElement;
+		expect(button.textContent).toBe("Tab 0");
+	});
+
+	it("tab without icon renders label with no icon span", () => {
+		const container = document.createElement("div");
+		createTabbedContainer(container, makeConfig());
+
+		const buttons = container.querySelectorAll<HTMLElement>(".test-tab-bar button");
+		for (const btn of buttons) {
+			expect(btn.querySelector(".test-tab-icon")).toBeNull();
+		}
+	});
+});
+
 describe("group tab manager modal", () => {
 	it("showTabManager does not throw with group tabs", () => {
 		const container = document.createElement("div");
