@@ -1,6 +1,6 @@
 {
 	"name": "prisma-calendar",
-	"version": "2.13.0",
+	"version": "2.14.0",
 	"description": "Prisma Calendar is a schema-agnostic visualization layer that turns any Obsidian note with a date into a first-class citizen on your timeline. No rigid schemas, no predefined fields — just your data, your rules, your filters, rendered exactly how you need it.",
 	"main": "main.js",
 	"scripts": {
