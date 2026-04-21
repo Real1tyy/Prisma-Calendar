@@ -4,7 +4,14 @@ import { BehaviorSubject, filter, firstValueFrom, type Observable, Subject, type
 import { deepEqualJsonLike } from "../../utils/deep-equal";
 import { CommandManager } from "../commands/command-manager";
 import type { Repository } from "../data-access/repository";
-import { extractFileName, getFolderPath, isDirectChildOrFolderNote, toDisplayLink } from "../file/file";
+import {
+	extractFileName,
+	extractRelativePath,
+	getFolderPath,
+	isDirectChildOrFolderNote,
+	isFileInConfiguredDirectory,
+	toDisplayLink,
+} from "../file/file";
 import { ensureDirectory, extractContentAfterFrontmatter, withFrontmatter } from "../file/file-utils";
 import { createFileAtPathAtomic, guardFromTemplater } from "../file/templater";
 import { correctFrontmatter, deleteInvalidFile } from "../frontmatter/frontmatter-repair";
@@ -61,6 +68,7 @@ export class VaultTable<
 	private readonly schema: TSchema;
 	private readonly invalidStrategy: InvalidStrategy;
 	private readonly nodeType: NodeType;
+	private readonly recursive: boolean;
 	private readonly fileNameFilter?: (fileName: string) => boolean;
 	private readonly filePathResolver: (directory: string, fileName: string) => string;
 	private readonly childDefs: TChildren | undefined;
@@ -100,12 +108,10 @@ export class VaultTable<
 		this.schema = config.schema;
 		this.invalidStrategy = config.invalidStrategy ?? "skip";
 		this.nodeType = config.nodeType ?? "files";
+		this.recursive = config.recursive ?? false;
 		if (config.fileNameFilter !== undefined) this.fileNameFilter = config.fileNameFilter;
 		this.filePathResolver = config.filePathResolver ?? ((dir, name) => `${dir}/${name}.md`);
 
-		if (config.children && this.nodeType !== "folderNotes") {
-			throw new Error('VaultTable: children are only supported when nodeType is "folderNotes"');
-		}
 		this.childDefs = config.children;
 		this.emitCrudEvents = config.emitCrudEvents ?? false;
 		this.templatePath = config.templatePath;
@@ -485,7 +491,7 @@ export class VaultTable<
 	}
 
 	private async doRestoreFile(filePath: string, rawContent: string, data: TData, bodyContent: string): Promise<void> {
-		const id = extractFileName(filePath);
+		const id = this.toRowKey(filePath);
 		const existing = this.rowByFileName.get(id);
 
 		if (existing) {
@@ -622,7 +628,7 @@ export class VaultTable<
 		if (!event.source) return;
 
 		const filePath = event.filePath;
-		const id = extractFileName(filePath);
+		const id = this.toRowKey(filePath);
 		const mtime = event.source.mtime;
 
 		const parsed = this.resolveParsedData(filePath, mtime, event.source.frontmatter);
@@ -688,7 +694,7 @@ export class VaultTable<
 	private handleFileDeleted(filePath: string): void {
 		this.persistentCache?.delete(filePath);
 
-		const existing = this.rowByFileName.get(extractFileName(filePath));
+		const existing = this.rowByFileName.get(this.toRowKey(filePath));
 		if (!existing) return;
 
 		this.removeRow(existing.id);
@@ -726,7 +732,7 @@ export class VaultTable<
 		switch (this.invalidStrategy) {
 			case "skip": {
 				this.persistentCache?.delete(filePath);
-				const existing = this.rowByFileName.get(extractFileName(filePath));
+				const existing = this.rowByFileName.get(this.toRowKey(filePath));
 				if (existing) {
 					this.removeRow(existing.id);
 				}
@@ -746,6 +752,19 @@ export class VaultTable<
 	// =========================================================================
 	// Internal Helpers
 	// =========================================================================
+
+	/**
+	 * Derive the row key from a full file path.
+	 * - Non-recursive: filename without extension (e.g., "meeting")
+	 * - Recursive: path relative to the directory without extension (e.g., "courses/CS101/hw1")
+	 *
+	 * This ensures uniqueness: non-recursive tables only have direct children
+	 * so filename is unique; recursive tables may have identically-named files
+	 * in different subdirectories, so the relative path disambiguates.
+	 */
+	toRowKey(filePath: string): string {
+		return this.recursive ? extractRelativePath(filePath, this.directory) : extractFileName(filePath);
+	}
 
 	private buildRow(
 		id: string,
@@ -774,7 +793,10 @@ export class VaultTable<
 	private buildIncludeFile(): (path: string) => boolean {
 		const nameFilter = this.fileNameFilter;
 		return (path) => {
-			if (!isDirectChildOrFolderNote(path, this.directory, this.nodeType)) return false;
+			const inScope = this.recursive
+				? isFileInConfiguredDirectory(path, this.directory)
+				: isDirectChildOrFolderNote(path, this.directory, this.nodeType);
+			if (!inScope) return false;
 			if (nameFilter) {
 				return nameFilter(extractFileName(path));
 			}

@@ -1,5 +1,6 @@
 import { BehaviorSubject, type Observable, Subject } from "rxjs";
 
+import { extractFileName } from "../../core/file/file";
 import type { FrontmatterDiff } from "../../core/frontmatter/frontmatter-diff";
 import type { InsertVaultRow, VaultRow, VaultTableEvent } from "../../core/vault-table/types";
 import { TFile } from "./obsidian";
@@ -161,6 +162,10 @@ export class MockVaultTable<TData extends Record<string, unknown> = Record<strin
 
 	toArray(): ReadonlyArray<VaultRow<TData>> {
 		return Array.from(this.rowsByKey.values());
+	}
+
+	toRowKey(filePath: string): string {
+		return extractFileName(filePath);
 	}
 
 	// ─── Operation Log (for assertions) ──────────────────────────

@@ -9,6 +9,7 @@ export interface GanttTask {
 	filePath: string;
 	color?: string;
 	allColors?: string[];
+	dotColors?: string[];
 }
 
 export interface PackedTask extends GanttTask {

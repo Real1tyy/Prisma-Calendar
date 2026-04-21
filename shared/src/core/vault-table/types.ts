@@ -25,6 +25,13 @@ interface FileVaultTableDef<TData, TSchema extends SerializableSchema<TData> = S
 	extends VaultTableDefBase<TData, TSchema> {
 	nodeType?: "files";
 	children?: never;
+	/**
+	 * When true, all markdown files anywhere under the directory tree are indexed
+	 * at any depth, not just direct children. Defaults to false (direct children only).
+	 * Only available in "files" mode — incompatible with "folderNotes" because
+	 * recursive scanning would overlap with per-folder-note child tables.
+	 */
+	recursive?: boolean;
 }
 
 interface FolderNoteVaultTableDef<
@@ -35,6 +42,7 @@ interface FolderNoteVaultTableDef<
 > extends VaultTableDefBase<TData, TSchema> {
 	nodeType: "folderNotes";
 	children?: TChildren;
+	recursive?: never;
 }
 
 export type VaultTableDef<

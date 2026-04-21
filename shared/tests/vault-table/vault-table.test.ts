@@ -1265,6 +1265,323 @@ describe("VaultTable", () => {
 		});
 	});
 
+	describe("recursive indexing", () => {
+		function getIncludeFile(overrides: Parameters<typeof createTestConfig>[0] = {}): (path: string) => boolean {
+			createTestConfig(overrides);
+			new VaultTable(createTestConfig(overrides).config);
+			const calls = vi.mocked(Indexer).mock.calls;
+			const configStore = calls[calls.length - 1][1] as BehaviorSubject<IndexerConfig>;
+			return configStore.value.includeFile!;
+		}
+
+		describe("default behaviour (recursive: false)", () => {
+			it("accepts direct children of the directory", () => {
+				const include = getIncludeFile({ directory: "events" });
+				expect(include("events/meeting.md")).toBe(true);
+			});
+
+			it("accepts folder notes (depth-2 file matching parent folder name)", () => {
+				const include = getIncludeFile({ directory: "events" });
+				expect(include("events/events.md")).toBe(true);
+			});
+
+			it("rejects files two levels deep", () => {
+				const include = getIncludeFile({ directory: "events" });
+				expect(include("events/SubFolder/meeting.md")).toBe(false);
+			});
+
+			it("rejects files three levels deep", () => {
+				const include = getIncludeFile({ directory: "events" });
+				expect(include("events/courses/CS101/homework.md")).toBe(false);
+			});
+
+			it("rejects files outside the directory", () => {
+				const include = getIncludeFile({ directory: "events" });
+				expect(include("other/meeting.md")).toBe(false);
+			});
+
+			it("rejects prefix-collision sibling directories", () => {
+				const include = getIncludeFile({ directory: "events" });
+				expect(include("events-archive/meeting.md")).toBe(false);
+				expect(include("events-extra/SubFolder/deep.md")).toBe(false);
+			});
+
+			it("rejects the directory itself as a path (no trailing slash)", () => {
+				const include = getIncludeFile({ directory: "events" });
+				expect(include("events")).toBe(false);
+			});
+		});
+
+		describe("recursive: true", () => {
+			it("accepts direct children", () => {
+				const include = getIncludeFile({ directory: "events", recursive: true });
+				expect(include("events/meeting.md")).toBe(true);
+			});
+
+			it("accepts files two levels deep", () => {
+				const include = getIncludeFile({ directory: "events", recursive: true });
+				expect(include("events/SubFolder/meeting.md")).toBe(true);
+			});
+
+			it("accepts files three levels deep", () => {
+				const include = getIncludeFile({ directory: "events", recursive: true });
+				expect(include("events/courses/CS101/homework.md")).toBe(true);
+			});
+
+			it("accepts files four levels deep", () => {
+				const include = getIncludeFile({ directory: "events", recursive: true });
+				expect(include("events/a/b/c/deep.md")).toBe(true);
+			});
+
+			it("still rejects files outside the directory", () => {
+				const include = getIncludeFile({ directory: "events", recursive: true });
+				expect(include("other/meeting.md")).toBe(false);
+			});
+
+			it("still rejects prefix-collision sibling directories", () => {
+				const include = getIncludeFile({ directory: "events", recursive: true });
+				expect(include("events-archive/meeting.md")).toBe(false);
+				expect(include("events-extra/SubFolder/deep.md")).toBe(false);
+			});
+
+			it("applies fileNameFilter to deep files", () => {
+				const include = getIncludeFile({
+					directory: "events",
+					recursive: true,
+					fileNameFilter: (name) => name.startsWith("hw"),
+				});
+				expect(include("events/courses/CS101/hw1.md")).toBe(true);
+				expect(include("events/courses/CS101/lecture.md")).toBe(false);
+				expect(include("events/hw-root.md")).toBe(true);
+			});
+
+			it("applies fileNameFilter to direct children too", () => {
+				const include = getIncludeFile({
+					directory: "events",
+					recursive: true,
+					fileNameFilter: (name) => name === "meeting",
+				});
+				expect(include("events/meeting.md")).toBe(true);
+				expect(include("events/standup.md")).toBe(false);
+			});
+
+			it("handles a directory at the root (no parent folder segment)", () => {
+				const include = getIncludeFile({ directory: "tasks", recursive: true });
+				expect(include("tasks/item.md")).toBe(true);
+				expect(include("tasks/a/b/item.md")).toBe(true);
+				expect(include("other/item.md")).toBe(false);
+			});
+
+			it("handles nested directory paths", () => {
+				const include = getIncludeFile({ directory: "vault/courses/CS101", recursive: true });
+				expect(include("vault/courses/CS101/hw1.md")).toBe(true);
+				expect(include("vault/courses/CS101/assignments/hw2.md")).toBe(true);
+				expect(include("vault/courses/CS102/hw1.md")).toBe(false);
+				expect(include("vault/courses/CS101-extra/hw1.md")).toBe(false);
+			});
+		});
+
+		describe("toRowKey", () => {
+			it("returns relative path (without extension) when recursive", () => {
+				const { config } = createTestConfig({ directory: "events", recursive: true });
+				const table = new VaultTable(config);
+				expect(table.toRowKey("events/courses/CS101/hw1.md")).toBe("courses/CS101/hw1");
+				expect(table.toRowKey("events/meeting.md")).toBe("meeting");
+				expect(table.toRowKey("events/a/b/c/d/deep.md")).toBe("a/b/c/d/deep");
+				table.destroy();
+			});
+
+			it("returns filename only (without extension) when non-recursive", () => {
+				const { config } = createTestConfig({ directory: "events" });
+				const table = new VaultTable(config);
+				expect(table.toRowKey("events/meeting.md")).toBe("meeting");
+				expect(table.toRowKey("events/sub/deep.md")).toBe("deep");
+				table.destroy();
+			});
+
+			it("handles directory with trailing segments correctly", () => {
+				const { config } = createTestConfig({ directory: "vault/my-events", recursive: true });
+				const table = new VaultTable(config);
+				expect(table.toRowKey("vault/my-events/sub/note.md")).toBe("sub/note");
+				expect(table.toRowKey("vault/my-events/root.md")).toBe("root");
+				table.destroy();
+			});
+		});
+
+		describe("indexer event processing", () => {
+			it("creates a row when a deep file event arrives and recursive is true", async () => {
+				const { config, fileStore } = createTestConfig({ directory: "events", recursive: true });
+				const table = new VaultTable(config);
+				const deepFile = createMockTFile("events/courses/CS101/hw1.md", 100);
+				fileStore.set("events/courses/CS101/hw1.md", deepFile);
+
+				await table.start();
+
+				emitIndexerEvent(
+					createFileChangedEvent("events/courses/CS101/hw1.md", { title: "Homework 1", priority: 1, tags: [] }, 100)
+				);
+
+				await vi.waitFor(() => expect(table.count()).toBe(1));
+
+				const row = table.get("courses/CS101/hw1");
+				expect(row).toBeDefined();
+				expect(row!.data.title).toBe("Homework 1");
+				expect(row!.filePath).toBe("events/courses/CS101/hw1.md");
+
+				table.destroy();
+			});
+
+			it("ignores deep file events when recursive is false (default)", async () => {
+				const { config } = createTestConfig({ directory: "events" });
+				const table = new VaultTable(config);
+
+				await table.start();
+
+				// The indexer mock still emits the event — VaultTable's includeFile filter
+				// passed to the Indexer is what blocks deep files in production. In tests,
+				// the Indexer is fully mocked, so we drive includeFile directly to confirm
+				// that the filter correctly rejects depth-2+ paths before events reach the table.
+				const calls = vi.mocked(Indexer).mock.calls;
+				const configStore = calls[calls.length - 1][1] as BehaviorSubject<IndexerConfig>;
+				const includeFile = configStore.value.includeFile!;
+
+				expect(includeFile("events/SubFolder/deep.md")).toBe(false);
+				expect(includeFile("events/a/b/c/deep.md")).toBe(false);
+				expect(includeFile("events/direct.md")).toBe(true);
+
+				table.destroy();
+			});
+
+			it("emits row-created event for deep file with emitCrudEvents=false (indexer path)", async () => {
+				const { config, fileStore } = createTestConfig({ directory: "events", recursive: true });
+				const table = new VaultTable(config);
+				const deepFile = createMockTFile("events/SubFolder/task.md", 100);
+				fileStore.set("events/SubFolder/task.md", deepFile);
+
+				await table.start();
+
+				const events: VaultTableEvent<TestData>[] = [];
+				table.events$.subscribe((e) => events.push(e));
+
+				emitIndexerEvent(
+					createFileChangedEvent("events/SubFolder/task.md", { title: "Deep Task", priority: 0, tags: [] }, 100)
+				);
+
+				await vi.waitFor(() => expect(events).toHaveLength(1));
+				expect(events[0].type).toBe("row-created");
+				if (events[0].type === "row-created") {
+					expect(events[0].filePath).toBe("events/SubFolder/task.md");
+				}
+
+				table.destroy();
+			});
+
+			it("uses relative path as row key for deep files", async () => {
+				const { config, fileStore } = createTestConfig({ directory: "events", recursive: true });
+				const table = new VaultTable(config);
+				fileStore.set("events/a/b/c/my-note.md", createMockTFile("events/a/b/c/my-note.md", 100));
+
+				await table.start();
+
+				emitIndexerEvent(
+					createFileChangedEvent("events/a/b/c/my-note.md", { title: "Deep Note", priority: 0, tags: [] }, 100)
+				);
+
+				await vi.waitFor(() => expect(table.count()).toBe(1));
+				expect(table.get("a/b/c/my-note")).toBeDefined();
+				expect(table.has("a/b/c/my-note")).toBe(true);
+				// filename-only key does NOT match
+				expect(table.get("my-note")).toBeUndefined();
+
+				table.destroy();
+			});
+
+			it("mixes shallow and deep files correctly in the same table", async () => {
+				const { config, fileStore } = createTestConfig({ directory: "events", recursive: true });
+				const table = new VaultTable(config);
+				fileStore.set("events/shallow.md", createMockTFile("events/shallow.md", 100));
+				fileStore.set("events/sub/deep.md", createMockTFile("events/sub/deep.md", 100));
+				fileStore.set("events/a/b/deeper.md", createMockTFile("events/a/b/deeper.md", 100));
+
+				await table.start();
+
+				emitIndexerEvent(
+					createFileChangedEvent("events/shallow.md", { title: "Shallow Event", priority: 1, tags: [] }, 100)
+				);
+				emitIndexerEvent(
+					createFileChangedEvent("events/sub/deep.md", { title: "Deep Event", priority: 2, tags: [] }, 100)
+				);
+				emitIndexerEvent(
+					createFileChangedEvent("events/a/b/deeper.md", { title: "Deeper Event", priority: 3, tags: [] }, 100)
+				);
+
+				await vi.waitFor(() => expect(table.count()).toBe(3));
+
+				expect(table.get("shallow")!.data.title).toBe("Shallow Event");
+				expect(table.get("sub/deep")!.data.title).toBe("Deep Event");
+				expect(table.get("a/b/deeper")!.data.title).toBe("Deeper Event");
+
+				table.destroy();
+			});
+
+			it("handles update and delete lifecycle on deep files", async () => {
+				const { config, fileStore } = createTestConfig({ directory: "events", recursive: true });
+				const table = new VaultTable(config);
+				fileStore.set("events/sub/task.md", createMockTFile("events/sub/task.md", 100));
+
+				await table.start();
+
+				emitIndexerEvent(
+					createFileChangedEvent("events/sub/task.md", { title: "Original", priority: 0, tags: [] }, 100)
+				);
+				await vi.waitFor(() => expect(table.count()).toBe(1));
+
+				// Update via indexer
+				const events: VaultTableEvent<TestData>[] = [];
+				table.events$.subscribe((e) => events.push(e));
+
+				fileStore.set("events/sub/task.md", createMockTFile("events/sub/task.md", 200));
+				emitIndexerEvent(
+					createFileChangedEvent("events/sub/task.md", { title: "Updated", priority: 5, tags: ["changed"] }, 200, {
+						title: "Original",
+						priority: 0,
+						tags: [],
+					})
+				);
+
+				await vi.waitFor(() => expect(table.get("sub/task")!.data.title).toBe("Updated"));
+				expect(events[0].type).toBe("row-updated");
+
+				// Delete via indexer
+				emitIndexerEvent(createFileDeletedEvent("events/sub/task.md"));
+				expect(table.count()).toBe(0);
+				expect(events[1].type).toBe("row-deleted");
+
+				table.destroy();
+			});
+
+			it("same filenames in different subdirectories produce distinct rows", async () => {
+				const { config, fileStore } = createTestConfig({ directory: "events", recursive: true });
+				const table = new VaultTable(config);
+				fileStore.set("events/a/note.md", createMockTFile("events/a/note.md", 100));
+				fileStore.set("events/b/note.md", createMockTFile("events/b/note.md", 200));
+
+				await table.start();
+
+				emitIndexerEvent(createFileChangedEvent("events/a/note.md", { title: "First", priority: 0, tags: [] }, 100));
+				await vi.waitFor(() => expect(table.count()).toBe(1));
+
+				emitIndexerEvent(createFileChangedEvent("events/b/note.md", { title: "Second", priority: 0, tags: [] }, 200));
+				await vi.waitFor(() => expect(table.count()).toBe(2));
+
+				expect(table.get("a/note")!.data.title).toBe("First");
+				expect(table.get("b/note")!.data.title).toBe("Second");
+
+				table.destroy();
+			});
+		});
+	});
+
 	describe("indexer configuration", () => {
 		it("should include folder notes by default", () => {
 			const { config } = createTestConfig({ directory: "my-data" });

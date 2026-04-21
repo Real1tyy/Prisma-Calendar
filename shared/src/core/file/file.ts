@@ -100,6 +100,23 @@ export function extractFileName(path: string): string {
 	return filename.replace(/\.md$/i, "");
 }
 
+/**
+ * Extracts the path relative to a directory prefix, without the .md extension.
+ * Used by recursive VaultTable to derive unique row keys from nested paths.
+ *
+ * @example
+ * ```ts
+ * extractRelativePath("events/courses/CS101/hw1.md", "events") // "courses/CS101/hw1"
+ * extractRelativePath("events/meeting.md", "events")            // "meeting"
+ * extractRelativePath("meeting.md", "")                         // "meeting"
+ * ```
+ */
+export function extractRelativePath(filePath: string, directory: string): string {
+	const prefix = directory ? directory + "/" : "";
+	const relative = filePath.startsWith(prefix) ? filePath.slice(prefix.length) : filePath;
+	return relative.replace(/\.md$/i, "");
+}
+
 export function extractDisplayName(input: string): string {
 	if (!input) return "";
 
