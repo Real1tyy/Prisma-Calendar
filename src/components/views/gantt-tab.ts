@@ -369,7 +369,8 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 				mergedSub = merge(
 					bundle.eventStore.changes$,
 					bundle.recurringEventManager.changes$,
-					bundle.prerequisiteTracker.graph$
+					bundle.prerequisiteTracker.graph$,
+					bundle.settingsStore.settings$
 				)
 					.pipe(debounceTime(REFRESH_DEBOUNCE_MS))
 					.subscribe(() => rebuild(false));

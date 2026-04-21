@@ -181,6 +181,8 @@ export interface EventOnDisk {
 	allDay?: boolean;
 	/** Single-category assignment — maps to the `Category` frontmatter key. */
 	category?: string;
+	/** Multi-category assignment — maps to the `Category` frontmatter key as a YAML list. */
+	categories?: string[];
 }
 
 export interface SeedOptions {
@@ -298,12 +300,13 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 		async seedOnDiskMany(events, options = {}) {
 			const out: EventHandle[] = [];
 			for (const input of events) {
-				const fm: Record<string, string | boolean> = {};
+				const fm: Record<string, string | boolean | string[]> = {};
 				if (input.start !== undefined) fm["Start Date"] = input.start;
 				if (input.end !== undefined) fm["End Date"] = input.end;
 				if (input.date !== undefined) fm["Date"] = input.date;
 				if (input.allDay !== undefined) fm["All Day"] = input.allDay;
-				if (input.category !== undefined) fm["Category"] = input.category;
+				if (input.categories !== undefined) fm["Category"] = input.categories;
+				else if (input.category !== undefined) fm["Category"] = input.category;
 				const relPath = seedEventFile(vaultDir, input.title, fm);
 				out.push(createEventHandle({ page, vaultDir }, relPath, input.title));
 			}

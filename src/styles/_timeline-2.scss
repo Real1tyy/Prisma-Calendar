@@ -87,6 +87,39 @@
 		background-color: var(--text-error);
 	}
 
+	.vis-item-content {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		min-width: 0;
+	}
+
+	.prisma-timeline-item-title {
+		flex: 1 1 0;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.prisma-timeline-color-dots {
+		display: flex;
+		gap: 3px;
+		align-items: center;
+		flex-shrink: 0;
+		pointer-events: none;
+	}
+
+	.prisma-timeline-color-dot {
+		display: inline-block;
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background-color: var(--dot-color);
+		border: 0.5px solid rgb(255 255 255 / 40%);
+		flex-shrink: 0;
+	}
+
 	.vis-tooltip {
 		max-width: 350px;
 		white-space: pre-wrap;

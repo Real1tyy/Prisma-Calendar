@@ -6,7 +6,7 @@ import type { DependencyGraph } from "../core/dependency-graph";
 import type { PrerequisiteTracker } from "../core/prerequisite-tracker";
 import type { CalendarEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/settings";
-import { resolveEventColor } from "../utils/event-color";
+import { resolveAllEventColors } from "../utils/event-color";
 
 export type {
 	ArrowLayout,
@@ -66,7 +66,10 @@ export function normalizeEvents(
 		.map((event) => {
 			const { startMs, endMs } = getTaskTimestamps(event);
 			const prereqs = graph.get(event.ref.filePath) ?? [];
-			const color = resolveEventColor(event.meta ?? {}, bundle, colorEvaluator);
+			const allColors = resolveAllEventColors(event.meta ?? {}, bundle, colorEvaluator);
+			const settings = bundle.settingsStore.currentSettings;
+			const colorModeCount = settings.colorMode === "off" ? 0 : Number(settings.colorMode);
+			const useMultiColor = colorModeCount >= 2 && allColors.length >= 2;
 
 			return {
 				id: sanitizeGanttId(event.ref.filePath),
@@ -75,7 +78,8 @@ export function normalizeEvents(
 				endMs,
 				dependencies: prereqs.map(sanitizeGanttId),
 				filePath: event.ref.filePath,
-				color,
+				color: allColors[0],
+				...(useMultiColor ? { allColors } : {}),
 			};
 		});
 }

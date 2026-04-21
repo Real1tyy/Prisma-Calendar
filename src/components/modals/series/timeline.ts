@@ -1,4 +1,11 @@
-import { cls, ColorEvaluator, MS_PER_DAY, showModal, toLocalISOString } from "@real1ty-obsidian-plugins";
+import {
+	buildColorGradient,
+	cls,
+	ColorEvaluator,
+	MS_PER_DAY,
+	showModal,
+	toLocalISOString,
+} from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { DataSet } from "vis-data";
 import { type DataItem, Timeline, type TimelineOptions } from "vis-timeline";
@@ -6,7 +13,7 @@ import { type DataItem, Timeline, type TimelineOptions } from "vis-timeline";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { CalendarEvent } from "../../../types/calendar";
 import type { SingleCalendarConfig } from "../../../types/settings";
-import { createTextColorResolver, resolveEventColor } from "../../../utils/event-color";
+import { createTextColorResolver, resolveAllEventColors } from "../../../utils/event-color";
 import { cleanupTitle } from "../../../utils/events/naming";
 import { buildEventTooltip } from "../../../utils/format";
 import { type PreviewEventData, showEventPreviewModal } from "../preview/event-preview";
@@ -207,9 +214,11 @@ export function renderTimelineInto(
 
 	function toItem(event: CalendarEvent, settings: SingleCalendarConfig) {
 		const startDate = new Date(event.start);
-		const eventColor = resolveEventColor(event.meta, bundle, colorEvaluator);
+		const allColors = resolveAllEventColors(event.meta, bundle, colorEvaluator);
+		const eventColor = allColors[0] || settings.defaultNodeColor;
 		const textColor = resolveTextColor(eventColor, settings);
-		const content = cleanupTitle(event.title);
+		const colorModeCount = settings.colorMode === "off" ? 0 : Number(settings.colorMode);
+		const rawTitle = cleanupTitle(event.title);
 		const tooltip = buildEventTooltip(event, settings);
 
 		const classes: string[] = [cls("timeline-item")];
@@ -217,12 +226,31 @@ export function renderTimelineInto(
 		classes.push(event.type === "allDay" ? cls("timeline-item-allday") : cls("timeline-item-timed"));
 
 		const styleParts: string[] = [];
-		if (eventColor) styleParts.push(`background-color: ${eventColor}; border-color: ${eventColor};`);
+		if (colorModeCount >= 2 && allColors.length >= 2) {
+			const gradientColors = allColors.slice(0, colorModeCount);
+			styleParts.push(`background-image: ${buildColorGradient(gradientColors)}; border-color: ${allColors[0]};`);
+		} else if (eventColor) {
+			styleParts.push(`background-color: ${eventColor}; border-color: ${eventColor};`);
+		}
 		if (textColor) styleParts.push(`color: ${textColor};`);
+
+		const titleSpan = `<span class="${cls("timeline-item-title")}">${rawTitle}</span>`;
+		let displayContent = titleSpan;
+		if (settings.showEventColorDots) {
+			const appliedCount = settings.colorMode === "off" ? 0 : Math.min(colorModeCount, allColors.length);
+			const overflowColors = allColors.slice(appliedCount);
+			if (overflowColors.length > 0) {
+				const dots = overflowColors
+					.slice(0, 6)
+					.map((c) => `<span class="${cls("timeline-color-dot")}" style="--dot-color:${c}"></span>`)
+					.join("");
+				displayContent += `<span class="${cls("timeline-color-dots")}">${dots}</span>`;
+			}
+		}
 
 		const base = {
 			id: event.ref.filePath,
-			content,
+			content: displayContent,
 			title: tooltip,
 			start: startDate,
 			className: classes.join(" "),

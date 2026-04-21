@@ -16,3 +16,21 @@
 		background: var(--background-modifier-hover);
 	}
 }
+
+.prisma-gantt-bar-color-dots {
+	display: flex;
+	gap: 3px;
+	position: absolute;
+	bottom: 2px;
+	right: 4px;
+	pointer-events: none;
+}
+
+.prisma-gantt-bar-color-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background-color: var(--dot-color);
+	border: 0.5px solid rgb(255 255 255 / 40%);
+	flex-shrink: 0;
+}

@@ -195,10 +195,20 @@ const SEED_ZETTEL_ID = "20250101000000";
  * the path, and the H1 mirrors the title so calendar-block text matching
  * works the same way the real plugin produces files.
  */
-export function seedEventFile(vaultDir: string, title: string, frontmatter: Record<string, string | boolean>): string {
+export function seedEventFile(
+	vaultDir: string,
+	title: string,
+	frontmatter: Record<string, string | boolean | string[]>
+): string {
 	const relativePath = `Events/${title}-${SEED_ZETTEL_ID}.md`;
 	const fmBody = Object.entries(frontmatter)
-		.map(([key, value]) => `${key}: ${value}`)
+		.map(([key, value]) => {
+			if (Array.isArray(value)) {
+				if (value.length === 0) return `${key}: []`;
+				return `${key}:\n${value.map((v) => `  - ${v}`).join("\n")}`;
+			}
+			return `${key}: ${value}`;
+		})
 		.join("\n");
 	writeFileSync(join(vaultDir, relativePath), `---\n${fmBody}\n---\n\n# ${title}\n`, "utf8");
 	return relativePath;

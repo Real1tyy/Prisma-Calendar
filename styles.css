@@ -211,7 +211,8 @@
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  position: relative;
+  overflow: visible;
   /* add subtle depth without harsh borders */
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
   transition: transform 0.06s ease, box-shadow 0.2s ease, opacity 0.2s ease;
@@ -238,6 +239,23 @@
   width: 14px;
   height: 14px;
   border: 0.5px solid rgba(255, 255, 255, 0.4);
+}
+
+/* Inline Color Dots — reusable multi-color indicators for list rows and detail panels */
+.prisma-inline-color-dots {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+  min-width: 44px;
+  margin-right: 4px;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+.prisma-inline-color-dots .prisma-day-color-dot {
+  width: 8px;
+  height: 8px;
+  border: 0.5px solid rgba(0, 0, 0, 0.15);
 }
 
 /* Prevent FullCalendar's default dark hover overlay */
@@ -4828,6 +4846,35 @@
 .prisma-timeline-modal .vis-current-time {
   background-color: var(--text-error);
 }
+.prisma-timeline-modal .vis-item-content {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.prisma-timeline-modal .prisma-timeline-item-title {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.prisma-timeline-modal .prisma-timeline-color-dots {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+.prisma-timeline-modal .prisma-timeline-color-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--dot-color);
+  border: 0.5px solid rgba(255, 255, 255, 0.4);
+  flex-shrink: 0;
+}
 .prisma-timeline-modal .vis-tooltip {
   max-width: 350px;
   white-space: pre-wrap;
@@ -5029,6 +5076,26 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+.prisma-heatmap-detail-time-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.prisma-heatmap-detail-color-dots {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  pointer-events: none;
+}
+.prisma-heatmap-detail-color-dot {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background-color: var(--dot-color);
+  border: 0.5px solid rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
 }
 .prisma-heatmap-detail-title {
   font-size: 0.9rem;

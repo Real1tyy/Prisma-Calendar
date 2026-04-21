@@ -1,11 +1,11 @@
-import { addCls, cls, ColorEvaluator, showModal } from "@real1ty-obsidian-plugins";
+import { addCls, buildColorGradient, cls, ColorEvaluator, hexToRgb, showModal } from "@real1ty-obsidian-plugins";
 import { DateTime } from "luxon";
 import type { App } from "obsidian";
 
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { CalendarEvent } from "../../../types/calendar";
 import type { SingleCalendarConfig } from "../../../types/settings";
-import { resolveEventColor } from "../../../utils/event-color";
+import { resolveAllEventColors } from "../../../utils/event-color";
 import { cleanupTitle } from "../../../utils/events/naming";
 import { emitHover } from "../../../utils/obsidian";
 import { getDisplayProperties, renderPropertyValue } from "../../../utils/property-display";
@@ -191,23 +191,46 @@ export function renderHeatmapInto(
 
 		const settings = bundle.settingsStore.currentSettings;
 		const displayPropertiesList = settings.frontmatterDisplayPropertiesHeatmap;
+		const colorModeCount = settings.colorMode === "off" ? 0 : Number(settings.colorMode);
 
 		const list = dayDetailPanel.createDiv(cls("heatmap-detail-list"));
 		for (const event of events) {
 			const row = list.createDiv(cls("heatmap-detail-row"));
-			const eventColor = resolveEventColor(event.meta ?? {}, bundle, colorEvaluator);
+			const allColors = resolveAllEventColors(event.meta ?? {}, bundle, colorEvaluator);
+			const eventColor = allColors[0];
 			if (eventColor) {
 				addCls(row, "heatmap-detail-row-categorized");
 				row.style.setProperty("--category-color", eventColor);
 			}
+			if (colorModeCount >= 2 && allColors.length >= 2) {
+				const appliedColors = allColors.slice(0, colorModeCount).map((c) => {
+					const rgb = hexToRgb(c);
+					return rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.15)` : c;
+				});
+				row.style.setProperty("background-image", buildColorGradient(appliedColors));
+				row.style.setProperty("border-color", allColors[0]);
+			}
 			const mainRow = row.createDiv(cls("heatmap-detail-row-main"));
 			mainRow.createSpan({ text: cleanupTitle(event.title), cls: cls("heatmap-detail-title") });
 
+			const timeGroup = mainRow.createSpan(cls("heatmap-detail-time-group"));
 			if (event.type === "timed") {
 				const startDt = DateTime.fromISO(event.start);
-				mainRow.createSpan({ text: startDt.toFormat("h:mm a"), cls: cls("heatmap-detail-time") });
+				timeGroup.createSpan({ text: startDt.toFormat("h:mm a"), cls: cls("heatmap-detail-time") });
 			} else {
-				mainRow.createSpan({ text: "All day", cls: cls("heatmap-detail-time") });
+				timeGroup.createSpan({ text: "All day", cls: cls("heatmap-detail-time") });
+			}
+
+			if (settings.showEventColorDots && allColors.length >= 2) {
+				const appliedCount = colorModeCount === 0 ? 0 : Math.min(colorModeCount, allColors.length);
+				const overflowColors = allColors.slice(appliedCount);
+				if (overflowColors.length > 0) {
+					const dotsEl = timeGroup.createSpan(cls("heatmap-color-dots"));
+					for (const color of overflowColors.slice(0, 4)) {
+						const dot = dotsEl.createSpan(cls("heatmap-color-dot"));
+						dot.style.setProperty("--dot-color", color);
+					}
+				}
 			}
 
 			if (displayPropertiesList.length > 0 && event.meta) {

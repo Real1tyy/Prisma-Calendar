@@ -4,19 +4,21 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.14.0 - 4/20/2026
+## 2.14.0 - 4/21/2026
 
-> **TLDR:** New **Settings transfer** and **Year view**. Export your plugin config as JSON and re-import it on another vault. See all twelve months at once with the new Year toolbar button. **CalDAV subscriptions** now pick up server-side deletions. **Title property** wins over **Calendar Title** everywhere.
+> **TLDR:** New **Settings transfer** and **Year view**. **Multi-color gradients and color dots** now work across Gantt, Timeline, Heatmap, and event series modals — not just the calendar. Export your plugin config as JSON and re-import it on another vault. **CalDAV subscriptions** now pick up server-side deletions. Events in nested subdirectories are now indexed again by default.
 
 ### Added
 - **Settings transfer (import / export / reset)**: New **Settings transfer** row at the bottom of **General** — export your plugin settings as JSON (only fields you changed from defaults are included), re-import them on another vault, or reset every setting to its default with one click (protected by a confirmation dialog). Local-only keys (license secret reference) are never touched. See [General Settings → Settings Transfer](./configuration/general.md#settings-transfer).
 - **Year view**: New **Year** toolbar button in the main calendar tab shows all twelve months in a compact grid. Events render as compact chips with automatic "+more" overflow, color dots show at the top of each day cell (same as monthly view), and the entire palette matches your Obsidian theme. Click an event to open it, click a day to create one, use prev/next to step by year. Set it as the default in **Settings → Calendar → View Configuration → Default view**. See [Calendar View](./features/calendar/calendar-view.md#view-modes).
 - **CalDAV picks up server-side deletions (Pro)**: Delete an event in iCloud, Google, Nextcloud, Fastmail, or Zimbra and Prisma now removes the local note on the next sync. Previously, deletions stayed stuck on the server. No setup needed — it just works after the update. See [CalDAV integration](./features/advanced/integrations.md#caldav-integration).
+- **Multi-color everywhere**: Color gradients and overflow color dots now render in Gantt bars, Timeline items, Heatmap detail rows, and event series modal rows — matching the calendar view behavior. See [Color Rules → Multi-Color Across All Views](./features/organization/color-rules.md#multi-color-across-all-views).
 
 ### Improved
 - **Title property takes priority over Calendar Title**: When both are set, your **Title property** now shows everywhere — calendar, edit modal, Gantt, Timeline, Heatmap, context menus, notifications, event lists. Before, the auto-generated **Calendar Title** quietly overrode it. **Calendar Title** still fills in when the Title property is empty. See [Properties](./configuration/properties.md#title-property) and [ZettelID Naming](./features/management/zettelid-naming.md#calendar-title-vs-title-property).
 
 ### Fixed
+- **Events in subdirectories not appearing on the calendar**: Files stored more than one level deep under the configured calendar folder (e.g., `courses/CS101/assignments/HW1.md`) were silently excluded after the v2.13.0 migration to VaultTable. A new **Index subdirectories** toggle (enabled by default) restores recursive scanning. See [General Settings](./configuration/general.md#calendar-directory).
 - **Duplicate event not opening the cloned note**: The duplicate command silently skipped opening the new note whenever the calendar view was visible. It now always opens the clone in a new tab. See [Hotkeys](./features/advanced/hotkeys.md#duplicate-current-event).
 - **Settings transfer dropping optional fields**: Exporting and re-importing settings silently dropped optional fields like **Template path**, **Tab state**, **Context menu state**, and **ZettelID property** — any field whose default is undefined. See [General Settings → Settings Transfer](./configuration/general.md#settings-transfer).
 - **Virtual events file created at vault root when directory is empty**: With no calendar directory configured, the plugin created a `Virtual Events.md` file at the vault root on startup. It now skips binding until a directory is set. See [Virtual Events](./features/events/virtual-events.md).
@@ -27,6 +29,8 @@ All notable changes to this project will be documented here.
 ## 2.13.0 - 4/18/2026
 
 > **TLDR:** New **Monthly + Stats** tab — a month-locked calendar paired with live monthly stats. New **Heatmap Monthly + Stats** showing heatmap motnhly with stats.
+>
+> 📺 [Watch the 2.13 update video](https://youtu.be/Hkws3JWPbck) — a walkthrough of all the major changes in action.
 
 ### Added
 - **Event title validation**: The create/edit event modal now blocks saves when the title contains filename-illegal characters (`/`, `\`, `:`, `*`, `?`, `"`, `<`, `>`, `|`). A notice explains which character(s) to remove and the modal stays open so you don't lose your work. See [Title Autocomplete](./features/events/title-autocomplete.md#filename-illegal-characters).

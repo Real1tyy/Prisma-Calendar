@@ -88,6 +88,16 @@ When **Show overflow color dots** is enabled (Settings → Rules → Event color
 
 This lets you see at a glance which rules an event matches beyond the visible background colors.
 
+### Multi-Color Across All Views
+
+Multi-color gradients and overflow color dots are supported everywhere events are displayed:
+
+- **Calendar view** — gradient background + overflow dots on event cards, plus day-cell color summary dots
+- **Gantt chart** — gradient bars with overflow dots for events matching multiple color rules
+- **Timeline** — gradient item backgrounds with inline color dots
+- **Heatmap detail panel** — color dots on individual event rows when viewing a day's events
+- **Event series modal** — color dots on event rows in the "By Name" tab
+
 ## Category Color Management
 
 For a convenient way to manage category colors without writing expressions manually, use the **Categories Settings** section (Settings → Categories). This interface automatically detects all categories from your events, displays event counts, and provides color pickers for each category. Behind the scenes, category colors are stored as color rules using expressions like `Category.includes('Work')`.

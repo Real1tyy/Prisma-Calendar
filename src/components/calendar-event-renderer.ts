@@ -1,10 +1,12 @@
 import type { EventContentArg } from "@fullcalendar/core";
 import {
+	buildColorGradient,
 	calculateDuration,
 	cls,
 	extractContentAfterFrontmatter,
 	getNotePreviewLines,
 	hasVeryCloseShadeFromRgb,
+	hexToRgb,
 	parseColorToRgb,
 	type RgbColor,
 } from "@real1ty-obsidian-plugins";
@@ -206,10 +208,10 @@ export function applyEventMountStyling(
 }
 
 function appendEventColorDots(element: HTMLElement, colors: string[]): void {
+	element.querySelector(`.${cls("event-color-dots")}`)?.remove();
 	const container = buildColorDotsContainer(colors, 6);
 	container.classList.add(cls("event-color-dots"));
-	const main = element.querySelector(".fc-event-main") ?? element;
-	main.appendChild(container);
+	element.appendChild(container);
 }
 
 export function attachLazyNotePreview(element: HTMLElement, filePath: string, app: App): void {
@@ -248,10 +250,38 @@ export function buildColorDotsContainer(colors: string[], maxDots: number): HTML
 	return container;
 }
 
-export function buildColorGradient(colors: string[]): string {
-	const segmentSize = 100 / colors.length;
-	const stops = colors.map((color, i) => `${color} ${i * segmentSize}%, ${color} ${(i + 1) * segmentSize}%`).join(", ");
-	return `linear-gradient(90deg, ${stops})`;
+export { buildColorGradient } from "@real1ty-obsidian-plugins";
+
+export function applyMultiColorIndicators(
+	element: HTMLElement,
+	allColors: string[],
+	settings: Pick<SingleCalendarConfig, "colorMode" | "showEventColorDots">,
+	options?: { maxDots?: number; colorMixRatio?: number }
+): void {
+	const colorModeCount = settings.colorMode === "off" ? 0 : Number(settings.colorMode);
+
+	if (colorModeCount >= 2 && allColors.length >= 2) {
+		const ratio = options?.colorMixRatio ?? 1;
+		const gradientColors =
+			ratio < 1
+				? allColors.slice(0, colorModeCount).map((c) => {
+						const rgb = hexToRgb(c);
+						return rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${ratio})` : c;
+					})
+				: allColors.slice(0, colorModeCount);
+		element.style.setProperty("background-image", buildColorGradient(gradientColors));
+		element.style.setProperty("border-color", allColors[0]);
+	}
+
+	if (settings.showEventColorDots) {
+		const appliedCount = settings.colorMode === "off" ? 0 : Math.min(colorModeCount, allColors.length);
+		const overflowColors = allColors.slice(appliedCount);
+		if (overflowColors.length > 0) {
+			const container = buildColorDotsContainer(overflowColors, options?.maxDots ?? 6);
+			container.classList.add(cls("inline-color-dots"));
+			element.appendChild(container);
+		}
+	}
 }
 
 function getEventIcon(

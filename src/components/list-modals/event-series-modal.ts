@@ -6,9 +6,10 @@ import type { CalendarBundle } from "../../core/calendar-bundle";
 import { PRO_FEATURES } from "../../core/license";
 import type { CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
-import { resolveEventColor } from "../../utils/event-color";
+import { resolveAllEventColors } from "../../utils/event-color";
 import { removeZettelId } from "../../utils/events/zettel-id";
 import { formatRecurrenceLabel, isWeekdaySupported } from "../../utils/recurring-utils";
+import { applyMultiColorIndicators } from "../calendar-event-renderer";
 import {
 	type EventSeriesBasesViewConfig,
 	showEventSeriesBasesViewModal,
@@ -30,6 +31,7 @@ interface EventListItem {
 	filePath: string;
 	skipped: boolean;
 	color?: string;
+	allColors?: string[];
 }
 
 interface EventListOptions {
@@ -326,7 +328,9 @@ export class EventSeriesModal extends Modal {
 				skipped: !!event.skipped,
 			};
 			if (!isCategory) {
-				item.color = this.getEventColor(event);
+				const allColors = this.getEventColors(event);
+				item.color = allColors[0];
+				item.allColors = allColors;
 			}
 			return item;
 		});
@@ -463,6 +467,11 @@ export class EventSeriesModal extends Modal {
 
 		const titleEl = row.createDiv(cls("recurring-event-title"));
 		titleEl.textContent = item.title;
+
+		if (item.allColors && item.allColors.length >= 2) {
+			const settings = this.bundle.settingsStore.currentSettings;
+			applyMultiColorIndicators(row, item.allColors, settings, { maxDots: 4, colorMixRatio: 0.15 });
+		}
 
 		if (item.skipped) {
 			addCls(titleEl, "recurring-event-skipped");
@@ -658,7 +667,7 @@ export class EventSeriesModal extends Modal {
 
 	// ─── Utilities ───────────────────────────────────────────────
 
-	private getEventColor(event: CalendarEvent): string {
-		return resolveEventColor(event.meta ?? {}, this.bundle, this.colorEvaluator);
+	private getEventColors(event: CalendarEvent): string[] {
+		return resolveAllEventColors(event.meta ?? {}, this.bundle, this.colorEvaluator);
 	}
 }

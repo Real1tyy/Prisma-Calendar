@@ -5,7 +5,8 @@
 	cursor: pointer;
 	display: flex;
 	flex-direction: column;
-	overflow: hidden;
+	position: relative;
+	overflow: visible;
 
 	/* add subtle depth without harsh borders */
 	box-shadow:
@@ -40,6 +41,24 @@
 		width: 14px;
 		height: 14px;
 		border: 0.5px solid rgb(255 255 255 / 40%);
+	}
+}
+
+/* Inline Color Dots — reusable multi-color indicators for list rows and detail panels */
+.prisma-inline-color-dots {
+	display: inline-flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 3px;
+	min-width: 44px;
+	margin-right: 4px;
+	flex-shrink: 0;
+	pointer-events: none;
+
+	.prisma-day-color-dot {
+		width: 8px;
+		height: 8px;
+		border: 0.5px solid rgb(0 0 0 / 15%);
 	}
 }
 
