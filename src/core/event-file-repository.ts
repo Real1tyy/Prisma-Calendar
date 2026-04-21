@@ -72,6 +72,7 @@ export class EventFileRepository implements CalendarEventSource {
 				newSettings.directory !== this.table.directory ||
 				newSettings.indexSubdirectories !== prevSettings.indexSubdirectories
 			) {
+				this.indexingCompleteSubject.next(false);
 				this.table.destroy();
 				this.table = this.createTable(newSettings);
 				this.wireTableEvents();

@@ -8,7 +8,7 @@ import { closeSettings, openCalendarView, openPrismaSettings, switchSettingsTab 
 import { refreshCalendar, seedEvent } from "../../fixtures/seed-events";
 import { openCalendarReady } from "../events/events-helpers";
 
-const SUBDIR_EVENT_TITLE = "Team Meeting";
+const SUBDIR_EVENT_TITLE = "Deep Nested Event";
 const NESTED_SUBDIR = "Events/SubFolder/Deep";
 
 test.describe("settings: Index subdirectories", () => {
@@ -49,7 +49,6 @@ test.describe("settings: Index subdirectories", () => {
 		await settleSettings(obsidian.page, { pluginId: PLUGIN_ID });
 		await closeSettings(obsidian.page);
 
-		// Event reappears now that recursive scanning is back on.
 		await handle.expectVisible(true);
 	});
 });
