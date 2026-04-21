@@ -4867,13 +4867,6 @@
   gap: 6px;
   min-width: 0;
 }
-.prisma-timeline-modal .prisma-timeline-item-title {
-  flex: 1 1 0;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 .prisma-timeline-modal .vis-tooltip {
   max-width: 350px;
   white-space: pre-wrap;
