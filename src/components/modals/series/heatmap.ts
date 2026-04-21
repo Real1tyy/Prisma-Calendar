@@ -225,9 +225,9 @@ export function renderHeatmapInto(
 				const appliedCount = colorModeCount === 0 ? 0 : Math.min(colorModeCount, allColors.length);
 				const overflowColors = allColors.slice(appliedCount);
 				if (overflowColors.length > 0) {
-					const dotsEl = timeGroup.createSpan(cls("heatmap-color-dots"));
+					const dotsEl = row.createDiv(cls("heatmap-detail-color-dots"));
 					for (const color of overflowColors.slice(0, 4)) {
-						const dot = dotsEl.createSpan(cls("heatmap-color-dot"));
+						const dot = dotsEl.createSpan(cls("heatmap-detail-color-dot"));
 						dot.style.setProperty("--dot-color", color);
 					}
 				}
