@@ -186,6 +186,17 @@ const DirectorySection = memo(function DirectorySection({ settings, updateField,
 				/>
 			</SettingItem>
 			<SettingItem
+				name="Index subdirectories"
+				description="Index event files anywhere under the configured folder, not just immediate children. When enabled, events stored at any depth (e.g., courses/CS101/HW1.md) appear on the calendar."
+				testId="prisma-settings-field-indexSubdirectories"
+			>
+				<Toggle
+					value={settings.indexSubdirectories}
+					onChange={(v) => updateField("indexSubdirectories", v)}
+					testId="prisma-settings-control-indexSubdirectories"
+				/>
+			</SettingItem>
+			<SettingItem
 				name="Read-only mode"
 				description="Prevent automatic file modifications. When enabled, the plugin will not automatically write to files (notifications, recurring event generation). Manual actions like propagation will still work. Stored in sync.json to prevent syncing across devices."
 				testId="prisma-settings-field-readOnly"

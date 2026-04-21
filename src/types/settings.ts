@@ -141,6 +141,12 @@ const GeneralSettingsSchema = z
 			.describe(
 				"Automatically add a Zettel ID timestamp to filenames of events in the calendar directory that don't have one. Files are renamed from 'My Event.md' to 'My Event-20260216120000.md'."
 			),
+		indexSubdirectories: z
+			.boolean()
+			.catch(true)
+			.describe(
+				"Index event files in all subdirectories of the configured folder, not just the immediate children. When enabled, events stored at any depth (e.g., courses/CS101/assignments/HW1.md) appear on the calendar. When disabled, only files directly inside the configured folder are indexed."
+			),
 	})
 	.strip();
 

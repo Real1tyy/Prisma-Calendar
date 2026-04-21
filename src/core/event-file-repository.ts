@@ -1,11 +1,5 @@
 import type { FrontmatterDiff, SyncStore, VaultRow, VaultTableEvent } from "@real1ty-obsidian-plugins";
-import {
-	extractFileName,
-	isFolderNote,
-	removeMarkdownExtension,
-	toSafeString,
-	VaultTable,
-} from "@real1ty-obsidian-plugins";
+import { isFolderNote, removeMarkdownExtension, toSafeString, VaultTable } from "@real1ty-obsidian-plugins";
 import { type App, TFile } from "obsidian";
 import { BehaviorSubject, type Observable, Subject, type Subscription } from "rxjs";
 
@@ -72,8 +66,12 @@ export class EventFileRepository implements CalendarEventSource {
 		this.indexingComplete$ = this.indexingCompleteSubject.asObservable();
 
 		this.settingsSub = settingsStore.subscribe((newSettings) => {
+			const prevSettings = this.settings;
 			this.settings = newSettings;
-			if (newSettings.directory !== this.table.directory) {
+			if (
+				newSettings.directory !== this.table.directory ||
+				newSettings.indexSubdirectories !== prevSettings.indexSubdirectories
+			) {
 				this.table.destroy();
 				this.table = this.createTable(newSettings);
 				this.wireTableEvents();
@@ -133,7 +131,7 @@ export class EventFileRepository implements CalendarEventSource {
 	// ─── Path resolution ─────────────────────────────────────────
 
 	toKey(filePath: string): string {
-		return extractFileName(filePath);
+		return this.table.toRowKey(filePath);
 	}
 
 	getByPath(filePath: string): Frontmatter | undefined {
@@ -527,6 +525,7 @@ export class EventFileRepository implements CalendarEventSource {
 			invalidStrategy: "skip",
 			debounceMs: 100,
 			emitCrudEvents: true,
+			recursive: settings.indexSubdirectories,
 			persistence: {
 				namespace: PRISMA_CACHE_NAMESPACE,
 				schemaVersion: PRISMA_CACHE_SCHEMA_VERSION,

@@ -2,7 +2,8 @@
 
 ## Calendar Directory
 
-- **Directory**: folder to scan for events and create new notes in (supports nested folders)
+- **Directory**: folder to scan for events and create new notes in
+- **Index subdirectories**: when enabled (default), events stored at any depth under the configured folder are indexed — for example, `courses/CS101/assignments/HW1.md` appears on the calendar. Disable to restrict indexing to direct children of the folder only.
 - **Template path**: optional Templater template used when creating events
 - **Locale**: language and date format for calendar headings, day names, month names, toolbar labels, and date displays. Defaults to English. Supports ~20 languages including French, German, Spanish, Italian, Portuguese, Japanese, Korean, Chinese, Russian, Arabic, and more.
 - **Show ribbon icon**: display calendar icon in the left sidebar to open calendar (enabled by default)
