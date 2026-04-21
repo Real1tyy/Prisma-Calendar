@@ -67,6 +67,9 @@ async function setupTwoConnectedEvents(calendar: CalendarHandle): Promise<void> 
 
 	await calendar.unlockPro();
 	await calendar.switchView("gantt");
+	// Gantt viewport centers on today, but events are seeded at the anchor
+	// (last Wednesday) — pan back so the anchor-dated bars are in view.
+	await calendar.page.locator('.prisma-gantt-nav button[aria-label="Back 1 week"]').click();
 }
 
 test.describe("analytics: gantt", () => {
