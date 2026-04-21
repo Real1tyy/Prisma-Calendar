@@ -250,6 +250,26 @@ export function buildColorDotsContainer(colors: string[], maxDots: number): HTML
 	return container;
 }
 
+export function injectOverflowDots(
+	parent: HTMLElement,
+	colors: string[],
+	containerClass: string,
+	dotClass: string,
+	maxDots = 6
+): void {
+	parent.querySelector(`.${containerClass}`)?.remove();
+	if (colors.length === 0) return;
+	const container = document.createElement("div");
+	container.className = containerClass;
+	for (const color of colors.slice(0, maxDots)) {
+		const dot = document.createElement("div");
+		dot.className = dotClass;
+		dot.style.setProperty("--dot-color", color);
+		container.appendChild(dot);
+	}
+	parent.appendChild(container);
+}
+
 export { buildColorGradient } from "@real1ty-obsidian-plugins";
 
 export function applyMultiColorIndicators(

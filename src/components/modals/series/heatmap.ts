@@ -9,6 +9,7 @@ import { resolveAllEventColors } from "../../../utils/event-color";
 import { cleanupTitle } from "../../../utils/events/naming";
 import { emitHover } from "../../../utils/obsidian";
 import { getDisplayProperties, renderPropertyValue } from "../../../utils/property-display";
+import { injectOverflowDots } from "../../calendar-event-renderer";
 import { buildHeatmapDataset, type HeatmapDataset } from "../../heatmap/heatmap-data";
 import {
 	findAdjacentCell,
@@ -224,13 +225,7 @@ export function renderHeatmapInto(
 			if (settings.showEventColorDots && allColors.length >= 2) {
 				const appliedCount = colorModeCount === 0 ? 0 : Math.min(colorModeCount, allColors.length);
 				const overflowColors = allColors.slice(appliedCount);
-				if (overflowColors.length > 0) {
-					const dotsEl = row.createDiv(cls("heatmap-detail-color-dots"));
-					for (const color of overflowColors.slice(0, 4)) {
-						const dot = dotsEl.createSpan(cls("heatmap-detail-color-dot"));
-						dot.style.setProperty("--dot-color", color);
-					}
-				}
+				injectOverflowDots(row, overflowColors, cls("heatmap-detail-color-dots"), cls("heatmap-detail-color-dot"));
 			}
 
 			if (displayPropertiesList.length > 0 && event.meta) {

@@ -62,6 +62,26 @@
 	}
 }
 
+/* Compact overflow dots — bottom-right indicators for gantt bars, timeline items, etc. */
+.prisma-compact-color-dots {
+	display: flex;
+	flex-direction: row-reverse;
+	gap: 2px;
+	position: absolute;
+	bottom: 2px;
+	right: 4px;
+	pointer-events: none;
+}
+
+.prisma-compact-color-dot {
+	width: 5px;
+	height: 5px;
+	border-radius: 50%;
+	background-color: var(--dot-color);
+	border: 0.5px solid rgb(255 255 255 / 40%);
+	flex-shrink: 0;
+}
+
 /* Prevent FullCalendar's default dark hover overlay */
 .prisma-calendar-container  {
 	.fc-event:hover, .fc-daygrid-event:hover, .fc-daygrid-dot-event:hover {

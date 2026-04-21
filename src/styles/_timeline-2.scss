@@ -9,7 +9,6 @@
 
 	.vis-item  {
 		background-color: var(--interactive-accent);
-		border-color: var(--interactive-accent);
 		color: var(--text-on-accent);
 		font-size: 0.9em;
 		border-radius: 4px;
@@ -32,7 +31,12 @@
 
 		&.vis-selected {
 			background-color: var(--interactive-accent-hover);
-			border-color: var(--interactive-accent-hover);
+		}
+
+		&.vis-range,
+		&.vis-box,
+		&.vis-dot {
+			border-style: none;
 		}
 
 		&.prisma-timeline-item-skipped  {
@@ -43,10 +47,7 @@
 			}
 		}
 
-		/* All-day events: hollow circle dot and dashed border */
 		&.prisma-timeline-item-allday  {
-			border-style: dashed;
-
 			.vis-dot {
 				background-color: transparent;
 				border-width: 3px;
@@ -100,24 +101,6 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
-	}
-
-	.prisma-timeline-color-dots {
-		display: flex;
-		gap: 3px;
-		align-items: center;
-		flex-shrink: 0;
-		pointer-events: none;
-	}
-
-	.prisma-timeline-color-dot {
-		display: inline-block;
-		width: 8px;
-		height: 8px;
-		border-radius: 50%;
-		background-color: var(--dot-color);
-		border: 0.5px solid rgb(255 255 255 / 40%);
-		flex-shrink: 0;
 	}
 
 	.vis-tooltip {

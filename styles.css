@@ -258,6 +258,26 @@
   border: 0.5px solid rgba(0, 0, 0, 0.15);
 }
 
+/* Compact overflow dots — bottom-right indicators for gantt bars, timeline items, etc. */
+.prisma-compact-color-dots {
+  display: flex;
+  flex-direction: row-reverse;
+  gap: 2px;
+  position: absolute;
+  bottom: 2px;
+  right: 4px;
+  pointer-events: none;
+}
+
+.prisma-compact-color-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: var(--dot-color);
+  border: 0.5px solid rgba(255, 255, 255, 0.4);
+  flex-shrink: 0;
+}
+
 /* Prevent FullCalendar's default dark hover overlay */
 .prisma-calendar-container .fc-event:hover, .prisma-calendar-container .fc-daygrid-event:hover, .prisma-calendar-container .fc-daygrid-dot-event:hover {
   filter: brightness(1.15) saturate(1.1);
@@ -4784,7 +4804,6 @@
 }
 .prisma-timeline-modal .vis-item {
   background-color: var(--interactive-accent);
-  border-color: var(--interactive-accent);
   color: var(--text-on-accent);
   font-size: 0.9em;
   border-radius: 4px;
@@ -4804,19 +4823,15 @@
 }
 .prisma-timeline-modal .vis-item.vis-selected {
   background-color: var(--interactive-accent-hover);
-  border-color: var(--interactive-accent-hover);
+}
+.prisma-timeline-modal .vis-item.vis-range, .prisma-timeline-modal .vis-item.vis-box, .prisma-timeline-modal .vis-item.vis-dot {
+  border-style: none;
 }
 .prisma-timeline-modal .vis-item.prisma-timeline-item-skipped {
   opacity: 0.5;
 }
 .prisma-timeline-modal .vis-item.prisma-timeline-item-skipped .vis-item-content {
   text-decoration: line-through;
-}
-.prisma-timeline-modal .vis-item {
-  /* All-day events: hollow circle dot and dashed border */
-}
-.prisma-timeline-modal .vis-item.prisma-timeline-item-allday {
-  border-style: dashed;
 }
 .prisma-timeline-modal .vis-item.prisma-timeline-item-allday .vis-dot {
   background-color: transparent;
@@ -4858,22 +4873,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-.prisma-timeline-modal .prisma-timeline-color-dots {
-  display: flex;
-  gap: 3px;
-  align-items: center;
-  flex-shrink: 0;
-  pointer-events: none;
-}
-.prisma-timeline-modal .prisma-timeline-color-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: var(--dot-color);
-  border: 0.5px solid rgba(255, 255, 255, 0.4);
-  flex-shrink: 0;
 }
 .prisma-timeline-modal .vis-tooltip {
   max-width: 350px;
@@ -5054,6 +5053,7 @@
   gap: 4px;
 }
 .prisma-heatmap-detail-row {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -5083,9 +5083,12 @@
   gap: 5px;
 }
 .prisma-heatmap-detail-color-dots {
-  display: inline-flex;
-  gap: 4px;
+  display: flex;
+  gap: 3px;
   align-items: center;
+  position: absolute;
+  bottom: 3px;
+  right: 8px;
   pointer-events: none;
 }
 .prisma-heatmap-detail-color-dot {
@@ -8792,4 +8795,21 @@ div.vis-tooltip {
   align-items: center;
   gap: 1rem;
   flex: 0 0 auto;
+}
+
+/* ─── Gantt Tab (overrides — base styles injected by shared library) ── */
+.prisma-gantt-create-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+}
+.prisma-gantt-create-btn:hover {
+  color: var(--text-normal);
+  background: var(--background-modifier-hover);
 }

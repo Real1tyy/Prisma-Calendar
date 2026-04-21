@@ -16,6 +16,7 @@ import type { SingleCalendarConfig } from "../../../types/settings";
 import { createTextColorResolver, resolveAllEventColors } from "../../../utils/event-color";
 import { cleanupTitle } from "../../../utils/events/naming";
 import { buildEventTooltip } from "../../../utils/format";
+import { injectOverflowDots } from "../../calendar-event-renderer";
 import { type PreviewEventData, showEventPreviewModal } from "../preview/event-preview";
 
 const RANGE_CHANGE_DEBOUNCE_MS = 200;
@@ -211,6 +212,7 @@ export function renderTimelineInto(
 	}
 
 	const resolveTextColor = createTextColorResolver();
+	const itemDotColors = new Map<string, string[]>();
 
 	function toItem(event: CalendarEvent, settings: SingleCalendarConfig) {
 		const startDate = new Date(event.start);
@@ -228,29 +230,25 @@ export function renderTimelineInto(
 		const styleParts: string[] = [];
 		if (colorModeCount >= 2 && allColors.length >= 2) {
 			const gradientColors = allColors.slice(0, colorModeCount);
-			styleParts.push(`background-image: ${buildColorGradient(gradientColors)}; border-color: ${allColors[0]};`);
+			styleParts.push(`background-image: ${buildColorGradient(gradientColors)};`);
 		} else if (eventColor) {
-			styleParts.push(`background-color: ${eventColor}; border-color: ${eventColor};`);
+			styleParts.push(`background-color: ${eventColor};`);
 		}
 		if (textColor) styleParts.push(`color: ${textColor};`);
 
-		const titleSpan = `<span class="${cls("timeline-item-title")}">${rawTitle}</span>`;
-		let displayContent = titleSpan;
 		if (settings.showEventColorDots) {
 			const appliedCount = settings.colorMode === "off" ? 0 : Math.min(colorModeCount, allColors.length);
 			const overflowColors = allColors.slice(appliedCount);
 			if (overflowColors.length > 0) {
-				const dots = overflowColors
-					.slice(0, 6)
-					.map((c) => `<span class="${cls("timeline-color-dot")}" style="--dot-color:${c}"></span>`)
-					.join("");
-				displayContent += `<span class="${cls("timeline-color-dots")}">${dots}</span>`;
+				itemDotColors.set(event.ref.filePath, overflowColors.slice(0, 6));
+			} else {
+				itemDotColors.delete(event.ref.filePath);
 			}
 		}
 
 		const base = {
 			id: event.ref.filePath,
-			content: displayContent,
+			content: rawTitle,
 			title: tooltip,
 			start: startDate,
 			className: classes.join(" "),
@@ -268,6 +266,29 @@ export function renderTimelineInto(
 		}
 
 		return { ...base, type: "point" as const };
+	}
+
+	function injectTimelineDots(): void {
+		for (const visItem of Array.from(timelineContainer.querySelectorAll<HTMLElement>(".vis-item"))) {
+			const title = visItem.querySelector(".vis-item-content")?.textContent?.trim();
+			if (!title) continue;
+
+			let matchedPath: string | undefined;
+			for (const [path, event] of eventMap) {
+				if (cleanupTitle(event.title) === title) {
+					matchedPath = path;
+					break;
+				}
+			}
+			if (!matchedPath) continue;
+
+			const colors = itemDotColors.get(matchedPath) ?? [];
+			injectOverflowDots(visItem, colors, cls("compact-color-dots"), cls("compact-color-dot"));
+		}
+	}
+
+	function scheduleInjectDots(): void {
+		requestAnimationFrame(() => injectTimelineDots());
 	}
 
 	// ─── Data Fetching ───────────────────────────────────────
@@ -310,6 +331,7 @@ export function renderTimelineInto(
 
 		if (toAdd.length > 0) items.add(toAdd);
 		if (toUpdate.length > 0) items.update(toUpdate);
+		scheduleInjectDots();
 	}
 
 	function rebuildAllEvents(): void {
@@ -345,6 +367,7 @@ export function renderTimelineInto(
 		if (toRemove.length > 0) items.remove(toRemove);
 		if (toAdd.length > 0) items.add(toAdd);
 		if (toUpdate.length > 0) items.update(toUpdate);
+		scheduleInjectDots();
 	}
 
 	async function fetchVisibleRange(): Promise<void> {

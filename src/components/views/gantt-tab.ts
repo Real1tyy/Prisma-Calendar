@@ -26,6 +26,7 @@ import type { SingleCalendarConfig } from "../../types/settings";
 import { isEventDone } from "../../utils/event-frontmatter";
 import { extractCleanDisplayName } from "../../utils/events/naming";
 import { getFileAndFrontmatter, openFileInNewWindow } from "../../utils/obsidian";
+import { injectOverflowDots } from "../calendar-event-renderer";
 import type {
 	BarLayout,
 	GanttInteractionHooks,
@@ -187,6 +188,7 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 
 	let prereqTargetFilePath: string | null = null;
 	let prereqBanner: StickyBannerHandle | null = null;
+	let barObserver: MutationObserver | null = null;
 
 	function findEventByTaskId(taskId: string): CalendarEvent | undefined {
 		const task = cachedTaskMap.get(taskId);
@@ -312,6 +314,8 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 		filterBar = null;
 		barContextMenu?.destroy();
 		barContextMenu = null;
+		barObserver?.disconnect();
+		barObserver = null;
 		renderer?.destroy();
 		renderer = null;
 		wrapperEl = null;
@@ -352,6 +356,19 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 
 				wrapperEl = el.createDiv({ cls: cls("gantt-wrapper") });
 				renderer = createGanttRenderer(wrapperEl, hooks, { cssPrefix: "prisma-" });
+
+				const barContainer = wrapperEl.querySelector(`.${cls("gantt-bar-container")}`) as HTMLElement | null;
+				if (barContainer) {
+					barObserver = new MutationObserver(() => {
+						for (const barEl of Array.from(barContainer.querySelectorAll<HTMLElement>("[data-task-id]"))) {
+							barEl.querySelector(`.${cls("gantt-bar-color-dots")}`)?.remove();
+							const taskId = barEl.getAttribute("data-task-id");
+							const task = taskId ? cachedTaskMap.get(taskId) : undefined;
+							injectOverflowDots(barEl, task?.dotColors ?? [], cls("compact-color-dots"), cls("compact-color-dot"));
+						}
+					});
+					barObserver.observe(barContainer, { childList: true });
+				}
 
 				const createBtn = renderer.toolbarLeft.createEl("button", {
 					cls: cls("gantt-create-btn"),

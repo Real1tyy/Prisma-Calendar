@@ -71,6 +71,9 @@ export function normalizeEvents(
 			const colorModeCount = settings.colorMode === "off" ? 0 : Number(settings.colorMode);
 			const useMultiColor = colorModeCount >= 2 && allColors.length >= 2;
 
+			const dotColors =
+				settings.showEventColorDots && allColors.length > colorModeCount ? allColors.slice(colorModeCount) : undefined;
+
 			return {
 				id: sanitizeGanttId(event.ref.filePath),
 				title: event.title,
@@ -80,6 +83,7 @@ export function normalizeEvents(
 				filePath: event.ref.filePath,
 				color: allColors[0],
 				...(useMultiColor ? { allColors } : {}),
+				...(dotColors ? { dotColors } : {}),
 			};
 		});
 }
