@@ -79,7 +79,7 @@ const GeneralSettingsSchema = z
 	.object({
 		directory: z
 			.string()
-			.catch("")
+			.catch(PROP_DEFAULTS.directory)
 			.transform(normalizeDirectoryPath)
 			.describe("Folder to scan for calendar events and create new events in")
 			.meta({ placeholder: "e.g., tasks, calendar, events" }),

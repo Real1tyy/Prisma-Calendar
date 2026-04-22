@@ -11,7 +11,7 @@ describe("Calendar Settings Utils", () => {
 			expect(config.id).toBe("test-id");
 			expect(config.name).toBe("Test Calendar");
 			expect(config.enabled).toBe(true);
-			expect(config.directory).toBe("");
+			expect(config.directory).toBe("Tasks");
 		});
 	});
 

@@ -107,6 +107,7 @@ export const PROPAGATION_DEBOUNCE_MS = 3000;
 
 // Property name defaults (shared between schema definitions and settings UI placeholders)
 export const PROP_DEFAULTS = {
+	directory: "Tasks",
 	start: "Start Date",
 	end: "End Date",
 	date: "Date",
