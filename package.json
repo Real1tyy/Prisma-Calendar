@@ -18,6 +18,8 @@
 		"test:e2e:prepare": "tsx ../shared/scripts/e2e/build-plugin.ts --skip-if-built",
 		"test:e2e": "pnpm run test:e2e:prepare && bash ../shared/scripts/e2e/run-playwright.sh",
 		"test:e2e:changed": "python3 ../scripts/ci/e2e_changed.py --plugin Prisma-Calendar",
+		"test:e2e:headed:changed": "E2E_HEADED=1 python3 ../scripts/ci/e2e_changed.py --plugin Prisma-Calendar",
+		"test:e2e:demo:changed": "PW_DEMO=1 python3 ../scripts/ci/e2e_changed.py --plugin Prisma-Calendar",
 		"test:e2e:verbose": "pnpm run test:e2e:prepare && E2E_VERBOSE=1 bash ../shared/scripts/e2e/run-playwright.sh",
 		"test:e2e:headed": "pnpm run test:e2e:prepare && E2E_HEADED=1 bash ../shared/scripts/e2e/run-playwright.sh",
 		"test:e2e:ui": "pnpm run test:e2e:prepare && E2E_HEADED=1 bash ../shared/scripts/e2e/run-playwright.sh --ui",
