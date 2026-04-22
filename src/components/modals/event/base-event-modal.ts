@@ -109,6 +109,7 @@ export abstract class BaseEventModal extends Modal {
 	protected rruleSelect?: HTMLSelectElement;
 	protected weekdayContainer!: HTMLElement;
 	protected weekdayCheckboxes: Map<Weekday, HTMLInputElement> = new Map();
+	protected rruleUntilInput!: HTMLInputElement;
 	protected futureInstancesCountInput!: HTMLInputElement;
 	protected generatePastEventsCheckbox!: HTMLInputElement;
 	protected customIntervalContainer!: HTMLElement;
@@ -654,6 +655,23 @@ export abstract class BaseEventModal extends Modal {
 				checkbox.checked = !checkbox.checked;
 			});
 		}
+
+		const untilContainer = this.recurringContainer.createDiv(cls("setting-item"));
+		untilContainer.createEl("div", {
+			text: "End date",
+			cls: cls("setting-item-name"),
+		});
+		const untilDesc = untilContainer.createEl("div", {
+			cls: cls("setting-item-description"),
+		});
+		untilDesc.setText("Inclusive last occurrence day. Leave empty to repeat indefinitely.");
+		this.rruleUntilInput = untilContainer.createEl("input", {
+			type: "date",
+			cls: cls("setting-item-control"),
+			attr: {
+				"data-testid": "prisma-event-control-rrule-until",
+			},
+		});
 
 		const futureInstancesContainer = this.recurringContainer.createDiv(cls("setting-item"));
 		futureInstancesContainer.createEl("div", {
@@ -1251,6 +1269,7 @@ export abstract class BaseEventModal extends Modal {
 		if (this.durationInput) this.durationInput.value = "";
 		if (this.rruleSelect) this.rruleSelect.value = Object.keys(RECURRENCE_TYPE_OPTIONS)[0]!;
 		for (const checkbox of this.weekdayCheckboxes.values()) checkbox.checked = false;
+		this.rruleUntilInput.value = "";
 		this.futureInstancesCountInput.value = "";
 		this.suppressAutoCategories = false;
 		this.stopwatch?.reset();
@@ -1319,6 +1338,7 @@ export abstract class BaseEventModal extends Modal {
 				weekdays: [...this.weekdayCheckboxes.entries()].filter(([, cb]) => cb.checked).map(([day]) => day),
 				customFreq: this.customFreqSelect?.value ?? "DAILY",
 				customInterval: this.customIntervalInput?.value ?? "1",
+				untilDate: this.rruleUntilInput?.value ?? "",
 				futureInstancesCount: this.futureInstancesCountInput?.value ?? "",
 				generatePastEvents: this.generatePastEventsCheckbox?.checked ?? false,
 			},
@@ -1385,6 +1405,10 @@ export abstract class BaseEventModal extends Modal {
 
 			if (state.recurring.futureInstancesCount && this.futureInstancesCountInput) {
 				this.futureInstancesCountInput.value = state.recurring.futureInstancesCount;
+			}
+
+			if (this.rruleUntilInput) {
+				this.rruleUntilInput.value = state.recurring.untilDate ?? "";
 			}
 
 			if (state.recurring.generatePastEvents && this.generatePastEventsCheckbox) {
@@ -1629,6 +1653,7 @@ export abstract class BaseEventModal extends Modal {
 				enabled: this.recurringCheckbox.checked,
 				rruleType: this.getEffectiveRruleType(),
 				weekdays: selectedWeekdays,
+				untilDate: this.rruleUntilInput?.value,
 				futureInstancesCount: this.futureInstancesCountInput?.value,
 				generatePastEvents: this.generatePastEventsCheckbox?.checked ?? false,
 			},

@@ -15,9 +15,11 @@ export const RecurringFormStateSchema = z.object({
 	weekdays: z.array(z.string()).default([]),
 	customFreq: z.string().default("DAILY"),
 	customInterval: z.string().default("1"),
+	untilDate: z.string().default(""),
 	futureInstancesCount: z.string().default(""),
 	generatePastEvents: z.boolean().default(false),
 });
+export type RecurringFormState = z.infer<typeof RecurringFormStateSchema>;
 
 export const EventFormStateSchema = z
 	.object({
@@ -37,6 +39,7 @@ export const EventFormStateSchema = z
 			weekdays: [],
 			customFreq: "DAILY",
 			customInterval: "1",
+			untilDate: "",
 			futureInstancesCount: "",
 			generatePastEvents: false,
 		}),

@@ -67,6 +67,7 @@ The following Prisma-managed properties are **always** excluded from propagation
 | All Day | `All Day` | Per-instance timing |
 | RRule | `RRule` | Recurrence metadata |
 | RRuleSpec | `RRuleSpec` | Recurrence metadata |
+| RRuleUntil | `RRuleUntil` | Recurrence metadata |
 | RRuleID | `RRuleID` | Recurrence metadata |
 | Source | `Source` | Recurrence metadata |
 | Instance Date | `Instance Date` | Recurrence metadata |

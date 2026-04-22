@@ -30,6 +30,7 @@ describe("EventEditModal - Custom Properties", () => {
 					skipProp: "Skip",
 					rruleProp: "RRule",
 					rruleSpecProp: "RRuleSpec",
+					rruleUntilProp: "RRuleUntil",
 					rruleIdProp: "RRuleID",
 					sourceProp: "Source",
 					categoryProp: "Category",
@@ -375,6 +376,66 @@ describe("EventEditModal - Custom Properties", () => {
 
 			// Custom property should be deleted
 			expect(frontmatter.CustomProp).toBeUndefined();
+		});
+	});
+
+	describe("Recurring until", () => {
+		it("loads RRuleUntil into the recurring form", () => {
+			const event = {
+				title: "Semester Class",
+				start: "2026-05-01T10:15:00",
+				extendedProps: { filePath: "semester-class.md" },
+			};
+
+			const modal = new EventEditModal(mockApp, mockBundle, event);
+			modal.originalFrontmatter = {
+				RRule: "weekly",
+				RRuleUntil: "2026-05-22",
+			};
+			modal.recurringCheckbox = { checked: false } as HTMLInputElement;
+			(modal as any).recurringContainer = { classList: { remove: vi.fn() } };
+			(modal as any).rruleUntilInput = { value: "" };
+			(modal as any).futureInstancesCountInput = { value: "" };
+			(modal as any).generatePastEventsCheckbox = { checked: false };
+			(modal as any).weekdayCheckboxes = new Map();
+			(modal as any).applyRruleTypeToForm = vi.fn();
+			(modal as any).rruleSelect = {
+				dispatchEvent: vi.fn(),
+			};
+
+			(modal as any).loadRecurringEventData();
+
+			expect(modal.recurringCheckbox.checked).toBe(true);
+			expect((modal as any).rruleUntilInput.value).toBe("2026-05-22");
+		});
+
+		it("saves RRuleUntil from the recurring controls", () => {
+			const event = {
+				title: "Semester Class",
+				start: "2026-05-01T10:15:00",
+				extendedProps: { filePath: "semester-class.md" },
+			};
+
+			const modal = new EventEditModal(mockApp, mockBundle, event);
+			modal.originalFrontmatter = {
+				"Start Date": "2026-05-01T10:15:00.000Z",
+			};
+			modal.getCustomProperties = vi.fn().mockReturnValue({});
+			modal.titleInput = { value: "Semester Class" } as HTMLInputElement;
+			modal.allDayCheckbox = { checked: false } as HTMLInputElement;
+			modal.startInput = { value: "2026-05-01T10:15" } as HTMLInputElement;
+			modal.endInput = { value: "2026-05-01T11:15" } as HTMLInputElement;
+			modal.recurringCheckbox = { checked: true } as HTMLInputElement;
+			(modal as any).rruleUntilInput = { value: "2026-05-22" };
+			(modal as any).futureInstancesCountInput = { value: "" };
+			(modal as any).generatePastEventsCheckbox = { checked: false };
+			(modal as any).getEffectiveRruleType = vi.fn().mockReturnValue("weekly");
+			(modal as any).weekdayCheckboxes = new Map();
+
+			modal.saveEvent();
+
+			const savedData = updateEventMock.mock.calls[0][0]!;
+			expect(savedData.preservedFrontmatter.RRuleUntil).toBe("2026-05-22");
 		});
 	});
 

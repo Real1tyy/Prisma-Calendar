@@ -57,6 +57,7 @@ export function buildMetadata(parsed: ParsedEventFrontmatter): EventMetadata {
 		alreadyNotified: parsed.alreadyNotified,
 		rruleType: parsed.rruleType,
 		rruleSpec: parsed.rruleSpec,
+		rruleUntil: parsed.rruleUntil,
 		rruleId: parsed.rruleId,
 		instanceDate: parsed.instanceDate,
 		source: parsed.source,

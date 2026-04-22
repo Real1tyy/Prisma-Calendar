@@ -6,6 +6,7 @@ import { parse } from "yaml";
 import { RecurringEventManager } from "../../src/core/recurring-event-manager";
 import { isTimedEvent } from "../../src/types/calendar";
 import type { EventMetadata } from "../../src/types/event-metadata";
+import type { RRuleFrontmatter } from "../../src/types/recurring";
 
 const defaultMetadata: EventMetadata = {
 	skip: false,
@@ -768,6 +769,46 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 		});
 
 		describe("Virtual Instance Generation", () => {
+			it("should stop virtual instances at the rrule until date", async () => {
+				mockIndexer.indexingComplete$ = new BehaviorSubject(false);
+				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
+
+				const recurringEvent = {
+					rRuleId: "virtual-until-123",
+					title: "Virtual Until Meeting",
+					rrules: {
+						type: "daily" as const,
+						allDay: false,
+						startTime: DateTime.fromISO("2026-05-01T14:30:00"),
+						endTime: DateTime.fromISO("2026-05-01T16:00:00"),
+						until: DateTime.fromISO("2026-05-03"),
+						weekdays: [],
+					},
+					frontmatter: {
+						"Start Date": "2026-05-01T14:30:00.000Z",
+						"End Date": "2026-05-01T16:00:00.000Z",
+						RRuleUntil: "2026-05-03",
+					},
+					futureInstancesCount: 0,
+					sourceFilePath: "recurring.md",
+					metadata: { ...defaultMetadata, rruleUntil: DateTime.fromISO("2026-05-03") },
+					content: "",
+				};
+
+				await (manager as any).handleIndexerEvent({
+					type: "recurring-event-found",
+					filePath: "recurring.md",
+					recurringEvent,
+				});
+
+				const virtualEvents = await manager.generateAllVirtualInstances(
+					DateTime.fromISO("2026-05-01"),
+					DateTime.fromISO("2026-05-10")
+				);
+
+				expect(virtualEvents.map((event) => event.start.slice(0, 10))).toEqual(["2026-05-02", "2026-05-03"]);
+			});
+
 			it.skip("should generate virtual instances with correct date/time logic for different recurrence types", async () => {
 				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
 
@@ -1286,18 +1327,20 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 	describe("Past Instance Generation", () => {
 		const today = DateTime.fromISO("2026-03-24T17:00:00");
 
-		function makeDailyRecurringEvent(startDate: DateTime, overrides: Partial<typeof defaultMetadata> = {}) {
+		function makeDailyRecurringEvent(startDate: DateTime, overrides: Partial<EventMetadata> = {}) {
+			const rrules: RRuleFrontmatter = {
+				type: "daily",
+				allDay: true,
+				date: startDate.startOf("day"),
+				startTime: undefined,
+				endTime: undefined,
+				weekdays: [],
+			};
+
 			return {
 				rRuleId: "past-gen-test",
 				title: "Daily Event",
-				rrules: {
-					type: "daily" as const,
-					allDay: true,
-					date: startDate.startOf("day"),
-					startTime: undefined,
-					endTime: undefined,
-					weekdays: [],
-				},
+				rrules,
 				frontmatter: { Date: startDate.toISODate() },
 				futureInstancesCount: 2,
 				sourceFilePath: "recurring.md",
@@ -1355,6 +1398,27 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 			expect(calledDates).toHaveLength(1);
 			expect(calledDates[0]).toBe(midnight.toISODate());
+
+			manager.destroy();
+		});
+
+		it("should stop past generation at the rrule until date", async () => {
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
+			const calledDates = spyOnCreateInstanceIfMissing(manager);
+			const until = today.minus({ days: 2 }).startOf("day");
+			const event = makeDailyRecurringEvent(today.minus({ days: 5 }), {
+				generatePastEvents: true,
+				rruleUntil: until,
+			});
+			event.rrules.until = until;
+
+			await (manager as any).ensurePastInstances(event, new Map(), today);
+
+			expect(calledDates).toEqual([
+				today.minus({ days: 4 }).toISODate(),
+				today.minus({ days: 3 }).toISODate(),
+				today.minus({ days: 2 }).toISODate(),
+			]);
 
 			manager.destroy();
 		});

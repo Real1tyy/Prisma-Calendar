@@ -6,6 +6,8 @@ import {
 	calculateTargetInstanceCount,
 	findFirstValidStartDate,
 	getStartDateTime,
+	isOccurrenceWithinUntil,
+	parseRRuleFromFrontmatter,
 } from "../../src/utils/recurring-utils";
 
 describe("recurring-utils", () => {
@@ -107,6 +109,47 @@ describe("recurring-utils", () => {
 			};
 			const result = calculateTargetInstanceCount(rrules, -5, 7);
 			expect(result).toBe(7);
+		});
+	});
+
+	describe("parseRRuleFromFrontmatter", () => {
+		it("should parse rrule until as an inclusive cutoff date", () => {
+			const result = parseRRuleFromFrontmatter(
+				{
+					RRule: "weekly",
+					RRuleSpec: "monday, wednesday",
+					RRuleUntil: "2026-05-22",
+					"Start Date": "2026-05-01T09:00:00",
+					"End Date": "2026-05-01T10:00:00",
+				},
+				{
+					rruleProp: "RRule",
+					rruleSpecProp: "RRuleSpec",
+					rruleUntilProp: "RRuleUntil",
+					startProp: "Start Date",
+					endProp: "End Date",
+					dateProp: "Date",
+					allDayProp: "All Day",
+				} as any
+			);
+
+			expect(result?.until?.toISODate()).toBe("2026-05-22");
+		});
+	});
+
+	describe("isOccurrenceWithinUntil", () => {
+		it("should include occurrences on the until day", () => {
+			const until = DateTime.fromISO("2026-05-22");
+			const occurrence = DateTime.fromISO("2026-05-22T18:00:00");
+
+			expect(isOccurrenceWithinUntil(occurrence, until)).toBe(true);
+		});
+
+		it("should exclude occurrences after the until day", () => {
+			const until = DateTime.fromISO("2026-05-22");
+			const occurrence = DateTime.fromISO("2026-05-23T00:00:00");
+
+			expect(isOccurrenceWithinUntil(occurrence, until)).toBe(false);
 		});
 	});
 

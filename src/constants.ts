@@ -118,6 +118,7 @@ export const PROP_DEFAULTS = {
 	skip: "Skip",
 	rrule: "RRule",
 	rruleSpec: "RRuleSpec",
+	rruleUntil: "RRuleUntil",
 	rruleId: "RRuleID",
 	source: "Source",
 	futureInstancesCount: "Future Instances Count",

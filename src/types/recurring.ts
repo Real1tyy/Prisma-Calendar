@@ -97,6 +97,7 @@ export const RRuleFrontmatterSchema = z
 	.object({
 		type: RecurrenceTypeSchema,
 		weekdays: weekdaysTransform,
+		until: optionalDateTransform,
 		date: optionalDateTransform,
 		startTime: optionalTimeTransform,
 		endTime: optionalTimeTransform,

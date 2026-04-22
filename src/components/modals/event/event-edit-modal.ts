@@ -97,6 +97,11 @@ export class EventEditModal extends BaseEventModal {
 				}
 			}
 
+			const untilDate = this.originalFrontmatter[settings.rruleUntilProp];
+			if (typeof untilDate === "string" && untilDate && this.rruleUntilInput) {
+				this.rruleUntilInput.value = formatDateOnly(untilDate);
+			}
+
 			const futureCount = this.originalFrontmatter[settings.futureInstancesCountProp];
 			const parsed = parsePositiveInt(futureCount, 0);
 			if (parsed > 0) {

@@ -4,7 +4,7 @@ import { join } from "node:path";
 import type { Page } from "@playwright/test";
 
 import { expect, test } from "../../fixtures/electron";
-import { refreshCalendar, setFrontmatterField } from "../../fixtures/seed-events";
+import { refreshCalendar, seedEvent, setFrontmatterField, waitForEventCount } from "../../fixtures/seed-events";
 import { sel, TID } from "../../fixtures/testids";
 import { createEventViaModal, formatLocalDate, openCalendarReady, switchToMonthView } from "./events-helpers";
 import { addDays, collectInstanceDates, toYMD } from "./robustness-helpers";
@@ -196,5 +196,34 @@ test.describe("recurring events — physical vs virtual instances", () => {
 
 		// Source + 6 physicals = 7 blocks with a data-event-file-path in the grid.
 		await expect.poll(() => countPhysicalBlocks(obsidian.page, "Past Daily"), { timeout: RENDER_TIMEOUT_MS }).toBe(7);
+	});
+
+	test("rrule until caps recurring generation at the inclusive end date", async ({ obsidian }) => {
+		await openCalendarReady(obsidian.page);
+		await switchToMonthView(obsidian.page);
+
+		const today = todayMidnight();
+		const anchor = addDays(today, 2);
+		const until = addDays(anchor, 1);
+		const expectedDates = [toYMD(until)];
+
+		seedEvent(obsidian.vaultDir, {
+			title: "Semester Class",
+			startDate: `${formatLocalDate(anchor)}T09:00`,
+			endDate: `${formatLocalDate(anchor)}T10:00`,
+			rrule: "daily",
+			extra: { RRuleUntil: toYMD(until) },
+		});
+
+		await refreshCalendar(obsidian.page);
+		await waitForEventCount(obsidian.page, 2);
+
+		await expect
+			.poll(() => collectInstanceDates(obsidian.vaultDir, "Semester Class"), { timeout: INSTANCE_TIMEOUT_MS })
+			.toEqual(expectedDates);
+
+		await expect
+			.poll(() => countPhysicalBlocks(obsidian.page, "Semester Class"), { timeout: RENDER_TIMEOUT_MS })
+			.toBe(2);
 	});
 });

@@ -65,6 +65,7 @@ const EventFrontmatterShape = {
 	alreadyNotified: strictBooleanOptional.optional(),
 	rruleType: optionalTrimmedString,
 	rruleSpec: optionalTrimmedString,
+	rruleUntil: optionalDateTransform,
 	rruleId: optionalTrimmedString,
 	instanceDate: optionalTrimmedString,
 	source: optionalTrimmedString,

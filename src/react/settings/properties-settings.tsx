@@ -23,6 +23,7 @@ const FRONTMATTER_PROPERTY_FIELDS: Array<keyof SingleCalendarConfig> = [
 	"skipProp",
 	"rruleProp",
 	"rruleSpecProp",
+	"rruleUntilProp",
 	"rruleIdProp",
 	"sourceProp",
 	"instanceDateProp",
@@ -151,6 +152,7 @@ ${settings.startProp}: 2024-01-15T09:00
 ${settings.endProp}: 2024-01-15T10:30
 ${settings.rruleProp}: weekly
 ${settings.rruleSpecProp}: monday, wednesday, friday
+${settings.rruleUntilProp}: 2024-05-31
 ${settings.futureInstancesCountProp}: 5
 ---
 

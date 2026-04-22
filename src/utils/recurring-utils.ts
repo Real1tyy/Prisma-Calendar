@@ -86,11 +86,12 @@ export function parseRRuleFromFrontmatter(
 	frontmatter: Frontmatter,
 	settings: SingleCalendarConfig
 ): RRuleFrontmatter | null {
-	const { rruleProp, rruleSpecProp, dateProp, startProp, endProp, allDayProp } = settings;
+	const { rruleProp, rruleSpecProp, rruleUntilProp, dateProp, startProp, endProp, allDayProp } = settings;
 
 	const candidateData = {
 		type: frontmatter[rruleProp],
 		weekdays: frontmatter[rruleSpecProp],
+		until: frontmatter[rruleUntilProp],
 		date: frontmatter[dateProp],
 		startTime: frontmatter[startProp],
 		endTime: frontmatter[endProp],
@@ -125,6 +126,10 @@ export function calculateTargetInstanceCount(
  */
 export function getStartDateTime(rrules: RRuleFrontmatter): DateTime {
 	return rrules.allDay ? rrules.date! : rrules.startTime!;
+}
+
+export function isOccurrenceWithinUntil(instanceDate: DateTime, until?: DateTime): boolean {
+	return !until || instanceDate.startOf("day") <= until.startOf("day");
 }
 
 /**

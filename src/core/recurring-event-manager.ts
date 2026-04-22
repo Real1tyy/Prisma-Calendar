@@ -46,6 +46,7 @@ import {
 	trashDuplicateFile,
 } from "../utils/obsidian";
 import { calculateTargetInstanceCount, findFirstValidStartDate, getStartDateTime } from "../utils/recurring-utils";
+import { isOccurrenceWithinUntil } from "../utils/recurring-utils";
 import type { CategoryTracker } from "./category-tracker";
 import type { EventStore } from "./event-store";
 
@@ -651,9 +652,10 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 			const now = DateTime.now();
 			const generatePastEvents = recurringEvent.metadata.generatePastEvents;
-
 			const futureInstances = this.getPhysicalInstancesList(physicalInstances).filter(
-				(instance) => instance.instanceDate >= now.startOf("day")
+				(instance) =>
+					instance.instanceDate >= now.startOf("day") &&
+					isOccurrenceWithinUntil(instance.instanceDate, recurringEvent.rrules.until)
 			);
 
 			const targetInstanceCount = calculateTargetInstanceCount(
@@ -674,6 +676,9 @@ export class RecurringEventManager extends DebouncedNotifier {
 			let nextDate = this.getNextOccurrenceFromTime(recurringEvent, futureInstances, now.startOf("day"));
 
 			for (let i = 0; i < instancesToCreate; i++) {
+				if (!isOccurrenceWithinUntil(nextDate, recurringEvent.rrules.until)) {
+					break;
+				}
 				await this.createInstanceIfMissing(recurringEvent, physicalInstances, nextDate);
 				nextDate = getNextOccurrence(nextDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
 			}
@@ -716,7 +721,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 	): Promise<void> {
 		let currentDate = getInitialOccurrenceDate(recurringEvent.rrules);
 
-		while (currentDate <= now.startOf("day")) {
+		while (currentDate <= now.startOf("day") && isOccurrenceWithinUntil(currentDate, recurringEvent.rrules.until)) {
 			await this.createInstanceIfMissing(recurringEvent, physicalInstances, currentDate);
 			currentDate = getNextOccurrence(currentDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
 		}
@@ -868,7 +873,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		const virtualInstances: NodeRecurringEventInstance[] = [];
 		let currentDate = virtualStartDate;
 
-		while (currentDate <= rangeEnd) {
+		while (currentDate <= rangeEnd && isOccurrenceWithinUntil(currentDate, recurringEvent.rrules.until)) {
 			const filePath = this.generateNodeInstanceFilePath(recurringEvent, currentDate);
 			virtualInstances.push({
 				recurringEvent,

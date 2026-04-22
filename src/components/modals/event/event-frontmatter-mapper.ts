@@ -4,6 +4,7 @@ import { NonNegativeInt, PositiveInt } from "../../../types/event-boundaries";
 import type { SingleCalendarConfig } from "../../../types/settings";
 import { setEventBasics, setUntrackedEventBasics } from "../../../utils/event-frontmatter";
 import { setBooleanProp } from "../../../utils/frontmatter-writer";
+import type { RecurringFormState } from "./event-form-state";
 
 export function loadSimpleFieldValues(
 	frontmatter: Frontmatter,
@@ -45,14 +46,10 @@ export function loadSimpleFieldValues(
 	return values;
 }
 
-export interface RecurringFieldsInput {
-	enabled: boolean;
-	rruleType: string;
-	weekdays: string[];
-	customIntervalDSL?: string;
-	futureInstancesCount?: string;
-	generatePastEvents: boolean;
-}
+type RecurringFieldsInput = Pick<
+	RecurringFormState,
+	"enabled" | "rruleType" | "weekdays" | "untilDate" | "futureInstancesCount" | "generatePastEvents"
+>;
 
 export function applyRecurringFieldsToFrontmatter(
 	fm: Frontmatter,
@@ -70,6 +67,13 @@ export function applyRecurringFieldsToFrontmatter(
 			delete fm[settings.rruleSpecProp];
 		}
 
+		const untilDate = input.untilDate?.trim();
+		if (untilDate) {
+			fm[settings.rruleUntilProp] = untilDate;
+		} else {
+			delete fm[settings.rruleUntilProp];
+		}
+
 		const futureCount = PositiveInt.parse(input.futureInstancesCount ?? "");
 		if (futureCount !== undefined) {
 			fm[settings.futureInstancesCountProp] = futureCount;
@@ -81,6 +85,7 @@ export function applyRecurringFieldsToFrontmatter(
 	} else if (original[settings.rruleProp]) {
 		delete fm[settings.rruleProp];
 		delete fm[settings.rruleSpecProp];
+		delete fm[settings.rruleUntilProp];
 		delete fm[settings.rruleIdProp];
 		delete fm[settings.futureInstancesCountProp];
 		delete fm[settings.generatePastEventsProp];

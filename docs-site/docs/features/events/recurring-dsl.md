@@ -211,6 +211,24 @@ RRuleSpec: saturday, sunday
 
 The `weekdays` and `weekends` presets automatically set `RRuleSpec` to the appropriate days — no manual specification needed.
 
+### RRuleUntil End Date
+
+Use `RRuleUntil` to stop a recurring series on a specific day:
+
+```yaml
+RRule: weekly
+RRuleSpec: tuesday, thursday
+RRuleUntil: 2026-05-22
+```
+
+`RRuleUntil` is inclusive. Occurrences on `2026-05-22` still appear, but anything after that day is ignored.
+
+What it affects:
+- Physical instances are never created after the until date
+- [Virtual events](./virtual-events) stop after the until date
+- Deleted instances beyond the until date are not recreated on reload
+
+
 ## Generation Control
 
 **Future Instances Count** (1-52): How many physical files created ahead. Recommended: 1-2 for most events.

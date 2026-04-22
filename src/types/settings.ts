@@ -206,6 +206,11 @@ const PropsSettingsSchema = z
 			.catch(PROP_DEFAULTS.rruleSpec)
 			.meta({ title: "RRule specification property" })
 			.describe("Frontmatter property name for recurring event specification (weekdays for weekly/bi-weekly events)"),
+		rruleUntilProp: z
+			.string()
+			.catch(PROP_DEFAULTS.rruleUntil)
+			.meta({ title: "RRule until property" })
+			.describe("Frontmatter property name for recurring event end date (inclusive last occurrence day)"),
 		rruleIdProp: z
 			.string()
 			.catch(PROP_DEFAULTS.rruleId)

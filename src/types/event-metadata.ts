@@ -1,4 +1,5 @@
 import {
+	optionalDateTransform,
 	optionalListTransform,
 	optionalNumber,
 	optionalPositiveNumber,
@@ -26,6 +27,7 @@ export const EventMetadataSchema = z.object({
 	alreadyNotified: strictBooleanOptional.optional(),
 	rruleType: optionalTrimmedString,
 	rruleSpec: optionalTrimmedString,
+	rruleUntil: optionalDateTransform,
 	rruleId: optionalTrimmedString,
 	instanceDate: optionalTrimmedString,
 	source: optionalTrimmedString,
@@ -67,6 +69,7 @@ export const METADATA_FIELD_MAP = defineMetadataFieldMap([
 	{ metadataKey: "alreadyNotified", settingsProp: "alreadyNotifiedProp" },
 	{ metadataKey: "rruleType", settingsProp: "rruleProp" },
 	{ metadataKey: "rruleSpec", settingsProp: "rruleSpecProp" },
+	{ metadataKey: "rruleUntil", settingsProp: "rruleUntilProp" },
 	{ metadataKey: "rruleId", settingsProp: "rruleIdProp" },
 	{ metadataKey: "instanceDate", settingsProp: "instanceDateProp" },
 	{ metadataKey: "source", settingsProp: "sourceProp" },
@@ -197,6 +200,13 @@ export const PROP_CLASSIFICATIONS: readonly PropClassification[] = [
 	},
 	{
 		settingsProp: "rruleSpecProp",
+		system: true,
+		dedicatedUI: false,
+		notificationSystem: false,
+		notificationDedicatedUI: false,
+	},
+	{
+		settingsProp: "rruleUntilProp",
 		system: true,
 		dedicatedUI: false,
 		notificationSystem: false,

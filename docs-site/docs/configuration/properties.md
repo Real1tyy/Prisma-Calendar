@@ -56,12 +56,14 @@ These property names control per-event notification overrides. The notification 
 
 - **Future instances count property**: property name for per-event override of future instances count (default: `Future Instances Count`)
 - **Generate past events property**: property name for generating past recurring instances from source event start date (default: `Generate Past Events`)
+- **RRule until property**: property name for the inclusive recurring end date (default: `RRuleUntil`)
 - **Instance date property**: property name for the date of a recurring instance, used to track which occurrence in the series a physical instance represents (default: `Recurring Instance Date`)
 
 ## Recurring (node-based)
 
 - **RRule property**: recurring event type — 9 built-in presets (`daily`, `bi-daily`, `weekly`, `bi-weekly`, `monthly`, `bi-monthly`, `quarterly`, `semi-annual`, `yearly`) or a custom interval using the DSL format `FREQUENCY;INTERVAL=N` (e.g., `DAILY;INTERVAL=5` for every 5 days, `WEEKLY;INTERVAL=3` for every 3 weeks, `MONTHLY;INTERVAL=4` for every 4 months)
 - **RRule specification property**: weekdays for weekly/bi-weekly (e.g., `monday, wednesday, friday`)
+- **RRule until property**: inclusive final occurrence day for the recurring series (e.g., `2026-05-22`)
 - **RRule ID property**: unique identifier for recurrence
 - **Source property**: link to the source recurring event
 - **Ignore recurring property**: when set to `true`, excludes the event from future instance generation count (useful for duplicated recurring events)
@@ -74,6 +76,7 @@ Start: 2025-01-15T09:00
 End: 2025-01-15T10:30
 RRule: weekly
 RRuleSpec: monday, wednesday, friday
+RRuleUntil: 2025-05-30
 RRuleID: standup-2025
 ---
 ```

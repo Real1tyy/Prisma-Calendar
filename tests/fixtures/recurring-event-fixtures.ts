@@ -24,6 +24,7 @@ export const RECURRING_MANAGER_SETTINGS = {
 	allDayProp: "All Day",
 	rruleProp: "RRule",
 	rruleSpecProp: "RRuleSpec",
+	rruleUntilProp: "RRuleUntil",
 	rruleIdProp: "RRuleID",
 	instanceDateProp: "Recurring Instance Date",
 	futureInstancesCount: 2,
@@ -66,6 +67,7 @@ export interface RecurringEventOverrides {
 	type?: "daily" | "weekly" | "monthly" | "yearly";
 	startISO?: string;
 	endISO?: string;
+	untilISO?: string;
 	futureInstancesCount?: number;
 	metadata?: Partial<EventMetadata>;
 }
@@ -78,6 +80,7 @@ export function buildRecurringEvent(overrides: RecurringEventOverrides = {}) {
 		type = "weekly",
 		startISO = "2024-01-01T10:00:00",
 		endISO = "2024-01-01T11:00:00",
+		untilISO,
 		futureInstancesCount = 2,
 		metadata = {},
 	} = overrides;
@@ -89,13 +92,21 @@ export function buildRecurringEvent(overrides: RecurringEventOverrides = {}) {
 			type,
 			allDay: false,
 			weekdays: [] as Weekday[],
+			...(untilISO ? { until: DateTime.fromISO(untilISO) } : {}),
 			startTime: DateTime.fromISO(startISO),
 			endTime: DateTime.fromISO(endISO),
 		},
-		frontmatter: { "Start Date": `${startISO}.000Z` },
+		frontmatter: {
+			"Start Date": `${startISO}.000Z`,
+			...(untilISO ? { RRuleUntil: untilISO } : {}),
+		},
 		futureInstancesCount,
 		sourceFilePath: `${rRuleId}.md`,
-		metadata: createDefaultMetadata({ skip, ...metadata }),
+		metadata: createDefaultMetadata({
+			skip,
+			...(untilISO ? { rruleUntil: DateTime.fromISO(untilISO) } : {}),
+			...metadata,
+		}),
 		content: "",
 	};
 }
