@@ -22,6 +22,7 @@ import {
 	toLocalISOString,
 	toSafeString,
 } from "../../src/utils/date/date";
+import { isDateLikeString } from "../../src/utils/zod/validation";
 
 // ─── toSafeString ────────────────────────────────────────────
 
@@ -496,6 +497,24 @@ describe("parseAsLocalDate", () => {
 	it("strips negative timezone offset", () => {
 		const result = parseAsLocalDate("2026-03-15T14:30:00-07:00");
 		expect(result).toBeInstanceOf(Date);
+	});
+});
+
+describe("isDateLikeString", () => {
+	it("accepts ISO date strings", () => {
+		expect(isDateLikeString("2026-04-22")).toBe(true);
+	});
+
+	it("accepts ISO datetime strings", () => {
+		expect(isDateLikeString("2026-04-22T09:30")).toBe(true);
+		expect(isDateLikeString("2026-04-22 09:30:15")).toBe(true);
+		expect(isDateLikeString("2026-04-22T09:30:15Z")).toBe(true);
+	});
+
+	it("rejects blank and non-date strings", () => {
+		expect(isDateLikeString("")).toBe(false);
+		expect(isDateLikeString("   ")).toBe(false);
+		expect(isDateLikeString("not a date")).toBe(false);
 	});
 });
 

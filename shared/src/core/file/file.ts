@@ -437,6 +437,18 @@ export function getFolderPath(filePath: string): string {
 }
 
 /**
+ * Returns the top-level directory segment for a vault path.
+ * Root-level files return null because they are not inside a directory.
+ */
+export function getTopLevelDirectory(path: string): string | null {
+	const folderPath = getFolderPath(path);
+	if (!folderPath) return null;
+
+	const [topLevel] = folderPath.split("/").filter(Boolean);
+	return topLevel || null;
+}
+
+/**
  * Gets all markdown files in a specific folder (non-recursive).
  *
  * @param app - The Obsidian App instance

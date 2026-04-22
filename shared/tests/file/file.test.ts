@@ -7,6 +7,7 @@ import {
 	getFileContext,
 	getFolderPath,
 	getParentByFolder,
+	getTopLevelDirectory,
 	getUniqueFilePath,
 	getUniqueFilePathFromFull,
 	isDirectChildOrFolderNote,
@@ -690,6 +691,24 @@ describe("getFolderPath", () => {
 		it("should handle paths without extension", () => {
 			expect(getFolderPath("folder/file")).toBe("folder");
 		});
+	});
+});
+
+describe("getTopLevelDirectory", () => {
+	it("returns the first folder segment for nested paths", () => {
+		expect(getTopLevelDirectory("projects/docs/note.md")).toBe("projects");
+	});
+
+	it("returns the first folder segment for direct children", () => {
+		expect(getTopLevelDirectory("tasks/today.md")).toBe("tasks");
+	});
+
+	it("returns null for root-level files", () => {
+		expect(getTopLevelDirectory("note.md")).toBeNull();
+	});
+
+	it("returns null for empty paths", () => {
+		expect(getTopLevelDirectory("")).toBeNull();
 	});
 });
 

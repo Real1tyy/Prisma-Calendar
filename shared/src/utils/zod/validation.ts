@@ -149,6 +149,12 @@ export const optionalTimeTransform = optionalParsed<DateTime>("time", parseTime)
 export const requiredDateTransform = requiredParsed<DateTime>("date", (s) => parseISODateStart(s));
 export const optionalDateTransform = optionalParsed<DateTime>("date", (s) => parseISODateStart(s));
 
+export function isDateLikeString(raw: string): boolean {
+	const value = raw.trim();
+	if (!value) return false;
+	return requiredDateTimeTransform.safeParse(value).success || requiredDateTransform.safeParse(value).success;
+}
+
 /**
  * Creates date transforms that parse ISO dates in a specific timezone.
  * Defaults to local timezone when no zone is specified.
