@@ -23,6 +23,7 @@ Once verified, the license section shows:
 - **Device activations** — how many of your allowed devices are active (e.g., 2/5)
 - **Offline expiry** — how long the license remains valid without an internet connection (7 days from last verification)
 - **Verify now** button — manually refresh your license status at any time
+- **Manage Subscription** button — open your account page to manage billing, update payment, or cancel. If you don't have an active subscription, the button shows **Subscribe** and links to the Prisma Calendar product page instead.
 
 See [Free vs Pro](../features/free-vs-pro.md) for details on what Pro includes and how to get a license.
 

@@ -10,6 +10,7 @@ interface LicenseSectionProps {
 	currentSecretName: string;
 	onSecretChange: (value: string) => Promise<void>;
 	cssPrefix: string;
+	accountUrl?: string;
 }
 
 function formatStatusText(status: LicenseStatus): string {
@@ -50,6 +51,7 @@ export const LicenseSection = memo(function LicenseSection({
 	currentSecretName,
 	onSecretChange,
 	cssPrefix,
+	accountUrl,
 }: LicenseSectionProps) {
 	const status = useExternalSnapshot(licenseManager.status$);
 	const [verifying, setVerifying] = useState(false);
@@ -85,6 +87,24 @@ export const LicenseSection = memo(function LicenseSection({
 					{verifying ? "Verifying..." : "Verify"}
 				</button>
 			</SettingItem>
+			{accountUrl != null && (
+				<SettingItem
+					name="Subscription"
+					description={
+						status.state === "valid"
+							? "Manage billing and subscription settings"
+							: `Get access to all ${licenseManager.productName} Pro features`
+					}
+				>
+					<button
+						type="button"
+						className={status.state !== "valid" ? "mod-cta" : ""}
+						onClick={() => window.open(status.state === "valid" ? accountUrl : licenseManager.purchaseUrl, "_blank")}
+					>
+						{status.state === "valid" ? "Manage Subscription" : "Subscribe"}
+					</button>
+				</SettingItem>
+			)}
 		</>
 	);
 });

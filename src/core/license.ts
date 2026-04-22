@@ -15,6 +15,7 @@ export const FREE_MAX_CALENDARS = 3;
 export const FREE_MAX_EVENT_PRESETS = 2;
 
 export const PRO_PURCHASE_URL = "https://matejvavroproductivity.com/tools/prisma-calendar";
+export const ACCOUNT_URL = "https://matejvavroproductivity.com/account";
 export const DEVICE_ID_STORAGE_KEY = "prisma-calendar-device-id";
 export const LICENSE_CACHE_STORAGE_KEY = "prisma-calendar-license-cache";
 

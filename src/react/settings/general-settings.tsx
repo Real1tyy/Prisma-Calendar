@@ -1,3 +1,4 @@
+import { buildUtmUrl } from "@real1ty-obsidian-plugins";
 import {
 	Dropdown,
 	LicenseSection,
@@ -12,7 +13,7 @@ import {
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 import { renderProUpgradeBanner } from "../../components/settings/pro-upgrade-banner";
-import { FREE_MAX_EVENT_PRESETS } from "../../core/license";
+import { ACCOUNT_URL, FREE_MAX_EVENT_PRESETS } from "../../core/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
 import type { CustomCalendarSettings, SingleCalendarConfig } from "../../types/settings";
@@ -56,6 +57,7 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 				currentSecretName={mainSettings.licenseKeySecretName}
 				onSecretChange={onSecretChange}
 				cssPrefix="prisma-"
+				accountUrl={buildUtmUrl(ACCOUNT_URL, "prisma-calendar", "plugin", "settings", "manage_subscription")}
 			/>
 			<DirectorySection settings={settings} updateField={updateField} plugin={plugin} />
 			<ParsingSection settings={settings} updateField={updateField} />
