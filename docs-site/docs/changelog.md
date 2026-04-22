@@ -4,6 +4,15 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 2.15.0 - 4/22/2026
+
+> **TLDR:** New **Subscription management button** in License settings — Pro users see "Manage Subscription" linking to the account page, free users see "Subscribe" linking to the product page.
+
+### Added
+- **Subscription management button**: The License section now shows a **Manage Subscription** button for Pro users (links to account page) or a **Subscribe** button for free users (links to purchase page). See [General Settings → License](./configuration/general.md#license).
+
+---
+
 ## 2.14.0 - 4/21/2026
 
 > **TLDR:** New **Settings transfer** and **Year view**. **Multi-color gradients and color dots** now work across Gantt, Timeline, Heatmap, and event series modals — not just the calendar. Export your plugin config as JSON and re-import it on another vault. **CalDAV subscriptions** now pick up server-side deletions. Events in nested subdirectories are now indexed again by default.
@@ -14,7 +23,6 @@ All notable changes to this project will be documented here.
 - **CalDAV picks up server-side deletions (Pro)**: Delete an event in iCloud, Google, Nextcloud, Fastmail, or Zimbra and Prisma now removes the local note on the next sync. Previously, deletions stayed stuck on the server. No setup needed — it just works after the update. See [CalDAV integration](./features/advanced/integrations.md#caldav-integration).
 - **Multi-color everywhere**: Color gradients and overflow color dots now render in Gantt bars, Timeline items, Heatmap detail rows, and event series modal rows — matching the calendar view behavior. See [Color Rules → Multi-Color Across All Views](./features/organization/color-rules.md#multi-color-across-all-views).
 - **Index subdirectories toggle**: New setting in **General → Calendar directory** to control whether events in nested subfolders are indexed. Enabled by default — disable it to restrict indexing to direct children only. See [General Settings](./configuration/general.md#calendar-directory).
-- **Subscription management button**: The License section now shows a **Manage Subscription** button for Pro users (links to account page) or a **Subscribe** button for free users (links to purchase page). See [General Settings → License](./configuration/general.md#license).
 
 ### Improved
 - **Title property takes priority over Calendar Title**: When both are set, your **Title property** now shows everywhere — calendar, edit modal, Gantt, Timeline, Heatmap, context menus, notifications, event lists. Before, the auto-generated **Calendar Title** quietly overrode it. **Calendar Title** still fills in when the Title property is empty. See [Properties](./configuration/properties.md#title-property) and [ZettelID Naming](./features/management/zettelid-naming.md#calendar-title-vs-title-property).
