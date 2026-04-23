@@ -289,11 +289,16 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 
 				buttons.push(button);
 			} else {
+				const tabDef = entry;
 				const button = tabBar.createEl("button", {
-					text: getLabel(entry),
 					cls: css.cls("tab"),
 					attr: { "data-tab-id": entry.id, "data-testid": `${cssPrefix}view-tab-${entry.id}` },
 				});
+				if (tabDef.icon) {
+					const iconEl = button.createEl("span", { cls: css.cls("tab-icon") });
+					setIcon(iconEl, tabDef.icon);
+				}
+				button.appendChild(document.createTextNode(getLabel(entry)));
 				button.addEventListener("click", () => handle.switchTo(entry.id));
 
 				if (editable && config.app) {

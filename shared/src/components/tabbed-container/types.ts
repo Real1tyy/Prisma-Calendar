@@ -28,6 +28,7 @@ export type TabbedContainerState = z.infer<typeof TabbedContainerStateSchema>;
 export interface TabDefinition {
 	id: string;
 	label: string;
+	icon?: string;
 	render: (container: HTMLElement) => void | Promise<void>;
 	cleanup?: () => void;
 	/** Key handlers dispatched when this tab is active and the container was last interacted with. Keys are `KeyboardEvent.key` values (e.g. "ArrowLeft"). */

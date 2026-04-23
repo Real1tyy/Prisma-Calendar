@@ -770,3 +770,5 @@ export function isDirectChildOrFolderNote(
 
 	return segments.length === 1;
 }
+
+export const normalizeDirectory = (directory: string): string => directory.trim().replace(/^\/+|\/+$/g, "");

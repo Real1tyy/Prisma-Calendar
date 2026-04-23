@@ -47,6 +47,7 @@ export type { SchemaFieldBinding, SettingsStorelike } from "./hooks/use-schema-f
 export { useSchemaField } from "./hooks/use-schema-field";
 export type { SettingsStorelike as SettingsStoreShape, SettingsUpdater } from "./hooks/use-settings-store";
 export { useSettingsStore } from "./hooks/use-settings-store";
+export * from "./onboarding";
 export { renderReactInline } from "./react-inline";
 export type { ReactViewConfig, ReactViewHandle } from "./react-view";
 export { registerReactView } from "./react-view";
