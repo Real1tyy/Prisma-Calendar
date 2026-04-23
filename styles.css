@@ -8834,32 +8834,33 @@ div.vis-tooltip {
 
 .prisma-welcome-tagline-headline {
   display: block;
-  font-size: 1.2rem;
-  font-weight: 600;
+  font-size: 1.25rem;
+  font-weight: 700;
   color: var(--text-normal);
   line-height: 1.4;
-  letter-spacing: -0.012em;
+  letter-spacing: -0.015em;
 }
 
 .prisma-welcome-tagline-sub {
   display: block;
   font-size: 0.92rem;
   color: var(--text-muted);
-  line-height: 1.55;
+  line-height: 1.6;
 }
 
 .prisma-first-launch-mode-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.9rem;
+  gap: 1rem;
 }
 
 .prisma-first-launch-mode-card {
   box-sizing: border-box;
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  padding: 1.15rem 1.25rem;
+  gap: 0.65rem;
+  padding: 1.35rem 1.4rem;
   border: 2px solid var(--background-modifier-border);
   border-radius: 16px;
   background: var(--background-secondary);
@@ -8869,29 +8870,52 @@ div.vis-tooltip {
   overflow-wrap: break-word;
   overflow: hidden;
   width: 100%;
-  min-height: 100px;
-  transition: border-color 120ms ease;
+  min-height: 110px;
+  transition: border-color 200ms ease, background 200ms ease, transform 200ms ease, box-shadow 200ms ease;
+}
+.prisma-first-launch-mode-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  opacity: 0;
+  background: radial-gradient(circle at 30% 30%, color-mix(in srgb, var(--interactive-accent) 15%, transparent), transparent 70%);
+  transition: opacity 200ms ease;
+  pointer-events: none;
 }
 .prisma-first-launch-mode-card:hover {
-  border-color: color-mix(in srgb, var(--background-modifier-border) 40%, var(--interactive-accent) 60%);
+  border-color: color-mix(in srgb, var(--background-modifier-border) 20%, var(--interactive-accent) 80%);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--interactive-accent) 12%, transparent);
+}
+.prisma-first-launch-mode-card:hover::after {
+  opacity: 1;
 }
 .prisma-first-launch-mode-card.is-selected {
   border-color: var(--interactive-accent);
-  background: color-mix(in srgb, var(--background-secondary) 82%, var(--interactive-accent) 18%);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--background-secondary) 75%, var(--interactive-accent) 25%), color-mix(in srgb, var(--background-secondary) 88%, var(--interactive-accent) 12%));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--interactive-accent) 25%, transparent), 0 0 20px color-mix(in srgb, var(--interactive-accent) 18%, transparent), 0 8px 24px color-mix(in srgb, var(--interactive-accent) 10%, transparent);
+}
+.prisma-first-launch-mode-card.is-selected::after {
+  opacity: 1;
+}
+.prisma-first-launch-mode-card.is-selected .prisma-first-launch-mode-title {
+  color: color-mix(in srgb, var(--text-normal) 70%, var(--interactive-accent) 30%);
 }
 
 .prisma-first-launch-mode-title {
   display: block;
-  font-size: 1rem;
+  font-size: 1.08rem;
   font-weight: 700;
   line-height: 1.35;
   color: var(--text-normal);
+  transition: color 200ms ease;
 }
 
 .prisma-first-launch-mode-desc {
   display: block;
   font-size: 0.88rem;
-  line-height: 1.5;
+  line-height: 1.55;
   color: var(--text-muted);
 }
 
@@ -8899,7 +8923,7 @@ div.vis-tooltip {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
-  padding: 1rem 1.1rem;
+  padding: 1.25rem 1.35rem;
   border: 1px solid var(--background-modifier-border);
   border-radius: 16px;
   background: var(--background-secondary);
@@ -8918,6 +8942,7 @@ div.vis-tooltip {
 .prisma-first-launch-detected p {
   margin: 0;
   line-height: 1.55;
+  color: var(--text-muted);
 }
 
 .prisma-first-launch-field {
@@ -8928,10 +8953,12 @@ div.vis-tooltip {
 }
 .prisma-first-launch-field label {
   font-weight: 600;
+  font-size: 0.95rem;
 }
 .prisma-first-launch-field small {
   color: var(--text-muted);
   line-height: 1.45;
+  font-size: 0.85rem;
 }
 
 .prisma-first-launch-muted {
@@ -8957,10 +8984,17 @@ div.vis-tooltip {
   background: var(--background-primary);
   text-align: left;
   cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+}
+.prisma-first-launch-suggestion:hover {
+  border-color: color-mix(in srgb, var(--background-modifier-border) 40%, var(--interactive-accent) 60%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--interactive-accent) 8%, transparent);
 }
 .prisma-first-launch-suggestion.is-selected {
   border-color: var(--interactive-accent);
-  background: color-mix(in srgb, var(--background-primary) 85%, var(--interactive-accent) 15%);
+  background: color-mix(in srgb, var(--background-primary) 82%, var(--interactive-accent) 18%);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--interactive-accent) 20%, transparent), 0 0 12px color-mix(in srgb, var(--interactive-accent) 10%, transparent);
 }
 
 .prisma-first-launch-props {
@@ -9006,6 +9040,27 @@ div.vis-tooltip {
   margin: 0;
   line-height: 1.45;
   min-width: 180px;
+}
+
+.prisma-first-launch-thanks {
+  padding: 0.85rem 1.1rem;
+  border-left: 3px solid var(--interactive-accent);
+  border-radius: 0 10px 10px 0;
+  background: color-mix(in srgb, var(--interactive-accent) 8%, var(--background-secondary));
+}
+.prisma-first-launch-thanks p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+.prisma-first-launch-thanks a {
+  color: var(--interactive-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prisma-first-launch-thanks a:hover {
+  color: var(--text-accent-hover);
 }
 
 @media (max-width: 720px) {
