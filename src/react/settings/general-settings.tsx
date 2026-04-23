@@ -3,6 +3,7 @@ import {
 	Dropdown,
 	LicenseSection,
 	NumberInput,
+	SettingCard,
 	SettingHeading,
 	SettingItem,
 	SettingsTransferButtons,
@@ -441,15 +442,19 @@ export const HelpSection = memo(function HelpSection() {
 	return (
 		<>
 			<SettingHeading name="Help & support" />
-			<div className="setting-item-description">
+			<SettingCard cssPrefix="prisma-" testId="prisma-settings-help">
+				<p>
+					Thanks for giving Prisma a try. I hope you enjoy using it, and that it helps you become more productive and
+					organized inside Obsidian.
+				</p>
 				<p>
 					Have a question? The{" "}
 					<a href={buildUtmUrl(DOCS_BASE, "prisma-calendar", "plugin", "settings", "help_documentation")}>
-						documentation
+						<strong>documentation</strong>
 					</a>{" "}
 					covers most topics — use the search bar in the top right to quickly find what you need. Check the{" "}
 					<a href={buildUtmUrl(`${DOCS_BASE}/faq`, "prisma-calendar", "plugin", "settings", "help_faq")}>
-						frequently asked questions
+						<strong>frequently asked questions</strong>
 					</a>{" "}
 					or{" "}
 					<a
@@ -458,21 +463,21 @@ export const HelpSection = memo(function HelpSection() {
 							"prisma-calendar",
 							"plugin",
 							"settings",
-							"help_troubleshooting"
+							"help_troubleshooting",
 						)}
 					>
-						troubleshooting
+						<strong>troubleshooting</strong>
 					</a>{" "}
 					pages for common issues and solutions.
 				</p>
 				<p>
-					If you have an idea how to make Prisma Calendar better, found a bug, or want to share any feedback — please{" "}
-					<a href={GITHUB_ISSUES_URL} target="_blank" rel="noopener noreferrer">
-						create a GitHub issue
+					If you spot any bugs or see ways to improve it, don't hesitate to share your feedback — please{" "}
+					<a href={GITHUB_ISSUES_URL}>
+						<strong>create a GitHub issue</strong>
 					</a>
 					. I would love to hear your thoughts.
 				</p>
-			</div>
+			</SettingCard>
 		</>
 	);
 });

@@ -33,6 +33,36 @@
 		font-size: var(--font-ui-smaller);
 	}
 
+	&-card {
+		padding: 12px 16px;
+		background-color: var(--background-secondary);
+		border-radius: 8px;
+		border: 1px solid var(--background-modifier-border);
+		margin-top: 8px;
+		font-size: var(--font-ui-small);
+		line-height: 1.6;
+		color: var(--text-normal);
+
+		p {
+			margin: 0 0 0.5em;
+
+			&:last-child {
+				margin-bottom: 0;
+			}
+		}
+
+		a {
+			color: var(--text-accent);
+			text-decoration: underline;
+			transition: color 0.15s ease, opacity 0.15s ease;
+
+			&:hover {
+				color: var(--text-accent-hover);
+				opacity: 0.85;
+			}
+		}
+	}
+
 	&-docs-link  {
 		display: inline-block;
 		margin-top: 0.5rem;
