@@ -463,7 +463,7 @@ export const HelpSection = memo(function HelpSection() {
 							"prisma-calendar",
 							"plugin",
 							"settings",
-							"help_troubleshooting",
+							"help_troubleshooting"
 						)}
 					>
 						<strong>troubleshooting</strong>
@@ -476,6 +476,22 @@ export const HelpSection = memo(function HelpSection() {
 						<strong>create a GitHub issue</strong>
 					</a>
 					. I would love to hear your thoughts.
+				</p>
+				<p>
+					For more connected, advanced workflows,{" "}
+					<a
+						href={buildUtmUrl(
+							"https://matejvavroproductivity.com/tools/prisma-calendar/",
+							"prisma-calendar",
+							"plugin",
+							"settings",
+							"help_pro"
+						)}
+					>
+						<strong>Prisma Pro</strong>
+					</a>{" "}
+					unlocks calendar synchronization, advanced visualizations, Bases integration for embedding views directly
+					inside notes, and other power-user capabilities built for serious planning inside Obsidian.
 				</p>
 			</SettingCard>
 		</>
