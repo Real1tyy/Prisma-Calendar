@@ -24,6 +24,9 @@ const PRISMA_NON_TRANSFERABLE_SETTINGS: ReadonlyArray<keyof CustomCalendarSettin
 	"version",
 ];
 
+const DOCS_BASE = "https://real1tyy.github.io/Prisma-Calendar";
+const GITHUB_ISSUES_URL = "https://github.com/Real1tyy/Prisma-Calendar/issues/new/choose";
+
 interface GeneralSettingsProps {
 	settingsStore: CalendarSettingsStore;
 	plugin: CustomCalendarPlugin;
@@ -65,6 +68,7 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 			<StatisticsSection settings={settings} updateField={updateField} />
 			<EventPresetsSection settings={settings} updateField={updateField} plugin={plugin} />
 			<SettingsTransferSection plugin={plugin} />
+			<HelpSection />
 		</>
 	);
 });
@@ -429,6 +433,46 @@ const EventPresetsSection = memo(function EventPresetsSection({
 					</div>
 				))
 			)}
+		</>
+	);
+});
+
+export const HelpSection = memo(function HelpSection() {
+	return (
+		<>
+			<SettingHeading name="Help & support" />
+			<div className="setting-item-description">
+				<p>
+					Have a question? The{" "}
+					<a href={buildUtmUrl(DOCS_BASE, "prisma-calendar", "plugin", "settings", "help_documentation")}>
+						documentation
+					</a>{" "}
+					covers most topics — use the search bar in the top right to quickly find what you need. Check the{" "}
+					<a href={buildUtmUrl(`${DOCS_BASE}/faq`, "prisma-calendar", "plugin", "settings", "help_faq")}>
+						frequently asked questions
+					</a>{" "}
+					or{" "}
+					<a
+						href={buildUtmUrl(
+							`${DOCS_BASE}/troubleshooting`,
+							"prisma-calendar",
+							"plugin",
+							"settings",
+							"help_troubleshooting"
+						)}
+					>
+						troubleshooting
+					</a>{" "}
+					pages for common issues and solutions.
+				</p>
+				<p>
+					If you have an idea how to make Prisma Calendar better, found a bug, or want to share any feedback — please{" "}
+					<a href={GITHUB_ISSUES_URL} target="_blank" rel="noopener noreferrer">
+						create a GitHub issue
+					</a>
+					. I would love to hear your thoughts.
+				</p>
+			</div>
 		</>
 	);
 });
