@@ -23,6 +23,16 @@ export interface WelcomeModalShellProps {
 
 function buildStyles(prefix: string): string {
 	return `
+@keyframes ${prefix}-welcome-fade-in {
+	from { opacity: 0; transform: translateY(8px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ${prefix}-welcome-title-glow {
+	0%, 100% { text-shadow: 0 0 30px color-mix(in srgb, var(--interactive-accent) 20%, transparent); }
+	50% { text-shadow: 0 0 40px color-mix(in srgb, var(--interactive-accent) 35%, transparent); }
+}
+
 .${prefix}-welcome-modal {
 	max-width: 980px;
 	width: min(980px, 94vw);
@@ -31,34 +41,48 @@ function buildStyles(prefix: string): string {
 .${prefix}-welcome-root {
 	display: flex;
 	flex-direction: column;
-	gap: 1rem;
+	gap: 1.15rem;
 	color: var(--text-normal);
+	animation: ${prefix}-welcome-fade-in 400ms ease-out both;
 }
 
 .${prefix}-welcome-title {
 	margin: 0;
-	font-size: 1.85rem;
+	padding-top: 0.25rem;
+	font-size: 2rem;
 	text-align: center;
-	font-weight: 700;
+	font-weight: 800;
 	line-height: 1.15;
-	color: var(--text-normal);
-	letter-spacing: -0.03em;
+	letter-spacing: -0.035em;
+	background: linear-gradient(
+		135deg,
+		var(--text-normal) 40%,
+		var(--interactive-accent) 100%
+	);
+	background-clip: text;
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	animation: ${prefix}-welcome-title-glow 4s ease-in-out infinite;
 }
 
 .${prefix}-welcome-tagline {
 	display: flex;
 	flex-direction: column;
-	gap: 0.35rem;
+	gap: 0.45rem;
 	margin: 0;
-	padding: 0.85rem 1.1rem;
+	padding: 1rem 1.25rem;
 	border-left: 3px solid var(--interactive-accent);
-	border-radius: 0 10px 10px 0;
-	background: color-mix(in srgb, var(--interactive-accent) 8%, var(--background-secondary));
+	border-radius: 0 12px 12px 0;
+	background: linear-gradient(
+		100deg,
+		color-mix(in srgb, var(--interactive-accent) 10%, var(--background-secondary)),
+		var(--background-secondary) 80%
+	);
 }
 
 .${prefix}-welcome-divider {
 	border: none;
-	border-top: 1px solid var(--background-modifier-border);
+	border-top: 1px solid color-mix(in srgb, var(--background-modifier-border) 70%, var(--interactive-accent) 30%);
 	margin: 0;
 }
 
@@ -70,6 +94,7 @@ function buildStyles(prefix: string): string {
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 16px;
 	background: var(--background-secondary);
+	box-shadow: 0 2px 12px color-mix(in srgb, var(--background-primary) 60%, transparent);
 }
 
 .${prefix}-welcome-video-frame {
@@ -136,8 +161,9 @@ function buildStyles(prefix: string): string {
 }
 
 .${prefix}-welcome-actions button {
-	padding: 0.6rem 1.1rem;
+	padding: 0.6rem 1.25rem;
 	font-size: 0.95rem;
+	font-weight: 600;
 }
 
 @media (max-width: 720px) {

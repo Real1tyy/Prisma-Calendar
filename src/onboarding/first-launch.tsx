@@ -358,6 +358,22 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 					See what Pro unlocks
 				</Button>
 			</section>
+
+			<section className="prisma-first-launch-thanks">
+				<p>
+					Thanks for giving Prisma a try. I hope you enjoy using it, and that it helps you become more productive and
+					organized inside Obsidian. If you spot any bugs or see ways to improve it, don't hesitate to share your
+					feedback through{" "}
+					<a
+						href={welcomeUtm("https://github.com/Real1tyy/Prisma-Calendar/issues", "feedback")}
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						GitHub issues
+					</a>
+					.
+				</p>
+			</section>
 		</WelcomeModalShell>
 	);
 });
