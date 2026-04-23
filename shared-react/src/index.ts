@@ -30,6 +30,7 @@ export { SettingCard, SettingHeading, SettingItem } from "./components/setting-i
 export type { TextareaProps } from "./components/textarea";
 export { Textarea } from "./components/textarea";
 export { AppContext, useApp } from "./contexts/app-context";
+export * from "./forms";
 export type { ActivatableProps } from "./hooks/use-activatable";
 export { useActivatable } from "./hooks/use-activatable";
 export type { DebouncedCommitHandle, UseDebouncedCommitOptions } from "./hooks/use-debounced-commit";
@@ -54,3 +55,4 @@ export { registerReactView } from "./react-view";
 export * from "./settings";
 export type { OpenReactModalConfig, ReactModalBaseConfig, ShowReactModalConfig } from "./show-react-modal";
 export { openReactModal, showReactModal } from "./show-react-modal";
+export * from "./virtual";

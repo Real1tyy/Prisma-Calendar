@@ -95,6 +95,7 @@
 		"@real1ty-obsidian-plugins": "file:./shared",
 		"@real1ty-obsidian-plugins-react": "file:./shared-react",
 		"@svgdotjs/svg.js": "^3.2.4",
+		"@tanstack/react-virtual": "^3.10.9",
 		"chart.js": "^4.5.1",
 		"colord": "^2.9.3",
 		"date-holidays": "^3.26.8",
