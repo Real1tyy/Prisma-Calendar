@@ -12,38 +12,35 @@ import { defineConfig } from "@playwright/test";
 //   - Demo mode (PW_DEMO=1) slows every action and holds the window open after
 //     each spec. A 15-field fill at 250ms slowMo + matching demoPause + hold
 //     easily crosses the normal envelope, so triple it.
-//   - Default headless runs (CI + dev `pnpm test:e2e`) get a tight budget —
-//     30s per test and 10s per `expect` assertion. Obsidian boot (~3-5s) plus
-//     a handful of UI clicks fits comfortably under that. A single hung wait
-//     now fails loud in a third of the wall time the 90s budget used to let
-//     it consume — failing specs should fail fast, passing ones never need
-//     more.
+//   - Default headless runs (CI + dev `pnpm test:e2e`) get a 45s budget. Each
+//     test spawns a fresh Obsidian process — bootstrap is typically 1-3s but
+//     can spike to 15-25s under disk/memory pressure during long serial runs.
+//     45s leaves ample room for spike + test body while still failing fast on
+//     genuine hangs.
 const DEMO_ON = !!process.env.PW_DEMO && process.env.PW_DEMO !== "0" && process.env.PW_DEMO !== "false";
 // --ui and --debug put a human at the keyboard; disable timeouts in both.
 // PWDEBUG is the official env var Playwright sets for the Inspector; argv
 // catches `--ui` and `--debug` passed directly to `playwright test`.
 const DEBUG_ON = !!process.env.PWDEBUG || process.argv.includes("--ui") || process.argv.includes("--debug");
 
-const TEST_TIMEOUT = DEBUG_ON ? 0 : DEMO_ON ? 1_800_000 : 30_000;
+const TEST_TIMEOUT = DEBUG_ON ? 0 : DEMO_ON ? 1_800_000 : 45_000;
 const EXPECT_TIMEOUT = DEBUG_ON ? 0 : DEMO_ON ? 120_000 : 10_000;
 // `actionTimeout` caps every `waitFor` / `click` / `fill` that doesn't pass its
 // own `timeout`. Mirrors EXPECT_TIMEOUT so specs can omit per-call timeouts
 // entirely — see feedback_e2e_no_timeout_overrides. Without this, actions fall
-// back to testTimeout (90s) and a single hung wait eats the whole spec.
+// back to testTimeout and a single hung wait eats the whole spec.
 const ACTION_TIMEOUT = DEBUG_ON ? 0 : DEMO_ON ? 120_000 : 10_000;
 
 export default defineConfig({
+	globalSetup: "./setup/global-setup.ts",
 	outputDir: "./test-results",
 	fullyParallel: false,
 	workers: 1,
 	timeout: TEST_TIMEOUT,
 	expect: { timeout: EXPECT_TIMEOUT },
 	forbidOnly: !!process.env.CI,
-	// Bootstrap runs inside the per-test 30s setup budget (see electron.ts). When
-	// the full suite runs serially, tmp/disk/process pressure accumulates and
-	// Obsidian spawn can tail-spike past that cap — a pure environmental flake.
-	// One retry locally / two on CI absorbs that without masking real spec-body
-	// hangs (those fail the same way on retry).
+	// One retry locally / two on CI absorbs residual bootstrap timing spikes
+	// that the 45s budget doesn't cover (extreme disk pressure, OOM thrashing).
 	retries: process.env.CI ? 2 : 1,
 	// `line` keeps output to one line per test (not per attempt) so the summary
 	// is readable even when several specs run. Full detail still lands in the
