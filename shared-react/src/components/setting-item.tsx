@@ -37,3 +37,17 @@ export const SettingHeading = memo(function SettingHeading({ name, testId }: Set
 		</div>
 	);
 });
+
+interface SettingCardProps {
+	children: ReactNode;
+	cssPrefix?: string;
+	testId?: string;
+}
+
+export const SettingCard = memo(function SettingCard({ children, cssPrefix = "", testId }: SettingCardProps) {
+	return (
+		<div className={`${cssPrefix}settings-card`} {...(testId ? { "data-testid": testId } : {})}>
+			{children}
+		</div>
+	);
+});

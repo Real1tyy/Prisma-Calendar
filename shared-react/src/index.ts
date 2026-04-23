@@ -26,7 +26,7 @@ export {
 	TextInput,
 	Toggle,
 } from "./components/setting-controls";
-export { SettingHeading, SettingItem } from "./components/setting-item";
+export { SettingCard, SettingHeading, SettingItem } from "./components/setting-item";
 export type { TextareaProps } from "./components/textarea";
 export { Textarea } from "./components/textarea";
 export { AppContext, useApp } from "./contexts/app-context";
