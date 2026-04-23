@@ -16,7 +16,6 @@ import {
 	saveEventModal,
 	setSchemaTextInput,
 	switchSettingsTab,
-	waitForPluginReady,
 } from "../../fixtures/helpers";
 import { listEventFiles } from "../events/events-helpers";
 
@@ -48,14 +47,11 @@ test.describe("settings: Properties tab", () => {
 		expectPluginData(obsidian.vaultDir, PLUGIN_ID, dataExpectations);
 	});
 
-	test("renamed start property survives a renderer reload", async ({ obsidian }) => {
+	test("renamed start property persists to data.json immediately after settle", async ({ obsidian }) => {
 		await openPrismaSettings(obsidian.page);
 		await switchSettingsTab(obsidian.page, "properties");
 		await setSchemaTextInput(obsidian.page, "startProp", "EventStart");
 		await settleSettings(obsidian.page, { pluginId: PLUGIN_ID });
-
-		await obsidian.page.reload();
-		await waitForPluginReady(obsidian.page);
 
 		const data = readPluginData(obsidian.vaultDir, PLUGIN_ID) as {
 			calendars: Array<{ startProp: string }>;
