@@ -342,8 +342,8 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 			<section className="prisma-first-launch-pro">
 				<span className="prisma-first-launch-pro-badge">PRO</span>
 				<p className="prisma-first-launch-pro-text">
-					For more connected, advanced workflows — Prisma Pro unlocks sync, AI-assisted scheduling, advanced views, and
-					other power-user capabilities built for serious planning inside Obsidian.
+					For more advanced workflows — Prisma Pro unlocks calendar sync, advanced visualizations, Bases integration,
+					and other power-user capabilities built for serious planning inside Obsidian.
 				</p>
 				<Button
 					testId={tid("pro-upgrade")}
