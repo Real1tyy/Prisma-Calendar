@@ -1,6 +1,8 @@
 import {
 	activateView,
 	buildUtmUrl,
+	ensureDirectory,
+	normalizeDirectory,
 	onceAsync,
 	SettingsStore,
 	showWhatsNewModal,
@@ -33,6 +35,7 @@ import { importEventsToCalendar } from "./core/integrations/ics-import";
 import type { LicenseManager } from "./core/license";
 import { createLicenseManager, PRO_FEATURES } from "./core/license";
 import { getProGateUrls } from "./core/pro-feature-previews";
+import { openFirstLaunchModal, scanVaultForDirectorySuggestions } from "./onboarding";
 import { CustomCalendarSettingsSchema, type PrismaCalendarSettingsStore, PrismaSyncDataSchema } from "./types";
 import { type CalDAVAccount, type ICSSubscription } from "./types/integrations";
 import { createDefaultCalendarConfig } from "./utils/calendar-settings";
@@ -51,6 +54,7 @@ export default class CustomCalendarPlugin extends Plugin {
 	}
 
 	override async onload() {
+		const isFirstLaunch = (await this.loadData()) === null;
 		await migrateSharedExcludedProps(this);
 		this.settingsStore = new SettingsStore(this, CustomCalendarSettingsSchema);
 		await this.settingsStore.loadSettings();
@@ -86,9 +90,14 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		this.app.workspace.onLayoutReady(() => {
 			void waitForCacheReady(this.app).then(() => {
-				void this.ensureCalendarBundlesReady();
+				void this.ensureCalendarBundlesReady().then(() => {
+					if (isFirstLaunch) {
+						void this.showFirstLaunchOnboarding();
+						return;
+					}
+					void this.checkForUpdates();
+				});
 			});
-			void this.checkForUpdates();
 			void this.licenseManager.initialize();
 		});
 	}
@@ -674,6 +683,49 @@ export default class CustomCalendarPlugin extends Plugin {
 				...settings,
 				version: currentVersion,
 			}));
+		}
+	}
+
+	private async showFirstLaunchOnboarding(): Promise<void> {
+		const scannedSuggestionsPromise = scanVaultForDirectorySuggestions(this.app);
+		const primaryCalendar = this.settingsStore.currentSettings.calendars[0];
+
+		const result = await openFirstLaunchModal({
+			app: this.app,
+			loadSuggestions: () => scannedSuggestionsPromise,
+			initialProps: {
+				startProp: primaryCalendar.startProp,
+				endProp: primaryCalendar.endProp,
+				dateProp: primaryCalendar.dateProp,
+			},
+		});
+
+		const currentVersion = this.manifest.version;
+		const directory = normalizeDirectory(result?.directory ?? "");
+
+		if (directory) {
+			await ensureDirectory(this.app, directory);
+		}
+
+		await this.settingsStore.updateSettings((settings) => ({
+			...settings,
+			version: currentVersion,
+			calendars: settings.calendars.map((calendar, index) =>
+				index === 0
+					? {
+							...calendar,
+							directory,
+							startProp: result?.startProp ?? primaryCalendar.startProp,
+							endProp: result?.endProp ?? primaryCalendar.endProp,
+							dateProp: result?.dateProp ?? primaryCalendar.dateProp,
+						}
+					: calendar
+			),
+		}));
+
+		const bundle = this.calendarBundles[0];
+		if (bundle) {
+			await bundle.activateCalendarView();
 		}
 	}
 }

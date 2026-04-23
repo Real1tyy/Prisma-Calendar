@@ -18,6 +18,18 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
 
 ## Initial Setup
 
+On a fresh install, Prisma opens a **Welcome** modal first.
+
+Use it to:
+
+1. Set the first calendar directory without leaving the modal.
+2. Pick one of the auto-detected folders if Prisma finds notes with date-like frontmatter in your vault.
+3. Open the Tutorial video or playlist if you want a guided walkthrough before going deeper.
+
+After you press **Continue**, Prisma opens the calendar immediately.
+
+If you skip the modal or want to change the setup later:
+
 1. Open Settings → Prisma Calendar and confirm your Active Calendar.
 2. Set Directory to the folder where event notes should live (e.g., `Calendar/`).
 3. (Optional) Adjust frontmatter property names for Start/End/AllDay/Title if you use custom keys.

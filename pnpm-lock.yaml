@@ -29,6 +29,9 @@ importers:
       '@fullcalendar/timegrid':
         specifier: ^6.1.20
         version: 6.1.20(@fullcalendar/core@6.1.20)
+      '@hookform/resolvers':
+        specifier: ^5.2.2
+        version: 5.2.2(react-hook-form@7.73.1(react@19.2.5))
       '@real1ty-obsidian-plugins':
         specifier: file:./shared
         version: link:shared
@@ -71,6 +74,9 @@ importers:
       react-dom:
         specifier: ^19.2.5
         version: 19.2.5(react@19.2.5)
+      react-hook-form:
+        specifier: ^7.73.1
+        version: 7.73.1(react@19.2.5)
       rxjs:
         specifier: ^7.8.2
         version: 7.8.2
@@ -710,6 +716,11 @@ packages:
     peerDependencies:
       '@fullcalendar/core': ~6.1.20
 
+  '@hookform/resolvers@5.2.2':
+    resolution: {integrity: sha512-A/IxlMLShx3KjV/HeTcTfaMxdwy690+L/ZADoeaTltLx+CVuzkeVIPuybK3jrRfw7YZnmdKsVVHAlEPIAEUNlA==}
+    peerDependencies:
+      react-hook-form: ^7.55.0
+
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
     engines: {node: '>=12'}
@@ -1095,6 +1106,9 @@ packages:
   '@sindresorhus/is@7.2.0':
     resolution: {integrity: sha512-P1Cz1dWaFfR4IR+U13mqqiGsLFf1KbayybWwdd2vfctdV6hDpUkgCY0nKOLLTMSoRd/jJNjtbqzf13K8DCCXQw==}
     engines: {node: '>=18'}
+
+  '@standard-schema/utils@0.3.0':
+    resolution: {integrity: sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g==}
 
   '@supercharge/promise-pool@3.2.0':
     resolution: {integrity: sha512-pj0cAALblTZBPtMltWOlZTQSLT07jIaFNeM8TWoJD1cQMgDB9mcMlVMoetiB35OzNJpqQ2b+QEtwiR9f20mADg==}
@@ -2322,6 +2336,12 @@ packages:
     peerDependencies:
       react: ^19.2.5
 
+  react-hook-form@7.73.1:
+    resolution: {integrity: sha512-VAfVYOPcx3piiEVQy95vyFmBwbVUsP/AUIN+mpFG8h11yshDd444nn0VyfaGWSRnhOLVgiDu7HIuBtAIzxn9dA==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      react: ^16.8.0 || ^17 || ^18 || ^19
+
   react-is@17.0.2:
     resolution: {integrity: sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==}
 
@@ -3220,6 +3240,11 @@ snapshots:
       '@fullcalendar/core': 6.1.20
       '@fullcalendar/daygrid': 6.1.20(@fullcalendar/core@6.1.20)
 
+  '@hookform/resolvers@5.2.2(react-hook-form@7.73.1(react@19.2.5))':
+    dependencies:
+      '@standard-schema/utils': 0.3.0
+      react-hook-form: 7.73.1(react@19.2.5)
+
   '@isaacs/cliui@8.0.2':
     dependencies:
       string-width: 5.1.2
@@ -3497,6 +3522,8 @@ snapshots:
   '@sec-ant/readable-stream@0.4.1': {}
 
   '@sindresorhus/is@7.2.0': {}
+
+  '@standard-schema/utils@0.3.0': {}
 
   '@supercharge/promise-pool@3.2.0': {}
 
@@ -4795,6 +4822,10 @@ snapshots:
     dependencies:
       react: 19.2.5
       scheduler: 0.27.0
+
+  react-hook-form@7.73.1(react@19.2.5):
+    dependencies:
+      react: 19.2.5
 
   react-is@17.0.2: {}
 

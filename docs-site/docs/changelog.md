@@ -9,7 +9,7 @@ All notable changes to this project will be documented here.
 > **TLDR:** New **Subscription management button** in License settings — Pro users see "Manage Subscription" linking to the account page, free users see "Subscribe" linking to the product page.
 
 ### Added
-- **First-launch welcome flow**: Fresh installs now open a dedicated welcome modal instead of dropping you into raw settings immediately. It explains the product in plain language, links to the Encyclopedia video and playlist, scans the vault for folders with date-like properties, lets you set the first calendar directory directly in the modal, and opens Prisma right away after setup. See [Quick Start](./quickstart.md#initial-setup).
+- **First-launch welcome flow**: Fresh installs now open a dedicated welcome modal. It scans the vault for folders with date-like properties, lets you set the first calendar directory directly in the modal, and opens Prisma right away after setup. See [Quick Start](./quickstart.md#initial-setup).
 - **Subscription management button**: The License section now shows a **Manage Subscription** button for Pro users (links to account page) or a **Subscribe** button for free users (links to purchase page). See [General Settings → License](./configuration/general.md#license).
 - **`RRuleUntil` recurring end date**: Recurring sources can now define an inclusive final occurrence day with `RRuleUntil` (or your renamed property). Physical generation and virtual previews both stop after that date, so bounded schedules like semesters no longer spill into future months. See [Recurring Events](./features/events/recurring-dsl.md#rruleuntil-end-date).
 
