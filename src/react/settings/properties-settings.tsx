@@ -178,8 +178,8 @@ const FrontmatterDisplayIntro = memo(function FrontmatterDisplayIntro() {
 	return (
 		<div>
 			<p>
-				Display additional frontmatter properties in calendar events. Properties appear below the event title in a 'key:
-				value' format. If the event is too small to show all properties, the content is scrollable.
+				Display additional frontmatter properties in events. Properties appear below the event title in a 'key: value'
+				format. If the event is too small to show all properties, the content is scrollable.
 			</p>
 			<p className="setting-item-description">
 				Enter comma-separated property names (e.g., status, priority, project, tags). Only properties that exist in the

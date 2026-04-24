@@ -350,7 +350,7 @@ export default class CustomCalendarPlugin extends Plugin {
 		addCalendarViewCommand(COMMAND_IDS.SHOW_ALLTIME_STATS, "Show all-time statistics", (view) => {
 			void view.showAllTimeStatsModal();
 		});
-		addCalendarViewCommand(COMMAND_IDS.REFRESH_CALENDAR, "Refresh calendar", (view) => {
+		addCalendarViewCommand(COMMAND_IDS.REFRESH_CALENDAR, "Refresh planning system", (view) => {
 			void view.refreshCalendar();
 		});
 		addCalendarViewCommand(

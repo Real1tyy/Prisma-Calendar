@@ -117,10 +117,10 @@ const DirectorySection = memo(function DirectorySection({ settings, updateField,
 
 	return (
 		<>
-			<SettingHeading name="Calendar directory" />
+			<SettingHeading name="Planning system directory" />
 			<SettingItem
 				name="Directory"
-				description="Folder to scan for calendar events and create new events in"
+				description="Folder to scan for events and create new events in"
 				testId="prisma-settings-field-directory"
 			>
 				<TextInput
@@ -144,7 +144,7 @@ const DirectorySection = memo(function DirectorySection({ settings, updateField,
 			</SettingItem>
 			<SettingItem
 				name="Locale"
-				description="Language and date format for calendar headings, day names, month names, toolbar labels, and date displays"
+				description="Language and date format for headings, day names, month names, toolbar labels, and date displays"
 				testId="prisma-settings-field-locale"
 			>
 				<Dropdown
@@ -156,7 +156,7 @@ const DirectorySection = memo(function DirectorySection({ settings, updateField,
 			</SettingItem>
 			<SettingItem
 				name="Show ribbon icon"
-				description="Display a calendar icon in the left sidebar to quickly open this calendar"
+				description="Display an icon in the left sidebar to quickly open this planning system"
 				testId="prisma-settings-field-showRibbonIcon"
 			>
 				<Toggle
@@ -178,7 +178,7 @@ const DirectorySection = memo(function DirectorySection({ settings, updateField,
 			</SettingItem>
 			<SettingItem
 				name="Auto assign zettel ID"
-				description="Automatically add a Zettel ID timestamp to filenames of events in the calendar directory that don't have one."
+				description="Automatically add a Zettel ID timestamp to filenames of events in the planning system directory that don't have one."
 				testId="prisma-settings-field-autoAssignZettelId"
 			>
 				<Dropdown
@@ -194,7 +194,7 @@ const DirectorySection = memo(function DirectorySection({ settings, updateField,
 			</SettingItem>
 			<SettingItem
 				name="Index subdirectories"
-				description="Index event files anywhere under the configured folder, not just immediate children. When enabled, events stored at any depth (e.g., courses/CS101/HW1.md) appear on the calendar."
+				description="Index event files anywhere under the configured folder, not just immediate children. When enabled, events stored at any depth (e.g., courses/CS101/HW1.md) appear in the planning system."
 				testId="prisma-settings-field-indexSubdirectories"
 			>
 				<Toggle
@@ -490,7 +490,7 @@ export const HelpSection = memo(function HelpSection() {
 					>
 						<strong>Prisma Pro</strong>
 					</a>{" "}
-					unlocks calendar synchronization, advanced visualizations, Bases integration for embedding views directly
+					unlocks external synchronization, advanced visualizations, Bases integration for embedding views directly
 					inside notes, and other power-user capabilities built for serious planning inside Obsidian.
 				</p>
 			</SettingCard>
