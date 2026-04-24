@@ -32,7 +32,6 @@ const EXPECT_TIMEOUT = DEBUG_ON ? 0 : DEMO_ON ? 120_000 : 10_000;
 const ACTION_TIMEOUT = DEBUG_ON ? 0 : DEMO_ON ? 120_000 : 10_000;
 
 export default defineConfig({
-	globalSetup: "./setup/global-setup.ts",
 	outputDir: "./test-results",
 	fullyParallel: false,
 	workers: 1,

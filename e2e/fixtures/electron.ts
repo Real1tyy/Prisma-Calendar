@@ -6,6 +6,7 @@ import {
 	bootstrapObsidian as sharedBootstrap,
 	type BootstrappedObsidian,
 	createFileLogger,
+	pruneStaleE2eResources,
 } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { openCalendarReady } from "../specs/events/events-helpers";
@@ -84,6 +85,8 @@ const VERSION_FILE = join(E2E_ROOT, "obsidian-version.json");
 
 const VERBOSE = process.env["E2E_VERBOSE"] === "1" || process.env["E2E_DEBUG"] === "1";
 const log = createFileLogger(LOG_FILE, { verbose: VERBOSE });
+
+pruneStaleE2eResources({ vaultsRoot: VAULTS_ROOT });
 
 // Demo mode: `PW_DEMO=1` (or any positive int value, interpreted as ms) slows
 // every Playwright operation so you can watch what the suite does. The wrapper
