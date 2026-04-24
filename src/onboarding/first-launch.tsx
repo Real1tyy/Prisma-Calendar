@@ -145,7 +145,7 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 		mode: "onChange",
 		defaultValues: {
 			mode: initialState?.mode ?? "new",
-			directory: initialState?.directory ?? "Events",
+			directory: initialState?.directory ?? "Tasks",
 			startProp: initialState?.startProp ?? initialProps.startProp,
 			endProp: initialState?.endProp ?? initialProps.endProp,
 			dateProp: initialState?.dateProp ?? initialProps.dateProp,
@@ -175,7 +175,7 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 	}, [loadSuggestions]);
 
 	useEffect(() => {
-		if (currentMode === "new" && !currentDirectory.trim()) setValue("directory", "Events");
+		if (currentMode === "new" && !currentDirectory.trim()) setValue("directory", "Tasks");
 	}, [currentMode, currentDirectory, setValue]);
 
 	const selectSuggestion = (suggestion: DirectorySuggestion): void => {
@@ -251,7 +251,7 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 						render={({ field }) => (
 							<TextInput
 								value={field.value}
-								placeholder={currentMode === "existing" ? "e.g. Calendar, Tasks, Work/Meetings" : "Events"}
+								placeholder={currentMode === "existing" ? "e.g. Calendar, Tasks, Work/Meetings" : "Tasks"}
 								onChange={field.onChange}
 								debounceMs={0}
 								testId={tid("directory-input")}
