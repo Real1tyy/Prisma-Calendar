@@ -105,56 +105,11 @@ export const FULL_COMMAND_IDS = Object.fromEntries(
 
 export const PROPAGATION_DEBOUNCE_MS = 3000;
 
-// Property name defaults (shared between schema definitions and settings UI placeholders)
-export const PROP_DEFAULTS = {
-	directory: "Tasks",
-	start: "Start Date",
-	end: "End Date",
-	date: "Date",
-	allDay: "All Day",
-	sortDate: "Sort Date",
-	title: "Title",
-	calendarTitle: "Calendar Title",
-	zettelId: "ZettelID",
-	skip: "Skip",
-	rrule: "RRule",
-	rruleSpec: "RRuleSpec",
-	rruleUntil: "RRuleUntil",
-	rruleId: "RRuleID",
-	source: "Source",
-	futureInstancesCount: "Future Instances Count",
-	generatePastEvents: "Generate Past Events",
-	status: "Status",
-	doneValue: "Done",
-	notDoneValue: "Not Done",
-	category: "Category",
-	location: "Location",
-	participants: "Participants",
-	break: "Break",
-	icon: "Icon",
-	prerequisite: "Prerequisite",
-	instanceDate: "Recurring Instance Date",
-	minutesBefore: "Minutes Before",
-	daysBefore: "Days Before",
-	alreadyNotified: "Already Notified",
-	caldav: "CalDAV",
-	icsSubscription: "ICSSubscription",
-} as const;
-
-// Shared defaults used in both schema definitions and settings UI fallbacks
 export const DEFAULT_EVENT_COLOR = "hsl(270, 70%, 50%)";
-export const DEFAULT_EVENT_TEXT_COLOR = "#ffffff";
-export const DEFAULT_EVENT_TEXT_COLOR_ALT = "#000000";
-export const DEFAULT_MONTH_EVEN_COLOR = "#131313";
-export const DEFAULT_MONTH_ODD_COLOR = "#6b9080";
 export const DEFAULT_CONNECTION_COLOR = "#7c3aed";
 export const DEFAULT_CONNECTION_STROKE_WIDTH = 3;
 export const DEFAULT_CONNECTION_ARROW_SIZE = 12;
-export const DEFAULT_ZOOM_LEVELS = [1, 2, 3, 5, 10, 15, 20, 30, 45, 60] as const;
-export const DEFAULT_SOURCE_RECURRING_MARKER = "⦿";
-export const DEFAULT_PHYSICAL_RECURRING_MARKER = "🔄";
 export const DEFAULT_EXPORT_FOLDER = "Prisma-Exports";
-export const DEFAULT_VIRTUAL_EVENTS_FILE_NAME = "Virtual Events";
 export const VIRTUAL_EVENTS_CODE_FENCE = "prisma-virtual-events";
 export const BASE_NAME = "calendar";
 
