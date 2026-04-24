@@ -330,7 +330,7 @@ export class RulesSettings {
 
 		const desc = containerEl.createDiv();
 		desc.createEl("p", {
-			text: "Create named filter presets for quick access via a dropdown in the calendar toolbar. These presets auto-fill the filter expression input.",
+			text: "Create named filter presets for quick access via a dropdown in the toolbar. These presets auto-fill the filter expression input.",
 		});
 
 		renderExamplesList(desc, "Example filter presets", FILTER_PRESET_EXAMPLES);

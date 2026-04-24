@@ -30,7 +30,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 			button.disabled = true;
 			addCls(button, "calendar-button-disabled");
 			const max = this.getMaxCalendars();
-			button.title = `Free plan allows up to ${max} calendars. Upgrade to Pro for unlimited.`;
+			button.title = `Free plan allows up to ${max} planning systems. Upgrade to Pro for unlimited.`;
 		}
 	}
 
@@ -39,7 +39,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		if (settings.calendars.length <= 1) {
 			button.disabled = true;
 			addCls(button, "calendar-button-disabled");
-			button.title = "At least one calendar is required";
+			button.title = "At least one planning system is required";
 		}
 	}
 
@@ -69,13 +69,13 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		const { containerEl } = this;
 		const settings = this.plugin.settingsStore.currentSettings;
 
-		new Setting(containerEl).setName("Calendar management").setHeading();
+		new Setting(containerEl).setName("Planning system management").setHeading();
 
 		const headerContainer = containerEl.createDiv(`${cls("calendar-management")} ${cls("calendar-management-header")}`);
 
 		new Setting(headerContainer)
-			.setName("Active calendar")
-			.setDesc("Select which calendar to configure")
+			.setName("Active planning system")
+			.setDesc("Select which planning system to configure")
 			.addDropdown((dropdown) => {
 				settings.calendars.forEach((calendar) => {
 					dropdown.addOption(calendar.id, `${calendar.name} ${calendar.enabled ? "" : "(disabled)"}`);
@@ -142,7 +142,9 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		const countInfo = headerContainer.createDiv(cls("calendar-count-info"));
 		const max = this.getMaxCalendars();
 		countInfo.textContent =
-			max === Infinity ? `${settings.calendars.length} calendars` : `${settings.calendars.length}/${max} calendars`;
+			max === Infinity
+				? `${settings.calendars.length} planning systems`
+				: `${settings.calendars.length}/${max} planning systems`;
 	}
 
 	private renderSelectedCalendarSettings(): void {
@@ -153,7 +155,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		const calendarStore = this.getOrCreateCalendarStore(this.selectedCalendarId);
 		if (!calendarStore) {
 			settingsContainer.createEl("p", {
-				text: "Calendar not found",
+				text: "Planning system not found",
 				cls: "setting-item-description",
 			});
 			return;
@@ -194,7 +196,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		}
 
 		const newId = generateUniqueCalendarId(settings);
-		const newName = `Calendar ${settings.calendars.length + 1}`;
+		const newName = `Planning System ${settings.calendars.length + 1}`;
 		const newCalendar = createDefaultCalendarConfig(newId, newName);
 
 		await this.plugin.settingsStore.updateSettings((currentSettings) => ({
@@ -297,11 +299,11 @@ function showRenameCalendarModal(app: App, currentName: string, onSubmit: (name:
 		app,
 		cls: cls("rename-calendar-modal"),
 		render: (el, ctx) => {
-			el.createEl("h2", { text: "Rename calendar" });
+			el.createEl("h2", { text: "Rename planning system" });
 
 			new Setting(el)
-				.setName("Calendar name")
-				.setDesc("Enter the new name for the calendar.")
+				.setName("Planning system name")
+				.setDesc("Enter the new name for the planning system.")
 				.addText((text) => {
 					text.setValue(currentName).onChange((value) => {
 						newName = value.trim();

@@ -133,7 +133,7 @@ export class IntegrationsSettings {
 		this.ui.addToggle(containerEl, {
 			key: "holidays.enabled",
 			name: "Enable holidays",
-			desc: "Display public holidays on the calendar as virtual read-only events",
+			desc: "Display public holidays as virtual read-only events",
 		});
 
 		this.holidayDetailsContainer = containerEl.createDiv();

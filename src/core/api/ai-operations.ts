@@ -24,7 +24,7 @@ export async function aiQuery(plugin: CustomCalendarPlugin, input: PrismaAIQuery
 
 	const viewContext = resolveActiveViewContext(plugin, bundle);
 	if (!viewContext) {
-		return { success: false, error: "No calendar view is currently open" };
+		return { success: false, error: "No planning system view is currently open" };
 	}
 
 	const chatStore = new ChatStore(plugin.app, plugin);

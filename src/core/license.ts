@@ -25,7 +25,7 @@ export const PRO_FEATURES = {
 	ICS_SYNC: "ICS Subscriptions",
 	PROGRAMMATIC_API: "Programmatic API",
 	CATEGORY_ASSIGNMENT_PRESETS: "Category Assignment Presets",
-	UNLIMITED_CALENDARS: "Unlimited Calendars",
+	UNLIMITED_CALENDARS: "Unlimited Planning Systems",
 	UNLIMITED_EVENT_PRESETS: "Unlimited Event Presets",
 	HEATMAP: "Heatmap View",
 	HEATMAP_MONTHLY: "Heatmap Monthly + Stats",

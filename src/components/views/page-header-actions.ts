@@ -133,7 +133,7 @@ const ACTION_SPECS: CommandActionSpec[] = [
 	},
 
 	// ─── Calendar Management ─────────────────────────────────────
-	{ id: "refresh", commandId: FULL_COMMAND_IDS.REFRESH_CALENDAR, label: "Refresh Calendar", icon: "refresh-cw" },
+	{ id: "refresh", commandId: FULL_COMMAND_IDS.REFRESH_CALENDAR, label: "Refresh", icon: "refresh-cw" },
 	{ id: "undo", commandId: FULL_COMMAND_IDS.UNDO, label: "Undo", icon: "undo-2" },
 	{ id: "redo", commandId: FULL_COMMAND_IDS.REDO, label: "Redo", icon: "redo-2" },
 

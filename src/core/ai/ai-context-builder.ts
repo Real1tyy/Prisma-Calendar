@@ -211,7 +211,7 @@ ${categoryStatsTable}Total: ${context.totalDuration}${categoryContext ? buildCat
 }
 
 export const NO_CONTEXT_PROMPT_SUFFIX =
-	"\n\nNo calendar view is currently open, so you don't have access to specific event data. Answer general questions about calendars and scheduling.";
+	"\n\nNo planning system view is currently open, so you don't have access to specific event data. Answer general questions about planning and scheduling.";
 
 export interface ManipulationContext {
 	calendarName: string;

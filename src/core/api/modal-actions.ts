@@ -141,7 +141,7 @@ export async function openEditActiveNoteModal(
 	return withActiveFileBundle(plugin, calendarId, (bundle, activeFile) => {
 		const settings = bundle.settingsStore.currentSettings;
 		if (settings.directory && !activeFile.path.startsWith(settings.directory)) {
-			new Notice("Active note is outside the selected calendar directory");
+			new Notice("Active note is outside the selected planning system directory");
 			return false;
 		}
 
