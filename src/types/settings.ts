@@ -11,6 +11,7 @@ import { z } from "zod";
 import {
 	BATCH_BUTTON_IDS,
 	DEFAULT_BATCH_ACTION_BUTTONS,
+	DEFAULT_CATEGORY_PROP,
 	DEFAULT_CONTEXT_MENU_ITEMS,
 	DEFAULT_TOOLBAR_BUTTONS,
 } from "../constants";
@@ -208,28 +209,28 @@ const PropsSettingsSchema = z
 			.describe("Frontmatter property name for the date of a physical recurring event instance"),
 		frontmatterDisplayProperties: z
 			.array(z.string())
-			.catch(["Category"])
+			.catch([DEFAULT_CATEGORY_PROP])
 			.meta({ title: "Display properties (timed events)" })
 			.describe(
 				"Comma-separated list of frontmatter property names to display in timed events (events with start and end times). Properties are shown in weekly and daily views, but hidden in monthly view to save space."
 			),
 		frontmatterDisplayPropertiesAllDay: z
 			.array(z.string())
-			.catch(["Category"])
+			.catch([DEFAULT_CATEGORY_PROP])
 			.meta({ title: "Display properties (all-day events)" })
 			.describe(
 				"Comma-separated list of frontmatter property names to display in all-day events. Properties are shown in weekly and daily views, but hidden in monthly view to save space."
 			),
 		frontmatterDisplayPropertiesUntracked: z
 			.array(z.string())
-			.catch(["Category"])
+			.catch([DEFAULT_CATEGORY_PROP])
 			.meta({ title: "Display properties (untracked events)" })
 			.describe(
 				"Comma-separated list of frontmatter property names to display in untracked events (events without dates). These appear in the untracked events sidebar."
 			),
 		frontmatterDisplayPropertiesHeatmap: z
 			.array(z.string())
-			.catch(["Category"])
+			.catch([DEFAULT_CATEGORY_PROP])
 			.meta({ title: "Display properties (heatmap)" })
 			.describe(
 				"Comma-separated list of frontmatter property names to display in the heatmap day detail panel when inspecting events. Properties appear below each event title with links rendered interactively."
@@ -259,7 +260,7 @@ const PropsSettingsSchema = z
 			.meta({ placeholder: "archived false" }),
 		categoryProp: z
 			.string()
-			.catch("Category")
+			.catch(DEFAULT_CATEGORY_PROP)
 			.describe("Frontmatter property name for event categories (used for grouping in statistics)"),
 		locationProp: z.string().catch("Location").describe("Frontmatter property name for event location (single string)"),
 		participantsProp: z
@@ -310,7 +311,7 @@ const PropsSettingsSchema = z
 			),
 		basesViewProperties: z
 			.array(z.string())
-			.catch([])
+			.catch([DEFAULT_CATEGORY_PROP])
 			.describe(
 				"Comma-separated list of frontmatter properties to include as columns in Bases views. These properties will appear after the default columns (file name, date, status)."
 			),
@@ -604,7 +605,7 @@ const CalendarSettingsSchema = z
 			),
 		autoAssignCategoryByIncludes: z
 			.boolean()
-			.catch(false)
+			.catch(true)
 			.describe(
 				"Use substring matching (case-insensitive) for category auto-assignment and category assignment presets. When enabled, categories match if the event name contains the category name, and preset event names match if the event name contains the preset name. Example: 'Youtube Analysis' matches the 'Youtube' category and a preset with event name 'Youtube'."
 			),
@@ -691,7 +692,7 @@ const RulesSettingsSchema = z
 			),
 		showEventColorDots: z
 			.boolean()
-			.catch(false)
+			.catch(true)
 			.describe(
 				"Show color dots in the bottom-right corner of events for matched color rules that were not applied as the event background. Displays overflow colors that exceed the color mode limit, or all matched colors when coloring is disabled."
 			),

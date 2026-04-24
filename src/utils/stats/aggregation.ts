@@ -1,5 +1,6 @@
 import { parseCategories } from "@real1ty-obsidian-plugins";
 
+import { DEFAULT_CATEGORY_PROP } from "../../constants";
 import type { CalendarEvent } from "../../types/calendar";
 import { isTimedEvent } from "../../types/calendar";
 import { extractNotesCoreName } from "../events/naming";
@@ -41,7 +42,7 @@ export function aggregateStats(
 	periodStart?: Date,
 	periodEnd?: Date,
 	mode: AggregationMode = "name",
-	categoryProp = "Category"
+	categoryProp = DEFAULT_CATEGORY_PROP
 ): Stats {
 	let filteredEvents = events;
 
@@ -106,7 +107,7 @@ export function aggregateWeeklyStats(
 	events: CalendarEvent[],
 	weekDate: Date,
 	mode: AggregationMode = "name",
-	categoryProp = "Category"
+	categoryProp = DEFAULT_CATEGORY_PROP
 ): Stats {
 	const { start, end } = getWeekBounds(weekDate);
 	return aggregateStats(events, start, end, mode, categoryProp);
@@ -119,7 +120,7 @@ export function aggregateMonthlyStats(
 	events: CalendarEvent[],
 	monthDate: Date,
 	mode: AggregationMode = "name",
-	categoryProp = "Category"
+	categoryProp = DEFAULT_CATEGORY_PROP
 ): Stats {
 	const { start, end } = getMonthBounds(monthDate);
 	return aggregateStats(events, start, end, mode, categoryProp);
@@ -132,7 +133,7 @@ export function aggregateDailyStats(
 	events: CalendarEvent[],
 	dayDate: Date,
 	mode: AggregationMode = "name",
-	categoryProp = "Category"
+	categoryProp = DEFAULT_CATEGORY_PROP
 ): Stats {
 	const { start, end } = getDayBounds(dayDate);
 	return aggregateStats(events, start, end, mode, categoryProp);

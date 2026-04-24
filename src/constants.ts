@@ -105,6 +105,7 @@ export const FULL_COMMAND_IDS = Object.fromEntries(
 
 export const PROPAGATION_DEBOUNCE_MS = 3000;
 
+export const DEFAULT_CATEGORY_PROP = "Category";
 export const DEFAULT_EVENT_COLOR = "hsl(270, 70%, 50%)";
 export const DEFAULT_CONNECTION_COLOR = "#7c3aed";
 export const DEFAULT_CONNECTION_STROKE_WIDTH = 3;

@@ -155,7 +155,7 @@ export function renderIntervalStatsInto(
 		if (token !== renderToken) return;
 		const filteredEvents = includeSkippedEvents ? [...events, ...bundle.eventStore.getSkippedEvents(query)] : events;
 
-		const categoryProp = bundle.settingsStore.currentSettings.categoryProp || "Category";
+		const categoryProp = bundle.settingsStore.currentSettings.categoryProp;
 		const stats = config.aggregateStats(filteredEvents, currentDate, aggregationMode, categoryProp);
 
 		headerLeft.empty();

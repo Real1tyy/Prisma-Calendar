@@ -112,7 +112,7 @@ export abstract class IntervalStatsModal extends StatsModal {
 		}
 
 		const settings = this.bundle.settingsStore.currentSettings;
-		const categoryProp = settings.categoryProp || "Category";
+		const categoryProp = settings.categoryProp;
 		const stats = this.intervalConfig.aggregateStats(
 			filteredEvents,
 			this.currentDate,

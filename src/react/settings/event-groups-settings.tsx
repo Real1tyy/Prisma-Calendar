@@ -79,6 +79,7 @@ export const EventGroupsSettingsReact = memo(function EventGroupsSettingsReact({
 				fields={["excludedRecurringInstanceProps"]}
 				overrides={{ excludedRecurringInstanceProps: EXCLUDED_PROPS_OVERRIDE }}
 			/>
+			<SchemaSection store={settingsStore} shape={shape} heading="Event markers" fields={MARKERS_FIELDS} />
 
 			<SettingHeading name="Name series propagation" />
 			<MutuallyExclusiveToggles store={settingsStore} {...NAME_SERIES_TOGGLES} />
@@ -97,8 +98,6 @@ export const EventGroupsSettingsReact = memo(function EventGroupsSettingsReact({
 				fields={["excludedCategorySeriesProps"]}
 				overrides={{ excludedCategorySeriesProps: EXCLUDED_PROPS_OVERRIDE }}
 			/>
-
-			<SchemaSection store={settingsStore} shape={shape} heading="Event markers" fields={MARKERS_FIELDS} />
 		</>
 	);
 });
