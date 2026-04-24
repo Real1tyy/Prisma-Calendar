@@ -18,13 +18,13 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
 
 Prisma Calendar features a powerful and reliable undo/redo system for every action you take. You can confidently make changes, knowing you can easily reverse them.
 
-## Per-Calendar History
+## Per-Planning-System History
 
-Each calendar has its own independent history. This means:
+Each planning system has its own independent history. This means:
 
--   Actions in one calendar don't affect another's undo history.
--   The system remembers your last 50 actions for each calendar.
--   When you perform a new action, the "redo" history for that calendar is cleared, which is standard behavior in most apps.
+-   Actions in one planning system don't affect another's undo history.
+-   The system remembers your last 50 actions for each planning system.
+-   When you perform a new action, the "redo" history for that planning system is cleared, which is standard behavior in most apps.
 
 ## How to Use
 

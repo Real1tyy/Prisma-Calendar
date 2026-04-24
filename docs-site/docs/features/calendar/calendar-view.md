@@ -2,7 +2,7 @@
 
 import useBaseUrl from "@docusaurus/useBaseUrl";
 
-The calendar view is the main interface for viewing and interacting with your events. It supports multiple view modes, a customizable toolbar, and a range of visual options.
+The Calendar tab is the main scheduling interface for viewing and interacting with your events. It supports multiple view modes, a customizable toolbar, and a range of visual options.
 
 <div style={{"textAlign": "center", "marginBottom": "2em"}}>
 

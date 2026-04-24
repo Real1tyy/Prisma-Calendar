@@ -208,7 +208,7 @@ After adding an account:
 1. Click **"Select calendars"** for the account
 2. Browse available calendars from the server
 3. Check calendars you want to sync
-4. Each account can sync multiple calendars to a single Prisma calendar
+4. Each account can sync multiple calendars to a single Prisma planning system
 
 ### Sync Configuration
 
@@ -387,5 +387,5 @@ When deleting a subscription that has synced events, you'll be prompted to choos
 ## Related Features
 
 - [Event Skipping](../events/event-skipping) - Hide events without deleting
-- [Multiple Calendars](../calendar/multiple-calendars) - Manage separate calendars
+- [Multiple Planning Systems](../calendar/multiple-calendars) - Manage separate planning systems
 - [Notifications](../management/notifications) - Configure event reminders

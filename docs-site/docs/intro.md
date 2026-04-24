@@ -10,17 +10,17 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 
 ![Downloads](https://img.shields.io/github/downloads/Real1tyy/Prisma-Calendar/total?label=Downloads&style=for-the-badge) ![Release](https://img.shields.io/github/v/release/Real1tyy/Prisma-Calendar?label=Latest%20Release&style=for-the-badge) ![Stars](https://img.shields.io/github/stars/Real1tyy/Prisma-Calendar?style=for-the-badge)
 
-**The Ultimate Temporal Visualization Engine for Obsidian.**
+**The Ultimate Flexible Planning System for Obsidian.**
 
-Prisma Calendar is a **schema-agnostic visualization layer** that turns any Obsidian note with a date into a first-class citizen on your timeline. No rigid schemas, no predefined fields — just your data, your rules, your filters, rendered exactly how you need it.
+Prisma Calendar is a **schema-agnostic planning system** that turns any Obsidian note with a date into a first-class citizen on your timeline. No rigid schemas, no predefined fields — just your data, your rules, your filters, rendered exactly how you need it.
 
 It's not just a calendar. It's a way to **see your entire vault through time**.
 
 Every setting is configurable. Every change is reactive. Every action is undoable.
 
-**Four dedicated views — four ways to understand time.** Calendar for scheduling, Timeline for sequencing, Heatmap for patterns, and Gantt for dependencies. Each reveals a different perspective, and together they turn Prisma into a complete temporal visualization engine.
+**Four dedicated views — four ways to understand time.** Calendar for scheduling, Timeline for sequencing, Heatmap for patterns, and Gantt for dependencies. Each reveals a different perspective, and together they turn Prisma into a complete planning system.
 
-Recurring events that generate real notes. Batch operations across dozens of events. Time-based statistics. CalDAV sync. A scriptable API. Prisma Calendar handles the workflows other calendars can't.
+Recurring events that generate real notes. Batch operations across dozens of events. Time-based statistics. CalDAV sync. A scriptable API. Prisma Calendar handles the workflows other planning tools can't.
 
 **[View Full Product Page →](https://matejvavroproductivity.com/tools/prisma-calendar/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=intro&utm_content=product_page)**
 
@@ -38,9 +38,9 @@ Recurring events that generate real notes. Batch operations across dozens of eve
 
 ### The Missing Piece for Your Obsidian Workflow
 
-Other Obsidian calendar plugins give you a basic view. Prisma Calendar gives you **a complete event management platform** — with the depth of a standalone app and the seamless integration only a native plugin can offer.
+Other Obsidian calendar plugins give you a basic view. Prisma Calendar gives you **a complete planning system** — with the depth of a standalone app and the seamless integration only a native plugin can offer.
 
-The core challenge for power users is simple: how do you visualize entirely disparate records — sharing only a timestamp — in a single, cohesive view? Prisma solves this by stepping beyond the definition of a "calendar." It is a visualization layer that takes any data with a time parameter and renders it using your custom rules, properties, and filters. Projects, habits, meetings, tasks, people — if it has a date, Prisma displays it.
+The core challenge for power users is simple: how do you visualize entirely disparate records — sharing only a timestamp — in a single, cohesive view? Prisma solves this by stepping beyond the definition of a "calendar." It is a planning system that takes any data with a time parameter and renders it using your custom rules, properties, and filters. Projects, habits, meetings, tasks, people — if it has a date, Prisma displays it.
 
 Prisma is fundamentally different from any conventional calendar. Tools like Google Calendar lock you into predefined fields that rarely fit complex needs. Platforms like Notion lack the seamless database visualization required for advanced workflows. Prisma breaks free from both.
 
@@ -93,10 +93,10 @@ Quick Links:
 ## Why Prisma Calendar?
 
 ### Configure Literally Everything
-Prisma Calendar adapts to you, not the other way around. Map your own frontmatter properties, define JavaScript-powered [color rules](/features/organization/color-rules), set up advanced [filters](/features/organization/filtering), and customize the calendar appearance down to event text, icons, and density. Manage **multiple independent calendars**, each with their own settings and folder scope. [Learn more →](/features/calendar/multiple-calendars)
+Prisma Calendar adapts to you, not the other way around. Map your own frontmatter properties, define JavaScript-powered [color rules](/features/organization/color-rules), set up advanced [filters](/features/organization/filtering), and customize the appearance down to event text, icons, and density. Manage **multiple independent planning systems**, each with their own settings and folder scope. [Learn more →](/features/calendar/multiple-calendars)
 
 ### Fully Reactive — Changes Propagate Instantly
-There's no "restart Obsidian to apply changes" here. Every setting change, every color rule tweak, every filter adjustment takes effect **immediately**. Edit a note's frontmatter and watch the calendar update in real time. This isn't a static display — it's a live, reactive system.
+There's no "restart Obsidian to apply changes" here. Every setting change, every color rule tweak, every filter adjustment takes effect **immediately**. Edit a note's frontmatter and watch the planning system update in real time. This isn't a static display — it's a live, reactive system.
 
 ### Undo and Redo Everything
 Every action you take — creating, editing, moving, deleting, batch operations — is tracked in a full memento history. Made a mistake? Hit undo. Changed your mind? Redo. You'll see exactly what's being reversed ("Undo Batch Delete", "Undo Move Event") so you're always in control. [Learn more →](/features/management/undo-redo)
@@ -108,7 +108,7 @@ Define a source node with a frequency (daily, weekly, bi-weekly, monthly, or a [
 Select multiple events and delete, duplicate, move, clone, skip, or open them — all at once. Shift entire weeks of events forward or backward. When you're managing a busy schedule, this isn't a nice-to-have — it's essential. [Learn more →](/features/management/batch-operations)
 
 ### Smart Categories with Title Autocomplete
-Define [categories](/features/organization/categories) with color coding, then let Prisma **auto-assign them** based on event names. [Title autocomplete](/features/events/title-autocomplete) suggests matching names as you type, keeping naming consistent and preventing typos. Categories also power event group aggregation, giving you a bird's-eye view of related events across your calendar.
+Define [categories](/features/organization/categories) with color coding, then let Prisma **auto-assign them** based on event names. [Title autocomplete](/features/events/title-autocomplete) suggests matching names as you type, keeping naming consistent and preventing typos. Categories also power event group aggregation, giving you a bird's-eye view of related events across your planning system.
 
 ### Statistics and Time Insights
 Track how you spend your time with visual [statistics](/features/organization/statistics) — pie charts, breakdowns by category, and detailed tables — all filterable by time horizon. See where your hours go across days, weeks, or months. Recurring event series get their own statistics too, so you can track consistency and trends.
@@ -123,7 +123,7 @@ Start and stop a timer directly from any event modal. Track actual time spent on
 Create reusable [event presets](/features/events/event-presets) so you can spin up new events with pre-filled frontmatter in seconds. Pair with [Templater integration](/features/advanced/templater) for even more powerful template-driven workflows.
 
 ### Scriptable via Programmatic API
-Prisma Calendar exposes a [programmatic API](/features/advanced/programmatic-api/overview), so you can create, modify, and query events from scripts, Templater templates, or other plugins. Automate event creation, build custom workflows, and integrate your calendar into your broader Obsidian setup.
+Prisma Calendar exposes a [programmatic API](/features/advanced/programmatic-api/overview), so you can create, modify, and query events from scripts, Templater templates, or other plugins. Automate event creation, build custom workflows, and integrate your planning system into your broader Obsidian setup.
 
 ### CalDAV and ICS Integration
 Sync events from external CalDAV servers (Fastmail, Nextcloud, iCloud, and more) or import/export `.ics` files — compatible with Google Calendar, Microsoft Outlook, and any service that supports the ICS standard. Synced events become real Obsidian notes with full frontmatter. Connect multiple sources to different calendars with configurable auto-sync intervals. [Learn more →](/features/advanced/integrations)
@@ -135,10 +135,10 @@ Switch between Calendar (month/week/day/list), [Timeline](/features/views/timeli
 One-click [shortcut buttons](/features/views/header-actions) for event creation, search, statistics, category highlighting, undo/redo, AI chat, and more — all customizable. Reorder, rename, change icons and colors, or hide actions via the gear button.
 
 ### Capacity Tracking
-See at a glance how full your calendar is. A compact indicator shows today's used vs total hours (e.g., "7h 30m / 11h (68%)") with remaining time and auto-inferred boundaries. [Learn more →](/features/views/capacity-tracking)
+See at a glance how full your schedule is. A compact indicator shows today's used vs total hours (e.g., "7h 30m / 11h (68%)") with remaining time and auto-inferred boundaries. [Learn more →](/features/views/capacity-tracking)
 
 ### Global Event Management
-Browse, search, and manage all events across all your calendars from a single unified interface. Auto-group events by recurring rule, category, or name with the [Event Series Modal](/features/events/event-groups). View series statistics, timelines, and heatmaps from [one place](/features/management/global-events-management).
+Browse, search, and manage all events across all your planning systems from a single unified interface. Auto-group events by recurring rule, category, or name with the [Event Series Modal](/features/events/event-groups). View series statistics, timelines, and heatmaps from [one place](/features/management/global-events-management).
 
 ### What does an event look like?
 
@@ -182,11 +182,11 @@ Prisma Calendar is free and fully-featured out of the box — no account, no tri
 
 ### What you get for free
 
-Tabbed view navigation (Calendar, Timeline, Daily+Stats, Dual Daily), 55+ customizable header actions, up to 3 independent calendars, up to 2 event presets, recurring events (9 types + custom intervals with real note generation), 50-action undo/redo, 10+ batch operations, built-in time tracker, capacity tracking, statistics dashboard, event groups, JavaScript color rules, advanced filtering with saved presets, desktop notifications, holidays (50+ countries), title autocomplete, auto-assign categories, untracked events inbox, ICS import/export, and 60+ hotkeys.
+Tabbed view navigation (Calendar, Timeline, Daily+Stats, Dual Daily), 55+ customizable header actions, up to 3 independent planning systems, up to 2 event presets, recurring events (9 types + custom intervals with real note generation), 50-action undo/redo, 10+ batch operations, built-in time tracker, capacity tracking, statistics dashboard, event groups, JavaScript color rules, advanced filtering with saved presets, desktop notifications, holidays (50+ countries), title autocomplete, auto-assign categories, untracked events inbox, ICS import/export, and 60+ hotkeys.
 
 ### What Pro adds
 
-AI Chat (Claude & GPT), Heatmap View, Dashboard, Gantt View, Bases Calendar View, Prerequisite Connections, CalDAV & ICS URL Sync, Programmatic API, Custom Category Presets, Unlimited Calendars, Unlimited Event Presets, and Priority Support.
+AI Chat (Claude & GPT), Heatmap View, Dashboard, Gantt View, Bases Calendar View, Prerequisite Connections, CalDAV & ICS URL Sync, Programmatic API, Custom Category Presets, Unlimited Planning Systems, Unlimited Event Presets, and Priority Support.
 
 ---
 

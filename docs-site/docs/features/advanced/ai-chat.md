@@ -81,7 +81,7 @@ Ask read-only questions about your calendar. The AI sees your events, statistics
 
 ### Event Manipulation Mode
 
-Describe calendar changes in natural language — delete events, move them to different days, or combine multiple edits in a single prompt. The AI responds with structured operations — creates, edits, and deletes — rendered as preview cards:
+Describe changes in natural language — delete events, move them to different days, or combine multiple edits in a single prompt. The AI responds with structured operations — creates, edits, and deletes — rendered as preview cards:
 
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>

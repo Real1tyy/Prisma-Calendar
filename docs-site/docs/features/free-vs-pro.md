@@ -4,15 +4,15 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
 
 **👉 [Visit the product page](https://matejvavroproductivity.com/tools/prisma-calendar/?utm_source=docs-site&utm_medium=content&utm_content=free-vs-pro-top) to learn more or start a 30-day free trial.**
 
-Prisma Calendar follows a freemium model. The free version is not a demo — it's a fully-featured calendar plugin packed with more capabilities than most standalone calendar apps. Pro adds advanced power-user features for those who need AI assistance, external calendar sync, scripting, and more.
+Prisma follows a freemium model, so all of the core features are completely free. For more connected, advanced workflows, Prisma Pro unlocks calendar synchronization, advanced visualizations, Bases integration for embedding views directly inside notes, and other power-user capabilities built for serious planning inside Obsidian.
 
 ## What's Free
 
-Everything you need for a powerful, production-ready calendar experience ships for free, with no account required:
+Everything you need for a powerful, production-ready planning experience ships for free, with no account required:
 
 - **Tabbed view navigation** — Calendar (Month, Week, Day, List), Timeline, Daily+Stats, and Dual Daily in a persistent tabbed container with CTRL+scroll zoom and density options
-- **55+ header actions** — customizable one-click shortcut buttons for any calendar command, fully reorderable with custom icons and colors
-- **Up to 3 calendars** — each with independent settings, directories, property mappings, and views
+- **55+ header actions** — customizable one-click shortcut buttons for any command, fully reorderable with custom icons and colors
+- **Up to 3 planning systems** — each with independent settings, directories, property mappings, and views
 - **Up to 2 event presets** — quick event creation with pre-filled frontmatter values
 - **Recurring events** — 9 built-in recurrence types + custom intervals (every N days/weeks/months) with real note generation and virtual previews
 - **50-action undo/redo** — full memento history covering creates, edits, deletes, moves, clones, skips, and all batch operations
@@ -27,7 +27,7 @@ Everything you need for a powerful, production-ready calendar experience ships f
 - **Title autocomplete** — ghost text suggestions from categories, presets, and frequent names
 - **Auto-assign categories** — by exact name match or substring match (e.g., "Youtube Analysis" auto-assigns "Youtube")
 - **Event groups** — auto-grouping by recurring rule, category, or name with series statistics and timeline
-- **Untracked events inbox** — drag & drop undated notes onto the calendar with dedicated filtering
+- **Untracked events inbox** — drag & drop undated notes onto the planning system with dedicated filtering
 - **ICS import/export** — manual exchange of `.ics` files with any calendar application
 - **ZettelID naming**, Templater integration, and mobile support
 - **60+ hotkeys** — keyboard shortcuts for navigation, batch operations, and quick actions
@@ -38,7 +38,7 @@ Pro unlocks these additional capabilities on top of everything in the free tier:
 
 | Feature | Description |
 |---------|-------------|
-| [AI Chat](./advanced/ai-chat.md) | Built-in sidebar with Claude and GPT. Query your calendar, create/edit events via natural language, and auto-plan your schedule. |
+| [AI Chat](./advanced/ai-chat.md) | Built-in sidebar with Claude and GPT. Query your planning system, create/edit events via natural language, and auto-plan your schedule. |
 | [Bases Calendar View](./views/bases-calendar-view.md) | Render Prisma Calendar events inside any Obsidian Base as a fully interactive calendar with month/week/day views, drag-and-drop, and context menus. |
 | [Heatmap View](./views/heatmap.md) | GitHub-style contribution heatmap showing event density across months/year with yearly and monthly modes, category-colored gradients, and click-to-inspect details. |
 | [Dashboard](./views/dashboard.md) | Full-page overview of all events with pie charts and sortable tables for recurring events, categories, and name-based series. |
@@ -47,7 +47,7 @@ Pro unlocks these additional capabilities on top of everything in the free tier:
 | [CalDAV & ICS URL Sync](./advanced/integrations.md) | One-way read-only sync from Google Calendar, Apple Calendar, Fastmail, Nextcloud, iCloud, and any CalDAV server or public ICS URL. |
 | [Programmatic API](./advanced/programmatic-api/overview.md) | `window.PrismaCalendar` and URL scheme for full CRUD, batch ops, statistics, settings, and navigation from external scripts. |
 | [Custom Category Assignment Presets](./organization/categories.md) | Map comma-separated event names to categories. Events auto-match on creation. |
-| Unlimited Calendars | Remove the 3-calendar limit — create as many calendars as you need. |
+| Unlimited Planning Systems | Remove the 3-system limit — create as many planning systems as you need. |
 | Unlimited Event Presets | Remove the 2-preset limit — create as many presets as you need. |
 | Priority Support | First in line for help and feature requests. |
 
@@ -55,7 +55,7 @@ Pro unlocks these additional capabilities on top of everything in the free tier:
 
 | | Free | Pro |
 |---|---|---|
-| Calendars | Up to 3 | Unlimited |
+| Planning Systems | Up to 3 | Unlimited |
 | Event presets | Up to 2 | Unlimited |
 | ICS import/export | Included | Included |
 | AI Chat | — | Included |
@@ -94,7 +94,7 @@ Once verified, the license section in General settings shows:
 
 ### What happens to my data if I downgrade?
 
-Nothing is deleted. If you created 5 calendars or 4 presets while on Pro, they all remain. You can still delete calendars and presets, but you can't create new ones beyond the free-tier limits until you re-subscribe.
+Nothing is deleted. If you created 5 planning systems or 4 presets while on Pro, they all remain. You can still delete planning systems and presets, but you can't create new ones beyond the free-tier limits until you re-subscribe.
 
 ### Does Pro work offline?
 

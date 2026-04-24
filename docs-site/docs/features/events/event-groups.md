@@ -36,7 +36,7 @@ Events linked by a shared `RRuleID` are automatically part of a recurring series
 
 ### 2. By Category (Automatic)
 
-Events sharing the same category property value are grouped together. If an event has multiple categories (YAML array), it appears in each category's group. This uses the same Category property configured in your calendar settings.
+Events sharing the same category property value are grouped together. If an event has multiple categories (YAML array), it appears in each category's group. This uses the same Category property configured in your planning system settings.
 
 ### 3. By Name (Automatic)
 

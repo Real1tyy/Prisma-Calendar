@@ -6,8 +6,8 @@ Prisma Calendar provides a comprehensive set of features for managing calendar e
 
 ## Core Capabilities
 
-### [Multiple Isolated Calendars](./calendar/multiple-calendars)
-Up to 10 separate calendars with independent configurations, dedicated folders, custom hotkeys, and clone/duplicate support.
+### [Multiple Isolated Planning Systems](./calendar/multiple-calendars)
+Up to 10 separate planning systems with independent configurations, dedicated folders, custom hotkeys, and clone/duplicate support.
 
 ### [Folder-Based Event Scanning](./calendar/folder-scanning)
 Automatic indexing of notes with frontmatter, recursive subfolder scanning, real-time updates, and date property normalization for external tool compatibility (Dataview, Bases).

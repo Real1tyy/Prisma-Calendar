@@ -63,16 +63,16 @@ Prisma Calendar is designed to handle large vaults without issues. If you're exp
 
 ---
 
-## 📆 Multiple Calendars
+## 📆 Multiple Planning Systems
 
 <details>
-<summary>Calendar stuck on "Indexing calendar events..." after duplicating</summary>
+<summary>Planning system stuck on "Indexing calendar events..." after duplicating</summary>
 
-**Problem**: After duplicating a calendar or creating a second calendar that points to the same directory, one or both calendars hang on "Indexing calendar events..." and never complete.
+**Problem**: After duplicating a planning system or creating a second one that points to the same directory, one or both planning systems hang on "Indexing calendar events..." and never complete.
 
-**Root Cause**: When multiple calendars share the same directory, they share the same underlying data layer. The initialization flow when duplicating calendars can cause synchronization issues where the shared layer doesn't properly notify all calendar views.
+**Root Cause**: When multiple planning systems share the same directory, they share the same underlying data layer. The initialization flow when duplicating planning systems can cause synchronization issues where the shared layer doesn't properly notify all views.
 
-**Solution**: Reload the plugin after creating/duplicating calendars:
+**Solution**: Reload the plugin after creating/duplicating planning systems:
 
 1. **Option 1**: Disable and re-enable the plugin
    - Go to Settings → Community Plugins
@@ -80,9 +80,9 @@ Prisma Calendar is designed to handle large vaults without issues. If you're exp
 
 2. **Option 2**: Restart Obsidian
 
-**Prevention**: If you frequently create multiple calendars for the same directory, consider:
-- Creating all calendars at once, then reloading the plugin once
-- Using different directories for different calendars if you don't need them to share events
+**Prevention**: If you frequently create multiple planning systems for the same directory, consider:
+- Creating all planning systems at once, then reloading the plugin once
+- Using different directories for different planning systems if you don't need them to share events
 
 </details>
 
