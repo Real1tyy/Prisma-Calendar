@@ -99,10 +99,11 @@ test.describe("undo/redo: batch operations (UI-driven)", () => {
 		const events = await calendar.seedEvents(2, { prefix: "Batch" });
 		const before = listEventFiles(calendar.vaultDir).length;
 
+		// Month view ensures both original and +7-day clone are visible
+		// regardless of which day of the week the suite runs on.
+		await calendar.switchMode("month");
+
 		await batchActionRoundTrip(calendar, events, "clone-next", {
-			// Clones keep the original title — each should render twice (original
-			// on day+1, clone on day+8). Per-title is stable; aggregate counts
-			// drift because FC month-view renders overflow clones.
 			mutated: async () => {
 				await calendar.expectEventCount(before + events.length);
 				await expectAllTitleCount(calendar.page, events, 2);
@@ -115,6 +116,7 @@ test.describe("undo/redo: batch operations (UI-driven)", () => {
 	});
 
 	test("batch move next week: every file's Start Date shifts → undo reverts all", async ({ calendar }) => {
+		await calendar.switchMode("month");
 		const events = await calendar.seedEvents(2, { prefix: "Batch" });
 		const originalStarts = events.map((e) => readEventFrontmatter(calendar.vaultDir, e.path)["Start Date"]);
 
@@ -136,6 +138,7 @@ test.describe("undo/redo: batch operations (UI-driven)", () => {
 	});
 
 	test("single undo reverses the whole batch, not just the last event in it", async ({ calendar }) => {
+		await calendar.switchMode("month");
 		const events = await calendar.seedEvents(3, { prefix: "Batch" });
 		const before = listEventFiles(calendar.vaultDir).length;
 

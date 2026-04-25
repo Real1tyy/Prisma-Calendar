@@ -18,14 +18,12 @@ test.describe("recurring rrule change", () => {
 	test("switching weekly → daily updates the source's RRule and keeps instances valid", async ({ obsidian }) => {
 		await openCalendarReady(obsidian.page);
 
-		const tomorrow = new Date();
-		tomorrow.setDate(tomorrow.getDate() + 1);
-		const tomorrowStr = formatLocalDate(tomorrow);
+		const todayStr = formatLocalDate(new Date());
 
 		const sourcePath = await createEventViaModal(obsidian, {
 			title: "Pattern Shift",
-			start: `${tomorrowStr}T09:00`,
-			end: `${tomorrowStr}T09:30`,
+			start: `${todayStr}T09:00`,
+			end: `${todayStr}T09:30`,
 			recurring: {
 				rruleType: "weekly",
 				weekdays: ["monday", "wednesday", "friday"],

@@ -6,7 +6,14 @@ import type { Page } from "@playwright/test";
 import { expect, test } from "../../fixtures/electron";
 import { refreshCalendar, seedEvent, setFrontmatterField, waitForEventCount } from "../../fixtures/seed-events";
 import { sel, TID } from "../../fixtures/testids";
-import { createEventViaModal, formatLocalDate, openCalendarReady, switchToMonthView } from "./events-helpers";
+import {
+	createEventViaModal,
+	formatLocalDate,
+	monthsFromTodayTo,
+	navigateCalendar,
+	openCalendarReady,
+	switchToMonthView,
+} from "./events-helpers";
 import { addDays, collectInstanceDates, toYMD } from "./robustness-helpers";
 
 // End-to-end lifecycle of recurring events — physical instance files on disk
@@ -50,7 +57,9 @@ test.describe("recurring events — physical vs virtual instances", () => {
 		await switchToMonthView(obsidian.page);
 
 		const today = todayMidnight();
-		const anchor = addDays(today, 2);
+		// Anchor at the 5th of next month so source, +7, and +14 all fall within
+		// one month view — avoids flakes near month boundaries.
+		const anchor = new Date(today.getFullYear(), today.getMonth() + 1, 5);
 		const anchorStr = formatLocalDate(anchor);
 		// Weekly, futureInstancesCount=2 (default). `getInitialOccurrenceDate`
 		// skips source day, so the two physicals land at source+7 and source+14.
@@ -66,6 +75,9 @@ test.describe("recurring events — physical vs virtual instances", () => {
 		await expect
 			.poll(() => collectInstanceDates(obsidian.vaultDir, "Weekly Anchor"), { timeout: INSTANCE_TIMEOUT_MS })
 			.toEqual(expectedDates);
+
+		// Navigate to anchor month so all 3 blocks (source, +7, +14) are visible.
+		await navigateCalendar(obsidian.page, monthsFromTodayTo(anchorStr));
 
 		// Source + 2 physicals = 3 blocks with a data-event-file-path in the grid.
 		await expect

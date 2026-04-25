@@ -1,7 +1,7 @@
 import { expectFrontmatter, readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { expect, test } from "../../fixtures/electron";
-import { formatLocalDate, listEventFiles, monthsFromTodayTo, navigateCalendar } from "./events-helpers";
+import { formatLocalDate, listEventFiles } from "./events-helpers";
 
 const INSTANCE_FILE_TIMEOUT_MS = 10_000;
 const DEFAULT_FUTURE_INSTANCES = 2;
@@ -28,14 +28,12 @@ function collectInstanceFiles(vaultDir: string, title: string): string[] {
 
 test.describe("recurring events", () => {
 	test("weekly Mon/Wed/Fri generates physical instances on the right weekdays", async ({ calendar }) => {
-		const tomorrow = new Date();
-		tomorrow.setDate(tomorrow.getDate() + 1);
-		const tomorrowStr = formatLocalDate(tomorrow);
+		const todayStr = formatLocalDate(new Date());
 
 		const evt = await calendar.createEvent({
 			title: "Weekly Review",
-			start: `${tomorrowStr}T09:00`,
-			end: `${tomorrowStr}T10:00`,
+			start: `${todayStr}T09:00`,
+			end: `${todayStr}T10:00`,
 			recurring: {
 				rruleType: "weekly",
 				weekdays: ["monday", "wednesday", "friday"],
@@ -68,7 +66,7 @@ test.describe("recurring events", () => {
 	});
 
 	test("custom interval every 2 days generates instances 2 days apart", async ({ calendar }) => {
-		const date = "2026-05-10";
+		const date = formatLocalDate(new Date());
 		const evt = await calendar.createEvent({
 			title: "Workout",
 			start: `${date}T07:00`,
@@ -102,18 +100,15 @@ test.describe("recurring events", () => {
 			);
 		}
 
-		await navigateCalendar(calendar.page, monthsFromTodayTo(date));
 		await evt.expectVisible();
 	});
 
 	test("Skip toggled on a physical instance hides it from render", async ({ calendar }) => {
-		const tomorrow = new Date();
-		tomorrow.setDate(tomorrow.getDate() + 1);
-		const instanceDate = formatLocalDate(tomorrow);
+		const todayStr = formatLocalDate(new Date());
 
 		const evt = await calendar.seedOnDisk("Skipped Instance", {
-			"Start Date": `${instanceDate}T09:00`,
-			"End Date": `${instanceDate}T10:00`,
+			"Start Date": `${todayStr}T09:00`,
+			"End Date": `${todayStr}T10:00`,
 			Skip: true,
 		});
 

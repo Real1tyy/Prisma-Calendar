@@ -269,7 +269,7 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 		async seedEvents(count, options = {}) {
 			const prefix = options.prefix ?? "Event";
 			const startHour = options.startHour ?? 8;
-			const days = options.daysFromToday ?? 1;
+			const days = options.daysFromToday ?? 0;
 			const out: EventHandle[] = [];
 			for (let i = 0; i < count; i++) {
 				const handle = await createEvent({

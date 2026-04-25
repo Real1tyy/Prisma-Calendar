@@ -3,7 +3,13 @@ import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { todayStamp } from "../../fixtures/dates";
 import { expect, test } from "../../fixtures/electron";
-import { seedEvent, type SeedEventInput } from "../../fixtures/seed-events";
+import {
+	getEventCount,
+	refreshCalendar,
+	seedEvent,
+	type SeedEventInput,
+	waitForEventCount,
+} from "../../fixtures/seed-events";
 import { listEventFiles, openCalendarReady, rightClickEventMenu } from "./events-helpers";
 
 // Round 3 — Every move / clone / fillTime context-menu item. Each test seeds
@@ -62,8 +68,15 @@ interface SeedHandle {
 }
 
 async function seedAndOpen(obsidian: Obsidian, seed: SeedEventInput): Promise<SeedHandle> {
+	const baseline = await getEventCount(obsidian.page);
 	seedEvent(obsidian.vaultDir, seed);
 	await openCalendarReady(obsidian.page);
+	await refreshCalendar(obsidian.page);
+	await waitForEventCount(obsidian.page, baseline + 1);
+	// Second refresh forces FullCalendar to re-render with the newly indexed event —
+	// the first refresh seeds the indexer, but FC may have already painted its
+	// initial frame before the indexer finished processing the new file.
+	await refreshCalendar(obsidian.page);
 	await obsidian.page.locator(".fc-event", { hasText: seed.title }).first().waitFor({ state: "visible" });
 	await waitForSeed(obsidian.vaultDir, seed.title);
 	const originalStart = seed.startDate ?? seed.date ?? "";
@@ -164,8 +177,8 @@ test.describe("event context menu — move/clone/fillTime breadth", () => {
 	});
 
 	test("fillStartTimeNow lands between wall-clock-before and wall-clock-after", async ({ obsidian }) => {
-		const startISO = todayStamp(1, 0);
-		const endISO = todayStamp(2, 0);
+		const startISO = todayStamp(9, 0);
+		const endISO = todayStamp(10, 0);
 		const { readFm } = await seedAndOpen(obsidian, { title: "Fill Start Now", startDate: startISO, endDate: endISO });
 
 		const before = Date.now();
@@ -181,8 +194,8 @@ test.describe("event context menu — move/clone/fillTime breadth", () => {
 	});
 
 	test("fillEndTimeNow lands between wall-clock-before and wall-clock-after", async ({ obsidian }) => {
-		const startISO = todayStamp(1, 0);
-		const endISO = todayStamp(2, 0);
+		const startISO = todayStamp(9, 0);
+		const endISO = todayStamp(10, 0);
 		const { readFm } = await seedAndOpen(obsidian, { title: "Fill End Now", startDate: startISO, endDate: endISO });
 
 		const before = Date.now();

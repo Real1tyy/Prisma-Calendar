@@ -325,7 +325,8 @@ async function runWithObsidianHandle(
 	// back to defaults — plugin state isn't affected. Not a plugin bug, so
 	// filter it out; every other "failed to read JSON" still fails loudly.
 	const isTransientAppJsonReadError = (text: string): boolean =>
-		text.includes("failed to read JSON") && text.includes(".obsidian/app.json");
+		text.includes("failed to read JSON") &&
+		(text.includes(".obsidian/app.json") || text.includes(".obsidian/community-plugins.json"));
 	// Resilience specs deliberately induce broken on-disk state (corrupt
 	// data.json, unreadable files) to prove the plugin recovers. Those flows
 	// DO legitimately emit console.errors from Obsidian's own JSON reader /

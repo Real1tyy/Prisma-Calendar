@@ -32,7 +32,7 @@ test.describe("settings: calendar CRUD", () => {
 		expect(calendars).toHaveLength(2);
 		expect(calendars[0].id).toBe("default");
 		expect(calendars[1].id).not.toBe("default");
-		expect(calendars[1].name).toMatch(/Calendar\s*2/);
+		expect(calendars[1].name).toMatch(/Planning System\s*2/);
 	});
 
 	test("Clone current duplicates every setting except id/name", async ({ obsidian }) => {

@@ -1,11 +1,11 @@
 import { expectFrontmatter, readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { expect, test } from "../../fixtures/electron";
-import { monthsFromTodayTo, navigateCalendar } from "./events-helpers";
+import { formatLocalDate } from "./events-helpers";
 
 test.describe("create event — all-day", () => {
 	test("writes Date + All Day, no timed datetime values, renders block", async ({ calendar }) => {
-		const date = "2026-06-01";
+		const date = formatLocalDate(new Date());
 		const evt = await calendar.createEvent({ title: "Project Planning", allDay: true, date });
 		expect(evt.path).toMatch(/^Events\/Project Planning.*\.md$/);
 
@@ -15,7 +15,7 @@ test.describe("create event — all-day", () => {
 		expect(fm["Start Date"] || "").toBe("");
 		expect(fm["End Date"] || "").toBe("");
 
-		await navigateCalendar(calendar.page, monthsFromTodayTo(date));
+		await calendar.switchMode("month");
 		await evt.expectVisible();
 	});
 });

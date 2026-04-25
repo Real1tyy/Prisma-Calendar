@@ -48,8 +48,11 @@ test.describe("multi-color across views", () => {
 			})
 			.toContain("linear-gradient");
 
-		const dots = tile.locator(".prisma-event-color-dots .prisma-day-color-dot");
-		await expect(dots).toHaveCount(1);
+		await expect
+			.poll(() => tile.locator(".prisma-event-color-dots .prisma-day-color-dot").count(), {
+				message: "expected 1 overflow color dot on the event tile",
+			})
+			.toBe(1);
 	});
 
 	test("gantt bars show gradient when event matches multiple color rules", async ({ calendar }) => {
@@ -79,8 +82,11 @@ test.describe("multi-color across views", () => {
 		const upstreamBar = ganttBarLocator(calendar.page, "Upstream Multi");
 		await expect(upstreamBar).toBeVisible();
 
-		const bgImage = await upstreamBar.evaluate((el) => (el as HTMLElement).style.backgroundImage);
-		expect(bgImage).toContain("linear-gradient");
+		await expect
+			.poll(() => upstreamBar.evaluate((el) => (el as HTMLElement).style.backgroundImage), {
+				message: "expected gradient on gantt bar",
+			})
+			.toContain("linear-gradient");
 	});
 
 	test("timeline items show gradient when event matches multiple color rules", async ({ calendar }) => {
