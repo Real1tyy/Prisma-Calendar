@@ -25,7 +25,7 @@ export function getEventDuration(event: CalendarEvent): number {
 	// the end date (e.g. start 23:00, end 01:00 same day).
 	let duration = Math.max(0, end.getTime() - start.getTime());
 
-	const breakMinutes = event.metadata?.breakMinutes;
+	const breakMinutes = event.metadata.breakMinutes;
 	if (typeof breakMinutes === "number" && breakMinutes > 0) {
 		const breakMs = breakMinutes * 60 * 1000;
 		duration = Math.max(0, duration - breakMs);

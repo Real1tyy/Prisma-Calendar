@@ -191,7 +191,7 @@ const shiftISO = (iso: unknown, duration?: DurationLike) => {
 		return shifted.toISODate();
 	}
 	const bare = shifted.toISO({ suppressMilliseconds: true, includeOffset: false });
-	return iso.endsWith("Z") ? ensureISOSuffix(bare ?? "") : bare;
+	return iso.endsWith("Z") ? ensureISOSuffix(bare) : bare;
 };
 
 export const applyStartEndOffsets = (
@@ -470,7 +470,7 @@ export const getAllFrontmatterProperties = (
 				return null;
 			}
 		})
-		.filter((fm): fm is Frontmatter => fm !== null && fm !== undefined);
+		.filter((fm): fm is Frontmatter => fm !== null);
 
 	if (allEventFrontmatters.length === 0) return new Map();
 

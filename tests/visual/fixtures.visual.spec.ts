@@ -18,7 +18,7 @@ if (fixtures.length === 0) {
 		test(`visual: ${fixture}`, async ({ page }) => {
 			await page.goto(`file://${join(FIXTURES_DIR, fixture)}`);
 			await page.waitForLoadState("networkidle");
-			await page.evaluate(() => document.fonts?.ready);
+			await page.evaluate(() => document.fonts.ready);
 			await expect(page).toHaveScreenshot(`${fixture}.png`, { fullPage: true });
 		});
 	}

@@ -53,15 +53,15 @@ export const UntrackedEventSchema = BaseEventSchema.extend({
 	meta: z.record(z.string(), z.unknown()),
 });
 
-const CalendarEventSchema = z.discriminatedUnion("type", [TimedEventSchema, AllDayEventSchema]);
+const _CalendarEventSchema = z.discriminatedUnion("type", [TimedEventSchema, AllDayEventSchema]);
 
-const ParsedEventSchema = z.discriminatedUnion("type", [TimedEventSchema, AllDayEventSchema, UntrackedEventSchema]);
+const _ParsedEventSchema = z.discriminatedUnion("type", [TimedEventSchema, AllDayEventSchema, UntrackedEventSchema]);
 
 export type TimedEvent = z.infer<typeof TimedEventSchema>;
 export type AllDayEvent = z.infer<typeof AllDayEventSchema>;
 export type UntrackedEvent = z.infer<typeof UntrackedEventSchema>;
-export type CalendarEvent = z.infer<typeof CalendarEventSchema>;
-export type ParsedEvent = z.infer<typeof ParsedEventSchema>;
+export type CalendarEvent = z.infer<typeof _CalendarEventSchema>;
+export type ParsedEvent = z.infer<typeof _ParsedEventSchema>;
 
 export function eventDefaults(): {
 	virtualKind: "none";
@@ -82,8 +82,8 @@ export function isAllDayEvent(event: ParsedEvent): event is AllDayEvent {
 
 // ─── Event Classification ────────────────────────────────────────────
 
-const EventKindSchema = z.enum(["normal", "source", "physical", "virtual", "manual", "holiday"]);
-export type EventKind = z.infer<typeof EventKindSchema>;
+const _EventKindSchema = z.enum(["normal", "source", "physical", "virtual", "manual", "holiday"]);
+export type EventKind = z.infer<typeof _EventKindSchema>;
 
 // ─── FullCalendar Adapter Types ──────────────────────────────────────
 

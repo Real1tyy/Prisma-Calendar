@@ -199,7 +199,7 @@ const FirstDayOfWeekField = memo(function FirstDayOfWeekField({ settingsStore }:
 	);
 	return (
 		<SettingItem name="First day of week" description="Which day should be the first day of the week in calendar views">
-			<Dropdown value={String(binding.value ?? 0)} options={FIRST_DAY_STRING_OPTIONS} onChange={handleChange} />
+			<Dropdown value={String(binding.value)} options={FIRST_DAY_STRING_OPTIONS} onChange={handleChange} />
 		</SettingItem>
 	);
 });

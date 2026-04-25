@@ -67,14 +67,14 @@ export function applyRecurringFieldsToFrontmatter(
 			delete fm[settings.rruleSpecProp];
 		}
 
-		const untilDate = input.untilDate?.trim();
+		const untilDate = input.untilDate.trim();
 		if (untilDate) {
 			fm[settings.rruleUntilProp] = untilDate;
 		} else {
 			delete fm[settings.rruleUntilProp];
 		}
 
-		const futureCount = PositiveInt.parse(input.futureInstancesCount ?? "");
+		const futureCount = PositiveInt.parse(input.futureInstancesCount);
 		if (futureCount !== undefined) {
 			fm[settings.futureInstancesCountProp] = futureCount;
 		} else {

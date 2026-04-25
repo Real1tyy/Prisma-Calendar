@@ -34,6 +34,7 @@ describe("EventEditModal - Custom Properties", () => {
 					rruleIdProp: "RRuleID",
 					sourceProp: "Source",
 					categoryProp: "Category",
+					categoryAssignmentPresets: [],
 				},
 			},
 			categoryTracker: {

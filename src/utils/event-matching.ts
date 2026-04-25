@@ -47,9 +47,7 @@ export function getSourceEventInfoFromVirtual(
 		result.end = sourceEvent.end;
 	}
 
-	if (sourceEvent.meta) {
-		result.extendedProps.frontmatterDisplayData = sourceEvent.meta;
-	}
+	result.extendedProps.frontmatterDisplayData = sourceEvent.meta;
 
 	return result;
 }
@@ -113,7 +111,7 @@ export const autoAssignCategories = (
 
 	// Custom category assignment presets take precedence (Pro only).
 	// When any preset matches, skip the name/substring category matching below.
-	if (isProEnabled && settings.categoryAssignmentPresets && settings.categoryAssignmentPresets.length > 0) {
+	if (isProEnabled && settings.categoryAssignmentPresets.length > 0) {
 		const useSubstring = settings.autoAssignCategoryByIncludes;
 		let presetMatched = false;
 		for (const preset of settings.categoryAssignmentPresets) {

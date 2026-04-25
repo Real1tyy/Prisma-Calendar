@@ -1,7 +1,6 @@
 import { cls, showSchemaModal } from "@real1ty-obsidian-plugins";
 import { type App, Notice } from "obsidian";
 
-import { CALDAV_DEFAULTS } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { CalDAVClientService } from "../../../core/integrations/caldav";
 import type CustomCalendarPlugin from "../../../main";
@@ -34,9 +33,9 @@ export function showEditCalDAVAccountModal(
 			data: {
 				name: account.name,
 				enabled: account.enabled,
-				syncIntervalMinutes: account.syncIntervalMinutes ?? CALDAV_DEFAULTS.SYNC_INTERVAL_MINUTES,
-				timezone: account.timezone ?? "UTC",
-				icon: account.icon ?? "",
+				syncIntervalMinutes: account.syncIntervalMinutes,
+				timezone: account.timezone,
+				icon: account.icon,
 			},
 		},
 		extraFields: (el) => {

@@ -92,15 +92,15 @@ function mapEventBase(event: CalendarEvent): AIEventSummary {
 		summary.end = event.end;
 	}
 
-	if (event.metadata?.categories && event.metadata.categories.length > 0) {
+	if (event.metadata.categories && event.metadata.categories.length > 0) {
 		summary.categories = event.metadata.categories;
 	}
 
-	if (event.metadata?.location) {
+	if (event.metadata.location) {
 		summary.location = event.metadata.location;
 	}
 
-	if (event.metadata?.status) {
+	if (event.metadata.status) {
 		summary.status = event.metadata.status;
 	}
 

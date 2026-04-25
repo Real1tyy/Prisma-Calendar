@@ -39,8 +39,8 @@ export class BatchSelectionManager {
 	// ─── Selection Mode ───────────────────────────────────────────
 
 	toggleSelectionMode(): void {
-		const currentView = this.calendar?.view?.type;
-		if (currentView?.includes("list")) {
+		const currentView = this.calendar.view.type;
+		if (currentView.includes("list")) {
 			new Notice("Batch selection is not available in list view");
 			if (this.isSelectionMode) {
 				this.isSelectionMode = false; // Ensure we exit if already in

@@ -427,7 +427,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			eventDragStart: (info) => {
 				this.dragNavigatedInterval = false;
 				this.setupDragEdgeScrolling();
-				const filePath = info.event.extendedProps?.["filePath"];
+				const filePath = info.event.extendedProps["filePath"];
 				this.isDraggingCalendarEvent =
 					isFileBackedEvent(info.event) && typeof filePath === "string" && filePath.length > 0;
 				this.draggingCalendarEventFilePath = this.isDraggingCalendarEvent ? filePath : null;
@@ -824,7 +824,6 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 	private stampToolbarTestIds(opts: { clearStale?: boolean } = {}): void {
 		const root = this.container;
-		if (!root) return;
 		// FullCalendar v6 recycles button DOM elements across `setOption("headerToolbar")`
 		// calls and rewrites their `fc-<name>-button` class. A button that used to be
 		// `.fc-filteredEvents-button` can become `.fc-batchCounter-button` on the next
@@ -1156,8 +1155,6 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private applyMobileControlsCollapsedState(): void {
-		if (!this.container) return;
-
 		const shouldCollapse = this.isMobileView() && this.mobileControlsCollapsed;
 		this.container.classList.toggle(cls("mobile-controls-collapsed"), shouldCollapse);
 		this.updateMobileControlsToggleButtonElement();
@@ -1165,7 +1162,6 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private updateMobileControlsToggleButtonElement(): void {
-		if (!this.container) return;
 		const btn = this.container.querySelector(".fc-mobileControls-button");
 		if (!(btn instanceof HTMLElement)) return;
 
@@ -1199,8 +1195,6 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private updateStickyOffsets(): void {
-		if (!this.container) return;
-
 		const toolbar = this.container.querySelector(".fc-header-toolbar.fc-toolbar");
 		const toolbarEl = toolbar instanceof HTMLElement ? toolbar : null;
 		const toolbarRect = toolbarEl?.getBoundingClientRect();
@@ -1242,7 +1236,6 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private updateButtonElement(selector: string, text: string, isVisible: boolean, tooltip?: string): void {
-		if (!this.container) return;
 		const btn = this.container.querySelector(selector);
 		if (!(btn instanceof HTMLElement)) {
 			return;
@@ -1267,10 +1260,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private cleanupEventCountButtons(): void {
-		if (!this.container) return;
-
 		const cleanupButton = (selector: string) => {
-			const btn = this.container?.querySelector(selector);
+			const btn = this.container.querySelector(selector);
 			if (btn instanceof HTMLElement) {
 				btn.textContent = "";
 				btn.title = "";
@@ -1326,7 +1317,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private async refreshEvents(): Promise<void> {
-		if (!this.calendar || !this.isIndexingComplete || !this.calendar.view) {
+		if (!this.calendar || !this.isIndexingComplete) {
 			this.releaseRefreshLock();
 			return;
 		}
@@ -1423,9 +1414,9 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			}
 			colorSet.add(primaryColor);
 
-			const folder = event.meta?.["folder"];
+			const folder = event.meta["folder"];
 			const folderStr = typeof folder === "string" ? folder : "";
-			const meta = event.meta ?? {};
+			const meta = event.meta;
 
 			return {
 				id: event.id,
@@ -1551,11 +1542,11 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private getEventColor(event: Pick<CalendarEvent, "meta">): string {
-		return resolveEventColor(event.meta ?? {}, this.bundle, this.colorEvaluator);
+		return resolveEventColor(event.meta, this.bundle, this.colorEvaluator);
 	}
 
 	private getAllEventColors(event: Pick<CalendarEvent, "meta">): string[] {
-		return resolveAllEventColors(event.meta ?? {}, this.bundle, this.colorEvaluator);
+		return resolveAllEventColors(event.meta, this.bundle, this.colorEvaluator);
 	}
 
 	private handleEventMount(info: EventMountInfo): void {
@@ -1577,9 +1568,9 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.cachedTextColorRgb = textColorCache.rgb;
 		this.cachedTextColorSource = textColorCache.source;
 
-		const filePath = event.extendedProps?.["filePath"];
+		const filePath = event.extendedProps["filePath"];
 		if (filePath && isFileBackedEvent(event)) {
-			attachLazyNotePreview(element, filePath as string, this.app);
+			attachLazyNotePreview(element, filePath, this.app);
 		}
 	}
 
@@ -1587,7 +1578,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		if (!this.calendar) return;
 
 		const settings = this.bundle.settingsStore.currentSettings;
-		const viewType = this.calendar.view?.type;
+		const viewType = this.calendar.view.type;
 		const shouldRender = settings.showColorDots && (viewType === "dayGridMonth" || viewType === "multiMonthYear");
 
 		// Build a snapshot string from the index to detect changes cheaply
@@ -1781,7 +1772,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const event = this.lastFocusedEventInfo;
 
 		const eventInfo =
-			event.extendedProps?.virtualKind === "recurring"
+			event.extendedProps.virtualKind === "recurring"
 				? getSourceEventInfoFromVirtual(event, this.bundle.eventStore)
 				: {
 						title: event.title,
@@ -1851,7 +1842,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			return;
 		}
 
-		const filePath = event.extendedProps?.filePath;
+		const filePath = event.extendedProps.filePath;
 		if (!filePath || typeof filePath !== "string") {
 			return;
 		}
@@ -1964,8 +1955,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const x = e.clientX;
 		const y = e.clientY;
 
-		const buttonEl = this.container?.querySelector(`.${cls("untracked-dropdown-button")}`);
-		const dropdownEl = this.container?.querySelector(`.${cls("untracked-dropdown")}`);
+		const buttonEl = this.container.querySelector(`.${cls("untracked-dropdown-button")}`);
+		const dropdownEl = this.container.querySelector(`.${cls("untracked-dropdown")}`);
 
 		const hitByRect = isPointInsideElement(x, y, buttonEl) || isPointInsideElement(x, y, dropdownEl);
 
@@ -2031,7 +2022,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private setupDragEdgeScrolling(): void {
-		if (!this.calendar || !this.container) return;
+		if (!this.calendar) return;
 
 		const viewType = this.calendar.view.type;
 		if (viewType === "dayGridMonth" || viewType === "listWeek" || viewType === "multiMonthYear") {
@@ -2042,7 +2033,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const scrollDelay = this.bundle.settingsStore.currentSettings.dragEdgeScrollDelayMs;
 
 		this.dragEdgeScrollListener = (e: MouseEvent) => {
-			if (!this.calendar || !this.container) return;
+			if (!this.calendar) return;
 
 			const rect = this.container.getBoundingClientRect();
 			const mouseX = e.clientX;
@@ -2262,8 +2253,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			async () => {
 				if (!this.calendar) throw new Error("Calendar not initialized");
 
-				const view = this.calendar.view;
-				if (!view) throw new Error("Calendar view not available");
+				const { view } = this.calendar;
 
 				const start = toLocalISOString(view.activeStart);
 				const end = toLocalISOString(view.activeEnd);
@@ -2334,7 +2324,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			},
 			() => {
 				const currentDate = date || this.calendar?.getDate() || new Date();
-				const viewType = this.calendar?.view?.type;
+				const viewType = this.calendar?.view.type;
 				return new DailyStatsModal(this.app, this.bundle, currentDate, viewType);
 			}
 		);
@@ -2432,7 +2422,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		if (!this.calendar) return;
 		const matchingIds = this.calendar
 			.getEvents()
-			.filter((event) => event.extendedProps?.["filePath"] === filePath)
+			.filter((event) => event.extendedProps["filePath"] === filePath)
 			.map((event) => event.id);
 
 		for (const id of matchingIds) {
@@ -2631,8 +2621,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const settings = this.bundle.settingsStore.currentSettings;
 		if (!settings.highlightUpcomingEvent) return result;
 
-		const view = this.calendar.view;
-		if (!view) return result;
+		const { view } = this.calendar;
 
 		const now = new Date();
 		const viewStart = view.activeStart;

@@ -48,7 +48,7 @@ export class EventCreateModal extends BaseEventModal {
 		const settings = this.bundle.settingsStore.currentSettings;
 
 		if (settings.defaultPresetId) {
-			const presets = settings.eventPresets || [];
+			const presets = settings.eventPresets;
 			const defaultPreset = presets.find((p) => p.id === settings.defaultPresetId);
 
 			if (defaultPreset) {

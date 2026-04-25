@@ -115,7 +115,7 @@ export function calculateTargetInstanceCount(
 	const { type, weekdays } = rrules;
 
 	if (isWeekdaySupported(type)) {
-		return (weekdays?.length || 1) * intervals;
+		return (weekdays.length || 1) * intervals;
 	}
 	return intervals;
 }
@@ -143,7 +143,7 @@ export function findFirstValidStartDate(rrules: RRuleFrontmatter): DateTime {
 
 	// For weekly-based types, the start date might not match the weekday rule.
 	// We must find the first date that IS a valid weekday on or after the start time.
-	if (isWeekdaySupported(rrules.type) && rrules.weekdays?.length) {
+	if (isWeekdaySupported(rrules.type) && rrules.weekdays.length) {
 		// Use the iterator to find the true first occurrence.
 		const iterator = iterateOccurrencesInRange(
 			startDateTime,

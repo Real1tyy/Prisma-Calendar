@@ -357,7 +357,7 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 				wrapperEl = el.createDiv({ cls: cls("gantt-wrapper") });
 				renderer = createGanttRenderer(wrapperEl, hooks, { cssPrefix: "prisma-" });
 
-				const barContainer = wrapperEl.querySelector(`.${cls("gantt-bar-container")}`) as HTMLElement | null;
+				const barContainer = wrapperEl.querySelector(`.${cls("gantt-bar-container")}`);
 				if (barContainer) {
 					barObserver = new MutationObserver(() => {
 						for (const barEl of Array.from(barContainer.querySelectorAll<HTMLElement>("[data-task-id]"))) {

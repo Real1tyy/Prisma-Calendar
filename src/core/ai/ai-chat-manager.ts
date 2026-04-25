@@ -181,9 +181,9 @@ export class AIChatManager {
 
 	private resolveAIConfig(): { model: string; provider: AIProvider; apiKey: string } {
 		const settings = this.settingsStore.currentSettings;
-		const model = settings.ai.aiModel || AI_DEFAULTS.DEFAULT_MODEL;
+		const model = settings.ai.aiModel;
 		const modelOption = AI_DEFAULTS.MODEL_OPTIONS[model];
-		const provider: AIProvider = modelOption?.provider ?? "anthropic";
+		const provider: AIProvider = modelOption.provider;
 
 		const secretName =
 			provider === "anthropic" ? settings.ai.anthropicApiKeySecretName : settings.ai.openaiApiKeySecretName;

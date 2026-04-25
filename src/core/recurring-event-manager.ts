@@ -515,7 +515,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 				try {
 					await this.ensurePhysicalInstancesWithLock(rruleId);
 				} catch (error) {
-					const eventTitle = data?.recurringEvent?.title || "Unknown Event";
+					const eventTitle = data.recurringEvent?.title || "Unknown Event";
 					console.error(`[RecurringEvents] ❌ Failed to process recurring event ${eventTitle} (${rruleId}):`, error);
 				}
 			})
@@ -959,7 +959,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		if (data.recurringEvent) {
 			const { title: sourceTitle, sourceFilePath, rrules, metadata } = data.recurringEvent;
 			const rruleType = rrules.type;
-			const rruleSpec = rrules.weekdays?.join(", ");
+			const rruleSpec = rrules.weekdays.join(", ");
 			const sourceCategory = this.getCategoryColor(metadata.categories);
 			return { sourceTitle, sourceFilePath, instances, rruleType, rruleSpec, sourceCategory };
 		}

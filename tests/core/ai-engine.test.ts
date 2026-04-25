@@ -85,7 +85,7 @@ function makeCategoryBundle(
 	return {
 		categoryTracker: { getCategories: () => categories },
 		settingsStore: {
-			currentSettings: { categoryAssignmentPresets: presets },
+			currentSettings: { categoryAssignmentPresets: presets ?? [] },
 		},
 	} as any as CalendarBundle;
 }

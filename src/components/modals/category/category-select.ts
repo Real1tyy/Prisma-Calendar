@@ -41,7 +41,7 @@ function renderCategorySelectForm(
 	const selectedCategoryDisplay = categorySection.createDiv(cls("category-selected-display"));
 	selectedCategoryDisplay.classList.add("prisma-hidden");
 
-	// eslint-disable-next-line prefer-const
+	// eslint-disable-next-line prefer-const -- deferred initialization
 	let highlightButton: HTMLButtonElement;
 
 	function openDropdown(): void {
@@ -112,7 +112,7 @@ function renderCategorySelectForm(
 		} else if (e.key === "Enter") {
 			e.preventDefault();
 			const firstItem = listContainer.querySelector(`.${cls("category-list-item")}`) as HTMLElement;
-			firstItem?.click();
+			firstItem.click();
 		}
 	});
 

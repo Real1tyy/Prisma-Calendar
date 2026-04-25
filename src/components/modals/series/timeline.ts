@@ -270,7 +270,7 @@ export function renderTimelineInto(
 
 	function injectTimelineDots(): void {
 		for (const visItem of Array.from(timelineContainer.querySelectorAll<HTMLElement>(".vis-item"))) {
-			const title = visItem.querySelector(".vis-item-content")?.textContent?.trim();
+			const title = visItem.querySelector(".vis-item-content")?.textContent.trim();
 			if (!title) continue;
 
 			let matchedPath: string | undefined;

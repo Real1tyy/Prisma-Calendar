@@ -150,7 +150,7 @@ const DirectorySection = memo(function DirectorySection({ settings, updateField,
 				<Dropdown
 					value={settings.locale}
 					options={LOCALE_OPTIONS}
-					onChange={(v) => updateField("locale", v as SingleCalendarConfig["locale"])}
+					onChange={(v) => updateField("locale", v)}
 					testId="prisma-settings-control-locale"
 				/>
 			</SettingItem>
@@ -332,7 +332,7 @@ const EventPresetsSection = memo(function EventPresetsSection({
 	updateField,
 	plugin,
 }: SectionProps & { plugin: CustomCalendarPlugin }) {
-	const presets = settings.eventPresets ?? [];
+	const presets = settings.eventPresets;
 	const showBanner = !plugin.isProEnabled && presets.length >= FREE_MAX_EVENT_PRESETS;
 
 	const bannerRef = useRef<HTMLDivElement>(null);

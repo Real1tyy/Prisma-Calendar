@@ -185,7 +185,7 @@ function parsedEventToVEvent(
 
 	// Export additional frontmatter as X-PRISMA-FM-* properties for round-trip preservation
 	// Excludes: standard ICS fields, empty arrays, and internal parser metadata
-	if (event.meta) {
+	{
 		const excludedProps = new Set<string>([
 			// Standard ICS field properties
 			options.excludeProps.startProp,

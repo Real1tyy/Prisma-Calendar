@@ -63,7 +63,7 @@ export function eventFingerprint(ev: FCPrismaEventInput): string {
 		ev.extendedProps.filePath,
 		ev.extendedProps.folder,
 		ev.extendedProps.originalTitle,
-		ev.extendedProps.virtualKind ?? "none",
+		ev.extendedProps.virtualKind,
 	].join("\0");
 }
 

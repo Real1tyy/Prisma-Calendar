@@ -142,7 +142,7 @@ export function createViewFilterBar(bundle: CalendarBundle, onFilterChange: () =
 	});
 
 	function shouldInclude(event: CalendarEvent): boolean {
-		return matchesSearch(searchValue, { title: event.title }) && matcher.evaluate(event.meta ?? {});
+		return matchesSearch(searchValue, { title: event.title }) && matcher.evaluate(event.meta);
 	}
 
 	function filterEvents(events: CalendarEvent[]): FilterResult {

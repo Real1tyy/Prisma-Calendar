@@ -49,7 +49,7 @@ const shiftISO = (iso: unknown, duration?: DurationLike) => {
 		return shifted.toISODate();
 	}
 	const bare = shifted.toISO({ suppressMilliseconds: true, includeOffset: false });
-	return iso.endsWith("Z") ? ensureISOSuffix(bare ?? "") : bare;
+	return iso.endsWith("Z") ? ensureISOSuffix(bare) : bare;
 };
 
 export const applyStartEndOffsets = (

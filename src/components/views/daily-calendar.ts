@@ -295,7 +295,7 @@ export function createDailyCalendar(
 	}
 
 	async function refreshEvents(): Promise<void> {
-		if (!isIndexingComplete || !calendar.view) {
+		if (!isIndexingComplete) {
 			releaseRefreshLock();
 			return;
 		}

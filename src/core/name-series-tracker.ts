@@ -37,7 +37,7 @@ export class NameSeriesTracker extends VaultTableView<Frontmatter> {
 		super(repo.getTable(), {
 			filter: () => true,
 			distinctBy: (oldRow, newRow) => {
-				const titleProp = this.settings?.titleProp;
+				const titleProp = this.settings.titleProp;
 				return titleProp !== undefined && oldRow.data[titleProp] === newRow.data[titleProp];
 			},
 		});

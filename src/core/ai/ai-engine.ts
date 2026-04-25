@@ -56,7 +56,7 @@ export function getActiveCalendarInfo(
 
 export function gatherCategoryContext(bundle: CalendarBundle): CategoryContext | null {
 	const availableCategories = bundle.categoryTracker.getCategories();
-	const presets = bundle.settingsStore.currentSettings.categoryAssignmentPresets ?? [];
+	const presets = bundle.settingsStore.currentSettings.categoryAssignmentPresets;
 
 	if (availableCategories.length === 0 && presets.length === 0) return null;
 

@@ -93,8 +93,8 @@ export abstract class BaseEventModal extends Modal {
 	public titleInput!: HTMLInputElement;
 	public startInput!: HTMLInputElement;
 	public endInput!: HTMLInputElement;
-	public durationInput!: HTMLInputElement;
-	protected durationContainer!: HTMLElement;
+	public durationInput?: HTMLInputElement;
+	protected durationContainer?: HTMLElement;
 	protected dateInput!: HTMLInputElement;
 	public allDayCheckbox!: HTMLInputElement;
 	public originalFrontmatter: Frontmatter = {};
@@ -121,9 +121,9 @@ export abstract class BaseEventModal extends Modal {
 	protected prerequisitesChipList?: ChipList;
 	protected participantsChipList?: ChipList;
 	protected initialMarkAsDoneState: boolean = false;
-	protected notificationInput!: HTMLInputElement;
-	protected notificationContainer!: HTMLElement;
-	protected notificationLabel!: HTMLElement;
+	protected notificationInput?: HTMLInputElement;
+	protected notificationContainer?: HTMLElement;
+	protected notificationLabel?: HTMLElement;
 
 	// Stopwatch for time tracking
 	protected stopwatch?: Stopwatch;
@@ -309,14 +309,14 @@ export abstract class BaseEventModal extends Modal {
 
 		this.settingsSubscription = this.bundle.settingsStore.settings$.subscribe((settings) => {
 			if (this.presetSelector) {
-				this.refreshPresetSelector(settings.eventPresets || []);
+				this.refreshPresetSelector(settings.eventPresets);
 			}
 		});
 	}
 
 	private createPresetSelector(container: HTMLElement): void {
 		const settings = this.bundle.settingsStore.currentSettings;
-		const presets = settings.eventPresets || [];
+		const presets = settings.eventPresets;
 
 		const selectorWrapper = container.createDiv(cls("event-preset-selector-wrapper"));
 
@@ -336,7 +336,7 @@ export abstract class BaseEventModal extends Modal {
 			const selectedId = this.presetSelector.value;
 			if (selectedId) {
 				const settings = this.bundle.settingsStore.currentSettings;
-				const preset = (settings.eventPresets || []).find((p) => p.id === selectedId);
+				const preset = settings.eventPresets.find((p) => p.id === selectedId);
 				if (preset) {
 					this.applyPreset(preset);
 				}
@@ -385,7 +385,7 @@ export abstract class BaseEventModal extends Modal {
 		});
 		this.titleInput = titleContainer.createEl("input", {
 			type: "text",
-			value: this.event.title || "",
+			value: this.event.title,
 			cls: cls("setting-item-control"),
 			attr: { "data-testid": "prisma-event-control-title" },
 		});
@@ -1214,9 +1214,7 @@ export abstract class BaseEventModal extends Modal {
 
 		const settings = this.bundle.settingsStore.currentSettings;
 
-		const hasAutoAssign =
-			settings.autoAssignCategoryByName ||
-			(settings.categoryAssignmentPresets && settings.categoryAssignmentPresets.length > 0);
+		const hasAutoAssign = settings.autoAssignCategoryByName || settings.categoryAssignmentPresets.length > 0;
 
 		if (!hasAutoAssign) return;
 
@@ -1305,8 +1303,8 @@ export abstract class BaseEventModal extends Modal {
 		this.otherPropertiesContainer.empty();
 
 		const displayPropsSet = new Set([
-			...(settings.frontmatterDisplayProperties || []),
-			...(settings.frontmatterDisplayPropertiesAllDay || []),
+			...settings.frontmatterDisplayProperties,
+			...settings.frontmatterDisplayPropertiesAllDay,
 		]);
 
 		for (const [key, value] of Object.entries(customProperties)) {
@@ -1319,6 +1317,7 @@ export abstract class BaseEventModal extends Modal {
 		return {
 			title: this.titleInput.value,
 			allDay: this.allDayCheckbox.checked,
+
 			virtual: this.virtualCheckbox?.checked ?? false,
 			start: this.startInput.value,
 			end: this.endInput.value,
@@ -1338,24 +1337,25 @@ export abstract class BaseEventModal extends Modal {
 				weekdays: [...this.weekdayCheckboxes.entries()].filter(([, cb]) => cb.checked).map(([day]) => day),
 				customFreq: this.customFreqSelect?.value ?? "DAILY",
 				customInterval: this.customIntervalInput?.value ?? "1",
+
 				untilDate: this.rruleUntilInput?.value ?? "",
+
 				futureInstancesCount: this.futureInstancesCountInput?.value ?? "",
+
 				generatePastEvents: this.generatePastEventsCheckbox?.checked ?? false,
 			},
 		};
 	}
 
 	private applyStateToDom(state: EventFormState): void {
-		if (state.title !== undefined) {
-			this.titleInput.value = state.title;
-		}
+		this.titleInput.value = state.title;
 
 		if (this.allDayCheckbox.checked !== state.allDay) {
 			this.allDayCheckbox.checked = state.allDay;
 			this.allDayCheckbox.dispatchEvent(new Event("change", { bubbles: true }));
 		}
 
-		if (state.virtual !== undefined && this.virtualCheckbox) {
+		if (this.virtualCheckbox) {
 			this.virtualCheckbox.checked = state.virtual;
 		}
 
@@ -1408,7 +1408,7 @@ export abstract class BaseEventModal extends Modal {
 			}
 
 			if (this.rruleUntilInput) {
-				this.rruleUntilInput.value = state.recurring.untilDate ?? "";
+				this.rruleUntilInput.value = state.recurring.untilDate;
 			}
 
 			if (state.recurring.generatePastEvents && this.generatePastEventsCheckbox) {
@@ -1445,7 +1445,7 @@ export abstract class BaseEventModal extends Modal {
 
 	private openSavePresetModal(): void {
 		const settings = this.bundle.settingsStore.currentSettings;
-		const existingPresets = settings.eventPresets || [];
+		const existingPresets = settings.eventPresets;
 		const atFreeLimit = !this.bundle.plugin.isProEnabled && existingPresets.length >= FREE_MAX_EVENT_PRESETS;
 
 		showSavePresetModal(this.app, existingPresets, atFreeLimit, (presetName, overridePresetId) => {
@@ -1470,14 +1470,14 @@ export abstract class BaseEventModal extends Modal {
 
 		// If overriding, preserve the original createdAt
 		if (overridePresetId) {
-			const existingPreset = (settings.eventPresets || []).find((p) => p.id === overridePresetId);
+			const existingPreset = settings.eventPresets.find((p) => p.id === overridePresetId);
 			if (existingPreset) {
 				preset.createdAt = existingPreset.createdAt;
 				preset.updatedAt = now;
 			}
 		}
 
-		const currentPresets = settings.eventPresets || [];
+		const currentPresets = settings.eventPresets;
 		let updatedPresets: EventPreset[];
 
 		if (overridePresetId) {
@@ -1653,8 +1653,11 @@ export abstract class BaseEventModal extends Modal {
 				enabled: this.recurringCheckbox.checked,
 				rruleType: this.getEffectiveRruleType(),
 				weekdays: selectedWeekdays,
-				untilDate: this.rruleUntilInput?.value,
-				futureInstancesCount: this.futureInstancesCountInput?.value,
+
+				untilDate: this.rruleUntilInput?.value ?? "",
+
+				futureInstancesCount: this.futureInstancesCountInput?.value ?? "",
+
 				generatePastEvents: this.generatePastEventsCheckbox?.checked ?? false,
 			},
 			isUntracked
@@ -1681,6 +1684,7 @@ export abstract class BaseEventModal extends Modal {
 			start,
 			end,
 			allDay: isUntracked ? false : this.allDayCheckbox.checked,
+
 			virtual: this.virtualCheckbox?.checked ?? false,
 			preservedFrontmatter,
 		};
@@ -1786,7 +1790,7 @@ export abstract class BaseEventModal extends Modal {
 			const keyInput = row.querySelector("input[placeholder='Property name']") as HTMLInputElement;
 			const valueInput = row.querySelector("input[placeholder='Value']") as HTMLInputElement;
 
-			if (keyInput?.value && valueInput?.value) {
+			if (keyInput.value && valueInput.value) {
 				properties[keyInput.value] = valueInput.value;
 			}
 		}

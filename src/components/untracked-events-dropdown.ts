@@ -303,7 +303,7 @@ export class UntrackedEventsDropdown {
 
 			// Apply color
 			const normalizedFrontmatter = normalizeFrontmatterForColorEvaluation(
-				event.meta || {},
+				event.meta,
 				settings.colorRules.map((rule) => ({
 					expression: rule.expression,
 					enabled: rule.enabled,
@@ -320,7 +320,7 @@ export class UntrackedEventsDropdown {
 			titleEl.textContent = removeZettelId(event.title);
 
 			// Display properties
-			if (event.meta) {
+			{
 				const settings = this.bundle.settingsStore.currentSettings;
 				const displayProps = getDisplayProperties(event.meta, settings.frontmatterDisplayPropertiesUntracked);
 

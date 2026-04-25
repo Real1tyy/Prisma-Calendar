@@ -49,13 +49,13 @@ function renderAssignmentList(
 ): void {
 	const states: CheckboxState[] = [];
 	let highlightedIndex = -1;
-	// eslint-disable-next-line prefer-const
+	// eslint-disable-next-line prefer-const -- deferred initialization
 	let assignButton: HTMLButtonElement;
-	// eslint-disable-next-line prefer-const
+	// eslint-disable-next-line prefer-const -- deferred initialization
 	let searchInput: HTMLInputElement;
-	// eslint-disable-next-line prefer-const
+	// eslint-disable-next-line prefer-const -- deferred initialization
 	let listContainer: HTMLElement;
-	// eslint-disable-next-line prefer-const
+	// eslint-disable-next-line prefer-const -- deferred initialization
 	let createNewContainer: HTMLElement;
 
 	const pageSize = config.pageSize ?? DEFAULT_PAGE_SIZE;
@@ -139,7 +139,7 @@ function renderAssignmentList(
 
 		for (let i = 0; i < sortedItems.length && visibleCount < pageSize; i++) {
 			if (renderedIndices.has(i)) continue;
-			const item = sortedItems[i]!;
+			const item = sortedItems[i];
 			if (getSearchableText(item).includes(searchTerm)) {
 				renderedIndices.add(i);
 				const itemEl = createCheckboxItem(item);
@@ -164,7 +164,7 @@ function renderAssignmentList(
 		for (let i = 0; i < sortedItems.length && added < pageSize; i++) {
 			if (renderedIndices.has(i)) continue;
 			renderedIndices.add(i);
-			const itemEl = createCheckboxItem(sortedItems[i]!);
+			const itemEl = createCheckboxItem(sortedItems[i]);
 			listContainer.appendChild(itemEl);
 			added++;
 		}

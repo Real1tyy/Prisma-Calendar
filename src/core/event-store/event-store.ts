@@ -415,10 +415,10 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 		if (!this.settings.markPastInstancesAsDone) return;
 
 		const now = DateTime.now();
-		const nowIso = now.toISO({ suppressMilliseconds: true, includeOffset: false }) ?? "";
+		const nowIso = now.toISO({ suppressMilliseconds: true, includeOffset: false });
 		// All-day events are past only after the end of that day (23:59:59),
 		// matching the indexer's markPastEventAsDone logic
-		const endOfTodayIso = now.endOf("day").toISO({ suppressMilliseconds: true, includeOffset: false }) ?? "";
+		const endOfTodayIso = now.endOf("day").toISO({ suppressMilliseconds: true, includeOffset: false });
 		const doneValue = this.settings.doneValue;
 		const minimizedFilePath = MinimizedModalManager.getState()?.filePath ?? null;
 

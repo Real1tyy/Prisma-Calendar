@@ -668,6 +668,6 @@ export class EventSeriesModal extends Modal {
 	// ─── Utilities ───────────────────────────────────────────────
 
 	private getEventColors(event: CalendarEvent): string[] {
-		return resolveAllEventColors(event.meta ?? {}, this.bundle, this.colorEvaluator);
+		return resolveAllEventColors(event.meta, this.bundle, this.colorEvaluator);
 	}
 }

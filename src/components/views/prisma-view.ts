@@ -136,7 +136,7 @@ export function registerPrismaCalendarView(
 				},
 			});
 
-			if (ctx.type === "view" && ctx.leaf) {
+			if (ctx.type === "view") {
 				ref.pageHeaderHandle.apply(ctx.leaf);
 			}
 

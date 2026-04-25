@@ -61,7 +61,7 @@ export function aggregateStats(
 		let groupKeys: string[];
 
 		if (mode === "category") {
-			const categories = event.metadata?.categories ?? parseCategories(event.meta?.[categoryProp]);
+			const categories = event.metadata.categories ?? parseCategories(event.meta[categoryProp]);
 			groupKeys = categories;
 		} else {
 			groupKeys = [extractNotesCoreName(event.title)];

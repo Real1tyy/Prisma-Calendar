@@ -105,7 +105,7 @@ export class ZoomManager {
 	// ─── Zoom Button ──────────────────────────────────────────────
 
 	updateZoomLevelButton(): void {
-		const button = this.calendar?.el?.querySelector(".fc-zoomLevel-button") as HTMLElement | null;
+		const button = this.calendar?.el.querySelector(".fc-zoomLevel-button") as HTMLElement | null;
 		if (!button) return;
 
 		const newText = this.getZoomLevelText();
@@ -173,6 +173,7 @@ export class ZoomManager {
 			if (!e.ctrlKey) return;
 
 			// Only allow zooming on time-based views (timeGridDay, timeGridWeek)
+
 			const currentView = this.calendar?.view?.type;
 			if (!currentView || !currentView.includes("timeGrid")) {
 				return; // Don't zoom on month/list views

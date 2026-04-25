@@ -120,7 +120,7 @@ export class EventEditModal extends BaseEventModal {
 
 		// Categorize properties using shared utility
 		// Use event.allDay if available, otherwise check the checkbox state
-		const isAllDay = this.event.allDay ?? this.allDayCheckbox?.checked ?? false;
+		const isAllDay = this.event.allDay ?? this.allDayCheckbox.checked;
 		const { displayProperties, otherProperties } = categorizeProperties(this.originalFrontmatter, settings, isAllDay);
 
 		// Load display properties
@@ -143,7 +143,7 @@ export class EventEditModal extends BaseEventModal {
 		super.onOpen();
 
 		// Update the title input with the display title (without ZettelID)
-		if (this.displayTitle && this.titleInput) {
+		if (this.displayTitle) {
 			this.titleInput.value = this.displayTitle;
 		}
 

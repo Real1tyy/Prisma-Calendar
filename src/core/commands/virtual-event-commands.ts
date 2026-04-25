@@ -140,7 +140,7 @@ export class ConvertToRealCommand implements Command {
 			start: this.storedVirtualData.start,
 			end: this.storedVirtualData.end,
 			allDay: this.storedVirtualData.allDay,
-			preservedFrontmatter: this.storedVirtualData.properties as Record<string, unknown>,
+			preservedFrontmatter: this.storedVirtualData.properties,
 		});
 	}
 

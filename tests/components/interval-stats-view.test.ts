@@ -125,7 +125,7 @@ describe("renderIntervalStatsBody", () => {
 		const result = renderIntervalStatsBody(container, bundle, { ...baseInput, stats });
 
 		expect(ChartCtor).toHaveBeenCalledTimes(1);
-		const [chartParent, chartEntries, chartOpts] = ChartCtor.mock.calls[0]!;
+		const [chartParent, chartEntries, chartOpts] = ChartCtor.mock.calls[0];
 		expect(chartParent).toBe(container);
 		expect(chartEntries).toBe(stats.entries);
 		expect((chartOpts as { showToggle?: boolean }).showToggle).toBe(false);
@@ -143,7 +143,7 @@ describe("renderIntervalStatsBody", () => {
 
 		renderIntervalStatsBody(container, bundle, { ...baseInput, stats, aggregationMode: "category" });
 
-		const opts = ChartCtor.mock.calls[0]![2] as { colorResolver?: (label: string) => string };
+		const opts = ChartCtor.mock.calls[0][2] as { colorResolver?: (label: string) => string };
 		expect(opts.colorResolver).toBeTypeOf("function");
 		expect(opts.colorResolver!("Work")).toBe("color-Work");
 		expect(getCategoryColor).toHaveBeenCalledWith("Work");
@@ -156,7 +156,7 @@ describe("renderIntervalStatsBody", () => {
 
 		renderIntervalStatsBody(container, bundle, { ...baseInput, stats, aggregationMode: "name" });
 
-		const opts = ChartCtor.mock.calls[0]![2] as { colorResolver?: unknown };
+		const opts = ChartCtor.mock.calls[0][2] as { colorResolver?: unknown };
 		expect(opts.colorResolver).toBeUndefined();
 	});
 
@@ -236,7 +236,7 @@ describe("renderIntervalStatsInto", () => {
 		const durationBtn = container.querySelector(".prisma-stats-duration-toggle") as HTMLElement;
 		expect(durationBtn.textContent).toContain("⏱");
 		const headerStats = container.querySelectorAll(".prisma-stats-header-stat");
-		const eventCountEl = Array.from(headerStats).find((el) => el.textContent?.includes("events"));
+		const eventCountEl = Array.from(headerStats).find((el) => el.textContent.includes("events"));
 		expect(eventCountEl?.textContent).toContain("5 events");
 	});
 
@@ -251,7 +251,7 @@ describe("renderIntervalStatsInto", () => {
 		expect(config.getBounds).toHaveBeenCalledTimes(1);
 		expect(getEvents).toHaveBeenCalledTimes(1);
 		expect(getSkippedEvents).not.toHaveBeenCalled();
-		const query = getEvents.mock.calls[0]![0] as { start: string; end: string };
+		const query = getEvents.mock.calls[0][0] as { start: string; end: string };
 		expect(query.start).toMatch(/^\d{4}-\d{2}-\d{2}T/);
 		expect(query.end).toMatch(/^\d{4}-\d{2}-\d{2}T/);
 	});

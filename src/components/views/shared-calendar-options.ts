@@ -164,7 +164,7 @@ export function buildSharedEventContent(
 			? settings.frontmatterDisplayPropertiesAllDay
 			: settings.frontmatterDisplayProperties;
 
-		const displayProperties = displayData ? getDisplayProperties(displayData, displayPropertiesList) : [];
+		const displayProperties = getDisplayProperties(displayData, displayPropertiesList);
 		if (displayProperties.length > 0) {
 			const propsContainer = document.createElement("div");
 			propsContainer.className = cls("fc-event-props");
@@ -295,7 +295,7 @@ export function mapEventToPrismaInput(
 	bundle: CalendarBundle,
 	colorEvaluator: ColorEvaluator<SingleCalendarConfig>
 ): FCPrismaEventInput {
-	const allColors = resolveAllEventColors(event.meta ?? {}, bundle, colorEvaluator);
+	const allColors = resolveAllEventColors(event.meta, bundle, colorEvaluator);
 	const eventColor = allColors[0] ?? bundle.settingsStore.currentSettings.defaultNodeColor;
 	const start = stripZ(event.start);
 	const end = isTimedEvent(event) ? stripZ(event.end) : undefined;
@@ -305,9 +305,9 @@ export function mapEventToPrismaInput(
 		classNames.push(cls("virtual-event"));
 	}
 
-	const folder = event.meta?.["folder"];
+	const folder = event.meta["folder"];
 	const folderStr = typeof folder === "string" ? folder : "";
-	const meta = event.meta ?? {};
+	const meta = event.meta;
 
 	const input: FCPrismaEventInput = {
 		id: event.id,

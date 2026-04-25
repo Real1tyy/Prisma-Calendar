@@ -34,7 +34,7 @@ export class PrerequisiteTracker extends VaultTableView<Frontmatter> {
 		super(repo.getTable(), {
 			filter: () => true,
 			distinctBy: (oldRow, newRow) => {
-				const prereqProp = this.settings?.prerequisiteProp;
+				const prereqProp = this.settings.prerequisiteProp;
 				if (!prereqProp) return true;
 				return String(oldRow.data[prereqProp] ?? "") === String(newRow.data[prereqProp] ?? "");
 			},

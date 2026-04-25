@@ -1,7 +1,6 @@
 import { showSchemaModal } from "@real1ty-obsidian-plugins";
 import { type App, Notice } from "obsidian";
 
-import { ICS_SUBSCRIPTION_DEFAULTS } from "../../../constants";
 import type { PrismaCalendarSettingsStore } from "../../../types";
 import type { ICSSubscription } from "../../../types/integrations";
 import { ICSSubscriptionEditFormShape, type ICSSubscriptionEditFormValues } from "../integration-shared";
@@ -22,9 +21,9 @@ export function showEditICSSubscriptionModal(
 			data: {
 				name: subscription.name,
 				enabled: subscription.enabled,
-				syncIntervalMinutes: subscription.syncIntervalMinutes ?? ICS_SUBSCRIPTION_DEFAULTS.SYNC_INTERVAL_MINUTES,
-				timezone: subscription.timezone ?? "UTC",
-				icon: subscription.icon ?? "",
+				syncIntervalMinutes: subscription.syncIntervalMinutes,
+				timezone: subscription.timezone,
+				icon: subscription.icon,
 			},
 		},
 		onSubmit: async (_name, values) => {

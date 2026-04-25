@@ -263,7 +263,7 @@ export class CalendarBundle {
 		// Release shared infrastructure through registry (will only destroy if no other calendars are using it)
 		this.indexerRegistry.releaseIndexer(this.calendarId, this.directory);
 		// Don't destroy fileRepository/parser/eventStore/recurringEventManager directly - the registry handles that
-		this.settingsStore?.destroy?.();
+		this.settingsStore.destroy();
 	}
 
 	// ─── Calendar View ────────────────────────────────────────────

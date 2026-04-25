@@ -109,7 +109,7 @@ export function showMoveByModal(app: App, onSubmit: (result: MoveByResult) => vo
 					const value = Number.parseInt(valueInput?.value ?? "", 10);
 					if (Number.isNaN(value) || value === 0) return;
 					const activeBtn = el.querySelector(`.${cls("move-by-unit-btn")}.prisma-is-active`);
-					const unit = (activeBtn?.textContent?.toLowerCase() as TimeUnit) || "minutes";
+					const unit = (activeBtn?.textContent.toLowerCase() as TimeUnit) || "minutes";
 					onSubmit({ value, unit });
 					ctx.close();
 				});

@@ -197,7 +197,7 @@ export function renderHeatmapInto(
 		const list = dayDetailPanel.createDiv(cls("heatmap-detail-list"));
 		for (const event of events) {
 			const row = list.createDiv(cls("heatmap-detail-row"));
-			const allColors = resolveAllEventColors(event.meta ?? {}, bundle, colorEvaluator);
+			const allColors = resolveAllEventColors(event.meta, bundle, colorEvaluator);
 			const eventColor = allColors[0];
 			if (eventColor) {
 				addCls(row, "heatmap-detail-row-categorized");
@@ -228,7 +228,7 @@ export function renderHeatmapInto(
 				injectOverflowDots(row, overflowColors, cls("heatmap-detail-color-dots"), cls("heatmap-detail-color-dot"));
 			}
 
-			if (displayPropertiesList.length > 0 && event.meta) {
+			if (displayPropertiesList.length > 0) {
 				const displayProps = getDisplayProperties(event.meta, displayPropertiesList);
 				if (displayProps.length > 0) {
 					const propsEl = row.createDiv(cls("heatmap-detail-props"));
@@ -265,7 +265,7 @@ export function renderHeatmapInto(
 		renderHeatmapLegend(legendContainer, dataset.thresholds, config.categoryColor);
 		config.onNavigate?.({ mode, year, month });
 
-		const firstDayOfWeek = bundle.settingsStore.currentSettings.firstDayOfWeek ?? 0;
+		const firstDayOfWeek = bundle.settingsStore.currentSettings.firstDayOfWeek;
 		grid = renderHeatmapSVG(svgContainer, dataset, {
 			mode,
 			year,

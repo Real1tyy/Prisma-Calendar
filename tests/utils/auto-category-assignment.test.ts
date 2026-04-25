@@ -558,12 +558,12 @@ describe("Auto-Category Assignment", () => {
 				expect(autoAssignCategories("Health", settings, [])).toEqual([]);
 			});
 
-			it("should handle undefined categoryAssignmentPresets", () => {
+			it("should handle empty categoryAssignmentPresets", () => {
 				const settings = {
 					...mockSettings,
 					autoAssignCategoryByName: false,
-					categoryAssignmentPresets: undefined,
-				} as any as SingleCalendarConfig;
+					categoryAssignmentPresets: [],
+				} as SingleCalendarConfig;
 
 				expect(autoAssignCategories("Health", settings, availableCategories, true)).toEqual([]);
 			});

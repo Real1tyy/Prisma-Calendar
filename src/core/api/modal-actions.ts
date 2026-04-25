@@ -146,7 +146,7 @@ export async function openEditActiveNoteModal(
 		}
 
 		const metadata = plugin.app.metadataCache.getFileCache(activeFile);
-		const frontmatter = (metadata?.frontmatter as Frontmatter) ?? {};
+		const frontmatter = (metadata?.frontmatter ?? {}) as Frontmatter;
 		const allDay = isAllDayFrontmatterValue(frontmatter[settings.allDayProp]);
 
 		const now = new Date();

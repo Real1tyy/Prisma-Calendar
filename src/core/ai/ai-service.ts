@@ -138,7 +138,7 @@ function handleHTTPError(response: RequestUrlResponse, provider: string): void {
 		let detail = "";
 		try {
 			const body = response.json as { error?: { message?: string } };
-			if (body?.error?.message) {
+			if (body.error?.message) {
 				detail = `: ${body.error.message}`;
 			}
 		} catch {

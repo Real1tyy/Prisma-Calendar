@@ -37,7 +37,7 @@ describe("EventStore", () => {
 	});
 
 	const createMockEvent = (overrides: Partial<CalendarEvent> = {}): CalendarEvent => {
-		const allDay = overrides?.allDay ?? false;
+		const allDay = overrides.allDay ?? false;
 		const baseOverrides = {
 			id: "test-event-1",
 			ref: { filePath: "Events/meeting.md" },

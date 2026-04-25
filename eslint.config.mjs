@@ -17,6 +17,14 @@ export default defineConfig([
 			"*.config.mjs",
 			"esbuild.config.mjs",
 			"version-bump.mjs",
+			".dependency-cruiser.mjs",
+			"package.json",
+			"manifest.json",
+			"versions.json",
+			"e2e/**",
+			"scripts/**",
+			"playwright.config.ts",
+			"vitest.config.ts",
 		],
 	},
 
@@ -26,7 +34,7 @@ export default defineConfig([
 	...obsidianmd.configs.recommended,
 
 	{
-		files: ["**/*.ts"],
+		files: ["**/*.ts", "**/*.tsx"],
 		languageOptions: {
 			parser: tseslint.parser,
 			parserOptions: {
@@ -70,6 +78,7 @@ export default defineConfig([
 		rules: {
 			"import/no-extraneous-dependencies": "off",
 			"no-console": "off",
+			"prefer-const": "error",
 			"@typescript-eslint/no-floating-promises": "error",
 			"@typescript-eslint/await-thenable": "error",
 			"@typescript-eslint/only-throw-error": "error",
@@ -102,15 +111,18 @@ export default defineConfig([
 			"@typescript-eslint/no-redundant-type-constituents": "off",
 			"@typescript-eslint/no-base-to-string": "off",
 			"@typescript-eslint/no-deprecated": "warn",
+			"@typescript-eslint/no-unnecessary-condition": "warn",
 			"@microsoft/sdl/no-inner-html": "off",
 		},
 	},
 
 	{
-		files: ["**/*.test.ts", "**/*.spec.ts", "tests/**/*.ts"],
+		files: ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "tests/**/*.ts", "tests/**/*.tsx"],
 		languageOptions: {
 			globals: {
 				global: "readonly",
+				structuredClone: "readonly",
+				__dirname: "readonly",
 			},
 		},
 		rules: {
@@ -120,6 +132,8 @@ export default defineConfig([
 			"@typescript-eslint/no-deprecated": "off",
 			"@typescript-eslint/await-thenable": "off",
 			"@typescript-eslint/no-explicit-any": "off",
+			"@typescript-eslint/no-unnecessary-type-assertion": "off",
+			"import/no-nodejs-modules": "off",
 		},
 	},
 ]);

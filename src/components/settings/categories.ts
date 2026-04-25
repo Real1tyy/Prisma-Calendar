@@ -234,7 +234,7 @@ export class CategoriesSettings {
 		container.empty();
 
 		const settings = this.settingsStore.currentSettings;
-		const presets = settings.categoryAssignmentPresets || [];
+		const presets = settings.categoryAssignmentPresets;
 
 		if (presets.length === 0) {
 			const emptyState = container.createDiv(cls("category-assignment-empty"));
@@ -411,7 +411,7 @@ export class CategoriesSettings {
 
 		await this.settingsStore.updateSettings((s) => ({
 			...s,
-			categoryAssignmentPresets: [...(s.categoryAssignmentPresets || []), newPreset],
+			categoryAssignmentPresets: [...s.categoryAssignmentPresets, newPreset],
 		}));
 
 		if (this.categoryAssignmentPresetsContainer) {
@@ -422,7 +422,7 @@ export class CategoriesSettings {
 	private async updateCategoryAssignmentPreset(id: string, updatedPreset: CategoryAssignmentPreset): Promise<void> {
 		await this.settingsStore.updateSettings((s) => ({
 			...s,
-			categoryAssignmentPresets: (s.categoryAssignmentPresets || []).map((preset) =>
+			categoryAssignmentPresets: s.categoryAssignmentPresets.map((preset) =>
 				preset.id === id ? updatedPreset : preset
 			),
 		}));
@@ -431,7 +431,7 @@ export class CategoriesSettings {
 	private async deleteCategoryAssignmentPreset(id: string): Promise<void> {
 		await this.settingsStore.updateSettings((s) => ({
 			...s,
-			categoryAssignmentPresets: (s.categoryAssignmentPresets || []).filter((preset) => preset.id !== id),
+			categoryAssignmentPresets: s.categoryAssignmentPresets.filter((preset) => preset.id !== id),
 		}));
 
 		if (this.categoryAssignmentPresetsContainer) {

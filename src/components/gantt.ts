@@ -66,7 +66,7 @@ export function normalizeEvents(
 		.map((event) => {
 			const { startMs, endMs } = getTaskTimestamps(event);
 			const prereqs = graph.get(event.ref.filePath) ?? [];
-			const allColors = resolveAllEventColors(event.meta ?? {}, bundle, colorEvaluator);
+			const allColors = resolveAllEventColors(event.meta, bundle, colorEvaluator);
 			const settings = bundle.settingsStore.currentSettings;
 			const colorModeCount = settings.colorMode === "off" ? 0 : Number(settings.colorMode);
 			const useMultiColor = colorModeCount >= 2 && allColors.length >= 2;

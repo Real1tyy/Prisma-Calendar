@@ -515,7 +515,7 @@ export default class CustomCalendarPlugin extends Plugin {
 	private async ensureMinimumCalendars(): Promise<void> {
 		const settings = this.settingsStore.currentSettings;
 
-		if (!settings.calendars || settings.calendars.length === 0) {
+		if (settings.calendars.length === 0) {
 			const defaultCalendar = createDefaultCalendarConfig("default", "Main Calendar");
 
 			await this.settingsStore.updateSettings((currentSettings) => ({

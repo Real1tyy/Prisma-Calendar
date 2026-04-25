@@ -131,7 +131,7 @@ export function addPrerequisite(
 ): FrontmatterUpdateCommand {
 	const settings = bundle.settingsStore.currentSettings;
 	const existing = bundle.fileRepository.getByPath(targetFilePath);
-	const currentPrereqs = parseIntoList(existing?.[settings.prerequisiteProp as keyof typeof existing], {
+	const currentPrereqs = parseIntoList(existing?.[settings.prerequisiteProp], {
 		splitCommas: false,
 	});
 	const wikiLink = toDisplayLink(prerequisiteFilePath);

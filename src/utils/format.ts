@@ -105,7 +105,7 @@ export function buildEventTooltip(
 	settings: Pick<SingleCalendarConfig, "frontmatterDisplayProperties" | "frontmatterDisplayPropertiesAllDay" | "locale">
 ): string {
 	const title = event.title;
-	const meta = "meta" in event ? (event.meta ?? {}) : (event.extendedProps?.frontmatterDisplayData ?? {});
+	const meta = "meta" in event ? event.meta : (event.extendedProps.frontmatterDisplayData ?? {});
 	const start = "ref" in event ? new Date(event.start) : event.start;
 	const end = "ref" in event ? (event.type === "timed" && event.end ? new Date(event.end) : null) : event.end;
 	const allDay = "ref" in event ? event.type === "allDay" : event.allDay;

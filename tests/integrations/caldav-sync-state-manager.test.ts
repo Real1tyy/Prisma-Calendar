@@ -41,9 +41,7 @@ function silentEventSource(): CalendarEventSource {
 
 function createStateManager() {
 	const app = createMockApp() as unknown as App;
-	const settings$ = new BehaviorSubject<SingleCalendarConfig>(
-		createMockSingleCalendarSettings() as SingleCalendarConfig
-	);
+	const settings$ = new BehaviorSubject<SingleCalendarConfig>(createMockSingleCalendarSettings());
 	const manager = new CalDAVSyncStateManager(app, silentEventSource(), settings$);
 	return { manager };
 }

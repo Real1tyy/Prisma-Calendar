@@ -193,20 +193,18 @@ export class EventsModal extends Modal {
 		});
 
 		const hotkeyCommandId = FULL_COMMAND_IDS.SHOW_RECURRING_EVENTS;
-		if (hotkeyCommandId) {
-			const appWithHotkeys = this.app as unknown as {
-				hotkeyManager?: {
-					getHotkeys: (id: string) => Array<{ modifiers: Modifier[]; key: string }>;
-				};
+		const appWithHotkeys = this.app as unknown as {
+			hotkeyManager?: {
+				getHotkeys: (id: string) => Array<{ modifiers: Modifier[]; key: string }>;
 			};
-			const hotkeys = appWithHotkeys.hotkeyManager?.getHotkeys(hotkeyCommandId);
-			if (hotkeys && hotkeys.length > 0) {
-				for (const hotkey of hotkeys) {
-					this.scope.register(hotkey.modifiers, hotkey.key, () => {
-						this.close();
-						return false;
-					});
-				}
+		};
+		const hotkeys = appWithHotkeys.hotkeyManager?.getHotkeys(hotkeyCommandId);
+		if (hotkeys && hotkeys.length > 0) {
+			for (const hotkey of hotkeys) {
+				this.scope.register(hotkey.modifiers, hotkey.key, () => {
+					this.close();
+					return false;
+				});
 			}
 		}
 	}
