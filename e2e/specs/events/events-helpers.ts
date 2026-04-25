@@ -194,13 +194,18 @@ const SEED_ZETTEL_ID = "20250101000000";
  * frontmatter. The filename embeds a fixed ZettelID so tests can predict
  * the path, and the H1 mirrors the title so calendar-block text matching
  * works the same way the real plugin produces files.
+ *
+ * Pass `suffix` when seeding multiple events with the same title in one
+ * batch (e.g. `seedOnDiskMany`) — it's appended to the zettel ID so each
+ * file gets a unique path while the displayed title stays identical.
  */
 export function seedEventFile(
 	vaultDir: string,
 	title: string,
-	frontmatter: Record<string, string | boolean | string[]>
+	frontmatter: Record<string, string | boolean | string[]>,
+	suffix = ""
 ): string {
-	const relativePath = `Events/${title}-${SEED_ZETTEL_ID}.md`;
+	const relativePath = `Events/${title}-${SEED_ZETTEL_ID}${suffix}.md`;
 	const fmBody = Object.entries(frontmatter)
 		.map(([key, value]) => {
 			if (Array.isArray(value)) {

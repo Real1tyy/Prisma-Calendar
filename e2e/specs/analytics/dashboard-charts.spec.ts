@@ -10,7 +10,9 @@ import { sel } from "../../fixtures/testids";
 test.describe("analytics: dashboard charts (populated)", () => {
 	test("every dashboard child surfaces the seeded events grouped by its axis", async ({ calendar }) => {
 		// Seed 3× "Weekly Review" (Work) + 2× "Workout" (Fitness) for deterministic
-		// per-name and per-category rankings.
+		// per-name and per-category rankings. Modal-based seeding is required here
+		// because same-titled events need the plugin's file-dedup logic, and the
+		// category assignment goes through the chip-list flow.
 		await calendar.seedMany([
 			{ title: "Weekly Review", start: todayStamp(9, 0), end: todayStamp(10, 0), categories: ["Work"] },
 			{ title: "Weekly Review", start: todayStamp(11, 0), end: todayStamp(12, 0), categories: ["Work"] },

@@ -46,6 +46,8 @@ const DEFAULT_CALENDAR = {
 	enabled: true,
 	directory: "Events",
 	enableNotifications: false,
+	autoAssignCategoryByName: false,
+	autoAssignCategoryByIncludes: false,
 	batchActionButtons: ALL_BATCH_BUTTONS,
 };
 

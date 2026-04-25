@@ -12,7 +12,7 @@ import { type EventModalInput, fillEventModal, saveEventModal } from "../../spec
 import { runCommand } from "../commands";
 import { ACTIVE_CALENDAR_LEAF, PLUGIN_ID } from "../constants";
 import { anchorISO, isoLocal } from "../dates";
-import { refreshCalendar } from "../seed-events";
+import { getEventCount, refreshCalendar, waitForEventCount } from "../seed-events";
 import { sel, TID, type ToolbarActionKey, type ViewMode, type ViewTabKey } from "../testids";
 import { type BatchHandle, openBatch } from "./batch";
 import { createEventHandle, type EventHandle } from "./event";
@@ -73,9 +73,8 @@ export interface CalendarHandle {
 	 * `{title, start, end, allDay, date, category}` shape so specs don't have
 	 * to spell out `"Start Date"` / `"End Date"` frontmatter keys. Richer
 	 * fields (prerequisites, participants, recurring, custom properties) still
-	 * require the full modal flow — use `seedMany` for those. All titles in a
-	 * single call must be unique: `seedOnDisk` uses a fixed ZettelID suffix so
-	 * duplicate titles collide on disk.
+	 * require the full modal flow — use `seedMany` for those. Duplicate titles
+	 * within a single batch are safe — each gets a unique zettel-ID suffix.
 	 *
 	 * Like `seedOnDisk`, pass `awaitRender: true` to wait for every seeded
 	 * tile to paint in the active calendar leaf — only safe when every
@@ -299,6 +298,8 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 
 		async seedOnDiskMany(events, options = {}) {
 			const out: EventHandle[] = [];
+			const titleCounts = new Map<string, number>();
+			const baseline = await getEventCount(page);
 			for (const input of events) {
 				const fm: Record<string, string | boolean | string[]> = {};
 				if (input.start !== undefined) fm["Start Date"] = input.start;
@@ -307,10 +308,14 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 				if (input.allDay !== undefined) fm["All Day"] = input.allDay;
 				if (input.categories !== undefined) fm["Category"] = input.categories;
 				else if (input.category !== undefined) fm["Category"] = input.category;
-				const relPath = seedEventFile(vaultDir, input.title, fm);
+				const count = titleCounts.get(input.title) ?? 0;
+				titleCounts.set(input.title, count + 1);
+				const suffix = count === 0 ? "" : String(count).padStart(2, "0");
+				const relPath = seedEventFile(vaultDir, input.title, fm, suffix);
 				out.push(createEventHandle({ page, vaultDir }, relPath, input.title));
 			}
 			await refreshCalendar(page);
+			await waitForEventCount(page, baseline + events.length);
 			if (options.awaitRender === true) {
 				for (const handle of out) await handle.expectVisible();
 			}

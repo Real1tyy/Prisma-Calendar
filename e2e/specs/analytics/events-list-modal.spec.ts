@@ -12,7 +12,8 @@ import { sel } from "../../fixtures/testids";
 
 test.describe("analytics: events-list modal + series visualisations", () => {
 	test.beforeEach(async ({ calendar }) => {
-		// Seed two categories, two distinct event-name series.
+		// Seed two categories, two distinct event-name series. Modal-based
+		// seeding is required for same-titled events and category assignment.
 		await calendar.seedMany([
 			{ title: "Team Meeting", start: todayStamp(9, 0), end: todayStamp(10, 0), categories: ["Work"] },
 			{ title: "Team Meeting", start: todayStamp(11, 0), end: todayStamp(12, 0), categories: ["Work"] },
