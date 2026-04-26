@@ -23,7 +23,17 @@ import {
 } from "../utils/prop-classifications";
 import { AI_DEFAULTS } from "./ai";
 import { CalDAVSettingsSchema, ICSSubscriptionSettingsSchema } from "./integrations";
-import { CalendarViewTypeSchema, ContextMenuItemSchema, LOCALE_KEYS, ToolbarButtonSchema } from "./view";
+import {
+	CALENDAR_VIEW_OPTIONS,
+	CalendarViewTypeSchema,
+	COLOR_MODE_OPTIONS,
+	ContextMenuItemSchema,
+	DAY_CELL_COLORING_OPTIONS,
+	DENSITY_OPTIONS,
+	LOCALE_KEYS,
+	LOCALE_OPTIONS,
+	ToolbarButtonSchema,
+} from "./view";
 
 // Use library's HolidayType definition
 const HolidayTypeSchema = z.enum(["public", "bank", "school", "observance", "optional"]);
@@ -75,7 +85,8 @@ const GeneralSettingsSchema = z
 			.int()
 			.positive()
 			.catch(60)
-			.describe("Default event duration when only start time is provided"),
+			.describe("Default event duration when only start time is provided")
+			.meta({ title: "Default duration (minutes)" }),
 		showDurationField: z
 			.boolean()
 			.catch(true)
@@ -87,7 +98,8 @@ const GeneralSettingsSchema = z
 			.catch(true)
 			.describe(
 				"Display a stopwatch in the event creation/edit modal for precise time tracking. Start fills the start date, stop fills the end date, and break time is tracked automatically."
-			),
+			)
+			.meta({ title: "Show time tracker in event modal" }),
 		showRibbonIcon: z
 			.boolean()
 			.catch(true)
@@ -95,7 +107,8 @@ const GeneralSettingsSchema = z
 		locale: z
 			.enum(LOCALE_KEYS)
 			.catch("en")
-			.describe("Language and date format for headings, day names, month names, toolbar labels, and date displays"),
+			.describe("Language and date format for headings, day names, month names, toolbar labels, and date displays")
+			.meta({ enumLabels: LOCALE_OPTIONS }),
 		templatePath: z
 			.string()
 			.optional()
@@ -106,7 +119,8 @@ const GeneralSettingsSchema = z
 			.catch(false)
 			.describe(
 				"Automatically mark past events as done during startup by updating their status property. Configure the status property and done value in the Properties section."
-			),
+			)
+			.meta({ title: "Mark past events as done" }),
 		virtualEventsFileName: z
 			.string()
 			.catch("Virtual Events")
@@ -125,7 +139,11 @@ const GeneralSettingsSchema = z
 			.catch("disabled")
 			.describe(
 				"Automatically add a Zettel ID timestamp to filenames of events in the planning system directory that don't have one. Files are renamed from 'My Event.md' to 'My Event-20260216120000.md'."
-			),
+			)
+			.meta({
+				title: "Auto-assign Zettel ID",
+				enumLabels: { disabled: "Disabled", calendarEvents: "Calendar events only", allEvents: "All events" },
+			}),
 		indexSubdirectories: z
 			.boolean()
 			.catch(true)
@@ -149,7 +167,18 @@ const PropsSettingsSchema = z
 			.catch("none")
 			.describe(
 				"Write a normalized datetime to a dedicated sort property so external tools (Bases, Dataview) can sort all event types by a single field. Timed events use the full datetime. All-day events get T00:00:00 appended for consistent cross-type sorting. The value is written to the sort date property configured below."
-			),
+			)
+			.meta({
+				title: "Sorting normalization strategy",
+				enumLabels: {
+					none: "None",
+					startDate: "Timed events only — start datetime",
+					endDate: "Timed events only — end datetime",
+					allDayOnly: "All-day events only",
+					allStartDate: "All events — start datetime (Recommended)",
+					allEndDate: "All events — end datetime",
+				},
+			}),
 		sortDateProp: z
 			.string()
 			.catch("Sort Date")
@@ -314,13 +343,18 @@ const PropsSettingsSchema = z
 			.catch([DEFAULT_CATEGORY_PROP])
 			.describe(
 				"Comma-separated list of frontmatter properties to include as columns in Bases views. These properties will appear after the default columns (file name, date, status)."
-			),
+			)
+			.meta({ title: "Additional properties", placeholder: "priority, project, tags" }),
 		basesViewType: z
 			.enum(["table", "cards", "list"])
 			.catch("cards")
 			.describe(
 				"Choose the default view type for Bases views (category events, interval views). Cards view displays events as visual cards, table view as a sortable table, and list view as a simple list."
-			),
+			)
+			.meta({
+				title: "View type",
+				enumLabels: { cards: "Cards (Recommended)", table: "Table", list: "List" },
+			}),
 	})
 	.strip();
 
@@ -344,7 +378,11 @@ const NotificationsSettingsSchema = z
 			.boolean()
 			.catch(true)
 			.describe("Enable event notifications. When disabled, all notification settings below are ignored."),
-		notificationSound: z.boolean().catch(false).describe("Play a system sound when notifications are shown"),
+		notificationSound: z
+			.boolean()
+			.catch(false)
+			.describe("Play a system sound when notifications are shown")
+			.meta({ title: "Play notification sound" }),
 		snoozeMinutes: z
 			.number()
 			.int()
@@ -352,19 +390,37 @@ const NotificationsSettingsSchema = z
 			.catch(15)
 			.describe(
 				"How many minutes to snooze a notification when pressing the Snooze button. The notification will be triggered again after this duration."
-			),
+			)
+			.meta({ title: "Snooze duration (minutes)" }),
 		skipNewlyCreatedNotifications: z
 			.boolean()
 			.catch(true)
 			.describe(
 				"Automatically mark events as notified if they were created within the last minute. Prevents notifications for events created via Create Event, Stopwatch, or other creation methods."
-			),
-		defaultMinutesBefore: z.number().int().nonnegative().optional(),
+			)
+			.meta({ title: "Skip newly created events" }),
+		defaultMinutesBefore: z
+			.number()
+			.int()
+			.nonnegative()
+			.optional()
+			.describe(
+				"Default notification time for timed events. Leave empty for no default. 0 = notify when event starts, 15 = notify 15 minutes before"
+			)
+			.meta({ title: "Timed events (minutes before)", placeholder: "e.g., 15 (leave empty for no default)" }),
 		minutesBeforeProp: z
 			.string()
 			.catch("Minutes Before")
 			.describe("Frontmatter property name for per-event notification times (timed events)"),
-		defaultDaysBefore: z.number().int().nonnegative().optional(),
+		defaultDaysBefore: z
+			.number()
+			.int()
+			.nonnegative()
+			.optional()
+			.describe(
+				"Default notification time for all-day events. Leave empty for no default. 0 = notify on the day of the event, 1 = notify 1 day before"
+			)
+			.meta({ title: "All-day events (days before)", placeholder: "e.g., 1 (leave empty for no default)" }),
 		daysBeforeProp: z
 			.string()
 			.catch("Days Before")
@@ -426,7 +482,7 @@ const CalendarSettingsSchema = z
 			.describe(
 				"Comma-separated list of frontmatter property names to exclude when propagating changes from recurring event sources to physical instances."
 			)
-			.meta({ placeholder: "tags, internal_id" }),
+			.meta({ title: "Excluded properties", placeholder: "tags, internal_id" }),
 		enableNameSeriesTracking: z
 			.boolean()
 			.catch(true)
@@ -451,7 +507,7 @@ const CalendarSettingsSchema = z
 			.describe(
 				"Comma-separated list of frontmatter property names to exclude when propagating changes across name series members."
 			)
-			.meta({ placeholder: "tags, internal_id" }),
+			.meta({ title: "Excluded properties", placeholder: "tags, internal_id" }),
 		propagateFrontmatterToCategorySeries: z
 			.boolean()
 			.catch(false)
@@ -470,9 +526,17 @@ const CalendarSettingsSchema = z
 			.describe(
 				"Comma-separated list of frontmatter property names to exclude when propagating changes across category series members."
 			)
-			.meta({ placeholder: "tags, internal_id" }),
-		defaultView: CalendarViewTypeSchema.catch("timeGridWeek"),
-		defaultMobileView: CalendarViewTypeSchema.catch("timeGridWeek"),
+			.meta({ title: "Excluded properties", placeholder: "tags, internal_id" }),
+		defaultView: CalendarViewTypeSchema.catch("timeGridWeek").describe("The calendar view to show when opening").meta({
+			title: "Default view",
+			enumLabels: CALENDAR_VIEW_OPTIONS,
+		}),
+		defaultMobileView: CalendarViewTypeSchema.catch("timeGridWeek")
+			.describe("The calendar view to show when opening on mobile devices (screen width ≤ 768px)")
+			.meta({
+				title: "Default mobile view",
+				enumLabels: CALENDAR_VIEW_OPTIONS,
+			}),
 		hideWeekends: z.boolean().catch(false).describe("Hide Saturday and Sunday in calendar views"),
 		showDecimalHours: z
 			.boolean()
@@ -483,15 +547,31 @@ const CalendarSettingsSchema = z
 		defaultAggregationMode: z
 			.enum(["name", "category"])
 			.catch("name")
-			.describe("Default grouping mode for statistics modals: group by event name or by category"),
+			.describe("Default grouping mode for statistics modals: group by event name or by category")
+			.meta({ title: "Default grouping mode", enumLabels: { name: "Event Name", category: "Category" } }),
 		capacityTrackingEnabled: z
 			.boolean()
 			.catch(true)
 			.describe(
 				"Show used vs remaining hours in statistics and page header. Boundaries are inferred from the earliest and latest events in each period."
-			),
-		hourStart: z.number().int().min(0).max(23).catch(7).describe("First hour to show in time grid views"),
-		hourEnd: z.number().int().min(1).max(24).catch(23).describe("Last hour to show in time grid views"),
+			)
+			.meta({ title: "Enable capacity tracking" }),
+		hourStart: z
+			.number()
+			.int()
+			.min(0)
+			.max(23)
+			.catch(7)
+			.describe("First hour to show in time grid views")
+			.meta({ title: "Day start hour" }),
+		hourEnd: z
+			.number()
+			.int()
+			.min(1)
+			.max(24)
+			.catch(23)
+			.describe("Last hour to show in time grid views")
+			.meta({ title: "Day end hour" }),
 		firstDayOfWeek: z.number().int().min(0).max(6).catch(0), // 0 = Sunday, 1 = Monday, etc.
 		slotDurationMinutes: z
 			.number()
@@ -507,10 +587,22 @@ const CalendarSettingsSchema = z
 			.max(60)
 			.catch(30)
 			.describe("Snap interval when dragging or resizing events (1-60 minutes)"),
-		zoomLevels: z.array(z.number().int().min(1).max(60)).catch([1, 2, 3, 5, 10, 15, 20, 30, 45, 60]), // available zoom levels for slot duration
-		density: z.enum(["comfortable", "compact"]).catch("comfortable"),
+		zoomLevels: z
+			.array(z.number().int().min(1).max(60))
+			.catch([1, 2, 3, 5, 10, 15, 20, 30, 45, 60])
+			.describe("Available zoom levels for Ctrl+scroll zooming. Enter comma-separated values (1-60 minutes each)")
+			.meta({ title: "Zoom levels (minutes)", placeholder: "5, 10, 15, 30, 60" }),
+		density: z
+			.enum(["comfortable", "compact"])
+			.catch("comfortable")
+			.describe("How compact to make the calendar display")
+			.meta({ title: "Display density", enumLabels: DENSITY_OPTIONS }),
 		enableEventPreview: z.boolean().catch(true).describe("Show preview of event notes when hovering over events"),
-		nowIndicator: z.boolean().catch(true).describe("Display a line showing the current time in weekly and daily views"),
+		nowIndicator: z
+			.boolean()
+			.catch(true)
+			.describe("Display a line showing the current time in weekly and daily views")
+			.meta({ title: "Show current time indicator" }),
 		highlightUpcomingEvent: z
 			.boolean()
 			.catch(true)
@@ -533,34 +625,39 @@ const CalendarSettingsSchema = z
 			.catch(true)
 			.describe(
 				"Allow events with overlapping times to render on top of each other. When disabled, overlapping events render side-by-side in columns (like Google Calendar). Applies to all views."
-			),
+			)
+			.meta({ title: "Allow event overlap" }),
 		slotEventOverlap: z
 			.boolean()
 			.catch(true)
 			.describe(
 				"In week/day time-grid views, allow events that share the exact same time-slot boundaries to render on top of each other. When disabled, events with identical start/end times are placed in separate columns within the slot. Has no effect when event overlap is disabled."
-			),
+			)
+			.meta({ title: "Allow slot event overlap" }),
 		eventMaxStack: z
 			.number()
 			.int()
 			.min(1)
 			.max(10)
 			.catch(4)
-			.describe("Maximum number of events to stack vertically before showing '+ more' link"),
+			.describe("Maximum number of events to stack vertically before showing '+ more' link")
+			.meta({ title: "Event stack limit" }),
 		desktopMaxEventsPerDay: z
 			.number()
 			.int()
 			.min(0)
 			.max(20)
 			.catch(0)
-			.describe("Maximum events to show per day on desktop before showing '+more' link (0 = unlimited)"),
+			.describe("Maximum events to show per day on desktop before showing '+more' link (0 = unlimited)")
+			.meta({ title: "Desktop events per day" }),
 		mobileMaxEventsPerDay: z
 			.number()
 			.int()
 			.min(0)
 			.max(20)
 			.catch(4)
-			.describe("Maximum events to show per day on mobile before showing '+more' link (0 = unlimited)"),
+			.describe("Maximum events to show per day on mobile before showing '+more' link (0 = unlimited)")
+			.meta({ title: "Mobile events per day" }),
 		showColorDots: z
 			.boolean()
 			.catch(true)
@@ -602,13 +699,15 @@ const CalendarSettingsSchema = z
 			.catch(true)
 			.describe(
 				"Automatically assign a category when the event name (without ZettelID) matches a category name (case-insensitive). Example: creating an event named 'Health' will auto-assign the 'health' category."
-			),
+			)
+			.meta({ title: "Auto-assign when name matches category" }),
 		autoAssignCategoryByIncludes: z
 			.boolean()
 			.catch(true)
 			.describe(
 				"Use substring matching (case-insensitive) for category auto-assignment and category assignment presets. When enabled, categories match if the event name contains the category name, and preset event names match if the event name contains the preset name. Example: 'Youtube Analysis' matches the 'Youtube' category and a preset with event name 'Youtube'."
-			),
+			)
+			.meta({ title: "Substring matching for categories and presets" }),
 		titleAutocomplete: z
 			.boolean()
 			.catch(true)
@@ -642,21 +741,42 @@ const CalendarSettingsSchema = z
 		showDurationInTitle: z
 			.boolean()
 			.catch(true)
-			.describe("Display event duration (e.g., 2h 30m) in parentheses after the event title for timed events"),
-		dayCellColoring: z.enum(["off", "uniform", "boundary"]).catch("off" as const), // Day cell background coloring mode: off, uniform single color, or alternating by month boundary
-		monthEvenColor: ColorSchema.catch("#131313"), // Background color for even months / uniform day background
-		monthOddColor: ColorSchema.catch("#6b9080"), // Background color for odd months
-		eventTextColor: ColorSchema.catch("#ffffff"), // Default text color for events (used when it has sufficient contrast on background)
-		eventTextColorAlt: ColorSchema.catch("#000000"), // Alternative text color (used when default has poor contrast)
-		connectionColor: ColorSchema.catch("#7c3aed"), // Color of prerequisite connection arrows
+			.describe("Display event duration (e.g., 2h 30m) in parentheses after the event title for timed events")
+			.meta({ title: "Show duration in event title" }),
+		dayCellColoring: z
+			.enum(["off", "uniform", "boundary"])
+			.catch("off" as const)
+			.describe(
+				"Controls the background coloring of day cells. Off: default calendar appearance. Uniform: applies a single gradient color to all day cells. Month boundary: alternates two gradient colors by even/odd month, making month transitions clearly visible."
+			)
+			.meta({ title: "Day cell coloring", enumLabels: DAY_CELL_COLORING_OPTIONS }),
+		monthEvenColor: ColorSchema.catch("#131313").meta({ widget: "color" }),
+		monthOddColor: ColorSchema.catch("#6b9080").meta({ widget: "color" }),
+		eventTextColor: ColorSchema.catch("#ffffff")
+			.describe("Text color for events with dark backgrounds (default: white)")
+			.meta({ title: "Default event text color", widget: "color" }),
+		eventTextColorAlt: ColorSchema.catch("#000000")
+			.describe("Text color used when event background is light or white (e.g., pastel colors) for better contrast")
+			.meta({ title: "Alternative event text color", widget: "color" }),
+		connectionColor: ColorSchema.catch("#7c3aed")
+			.describe("Color of the prerequisite connection arrows on the Calendar tab")
+			.meta({ title: "Arrow color", widget: "color" }),
 		connectionStrokeWidth: z
 			.number()
 			.int()
 			.min(1)
 			.max(10)
 			.catch(3)
-			.describe("Thickness of connection arrow lines in pixels"),
-		connectionArrowSize: z.number().int().min(4).max(24).catch(12).describe("Size of connection arrowheads in pixels"),
+			.describe("Thickness of connection arrow lines in pixels")
+			.meta({ title: "Line thickness" }),
+		connectionArrowSize: z
+			.number()
+			.int()
+			.min(4)
+			.max(24)
+			.catch(12)
+			.describe("Size of connection arrowheads in pixels")
+			.meta({ title: "Arrowhead size" }),
 		fileConcurrencyLimit: z
 			.number()
 			.int()
@@ -689,14 +809,18 @@ const RulesSettingsSchema = z
 			.catch("1")
 			.describe(
 				"Controls how many color rule matches are applied to each event. Off: no coloring. 1: single color (default). 2-5: split the event width into equal segments, each colored by a successive matching rule."
-			),
+			)
+			.meta({ enumLabels: COLOR_MODE_OPTIONS }),
 		showEventColorDots: z
 			.boolean()
 			.catch(true)
 			.describe(
 				"Show color dots in the bottom-right corner of events for matched color rules that were not applied as the event background. Displays overflow colors that exceed the color mode limit, or all matched colors when coloring is disabled."
-			),
-		defaultNodeColor: ColorSchema.catch("hsl(270, 70%, 50%)"), // Default purple color
+			)
+			.meta({ title: "Show overflow color dots" }),
+		defaultNodeColor: ColorSchema.catch("hsl(270, 70%, 50%)")
+			.describe("Default color for events when no color rules match")
+			.meta({ title: "Default event color", widget: "color" }),
 		colorRules: z
 			.array(
 				z
@@ -722,30 +846,48 @@ const CustomPromptSchema = z
 
 const AISettingsSchema = z
 	.object({
-		openaiApiKeySecretName: z.string().catch(""),
-		anthropicApiKeySecretName: z.string().catch(""),
-		aiModel: z.string().catch(AI_DEFAULTS.DEFAULT_MODEL),
+		openaiApiKeySecretName: z
+			.string()
+			.catch("")
+			.describe("Select an OpenAI API key from SecretStorage for GPT models. Secrets are stored securely by Obsidian.")
+			.meta({ title: "OpenAI API key", widget: "secret" }),
+		anthropicApiKeySecretName: z
+			.string()
+			.catch("")
+			.describe(
+				"Select an Anthropic API key from SecretStorage for Claude models. Secrets are stored securely by Obsidian."
+			)
+			.meta({ title: "Anthropic API key", widget: "secret" }),
+		aiModel: z
+			.string()
+			.catch(AI_DEFAULTS.DEFAULT_MODEL)
+			.describe("Which AI model to use for the chat assistant. Requires the corresponding API key.")
+			.meta({ title: "Model" }),
 		aiBatchExecution: z
 			.boolean()
 			.catch(AI_DEFAULTS.DEFAULT_BATCH_EXECUTION)
 			.describe(
 				"When enabled, all AI-suggested operations execute as a single batch — one undo reverts everything. When disabled, each operation is a separate undo entry."
-			),
+			)
+			.meta({ title: "Batch execution" }),
 		aiConfirmExecution: z
 			.boolean()
 			.catch(AI_DEFAULTS.DEFAULT_CONFIRM_EXECUTION)
 			.describe(
 				"When enabled, AI-suggested operations show a preview with an Execute button. When disabled, operations execute immediately without confirmation."
-			),
+			)
+			.meta({ title: "Confirm before execution" }),
 		customPrompts: z.array(CustomPromptSchema).catch([]),
 		aiPlanningGapDetection: z
 			.boolean()
 			.catch(AI_DEFAULTS.DEFAULT_PLANNING_GAP_DETECTION)
-			.describe("Validate that AI-planned events are contiguous with no gaps between consecutive events."),
+			.describe("Validate that AI-planned events are contiguous with no gaps between consecutive events.")
+			.meta({ title: "Gap detection" }),
 		aiPlanningDayCoverage: z
 			.boolean()
 			.catch(AI_DEFAULTS.DEFAULT_PLANNING_DAY_COVERAGE)
-			.describe("Validate that AI plans cover every day in the interval."),
+			.describe("Validate that AI plans cover every day in the interval.")
+			.meta({ title: "Day coverage" }),
 	})
 	.strip();
 

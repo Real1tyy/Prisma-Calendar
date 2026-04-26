@@ -108,10 +108,19 @@ export const CalDAVSettingsSchema = z
 		enableAutoSync: z
 			.boolean()
 			.catch(true)
-			.describe("Enable automatic periodic syncing based on each account's sync interval"),
+			.describe("Enable automatic periodic syncing based on each account's sync interval")
+			.meta({ title: "Allow auto-sync" }),
 		syncOnStartup: z.boolean().catch(true).describe("Automatically sync calendars when the app starts"),
-		notifyOnSync: z.boolean().catch(true).describe("Show notifications when calendar sync completes"),
-		integrationEventColor: z.string().catch("#8b5cf6"),
+		notifyOnSync: z
+			.boolean()
+			.catch(true)
+			.describe("Show notifications when calendar sync completes")
+			.meta({ title: "Show sync notifications" }),
+		integrationEventColor: z
+			.string()
+			.catch("#8b5cf6")
+			.describe("Default color for CalDAV-synced events on the calendar")
+			.meta({ title: "Integration event color", widget: "color" }),
 	})
 	.loose();
 
@@ -137,9 +146,21 @@ export type ICSSubscription = z.infer<typeof ICSSubscriptionSchema>;
 export const ICSSubscriptionSettingsSchema = z
 	.object({
 		subscriptions: z.array(ICSSubscriptionSchema).catch([]),
-		enableAutoSync: z.boolean().catch(true),
-		syncOnStartup: z.boolean().catch(true),
-		notifyOnSync: z.boolean().catch(true),
-		integrationEventColor: z.string().catch("#8b5cf6"),
+		enableAutoSync: z
+			.boolean()
+			.catch(true)
+			.describe("Enable automatic periodic syncing based on subscription sync intervals")
+			.meta({ title: "Allow auto-sync" }),
+		syncOnStartup: z.boolean().catch(true).describe("Automatically sync subscriptions when the app starts"),
+		notifyOnSync: z
+			.boolean()
+			.catch(true)
+			.describe("Show notifications when subscription sync completes")
+			.meta({ title: "Show sync notifications" }),
+		integrationEventColor: z
+			.string()
+			.catch("#8b5cf6")
+			.describe("Default color for ICS-synced events on the calendar")
+			.meta({ title: "Integration event color", widget: "color" }),
 	})
 	.loose();

@@ -8,11 +8,6 @@ interface EventGroupsSettingsProps {
 	settingsStore: CalendarSettingsStore;
 }
 
-const EXCLUDED_PROPS_OVERRIDE = {
-	label: "Excluded properties",
-	placeholder: "Property1, Property2, Property3",
-};
-
 const RECURRING_TOGGLES = {
 	toggleA: {
 		path: "propagateFrontmatterToInstances",
@@ -73,31 +68,16 @@ export const EventGroupsSettingsReact = memo(function EventGroupsSettingsReact({
 		<>
 			<SchemaSection store={settingsStore} shape={shape} heading="Recurring events" fields={["futureInstancesCount"]} />
 			<MutuallyExclusiveToggles store={settingsStore} {...RECURRING_TOGGLES} />
-			<SchemaSection
-				store={settingsStore}
-				shape={shape}
-				fields={["excludedRecurringInstanceProps"]}
-				overrides={{ excludedRecurringInstanceProps: EXCLUDED_PROPS_OVERRIDE }}
-			/>
+			<SchemaSection store={settingsStore} shape={shape} fields={["excludedRecurringInstanceProps"]} />
 			<SchemaSection store={settingsStore} shape={shape} heading="Event markers" fields={MARKERS_FIELDS} />
 
 			<SettingHeading name="Name series propagation" />
 			<MutuallyExclusiveToggles store={settingsStore} {...NAME_SERIES_TOGGLES} />
-			<SchemaSection
-				store={settingsStore}
-				shape={shape}
-				fields={["excludedNameSeriesProps"]}
-				overrides={{ excludedNameSeriesProps: EXCLUDED_PROPS_OVERRIDE }}
-			/>
+			<SchemaSection store={settingsStore} shape={shape} fields={["excludedNameSeriesProps"]} />
 
 			<SettingHeading name="Category series propagation" />
 			<MutuallyExclusiveToggles store={settingsStore} {...CATEGORY_SERIES_TOGGLES} />
-			<SchemaSection
-				store={settingsStore}
-				shape={shape}
-				fields={["excludedCategorySeriesProps"]}
-				overrides={{ excludedCategorySeriesProps: EXCLUDED_PROPS_OVERRIDE }}
-			/>
+			<SchemaSection store={settingsStore} shape={shape} fields={["excludedCategorySeriesProps"]} />
 		</>
 	);
 });

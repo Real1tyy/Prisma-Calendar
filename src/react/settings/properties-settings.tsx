@@ -1,5 +1,4 @@
 import { cls } from "@real1ty-obsidian-plugins";
-import type { SchemaFieldOverride } from "@real1ty-obsidian-plugins-react";
 import { SchemaSection, useSettingsStore } from "@real1ty-obsidian-plugins-react";
 import { memo } from "react";
 
@@ -10,17 +9,10 @@ interface PropertiesSettingsProps {
 	settingsStore: CalendarSettingsStore;
 }
 
-const FRONTMATTER_PROPERTY_FIELDS: Array<keyof SingleCalendarConfig> = [
-	"startProp",
-	"endProp",
-	"dateProp",
-	"allDayProp",
-	"sortingStrategy",
-	"sortDateProp",
-	"titleProp",
-	"calendarTitleProp",
-	"zettelIdProp",
-	"skipProp",
+const TIMING_FIELDS = ["startProp", "endProp", "dateProp", "allDayProp"];
+const SORTING_FIELDS = ["sortingStrategy", "sortDateProp"];
+const IDENTITY_FIELDS = ["titleProp", "calendarTitleProp", "zettelIdProp", "skipProp", "iconProp"];
+const RECURRENCE_FIELDS = [
 	"rruleProp",
 	"rruleSpecProp",
 	"rruleUntilProp",
@@ -29,49 +21,17 @@ const FRONTMATTER_PROPERTY_FIELDS: Array<keyof SingleCalendarConfig> = [
 	"instanceDateProp",
 	"futureInstancesCountProp",
 	"generatePastEventsProp",
-	"statusProperty",
-	"doneValue",
-	"notDoneValue",
-	"customDoneProperty",
-	"customUndoneProperty",
-	"categoryProp",
-	"locationProp",
-	"participantsProp",
-	"breakProp",
-	"iconProp",
-	"prerequisiteProp",
-	"minutesBeforeProp",
-	"daysBeforeProp",
-	"alreadyNotifiedProp",
-	"caldavProp",
-	"icsSubscriptionProp",
 ];
-
-const FRONTMATTER_DISPLAY_FIELDS: Array<keyof SingleCalendarConfig> = [
+const STATUS_FIELDS = ["statusProperty", "doneValue", "notDoneValue", "customDoneProperty", "customUndoneProperty"];
+const METADATA_FIELDS = ["categoryProp", "locationProp", "participantsProp", "breakProp", "prerequisiteProp"];
+const NOTIFICATION_PROP_FIELDS = ["minutesBeforeProp", "daysBeforeProp", "alreadyNotifiedProp"];
+const INTEGRATION_PROP_FIELDS = ["caldavProp", "icsSubscriptionProp"];
+const DISPLAY_FIELDS = [
 	"frontmatterDisplayProperties",
 	"frontmatterDisplayPropertiesAllDay",
 	"frontmatterDisplayPropertiesUntracked",
 	"frontmatterDisplayPropertiesHeatmap",
 ];
-
-// Only overrides that can't live on the schema itself: enum option labels
-// (UI-presentation strings that don't belong in data) and the section-level
-// "Sorting normalization strategy" label that renames the field entirely.
-// All other labels/placeholders come from `.meta({ title, placeholder })` in
-// the schema, and placeholders fall back to each field's `.catch()` default.
-const PROPERTY_OVERRIDES: Record<string, SchemaFieldOverride> = {
-	sortingStrategy: {
-		label: "Sorting normalization strategy",
-		options: {
-			none: "None",
-			startDate: "Timed events only — start datetime",
-			endDate: "Timed events only — end datetime",
-			allDayOnly: "All-day events only",
-			allStartDate: "All events — start datetime (Recommended)",
-			allEndDate: "All events — end datetime",
-		},
-	},
-};
 
 const propLabel = (descriptor: { label: string }): string => descriptor.label.replace(/ Prop$/, " property");
 
@@ -87,20 +47,83 @@ export const PropertiesSettingsReact = memo(function PropertiesSettingsReact({
 			<SchemaSection
 				store={settingsStore}
 				shape={SHAPE}
-				heading="Frontmatter properties"
-				fields={FRONTMATTER_PROPERTY_FIELDS as string[]}
-				overrides={PROPERTY_OVERRIDES}
+				heading="Event timing"
+				fields={TIMING_FIELDS}
 				labelTransform={propLabel}
 				testIdPrefix="prisma-settings-"
 			/>
 			<EventTypesInfo settings={settings} />
+
+			<SchemaSection
+				store={settingsStore}
+				shape={SHAPE}
+				heading="Sorting"
+				fields={SORTING_FIELDS}
+				labelTransform={propLabel}
+				testIdPrefix="prisma-settings-"
+			/>
+
+			<SchemaSection
+				store={settingsStore}
+				shape={SHAPE}
+				heading="Identity"
+				fields={IDENTITY_FIELDS}
+				labelTransform={propLabel}
+				testIdPrefix="prisma-settings-"
+			/>
+
+			<SchemaSection
+				store={settingsStore}
+				shape={SHAPE}
+				heading="Recurrence"
+				fields={RECURRENCE_FIELDS}
+				labelTransform={propLabel}
+				testIdPrefix="prisma-settings-"
+			/>
 			<RecurringEventsInfo settings={settings} />
+
+			<SchemaSection
+				store={settingsStore}
+				shape={SHAPE}
+				heading="Status"
+				fields={STATUS_FIELDS}
+				labelTransform={propLabel}
+				testIdPrefix="prisma-settings-"
+			/>
+
+			<SchemaSection
+				store={settingsStore}
+				shape={SHAPE}
+				heading="Metadata"
+				fields={METADATA_FIELDS}
+				labelTransform={propLabel}
+				testIdPrefix="prisma-settings-"
+			/>
+
+			<SchemaSection
+				store={settingsStore}
+				shape={SHAPE}
+				heading="Notifications"
+				fields={NOTIFICATION_PROP_FIELDS}
+				labelTransform={propLabel}
+				testIdPrefix="prisma-settings-"
+			/>
+
+			<SchemaSection
+				store={settingsStore}
+				shape={SHAPE}
+				heading="Integrations"
+				fields={INTEGRATION_PROP_FIELDS}
+				labelTransform={propLabel}
+				testIdPrefix="prisma-settings-"
+			/>
+
 			<FrontmatterDisplayIntro />
 			<SchemaSection
 				store={settingsStore}
 				shape={SHAPE}
-				heading="Frontmatter display"
-				fields={FRONTMATTER_DISPLAY_FIELDS as string[]}
+				heading="Display in events"
+				fields={DISPLAY_FIELDS}
 				testIdPrefix="prisma-settings-"
 			/>
 		</>

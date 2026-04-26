@@ -27,15 +27,7 @@ describe("CalendarSettingsReact", () => {
 		const headings = Array.from(
 			container.querySelectorAll<HTMLElement>(".setting-item-heading .setting-item-name")
 		).map((el) => el.textContent);
-		expect(headings).toEqual(
-			expect.arrayContaining([
-				"User interface",
-				"Event overlap",
-				"Event text colors",
-				"Capacity Tracking",
-				"Prerequisite Connection Arrows",
-			])
-		);
+		expect(headings).toEqual(expect.arrayContaining(["Views", "Event appearance", "Time grid", "Event overlap"]));
 	});
 
 	it("renders view dropdowns with human-readable option labels", () => {

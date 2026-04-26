@@ -10,21 +10,6 @@ interface BasesSettingsProps {
 
 const FIELDS = ["basesViewType", "basesViewProperties"];
 
-const OVERRIDES = {
-	basesViewType: {
-		label: "View type",
-		options: {
-			cards: "Cards (Recommended)",
-			table: "Table",
-			list: "List",
-		},
-	},
-	basesViewProperties: {
-		label: "Additional properties",
-		placeholder: "priority, project, tags",
-	},
-};
-
 export const BasesSettingsReact = memo(function BasesSettingsReact({ settingsStore }: BasesSettingsProps) {
 	return (
 		<SchemaSection
@@ -32,7 +17,6 @@ export const BasesSettingsReact = memo(function BasesSettingsReact({ settingsSto
 			shape={SingleCalendarConfigSchema.shape}
 			heading="Bases"
 			fields={FIELDS}
-			overrides={OVERRIDES}
 			testIdPrefix="prisma-settings-"
 		/>
 	);
