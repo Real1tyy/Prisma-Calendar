@@ -261,6 +261,7 @@ export class SettingsNavigation {
 				if (matches) sectionHasMatch = true;
 			});
 
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- mutated inside forEach callback
 			if (!sectionHasMatch) {
 				sectionWrapper.remove();
 				continue;
@@ -285,14 +286,16 @@ export class SettingsNavigation {
 				}
 			});
 
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- mutated inside forEach callback
 			if (currentHeading) {
-				(currentHeading as HTMLElement).style.display = headingHasVisibleChild ? "" : "none";
+				(currentHeading as HTMLElement).style.display = headingHasVisibleChild ? "" : "none"; // eslint-disable-line @typescript-eslint/no-unnecessary-condition -- mutated inside forEach callback
 			}
 
 			const allChildren = contentContainer.children;
 			for (let i = 0; i < allChildren.length; i++) {
 				const child = allChildren[i] as HTMLElement;
 				if (child.classList.contains("setting-item")) continue;
+				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- textContent can be null for detached nodes
 				const text = child.textContent?.toLowerCase() ?? "";
 				child.style.display = text.includes(query) ? "" : "none";
 			}

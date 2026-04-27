@@ -101,7 +101,7 @@ async function waitForTemplater(app: App, timeoutMs = 8000): Promise<TemplaterLi
 		const plug = appWithPlugins.plugins?.getPlugin?.(TEMPLATER_ID) as { templater?: TemplaterLike } | null | undefined;
 		const api = plug?.templater ?? null;
 
-		const createFn: CreateFn | undefined = api?.create_new_note_from_template?.bind(api);
+		const createFn: CreateFn | undefined = api?.create_new_note_from_template.bind(api);
 		if (typeof createFn === "function") {
 			return { create_new_note_from_template: createFn };
 		}
@@ -133,7 +133,7 @@ function getTemplaterPlugin(app: App): TemplaterPlugin | null {
  */
 export function guardFromTemplater(app: App, filePath: string, releaseDelayMs = 500): () => void {
 	const plugin = getTemplaterPlugin(app);
-	const pending = plugin?.templater?.files_with_pending_templates;
+	const pending = plugin?.templater.files_with_pending_templates;
 	if (pending) {
 		pending.add(filePath);
 	}
@@ -160,8 +160,8 @@ function mergeTemplateContent(processedContent: string, overrides: Record<string
 	}
 
 	const rawTemplateFm = fmMatch[1];
-	const body = fmMatch[2] ?? "";
-	const templateFm = (parseYAML(rawTemplateFm) as Record<string, unknown>) ?? {};
+	const body = fmMatch[2];
+	const templateFm = parseYAML(rawTemplateFm) as Record<string, unknown>;
 
 	const mergedFm = { ...templateFm, ...overrides };
 
@@ -221,7 +221,7 @@ export async function renderTemplateContent(
 ): Promise<string | null> {
 	try {
 		const plugin = getTemplaterPlugin(app);
-		if (!plugin?.templater?.read_and_parse_template) {
+		if (!plugin) {
 			return null;
 		}
 

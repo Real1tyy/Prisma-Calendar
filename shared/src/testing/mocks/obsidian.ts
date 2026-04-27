@@ -76,6 +76,7 @@ export class ItemView {
 
 	constructor(leaf: unknown) {
 		this.leaf = leaf;
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		this.app = (leaf as { app?: unknown })?.app;
 		this.containerEl = document.createElement("div");
 	}

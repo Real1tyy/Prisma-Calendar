@@ -48,7 +48,7 @@ function prefixRange(prefix: string): IDBKeyRange {
 function requestAsPromise<T>(request: IDBRequest<T>): Promise<T> {
 	return new Promise<T>((resolve, reject) => {
 		request.onsuccess = () => resolve(request.result);
-		request.onerror = () => reject(request.error);
+		request.onerror = () => reject(request.error ?? new Error("IDB request failed"));
 	});
 }
 
@@ -188,8 +188,7 @@ export class OpenIdbConnection {
 
 	async getAllInRange(prefix: string): Promise<StoredRecord[]> {
 		const tx = this.db.transaction(STORE_NAME, "readonly");
-		const result = await requestAsPromise<StoredRecord[]>(tx.objectStore(STORE_NAME).getAll(prefixRange(prefix)));
-		return result ?? [];
+		return requestAsPromise<StoredRecord[]>(tx.objectStore(STORE_NAME).getAll(prefixRange(prefix)));
 	}
 
 	/**
@@ -217,7 +216,7 @@ export class OpenIdbConnection {
 	async clearRange(prefix: string): Promise<void> {
 		const readTx = this.db.transaction(STORE_NAME, "readonly");
 		const keys = (await requestAsPromise(readTx.objectStore(STORE_NAME).getAllKeys(prefixRange(prefix)))) as string[];
-		if (!keys || keys.length === 0) return;
+		if (keys.length === 0) return;
 
 		await this.runWriteTx(STORE_NAME, (store) => {
 			for (const key of keys) store.delete(key);
@@ -245,7 +244,7 @@ export class OpenIdbConnection {
 			const tx = this.db.transaction(storeName, "readwrite");
 			work(tx.objectStore(storeName));
 			tx.oncomplete = () => resolve();
-			tx.onerror = () => reject(tx.error);
+			tx.onerror = () => reject(tx.error ?? new Error("Transaction failed"));
 			tx.onabort = () => reject(tx.error ?? new Error("Transaction aborted"));
 		});
 	}

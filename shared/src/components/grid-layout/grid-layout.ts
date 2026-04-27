@@ -264,7 +264,6 @@ export function createGridLayout(container: HTMLElement, config: GridLayoutConfi
 	function applyContainerTemplate(index: number): void {
 		if (!perCell) return;
 		const el = perCell.containers[index];
-		if (!el) return;
 		const sizes = perCell.getSizes(index);
 		el.style[perCell.templateProp] = sizes.map((s) => `${s}fr`).join(" ");
 	}
@@ -292,7 +291,6 @@ export function createGridLayout(container: HTMLElement, config: GridLayoutConfi
 
 		for (let i = 0; i < perCell.containerCount(); i++) {
 			const el = perCell.containers[i];
-			if (!el) continue;
 
 			const idx = i;
 			const axisConfig: ResizeAxisConfig = {
@@ -407,6 +405,7 @@ export function createGridLayout(container: HTMLElement, config: GridLayoutConfi
 
 	function createCellElement(row: number, col: number, rowSpan?: number, colSpan?: number): HTMLElement {
 		const parent = perCell ? perCell.containers[perCell.getContainerIndex(row, col)] : gridEl;
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- parent can be undefined at runtime (noUncheckedIndexedAccess disabled)
 		if (!parent) return gridEl.createDiv(css.cls("grid-cell"));
 
 		const el = parent.createDiv(css.cls("grid-cell"));
@@ -535,11 +534,7 @@ export function createGridLayout(container: HTMLElement, config: GridLayoutConfi
 		} else {
 			delete existing.cleanup;
 		}
-		if (option.id !== undefined) {
-			existing.id = option.id;
-		} else {
-			delete existing.id;
-		}
+		existing.id = option.id;
 		if (option.enlargeable !== undefined) {
 			existing.enlargeable = option.enlargeable;
 		} else {

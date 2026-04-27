@@ -315,7 +315,7 @@ export async function bootstrapObsidian(options: BootstrapOptions): Promise<Boot
 		stdio: ["ignore", "pipe", "pipe"],
 	});
 	log.debug(`spawned pid=${proc.pid}`);
-	proc.stdout?.on("data", (d) => log.debug(`obsidian.stdout: ${String(d).trimEnd()}`));
+	proc.stdout.on("data", (d) => log.debug(`obsidian.stdout: ${String(d).trimEnd()}`));
 	proc.on("exit", (code, signal) => log.debug(`obsidian process exit code=${code} signal=${signal}`));
 
 	// Grep the CDP endpoint out of Obsidian's own stderr. Chromium prints
@@ -328,14 +328,14 @@ export async function bootstrapObsidian(options: BootstrapOptions): Promise<Boot
 			60_000
 		);
 		let buffer = "";
-		proc.stderr?.on("data", (chunk: Buffer) => {
+		proc.stderr.on("data", (chunk: Buffer) => {
 			const text = chunk.toString();
 			log.debug(`obsidian.stderr: ${text.trimEnd()}`);
 			buffer += text;
 			const match = buffer.match(/DevTools listening on (ws:\/\/[^\s]+)/);
 			if (match) {
 				clearTimeout(timer);
-				resolve(match[1]!);
+				resolve(match[1]);
 			}
 		});
 		proc.on("exit", () => {
@@ -351,6 +351,7 @@ export async function bootstrapObsidian(options: BootstrapOptions): Promise<Boot
 	log.debug(`connected (contexts=${browser.contexts().length})`);
 
 	const context = browser.contexts()[0];
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- array may be empty at runtime (noUncheckedIndexedAccess disabled)
 	if (!context) throw new Error("no browser context after connect");
 
 	// Poll context.pages() directly instead of `browser.firstWindow()` —
@@ -623,6 +624,7 @@ async function configureDemoViewport(page: Page, log: Logger): Promise<void> {
 		.evaluate(() => {
 			const w = window as unknown as { require?: (m: string) => unknown };
 			const remote = w.require?.("@electron/remote") as { getCurrentWindow?: () => { maximize?: () => void } };
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 			remote?.getCurrentWindow?.()?.maximize?.();
 		})
 		.catch((err) => log.debug(`demo viewport: maximize failed: ${String(err)}`));

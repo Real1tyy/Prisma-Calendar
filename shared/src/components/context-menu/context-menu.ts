@@ -305,7 +305,7 @@ export function createContextMenu(config: ContextMenuConfig): ContextMenuHandle 
 			if (filterFn && !filterFn(item.id)) continue;
 
 			const section = getSection(item);
-			if (section !== undefined && lastSection !== undefined && section !== lastSection) {
+			if (lastSection !== undefined && section !== lastSection) {
 				menu.addSeparator();
 			}
 			lastSection = section;

@@ -103,6 +103,7 @@ export async function expectFieldValue(page: Page, testId: string): Promise<stri
 		if (el.classList.contains("checkbox-container")) {
 			return String(el.classList.contains("is-enabled"));
 		}
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- textContent can be null for detached nodes
 		return el.textContent?.trim() ?? "";
 	});
 }
@@ -136,6 +137,7 @@ export async function settleSettings(page: Page, options: SettleOptions = {}): P
 				};
 			};
 			const plugin = w.app.plugins.plugins[id];
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 			if (plugin && typeof plugin.saveData === "function") {
 				await plugin.saveData(plugin.settings).catch(() => {});
 			}

@@ -36,6 +36,7 @@ function initValues<T>(
 
 		if (existingVal !== undefined) {
 			values[desc.key] = existingVal;
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- override can be undefined at runtime (noUncheckedIndexedAccess disabled)
 		} else if (override?.defaultValue !== undefined) {
 			values[desc.key] = override.defaultValue;
 		} else if (desc.defaultValue !== undefined) {
@@ -88,9 +89,7 @@ export function coerceFormValues(
 			case "array":
 				if (Array.isArray(raw)) {
 					result[desc.key] =
-						(desc as ArrayFieldDescriptor).itemType === "number"
-							? raw.map(Number).filter((n) => !Number.isNaN(n))
-							: raw.map(String);
+						desc.itemType === "number" ? raw.map(Number).filter((n) => !Number.isNaN(n)) : raw.map(String);
 				} else {
 					result[desc.key] = [];
 				}
@@ -393,6 +392,7 @@ function renderFields(
 ): void {
 	for (const desc of descriptors) {
 		const override = overrides[desc.key];
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- override can be undefined at runtime (noUncheckedIndexedAccess disabled)
 		if (override?.hidden) continue;
 		if (mode === "readonly") {
 			renderReadonlyField(container, desc, override, values);

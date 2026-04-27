@@ -23,7 +23,7 @@ import { formatWikiLink, parsePropertyLinks } from "../file/link-parser";
  */
 export function addLinkToProperty(currentValue: string | string[] | undefined, linkPath: string): string[] {
 	// Handle undefined or null
-	if (currentValue === undefined || currentValue === null) {
+	if (currentValue === undefined) {
 		return [formatWikiLink(linkPath)];
 	}
 
@@ -62,7 +62,7 @@ export function addLinkToProperty(currentValue: string | string[] | undefined, l
  * ```
  */
 export function removeLinkFromProperty(currentValue: string | string[] | undefined, linkPath: string): string[] {
-	if (currentValue === undefined || currentValue === null) {
+	if (currentValue === undefined) {
 		return [];
 	}
 

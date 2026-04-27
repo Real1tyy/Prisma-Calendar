@@ -44,7 +44,7 @@ export interface GroupTabDefinition {
 export type TabEntry = TabDefinition | GroupTabDefinition;
 
 export function isGroupTab(entry: TabEntry): entry is GroupTabDefinition {
-	return "children" in entry && Array.isArray((entry as GroupTabDefinition).children);
+	return "children" in entry && Array.isArray(entry.children);
 }
 
 export interface GroupChildState {

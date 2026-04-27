@@ -13,6 +13,8 @@ export function injectStyleSheet(id: string, css: string): void {
 		INJECTED.add(id);
 		return;
 	}
+
+	// eslint-disable-next-line obsidianmd/no-forbidden-elements -- runtime style injection for React components
 	const el = document.createElement("style");
 	el.id = id;
 	el.textContent = css;

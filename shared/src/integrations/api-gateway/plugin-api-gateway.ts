@@ -238,6 +238,7 @@ export class PluginApiGateway<TActions extends ActionDefMap> {
 		}
 
 		const actionDef = this.actions[call];
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- actionDef can be undefined at runtime (noUncheckedIndexedAccess disabled)
 		if (!actionDef) {
 			new Notice(`Unknown action: ${call}`);
 			return;

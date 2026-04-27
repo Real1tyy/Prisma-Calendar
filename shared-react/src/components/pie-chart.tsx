@@ -13,7 +13,7 @@ import { EmptyHint } from "./empty-hint";
 
 export type { PieChartData };
 
-export type ChartJSCtor = new (canvas: HTMLCanvasElement, config: ChartConfiguration<"pie">) => Chart<"pie">;
+export type ChartJSCtor = new (canvas: HTMLCanvasElement, config: ChartConfiguration) => Chart;
 
 const DEFAULT_MAX_LEGEND_ITEMS = 20;
 const DEFAULT_EMPTY_TEXT = "No data";

@@ -10,6 +10,8 @@ let styleInjected = false;
 function ensureHiddenStyle(): void {
 	if (styleInjected) return;
 	styleInjected = true;
+
+	// eslint-disable-next-line obsidianmd/no-forbidden-elements -- runtime style injection
 	const style = document.createElement("style");
 	style.textContent = `.${HIDDEN_CLS} { display: none !important; }`;
 	document.head.appendChild(style);
@@ -191,7 +193,7 @@ export function createPageHeader(config: PageHeaderConfig): PageHeaderHandle {
 
 	function applyToLeaf(leaf: WorkspaceLeaf): void {
 		const view = leaf.view as ItemView;
-		if (!view || typeof view.addAction !== "function") return;
+		if (typeof view.addAction !== "function") return;
 
 		removeFromLeaf(leaf);
 

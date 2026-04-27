@@ -197,29 +197,29 @@ export function showProgressModal(config: ProgressModalConfig): ProgressModalHan
 			if (isComplete) return;
 			const clamped = Math.max(0, Math.min(current, safeTotal));
 			const percentage = Math.round((clamped / safeTotal) * 100);
-			progressBar?.setCssProps({ width: `${percentage}%` });
-			statusText?.setText(formatStatus(clamped));
+			progressBar.setCssProps({ width: `${percentage}%` });
+			statusText.setText(formatStatus(clamped));
 			if (detail) {
-				detailsText?.setText(detail);
+				detailsText.setText(detail);
 			}
 		},
 
 		showComplete(summaryLines: string[]): void {
 			if (isComplete) return;
 			isComplete = true;
-			progressBar?.setCssProps({ width: "100%" });
-			if (progressBar) css.addCls(progressBar, "progress-complete");
-			statusText?.setText(baseTitle + " complete");
-			detailsText?.setText(summaryLines.join("  •  "));
+			progressBar.setCssProps({ width: "100%" });
+			css.addCls(progressBar, "progress-complete");
+			statusText.setText(baseTitle + " complete");
+			detailsText.setText(summaryLines.join("  •  "));
 			scheduleClose(successCloseDelay);
 		},
 
 		showError(message: string): void {
 			if (isComplete) return;
 			isComplete = true;
-			if (progressBar) css.addCls(progressBar, "progress-error");
-			statusText?.setText(baseTitle + " failed");
-			detailsText?.setText(message);
+			css.addCls(progressBar, "progress-error");
+			statusText.setText(baseTitle + " failed");
+			detailsText.setText(message);
 			scheduleClose(errorCloseDelay);
 		},
 

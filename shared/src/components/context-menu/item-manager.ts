@@ -149,7 +149,7 @@ export function openItemManager(config: ItemManagerConfig): void {
 
 			sectionEl.addEventListener("drop", (e) => {
 				if (!draggedId) return;
-				const targetRow = (e.target as HTMLElement).closest(`[data-item-id]`) as HTMLElement | null;
+				const targetRow = (e.target as HTMLElement).closest(`[data-item-id]`);
 				if (targetRow) return; // Handled by row-level drop
 				e.preventDefault();
 

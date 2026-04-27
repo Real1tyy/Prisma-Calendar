@@ -157,7 +157,7 @@ export const TabbedContainer = memo(function TabbedContainer({
 	const handleDragStart = useCallback(
 		(id: string) => (e: React.DragEvent) => {
 			setDraggedId(id);
-			if (e.dataTransfer) e.dataTransfer.effectAllowed = "move";
+			e.dataTransfer.effectAllowed = "move";
 		},
 		[]
 	);
@@ -165,7 +165,7 @@ export const TabbedContainer = memo(function TabbedContainer({
 	const handleDragOver = useCallback(
 		(_id: string) => (e: React.DragEvent) => {
 			e.preventDefault();
-			if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+			e.dataTransfer.dropEffect = "move";
 		},
 		[]
 	);

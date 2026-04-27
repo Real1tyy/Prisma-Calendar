@@ -12,6 +12,7 @@ export const ParamCoercion = {
 	/** Parses a boolean from `"true"` / `"false"` / `"1"` / `"0"`. */
 	boolean(raw: Record<string, string>, key: string): boolean | undefined {
 		const val = raw[key];
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- val can be undefined at runtime (noUncheckedIndexedAccess disabled)
 		if (val === undefined) return undefined;
 		return val === "true" || val === "1";
 	},
@@ -19,6 +20,7 @@ export const ParamCoercion = {
 	/** Parses a number. Returns `undefined` if absent or `NaN`. */
 	number(raw: Record<string, string>, key: string): number | undefined {
 		const val = raw[key];
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- val can be undefined at runtime (noUncheckedIndexedAccess disabled)
 		if (val === undefined) return undefined;
 		const num = Number(val);
 		return Number.isNaN(num) ? undefined : num;
@@ -27,6 +29,7 @@ export const ParamCoercion = {
 	/** Splits a comma-separated string into a string array. */
 	stringArray(raw: Record<string, string>, key: string): string[] | undefined {
 		const val = raw[key];
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- val can be undefined at runtime (noUncheckedIndexedAccess disabled)
 		if (val === undefined) return undefined;
 		return val
 			.split(",")
@@ -38,18 +41,21 @@ export const ParamCoercion = {
 	required: {
 		string(raw: Record<string, string>, key: string): string {
 			const val = raw[key];
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- val can be undefined at runtime (noUncheckedIndexedAccess disabled)
 			if (val === undefined) throw new Error(`Missing required URL parameter: ${key}`);
 			return val;
 		},
 
 		boolean(raw: Record<string, string>, key: string): boolean {
 			const val = raw[key];
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- val can be undefined at runtime (noUncheckedIndexedAccess disabled)
 			if (val === undefined) throw new Error(`Missing required URL parameter: ${key}`);
 			return val === "true" || val === "1";
 		},
 
 		number(raw: Record<string, string>, key: string): number {
 			const val = raw[key];
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- val can be undefined at runtime (noUncheckedIndexedAccess disabled)
 			if (val === undefined) throw new Error(`Missing required URL parameter: ${key}`);
 			const num = Number(val);
 			if (Number.isNaN(num)) throw new Error(`URL parameter "${key}" is not a valid number: ${val}`);
@@ -58,6 +64,7 @@ export const ParamCoercion = {
 
 		stringArray(raw: Record<string, string>, key: string): string[] {
 			const val = raw[key];
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- val can be undefined at runtime (noUncheckedIndexedAccess disabled)
 			if (val === undefined) throw new Error(`Missing required URL parameter: ${key}`);
 			return val
 				.split(",")

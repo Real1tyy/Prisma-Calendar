@@ -137,9 +137,11 @@ export const WhatsNewContent = memo(function WhatsNewContent({
 	const markdownContent = changelogSections.length > 0 ? formatChangelogSections(changelogSections) : "";
 
 	useEffect(() => {
-		if (!changelogRef.current || !markdownContent || !app) return;
+		if (!changelogRef.current || !markdownContent) return;
 		const el = changelogRef.current;
 		while (el.firstChild) el.removeChild(el.firstChild);
+
+		// eslint-disable-next-line obsidianmd/no-plugin-as-component -- short-lived modal, cleaned up on close
 		void MarkdownRenderer.render(app, markdownContent, el, "/", plugin).then(() => {
 			makeExternalLinksClickable(el, config.links.documentation);
 		});

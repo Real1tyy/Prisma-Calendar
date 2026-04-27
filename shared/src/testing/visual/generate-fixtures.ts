@@ -35,9 +35,6 @@ export function generateFixtures(options: GenerateFixturesOptions): GenerateFixt
 	let written = 0;
 	for (const scenario of scenarios) {
 		const rendered = scenario.render();
-		if (!rendered) {
-			throw new Error(`Scenario "${scenario.name}" did not return an element.`);
-		}
 		const innerHtml = rendered.outerHTML;
 		for (const theme of themes) {
 			const html = buildHarnessHtml(innerHtml, {

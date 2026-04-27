@@ -484,6 +484,7 @@ export function showWhatsNewModal(
 
 				const markdownContent = formatChangelogSections(changelogSections);
 
+				// eslint-disable-next-line obsidianmd/no-plugin-as-component -- short-lived modal, cleaned up on close
 				await MarkdownRenderer.render(app, markdownContent, changelogContainer, "/", plugin);
 
 				makeExternalLinksClickable(changelogContainer, config.links.documentation);
@@ -502,7 +503,7 @@ export function showWhatsNewModal(
 					text: "Product Page",
 				});
 				productPageBtn.addEventListener("click", () => {
-					window.open(config.links.productPage!, "_blank");
+					window.open(config.links.productPage, "_blank");
 				});
 			}
 

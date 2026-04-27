@@ -211,6 +211,7 @@ export class FolderCollapser {
 	// ─── CSS Injection ───────────────────────────────────────────────────
 
 	private injectStyles(): void {
+		// eslint-disable-next-line obsidianmd/no-forbidden-elements -- runtime style injection
 		this.styleEl = document.createElement("style");
 		this.styleEl.id = `${this.config.cssPrefix}folder-collapser-styles`;
 		this.styleEl.textContent = buildStyleRules(this.cls);
@@ -221,14 +222,16 @@ export class FolderCollapser {
 
 	private getFileExplorerView(): FileExplorerView | null {
 		const leaf = this.app.workspace.getLeavesOfType("file-explorer")[0];
-		return (leaf?.view as unknown as FileExplorerView) ?? null;
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- array may be empty at runtime (noUncheckedIndexedAccess disabled)
+		if (!leaf) return null;
+		return leaf.view as unknown as FileExplorerView;
 	}
 
 	private getExplorerElement(path: string): HTMLElement | null {
 		const view = this.getFileExplorerView();
 		if (!view) return null;
 		const item = view.fileItems[path];
-		return item?.selfEl ?? item?.titleEl ?? null;
+		return item.selfEl ?? item.titleEl ?? null;
 	}
 
 	private applyClassesToFolder(folder: TFolder, primaryFile: TFile): void {
@@ -307,7 +310,7 @@ export class FolderCollapser {
 		if (!view) return;
 
 		for (const item of Object.values(view.fileItems)) {
-			const el = item?.selfEl ?? item?.titleEl;
+			const el = item.selfEl ?? item.titleEl;
 			if (el) {
 				el.classList.remove(this.cls.collapsedChild, this.cls.hasCollapsed);
 				const navFolder = el.closest(".nav-folder");
@@ -436,6 +439,7 @@ export class FolderCollapser {
 	// ─── RevealInFolder Patch ────────────────────────────────────────────
 
 	private patchRevealInFolder(): void {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- accessing internal Obsidian API
 		const internalPlugins = (this.app as any).internalPlugins;
 		const fileExplorerPlugin = internalPlugins?.getEnabledPluginById?.("file-explorer");
 		if (!fileExplorerPlugin?.revealInFolder) return;
@@ -465,6 +469,7 @@ export class FolderCollapser {
 	private restoreRevealInFolder(): void {
 		if (!this.originalRevealInFolder) return;
 
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- accessing internal Obsidian API
 		const internalPlugins = (this.app as any).internalPlugins;
 		const fileExplorerPlugin = internalPlugins?.getEnabledPluginById?.("file-explorer");
 		if (fileExplorerPlugin) {

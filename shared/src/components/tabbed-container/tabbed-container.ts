@@ -98,8 +98,8 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 	const onKeyDown = (e: KeyboardEvent): void => {
 		if (!containerActive || destroyed) return;
 		const entry = visibleTabs[currentIndex];
-		const tab = entry ? getActiveChild(entry) : undefined;
-		const handler = tab?.keyHandlers?.[e.key];
+		const tab = getActiveChild(entry);
+		const handler = tab.keyHandlers?.[e.key];
 		if (handler) {
 			handler(e);
 			e.preventDefault();

@@ -595,6 +595,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 		const render = () => {
 			listContainer.empty();
 
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- getNestedValue can return undefined at runtime despite cast
 			const currentItems = (this.getNestedValue(key) as unknown[]) ?? [];
 
 			for (const item of currentItems) {
@@ -644,17 +645,13 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 					.setCta()
 					.onClick(async () => {
 						const input = document.getElementById(inputId) as HTMLInputElement;
-						if (!input) {
-							console.error(`Input element not found: ${inputId}`);
-							return;
-						}
-
 						const newItem = input.value.trim();
 
 						if (!newItem) {
 							return;
 						}
 
+						// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- getNestedValue can return undefined at runtime despite cast
 						const currentItems = (this.getNestedValue(key) as unknown[]) ?? [];
 						let newItems = [...currentItems];
 
@@ -676,6 +673,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 
 		// Quick actions
 		for (const quickAction of quickActions) {
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- getNestedValue can return undefined at runtime despite cast
 			const currentItems = (this.getNestedValue(key) as unknown[]) ?? [];
 
 			// Check condition if provided
@@ -688,6 +686,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 				.setDesc(quickAction.desc)
 				.addButton((button) =>
 					button.setButtonText(quickAction.buttonText).onClick(async () => {
+						// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- getNestedValue can return undefined at runtime despite cast
 						const currentItems = (this.getNestedValue(key) as unknown[]) ?? [];
 						const newItems = await quickAction.action(currentItems);
 						await this.updateSetting(key, newItems);

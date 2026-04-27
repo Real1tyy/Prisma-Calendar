@@ -6,7 +6,15 @@ import tseslint from "typescript-eslint";
 
 export default defineConfig([
 	{
-		ignores: ["node_modules/**", "dist/**", "coverage/**", "*.config.js", "*.config.mjs", "*.config.ts"],
+		ignores: [
+			"node_modules/**",
+			"dist/**",
+			"coverage/**",
+			"*.config.js",
+			"*.config.mjs",
+			"*.config.ts",
+			"package.json",
+		],
 	},
 
 	js.configs.recommended,
@@ -15,7 +23,7 @@ export default defineConfig([
 	...obsidianmd.configs.recommended,
 
 	{
-		files: ["**/*.ts"],
+		files: ["**/*.ts", "**/*.tsx"],
 		languageOptions: {
 			parser: tseslint.parser,
 			parserOptions: {
@@ -54,6 +62,8 @@ export default defineConfig([
 				Response: "readonly",
 				Headers: "readonly",
 				CustomEvent: "readonly",
+				React: "readonly",
+				navigator: "readonly",
 			},
 		},
 		rules: {
@@ -73,7 +83,7 @@ export default defineConfig([
 					caughtErrorsIgnorePattern: "^_",
 				},
 			],
-			"@typescript-eslint/no-explicit-any": "warn",
+			"@typescript-eslint/no-explicit-any": ["warn", { fixToUnknown: false }],
 			"@typescript-eslint/no-non-null-assertion": "off",
 			"@typescript-eslint/no-unsafe-assignment": "off",
 			"@typescript-eslint/no-unsafe-member-access": "off",
@@ -84,18 +94,29 @@ export default defineConfig([
 			"@typescript-eslint/restrict-template-expressions": "off",
 			"@typescript-eslint/unbound-method": "off",
 			"@typescript-eslint/no-implied-eval": "off",
-			"obsidianmd/ui/sentence-case": "off",
-			"obsidianmd/no-static-styles-assignment": "off",
-			"obsidianmd/no-tfile-tfolder-cast": "warn",
 			"@typescript-eslint/no-redundant-type-constituents": "off",
 			"@typescript-eslint/no-base-to-string": "off",
 			"@typescript-eslint/no-deprecated": "warn",
+			"@typescript-eslint/no-unnecessary-condition": "warn",
+			"obsidianmd/ui/sentence-case": "off",
+			"obsidianmd/no-static-styles-assignment": "off",
+			"obsidianmd/no-tfile-tfolder-cast": "warn",
+			"obsidianmd/commands/no-plugin-id-in-command-id": "off",
+			"obsidianmd/commands/no-plugin-name-in-command-name": "off",
+			"obsidianmd/commands/no-command-in-command-id": "off",
+			"obsidianmd/commands/no-command-in-command-name": "off",
+			"obsidianmd/commands/no-default-hotkeys": "off",
+			"obsidianmd/validate-manifest": "off",
+			"obsidianmd/sample-names": "off",
+			"import/no-extraneous-dependencies": "off",
+			"import/no-nodejs-modules": "off",
 			"@microsoft/sdl/no-inner-html": "off",
+			"prefer-const": "error",
 		},
 	},
 
 	{
-		files: ["**/*.test.ts", "**/*.spec.ts", "tests/**/*.ts"],
+		files: ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "tests/**/*.ts", "tests/**/*.tsx"],
 		languageOptions: {
 			globals: {
 				global: "readonly",

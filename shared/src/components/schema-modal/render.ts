@@ -73,7 +73,7 @@ export function createSchemaFormRenderer<T>(config: SchemaModalConfig<T>) {
 						}
 
 						const name = config.existing?.id ?? nameRef.value;
-						void resolveSubmitAction(config, name, result.data as T).then((shouldClose) => {
+						void resolveSubmitAction(config, name, result.data).then((shouldClose) => {
 							if (shouldClose) ctx.close();
 						});
 					});

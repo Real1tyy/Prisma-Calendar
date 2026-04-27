@@ -55,8 +55,8 @@ function renderFieldFromDescriptor(
 	if (override?.render && settingsStore) {
 		const value = getNestedValue(settingsStore.currentSettings, prefixedKey);
 		override.render(containerEl, value, (v) => {
-			void settingsStore.updateSettings(
-				(current) => setNestedValue(current as unknown as Record<string, unknown>, prefixedKey, v) as typeof current
+			void settingsStore.updateSettings((current) =>
+				setNestedValue(current as unknown as Record<string, unknown>, prefixedKey, v)
 			);
 		});
 		return;
@@ -222,6 +222,7 @@ function renderGroupedFields(
 			const descriptor = descriptorMap.get(fieldKey);
 			if (!descriptor) continue;
 			const override = overrides[fieldKey];
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- override can be undefined at runtime (noUncheckedIndexedAccess disabled)
 			if (override?.hidden) continue;
 			renderFieldFromDescriptor(
 				containerEl,
@@ -237,6 +238,7 @@ function renderGroupedFields(
 	const ungrouped = descriptors.filter((d) => !assignedFields.has(d.key));
 	for (const descriptor of ungrouped) {
 		const override = overrides[descriptor.key];
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- override can be undefined at runtime (noUncheckedIndexedAccess disabled)
 		if (override?.hidden) continue;
 		renderFieldFromDescriptor(
 			containerEl,
@@ -259,6 +261,7 @@ function renderFlatFields(
 ): void {
 	for (const descriptor of descriptors) {
 		const override = overrides[descriptor.key];
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- override can be undefined at runtime (noUncheckedIndexedAccess disabled)
 		if (override?.hidden) continue;
 		renderFieldFromDescriptor(
 			containerEl,
@@ -313,6 +316,7 @@ function deriveAutoSections(
 			const override = sectionOverrides[key];
 			return {
 				id: key,
+				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- override can be undefined at runtime (noUncheckedIndexedAccess disabled)
 				label: override?.label ?? camelCaseToLabel(key),
 				schema: key,
 				...override,

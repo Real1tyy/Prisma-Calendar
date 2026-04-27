@@ -6,6 +6,7 @@ if (typeof HTMLElement !== "undefined") {
 function setupObsidianDom(): void {
 	const proto = HTMLElement.prototype as HTMLElement & Record<string, unknown>;
 
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- runtime check: Obsidian augments HTMLElement, but prototype may not have it yet
 	if (!proto.createEl) {
 		(proto as any).createEl = function (
 			this: HTMLElement,
@@ -39,6 +40,7 @@ function setupObsidianDom(): void {
 		};
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- runtime check: Obsidian augments HTMLElement, but prototype may not have it yet
 	if (!proto.createDiv) {
 		(proto as any).createDiv = function (
 			this: HTMLElement,
@@ -54,18 +56,20 @@ function setupObsidianDom(): void {
 					if (c) el.classList.add(c);
 				}
 			}
-			if (typeof opts === "object" && opts?.text) el.textContent = opts.text;
+			if (typeof opts === "object" && opts.text) el.textContent = opts.text;
 			this.appendChild(el);
 			return el;
 		};
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- runtime check: Obsidian augments HTMLElement, but prototype may not have it yet
 	if (!proto.empty) {
 		(proto as any).empty = function (this: HTMLElement): void {
 			this.innerHTML = "";
 		};
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- runtime check: Obsidian augments HTMLElement, but prototype may not have it yet
 	if (!proto.addClass) {
 		(proto as any).addClass = function (this: HTMLElement, ...classes: string[]): void {
 			for (const cls of classes) {
@@ -74,6 +78,7 @@ function setupObsidianDom(): void {
 		};
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- runtime check: Obsidian augments HTMLElement, but prototype may not have it yet
 	if (!proto.removeClass) {
 		(proto as any).removeClass = function (this: HTMLElement, ...classes: string[]): void {
 			for (const cls of classes) {
@@ -82,6 +87,7 @@ function setupObsidianDom(): void {
 		};
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- runtime check: Obsidian augments HTMLElement, but prototype may not have it yet
 	if (!proto.hasClass) {
 		(proto as any).hasClass = function (this: HTMLElement, cls: string): boolean {
 			return this.classList.contains(cls);
@@ -100,7 +106,7 @@ function setupObsidianDom(): void {
 					if (c) el.classList.add(c);
 				}
 			}
-			if (typeof opts === "object" && opts?.text) el.textContent = opts.text;
+			if (typeof opts === "object" && opts.text) el.textContent = opts.text;
 			return el;
 		};
 	}
@@ -120,12 +126,14 @@ function setupObsidianDom(): void {
 
 	const fragProto = DocumentFragment.prototype as DocumentFragment & Record<string, unknown>;
 
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- runtime check: Obsidian augments DocumentFragment, but prototype may not have it yet
 	if (!fragProto.appendText) {
 		(fragProto as any).appendText = function (this: DocumentFragment, text: string): void {
 			this.appendChild(document.createTextNode(text));
 		};
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- runtime check: Obsidian augments DocumentFragment, but prototype may not have it yet
 	if (!fragProto.createSpan) {
 		(fragProto as any).createSpan = function (
 			this: DocumentFragment,
@@ -139,6 +147,7 @@ function setupObsidianDom(): void {
 		};
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- runtime check: Obsidian augments DocumentFragment, but prototype may not have it yet
 	if (!fragProto.createEl) {
 		(fragProto as any).createEl = function (
 			this: DocumentFragment,
@@ -154,6 +163,7 @@ function setupObsidianDom(): void {
 		};
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- runtime check: Obsidian augments HTMLElement, but prototype may not have it yet
 	if (!proto.setAttr) {
 		(proto as any).setAttr = function (this: HTMLElement, name: string, value: string): void {
 			this.setAttribute(name, value);

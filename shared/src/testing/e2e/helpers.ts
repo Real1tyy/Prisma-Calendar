@@ -39,6 +39,7 @@ export async function openSettingsTab(page: Page, tabId: string): Promise<void> 
 export async function isPluginLoaded(page: Page, pluginId: string): Promise<boolean> {
 	return page.evaluate((id) => {
 		const w = window as unknown as ObsidianWindow;
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		return Boolean(w.app.plugins?.plugins?.[id]);
 	}, pluginId);
 }

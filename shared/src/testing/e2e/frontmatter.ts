@@ -12,7 +12,7 @@ function matchFrontmatter(raw: string): string | null {
 	// Match a leading YAML block `---\n...\n---`. We cannot rely on Obsidian's
 	// parser because `app.metadataCache` lags behind writes in test timings.
 	const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-	return match ? match[1]! : null;
+	return match ? match[1] : null;
 }
 
 /** Parse the YAML frontmatter at the top of a note. Returns an empty object when absent. */

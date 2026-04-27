@@ -1,4 +1,4 @@
-import { type App, MarkdownView, type TFile, TFolder, type Vault } from "obsidian";
+import { type App, MarkdownView, TFile, type Vault } from "obsidian";
 import type { z } from "zod";
 
 import { isFolderNote } from "../file/file";
@@ -29,8 +29,8 @@ export class CodeBlockFile<T> {
 
 	resolveFile(app: App, filePath: string): TFile | null {
 		const file = app.vault.getAbstractFileByPath(filePath);
-		if (!file || file instanceof TFolder) return null;
-		return file as TFile;
+		if (!(file instanceof TFile)) return null;
+		return file;
 	}
 
 	async createBackingFile(app: App, filePath: string): Promise<TFile> {
@@ -39,7 +39,7 @@ export class CodeBlockFile<T> {
 			await ensureDirectory(app, filePath.substring(0, lastSlash));
 		}
 		const content = `\`\`\`${this.codeFence}\n[]\n\`\`\`\n`;
-		return (await app.vault.create(filePath, content)) as TFile;
+		return await app.vault.create(filePath, content);
 	}
 
 	// =========================================================================

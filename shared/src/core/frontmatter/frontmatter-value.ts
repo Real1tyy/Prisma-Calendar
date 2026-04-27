@@ -417,7 +417,7 @@ export function parseInlineWikiLinks(text: string): WikiLinkSegment[] {
 
 	for (const match of matches) {
 		// Add text before the link
-		if (match.index !== undefined && match.index > lastIndex) {
+		if (match.index > lastIndex) {
 			segments.push({
 				type: "text",
 				content: text.substring(lastIndex, match.index),
@@ -435,7 +435,7 @@ export function parseInlineWikiLinks(text: string): WikiLinkSegment[] {
 			displayText,
 		});
 
-		lastIndex = (match.index ?? 0) + match[0].length;
+		lastIndex = match.index + match[0].length;
 	}
 
 	// Add remaining text

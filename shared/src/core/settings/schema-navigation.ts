@@ -63,7 +63,7 @@ export function navigateSchema(shape: ZodRawShape, dottedKey: string): unknown |
 		fieldSchema = unwrapInnerSchema(fieldSchema);
 
 		if (fieldSchema && typeof fieldSchema === "object" && "shape" in fieldSchema) {
-			fieldSchema = (fieldSchema as { shape: Record<string, unknown> }).shape?.[k];
+			fieldSchema = (fieldSchema as { shape: Record<string, unknown> }).shape[k];
 		} else if (fieldSchema && typeof fieldSchema === "object" && k in fieldSchema) {
 			fieldSchema = (fieldSchema as Record<string, unknown>)[k];
 		} else {
@@ -148,7 +148,7 @@ export function inferArrayItemType(shape: ZodRawShape, key: string): "string" | 
 		if (getTypeName(innerSchema) !== "ZodArray") return undefined;
 
 		const def = getDef(innerSchema);
-		const elementType = def?.["type"] as unknown;
+		const elementType = def?.["type"];
 		const elementTypeName = getTypeName(elementType);
 
 		if (elementTypeName === "ZodNumber") return "number";

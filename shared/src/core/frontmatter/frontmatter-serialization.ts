@@ -9,6 +9,7 @@ import { stringify as stringifyYAML } from "yaml";
  * @returns Complete file content with YAML frontmatter
  */
 export function createFileContentWithFrontmatter(frontmatter: Record<string, unknown>, content = ""): string {
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- frontmatter can be null at runtime from untyped callers
 	if (!frontmatter || Object.keys(frontmatter).length === 0) {
 		// No frontmatter, just return content
 		return content;
