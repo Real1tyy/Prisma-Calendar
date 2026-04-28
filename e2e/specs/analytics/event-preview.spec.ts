@@ -23,3 +23,30 @@ test.describe("event preview modal", () => {
 		await expect(modal.locator(sel("prisma-event-preview-title"))).toHaveText("Preview Target");
 	});
 });
+
+test.describe("note content tooltip", () => {
+	test("hover tooltip shows note body and refreshes after edits", async ({ calendar }) => {
+		const evt = await calendar.createEvent({
+			title: "Tooltip Note",
+			start: todayStamp(11, 0),
+			end: todayStamp(12, 0),
+		});
+
+		await evt.expectVisible();
+
+		// Write initial body and verify it appears in the tooltip
+		await evt.writeNoteBody("Weekly review\nProject status\nAction items");
+		await evt.hover();
+		await expect.poll(() => evt.getTooltip()).toContain("Weekly review");
+
+		// Edit the note body and verify the tooltip refreshes
+		await calendar.page.mouse.move(0, 0);
+		await evt.writeNoteBody("Meeting agenda\nBudget discussion\nFollow-up notes");
+		await evt.hover();
+
+		await expect.poll(() => evt.getTooltip()).toContain("Meeting agenda");
+		const tooltip = await evt.getTooltip();
+		expect(tooltip).toContain("Budget discussion");
+		expect(tooltip).toContain("Follow-up notes");
+	});
+});

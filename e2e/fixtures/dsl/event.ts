@@ -52,6 +52,18 @@ export interface EventHandle {
 	 */
 	expectColor(expected: string, message?: string): Promise<void>;
 
+	/**
+	 * Replace the note body (everything after frontmatter) via `app.vault.modify`.
+	 * Preserves frontmatter — only the markdown body is swapped.
+	 */
+	writeNoteBody(body: string): Promise<void>;
+
+	/** Hover over the event block in the active calendar leaf. */
+	hover(): Promise<void>;
+
+	/** Read the native `title` attribute (tooltip text) from the event block. */
+	getTooltip(): Promise<string | null>;
+
 	/** Wait for (or assert the absence of) the event block in the active calendar leaf. */
 	expectVisible(yes?: boolean): Promise<void>;
 }
@@ -126,6 +138,40 @@ export function createEventHandle(deps: EventHandleDeps, path: string, title: st
 					message: message ?? `frontmatter ${key} did not match in ${path}`,
 				})
 				.toBe(true);
+		},
+
+		async writeNoteBody(body) {
+			await page.evaluate(
+				async ({ filePath, newBody }) => {
+					const w = window as unknown as {
+						app: {
+							vault: {
+								getAbstractFileByPath: (p: string) => unknown;
+								read: (file: unknown) => Promise<string>;
+								modify: (file: unknown, content: string) => Promise<void>;
+							};
+						};
+					};
+					const file = w.app.vault.getAbstractFileByPath(filePath);
+					if (!file) throw new Error(`writeNoteBody: no file at ${filePath}`);
+					const content = await w.app.vault.read(file);
+					const fmEnd = content.indexOf("\n---\n");
+					if (fmEnd === -1) throw new Error(`writeNoteBody: no frontmatter in ${filePath}`);
+					const frontmatter = content.slice(0, fmEnd + 5);
+					await w.app.vault.modify(file, frontmatter + "\n" + newBody + "\n");
+				},
+				{ filePath: path, newBody: body }
+			);
+		},
+
+		async hover() {
+			const el = block();
+			await el.waitFor({ state: "visible" });
+			await el.hover();
+		},
+
+		async getTooltip() {
+			return block().getAttribute("title");
 		},
 
 		async expectVisible(yes = true) {
