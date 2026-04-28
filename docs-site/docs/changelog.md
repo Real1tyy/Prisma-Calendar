@@ -8,6 +8,9 @@ All notable changes to this project will be documented here.
 
 > **TLDR:** New **Subscription management button** in License settings — Pro users see "Manage Subscription" linking to the account page, free users see "Subscribe" linking to the product page.
 
+### Fixed
+- **Stale note preview in hover tooltip**: Editing a note's body content and hovering over the event again now shows the updated text immediately. See [Calendar View → Event Interaction](./features/calendar/calendar-view.md#event-interaction).
+
 ### Added
 - **First-launch welcome flow**: Fresh installs now open a dedicated welcome modal. It scans the vault for folders with date-like properties, lets you set the first calendar directory directly in the modal, and opens Prisma right away after setup. See [Quick Start](./quickstart.md#initial-setup).
 - **Subscription management button**: The License section now shows a **Manage Subscription** button for Pro users (links to account page) or a **Subscribe** button for free users (links to purchase page). See [General Settings → License](./configuration/general.md#license).

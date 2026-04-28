@@ -216,23 +216,24 @@ function appendEventColorDots(element: HTMLElement, colors: string[]): void {
 
 export function attachLazyNotePreview(element: HTMLElement, filePath: string, app: App): void {
 	element.addEventListener("mouseenter", () => {
-		if (element.dataset["notesLoaded"]) return;
-		element.dataset["notesLoaded"] = "true";
-		const currentTitle = element.getAttribute("title") ?? "";
+		const baseTitle = element.dataset["baseTitle"] ?? element.getAttribute("title") ?? "";
+		if (!element.dataset["baseTitle"]) {
+			element.dataset["baseTitle"] = baseTitle;
+		}
 		element.removeAttribute("title");
 		void (async () => {
 			try {
 				const file = app.vault.getAbstractFileByPath(filePath);
 				if (!(file instanceof TFile)) {
-					element.setAttribute("title", currentTitle);
+					element.setAttribute("title", baseTitle);
 					return;
 				}
 				const fullContent = await app.vault.cachedRead(file);
 				const body = extractContentAfterFrontmatter(fullContent);
 				const preview = getNotePreviewLines(body, 3);
-				element.setAttribute("title", preview ? currentTitle + "\n---\n" + preview : currentTitle);
+				element.setAttribute("title", preview ? baseTitle + "\n---\n" + preview : baseTitle);
 			} catch {
-				element.setAttribute("title", currentTitle);
+				element.setAttribute("title", baseTitle);
 			}
 		})();
 	});
