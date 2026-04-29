@@ -1,9 +1,9 @@
 import { type ChildProcess, spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { appendFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import { appendFileSync, cpSync, existsSync, linkSync, mkdirSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 
 import { type Browser, chromium, type Page } from "@playwright/test";
 
@@ -268,7 +268,12 @@ export async function bootstrapObsidian(options: BootstrapOptions): Promise<Boot
 		if (!existsSync(src)) {
 			throw new Error(`plugin artifact missing: ${src} (run your build before tests)`);
 		}
-		cpSync(src, join(pluginDir, file));
+		const dest = join(pluginDir, file);
+		try {
+			linkSync(src, dest);
+		} catch {
+			cpSync(src, dest);
+		}
 	}
 	log.debug(`plugin artifacts staged at ${pluginDir}`);
 
@@ -284,7 +289,7 @@ export async function bootstrapObsidian(options: BootstrapOptions): Promise<Boot
 	// Mode for this vaultId, writes Preferences, and copies the asar in — it's
 	// the sanctioned way to produce a userDataDir Obsidian will happily boot
 	// against. The returned installerPath is the Electron binary we spawn below.
-	const { userDataDir, installerPath } = await buildUserDataDir(vaultDir, options.version);
+	const { userDataDir, installerPath } = await buildUserDataDir(vaultDir, options.version, log);
 	log.debug(`userDataDir=${userDataDir}`);
 	log.debug(`installerPath=${installerPath}`);
 
@@ -509,10 +514,18 @@ function leanVault(
 	);
 }
 
-async function buildUserDataDir(
-	vaultDir: string,
-	version: ObsidianVersion
-): Promise<{ userDataDir: string; installerPath: string }> {
+type LauncherCache = {
+	launcher: ObsidianLauncherLike;
+	installerPath: string;
+	appPathInTmp: string;
+};
+
+let _launcherCache: LauncherCache | undefined;
+
+async function ensureLauncherCache(version: ObsidianVersion, log: Logger): Promise<LauncherCache> {
+	if (_launcherCache) return _launcherCache;
+
+	log.debug("initializing launcher cache (first test in this worker)");
 	const launcherModule = await import("obsidian-launcher");
 	const Launcher = (launcherModule as { default: new () => ObsidianLauncherLike }).default;
 	const launcher = new Launcher();
@@ -520,10 +533,34 @@ async function buildUserDataDir(
 		launcher.downloadApp(version.appVersion),
 		launcher.downloadInstaller(version.installerVersion),
 	]);
+
+	// Stage the asar under /tmp so setupConfigDir's internal linkOrCp can
+	// hardlink it into every per-test config dir (both paths on the same fs).
+	// The downloaded asar often lives under ~/.cache — a different mount on
+	// many Linux setups — which forces a full 23 MB copy per test.
+	// The basename must stay unchanged (setupConfigDir uses it as the dest name).
+	const asarCacheDir = join(tmpdir(), "obsidian-e2e-asar-cache");
+	mkdirSync(asarCacheDir, { recursive: true });
+	const tmpAsar = join(asarCacheDir, basename(appPath));
+	if (!existsSync(tmpAsar)) {
+		cpSync(appPath, tmpAsar);
+		log.debug(`asar staged in tmpdir: ${tmpAsar}`);
+	}
+
+	_launcherCache = { launcher, installerPath, appPathInTmp: tmpAsar };
+	return _launcherCache;
+}
+
+async function buildUserDataDir(
+	vaultDir: string,
+	version: ObsidianVersion,
+	log: Logger
+): Promise<{ userDataDir: string; installerPath: string }> {
+	const { launcher, installerPath, appPathInTmp } = await ensureLauncherCache(version, log);
 	const userDataDir = await launcher.setupConfigDir({
 		appVersion: version.appVersion,
 		installerVersion: version.installerVersion,
-		appPath,
+		appPath: appPathInTmp,
 		vault: vaultDir,
 	});
 	return { userDataDir, installerPath };

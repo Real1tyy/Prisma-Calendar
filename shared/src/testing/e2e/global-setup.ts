@@ -52,7 +52,7 @@ function pruneOrphanXdgDirs(): void {
 
 	let removed = 0;
 	for (const entry of entries) {
-		if (!entry.startsWith("o-e2e-")) continue;
+		if (!entry.startsWith("o-e2e-") && !entry.startsWith("obsidian-launcher-config-")) continue;
 		try {
 			rmSync(join("/tmp", entry), { recursive: true, force: true });
 			removed++;
@@ -62,6 +62,6 @@ function pruneOrphanXdgDirs(): void {
 	}
 
 	if (removed > 0) {
-		console.log(`[global-setup] cleaned ${removed} orphan /tmp/o-e2e-* dir(s)`);
+		console.log(`[global-setup] cleaned ${removed} orphan /tmp/{o-e2e-*,obsidian-launcher-config-*} dir(s)`);
 	}
 }
