@@ -1587,8 +1587,12 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		if (snapshot === this.colorDotSnapshot) return;
 		this.colorDotSnapshot = snapshot;
 
-		// Batch remove existing dots
-		for (const dot of Array.from(this.container.querySelectorAll(`.${cls("day-color-dots")}`))) {
+		// Remove day-cell level dots only; event-level overflow dots are managed
+		// by the event rendering pipeline and must not be stripped here — the
+		// no-diff path in performIncrementalUpdate does not re-render events.
+		for (const dot of Array.from(
+			this.container.querySelectorAll(`.${cls("day-color-dots")}:not(.${cls("event-color-dots")})`)
+		)) {
 			dot.remove();
 		}
 
