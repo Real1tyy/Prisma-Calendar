@@ -656,9 +656,10 @@ async function ensurePluginLoaded(page: Page, pluginId: string, log: Logger, tim
 
 function pipeRendererConsole(page: Page, log: Logger): void {
 	page.on("console", (msg) => log.debug(`console.${msg.type()}: ${msg.text()}`));
-	// Page errors and crashes are real failures — promote to info so they show
-	// up without requiring --debug.
-	page.on("pageerror", (err) => log.info(`pageerror: ${err.message}\n${err.stack ?? ""}`));
+	page.on("pageerror", (err) => {
+		if (isTransientObsidianTeardownError(err.message)) return;
+		log.info(`pageerror: ${err.message}\n${err.stack ?? ""}`);
+	});
 	page.on("crash", () => log.info(`PAGE CRASHED`));
 }
 
