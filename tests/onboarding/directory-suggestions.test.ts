@@ -40,20 +40,57 @@ describe("directory suggestions", () => {
 			directory: "Projects",
 			fileCount: 2,
 		});
-		expect(suggestions[0].matchedProps).toContain("Start Date");
-		expect(suggestions[0].matchedProps).toContain("Date");
+		expect(suggestions[0].datetimeProps).toContain("Start Date");
+		expect(suggestions[0].datetimeProps).toContain("End Date");
+		expect(suggestions[0].dateProps).toContain("Date");
 		expect(suggestions.some((entry) => entry.directory === "Inbox")).toBe(false);
 	});
 
-	it("formats suggestion metadata for the onboarding UI", () => {
+	it("classifies datetime and date properties separately", () => {
+		const suggestions = buildDirectorySuggestions([
+			{
+				path: "Calendar/Meeting.md",
+				frontmatter: {
+					Start: "2026-05-01T14:00",
+					End: "2026-05-01T15:00",
+					Due: "2026-05-01",
+					Created: "2026-04-20",
+				},
+			},
+		]);
+
+		expect(suggestions).toHaveLength(1);
+		expect(suggestions[0].datetimeProps).toEqual(["End", "Start"]);
+		expect(suggestions[0].dateProps).toEqual(["Created", "Due"]);
+	});
+
+	it("classifies a property as datetime if any occurrence has a time component", () => {
+		const suggestions = buildDirectorySuggestions([
+			{
+				path: "Tasks/A.md",
+				frontmatter: { Deadline: "2026-05-01" },
+			},
+			{
+				path: "Tasks/B.md",
+				frontmatter: { Deadline: "2026-05-02T10:00" },
+			},
+		]);
+
+		expect(suggestions[0].datetimeProps).toContain("Deadline");
+		expect(suggestions[0].dateProps).not.toContain("Deadline");
+	});
+
+	it("formats suggestion metadata with categorized properties", () => {
 		const meta = formatDirectorySuggestionMeta({
 			directory: "Calendar",
 			fileCount: 3,
-			matchedProps: ["Start", "End"],
+			datetimeProps: ["Start", "End"],
+			dateProps: ["Due"],
 		});
 
 		expect(meta).toContain("3 notes");
-		expect(meta).toContain("Start, End");
+		expect(meta).toContain("datetime: Start, End");
+		expect(meta).toContain("date: Due");
 	});
 
 	it("formats suggestion descriptions without ranking folders", () => {
@@ -61,7 +98,8 @@ describe("directory suggestions", () => {
 			formatDirectorySuggestionDescription({
 				directory: "Calendar",
 				fileCount: 1,
-				matchedProps: ["Date"],
+				dateProps: ["Date"],
+				datetimeProps: [],
 			})
 		).toContain("Contains a note");
 
@@ -69,7 +107,8 @@ describe("directory suggestions", () => {
 			formatDirectorySuggestionDescription({
 				directory: "Calendar",
 				fileCount: 2,
-				matchedProps: ["Date"],
+				dateProps: ["Date"],
+				datetimeProps: [],
 			})
 		).toContain("Contains notes");
 	});

@@ -1,10 +1,11 @@
-import { getTopLevelDirectory, isDateLikeString } from "@real1ty-obsidian-plugins";
+import { classifyDateLikeString, type DateLikeKind, getTopLevelDirectory } from "@real1ty-obsidian-plugins";
 import type { App, TFile } from "obsidian";
 
 export interface DirectorySuggestion {
 	directory: string;
 	fileCount: number;
-	matchedProps: string[];
+	dateProps: string[];
+	datetimeProps: string[];
 }
 
 interface FileFrontmatterLike {
@@ -12,20 +13,28 @@ interface FileFrontmatterLike {
 	frontmatter: Record<string, unknown> | null | undefined;
 }
 
-export function isDateLikeFrontmatterValue(value: unknown): boolean {
-	return typeof value === "string" && isDateLikeString(value);
+function classifyFrontmatterProps(frontmatter: Record<string, unknown>) {
+	return Object.entries(frontmatter).flatMap(([key, value]) => {
+		if (typeof value !== "string") return [];
+		const kind = classifyDateLikeString(value);
+		return kind ? [{ key, kind }] : [];
+	});
 }
 
-function summarizeFile(frontmatter: Record<string, unknown>): { matchedProps: string[] } | null {
-	const matchedProps = Object.entries(frontmatter)
-		.filter(([, value]) => isDateLikeFrontmatterValue(value))
-		.map(([key]) => key);
+interface PropTally {
+	count: number;
+	datetimeCount: number;
+}
 
-	if (matchedProps.length === 0) return null;
+const MAX_PROPS_PER_KIND = 4;
+const MAX_SUGGESTIONS = 6;
 
-	return {
-		matchedProps,
-	};
+function topPropsByCount(tally: Map<string, PropTally>, kind: DateLikeKind): string[] {
+	return Array.from(tally.entries())
+		.filter(([, t]) => (kind === "datetime" ? t.datetimeCount > 0 : t.datetimeCount === 0))
+		.sort((a, b) => b[1].count - a[1].count || a[0].localeCompare(b[0]))
+		.map(([key]) => key)
+		.slice(0, MAX_PROPS_PER_KIND);
 }
 
 export function buildDirectorySuggestions(files: FileFrontmatterLike[]): DirectorySuggestion[] {
@@ -33,7 +42,7 @@ export function buildDirectorySuggestions(files: FileFrontmatterLike[]): Directo
 		string,
 		{
 			fileCount: number;
-			propCounts: Map<string, number>;
+			propCounts: Map<string, PropTally>;
 		}
 	>();
 
@@ -42,18 +51,21 @@ export function buildDirectorySuggestions(files: FileFrontmatterLike[]): Directo
 		const directory = getTopLevelDirectory(file.path);
 		if (!directory) continue;
 
-		const summary = summarizeFile(file.frontmatter);
-		if (!summary) continue;
+		const classified = classifyFrontmatterProps(file.frontmatter);
+		if (classified.length === 0) continue;
 
 		const bucket = buckets.get(directory) ?? {
 			fileCount: 0,
-			propCounts: new Map<string, number>(),
+			propCounts: new Map<string, PropTally>(),
 		};
 
 		bucket.fileCount += 1;
 
-		for (const key of summary.matchedProps) {
-			bucket.propCounts.set(key, (bucket.propCounts.get(key) ?? 0) + 1);
+		for (const { key, kind } of classified) {
+			const existing = bucket.propCounts.get(key) ?? { count: 0, datetimeCount: 0 };
+			existing.count += 1;
+			if (kind === "datetime") existing.datetimeCount += 1;
+			bucket.propCounts.set(key, existing);
 		}
 
 		buckets.set(directory, bucket);
@@ -63,14 +75,12 @@ export function buildDirectorySuggestions(files: FileFrontmatterLike[]): Directo
 		.map(([directory, bucket]) => ({
 			directory,
 			fileCount: bucket.fileCount,
-			matchedProps: Array.from(bucket.propCounts.entries())
-				.sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-				.map(([key]) => key)
-				.slice(0, 4),
+			dateProps: topPropsByCount(bucket.propCounts, "date"),
+			datetimeProps: topPropsByCount(bucket.propCounts, "datetime"),
 		}))
 		.filter((entry) => entry.fileCount > 0)
 		.sort((a, b) => b.fileCount - a.fileCount || a.directory.localeCompare(b.directory))
-		.slice(0, 6);
+		.slice(0, MAX_SUGGESTIONS);
 }
 
 export async function scanVaultForDirectorySuggestions(app: App): Promise<DirectorySuggestion[]> {
@@ -83,10 +93,10 @@ export async function scanVaultForDirectorySuggestions(app: App): Promise<Direct
 }
 
 export function formatDirectorySuggestionMeta(suggestion: DirectorySuggestion): string {
-	const props =
-		suggestion.matchedProps.length > 0
-			? `Found date-like properties: ${suggestion.matchedProps.join(", ")}`
-			: "Found date-like properties";
+	const parts: string[] = [];
+	if (suggestion.datetimeProps.length > 0) parts.push(`datetime: ${suggestion.datetimeProps.join(", ")}`);
+	if (suggestion.dateProps.length > 0) parts.push(`date: ${suggestion.dateProps.join(", ")}`);
+	const props = parts.length > 0 ? `Found properties — ${parts.join(" · ")}` : "Found date-like properties";
 	return `${suggestion.fileCount} note${suggestion.fileCount === 1 ? "" : "s"} · ${props}`;
 }
 
