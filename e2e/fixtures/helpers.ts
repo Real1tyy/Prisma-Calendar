@@ -116,7 +116,7 @@ export async function closeSettings(page: Page): Promise<void> {
  * smaller viewports and need scrolling.
  */
 export async function switchSettingsTab(page: Page, tabId: string): Promise<void> {
-	const tab = page.locator(`[data-testid="prisma-settings-tab-${tabId}"]`).first();
+	const tab = page.locator(`[data-testid="prisma-settings-nav-${tabId}"]`).first();
 	await tab.waitFor({ state: "visible", timeout: 10_000 });
 	await tab.click();
 }
