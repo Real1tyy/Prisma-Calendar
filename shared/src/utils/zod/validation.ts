@@ -156,6 +156,17 @@ export function isDateLikeString(raw: string): boolean {
 	return requiredDateTimeTransform.safeParse(value).success || requiredDateTransform.safeParse(value).success;
 }
 
+export type DateLikeKind = "date" | "datetime";
+
+const HAS_TIME = /T\d|[\s]\d{1,2}:\d{2}/;
+
+export function classifyDateLikeString(raw: string): DateLikeKind | null {
+	const value = raw.trim();
+	if (!value) return null;
+	if (!isDateLikeString(value)) return null;
+	return HAS_TIME.test(value) ? "datetime" : "date";
+}
+
 /**
  * Creates date transforms that parse ISO dates in a specific timezone.
  * Defaults to local timezone when no zone is specified.

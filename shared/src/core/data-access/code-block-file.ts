@@ -34,6 +34,9 @@ export class CodeBlockFile<T> {
 	}
 
 	async createBackingFile(app: App, filePath: string): Promise<TFile> {
+		const existing = app.vault.getAbstractFileByPath(filePath);
+		if (existing instanceof TFile) return existing;
+
 		const lastSlash = filePath.lastIndexOf("/");
 		if (lastSlash > 0) {
 			await ensureDirectory(app, filePath.substring(0, lastSlash));
