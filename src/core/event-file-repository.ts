@@ -26,6 +26,10 @@ export type FrontmatterSnapshot = {
 	data: Frontmatter;
 	content: string;
 	filePath: string;
+	/** Obsidian keeps TFile.path current through renames, so this reference
+	 *  never goes stale — even if ZettelID assignment renames the file after
+	 *  the snapshot was captured. */
+	file: TFile;
 };
 
 type EventTable = VaultTable<Frontmatter>;
@@ -189,13 +193,17 @@ export class EventFileRepository implements CalendarEventSource {
 			data: { ...row.data },
 			content: rawContent,
 			filePath: row.filePath,
+			file: row.file,
 		};
 	}
 
 	async restoreSnapshot(snapshot: FrontmatterSnapshot): Promise<void> {
-		const existing = this.table.get(snapshot.key);
-		if (existing) {
-			await this.app.vault.modify(existing.file, snapshot.content);
+		// snapshot.file.path stays current through renames; snapshot.filePath
+		// is the path at capture time (used as fallback for deleted files).
+		const currentPath = snapshot.file.path;
+		const file = this.app.vault.getAbstractFileByPath(currentPath);
+		if (file) {
+			await this.app.vault.modify(file as TFile, snapshot.content);
 		} else {
 			await this.app.vault.create(snapshot.filePath, snapshot.content);
 		}

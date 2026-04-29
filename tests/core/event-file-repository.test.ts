@@ -181,23 +181,29 @@ describe("EventFileRepository", () => {
 		it("should restore a snapshot to an existing row", async () => {
 			const fm = createTimedFrontmatter();
 			const row = repo.mockTable.seed("meeting", fm);
+			mockApp.vault.getAbstractFileByPath.mockReturnValue(row.file);
 
 			await repo.restoreSnapshot({
 				key: "meeting",
 				data: fm,
 				content: "---\nTitle: Team Meeting\n---\nRestored body",
 				filePath: row.filePath,
+				file: row.file,
 			});
 
 			expect(mockApp.vault.modify).toHaveBeenCalledWith(row.file, "---\nTitle: Team Meeting\n---\nRestored body");
 		});
 
 		it("should create a new file when restoring a snapshot for a deleted row", async () => {
+			const deletedFile = { path: "Events/deleted-event.md" };
+			mockApp.vault.getAbstractFileByPath.mockReturnValue(null);
+
 			await repo.restoreSnapshot({
 				key: "deleted-event",
 				data: createTimedFrontmatter(),
 				content: "---\nTitle: Team Meeting\n---\nRestored",
 				filePath: "Events/deleted-event.md",
+				file: deletedFile as any,
 			});
 
 			expect(mockApp.vault.create).toHaveBeenCalledWith("Events/deleted-event.md", expect.any(String));
