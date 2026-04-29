@@ -1,5 +1,6 @@
 import { expectFrontmatter, readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
+import { fromAnchor } from "../../fixtures/dates";
 import { expect, test } from "../../fixtures/electron";
 import { sel, TID } from "../../fixtures/testids";
 import {
@@ -24,8 +25,8 @@ test.describe("cancel / escape", () => {
 		await openCreateModal(calendar.page);
 		await fillEventModal(calendar.page, {
 			title: "Abandoned Draft",
-			start: "2026-05-10T09:00",
-			end: "2026-05-10T10:00",
+			start: fromAnchor(0, 9, 0),
+			end: fromAnchor(0, 10, 0),
 		});
 		await calendar.page.locator(sel(TID.event.btn("cancel"))).click();
 		await waitForModalClosed(calendar.page);
@@ -42,8 +43,8 @@ test.describe("cancel / escape", () => {
 		await openCreateModal(calendar.page);
 		await fillEventModal(calendar.page, {
 			title: "Escaped Draft",
-			start: "2026-05-10T09:00",
-			end: "2026-05-10T10:00",
+			start: fromAnchor(0, 9, 0),
+			end: fromAnchor(0, 10, 0),
 		});
 		await calendar.page.keyboard.press("Escape");
 		await waitForModalClosed(calendar.page);

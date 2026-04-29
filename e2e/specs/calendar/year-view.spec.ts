@@ -1,6 +1,6 @@
 import { gotoToday, monthCellForDate, todayISO, todayTimedEvent, waitForEvent } from "../../fixtures/calendar-helpers";
 import { expect, test } from "../../fixtures/electron";
-import { refreshCalendar, seedEvent } from "../../fixtures/seed-events";
+import { refreshCalendar, seedEvent, updateCalendarSettings } from "../../fixtures/seed-events";
 
 test.describe("year view", () => {
 	test("seeded event renders in the matching day cell across all twelve months", async ({ calendar }) => {
@@ -29,15 +29,20 @@ test.describe("year view", () => {
 
 	test("color dots render in year view day cells", async ({ calendar }) => {
 		const { page, vaultDir } = calendar;
-		seedEvent(vaultDir, todayTimedEvent("Dots Event", 9, 10));
+		await updateCalendarSettings(page, {
+			colorRules: [
+				{ id: "rule-dots", expression: "Category === 'Work'", color: "#ff0000", enabled: true },
+				{ id: "rule-dots-2", expression: "Category === 'Work'", color: "#00ff00", enabled: true },
+			],
+		});
+		seedEvent(vaultDir, { ...todayTimedEvent("Dots Event", 9, 10), category: "Work" });
 
 		await refreshCalendar(page);
 		await gotoToday(page);
 		await calendar.switchMode("year");
-		await waitForEvent(page, "Dots Event");
 
 		const cell = monthCellForDate(page, todayISO());
-		const dots = cell.locator(".prisma-day-color-dots");
+		const dots = cell.locator(".prisma-day-color-dots:not(.prisma-event-color-dots)");
 		await expect(dots.first()).toBeVisible();
 	});
 
