@@ -328,10 +328,13 @@ async function runWithObsidianHandle(
 	// SyntaxError: Unexpected end of JSON input`. Obsidian recovers by falling
 	// back to defaults — plugin state isn't affected. Not a plugin bug, so
 	// filter it out; every other "failed to read JSON" still fails loudly.
+	/* eslint-disable obsidianmd/hardcoded-config-path */
 	const isTransientAppJsonReadError = (text: string): boolean =>
 		text.includes("failed to read JSON") &&
-		// eslint-disable-next-line obsidianmd/hardcoded-config-path
-		(text.includes(".obsidian/app.json") || text.includes(".obsidian/community-plugins.json"));
+		(text.includes(".obsidian/app.json") ||
+			text.includes(".obsidian/community-plugins.json") ||
+			text.includes(".obsidian/appearance.json"));
+	/* eslint-enable obsidianmd/hardcoded-config-path */
 	// Resilience specs deliberately induce broken on-disk state (corrupt
 	// data.json, unreadable files) to prove the plugin recovers. Those flows
 	// DO legitimately emit console.errors from Obsidian's own JSON reader /

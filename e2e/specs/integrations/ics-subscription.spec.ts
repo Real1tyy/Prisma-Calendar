@@ -273,12 +273,16 @@ test.describe("ICS URL subscription sync", () => {
 
 		await triggerSync(obsidian.page);
 		await waitForRequest(server);
-		await waitForEventFileCount(obsidian.vaultDir, 2);
+
+		// The sync deletes "To Be Deleted" and creates "Newly Added" asynchronously.
+		// Poll until the expected final state materialises on disk.
+		await expect.poll(() => listSubscribedEvents(obsidian.vaultDir).some((f) => f.includes("Newly Added"))).toBe(true);
+		await expect
+			.poll(() => listSubscribedEvents(obsidian.vaultDir).some((f) => f.includes("To Be Deleted")))
+			.toBe(false);
 
 		const files = listSubscribedEvents(obsidian.vaultDir);
 		expect(files.some((f) => f.includes("Stable Event"))).toBe(true);
-		expect(files.some((f) => f.includes("Newly Added"))).toBe(true);
-		expect(files.some((f) => f.includes("To Be Deleted"))).toBe(false);
 	});
 
 	test("malformed ICS response leaves the vault untouched and the plugin alive", async ({ obsidian }) => {
