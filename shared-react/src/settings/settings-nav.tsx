@@ -1,5 +1,5 @@
 import type { KeyboardEvent, ReactNode } from "react";
-import { memo, useCallback, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 import { useInjectedStyles } from "../hooks/use-injected-styles";
 
@@ -32,6 +32,10 @@ function buildSettingsNavStyles(p: string): string {
 .${p}settings-search-input:focus {
 	border-color: var(--interactive-accent);
 	box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2); width: 200px;
+}
+.${p}settings-search-hidden.setting-item { display: none; }
+.${p}settings-search-no-results {
+	padding: 24px; text-align: center; color: var(--text-muted); font-style: italic;
 }
 .${p}settings-footer { margin-top: 2rem; text-align: center; font-size: var(--font-ui-smaller); color: var(--text-faint); }
 .${p}settings-footer-links { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
@@ -76,7 +80,33 @@ export const SettingsNav = memo(function SettingsNav({
 }: SettingsNavProps) {
 	useInjectedStyles(`${cssPrefix}settings-nav-styles`, buildSettingsNavStyles(cssPrefix));
 	const [focusedIndex, setFocusedIndex] = useState(-1);
+	const [noResults, setNoResults] = useState(false);
 	const buttonsRef = useRef<(HTMLButtonElement | null)[]>([]);
+	const rootRef = useRef<HTMLDivElement>(null);
+
+	const isSearching = (searchValue ?? "").trim().length >= 2;
+
+	useEffect(() => {
+		const root = rootRef.current;
+		if (!root) return;
+
+		const HIDDEN = `${cssPrefix}settings-search-hidden`;
+
+		if (!isSearching) {
+			root.querySelectorAll(`.${HIDDEN}`).forEach((el) => el.classList.remove(HIDDEN));
+			setNoResults(false);
+			return;
+		}
+
+		const q = searchValue.trim().toLowerCase();
+		let visible = 0;
+		root.querySelectorAll<HTMLElement>(`.setting-item:not(.${cssPrefix}settings-footer)`).forEach((el) => {
+			const match = (el.textContent ?? "").toLowerCase().includes(q);
+			el.classList.toggle(HIDDEN, !match);
+			if (match) visible++;
+		});
+		setNoResults(visible === 0);
+	}, [searchValue, isSearching, cssPrefix]);
 
 	const visibleTabs = tabs.filter((tab) => tab.visible !== false);
 
@@ -110,7 +140,7 @@ export const SettingsNav = memo(function SettingsNav({
 	);
 
 	return (
-		<div>
+		<div ref={rootRef}>
 			<nav className={`${cssPrefix}settings-nav`} role="tablist" aria-label="Settings navigation">
 				<div className={`${cssPrefix}nav-buttons`} onKeyDown={handleKeyDown}>
 					{visibleTabs.map((tab, index) => {
@@ -151,6 +181,10 @@ export const SettingsNav = memo(function SettingsNav({
 					)}
 				</div>
 			</nav>
+
+			{isSearching && noResults && (
+				<div className={`${cssPrefix}settings-search-no-results`}>No settings found for &quot;{searchValue}&quot;</div>
+			)}
 
 			{children}
 

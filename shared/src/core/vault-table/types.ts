@@ -21,10 +21,8 @@ interface VaultTableDefBase<TData, TSchema extends SerializableSchema<TData> = S
 	parentProperty?: string;
 }
 
-interface FileVaultTableDef<
-	TData,
-	TSchema extends SerializableSchema<TData> = SerializableSchema<TData>,
-> extends VaultTableDefBase<TData, TSchema> {
+interface FileVaultTableDef<TData, TSchema extends SerializableSchema<TData> = SerializableSchema<TData>>
+	extends VaultTableDefBase<TData, TSchema> {
 	nodeType?: "files";
 	children?: never;
 	/**
