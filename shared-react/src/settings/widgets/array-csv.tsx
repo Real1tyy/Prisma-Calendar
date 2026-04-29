@@ -6,7 +6,7 @@ import { resolvePlaceholder, type WidgetProps } from "./common";
  * `z.array(z.number())` fields. For richer add/remove UIs, plug in a custom
  * widget via `override.render`.
  */
-export function ArrayCsvWidget({ descriptor, override, binding }: WidgetProps) {
+export function ArrayCsvWidget({ descriptor, override, binding, testId }: WidgetProps) {
 	const itemType = descriptor.type === "array" ? descriptor.itemType : "string";
 
 	return (
@@ -15,6 +15,7 @@ export function ArrayCsvWidget({ descriptor, override, binding }: WidgetProps) {
 			itemType={itemType}
 			placeholder={resolvePlaceholder(descriptor, override)}
 			onChange={binding.onChange}
+			{...(testId ? { testId } : {})}
 		/>
 	);
 }

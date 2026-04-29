@@ -5,6 +5,7 @@ export interface CsvInputProps {
 	itemType: "string" | "number";
 	placeholder?: string | undefined;
 	onChange: (next: string[] | number[]) => void;
+	testId?: string;
 }
 
 /**
@@ -16,7 +17,7 @@ export interface CsvInputProps {
  * External store updates resync via the "adjust state during render" pattern
  * (React docs: *You Might Not Need an Effect*), avoiding `useEffect`.
  */
-export const CsvInput = memo(function CsvInput({ value, itemType, placeholder, onChange }: CsvInputProps) {
+export const CsvInput = memo(function CsvInput({ value, itemType, placeholder, onChange, testId }: CsvInputProps) {
 	const canonical = useMemo(() => (Array.isArray(value) ? value.join(", ") : ""), [value]);
 
 	const [draft, setDraft] = useState(canonical);
@@ -57,6 +58,7 @@ export const CsvInput = memo(function CsvInput({ value, itemType, placeholder, o
 					commit(draft);
 				}
 			}}
+			{...(testId ? { "data-testid": testId } : {})}
 		/>
 	);
 });

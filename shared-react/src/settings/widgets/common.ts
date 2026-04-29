@@ -12,6 +12,7 @@ export interface WidgetProps {
 	descriptor: SchemaFieldDescriptor;
 	override?: SchemaFieldOverride | undefined;
 	binding: SchemaFieldBinding<unknown>;
+	testId?: string | undefined;
 }
 
 export function stringValue(raw: unknown): string {

@@ -19,11 +19,17 @@ interface SchemaFieldProps {
 	override?: SchemaFieldOverride;
 	/** When set, stamps `data-testid` on the outer `.setting-item` for E2E. */
 	testId?: string;
-	/** Reserved for future per-widget control targeting; currently unused at the shared layer. */
 	controlTestId?: string;
 }
 
-export const SchemaField = memo(function SchemaField({ store, descriptor, path, override, testId }: SchemaFieldProps) {
+export const SchemaField = memo(function SchemaField({
+	store,
+	descriptor,
+	path,
+	override,
+	testId,
+	controlTestId,
+}: SchemaFieldProps) {
 	const resolvedPath = path ?? descriptor.key;
 	const binding = useSchemaField<unknown>(store, resolvedPath);
 
@@ -45,7 +51,7 @@ export const SchemaField = memo(function SchemaField({ store, descriptor, path, 
 
 	return (
 		<SettingItem name={label} description={description} {...(testId ? { testId } : {})}>
-			<Widget descriptor={descriptor} override={override} binding={binding} />
+			<Widget descriptor={descriptor} override={override} binding={binding} testId={controlTestId} />
 		</SettingItem>
 	);
 });

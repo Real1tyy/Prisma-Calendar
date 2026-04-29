@@ -234,9 +234,10 @@ interface SliderProps {
 	onChange: (value: number) => void;
 	/** Override the default 300ms commit delay. Pass `0` to commit synchronously. */
 	debounceMs?: number;
+	testId?: string;
 }
 
-export const Slider = memo(function Slider({ value, min, max, step, onChange, debounceMs }: SliderProps) {
+export const Slider = memo(function Slider({ value, min, max, step, onChange, debounceMs, testId }: SliderProps) {
 	injectStyleSheet("setting-slider-host-styles", ".setting-slider-host { display: contents; }");
 	const hostRef = useRef<HTMLSpanElement>(null);
 	const componentRef = useRef<SliderComponent | null>(null);
@@ -280,5 +281,5 @@ export const Slider = memo(function Slider({ value, min, max, step, onChange, de
 		componentRef.current?.setValue(draft);
 	}, [draft]);
 
-	return <span ref={hostRef} className="setting-slider-host" />;
+	return <span ref={hostRef} className="setting-slider-host" {...(testId ? { "data-testid": testId } : {})} />;
 });

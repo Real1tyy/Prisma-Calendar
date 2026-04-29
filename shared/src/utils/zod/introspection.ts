@@ -68,9 +68,10 @@ export function hasDateFormat(prop: JSONSchemaProperty): boolean {
 }
 
 export function extractNumberBounds(prop: JSONSchemaProperty): { min?: number; max?: number } {
+	const max = prop.maximum !== undefined && prop.maximum < Number.MAX_SAFE_INTEGER ? prop.maximum : undefined;
 	return {
 		...(prop.minimum !== undefined ? { min: prop.minimum } : {}),
-		...(prop.maximum !== undefined ? { max: prop.maximum } : {}),
+		...(max !== undefined ? { max } : {}),
 	};
 }
 

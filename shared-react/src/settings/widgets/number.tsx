@@ -2,9 +2,9 @@ import { NumberInput, Slider } from "../../components/setting-controls";
 import { TextInput } from "../../components/setting-controls";
 import { numericMax, numericMin, resolvePlaceholder, type WidgetProps } from "./common";
 
-export function NumberWidget({ descriptor, override, binding }: WidgetProps) {
+export function NumberWidget({ descriptor, override, binding, testId }: WidgetProps) {
 	if (descriptor.optional) {
-		return <OptionalNumberInput descriptor={descriptor} override={override} binding={binding} />;
+		return <OptionalNumberInput descriptor={descriptor} override={override} binding={binding} testId={testId} />;
 	}
 
 	const min = override?.min ?? numericMin(descriptor);
@@ -16,11 +16,12 @@ export function NumberWidget({ descriptor, override, binding }: WidgetProps) {
 			{...(min !== undefined ? { min } : {})}
 			{...(max !== undefined ? { max } : {})}
 			{...(override?.step !== undefined ? { step: override.step } : {})}
+			{...(testId ? { testId } : {})}
 		/>
 	);
 }
 
-function OptionalNumberInput({ descriptor, override, binding }: WidgetProps) {
+function OptionalNumberInput({ descriptor, override, binding, testId }: WidgetProps) {
 	const placeholder = resolvePlaceholder(descriptor, override);
 	const min = override?.min ?? numericMin(descriptor);
 	const display = binding.value !== undefined && binding.value !== null ? String(binding.value) : "";
@@ -40,12 +41,13 @@ function OptionalNumberInput({ descriptor, override, binding }: WidgetProps) {
 					binding.onChange(num);
 				}
 			}}
+			{...(testId ? { testId } : {})}
 		/>
 	);
 }
 
 export function SliderWidget(props: WidgetProps) {
-	const { descriptor, override, binding } = props;
+	const { descriptor, override, binding, testId } = props;
 	const min = override?.min ?? numericMin(descriptor);
 	const max = override?.max ?? numericMax(descriptor);
 
@@ -60,6 +62,7 @@ export function SliderWidget(props: WidgetProps) {
 			max={max}
 			{...(override?.step !== undefined ? { step: override.step } : {})}
 			onChange={binding.onChange}
+			{...(testId ? { testId } : {})}
 		/>
 	);
 }

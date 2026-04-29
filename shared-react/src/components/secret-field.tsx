@@ -12,6 +12,7 @@ interface SecretFieldProps {
 	 */
 	value: string;
 	onChange: (id: string) => void;
+	testId?: string;
 }
 
 /**
@@ -19,7 +20,7 @@ interface SecretFieldProps {
  * `<AppContext>` ancestor (already provided by `renderReactInline` /
  * `ReactModal` / `registerReactView`).
  */
-export const SecretField = memo(function SecretField({ value, onChange }: SecretFieldProps) {
+export const SecretField = memo(function SecretField({ value, onChange, testId }: SecretFieldProps) {
 	injectStyleSheet("setting-secret-host-styles", ".setting-secret-host { display: contents; }");
 	const app = useApp();
 	const containerRef = useRef<HTMLSpanElement>(null);
@@ -45,5 +46,5 @@ export const SecretField = memo(function SecretField({ value, onChange }: Secret
 		componentRef.current?.setValue(value);
 	}, [value]);
 
-	return <span ref={containerRef} className="setting-secret-host" />;
+	return <span ref={containerRef} className="setting-secret-host" {...(testId ? { "data-testid": testId } : {})} />;
 });
