@@ -412,6 +412,24 @@ export const test = base.extend<{
  * recovery paths. Kept as module-level consts so the list stays explicit —
  * every entry needs a matching spec scenario, or it should be deleted.
  */
+/**
+ * Specs that bulk-seed files via writeFileSync while Obsidian runs may trigger
+ * a transient "File already exists" pageerror from the vault watcher. The files
+ * are still created correctly — the error is a harmless race.
+ */
+export const FILE_SEED_EXPECTED_ERRORS: readonly RegExp[] = [/File already exists/];
+
+export const testWithSeededFiles = base.extend<{
+	obsidian: BootstrappedObsidian;
+	calendar: CalendarHandle;
+}>({
+	// eslint-disable-next-line no-empty-pattern
+	obsidian: async ({}, use) => {
+		await runWithObsidianHandle({ prefix: "seed-spec", expectedErrorPatterns: FILE_SEED_EXPECTED_ERRORS }, use);
+	},
+	calendar: calendarFixture,
+});
+
 export const RESILIENCE_EXPECTED_ERRORS: readonly RegExp[] = [
 	// corrupt-data-json.spec.ts: truncated / schema-incompatible data.json
 	/failed to read JSON.*prisma-calendar\/data\.json/,
