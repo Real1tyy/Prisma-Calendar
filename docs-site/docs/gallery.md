@@ -967,15 +967,9 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
 
 ### [Installation](installation) — BRAT Installation
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
-  <video
-    controls
-    autoPlay
-    loop
-    muted
-    playsInline
-    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
-  >
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
     <source src={useBaseUrl("/video/InstallationBrat.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/InstallationBrat.mp4")} type="video/mp4" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -999,17 +993,14 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
 
 ### [Quickstart](quickstart) — Getting Started
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
-  <video
-    controls
-    autoPlay
-    loop
-    muted
-    playsInline
-    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
-  >
-    <source src={useBaseUrl("/video/Quickstart.webm")} type="video/webm" />
-    Your browser does not support the video tag.
-  </video>
+  <iframe
+    width="100%"
+    style={{"maxWidth": "800px", "aspectRatio": "16/9", "borderRadius": "8px", "border": "none"}}
+    src="https://www.youtube.com/embed/dziQK9UQhvE"
+    title="Prisma Calendar Quick Start"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowFullScreen
+  />
 </div>
 
 

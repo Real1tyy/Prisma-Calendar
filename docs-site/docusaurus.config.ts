@@ -86,9 +86,14 @@ const config: Config = {
 			logo: {
 				alt: "Prisma Calendar Logo",
 				src: "img/prisma_logo.png",
-				href: "/", // Fix: Make logo/title link to root
+				href: "/",
 			},
 			items: [
+				{
+					to: "/quickstart",
+					label: "Quick Start",
+					position: "left",
+				},
 				{
 					to: "/features/overview",
 					label: "Features",
@@ -97,11 +102,6 @@ const config: Config = {
 				{
 					to: "/features/free-vs-pro",
 					label: "Free vs Pro",
-					position: "left",
-				},
-				{
-					href: "https://www.youtube.com/watch?v=HrcNKh6uFH8&utm_campaign=prisma_calendar&utm_source=docs&utm_medium=navbar&utm_content=encyclopedia",
-					label: "Encyclopedia",
 					position: "left",
 				},
 				{
@@ -121,7 +121,7 @@ const config: Config = {
 				},
 				{
 					href: "https://matejvavroproductivity.com/tools/prisma-calendar/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=navbar&utm_content=website",
-					label: "Website",
+					label: "Product Page",
 					position: "right",
 				},
 				{
@@ -140,16 +140,8 @@ const config: Config = {
 			style: "dark",
 			links: [
 				{
-					title: "Docs",
+					title: "Get Started",
 					items: [
-						{
-							label: "Prisma Calendar",
-							to: "/",
-						},
-						{
-							label: "Free vs Pro",
-							to: "/features/free-vs-pro",
-						},
 						{
 							label: "Installation",
 							to: "/installation",
@@ -159,41 +151,49 @@ const config: Config = {
 							to: "/quickstart",
 						},
 						{
-							label: "Encyclopedia",
-							href: "https://www.youtube.com/watch?v=HrcNKh6uFH8&utm_campaign=prisma_calendar&utm_source=docs&utm_medium=footer&utm_content=encyclopedia",
+							label: "Configuration",
+							to: "/configuration",
 						},
 						{
-							label: "Gallery",
-							to: "/gallery",
+							label: "Features",
+							to: "/features/overview",
 						},
 						{
-							label: "Changelog",
-							to: "/changelog",
+							label: "Free vs Pro",
+							to: "/features/free-vs-pro",
+						},
+						{
+							label: "FAQ",
+							to: "/faq",
 						},
 					],
 				},
 				{
-					title: "Community",
+					title: "Videos",
 					items: [
 						{
-							label: "Contributing & Support",
-							to: "/contributing",
+							label: "Quick Start Video",
+							href: "https://www.youtube.com/watch?v=dziQK9UQhvE&utm_campaign=prisma_calendar&utm_source=docs&utm_medium=footer&utm_content=quickstart_video",
 						},
-						{
-							label: "GitHub Issues",
-							href: "https://github.com/Real1tyy/Prisma-Calendar/issues",
-						},
-					],
-				},
-				{
-					title: "More",
-					items: [
 						{
 							label: "Encyclopedia",
 							href: "https://www.youtube.com/watch?v=HrcNKh6uFH8&utm_campaign=prisma_calendar&utm_source=docs&utm_medium=footer&utm_content=encyclopedia",
 						},
 						{
-							label: "Repository",
+							label: "All Videos Playlist",
+							href: "https://www.youtube.com/playlist?list=PLMVJknbUasLCULubO4MdCDvg9MyXu3kG4&utm_campaign=prisma_calendar&utm_source=docs&utm_medium=footer&utm_content=youtube_playlist",
+						},
+						{
+							label: "YouTube Channel",
+							href: "https://www.youtube.com/@MatejVavroProductivity?sub_confirmation=1&utm_campaign=prisma_calendar&utm_source=docs&utm_medium=footer&utm_content=youtube_channel",
+						},
+					],
+				},
+				{
+					title: "Project",
+					items: [
+						{
+							label: "GitHub",
 							href: "https://github.com/Real1tyy/Prisma-Calendar",
 						},
 						{
@@ -201,15 +201,19 @@ const config: Config = {
 							href: "https://github.com/Real1tyy/Prisma-Calendar/releases",
 						},
 						{
-							label: "YouTube Playlist",
-							href: "https://www.youtube.com/playlist?list=PLMVJknbUasLCULubO4MdCDvg9MyXu3kG4&utm_campaign=prisma_calendar&utm_source=docs&utm_medium=footer&utm_content=youtube_playlist",
+							label: "Issues & Feedback",
+							href: "https://github.com/Real1tyy/Prisma-Calendar/issues",
 						},
 						{
-							label: "YouTube Channel",
-							href: "https://www.youtube.com/@MatejVavroProductivity?sub_confirmation=1&utm_campaign=prisma_calendar&utm_source=docs&utm_medium=footer&utm_content=youtube_channel",
+							label: "Changelog",
+							to: "/changelog",
 						},
 						{
-							label: "Website",
+							label: "Gallery",
+							to: "/gallery",
+						},
+						{
+							label: "Product Page",
 							href: "https://matejvavroproductivity.com/tools/prisma-calendar/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=footer&utm_content=website",
 						},
 						{
@@ -219,15 +223,19 @@ const config: Config = {
 					],
 				},
 				{
-					title: "Support",
+					title: "Support & Legal",
 					items: [
 						{
-							label: "Support Me",
+							label: "Support Prisma",
 							to: "/support",
 						},
 						{
-							label: "Sponsorship options",
+							label: "Sponsorship",
 							href: "https://matejvavroproductivity.com/support/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=footer&utm_content=sponsorship",
+						},
+						{
+							label: "Contributing",
+							to: "/contributing",
 						},
 						{
 							label: "Privacy Policy",

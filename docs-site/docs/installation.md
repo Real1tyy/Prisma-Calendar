@@ -2,18 +2,29 @@
 
 import useBaseUrl from "@docusaurus/useBaseUrl";
 
+How to install Prisma Calendar using BRAT.
+
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
-  <video
-    controls
-    autoPlay
-    loop
-    muted
-    playsInline
-    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
-  >
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
     <source src={useBaseUrl("/video/InstallationBrat.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/InstallationBrat.mp4")} type="video/mp4" />
     Your browser does not support the video tag.
   </video>
+</div>
+
+## Quick Start Video
+
+Learn how to install, setup, and begin using Prisma Calendar in minutes.
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <iframe
+    width="100%"
+    style={{"maxWidth": "800px", "aspectRatio": "16/9", "borderRadius": "8px", "border": "none"}}
+    src="https://www.youtube.com/embed/dziQK9UQhvE"
+    title="Prisma Calendar Quick Start"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowFullScreen
+  />
 </div>
 
 Prisma Calendar is currently **awaiting approval** for the Obsidian Community Plugin store. While it's pending approval, you can install it using one of the methods below.
@@ -45,7 +56,6 @@ The easiest and most convenient way to install Prisma Calendar with automatic up
 - ✅ **Automatic updates** - Get new features and fixes automatically
 - ✅ **Easy installation** - Just paste the repo URL
 - ✅ **One-click setup** - No manual file management
-- ✅ **Smoother experience** - Updates handle themselves
 
 ## 📥 Manual Installation from GitHub Releases
 
@@ -91,11 +101,11 @@ Once Prisma Calendar is approved for the Obsidian Community Plugin store, you'll
 3. Click Install
 4. Enable the plugin
 
-We'll update this page as soon as the plugin is available in the store!
+I'll update this page as soon as the plugin is available in the store!
 
 ## Requirements
-- Obsidian 1.5+
-- For templating features, install the Templater plugin
+- Obsidian 1.10+
+- For templating features, install the [Templater](https://github.com/SilentVoid13/Templater) plugin
 
 ## Next Steps
 
