@@ -12,6 +12,7 @@ import { memo, useCallback, useMemo, useState } from "react";
 import { FREE_MAX_CALENDARS } from "../../core/license";
 import { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
+import { openConfigureCalendarModal } from "../../onboarding/configure-calendar";
 import {
 	createDefaultCalendarConfig,
 	duplicateCalendarConfig,
@@ -31,6 +32,10 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 	const calendars = mainSettings.calendars;
 	const maxCalendars = plugin.isProEnabled ? Infinity : FREE_MAX_CALENDARS;
 	const isAtMax = calendars.length >= maxCalendars;
+	const selectedCalendar = useMemo(
+		() => calendars.find((c) => c.id === selectedCalendarId) ?? null,
+		[calendars, selectedCalendarId]
+	);
 
 	const calendarStore = useMemo(() => {
 		try {
@@ -40,16 +45,27 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 		}
 	}, [plugin.settingsStore, selectedCalendarId]);
 
-	const calendarOptions = useMemo(() => {
-		const opts: Record<string, string> = {};
-		for (const cal of calendars) {
-			opts[cal.id] = `${cal.name}${cal.enabled ? "" : " (disabled)"}`;
-		}
-		return opts;
-	}, [calendars]);
+	const calendarOptions = useMemo(
+		() => Object.fromEntries(calendars.map((cal) => [cal.id, `${cal.name}${cal.enabled ? "" : " (disabled)"}`])),
+		[calendars]
+	);
 
 	const countText =
 		maxCalendars === Infinity ? `${calendars.length} calendars` : `${calendars.length}/${maxCalendars} calendars`;
+	const maxTitle = isAtMax
+		? `Free plan allows up to ${maxCalendars} calendars. Upgrade to Pro for unlimited.`
+		: undefined;
+
+	const updateSelectedCalendar = useCallback(
+		async (patch: Partial<(typeof calendars)[number]>) => {
+			await updateMainSettings((s) => ({
+				...s,
+				calendars: s.calendars.map((cal) => (cal.id === selectedCalendarId ? { ...cal, ...patch } : cal)),
+			}));
+			await plugin.refreshCalendarBundles();
+		},
+		[selectedCalendarId, updateMainSettings, plugin]
+	);
 
 	const handleCreate = useCallback(async () => {
 		if (isAtMax) return;
@@ -62,16 +78,13 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 	}, [isAtMax, mainSettings, calendars.length, updateMainSettings, plugin]);
 
 	const handleClone = useCallback(async () => {
-		if (isAtMax) return;
-		const current = calendars.find((c) => c.id === selectedCalendarId);
-		if (!current) return;
+		if (isAtMax || !selectedCalendar) return;
 		const newId = generateUniqueCalendarId(mainSettings);
-		const newName = `${current.name} (Copy)`;
-		const cloned = duplicateCalendarConfig(current, newId, newName);
+		const cloned = duplicateCalendarConfig(selectedCalendar, newId, `${selectedCalendar.name} (Copy)`);
 		await updateMainSettings((s) => ({ ...s, calendars: [...s.calendars, cloned] }));
 		setSelectedCalendarId(newId);
 		await plugin.refreshCalendarBundles();
-	}, [isAtMax, calendars, selectedCalendarId, mainSettings, updateMainSettings, plugin]);
+	}, [isAtMax, selectedCalendar, mainSettings, updateMainSettings, plugin]);
 
 	const handleDelete = useCallback(async () => {
 		if (calendars.length <= 1) return;
@@ -85,24 +98,34 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 	}, [calendars, selectedCalendarId, updateMainSettings, plugin]);
 
 	const handleRename = useCallback(async () => {
-		const current = calendars.find((c) => c.id === selectedCalendarId);
-		if (!current) return;
+		if (!selectedCalendar) return;
 
 		const newName = await openRenameModal(app, {
 			title: "Rename calendar",
-			initialValue: current.name,
+			initialValue: selectedCalendar.name,
 			cssPrefix: "prisma-",
 			testIdPrefix: "prisma-settings-calendar-",
 		});
 
-		if (newName && newName !== current.name) {
-			await updateMainSettings((s) => ({
-				...s,
-				calendars: s.calendars.map((cal) => (cal.id === selectedCalendarId ? { ...cal, name: newName } : cal)),
-			}));
-			await plugin.refreshCalendarBundles();
+		if (newName && newName !== selectedCalendar.name) {
+			await updateSelectedCalendar({ name: newName });
 		}
-	}, [app, calendars, selectedCalendarId, updateMainSettings, plugin]);
+	}, [app, selectedCalendar, updateSelectedCalendar]);
+
+	const handleConfigure = useCallback(async () => {
+		if (!selectedCalendar) return;
+
+		const result = await openConfigureCalendarModal(app, {
+			directory: selectedCalendar.directory,
+			startProp: selectedCalendar.startProp,
+			endProp: selectedCalendar.endProp,
+			dateProp: selectedCalendar.dateProp,
+		});
+
+		if (result) {
+			await updateSelectedCalendar(result);
+		}
+	}, [app, selectedCalendar, updateSelectedCalendar]);
 
 	return (
 		<>
@@ -118,9 +141,7 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 						className="prisma-calendar-action-button prisma-calendar-create-button"
 						data-testid="prisma-settings-calendar-add"
 						disabled={isAtMax}
-						title={
-							isAtMax ? `Free plan allows up to ${maxCalendars} calendars. Upgrade to Pro for unlimited.` : undefined
-						}
+						title={maxTitle}
 						onClick={handleCreate}
 					>
 						Create new
@@ -130,12 +151,18 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 						className="prisma-calendar-action-button prisma-calendar-clone-button"
 						data-testid="prisma-settings-calendar-clone"
 						disabled={isAtMax}
-						title={
-							isAtMax ? `Free plan allows up to ${maxCalendars} calendars. Upgrade to Pro for unlimited.` : undefined
-						}
+						title={maxTitle}
 						onClick={handleClone}
 					>
 						Clone current
+					</button>
+					<button
+						type="button"
+						className="prisma-calendar-action-button prisma-calendar-configure-button"
+						data-testid="prisma-settings-calendar-configure"
+						onClick={handleConfigure}
+					>
+						Configure current
 					</button>
 					<button
 						type="button"
