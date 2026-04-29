@@ -3,6 +3,8 @@ import { fileURLToPath } from "node:url";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
+import { VITEST_POOL_OPTIONS } from "./src/testing/vitest-aliases.ts";
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Test files/directories that need a DOM environment. Single source of truth
@@ -30,13 +32,13 @@ const JSDOM_PATTERNS = [
 ];
 
 export default defineConfig({
-	server: { fs: { allow: [".."] } },
 	plugins: [tsconfigPaths({ ignoreConfigErrors: true })],
 	test: {
 		globals: true,
 		testTimeout: 10000,
 		exclude: ["**/node_modules/**", "**/dist/**", "tests/react/**"],
 		setupFiles: ["./src/testing/obsidian-dom-setup.ts"],
+		...VITEST_POOL_OPTIONS,
 		pool: "threads",
 		isolate: false,
 		coverage: {

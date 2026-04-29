@@ -3,18 +3,18 @@ import { fileURLToPath } from "node:url";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
-import { sharedVitestAliases } from "../shared/src/testing/vitest-aliases.ts";
+import { VITEST_POOL_OPTIONS, sharedVitestAliases } from "../shared/src/testing/vitest-aliases.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
-	server: { fs: { allow: [".."] } },
 	plugins: [tsconfigPaths({ ignoreConfigErrors: true })],
 	test: {
 		globals: true,
 		testTimeout: 10000,
 		environment: "jsdom",
 		setupFiles: ["../shared/src/testing/obsidian-dom-setup.ts", "./tests/setup-rtl.ts"],
+		...VITEST_POOL_OPTIONS,
 		coverage: {
 			provider: "v8",
 			reporter: ["text", "json-summary", "html"],

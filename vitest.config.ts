@@ -2,7 +2,7 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
-import { sharedVitestAliases } from "./shared/src/testing/vitest-aliases.ts";
+import { VITEST_POOL_OPTIONS, sharedVitestAliases } from "./shared/src/testing/vitest-aliases.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -27,6 +27,7 @@ export default defineConfig({
 		setupFiles: ["./tests/setup.ts"],
 		// Playwright owns *.visual.spec.ts and the e2e/ suite — vitest should skip them.
 		exclude: SHARED_EXCLUDE,
+		...VITEST_POOL_OPTIONS,
 		pool: "threads",
 		isolate: false,
 		projects: [

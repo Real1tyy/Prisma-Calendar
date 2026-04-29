@@ -22,6 +22,13 @@ function resolveSharedPackageSrc(pluginDir: string, name: string): string {
 	return path.resolve(pluginDir, "..", name, "src");
 }
 
+export const VITEST_POOL_OPTIONS = {
+	poolOptions: {
+		threads: { maxThreads: 8 },
+		forks: { maxForks: 8 },
+	},
+};
+
 export function sharedVitestAliases(pluginDir: string) {
 	const sharedSrc = resolveSharedPackageSrc(pluginDir, "shared");
 	const sharedReactSrc = resolveSharedPackageSrc(pluginDir, "shared-react");
