@@ -118,7 +118,7 @@ const welcomeUtm = (url: string, content: string) =>
 	buildUtmUrl(url, "prisma-calendar", "plugin", "welcome_modal", content);
 
 const FOOTER_LINKS = [
-	{ label: "Quickstart", href: welcomeUtm("https://www.youtube.com/watch?v=HrcNKh6uFH8", "quickstart_video") },
+	{ label: "Quickstart", href: welcomeUtm("https://www.youtube.com/watch?v=dziQK9UQhvE", "quickstart_video") },
 	{ label: "Features", href: welcomeUtm("https://www.youtube.com/watch?v=HrcNKh6uFH8", "features_video") },
 	{ label: "Documentation", href: welcomeUtm("https://real1tyy.github.io/Prisma-Calendar/", "documentation") },
 	{ label: "Changelog", href: welcomeUtm("https://real1tyy.github.io/Prisma-Calendar/changelog", "changelog") },

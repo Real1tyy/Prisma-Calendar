@@ -13,3 +13,5 @@ export type {
 	OpenFirstLaunchModalOptions,
 } from "./first-launch";
 export { FirstLaunchController, openFirstLaunchModal } from "./first-launch";
+export type { ProWelcomeControllerProps } from "./pro-welcome";
+export { ProWelcomeController, showProWelcomeModal } from "./pro-welcome";

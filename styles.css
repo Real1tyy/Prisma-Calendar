@@ -9063,8 +9063,118 @@ div.vis-tooltip {
   color: var(--text-accent-hover);
 }
 
+.prisma-pro-welcome-trial {
+  margin: 0;
+  padding: 0.75rem 1.1rem;
+  border-radius: 12px;
+  background: linear-gradient(100deg, color-mix(in srgb, var(--interactive-accent) 15%, var(--background-secondary)), var(--background-secondary) 80%);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-normal);
+  text-align: center;
+  letter-spacing: -0.01em;
+}
+
+.prisma-pro-welcome-highlights {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.prisma-pro-welcome-highlights-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-normal);
+}
+
+.prisma-pro-welcome-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.prisma-pro-welcome-highlight-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 14px;
+  background: var(--background-secondary);
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+.prisma-pro-welcome-highlight-card:hover {
+  border-color: color-mix(in srgb, var(--background-modifier-border) 40%, var(--interactive-accent) 60%);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--interactive-accent) 10%, transparent);
+}
+
+.prisma-pro-welcome-highlight-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-normal);
+}
+
+.prisma-pro-welcome-highlight-desc {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.prisma-pro-welcome-next {
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 14px;
+  background: var(--background-secondary);
+}
+.prisma-pro-welcome-next h3 {
+  margin: 0 0 0.55rem 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-normal);
+}
+.prisma-pro-welcome-next ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.prisma-pro-welcome-next li {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.prisma-pro-welcome-cta {
+  padding: 0.85rem 1.1rem;
+  border-left: 3px solid var(--interactive-accent);
+  border-radius: 0 10px 10px 0;
+  background: color-mix(in srgb, var(--interactive-accent) 8%, var(--background-secondary));
+}
+.prisma-pro-welcome-cta p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+.prisma-pro-welcome-cta p + p {
+  margin-top: 0.65rem;
+}
+.prisma-pro-welcome-cta a {
+  color: var(--interactive-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prisma-pro-welcome-cta a:hover {
+  color: var(--text-accent-hover);
+}
+
 @media (max-width: 720px) {
   .prisma-first-launch-mode-grid {
+    grid-template-columns: 1fr;
+  }
+  .prisma-pro-welcome-grid {
     grid-template-columns: 1fr;
   }
 }
