@@ -90,11 +90,11 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		this.app.workspace.onLayoutReady(() => {
 			void waitForCacheReady(this.app).then(() => {
+				if (isFirstLaunch) {
+					void this.showFirstLaunchOnboarding();
+					return;
+				}
 				void this.ensureCalendarBundlesReady().then(() => {
-					if (isFirstLaunch) {
-						void this.showFirstLaunchOnboarding();
-						return;
-					}
 					void this.checkForUpdates();
 				});
 			});
@@ -722,6 +722,8 @@ export default class CustomCalendarPlugin extends Plugin {
 					: calendar
 			),
 		}));
+
+		await this.ensureCalendarBundlesReady();
 
 		const bundle = this.calendarBundles[0];
 		if (bundle) {
