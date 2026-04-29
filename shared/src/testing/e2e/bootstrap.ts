@@ -553,9 +553,6 @@ async function ensureLauncherCache(version: ObsidianVersion, log: Logger): Promi
 	mkdirSync(asarCacheDir, { recursive: true });
 	const tmpAsar = join(asarCacheDir, basename(appPath));
 	if (!existsSync(tmpAsar)) {
-		// Atomic write: copy to a PID-scoped temp file, then rename.
-		// rename() is atomic on the same filesystem on Linux, so parallel
-		// workers can't corrupt the cache by writing simultaneously.
 		const tmpWrite = `${tmpAsar}.${process.pid}`;
 		cpSync(appPath, tmpWrite);
 		try {
