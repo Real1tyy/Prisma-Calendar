@@ -60,11 +60,11 @@ test.describe("event context menu", () => {
 		const evt = await calendar.eventByTitle("Ctx Dup");
 		await evt.rightClick("duplicateEvent");
 
-		// Menu must close (ensures the click landed and the onAction fired
-		// without throwing); source file with its title is still on disk.
 		await expect(page.locator(sel(TID.ctxMenu("duplicateEvent"))).first()).not.toBeVisible();
+		await expect
+			.poll(() => readdirSync(join(vaultDir, "Events")).filter((f) => f.endsWith(".md")).length)
+			.toBe(initialCount + 1);
 		const entries = readdirSync(join(vaultDir, "Events")).filter((f) => f.endsWith(".md"));
-		expect(entries.length).toBeGreaterThanOrEqual(initialCount);
 		expect(entries.some((f) => f.startsWith("Ctx Dup"))).toBe(true);
 	});
 

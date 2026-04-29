@@ -21,7 +21,7 @@ test.describe("dual daily tab", () => {
 		// Switching tabs hides the main calendar's `.fc` (display:none on the
 		// deactivated tab). Dual-daily lazily mounts two of its own `.fc`
 		// roots, so wait for a visible one rather than the first-in-DOM one.
-		await expect.poll(() => page.locator(".fc:visible").count()).toBeGreaterThanOrEqual(1);
+		await expect.poll(() => page.locator(".fc:visible").count()).toBe(2);
 		expect(errors, `pageerror(s) while opening dual-daily:\n${errors.join("\n")}`).toHaveLength(0);
 	});
 });

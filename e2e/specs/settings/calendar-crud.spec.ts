@@ -32,7 +32,7 @@ test.describe("settings: calendar CRUD", () => {
 		expect(calendars).toHaveLength(2);
 		expect(calendars[0].id).toBe("default");
 		expect(calendars[1].id).not.toBe("default");
-		expect(calendars[1].name).toMatch(/Planning System\s*2/);
+		expect(calendars[1].name).toMatch(/Calendar\s*2/);
 	});
 
 	test("Clone current duplicates every setting except id/name", async ({ obsidian }) => {
@@ -69,7 +69,7 @@ test.describe("settings: calendar CRUD", () => {
 		// fill() fires natively — the `newName` closure inside the rename modal
 		// only updates via that listener, so no extra change dispatch is needed.
 		await renameInput.fill("Renamed Calendar");
-		await obsidian.page.locator('[data-testid="prisma-settings-calendar-rename-save"]').first().click();
+		await obsidian.page.locator('[data-testid="prisma-settings-calendar-rename-submit"]').first().click();
 		await settleSettings(obsidian.page, { pluginId: PLUGIN_ID });
 
 		const calendars = getCalendars(obsidian.vaultDir);

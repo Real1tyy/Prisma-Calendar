@@ -22,11 +22,9 @@ test("reload reopens the active calendar view", async ({ obsidian }) => {
 	const SECONDARY_VIEW_TYPE = "custom-calendar-view-secondary";
 	await activateCalendar(obsidian.page, "secondary");
 
-	await expect
-		.poll(() => countLeavesOfType(obsidian.page, SECONDARY_VIEW_TYPE), { timeout: 15_000 })
-		.toBeGreaterThan(0);
+	await expect.poll(() => countLeavesOfType(obsidian.page, SECONDARY_VIEW_TYPE), { timeout: 15_000 }).toBe(1);
 
 	await reloadAndWaitForPrisma(obsidian.page);
 
-	expect(await countLeavesOfType(obsidian.page, SECONDARY_VIEW_TYPE)).toBeGreaterThan(0);
+	expect(await countLeavesOfType(obsidian.page, SECONDARY_VIEW_TYPE)).toBe(1);
 });

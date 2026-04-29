@@ -1,7 +1,7 @@
 import { expect, type Page } from "@playwright/test";
 import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
-import { getEventCount, refreshCalendar, seedEvent, type SeedEventInput } from "./seed-events";
+import { refreshCalendar, seedEvent, type SeedEventInput, waitForEventCount } from "./seed-events";
 
 // Template-pattern helper for the edge-case + integrations suites: every spec
 // that verifies a single-event frontmatter round-trip does the same four
@@ -31,5 +31,5 @@ export async function assertFrontmatterRoundTrip(
 	}
 
 	const minEvents = spec.minEvents ?? 1;
-	expect(await getEventCount(page)).toBeGreaterThanOrEqual(minEvents);
+	await waitForEventCount(page, minEvents);
 }

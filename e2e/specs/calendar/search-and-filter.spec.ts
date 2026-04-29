@@ -17,11 +17,11 @@ test.describe("search and filter", () => {
 		const search = page.locator(sel("prisma-filter-search")).first();
 		await search.fill("Alpha");
 
-		await expect.poll(() => eventByTitle(page, "Alpha Standup").count()).toBeGreaterThan(0);
+		await expect.poll(() => eventByTitle(page, "Alpha Standup").count()).toBe(1);
 		await expect.poll(() => eventByTitle(page, "Beta Sync").count()).toBe(0);
 
 		await search.fill("");
-		await expect.poll(() => eventByTitle(page, "Beta Sync").count()).toBeGreaterThan(0);
+		await expect.poll(() => eventByTitle(page, "Beta Sync").count()).toBe(1);
 	});
 
 	test("typing into the expression filter hides events by property", async ({ calendar }) => {
@@ -49,7 +49,7 @@ test.describe("search and filter", () => {
 		await expr.fill("Category === 'Work'");
 		await expr.press("Enter");
 
-		await expect.poll(() => eventByTitle(page, "Keep Event").count()).toBeGreaterThan(0);
+		await expect.poll(() => eventByTitle(page, "Keep Event").count()).toBe(1);
 		await expect.poll(() => eventByTitle(page, "Hide Event").count()).toBe(0);
 	});
 });

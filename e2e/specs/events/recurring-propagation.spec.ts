@@ -36,7 +36,7 @@ test.describe("recurring event propagation", () => {
 
 		await expect
 			.poll(() => collectInstanceFiles(obsidian.vaultDir, "No Propagate").length, { timeout: INSTANCE_TIMEOUT_MS })
-			.toBeGreaterThanOrEqual(2);
+			.toBe(2);
 
 		const instances = collectInstanceFiles(obsidian.vaultDir, "No Propagate").map((abs) =>
 			abs.slice(obsidian.vaultDir.length + 1)
