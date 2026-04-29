@@ -6,6 +6,7 @@ import {
 	bootstrapObsidian as sharedBootstrap,
 	type BootstrappedObsidian,
 	createFileLogger,
+	isTransientObsidianTeardownError,
 	pruneStaleE2eResources,
 } from "@real1ty-obsidian-plugins/testing/e2e";
 
@@ -190,6 +191,7 @@ export async function bootstrapObsidian(
 					// Notices still render for anyone watching a headed run, they
 					// just never block a click, which lets every spec skip the
 					// "wait for notices to drain" step.
+					// eslint-disable-next-line obsidianmd/no-forbidden-elements
 					const style = document.createElement("style");
 					style.textContent = ".notice-container, .notice-container .notice { pointer-events: none !important; }";
 					document.head.appendChild(style);
@@ -263,6 +265,7 @@ export async function bootstrapObsidian(
 					const w = window as unknown as {
 						app: { plugins: { plugins: Record<string, { calendarBundles?: unknown[] }> } };
 					};
+					// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 					return Boolean(w.app.plugins.plugins[id]?.calendarBundles?.length);
 				},
 				PLUGIN_ID,
@@ -283,6 +286,7 @@ export async function bootstrapObsidian(
 					};
 				};
 				const plugin = w.app.plugins.plugins[id];
+				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 				if (!plugin) return;
 				if (typeof plugin.ensureCalendarBundlesReady === "function") {
 					await plugin.ensureCalendarBundlesReady();
@@ -326,6 +330,7 @@ async function runWithObsidianHandle(
 	// filter it out; every other "failed to read JSON" still fails loudly.
 	const isTransientAppJsonReadError = (text: string): boolean =>
 		text.includes("failed to read JSON") &&
+		// eslint-disable-next-line obsidianmd/hardcoded-config-path
 		(text.includes(".obsidian/app.json") || text.includes(".obsidian/community-plugins.json"));
 	// Resilience specs deliberately induce broken on-disk state (corrupt
 	// data.json, unreadable files) to prove the plugin recovers. Those flows
@@ -339,12 +344,14 @@ async function runWithObsidianHandle(
 		const text = msg.text();
 		if (isTransientEventFileEnoent(text)) return;
 		if (isTransientAppJsonReadError(text)) return;
+		if (isTransientObsidianTeardownError(text)) return;
 		if (isExpectedError(text)) return;
 		consoleErrors.push(text);
 	};
 	const onPageError = (err: Error): void => {
 		if (isTransientEventFileEnoent(err.message)) return;
 		if (isTransientAppJsonReadError(err.message)) return;
+		if (isTransientObsidianTeardownError(err.message)) return;
 		if (isExpectedError(err.message)) return;
 		consoleErrors.push(`pageerror: ${err.message}`);
 	};

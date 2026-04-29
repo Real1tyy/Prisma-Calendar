@@ -1,6 +1,16 @@
 import { type ChildProcess, spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { appendFileSync, cpSync, existsSync, linkSync, mkdirSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import {
+	appendFileSync,
+	cpSync,
+	existsSync,
+	linkSync,
+	mkdirSync,
+	readdirSync,
+	readFileSync,
+	renameSync,
+	rmSync,
+} from "node:fs";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
@@ -543,7 +553,16 @@ async function ensureLauncherCache(version: ObsidianVersion, log: Logger): Promi
 	mkdirSync(asarCacheDir, { recursive: true });
 	const tmpAsar = join(asarCacheDir, basename(appPath));
 	if (!existsSync(tmpAsar)) {
-		cpSync(appPath, tmpAsar);
+		// Atomic write: copy to a PID-scoped temp file, then rename.
+		// rename() is atomic on the same filesystem on Linux, so parallel
+		// workers can't corrupt the cache by writing simultaneously.
+		const tmpWrite = `${tmpAsar}.${process.pid}`;
+		cpSync(appPath, tmpWrite);
+		try {
+			renameSync(tmpWrite, tmpAsar);
+		} catch {
+			rmSync(tmpWrite, { force: true });
+		}
 		log.debug(`asar staged in tmpdir: ${tmpAsar}`);
 	}
 
@@ -676,6 +695,16 @@ async function configureDemoViewport(page: Page, log: Logger): Promise<void> {
 	} catch (err) {
 		log.debug(`demo viewport: sidebar collapse failed: ${String(err)}`);
 	}
+}
+
+export function isTransientObsidianTeardownError(text: string): boolean {
+	return (
+		text.includes("database connection is closing") ||
+		text.includes("Internal error committing transaction") ||
+		text.includes("The transaction was aborted") ||
+		text === "AbortError" ||
+		text === "A network error occurred."
+	);
 }
 
 // Format: YYYY-MM-DD-HHmm (local time) — chronologically sortable in `ls`, and

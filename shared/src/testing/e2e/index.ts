@@ -4,6 +4,7 @@ export {
 	type BootstrappedObsidian,
 	createFileLogger,
 	type CreateFileLoggerOptions,
+	isTransientObsidianTeardownError,
 	type LeanVaultOptions,
 	type Logger,
 	type LogLevel,
