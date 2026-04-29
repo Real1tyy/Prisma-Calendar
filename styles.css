@@ -1774,6 +1774,9 @@
   color: var(--text-muted);
   font-style: italic;
 }
+.prisma-settings-search-hidden.setting-item {
+  display: none;
+}
 
 /* Settings Tabs */
 .prisma-settings-nav {

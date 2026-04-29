@@ -30,6 +30,10 @@
 		color: var(--text-muted);
 		font-style: italic;
 	}
+
+	&-hidden.setting-item {
+		display: none;
+	}
 }
 
 /* Settings Tabs */

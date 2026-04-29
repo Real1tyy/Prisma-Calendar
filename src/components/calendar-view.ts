@@ -1463,6 +1463,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const diff = diffEvents(this.renderedEvents, calendarEvents);
 
 		if (diff.added.length === 0 && diff.removed.length === 0 && diff.changed.length === 0) {
+			this.updateColorDots();
 			return false;
 		}
 
