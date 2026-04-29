@@ -101,6 +101,7 @@ export const SettingsNav = memo(function SettingsNav({
 				setFocusedIndex(prev);
 				buttonsRef.current[prev]?.focus();
 			} else if (e.key === "Enter" && focusedIndex >= 0) {
+				if ((e.target as HTMLElement).tagName === "INPUT") return;
 				e.preventDefault();
 				handleTabClick(visibleTabs[focusedIndex].id);
 			}
