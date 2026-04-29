@@ -38,9 +38,8 @@ test.describe("bootstrap", () => {
 			expect(summary.directory, "data.json directory should be seeded to Events").toBe("Events");
 			expect(summary.prismaCommands.length, "prisma-calendar should register commands").toBeGreaterThan(0);
 
-			// Seed file is readable through the fixture (sanity for vault access).
-			const eventNote = ob.readVaultFile("Events/Team Meeting.md");
-			expect(eventNote).toContain("Team Meeting");
+			const welcome = ob.readVaultFile("Welcome.md");
+			expect(welcome).toContain("Welcome");
 		} finally {
 			await ob.close();
 		}

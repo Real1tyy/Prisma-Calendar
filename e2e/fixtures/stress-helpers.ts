@@ -1,4 +1,4 @@
-import { readdirSync, rmSync, statSync } from "node:fs";
+import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 import { expect, type Page } from "@playwright/test";
@@ -106,18 +106,6 @@ function countMdFilesRecursive(dir: string): number {
 
 function isEnoent(err: unknown): boolean {
 	return typeof err === "object" && err !== null && "code" in err && (err as { code: unknown }).code === "ENOENT";
-}
-
-/**
- * Remove the `Team Meeting.md` that ships in the vault seed. Stress specs
- * assume a known-empty Events/ directory so absolute file / indexer counts
- * match the seeded batch exactly. The seed's sample event shows up in the
- * default E2E suite to prove the indexer works end-to-end; it does not
- * belong in stress-test reasoning.
- */
-export function clearVaultSeedEvents(vaultDir: string): void {
-	const sampleEvent = join(vaultDir, "Events", "Team Meeting.md");
-	rmSync(sampleEvent, { force: true });
 }
 
 /**
