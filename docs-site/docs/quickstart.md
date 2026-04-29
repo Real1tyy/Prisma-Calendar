@@ -19,7 +19,7 @@
 
 When you first install Prisma, a **Welcome** modal appears with two choices:
 
-- **Use notes you already have** — Prisma scans your vault for folders containing notes with date-like frontmatter properties and lists them. Pick one and your existing notes become events immediately.
+- **Use notes you already have** — Prisma scans your vault for folders containing notes with date-like frontmatter. Detected properties are split into **datetime** (with a time component) and **date** (date-only) categories, each clickable to copy. Inline **"Use"** buttons next to the Start, End, and Date fields let you prefill them with one click. If multiple folders are detected, each can become its own planning system later.
 - **Start with a clean setup** — Prisma creates a new dedicated folder (e.g. `Tasks/`) so you can start planning right away.
 
 ### How Prisma Maps Your Notes
@@ -31,7 +31,7 @@ Prisma looks for notes inside your chosen folder and reads their frontmatter pro
 
 You choose which property names Prisma should look for during setup. If you already have notes with date properties, Prisma picks them up and visualizes them automatically — no migration needed.
 
-You can change these property names anytime in **Settings → Prisma Calendar → General**.
+You can change these property names anytime in **Settings → Prisma Calendar → General**, or use the **Configure current** button in the calendar management section to re-run property detection on any planning system.
 
 ---
 

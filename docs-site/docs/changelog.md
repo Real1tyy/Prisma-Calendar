@@ -6,13 +6,14 @@ All notable changes to this project will be documented here.
 
 ## 2.15.0 - 4/22/2026
 
-> **TLDR:** New **Subscription management button** in License settings — Pro users see "Manage Subscription" linking to the account page, free users see "Subscribe" linking to the product page.
+> **TLDR:** Smarter onboarding with datetime/date property detection, prefill buttons, and a new **Configure current** button in calendar management for re-running property detection on any planning system.
 
 ### Fixed
 - **Stale note preview in hover tooltip**: Editing a note's body content and hovering over the event again now shows the updated text immediately. See [Calendar View → Event Interaction](./features/calendar/calendar-view.md#event-interaction).
 
 ### Added
-- **First-launch welcome flow**: Fresh installs now open a dedicated welcome modal. It scans the vault for folders with date-like properties, lets you set the first calendar directory directly in the modal, and opens Prisma right away after setup. See [Quick Start](./quickstart.md#initial-setup).
+- **First-launch welcome flow**: Fresh installs now open a dedicated welcome modal. It scans the vault for folders with date-like properties — split into **datetime** and **date** categories — with click-to-copy property names and inline **"Use"** prefill buttons next to each property field. When multiple folders are detected, a hint explains that each can become its own planning system. See [Quick Start](./quickstart.md#initial-setup).
+- **Configure current calendar**: New **Configure current** button in calendar management opens a focused modal that scans the vault for date-like properties and lets you set the directory and property names with the same detection and prefill workflow as onboarding. See [Quick Start](./quickstart.md#initial-setup).
 - **Subscription management button**: The License section now shows a **Manage Subscription** button for Pro users (links to account page) or a **Subscribe** button for free users (links to purchase page). See [General Settings → License](./configuration/general.md#license).
 - **`RRuleUntil` recurring end date**: Recurring sources can now define an inclusive final occurrence day with `RRuleUntil` (or your renamed property). Physical generation and virtual previews both stop after that date, so bounded schedules like semesters no longer spill into future months. See [Recurring Events](./features/events/recurring-dsl.md#rruleuntil-end-date).
 

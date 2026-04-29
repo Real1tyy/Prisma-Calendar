@@ -1,3 +1,5 @@
+export type { ConfigureCalendarResult } from "./configure-calendar";
+export { ConfigureCalendarController, openConfigureCalendarModal } from "./configure-calendar";
 export {
 	type DirectorySuggestion,
 	formatDirectorySuggestionDescription,

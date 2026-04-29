@@ -157,6 +157,17 @@
 	}
 }
 
+.prisma-first-launch-field-row {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+
+	> :first-child {
+		flex: 1;
+		min-width: 0;
+	}
+}
+
 .prisma-first-launch-muted {
 	color: var(--text-muted);
 	line-height: 1.45;
@@ -203,21 +214,142 @@
 	}
 }
 
-// ─── Property chips ───────────────────────────────────────────────────────────
+// ─── Property categories (date / datetime split) ────────────────────────────
 
-.prisma-first-launch-props {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-	gap: 0.55rem;
-	margin-top: 0.8rem;
+.prisma-first-launch-prop-categories {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+	margin-top: 0.25rem;
 }
 
-.prisma-first-launch-prop-chip {
-	padding: 0.55rem 0.7rem;
+.prisma-first-launch-prop-category {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.35rem;
+	font-size: 0.85rem;
+	color: var(--text-muted);
+}
+
+.prisma-first-launch-prop-category-label {
+	font-weight: 600;
+	color: var(--text-faint);
+	font-size: 0.8rem;
+}
+
+.prisma-first-launch-copyable-prop {
+	display: inline-block;
+	padding: 0.15rem 0.5rem;
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 999px;
 	background: var(--background-primary);
-	font-size: 0.92rem;
+	font-size: 0.82rem;
+	font-weight: 500;
+	color: var(--text-normal);
+	cursor: pointer;
+	transition:
+		border-color 150ms ease,
+		background 150ms ease,
+		color 150ms ease;
+
+	&:hover {
+		border-color: var(--interactive-accent);
+		background: color-mix(in srgb, var(--interactive-accent) 12%, var(--background-primary));
+	}
+
+	&.is-copied {
+		border-color: var(--interactive-accent);
+		background: var(--interactive-accent);
+		color: var(--text-on-accent);
+	}
+}
+
+// ─── Prefill buttons (Use X / Use Y next to property inputs) ─────────────────
+
+.prisma-first-launch-prefill {
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: center;
+	gap: 0.35rem;
+	flex-shrink: 0;
+}
+
+.prisma-first-launch-prefill-label {
+	font-size: 0.82rem;
+	font-weight: 600;
+	color: var(--text-faint);
+}
+
+.prisma-first-launch-prefill-btn {
+	padding: 0.2rem 0.6rem;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 999px;
+	background: var(--background-primary);
+	font-size: 0.82rem;
+	font-weight: 500;
+	color: var(--text-normal);
+	cursor: pointer;
+	transition:
+		border-color 150ms ease,
+		background 150ms ease,
+		transform 100ms ease;
+
+	&:hover {
+		border-color: var(--interactive-accent);
+		background: color-mix(in srgb, var(--interactive-accent) 12%, var(--background-primary));
+		transform: translateY(-1px);
+	}
+
+	&:active {
+		transform: translateY(0);
+	}
+}
+
+// ─── Multi-folder hint ───────────────────────────────────────────────────────
+
+.prisma-first-launch-multi-hint {
+	padding: 0.7rem 0.9rem;
+	border-left: 3px solid var(--interactive-accent);
+	border-radius: 0 8px 8px 0;
+	background: color-mix(in srgb, var(--interactive-accent) 6%, var(--background-secondary));
+	font-size: 0.85rem;
+	line-height: 1.5;
+	color: var(--text-muted);
+}
+
+// ─── Configure calendar modal ────────────────────────────────────────────────
+
+.modal.prisma-configure-calendar-modal {
+	max-width: 980px;
+	width: min(980px, 94vw);
+}
+
+.prisma-configure-calendar {
+	display: flex;
+	flex-direction: column;
+	gap: 0.65rem;
+	padding: 1.25rem 1.5rem;
+}
+
+.prisma-configure-calendar-title {
+	margin: 0;
+	font-size: 1.15rem;
+	font-weight: 700;
+}
+
+.prisma-configure-calendar-desc {
+	margin: 0;
+	font-size: 0.9rem;
+	line-height: 1.55;
+	color: var(--text-muted);
+}
+
+.prisma-configure-calendar-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.5rem;
+	margin-top: 0.5rem;
 }
 
 // ─── Pro callout ──────────────────────────────────────────────────────────────

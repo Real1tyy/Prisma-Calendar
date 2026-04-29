@@ -2,11 +2,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { buildUtmUrl } from "@real1ty-obsidian-plugins";
 import { Button, openReactModal, TextInput, WelcomeModalShell } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
-import { memo, type ReactNode, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import type { DirectorySuggestion } from "./directory-suggestions";
+import { computePrefill, Field, PropertyFields, SuggestionList } from "./property-config";
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
 
@@ -84,16 +85,6 @@ function ModeCard({
 		>
 			<span className="prisma-first-launch-mode-title">{title}</span>
 			<span className="prisma-first-launch-mode-desc">{desc}</span>
-		</div>
-	);
-}
-
-function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
-	return (
-		<div className="prisma-first-launch-field">
-			<label>{label}</label>
-			{hint ? <small>{hint}</small> : null}
-			{children}
 		</div>
 	);
 }
@@ -178,10 +169,17 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 		if (currentMode === "new" && !currentDirectory.trim()) setValue("directory", "Tasks");
 	}, [currentMode, currentDirectory, setValue]);
 
-	const selectSuggestion = (suggestion: DirectorySuggestion): void => {
-		setValue("mode", "existing");
-		setValue("directory", suggestion.directory);
-	};
+	const selectSuggestion = useCallback(
+		(suggestion: DirectorySuggestion): void => {
+			setValue("mode", "existing");
+			setValue("directory", suggestion.directory);
+			const prefill = computePrefill(suggestion);
+			setValue("startProp", prefill.startProp || initialProps.startProp);
+			setValue("endProp", prefill.endProp || initialProps.endProp);
+			setValue("dateProp", prefill.dateProp || initialProps.dateProp);
+		},
+		[setValue, initialProps]
+	);
 
 	const submit = handleSubmit((values) => {
 		onSubmit({
@@ -214,14 +212,26 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 					desc="Prisma reads an existing folder and turns your notes into events using your current properties."
 					selected={currentMode === "existing"}
 					testId={tid("mode-existing")}
-					onSelect={() => setValue("mode", "existing")}
+					onSelect={() => {
+						setValue("mode", "existing");
+						setValue("directory", "");
+						setValue("startProp", initialProps.startProp);
+						setValue("endProp", initialProps.endProp);
+						setValue("dateProp", initialProps.dateProp);
+					}}
 				/>
 				<ModeCard
 					title="Start with a clean setup"
 					desc="Prisma creates a new dedicated folder with a simple property schema so you can start planning right away."
 					selected={currentMode === "new"}
 					testId={tid("mode-new")}
-					onSelect={() => setValue("mode", "new")}
+					onSelect={() => {
+						setValue("mode", "new");
+						setValue("directory", "Tasks");
+						setValue("startProp", initialProps.startProp);
+						setValue("endProp", initialProps.endProp);
+						setValue("dateProp", initialProps.dateProp);
+					}}
 				/>
 			</section>
 
@@ -262,81 +272,28 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 
 				{currentMode === "existing" ? (
 					<div className="prisma-first-launch-suggestions">
-						{isLoadingSuggestions ? (
-							<div className="prisma-first-launch-muted">
-								Scanning your vault for folders with date-like frontmatter...
-							</div>
-						) : suggestions.length === 0 ? (
-							<div className="prisma-first-launch-muted">
-								No existing folders with date-like frontmatter were detected. You can still type a folder above.
-							</div>
-						) : (
-							suggestions.map((suggestion) => (
-								<div
-									key={suggestion.directory}
-									role="button"
-									tabIndex={0}
-									className={`prisma-first-launch-suggestion${matchedSuggestion?.directory === suggestion.directory ? " is-selected" : ""}`}
-									onClick={() => selectSuggestion(suggestion)}
-									onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && selectSuggestion(suggestion)}
-									data-testid={tid(`suggestion-${suggestion.directory.replace(/[^\w-]+/g, "-").toLowerCase()}`)}
-								>
-									<span className="prisma-first-launch-mode-title">{suggestion.directory}</span>
-									<span className="prisma-first-launch-mode-desc">
-										{suggestion.fileCount} note{suggestion.fileCount === 1 ? "" : "s"} · Found date-like properties:{" "}
-										<strong>{suggestion.matchedProps.join(", ")}</strong>
-									</span>
-								</div>
-							))
-						)}
+						<SuggestionList
+							suggestions={suggestions}
+							isLoading={isLoadingSuggestions}
+							selectedDirectory={currentDirectory}
+							onSelect={selectSuggestion}
+							testIdPrefix="prisma-welcome"
+							multiHint
+						/>
 					</div>
 				) : null}
 
-				<Field label="Start property" hint="Starting datetime value for timed events.">
-					<Controller
-						name="startProp"
-						control={control}
-						render={({ field }) => (
-							<TextInput
-								value={field.value}
-								placeholder={initialProps.startProp}
-								onChange={field.onChange}
-								debounceMs={0}
-								testId={tid("start-prop")}
-							/>
-						)}
-					/>
-				</Field>
-				<Field label="End property" hint="Ending datetime value for timed events.">
-					<Controller
-						name="endProp"
-						control={control}
-						render={({ field }) => (
-							<TextInput
-								value={field.value}
-								placeholder={initialProps.endProp}
-								onChange={field.onChange}
-								debounceMs={0}
-								testId={tid("end-prop")}
-							/>
-						)}
-					/>
-				</Field>
-				<Field label="Date property" hint="Date value for all-day events.">
-					<Controller
-						name="dateProp"
-						control={control}
-						render={({ field }) => (
-							<TextInput
-								value={field.value}
-								placeholder={initialProps.dateProp}
-								onChange={field.onChange}
-								debounceMs={0}
-								testId={tid("date-prop")}
-							/>
-						)}
-					/>
-				</Field>
+				<PropertyFields
+					startProp={watch("startProp")}
+					endProp={watch("endProp")}
+					dateProp={watch("dateProp")}
+					onStartPropChange={(v) => setValue("startProp", v)}
+					onEndPropChange={(v) => setValue("endProp", v)}
+					onDatePropChange={(v) => setValue("dateProp", v)}
+					placeholders={initialProps}
+					suggestion={currentMode === "existing" ? matchedSuggestion : null}
+					testIdPrefix="prisma-welcome"
+				/>
 			</section>
 
 			<section className="prisma-first-launch-pro">
