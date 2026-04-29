@@ -11,7 +11,6 @@ import {
 } from "../../fixtures/history-helpers";
 import { refreshCalendar, waitForEventCount } from "../../fixtures/seed-events";
 import {
-	clearVaultSeedEvents,
 	currentWeekStartOffset,
 	expectCalendarConsistent,
 	expectUniqueVisibleEventCount,
@@ -34,7 +33,6 @@ test.describe("stress: batch skip + batch clone reactivity", () => {
 		test.slow();
 		const { page, vaultDir } = obsidian;
 
-		clearVaultSeedEvents(vaultDir);
 		seedBulkEvents(vaultDir, EVENT_COUNT, {
 			prefix: "Skip",
 			spreadDays: 7,
@@ -76,7 +74,6 @@ test.describe("stress: batch skip + batch clone reactivity", () => {
 		const { page, vaultDir } = obsidian;
 
 		const startingCount = 21;
-		clearVaultSeedEvents(vaultDir);
 		seedBulkEvents(vaultDir, startingCount, {
 			prefix: "Clone",
 			spreadDays: 7,

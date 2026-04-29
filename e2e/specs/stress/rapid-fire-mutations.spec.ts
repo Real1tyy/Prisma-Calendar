@@ -10,7 +10,6 @@ import {
 } from "../../fixtures/history-helpers";
 import { refreshCalendar, waitForEventCount } from "../../fixtures/seed-events";
 import {
-	clearVaultSeedEvents,
 	currentWeekStartOffset,
 	expectCalendarConsistent,
 	expectUniqueVisibleEventCount,
@@ -37,7 +36,6 @@ test.describe("stress: rapid-fire mutations against coalesced refresh", () => {
 		test.slow();
 		const { page, vaultDir } = obsidian;
 
-		clearVaultSeedEvents(vaultDir);
 		seedBulkEvents(vaultDir, EVENT_COUNT, {
 			prefix: "Rapid",
 			spreadDays: 7,
@@ -105,7 +103,6 @@ test.describe("stress: rapid-fire mutations against coalesced refresh", () => {
 		test.slow();
 		const { page, vaultDir } = obsidian;
 
-		clearVaultSeedEvents(vaultDir);
 		seedBulkEvents(vaultDir, EVENT_COUNT, {
 			prefix: "Twice",
 			spreadDays: 7,

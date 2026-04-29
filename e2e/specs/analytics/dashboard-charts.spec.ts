@@ -49,12 +49,9 @@ test.describe("analytics: dashboard charts (populated)", () => {
 		await expect(visibleTable.locator('[data-item-title="Work"]')).toBeVisible();
 		await expect(visibleTable.locator('[data-item-title="Fitness"]')).toBeVisible();
 
-		// 5 events seeded above + 1 from `vault-seed/Events/Team Meeting.md`
-		// (the fixture event also carries `Category: Work`, so it lands in the
-		// byCategory total too).
 		await expect(
 			calendar.page.locator(`${sel("prisma-dashboard-stat-value-Total Events")}:visible`).first()
-		).toHaveText("6");
+		).toHaveText("5");
 
 		// ─── Recurring ───
 		// No recurring events seeded, so rankings are empty (empty-state text)

@@ -21,5 +21,5 @@ test("views unmount on disable and state returns on re-enable", async ({ calenda
 	await enablePrisma(obsidian.page);
 	expect(await isPluginLoaded(obsidian.page, PLUGIN_ID)).toBe(true);
 
-	expect(obsidian.readVaultFile("Events/Team Meeting.md")).toContain("Team Meeting");
+	expect(obsidian.readVaultFile("Welcome.md")).toContain("Welcome");
 });

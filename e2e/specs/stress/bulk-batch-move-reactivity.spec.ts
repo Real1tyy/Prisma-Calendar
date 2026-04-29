@@ -3,7 +3,6 @@ import { openCalendar, switchCalendarViewMode } from "../../fixtures/helpers";
 import { clickBatchButton, enterBatchMode, exitBatchMode, expectSelectedCount } from "../../fixtures/history-helpers";
 import { refreshCalendar, waitForEventCount } from "../../fixtures/seed-events";
 import {
-	clearVaultSeedEvents,
 	currentWeekStartOffset,
 	expectCalendarConsistent,
 	expectUniqueVisibleEventCount,
@@ -41,7 +40,6 @@ test.describe("stress: batch move reactivity", () => {
 		test.slow();
 		const { page, vaultDir } = obsidian;
 
-		clearVaultSeedEvents(vaultDir);
 		seedBulkEvents(vaultDir, EVENT_COUNT, {
 			prefix: "Move",
 			spreadDays: 7,
@@ -85,7 +83,6 @@ test.describe("stress: batch move reactivity", () => {
 		test.slow();
 		const { page, vaultDir } = obsidian;
 
-		clearVaultSeedEvents(vaultDir);
 		seedBulkEvents(vaultDir, EVENT_COUNT, {
 			prefix: "Round",
 			spreadDays: 7,
@@ -124,7 +121,6 @@ test.describe("stress: batch move reactivity", () => {
 		test.slow();
 		const { page, vaultDir } = obsidian;
 
-		clearVaultSeedEvents(vaultDir);
 		seedBulkEvents(vaultDir, EVENT_COUNT, {
 			prefix: "Partial",
 			spreadDays: 7,

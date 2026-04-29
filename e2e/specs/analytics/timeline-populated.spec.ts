@@ -20,8 +20,6 @@ test.describe("analytics: timeline (populated)", () => {
 		const container = calendar.page.locator(sel("prisma-timeline-container")).first();
 		await expect(container).toBeVisible();
 
-		// vis-timeline copies our `className` onto each rendered `.vis-item`.
-		// At least the three seeded events must be present.
 		const items = container.locator(".prisma-timeline-item");
 		await expect(items).toHaveCount(3);
 	});

@@ -2,7 +2,6 @@ import { test } from "../../fixtures/electron";
 import { openCalendar, switchCalendarViewMode } from "../../fixtures/helpers";
 import { refreshCalendar, waitForEventCount } from "../../fixtures/seed-events";
 import {
-	clearVaultSeedEvents,
 	currentWeekStartOffset,
 	expectCalendarConsistent,
 	expectUniqueVisibleEventCount,
@@ -31,8 +30,6 @@ test.describe("stress: large vault initial render", () => {
 	}) => {
 		test.slow();
 		const { page, vaultDir } = obsidian;
-
-		clearVaultSeedEvents(vaultDir);
 
 		// Anchor spread to the current week's Sunday and extend 4 weeks
 		// forward so 5 of the 28 days fall within the current-week listView

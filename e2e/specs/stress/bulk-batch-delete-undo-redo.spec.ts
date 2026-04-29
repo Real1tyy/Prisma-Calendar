@@ -11,7 +11,6 @@ import {
 } from "../../fixtures/history-helpers";
 import { refreshCalendar, waitForEventCount } from "../../fixtures/seed-events";
 import {
-	clearVaultSeedEvents,
 	currentWeekStartOffset,
 	expectCalendarConsistent,
 	expectUniqueVisibleEventCount,
@@ -38,7 +37,6 @@ test.describe("stress: batch delete undo/redo", () => {
 		test.slow();
 		const { page, vaultDir } = obsidian;
 
-		clearVaultSeedEvents(vaultDir);
 		seedBulkEvents(vaultDir, EVENT_COUNT, {
 			prefix: "Del",
 			spreadDays: 7,
@@ -79,7 +77,6 @@ test.describe("stress: batch delete undo/redo", () => {
 		test.slow();
 		const { page, vaultDir } = obsidian;
 
-		clearVaultSeedEvents(vaultDir);
 		seedBulkEvents(vaultDir, EVENT_COUNT, {
 			prefix: "Chain",
 			spreadDays: 7,

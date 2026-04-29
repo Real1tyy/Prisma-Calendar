@@ -13,7 +13,6 @@ import {
 } from "../../fixtures/history-helpers";
 import { refreshCalendar, updateCalendarSettings, waitForEventCount } from "../../fixtures/seed-events";
 import {
-	clearVaultSeedEvents,
 	currentWeekStartOffset,
 	expectCalendarConsistent,
 	expectUniqueVisibleEventCount,
@@ -75,8 +74,6 @@ test.describe("stress: huge 5000-event vault with focused mutations", () => {
 	}) => {
 		test.setTimeout(HUGE_VAULT_TIMEOUT_MS);
 		const { page, vaultDir } = obsidian;
-
-		clearVaultSeedEvents(vaultDir);
 
 		// Background events: must be indexed but must never bleed into the
 		// current week / adjacent weeks we navigate to during the test.
@@ -179,7 +176,6 @@ test.describe("stress: huge 5000-event vault with focused mutations", () => {
 		test.setTimeout(HUGE_VAULT_TIMEOUT_MS);
 		const { page, vaultDir } = obsidian;
 
-		clearVaultSeedEvents(vaultDir);
 		seedBulkEvents(vaultDir, BACKGROUND_COUNT, {
 			prefix: "BgDel",
 			spreadDays: BACKGROUND_SPREAD_DAYS,

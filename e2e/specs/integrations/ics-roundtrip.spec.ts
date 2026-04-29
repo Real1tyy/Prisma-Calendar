@@ -80,13 +80,6 @@ async function runRoundTrip(
 	{ page, vaultDir }: { page: Page; vaultDir: string },
 	seed: readonly SeedEventInput[]
 ): Promise<RoundTripHandles> {
-	// Clear the vault-seed's pre-existing event (Team Meeting.md) so the
-	// exported VEVENT count equals the seed length exactly. Seed titles that
-	// happen to collide with the existing file would otherwise be coupled to
-	// whatever the vault-seed ships.
-	for (const md of listEventMarkdown(vaultDir)) {
-		unlinkSync(join(vaultDir, EVENTS_DIR, md));
-	}
 	seedEvents(vaultDir, seed);
 	await refreshCalendar(page);
 	await waitForEventCount(page, seed.length);
