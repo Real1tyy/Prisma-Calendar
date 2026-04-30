@@ -148,6 +148,7 @@ export class CalendarBundle {
 				this.startICSAutoSync();
 			}),
 			this.settingsStore.settings$.subscribe((settings) => {
+				if (this.destroyed) return;
 				this.updateRibbonIcon(settings.showRibbonIcon, settings.name);
 				this.updateCommandNames(settings.name);
 				this.updateLeafDisplayName(settings.name);

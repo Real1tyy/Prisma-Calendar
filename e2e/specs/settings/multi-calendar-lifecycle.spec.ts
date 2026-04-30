@@ -306,6 +306,49 @@ test.describe("multi-calendar lifecycle: create, configure, delete without full 
 		expect(hasCommand).toBe(false);
 	});
 
+	test("create/delete cycles leave no orphaned ribbon icons or commands", async ({ obsidian }) => {
+		const { page } = obsidian;
+
+		const countRibbonIcons = () => page.locator('[data-testid^="prisma-ribbon-open-"]').count();
+		const countCommands = () =>
+			page.evaluate((pid) => {
+				const cmds = (window as any).app.commands.commands as Record<string, unknown>;
+				return Object.keys(cmds).filter((k) => k.startsWith(`${pid}:open-calendar-`)).length;
+			}, PLUGIN_ID);
+
+		expect(await countRibbonIcons()).toBe(1);
+		expect(await countCommands()).toBe(1);
+
+		// Cycle 1: create then delete
+		await openPrismaSettings(page);
+		const id1 = await createAndConfigureCalendar(page, obsidian.vaultDir, "Meetings", 2);
+		await closeSettings(page);
+		expect(await countRibbonIcons()).toBe(2);
+		expect(await countCommands()).toBe(2);
+
+		await openPrismaSettings(page);
+		await page.locator(".prisma-calendar-management select.dropdown").selectOption(id1);
+		await page.locator('[data-testid="prisma-settings-calendar-delete"]').click();
+		await waitForCalendarCount(page, 1);
+		await closeSettings(page);
+		expect(await countRibbonIcons()).toBe(1);
+		expect(await countCommands()).toBe(1);
+
+		// Cycle 2: create then delete again (same ID gets reused)
+		await openPrismaSettings(page);
+		const id2 = await createAndConfigureCalendar(page, obsidian.vaultDir, "Personal", 2);
+		await closeSettings(page);
+		expect(await countRibbonIcons()).toBe(2);
+
+		await openPrismaSettings(page);
+		await page.locator(".prisma-calendar-management select.dropdown").selectOption(id2);
+		await page.locator('[data-testid="prisma-settings-calendar-delete"]').click();
+		await waitForCalendarCount(page, 1);
+		await closeSettings(page);
+		expect(await countRibbonIcons()).toBe(1);
+		expect(await countCommands()).toBe(1);
+	});
+
 	test("settings open to last-used planning system", async ({ obsidian }) => {
 		const { page } = obsidian;
 

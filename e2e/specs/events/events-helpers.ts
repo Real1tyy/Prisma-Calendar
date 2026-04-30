@@ -178,6 +178,19 @@ export async function expectEventVisible(page: Page, title: string, timeoutMs = 
 }
 
 /**
+ * Like `expectEventVisible` but scoped to the active workspace leaf's calendar
+ * grid. Excludes untracked dropdown items and events from inactive calendar
+ * leaves — use this in multi-calendar specs where `.fc-event` would match
+ * hidden elements from other views.
+ */
+export async function expectGridEventVisible(page: Page, title: string, timeoutMs = 15_000): Promise<void> {
+	await page
+		.locator(".workspace-leaf.mod-active .fc-view-harness .fc-event", { hasText: title })
+		.first()
+		.waitFor({ state: "visible", timeout: timeoutMs });
+}
+
+/**
  * Locator for all event blocks rendered in the calendar grid matching a title.
  * Scope is explicitly `.fc-view-harness .fc-event` so the match excludes items
  * in the untracked dropdown, which reuses the `.fc-event` class for FC's

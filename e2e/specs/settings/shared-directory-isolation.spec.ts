@@ -7,7 +7,7 @@ import { expect, testWithSeededFiles as test } from "../../fixtures/electron";
 import { closeSettings, openPrismaSettings, setSchemaTextInput, switchSettingsTab } from "../../fixtures/helpers";
 import { getCalendars } from "../../fixtures/plugin-data";
 import { type SeedEventInput, seedEvents, waitForCalendarCount } from "../../fixtures/seed-events";
-import { expectEventVisible, openCalendarView } from "../events/events-helpers";
+import { expectGridEventVisible, openCalendarView } from "../events/events-helpers";
 
 // ─── Dataset: one directory, two property schemas ────────────────────────────
 //
@@ -86,8 +86,8 @@ test.describe("shared directory isolation: planning systems on the same folder",
 		await closeSettings(page);
 
 		await openCalendarView(page, "default");
-		await expectEventVisible(page, "Weekly Review", 20_000);
-		await expectEventVisible(page, "Budget Meeting");
+		await expectGridEventVisible(page, "Weekly Review", 20_000);
+		await expectGridEventVisible(page, "Budget Meeting");
 
 		// Create second planning system → same dir, "Start"/"End"
 		await openPrismaSettings(page);
@@ -104,13 +104,13 @@ test.describe("shared directory isolation: planning systems on the same folder",
 
 		// Second planning system shows only Schema B events
 		await openCalendarView(page, secondId);
-		await expectEventVisible(page, "Design Sprint", 20_000);
-		await expectEventVisible(page, "Code Review");
+		await expectGridEventVisible(page, "Design Sprint", 20_000);
+		await expectGridEventVisible(page, "Code Review");
 
 		// First planning system still shows only Schema A events
 		await openCalendarView(page, "default");
-		await expectEventVisible(page, "Weekly Review");
-		await expectEventVisible(page, "Budget Meeting");
+		await expectGridEventVisible(page, "Weekly Review");
+		await expectGridEventVisible(page, "Budget Meeting");
 
 		// Verify exact counts via plugin API — no cross-contamination
 		const counts = await page.evaluate((pid) => {
@@ -141,7 +141,7 @@ test.describe("shared directory isolation: planning systems on the same folder",
 		await closeSettings(page);
 
 		await openCalendarView(page, "default");
-		await expectEventVisible(page, "Weekly Review", 20_000);
+		await expectGridEventVisible(page, "Weekly Review", 20_000);
 
 		// Create second planning system → same dir, same properties
 		await openPrismaSettings(page);
@@ -158,12 +158,12 @@ test.describe("shared directory isolation: planning systems on the same folder",
 
 		// Both planning systems see Schema A events
 		await openCalendarView(page, secondId);
-		await expectEventVisible(page, "Weekly Review", 20_000);
-		await expectEventVisible(page, "Budget Meeting");
+		await expectGridEventVisible(page, "Weekly Review", 20_000);
+		await expectGridEventVisible(page, "Budget Meeting");
 
 		await openCalendarView(page, "default");
-		await expectEventVisible(page, "Weekly Review");
-		await expectEventVisible(page, "Budget Meeting");
+		await expectGridEventVisible(page, "Weekly Review");
+		await expectGridEventVisible(page, "Budget Meeting");
 	});
 
 	test("deleting one planning system on a shared directory does not affect the other", async ({ obsidian }) => {
@@ -185,9 +185,9 @@ test.describe("shared directory isolation: planning systems on the same folder",
 
 		// Verify both work
 		await openCalendarView(page, "default");
-		await expectEventVisible(page, "Weekly Review", 20_000);
+		await expectGridEventVisible(page, "Weekly Review", 20_000);
 		await openCalendarView(page, secondId);
-		await expectEventVisible(page, "Design Sprint", 20_000);
+		await expectGridEventVisible(page, "Design Sprint", 20_000);
 
 		// Delete the second planning system
 		await openPrismaSettings(page);
@@ -197,7 +197,7 @@ test.describe("shared directory isolation: planning systems on the same folder",
 
 		// First still works
 		await openCalendarView(page, "default");
-		await expectEventVisible(page, "Weekly Review");
-		await expectEventVisible(page, "Budget Meeting");
+		await expectGridEventVisible(page, "Weekly Review");
+		await expectGridEventVisible(page, "Budget Meeting");
 	});
 });
