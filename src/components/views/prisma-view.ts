@@ -8,6 +8,7 @@ import {
 	type TabbedContainerHandle,
 	type TabbedContainerState,
 	type ViewActivator,
+	type ViewComponentConfig,
 } from "@real1ty-obsidian-plugins";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
@@ -42,6 +43,7 @@ export interface PrismaViewRef {
 	tabbedHandle: TabbedContainerHandle | null;
 	pageHeaderHandle: PageHeaderHandle | null;
 	capacityIndicatorHandle: CapacityIndicatorHandle | null;
+	viewConfig: { displayText: string } | null;
 }
 
 export function registerPrismaCalendarView(
@@ -49,7 +51,7 @@ export function registerPrismaCalendarView(
 	bundle: CalendarBundle,
 	ref: PrismaViewRef
 ): ViewActivator {
-	return registerComponentView(plugin, {
+	const viewConfig: ViewComponentConfig = {
 		viewType: bundle.viewType,
 		displayText: bundle.settingsStore.currentSettings.name,
 		icon: "calendar",
@@ -152,5 +154,8 @@ export function registerPrismaCalendarView(
 			ref.tabbedHandle?.destroy();
 			ref.tabbedHandle = null;
 		},
-	});
+	};
+
+	ref.viewConfig = viewConfig;
+	return registerComponentView(plugin, viewConfig);
 }

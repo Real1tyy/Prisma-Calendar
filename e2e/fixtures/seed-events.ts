@@ -179,18 +179,13 @@ export async function updateCalendarSettings(page: Page, patch: Record<string, u
 	);
 }
 
-/**
- * Wait until the indexer has caught up to at least `minCount` events. Large
- * seeded datasets take measurably longer than the 500ms refresh sleep to
- * ingest; polling here avoids flaky "expected N got <N" races.
- */
-export async function waitForEventCount(page: Page, minCount: number, timeout = 30_000): Promise<void> {
+export async function waitForEventCount(page: Page, count: number, timeout = 30_000): Promise<void> {
 	await expect
 		.poll(() => getEventCount(page), {
 			timeout,
-			message: `indexer never reached ${minCount} events`,
+			message: `indexer never reached ${count} events`,
 		})
-		.toBeGreaterThanOrEqual(minCount);
+		.toBe(count);
 }
 
 /** Count events the plugin currently sees via the event store. */
@@ -215,4 +210,19 @@ export async function getEventCount(page: Page): Promise<number> {
 		if (!bundle) throw new Error("No calendar bundle");
 		return bundle.eventStore.getAllEvents().length;
 	}, PLUGIN_ID);
+}
+
+export async function waitForCalendarCount(page: Page, count: number): Promise<void> {
+	await expect
+		.poll(
+			() =>
+				page.evaluate((pid) => {
+					const w = window as unknown as {
+						app: { plugins: { plugins: Record<string, { calendarBundles?: unknown[] }> } };
+					};
+					return w.app.plugins.plugins[pid]?.calendarBundles?.length ?? 0;
+				}, PLUGIN_ID),
+			{ message: `waiting for ${count} calendar bundles` }
+		)
+		.toBe(count);
 }

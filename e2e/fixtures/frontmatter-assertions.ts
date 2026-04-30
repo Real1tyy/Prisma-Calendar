@@ -13,8 +13,8 @@ export interface RoundTripAssertion {
 	seed: SeedEventInput;
 	/** Frontmatter keys to compare literal-for-literal (byte preservation). */
 	expectFrontmatter: Record<string, string | boolean>;
-	/** Minimum event count after refresh (defaults to 1). */
-	minEvents?: number;
+	/** Expected event count after refresh (defaults to 1). */
+	expectedEvents?: number;
 }
 
 export async function assertFrontmatterRoundTrip(
@@ -30,6 +30,6 @@ export async function assertFrontmatterRoundTrip(
 		expect(fm[key], `frontmatter ${key} must round-trip byte-for-byte`).toBe(value);
 	}
 
-	const minEvents = spec.minEvents ?? 1;
-	await waitForEventCount(page, minEvents);
+	const expectedEvents = spec.expectedEvents ?? 1;
+	await waitForEventCount(page, expectedEvents);
 }

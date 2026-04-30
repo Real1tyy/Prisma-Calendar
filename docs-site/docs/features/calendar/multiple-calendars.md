@@ -28,15 +28,23 @@ Separate contexts with dedicated configurations. The free plan supports up to 3 
 
 ## Typical setup
 
-Each planning system **must use its own separate directory** for full independence:
+Every planning system is fully isolated. You can use separate directories or point multiple planning systems at the same directory. Both approaches work.
 
 1. Create a Work planning system → Directory `work/`
 2. Create a Personal planning system → Directory `personal/`
-3. Create a Projects planning system → Directory `projects/`
-4. Add different color rules (e.g., Work blue, Personal purple)
-5. Assign hotkeys to switch quickly
+3. Configure different property mappings, filters, and color rules per planning system
+4. Assign hotkeys to switch quickly
 
-**Important**: Each planning system needs its own directory to maintain independent filtering and property settings.
+**Separate directories** give you content separation — different notes live in different folders. **Shared directories** let you view the same notes through different lenses (different properties, filters, or color schemes).
+
+## Managing planning systems
+
+All management happens in Settings at the top of the page — create, clone, rename, configure, or delete planning systems from the action buttons.
+
+- **Settings remember your last-used system** — opening settings pre-selects the planning system you last interacted with.
+- **Creating or deleting** a planning system is instant and never disrupts other open systems — no re-indexing, no settings closing.
+- **Renaming** immediately updates the ribbon icon tooltip and command palette entries.
+- **Configure current** opens a focused modal that scans your vault for date-like properties and lets you set the directory and property names with auto-detection.
 
 ## Example Configurations
 
@@ -68,56 +76,48 @@ Planning System "Archive":
   Colors: Muted gray theme
 ```
 
-## Sharing Directories: When It Works and When It Doesn't
-
-Multiple planning systems **can** point to the same directory, but with important limitations to understand.
-
-### ✅ Great Use Case: Different Visual Perspectives
-
-If you want multiple ways to **view and style the same events**, sharing a directory works perfectly:
-
+**Same Directory, Different Properties:**
 ```
-Planning System "Work - Timeline":
+Planning System "Meetings":
   Directory: work/
-  View: Month view, expanded hours
-  Colors: Priority-based (High → Red, Medium → Yellow)
-  Display: Show all properties
+  Properties: meetingStart, meetingEnd, meetingTitle
+  Filters: type === 'meeting'
+  Colors: Blue theme
 
-Planning System "Work - Daily":
+Planning System "Deadlines":
   Directory: work/  (same directory!)
-  View: Day view, 8am-6pm focus
-  Colors: Project-based (Phoenix → Blue, Atlas → Green)
-  Display: Show only title and time
+  Properties: dueDate, deadline, taskName
+  Filters: type === 'deadline'
+  Colors: Red theme
 ```
 
-**What you can customize per planning system:**
-- ✅ Planning system name
-- ✅ View settings (hour range, default view, time slots)
-- ✅ Color rules (different colors for same events)
-- ✅ Display properties (which frontmatter fields to show)
-- ✅ UI preferences (event preview, contrast settings)
+## Sharing Directories
 
-### ❌ Won't Work: Different Filters or Properties
+Planning systems never interfere with each other, even when pointing at the same directory with completely different configurations.
 
-You **cannot** use the same directory if you need:
-- ❌ Different filter expressions (one planning system shows "active", another shows "all")
-- ❌ Different property mappings (one uses `start`, another uses `scheduledDate`)
-- ❌ Different recurring event settings
+**Same directory, different properties:** Each planning system only sees events matching its configured property names. A planning system looking for `meetingStart` and another looking for `dueDate` in the same folder will each find only the notes relevant to them.
 
-**Why this limitation exists**: Planning systems sharing a directory share the same underlying data layer to prevent conflicts and duplicate event creation. This shared layer uses the **FIRST planning system's settings** for:
+**Same directory, same properties:** Both planning systems see the same events independently. Changes made in one are picked up by the other. There are no conflicts or overrides — each operates on its own copy of the data.
+
+**Subdirectories:** A planning system pointing at `work/` and another at `work/projects/` work independently. Each indexes only the notes in its configured path.
+
+**What you can customize per planning system (all independent):**
+- Property mappings (Start, End, Date, Title, etc.)
 - Filter expressions
-- Property mappings (Start, End, Date, etc.)
+- Color rules and themes
+- View settings (hour range, default view, time slots)
+- Display properties (which frontmatter fields to show)
 - Recurring event settings
+- UI preferences (event preview, contrast settings)
 
 ### Decision Guide
 
 **Use the SAME directory when:**
-- ✅ You want different colored views of the same events
-- ✅ You need different time ranges or view types (month vs. day)
-- ✅ You want to show/hide different properties on events
-- ✅ All planning systems can use the same filters and property mappings
+- You want different views of the same notes (e.g., timeline vs. daily focus)
+- You want to read different properties from the same notes (e.g., meetings vs. deadlines)
+- You want different color schemes or filter rules for the same content
 
 **Use SEPARATE directories when:**
-- ✅ You need different filter expressions
-- ✅ You need different property mappings
-- ✅ You're organizing completely different types of events
+- You want content separation — different notes for different contexts
+- You're organizing completely different types of events (work vs. personal)
+- You prefer a clean folder structure in your vault

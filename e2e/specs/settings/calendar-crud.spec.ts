@@ -1,4 +1,4 @@
-import { readPluginData, setTextInput, settleSettings } from "@real1ty-obsidian-plugins/testing/e2e";
+import { setTextInput, settleSettings } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { PLUGIN_ID } from "../../fixtures/constants";
 import { expect, test } from "../../fixtures/electron";
@@ -12,14 +12,8 @@ import {
 	setSchemaTextInput,
 	switchSettingsTab,
 } from "../../fixtures/helpers";
+import { getCalendars } from "../../fixtures/plugin-data";
 import { listEventFiles } from "../events/events-helpers";
-
-type CalendarRow = { id: string; name: string; directory?: string };
-type PluginData = { calendars: CalendarRow[] };
-
-function getCalendars(vaultDir: string): CalendarRow[] {
-	return (readPluginData(vaultDir, PLUGIN_ID) as PluginData).calendars;
-}
 
 test.describe("settings: calendar CRUD", () => {
 	test("Create new adds a second calendar to data.json", async ({ obsidian }) => {
@@ -32,7 +26,7 @@ test.describe("settings: calendar CRUD", () => {
 		expect(calendars).toHaveLength(2);
 		expect(calendars[0].id).toBe("default");
 		expect(calendars[1].id).not.toBe("default");
-		expect(calendars[1].name).toMatch(/Calendar\s*2/);
+		expect(calendars[1].name).toMatch(/Planning System\s*2/);
 	});
 
 	test("Clone current duplicates every setting except id/name", async ({ obsidian }) => {

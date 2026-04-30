@@ -1,5 +1,4 @@
 import type { SyncStore } from "@real1ty-obsidian-plugins";
-import { normalizeDirectoryPath } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import type { BehaviorSubject } from "rxjs";
 
@@ -75,11 +74,15 @@ export class IndexerRegistry {
 	/**
 	 * Get or create shared infrastructure for the specified directory.
 	 * Returns existing instances if another calendar is already using this directory.
+	 *
+	 * Empty directories get per-calendar keys — each unconfigured calendar gets
+	 * its own infrastructure so they can independently diverge when the user
+	 * picks real directories via configure.
 	 */
 	getOrCreateIndexer(calendarId: string, settingsStore: BehaviorSubject<SingleCalendarConfig>): SharedInfrastructure {
-		const directory = normalizeDirectoryPath(settingsStore.value.directory);
+		const registryKey = calendarId;
 
-		let entry: RegistryEntry | undefined = this.registry.get(directory);
+		let entry: RegistryEntry | undefined = this.registry.get(registryKey);
 
 		if (entry) {
 			entry.refCount++;
@@ -111,7 +114,7 @@ export class IndexerRegistry {
 				calendarIds: new Set([calendarId]),
 			} satisfies RegistryEntry;
 
-			this.registry.set(directory, entry);
+			this.registry.set(registryKey, entry);
 		}
 
 		return {
@@ -131,9 +134,9 @@ export class IndexerRegistry {
 	 * Release an indexer reference when a calendar is destroyed.
 	 * Destroys the indexer only when no calendars are using it anymore.
 	 */
-	releaseIndexer(calendarId: string, directory: string): void {
-		const normalizedDir = normalizeDirectoryPath(directory);
-		const entry = this.registry.get(normalizedDir);
+	releaseIndexer(calendarId: string, _directory: string): void {
+		const registryKey = calendarId;
+		const entry = this.registry.get(registryKey);
 
 		if (!entry) {
 			return;
@@ -152,7 +155,7 @@ export class IndexerRegistry {
 			entry.categoryTracker.destroy();
 			entry.nameSeriesTracker.destroy();
 			entry.prerequisiteTracker.destroy();
-			this.registry.delete(normalizedDir);
+			this.registry.delete(registryKey);
 		}
 	}
 

@@ -6,7 +6,7 @@ All notable changes to this project will be documented here.
 
 ## 2.15.0 - 4/29/2026
 
-> **TLDR:** New [Quick Start Video](https://youtu.be/dziQK9UQhvE) covering installation, setup, and core workflows from scratch. Smarter onboarding with datetime/date property detection, prefill buttons, and a new **Configure current** button for re-running property detection on any planning system.
+> **TLDR:** New [Quick Start Video](https://youtu.be/dziQK9UQhvE) covering installation, setup, and core workflows from scratch. Smarter onboarding with datetime/date property detection, prefill buttons, and a new **Configure current** button for re-running property detection on any planning system. Planning systems are now fully isolated — creating, deleting, or reconfiguring one never disrupts others, and multiple systems can share the same directory with different property mappings.
 
 ### Added
 - **Quick Start Video**: New [Quick Start guide video](https://youtu.be/dziQK9UQhvE) walks through everything from installation to setup to daily use — creating events, editing, categories, recurring events, statistics, and multiple planning systems. Highly recommended for both new and existing users to better understand how Prisma works and get the most out of it. See [Quick Start](./quickstart.md).
@@ -18,10 +18,19 @@ All notable changes to this project will be documented here.
 - **In-app changelog viewer**: Browse the full changelog with lazy-loaded entries directly from Settings → General → Help & Support. See [General Settings → Help & Support](./configuration/general.md#help--support).
 - `RRuleUntil` **recurring end date**: Recurring sources can now define an inclusive final occurrence day with `RRuleUntil` (or your renamed property). Physical generation and virtual previews both stop after that date, so bounded schedules like semesters no longer spill into future months. See [Recurring Events](./features/events/recurring-dsl.md#rruleuntil-end-date).
 
+### Improved
+- **What's New modal styling**: Refreshed Pro section with subtle accent coloring and a collapsible toggle — click the header to collapse or expand it, freeing up space for the changelog content.
+- **Fully isolated planning systems**: Multiple planning systems can now share the same directory with different property mappings — each sees only the events matching its configured properties. Creating, deleting, or reconfiguring one system never disrupts others. See [Multiple Planning Systems](./features/calendar/multiple-calendars.md).
+- **Settings open to last-used planning system**: Opening settings now pre-selects the planning system you last interacted with instead of always defaulting to the first one. See [Multiple Planning Systems](./features/calendar/multiple-calendars.md).
+- **Renaming a planning system updates everywhere**: Renaming now immediately updates the ribbon icon tooltip, command palette entries, and the open tab name — no restart needed. See [Multiple Planning Systems](./features/calendar/multiple-calendars.md).
+
 ### Fixed
 - **Monthly color dots showing for events with no custom color**: Events without a matching color rule displayed the default color as a dot in monthly/year view. Color dots now only appear for events with configured color rules. See [Color Rules → Multi-Color Across All Views](./features/organization/color-rules.md#multi-color-across-all-views).
 - **Stale note preview in hover tooltip**: Editing a note's body content and hovering over the event again now shows the updated text immediately. See [Calendar View → Event Interaction](./features/calendar/calendar-view.md#event-interaction).
 - **Calendar stuck on "Indexing calendar events..." after reconfiguring directory**: Changing a calendar's directory via the Configure button left the calendar view frozen on the indexing spinner. See [Quick Start](./quickstart.md#initial-setup).
+- **Creating or deleting a planning system re-indexed all other calendars**: Adding, cloning, or removing a planning system closed settings, reset open views, and forced a full re-index of unrelated calendars. Each operation now only touches the affected planning system. See [Multiple Planning Systems](./features/calendar/multiple-calendars.md).
+- **Deleting a planning system left orphaned ribbon icons and commands**: The ribbon icon and command palette entries for a deleted planning system persisted until restart. See [Multiple Planning Systems](./features/calendar/multiple-calendars.md).
+- **New planning systems sharing another calendar's events**: Creating multiple planning systems could cause them to show events from the wrong directory. Each planning system now operates independently. See [Multiple Planning Systems](./features/calendar/multiple-calendars.md).
 
 :::note Active Development
 Prisma is under active, full-time development. If you have ideas for improving the onboarding experience, feature requests, bug reports, or suggestions for integrations — please [open an issue on GitHub](https://github.com/Real1tyy/Prisma-Calendar/issues). Your feedback directly shapes what gets built next.

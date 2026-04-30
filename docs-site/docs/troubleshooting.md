@@ -66,94 +66,20 @@ Prisma Calendar is designed to handle large vaults without issues. If you're exp
 ## 📆 Multiple Planning Systems
 
 <details>
-<summary>Planning system stuck on "Indexing calendar events..." after duplicating</summary>
+<summary>Events not showing after creating a new planning system</summary>
 
-**Problem**: After duplicating a planning system or creating a second one that points to the same directory, one or both planning systems hang on "Indexing calendar events..." and never complete.
+**Problem**: After creating a new planning system, the calendar view shows no events or the wrong events.
 
-**Root Cause**: When multiple planning systems share the same directory, they share the same underlying data layer. The initialization flow when duplicating planning systems can cause synchronization issues where the shared layer doesn't properly notify all views.
-
-**Solution**: Reload the plugin after creating/duplicating planning systems:
-
-1. **Option 1**: Disable and re-enable the plugin
-   - Go to Settings → Community Plugins
-   - Toggle "Prisma Calendar" off then on
-
-2. **Option 2**: Restart Obsidian
-
-**Prevention**: If you frequently create multiple planning systems for the same directory, consider:
-- Creating all planning systems at once, then reloading the plugin once
-- Using different directories for different planning systems if you don't need them to share events
+**Solution**: Make sure you configured both the directory and the property mappings. Open Settings, select the new planning system, and use **Configure current** to set the directory and properties. Each planning system is fully independent — it only sees events matching its own configured property names.
 
 </details>
 
 <details>
-<summary>Multiple calendars creating duplicate events</summary>
+<summary>Two planning systems on the same directory showing overlapping events</summary>
 
-If you're seeing duplicate events or recurring instances being created multiple times, this may be caused by multiple calendars using overlapping directories.
+**Problem**: Two planning systems point at the same directory and both show the same events even though you want each to show different ones.
 
-**Automatic Conflict Prevention:**
-When multiple calendars use the **exact same directory path**, they automatically share the same underlying data layer and recurring event manager. This prevents duplicates and conflicts.
-
-**Known Limitation - Directory Subsets:**
-The system **cannot detect** when one calendar uses a parent directory and another uses a subdirectory. For example:
-- Calendar A uses `tasks`
-- Calendar B uses `tasks/homework`
-
-These will be managed separately and may conflict, potentially causing:
-- Duplicate recurring event instances
-- File change events processed multiple times
-- Inconsistent event states
-
-**Solutions:**
-1. **Recommended**: Use the same exact directory path for all calendars that should see the same events, then use filters to differentiate views
-2. **Alternative**: Use completely separate directory trees (e.g., `work/` and `personal/`) with no overlap
-3. **Workaround**: Keep parent/child directory calendars, but disable recurring events in one of them
-
-**Example - Good Configuration:**
-```
-Calendar "Work - Tasks":    Directory: tasks/
-Calendar "Work - Calendar":  Directory: tasks/
-Filter: type === 'task'   Filter: type === 'event'
-```
-
-**Example - Problematic Configuration:**
-```
-Calendar A: Directory: tasks/          ❌ Will conflict
-Calendar B: Directory: tasks/homework/ ❌ Will conflict
-```
-
-</details>
-
-<details>
-<summary>Calendars sharing directory have different frontmatter property settings</summary>
-
-**Problem**: You have two calendars pointing to the same directory, but want Calendar 1 to use `start` property and Calendar 2 to use `scheduledDate` property. However, both calendars seem to use the same property mappings.
-
-**Root Cause**: When multiple calendars share the same directory, they share the same underlying data layer. This layer is initialized with the FIRST calendar's settings and is reused by all subsequent calendars pointing to that directory.
-
-**What's Shared**:
-- Frontmatter property mappings (Start, End, Date, Title, etc.)
-- Event filtering expressions
-- Recurring event settings (RRule properties)
-- Skip property, Source property, etc.
-
-**What's Individual**:
-- Calendar name
-- View settings (hour range, default view, slot duration)
-- Color rules
-- Display properties (which frontmatter fields to show)
-- UI preferences
-
-**Solution**: Use separate directories for calendars that need different property mappings:
-```
-Calendar "Tasks":          Directory: tasks/
-  Properties: start, end, due
-
-Calendar "Schedule":       Directory: schedule/
-  Properties: scheduledDate, deadline
-```
-
-**Alternative**: If events truly belong in the same directory, standardize on one set of property names and use that across all calendars viewing that directory.
+**Solution**: Configure different property mappings for each planning system. For example, one system uses `meetingStart` / `meetingEnd` while the other uses `dueDate` / `deadline`. Each planning system only sees notes whose frontmatter contains its configured start property. If both systems use the same property names, they will both see all matching events — that's the expected behavior.
 
 </details>
 

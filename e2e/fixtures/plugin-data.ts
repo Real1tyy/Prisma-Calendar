@@ -11,6 +11,8 @@ const DEFAULT_CALENDAR_ID = "default";
 
 type CalendarEntry<Extra extends Record<string, unknown> = Record<string, unknown>> = { id: string } & Extra;
 
+export type { CalendarEntry };
+
 /**
  * Read `data.json`, then return the default calendar entry (by id, falling
  * back to the first). The generic narrows the return type so callers get the
@@ -24,4 +26,13 @@ export function readDefaultCalendar<Extra extends Record<string, unknown>>(
 	};
 	const calendars = data.calendars;
 	return calendars?.find((c) => c.id === DEFAULT_CALENDAR_ID) ?? calendars?.[0];
+}
+
+export function getCalendars<Extra extends Record<string, unknown> = Record<string, unknown>>(
+	vaultDir: string
+): Array<CalendarEntry<Extra>> {
+	const data = readPluginData(vaultDir, PLUGIN_ID) as {
+		calendars?: Array<CalendarEntry<Extra>>;
+	};
+	return data.calendars ?? [];
 }

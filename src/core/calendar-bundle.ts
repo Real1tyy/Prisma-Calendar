@@ -77,12 +77,14 @@ export class CalendarBundle {
 	private caldavSync = new SyncState<CalDAVSyncService>("CalDAV");
 	private icsSubscriptionSync = new SyncState<ICSSubscriptionSyncService>("ICS Subscription");
 	private ribbonIconEl: HTMLElement | null = null;
+	private destroyed = false;
 	private readonly subscriptions: Subscription[] = [];
 	public readonly viewRef: PrismaViewRef = {
 		calendarComponent: null,
 		tabbedHandle: null,
 		pageHeaderHandle: null,
 		capacityIndicatorHandle: null,
+		viewConfig: null,
 	};
 
 	constructor(
@@ -146,7 +148,9 @@ export class CalendarBundle {
 				this.startICSAutoSync();
 			}),
 			this.settingsStore.settings$.subscribe((settings) => {
-				this.updateRibbonIcon(settings.showRibbonIcon);
+				this.updateRibbonIcon(settings.showRibbonIcon, settings.name);
+				this.updateCommandNames(settings.name);
+				this.updateLeafDisplayName(settings.name);
 
 				const holidaySettingsChanged = this.holidayStore.updateConfig(settings.holidays as HolidayConfig);
 
@@ -163,6 +167,8 @@ export class CalendarBundle {
 			await this.fileRepository.start();
 			await this.virtualEventStore.initialize();
 			await firstValueFrom(this.fileRepository.indexingComplete$.pipe(filter((complete) => complete)));
+
+			if (this.destroyed) return;
 
 			registerPrismaCalendarView(this.plugin, this, this.viewRef);
 
@@ -208,7 +214,7 @@ export class CalendarBundle {
 				})
 			);
 
-			this.updateRibbonIcon(this.settingsStore.currentSettings.showRibbonIcon);
+			this.updateRibbonIcon(this.settingsStore.currentSettings.showRibbonIcon, this.settingsStore.currentSettings.name);
 		})();
 	}
 
@@ -247,6 +253,7 @@ export class CalendarBundle {
 	}
 
 	destroy(): void {
+		this.destroyed = true;
 		// Don't detach leaves here - Obsidian handles that automatically during plugin updates
 		// Detaching in onunload causes leaves to reset to their original positions
 		// See: https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines#Don't+detach+leaves+in+%60onunload%60
@@ -256,6 +263,9 @@ export class CalendarBundle {
 			this.ribbonIconEl.remove();
 			this.ribbonIconEl = null;
 		}
+
+		this.plugin.removeCommand(`open-calendar-${this.calendarId}`);
+		this.plugin.removeCommand(`open-virtual-events-${this.calendarId}`);
 
 		this.caldavSync.destroy();
 		this.icsSubscriptionSync.destroy();
@@ -273,16 +283,37 @@ export class CalendarBundle {
 
 	// ─── Calendar View ────────────────────────────────────────────
 
-	private updateRibbonIcon(show: boolean): void {
+	private updateRibbonIcon(show: boolean, name: string): void {
 		if (show && !this.ribbonIconEl) {
-			this.ribbonIconEl = this.plugin.addRibbonIcon("calendar-days", this.settingsStore.currentSettings.name, () => {
+			this.ribbonIconEl = this.plugin.addRibbonIcon("calendar-days", name, () => {
 				void this.activateCalendarView();
 			});
 			this.ribbonIconEl.setAttribute("data-testid", `prisma-ribbon-open-${this.calendarId}`);
+		} else if (show && this.ribbonIconEl) {
+			this.ribbonIconEl.setAttribute("aria-label", name);
 		} else if (!show && this.ribbonIconEl) {
 			this.ribbonIconEl.remove();
 			this.ribbonIconEl = null;
 		}
+	}
+
+	private updateLeafDisplayName(name: string): void {
+		if (this.viewRef.viewConfig) {
+			this.viewRef.viewConfig.displayText = name;
+		}
+		for (const leaf of this.app.workspace.getLeavesOfType(this.viewType)) {
+			const titleEl = (leaf as unknown as { tabHeaderInnerTitleEl?: HTMLElement }).tabHeaderInnerTitleEl;
+			if (titleEl) titleEl.textContent = name;
+		}
+	}
+
+	private updateCommandNames(name: string): void {
+		const commands = (this.app as unknown as { commands: { commands: Record<string, { name: string }> } }).commands
+			.commands;
+		const openCmd = commands[`prisma-calendar:open-calendar-${this.calendarId}`];
+		if (openCmd) openCmd.name = `Open ${name}`;
+		const virtualCmd = commands[`prisma-calendar:open-virtual-events-${this.calendarId}`];
+		if (virtualCmd) virtualCmd.name = `Open virtual events file (${name})`;
 	}
 
 	async activateCalendarView(): Promise<void> {

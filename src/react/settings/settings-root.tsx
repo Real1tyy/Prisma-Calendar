@@ -1,8 +1,8 @@
-import { cls } from "@real1ty-obsidian-plugins";
+import { buildUtmUrl, cls } from "@real1ty-obsidian-plugins";
 import {
+	Copyable,
 	Dropdown,
 	openRenameModal,
-	SettingHeading,
 	SettingItem,
 	useApp,
 	useSettingsStore,
@@ -20,6 +20,8 @@ import {
 } from "../../utils/calendar-settings";
 import { SingleCalendarSettingsReact } from "./single-calendar-settings-react";
 
+const GITHUB_REPO_URL = "https://github.com/Real1tyy/Prisma-Calendar";
+
 interface SettingsRootProps {
 	plugin: CustomCalendarPlugin;
 }
@@ -27,8 +29,13 @@ interface SettingsRootProps {
 export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootProps) {
 	const app = useApp();
 	const [mainSettings, updateMainSettings] = useSettingsStore(plugin.settingsStore);
-	const [selectedCalendarId, setSelectedCalendarId] = useState(mainSettings.calendars[0]?.id ?? "default");
+	const [selectedCalendarId, setSelectedCalendarId] = useState(() => {
+		const lastUsed = plugin.syncStore.data.lastUsedCalendarId;
+		if (lastUsed && mainSettings.calendars.some((c) => c.id === lastUsed)) return lastUsed;
+		return mainSettings.calendars[0]?.id ?? "default";
+	});
 
+	const version = plugin.manifest?.version ?? "?";
 	const calendars = mainSettings.calendars;
 	const maxCalendars = plugin.isProEnabled ? Infinity : FREE_MAX_CALENDARS;
 	const isAtMax = calendars.length >= maxCalendars;
@@ -51,9 +58,11 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 	);
 
 	const countText =
-		maxCalendars === Infinity ? `${calendars.length} calendars` : `${calendars.length}/${maxCalendars} calendars`;
+		maxCalendars === Infinity
+			? `${calendars.length} planning systems`
+			: `${calendars.length}/${maxCalendars} planning systems`;
 	const maxTitle = isAtMax
-		? `Free plan allows up to ${maxCalendars} calendars. Upgrade to Pro for unlimited.`
+		? `Free plan allows up to ${maxCalendars} planning systems. Start your 30-day free trial for unlimited.`
 		: undefined;
 
 	const updateSelectedCalendar = useCallback(
@@ -62,19 +71,18 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 				...s,
 				calendars: s.calendars.map((cal) => (cal.id === selectedCalendarId ? { ...cal, ...patch } : cal)),
 			}));
-			await plugin.refreshCalendarBundles();
 		},
-		[selectedCalendarId, updateMainSettings, plugin]
+		[selectedCalendarId, updateMainSettings]
 	);
 
 	const handleCreate = useCallback(async () => {
 		if (isAtMax) return;
 		const newId = generateUniqueCalendarId(mainSettings);
-		const newName = `Calendar ${calendars.length + 1}`;
+		const newName = `Planning System ${calendars.length + 1}`;
 		const newCalendar = createDefaultCalendarConfig(newId, newName);
 		await updateMainSettings((s) => ({ ...s, calendars: [...s.calendars, newCalendar] }));
 		setSelectedCalendarId(newId);
-		await plugin.refreshCalendarBundles();
+		await plugin.addCalendarBundle(newId);
 	}, [isAtMax, mainSettings, calendars.length, updateMainSettings, plugin]);
 
 	const handleClone = useCallback(async () => {
@@ -83,25 +91,26 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 		const cloned = duplicateCalendarConfig(selectedCalendar, newId, `${selectedCalendar.name} (Copy)`);
 		await updateMainSettings((s) => ({ ...s, calendars: [...s.calendars, cloned] }));
 		setSelectedCalendarId(newId);
-		await plugin.refreshCalendarBundles();
+		await plugin.addCalendarBundle(newId);
 	}, [isAtMax, selectedCalendar, mainSettings, updateMainSettings, plugin]);
 
 	const handleDelete = useCallback(async () => {
 		if (calendars.length <= 1) return;
 		const currentIndex = calendars.findIndex((c) => c.id === selectedCalendarId);
 		if (currentIndex === -1) return;
+		const deletedId = selectedCalendarId;
 		const updated = calendars.filter((c) => c.id !== selectedCalendarId);
 		const next = updated[Math.min(currentIndex, updated.length - 1)];
 		setSelectedCalendarId(next.id);
+		await plugin.removeCalendarBundle(deletedId);
 		await updateMainSettings((s) => ({ ...s, calendars: updated }));
-		await plugin.refreshCalendarBundles();
 	}, [calendars, selectedCalendarId, updateMainSettings, plugin]);
 
 	const handleRename = useCallback(async () => {
 		if (!selectedCalendar) return;
 
 		const newName = await openRenameModal(app, {
-			title: "Rename calendar",
+			title: "Rename planning system",
 			initialValue: selectedCalendar.name,
 			cssPrefix: "prisma-",
 			testIdPrefix: "prisma-settings-calendar-",
@@ -132,9 +141,25 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 
 	return (
 		<>
-			<SettingHeading name="Calendar management" />
 			<div className={`${cls("calendar-management")} ${cls("calendar-management-header")}`}>
-				<SettingItem name="Active calendar" description="Select which calendar to configure">
+				<div className={cls("settings-hero")}>
+					<div className={cls("settings-hero-pitch")}>
+						Prisma turns any note with a date into a flexible planning system inside Obsidian.
+					</div>
+					<div className={cls("settings-hero-meta")}>
+						<Copyable text={version} className={cls("settings-hero-version")} successMessage={`Copied ${version}`}>
+							v{version}
+						</Copyable>
+						<a
+							href={buildUtmUrl(GITHUB_REPO_URL, "prisma-calendar", "plugin", "settings", "hero_github")}
+							className={cls("settings-hero-link")}
+						>
+							GitHub
+						</a>
+					</div>
+				</div>
+
+				<SettingItem name="Active planning system" description="Select which planning system to configure">
 					<Dropdown value={selectedCalendarId} options={calendarOptions} onChange={setSelectedCalendarId} />
 				</SettingItem>
 
@@ -180,7 +205,7 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 						className="prisma-calendar-action-button prisma-calendar-delete-button"
 						data-testid="prisma-settings-calendar-delete"
 						disabled={calendars.length <= 1}
-						title={calendars.length <= 1 ? "At least one calendar is required" : undefined}
+						title={calendars.length <= 1 ? "At least one planning system is required" : undefined}
 						onClick={handleDelete}
 					>
 						Delete current
@@ -199,7 +224,7 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 						mainSettingsStore={plugin.settingsStore}
 					/>
 				) : (
-					<p className="setting-item-description">Calendar not found</p>
+					<p className="setting-item-description">Planning system not found</p>
 				)}
 			</div>
 		</>

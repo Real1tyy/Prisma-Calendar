@@ -50,6 +50,7 @@ function createFakePlugin(app: MockApp) {
 	return {
 		app,
 		addCommand: vi.fn(),
+		removeCommand: vi.fn(),
 		addRibbonIcon: vi.fn().mockReturnValue(ribbonEl),
 		ensureCalendarViewFocus: vi.fn().mockResolvedValue(undefined),
 		rememberLastUsedCalendar: vi.fn(),
@@ -86,6 +87,7 @@ describe("CalendarBundle — wiring contracts", () => {
 		(app.workspace as any).getLeavesOfType = vi.fn().mockReturnValue([]);
 		(app as any).loadLocalStorage = vi.fn(async () => null);
 		(app as any).saveLocalStorage = vi.fn();
+		(app as any).commands = { commands: {} };
 
 		// Reset registry singleton so each test starts clean.
 		IndexerRegistry.getInstance(app as any).destroy();

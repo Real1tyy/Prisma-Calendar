@@ -1,14 +1,11 @@
 import {
 	activateView,
-	buildUtmUrl,
 	ensureDirectory,
 	normalizeDirectory,
-	onceAsync,
 	SettingsStore,
 	showWhatsNewModal,
 	SyncStore,
 	waitForCacheReady,
-	type WhatsNewModalConfig,
 } from "@real1ty-obsidian-plugins";
 import { Notice, Plugin, TFile, type View, type WorkspaceLeaf } from "obsidian";
 
@@ -35,6 +32,7 @@ import { importEventsToCalendar } from "./core/integrations/ics-import";
 import type { LicenseManager } from "./core/license";
 import { createLicenseManager, PRO_FEATURES } from "./core/license";
 import { getProGateUrls } from "./core/pro-feature-previews";
+import { buildWhatsNewConfig } from "./core/whats-new-config";
 import { openFirstLaunchModal, scanVaultForDirectorySuggestions } from "./onboarding";
 import { CustomCalendarSettingsSchema, type PrismaCalendarSettingsStore, PrismaSyncDataSchema } from "./types";
 import { type CalDAVAccount, type ICSSubscription } from "./types/integrations";
@@ -42,6 +40,7 @@ import { createDefaultCalendarConfig } from "./utils/calendar-settings";
 import { migrateSharedExcludedProps } from "./utils/settings-migrations";
 
 export default class CustomCalendarPlugin extends Plugin {
+	readonly changelogContent: string = CHANGELOG_CONTENT;
 	settingsStore!: PrismaCalendarSettingsStore;
 	syncStore!: SyncStore<typeof PrismaSyncDataSchema>;
 	calendarBundles: CalendarBundle[] = [];
@@ -505,11 +504,9 @@ export default class CustomCalendarPlugin extends Plugin {
 	}
 
 	async ensureCalendarBundlesReady(): Promise<void> {
-		return await onceAsync(async () => {
-			for (const bundle of this.calendarBundles) {
-				await bundle.initialize();
-			}
-		})();
+		for (const bundle of this.calendarBundles) {
+			await bundle.initialize();
+		}
 	}
 
 	private async ensureMinimumCalendars(): Promise<void> {
@@ -527,8 +524,44 @@ export default class CustomCalendarPlugin extends Plugin {
 		}
 	}
 
+	async addCalendarBundle(calendarId: string): Promise<void> {
+		const bundle = new CalendarBundle(this, calendarId, this.settingsStore);
+		this.calendarBundles.push(bundle);
+		await bundle.initialize();
+	}
+
+	async removeCalendarBundle(calendarId: string): Promise<void> {
+		const idx = this.calendarBundles.findIndex((b) => b.calendarId === calendarId);
+		if (idx === -1) return;
+		const bundle = this.calendarBundles[idx];
+
+		this.app.workspace.detachLeavesOfType(bundle.viewType);
+		this.registeredViewTypes.delete(bundle.viewType);
+
+		bundle.destroy();
+		this.calendarBundles.splice(idx, 1);
+	}
+
+	prepareForBundleRefresh(): void {
+		for (const bundle of this.calendarBundles) {
+			bundle.prepareForRefresh();
+		}
+	}
+
 	async refreshCalendarBundles(): Promise<void> {
 		MinimizedModalManager.clear();
+		this.prepareForBundleRefresh();
+
+		const openViewTypes = new Set(
+			this.calendarBundles
+				.filter((b) => this.app.workspace.getLeavesOfType(b.viewType).length > 0)
+				.map((b) => b.viewType)
+		);
+
+		for (const bundle of this.calendarBundles) {
+			this.app.workspace.detachLeavesOfType(bundle.viewType);
+			this.registeredViewTypes.delete(bundle.viewType);
+		}
 
 		for (const bundle of this.calendarBundles) {
 			bundle.destroy();
@@ -537,6 +570,12 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		this.initializeCalendarBundles();
 		await this.ensureCalendarBundlesReady();
+
+		for (const bundle of this.calendarBundles) {
+			if (openViewTypes.has(bundle.viewType)) {
+				await bundle.activateCalendarView();
+			}
+		}
 	}
 
 	registerViewTypeSafe(viewType: string, viewCreator: (leaf: WorkspaceLeaf) => View): boolean {
@@ -571,7 +610,7 @@ export default class CustomCalendarPlugin extends Plugin {
 
 	private showCalendarExportModal(): void {
 		if (this.calendarBundles.length === 0) {
-			new Notice("No calendars available to export");
+			new Notice("No planning systems available to export");
 			return;
 		}
 
@@ -582,7 +621,7 @@ export default class CustomCalendarPlugin extends Plugin {
 
 	private showCalendarImportModal(): void {
 		if (this.calendarBundles.length === 0) {
-			new Notice("No calendars available to import to");
+			new Notice("No planning systems available to import to");
 			return;
 		}
 
@@ -604,7 +643,7 @@ export default class CustomCalendarPlugin extends Plugin {
 	async syncSingleAccount(account: CalDAVAccount): Promise<void> {
 		const bundle = this.calendarBundles.find((b) => b.calendarId === account.calendarId);
 		if (!bundle) {
-			new Notice("Calendar not found for this account");
+			new Notice("Planning system not found for this account");
 			return;
 		}
 
@@ -614,7 +653,7 @@ export default class CustomCalendarPlugin extends Plugin {
 	async syncSingleICSSubscription(subscription: ICSSubscription): Promise<void> {
 		const bundle = this.calendarBundles.find((b) => b.calendarId === subscription.calendarId);
 		if (!bundle) {
-			new Notice("Calendar not found for this subscription");
+			new Notice("Planning system not found for this subscription");
 			return;
 		}
 
@@ -626,58 +665,7 @@ export default class CustomCalendarPlugin extends Plugin {
 		const lastSeenVersion = this.settingsStore.currentSettings.version;
 
 		if (lastSeenVersion !== currentVersion) {
-			const config: WhatsNewModalConfig = {
-				cssPrefix: "prisma",
-				pluginName: "Prisma Calendar",
-				changelogContent: CHANGELOG_CONTENT,
-				links: {
-					github: "https://github.com/Real1tyy/Prisma-Calendar",
-					productPage: buildUtmUrl(
-						"https://matejvavroproductivity.com/tools/prisma-calendar/",
-						"prisma-calendar",
-						"plugin",
-						"whats_new",
-						"product_page"
-					),
-					support: buildUtmUrl(
-						"https://real1tyy.github.io/Prisma-Calendar/support",
-						"prisma-calendar",
-						"plugin",
-						"whats_new",
-						"support"
-					),
-					changelog: buildUtmUrl(
-						"https://real1tyy.github.io/Prisma-Calendar/changelog",
-						"prisma-calendar",
-						"plugin",
-						"whats_new",
-						"changelog"
-					),
-					documentation: buildUtmUrl(
-						"https://real1tyy.github.io/Prisma-Calendar/",
-						"prisma-calendar",
-						"plugin",
-						"whats_new",
-						"documentation"
-					),
-				},
-				supportSection: {
-					heading: "Unlock the full experience with Pro",
-					description:
-						"Get Dashboard analytics, AI Chat with Claude & GPT, Gantt & Heatmap views, interactive Bases Calendar, CalDAV sync, unlimited calendars, and more.",
-					cta: {
-						text: "Get Prisma Pro",
-						href: buildUtmUrl(
-							"https://matejvavroproductivity.com/tools/prisma-calendar/",
-							"prisma-calendar",
-							"plugin",
-							"whats_new",
-							"product_page"
-						),
-					},
-				},
-			};
-
+			const config = buildWhatsNewConfig(CHANGELOG_CONTENT, "whats_new");
 			showWhatsNewModal(this.app, this, config, lastSeenVersion, currentVersion);
 			await this.settingsStore.updateSettings((settings) => ({
 				...settings,
