@@ -19,7 +19,7 @@ export async function aiQuery(plugin: CustomCalendarPlugin, input: PrismaAIQuery
 	const mode: AIMode = input.mode ?? "query";
 	const bundle = resolveBundle(plugin, input.calendarId);
 	if (!bundle) {
-		return { success: false, error: "No calendars available" };
+		return { success: false, error: "No planning systems available" };
 	}
 
 	const viewContext = resolveActiveViewContext(plugin, bundle);

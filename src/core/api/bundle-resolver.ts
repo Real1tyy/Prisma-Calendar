@@ -26,7 +26,7 @@ export function resolveBundle(plugin: CustomCalendarPlugin, calendarId?: string)
 export function resolveBundleOrNotice(plugin: CustomCalendarPlugin, calendarId?: string): CalendarBundle | null {
 	const bundle = resolveBundle(plugin, calendarId);
 	if (!bundle) {
-		new Notice("No calendars available");
+		new Notice("No planning systems available");
 		return null;
 	}
 	return bundle;

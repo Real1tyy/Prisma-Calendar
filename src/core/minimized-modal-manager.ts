@@ -238,7 +238,7 @@ class MinimizedModalManagerClass {
 
 		const bundle = calendarBundles.find((b) => b.calendarId === state.calendarId);
 		if (!bundle) {
-			new Notice("Calendar not found for minimized modal");
+			new Notice("Planning system not found for minimized modal");
 			this.clear();
 			return;
 		}
@@ -307,7 +307,7 @@ class MinimizedModalManagerClass {
 
 		const bundle = calendarBundles.find((b) => b.calendarId === state.calendarId);
 		if (!bundle) {
-			new Notice("Calendar not found for minimized modal. This should not happen, please report this as a bug.");
+			new Notice("Planning system not found for minimized modal. This should not happen, please report this as a bug.");
 			this.clear();
 			return;
 		}

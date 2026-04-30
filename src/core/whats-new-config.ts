@@ -23,9 +23,9 @@ export function buildWhatsNewConfig(changelogContent: string, utmSection: string
 		supportSection: {
 			heading: "Unlock the full experience with Pro",
 			description:
-				"Get Dashboard analytics, AI Chat with Claude & GPT, Gantt & Heatmap views, interactive Bases Calendar, CalDAV sync, unlimited calendars, and more.",
+				"For more connected, advanced workflows, Prisma Pro unlocks external calendar synchronization, advanced visualizations, database integration, and other power-user capabilities built for serious planning inside Obsidian.",
 			cta: {
-				text: "Get Prisma Pro",
+				text: "Start your 30-day free trial — cancel anytime",
 				href: buildUrl(PRODUCT_PAGE_URL, "pro"),
 			},
 		},

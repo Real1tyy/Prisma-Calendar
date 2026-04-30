@@ -300,7 +300,8 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 				<span className="prisma-first-launch-pro-badge">PRO</span>
 				<p className="prisma-first-launch-pro-text">
 					For more advanced workflows — Prisma Pro unlocks calendar sync, advanced visualizations, Bases integration,
-					and other power-user capabilities built for serious planning inside Obsidian.
+					and other power-user capabilities built for serious planning inside Obsidian. Try every Pro feature with a
+					30-day free trial — cancel anytime.
 				</p>
 				<Button
 					testId={tid("pro-upgrade")}

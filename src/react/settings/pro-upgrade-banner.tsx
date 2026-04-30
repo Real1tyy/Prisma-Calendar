@@ -46,6 +46,7 @@ export const ProUpgradeBanner = memo(function ProUpgradeBanner({
 			<span className="prisma-pro-upgrade-badge">PRO</span>
 			<h3 className="prisma-pro-upgrade-title">{featureName}</h3>
 			<p className="prisma-pro-upgrade-description">{description}</p>
+			<p className="prisma-pro-upgrade-trial">Try every Pro feature with a 30-day free trial — cancel anytime.</p>
 			<div className="prisma-pro-upgrade-actions">
 				{docUrl && (
 					<a className="prisma-pro-upgrade-doc-link" href={docUrl} target="_blank" rel="noopener">
@@ -53,7 +54,7 @@ export const ProUpgradeBanner = memo(function ProUpgradeBanner({
 					</a>
 				)}
 				<a className="prisma-pro-upgrade-link" href={purchaseUrl} target="_blank" rel="noopener">
-					Get Prisma Calendar Pro
+					Start your free trial
 				</a>
 			</div>
 		</div>

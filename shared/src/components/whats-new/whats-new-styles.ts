@@ -37,18 +37,61 @@ function buildWhatsNewStyles(p: string): string {
 }
 .${p}-whats-new-support {
 	margin: 0 0 1rem;
-	padding: 1rem;
-	background-color: var(--background-secondary);
+	padding: 1rem 1.1rem;
+	background: linear-gradient(
+		135deg,
+		color-mix(in srgb, var(--background-secondary) 85%, var(--interactive-accent) 15%),
+		var(--background-secondary) 70%
+	);
 	border-radius: 8px;
+	border: 1px solid color-mix(in srgb, var(--interactive-accent) 15%, transparent);
 }
-.${p}-whats-new-support h3 {
-	margin-top: 0;
-	margin-bottom: 0.5rem;
+.${p}-whats-new-support-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	cursor: pointer;
+	user-select: none;
+}
+.${p}-whats-new-support-header h3 {
+	margin: 0;
 	font-size: 1rem;
+	font-weight: 600;
+	color: var(--text-accent);
+}
+.${p}-whats-new-support-chevron {
+	font-size: 0.7rem;
+	color: var(--text-muted);
+	transition: transform 0.15s ease;
+	flex-shrink: 0;
+	padding: 0.2rem;
+}
+.${p}-whats-new-support-body {
+	margin-top: 0.5rem;
+	overflow: hidden;
+	transition: max-height 0.2s ease, opacity 0.2s ease;
+	max-height: 500px;
+	opacity: 1;
+}
+.${p}-whats-new-support-collapsed {
+	max-height: 0;
+	opacity: 0;
+	margin-top: 0;
 }
 .${p}-whats-new-support p {
 	margin: 0.5rem 0;
 	color: var(--text-normal);
+}
+.${p}-whats-new-support .${p}-whats-new-trial-highlight {
+	display: inline-block;
+	margin-top: 0.4rem;
+	padding: 0.2rem 0.5rem;
+	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+	border: 1px solid color-mix(in srgb, var(--interactive-accent) 20%, transparent);
+	border-radius: 5px;
+	font-weight: 500;
+	font-size: 0.85rem;
+	color: var(--text-accent);
 }
 .${p}-whats-new-support a {
 	color: var(--link-color);
