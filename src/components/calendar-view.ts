@@ -1405,14 +1405,17 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			const start = stripZ(event.start);
 			const end = isTimedEvent(event) ? stripZ(event.end) : undefined;
 
-			// Index color by date for O(1) color-dot lookup
-			const dateKey = start.slice(0, 10);
-			let colorSet = this.colorDotIndex.get(dateKey);
-			if (!colorSet) {
-				colorSet = new Set();
-				this.colorDotIndex.set(dateKey, colorSet);
+			// Index color by date for O(1) color-dot lookup — only custom colors,
+			// not the default fallback (dots should highlight configured distinctions)
+			if (allColors.length > 0) {
+				const dateKey = start.slice(0, 10);
+				let colorSet = this.colorDotIndex.get(dateKey);
+				if (!colorSet) {
+					colorSet = new Set();
+					this.colorDotIndex.set(dateKey, colorSet);
+				}
+				colorSet.add(primaryColor);
 			}
-			colorSet.add(primaryColor);
 
 			const folder = event.meta["folder"];
 			const folderStr = typeof folder === "string" ? folder : "";

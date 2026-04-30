@@ -19,6 +19,7 @@ All notable changes to this project will be documented here.
 - `RRuleUntil` **recurring end date**: Recurring sources can now define an inclusive final occurrence day with `RRuleUntil` (or your renamed property). Physical generation and virtual previews both stop after that date, so bounded schedules like semesters no longer spill into future months. See [Recurring Events](./features/events/recurring-dsl.md#rruleuntil-end-date).
 
 ### Fixed
+- **Monthly color dots showing for events with no custom color**: Events without a matching color rule displayed the default color as a dot in monthly/year view. Color dots now only appear for events with configured color rules. See [Color Rules → Multi-Color Across All Views](./features/organization/color-rules.md#multi-color-across-all-views).
 - **Stale note preview in hover tooltip**: Editing a note's body content and hovering over the event again now shows the updated text immediately. See [Calendar View → Event Interaction](./features/calendar/calendar-view.md#event-interaction).
 
 :::note Active Development
