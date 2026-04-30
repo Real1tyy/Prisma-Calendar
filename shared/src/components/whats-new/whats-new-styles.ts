@@ -2,7 +2,7 @@ import { injectStyleSheet } from "../../utils/styles/inject";
 
 function buildWhatsNewStyles(p: string): string {
 	return `
-.modal-container.mod-dim .modal:has(.${p}-whats-new-modal) {
+.modal-container.mod-dim .modal.${p}-whats-new-modal {
 	max-width: 750px;
 	width: 90%;
 }

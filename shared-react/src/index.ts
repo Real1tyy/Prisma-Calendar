@@ -7,6 +7,8 @@ export type { ChipListProps } from "./components/chip-list";
 export { ChipList } from "./components/chip-list";
 export type { CollapsibleSectionProps, SectionBodyProps, SectionHeaderProps } from "./components/collapsible-section";
 export { CollapsibleSection, SectionBody, SectionHeader } from "./components/collapsible-section";
+export type { CopyableProps } from "./components/copyable";
+export { Copyable } from "./components/copyable";
 export type { EmptyHintProps } from "./components/empty-hint";
 export { EmptyHint } from "./components/empty-hint";
 export type { FilterInputProps } from "./components/filter-input";
@@ -47,6 +49,8 @@ export * from "./forms";
 // ─── Hooks ───
 export type { ActivatableProps } from "./hooks/use-activatable";
 export { useActivatable } from "./hooks/use-activatable";
+export type { UseCopyToClipboardOptions } from "./hooks/use-copy-to-clipboard";
+export { useCopyToClipboard } from "./hooks/use-copy-to-clipboard";
 export type { DebouncedCommitHandle, UseDebouncedCommitOptions } from "./hooks/use-debounced-commit";
 export { DEBOUNCED_COMMIT_DEFAULT_MS, useDebouncedCommit } from "./hooks/use-debounced-commit";
 export { useDomEvent } from "./hooks/use-dom-event";
