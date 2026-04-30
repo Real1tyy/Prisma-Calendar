@@ -2695,17 +2695,26 @@
   border-bottom: 1px solid var(--background-modifier-border);
 }
 
+.prisma-settings-hero-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .prisma-settings-hero-pitch {
   font-size: var(--font-ui-medium);
   color: var(--text-muted);
   line-height: 1.5;
-  margin-bottom: 8px;
 }
 
-.prisma-settings-hero-meta {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.prisma-settings-hero-name {
+  font-weight: 600;
+  color: var(--text-accent);
+  text-decoration: none;
+}
+.prisma-settings-hero-name:hover {
+  text-decoration: underline;
 }
 
 .prisma-settings-hero-version {
@@ -2718,6 +2727,7 @@
   border-radius: 4px;
   cursor: pointer;
   transition: border-color 0.15s ease, color 0.15s ease;
+  flex-shrink: 0;
 }
 .prisma-settings-hero-version:hover {
   border-color: var(--text-faint);
@@ -2726,15 +2736,6 @@
 .prisma-settings-hero-version.is-copied {
   border-color: var(--color-green);
   color: var(--color-green);
-}
-
-.prisma-settings-hero-link {
-  font-size: var(--font-ui-smaller);
-  color: var(--text-accent);
-  text-decoration: none;
-}
-.prisma-settings-hero-link:hover {
-  text-decoration: underline;
 }
 
 .prisma-calendar-management-header {

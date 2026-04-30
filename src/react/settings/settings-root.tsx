@@ -1,4 +1,4 @@
-import { buildUtmUrl, cls } from "@real1ty-obsidian-plugins";
+import { cls } from "@real1ty-obsidian-plugins";
 import {
 	Copyable,
 	Dropdown,
@@ -143,19 +143,16 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 		<>
 			<div className={`${cls("calendar-management")} ${cls("calendar-management-header")}`}>
 				<div className={cls("settings-hero")}>
-					<div className={cls("settings-hero-pitch")}>
-						Prisma turns any note with a date into a flexible planning system inside Obsidian.
-					</div>
-					<div className={cls("settings-hero-meta")}>
+					<div className={cls("settings-hero-row")}>
+						<div className={cls("settings-hero-pitch")}>
+							<a href={GITHUB_REPO_URL} className={cls("settings-hero-name")}>
+								Prisma
+							</a>
+							<span> turns any note with a date into a flexible planning system inside Obsidian.</span>
+						</div>
 						<Copyable text={version} className={cls("settings-hero-version")} successMessage={`Copied ${version}`}>
 							v{version}
 						</Copyable>
-						<a
-							href={buildUtmUrl(GITHUB_REPO_URL, "prisma-calendar", "plugin", "settings", "hero_github")}
-							className={cls("settings-hero-link")}
-						>
-							GitHub
-						</a>
 					</div>
 				</div>
 
