@@ -123,9 +123,12 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 		});
 
 		if (result) {
-			await updateSelectedCalendar(result);
+			await updateMainSettings((s) => ({
+				...s,
+				calendars: s.calendars.map((cal) => (cal.id === selectedCalendarId ? { ...cal, ...result } : cal)),
+			}));
 		}
-	}, [app, selectedCalendar, updateSelectedCalendar]);
+	}, [app, selectedCalendar, selectedCalendarId, updateMainSettings]);
 
 	return (
 		<>

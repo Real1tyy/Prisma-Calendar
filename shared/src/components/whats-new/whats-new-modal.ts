@@ -5,6 +5,8 @@ import { formatChangelogSections, getChangelogSince } from "../../utils/string";
 import { showModal } from "../component-renderer/modal";
 import { injectWhatsNewStyles } from "./whats-new-styles";
 
+const LINES_PER_PAGE = 15;
+
 /**
  * Default URLs for the What's New modal.
  * These can be overridden in the config.
@@ -401,6 +403,7 @@ export function showWhatsNewModal(
 		cls: cls("whats-new-modal"),
 		title: " ",
 		render: async (contentEl, ctx) => {
+			const isFullChangelog = fromVersion === "0.0.0";
 			const titleEl = ctx.type === "modal" ? ctx.modalEl.querySelector<HTMLElement>(".modal-title") : null;
 			if (titleEl) {
 				titleEl.empty();
@@ -417,14 +420,16 @@ export function showWhatsNewModal(
 				});
 
 				titleEl.createSpan({
-					text: ` updated to v${toVersion}`,
+					text: isFullChangelog ? " Changelog" : ` updated to v${toVersion}`,
 				});
 			}
 
-			contentEl.createEl("p", {
-				text: `Changes since v${fromVersion}`,
-				cls: cls("whats-new-subtitle"),
-			});
+			if (!isFullChangelog) {
+				contentEl.createEl("p", {
+					text: `Changes since v${fromVersion}`,
+					cls: cls("whats-new-subtitle"),
+				});
+			}
 
 			const supportSection = contentEl.createDiv({
 				cls: cls("whats-new-support"),
@@ -482,12 +487,57 @@ export function showWhatsNewModal(
 					cls: cls("whats-new-content"),
 				});
 
-				const markdownContent = formatChangelogSections(changelogSections);
+				let renderedCount = 0;
+				let loadMoreBtn: HTMLButtonElement | null = null;
+				let isRendering = false;
 
-				// eslint-disable-next-line obsidianmd/no-plugin-as-component -- short-lived modal, cleaned up on close
-				await MarkdownRenderer.render(app, markdownContent, changelogContainer, "/", plugin);
+				const countLines = (content: string): number =>
+					content.split("\n").filter((line) => line.trim().length > 0).length;
 
-				makeExternalLinksClickable(changelogContainer, config.links.documentation);
+				const renderNextBatch = async (): Promise<void> => {
+					if (isRendering) return;
+					isRendering = true;
+
+					let linesAccum = 0;
+					let end = renderedCount;
+					while (end < changelogSections.length) {
+						const sectionLines = countLines(changelogSections[end].content);
+						if (linesAccum > 0 && linesAccum + sectionLines > LINES_PER_PAGE) break;
+						linesAccum += sectionLines;
+						end++;
+					}
+					if (end === renderedCount && end < changelogSections.length) end++;
+
+					const batch = changelogSections.slice(renderedCount, end);
+					const batchMarkdown = formatChangelogSections(batch);
+
+					const batchContainer = changelogContainer.createDiv();
+					// eslint-disable-next-line obsidianmd/no-plugin-as-component -- short-lived modal, cleaned up on close
+					await MarkdownRenderer.render(app, batchMarkdown, batchContainer, "/", plugin);
+					makeExternalLinksClickable(batchContainer, config.links.documentation);
+
+					renderedCount = end;
+
+					const remaining = changelogSections.length - renderedCount;
+					if (remaining > 0) {
+						if (!loadMoreBtn) {
+							loadMoreBtn = changelogContainer.createEl("button", {
+								cls: cls("whats-new-load-more"),
+							});
+							loadMoreBtn.addEventListener("click", () => void renderNextBatch());
+						} else {
+							changelogContainer.appendChild(loadMoreBtn);
+						}
+						loadMoreBtn.textContent = `Load more (${remaining} versions remaining)`;
+					} else if (loadMoreBtn) {
+						loadMoreBtn.remove();
+						loadMoreBtn = null;
+					}
+
+					isRendering = false;
+				};
+
+				await renderNextBatch();
 			}
 
 			const stickyFooter = contentEl.createDiv({

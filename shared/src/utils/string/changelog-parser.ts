@@ -79,6 +79,31 @@ export function getChangelogSince(changelogContent: string, fromVersion: string,
 	});
 }
 
+const ADMONITION_TYPE_MAP: Record<string, string> = {
+	note: "info",
+	tip: "tip",
+	info: "info",
+	caution: "warning",
+	danger: "danger",
+	warning: "warning",
+};
+
+function convertDocusaurusAdmonitions(content: string): string {
+	return content.replace(
+		/^:::(note|tip|info|caution|danger|warning)\s*(.*)\n([\s\S]*?)^:::$/gm,
+		(_match, type: string, title: string, body: string) => {
+			const calloutType = ADMONITION_TYPE_MAP[type] ?? "info";
+			const heading = title.trim() || type.charAt(0).toUpperCase() + type.slice(1);
+			const quotedBody = body
+				.trimEnd()
+				.split("\n")
+				.map((line) => `> ${line}`)
+				.join("\n");
+			return `> [!${calloutType}] ${heading}\n${quotedBody}`;
+		}
+	);
+}
+
 export function formatChangelogSections(sections: VersionSection[]): string {
 	if (sections.length === 0) {
 		return "No changes found.";
@@ -86,8 +111,10 @@ export function formatChangelogSections(sections: VersionSection[]): string {
 
 	return sections
 		.map((section) => {
-			// Escape Dataview inline queries to prevent parsing errors
-			const content = section.content.replace(/`=([^`]+)`/g, "`\\=$1`");
+			const content = convertDocusaurusAdmonitions(section.content)
+				.replace(/`=([^`]+)`/g, "`\\=$1`")
+				.replace(/^---$/gm, "")
+				.trim();
 			return `## ${section.version}\n\n${content}`;
 		})
 		.join("\n\n");

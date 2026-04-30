@@ -104,14 +104,20 @@ function buildWhatsNewStyles(p: string): string {
 	border-radius: 3px;
 	font-size: 0.9em;
 }
+.${p}-whats-new-modal .${p}-whats-new-content code {
+	color: var(--code-normal, var(--text-normal));
+}
 .${p}-whats-new-content pre {
 	background: var(--code-background);
 	padding: 1rem;
 	border-radius: 6px;
 	overflow-x: auto;
 }
-.${p}-whats-new-content a.external-link {
-	color: var(--link-external-color);
+.${p}-whats-new-modal .${p}-whats-new-content a {
+	color: var(--link-color);
+}
+.${p}-whats-new-modal .${p}-whats-new-content a.external-link {
+	color: var(--link-external-color, var(--link-color));
 }
 .${p}-whats-new-content a.external-link::after {
 	content: "\\2197";
@@ -123,6 +129,25 @@ function buildWhatsNewStyles(p: string): string {
 	color: var(--text-muted);
 	padding: 2rem;
 	font-style: italic;
+}
+.${p}-whats-new-load-more {
+	display: block;
+	width: 100%;
+	padding: 0.75rem 1rem;
+	margin-top: 1rem;
+	border-radius: 6px;
+	cursor: pointer;
+	border: 1px dashed var(--background-modifier-border);
+	background: var(--background-secondary);
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+	transition: all 0.2s ease;
+	text-align: center;
+}
+.${p}-whats-new-load-more:hover {
+	background: var(--background-modifier-hover);
+	border-color: var(--interactive-accent);
+	color: var(--text-normal);
 }
 .${p}-whats-new-sticky-footer {
 	position: sticky;

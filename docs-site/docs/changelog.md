@@ -6,7 +6,7 @@ All notable changes to this project will be documented here.
 
 ## 2.15.0 - 4/29/2026
 
-> **TLDR:** New **[Quick Start Video](https://youtu.be/dziQK9UQhvE)** covering installation, setup, and core workflows from scratch. Smarter onboarding with datetime/date property detection, prefill buttons, and a new **Configure current** button for re-running property detection on any planning system.
+> **TLDR:** New [Quick Start Video](https://youtu.be/dziQK9UQhvE) covering installation, setup, and core workflows from scratch. Smarter onboarding with datetime/date property detection, prefill buttons, and a new **Configure current** button for re-running property detection on any planning system.
 
 ### Added
 - **Quick Start Video**: New [Quick Start guide video](https://youtu.be/dziQK9UQhvE) walks through everything from installation to setup to daily use — creating events, editing, categories, recurring events, statistics, and multiple planning systems. Highly recommended for both new and existing users to better understand how Prisma works and get the most out of it. See [Quick Start](./quickstart.md).
@@ -15,7 +15,8 @@ All notable changes to this project will be documented here.
 - **First-launch welcome flow**: Fresh installs now open a dedicated welcome modal. It scans the vault for folders with date-like properties — split into **datetime** and **date** categories — with click-to-copy property names and inline **"Use"** prefill buttons next to each property field. When multiple folders are detected, a hint explains that each can become its own planning system. See [Quick Start](./quickstart.md#initial-setup).
 - **Configure current calendar**: New **Configure current** button in calendar management opens a focused modal that scans the vault for date-like properties and lets you set the directory and property names with the same detection and prefill workflow as onboarding. See [Quick Start](./quickstart.md#initial-setup).
 - **Subscription management button**: The License section now shows a **Manage Subscription** button for Pro users (links to account page) or a **Subscribe** button for free users (links to purchase page). See [General Settings → License](./configuration/general.md#license).
-- **`RRuleUntil` recurring end date**: Recurring sources can now define an inclusive final occurrence day with `RRuleUntil` (or your renamed property). Physical generation and virtual previews both stop after that date, so bounded schedules like semesters no longer spill into future months. See [Recurring Events](./features/events/recurring-dsl.md#rruleuntil-end-date).
+- **In-app changelog viewer**: Browse the full changelog with lazy-loaded entries directly from Settings → General → Help & Support. See [General Settings → Help & Support](./configuration/general.md#help--support).
+- `RRuleUntil` **recurring end date**: Recurring sources can now define an inclusive final occurrence day with `RRuleUntil` (or your renamed property). Physical generation and virtual previews both stop after that date, so bounded schedules like semesters no longer spill into future months. See [Recurring Events](./features/events/recurring-dsl.md#rruleuntil-end-date).
 
 ### Fixed
 - **Stale note preview in hover tooltip**: Editing a note's body content and hovering over the event again now shows the updated text immediately. See [Calendar View → Event Interaction](./features/calendar/calendar-view.md#event-interaction).

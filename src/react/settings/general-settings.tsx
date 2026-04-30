@@ -1,4 +1,4 @@
-import { buildUtmUrl } from "@real1ty-obsidian-plugins";
+import { buildUtmUrl, showWhatsNewModal } from "@real1ty-obsidian-plugins";
 import {
 	Dropdown,
 	LicenseSection,
@@ -15,6 +15,7 @@ import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { renderProUpgradeBanner } from "../../components/settings/pro-upgrade-banner";
 import { ACCOUNT_URL, FREE_MAX_EVENT_PRESETS } from "../../core/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
+import { buildWhatsNewConfig } from "../../core/whats-new-config";
 import type CustomCalendarPlugin from "../../main";
 import type { CustomCalendarSettings, SingleCalendarConfig } from "../../types/settings";
 import { SingleCalendarConfigSchema } from "../../types/settings";
@@ -104,7 +105,7 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 			/>
 			<EventPresetsSection settings={settings} settingsStore={settingsStore} plugin={plugin} />
 			<SettingsTransferSection plugin={plugin} />
-			<HelpSection />
+			<HelpSection plugin={plugin} />
 		</>
 	);
 });
@@ -268,7 +269,12 @@ const EventPresetsSection = memo(function EventPresetsSection({
 	);
 });
 
-export const HelpSection = memo(function HelpSection() {
+export const HelpSection = memo(function HelpSection({ plugin }: { plugin: CustomCalendarPlugin }) {
+	const handleViewChangelog = useCallback(() => {
+		const config = buildWhatsNewConfig(plugin.changelogContent, "settings");
+		showWhatsNewModal(plugin.app, plugin, config, "0.0.0", plugin.manifest.version);
+	}, [plugin]);
+
 	return (
 		<>
 			<SettingHeading name="Help & support" />
@@ -324,6 +330,15 @@ export const HelpSection = memo(function HelpSection() {
 					inside notes, and other power-user capabilities built for serious planning inside Obsidian.
 				</p>
 			</SettingCard>
+			<SettingItem
+				name="Changelog"
+				description="Browse the full changelog with every update since the first release"
+				testId="prisma-settings-field-changelog"
+			>
+				<button type="button" onClick={handleViewChangelog} data-testid="prisma-settings-changelog-btn">
+					View changelog
+				</button>
+			</SettingItem>
 		</>
 	);
 });

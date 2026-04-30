@@ -134,3 +134,11 @@ At the bottom of the General tab, the **Settings transfer** row provides three b
 - **Reset to defaults** asks for confirmation and then restores every transferable setting to its default value. Use it as a quick "start over" when you've experimented yourself into a corner.
 
 The **license key secret name** is local to each vault and is never exported, overwritten on import, or cleared on reset. The exported JSON has no version field: forward- and backward-compatibility is handled by a type-coercing merge on import plus the plugin's own schema fallbacks.
+
+## Help & Support
+
+The **Help & support** section at the bottom of the General tab provides quick links to documentation, FAQ, troubleshooting, and GitHub issues.
+
+### Changelog viewer
+
+Click **View changelog** to open the full changelog as a scrollable modal. Entries load in batches — click **Load more** to see older versions. The same modal appears automatically after each plugin update showing only the new changes.
