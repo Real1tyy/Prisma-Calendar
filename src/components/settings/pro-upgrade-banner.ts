@@ -1,4 +1,4 @@
-import { cls } from "@real1ty-obsidian-plugins";
+import { buildUtmUrl, cls } from "@real1ty-obsidian-plugins";
 
 import { PRO_PURCHASE_URL } from "../../core/license";
 import {
@@ -7,6 +7,8 @@ import {
 	getFeaturePurchaseUrl,
 	type ProFeatureKey,
 } from "../../core/pro-feature-previews";
+
+const FREE_VS_PRO_URL = "https://real1tyy.github.io/Prisma-Calendar/features/free-vs-pro";
 
 export function renderProUpgradeBanner(
 	containerEl: HTMLElement,
@@ -47,6 +49,17 @@ export function renderProUpgradeBanner(
 		cls: cls("pro-upgrade-description"),
 	});
 
+	const trialEl = banner.createEl("p", { cls: cls("pro-upgrade-trial") });
+	trialEl.appendText("Try every Pro feature with a 30-day free trial — cancel anytime. ");
+	const learnMoreUrl = buildUtmUrl(FREE_VS_PRO_URL, "prisma-calendar", "plugin", "pro_gate", "learn_more");
+	const learnLink = trialEl.createEl("a", {
+		text: "Learn more about Pro",
+		cls: cls("pro-upgrade-learn-more"),
+		href: learnMoreUrl,
+	});
+	learnLink.setAttr("target", "_blank");
+	learnLink.setAttr("rel", "noopener");
+
 	const actions = banner.createDiv(cls("pro-upgrade-actions"));
 
 	if (previewKey) {
@@ -61,7 +74,7 @@ export function renderProUpgradeBanner(
 
 	const purchaseUrl = previewKey ? getFeaturePurchaseUrl(previewKey) : PRO_PURCHASE_URL;
 	const proLink = actions.createEl("a", {
-		text: "Get Prisma Calendar Pro",
+		text: "Start your free trial",
 		cls: cls("pro-upgrade-link"),
 		href: purchaseUrl,
 	});

@@ -177,7 +177,7 @@ const EventPresetsSection = memo(function EventPresetsSection({
 			renderProUpgradeBanner(
 				el,
 				"Unlimited Event Presets",
-				`Free plan supports up to ${FREE_MAX_EVENT_PRESETS} event presets. Upgrade to Pro for unlimited presets.`
+				`Free plan supports up to ${FREE_MAX_EVENT_PRESETS} event presets. Start your 30-day free trial for unlimited presets.`
 			);
 		}
 	}, [showBanner]);
@@ -327,7 +327,19 @@ export const HelpSection = memo(function HelpSection({ plugin }: { plugin: Custo
 						<strong>Prisma Pro</strong>
 					</a>{" "}
 					unlocks external synchronization, advanced visualizations, Bases integration for embedding views directly
-					inside notes, and other power-user capabilities built for serious planning inside Obsidian.
+					inside notes, and other power-user capabilities built for serious planning inside Obsidian.{" "}
+					<a
+						href={buildUtmUrl(
+							"https://matejvavroproductivity.com/tools/prisma-calendar/",
+							"prisma-calendar",
+							"plugin",
+							"settings",
+							"help_free_trial"
+						)}
+					>
+						<strong>Try every Pro feature with a 30-day free trial</strong>
+					</a>{" "}
+					— cancel anytime.
 				</p>
 			</SettingCard>
 			<SettingItem

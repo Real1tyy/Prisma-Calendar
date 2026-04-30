@@ -1,3 +1,4 @@
+import { buildUtmUrl } from "@real1ty-obsidian-plugins";
 import { memo, useCallback } from "react";
 
 import { PRO_PURCHASE_URL } from "../../core/license";
@@ -7,6 +8,8 @@ import {
 	getFeaturePurchaseUrl,
 	type ProFeatureKey,
 } from "../../core/pro-feature-previews";
+
+const FREE_VS_PRO_URL = "https://real1tyy.github.io/Prisma-Calendar/features/free-vs-pro";
 
 interface ProUpgradeBannerProps {
 	featureName: string;
@@ -22,6 +25,7 @@ export const ProUpgradeBanner = memo(function ProUpgradeBanner({
 	const purchaseUrl = previewKey ? getFeaturePurchaseUrl(previewKey) : PRO_PURCHASE_URL;
 	const previewSrc = previewKey ? getFeaturePreviewSrc(previewKey) : null;
 	const docUrl = previewKey ? getFeatureDocUrl(previewKey) : null;
+	const learnMoreUrl = buildUtmUrl(FREE_VS_PRO_URL, "prisma-calendar", "plugin", "pro_gate", "learn_more");
 
 	const handleImageClick = useCallback(() => {
 		if (previewSrc) openImageLightbox(previewSrc, featureName);
@@ -46,7 +50,12 @@ export const ProUpgradeBanner = memo(function ProUpgradeBanner({
 			<span className="prisma-pro-upgrade-badge">PRO</span>
 			<h3 className="prisma-pro-upgrade-title">{featureName}</h3>
 			<p className="prisma-pro-upgrade-description">{description}</p>
-			<p className="prisma-pro-upgrade-trial">Try every Pro feature with a 30-day free trial — cancel anytime.</p>
+			<p className="prisma-pro-upgrade-trial">
+				Try every Pro feature with a 30-day free trial &mdash; cancel anytime.{" "}
+				<a className="prisma-pro-upgrade-learn-more" href={learnMoreUrl} target="_blank" rel="noopener">
+					Learn more about Pro
+				</a>
+			</p>
 			<div className="prisma-pro-upgrade-actions">
 				{docUrl && (
 					<a className="prisma-pro-upgrade-doc-link" href={docUrl} target="_blank" rel="noopener">

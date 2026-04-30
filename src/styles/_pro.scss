@@ -83,6 +83,21 @@
 		max-width: 500px;
 	}
 
+	&-trial {
+		margin: 4px 0 0;
+		font-size: 13px;
+		font-weight: 500;
+		color: var(--text-muted);
+		line-height: 1.5;
+		max-width: 560px;
+	}
+
+	&-learn-more {
+		color: var(--text-accent);
+		text-decoration: underline;
+		font-weight: 600;
+	}
+
 	&-actions {
 		display: flex;
 		align-items: center;

@@ -27,10 +27,10 @@ describe("ProUpgradeBanner", () => {
 		const { container } = render(<ProUpgradeBanner featureName="Test Feature" description="Description" />);
 		const link = container.querySelector<HTMLAnchorElement>(".prisma-pro-upgrade-link");
 		expect(link).toBeTruthy();
-		expect(link!.textContent).toContain("Get Prisma Calendar Pro");
+		expect(link!.textContent).toContain("Start your free trial");
 	});
 
-	it("renders doc link when previewKey is provided", () => {
+	it("renders feature doc link when previewKey is provided", () => {
 		const { container } = render(
 			<ProUpgradeBanner featureName="AI Chat" description="AI description" previewKey="AI_CHAT" />
 		);
@@ -39,17 +39,25 @@ describe("ProUpgradeBanner", () => {
 		expect(docLink!.textContent).toContain("View full feature documentation");
 	});
 
+	it("does not render feature doc link when no previewKey", () => {
+		const { container } = render(<ProUpgradeBanner featureName="Test Feature" description="Description" />);
+		const docLink = container.querySelector(".prisma-pro-upgrade-doc-link");
+		expect(docLink).toBeNull();
+	});
+
+	it("renders trial text with learn more link", () => {
+		const { container } = render(<ProUpgradeBanner featureName="Test Feature" description="Description" />);
+		expect(container.textContent).toContain("30-day free trial");
+		const learnMore = container.querySelector<HTMLAnchorElement>(".prisma-pro-upgrade-learn-more");
+		expect(learnMore).toBeTruthy();
+		expect(learnMore!.textContent).toContain("Learn more about Pro");
+	});
+
 	it("applies data-testid when previewKey is provided", () => {
 		const { container } = render(
 			<ProUpgradeBanner featureName="AI Chat" description="AI description" previewKey="AI_CHAT" />
 		);
 		const banner = container.querySelector("[data-testid='prisma-pro-gate-AI_CHAT']");
 		expect(banner).toBeTruthy();
-	});
-
-	it("does not render doc link when no previewKey", () => {
-		const { container } = render(<ProUpgradeBanner featureName="Test Feature" description="Description" />);
-		const docLink = container.querySelector(".prisma-pro-upgrade-doc-link");
-		expect(docLink).toBeNull();
 	});
 });

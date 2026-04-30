@@ -2689,6 +2689,54 @@
   padding-bottom: 5px;
 }
 
+.prisma-settings-hero {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.prisma-settings-hero-pitch {
+  font-size: var(--font-ui-medium);
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.prisma-settings-hero-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.prisma-settings-hero-version {
+  font-size: var(--font-ui-small);
+  color: var(--text-faint);
+  white-space: nowrap;
+  padding: 2px 8px;
+  background: none;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.prisma-settings-hero-version:hover {
+  border-color: var(--text-faint);
+  color: var(--text-muted);
+}
+.prisma-settings-hero-version.is-copied {
+  border-color: var(--color-green);
+  color: var(--color-green);
+}
+
+.prisma-settings-hero-link {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-accent);
+  text-decoration: none;
+}
+.prisma-settings-hero-link:hover {
+  text-decoration: underline;
+}
+
 .prisma-calendar-management-header {
   margin-bottom: 24px;
   padding: 16px;
@@ -8275,6 +8323,19 @@ div.vis-tooltip {
   color: var(--text-muted);
   line-height: 1.5;
   max-width: 500px;
+}
+.prisma-pro-upgrade-trial {
+  margin: 4px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1.5;
+  max-width: 560px;
+}
+.prisma-pro-upgrade-learn-more {
+  color: var(--text-accent);
+  text-decoration: underline;
+  font-weight: 600;
 }
 .prisma-pro-upgrade-actions {
   display: flex;

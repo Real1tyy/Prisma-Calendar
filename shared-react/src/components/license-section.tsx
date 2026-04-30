@@ -82,7 +82,7 @@ export const LicenseSection = memo(function LicenseSection({
 		<>
 			{`Enter your ${licenseManager.productName} Pro license key to unlock advanced features. `}
 			<a href={licenseManager.purchaseUrl} target="_blank" rel="noopener noreferrer">
-				Get a license
+				Start your 30-day free trial
 			</a>
 		</>
 	);
@@ -104,7 +104,7 @@ export const LicenseSection = memo(function LicenseSection({
 					description={
 						status.state === "valid"
 							? "Manage billing and subscription settings"
-							: `Get access to all ${licenseManager.productName} Pro features`
+							: `Try every ${licenseManager.productName} Pro feature with a 30-day free trial — cancel anytime`
 					}
 				>
 					<button
@@ -112,7 +112,7 @@ export const LicenseSection = memo(function LicenseSection({
 						className={status.state !== "valid" ? "mod-cta" : ""}
 						onClick={() => window.open(status.state === "valid" ? accountUrl : licenseManager.purchaseUrl, "_blank")}
 					>
-						{status.state === "valid" ? "Manage Subscription" : "Subscribe"}
+						{status.state === "valid" ? "Manage Subscription" : "Start free trial"}
 					</button>
 				</SettingItem>
 			)}

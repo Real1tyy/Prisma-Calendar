@@ -47,7 +47,11 @@ export const RenameModalContent = memo(function RenameModalContent({
 
 	const handleKeyDown = useCallback(
 		(e: KeyboardEvent) => {
-			if (e.key === "Enter") handleSubmit();
+			if (e.key === "Enter") {
+				e.preventDefault();
+				e.stopPropagation();
+				handleSubmit();
+			}
 		},
 		[handleSubmit]
 	);
