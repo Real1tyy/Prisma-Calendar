@@ -183,24 +183,36 @@ export function showWhatsNewModal(
 				cls: cls("whats-new-support"),
 			});
 
+			const headingText = config.supportSection
+				? config.supportSection.heading
+				: "Support the development of this plugin";
+
+			const supportHeader = supportSection.createDiv({ cls: cls("whats-new-support-header") });
+			supportHeader.createEl("h3", { text: headingText });
+			const chevron = supportHeader.createSpan({ cls: cls("whats-new-support-chevron"), text: "▼" });
+
+			const supportBody = supportSection.createDiv({ cls: cls("whats-new-support-body") });
+
+			supportHeader.addEventListener("click", () => {
+				const collapsed = supportBody.classList.toggle(cls("whats-new-support-collapsed"));
+				chevron.textContent = collapsed ? "▶" : "▼";
+			});
+
 			if (config.supportSection) {
-				const { heading, description, cta } = config.supportSection;
-				supportSection.createEl("h3", { text: heading });
-				supportSection.createEl("p", { text: description });
+				const { description, cta } = config.supportSection;
+				supportBody.createEl("p", { text: description });
 				if (cta) {
-					const ctaText = supportSection.createEl("p");
+					const ctaText = supportBody.createEl("p");
 					ctaText.createSpan({ text: "👉 " });
 					ctaText.createEl("a", { text: cta.text, href: cta.href });
 				}
 			} else {
-				supportSection.createEl("h3", { text: "Support the development of this plugin" });
-
-				const introText = supportSection.createEl("p");
+				const introText = supportBody.createEl("p");
 				introText.setText(
 					"If this plugin saves you time or improves how you work in Obsidian, consider supporting its development. Your support helps fund ongoing maintenance, new features, and long-term stability."
 				);
 
-				const supportLinkText = supportSection.createEl("p");
+				const supportLinkText = supportBody.createEl("p");
 				supportLinkText.createSpan({ text: "👉 " });
 				supportLinkText.createEl("a", {
 					text: "Support my work",
@@ -208,7 +220,7 @@ export function showWhatsNewModal(
 				});
 			}
 
-			const exploreText = supportSection.createEl("p");
+			const exploreText = supportBody.createEl("p");
 			exploreText.createSpan({ text: "You can also explore my " });
 			exploreText.createEl("a", {
 				text: "other Obsidian plugins and productivity tools",

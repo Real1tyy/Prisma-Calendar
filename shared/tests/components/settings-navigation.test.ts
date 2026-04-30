@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("obsidian", async (importOriginal) => {
+	const actual = await importOriginal();
+	return { ...actual };
+});
+
 import {
 	SettingsNavigation,
 	type SettingsNavigationConfig,

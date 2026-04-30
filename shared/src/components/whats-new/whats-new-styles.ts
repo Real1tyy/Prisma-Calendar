@@ -5,6 +5,13 @@ function buildWhatsNewStyles(p: string): string {
 .modal-container.mod-dim .modal.${p}-whats-new-modal {
 	max-width: 750px;
 	width: 90%;
+	height: 80vh;
+}
+.${p}-whats-new-modal .modal-content {
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	height: 100%;
 }
 .${p}-whats-new-plugin-name {
 	color: var(--link-color);
@@ -36,7 +43,8 @@ function buildWhatsNewStyles(p: string): string {
 	margin: 0 0 1rem;
 }
 .${p}-whats-new-support {
-	margin: 0 0 1rem;
+	flex-shrink: 0;
+	margin: 0;
 	padding: 1rem 1.1rem;
 	background: linear-gradient(
 		135deg,
@@ -117,7 +125,8 @@ function buildWhatsNewStyles(p: string): string {
 	width: 100%;
 }
 .${p}-whats-new-content {
-	max-height: 400px;
+	flex: 1;
+	min-height: 0;
 	overflow-y: auto;
 	margin-bottom: 1rem;
 	padding-right: 0.5rem;
@@ -193,6 +202,7 @@ function buildWhatsNewStyles(p: string): string {
 	color: var(--text-normal);
 }
 .${p}-whats-new-sticky-footer {
+	flex-shrink: 0;
 	position: sticky;
 	bottom: 0;
 	background: var(--background-primary);
