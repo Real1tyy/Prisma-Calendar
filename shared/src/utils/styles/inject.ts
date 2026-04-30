@@ -5,6 +5,10 @@ const INJECTED = new Set<string>();
  * Used by shared components to self-inject their base CSS at runtime using the cssPrefix system.
  * Plugins can override any injected style via their own styles.css (same specificity, later load order wins).
  */
+export function clearInjectedStyles(): void {
+	INJECTED.clear();
+}
+
 export function injectStyleSheet(id: string, css: string): void {
 	if (INJECTED.has(id)) return;
 	const existing = document.getElementById(id);
