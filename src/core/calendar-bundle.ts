@@ -241,6 +241,11 @@ export class CalendarBundle {
 		this.startICSAutoSync();
 	}
 
+	prepareForRefresh(): void {
+		this.fileRepository.detachSettingsSubscription();
+		this.virtualEventStore.detachSettingsSubscription();
+	}
+
 	destroy(): void {
 		// Don't detach leaves here - Obsidian handles that automatically during plugin updates
 		// Detaching in onunload causes leaves to reset to their original positions

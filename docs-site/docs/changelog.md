@@ -21,6 +21,7 @@ All notable changes to this project will be documented here.
 ### Fixed
 - **Monthly color dots showing for events with no custom color**: Events without a matching color rule displayed the default color as a dot in monthly/year view. Color dots now only appear for events with configured color rules. See [Color Rules → Multi-Color Across All Views](./features/organization/color-rules.md#multi-color-across-all-views).
 - **Stale note preview in hover tooltip**: Editing a note's body content and hovering over the event again now shows the updated text immediately. See [Calendar View → Event Interaction](./features/calendar/calendar-view.md#event-interaction).
+- **Calendar stuck on "Indexing calendar events..." after reconfiguring directory**: Changing a calendar's directory via the Configure button left the calendar view frozen on the indexing spinner. See [Quick Start](./quickstart.md#initial-setup).
 
 :::note Active Development
 Prisma is under active, full-time development. If you have ideas for improving the onboarding experience, feature requests, bug reports, or suggestions for integrations — please [open an issue on GitHub](https://github.com/Real1tyy/Prisma-Calendar/issues). Your feedback directly shapes what gets built next.

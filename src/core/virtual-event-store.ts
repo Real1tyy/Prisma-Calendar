@@ -49,7 +49,7 @@ export class VirtualEventStore {
 
 			if (this.binding) {
 				const epoch = ++this.bindEpoch;
-				void this.repo
+				this.repo
 					.rebind(this.binding, this.app, this.getFilePath(), {
 						onChange: () => this.emit(),
 						createIfMissing: true,
@@ -63,6 +63,9 @@ export class VirtualEventStore {
 							return;
 						}
 						this.binding = b;
+					})
+					.catch((error) => {
+						console.error("[VirtualEventStore] rebind failed:", error);
 					});
 			} else {
 				void this.initialize();
@@ -82,13 +85,17 @@ export class VirtualEventStore {
 		});
 	}
 
+	detachSettingsSubscription(): void {
+		this.settingsSubscription?.unsubscribe();
+		this.settingsSubscription = null;
+	}
+
 	destroy(): void {
 		this.destroyed = true;
 		this.bindEpoch++;
 		this.binding?.unsubscribe();
 		this.binding = null;
-		this.settingsSubscription?.unsubscribe();
-		this.settingsSubscription = null;
+		this.detachSettingsSubscription();
 		this.events$.complete();
 	}
 

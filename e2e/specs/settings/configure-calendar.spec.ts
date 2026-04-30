@@ -1,9 +1,11 @@
 import { readPluginData, settleSettings } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { PLUGIN_ID } from "../../fixtures/constants";
+import { fromAnchor } from "../../fixtures/dates";
 import { expect, testWithSeededFiles as test } from "../../fixtures/electron";
-import { openPrismaSettings, switchSettingsTab } from "../../fixtures/helpers";
+import { closeSettings, openPrismaSettings, switchSettingsTab } from "../../fixtures/helpers";
 import { type SeedEventInput, seedEvents } from "../../fixtures/seed-events";
+import { expectEventVisible, openCalendarReady } from "../events/events-helpers";
 
 // ─── Dataset: three folders with distinct property schemas ───────────────────
 
@@ -214,5 +216,78 @@ test.describe("settings: configure calendar with property detection", () => {
 
 		const calendarsAfter = getCalendars(obsidian.vaultDir);
 		expect(calendarsAfter[0].directory).toBe(calendarsBefore[0].directory);
+	});
+
+	test("calendar re-indexes and renders events after directory switch via configure", async ({ obsidian }) => {
+		const { page } = obsidian;
+
+		// Seed anchor-relative events so they're visible on the current week
+		const meetingsVisible: SeedEventInput[] = [
+			{
+				title: "Team Standup",
+				subdir: "Meetings",
+				extra: {
+					"Meeting Start": fromAnchor(0, 9),
+					"Meeting End": fromAnchor(0, 10),
+					"Created On": fromAnchor(0).slice(0, 10),
+				},
+			},
+			{
+				title: "Sprint Planning",
+				subdir: "Meetings",
+				extra: {
+					"Meeting Start": fromAnchor(1, 14),
+					"Meeting End": fromAnchor(1, 15),
+					"Created On": fromAnchor(1).slice(0, 10),
+				},
+			},
+		];
+		const personalVisible: SeedEventInput[] = [
+			{
+				title: "Guitar Lesson",
+				subdir: "Personal",
+				extra: { "Start Time": fromAnchor(0, 18), "End Time": fromAnchor(0, 19), Due: fromAnchor(0).slice(0, 10) },
+			},
+			{
+				title: "Yoga Class",
+				subdir: "Personal",
+				extra: { "Start Time": fromAnchor(1, 7), "End Time": fromAnchor(1, 8), Due: fromAnchor(1).slice(0, 10) },
+			},
+		];
+		seedEvents(obsidian.vaultDir, [...meetingsVisible, ...personalVisible]);
+		await page.waitForTimeout(2000);
+
+		// Configure calendar to use Meetings folder
+		await openPrismaSettings(page);
+		await page.locator('[data-testid="prisma-settings-calendar-configure"]').click();
+
+		const modal = page.locator('[data-testid="prisma-configure-calendar-modal"]');
+		await modal.waitFor({ state: "visible" });
+		const suggestionCards = modal.locator(".prisma-first-launch-suggestion");
+		await expect(suggestionCards.first()).toBeVisible();
+		await suggestionCards.filter({ hasText: "Meetings" }).click();
+		await modal.locator('[data-testid="prisma-configure-save"]').click();
+		await settleSettings(page, { pluginId: PLUGIN_ID });
+		await closeSettings(page);
+
+		await closeSettings(page);
+		await openCalendarReady(page);
+		await expectEventVisible(page, "Team Standup", 20_000);
+		await expectEventVisible(page, "Sprint Planning");
+
+		// Now switch to Personal via configure
+		await openPrismaSettings(page);
+		await page.locator('[data-testid="prisma-settings-calendar-configure"]').click();
+		const modal2 = page.locator('[data-testid="prisma-configure-calendar-modal"]');
+		await modal2.waitFor({ state: "visible" });
+		const cards2 = modal2.locator(".prisma-first-launch-suggestion");
+		await expect(cards2.first()).toBeVisible();
+		await cards2.filter({ hasText: "Personal" }).click();
+		await modal2.locator('[data-testid="prisma-configure-save"]').click();
+		await settleSettings(page, { pluginId: PLUGIN_ID });
+		await closeSettings(page);
+		await openCalendarReady(page);
+		await expectEventVisible(page, "Guitar Lesson", 20_000);
+		await expectEventVisible(page, "Yoga Class");
 	});
 });

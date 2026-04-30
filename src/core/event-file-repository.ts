@@ -80,7 +80,9 @@ export class EventFileRepository implements CalendarEventSource {
 				this.table.destroy();
 				this.table = this.createTable(newSettings);
 				this.wireTableEvents();
-				void this.table.start();
+				this.table.start().catch((error) => {
+					console.error("[EventFileRepository] table.start() failed after settings change:", error);
+				});
 			}
 		});
 	}
@@ -220,9 +222,13 @@ export class EventFileRepository implements CalendarEventSource {
 		await this.table.waitUntilReady();
 	}
 
-	destroy(): void {
+	detachSettingsSubscription(): void {
 		this.settingsSub?.unsubscribe();
 		this.settingsSub = null;
+	}
+
+	destroy(): void {
+		this.detachSettingsSubscription();
 		this.tableSub?.unsubscribe();
 		this.tableSub = null;
 		this.table.destroy();

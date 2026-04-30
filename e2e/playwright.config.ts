@@ -12,10 +12,10 @@ import { defineConfig } from "@playwright/test";
 //   - Demo mode (PW_DEMO=1) slows every action and holds the window open after
 //     each spec. A 15-field fill at 250ms slowMo + matching demoPause + hold
 //     easily crosses the normal envelope, so triple it.
-//   - Default headless runs (CI + dev `pnpm test:e2e`) get a 45s budget. Each
+//   - Default headless runs (CI + dev `pnpm test:e2e`) get a 90s budget. Each
 //     test spawns a fresh Obsidian process — bootstrap is typically 1-3s but
-//     can spike to 15-25s under disk/memory pressure during long serial runs.
-//     45s leaves ample room for spike + test body while still failing fast on
+//     can spike to 30-35s under disk/memory pressure during long serial runs.
+//     90s leaves ample room for spike + test body while still failing fast on
 //     genuine hangs.
 const DEMO_ON = !!process.env.PW_DEMO && process.env.PW_DEMO !== "0" && process.env.PW_DEMO !== "false";
 // --ui and --debug put a human at the keyboard; disable timeouts in both.
@@ -23,7 +23,7 @@ const DEMO_ON = !!process.env.PW_DEMO && process.env.PW_DEMO !== "0" && process.
 // catches `--ui` and `--debug` passed directly to `playwright test`.
 const DEBUG_ON = !!process.env.PWDEBUG || process.argv.includes("--ui") || process.argv.includes("--debug");
 
-const TEST_TIMEOUT = DEBUG_ON ? 0 : DEMO_ON ? 1_800_000 : 45_000;
+const TEST_TIMEOUT = DEBUG_ON ? 0 : DEMO_ON ? 1_800_000 : 90_000;
 const EXPECT_TIMEOUT = DEBUG_ON ? 0 : DEMO_ON ? 120_000 : 10_000;
 // `actionTimeout` caps every `waitFor` / `click` / `fill` that doesn't pass its
 // own `timeout`. Mirrors EXPECT_TIMEOUT so specs can omit per-call timeouts
@@ -34,7 +34,7 @@ const ACTION_TIMEOUT = DEBUG_ON ? 0 : DEMO_ON ? 120_000 : 10_000;
 export default defineConfig({
 	outputDir: "./test-results",
 	fullyParallel: !DEBUG_ON,
-	workers: DEBUG_ON ? 1 : 4,
+	workers: DEBUG_ON ? 1 : 1,
 	timeout: TEST_TIMEOUT,
 	expect: { timeout: EXPECT_TIMEOUT },
 	forbidOnly: !!process.env.CI,
