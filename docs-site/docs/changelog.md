@@ -7,6 +7,8 @@ All notable changes to this project will be documented here.
 ## 2.15.0 - 4/29/2026
 
 > **TLDR:** New [Quick Start Video](https://youtu.be/dziQK9UQhvE) covering installation, setup, and core workflows from scratch. Smarter onboarding with datetime/date property detection, prefill buttons, and a new **Configure current** button for re-running property detection on any planning system. Planning systems are now fully isolated — creating, deleting, or reconfiguring one never disrupts others, and multiple systems can share the same directory with different property mappings.
+>
+> 📺 [Watch the 2.15 & 2.14 update video](https://youtu.be/QBB6QmY-n8Y) — a walkthrough of all the major changes in action.
 
 ### Added
 - **Quick Start Video**: New [Quick Start guide video](https://youtu.be/dziQK9UQhvE) walks through everything from installation to setup to daily use — creating events, editing, categories, recurring events, statistics, and multiple planning systems. Highly recommended for both new and existing users to better understand how Prisma works and get the most out of it. See [Quick Start](./quickstart.md).
@@ -41,6 +43,8 @@ Prisma is under active, full-time development. If you have ideas for improving t
 ## 2.14.0 - 4/21/2026
 
 > **TLDR:** New **Settings transfer** and **Year view**. **Multi-color gradients and color dots** now work across Gantt, Timeline, Heatmap, and event series modals — not just the calendar. Export your plugin config as JSON and re-import it on another vault. **CalDAV subscriptions** now pick up server-side deletions. Events in nested subdirectories are now indexed again by default.
+>
+> 📺 [Watch the 2.15 & 2.14 update video](https://youtu.be/QBB6QmY-n8Y) — a walkthrough of all the major changes in action.
 
 ### Added
 - **Settings transfer (import / export / reset)**: New **Settings transfer** row at the bottom of **General** — export your plugin settings as JSON (only fields you changed from defaults are included), re-import them on another vault, or reset every setting to its default with one click (protected by a confirmation dialog). Local-only keys (license secret reference) are never touched. See [General Settings → Settings Transfer](./configuration/general.md#settings-transfer).
