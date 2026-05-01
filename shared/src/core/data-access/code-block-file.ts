@@ -42,7 +42,14 @@ export class CodeBlockFile<T> {
 			await ensureDirectory(app, filePath.substring(0, lastSlash));
 		}
 		const content = `\`\`\`${this.codeFence}\n[]\n\`\`\`\n`;
-		return await app.vault.create(filePath, content);
+		try {
+			return await app.vault.create(filePath, content);
+		} catch {
+			// TOCTOU: another caller created the file between the check and vault.create
+			const retry = app.vault.getAbstractFileByPath(filePath);
+			if (retry instanceof TFile) return retry;
+			throw new Error(`Failed to create or resolve backing file at ${filePath}`);
+		}
 	}
 
 	// =========================================================================
