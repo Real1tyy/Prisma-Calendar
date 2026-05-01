@@ -2803,15 +2803,6 @@
   border-color: var(--text-error);
 }
 
-.prisma-calendar-button-disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.prisma-calendar-button-disabled:hover {
-  transform: none;
-  box-shadow: none;
-}
-
 .prisma-calendar-count-info {
   margin-top: 8px;
   font-size: 12px;
@@ -8994,14 +8985,12 @@ div.vis-tooltip {
   margin: 0 0 0.25rem 0;
 }
 
-.prisma-first-launch-helper,
-.prisma-first-launch-detected {
+.prisma-first-launch-helper {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
 }
-.prisma-first-launch-helper p,
-.prisma-first-launch-detected p {
+.prisma-first-launch-helper p {
   margin: 0;
   line-height: 1.55;
   color: var(--text-muted);

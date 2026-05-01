@@ -236,15 +236,6 @@
 	}
 }
 
-.prisma-calendar-button-disabled  {
-	opacity: 0.5;
-	cursor: not-allowed;
-
-	&:hover {
-		transform: none;
-		box-shadow: none;
-	}
-}
 
 .prisma-calendar-count-info {
 	margin-top: 8px;
