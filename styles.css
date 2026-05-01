@@ -2110,11 +2110,6 @@
   margin-top: 0;
   margin-bottom: 16px;
 }
-.prisma-categories-chart-container {
-  position: relative;
-  height: 400px;
-  width: 100%;
-}
 
 /* Event Statistics */
 .prisma-categories-stats-container {
