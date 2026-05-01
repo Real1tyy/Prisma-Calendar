@@ -61,6 +61,7 @@ function createFakePlugin(app: MockApp) {
 			},
 		},
 		calendarBundles: new Map(),
+		manifest: { name: "Prisma Calendar" },
 		ribbonEl,
 	};
 }

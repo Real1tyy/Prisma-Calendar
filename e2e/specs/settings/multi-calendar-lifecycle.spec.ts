@@ -272,7 +272,7 @@ test.describe("multi-calendar lifecycle: create, configure, delete without full 
 			};
 			return w.app.commands.commands[`${pid}:open-calendar-default`]?.name;
 		}, PLUGIN_ID);
-		expect(commandName).toBe("Open Work Schedule");
+		expect(commandName).toBe("Prisma Calendar: Open Work Schedule");
 	});
 
 	test("deleting a planning system removes its ribbon icon and commands", async ({ obsidian }) => {

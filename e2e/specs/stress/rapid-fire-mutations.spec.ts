@@ -14,6 +14,7 @@ import {
 	expectCalendarConsistent,
 	expectUniqueVisibleEventCount,
 	seedBulkEvents,
+	waitForIndexerToReach,
 } from "../../fixtures/stress-helpers";
 import { sel, TID } from "../../fixtures/testids";
 
@@ -93,9 +94,14 @@ test.describe("stress: rapid-fire mutations against coalesced refresh", () => {
 		await expectUniqueVisibleEventCount(page, 0);
 
 		// Three undos peel back: move-next → move-prev → move-next, landing
-		// the events on their original start dates. At any intermediate step
-		// a partially-applied undo would leave the calendar mid-drift.
-		await undoViaPalette(page, 3);
+		// the events on their original start dates. Gate each undo on indexer
+		// convergence — each reversal writes 28 frontmatter files and the next
+		// undo must not fire until the previous batch settles on disk.
+		await undoViaPalette(page, 1);
+		await waitForIndexerToReach(page, EVENT_COUNT);
+		await undoViaPalette(page, 1);
+		await waitForIndexerToReach(page, EVENT_COUNT);
+		await undoViaPalette(page, 1);
 		await expectCalendarConsistent(page, { indexer: EVENT_COUNT, visible: EVENT_COUNT });
 	});
 

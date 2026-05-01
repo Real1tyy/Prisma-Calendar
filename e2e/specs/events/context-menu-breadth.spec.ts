@@ -209,10 +209,6 @@ test.describe("event context menu — move/clone/fillTime breadth", () => {
 	});
 
 	test("fillStartTimePrevious snaps Start to the previous event's End (exact)", async ({ obsidian }) => {
-		const prevStart = todayStamp(9, 0);
-		const prevEnd = todayStamp(9, 30);
-		seedEvent(obsidian.vaultDir, { title: "Previous Event", startDate: prevStart, endDate: prevEnd });
-
 		const targetStart = todayStamp(10, 0);
 		const targetEnd = todayStamp(11, 0);
 		const { readFm } = await seedAndOpen(obsidian, {
@@ -220,6 +216,10 @@ test.describe("event context menu — move/clone/fillTime breadth", () => {
 			startDate: targetStart,
 			endDate: targetEnd,
 		});
+
+		const prevStart = todayStamp(9, 0);
+		const prevEnd = todayStamp(9, 30);
+		seedEvent(obsidian.vaultDir, { title: "Previous Event", startDate: prevStart, endDate: prevEnd });
 		await obsidian.page.locator(".fc-event", { hasText: "Previous Event" }).first().waitFor({ state: "visible" });
 
 		await rightClickEventMenu(obsidian.page, "Target Start", "fillStartTimePrevious");

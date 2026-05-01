@@ -5,7 +5,7 @@ import { test } from "../../fixtures/electron";
 import { openPrismaSettings, switchSettingsTab } from "../../fixtures/helpers";
 
 test.describe("settings: Subscription button", () => {
-	test("shows Subscribe button when no license is active", async ({ obsidian }) => {
+	test("shows Start free trial button when no license is active", async ({ obsidian }) => {
 		await openPrismaSettings(obsidian.page);
 		await switchSettingsTab(obsidian.page, "general");
 
@@ -13,7 +13,7 @@ test.describe("settings: Subscription button", () => {
 		await expect(subscriptionItem).toBeVisible();
 
 		const btn = subscriptionItem.locator("button");
-		await expect(btn).toHaveText("Subscribe");
+		await expect(btn).toHaveText("Start free trial");
 		await expect(btn).toHaveClass(/mod-cta/);
 	});
 

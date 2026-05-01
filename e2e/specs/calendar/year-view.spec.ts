@@ -1,19 +1,22 @@
-import { gotoToday, monthCellForDate, todayISO, todayTimedEvent, waitForEvent } from "../../fixtures/calendar-helpers";
+import { gotoToday, monthCellForDate, todayISO, todayTimedEvent } from "../../fixtures/calendar-helpers";
+import { anchorDayISO, fromAnchor } from "../../fixtures/dates";
 import { expect, test } from "../../fixtures/electron";
 import { refreshCalendar, seedEvent, updateCalendarSettings } from "../../fixtures/seed-events";
 
 test.describe("year view", () => {
 	test("seeded event renders in the matching day cell across all twelve months", async ({ calendar }) => {
 		const { page, vaultDir } = calendar;
-		seedEvent(vaultDir, todayTimedEvent("Year Event", 10, 11));
+		seedEvent(vaultDir, { title: "Year Event", startDate: fromAnchor(0, 10, 0), endDate: fromAnchor(0, 11, 0) });
 
 		await refreshCalendar(page);
-		await gotoToday(page);
+		await calendar.goToAnchor();
 		await calendar.switchMode("year");
-		await waitForEvent(page, "Year Event");
 
-		const cell = monthCellForDate(page, todayISO());
-		await expect(cell.locator('[data-event-title="Year Event"]').first()).toBeVisible();
+		// Year view uses compact cells with dayMaxEvents — the event may be
+		// behind a +more popover, so assert DOM attachment in the correct cell
+		// rather than CSS visibility.
+		const cell = monthCellForDate(page, anchorDayISO(0));
+		await expect(cell.locator('[data-event-title="Year Event"]').first()).toBeAttached();
 
 		const months = page.locator(".fc-multimonth-month");
 		await expect(months).toHaveCount(12);

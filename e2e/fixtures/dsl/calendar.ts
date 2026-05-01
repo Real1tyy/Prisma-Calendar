@@ -11,7 +11,7 @@ import {
 import { type EventModalInput, fillEventModal, saveEventModal } from "../../specs/events/fill-event-modal";
 import { runCommand } from "../commands";
 import { ACTIVE_CALENDAR_LEAF, PLUGIN_ID } from "../constants";
-import { anchorISO, isoLocal } from "../dates";
+import { anchorDate, anchorISO, isoLocal } from "../dates";
 import { getEventCount, refreshCalendar, waitForEventCount } from "../seed-events";
 import { sel, TID, type ToolbarActionKey, type ViewMode, type ViewTabKey } from "../testids";
 import { type BatchHandle, openBatch } from "./batch";
@@ -124,6 +124,16 @@ export interface CalendarHandle {
 	 * on — see `docs/specs/e2e-date-anchor-robustness.md`.
 	 */
 	goToAnchor(): Promise<void>;
+
+	/**
+	 * Navigate an embedded FullCalendar (e.g. inside monthly-calendar-stats) to
+	 * the anchor month. `goToAnchor()` drives the main calendar component —
+	 * this method clicks the embedded calendar's own prev button to reach the
+	 * anchor month, then asserts the stats date label updated.
+	 *
+	 * @param gridCellSelector CSS selector for the grid cell that contains the embedded calendar.
+	 */
+	goToEmbeddedAnchor(gridCellSelector: string): Promise<void>;
 
 	/** Flip the license to Pro via the `__setProForTesting` seam (guarded by `window.E2E`). */
 	unlockPro(): Promise<void>;
@@ -379,6 +389,19 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 
 		async goToAnchor() {
 			await navigateCalendarTo(page, anchorISO());
+		},
+
+		async goToEmbeddedAnchor(gridCellSelector) {
+			const anchor = anchorDate();
+			const now = new Date();
+			const monthDiff = (now.getFullYear() - anchor.getFullYear()) * 12 + (now.getMonth() - anchor.getMonth());
+			if (monthDiff === 0) return;
+			const cell = page.locator(gridCellSelector).first();
+			for (let i = 0; i < monthDiff; i++) {
+				await cell.locator(".fc-prev-button").click();
+			}
+			const targetLabel = anchor.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+			await expect(page.locator(sel("prisma-stats-date-label")).first()).toHaveText(targetLabel);
 		},
 
 		async unlockPro() {

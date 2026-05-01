@@ -91,6 +91,10 @@ export async function openPrismaSettings(page: Page): Promise<void> {
 		await closeSettings(page);
 	}
 	await page.keyboard.press(isMac() ? "Meta+," : "Control+,");
+	await page
+		.locator(".progress-bar-container")
+		.waitFor({ state: "hidden" })
+		.catch(() => {});
 	const sidebarTab = page.locator('.vertical-tab-nav-item:has-text("Prisma Calendar")').first();
 	await sidebarTab.waitFor({ state: "visible", timeout: 10_000 });
 	await sidebarTab.click();

@@ -321,7 +321,7 @@ async function runWithObsidianHandle(
 	// otherwise fail the spec. Filter that specific shape out; anything
 	// else still fails loudly.
 	const isTransientEventFileEnoent = (text: string): boolean =>
-		text.includes("ENOENT") && text.includes("/Events") && text.endsWith(".md'");
+		text.includes("ENOENT") && /\/Events\/[^/]+\.md/.test(text);
 	// `page.reload()` races with Obsidian's own workspace-flush: on startup the
 	// renderer reads `.obsidian/app.json`, occasionally catching the file mid-
 	// rewrite (empty bytes) and logging `failed to read JSON .obsidian/app.json

@@ -3,7 +3,6 @@ import {
 	type Command,
 	type HistoryStack,
 	intoDate,
-	onceAsync,
 	sanitizeForFilename,
 	TemplaterService,
 } from "@real1ty-obsidian-plugins";
@@ -78,6 +77,7 @@ export class CalendarBundle {
 	private icsSubscriptionSync = new SyncState<ICSSubscriptionSyncService>("ICS Subscription");
 	private ribbonIconEl: HTMLElement | null = null;
 	private destroyed = false;
+	private initPromise: Promise<void> | null = null;
 	private readonly subscriptions: Subscription[] = [];
 	public readonly viewRef: PrismaViewRef = {
 		calendarComponent: null,
@@ -163,60 +163,63 @@ export class CalendarBundle {
 	}
 
 	async initialize(): Promise<void> {
-		return await onceAsync(async () => {
-			await this.notificationManager.start();
-			await this.fileRepository.start();
-			await this.virtualEventStore.initialize();
-			await firstValueFrom(this.fileRepository.indexingComplete$.pipe(filter((complete) => complete)));
+		this.initPromise ??= this.doInitialize();
+		return this.initPromise;
+	}
 
-			if (this.destroyed) return;
+	private async doInitialize(): Promise<void> {
+		await this.notificationManager.start();
+		await this.fileRepository.start();
+		await this.virtualEventStore.initialize();
+		await firstValueFrom(this.fileRepository.indexingComplete$.pipe(filter((complete) => complete)));
 
-			registerPrismaCalendarView(this.plugin, this, this.viewRef);
+		if (this.destroyed) return;
 
-			(
-				this.app.workspace as unknown as {
-					registerHoverLinkSource: (id: string, info: { display: string; defaultMod: boolean }) => void;
+		registerPrismaCalendarView(this.plugin, this, this.viewRef);
+
+		(
+			this.app.workspace as unknown as {
+				registerHoverLinkSource: (id: string, info: { display: string; defaultMod: boolean }) => void;
+			}
+		).registerHoverLinkSource(this.viewType, {
+			display: this.settingsStore.currentSettings.name,
+			defaultMod: true,
+		});
+
+		this.plugin.addCommand({
+			id: `open-calendar-${this.calendarId}`,
+			name: `Open ${this.settingsStore.currentSettings.name}`,
+			callback: () => {
+				void this.activateCalendarView();
+			},
+		});
+
+		this.plugin.addCommand({
+			id: `open-virtual-events-${this.calendarId}`,
+			name: `Open virtual events file (${this.settingsStore.currentSettings.name})`,
+			callback: () => {
+				const filePath = this.virtualEventStore.getFilePath();
+				const file = this.app.vault.getAbstractFileByPath(filePath);
+				if (file instanceof TFile) {
+					void this.app.workspace.getLeaf(false).openFile(file);
+				} else {
+					new Notice("Virtual events file not found. Create a virtual event first.");
 				}
-			).registerHoverLinkSource(this.viewType, {
-				display: this.settingsStore.currentSettings.name,
-				defaultMod: true,
-			});
+			},
+		});
 
-			this.plugin.addCommand({
-				id: `open-calendar-${this.calendarId}`,
-				name: `Open ${this.settingsStore.currentSettings.name}`,
-				callback: () => {
-					void this.activateCalendarView();
-				},
-			});
+		this.subscriptions.push(
+			this.plugin.licenseManager.isPro$.pipe(distinctUntilChanged()).subscribe((isPro) => {
+				if (isPro) {
+					this.onProActivated();
+				} else {
+					this.caldavSync.stopAutoSync();
+					this.icsSubscriptionSync.stopAutoSync();
+				}
+			})
+		);
 
-			this.plugin.addCommand({
-				id: `open-virtual-events-${this.calendarId}`,
-				name: `Open virtual events file (${this.settingsStore.currentSettings.name})`,
-				callback: () => {
-					const filePath = this.virtualEventStore.getFilePath();
-					const file = this.app.vault.getAbstractFileByPath(filePath);
-					if (file instanceof TFile) {
-						void this.app.workspace.getLeaf(false).openFile(file);
-					} else {
-						new Notice("Virtual events file not found. Create a virtual event first.");
-					}
-				},
-			});
-
-			this.subscriptions.push(
-				this.plugin.licenseManager.isPro$.pipe(distinctUntilChanged()).subscribe((isPro) => {
-					if (isPro) {
-						this.onProActivated();
-					} else {
-						this.caldavSync.stopAutoSync();
-						this.icsSubscriptionSync.stopAutoSync();
-					}
-				})
-			);
-
-			this.updateRibbonIcon(this.settingsStore.currentSettings.showRibbonIcon, this.settingsStore.currentSettings.name);
-		})();
+		this.updateRibbonIcon(this.settingsStore.currentSettings.showRibbonIcon, this.settingsStore.currentSettings.name);
 	}
 
 	private onProActivated(): void {
@@ -303,18 +306,32 @@ export class CalendarBundle {
 			this.viewRef.viewConfig.displayText = name;
 		}
 		for (const leaf of this.app.workspace.getLeavesOfType(this.viewType)) {
-			const titleEl = (leaf as unknown as { tabHeaderInnerTitleEl?: HTMLElement }).tabHeaderInnerTitleEl;
+			const leafAny = leaf as unknown as Record<string, unknown>;
+			if (typeof leafAny["updateHeader"] === "function") {
+				(leafAny["updateHeader"] as () => void)();
+			}
+			const titleEl = leafAny["tabHeaderInnerTitleEl"] as HTMLElement | undefined;
 			if (titleEl) titleEl.textContent = name;
+		}
+		if (typeof activeDocument !== "undefined") {
+			activeDocument
+				.querySelectorAll<HTMLElement>(
+					`.workspace-tab-header[data-type="${this.viewType}"] .workspace-tab-header-inner-title`
+				)
+				.forEach((el) => {
+					el.textContent = name;
+				});
 		}
 	}
 
 	private updateCommandNames(name: string): void {
 		const commands = (this.app as unknown as { commands: { commands: Record<string, { name: string }> } }).commands
 			.commands;
+		const prefix = `${this.plugin.manifest.name}: `;
 		const openCmd = commands[`prisma-calendar:open-calendar-${this.calendarId}`];
-		if (openCmd) openCmd.name = `Open ${name}`;
+		if (openCmd) openCmd.name = `${prefix}Open ${name}`;
 		const virtualCmd = commands[`prisma-calendar:open-virtual-events-${this.calendarId}`];
-		if (virtualCmd) virtualCmd.name = `Open virtual events file (${name})`;
+		if (virtualCmd) virtualCmd.name = `${prefix}Open virtual events file (${name})`;
 	}
 
 	async activateCalendarView(): Promise<void> {
