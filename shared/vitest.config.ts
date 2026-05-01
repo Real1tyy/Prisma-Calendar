@@ -32,6 +32,7 @@ const JSDOM_PATTERNS = [
 ];
 
 export default defineConfig({
+	server: { fs: { allow: [".."] } },
 	plugins: [tsconfigPaths({ ignoreConfigErrors: true })],
 	test: {
 		globals: true,

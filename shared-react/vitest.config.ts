@@ -8,6 +8,7 @@ import { VITEST_POOL_OPTIONS, sharedVitestAliases } from "../shared/src/testing/
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
+	server: { fs: { allow: [".."] } },
 	plugins: [tsconfigPaths({ ignoreConfigErrors: true })],
 	test: {
 		globals: true,

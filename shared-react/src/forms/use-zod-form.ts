@@ -4,10 +4,8 @@ import type { z, ZodType } from "zod";
 
 import { zodV4Resolver } from "./zod-resolver";
 
-export interface UseZodFormOptions<TValues extends FieldValues, TSchema extends ZodType> extends Omit<
-	UseFormProps<TValues>,
-	"resolver"
-> {
+export interface UseZodFormOptions<TValues extends FieldValues, TSchema extends ZodType>
+	extends Omit<UseFormProps<TValues>, "resolver"> {
 	schema: TSchema;
 	defaultValues?: DefaultValues<TValues>;
 }
