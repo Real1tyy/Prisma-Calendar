@@ -302,6 +302,8 @@ All free features keep working exactly as before. Pro features (Gantt, Heatmap, 
 
 No. Prisma is built for performance and handles vaults with thousands of notes. The reactive engine only processes changes — it doesn't re-scan everything on every edit.
 
+</details>
+
 <details>
 <summary><strong>Is my data locked into Prisma's format?</strong></summary>
 
