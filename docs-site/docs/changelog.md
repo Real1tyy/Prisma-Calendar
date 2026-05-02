@@ -4,6 +4,18 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 2.16.0 - 5/2/2026
+
+> **TLDR:** New **series shortcut** context menu items let you jump directly to the name, category, or recurring tab in the Event Series Modal. Timeline and Heatmap views now react to settings and color changes in real time.
+
+### Added
+- **Series shortcut context menu items**: Three new right-click items — **Show name series**, **Show category series**, and **Show recurring series** — open the Event Series Modal directly on the corresponding tab. Category and recurring shortcuts only appear when applicable. See [Event Groups → Series Shortcuts](./features/events/event-groups.md#series-shortcuts-in-context-menu).
+
+### Fixed
+- **Timeline and Heatmap not updating on settings or color changes**: Changing color rules, default colors, or display settings had no effect on the Timeline or Heatmap until you switched tabs. Both views now refresh automatically. See [Timeline](./features/views/timeline.md#live-updates) and [Heatmap](./features/views/heatmap.md#live-updates).
+
+---
+
 ## 2.15.0 - 4/29/2026
 
 > **TLDR:** New [Quick Start Video](https://youtu.be/dziQK9UQhvE) covering installation, setup, and core workflows from scratch. Smarter onboarding with datetime/date property detection, prefill buttons, and a new **Configure current** button for re-running property detection on any planning system. Planning systems are now fully isolated — creating, deleting, or reconfiguring one never disrupts others, and multiple systems can share the same directory with different property mappings.

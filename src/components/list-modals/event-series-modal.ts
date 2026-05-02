@@ -73,7 +73,8 @@ export class EventSeriesModal extends Modal {
 		private bundle: CalendarBundle,
 		private nameKey: string | null,
 		private rruleId: string | null,
-		private categoryValues: string[] | null = null
+		private categoryValues: string[] | null = null,
+		private preferredTab: SourceTab | null = null
 	) {
 		super(app);
 		this.colorEvaluator = new ColorEvaluator(bundle.settingsStore.settings$);
@@ -86,7 +87,8 @@ export class EventSeriesModal extends Modal {
 		const tabs = this.getAvailableTabs();
 		if (tabs.length === 0) return;
 
-		this.activeTab = tabs[0].id;
+		const preferred = this.preferredTab && tabs.some((t) => t.id === this.preferredTab) ? this.preferredTab : null;
+		this.activeTab = preferred ?? tabs[0].id;
 
 		// If only one category, auto-select it
 		if (this.categoryValues && this.categoryValues.length === 1) {

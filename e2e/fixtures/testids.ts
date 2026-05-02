@@ -24,7 +24,10 @@ export type ContextMenuItemKey =
 	| "deleteEvent"
 	| "skipEvent"
 	| "openFile"
-	| "openFileNewWindow";
+	| "openFileNewWindow"
+	| "viewNameSeries"
+	| "viewCategorySeries"
+	| "viewRecurringSeries";
 
 export type EventControlKey =
 	| "title"

@@ -67,6 +67,9 @@ If you previously configured context menu visibility via the settings tab (prior
 - **Edit source event**: Open edit modal with source recurring event data (only appears on physical/virtual recurring instances)
 - **Duplicate recurring instance**: Create a duplicate of a physical recurring instance
 - **View event groups**: Open modal showing all event groups (recurring, by category, by name)
+- **Show name series**: Open the event series modal directly on the By Name tab
+- **Show category series**: Open the event series modal directly on the By Category tab (only visible when the event has categories)
+- **Show recurring series**: Open the event series modal directly on the Recurring tab (only visible for recurring events)
 - **Edit event**: Open event edit modal
 - **Assign categories**: Open category assignment modal
 - **Assign prerequisites**: Open prerequisite assignment modal for linking dependent events

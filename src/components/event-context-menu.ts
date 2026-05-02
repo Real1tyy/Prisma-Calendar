@@ -142,6 +142,11 @@ export class EventContextMenu {
 		const isDone = this.isEventDone(event);
 		const isDisabled = isRecurring ? this.isSourceEventDisabled(event) : false;
 
+		const settings = this.bundle.settingsStore.currentSettings;
+		const frontmatter = event.extendedProps?.frontmatterDisplayData;
+		const hasCategories =
+			!!settings.categoryProp && !!frontmatter && parseIntoList(frontmatter[settings.categoryProp]).length > 0;
+
 		const titleOverrides: Record<string, string> = {};
 		if (isDone) {
 			titleOverrides["markDone"] = "Mark as undone";
@@ -185,7 +190,10 @@ export class EventContextMenu {
 					case "openFileNewWindow":
 						return isNormal && !!filePath;
 					case "toggleRecurring":
+					case "viewRecurringSeries":
 						return isRecurring;
+					case "viewCategorySeries":
+						return hasCategories;
 					case "makeVirtual":
 						return isNormal;
 					case "makeReal":
@@ -263,6 +271,27 @@ export class EventContextMenu {
 				icon: "list",
 				section: "navigation",
 				onAction: () => this.showEventSeries(this.currentEvent!),
+			},
+			{
+				id: "viewNameSeries",
+				label: CONTEXT_MENU_BUTTON_LABELS.viewNameSeries,
+				icon: "text",
+				section: "navigation",
+				onAction: () => this.showEventSeries(this.currentEvent!, "name"),
+			},
+			{
+				id: "viewCategorySeries",
+				label: CONTEXT_MENU_BUTTON_LABELS.viewCategorySeries,
+				icon: "tag",
+				section: "navigation",
+				onAction: () => this.showEventSeries(this.currentEvent!, "category"),
+			},
+			{
+				id: "viewRecurringSeries",
+				label: CONTEXT_MENU_BUTTON_LABELS.viewRecurringSeries,
+				icon: "repeat",
+				section: "navigation",
+				onAction: () => this.showEventSeries(this.currentEvent!, "recurring"),
 			},
 			{
 				id: "editEvent",
@@ -645,7 +674,7 @@ export class EventContextMenu {
 		action(sourceEvent, sourceFilePath);
 	}
 
-	private showEventSeries(event: CalendarEventInfo): void {
+	private showEventSeries(event: CalendarEventInfo, preferredTab?: "name" | "category" | "recurring"): void {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const frontmatter = event.extendedProps?.frontmatterDisplayData;
 		const filePath = event.extendedProps?.filePath ?? null;
@@ -661,7 +690,8 @@ export class EventContextMenu {
 			this.bundle,
 			nameKey,
 			rruleId,
-			categoryValues.length > 0 ? categoryValues : null
+			categoryValues.length > 0 ? categoryValues : null,
+			preferredTab ?? null
 		).open();
 	}
 

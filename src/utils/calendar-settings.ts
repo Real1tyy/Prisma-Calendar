@@ -26,20 +26,27 @@ export function getCalendarById(settings: CustomCalendarSettings, id: string): S
 	return settings.calendars.find((calendar) => calendar.id === id);
 }
 
-/**
- * Builds a stable key from the subset of settings that affect how events are rendered.
- * When this key changes, a full event refresh is needed.
- */
-export function getEventRenderingKey(settings: SingleCalendarConfig): string {
-	return JSON.stringify([
+function getSharedRenderingFields(settings: SingleCalendarConfig): unknown[] {
+	return [
 		settings.colorRules,
 		settings.defaultNodeColor,
 		settings.colorMode,
 		settings.showEventColorDots,
-		settings.filterExpressions,
-		settings.untrackedFilterExpressions,
+		settings.eventTextColor,
+		settings.eventTextColorAlt,
 		settings.caldavProp,
 		settings.icsSubscriptionProp,
+		settings.skipProp,
+		settings.titleProp,
+		settings.calendarTitleProp,
+	];
+}
+
+export function getCalendarRenderingKey(settings: SingleCalendarConfig): string {
+	return JSON.stringify([
+		...getSharedRenderingFields(settings),
+		settings.filterExpressions,
+		settings.untrackedFilterExpressions,
 		settings.frontmatterDisplayProperties,
 		settings.frontmatterDisplayPropertiesAllDay,
 		settings.showDurationInTitle,
@@ -49,17 +56,29 @@ export function getEventRenderingKey(settings: SingleCalendarConfig): string {
 		settings.physicalRecurringMarker,
 		settings.showColorDots,
 		settings.pastEventContrast,
-		settings.eventTextColor,
-		settings.eventTextColorAlt,
-		settings.skipProp,
-		settings.titleProp,
-		settings.calendarTitleProp,
 		settings.eventOverlap,
 		settings.slotEventOverlap,
 		settings.eventMaxStack,
 		settings.desktopMaxEventsPerDay,
 		settings.mobileMaxEventsPerDay,
 	]);
+}
+
+export function getTimelineRenderingKey(settings: SingleCalendarConfig): string {
+	return JSON.stringify([
+		...getSharedRenderingFields(settings),
+		settings.frontmatterDisplayProperties,
+		settings.frontmatterDisplayPropertiesAllDay,
+		settings.locale,
+	]);
+}
+
+export function getHeatmapRenderingKey(settings: SingleCalendarConfig): string {
+	return JSON.stringify([...getSharedRenderingFields(settings), settings.frontmatterDisplayPropertiesHeatmap]);
+}
+
+export function getGanttRenderingKey(settings: SingleCalendarConfig): string {
+	return JSON.stringify(getSharedRenderingFields(settings));
 }
 
 export function generateUniqueCalendarId(settings: CustomCalendarSettings): string {

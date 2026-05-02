@@ -52,6 +52,16 @@ The modal determines which tabs to show based on the event's properties:
 
 When multiple tabs are available, they appear in the order above (Recurring first). If only one grouping applies, the modal opens directly into that view with no tab bar.
 
+### Series Shortcuts in Context Menu
+
+The right-click context menu offers shortcut items that jump directly to a specific tab in the Event Series Modal:
+
+- **Show name series** — opens the modal on the By Name tab (always available)
+- **Show category series** — opens the modal on the By Category tab (only visible when the event has categories assigned)
+- **Show recurring series** — opens the modal on the Recurring tab (only visible for recurring events)
+
+These complement the existing **View event groups** item, which opens the modal on the default first tab. Use shortcuts when you know exactly which grouping perspective you want.
+
 ### Recurring Tab
 
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
