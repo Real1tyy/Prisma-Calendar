@@ -12,7 +12,7 @@ import { type EventModalInput, fillEventModal, saveEventModal } from "../../spec
 import { runCommand } from "../commands";
 import { ACTIVE_CALENDAR_LEAF, PLUGIN_ID } from "../constants";
 import { anchorDate, anchorISO, isoLocal } from "../dates";
-import { getEventCount, refreshCalendar, waitForEventCount } from "../seed-events";
+import { getEventCount, refreshCalendar, type SeedEventInput, waitForEventCount } from "../seed-events";
 import { sel, TID, type ToolbarActionKey, type ViewMode, type ViewTabKey } from "../testids";
 import { type BatchHandle, openBatch } from "./batch";
 import { createEventHandle, type EventHandle } from "./event";
@@ -81,6 +81,13 @@ export interface CalendarHandle {
 	 * seeded date sits inside the currently-visible FC viewport.
 	 */
 	seedOnDiskMany(events: readonly EventOnDisk[], options?: { awaitRender?: boolean }): Promise<EventHandle[]>;
+
+	/**
+	 * Bulk-seed events to disk with a double-refresh to flush reactive trackers
+	 * (name series, category, etc.). Use this instead of raw `seedEvent` loops
+	 * when the spec opens a modal that reads tracker data (e.g. Event Series Modal).
+	 */
+	seedAndStabilize(events: readonly SeedEventInput[]): Promise<void>;
 
 	batch(events: readonly EventHandle[]): Promise<BatchHandle>;
 
@@ -330,6 +337,48 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 				for (const handle of out) await handle.expectVisible();
 			}
 			return out;
+		},
+
+		async seedAndStabilize(events) {
+			const baseline = await getEventCount(page);
+			// Build file content from SeedEventInput, then create via Obsidian's
+			// vault API so the metadata cache fires events and downstream reactive
+			// trackers (name series, category) pick up the new rows. Raw
+			// writeFileSync bypasses the cache → trackers stay empty.
+			const files = events.map((event) => {
+				const subdir = event.subdir ?? "Events";
+				const filename = `${event.title.replace(/[/\\:*?"<>|]/g, "-")}.md`;
+				const fm: Record<string, unknown> = {};
+				if (event.startDate) fm["Start Date"] = event.startDate;
+				if (event.endDate) fm["End Date"] = event.endDate;
+				if (event.date) fm["Date"] = event.date;
+				if (event.allDay) fm["All Day"] = true;
+				if (event.category) fm["Category"] = event.category;
+				if (event.location) fm["Location"] = event.location;
+				if (event.participants?.length) fm["Participants"] = event.participants;
+				if (event.rrule) fm["RRule"] = event.rrule;
+				if (event.rruleSpec) fm["RRuleSpec"] = event.rruleSpec;
+				if (event.extra) {
+					for (const [k, v] of Object.entries(event.extra)) fm[k] = v;
+				}
+				const fmLines = Object.entries(fm)
+					.map(([k, v]) => {
+						if (Array.isArray(v))
+							return v.length === 0 ? `${k}: []` : `${k}:\n${v.map((item) => `  - ${String(item)}`).join("\n")}`;
+						if (typeof v === "string" && (v.includes(":") || v.includes("#")))
+							return `${k}: "${v.replace(/"/g, '\\"')}"`;
+						return `${k}: ${String(v)}`;
+					})
+					.join("\n");
+				return { path: `${subdir}/${filename}`, content: `---\n${fmLines}\n---\n\n# ${event.title}\n` };
+			});
+			await page.evaluate(async (fileList) => {
+				const vault = (window as unknown as { app: { vault: { create: (p: string, c: string) => Promise<unknown> } } })
+					.app.vault;
+				for (const f of fileList) await vault.create(f.path, f.content);
+			}, files);
+			await refreshCalendar(page);
+			await waitForEventCount(page, baseline + events.length);
 		},
 
 		async batch(events) {
