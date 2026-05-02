@@ -85,30 +85,45 @@ interface WhatsNewContentProps {
 	close: () => void;
 }
 
-function makeExternalLinksClickable(container: HTMLElement, documentationBaseUrl: string): void {
-	const links = container.querySelectorAll<HTMLAnchorElement>("a[href]");
-	for (const link of Array.from(links)) {
-		const href = link.getAttribute("href");
-		if (!href) continue;
+export function makeExternalLinksClickable(container: HTMLElement, documentationBaseUrl: string): void {
+	const baseUrl = new URL(documentationBaseUrl);
+	const cleanBase = `${baseUrl.origin}${baseUrl.pathname}`.replace(/\/$/, "");
+	const utmParams = new URLSearchParams();
+	for (const [key, value] of baseUrl.searchParams) {
+		if (key.startsWith("utm_")) utmParams.set(key, value);
+	}
 
-		let finalUrl: string | null = null;
+	const links = container.querySelectorAll<HTMLAnchorElement>("a");
+	for (const link of Array.from(links)) {
+		const href = link.getAttribute("href") ?? link.getAttribute("data-href");
+		if (!href || href.startsWith("#")) continue;
+
+		let finalUrl: string;
 		if (href.startsWith("http://") || href.startsWith("https://")) {
 			finalUrl = href;
-		} else if (href.startsWith("/")) {
-			const normalizedBase = documentationBaseUrl.endsWith("/")
-				? documentationBaseUrl.slice(0, -1)
-				: documentationBaseUrl;
-			finalUrl = `${normalizedBase}${href}`;
+		} else if (href.includes("://") || href.startsWith("mailto:")) {
+			continue;
+		} else {
+			const cleaned = href.replace(/^\.\//, "").replace(/\.md(?=#|$)/, "");
+			const path = cleaned.startsWith("/") ? cleaned : `/${cleaned}`;
+			const hashIndex = path.indexOf("#");
+			const pathPart = hashIndex >= 0 ? path.slice(0, hashIndex) : path;
+			const fragment = hashIndex >= 0 ? path.slice(hashIndex + 1) : undefined;
+			const resolved = new URL(`${cleanBase}${pathPart}`);
+			for (const [key, value] of utmParams) {
+				resolved.searchParams.set(key, value);
+			}
+			const lastSegment = pathPart.split("/").filter(Boolean).pop() ?? "changelog_link";
+			resolved.searchParams.set("utm_content", lastSegment.replace(/-/g, "_"));
+			if (fragment) resolved.hash = fragment;
+			finalUrl = resolved.toString();
 		}
 
-		if (finalUrl) {
-			const url = finalUrl;
-			link.addEventListener("click", (e: MouseEvent) => {
-				e.preventDefault();
-				window.open(url, "_blank");
-			});
-			link.classList.add("external-link");
-		}
+		link.addEventListener("click", (e: MouseEvent) => {
+			e.preventDefault();
+			window.open(finalUrl, "_blank");
+		});
+		link.classList.add("external-link");
 	}
 }
 
