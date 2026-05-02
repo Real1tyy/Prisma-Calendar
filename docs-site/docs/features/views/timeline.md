@@ -58,7 +58,7 @@ This means the timeline opens fast regardless of how many events are in your vau
 
 ## Live Updates
 
-The timeline updates automatically when events change — new events appear, deleted events disappear, and edits are reflected instantly.
+The timeline updates automatically when events change — new events appear, deleted events disappear, and edits are reflected instantly. Settings changes (color rules, default color, display options) are also picked up immediately without switching tabs.
 
 ## Command
 

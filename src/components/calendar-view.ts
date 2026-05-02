@@ -47,7 +47,7 @@ import type {
 } from "../types/calendar";
 import { isAnyVirtual, isTimedEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/index";
-import { getEventRenderingKey } from "../utils/calendar-settings";
+import { getCalendarRenderingKey } from "../utils/calendar-settings";
 import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
 import { isBatchSelectable, isFileBackedEvent } from "../utils/event-classification";
 import { resolveAllEventColors, resolveEventColor } from "../utils/event-color";
@@ -639,7 +639,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 		// Only schedule a full event refresh if event-rendering settings changed.
 		// Non-rendering settings (hour range, weekends, etc.) are handled by setOption() above.
-		const eventRenderingKey = getEventRenderingKey(settings);
+		const eventRenderingKey = getCalendarRenderingKey(settings);
 
 		if (eventRenderingKey !== this.previousEventRenderingKey) {
 			this.previousEventRenderingKey = eventRenderingKey;

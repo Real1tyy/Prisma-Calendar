@@ -39,14 +39,15 @@ function getSharedRenderingFields(settings: SingleCalendarConfig): unknown[] {
 		settings.skipProp,
 		settings.titleProp,
 		settings.calendarTitleProp,
+		settings.filterExpressions,
+		settings.untrackedFilterExpressions,
+		settings.showColorDots,
 	];
 }
 
 export function getCalendarRenderingKey(settings: SingleCalendarConfig): string {
 	return JSON.stringify([
 		...getSharedRenderingFields(settings),
-		settings.filterExpressions,
-		settings.untrackedFilterExpressions,
 		settings.frontmatterDisplayProperties,
 		settings.frontmatterDisplayPropertiesAllDay,
 		settings.showDurationInTitle,
@@ -54,7 +55,6 @@ export function getCalendarRenderingKey(settings: SingleCalendarConfig): string 
 		settings.showPhysicalRecurringMarker,
 		settings.sourceRecurringMarker,
 		settings.physicalRecurringMarker,
-		settings.showColorDots,
 		settings.pastEventContrast,
 		settings.eventOverlap,
 		settings.slotEventOverlap,

@@ -6,13 +6,14 @@ All notable changes to this project will be documented here.
 
 ## 2.16.0 - 5/2/2026
 
-> **TLDR:** New **series shortcut** context menu items let you jump directly to the name, category, or recurring tab in the Event Series Modal. Timeline and Heatmap views now react to settings and color changes in real time.
+> **TLDR:** New **series shortcut** context menu items let you jump directly to the name, category, or recurring tab in the Event Series Modal. Timeline, Heatmap, and Gantt views now react to settings and color changes in real time.
 
 ### Added
 - **Series shortcut context menu items**: Three new right-click items — **Show name series**, **Show category series**, and **Show recurring series** — open the Event Series Modal directly on the corresponding tab. Category and recurring shortcuts only appear when applicable. See [Event Groups → Series Shortcuts](./features/events/event-groups.md#series-shortcuts-in-context-menu).
 
 ### Fixed
-- **Timeline and Heatmap not updating on settings or color changes**: Changing color rules, default colors, or display settings had no effect on the Timeline or Heatmap until you switched tabs. Both views now refresh automatically. See [Timeline](./features/views/timeline.md#live-updates) and [Heatmap](./features/views/heatmap.md#live-updates).
+- **Timeline, Heatmap, and Gantt not updating on settings or color changes**: Changing color rules, default colors, or display settings had no effect on the Timeline, Heatmap, or Gantt until you switched tabs. All three views now refresh automatically when rendering-relevant settings change. See [Timeline](./features/views/timeline.md#live-updates), [Heatmap](./features/views/heatmap.md#live-updates), and [Gantt](./features/views/gantt.md#live-updates).
+- **Documentation links in changelog not clickable**: Relative documentation links in the What's New modal and in-app changelog viewer did nothing on click. They now open the corresponding page on the documentation site. See [General Settings → Changelog Viewer](./configuration/general.md#changelog-viewer).
 
 ---
 

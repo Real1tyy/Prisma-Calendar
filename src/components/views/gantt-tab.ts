@@ -8,7 +8,7 @@ import {
 	type TabDefinition,
 } from "@real1ty-obsidian-plugins";
 import { type App, Menu, Notice } from "obsidian";
-import { debounceTime, distinctUntilChanged, merge, skip, type Subscription } from "rxjs";
+import { debounceTime, distinctUntilChanged, map, merge, skip, type Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import {
@@ -23,6 +23,7 @@ import { CloneEventCommand, DeleteEventCommand } from "../../core/commands/lifec
 import { PRO_FEATURES } from "../../core/license";
 import type { CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
+import { getGanttRenderingKey } from "../../utils/calendar-settings";
 import { isEventDone } from "../../utils/event-frontmatter";
 import { extractCleanDisplayName } from "../../utils/events/naming";
 import { getFileAndFrontmatter, openFileInNewWindow } from "../../utils/obsidian";
@@ -383,11 +384,18 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 				renderer.toolbarLeft.appendChild(filterBar.el);
 
 				rebuild(false);
+
+				const renderingSettings$ = bundle.settingsStore.settings$.pipe(
+					skip(1),
+					map(getGanttRenderingKey),
+					distinctUntilChanged()
+				);
+
 				mergedSub = merge(
 					bundle.eventStore.changes$,
 					bundle.recurringEventManager.changes$,
 					bundle.prerequisiteTracker.graph$,
-					bundle.settingsStore.settings$
+					renderingSettings$
 				)
 					.pipe(debounceTime(REFRESH_DEBOUNCE_MS))
 					.subscribe(() => rebuild(false));

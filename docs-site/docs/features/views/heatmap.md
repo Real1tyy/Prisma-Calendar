@@ -74,6 +74,10 @@ Click any day cell to open the detail panel below the heatmap. It shows:
 - **Click an event** to open its file in the editor.
 - **Ctrl/Cmd + hover** to see a backlink preview.
 
+## Live Updates
+
+The heatmap updates automatically when events or settings change — new events, edits, color rule changes, and display property changes are reflected immediately without switching tabs.
+
 ## Week Layout
 
 The first day of the week follows your calendar's **First day of week** setting (Settings → General). If set to Monday, Monday appears in the leftmost column; if Sunday, Sunday does.

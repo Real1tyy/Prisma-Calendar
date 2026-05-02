@@ -1,9 +1,10 @@
 import { type TabDefinition } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
-import { merge } from "rxjs";
+import { distinctUntilChanged, map, merge, skip } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { PRO_FEATURES } from "../../core/license";
+import { getHeatmapRenderingKey } from "../../utils/calendar-settings";
 import { type HeatmapHandle, renderHeatmapInto } from "../modals";
 import { createViewFilterBar, type ViewFilterBarHandle } from "../view-filter-bar";
 import { createProGatedContent } from "./pro-gated-content";
@@ -32,7 +33,17 @@ export function createHeatmapTabDefinition(app: App, bundle: CalendarBundle): Ta
 				toolbarLeft: filterBar.el,
 			});
 
-			const eventsSub = merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$).subscribe(() => {
+			const renderingSettings$ = bundle.settingsStore.settings$.pipe(
+				skip(1),
+				map(getHeatmapRenderingKey),
+				distinctUntilChanged()
+			);
+
+			const eventsSub = merge(
+				bundle.eventStore.changes$,
+				bundle.recurringEventManager.changes$,
+				renderingSettings$
+			).subscribe(() => {
 				heatmapHandle?.refresh(getFilteredEvents().visible);
 			});
 

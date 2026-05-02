@@ -80,6 +80,10 @@ The chart fills the full height of the tab. Events from independent prerequisite
 
 Bar width reflects the event's title length with padding, capped at a maximum width. Long event titles word-wrap inside the bar.
 
+## Live Updates
+
+The Gantt view updates automatically when events, prerequisites, or settings change — new bars appear, dependency arrows adjust, and color rule changes are reflected immediately without switching tabs.
+
 ## Performance
 
 Prerequisite relationships are tracked incrementally — when you add, edit, or delete an event, only that event's prerequisites are updated instead of rebuilding the entire dependency graph. This keeps the Gantt tab responsive even with large vaults.

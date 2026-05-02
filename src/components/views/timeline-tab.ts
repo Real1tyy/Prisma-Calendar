@@ -1,8 +1,9 @@
 import type { TabDefinition } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
-import { debounceTime, merge, type Subscription } from "rxjs";
+import { debounceTime, distinctUntilChanged, map, merge, skip, type Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
+import { getTimelineRenderingKey } from "../../utils/calendar-settings";
 import { renderTimelineInto, type TimelineHandle } from "../modals";
 import { createViewFilterBar, type ViewFilterBarHandle } from "../view-filter-bar";
 
@@ -27,7 +28,13 @@ export function createTimelineTabDefinition(app: App, bundle: CalendarBundle): T
 				toolbarLeft: filterBar.el,
 			});
 
-			mergedSub = merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$)
+			const renderingSettings$ = bundle.settingsStore.settings$.pipe(
+				skip(1),
+				map(getTimelineRenderingKey),
+				distinctUntilChanged()
+			);
+
+			mergedSub = merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$, renderingSettings$)
 				.pipe(debounceTime(REFRESH_DEBOUNCE_MS))
 				.subscribe(() => {
 					handle?.invalidateAndRefetch();
