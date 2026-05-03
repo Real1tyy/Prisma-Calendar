@@ -2095,4 +2095,121 @@ describe("VaultTable", () => {
 			});
 		});
 	});
+
+	describe("resync", () => {
+		it("should clear all rows and call indexer.resync()", async () => {
+			const { config, fileStore } = createTestConfig();
+			const table = new VaultTable(config);
+			await table.start();
+
+			fileStore.set("test-table/event-1.md", createMockTFile("test-table/event-1.md", 100));
+			emitIndexerEvent(
+				createFileChangedEvent(
+					"test-table/event-1.md",
+					{ title: "Event 1", priority: 1, tags: [], category: "general" },
+					100
+				)
+			);
+			await vi.waitFor(() => expect(table.count()).toBe(1));
+
+			table.resync();
+
+			expect(table.count()).toBe(0);
+			expect(vi.mocked(Indexer).mock.results[0].value.resync).toHaveBeenCalled();
+
+			table.destroy();
+		});
+
+		it("should preserve events$ subscription across resync — new events flow to existing subscribers", async () => {
+			const { config, fileStore } = createTestConfig();
+			const table = new VaultTable(config);
+			await table.start();
+
+			const events: VaultTableEvent<TestData>[] = [];
+			table.events$.subscribe((e) => events.push(e));
+
+			fileStore.set("test-table/before.md", createMockTFile("test-table/before.md", 100));
+			emitIndexerEvent(
+				createFileChangedEvent(
+					"test-table/before.md",
+					{ title: "Before", priority: 0, tags: [], category: "general" },
+					100
+				)
+			);
+			await vi.waitFor(() => expect(events).toHaveLength(1));
+			expect(events[0].type).toBe("row-created");
+
+			table.resync();
+
+			fileStore.set("test-table/after.md", createMockTFile("test-table/after.md", 200));
+			emitIndexerEvent(
+				createFileChangedEvent(
+					"test-table/after.md",
+					{ title: "After", priority: 0, tags: [], category: "general" },
+					200
+				)
+			);
+			await vi.waitFor(() => expect(events).toHaveLength(2));
+			expect(events[1].type).toBe("row-created");
+
+			table.destroy();
+		});
+
+		it("should re-emit ready$ false then true after resync completes", async () => {
+			const { config } = createTestConfig();
+			const table = new VaultTable(config);
+			await table.start();
+
+			const readyValues: boolean[] = [];
+			table.ready$.subscribe((v) => readyValues.push(v));
+
+			emitIndexingComplete();
+			expect(readyValues).toContain(true);
+
+			mockIndexerCompleteSubject.next(false);
+			table.resync();
+			expect(readyValues.at(-1)).toBe(false);
+
+			mockIndexerCompleteSubject.next(true);
+			expect(readyValues.at(-1)).toBe(true);
+
+			table.destroy();
+		});
+
+		it("should allow multiple consecutive resyncs with events flowing each time", async () => {
+			const { config, fileStore } = createTestConfig();
+			const table = new VaultTable(config);
+			await table.start();
+
+			const events: VaultTableEvent<TestData>[] = [];
+			table.events$.subscribe((e) => events.push(e));
+
+			fileStore.set("test-table/a.md", createMockTFile("test-table/a.md", 100));
+			emitIndexerEvent(
+				createFileChangedEvent("test-table/a.md", { title: "A", priority: 0, tags: [], category: "general" }, 100)
+			);
+			await vi.waitFor(() => expect(events).toHaveLength(1));
+
+			mockIndexerCompleteSubject.next(false);
+			table.resync();
+			fileStore.set("test-table/b.md", createMockTFile("test-table/b.md", 200));
+			emitIndexerEvent(
+				createFileChangedEvent("test-table/b.md", { title: "B", priority: 0, tags: [], category: "general" }, 200)
+			);
+			await vi.waitFor(() => expect(events).toHaveLength(2));
+			mockIndexerCompleteSubject.next(true);
+
+			mockIndexerCompleteSubject.next(false);
+			table.resync();
+			fileStore.set("test-table/c.md", createMockTFile("test-table/c.md", 300));
+			emitIndexerEvent(
+				createFileChangedEvent("test-table/c.md", { title: "C", priority: 0, tags: [], category: "general" }, 300)
+			);
+			await vi.waitFor(() => expect(events).toHaveLength(3));
+
+			expect(table.count()).toBe(1);
+
+			table.destroy();
+		});
+	});
 });

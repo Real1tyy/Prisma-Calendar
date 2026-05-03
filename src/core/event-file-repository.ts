@@ -106,10 +106,7 @@ export class EventFileRepository implements CalendarEventSource {
 
 	resync(): void {
 		this.indexingCompleteSubject.next(false);
-		this.table.destroy();
-		this.table = this.createTable(this.settings);
-		this.wireTableEvents();
-		void this.table.start();
+		this.table.resync();
 	}
 
 	/** The underlying VaultTable — use for creating VaultTableViews or direct access */

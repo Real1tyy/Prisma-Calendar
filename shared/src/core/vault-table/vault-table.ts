@@ -222,6 +222,25 @@ export class VaultTable<
 		this.indexer.stop();
 	}
 
+	resync(): void {
+		for (const cache of this.childCacheByPath.values()) {
+			for (const table of cache.values()) table.destroy();
+		}
+		this.childCacheByPath.clear();
+		this.rowByFileName.clear();
+		this.rows = [];
+		this.rowsDirty = false;
+		this.commandManager?.clearHistory();
+		this.readySubject.next(false);
+
+		this.readySub?.unsubscribe();
+		this.readySub = this.indexer.indexingComplete$.pipe(filter(Boolean), take(1)).subscribe(() => {
+			this.readySubject.next(true);
+		});
+
+		this.indexer.resync();
+	}
+
 	/**
 	 * Await any pending persistent-cache writes and close the underlying
 	 * IndexedDB connection. Prefer this over {@link destroy} when callers
