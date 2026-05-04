@@ -312,164 +312,216 @@ export async function bootstrapObsidian(options: BootstrapOptions): Promise<Boot
 	mkdirSync(xdgRuntimeDir, { recursive: true, mode: 0o700 });
 	log.debug(`XDG_RUNTIME_DIR=${xdgRuntimeDir}`);
 
-	const binary = process.env["OBSIDIAN_BIN"] ?? installerPath;
-	const spawnArgs = [
-		...sandboxArgs,
-		...gpuArgs,
-		`--remote-debugging-port=${cdpPort}`,
-		`--user-data-dir=${userDataDir}`,
-		...(options.extraArgs ?? []),
-	];
-	log.debug(`spawning ${binary} ${spawnArgs.join(" ")}`);
-	const proc = spawn(binary, spawnArgs, {
-		env: {
-			...process.env,
-			XDG_RUNTIME_DIR: xdgRuntimeDir,
-			...options.env,
-		},
-		stdio: ["ignore", "pipe", "pipe"],
-	});
-	log.debug(`spawned pid=${proc.pid}`);
-	proc.stdout.on("data", (d) => log.debug(`obsidian.stdout: ${String(d).trimEnd()}`));
-	proc.on("exit", (code, signal) => log.debug(`obsidian process exit code=${code} signal=${signal}`));
-
-	// Grep the CDP endpoint out of Obsidian's own stderr. Chromium prints
-	// "DevTools listening on ws://..." as soon as the debug port is up; this
-	// is the one signal we can rely on cross-version without touching
-	// Playwright's _electron machinery.
-	const wsEndpoint = await new Promise<string>((resolve, reject) => {
-		const timer = setTimeout(
-			() => reject(new Error("timeout waiting for DevTools WebSocket URL from Obsidian stderr")),
-			60_000
-		);
-		let buffer = "";
-		proc.stderr.on("data", (chunk: Buffer) => {
-			const text = chunk.toString();
-			log.debug(`obsidian.stderr: ${text.trimEnd()}`);
-			buffer += text;
-			const match = buffer.match(/DevTools listening on (ws:\/\/[^\s]+)/);
-			if (match) {
-				clearTimeout(timer);
-				resolve(match[1]);
-			}
-		});
-		proc.on("exit", () => {
-			clearTimeout(timer);
-			reject(new Error("Obsidian process exited before DevTools WebSocket came up"));
-		});
-	});
-	log.debug(`got CDP wsEndpoint=${wsEndpoint}`);
-
-	const slowMo = options.slowMoMs && options.slowMoMs > 0 ? options.slowMoMs : 0;
-	if (slowMo > 0) log.info(`slowMo=${slowMo}ms (demo mode)`);
-	const browser = await chromium.connectOverCDP(wsEndpoint, { timeout: 30_000, slowMo });
-	log.debug(`connected (contexts=${browser.contexts().length})`);
-
-	const context = browser.contexts()[0];
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- array may be empty at runtime (noUncheckedIndexedAccess disabled)
-	if (!context) throw new Error("no browser context after connect");
-
-	// Poll context.pages() directly instead of `browser.firstWindow()` —
-	// firstWindow() hangs against Obsidian (never resolves) because of how the
-	// renderer window is attached after the CDP connection is already up. The
-	// last page in the list is the workspace window; earlier entries can be
-	// transient splash/dev pages.
-	let page: Page | undefined;
-	const pageDeadline = Date.now() + 120_000;
-	while (Date.now() < pageDeadline) {
-		const pages = context.pages();
-		if (pages.length > 0) {
-			page = pages[pages.length - 1]!;
-			log.debug(`found ${pages.length} page(s); using last: url=${page.url()}`);
-			break;
+	// --- Helper: kill the Obsidian process group + clean up temp dirs. ---
+	// Shared by the happy-path close() and the catch-path so neither leaks.
+	const killProcessGroup = (proc: ChildProcess, signal: NodeJS.Signals): void => {
+		const pgid = proc.pid;
+		if (!pgid) return;
+		try {
+			process.kill(-pgid, signal);
+		} catch {
+			// ESRCH — already dead
 		}
-		await new Promise((r) => setTimeout(r, 500));
-	}
-	if (!page) throw new Error("no Obsidian renderer page appeared within 120s");
-
-	pipeRendererConsole(page, log);
-
-	await page.waitForLoadState("domcontentloaded", { timeout: 30_000 }).catch((err) => {
-		log.debug(`domcontentloaded timeout — continuing: ${String(err)}`);
-	});
-
-	log.debug(`waiting for window.app...`);
-	await page.waitForFunction(() => Boolean((window as unknown as { app?: unknown }).app), null, {
-		timeout: 60_000,
-	});
-	log.debug(`window.app exists`);
-
-	if (options.onRendererReady) {
-		await options.onRendererReady(page);
-	}
-
-	await ensurePluginLoaded(page, options.plugin.id, log);
-
-	if (options.afterPluginLoaded) {
-		await options.afterPluginLoaded(page);
-	}
-
-	// Demo/headed polish: maximize the window and collapse Obsidian's left
-	// sidebar so what the human sees is the plugin UI, not chrome. Triggered
-	// whenever the caller opts in via `polishVisibleWindow` OR slowMo > 0
-	// (PW_DEMO implies a watched run). In a plain headless CI run the viewport
-	// stays at CDP defaults.
-	if (slowMo > 0 || options.polishVisibleWindow) {
-		await configureDemoViewport(page, log);
-	}
-
-	const elapsed = ((Date.now() - bootstrapStart) / 1000).toFixed(1);
-	if (verboseBootstrap) {
-		log.info(`bootstrap ready id=${id} plugin=${options.plugin.id}`);
-	} else {
-		log.info(`bootstrap ok id=${id} plugin=${options.plugin.id} (${elapsed}s)`);
-	}
-
-	return {
-		browser,
-		page,
-		process: proc,
-		vaultDir,
-		userDataDir,
-		readVaultFile: (relativePath: string) => readFileSync(join(vaultDir, relativePath), "utf8"),
-		close: async () => {
-			log.debug(`closing obsidian (${id})`);
-			await browser.close().catch((err) => log.debug(`browser close error: ${String(err)}`));
-			if (!proc.killed) {
-				proc.kill("SIGTERM");
-				await new Promise<void>((resolve) => {
-					const t = setTimeout(() => {
-						if (!proc.killed) proc.kill("SIGKILL");
-						resolve();
-					}, 5_000);
-					proc.on("exit", () => {
-						clearTimeout(t);
-						resolve();
-					});
-				});
-			}
-			if (process.env["E2E_CLEANUP"] === "1") {
-				rmSync(join(vaultsRoot, id), { recursive: true, force: true });
-				log.debug(`vault cleaned`);
-			} else if (options.leanVaultOnClose) {
-				leanVault(vaultDir, options.plugin.id, files, options.leanVaultOnClose, log);
-				log.debug(`vault leaned at ${join(vaultsRoot, id)} (set E2E_CLEANUP=1 to delete)`);
-			} else {
-				log.debug(`vault kept at ${join(vaultsRoot, id)} (set E2E_CLEANUP=1 to delete)`);
-			}
-			// XDG_RUNTIME_DIR holds only transient Chromium/Wayland sockets — safe
-			// to always drop. Leaving these behind across a 242-spec serial run
-			// accumulates hundreds of /tmp/o-e2e-* dirs and contributes to the
-			// tail-end bootstrap slowdown we otherwise paper over with retries.
-			rmSync(xdgRuntimeDir, { recursive: true, force: true });
-			log.debug(`xdg runtime dir cleaned: ${xdgRuntimeDir}`);
-			// userDataDir is obsidian-launcher's per-run config dir (~26 MB, mostly
-			// a copied asar). It's fully reproducible from the same {vault,
-			// appVersion, installerVersion} inputs, so dropping it has no cost.
-			rmSync(userDataDir, { recursive: true, force: true });
-			log.debug(`user data dir cleaned: ${userDataDir}`);
-		},
 	};
+
+	const hasExited = (proc: ChildProcess): boolean => proc.exitCode !== null || proc.signalCode !== null;
+
+	const waitForExit = (proc: ChildProcess, timeoutMs: number): Promise<boolean> => {
+		if (hasExited(proc)) return Promise.resolve(true);
+		return new Promise((resolve) => {
+			const timer = setTimeout(() => {
+				cleanup();
+				resolve(false);
+			}, timeoutMs);
+			const onExit = (): void => {
+				cleanup();
+				resolve(true);
+			};
+			const cleanup = (): void => {
+				clearTimeout(timer);
+				proc.off("exit", onExit);
+			};
+			proc.once("exit", onExit);
+		});
+	};
+
+	const teardownProcess = async (proc: ChildProcess): Promise<void> => {
+		if (!hasExited(proc)) {
+			killProcessGroup(proc, "SIGTERM");
+			const exitedAfterTerm = await waitForExit(proc, 5_000);
+			if (!exitedAfterTerm && !hasExited(proc)) {
+				killProcessGroup(proc, "SIGKILL");
+				await waitForExit(proc, 2_000);
+			}
+		}
+		proc.stdout?.destroy();
+		proc.stderr?.destroy();
+	};
+
+	const teardownDirs = (): void => {
+		rmSync(xdgRuntimeDir, { recursive: true, force: true });
+		rmSync(userDataDir, { recursive: true, force: true });
+	};
+
+	let proc: ChildProcess | undefined;
+	let browser: Browser | undefined;
+
+	try {
+		const binary = process.env["OBSIDIAN_BIN"] ?? installerPath;
+		const spawnArgs = [
+			...sandboxArgs,
+			...gpuArgs,
+			`--remote-debugging-port=${cdpPort}`,
+			`--user-data-dir=${userDataDir}`,
+			...(options.extraArgs ?? []),
+		];
+		log.debug(`spawning ${binary} ${spawnArgs.join(" ")}`);
+		proc = spawn(binary, spawnArgs, {
+			env: {
+				...process.env,
+				XDG_RUNTIME_DIR: xdgRuntimeDir,
+				...options.env,
+			},
+			stdio: ["ignore", "pipe", "pipe"],
+			// Run in its own process group so we can kill the entire tree (main +
+			// GPU + utility + renderer helper) on close. Without this, only the
+			// main Electron process receives SIGTERM and child processes survive as
+			// orphans, leaking inotify instances and file descriptors across the
+			// serial test run until the OS hits EMFILE / max_user_instances.
+			detached: true,
+		});
+		log.debug(`spawned pid=${proc.pid}`);
+		proc.stdout!.on("data", (d: Buffer) => log.debug(`obsidian.stdout: ${String(d).trimEnd()}`));
+		proc.on("exit", (code, signal) => log.debug(`obsidian process exit code=${code} signal=${signal}`));
+
+		// Grep the CDP endpoint out of Obsidian's own stderr. Chromium prints
+		// "DevTools listening on ws://..." as soon as the debug port is up; this
+		// is the one signal we can rely on cross-version without touching
+		// Playwright's _electron machinery.
+		const wsEndpoint = await new Promise<string>((resolve, reject) => {
+			const timer = setTimeout(
+				() => reject(new Error("timeout waiting for DevTools WebSocket URL from Obsidian stderr")),
+				60_000
+			);
+			let buffer = "";
+			proc!.stderr!.on("data", (chunk: Buffer) => {
+				const text = chunk.toString();
+				log.debug(`obsidian.stderr: ${text.trimEnd()}`);
+				buffer += text;
+				const match = buffer.match(/DevTools listening on (ws:\/\/[^\s]+)/);
+				if (match) {
+					clearTimeout(timer);
+					resolve(match[1]);
+				}
+			});
+			proc!.on("exit", () => {
+				clearTimeout(timer);
+				reject(new Error("Obsidian process exited before DevTools WebSocket came up"));
+			});
+		});
+		log.debug(`got CDP wsEndpoint=${wsEndpoint}`);
+
+		const slowMo = options.slowMoMs && options.slowMoMs > 0 ? options.slowMoMs : 0;
+		if (slowMo > 0) log.info(`slowMo=${slowMo}ms (demo mode)`);
+		browser = await chromium.connectOverCDP(wsEndpoint, { timeout: 30_000, slowMo });
+		log.debug(`connected (contexts=${browser.contexts().length})`);
+
+		const context = browser.contexts()[0];
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- array may be empty at runtime (noUncheckedIndexedAccess disabled)
+		if (!context) throw new Error("no browser context after connect");
+
+		// Poll context.pages() directly instead of `browser.firstWindow()` —
+		// firstWindow() hangs against Obsidian (never resolves) because of how the
+		// renderer window is attached after the CDP connection is already up. The
+		// last page in the list is the workspace window; earlier entries can be
+		// transient splash/dev pages.
+		let page: Page | undefined;
+		const pageDeadline = Date.now() + 120_000;
+		while (Date.now() < pageDeadline) {
+			const pages = context.pages();
+			if (pages.length > 0) {
+				page = pages[pages.length - 1]!;
+				log.debug(`found ${pages.length} page(s); using last: url=${page.url()}`);
+				break;
+			}
+			await new Promise((r) => setTimeout(r, 500));
+		}
+		if (!page) throw new Error("no Obsidian renderer page appeared within 120s");
+
+		pipeRendererConsole(page, log);
+
+		await page.waitForLoadState("domcontentloaded", { timeout: 30_000 }).catch((err) => {
+			log.debug(`domcontentloaded timeout — continuing: ${String(err)}`);
+		});
+
+		log.debug(`waiting for window.app...`);
+		await page.waitForFunction(() => Boolean((window as unknown as { app?: unknown }).app), null, {
+			timeout: 60_000,
+		});
+		log.debug(`window.app exists`);
+
+		if (options.onRendererReady) {
+			await options.onRendererReady(page);
+		}
+
+		await ensurePluginLoaded(page, options.plugin.id, log);
+
+		if (options.afterPluginLoaded) {
+			await options.afterPluginLoaded(page);
+		}
+
+		// Demo/headed polish: maximize the window and collapse Obsidian's left
+		// sidebar so what the human sees is the plugin UI, not chrome. Triggered
+		// whenever the caller opts in via `polishVisibleWindow` OR slowMo > 0
+		// (PW_DEMO implies a watched run). In a plain headless CI run the viewport
+		// stays at CDP defaults.
+		if (slowMo > 0 || options.polishVisibleWindow) {
+			await configureDemoViewport(page, log);
+		}
+
+		const elapsed = ((Date.now() - bootstrapStart) / 1000).toFixed(1);
+		if (verboseBootstrap) {
+			log.info(`bootstrap ready id=${id} plugin=${options.plugin.id}`);
+		} else {
+			log.info(`bootstrap ok id=${id} plugin=${options.plugin.id} (${elapsed}s)`);
+		}
+
+		// Capture proc/browser in a local const so the close() closure doesn't
+		// need to reason about the outer `let` being reassigned.
+		const spawnedProc = proc;
+		const connectedBrowser = browser;
+
+		return {
+			browser: connectedBrowser,
+			page,
+			process: spawnedProc,
+			vaultDir,
+			userDataDir,
+			readVaultFile: (relativePath: string) => readFileSync(join(vaultDir, relativePath), "utf8"),
+			close: async () => {
+				log.debug(`closing obsidian (${id})`);
+				await connectedBrowser.close().catch((err) => log.debug(`browser close error: ${String(err)}`));
+				await teardownProcess(spawnedProc);
+				if (process.env["E2E_CLEANUP"] === "1") {
+					rmSync(join(vaultsRoot, id), { recursive: true, force: true });
+					log.debug(`vault cleaned`);
+				} else if (options.leanVaultOnClose) {
+					leanVault(vaultDir, options.plugin.id, files, options.leanVaultOnClose, log);
+					log.debug(`vault leaned at ${join(vaultsRoot, id)} (set E2E_CLEANUP=1 to delete)`);
+				} else {
+					log.debug(`vault kept at ${join(vaultsRoot, id)} (set E2E_CLEANUP=1 to delete)`);
+				}
+				teardownDirs();
+				log.debug(`dirs cleaned: xdg=${xdgRuntimeDir} userData=${userDataDir}`);
+			},
+		};
+	} catch (err) {
+		log.debug(`bootstrap failed (${id}): ${err instanceof Error ? err.message : String(err)}`);
+		await browser?.close().catch(() => {});
+		if (proc) await teardownProcess(proc);
+		teardownDirs();
+		throw err;
+	}
 }
 
 function leanVault(
