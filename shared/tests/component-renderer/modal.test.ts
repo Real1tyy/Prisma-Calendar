@@ -39,19 +39,21 @@ vi.mock("obsidian", () => {
 
 const { showModal } = await import("../../src/components/component-renderer/modal");
 
+const flush = (): Promise<void> => new Promise((r) => queueMicrotask(r));
+
 describe("showModal", () => {
 	beforeEach(() => {
 		mockContentEl = document.createElement("div");
 		(mockContentEl as any).addClass = (cls: string) => mockContentEl.classList.add(cls);
 		(mockContentEl as any).empty = () => {
-			mockContentEl.innerHTML = "";
+			while (mockContentEl.firstChild) mockContentEl.removeChild(mockContentEl.firstChild);
 		};
 		mockModalEl = document.createElement("div");
 		(mockModalEl as any).addClass = (cls: string) => mockModalEl.classList.add(cls);
 		mockScope = { register: vi.fn() };
 	});
 
-	it("calls the render function with contentEl", () => {
+	it("calls the render function with contentEl", async () => {
 		const renderSpy = vi.fn();
 
 		showModal({
@@ -59,33 +61,36 @@ describe("showModal", () => {
 			cls: "test-modal",
 			render: renderSpy,
 		});
+		await flush();
 
 		expect(renderSpy).toHaveBeenCalledOnce();
 		expect(renderSpy.mock.calls[0][0]).toBe(mockContentEl);
 	});
 
-	it("sets title when provided", () => {
+	it("sets title when provided", async () => {
 		showModal({
 			app: { name: "test" } as any,
 			cls: "test-modal",
 			render: vi.fn(),
 			title: "Test Title",
 		});
+		await flush();
 
 		expect(mockContentEl.dataset.title).toBe("Test Title");
 	});
 
-	it("adds CSS class to modalEl", () => {
+	it("adds CSS class to modalEl", async () => {
 		showModal({
 			app: { name: "test" } as any,
 			cls: "my-modal",
 			render: vi.fn(),
 		});
+		await flush();
 
 		expect(mockModalEl.classList.contains("my-modal")).toBe(true);
 	});
 
-	it("provides a ModalContext with type discriminant", () => {
+	it("provides a ModalContext with type discriminant", async () => {
 		let capturedCtx: ComponentContext | null = null;
 
 		showModal({
@@ -95,13 +100,14 @@ describe("showModal", () => {
 				capturedCtx = ctx;
 			},
 		});
+		await flush();
 
 		expect(capturedCtx).not.toBeNull();
 		expect(capturedCtx!.type).toBe("modal");
 		expect(typeof capturedCtx!.close).toBe("function");
 	});
 
-	it("provides modalEl and scope in modal context", () => {
+	it("provides modalEl and scope in modal context", async () => {
 		let capturedCtx: ModalContext | null = null;
 
 		showModal({
@@ -111,12 +117,13 @@ describe("showModal", () => {
 				if (ctx.type === "modal") capturedCtx = ctx;
 			},
 		});
+		await flush();
 
 		expect(capturedCtx!.modalEl).toBe(mockModalEl);
 		expect(capturedCtx!.scope).toBe(mockScope);
 	});
 
-	it("calls cleanup on close", () => {
+	it("calls cleanup on close", async () => {
 		const cleanupSpy = vi.fn();
 
 		showModal({
@@ -125,8 +132,8 @@ describe("showModal", () => {
 			render: vi.fn(),
 			cleanup: cleanupSpy,
 		});
+		await flush();
 
-		// The mock doesn't call onClose, but we can verify the config is wired
 		expect(cleanupSpy).not.toHaveBeenCalled();
 	});
 });
