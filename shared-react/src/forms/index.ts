@@ -1,4 +1,4 @@
-export { FormDropdown, FormNumberInput, FormTextInput, FormToggle } from "./controls";
+export { FormDropdown, FormNumberInput, FormSecretField, FormTextInput, FormToggle } from "./controls";
 export { SchemaArrayField } from "./schema-array-field";
 export type { SchemaFormFieldOverride, SchemaFormProps, SchemaFormSection } from "./schema-form";
 export { SchemaForm } from "./schema-form";

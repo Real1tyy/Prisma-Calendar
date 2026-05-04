@@ -1,6 +1,7 @@
 import type { FieldPath, FieldValues, UseFormReturn } from "react-hook-form";
 import { useController } from "react-hook-form";
 
+import { SecretField } from "../components/secret-field";
 import { Dropdown } from "../components/setting-controls";
 import { NumberInput } from "../components/setting-controls";
 import { TextInput } from "../components/setting-controls";
@@ -57,6 +58,21 @@ export function FormNumberInput<TValues extends FieldValues, TName extends Field
 			{...(max !== undefined ? { max } : {})}
 			{...(step !== undefined ? { step } : {})}
 			{...(testId ? { testId } : {})}
+		/>
+	);
+}
+
+export function FormSecretField<TValues extends FieldValues, TName extends FieldPath<TValues>>({
+	form,
+	name,
+	testId,
+}: FormFieldBase<TValues, TName>) {
+	const { field } = useController({ control: form.control, name });
+	return (
+		<SecretField
+			value={String(field.value ?? "")}
+			onChange={field.onChange}
+			{...(testId ? { "data-testid": testId } : {})}
 		/>
 	);
 }

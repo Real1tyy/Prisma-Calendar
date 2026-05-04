@@ -23,6 +23,8 @@ export { ManagerEditForm } from "./components/manager-edit-form";
 export type { ManagerRowAction, ManagerRowProps } from "./components/manager-row";
 export type { EditableItem } from "./components/manager-row";
 export { ManagerRow } from "./components/manager-row";
+export type { ModalFormProps, ModalSchemaFormProps } from "./components/modal-form";
+export { ModalForm, ModalSchemaForm } from "./components/modal-form";
 export { ObsidianIcon } from "./components/obsidian-icon";
 export type { ChartJSCtor, ChartTitleProps, PieCanvasProps, PieChartData, PieChartProps } from "./components/pie-chart";
 export { ChartTitle, PieCanvas, PieChart } from "./components/pie-chart";

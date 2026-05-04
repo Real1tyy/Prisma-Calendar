@@ -7,7 +7,7 @@ import { useFormState } from "react-hook-form";
 import type { ZodObject, ZodRawShape } from "zod";
 
 import { SettingHeading, SettingItem } from "../components/setting-item";
-import { FormDropdown, FormNumberInput, FormTextInput, FormToggle } from "./controls";
+import { FormDropdown, FormNumberInput, FormSecretField, FormTextInput, FormToggle } from "./controls";
 import { SchemaArrayField } from "./schema-array-field";
 
 export interface SchemaFormFieldOverride {
@@ -81,6 +81,9 @@ function FormFieldRow<TValues extends FieldValues>({
 			case "boolean":
 			case "toggle":
 				control = <FormToggle form={form} name={name} testId={controlTestId} />;
+				break;
+			case "secret":
+				control = <FormSecretField form={form} name={name} testId={controlTestId} />;
 				break;
 			case "number":
 				control = (
