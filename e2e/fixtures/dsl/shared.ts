@@ -12,6 +12,7 @@ import {
 	PROGRESS_MODAL_TID,
 	PROGRESS_STATUS_TID,
 	sel,
+	SHARED_ROW_PREFIX,
 	sharedTID,
 	TAB_MANAGER_MODAL,
 	TABBED_CONTAINER_MANAGE_BTN,
@@ -88,9 +89,21 @@ export async function openTabManager(page: Page): Promise<TabManagerHandle> {
 	return {
 		modal,
 		async moveUp(id) {
-			const btn = page.locator(sel(sharedTID.tabManagerUp(id))).first();
-			await btn.waitFor({ state: "visible" });
-			await btn.click();
+			const srcRow = modal.locator(sel(sharedTID.tabManagerRow(id))).first();
+			await srcRow.waitFor({ state: "visible" });
+			const allRows = modal.locator(`[data-testid^="${SHARED_ROW_PREFIX.tabManagerRow}"]`);
+			const count = await allRows.count();
+			let targetRow: typeof srcRow | null = null;
+			for (let i = 1; i < count; i++) {
+				const row = allRows.nth(i);
+				const tid = await row.getAttribute("data-testid");
+				if (tid === `${SHARED_ROW_PREFIX.tabManagerRow}${id}`) {
+					targetRow = allRows.nth(i - 1);
+					break;
+				}
+			}
+			if (!targetRow) throw new Error(`moveUp: cannot find row above ${id}`);
+			await srcRow.dragTo(targetRow);
 		},
 		async toggle(id) {
 			const btn = page.locator(sel(sharedTID.tabManagerToggle(id))).first();
@@ -98,9 +111,9 @@ export async function openTabManager(page: Page): Promise<TabManagerHandle> {
 			await btn.click();
 		},
 		async rename(id) {
-			const btn = page.locator(sel(sharedTID.tabManagerRename(id))).first();
-			await btn.waitFor({ state: "visible" });
-			await btn.click();
+			const editBtn = page.locator(sel(sharedTID.tabManagerEdit(id))).first();
+			await editBtn.waitFor({ state: "visible" });
+			await editBtn.click();
 		},
 		async close() {
 			await page.keyboard.press("Escape");

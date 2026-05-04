@@ -34,7 +34,7 @@ const ACTION_TIMEOUT = DEBUG_ON ? 0 : DEMO_ON ? 120_000 : 10_000;
 export default defineConfig({
 	outputDir: "./test-results",
 	fullyParallel: !DEBUG_ON,
-	workers: DEBUG_ON ? 1 : 1,
+	workers: DEBUG_ON ? 1 : 3,
 	timeout: TEST_TIMEOUT,
 	expect: { timeout: EXPECT_TIMEOUT },
 	forbidOnly: !!process.env.CI,

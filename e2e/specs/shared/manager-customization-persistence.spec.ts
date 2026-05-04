@@ -7,13 +7,25 @@ import { expectItemManagerOpen, openActionManager, openTabManager } from "../../
 import { expect, test } from "../../fixtures/electron";
 import { clickContextMenuItem, rightClickEvent } from "../../fixtures/helpers";
 import { readDefaultCalendar } from "../../fixtures/plugin-data";
-import { ICON_PICKER_GRID_TID, ICON_PICKER_NO_ICON_TID, sel } from "../../fixtures/testids";
+import { ICON_PICKER_GRID_TID, ICON_PICKER_NO_ICON_TID, sel, SHARED_ROW_PREFIX, TID } from "../../fixtures/testids";
 
 type Overrides = {
 	renames?: Record<string, string>;
 	iconOverrides?: Record<string, string>;
 	colorOverrides?: Record<string, string>;
 };
+
+type ActiveTabState = {
+	activeTab?: Overrides & { visibleTabIds?: string[] };
+};
+
+async function readTabOrder(page: Page): Promise<string[]> {
+	return page.evaluate((prefix) => {
+		return Array.from(document.querySelectorAll(`[data-testid^='${prefix}']`))
+			.filter((el) => el.tagName === "BUTTON")
+			.map((el) => el.getAttribute("data-testid")!.replace(prefix, ""));
+	}, SHARED_ROW_PREFIX.viewTab);
+}
 
 async function customizeAndAssert(
 	page: Page,
@@ -128,5 +140,55 @@ test.describe("manager customization + persistence", () => {
 			},
 			readOverrides: () => readDefaultCalendar<{ contextMenuState?: Overrides }>(calendar.vaultDir)?.contextMenuState,
 		});
+	});
+
+	test("tab manager: rename → reorder → hide lifecycle persists all mutations", async ({ calendar }) => {
+		const page = calendar.page;
+		const initialOrder = await readTabOrder(page);
+		expect(initialOrder.length).toBeGreaterThan(2);
+
+		const renameTarget = "timeline";
+		const newLabel = "My Timeline";
+		const reorderTarget = initialOrder[2]!;
+		const reorderPredecessor = initialOrder[1]!;
+		const hideTarget = initialOrder[initialOrder.length - 1]!;
+
+		const manager = await openTabManager(page);
+
+		// 1. Rename
+		await manager.rename(renameTarget);
+		const nameInput = manager.modal
+			.locator(".setting-item:has(.setting-item-name:text('Name')) input[type='text']")
+			.first();
+		await nameInput.waitFor({ state: "visible" });
+		await nameInput.fill(newLabel);
+		await manager.rename(renameTarget);
+
+		// 2. Reorder — drag 3rd tab above 2nd
+		await manager.moveUp(reorderTarget);
+
+		// 3. Hide last tab
+		await manager.toggle(hideTarget);
+
+		await manager.close();
+
+		// DOM: renamed tab shows new label
+		await expect(page.locator(sel(TID.viewTab(renameTarget))).first()).toContainText(newLabel);
+
+		// DOM: reordered tabs reflect new order
+		const newOrder = await readTabOrder(page);
+		expect(newOrder.indexOf(reorderTarget)).toBeLessThan(newOrder.indexOf(reorderPredecessor));
+
+		// DOM: hidden tab is gone
+		expect(newOrder).not.toContain(hideTarget);
+
+		// Disk: all three mutations persisted
+		await settleSettings(page, { pluginId: PLUGIN_ID });
+		const cal = readDefaultCalendar<ActiveTabState>(calendar.vaultDir);
+		expect(cal?.activeTab?.renames?.[renameTarget]).toBe(newLabel);
+		expect(cal?.activeTab?.visibleTabIds?.indexOf(reorderTarget)).toBeLessThan(
+			cal?.activeTab?.visibleTabIds?.indexOf(reorderPredecessor) ?? -1
+		);
+		expect(cal?.activeTab?.visibleTabIds ?? []).not.toContain(hideTarget);
 	});
 });
