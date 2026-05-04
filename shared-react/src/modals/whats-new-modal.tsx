@@ -1,4 +1,4 @@
-import { formatChangelogSections, getChangelogSince } from "@real1ty-obsidian-plugins";
+import { formatChangelogSections, getChangelogSince, resolveRelativeDocLinks } from "@real1ty-obsidian-plugins";
 import type { App, Plugin } from "obsidian";
 import { MarkdownRenderer } from "obsidian";
 import { memo, useCallback, useEffect, useRef } from "react";
@@ -85,43 +85,15 @@ interface WhatsNewContentProps {
 	close: () => void;
 }
 
-export function makeExternalLinksClickable(container: HTMLElement, documentationBaseUrl: string): void {
-	const baseUrl = new URL(documentationBaseUrl);
-	const cleanBase = `${baseUrl.origin}${baseUrl.pathname}`.replace(/\/$/, "");
-	const utmParams = new URLSearchParams();
-	for (const [key, value] of baseUrl.searchParams) {
-		if (key.startsWith("utm_")) utmParams.set(key, value);
-	}
-
-	const links = container.querySelectorAll<HTMLAnchorElement>("a");
+function makeExternalLinksClickable(container: HTMLElement): void {
+	const links = container.querySelectorAll<HTMLAnchorElement>("a[href]");
 	for (const link of Array.from(links)) {
-		const href = link.getAttribute("href") ?? link.getAttribute("data-href");
-		if (!href || href.startsWith("#")) continue;
-
-		let finalUrl: string;
-		if (href.startsWith("http://") || href.startsWith("https://")) {
-			finalUrl = href;
-		} else if (href.includes("://") || href.startsWith("mailto:")) {
-			continue;
-		} else {
-			const cleaned = href.replace(/^\.\//, "").replace(/\.md(?=#|$)/, "");
-			const path = cleaned.startsWith("/") ? cleaned : `/${cleaned}`;
-			const hashIndex = path.indexOf("#");
-			const pathPart = hashIndex >= 0 ? path.slice(0, hashIndex) : path;
-			const fragment = hashIndex >= 0 ? path.slice(hashIndex + 1) : undefined;
-			const resolved = new URL(`${cleanBase}${pathPart}`);
-			for (const [key, value] of utmParams) {
-				resolved.searchParams.set(key, value);
-			}
-			const lastSegment = pathPart.split("/").filter(Boolean).pop() ?? "changelog_link";
-			resolved.searchParams.set("utm_content", lastSegment.replace(/-/g, "_"));
-			if (fragment) resolved.hash = fragment;
-			finalUrl = resolved.toString();
-		}
+		const href = link.getAttribute("href");
+		if (!href || !href.startsWith("http")) continue;
 
 		link.addEventListener("click", (e: MouseEvent) => {
 			e.preventDefault();
-			window.open(finalUrl, "_blank");
+			window.open(href, "_blank");
 		});
 		link.classList.add("external-link");
 	}
@@ -149,18 +121,19 @@ export const WhatsNewContent = memo(function WhatsNewContent({
 	const cls = (suffix: string) => `${config.cssPrefix}-${suffix}`;
 
 	const changelogSections = getChangelogSince(config.changelogContent, fromVersion, toVersion);
-	const markdownContent = changelogSections.length > 0 ? formatChangelogSections(changelogSections) : "";
+	const markdownContent = formatChangelogSections(changelogSections);
+	const resolvedMarkdown = resolveRelativeDocLinks(markdownContent, config.links.documentation);
 
 	useEffect(() => {
-		if (!changelogRef.current || !markdownContent) return;
+		if (!changelogRef.current || !resolvedMarkdown) return;
 		const el = changelogRef.current;
 		while (el.firstChild) el.removeChild(el.firstChild);
 
 		// eslint-disable-next-line obsidianmd/no-plugin-as-component -- short-lived modal, cleaned up on close
-		void MarkdownRenderer.render(app, markdownContent, el, "/", plugin).then(() => {
-			makeExternalLinksClickable(el, config.links.documentation);
+		void MarkdownRenderer.render(app, resolvedMarkdown, el, "/", plugin).then(() => {
+			makeExternalLinksClickable(el);
 		});
-	}, [app, markdownContent, plugin, config.links.documentation]);
+	}, [app, resolvedMarkdown, plugin]);
 
 	const toolsUrl = config.links.tools ?? DEFAULT_WHATS_NEW_LINKS.TOOLS;
 	const youtubeUrl = config.links.youtube ?? DEFAULT_WHATS_NEW_LINKS.YOUTUBE;

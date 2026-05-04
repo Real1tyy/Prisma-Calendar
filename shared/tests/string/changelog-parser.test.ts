@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { formatChangelogSections, getChangelogSince, parseChangelog } from "../../src/utils/string/changelog-parser";
+import {
+	formatChangelogSections,
+	getChangelogSince,
+	parseChangelog,
+	resolveRelativeDocLinks,
+} from "../../src/utils/string/changelog-parser";
 
 const MOCK_CHANGELOG = `# Changelog
 
@@ -253,6 +258,220 @@ describe("Changelog Parser", () => {
 
 			// Some sections have --- in their content
 			expect(sections[0].content).toContain("---");
+		});
+	});
+});
+
+const DOCS_BASE_WITH_UTM =
+	"https://real1tyy.github.io/Prisma-Calendar/?utm_campaign=prisma_calendar&utm_source=plugin&utm_medium=whats_new&utm_content=documentation";
+const DOCS_BASE_CLEAN = "https://real1tyy.github.io/Prisma-Calendar/";
+
+const UTM_PREFIX = "utm_campaign=prisma_calendar&utm_source=plugin&utm_medium=whats_new&utm_content=";
+const BASE = "https://real1tyy.github.io/Prisma-Calendar";
+
+describe("resolveRelativeDocLinks", () => {
+	describe("path resolution with full URL verification", () => {
+		it("converts ./path.md to absolute URL with all UTM params", () => {
+			const result = resolveRelativeDocLinks("[Quick Start](./quickstart.md)", DOCS_BASE_WITH_UTM);
+
+			expect(result).toBe(`[Quick Start](${BASE}/quickstart?${UTM_PREFIX}quickstart)`);
+		});
+
+		it("resolves nested relative paths with all UTM params", () => {
+			const result = resolveRelativeDocLinks("[Event Groups](./features/events/event-groups.md)", DOCS_BASE_WITH_UTM);
+
+			expect(result).toBe(`[Event Groups](${BASE}/features/events/event-groups?${UTM_PREFIX}event_groups)`);
+		});
+
+		it("preserves fragment anchors after UTM params", () => {
+			const result = resolveRelativeDocLinks("[License](./configuration/general.md#license)", DOCS_BASE_WITH_UTM);
+
+			expect(result).toBe(`[License](${BASE}/configuration/general?${UTM_PREFIX}general#license)`);
+		});
+
+		it("handles deeply nested paths with fragments", () => {
+			const result = resolveRelativeDocLinks(
+				"[Series Shortcuts](./features/events/event-groups.md#series-shortcuts-in-context-menu)",
+				DOCS_BASE_WITH_UTM
+			);
+
+			expect(result).toBe(
+				`[Series Shortcuts](${BASE}/features/events/event-groups?${UTM_PREFIX}event_groups#series-shortcuts-in-context-menu)`
+			);
+		});
+
+		it("handles relative paths without .md extension", () => {
+			const result = resolveRelativeDocLinks("[Features](./features)", DOCS_BASE_WITH_UTM);
+
+			expect(result).toBe(`[Features](${BASE}/features?${UTM_PREFIX}features)`);
+		});
+
+		it("handles clean base URL (no UTM inheritance)", () => {
+			const result = resolveRelativeDocLinks("[QS](./quickstart.md)", DOCS_BASE_CLEAN);
+
+			expect(result).toBe(`[QS](${BASE}/quickstart?utm_content=quickstart)`);
+		});
+	});
+
+	describe("UTM parameter handling", () => {
+		it("replaces hyphens with underscores in utm_content", () => {
+			const result = resolveRelativeDocLinks("[Rules](./features/organization/color-rules.md)", DOCS_BASE_WITH_UTM);
+
+			expect(result).toBe(`[Rules](${BASE}/features/organization/color-rules?${UTM_PREFIX}color_rules)`);
+		});
+
+		it("overrides base utm_content=documentation with path-derived value", () => {
+			const result = resolveRelativeDocLinks("[QS](./quickstart.md)", DOCS_BASE_WITH_UTM);
+
+			expect(result).not.toContain("utm_content=documentation");
+			expect(result).toContain("utm_content=quickstart");
+		});
+
+		it("inherits utm_medium=settings when opened from settings", () => {
+			const settingsBase =
+				"https://real1tyy.github.io/Prisma-Calendar/?utm_campaign=prisma_calendar&utm_source=plugin&utm_medium=settings&utm_content=documentation";
+			const result = resolveRelativeDocLinks("[QS](./quickstart.md)", settingsBase);
+
+			expect(result).toBe(
+				`[QS](${BASE}/quickstart?utm_campaign=prisma_calendar&utm_source=plugin&utm_medium=settings&utm_content=quickstart)`
+			);
+		});
+
+		it("ignores non-utm query params in base URL", () => {
+			const result = resolveRelativeDocLinks(
+				"[QS](./quickstart.md)",
+				"https://example.com/docs?foo=bar&utm_campaign=test"
+			);
+
+			expect(result).toBe("[QS](https://example.com/docs/quickstart?utm_campaign=test&utm_content=quickstart)");
+		});
+	});
+
+	describe("passthrough — links that should NOT be transformed", () => {
+		it("leaves absolute https URLs untouched", () => {
+			const md = "[Video](https://youtu.be/abc123)";
+
+			expect(resolveRelativeDocLinks(md, DOCS_BASE_WITH_UTM)).toBe(md);
+		});
+
+		it("leaves absolute http URLs untouched", () => {
+			const md = "[Old](http://example.com)";
+
+			expect(resolveRelativeDocLinks(md, DOCS_BASE_WITH_UTM)).toBe(md);
+		});
+
+		it("leaves anchor-only links untouched", () => {
+			const md = "[Section](#my-section)";
+
+			expect(resolveRelativeDocLinks(md, DOCS_BASE_WITH_UTM)).toBe(md);
+		});
+
+		it("leaves bare text without links untouched", () => {
+			const md = "No links here, just **bold** text.";
+
+			expect(resolveRelativeDocLinks(md, DOCS_BASE_WITH_UTM)).toBe(md);
+		});
+
+		it("leaves image syntax untouched", () => {
+			const md = "![Screenshot](./images/screenshot.png)";
+
+			expect(resolveRelativeDocLinks(md, DOCS_BASE_WITH_UTM)).toBe(md);
+		});
+	});
+
+	describe("multiple links", () => {
+		it("resolves all relative links in one line with correct per-link UTM", () => {
+			const result = resolveRelativeDocLinks(
+				"See [QS](./quickstart.md) and [General](./configuration/general.md).",
+				DOCS_BASE_WITH_UTM
+			);
+
+			expect(result).toBe(
+				`See [QS](${BASE}/quickstart?${UTM_PREFIX}quickstart) and [General](${BASE}/configuration/general?${UTM_PREFIX}general).`
+			);
+		});
+
+		it("resolves relative links and leaves absolute links across lines", () => {
+			const md = [
+				"- [Quick Start](./quickstart.md)",
+				"- [Timeline](./features/views/timeline.md#live-updates)",
+				"- [Video](https://youtu.be/abc)",
+			].join("\n");
+			const result = resolveRelativeDocLinks(md, DOCS_BASE_WITH_UTM);
+
+			expect(result).toBe(
+				[
+					`- [Quick Start](${BASE}/quickstart?${UTM_PREFIX}quickstart)`,
+					`- [Timeline](${BASE}/features/views/timeline?${UTM_PREFIX}timeline#live-updates)`,
+					"- [Video](https://youtu.be/abc)",
+				].join("\n")
+			);
+		});
+	});
+
+	describe("real changelog patterns", () => {
+		it("produces exact output for Prisma Calendar changelog entry", () => {
+			const md =
+				"- **Series shortcuts**: See [Event Groups → Series Shortcuts](./features/events/event-groups.md#series-shortcuts-in-context-menu).";
+			const result = resolveRelativeDocLinks(md, DOCS_BASE_WITH_UTM);
+
+			expect(result).toBe(
+				`- **Series shortcuts**: See [Event Groups → Series Shortcuts](${BASE}/features/events/event-groups?${UTM_PREFIX}event_groups#series-shortcuts-in-context-menu).`
+			);
+		});
+
+		it("transforms relative links but preserves absolute YouTube links", () => {
+			const md = [
+				"> **TLDR:** New [Quick Start Video](https://youtu.be/abc) covering setup.",
+				"- **Quick Start Video**: See [Quick Start](./quickstart.md).",
+				"- **Welcome flow**: See [Quick Start](./quickstart.md#initial-setup).",
+				"- **Subscription**: See [License](./configuration/general.md#license).",
+			].join("\n");
+			const result = resolveRelativeDocLinks(md, DOCS_BASE_WITH_UTM);
+
+			expect(result).toBe(
+				[
+					"> **TLDR:** New [Quick Start Video](https://youtu.be/abc) covering setup.",
+					`- **Quick Start Video**: See [Quick Start](${BASE}/quickstart?${UTM_PREFIX}quickstart).`,
+					`- **Welcome flow**: See [Quick Start](${BASE}/quickstart?${UTM_PREFIX}quickstart#initial-setup).`,
+					`- **Subscription**: See [License](${BASE}/configuration/general?${UTM_PREFIX}general#license).`,
+				].join("\n")
+			);
+		});
+
+		it("preserves special characters in link text", () => {
+			const result = resolveRelativeDocLinks(
+				"[Color Rules → Multi-Color](./features/organization/color-rules.md#multi-color)",
+				DOCS_BASE_WITH_UTM
+			);
+
+			expect(result).toBe(
+				`[Color Rules → Multi-Color](${BASE}/features/organization/color-rules?${UTM_PREFIX}color_rules#multi-color)`
+			);
+		});
+	});
+
+	describe("edge cases", () => {
+		it("returns empty string for empty input", () => {
+			expect(resolveRelativeDocLinks("", DOCS_BASE_WITH_UTM)).toBe("");
+		});
+
+		it("handles base URL with trailing slash", () => {
+			const result = resolveRelativeDocLinks("[QS](./quickstart.md)", "https://example.com/docs/");
+
+			expect(result).toBe("[QS](https://example.com/docs/quickstart?utm_content=quickstart)");
+		});
+
+		it("handles base URL without trailing slash", () => {
+			const result = resolveRelativeDocLinks("[QS](./quickstart.md)", "https://example.com/docs");
+
+			expect(result).toBe("[QS](https://example.com/docs/quickstart?utm_content=quickstart)");
+		});
+
+		it("handles fragment-only .md path", () => {
+			const result = resolveRelativeDocLinks("[Sec](./page.md#section)", DOCS_BASE_CLEAN);
+
+			expect(result).toBe(`[Sec](${BASE}/page?utm_content=page#section)`);
 		});
 	});
 });

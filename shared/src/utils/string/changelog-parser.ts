@@ -120,4 +120,29 @@ export function formatChangelogSections(sections: VersionSection[]): string {
 		.join("\n\n");
 }
 
+export function resolveRelativeDocLinks(markdown: string, documentationBaseUrl: string): string {
+	const baseUrl = new URL(documentationBaseUrl);
+	const cleanBase = `${baseUrl.origin}${baseUrl.pathname}`.replace(/\/$/, "");
+	const utmParams = new URLSearchParams();
+	for (const [key, value] of baseUrl.searchParams) {
+		if (key.startsWith("utm_")) utmParams.set(key, value);
+	}
+
+	return markdown.replace(/(?<!!)\[([^\]]+)\]\((\.[^)]+)\)/g, (_match, text: string, rawPath: string) => {
+		const cleaned = rawPath.replace(/^\.\//, "").replace(/\.md(?=#|$)/, "");
+		const path = cleaned.startsWith("/") ? cleaned : `/${cleaned}`;
+		const hashIndex = path.indexOf("#");
+		const pathPart = hashIndex >= 0 ? path.slice(0, hashIndex) : path;
+		const fragment = hashIndex >= 0 ? path.slice(hashIndex + 1) : undefined;
+		const resolved = new URL(`${cleanBase}${pathPart}`);
+		for (const [key, value] of utmParams) {
+			resolved.searchParams.set(key, value);
+		}
+		const lastSegment = pathPart.split("/").filter(Boolean).pop() ?? "changelog_link";
+		resolved.searchParams.set("utm_content", lastSegment.replace(/-/g, "_"));
+		if (fragment) resolved.hash = fragment;
+		return `[${text}](${resolved.toString()})`;
+	});
+}
+
 export type { VersionSection };
