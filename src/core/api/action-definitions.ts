@@ -22,6 +22,7 @@ import {
 	makeEventReal,
 	makeEventVirtual,
 } from "./event-crud";
+import { activateLicense } from "./license-activation";
 import {
 	addZettelIdToActiveNote,
 	duplicateCurrentEvent,
@@ -44,6 +45,14 @@ import type {
 
 export function buildActions(plugin: CustomCalendarPlugin): ActionDefMap {
 	return {
+		activate: {
+			handler: async (input: { key: string }) => {
+				await activateLicense(plugin, input.key);
+			},
+			parseParams: (raw: Record<string, string>) => ({
+				key: ParamCoercion.required.string(raw, "key"),
+			}),
+		},
 		isPro: {
 			handler: () => {
 				return plugin.isProEnabled;

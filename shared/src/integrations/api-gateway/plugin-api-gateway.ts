@@ -35,6 +35,7 @@ export class PluginApiGateway<TActions extends ActionDefMap> {
 	private api: InferWindowApi<TActions> | null = null;
 	private httpServer: HttpApiServer | null = null;
 	private isExposed = false;
+	private isProtocolRegistered = false;
 	private pendingHttpRoutes: HttpRoute[] = [];
 
 	constructor(options: PluginApiGatewayOptions<TActions>) {
@@ -46,6 +47,19 @@ export class PluginApiGateway<TActions extends ActionDefMap> {
 	}
 
 	// ─── Public API ──────────────────────────────────────────────
+
+	/**
+	 * Registers the `obsidian://protocolKey` handler independently of
+	 * `expose()`. Call this on plugin load so protocol URLs work
+	 * regardless of Pro/window-API state. No-op if already registered.
+	 */
+	registerProtocol(): void {
+		if (this.isProtocolRegistered || !this.protocolKey) return;
+		this.isProtocolRegistered = true;
+		this.plugin.registerObsidianProtocolHandler(this.protocolKey, (params) => {
+			void this.dispatchProtocol(params);
+		});
+	}
 
 	/**
 	 * Assigns the typed API to `window[globalKey]`, registers the
@@ -64,11 +78,7 @@ export class PluginApiGateway<TActions extends ActionDefMap> {
 		}
 		globalObj[this.globalKey] = this.api;
 
-		if (this.protocolKey) {
-			this.plugin.registerObsidianProtocolHandler(this.protocolKey, (params) => {
-				void this.dispatchProtocol(params);
-			});
-		}
+		this.registerProtocol();
 
 		if (this.httpConfig?.enabled) {
 			this.httpServer = new HttpApiServer(this.httpConfig);

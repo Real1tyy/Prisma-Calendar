@@ -25,6 +25,7 @@ export class PrismaCalendarApiManager {
 		(window as unknown as Record<string, unknown>)[GLOBAL_KEY] = {
 			isPro: () => this.plugin.isProEnabled,
 		};
+		this.gateway.registerProtocol();
 	}
 
 	expose(): void {
