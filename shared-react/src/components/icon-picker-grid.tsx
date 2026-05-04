@@ -1,13 +1,14 @@
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { getIconIds, setIcon } from "obsidian";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useInjectedStyles } from "../hooks/use-injected-styles";
 
-const ITEM_HEIGHT = 48;
 const GRID_COLUMNS = 8;
-const GRID_GAP = 4;
+const ROW_HEIGHT = 52;
 const GRID_MAX_HEIGHT = 360;
 const SEARCH_DEBOUNCE_MS = 150;
+const OVERSCAN = 3;
 
 const ICON_PICKER_CSS = `
 .mod-shared-icon-picker { width: 500px; }
@@ -26,12 +27,10 @@ const ICON_PICKER_CSS = `
 	cursor: pointer; box-shadow: none; white-space: nowrap;
 }
 .shared-icon-picker-no-icon-btn:hover { color: var(--text-normal); border-color: var(--interactive-accent); }
-.shared-icon-picker-grid { position: relative; max-height: ${GRID_MAX_HEIGHT}px; overflow-y: auto; padding: 4px; }
-.shared-icon-picker-grid-sizer { width: 100%; }
-.shared-icon-picker-grid-viewport {
+.shared-icon-picker-grid { max-height: ${GRID_MAX_HEIGHT}px; overflow-y: auto; padding: 4px; }
+.shared-icon-picker-row {
 	display: grid; grid-template-columns: repeat(${GRID_COLUMNS}, 1fr);
-	gap: ${GRID_GAP}px; position: absolute; left: 4px; right: 4px;
-	justify-items: center;
+	gap: 4px; justify-items: center;
 }
 .shared-icon-picker-item {
 	display: flex; align-items: center; justify-content: center;
@@ -88,7 +87,6 @@ export const IconPickerGrid = memo(function IconPickerGrid({ onSelect, allowNoIc
 	const [debouncedQuery, setDebouncedQuery] = useState("");
 	const gridRef = useRef<HTMLDivElement>(null);
 	const searchRef = useRef<HTMLInputElement>(null);
-	const [scrollTop, setScrollTop] = useState(0);
 
 	useEffect(() => {
 		searchRef.current?.focus();
@@ -104,28 +102,20 @@ export const IconPickerGrid = memo(function IconPickerGrid({ onSelect, allowNoIc
 		return q ? allIcons.filter((id) => id.toLowerCase().includes(q)) : allIcons;
 	}, [allIcons, debouncedQuery]);
 
-	useEffect(() => {
-		if (gridRef.current) gridRef.current.scrollTop = 0;
-		setScrollTop(0);
-	}, [debouncedQuery]);
+	const rowCount = Math.ceil(filteredIcons.length / GRID_COLUMNS);
 
-	const onScroll = useCallback(() => {
-		if (gridRef.current) setScrollTop(gridRef.current.scrollTop);
-	}, []);
+	const virtualizer = useVirtualizer({
+		count: rowCount,
+		getScrollElement: () => gridRef.current,
+		estimateSize: () => ROW_HEIGHT,
+		overscan: OVERSCAN,
+	});
+
+	useEffect(() => {
+		virtualizer.scrollToOffset(0);
+	}, [debouncedQuery, virtualizer]);
 
 	const handleClick = useCallback((iconId: string) => onSelect(iconId), [onSelect]);
-
-	const rowHeight = ITEM_HEIGHT + GRID_GAP;
-	const totalRows = Math.ceil(filteredIcons.length / GRID_COLUMNS);
-	const totalHeight = Math.max(totalRows * rowHeight - GRID_GAP, 0);
-
-	const startRow = Math.max(0, Math.floor(scrollTop / rowHeight) - 2);
-	const visibleRows = Math.ceil(GRID_MAX_HEIGHT / rowHeight) + 4;
-	const endRow = Math.min(totalRows, startRow + visibleRows);
-	const startIndex = startRow * GRID_COLUMNS;
-	const endIndex = Math.min(endRow * GRID_COLUMNS, filteredIcons.length);
-
-	const visibleSlice = filteredIcons.slice(startIndex, endIndex);
 
 	return (
 		<div className="shared-icon-picker-content">
@@ -150,15 +140,33 @@ export const IconPickerGrid = memo(function IconPickerGrid({ onSelect, allowNoIc
 					</button>
 				)}
 			</div>
-			<div ref={gridRef} className="shared-icon-picker-grid" data-testid="shared-icon-picker-grid" onScroll={onScroll}>
-				<div className="shared-icon-picker-grid-sizer" style={{ height: totalHeight }} />
+			<div ref={gridRef} className="shared-icon-picker-grid" data-testid="shared-icon-picker-grid">
 				{filteredIcons.length === 0 ? (
 					<div className="shared-icon-picker-empty">No icons found</div>
 				) : (
-					<div className="shared-icon-picker-grid-viewport" style={{ top: startRow * rowHeight }}>
-						{visibleSlice.map((iconId) => (
-							<IconItem key={iconId} iconId={iconId} onClick={handleClick} />
-						))}
+					<div style={{ height: virtualizer.getTotalSize(), width: "100%", position: "relative" }}>
+						{virtualizer.getVirtualItems().map((virtualRow) => {
+							const startIdx = virtualRow.index * GRID_COLUMNS;
+							const rowIcons = filteredIcons.slice(startIdx, startIdx + GRID_COLUMNS);
+							return (
+								<div
+									key={virtualRow.key}
+									className="shared-icon-picker-row"
+									style={{
+										position: "absolute",
+										top: 0,
+										left: 0,
+										width: "100%",
+										height: virtualRow.size,
+										transform: `translateY(${virtualRow.start}px)`,
+									}}
+								>
+									{rowIcons.map((iconId) => (
+										<IconItem key={iconId} iconId={iconId} onClick={handleClick} />
+									))}
+								</div>
+							);
+						})}
 					</div>
 				)}
 			</div>
