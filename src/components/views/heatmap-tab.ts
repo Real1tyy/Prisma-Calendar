@@ -60,6 +60,7 @@ export function createHeatmapTabDefinition(app: App, bundle: CalendarBundle): Ta
 	return {
 		id: "heatmap",
 		label: "Heatmap",
+		icon: "flame",
 		keyHandlers: {
 			ArrowLeft: () => heatmapHandle?.handleArrow("left"),
 			ArrowRight: () => heatmapHandle?.handleArrow("right"),

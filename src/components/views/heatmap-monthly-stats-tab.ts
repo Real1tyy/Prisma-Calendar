@@ -79,6 +79,7 @@ export function createHeatmapMonthlyStatsTabDefinition(app: App, bundle: Calenda
 	return {
 		id: "heatmap-monthly-stats",
 		label: "Heatmap Monthly + Stats",
+		icon: "flame",
 		keyHandlers: {
 			ArrowLeft: () => heatmapHandle?.handleArrow("left"),
 			ArrowRight: () => heatmapHandle?.handleArrow("right"),

@@ -13,6 +13,7 @@ export function createMonthlyCalendarStatsTabDefinition(app: App, bundle: Calend
 	return {
 		id: "monthly-calendar-stats",
 		label: "Monthly + Stats",
+		icon: "calendar-range",
 		keyHandlers: {
 			ArrowLeft: () => calendarHandle?.prev(),
 			ArrowRight: () => calendarHandle?.next(),

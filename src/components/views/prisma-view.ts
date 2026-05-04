@@ -66,6 +66,7 @@ export function registerPrismaCalendarView(
 			const calendarTab = {
 				id: "calendar",
 				label: "Calendar",
+				icon: "calendar",
 				render: (tabEl: HTMLElement) => {
 					ref.calendarComponent = new CalendarComponent(app, bundle, tabEl, hostEl, leaf!);
 					ref.calendarComponent.load();

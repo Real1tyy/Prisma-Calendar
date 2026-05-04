@@ -325,6 +325,7 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 	return {
 		id: "gantt",
 		label: "Gantt",
+		icon: "gantt-chart",
 		render: (el) => {
 			function renderTab(): void {
 				cleanupContent();

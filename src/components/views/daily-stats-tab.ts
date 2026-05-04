@@ -17,6 +17,7 @@ export function createDailyStatsTabDefinition(app: App, bundle: CalendarBundle):
 	return {
 		id: "daily-stats",
 		label: "Daily + Stats",
+		icon: "bar-chart-3",
 		keyHandlers: {
 			ArrowLeft: () => calendarHandle?.prev(),
 			ArrowRight: () => calendarHandle?.next(),

@@ -341,6 +341,7 @@ export function createDashboardTabDefinition(app: App, bundle: CalendarBundle): 
 	return {
 		id: "dashboard",
 		label: "Dashboard",
+		icon: "layout-dashboard",
 		children: [
 			createDashboardChild("dashboard-by-name", "By Name", bundle, buildByNameData(app, bundle)),
 			createDashboardChild("dashboard-by-category", "By Category", bundle, buildByCategoryData(app, bundle)),

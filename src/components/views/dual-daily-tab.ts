@@ -18,6 +18,7 @@ export function createDualDailyTabDefinition(app: App, bundle: CalendarBundle): 
 	return {
 		id: "dual-daily",
 		label: "Dual Daily",
+		icon: "columns-2",
 		keyHandlers: {
 			ArrowLeft: () => getFocusedCalendar()?.prev(),
 			ArrowRight: () => getFocusedCalendar()?.next(),

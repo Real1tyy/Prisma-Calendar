@@ -17,6 +17,7 @@ export function createTimelineTabDefinition(app: App, bundle: CalendarBundle): T
 	return {
 		id: "timeline",
 		label: "Timeline",
+		icon: "clock",
 		render: (el) => {
 			filterBar = createViewFilterBar(bundle, () => {
 				handle?.setEventFilter((e) => filterBar!.shouldInclude(e));
