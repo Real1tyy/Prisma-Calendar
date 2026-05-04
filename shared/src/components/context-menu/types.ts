@@ -17,7 +17,7 @@ export type ContextMenuState = z.infer<typeof ContextMenuStateSchema>;
 export interface ContextMenuItemDefinition {
 	id: string;
 	label: string;
-	icon: string;
+	icon?: string;
 	color?: string;
 	/** Items with the same section are grouped; separators are inserted between different sections. */
 	section?: string;

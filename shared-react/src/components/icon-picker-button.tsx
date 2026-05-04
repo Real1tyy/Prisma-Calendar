@@ -1,23 +1,18 @@
-import { showIconPicker } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { memo, useCallback, useContext } from "react";
 
 import { AppContext } from "../contexts/app-context";
+import { showReactIconPicker } from "../modals/icon-picker-modal";
 import { ObsidianIcon } from "./obsidian-icon";
 
-/**
- * Imperatively opens the icon picker. Thin wrapper over the existing
- * `showIconPicker` function — exposed as a hook so callers don't re-plumb
- * `App` themselves. Pass an explicit `app` to bypass `AppContext`.
- */
-export function useIconPicker(app?: App): (onDone: (icon: string) => void) => void {
+export function useIconPicker(app?: App): (onDone: (icon: string | null) => void) => void {
 	const fromContext = useContext(AppContext);
 	const resolved = app ?? fromContext;
 
 	return useCallback(
-		(onDone: (icon: string) => void) => {
+		(onDone: (icon: string | null) => void) => {
 			if (!resolved) throw new Error("useIconPicker: no App available — wrap in <AppContext> or pass `app`.");
-			showIconPicker(resolved, onDone);
+			showReactIconPicker(resolved, onDone);
 		},
 		[resolved]
 	);
@@ -25,7 +20,7 @@ export function useIconPicker(app?: App): (onDone: (icon: string) => void) => vo
 
 export interface IconPickerButtonProps {
 	value: string;
-	onChange: (icon: string) => void;
+	onChange: (icon: string | null) => void;
 	/** Accessible label for the button. Defaults to "Pick icon". */
 	ariaLabel?: string;
 	className?: string;

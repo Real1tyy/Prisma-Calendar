@@ -15,7 +15,7 @@ export type PageHeaderState = z.infer<typeof PageHeaderStateSchema>;
 export interface HeaderActionDefinition {
 	id: string;
 	label: string;
-	icon: string;
+	icon?: string;
 	color?: string;
 	/** Callback executed when the header button is clicked. */
 	onAction: (view: ItemView) => void;

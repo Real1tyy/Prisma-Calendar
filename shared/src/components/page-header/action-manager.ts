@@ -202,6 +202,7 @@ export function openActionManager(config: ActionManagerConfig): void {
 				onIconChange: config.onIconChange,
 				onColorChange: config.onColorChange,
 				rerender: () => renderManagerList(root),
+				allowNoIcon: false,
 			});
 		}
 	}

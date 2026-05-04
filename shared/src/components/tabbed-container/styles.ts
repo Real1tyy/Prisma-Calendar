@@ -109,7 +109,7 @@ function buildTabStyles(p: string): string {
 	color: var(--text-on-accent);
 }
 .modal:has(.${p}tab-manager-modal) {
-	width: 420px;
+	width: 480px;
 }
 .modal:has(.${p}tab-manager-modal) .modal-title {
 	text-align: center;
@@ -194,6 +194,18 @@ function buildTabStyles(p: string): string {
 	gap: 8px;
 	min-width: 0;
 }
+.${p}tab-manager-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
+	flex-shrink: 0;
+}
+.${p}tab-manager-icon svg {
+	width: 14px;
+	height: 14px;
+}
 .${p}tab-manager-label-text {
 	font-size: var(--font-ui-medium);
 	font-weight: 500;
@@ -248,6 +260,20 @@ function buildTabStyles(p: string): string {
 	margin-bottom: 8px;
 	font-size: var(--font-ui-small);
 	color: var(--text-muted);
+}
+.${p}tab-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 14px;
+	height: 14px;
+	flex-shrink: 0;
+	margin-right: 5px;
+	vertical-align: middle;
+}
+.${p}tab-icon svg {
+	width: 13px;
+	height: 13px;
 }
 .${p}tab-group {
 	display: inline-flex;
@@ -314,6 +340,17 @@ function buildTabStyles(p: string): string {
 .${p}tab-manager-children .${p}tab-manager-row-dragover {
 	border-color: var(--interactive-accent);
 	background: hsla(var(--color-accent-hsl), 0.06);
+}
+.${p}tab-manager-row:has(.${p}tab-manager-edit-form) {
+	flex-wrap: wrap;
+}
+.${p}tab-manager-edit-form {
+	flex-basis: 100%;
+	padding-top: 8px;
+}
+.${p}tab-manager-edit-form .setting-item {
+	padding: 6px 0;
+	border-top: none;
 }
 `;
 }

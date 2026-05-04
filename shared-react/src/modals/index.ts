@@ -5,6 +5,8 @@ export type {
 	OpenFrontmatterPropagationOptions,
 } from "./frontmatter-propagation-modal";
 export { FrontmatterPropagationModalContent, openFrontmatterPropagationModal } from "./frontmatter-propagation-modal";
+export type { ShowReactIconPickerOptions } from "./icon-picker-modal";
+export { showReactIconPicker } from "./icon-picker-modal";
 export type { ProgressModalConfig, ProgressModalHandle } from "./progress-modal";
 export { openProgressModal } from "./progress-modal";
 export type { OpenRenameOptions, RenameModalProps } from "./rename-modal";

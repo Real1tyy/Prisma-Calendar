@@ -7,9 +7,9 @@ import { IconPickerButton, useIconPicker } from "../../src/components/icon-picke
 import { AppContext } from "../../src/contexts/app-context";
 import { renderReact } from "../helpers/render-react";
 
-const showIconPickerMock = vi.fn();
-vi.mock("../../../shared/src/components/primitives/icon-picker", () => ({
-	showIconPicker: (app: App, onDone: (icon: string) => void) => showIconPickerMock(app, onDone),
+const showReactIconPickerMock = vi.fn();
+vi.mock("../../src/modals/icon-picker-modal", () => ({
+	showReactIconPicker: (app: App, onDone: (icon: string | null) => void) => showReactIconPickerMock(app, onDone),
 }));
 
 vi.mock("obsidian", async () => {
@@ -25,8 +25,8 @@ vi.mock("obsidian", async () => {
 const fakeApp = { fake: true } as unknown as App;
 
 describe("useIconPicker", () => {
-	it("returns a function that forwards to showIconPicker using the explicit app", async () => {
-		showIconPickerMock.mockReset();
+	it("returns a function that forwards to showReactIconPicker using the explicit app", async () => {
+		showReactIconPickerMock.mockReset();
 
 		function Harness() {
 			const open = useIconPicker(fakeApp);
@@ -40,12 +40,12 @@ describe("useIconPicker", () => {
 		const { user } = renderReact(<Harness />);
 		await user.click(screen.getByRole("button", { name: "open" }));
 
-		expect(showIconPickerMock).toHaveBeenCalledTimes(1);
-		expect(showIconPickerMock.mock.calls[0][0]).toBe(fakeApp);
+		expect(showReactIconPickerMock).toHaveBeenCalledTimes(1);
+		expect(showReactIconPickerMock.mock.calls[0][0]).toBe(fakeApp);
 	});
 
 	it("falls back to AppContext when no explicit app is passed", async () => {
-		showIconPickerMock.mockReset();
+		showReactIconPickerMock.mockReset();
 
 		function Harness() {
 			const open = useIconPicker();
@@ -63,7 +63,7 @@ describe("useIconPicker", () => {
 		);
 		await user.click(screen.getByRole("button", { name: "open" }));
 
-		expect(showIconPickerMock.mock.calls[0][0]).toBe(fakeApp);
+		expect(showReactIconPickerMock.mock.calls[0][0]).toBe(fakeApp);
 	});
 });
 
@@ -74,14 +74,14 @@ describe("IconPickerButton", () => {
 	});
 
 	it("opens the picker on click and passes onChange through", async () => {
-		showIconPickerMock.mockReset();
+		showReactIconPickerMock.mockReset();
 		const onChange = vi.fn();
 		const { user } = renderReact(<IconPickerButton value="calendar" onChange={onChange} app={fakeApp} />);
 
 		await user.click(screen.getByRole("button", { name: "Pick icon" }));
 
-		expect(showIconPickerMock).toHaveBeenCalledTimes(1);
-		const captured = showIconPickerMock.mock.calls[0][1] as (icon: string) => void;
+		expect(showReactIconPickerMock).toHaveBeenCalledTimes(1);
+		const captured = showReactIconPickerMock.mock.calls[0][1] as (icon: string) => void;
 		captured("search");
 		expect(onChange).toHaveBeenCalledExactlyOnceWith("search");
 	});

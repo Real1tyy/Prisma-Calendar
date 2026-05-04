@@ -1,7 +1,24 @@
 import type { App } from "obsidian";
 import { FuzzySuggestModal, getIconIds } from "obsidian";
 
-export function showIconPicker(app: App, onDone: (icon: string) => void): void {
+export interface IconPickerOptions {
+	allowNoIcon?: boolean;
+}
+
+export type IconPickerFn = (app: App, onDone: (icon: string | null) => void, options?: IconPickerOptions) => void;
+
+let _override: IconPickerFn | null = null;
+
+export function setIconPickerImplementation(impl: IconPickerFn): void {
+	_override = impl;
+}
+
+export function showIconPicker(app: App, onDone: (icon: string | null) => void, options?: IconPickerOptions): void {
+	if (_override) {
+		_override(app, onDone, options);
+		return;
+	}
+
 	class IconPickerModal extends FuzzySuggestModal<string> {
 		getItems(): string[] {
 			return getIconIds();

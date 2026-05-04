@@ -32,6 +32,8 @@ export interface ManagerRowConfig<T extends EditableItem> {
 	onIconChange: (id: string, icon: string | undefined) => void;
 	onColorChange: (id: string, color: string | undefined) => void;
 	rerender: () => void;
+	/** When false, the icon picker hides the "No icon" option. Defaults to true. */
+	allowNoIcon?: boolean;
 }
 
 export function renderManagerRowContent<T extends EditableItem>(row: HTMLElement, config: ManagerRowConfig<T>): void {
@@ -42,10 +44,12 @@ export function renderManagerRowContent<T extends EditableItem>(row: HTMLElement
 	const displayColor = colorOverrides.get(item.id) ?? item.color;
 
 	const label = row.createDiv(css.cls(`${rowPrefix}-label`));
-	const iconSpan = label.createEl("span", { cls: css.cls(`${rowPrefix}-icon`) });
-	setIcon(iconSpan, displayIcon);
-	if (displayColor && displayColor !== DEFAULT_COLOR_SENTINEL) {
-		iconSpan.style.setProperty("color", displayColor);
+	if (displayIcon) {
+		const iconSpan = label.createEl("span", { cls: css.cls(`${rowPrefix}-icon`) });
+		setIcon(iconSpan, displayIcon);
+		if (displayColor && displayColor !== DEFAULT_COLOR_SENTINEL) {
+			iconSpan.style.setProperty("color", displayColor);
+		}
 	}
 	label.createEl("span", { text: displayLabel, cls: css.cls(`${rowPrefix}-label-text`) });
 
@@ -91,6 +95,7 @@ export function renderManagerRowContent<T extends EditableItem>(row: HTMLElement
 			app: config.app,
 			css,
 			formPrefix: rowPrefix,
+			...(config.testIdPrefix !== undefined ? { testIdPrefix: config.testIdPrefix } : {}),
 			item,
 			currentLabel: displayLabel,
 			currentIcon: displayIcon,
@@ -102,6 +107,7 @@ export function renderManagerRowContent<T extends EditableItem>(row: HTMLElement
 			onIconChange: config.onIconChange,
 			onColorChange: config.onColorChange,
 			rerender: config.rerender,
+			...(config.allowNoIcon !== undefined ? { allowNoIcon: config.allowNoIcon } : {}),
 		});
 	}
 }

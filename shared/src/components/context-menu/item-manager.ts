@@ -324,6 +324,7 @@ export function openItemManager(config: ItemManagerConfig): void {
 			onIconChange: config.onIconChange,
 			onColorChange: config.onColorChange,
 			rerender: () => renderManagerList(root),
+			allowNoIcon: false,
 		});
 	}
 }

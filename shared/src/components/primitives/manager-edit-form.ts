@@ -7,7 +7,7 @@ import { showIconPicker } from "./icon-picker";
 export interface EditableItem {
 	id: string;
 	label: string;
-	icon: string;
+	icon?: string;
 	color?: string;
 }
 
@@ -15,9 +15,10 @@ export interface ManagerEditFormConfig {
 	app: App;
 	css: CssUtils;
 	formPrefix: string;
+	testIdPrefix?: string;
 	item: EditableItem;
 	currentLabel: string;
-	currentIcon: string;
+	currentIcon: string | undefined;
 	currentColor: string;
 	hasRenameOverride: boolean;
 	hasIconOverride: boolean;
@@ -26,6 +27,8 @@ export interface ManagerEditFormConfig {
 	onIconChange: (id: string, icon: string | undefined) => void;
 	onColorChange: (id: string, color: string | undefined) => void;
 	rerender: () => void;
+	/** When false, the icon picker hides the "No icon" option. Defaults to true. */
+	allowNoIcon?: boolean;
 }
 
 export function renderManagerEditForm(container: HTMLElement, config: ManagerEditFormConfig): void {
@@ -33,7 +36,28 @@ export function renderManagerEditForm(container: HTMLElement, config: ManagerEdi
 
 	const form = container.createDiv(css.cls(`${formPrefix}-edit-form`));
 
+	function addResetButton(setting: Setting, tooltip: string, onReset: () => void, visible: boolean): HTMLElement {
+		let resetEl!: HTMLElement;
+		setting.addExtraButton((btn) => {
+			btn.setIcon("rotate-ccw");
+			btn.setTooltip(tooltip);
+			btn.onClick(onReset);
+			resetEl = btn.extraSettingsEl;
+		});
+		if (!visible) resetEl.style.display = "none";
+		return resetEl;
+	}
+
 	const nameSetting = new Setting(form).setName("Name");
+	const nameResetEl = addResetButton(
+		nameSetting,
+		`Reset to "${item.label}"`,
+		() => {
+			config.onRename(item.id, undefined);
+			rerender();
+		},
+		config.hasRenameOverride
+	);
 	nameSetting.addText((text) => {
 		text.setValue(config.currentLabel);
 		text.setPlaceholder(item.label);
@@ -41,58 +65,58 @@ export function renderManagerEditForm(container: HTMLElement, config: ManagerEdi
 			const trimmed = value.trim();
 			const resolvedLabel = trimmed && trimmed !== item.label ? trimmed : undefined;
 			config.onRename(item.id, resolvedLabel);
+			nameResetEl.style.display = resolvedLabel ? "" : "none";
 		});
 	});
-	if (config.hasRenameOverride) {
-		nameSetting.addExtraButton((btn) => {
-			btn.setIcon("rotate-ccw");
-			btn.setTooltip(`Reset to "${item.label}"`);
-			btn.onClick(() => {
-				config.onRename(item.id, undefined);
-				rerender();
-			});
-		});
-	}
 
 	const iconSetting = new Setting(form).setName("Icon");
+	addResetButton(
+		iconSetting,
+		item.icon ? `Reset to "${item.icon}"` : "Reset icon",
+		() => {
+			config.onIconChange(item.id, undefined);
+			rerender();
+		},
+		config.hasIconOverride
+	);
 	iconSetting.addButton((btn) => {
-		btn.setButtonText(config.currentIcon);
+		btn.setButtonText(config.currentIcon ?? "No icon");
+		if (config.testIdPrefix) {
+			btn.buttonEl.setAttribute("data-testid", `${config.testIdPrefix}${formPrefix}-icon-btn-${item.id}`);
+		}
 		btn.onClick(() => {
-			showIconPicker(app, (icon) => {
-				const resolvedIcon = icon !== item.icon ? icon : undefined;
-				config.onIconChange(item.id, resolvedIcon);
-				rerender();
-			});
+			showIconPicker(
+				app,
+				(icon) => {
+					if (icon === null) {
+						config.onIconChange(item.id, undefined);
+					} else {
+						config.onIconChange(item.id, icon !== item.icon ? icon : undefined);
+					}
+					rerender();
+				},
+				config.allowNoIcon !== undefined ? { allowNoIcon: config.allowNoIcon } : undefined
+			);
 		});
 	});
-	if (config.hasIconOverride) {
-		iconSetting.addExtraButton((btn) => {
-			btn.setIcon("rotate-ccw");
-			btn.setTooltip(`Reset to "${item.icon}"`);
-			btn.onClick(() => {
-				config.onIconChange(item.id, undefined);
-				rerender();
-			});
-		});
-	}
 
 	const colorSetting = new Setting(form).setName("Color");
+	const colorResetEl = addResetButton(
+		colorSetting,
+		"Reset to default color",
+		() => {
+			config.onColorChange(item.id, undefined);
+			rerender();
+		},
+		config.hasColorOverride
+	);
 	colorSetting.addColorPicker((picker) => {
 		picker.setValue(config.currentColor);
 		picker.onChange((value) => {
 			const defaultColor = item.color ?? "#ffffff";
 			const resolved = value !== defaultColor ? value : undefined;
 			config.onColorChange(item.id, resolved);
+			colorResetEl.style.display = resolved ? "" : "none";
 		});
 	});
-	if (config.hasColorOverride) {
-		colorSetting.addExtraButton((btn) => {
-			btn.setIcon("rotate-ccw");
-			btn.setTooltip("Reset to default color");
-			btn.onClick(() => {
-				config.onColorChange(item.id, undefined);
-				rerender();
-			});
-		});
-	}
 }

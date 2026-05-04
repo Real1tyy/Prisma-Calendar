@@ -1,21 +1,23 @@
 import type { App } from "obsidian";
 import { z } from "zod";
 
+import { CustomizableUIBaseStateSchema } from "../../core/customizable-ui-state";
+
+const optionalStringRecord = z.record(z.string(), z.string()).optional().catch(undefined);
+
 /** Zod schema for persisted tab container state. Reuse in plugin settings schemas. */
-export const TabbedContainerStateSchema = z.object({
+export const TabbedContainerStateSchema = CustomizableUIBaseStateSchema.extend({
 	/** Ordered list of visible tab IDs. Controls both visibility and order. When absent, all tabs shown in default order. */
 	visibleTabIds: z.array(z.string()).optional().catch(undefined),
-	/** Custom labels keyed by tab ID. */
-	renames: z.record(z.string(), z.string()).optional().catch(undefined),
-	/** Whether the settings gear button is shown in the tab bar. Default: true. */
-	showSettingsButton: z.boolean().optional().catch(undefined),
-	/** Per-group child state: visibility order and renames. */
+	/** Per-group child state: visibility order, renames, and icon/color overrides. */
 	groupState: z
 		.record(
 			z.string(),
 			z.object({
 				visibleChildIds: z.array(z.string()).optional().catch(undefined),
-				childRenames: z.record(z.string(), z.string()).optional().catch(undefined),
+				childRenames: optionalStringRecord,
+				childIconOverrides: optionalStringRecord,
+				childColorOverrides: optionalStringRecord,
 			})
 		)
 		.optional()
@@ -25,10 +27,16 @@ export const TabbedContainerStateSchema = z.object({
 /** Serializable snapshot of tab container state. Safe to persist in plugin settings. */
 export type TabbedContainerState = z.infer<typeof TabbedContainerStateSchema>;
 
+/** Shape of a single group's persisted child state — inferred from the Zod schema. */
+export type GroupStatePersisted = NonNullable<TabbedContainerState["groupState"]>[string];
+
 export interface TabDefinition {
 	id: string;
 	label: string;
+	/** Optional icon rendered before the tab label. Use any Obsidian icon ID (e.g. "calendar", "gantt-chart"). */
 	icon?: string;
+	/** Optional default color for the tab icon. */
+	color?: string;
 	render: (container: HTMLElement) => void | Promise<void>;
 	cleanup?: () => void;
 	/** Key handlers dispatched when this tab is active and the container was last interacted with. Keys are `KeyboardEvent.key` values (e.g. "ArrowLeft"). */
@@ -38,6 +46,10 @@ export interface TabDefinition {
 export interface GroupTabDefinition {
 	id: string;
 	label: string;
+	/** Optional icon rendered before the group tab label. */
+	icon?: string;
+	/** Optional default color for the group tab icon. */
+	color?: string;
 	children: TabDefinition[];
 }
 
@@ -52,6 +64,8 @@ export interface GroupChildState {
 	visibleChildren: TabDefinition[];
 	activeChildIndex: number;
 	childRenames: Map<string, string>;
+	childIconOverrides: Map<string, string>;
+	childColorOverrides: Map<string, string>;
 }
 
 export interface TabbedContainerConfig {

@@ -115,7 +115,7 @@ export function createPageHeader(config: PageHeaderConfig): PageHeaderHandle {
 		return renames.get(action.id) ?? action.label;
 	}
 
-	function getIconOverride(action: HeaderActionDefinition): string {
+	function getIconOverride(action: HeaderActionDefinition): string | undefined {
 		return iconOverrides.get(action.id) ?? action.icon;
 	}
 
@@ -164,7 +164,7 @@ export function createPageHeader(config: PageHeaderConfig): PageHeaderHandle {
 			const icon = getIconOverride(action);
 			const label = getLabel(action);
 
-			const el = view.addAction(icon, label, () => {
+			const el = view.addAction(icon ?? "", label, () => {
 				app.workspace.setActiveLeaf(leaf, { focus: true });
 				action.onAction(view);
 			});

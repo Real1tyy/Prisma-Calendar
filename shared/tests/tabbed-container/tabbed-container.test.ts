@@ -728,6 +728,121 @@ describe("tab icons", () => {
 	});
 });
 
+describe("icon and color overrides", () => {
+	it("initialState.iconOverrides overrides tab icon in the tab bar", () => {
+		const container = document.createElement("div");
+		const tabs: TabDefinition[] = [
+			{ id: "tab-0", label: "Tab 0", icon: "calendar", render: vi.fn() },
+			{ id: "tab-1", label: "Tab 1", icon: "star", render: vi.fn() },
+		];
+		createTabbedContainer(container, {
+			tabs,
+			cssPrefix: "test-",
+			initialState: { iconOverrides: { "tab-0": "heart" } },
+		});
+
+		const iconSpan = container.querySelector<HTMLElement>(".test-tab-bar button .test-tab-icon");
+		expect(iconSpan).toBeTruthy();
+	});
+
+	it("initialState.colorOverrides applies color to tab icon", () => {
+		const container = document.createElement("div");
+		const tabs: TabDefinition[] = [{ id: "tab-0", label: "Tab 0", icon: "calendar", render: vi.fn() }];
+		createTabbedContainer(container, {
+			tabs,
+			cssPrefix: "test-",
+			initialState: { colorOverrides: { "tab-0": "#ff0000" } },
+		});
+
+		const iconSpan = container.querySelector<HTMLElement>(".test-tab-bar button .test-tab-icon");
+		expect(iconSpan).toBeTruthy();
+		expect(iconSpan!.style.color).toBe("rgb(255, 0, 0)");
+	});
+
+	it("getState includes iconOverrides when set", () => {
+		const container = document.createElement("div");
+		const tabs: TabDefinition[] = [{ id: "tab-0", label: "Tab 0", icon: "calendar", render: vi.fn() }];
+		const handle = createTabbedContainer(container, {
+			tabs,
+			cssPrefix: "test-",
+			initialState: { iconOverrides: { "tab-0": "heart" } },
+		});
+
+		const state = handle.getState();
+		expect(state.iconOverrides).toEqual({ "tab-0": "heart" });
+	});
+
+	it("getState includes colorOverrides when set", () => {
+		const container = document.createElement("div");
+		const tabs: TabDefinition[] = [{ id: "tab-0", label: "Tab 0", icon: "calendar", render: vi.fn() }];
+		const handle = createTabbedContainer(container, {
+			tabs,
+			cssPrefix: "test-",
+			initialState: { colorOverrides: { "tab-0": "#ff0000" } },
+		});
+
+		const state = handle.getState();
+		expect(state.colorOverrides).toEqual({ "tab-0": "#ff0000" });
+	});
+
+	it("getState omits iconOverrides and colorOverrides when empty", () => {
+		const container = document.createElement("div");
+		const handle = createTabbedContainer(container, makeConfig());
+
+		const state = handle.getState();
+		expect(state.iconOverrides).toBeUndefined();
+		expect(state.colorOverrides).toBeUndefined();
+	});
+
+	it("tab without icon but with color override does not render icon span", () => {
+		const container = document.createElement("div");
+		const tabs: TabDefinition[] = [{ id: "tab-0", label: "Tab 0", render: vi.fn() }];
+		createTabbedContainer(container, {
+			tabs,
+			cssPrefix: "test-",
+			initialState: { colorOverrides: { "tab-0": "#ff0000" } },
+		});
+
+		const iconSpan = container.querySelector<HTMLElement>(".test-tab-bar button .test-tab-icon");
+		expect(iconSpan).toBeNull();
+	});
+
+	it("icon override adds icon to tab that had no default icon", () => {
+		const container = document.createElement("div");
+		const tabs: TabDefinition[] = [{ id: "tab-0", label: "Tab 0", render: vi.fn() }];
+		createTabbedContainer(container, {
+			tabs,
+			cssPrefix: "test-",
+			initialState: { iconOverrides: { "tab-0": "star" } },
+		});
+
+		const iconSpan = container.querySelector<HTMLElement>(".test-tab-bar button .test-tab-icon");
+		expect(iconSpan).toBeTruthy();
+	});
+});
+
+describe("group child icon/color overrides", () => {
+	it("getState includes child icon/color overrides in groupState", () => {
+		const container = document.createElement("div");
+		const handle = createTabbedContainer(container, {
+			tabs: [makeGroupTab("g", 2)],
+			cssPrefix: "test-",
+			initialState: {
+				groupState: {
+					g: {
+						childIconOverrides: { "g-child-0": "heart" },
+						childColorOverrides: { "g-child-0": "#00ff00" },
+					},
+				},
+			},
+		});
+
+		const state = handle.getState();
+		expect(state.groupState?.g?.childIconOverrides).toEqual({ "g-child-0": "heart" });
+		expect(state.groupState?.g?.childColorOverrides).toEqual({ "g-child-0": "#00ff00" });
+	});
+});
+
 describe("group tab manager modal", () => {
 	it("showTabManager does not throw with group tabs", () => {
 		const container = document.createElement("div");

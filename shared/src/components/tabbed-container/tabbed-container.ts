@@ -2,12 +2,12 @@ import { Menu, setIcon, Setting } from "obsidian";
 
 import { createCssUtils } from "../../utils/css-utils";
 import { showModal } from "../component-renderer/modal";
-import { renderManagerRow } from "./manager-row";
-import { openRenameModal } from "./rename-modal";
-import { hideGroupChild, moveGroupChild, reorderGroupChildren, reorderList, showGroupChild } from "./reorder";
+import { renderManagerRowContent } from "../primitives/manager-row";
+import { hideGroupChild, reorderGroupChildren, reorderList, showGroupChild } from "./reorder";
 import { injectTabStyles } from "./styles";
 import type {
 	GroupChildState,
+	GroupStatePersisted,
 	GroupTabDefinition,
 	TabbedContainerConfig,
 	TabbedContainerHandle,
@@ -22,20 +22,23 @@ function flattenEntry(entry: TabEntry): TabDefinition {
 	return entry;
 }
 
+function loadStringRecord(source: Record<string, string> | undefined): Map<string, string> {
+	return new Map(Object.entries(source ?? {}));
+}
+
 function resolveVisibleTabs(config: TabbedContainerConfig): {
 	visibleTabs: TabEntry[];
 	renames: Map<string, string>;
+	iconOverrides: Map<string, string>;
+	colorOverrides: Map<string, string>;
 } {
 	const { tabs, initialState } = config;
-	const renames = new Map<string, string>();
-	if (initialState?.renames) {
-		for (const [id, label] of Object.entries(initialState.renames)) {
-			renames.set(id, label);
-		}
-	}
+	const renames = loadStringRecord(initialState?.renames);
+	const iconOverrides = loadStringRecord(initialState?.iconOverrides);
+	const colorOverrides = loadStringRecord(initialState?.colorOverrides);
 
 	if (!initialState?.visibleTabIds) {
-		return { visibleTabs: tabs, renames };
+		return { visibleTabs: tabs, renames, iconOverrides, colorOverrides };
 	}
 
 	const tabMap = new Map(tabs.map((t) => [t.id, t]));
@@ -45,7 +48,7 @@ function resolveVisibleTabs(config: TabbedContainerConfig): {
 		if (tab) visible.push(tab);
 	}
 
-	return { visibleTabs: visible.length > 0 ? visible : tabs, renames };
+	return { visibleTabs: visible.length > 0 ? visible : tabs, renames, iconOverrides, colorOverrides };
 }
 
 export function createTabbedContainer(container: HTMLElement, config: TabbedContainerConfig): TabbedContainerHandle {
@@ -66,8 +69,11 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 	injectTabStyles(config.cssPrefix);
 	const panelMap = new Map<string, HTMLElement>();
 
-	const { visibleTabs: initialVisible, renames } = resolveVisibleTabs(config);
-	let visibleTabs = [...initialVisible];
+	const resolved = resolveVisibleTabs(config);
+	const renames = resolved.renames;
+	const iconOverrides = resolved.iconOverrides;
+	const colorOverrides = resolved.colorOverrides;
+	let visibleTabs = [...resolved.visibleTabs];
 	let currentIndex = 0;
 	let showSettingsButton = config.initialState?.showSettingsButton !== false;
 	let destroyed = false;
@@ -77,6 +83,7 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 	let skipNextGroupClick = false;
 	let hoverCloseTimer: ReturnType<typeof setTimeout> | null = null;
 	const managerExpandedGroups = new Set<string>();
+	let managerExpandedId: string | null = null;
 	initGroupStates();
 
 	const barParent = tabBarContainer ?? container;
@@ -124,12 +131,9 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 		for (const entry of allTabs) {
 			if (!isGroupTab(entry)) continue;
 			const saved = savedGroupState?.[entry.id];
-			const childRenames = new Map<string, string>();
-			if (saved?.childRenames) {
-				for (const [id, label] of Object.entries(saved.childRenames)) {
-					childRenames.set(id, label);
-				}
-			}
+			const childRenames = loadStringRecord(saved?.childRenames);
+			const childIconOverrides = loadStringRecord(saved?.childIconOverrides);
+			const childColorOverrides = loadStringRecord(saved?.childColorOverrides);
 
 			let visibleChildren: TabDefinition[];
 			if (saved?.visibleChildIds) {
@@ -147,6 +151,8 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 				visibleChildren,
 				activeChildIndex: 0,
 				childRenames,
+				childIconOverrides,
+				childColorOverrides,
 			});
 		}
 	}
@@ -167,9 +173,19 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 		return renames.get(entry.id) ?? entry.label;
 	}
 
+	function getIcon(entry: TabEntry): string | undefined {
+		return iconOverrides.get(entry.id) ?? entry.icon;
+	}
+
+	function getColor(entry: TabEntry): string | undefined {
+		return colorOverrides.get(entry.id) ?? (entry as TabDefinition).color;
+	}
+
 	function buildState(): TabbedContainerState {
 		const state: TabbedContainerState = {};
 		if (renames.size > 0) state.renames = Object.fromEntries(renames);
+		if (iconOverrides.size > 0) state.iconOverrides = Object.fromEntries(iconOverrides);
+		if (colorOverrides.size > 0) state.colorOverrides = Object.fromEntries(colorOverrides);
 		const defaultOrder = allTabs.map((t) => t.id);
 		const currentOrder = visibleTabs.map((t) => t.id);
 		if (visibleTabs.length !== allTabs.length || currentOrder.some((id, i) => id !== defaultOrder[i])) {
@@ -177,12 +193,12 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 		}
 		if (!showSettingsButton) state.showSettingsButton = false;
 
-		const gs: Record<string, { visibleChildIds?: string[]; childRenames?: Record<string, string> }> = {};
+		const gs: Record<string, GroupStatePersisted> = {};
 		let hasGroupState = false;
 		for (const [groupId, childState] of groupChildState) {
 			const group = allTabs.find((t) => t.id === groupId) as GroupTabDefinition | undefined;
 			if (!group) continue;
-			const entry: { visibleChildIds?: string[]; childRenames?: Record<string, string> } = {};
+			const entry: GroupStatePersisted = {};
 			let hasEntry = false;
 
 			const defaultChildOrder = group.children.map((c) => c.id);
@@ -197,6 +213,16 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 
 			if (childState.childRenames.size > 0) {
 				entry.childRenames = Object.fromEntries(childState.childRenames);
+				hasEntry = true;
+			}
+
+			if (childState.childIconOverrides.size > 0) {
+				entry.childIconOverrides = Object.fromEntries(childState.childIconOverrides);
+				hasEntry = true;
+			}
+
+			if (childState.childColorOverrides.size > 0) {
+				entry.childColorOverrides = Object.fromEntries(childState.childColorOverrides);
 				hasEntry = true;
 			}
 
@@ -247,6 +273,13 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 					cls: css.cls("tab", "tab-group"),
 					attr: { "data-tab-id": entry.id, "data-testid": `${cssPrefix}view-tab-${entry.id}` },
 				});
+				const groupIcon = getIcon(entry);
+				const groupColor = getColor(entry);
+				if (groupIcon) {
+					const iconSpan = button.createEl("span", { cls: css.cls("tab-icon") });
+					setIcon(iconSpan, groupIcon);
+					if (groupColor) iconSpan.style.setProperty("color", groupColor);
+				}
 				button.createEl("span", { text: getLabel(entry) });
 				const chevron = button.createEl("span", { cls: css.cls("tab-group-chevron") });
 				setIcon(chevron, "chevron-down");
@@ -289,16 +322,18 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 
 				buttons.push(button);
 			} else {
-				const tabDef = entry;
 				const button = tabBar.createEl("button", {
 					cls: css.cls("tab"),
 					attr: { "data-tab-id": entry.id, "data-testid": `${cssPrefix}view-tab-${entry.id}` },
 				});
-				if (tabDef.icon) {
-					const iconEl = button.createEl("span", { cls: css.cls("tab-icon") });
-					setIcon(iconEl, tabDef.icon);
+				const tabIcon = getIcon(entry);
+				const tabColor = getColor(entry);
+				if (tabIcon) {
+					const iconSpan = button.createEl("span", { cls: css.cls("tab-icon") });
+					setIcon(iconSpan, tabIcon);
+					if (tabColor) iconSpan.style.setProperty("color", tabColor);
 				}
-				button.appendChild(document.createTextNode(getLabel(entry)));
+				button.createEl("span", { text: getLabel(entry) });
 				button.addEventListener("click", () => handle.switchTo(entry.id));
 
 				if (editable && config.app) {
@@ -405,9 +440,9 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 
 		menu.addItem((item) => {
 			item
-				.setTitle("Rename")
+				.setTitle("Edit")
 				.setIcon("pencil")
-				.onClick(() => showRenameModal(entry));
+				.onClick(() => handle.showTabManager());
 		});
 
 		if (visibleTabs.length > 1) {
@@ -442,40 +477,34 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 		menu.showAtMouseEvent(e);
 	}
 
-	function showRenameModal(entry: TabEntry, onDone?: () => void): void {
-		if (!config.app) return;
-		openRenameModal(
-			config.app,
-			css,
-			{
-				currentLabel: getLabel(entry),
-				originalLabel: entry.label,
-				hasRename: renames.has(entry.id),
-				save: (label) => renames.set(entry.id, label),
-				reset: () => renames.delete(entry.id),
-			},
-			rebuild,
-			onDone
-		);
+	function setOrDelete(map: Map<string, string>, key: string, value: string | undefined): void {
+		if (value) map.set(key, value);
+		else map.delete(key);
+		emitStateChange();
+		rebuild();
 	}
 
-	function showChildRenameModal(groupId: string, child: TabDefinition, onDone?: () => void): void {
-		if (!config.app) return;
+	function handleRename(id: string, v: string | undefined): void {
+		setOrDelete(renames, id, v);
+	}
+	function handleIconChange(id: string, v: string | undefined): void {
+		setOrDelete(iconOverrides, id, v);
+	}
+	function handleColorChange(id: string, v: string | undefined): void {
+		setOrDelete(colorOverrides, id, v);
+	}
+
+	function handleChildRename(groupId: string, childId: string, v: string | undefined): void {
 		const gs = groupChildState.get(groupId);
-		if (!gs) return;
-		openRenameModal(
-			config.app,
-			css,
-			{
-				currentLabel: gs.childRenames.get(child.id) ?? child.label,
-				originalLabel: child.label,
-				hasRename: gs.childRenames.has(child.id),
-				save: (label) => gs.childRenames.set(child.id, label),
-				reset: () => gs.childRenames.delete(child.id),
-			},
-			rebuild,
-			onDone
-		);
+		if (gs) setOrDelete(gs.childRenames, childId, v);
+	}
+	function handleChildIconChange(groupId: string, childId: string, v: string | undefined): void {
+		const gs = groupChildState.get(groupId);
+		if (gs) setOrDelete(gs.childIconOverrides, childId, v);
+	}
+	function handleChildColorChange(groupId: string, childId: string, v: string | undefined): void {
+		const gs = groupChildState.get(groupId);
+		if (gs) setOrDelete(gs.childColorOverrides, childId, v);
 	}
 
 	function showTabManager(): void {
@@ -490,6 +519,44 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 				renderManagerList(modalEl);
 			},
 		});
+	}
+
+	type DragContext = { current: string | null };
+
+	function attachDragHandlers(
+		row: HTMLElement,
+		itemId: string,
+		ctx: DragContext,
+		onDrop: (draggedId: string) => void
+	): void {
+		row.setAttribute("draggable", "true");
+		row.dataset["tabId"] = itemId;
+		row.addEventListener("dragstart", (e) => {
+			ctx.current = itemId;
+			css.addCls(row, "tab-manager-row-dragging");
+			if (e.dataTransfer) e.dataTransfer.effectAllowed = "move";
+		});
+		row.addEventListener("dragend", () => {
+			ctx.current = null;
+			css.removeCls(row, "tab-manager-row-dragging");
+		});
+		row.addEventListener("dragover", (e) => {
+			e.preventDefault();
+			if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+			css.addCls(row, "tab-manager-row-dragover");
+		});
+		row.addEventListener("dragleave", () => {
+			css.removeCls(row, "tab-manager-row-dragover");
+		});
+		row.addEventListener("drop", (e) => {
+			e.preventDefault();
+			css.removeCls(row, "tab-manager-row-dragover");
+			if (!ctx.current || ctx.current === itemId) return;
+			onDrop(ctx.current);
+		});
+		const handle = row.createDiv(css.cls("tab-manager-drag"));
+		const grip = handle.createEl("span", { cls: css.cls("tab-manager-grip") });
+		setIcon(grip, "grip-vertical");
 	}
 
 	function renderManagerList(root: HTMLElement): void {
@@ -509,41 +576,58 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 		const list = root.createDiv(css.cls("tab-manager-list"));
 		const visibleIds = new Set(visibleTabs.map((t) => t.id));
 		const orderedTabs = [...visibleTabs, ...allTabs.filter((t) => !visibleIds.has(t.id))];
-		const dragRef = { value: null as string | null };
+		const dragCtx: DragContext = { current: null };
 
 		for (const tab of orderedTabs) {
 			const isVisible = visibleIds.has(tab.id);
-			const idx = visibleTabs.findIndex((t) => t.id === tab.id);
+			const isExpanded = managerExpandedId === tab.id;
 
-			const row = renderManagerRow(
-				list,
-				{
-					itemId: tab.id,
-					displayLabel: getLabel(tab),
-					originalLabel: tab.label,
-					isVisible,
-					visibleIndex: idx,
-					visibleCount: visibleTabs.length,
-					hasRename: renames.has(tab.id),
-					dragRef,
-					testIdPrefix: cssPrefix,
-					onRename: (done) => showRenameModal(tab, done),
-					onHide: isVisible && visibleTabs.length > 1 ? () => hideTab(tab.id) : null,
-					onShow: !isVisible ? () => restoreTab(tab.id) : null,
-					onMove: isVisible ? (dir) => moveTab(tab.id, dir) : null,
-					onDrop: (fromId) => {
-						const activeId = visibleTabs[currentIndex]?.id;
-						visibleTabs = reorderList(visibleTabs, fromId, tab.id);
-						currentIndex = Math.max(
-							0,
-							visibleTabs.findIndex((t) => t.id === activeId)
-						);
-						rebuild();
-					},
-				},
+			const row = list.createDiv(css.cls("tab-manager-row"));
+			if (cssPrefix) row.setAttribute("data-testid", `${cssPrefix}tab-manager-row-${tab.id}`);
+			if (!isVisible) css.addCls(row, "tab-manager-row-hidden");
+
+			if (isVisible) {
+				attachDragHandlers(row, tab.id, dragCtx, (draggedId) => {
+					const activeId = visibleTabs[currentIndex]?.id;
+					visibleTabs = reorderList(visibleTabs, draggedId, tab.id);
+					currentIndex = Math.max(
+						0,
+						visibleTabs.findIndex((t) => t.id === activeId)
+					);
+					rebuild();
+					rerender();
+				});
+			}
+
+			renderManagerRowContent(row, {
+				app: config.app!,
 				css,
-				rerender
-			);
+				rowPrefix: "tab-manager",
+				testIdPrefix: cssPrefix,
+				item: tab,
+				isVisible,
+				isExpanded,
+				visibleCount: visibleTabs.length,
+				renames,
+				iconOverrides,
+				colorOverrides,
+				onToggleExpand: () => {
+					managerExpandedId = isExpanded ? null : tab.id;
+					rerender();
+				},
+				onHide: () => {
+					hideTab(tab.id);
+					rerender();
+				},
+				onRestore: () => {
+					restoreTab(tab.id);
+					rerender();
+				},
+				onRename: handleRename,
+				onIconChange: handleIconChange,
+				onColorChange: handleColorChange,
+				rerender,
+			});
 
 			if (isGroupTab(tab)) {
 				const groupToggleBtn = row.createEl("button", { cls: css.cls("tab-manager-group-toggle") });
@@ -569,53 +653,57 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 				if (gs) {
 					const visibleChildIds = new Set(gs.visibleChildren.map((c) => c.id));
 					const orderedChildren = [...gs.visibleChildren, ...gs.allChildren.filter((c) => !visibleChildIds.has(c.id))];
-					const childDragRef = { value: null as string | null };
+					const childDragCtx: DragContext = { current: null };
 
 					for (const child of orderedChildren) {
 						const childVisible = visibleChildIds.has(child.id);
-						const childIdx = gs.visibleChildren.findIndex((c) => c.id === child.id);
+						const childExpanded = managerExpandedId === `${tab.id}:${child.id}`;
 
-						renderManagerRow(
-							childrenContainer,
-							{
-								itemId: child.id,
-								displayLabel: getChildLabel(tab.id, child),
-								originalLabel: child.label,
-								isVisible: childVisible,
-								visibleIndex: childIdx,
-								visibleCount: gs.visibleChildren.length,
-								hasRename: gs.childRenames.has(child.id),
-								dragRef: childDragRef,
-								testIdPrefix: cssPrefix,
-								onRename: (done) => showChildRenameModal(tab.id, child, done),
-								onHide:
-									childVisible && gs.visibleChildren.length > 1
-										? () => {
-												hideGroupChild(gs, child);
-												rebuild();
-											}
-										: null,
-								onShow: !childVisible
-									? () => {
-											showGroupChild(gs, child);
-											getOrCreatePanel(child);
-											rebuild();
-										}
-									: null,
-								onMove: childVisible
-									? (dir) => {
-											moveGroupChild(gs, child.id, dir);
-											rebuild();
-										}
-									: null,
-								onDrop: (fromId) => {
-									reorderGroupChildren(gs, fromId, child.id);
-									rebuild();
-								},
-							},
+						const childRow = childrenContainer.createDiv(css.cls("tab-manager-row"));
+						if (cssPrefix) childRow.setAttribute("data-testid", `${cssPrefix}tab-manager-row-${child.id}`);
+						if (!childVisible) css.addCls(childRow, "tab-manager-row-hidden");
+
+						if (childVisible) {
+							attachDragHandlers(childRow, child.id, childDragCtx, (draggedId) => {
+								reorderGroupChildren(gs, draggedId, child.id);
+								rebuild();
+								rerender();
+							});
+						}
+
+						renderManagerRowContent(childRow, {
+							app: config.app!,
 							css,
-							rerender
-						);
+							rowPrefix: "tab-manager",
+							testIdPrefix: cssPrefix,
+							item: child,
+							isVisible: childVisible,
+							isExpanded: childExpanded,
+							visibleCount: gs.visibleChildren.length,
+							renames: gs.childRenames,
+							iconOverrides: gs.childIconOverrides,
+							colorOverrides: gs.childColorOverrides,
+							onToggleExpand: () => {
+								const key = `${tab.id}:${child.id}`;
+								managerExpandedId = childExpanded ? null : key;
+								rerender();
+							},
+							onHide: () => {
+								hideGroupChild(gs, child);
+								rebuild();
+								rerender();
+							},
+							onRestore: () => {
+								showGroupChild(gs, child);
+								getOrCreatePanel(child);
+								rebuild();
+								rerender();
+							},
+							onRename: (id, label) => handleChildRename(tab.id, id, label),
+							onIconChange: (id, icon) => handleChildIconChange(tab.id, id, icon),
+							onColorChange: (id, color) => handleChildColorChange(tab.id, id, color),
+							rerender,
+						});
 					}
 				}
 			}

@@ -124,6 +124,9 @@ export class Setting {
 	addToggle = vi.fn().mockReturnThis();
 	addDropdown = vi.fn().mockReturnThis();
 	addButton = vi.fn().mockReturnThis();
+	addColorPicker = vi.fn().mockReturnThis();
+	addExtraButton = vi.fn().mockReturnThis();
+	addSlider = vi.fn().mockReturnThis();
 	addComponent = vi.fn().mockReturnThis();
 	setClass = vi.fn().mockReturnThis();
 	setDisabled = vi.fn().mockReturnThis();
@@ -347,6 +350,11 @@ export function debounce<T extends (...args: unknown[]) => unknown>(func: T, wai
 
 // setIcon mock
 export function setIcon(_el: HTMLElement, _iconId: string): void {}
+
+// getIconIds mock
+export function getIconIds(): string[] {
+	return ["check", "circle", "star", "calendar", "edit", "trash", "settings"];
+}
 
 // normalizePath mock - simple path normalization for tests
 export function normalizePath(path: string): string {

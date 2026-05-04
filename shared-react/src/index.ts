@@ -15,6 +15,8 @@ export type { FilterInputProps } from "./components/filter-input";
 export { FilterInput, useFilteredItems } from "./components/filter-input";
 export type { IconPickerButtonProps } from "./components/icon-picker-button";
 export { IconPickerButton, useIconPicker } from "./components/icon-picker-button";
+export type { IconPickerGridProps } from "./components/icon-picker-grid";
+export { IconPickerGrid } from "./components/icon-picker-grid";
 export { LicenseSection } from "./components/license-section";
 export type { EditableItem as ManagerEditableItem, ManagerEditFormProps } from "./components/manager-edit-form";
 export { ManagerEditForm } from "./components/manager-edit-form";
@@ -90,6 +92,8 @@ export {
 	FrontmatterPropagationModalContent,
 	openFrontmatterPropagationModal,
 } from "./modals/frontmatter-propagation-modal";
+export type { ShowReactIconPickerOptions } from "./modals/icon-picker-modal";
+export { showReactIconPicker } from "./modals/icon-picker-modal";
 export type { ProgressModalConfig, ProgressModalHandle } from "./modals/progress-modal";
 export { openProgressModal } from "./modals/progress-modal";
 export type { OpenRenameOptions, RenameModalProps } from "./modals/rename-modal";

@@ -102,7 +102,7 @@ export function createContextMenu(config: ContextMenuConfig): ContextMenuHandle 
 		return renames.get(item.id) ?? item.label;
 	}
 
-	function getIcon(item: ContextMenuItemDefinition): string {
+	function getIcon(item: ContextMenuItemDefinition): string | undefined {
 		return iconOverrides.get(item.id) ?? item.icon;
 	}
 
@@ -315,10 +315,8 @@ export function createContextMenu(config: ContextMenuConfig): ContextMenuHandle 
 			const color = getColor(item);
 
 			menu.addItem((menuItem) => {
-				menuItem
-					.setTitle(label)
-					.setIcon(icon)
-					.onClick(() => item.onAction());
+				menuItem.setTitle(label).onClick(() => item.onAction());
+				if (icon) menuItem.setIcon(icon);
 				// Stable testid per item id — E2E specs click entries by id rather
 				// than by label (which drifts with localization and renames).
 				getMenuItemDom(menuItem)?.setAttribute("data-testid", `${testIdPrefix}${item.id}`);
