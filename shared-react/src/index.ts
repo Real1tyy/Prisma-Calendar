@@ -64,6 +64,7 @@ export type { Emitterlike } from "./hooks/use-obsidian-event";
 export { useObsidianEvent } from "./hooks/use-obsidian-event";
 export type { SchemaFieldBinding, SettingsStorelike } from "./hooks/use-schema-field";
 export { useSchemaField } from "./hooks/use-schema-field";
+export { useScrollRestore } from "./hooks/use-scroll-restore";
 export type { SettingsStorelike as SettingsStoreShape, SettingsUpdater } from "./hooks/use-settings-store";
 export { useSettingsStore } from "./hooks/use-settings-store";
 
