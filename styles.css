@@ -1514,7 +1514,7 @@
 }
 
 /* Adjust checkbox position for compact month view block events (all-day events only, not dots) */
-.fc-daygrid-block-event.prisma-batch-selectable .fc-event-main::before:not(.fc-daygrid-dot-event) {
+.fc-daygrid-block-event.prisma-batch-selectable .fc-event-main::before {
   top: 1px;
   right: 1px;
   width: 14px;
@@ -1562,7 +1562,7 @@
 }
 
 /* Smaller checkmark for compact month view block events (all-day events only, not dots) */
-.fc-daygrid-block-event.prisma-batch-selected .fc-event-main::before:not(.fc-daygrid-dot-event) {
+.fc-daygrid-block-event.prisma-batch-selected .fc-event-main::before {
   font-size: 9px;
 }
 
@@ -2712,6 +2712,13 @@
   text-decoration: underline;
 }
 
+.prisma-settings-hero-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
 .prisma-settings-hero-version {
   font-size: var(--font-ui-small);
   color: var(--text-faint);
@@ -2731,6 +2738,27 @@
 .prisma-settings-hero-version.is-copied {
   border-color: var(--color-green);
   color: var(--color-green);
+}
+
+.prisma-settings-hero-collapse-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  background: none;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-faint);
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.prisma-settings-hero-collapse-toggle:hover {
+  color: var(--text-muted);
+  border-color: var(--text-faint);
+}
+.prisma-settings-hero-collapse-toggle svg {
+  width: 16px;
+  height: 16px;
 }
 
 .prisma-calendar-management-header {

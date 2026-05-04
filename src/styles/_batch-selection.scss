@@ -132,7 +132,7 @@
 }
 
 /* Adjust checkbox position for compact month view block events (all-day events only, not dots) */
-.fc-daygrid-block-event.prisma-batch-selectable .fc-event-main::before:not(.fc-daygrid-dot-event) {
+.fc-daygrid-block-event.prisma-batch-selectable .fc-event-main::before {
 	top: 1px;
 	right: 1px;
 	width: 14px;
@@ -182,7 +182,7 @@
 }
 
 /* Smaller checkmark for compact month view block events (all-day events only, not dots) */
-.fc-daygrid-block-event.prisma-batch-selected .fc-event-main::before:not(.fc-daygrid-dot-event) {
+.fc-daygrid-block-event.prisma-batch-selected .fc-event-main::before {
 	font-size: 9px;
 }
 

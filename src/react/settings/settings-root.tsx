@@ -2,6 +2,7 @@ import { cls } from "@real1ty-obsidian-plugins";
 import {
 	Copyable,
 	Dropdown,
+	ObsidianIcon,
 	openRenameModal,
 	SettingItem,
 	useApp,
@@ -34,6 +35,7 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 		if (lastUsed && mainSettings.calendars.some((c) => c.id === lastUsed)) return lastUsed;
 		return mainSettings.calendars[0]?.id ?? "default";
 	});
+	const [managementCollapsed, setManagementCollapsed] = useState(false);
 
 	const version = plugin.manifest?.version ?? "?";
 	const calendars = mainSettings.calendars;
@@ -150,66 +152,82 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 							</a>
 							<span> turns any note with a date into a flexible planning system inside Obsidian.</span>
 						</div>
-						<Copyable text={version} className={cls("settings-hero-version")} successMessage={`Copied ${version}`}>
-							v{version}
-						</Copyable>
+						<div className={cls("settings-hero-controls")}>
+							<Copyable text={version} className={cls("settings-hero-version")} successMessage={`Copied ${version}`}>
+								v{version}
+							</Copyable>
+							<button
+								type="button"
+								className={cls("settings-hero-collapse-toggle")}
+								data-testid="prisma-settings-management-toggle"
+								onClick={() => setManagementCollapsed((prev) => !prev)}
+								aria-label={managementCollapsed ? "Expand planning systems" : "Collapse planning systems"}
+								aria-expanded={!managementCollapsed}
+							>
+								<ObsidianIcon icon={managementCollapsed ? "chevron-right" : "chevron-down"} />
+							</button>
+						</div>
 					</div>
 				</div>
 
-				<SettingItem name="Active planning system" description="Select which planning system to configure">
-					<Dropdown value={selectedCalendarId} options={calendarOptions} onChange={setSelectedCalendarId} />
-				</SettingItem>
+				{!managementCollapsed && (
+					<>
+						<SettingItem name="Active planning system" description="Select which planning system to configure">
+							<Dropdown value={selectedCalendarId} options={calendarOptions} onChange={setSelectedCalendarId} />
+						</SettingItem>
 
-				<div className="prisma-calendar-actions">
-					<button
-						type="button"
-						className="prisma-calendar-action-button prisma-calendar-create-button"
-						data-testid="prisma-settings-calendar-add"
-						disabled={isAtMax}
-						title={maxTitle}
-						onClick={handleCreate}
-					>
-						Create new
-					</button>
-					<button
-						type="button"
-						className="prisma-calendar-action-button prisma-calendar-clone-button"
-						data-testid="prisma-settings-calendar-clone"
-						disabled={isAtMax}
-						title={maxTitle}
-						onClick={handleClone}
-					>
-						Clone current
-					</button>
-					<button
-						type="button"
-						className="prisma-calendar-action-button prisma-calendar-configure-button"
-						data-testid="prisma-settings-calendar-configure"
-						onClick={handleConfigure}
-					>
-						Configure current
-					</button>
-					<button
-						type="button"
-						className="prisma-calendar-action-button prisma-calendar-rename-button"
-						data-testid="prisma-settings-calendar-rename"
-						onClick={handleRename}
-					>
-						Rename current
-					</button>
-					<button
-						type="button"
-						className="prisma-calendar-action-button prisma-calendar-delete-button"
-						data-testid="prisma-settings-calendar-delete"
-						disabled={calendars.length <= 1}
-						title={calendars.length <= 1 ? "At least one planning system is required" : undefined}
-						onClick={handleDelete}
-					>
-						Delete current
-					</button>
-				</div>
+						<div className="prisma-calendar-actions">
+							<button
+								type="button"
+								className="prisma-calendar-action-button prisma-calendar-create-button"
+								data-testid="prisma-settings-calendar-add"
+								disabled={isAtMax}
+								title={maxTitle}
+								onClick={handleCreate}
+							>
+								Create new
+							</button>
+							<button
+								type="button"
+								className="prisma-calendar-action-button prisma-calendar-clone-button"
+								data-testid="prisma-settings-calendar-clone"
+								disabled={isAtMax}
+								title={maxTitle}
+								onClick={handleClone}
+							>
+								Clone current
+							</button>
+							<button
+								type="button"
+								className="prisma-calendar-action-button prisma-calendar-configure-button"
+								data-testid="prisma-settings-calendar-configure"
+								onClick={handleConfigure}
+							>
+								Configure current
+							</button>
+							<button
+								type="button"
+								className="prisma-calendar-action-button prisma-calendar-rename-button"
+								data-testid="prisma-settings-calendar-rename"
+								onClick={handleRename}
+							>
+								Rename current
+							</button>
+							<button
+								type="button"
+								className="prisma-calendar-action-button prisma-calendar-delete-button"
+								data-testid="prisma-settings-calendar-delete"
+								disabled={calendars.length <= 1}
+								title={calendars.length <= 1 ? "At least one planning system is required" : undefined}
+								onClick={handleDelete}
+							>
+								Delete current
+							</button>
+						</div>
 
-				<div className="prisma-calendar-count-info">{countText}</div>
+						<div className="prisma-calendar-count-info">{countText}</div>
+					</>
+				)}
 			</div>
 
 			<div className="prisma-calendar-settings-container">

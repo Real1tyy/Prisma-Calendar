@@ -144,6 +144,13 @@
 	}
 }
 
+.prisma-settings-hero-controls {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex-shrink: 0;
+}
+
 .prisma-settings-hero-version {
 	font-size: var(--font-ui-small);
 	color: var(--text-faint);
@@ -164,6 +171,29 @@
 	&.is-copied {
 		border-color: var(--color-green);
 		color: var(--color-green);
+	}
+}
+
+.prisma-settings-hero-collapse-toggle {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 4px;
+	background: none;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	cursor: pointer;
+	color: var(--text-faint);
+	transition: color 0.15s ease, border-color 0.15s ease;
+
+	&:hover {
+		color: var(--text-muted);
+		border-color: var(--text-faint);
+	}
+
+	svg {
+		width: 16px;
+		height: 16px;
 	}
 }
 
