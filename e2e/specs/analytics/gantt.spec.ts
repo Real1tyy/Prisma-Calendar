@@ -109,28 +109,27 @@ test.describe("analytics: gantt", () => {
 		await openGantt(calendar);
 
 		const nav = calendar.page.locator(".prisma-gantt-nav");
-		const firstMonth = calendar.page.locator(".prisma-gantt-month-label").first();
+		const monthLabels = calendar.page.locator(".prisma-gantt-month-label");
+		const getLabels = () => monthLabels.allInnerTexts();
 
-		const todayLabel = (await firstMonth.innerText()).trim();
+		const initial = await getLabels();
 
 		await nav.locator('button[aria-label="Forward 1 month"]').click();
-		await expect(firstMonth).not.toHaveText(todayLabel);
+		await expect.poll(getLabels).not.toEqual(initial);
 
 		await nav.locator(".prisma-gantt-today-btn").click();
-		await expect(firstMonth).toHaveText(todayLabel);
+		await expect.poll(getLabels).toEqual(initial);
 
 		await nav.locator('button[aria-label="Back 1 month"]').click();
-		await expect(firstMonth).not.toHaveText(todayLabel);
+		await expect.poll(getLabels).not.toEqual(initial);
 
 		await nav.locator('button[aria-label="Forward 1 month"]').click();
-		await expect(firstMonth).toHaveText(todayLabel);
+		await expect.poll(getLabels).toEqual(initial);
 
-		// Weekly nav is a no-op on the month label when today sits mid-month,
-		// so we only assert the buttons click without throwing. A round trip
-		// forward+back leaves the viewport exactly where it started.
+		// Weekly nav round trip leaves the viewport exactly where it started.
 		await nav.locator('button[aria-label="Forward 1 week"]').click();
 		await nav.locator('button[aria-label="Back 1 week"]').click();
-		await expect(firstMonth).toHaveText(todayLabel);
+		await expect.poll(getLabels).toEqual(initial);
 	});
 
 	test("prerequisite arrow renders between two connected events", async ({ calendar }) => {

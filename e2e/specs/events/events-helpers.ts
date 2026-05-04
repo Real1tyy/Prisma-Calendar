@@ -5,6 +5,7 @@ import { type Locator, type Page } from "@playwright/test";
 import { listEventFiles as listAllMarkdownFiles } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { ACTIVE_CALENDAR_LEAF, PLUGIN_ID } from "../../fixtures/constants";
+import { anchorISO } from "../../fixtures/dates";
 import { sel, TID, UNTRACKED_BUTTON_TID, UNTRACKED_DROPDOWN_TID, UNTRACKED_ITEM_TID } from "../../fixtures/testids";
 import { type EventModalInput, fillEventModal, saveEventModal } from "./fill-event-modal";
 
@@ -243,6 +244,41 @@ export async function navigateCalendar(page: Page, monthDiff: number): Promise<v
 	for (let i = 0; i < Math.abs(monthDiff); i++) {
 		await page.locator(selector).click();
 	}
+}
+
+/**
+ * Navigate all mounted FullCalendar instances to the anchor date so that
+ * anchor-seeded events are visible. Use this in specs that operate on the
+ * `obsidian` fixture (no `CalendarHandle.goToAnchor()` available).
+ */
+export async function navigateToAnchor(page: Page): Promise<void> {
+	const iso = anchorISO();
+	await page.evaluate(
+		({ dateIso, pid }) => {
+			const w = window as unknown as {
+				app: {
+					plugins: {
+						plugins: Record<
+							string,
+							{
+								calendarBundles?: Array<{
+									viewRef?: {
+										calendarComponent?: { calendar?: { gotoDate: (d: string) => void } } | null;
+									};
+								}>;
+							}
+						>;
+					};
+				};
+			};
+			const bundles = w.app.plugins.plugins[pid]?.calendarBundles ?? [];
+			for (const bundle of bundles) {
+				const cal = bundle.viewRef?.calendarComponent?.calendar;
+				if (cal) cal.gotoDate(dateIso);
+			}
+		},
+		{ dateIso: iso, pid: PLUGIN_ID }
+	);
 }
 
 /** Months between today and an ISO-ish date string (YYYY-MM-DD or YYYY-MM-DDTHH:MM). */

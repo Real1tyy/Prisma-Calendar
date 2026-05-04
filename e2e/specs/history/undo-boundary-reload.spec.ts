@@ -26,6 +26,7 @@ test.describe("undo boundary: reload (UI-driven)", () => {
 			return Boolean(w.app?.plugins?.plugins?.[pid]?.calendarBundles?.length);
 		}, PLUGIN_ID);
 		await openCalendarReady(calendar.page);
+		await calendar.goToAnchor();
 
 		await calendar.undo();
 		await event.expectExists(true);

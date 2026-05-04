@@ -6,7 +6,7 @@ import { createEventHandle } from "../../fixtures/dsl/event";
 import { test } from "../../fixtures/electron";
 import { closeSettings, openCalendarView, openPrismaSettings, switchSettingsTab } from "../../fixtures/helpers";
 import { refreshCalendar, seedEvent } from "../../fixtures/seed-events";
-import { openCalendarReady } from "../events/events-helpers";
+import { navigateToAnchor, openCalendarReady } from "../events/events-helpers";
 
 const SUBDIR_EVENT_TITLE = "Deep Nested Event";
 const NESTED_SUBDIR = "Events/SubFolder/Deep";
@@ -26,6 +26,7 @@ test.describe("settings: Index subdirectories", () => {
 		await openCalendarReady(obsidian.page);
 		await openCalendarView(obsidian.page);
 		await refreshCalendar(obsidian.page);
+		await navigateToAnchor(obsidian.page);
 
 		const handle = createEventHandle({ page: obsidian.page, vaultDir: obsidian.vaultDir }, relPath, SUBDIR_EVENT_TITLE);
 

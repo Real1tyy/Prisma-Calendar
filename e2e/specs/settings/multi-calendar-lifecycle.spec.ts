@@ -7,7 +7,7 @@ import { expect, testWithSeededFiles as test } from "../../fixtures/electron";
 import { closeSettings, openPrismaSettings } from "../../fixtures/helpers";
 import { getCalendars } from "../../fixtures/plugin-data";
 import { type SeedEventInput, seedEvents, waitForCalendarCount } from "../../fixtures/seed-events";
-import { expectEventVisible, openCalendarView } from "../events/events-helpers";
+import { expectEventVisible, navigateToAnchor, openCalendarView } from "../events/events-helpers";
 
 // ─── Dataset: three folders with distinct property schemas ───────────────────
 
@@ -129,6 +129,7 @@ test.describe("multi-calendar lifecycle: create, configure, delete without full 
 
 		// Verify Meetings events are visible
 		await openCalendarView(page, "default");
+		await navigateToAnchor(page);
 		await expectEventVisible(page, "Team Standup", 20_000);
 		await expectEventVisible(page, "Sprint Planning");
 
@@ -140,11 +141,13 @@ test.describe("multi-calendar lifecycle: create, configure, delete without full 
 
 		// Verify the new calendar shows Personal events
 		await openCalendarView(page, newCalId);
+		await navigateToAnchor(page);
 		await expectEventVisible(page, "Guitar Lesson", 20_000);
 		await expectEventVisible(page, "Yoga Class");
 
 		// Switch back to default — Meetings events still there, no re-index
 		await openCalendarView(page, "default");
+		await navigateToAnchor(page);
 		await expectEventVisible(page, "Team Standup");
 		await expectEventVisible(page, "Sprint Planning");
 	});
@@ -160,9 +163,11 @@ test.describe("multi-calendar lifecycle: create, configure, delete without full 
 
 		// Verify both calendars work
 		await openCalendarView(page, "default");
+		await navigateToAnchor(page);
 		await expectEventVisible(page, "Team Standup", 20_000);
 
 		await openCalendarView(page, secondCalId);
+		await navigateToAnchor(page);
 		await expectEventVisible(page, "Guitar Lesson", 20_000);
 
 		// Select the second calendar and delete it
@@ -177,6 +182,7 @@ test.describe("multi-calendar lifecycle: create, configure, delete without full 
 
 		// Default calendar still shows Meetings events — no re-index
 		await openCalendarView(page, "default");
+		await navigateToAnchor(page);
 		await expectEventVisible(page, "Team Standup");
 		await expectEventVisible(page, "Sprint Planning");
 	});
@@ -191,6 +197,7 @@ test.describe("multi-calendar lifecycle: create, configure, delete without full 
 		await configureCalendarViaModal(page, "Meetings");
 		await closeSettings(page);
 		await openCalendarView(page, "default");
+		await navigateToAnchor(page);
 		await expectEventVisible(page, "Team Standup", 20_000);
 
 		// Step 2: Create second calendar → Personal
@@ -199,6 +206,7 @@ test.describe("multi-calendar lifecycle: create, configure, delete without full 
 		await closeSettings(page);
 
 		await openCalendarView(page, secondId);
+		await navigateToAnchor(page);
 		await expectEventVisible(page, "Guitar Lesson", 20_000);
 		await expectEventVisible(page, "Yoga Class");
 
@@ -208,15 +216,19 @@ test.describe("multi-calendar lifecycle: create, configure, delete without full 
 		await closeSettings(page);
 
 		await openCalendarView(page, thirdId);
+		await navigateToAnchor(page);
 		await expectEventVisible(page, "API Rate Limiting", 20_000);
 		await expectEventVisible(page, "Security Audit");
 
 		// Step 4: Verify all three calendars still show events (no interference)
 		await openCalendarView(page, "default");
+		await navigateToAnchor(page);
 		await expectEventVisible(page, "Team Standup");
 		await openCalendarView(page, secondId);
+		await navigateToAnchor(page);
 		await expectEventVisible(page, "Guitar Lesson");
 		await openCalendarView(page, thirdId);
+		await navigateToAnchor(page);
 		await expectEventVisible(page, "API Rate Limiting");
 
 		// Step 5: Delete second calendar — other two must survive
@@ -227,9 +239,11 @@ test.describe("multi-calendar lifecycle: create, configure, delete without full 
 
 		// First and third still render their events
 		await openCalendarView(page, "default");
+		await navigateToAnchor(page);
 		await expectEventVisible(page, "Team Standup");
 		await expectEventVisible(page, "Sprint Planning");
 		await openCalendarView(page, thirdId);
+		await navigateToAnchor(page);
 		await expectEventVisible(page, "API Rate Limiting");
 		await expectEventVisible(page, "Security Audit");
 	});

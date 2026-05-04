@@ -5,7 +5,7 @@ import { fromAnchor } from "../../fixtures/dates";
 import { expect, testWithSeededFiles as test } from "../../fixtures/electron";
 import { closeSettings, openPrismaSettings, switchSettingsTab } from "../../fixtures/helpers";
 import { type SeedEventInput, seedEvents } from "../../fixtures/seed-events";
-import { expectEventVisible, openCalendarReady } from "../events/events-helpers";
+import { expectEventVisible, navigateToAnchor, openCalendarReady } from "../events/events-helpers";
 
 // ─── Dataset: three folders with distinct property schemas ───────────────────
 
@@ -272,6 +272,7 @@ test.describe("settings: configure calendar with property detection", () => {
 
 		await closeSettings(page);
 		await openCalendarReady(page);
+		await navigateToAnchor(page);
 		await expectEventVisible(page, "Team Standup", 20_000);
 		await expectEventVisible(page, "Sprint Planning");
 
@@ -287,6 +288,7 @@ test.describe("settings: configure calendar with property detection", () => {
 		await settleSettings(page, { pluginId: PLUGIN_ID });
 		await closeSettings(page);
 		await openCalendarReady(page);
+		await navigateToAnchor(page);
 		await expectEventVisible(page, "Guitar Lesson", 20_000);
 		await expectEventVisible(page, "Yoga Class");
 	});

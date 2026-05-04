@@ -7,7 +7,7 @@ import { expect, testWithSeededFiles as test } from "../../fixtures/electron";
 import { closeSettings, openPrismaSettings, setSchemaTextInput, switchSettingsTab } from "../../fixtures/helpers";
 import { getCalendars } from "../../fixtures/plugin-data";
 import { type SeedEventInput, seedEvents, waitForCalendarCount } from "../../fixtures/seed-events";
-import { expectGridEventVisible, openCalendarView } from "../events/events-helpers";
+import { expectGridEventVisible, navigateToAnchor, openCalendarView } from "../events/events-helpers";
 
 // ─── Dataset: one directory, two property schemas ────────────────────────────
 //
@@ -86,6 +86,7 @@ test.describe("shared directory isolation: planning systems on the same folder",
 		await closeSettings(page);
 
 		await openCalendarView(page, "default");
+		await navigateToAnchor(page);
 		await expectGridEventVisible(page, "Weekly Review", 20_000);
 		await expectGridEventVisible(page, "Budget Meeting");
 
@@ -104,11 +105,13 @@ test.describe("shared directory isolation: planning systems on the same folder",
 
 		// Second planning system shows only Schema B events
 		await openCalendarView(page, secondId);
+		await navigateToAnchor(page);
 		await expectGridEventVisible(page, "Design Sprint", 20_000);
 		await expectGridEventVisible(page, "Code Review");
 
 		// First planning system still shows only Schema A events
 		await openCalendarView(page, "default");
+		await navigateToAnchor(page);
 		await expectGridEventVisible(page, "Weekly Review");
 		await expectGridEventVisible(page, "Budget Meeting");
 
@@ -141,6 +144,7 @@ test.describe("shared directory isolation: planning systems on the same folder",
 		await closeSettings(page);
 
 		await openCalendarView(page, "default");
+		await navigateToAnchor(page);
 		await expectGridEventVisible(page, "Weekly Review", 20_000);
 
 		// Create second planning system → same dir, same properties
@@ -158,10 +162,12 @@ test.describe("shared directory isolation: planning systems on the same folder",
 
 		// Both planning systems see Schema A events
 		await openCalendarView(page, secondId);
+		await navigateToAnchor(page);
 		await expectGridEventVisible(page, "Weekly Review", 20_000);
 		await expectGridEventVisible(page, "Budget Meeting");
 
 		await openCalendarView(page, "default");
+		await navigateToAnchor(page);
 		await expectGridEventVisible(page, "Weekly Review");
 		await expectGridEventVisible(page, "Budget Meeting");
 	});
@@ -185,8 +191,10 @@ test.describe("shared directory isolation: planning systems on the same folder",
 
 		// Verify both work
 		await openCalendarView(page, "default");
+		await navigateToAnchor(page);
 		await expectGridEventVisible(page, "Weekly Review", 20_000);
 		await openCalendarView(page, secondId);
+		await navigateToAnchor(page);
 		await expectGridEventVisible(page, "Design Sprint", 20_000);
 
 		// Delete the second planning system
@@ -197,6 +205,7 @@ test.describe("shared directory isolation: planning systems on the same folder",
 
 		// First still works
 		await openCalendarView(page, "default");
+		await navigateToAnchor(page);
 		await expectGridEventVisible(page, "Weekly Review");
 		await expectGridEventVisible(page, "Budget Meeting");
 	});
