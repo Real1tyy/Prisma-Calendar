@@ -6,11 +6,13 @@ All notable changes to this project will be documented here.
 
 ## 2.16.0 - 5/4/2026
 
-> **TLDR:** New **series shortcut** context menu items let you jump directly to the name, category, or recurring tab in the Event Series Modal. Timeline, Heatmap, and Gantt views now react to settings and color changes in real time. Settings now remember your active tab and scroll position.
+> **TLDR:** New **series shortcut** context menu items let you jump directly to the name, category, or recurring tab in the Event Series Modal. Timeline, Heatmap, and Gantt views now react to settings and color changes in real time. Settings now remember your active tab and scroll position. Icons now have a **visual picker** with live previews, are **optional on all UI elements**, **tabs support inline icons**, and the **tab manager** now lets you edit icons and colors per tab.
 
 ### Added
 - **Series shortcut context menu items**: Three new right-click items — **Show name series**, **Show category series**, and **Show recurring series** — open the Event Series Modal directly on the corresponding tab. Category and recurring shortcuts only appear when applicable. See [Event Groups → Series Shortcuts](./features/events/event-groups.md#series-shortcuts-in-context-menu).
 - **Collapsible planning system management**: A chevron toggle next to the version badge collapses the planning system selector and action buttons, giving more room for settings content. See [Multiple Planning Systems → Managing planning systems](./features/calendar/multiple-calendars.md#managing-planning-systems).
+- **Visual icon picker**: Editing any icon field now opens a searchable grid with live-rendered previews of every available icon. Click to apply, or **No icon** to remove it. See [Tabbed Views](./features/views/tabbed-views.md#tab-icons).
+- **Tab icons and color editing**: Tabs support optional inline icons and the tab manager lets you edit each tab's name, icon, and color. Icons are also now optional everywhere — context menu items, header actions, and tabs render cleanly without one. See [Tabbed Views](./features/views/tabbed-views.md#managing-tabs).
 
 ### Improved
 - **Settings remember active tab and scroll position**: Closing and reopening settings restores the tab you were on and your scroll position within it. See [Configuration](./configuration/index.md#settings-state-persistence).
@@ -59,7 +61,7 @@ Prisma is under active, full-time development. If you have ideas for improving t
 
 ## 2.14.0 - 4/21/2026
 
-> **TLDR:** New **Settings transfer** and **Year view**. **Multi-color gradients and color dots** now work across Gantt, Timeline, Heatmap, and event series modals — not just the calendar. Export your plugin config as JSON and re-import it on another vault. **CalDAV subscriptions** now pick up server-side deletions. Events in nested subdirectories are now indexed again by default.
+> **TLDR:** New **Settings transfer** and **Year view**. **Multi-color gradients and color dots** now work across Gantt, Timeline, Heatmap, and event series modals — not just the calendar. Export your plugin config as JSON and re-import it on another vault. **CalDAV subscriptions** now pick up server-side deletions. **Title property** wins over **Calendar Title** everywhere.
 >
 > 📺 [Watch the 2.15 & 2.14 update video](https://youtu.be/QBB6QmY-n8Y) — a walkthrough of all the major changes in action.
 

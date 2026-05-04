@@ -2,11 +2,12 @@ import {
 	activateView,
 	ensureDirectory,
 	normalizeDirectory,
+	setIconPickerImplementation,
 	SettingsStore,
 	SyncStore,
 	waitForCacheReady,
 } from "@real1ty-obsidian-plugins";
-import { showWhatsNewReactModal } from "@real1ty-obsidian-plugins-react";
+import { showReactIconPicker, showWhatsNewReactModal } from "@real1ty-obsidian-plugins-react";
 import { Notice, Plugin, TFile, type View, type WorkspaceLeaf } from "obsidian";
 
 import CHANGELOG_CONTENT from "../../docs-site/docs/changelog.md";
@@ -54,6 +55,7 @@ export default class CustomCalendarPlugin extends Plugin {
 	}
 
 	override async onload() {
+		setIconPickerImplementation(showReactIconPicker);
 		const isFirstLaunch = (await this.loadData()) === null;
 		await migrateSharedExcludedProps(this);
 		this.settingsStore = new SettingsStore(this, CustomCalendarSettingsSchema);

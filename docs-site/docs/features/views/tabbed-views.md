@@ -61,6 +61,12 @@ A Gantt chart showing events as horizontal bars with dependency arrows between p
 - **Switch tabs** by clicking a tab in the header bar, or use the `Prisma Calendar: Go to tab` commands.
 - **Reorder tabs** by right-clicking a tab and selecting Move left/right, or use the settings gear to open the tab manager.
 - **Hide/show tabs** via the tab manager (gear icon) or right-click context menu.
-- **Rename tabs** via right-click or the tab manager.
+- **Edit tabs** via the tab manager — click the pencil icon on any row to expand an inline edit form where you can change the tab's **name**, **icon**, and **color**. This is the same edit form used by header actions and context menu items.
 
-Tab state — active tab, visibility, order, and custom names — persists across sessions.
+Tab state — active tab, visibility, order, custom names, icon overrides, and color overrides — persists across sessions.
+
+## Tab Icons
+
+Tabs support optional icons shown to the left of the label. When an icon is provided, a small inline icon renders before the tab name. Tabs without icons display label text only — the icon is always optional and never required.
+
+Context menu items and header actions also support optional icons. When editing an icon via the item manager or action manager, a **visual icon picker** opens showing all available icons as a rendered grid — click any icon to apply it, or click **No icon** to remove it.
