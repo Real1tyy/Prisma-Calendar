@@ -13,6 +13,7 @@ export type ObsidianPluginsRegistry = {
 	isEnabled?: () => boolean;
 	plugins: Record<string, unknown>;
 	manifests?: Record<string, unknown>;
+	enabledPlugins?: Set<string>;
 };
 
 export type ObsidianApp = {
@@ -36,6 +37,10 @@ export type ObsidianApp = {
 
 export type ObsidianWindow = {
 	app: ObsidianApp;
+	/** Set by E2E bootstrap to signal test mode to plugin code. */
+	E2E?: boolean;
+	/** Electron's `require` — available in the renderer when nodeIntegration is on. */
+	require?: (module: string) => unknown;
 };
 
 // Usage inside `page.evaluate(...)`:

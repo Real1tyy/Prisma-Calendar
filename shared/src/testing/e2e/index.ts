@@ -33,6 +33,15 @@ export {
 	readPluginData,
 } from "./frontmatter";
 export { type GlobalSetupOptions, pruneStaleE2eResources } from "./global-setup";
-export { countPluginCommands, executeCommand, isPluginLoaded, openNote, openSettingsTab } from "./helpers";
+export {
+	countPluginCommands,
+	executeCommand,
+	isPluginLoaded,
+	openNote,
+	openSettingsTab,
+	waitForApp,
+	waitForPluginLoaded,
+	waitForPlugins,
+} from "./helpers";
 export type { ObsidianApp, ObsidianPluginsRegistry, ObsidianWindow } from "./types";
 export { buildVaultPrefix, slug as slugifyVaultSegment, type VaultPrefixOptions } from "./vault-prefix";

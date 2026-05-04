@@ -17,6 +17,9 @@ import { basename, join } from "node:path";
 
 import { type Browser, chromium, type Page } from "@playwright/test";
 
+import { waitForApp, waitForPluginLoaded, waitForPlugins } from "./helpers";
+import type { ObsidianWindow } from "./types";
+
 // Generic Obsidian E2E bootstrap — spawns a real Obsidian Electron instance per
 // test, connects Playwright over CDP, and drives the plugin registry to a known
 // state. Plugin-specific setup (seeding data.json, waiting for runtime structures
@@ -455,16 +458,14 @@ export async function bootstrapObsidian(options: BootstrapOptions): Promise<Boot
 		});
 
 		log.debug(`waiting for window.app...`);
-		await page.waitForFunction(() => Boolean((window as unknown as { app?: unknown }).app), null, {
-			timeout: 60_000,
-		});
+		await waitForApp(page, 60_000);
 		log.debug(`window.app exists`);
 
 		if (options.onRendererReady) {
 			await options.onRendererReady(page);
 		}
 
-		await ensurePluginLoaded(page, options.plugin.id, log);
+		await ensurePluginLoaded(page, options.plugin.id, log, 60_000, options.onRendererReady);
 
 		if (options.afterPluginLoaded) {
 			await options.afterPluginLoaded(page);
@@ -645,32 +646,94 @@ type ObsidianLauncherLike = {
 	}) => Promise<string>;
 };
 
-async function ensurePluginLoaded(page: Page, pluginId: string, log: Logger, timeoutMs = 60_000): Promise<void> {
+async function ensurePluginLoaded(
+	page: Page,
+	pluginId: string,
+	log: Logger,
+	timeoutMs = 60_000,
+	onRendererReady?: (page: Page) => void | Promise<void>
+): Promise<void> {
 	log.debug(`ensurePluginLoaded: waiting for app.plugins...`);
-	await page.waitForFunction(() => Boolean((window as unknown as { app?: { plugins?: unknown } }).app?.plugins), null, {
-		timeout: timeoutMs,
-	});
+	await waitForPlugins(page, timeoutMs);
 
-	const trace = await page.evaluate(async (id) => {
-		const w = window as unknown as {
-			app: {
-				plugins: {
-					setEnable?: (enable: boolean) => Promise<void> | void;
-					enablePluginAndSave?: (id: string) => Promise<void>;
-					enablePlugin?: (id: string) => Promise<void>;
-					plugins: Record<string, unknown>;
-					manifests?: Record<string, unknown>;
-					loadManifests?: () => Promise<void>;
-				};
-			};
-		};
-		const plugins = w.app.plugins;
+	const deadline = Date.now() + timeoutMs;
+	const MAX_ATTEMPTS = 5;
+	const POLL_INTERVAL_MS = 5_000;
+
+	for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+		if (Date.now() >= deadline) break;
+
+		const result = await tryEnablePlugin(page, pluginId);
+		for (const step of result.trace) log.debug(`enable[${attempt}]: ${step}`);
+
+		if (result.loaded) {
+			log.debug(`ensurePluginLoaded: ${pluginId} loaded (attempt ${attempt})`);
+			return;
+		}
+
+		if (result.hasFail) {
+			log.debug(`enable[${attempt}]: enable call reported FAIL — retrying immediately`);
+			await page.waitForTimeout(500);
+			continue;
+		}
+
+		// enablePluginAndSave reported ok but the plugin isn't in the registry
+		// yet — Obsidian may still be running onload(). Short-poll before retry.
+		const remainingMs = Math.min(POLL_INTERVAL_MS, deadline - Date.now());
+		if (remainingMs <= 0) break;
+
+		const appeared = await waitForPluginLoaded(page, pluginId, remainingMs);
+
+		if (appeared) {
+			log.debug(`ensurePluginLoaded: ${pluginId} loaded (attempt ${attempt}, after poll)`);
+			return;
+		}
+
+		log.debug(`enable[${attempt}]: plugin not in registry after ${POLL_INTERVAL_MS}ms poll`);
+
+		if (page.isClosed()) {
+			throw new Error(`ensurePluginLoaded: page closed during attempt ${attempt}`);
+		}
+	}
+
+	// Last resort: reload the page. enablePluginAndSave persisted the plugin
+	// to community-plugins.json, so Obsidian will load it from saved state.
+	log.debug(`ensurePluginLoaded: ${MAX_ATTEMPTS} attempts exhausted — reloading page as fallback`);
+	await page.reload({ timeout: 30_000 });
+	await waitForApp(page, 30_000);
+	if (onRendererReady) await onRendererReady(page);
+	await waitForPlugins(page, 30_000);
+
+	const finalCheck = await waitForPluginLoaded(page, pluginId, 30_000);
+
+	if (finalCheck) {
+		log.debug(`ensurePluginLoaded: ${pluginId} loaded after page reload`);
+		return;
+	}
+
+	const diagnostics = await collectPluginDiagnostics(page, pluginId);
+	throw new Error(
+		`ensurePluginLoaded: ${pluginId} not loaded after ${MAX_ATTEMPTS} attempts + page reload.\n${diagnostics}`
+	);
+}
+
+type EnableResult = {
+	trace: string[];
+	loaded: boolean;
+	hasFail: boolean;
+};
+
+async function tryEnablePlugin(page: Page, pluginId: string): Promise<EnableResult> {
+	const result = await page.evaluate(async (id) => {
+		const { plugins } = (window as unknown as ObsidianWindow).app;
 		const steps: string[] = [];
+		let hasFail = false;
 		const call = async (label: string, fn: () => Promise<unknown> | unknown): Promise<void> => {
 			try {
 				await fn();
 				steps.push(`${label}: ok`);
 			} catch (err) {
+				hasFail = true;
 				steps.push(`${label}: FAIL ${err instanceof Error ? err.message : String(err)}`);
 			}
 		};
@@ -688,22 +751,34 @@ async function ensurePluginLoaded(page: Page, pluginId: string, log: Logger, tim
 				await call(`enablePlugin(${id})`, () => plugins.enablePlugin!(id));
 			} else {
 				steps.push("no enable fn");
+				hasFail = true;
 			}
 		}
+		const loaded = Boolean(plugins.plugins[id]);
 		steps.push(`loaded=${Object.keys(plugins.plugins).join(",")}`);
-		return steps;
+		return { trace: steps, loaded, hasFail };
 	}, pluginId);
-	for (const step of trace) log.debug(`enable: ${step}`);
+	return result;
+}
 
-	await page.waitForFunction(
-		(id) =>
-			Boolean(
-				(window as unknown as { app?: { plugins?: { plugins?: Record<string, unknown> } } }).app?.plugins?.plugins?.[id]
-			),
-		pluginId,
-		{ timeout: timeoutMs }
-	);
-	log.debug(`ensurePluginLoaded: ${pluginId} loaded`);
+async function collectPluginDiagnostics(page: Page, pluginId: string): Promise<string> {
+	try {
+		return await page.evaluate((id) => {
+			const { plugins } = (window as unknown as ObsidianWindow).app;
+			if (!plugins) return "app.plugins is falsy";
+			const lines: string[] = [];
+			lines.push(`manifests: ${Object.keys(plugins.manifests ?? {}).join(", ") || "(none)"}`);
+			lines.push(`loaded plugins: ${Object.keys(plugins.plugins ?? {}).join(", ") || "(none)"}`);
+			lines.push(`target "${id}" in manifests: ${Boolean(plugins.manifests?.[id])}`);
+			lines.push(`target "${id}" in plugins: ${Boolean(plugins.plugins?.[id])}`);
+			if (plugins.enabledPlugins instanceof Set) {
+				lines.push(`target "${id}" in enabledPlugins: ${plugins.enabledPlugins.has(id)}`);
+			}
+			return lines.join("\n");
+		}, pluginId);
+	} catch {
+		return "(diagnostics unavailable — page may have crashed)";
+	}
 }
 
 function pipeRendererConsole(page: Page, log: Logger): void {
@@ -728,7 +803,7 @@ async function configureDemoViewport(page: Page, log: Logger): Promise<void> {
 
 	await page
 		.evaluate(() => {
-			const w = window as unknown as { require?: (m: string) => unknown };
+			const w = window as unknown as ObsidianWindow;
 			const remote = w.require?.("@electron/remote") as { getCurrentWindow?: () => { maximize?: () => void } };
 			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 			remote?.getCurrentWindow?.()?.maximize?.();

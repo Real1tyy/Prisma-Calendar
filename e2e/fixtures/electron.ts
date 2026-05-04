@@ -7,6 +7,7 @@ import {
 	type BootstrappedObsidian,
 	createFileLogger,
 	isTransientObsidianTeardownError,
+	type ObsidianWindow,
 	pruneStaleE2eResources,
 } from "@real1ty-obsidian-plugins/testing/e2e";
 
@@ -181,7 +182,7 @@ export async function bootstrapObsidian(
 			// testability hooks (e.g., exposing the active event modal instance).
 			await page.evaluate(
 				({ verbose }) => {
-					const w = window as unknown as { E2E?: boolean };
+					const w = window as unknown as ObsidianWindow;
 					w.E2E = true;
 					// Obsidian success/error toasts (`.notice`) stack in a top-right
 					// container and intercept clicks on the calendar toolbar for
@@ -260,33 +261,23 @@ export async function bootstrapObsidian(
 			// CalendarBundles initialize lazily via workspace.onLayoutReady →
 			// waitForCacheReady. Force them to resolve before tests run so the
 			// plugin is fully usable (commands registered, views activatable).
+			type PrismaPlugin = {
+				calendarBundles?: Array<{ calendarId: string; initialize: () => Promise<void> }>;
+				ensureCalendarBundlesReady?: () => Promise<void>;
+			};
 			await page.waitForFunction(
 				(id) => {
-					const w = window as unknown as {
-						app: { plugins: { plugins: Record<string, { calendarBundles?: unknown[] }> } };
-					};
-					// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-					return Boolean(w.app.plugins.plugins[id]?.calendarBundles?.length);
+					const w = window as unknown as ObsidianWindow;
+
+					return Boolean((w.app.plugins.plugins[id] as PrismaPlugin | undefined)?.calendarBundles?.length);
 				},
 				PLUGIN_ID,
 				{ timeout: 60_000 }
 			);
 			await page.evaluate(async (id) => {
-				const w = window as unknown as {
-					app: {
-						plugins: {
-							plugins: Record<
-								string,
-								{
-									ensureCalendarBundlesReady?: () => Promise<void>;
-									calendarBundles?: Array<{ calendarId: string; initialize: () => Promise<void> }>;
-								}
-							>;
-						};
-					};
-				};
-				const plugin = w.app.plugins.plugins[id];
-				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+				const w = window as unknown as ObsidianWindow;
+				const plugin = w.app.plugins.plugins[id] as PrismaPlugin | undefined;
+
 				if (!plugin) return;
 				if (typeof plugin.ensureCalendarBundlesReady === "function") {
 					await plugin.ensureCalendarBundlesReady();

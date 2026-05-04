@@ -52,3 +52,27 @@ export async function countPluginCommands(page: Page, pluginId: string): Promise
 		return Object.keys(commands).filter((commandId) => commandId.startsWith(`${id}:`)).length;
 	}, pluginId);
 }
+
+// ── Bootstrap wait helpers ──────────────────────────────────────────────────
+// Encapsulate the repeated waitForFunction + ObsidianWindow cast patterns that
+// bootstrap.ts and plugin fixtures use to gate on Obsidian lifecycle milestones.
+
+/** Resolve once `window.app` exists on the renderer page. */
+export async function waitForApp(page: Page, timeout: number): Promise<void> {
+	await page.waitForFunction(() => Boolean((window as unknown as ObsidianWindow).app), null, { timeout });
+}
+
+/** Resolve once `window.app.plugins` exists. */
+export async function waitForPlugins(page: Page, timeout: number): Promise<void> {
+	await page.waitForFunction(() => Boolean((window as unknown as ObsidianWindow).app?.plugins), null, { timeout });
+}
+
+/** Resolve once `window.app.plugins.plugins[id]` is truthy; returns false on timeout. */
+export async function waitForPluginLoaded(page: Page, pluginId: string, timeout: number): Promise<boolean> {
+	return page
+		.waitForFunction((id) => Boolean((window as unknown as ObsidianWindow).app?.plugins?.plugins?.[id]), pluginId, {
+			timeout,
+		})
+		.then(() => true)
+		.catch(() => false);
+}
