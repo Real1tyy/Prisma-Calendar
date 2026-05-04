@@ -156,6 +156,10 @@ export const TAB_MANAGER_MODAL = "prisma-tab-manager-modal";
 export const ITEM_MANAGER_MODAL = "prisma-item-manager-modal";
 /** Generic assignment picker (used by Assign Categories / Assign Prerequisites). */
 export const ASSIGN_MODAL_ROOT = ".prisma-assignment-modal";
+/** Shared visual icon picker modal — opened when editing an icon in any manager. */
+export const ICON_PICKER_GRID_TID = "shared-icon-picker-grid";
+export const ICON_PICKER_SEARCH_TID = "shared-icon-picker-search";
+export const ICON_PICKER_NO_ICON_TID = "shared-icon-picker-no-icon";
 /** Plugin-agnostic shared confirmation modal (unprefixed by design). */
 export const CONFIRMATION_MODAL_TID = "confirmation-modal";
 export const CONFIRMATION_MODAL_CONFIRM_TID = "confirmation-modal-confirm";
@@ -176,10 +180,15 @@ export const SHARED_ROW_PREFIX = {
 	actionRow: "prisma-action-manager-row-",
 	actionUp: "prisma-action-manager-up-",
 	actionToggle: "prisma-action-manager-toggle-",
+	tabManagerRow: "prisma-tab-manager-row-",
 	tabManagerUp: "prisma-tab-manager-up-",
 	tabManagerToggle: "prisma-tab-manager-toggle-",
+	tabManagerEdit: "prisma-tab-manager-edit-",
+	tabManagerIconBtn: "prisma-tab-manager-icon-btn-",
 	tabManagerRename: "prisma-tab-manager-rename-",
 	itemManagerToggle: "prisma-item-manager-toggle-",
+	itemManagerEdit: "prisma-item-manager-edit-",
+	itemManagerIconBtn: "prisma-item-manager-icon-btn-",
 	collapsibleHeader: "prisma-collapsible-header-",
 	collapsibleBody: "prisma-collapsible-body-",
 	collapsibleToggle: "prisma-collapsible-toggle-",
@@ -191,10 +200,15 @@ export const sharedTID = {
 	actionRow: (id: string): string => `${SHARED_ROW_PREFIX.actionRow}${id}`,
 	actionUp: (id: string): string => `${SHARED_ROW_PREFIX.actionUp}${id}`,
 	actionToggle: (id: string): string => `${SHARED_ROW_PREFIX.actionToggle}${id}`,
+	tabManagerRow: (id: string): string => `${SHARED_ROW_PREFIX.tabManagerRow}${id}`,
 	tabManagerUp: (id: string): string => `${SHARED_ROW_PREFIX.tabManagerUp}${id}`,
 	tabManagerToggle: (id: string): string => `${SHARED_ROW_PREFIX.tabManagerToggle}${id}`,
+	tabManagerEdit: (id: string): string => `${SHARED_ROW_PREFIX.tabManagerEdit}${id}`,
+	tabManagerIconBtn: (id: string): string => `${SHARED_ROW_PREFIX.tabManagerIconBtn}${id}`,
 	tabManagerRename: (id: string): string => `${SHARED_ROW_PREFIX.tabManagerRename}${id}`,
 	itemManagerToggle: (id: string): string => `${SHARED_ROW_PREFIX.itemManagerToggle}${id}`,
+	itemManagerEdit: (id: string): string => `${SHARED_ROW_PREFIX.itemManagerEdit}${id}`,
+	itemManagerIconBtn: (id: string): string => `${SHARED_ROW_PREFIX.itemManagerIconBtn}${id}`,
 	collapsibleHeader: (id: string): string => `${SHARED_ROW_PREFIX.collapsibleHeader}${id}`,
 	collapsibleBody: (id: string): string => `${SHARED_ROW_PREFIX.collapsibleBody}${id}`,
 	collapsibleToggle: (id: string): string => `${SHARED_ROW_PREFIX.collapsibleToggle}${id}`,
