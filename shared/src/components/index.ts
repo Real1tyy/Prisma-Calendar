@@ -12,4 +12,3 @@ export * from "./primitives";
 export * from "./property-renderer";
 export * from "./schema-modal";
 export * from "./tabbed-container";
-export * from "./whats-new";
