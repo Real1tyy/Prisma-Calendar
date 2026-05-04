@@ -1,4 +1,4 @@
-import { buildUtmUrl, showWhatsNewModal } from "@real1ty-obsidian-plugins";
+import { buildUtmUrl } from "@real1ty-obsidian-plugins";
 import {
 	Dropdown,
 	LicenseSection,
@@ -7,6 +7,7 @@ import {
 	SettingHeading,
 	SettingItem,
 	SettingsTransferButtons,
+	showWhatsNewReactModal,
 	Toggle,
 	useSettingsStore,
 } from "@real1ty-obsidian-plugins-react";
@@ -272,7 +273,7 @@ const EventPresetsSection = memo(function EventPresetsSection({
 export const HelpSection = memo(function HelpSection({ plugin }: { plugin: CustomCalendarPlugin }) {
 	const handleViewChangelog = useCallback(() => {
 		const config = buildWhatsNewConfig(plugin.changelogContent, "settings");
-		showWhatsNewModal(plugin.app, plugin, config, "0.0.0", plugin.manifest.version);
+		showWhatsNewReactModal(plugin.app, plugin, config, "0.0.0", plugin.manifest.version);
 	}, [plugin]);
 
 	return (

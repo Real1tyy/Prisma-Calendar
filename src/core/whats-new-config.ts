@@ -1,4 +1,5 @@
-import { buildUtmUrl, type WhatsNewModalConfig } from "@real1ty-obsidian-plugins";
+import { buildUtmUrl } from "@real1ty-obsidian-plugins";
+import type { WhatsNewModalConfig } from "@real1ty-obsidian-plugins-react";
 
 const GITHUB_URL = "https://github.com/Real1tyy/Prisma-Calendar";
 const PRODUCT_PAGE_URL = "https://matejvavroproductivity.com/tools/prisma-calendar/";

@@ -3,10 +3,10 @@ import {
 	ensureDirectory,
 	normalizeDirectory,
 	SettingsStore,
-	showWhatsNewModal,
 	SyncStore,
 	waitForCacheReady,
 } from "@real1ty-obsidian-plugins";
+import { showWhatsNewReactModal } from "@real1ty-obsidian-plugins-react";
 import { Notice, Plugin, TFile, type View, type WorkspaceLeaf } from "obsidian";
 
 import CHANGELOG_CONTENT from "../../docs-site/docs/changelog.md";
@@ -666,7 +666,7 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		if (lastSeenVersion !== currentVersion) {
 			const config = buildWhatsNewConfig(CHANGELOG_CONTENT, "whats_new");
-			showWhatsNewModal(this.app, this, config, lastSeenVersion, currentVersion);
+			showWhatsNewReactModal(this.app, this, config, lastSeenVersion, currentVersion);
 			await this.settingsStore.updateSettings((settings) => ({
 				...settings,
 				version: currentVersion,
