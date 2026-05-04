@@ -6,6 +6,7 @@ import {
 	openRenameModal,
 	SettingItem,
 	useApp,
+	useScrollRestore,
 	useSettingsStore,
 } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useMemo, useState } from "react";
@@ -141,9 +142,11 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 		}
 	}, [app, selectedCalendar, selectedCalendarId, updateMainSettings]);
 
+	const scrollRef = useScrollRestore(plugin.settingsSessionState.scrollTop, ".vertical-tab-content");
+
 	return (
 		<>
-			<div className={`${cls("calendar-management")} ${cls("calendar-management-header")}`}>
+			<div ref={scrollRef} className={`${cls("calendar-management")} ${cls("calendar-management-header")}`}>
 				<div className={cls("settings-hero")}>
 					<div className={cls("settings-hero-row")}>
 						<div className={cls("settings-hero-pitch")}>

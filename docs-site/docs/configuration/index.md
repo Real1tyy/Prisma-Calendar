@@ -25,11 +25,16 @@ A search input sits to the right of the section tabs (General, Properties, Calen
 - **Enter**: applies the filter immediately
 - **Clear**: remove the search text or click any tab to return to normal tabbed navigation
 
+## Settings State Persistence
+
+Settings remember your position across close/reopen cycles — the active tab and scroll position are restored so you pick up exactly where you left off. State is kept in memory for the current session and resets on plugin reload.
+
 ## Calendar Management
 
 - Add, clone, or delete calendars from Settings → Prisma Calendar
 - Each calendar is isolated: its own directory, filters, colors, and UI options
 - Maximum calendars: 10 (configurable limit in code, UI will disable buttons at the max)
+- Click the **chevron toggle** next to the version badge to collapse the management section and free up vertical space
 
 ### Active Calendar
 

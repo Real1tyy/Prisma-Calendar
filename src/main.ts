@@ -46,6 +46,7 @@ export default class CustomCalendarPlugin extends Plugin {
 	calendarBundles: CalendarBundle[] = [];
 	apiManager!: PrismaCalendarApiManager;
 	licenseManager!: LicenseManager;
+	settingsSessionState = { tab: "general", scrollTop: { current: 0 } };
 	private registeredViewTypes: Set<string> = new Set();
 
 	get isProEnabled(): boolean {

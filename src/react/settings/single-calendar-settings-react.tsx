@@ -1,6 +1,6 @@
 import { buildUtmUrl } from "@real1ty-obsidian-plugins";
 import { type SettingsFooterLink, SettingsNav } from "@real1ty-obsidian-plugins-react";
-import { memo, useState } from "react";
+import { memo, useCallback, useState } from "react";
 
 import { PRO_FEATURES } from "../../core/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
@@ -117,8 +117,18 @@ export const SingleCalendarSettingsReact = memo(function SingleCalendarSettingsR
 	mainSettingsStore,
 	initialTab = "general",
 }: SingleCalendarSettingsReactProps) {
-	const [activeTab, setActiveTab] = useState(initialTab);
+	const [activeTab, setActiveTabRaw] = useState(() =>
+		initialTab !== "general" ? initialTab : plugin.settingsSessionState.tab
+	);
 	const [searchQuery, setSearchQuery] = useState("");
+
+	const setActiveTab = useCallback(
+		(tab: string) => {
+			setActiveTabRaw(tab);
+			plugin.settingsSessionState.tab = tab;
+		},
+		[plugin]
+	);
 
 	const isSearching = searchQuery.trim().length >= 2;
 

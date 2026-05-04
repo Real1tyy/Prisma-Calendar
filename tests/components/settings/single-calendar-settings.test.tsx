@@ -63,6 +63,7 @@ function createMockPlugin() {
 		isProEnabled: false,
 		calendarBundles: [],
 		settingsStore: createMockMainStore(),
+		settingsSessionState: { tab: "general", scrollTop: { current: 0 } },
 		licenseManager: { status$: new BehaviorSubject("inactive") },
 		syncStore: { data: { readOnly: false }, updateData: vi.fn() },
 		syncSingleAccount: vi.fn(),

@@ -45,6 +45,7 @@ All management happens in Settings at the top of the page — create, clone, ren
 - **Creating or deleting** a planning system is instant and never disrupts other open systems — no re-indexing, no settings closing.
 - **Renaming** immediately updates the ribbon icon tooltip and command palette entries.
 - **Configure current** opens a focused modal that scans your vault for date-like properties and lets you set the directory and property names with auto-detection.
+- **Collapsible management section** — click the chevron toggle next to the version badge to collapse the planning system selector and action buttons, freeing up vertical space for the settings tabs below.
 
 ## Example Configurations
 
