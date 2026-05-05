@@ -15,26 +15,18 @@ vi.mock("../../../src/core/pro-feature-previews", () => ({
 	getFeaturePurchaseUrl: vi.fn().mockReturnValue("https://example.com/buy"),
 }));
 
-vi.mock("../../../src/components/settings/caldav/add-modal", () => ({
-	showAddCalDAVAccountModal: vi.fn(),
-}));
-vi.mock("../../../src/components/settings/caldav/edit-modal", () => ({
-	showEditCalDAVAccountModal: vi.fn(),
-}));
-vi.mock("../../../src/components/settings/ics-subscriptions/add-modal", () => ({
-	showAddICSSubscriptionModal: vi.fn(),
-}));
-vi.mock("../../../src/components/settings/ics-subscriptions/edit-modal", () => ({
-	showEditICSSubscriptionModal: vi.fn(),
+vi.mock("../../../src/react/modals", () => ({
+	openCalDAVAddModal: vi.fn().mockResolvedValue(null),
+	openCalDAVEditModal: vi.fn().mockResolvedValue(undefined),
+	openICSAddModal: vi.fn().mockResolvedValue(null),
+	openICSEditModal: vi.fn().mockResolvedValue(undefined),
+	openCalendarIntegrationDeleteEventsModal: vi.fn().mockResolvedValue(null),
+	openConfirmDeleteModal: vi.fn().mockResolvedValue(false),
+	openCategoryDeleteModal: vi.fn(),
+	openCategoryRenameModal: vi.fn(),
 }));
 vi.mock("../../../src/components/modals", () => ({
-	showCalendarIntegrationDeleteEventsModal: vi.fn(),
-	showCategoryDeleteModal: vi.fn(),
-	showCategoryRenameModal: vi.fn(),
 	showCategoryEventsModal: vi.fn(),
-}));
-vi.mock("../../../src/components/settings/generic", () => ({
-	showConfirmDeleteModal: vi.fn(),
 }));
 vi.mock("../../../src/components/settings/integration-shared", () => ({
 	deleteTrackedIntegrationEvents: vi.fn().mockResolvedValue(undefined),
