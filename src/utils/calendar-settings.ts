@@ -95,3 +95,8 @@ export function generateUniqueCalendarId(settings: CustomCalendarSettings): stri
 
 	return `${BASE_NAME}-${counter}`;
 }
+
+export function friendlyCalendarName(url: string): string {
+	const segment = url.replace(/\/+$/, "").split("/").pop() ?? url;
+	return segment.replace(/[_-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}

@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import type { SingleCalendarConfig } from "../../src/types";
-import { createDefaultCalendarConfig, duplicateCalendarConfig } from "../../src/utils/calendar-settings";
+import {
+	createDefaultCalendarConfig,
+	duplicateCalendarConfig,
+	friendlyCalendarName,
+} from "../../src/utils/calendar-settings";
 
 describe("Calendar Settings Utils", () => {
 	describe("createDefaultCalendarConfig", () => {
@@ -86,6 +90,32 @@ describe("Calendar Settings Utils", () => {
 					color: "#ff0000",
 				},
 			]);
+		});
+	});
+
+	describe("friendlyCalendarName", () => {
+		it("extracts and title-cases the last path segment", () => {
+			expect(friendlyCalendarName("https://caldav.example.com/dav/my-calendar")).toBe("My Calendar");
+		});
+
+		it("strips trailing slashes before extracting", () => {
+			expect(friendlyCalendarName("https://caldav.example.com/dav/work-calendar/")).toBe("Work Calendar");
+		});
+
+		it("replaces underscores with spaces", () => {
+			expect(friendlyCalendarName("https://example.com/team_meetings")).toBe("Team Meetings");
+		});
+
+		it("title-cases a bare segment with no slashes", () => {
+			expect(friendlyCalendarName("personal")).toBe("Personal");
+		});
+
+		it("handles multiple trailing slashes", () => {
+			expect(friendlyCalendarName("https://example.com/cal///")).toBe("Cal");
+		});
+
+		it("handles mixed hyphens and underscores", () => {
+			expect(friendlyCalendarName("https://example.com/my_work-calendar")).toBe("My Work Calendar");
 		});
 	});
 });

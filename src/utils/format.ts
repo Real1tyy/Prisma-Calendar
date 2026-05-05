@@ -1,4 +1,10 @@
-import { calculateDuration, formatDurationHumanReadable, intoDate, isNotEmpty } from "@real1ty-obsidian-plugins";
+import {
+	calculateDuration,
+	formatDurationHumanReadable,
+	intoDate,
+	isNotEmpty,
+	toDisplayLink,
+} from "@real1ty-obsidian-plugins";
 import { DateTime } from "luxon";
 
 import type { Frontmatter } from "../types";
@@ -149,4 +155,30 @@ export function categorizeProperties(
 	}
 
 	return { displayProperties, otherProperties };
+}
+
+export interface EventDisplayItem {
+	name: string;
+	displayName: string;
+	color: string;
+	rightLabel: string;
+	tooltip: string;
+}
+
+export function formatEventDateLabel(event: CalendarEvent): string {
+	const startDate = new Date(event.start);
+	const date = startDate.toLocaleDateString([], { month: "short", day: "numeric" });
+	return isTimedEvent(event)
+		? `${date} ${startDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })}`
+		: `${date} · all-day`;
+}
+
+export function mapEventsToDisplayItems(events: CalendarEvent[], defaultColor: string): EventDisplayItem[] {
+	return events.map((event) => ({
+		name: toDisplayLink(event.ref.filePath),
+		displayName: cleanupTitle(event.title),
+		color: event.color ?? defaultColor,
+		rightLabel: formatEventDateLabel(event),
+		tooltip: event.ref.filePath,
+	}));
 }
