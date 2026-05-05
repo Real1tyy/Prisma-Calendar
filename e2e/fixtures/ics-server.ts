@@ -127,6 +127,18 @@ function toICALTime(stamp: string, allDay: boolean): ICAL.Time {
 	return new ICAL.Time({ year, month, day, hour, minute, second, isDate: false }, ICAL.Timezone.utcTimezone);
 }
 
+// Tracks the last LAST-MODIFIED ms emitted across all buildIcs() calls so each
+// successive call is guaranteed to be strictly greater than every prior one,
+// even when fired in the same wall-clock second. Without this monotonic
+// counter the sync planner can't tell two consecutive ICS bodies apart and
+// treats real changes as "skip-unchanged" — see ICSSubscriptionSyncPlan.
+let lastModifiedMs = 0;
+function nextLastModifiedTime(): ICAL.Time {
+	const ms = Math.max(Date.now(), lastModifiedMs + 1000);
+	lastModifiedMs = ms;
+	return ICAL.Time.fromJSDate(new Date(ms), true);
+}
+
 function buildVEvent(v: VEventInput): ICAL.Component {
 	const vevent = new ICAL.Component("vevent");
 	vevent.addPropertyWithValue("uid", v.uid);
@@ -135,11 +147,7 @@ function buildVEvent(v: VEventInput): ICAL.Component {
 	if (v.dtend) {
 		vevent.addPropertyWithValue("dtend", toICALTime(v.dtend, Boolean(v.allDay)));
 	}
-	// Stamp LAST-MODIFIED with the current wall-clock time so the sync planner
-	// can detect that the remote feed changed between calls to buildIcs().
-	// Without this, every event has lastModified=undefined and the planner
-	// treats all re-syncs as "skip-unchanged".
-	vevent.addPropertyWithValue("last-modified", ICAL.Time.now());
+	vevent.addPropertyWithValue("last-modified", nextLastModifiedTime());
 	if (v.categories) vevent.addPropertyWithValue("categories", v.categories);
 	if (v.location) vevent.addPropertyWithValue("location", v.location);
 	if (v.description) vevent.addPropertyWithValue("description", v.description);
