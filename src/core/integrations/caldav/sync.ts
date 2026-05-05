@@ -107,6 +107,10 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 	 * Run `client.syncCalendar` and, if the server reports the token stale or
 	 * unknown, clear the persisted token and retry once from scratch. Callers
 	 * get a uniform result shape regardless of which pass produced it.
+	 *
+	 * Initial sync (no token, no tracked objects): tsdav's smartCollectionSync
+	 * returns empty results when it has nothing to diff against, so we fall
+	 * through to a full fetchCalendarObjects and treat everything as "created".
 	 */
 	private async runSyncWithTokenFallback(): Promise<{
 		created: CalDAVFetchedEvent[];
@@ -117,6 +121,12 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 	}> {
 		const storedState = this.getCalendarSyncState();
 		const storedToken = storedState.syncToken;
+		const trackedObjects = this.syncStateManager.getAllForCalendar(this.account.id, this.calendar.url);
+
+		if (!storedToken && trackedObjects.length === 0) {
+			const allEvents = await this.client.fetchCalendarEvents({ calendar: this.calendar });
+			return { created: allEvents, updated: [], deleted: [], usedFullResync: true };
+		}
 
 		try {
 			const result = await this.client.syncCalendar(this.buildStoredCalendar(storedToken));

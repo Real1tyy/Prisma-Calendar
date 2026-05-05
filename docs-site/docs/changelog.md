@@ -18,6 +18,7 @@ All notable changes to this project will be documented here.
 - **Settings remember active tab and scroll position**: Closing and reopening settings restores the tab you were on and your scroll position within it. See [Configuration](./configuration/index.md#settings-state-persistence).
 
 ### Fixed
+- **CalDAV initial sync not fetching events**: First-time CalDAV sync sometimes produced no events, the initial sync now correctly fetches all calendar objects from the server. See [CalDAV Integration](./features/integrations/caldav.md).
 - **Timeline, Heatmap, and Gantt not updating on settings or color changes**: Changing color rules, default colors, or display settings had no effect on the Timeline, Heatmap, or Gantt until you switched tabs. All three views now refresh automatically when rendering-relevant settings change. See [Timeline](./features/views/timeline.md#live-updates), [Heatmap](./features/views/heatmap.md#live-updates), and [Gantt](./features/views/gantt.md#live-updates).
 - **Documentation links in changelog not clickable**: Relative documentation links in the What's New modal and in-app changelog viewer did nothing on click. They now open the corresponding page on the documentation site. See [General Settings → Changelog Viewer](./configuration/general.md#changelog-viewer).
 
