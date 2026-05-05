@@ -21,6 +21,7 @@ import {
 } from "../../core/commands/frontmatter-update-command";
 import { CloneEventCommand, DeleteEventCommand } from "../../core/commands/lifecycle-commands";
 import { PRO_FEATURES } from "../../core/license";
+import { openCategoryAssignModal } from "../../react/modals";
 import type { CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { getGanttRenderingKey } from "../../utils/calendar-settings";
@@ -46,7 +47,6 @@ import {
 	sanitizeGanttId,
 } from "../gantt";
 import { showEventPreviewModal } from "../modals";
-import { openCategoryAssignModal } from "../modals/category/assignment";
 import { EventCreateModal } from "../modals/event/event-create-modal";
 import { EventEditModal } from "../modals/event/event-edit-modal";
 import { renderProUpgradeBanner } from "../settings/pro-upgrade-banner";
@@ -151,8 +151,8 @@ function buildBarMenuItems(
 				const { frontmatter } = getFileAndFrontmatter(app, ev.ref.filePath);
 				const currentCats = parseIntoList(frontmatter[settings.categoryProp], { splitCommas: true });
 				const categories = bundle.categoryTracker.getCategoriesWithColors();
-				openCategoryAssignModal(app, categories, settings.defaultNodeColor, currentCats, (selected: string[]) => {
-					exec(assignCategories(bundle, ev.ref.filePath, selected));
+				void openCategoryAssignModal(app, categories, settings.defaultNodeColor, currentCats).then((selected) => {
+					if (selected) void bundle.commandManager.executeCommand(assignCategories(bundle, ev.ref.filePath, selected));
 				});
 			}),
 		},

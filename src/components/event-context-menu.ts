@@ -35,6 +35,7 @@ import {
 } from "../core/commands";
 import { weekDuration } from "../core/commands/batch-commands";
 import { MinimizedModalManager } from "../core/minimized-modal-manager";
+import { openCategoryAssignModal, openDeleteRecurringEventsModal, openMoveByModal } from "../react/modals";
 import { isTimedEvent } from "../types";
 import type { CalendarEvent, EventKind } from "../types/calendar";
 import { isTimeUnitAllowedForAllDay } from "../types/calendar";
@@ -53,13 +54,7 @@ import {
 import type { CalendarHost } from "./calendar-host";
 import { EventSeriesModal } from "./list-modals/event-series-modal";
 import type { PreviewEventData } from "./modals";
-import {
-	EventEditModal,
-	openCategoryAssignModal,
-	showDeleteRecurringEventsModal,
-	showEventPreviewModal,
-	showMoveByModal,
-} from "./modals";
+import { EventEditModal, showEventPreviewModal } from "./modals";
 
 interface CalendarEventInfo {
 	title: string;
@@ -758,23 +753,22 @@ export class EventContextMenu {
 	moveEventBy(event: CalendarEventInfo): void {
 		const isAllDay = event.allDay || false;
 
-		void this.withFilePath(event, "move event", (filePath) => {
-			showMoveByModal(this.app, (result) => {
-				void (async () => {
-					if (isAllDay && !isTimeUnitAllowedForAllDay(result.unit)) {
-						console.warn(
-							`[ContextMenu] Skipping MoveBy operation: Time unit "${result.unit}" is not allowed for all-day events. Only days, weeks, months, and years are supported.`
-						);
-						new Notice(`Cannot move all-day event by ${result.unit}. Please use days, weeks, months, or years.`, 5000);
-						return;
-					}
+		void this.withFilePath(event, "move event", async (filePath) => {
+			const result = await openMoveByModal(this.app);
+			if (!result) return;
 
-					const offset = { [result.unit]: result.value };
-					await this.runCommand(() => moveEvent(this.bundle, filePath, offset, offset), {
-						success: `Event moved by ${result.value} ${result.unit}`,
-						error: "Failed to move event",
-					});
-				})();
+			if (isAllDay && !isTimeUnitAllowedForAllDay(result.unit)) {
+				console.warn(
+					`[ContextMenu] Skipping MoveBy operation: Time unit "${result.unit}" is not allowed for all-day events. Only days, weeks, months, and years are supported.`
+				);
+				new Notice(`Cannot move all-day event by ${result.unit}. Please use days, weeks, months, or years.`, 5000);
+				return;
+			}
+
+			const offset = { [result.unit]: result.value };
+			await this.runCommand(() => moveEvent(this.bundle, filePath, offset, offset), {
+				success: `Event moved by ${result.value} ${result.unit}`,
+				error: "Failed to move event",
 			});
 		});
 	}
@@ -852,16 +846,11 @@ export class EventContextMenu {
 
 		const physicalInstances = this.bundle.recurringEventManager.getPhysicalInstancesByRRuleId(rruleId);
 		if (physicalInstances.length > 0) {
-			showDeleteRecurringEventsModal(
-				this.app,
-				async () => {
-					await this.bundle.recurringEventManager.deleteAllPhysicalInstances(rruleId);
-					await onComplete();
-				},
-				() => {
-					void onComplete();
-				}
-			);
+			const confirmed = await openDeleteRecurringEventsModal(this.app);
+			if (confirmed) {
+				await this.bundle.recurringEventManager.deleteAllPhysicalInstances(rruleId);
+			}
+			await onComplete();
 		} else {
 			await onComplete();
 		}
@@ -895,12 +884,18 @@ export class EventContextMenu {
 			const currentCategories = getCategoriesFromFilePath(this.app, filePath, settings.categoryProp);
 			const categories = this.bundle.categoryTracker.getCategoriesWithColors();
 
-			openCategoryAssignModal(this.app, categories, settings.defaultNodeColor, currentCategories, (selected) => {
-				void this.runCommand(() => assignCategories(this.bundle, filePath, selected), {
+			const selected = await openCategoryAssignModal(
+				this.app,
+				categories,
+				settings.defaultNodeColor,
+				currentCategories
+			);
+			if (selected) {
+				await this.runCommand(() => assignCategories(this.bundle, filePath, selected), {
 					success: "Categories updated",
 					error: "Failed to assign categories",
 				});
-			});
+			}
 		});
 	}
 

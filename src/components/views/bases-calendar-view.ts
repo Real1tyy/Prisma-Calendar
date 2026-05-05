@@ -10,6 +10,7 @@ import { distinctUntilChanged, skip, type Subscription } from "rxjs";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { PRO_FEATURES } from "../../core/license";
 import type CustomCalendarPlugin from "../../main";
+import { openBatchFrontmatterModal, openCategoryAssignModal } from "../../react/modals";
 import type { CalendarEventData, ExtendedButtonInput, FCPrismaEventInput } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { isBatchSelectable, isFileBackedEvent } from "../../utils/event-classification";
@@ -17,7 +18,6 @@ import { getCommonCategories } from "../../utils/event-frontmatter";
 import { BatchSelectionManager } from "../batch-selection-manager";
 import type { CalendarHost } from "../calendar-host";
 import { EventContextMenu } from "../event-context-menu";
-import { openCategoryAssignModal, showBatchFrontmatterModal } from "../modals";
 import { renderProUpgradeBanner } from "../settings/pro-upgrade-banner";
 import { UntrackedEventsDropdown } from "../untracked-events-dropdown";
 import {
@@ -557,9 +557,15 @@ class PrismaBasesView extends BasesView {
 		const selectedEvents = this.batchSelectionManager.getSelectedEvents();
 		const commonCategories = getCommonCategories(this.app, selectedEvents, settings.categoryProp);
 
-		openCategoryAssignModal(this.app, categories, settings.defaultNodeColor, commonCategories, (selectedCategories) => {
+		const selectedCategories = await openCategoryAssignModal(
+			this.app,
+			categories,
+			settings.defaultNodeColor,
+			commonCategories
+		);
+		if (selectedCategories) {
 			this.batchSelectionManager?.executeAssignCategories(selectedCategories);
-		});
+		}
 	}
 
 	private async openBatchFrontmatterModal(bundle: CalendarBundle): Promise<void> {
@@ -568,9 +574,10 @@ class PrismaBasesView extends BasesView {
 		const settings = bundle.settingsStore.currentSettings;
 		const selectedEvents = this.batchSelectionManager.getSelectedEvents();
 
-		showBatchFrontmatterModal(this.app, settings, selectedEvents, (propertyUpdates: Map<string, string | null>) => {
+		const propertyUpdates = await openBatchFrontmatterModal(this.app, settings, selectedEvents);
+		if (propertyUpdates) {
 			this.batchSelectionManager?.executeUpdateFrontmatter(propertyUpdates);
-		});
+		}
 	}
 
 	// ─── Helpers ─────────────────────────────────────────────────

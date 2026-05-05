@@ -3,9 +3,10 @@ import type { App } from "obsidian";
 import { Notice, TFile } from "obsidian";
 import type { Subscription } from "rxjs";
 
-import { EventCreateModal, EventEditModal, type EventModalData, openCategoryAssignModal } from "../components/modals";
+import { EventCreateModal, EventEditModal, type EventModalData } from "../components/modals";
 import type { EventFormState } from "../components/modals/event/event-form-state";
 import type { StopwatchSnapshot } from "../components/stopwatch";
+import { openCategoryAssignModal } from "../react/modals";
 import type { Frontmatter } from "../types";
 import type { IndexerEvent } from "../types/event-source";
 import type { EventPreset } from "../types/settings";
@@ -317,17 +318,16 @@ class MinimizedModalManagerClass {
 		const categories = bundle.categoryTracker.getCategoriesWithColors();
 		const defaultColor = settings.defaultNodeColor;
 
-		openCategoryAssignModal(app, categories, defaultColor, currentCategories, (selectedCategories) => {
-			void (async () => {
-				try {
-					const command = assignCategories(bundle, state.filePath!, selectedCategories);
-					await bundle.commandManager.executeCommand(command);
-					new Notice("Categories updated for minimized event");
-				} catch (error) {
-					console.error("[MinimizedModal] Failed to assign categories:", error);
-					new Notice("Failed to assign categories");
-				}
-			})();
+		void openCategoryAssignModal(app, categories, defaultColor, currentCategories).then(async (selectedCategories) => {
+			if (!selectedCategories) return;
+			try {
+				const command = assignCategories(bundle, state.filePath!, selectedCategories);
+				await bundle.commandManager.executeCommand(command);
+				new Notice("Categories updated for minimized event");
+			} catch (error) {
+				console.error("[MinimizedModal] Failed to assign categories:", error);
+				new Notice("Failed to assign categories");
+			}
 		});
 	}
 

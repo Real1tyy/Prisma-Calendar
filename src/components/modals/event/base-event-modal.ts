@@ -28,6 +28,7 @@ import {
 	MinimizedModalManager,
 	type MinimizedModalState,
 } from "../../../core/minimized-modal-manager";
+import { openCategoryAssignModal, openPrerequisiteAssignModal, openSavePresetModal } from "../../../react/modals";
 import type { Frontmatter } from "../../../types";
 import { isTimedEvent } from "../../../types/calendar";
 import {
@@ -53,7 +54,6 @@ import {
 } from "../../../utils/recurring-utils";
 import { Stopwatch } from "../../stopwatch";
 import { TitleInputSuggest } from "../../title-input-suggest";
-import { openCategoryAssignModal, openPrerequisiteAssignModal } from "../category/assignment";
 import { showCategoryEventsModal } from "../series/bases-view";
 import {
 	applyPresetToState,
@@ -66,7 +66,6 @@ import {
 	applyNotificationToFrontmatter,
 	applyRecurringFieldsToFrontmatter,
 } from "./event-frontmatter-mapper";
-import { showSavePresetModal } from "./save-preset";
 
 export interface EventModalData {
 	title: string;
@@ -781,9 +780,11 @@ export abstract class BaseEventModal extends Modal {
 	}
 
 	private openAssignPrerequisitesModal(): void {
-		openPrerequisiteAssignModal(this.app, this.bundle, this.prerequisitesChipList?.value ?? [], (selected) => {
-			this.prerequisitesChipList!.setItems(selected);
-		});
+		void openPrerequisiteAssignModal(this.app, this.bundle, this.prerequisitesChipList?.value ?? []).then(
+			(selected) => {
+				if (selected) this.prerequisitesChipList!.setItems(selected);
+			}
+		);
 	}
 
 	private createParticipantField(contentEl: HTMLElement): void {
@@ -1237,13 +1238,9 @@ export abstract class BaseEventModal extends Modal {
 		const categories = this.bundle.categoryTracker.getCategoriesWithColors();
 		const defaultColor = this.bundle.settingsStore.currentSettings.defaultNodeColor;
 
-		openCategoryAssignModal(
-			this.app,
-			categories,
-			defaultColor,
-			this.categoriesChipList?.value ?? [],
+		void openCategoryAssignModal(this.app, categories, defaultColor, this.categoriesChipList?.value ?? []).then(
 			(selectedCategories) => {
-				this.categoriesChipList!.setItems(selectedCategories);
+				if (selectedCategories) this.categoriesChipList!.setItems(selectedCategories);
 			}
 		);
 	}
@@ -1448,8 +1445,8 @@ export abstract class BaseEventModal extends Modal {
 		const existingPresets = settings.eventPresets;
 		const atFreeLimit = !this.bundle.plugin.isProEnabled && existingPresets.length >= FREE_MAX_EVENT_PRESETS;
 
-		showSavePresetModal(this.app, existingPresets, atFreeLimit, (presetName, overridePresetId) => {
-			this.saveCurrentAsPreset(presetName, overridePresetId);
+		void openSavePresetModal(this.app, existingPresets, atFreeLimit).then((result) => {
+			if (result) this.saveCurrentAsPreset(result.name, result.overridePresetId);
 		});
 	}
 

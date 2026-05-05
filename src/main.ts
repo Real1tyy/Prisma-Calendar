@@ -14,7 +14,7 @@ import CHANGELOG_CONTENT from "../../docs-site/docs/changelog.md";
 import { CustomCalendarSettingsTab } from "./components";
 import { AI_CHAT_VIEW_TYPE, AIChatView } from "./components/ai-chat-view";
 import type { CalendarComponent } from "./components/calendar-view";
-import { showCalendarSelectModal, showICSImportModal, showICSImportProgressModal } from "./components/modals";
+import { showICSImportProgressModal } from "./components/modals";
 import { registerPrismaBasesView } from "./components/views/bases-calendar-view";
 import { VirtualEventsBlockRenderer } from "./components/virtual-events-block";
 import { COMMAND_IDS, VIRTUAL_EVENTS_CODE_FENCE } from "./constants";
@@ -35,6 +35,7 @@ import { createLicenseManager, PRO_FEATURES } from "./core/license";
 import { getProGateUrls } from "./core/pro-feature-previews";
 import { buildWhatsNewConfig } from "./core/whats-new-config";
 import { openFirstLaunchModal, scanVaultForDirectorySuggestions } from "./onboarding";
+import { openCalendarSelectModal, openICSImportModal } from "./react/modals";
 import { CustomCalendarSettingsSchema, type PrismaCalendarSettingsStore, PrismaSyncDataSchema } from "./types";
 import { type CalDAVAccount, type ICSSubscription } from "./types/integrations";
 import { createDefaultCalendarConfig } from "./utils/calendar-settings";
@@ -425,7 +426,7 @@ export default class CustomCalendarPlugin extends Plugin {
 			id: COMMAND_IDS.IMPORT_CALENDAR_ICS,
 			name: "Import .ics file",
 			callback: () => {
-				this.showCalendarImportModal();
+				void this.showCalendarImportModal();
 			},
 		});
 
@@ -617,30 +618,32 @@ export default class CustomCalendarPlugin extends Plugin {
 			return;
 		}
 
-		showCalendarSelectModal(this.app, this.calendarBundles, (options) => {
-			void exportCalendarAsICS(this.app, options);
+		void openCalendarSelectModal(this.app, this.calendarBundles).then((options) => {
+			if (options) void exportCalendarAsICS(this.app, options);
 		});
 	}
 
-	private showCalendarImportModal(): void {
+	private async showCalendarImportModal(): Promise<void> {
 		if (this.calendarBundles.length === 0) {
 			new Notice("No planning systems available to import to");
 			return;
 		}
 
-		showICSImportModal(this.app, this.calendarBundles, async (bundle, events, timezone) => {
-			const progressHandle = showICSImportProgressModal(this.app, events.length);
+		const selection = await openICSImportModal(this.app, this.calendarBundles);
+		if (!selection) return;
 
-			try {
-				const result = await importEventsToCalendar(this.app, bundle, events, timezone, (current, _total, title) => {
-					progressHandle.updateProgress(current, title);
-				});
+		const { bundle, events, timezone } = selection;
+		const progressHandle = showICSImportProgressModal(this.app, events.length);
 
-				progressHandle.showComplete(result.successCount, result.errorCount, result.skippedCount);
-			} catch (error) {
-				progressHandle.showError(error instanceof Error ? error.message : "Import failed");
-			}
-		});
+		try {
+			const result = await importEventsToCalendar(this.app, bundle, events, timezone, (current, _total, title) => {
+				progressHandle.updateProgress(current, title);
+			});
+
+			progressHandle.showComplete(result.successCount, result.errorCount, result.skippedCount);
+		} catch (error) {
+			progressHandle.showError(error instanceof Error ? error.message : "Import failed");
+		}
 	}
 
 	async syncSingleAccount(account: CalDAVAccount): Promise<void> {

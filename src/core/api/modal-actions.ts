@@ -1,8 +1,9 @@
 import { roundToNearestHour, toLocalISOString } from "@real1ty-obsidian-plugins";
 import { Notice, TFile } from "obsidian";
 
-import { EventCreateModal, EventEditModal, showUntrackedEventCreateModal } from "../../components/modals";
+import { EventCreateModal, EventEditModal } from "../../components/modals";
 import type CustomCalendarPlugin from "../../main";
+import { openUntrackedEventCreateModal } from "../../react/modals";
 import type { Frontmatter } from "../../types";
 import { isAllDayFrontmatterValue } from "../../utils/frontmatter/predicates";
 import { openFileInNewTab } from "../../utils/obsidian";
@@ -82,7 +83,8 @@ export async function triggerCurrentEventStopwatch(
 export function openCreateUntrackedEventModal(plugin: CustomCalendarPlugin): void {
 	const bundle = resolveBundleOrNotice(plugin);
 	if (!bundle) return;
-	showUntrackedEventCreateModal(plugin.app, async (title) => {
+	void openUntrackedEventCreateModal(plugin.app).then(async (title) => {
+		if (!title) return;
 		const filePath = await createUntrackedEvent(plugin, title, bundle.calendarId);
 		if (filePath && !isCalendarViewFocused(plugin)) {
 			await openFileInNewTab(plugin.app, filePath);

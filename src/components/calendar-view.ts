@@ -36,6 +36,7 @@ import { buildDependencyGraph } from "../core/dependency-graph";
 import { PRO_FEATURES } from "../core/license";
 import { MinimizedModalManager } from "../core/minimized-modal-manager";
 import { getProGateUrls } from "../core/pro-feature-previews";
+import { openBatchFrontmatterModal, openCategoryAssignModal, openCategorySelectModal } from "../react/modals";
 import type {
 	CalendarEvent,
 	CalendarEventData,
@@ -80,14 +81,7 @@ import {
 	SkippedEventsModal,
 } from "./list-modals";
 import type { PreviewEventData } from "./modals";
-import {
-	EventCreateModal,
-	openCategoryAssignModal,
-	showBatchFrontmatterModal,
-	showCategorySelectModal,
-	showEventPreviewModal,
-	showIntervalEventsModal,
-} from "./modals";
+import { EventCreateModal, showEventPreviewModal, showIntervalEventsModal } from "./modals";
 import { PrerequisiteSelectionManager } from "./prerequisite-selection-manager";
 import { createStickyBanner, type StickyBannerHandle } from "./sticky-banner";
 import { UntrackedEventsDropdown } from "./untracked-events-dropdown";
@@ -2230,11 +2224,15 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const selectedEvents = this.batchSelectionManager.getSelectedEvents();
 		const commonCategories = getCommonCategories(this.app, selectedEvents, settings.categoryProp);
 
-		openCategoryAssignModal(this.app, categories, settings.defaultNodeColor, commonCategories, (selectedCategories) => {
-			if (this.batchSelectionManager) {
-				this.batchSelectionManager.executeAssignCategories(selectedCategories);
-			}
-		});
+		const selectedCategories = await openCategoryAssignModal(
+			this.app,
+			categories,
+			settings.defaultNodeColor,
+			commonCategories
+		);
+		if (selectedCategories && this.batchSelectionManager) {
+			this.batchSelectionManager.executeAssignCategories(selectedCategories);
+		}
 	}
 
 	async openBatchFrontmatterModal(): Promise<void> {
@@ -2243,11 +2241,10 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const settings = this.bundle.settingsStore.currentSettings;
 		const selectedEvents = this.batchSelectionManager.getSelectedEvents();
 
-		showBatchFrontmatterModal(this.app, settings, selectedEvents, (propertyUpdates: Map<string, string | null>) => {
-			if (this.batchSelectionManager) {
-				this.batchSelectionManager.executeUpdateFrontmatter(propertyUpdates);
-			}
-		});
+		const propertyUpdates = await openBatchFrontmatterModal(this.app, settings, selectedEvents);
+		if (propertyUpdates && this.batchSelectionManager) {
+			this.batchSelectionManager.executeUpdateFrontmatter(propertyUpdates);
+		}
 	}
 
 	// ─── Modals ──────────────────────────────────────────────────
@@ -2509,8 +2506,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	public showCategorySelectModal(): void {
-		showCategorySelectModal(this.app, this.bundle.categoryTracker, (category: string) => {
-			this.highlightEventsWithCategory(category);
+		void openCategorySelectModal(this.app, this.bundle.categoryTracker).then((category) => {
+			if (category) this.highlightEventsWithCategory(category);
 		});
 	}
 

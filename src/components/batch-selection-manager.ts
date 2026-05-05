@@ -13,11 +13,11 @@ import { type App, Modal, Notice } from "obsidian";
 
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { BatchCommandFactory } from "../core/commands/batch-commands";
+import { openMoveByModal } from "../react/modals";
 import type { CalendarEvent } from "../types/calendar";
 import { isTimeUnitAllowedForAllDay } from "../types/calendar";
 import { isBatchSelectable, isVirtualEvent } from "../utils/event-classification";
 import { parseFCExtendedProps } from "../utils/extended-props";
-import { showMoveByModal } from "./modals";
 
 export class BatchSelectionManager {
 	private selectedEvents = new Map<string, CalendarEvent>();
@@ -258,23 +258,22 @@ export class BatchSelectionManager {
 		// Check if any selected events are all-day
 		const hasAllDayEvents = selectedEventsArray.some((event) => event.allDay);
 
-		showMoveByModal(this.app, (result) => {
-			void (async () => {
-				if (hasAllDayEvents && !isTimeUnitAllowedForAllDay(result.unit)) {
-					console.warn(
-						`[BatchSelection] Skipping MoveBy operation: Time unit "${result.unit}" is not allowed for all-day events. Only days, weeks, months, and years are supported.`
-					);
-					new Notice(`Cannot move all-day events by ${result.unit}. Please use days, weeks, months, or years.`, 5000);
-					return;
-				}
-
-				const offset = { [result.unit]: result.value };
-				await this.executeWithSelection(
-					(filePaths) => this.batchCommandFactory.createMoveBy(filePaths, offset),
-					(count) => `Moved ${count} event${pluralize(count)} by ${result.value} ${result.unit}`,
-					"Failed to move events by custom offset"
+		void openMoveByModal(this.app).then(async (result) => {
+			if (!result) return;
+			if (hasAllDayEvents && !isTimeUnitAllowedForAllDay(result.unit)) {
+				console.warn(
+					`[BatchSelection] Skipping MoveBy operation: Time unit "${result.unit}" is not allowed for all-day events. Only days, weeks, months, and years are supported.`
 				);
-			})();
+				new Notice(`Cannot move all-day events by ${result.unit}. Please use days, weeks, months, or years.`, 5000);
+				return;
+			}
+
+			const offset = { [result.unit]: result.value };
+			await this.executeWithSelection(
+				(filePaths) => this.batchCommandFactory.createMoveBy(filePaths, offset),
+				(count) => `Moved ${count} event${pluralize(count)} by ${result.value} ${result.unit}`,
+				"Failed to move events by custom offset"
+			);
 		});
 	}
 

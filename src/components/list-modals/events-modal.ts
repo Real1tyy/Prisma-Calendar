@@ -5,6 +5,7 @@ import { type App, Modal, Notice } from "obsidian";
 import { FULL_COMMAND_IDS } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { assignCategories, toggleSkip } from "../../core/commands";
+import { openCategoryAssignModal } from "../../react/modals";
 import { type NodeRecurringEvent, RECURRENCE_TYPE_OPTIONS } from "../../types/recurring";
 import { getEventName } from "../../utils/events/naming";
 import { removeZettelId } from "../../utils/events/zettel-id";
@@ -12,7 +13,6 @@ import { getCategoriesFromFilePath, openFileInNewTab } from "../../utils/obsidia
 import { formatRecurrenceLabel, isPresetType } from "../../utils/recurring-utils";
 import { getStartDateTime } from "../../utils/recurring-utils";
 import type { CalendarComponent } from "../calendar-view";
-import { openCategoryAssignModal } from "../modals";
 import { EventSeriesModal } from "./event-series-modal";
 
 type TabId = "recurring" | "byCategory" | "byName";
@@ -543,12 +543,9 @@ export class EventsModal extends Modal {
 		const currentCategories = getCategoriesFromFilePath(this.app, item.filePath, settings.categoryProp);
 		const categories = this.bundle.categoryTracker.getCategoriesWithColors();
 
-		openCategoryAssignModal(
-			this.app,
-			categories,
-			settings.defaultNodeColor,
-			currentCategories,
+		void openCategoryAssignModal(this.app, categories, settings.defaultNodeColor, currentCategories).then(
 			async (selectedCategories) => {
+				if (!selectedCategories) return;
 				try {
 					const command = assignCategories(this.bundle, item.filePath, selectedCategories);
 					await this.bundle.commandManager.executeCommand(command);
