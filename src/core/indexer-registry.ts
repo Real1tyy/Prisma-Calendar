@@ -3,7 +3,7 @@ import type { App } from "obsidian";
 import type { BehaviorSubject } from "rxjs";
 
 import type { PrismaSyncDataSchema } from "../types";
-import type { SingleCalendarConfig } from "../types/settings";
+import type { PrismaCalendarSettingsStore, SingleCalendarConfig } from "../types/settings";
 import { CategoryTracker } from "./category-tracker";
 import { EventFileRepository } from "./event-file-repository";
 import { EventStore } from "./event-store";
@@ -79,7 +79,11 @@ export class IndexerRegistry {
 	 * its own infrastructure so they can independently diverge when the user
 	 * picks real directories via configure.
 	 */
-	getOrCreateIndexer(calendarId: string, settingsStore: BehaviorSubject<SingleCalendarConfig>): SharedInfrastructure {
+	getOrCreateIndexer(
+		calendarId: string,
+		settingsStore: BehaviorSubject<SingleCalendarConfig>,
+		mainSettingsStore: PrismaCalendarSettingsStore
+	): SharedInfrastructure {
 		const registryKey = calendarId;
 
 		let entry: RegistryEntry | undefined = this.registry.get(registryKey);
@@ -91,7 +95,7 @@ export class IndexerRegistry {
 			const fileRepository = new EventFileRepository(this.app, settingsStore, this.syncStore);
 			const recurringEventManager = new RecurringEventManager(this.app, settingsStore, fileRepository, this.syncStore);
 			const notificationManager = new NotificationManager(this.app, settingsStore, fileRepository, this.syncStore);
-			const parser = new Parser(this.app, settingsStore);
+			const parser = new Parser(this.app, settingsStore, mainSettingsStore, calendarId);
 			const eventStore = new EventStore(fileRepository, parser, recurringEventManager, settingsStore);
 			const categoryTracker = new CategoryTracker(this.app, fileRepository, eventStore, settingsStore);
 			const nameSeriesTracker = new NameSeriesTracker(this.app, fileRepository, eventStore, settingsStore);

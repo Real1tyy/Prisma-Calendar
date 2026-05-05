@@ -177,6 +177,17 @@ The property name defaults to `Sort Date`. Change it in the "Sort date property"
 
 In earlier versions, date normalization wrote directly to the `Date` property, which conflicted with the all-day event date. If you previously used the `Date` property for sorting timed events in Bases or Dataview queries, enable the sorting normalization strategy (recommended: "All events — start datetime") and update your queries to sort by `Sort Date` instead of `Date`.
 
+### Multiple planning systems on the same directory
+
+If two planning systems point at the same directory (or one indexes a parent of the other with **Index subdirectories** enabled) and they disagree on the sort normalization strategy or the sort date property name, they would each rewrite the same events in different ways — leaving your notes in an inconsistent state.
+
+Prisma detects this and:
+
+- Shows a **Sort date conflict** warning banner in both planning systems' settings, naming the other system and the shared directory.
+- Pauses `Sort Date` updates on both systems until the conflict is resolved — existing values stay untouched.
+
+Resolve it by picking the same sort normalization strategy and `Sort Date` property on both systems, by giving them different directories, or by disabling one of them.
+
 ## Auto-mark Past Events
 
 When enabled in [General settings](./general), Prisma Calendar will automatically update the status property of past events during startup:

@@ -1,6 +1,8 @@
 import type { Locator, Page } from "@playwright/test";
 
 import { ACTIVE_CALENDAR_LEAF, DEFAULT_CALENDAR_ID, PLUGIN_ID } from "./constants";
+import { getCalendars } from "./plugin-data";
+import { waitForCalendarCount } from "./seed-events";
 
 // ── Schema-field accessors ──────────────────────────────────────────────────
 // Fields rendered via SchemaSection stamp the outer `.setting-item` wrapper
@@ -537,4 +539,31 @@ export async function openUntrackedDropdown(page: Page): Promise<void> {
 	const toggle = page.locator(`${ACTIVE_CALENDAR_LEAF} [data-testid="prisma-untracked-dropdown-button"]`).first();
 	await toggle.waitFor({ state: "visible", timeout: 10_000 });
 	await toggle.click();
+}
+
+// ── Calendar management helpers ─────────────────────────────────────────────
+// Shared helpers for multi-calendar settings interactions. The "add calendar
+// and get its ID" pattern appears in every multi-calendar spec — this is the
+// single source of truth.
+
+/**
+ * Click the "Add calendar" button, wait for the new bundle to register, and
+ * return the new calendar's id. Settings must already be open before calling.
+ */
+export async function addCalendar(page: Page, vaultDir: string): Promise<string> {
+	const before = getCalendars(vaultDir);
+	await page.locator('[data-testid="prisma-settings-calendar-add"]').click();
+	await waitForCalendarCount(page, before.length + 1);
+	const after = getCalendars(vaultDir);
+	const id = after.find((c) => !before.some((b) => b.id === c.id))?.id;
+	if (!id) throw new Error("addCalendar: new calendar id not found");
+	return id;
+}
+
+/**
+ * Select a calendar from the calendar-management dropdown in Prisma settings.
+ * Requires the settings modal to be open.
+ */
+export async function selectCalendarInSettings(page: Page, calendarId: string): Promise<void> {
+	await page.locator(".prisma-calendar-management select.dropdown").selectOption(calendarId);
 }

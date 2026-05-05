@@ -272,3 +272,50 @@
 	font-size: 12px;
 	color: var(--text-muted);
 }
+
+.prisma-normalization-conflict-banner {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	margin: 0 0 20px;
+	padding: 14px 16px;
+	border-radius: 8px;
+	border: 1px solid var(--background-modifier-border);
+	border-left: 4px solid var(--text-error);
+	background-color: var(--background-secondary);
+	box-shadow: 0 1px 2px rgb(0 0 0 / 4%);
+}
+
+.prisma-normalization-conflict-icon {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	background-color: var(--background-modifier-error);
+	color: var(--text-on-accent, #fff);
+	font-size: 16px;
+	line-height: 1;
+}
+
+.prisma-normalization-conflict-content {
+	flex: 1 1 auto;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	min-width: 0;
+}
+
+.prisma-normalization-conflict-title {
+	font-weight: var(--font-weight-bold, 600);
+	font-size: var(--font-ui-medium, 14px);
+	color: var(--text-normal);
+}
+
+.prisma-normalization-conflict-body {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small, 13px);
+	line-height: 1.5;
+}

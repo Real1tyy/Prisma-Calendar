@@ -14,6 +14,7 @@ import { ConfigurationSettingsReact } from "./configuration-settings";
 import { EventGroupsSettingsReact } from "./event-groups-settings";
 import { GeneralSettingsReact } from "./general-settings";
 import { IntegrationsSettingsReact } from "./integrations-settings";
+import { NormalizationConflictBanner } from "./normalization-conflict-banner";
 import { NotificationsSettingsReact } from "./notifications-settings";
 import { PerformanceSettingsReact } from "./performance-settings";
 import { ProUpgradeBanner } from "./pro-upgrade-banner";
@@ -134,6 +135,7 @@ export const SingleCalendarSettingsReact = memo(function SingleCalendarSettingsR
 
 	return (
 		<div className="prisma-settings-calendar">
+			<NormalizationConflictBanner calendarId={settingsStore.calendarId} mainSettingsStore={mainSettingsStore} />
 			<SettingsNav
 				tabs={SETTINGS_TAB_DEFINITIONS}
 				activeId={activeTab}

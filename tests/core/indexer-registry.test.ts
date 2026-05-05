@@ -10,7 +10,8 @@ import type { BehaviorSubject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { IndexerRegistry } from "../../src/core/indexer-registry";
-import type { SingleCalendarConfig } from "../../src/types/settings";
+import type { SingleCalendarConfig } from "../../src/types";
+import { createMockMainSettingsStore } from "../fixtures";
 import { createRepoSettingsStore } from "../fixtures/event-file-repository-fixtures";
 import { createMockApp } from "../setup";
 
@@ -54,8 +55,8 @@ describe("IndexerRegistry", () => {
 			const settingsA = settingsFor("Events");
 			const settingsB = settingsFor("Events");
 
-			const a = registry.getOrCreateIndexer("cal-a", settingsA);
-			const b = registry.getOrCreateIndexer("cal-b", settingsB);
+			const a = registry.getOrCreateIndexer("cal-a", settingsA, createMockMainSettingsStore());
+			const b = registry.getOrCreateIndexer("cal-b", settingsB, createMockMainSettingsStore());
 
 			expect(a.fileRepository).not.toBe(b.fileRepository);
 			expect(a.parser).not.toBe(b.parser);
@@ -65,8 +66,8 @@ describe("IndexerRegistry", () => {
 		});
 
 		it("same calendarId returns the same infrastructure", () => {
-			const a = registry.getOrCreateIndexer("cal-a", settingsFor("Events"));
-			const b = registry.getOrCreateIndexer("cal-a", settingsFor("Events"));
+			const a = registry.getOrCreateIndexer("cal-a", settingsFor("Events"), createMockMainSettingsStore());
+			const b = registry.getOrCreateIndexer("cal-a", settingsFor("Events"), createMockMainSettingsStore());
 
 			expect(a.fileRepository).toBe(b.fileRepository);
 			expect(a.parser).toBe(b.parser);
@@ -76,15 +77,15 @@ describe("IndexerRegistry", () => {
 		});
 
 		it("different calendarIds always get separate infrastructure regardless of directory", () => {
-			const a = registry.getOrCreateIndexer("cal-a", settingsFor("Events"));
-			const b = registry.getOrCreateIndexer("cal-b", settingsFor("Tasks"));
+			const a = registry.getOrCreateIndexer("cal-a", settingsFor("Events"), createMockMainSettingsStore());
+			const b = registry.getOrCreateIndexer("cal-b", settingsFor("Tasks"), createMockMainSettingsStore());
 
 			expect(a.fileRepository).not.toBe(b.fileRepository);
 			expect(a.eventStore).not.toBe(b.eventStore);
 		});
 
 		it("wires recurringEventManager with eventStore and categoryTracker on creation", () => {
-			const indexer = registry.getOrCreateIndexer("cal-a", settingsFor("Events"));
+			const indexer = registry.getOrCreateIndexer("cal-a", settingsFor("Events"), createMockMainSettingsStore());
 
 			expect(indexer.recurringEventManager).toBeDefined();
 			expect(indexer.eventStore).toBeDefined();
@@ -95,8 +96,8 @@ describe("IndexerRegistry", () => {
 	describe("releaseIndexer", () => {
 		it("does NOT destroy infrastructure when other references still hold", () => {
 			const settings = settingsFor("Events");
-			const shared = registry.getOrCreateIndexer("cal-a", settings);
-			registry.getOrCreateIndexer("cal-a", settings);
+			const shared = registry.getOrCreateIndexer("cal-a", settings, createMockMainSettingsStore());
+			registry.getOrCreateIndexer("cal-a", settings, createMockMainSettingsStore());
 
 			const destroySpy = vi.spyOn(shared.eventStore, "destroy");
 			registry.releaseIndexer("cal-a", "Events");
@@ -105,7 +106,7 @@ describe("IndexerRegistry", () => {
 		});
 
 		it("destroys infrastructure when the last reference releases", () => {
-			const shared = registry.getOrCreateIndexer("cal-a", settingsFor("Events"));
+			const shared = registry.getOrCreateIndexer("cal-a", settingsFor("Events"), createMockMainSettingsStore());
 
 			const eventStoreDestroy = vi.spyOn(shared.eventStore, "destroy");
 			const repoDestroy = vi.spyOn(shared.fileRepository, "destroy");
@@ -121,10 +122,10 @@ describe("IndexerRegistry", () => {
 		});
 
 		it("creates fresh infrastructure after fully released", () => {
-			const first = registry.getOrCreateIndexer("cal-a", settingsFor("Events"));
+			const first = registry.getOrCreateIndexer("cal-a", settingsFor("Events"), createMockMainSettingsStore());
 			registry.releaseIndexer("cal-a", "Events");
 
-			const second = registry.getOrCreateIndexer("cal-a", settingsFor("Events"));
+			const second = registry.getOrCreateIndexer("cal-a", settingsFor("Events"), createMockMainSettingsStore());
 			expect(second.eventStore).not.toBe(first.eventStore);
 		});
 
@@ -135,8 +136,8 @@ describe("IndexerRegistry", () => {
 
 	describe("destroy", () => {
 		it("destroys every entry and clears the registry", () => {
-			const a = registry.getOrCreateIndexer("cal-a", settingsFor("Events"));
-			const b = registry.getOrCreateIndexer("cal-b", settingsFor("Tasks"));
+			const a = registry.getOrCreateIndexer("cal-a", settingsFor("Events"), createMockMainSettingsStore());
+			const b = registry.getOrCreateIndexer("cal-b", settingsFor("Tasks"), createMockMainSettingsStore());
 			const aDestroy = vi.spyOn(a.eventStore, "destroy");
 			const bDestroy = vi.spyOn(b.eventStore, "destroy");
 
@@ -148,7 +149,7 @@ describe("IndexerRegistry", () => {
 			// After destroy(), the next getInstance() returns a fresh registry with no entries:
 			// re-fetching for the same directory must yield NEW infrastructure.
 			const fresh = IndexerRegistry.getInstance(app as any);
-			const reborn = fresh.getOrCreateIndexer("cal-a", settingsFor("Events"));
+			const reborn = fresh.getOrCreateIndexer("cal-a", settingsFor("Events"), createMockMainSettingsStore());
 			expect(reborn.eventStore).not.toBe(a.eventStore);
 		});
 	});

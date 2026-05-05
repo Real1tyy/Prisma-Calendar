@@ -1,6 +1,8 @@
 import { BehaviorSubject } from "rxjs";
 
 import type { CalendarSettingsStore, ToolbarButtonsKey } from "../../src/core/settings-store";
+import type { CustomCalendarSettings, PrismaCalendarSettingsStore } from "../../src/types";
+import { CustomCalendarSettingsSchema } from "../../src/types";
 import type { SingleCalendarConfig } from "../../src/types/settings";
 import { createMockSingleCalendarSettings } from "../setup";
 
@@ -70,4 +72,24 @@ export function createMockCalendarSettingsStore(initial: Partial<SingleCalendarC
 	};
 
 	return store as unknown as CalendarSettingsStore;
+}
+
+/**
+ * Minimal in-memory PrismaCalendarSettingsStore for unit tests that construct
+ * a Parser or IndexerRegistry. Provides functional `updateSettings` so
+ * conflict-detection subscriptions wire up correctly.
+ */
+export function createMockMainSettingsStore(calendars: SingleCalendarConfig[] = []): PrismaCalendarSettingsStore {
+	const base = CustomCalendarSettingsSchema.parse({});
+	const initial: CustomCalendarSettings = { ...base, calendars };
+	const settings$ = new BehaviorSubject<CustomCalendarSettings>(initial);
+	return {
+		settings$,
+		get currentSettings() {
+			return settings$.value;
+		},
+		async updateSettings(updater: (s: CustomCalendarSettings) => CustomCalendarSettings) {
+			settings$.next(updater(settings$.value));
+		},
+	} as unknown as PrismaCalendarSettingsStore;
 }

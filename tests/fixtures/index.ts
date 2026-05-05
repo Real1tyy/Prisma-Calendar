@@ -21,5 +21,5 @@ export {
 	registerRecurringEvent,
 } from "./recurring-event-fixtures";
 export { SCENARIO } from "./scenarios";
-export { createNotificationSettings, createParserSettings } from "./settings-fixtures";
+export { createMockMainSettingsStore, createNotificationSettings, createParserSettings } from "./settings-fixtures";
 export { createAllDayVirtualEventData, createVirtualEventData } from "./virtual-event-fixtures";

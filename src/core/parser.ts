@@ -1,137 +1,89 @@
-import { FilterEvaluator, getFilenameFromPath, removeMarkdownExtension } from "@real1ty-obsidian-plugins";
-import type { DateTime } from "luxon";
+import { FilterEvaluator } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
-import { v5 as uuidv5 } from "uuid";
 
-import { PRISMA_CALENDAR_NAMESPACE } from "../constants";
-import type { AllDayEvent, CalendarEvent, TimedEvent } from "../types/calendar";
-import { eventDefaults } from "../types/calendar";
-import type { EventMetadata } from "../types/event-metadata";
+import type { CalendarEvent } from "../types/calendar";
+import type { CalendarEventParser } from "../types/event-schemas";
+import { buildEventSchemaInput, createEventSchema } from "../types/event-schemas";
 import type { RawEventSource } from "../types/event-source";
-import type { Frontmatter, ISO, SingleCalendarConfig } from "../types/index";
-import { applyDateNormalizationToFile, parseEventFrontmatter } from "../utils/event-frontmatter";
-import { getEventName } from "../utils/event-naming";
-import { toInternalISO } from "../utils/iso";
+import type { PrismaCalendarSettingsStore, SingleCalendarConfig } from "../types/index";
+import { findConflictForCalendar } from "../utils/calendar-conflicts";
+import { applyDateNormalizationToFile } from "../utils/event-frontmatter";
 
 export class Parser {
 	private settings: SingleCalendarConfig;
-	private subscription: Subscription | null = null;
+	private subscriptions: Subscription[] = [];
 	private filterEvaluator: FilterEvaluator<SingleCalendarConfig>;
+	private schema: CalendarEventParser;
+	// Cached on every settings change so parseEventSource doesn't recompute on
+	// every event. The runtime guard that prevents two calendars from racing
+	// sort-date writes against the same files — see calendar-conflicts.ts.
+	private hasNormalizationConflict = false;
 
 	constructor(
 		private app: App,
-		settingsStore: BehaviorSubject<SingleCalendarConfig>
+		settingsStore: BehaviorSubject<SingleCalendarConfig>,
+		private mainSettingsStore: PrismaCalendarSettingsStore,
+		private calendarId: string
 	) {
-		this.app = app;
 		this.settings = settingsStore.value;
 		this.filterEvaluator = new FilterEvaluator<SingleCalendarConfig>(settingsStore);
-		this.subscription = settingsStore.subscribe((newSettings) => {
-			this.settings = newSettings;
-		});
+		this.schema = createEventSchema(this.settings);
+		this.recomputeNormalizationConflict();
+		this.subscriptions.push(
+			settingsStore.subscribe((newSettings) => {
+				this.settings = newSettings;
+				this.schema = createEventSchema(newSettings);
+			}),
+			this.mainSettingsStore.settings$.subscribe(() => {
+				this.recomputeNormalizationConflict();
+			})
+		);
+	}
+
+	private recomputeNormalizationConflict(): void {
+		this.hasNormalizationConflict =
+			findConflictForCalendar(this.calendarId, this.mainSettingsStore.currentSettings.calendars) !== null;
 	}
 
 	destroy(): void {
-		this.subscription?.unsubscribe();
+		for (const sub of this.subscriptions) sub.unsubscribe();
+		this.subscriptions = [];
 	}
 
 	parseEventSource(source: RawEventSource): CalendarEvent | null {
-		const { filePath, frontmatter, metadata } = source;
-
-		if (!this.filterEvaluator.evaluateFilters(frontmatter)) {
+		if (!this.filterEvaluator.evaluateFilters(source.frontmatter)) {
 			return null;
 		}
 
-		const id = uuidv5(filePath, PRISMA_CALENDAR_NAMESPACE);
+		const input = buildEventSchemaInput(
+			{ filePath: source.filePath, frontmatter: source.frontmatter, folder: source.folder },
+			this.settings
+		);
+		const event = this.schema.parse(input);
+		if (!event) return null;
 
-		const result = parseEventFrontmatter(frontmatter, this.settings);
-		if (!result) {
-			return null;
+		// Side effect: normalize sort date on disk.
+		// TODO(refactor): extract into the side-effects manager when the table-level
+		// migration lands; this stays here so the public Parser API doesn't change.
+		// Suppress writes while another calendar in the same directory disagrees
+		// on (sortingStrategy, sortDateProp): both parsers would otherwise thrash
+		// the same property on every parse and corrupt the IDB cache.
+		if (!this.hasNormalizationConflict) {
+			const start = event.start;
+			const end = event.type === "timed" ? event.end : undefined;
+			const allDay = event.type === "allDay";
+			void applyDateNormalizationToFile(
+				this.app,
+				source.filePath,
+				source.frontmatter,
+				this.settings,
+				start,
+				end,
+				allDay
+			);
 		}
 
-		const { datetime: parsed } = result;
-
-		const title =
-			getEventName(this.settings.titleProp, frontmatter, filePath, this.settings.calendarTitleProp) ||
-			removeMarkdownExtension(getFilenameFromPath(filePath));
-
-		return parsed.allDay
-			? this.parseAllDayEvent(source, id, title, parsed.date, metadata)
-			: this.parseTimedEvent(source, id, title, parsed.startTime, parsed.endTime, metadata);
-	}
-
-	private parseAllDayEvent(
-		source: RawEventSource,
-		id: string,
-		title: string,
-		date: DateTime,
-		metadata: EventMetadata
-	): AllDayEvent {
-		const { filePath, frontmatter } = source;
-		const start = toInternalISO(date.startOf("day"));
-
-		const meta = this.createEventMeta(source);
-
-		void applyDateNormalizationToFile(this.app, filePath, frontmatter, this.settings, start, undefined, true);
-
-		return {
-			...eventDefaults(),
-			id,
-			ref: { filePath },
-			title,
-			type: "allDay",
-			start: start,
-			allDay: true,
-			skipped: metadata.skip ?? false,
-			metadata,
-			meta,
-		};
-	}
-
-	private parseTimedEvent(
-		source: RawEventSource,
-		id: string,
-		title: string,
-		startTime: DateTime,
-		endTime: DateTime | null | undefined,
-		metadata: EventMetadata
-	): TimedEvent {
-		const { filePath, frontmatter } = source;
-		const start = toInternalISO(startTime);
-		const end: ISO = endTime ? toInternalISO(endTime) : toInternalISO(this.calculateDefaultEnd(startTime, false));
-
-		const meta = this.createEventMeta(source);
-		void applyDateNormalizationToFile(this.app, source.filePath, frontmatter, this.settings, start, end);
-
-		return {
-			...eventDefaults(),
-			id,
-			ref: { filePath },
-			title,
-			type: "timed",
-			start,
-			end,
-			allDay: false,
-			skipped: metadata.skip ?? false,
-			metadata,
-			meta,
-		};
-	}
-
-	private createEventMeta(source: RawEventSource): Frontmatter {
-		const { folder, frontmatter, isAllDay } = source;
-		return {
-			folder,
-			isAllDay,
-			...frontmatter,
-		};
-	}
-
-	private calculateDefaultEnd(start: DateTime, allDay: boolean): DateTime {
-		if (allDay) {
-			return start.endOf("day");
-		}
-
-		return start.plus({ minutes: this.settings.defaultDurationMinutes });
+		return event;
 	}
 }

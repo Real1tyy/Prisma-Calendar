@@ -110,7 +110,7 @@ export class CalendarBundle {
 			categoryTracker,
 			nameSeriesTracker,
 			prerequisiteTracker,
-		} = this.indexerRegistry.getOrCreateIndexer(this.calendarId, this.settingsStore.settings$);
+		} = this.indexerRegistry.getOrCreateIndexer(this.calendarId, this.settingsStore.settings$, this.mainSettingsStore);
 
 		this.fileRepository = fileRepository;
 		this.parser = parser;

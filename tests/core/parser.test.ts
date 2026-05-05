@@ -1,18 +1,20 @@
 import { DateTime } from "luxon";
 import type { App } from "obsidian";
-import type { BehaviorSubject } from "rxjs";
-import { beforeEach, describe, expect, it } from "vitest";
+import { BehaviorSubject } from "rxjs";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { Parser } from "../../src/core/parser";
+import type { PrismaCalendarSettingsStore, SingleCalendarConfig } from "../../src/types";
 import { isAllDayEvent, isTimedEvent } from "../../src/types/calendar";
-import { createMockIntegrationApp, createRawEventSource } from "../fixtures";
-import { createMockSingleCalendarSettings, createMockSingleCalendarSettingsStore } from "../setup";
+import { createMockIntegrationApp, createMockMainSettingsStore, createRawEventSource } from "../fixtures";
+import { createMockFile, createMockSingleCalendarSettings, createMockSingleCalendarSettingsStore } from "../setup";
 
 const mockApp = createMockIntegrationApp() as any;
 
 describe("Parser", () => {
 	let parser: Parser;
 	let settingsStore: BehaviorSubject<any>;
+	let mainStore: PrismaCalendarSettingsStore;
 	let settings: any;
 
 	beforeEach(() => {
@@ -26,7 +28,8 @@ describe("Parser", () => {
 			defaultDurationMinutes: 60,
 		};
 		settingsStore = createMockSingleCalendarSettingsStore(settings);
-		parser = new Parser(mockApp as App, settingsStore);
+		mainStore = createMockMainSettingsStore([settings as SingleCalendarConfig]);
+		parser = new Parser(mockApp as App, settingsStore, mainStore, settings.id);
 	});
 
 	describe("basic event parsing", () => {
@@ -145,7 +148,7 @@ describe("Parser", () => {
 				titleProp: "eventTitle",
 			};
 			settingsStore.next(testSettings);
-			parser = new Parser(mockApp as App, settingsStore);
+			parser = new Parser(mockApp as App, settingsStore, mainStore, settings.id);
 
 			const source = createRawEventSource({
 				filePath: "Events/meeting.md",
@@ -370,9 +373,6 @@ describe("Parser", () => {
 			expect(event.meta).toEqual({
 				folder: "Projects",
 				isAllDay: false,
-				originalStart: "2024-01-15 10:00",
-				originalEnd: undefined,
-				originalDate: undefined,
 				// All frontmatter properties should be included for Frontmatter Display
 				start: "2024-01-15 10:00",
 				priority: "high",
@@ -479,7 +479,12 @@ describe("Parser", () => {
 				startProp: "Start Date", // Use capital S to match the frontmatter
 			};
 			const testSettingsStore = createMockSingleCalendarSettingsStore(testSettings);
-			const parser = new Parser(mockApp as App, testSettingsStore);
+			const parser = new Parser(
+				mockApp as App,
+				testSettingsStore,
+				createMockMainSettingsStore([testSettings as SingleCalendarConfig]),
+				testSettings.id
+			);
 
 			const source = createRawEventSource({
 				filePath: "Tasks/enforce All Templates, Make it a one off script to enforce all frontmatter and templates..md",
@@ -548,7 +553,12 @@ describe("Parser", () => {
 			// Use the default settings from the schema
 			const defaultSettings = createMockSingleCalendarSettings();
 			const defaultSettingsStore = createMockSingleCalendarSettingsStore(defaultSettings);
-			const parser = new Parser(mockApp as App, defaultSettingsStore);
+			const parser = new Parser(
+				mockApp as App,
+				defaultSettingsStore,
+				createMockMainSettingsStore([defaultSettings as SingleCalendarConfig]),
+				defaultSettings.id
+			);
 
 			const source = createRawEventSource({
 				filePath: "Tasks/test-task.md",
@@ -576,6 +586,109 @@ describe("Parser", () => {
 			expect(startDate.day).toBe(5);
 			expect(startDate.hour).toBe(22);
 			expect(startDate.minute).toBe(21);
+		});
+	});
+
+	// Regression: two planning systems pointing at the same directory with
+	// disagreeing (sortingStrategy, sortDateProp) used to thrash each other's
+	// `Sort Date` writes on every parse, which corrupted the IDB cache. The
+	// Parser now skips its sort-date side effect entirely while a conflict is
+	// active.
+	describe("normalization conflict guard", () => {
+		function makeWritingCalendar(id: string, overrides: Partial<SingleCalendarConfig> = {}): SingleCalendarConfig {
+			return {
+				...createMockSingleCalendarSettings(),
+				id,
+				name: id,
+				enabled: true,
+				directory: "Tasks",
+				indexSubdirectories: false,
+				sortingStrategy: "allStartDate" as any,
+				sortDateProp: "Sort Date",
+				...overrides,
+			} as SingleCalendarConfig;
+		}
+
+		function buildParser(calendars: SingleCalendarConfig[], selfId: string) {
+			const fakeFile = createMockFile("Tasks/event.md", { basename: "event", extension: "md" });
+			const processFrontMatter = vi.fn(async (_file: unknown, fn: (fm: Record<string, unknown>) => void) => fn({}));
+			const app = createMockIntegrationApp({
+				vault: { getAbstractFileByPath: vi.fn().mockReturnValue(fakeFile) } as any,
+				fileManager: { processFrontMatter, renameFile: vi.fn().mockResolvedValue(undefined) } as any,
+			});
+			const self = calendars.find((c) => c.id === selfId);
+			if (!self) throw new Error(`buildParser: no calendar with id ${selfId}`);
+			const perCal = new BehaviorSubject<SingleCalendarConfig>(self);
+			const main = createMockMainSettingsStore(calendars);
+			const parser = new Parser(app as unknown as App, perCal, main, selfId);
+			return { parser, processFrontMatter, main, perCal };
+		}
+
+		const seedSource = () =>
+			createRawEventSource({
+				filePath: "Tasks/event.md",
+				mtime: Date.now(),
+				frontmatter: { "Start Date": "2026-01-15 10:00" },
+				folder: "Tasks",
+				isAllDay: false,
+				isUntracked: false,
+			});
+
+		it("writes Sort Date on parse when no other calendar overlaps", async () => {
+			const { parser, processFrontMatter } = buildParser([makeWritingCalendar("solo")], "solo");
+
+			const event = parser.parseEventSource(seedSource());
+			expect(event).not.toBeNull();
+			await new Promise((r) => setTimeout(r, 0));
+
+			expect(processFrontMatter).toHaveBeenCalled();
+		});
+
+		it("suppresses Sort Date writes while a conflicting peer shares the directory", async () => {
+			const writer = makeWritingCalendar("writer");
+			const peer = makeWritingCalendar("peer", { sortingStrategy: "none" as any });
+			const { parser, processFrontMatter } = buildParser([writer, peer], "writer");
+
+			parser.parseEventSource(seedSource());
+			await new Promise((r) => setTimeout(r, 0));
+
+			expect(processFrontMatter).not.toHaveBeenCalled();
+		});
+
+		it("blocks the non-writing peer too — both sides of the conflict are silenced", async () => {
+			const writer = makeWritingCalendar("writer");
+			const peer = makeWritingCalendar("peer", { sortingStrategy: "none" as any });
+			const { parser, processFrontMatter } = buildParser([writer, peer], "peer");
+
+			// Peer would normally try to *delete* Sort Date here (strategy=none + prop in fm).
+			parser.parseEventSource({
+				...seedSource(),
+				frontmatter: { "Start Date": "2026-01-15 10:00", "Sort Date": "2026-01-15T10:00:00" },
+			} as any);
+			await new Promise((r) => setTimeout(r, 0));
+
+			expect(processFrontMatter).not.toHaveBeenCalled();
+		});
+
+		it("resumes writes when the conflict resolves via a settings change", async () => {
+			const writer = makeWritingCalendar("writer");
+			const peer = makeWritingCalendar("peer", { sortingStrategy: "none" as any });
+			const { parser, processFrontMatter, main } = buildParser([writer, peer], "writer");
+
+			parser.parseEventSource(seedSource());
+			await new Promise((r) => setTimeout(r, 0));
+			expect(processFrontMatter).not.toHaveBeenCalled();
+
+			// User aligns the peer's strategy → conflict clears → next parse writes.
+			main.settings$.next({
+				...main.currentSettings,
+				calendars: [writer, { ...peer, sortingStrategy: "allStartDate" as any }],
+			});
+
+			parser.parseEventSource(seedSource());
+			await new Promise((r) => setTimeout(r, 0));
+
+			expect(processFrontMatter).toHaveBeenCalled();
 		});
 	});
 });
