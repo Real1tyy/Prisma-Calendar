@@ -248,7 +248,12 @@ const CategoriesListSection = memo(function CategoriesListSection({
 							>
 								<ObsidianIcon icon="trash" />
 							</button>
-							<input type="color" value={info.color} onChange={(e) => handleColorChange(info.name, e.target.value)} />
+							<input
+								type="color"
+								data-testid="prisma-category-settings-color-input"
+								value={info.color}
+								onChange={(e) => handleColorChange(info.name, e.target.value)}
+							/>
 						</div>
 					</div>
 				);

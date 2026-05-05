@@ -200,7 +200,11 @@ function renderNotificationContent(
 
 	const buttonContainer = el.createDiv(cls("event-notification-buttons"));
 
-	const openButton = buttonContainer.createEl("button", { text: "Open event", cls: "mod-cta" });
+	const openButton = buttonContainer.createEl("button", {
+		text: "Open event",
+		cls: "mod-cta",
+		attr: { "data-testid": "prisma-notification-open" },
+	});
 	openButton.onclick = () => {
 		void app.workspace.openLinkText(eventData.filePath, "", false);
 		close();
@@ -210,7 +214,10 @@ function renderNotificationContent(
 		renderSnoozeControl(buttonContainer, settings, onSnooze, close);
 	}
 
-	const dismissButton = buttonContainer.createEl("button", { text: "Dismiss" });
+	const dismissButton = buttonContainer.createEl("button", {
+		text: "Dismiss",
+		attr: { "data-testid": "prisma-notification-dismiss" },
+	});
 	dismissButton.onclick = close;
 }
 
@@ -225,6 +232,7 @@ export function showNotificationModal(
 		cls: cls("event-notification-modal"),
 		render: (el, ctx) => {
 			addCls(el, "event-notification-modal");
+			el.setAttribute("data-testid", "prisma-notification-modal");
 			renderNotificationContent(el, app, eventData, settings, ctx.close, onSnooze);
 		},
 	});
