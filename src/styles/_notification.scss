@@ -13,19 +13,6 @@
 		margin-bottom: 16px;
 	}
 
-	&-row {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-	}
-
-	&-label {
-		min-width: 80px;
-		font-size: var(--font-ui-small);
-		font-weight: var(--font-weight-medium);
-		color: var(--text-muted);
-	}
-
 	&-btn  {
 		padding: 8px 24px;
 		border: 1px solid var(--background-modifier-border);
@@ -128,17 +115,6 @@
 
 /* Responsive adjustments */
 @media (width <= 768px) {
-	.prisma-move-by-row {
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 8px;
-	}
-
-	.prisma-move-by-label {
-		min-width: 0;
-		width: 100%;
-	}
-
 	.prisma-move-by-amount-group, .prisma-move-by-unit-group {
 		width: 100%;
 	}
