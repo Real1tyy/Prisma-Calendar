@@ -332,10 +332,10 @@ test.describe("ICS roundtrip", () => {
 
 		await refreshCalendar(page);
 
-		// Originals must survive — the re-import must not *overwrite* existing
-		// files or reduce the vault below its post-first-import count.
+		// Manual re-import is not UID-aware and creates duplicates (see comment
+		// above). Originals must survive alongside the new copies.
 		const afterSecondImport = listEventMarkdown(vaultDir);
-		expect(afterSecondImport.length).toBeGreaterThanOrEqual(seed.length);
+		expect(afterSecondImport.length).toBe(2 * seed.length);
 		for (const original of afterFirstImport) {
 			expect(afterSecondImport).toContain(original);
 		}

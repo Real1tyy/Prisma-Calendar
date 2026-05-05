@@ -34,10 +34,10 @@ test.describe("settings: search", () => {
 		await expect.poll(async () => visibleSettings.count()).toBeLessThan(baselineCount);
 		await expect(obsidian.page.locator(".prisma-settings-search-no-results").first()).toBeVisible();
 
-		// Clear → visible count returns to at least the baseline.
+		// Clear → visible count returns to exactly the baseline.
 		await searchInput.fill("");
 		await searchInput.press("Enter");
 
-		await expect.poll(async () => visibleSettings.count()).toBeGreaterThanOrEqual(baselineCount);
+		await expect.poll(async () => visibleSettings.count()).toBe(baselineCount);
 	});
 });
