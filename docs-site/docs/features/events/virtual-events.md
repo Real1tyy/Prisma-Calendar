@@ -83,6 +83,8 @@ Manual virtual events are stored in a `Virtual Events.md` file inside your calen
 
 Each virtual event stores: title, start/end datetime, all-day flag, and frontmatter properties.
 
+When you change the calendar directory in settings, the plugin waits **3 seconds** after the last keystroke before creating the `Virtual Events.md` file at the new path. This prevents stray files from appearing at half-typed directories while you're still editing the path.
+
 ### Converting Between Virtual and Physical
 
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>

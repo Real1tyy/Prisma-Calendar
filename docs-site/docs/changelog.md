@@ -23,6 +23,7 @@ All notable changes to this project will be documented here.
 - **ICS import crashing on recurring-instance files**: Importing an exported `.ics` could fail with `Could not extract integer from ":1"`, blocking every event from being imported. Fixed, also the importer now skips any unreadable event with a clear in-modal warning instead of aborting the whole file. See [ICS Import](./features/integrations/ics-import.md).
 - **Timeline, Heatmap, and Gantt not updating on settings or color changes**: Changing color rules, default colors, or display settings had no effect on the Timeline, Heatmap, or Gantt until you switched tabs. All three views now refresh automatically when rendering-relevant settings change. See [Timeline](./features/views/timeline.md#live-updates), [Heatmap](./features/views/heatmap.md#live-updates), and [Gantt](./features/views/gantt.md#live-updates).
 - **Documentation links in changelog not clickable**: Relative documentation links in the What's New modal and in-app changelog viewer did nothing on click. They now open the corresponding page on the documentation site. See [General Settings → Changelog Viewer](./configuration/general.md#changelog-viewer).
+- **Stray virtual events files at half-typed directories**: Typing the calendar directory in settings created a `Virtual Events.md` at every intermediate path. The plugin now waits 3 seconds after the last keystroke before binding the new directory. See [Virtual Events → Storage](./features/events/virtual-events.md#storage).
 
 ---
 

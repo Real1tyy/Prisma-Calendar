@@ -1,13 +1,19 @@
 import { type CodeBlockBinding, CodeBlockRepository } from "@real1ty-obsidian-plugins";
 import type { DateTime } from "luxon";
 import type { App } from "obsidian";
-import { BehaviorSubject, type Subscription } from "rxjs";
+import { BehaviorSubject, debounceTime, type Subscription } from "rxjs";
 import { v4 as uuidv4 } from "uuid";
 
 import { VIRTUAL_EVENTS_CODE_FENCE } from "../constants";
 import { type VirtualEventData, VirtualEventDataSchema } from "../types/calendar";
 import type { EventSaveData } from "../types/event-boundaries";
 import type { SingleCalendarConfig } from "../types/settings";
+
+// Wait for the user to stop typing the directory in settings before binding
+// (and creating) the virtual events file. Without this, every intermediate
+// keystroke that the schema-field commits creates a stray code-fence file at
+// a half-typed path.
+export const VIRTUAL_EVENT_SETTINGS_DEBOUNCE_MS = 3000;
 
 export class VirtualEventStore {
 	private readonly repo = new CodeBlockRepository<VirtualEventData>({
@@ -31,46 +37,48 @@ export class VirtualEventStore {
 		this.directory = settings.directory;
 		this.fileName = settings.virtualEventsFileName;
 
-		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
-			const dirChanged = this.directory !== newSettings.directory;
-			const nameChanged = this.fileName !== newSettings.virtualEventsFileName;
-			this.directory = newSettings.directory;
-			this.fileName = newSettings.virtualEventsFileName;
-			if (!dirChanged && !nameChanged) return;
+		this.settingsSubscription = settingsStore
+			.pipe(debounceTime(VIRTUAL_EVENT_SETTINGS_DEBOUNCE_MS))
+			.subscribe((newSettings) => {
+				const dirChanged = this.directory !== newSettings.directory;
+				const nameChanged = this.fileName !== newSettings.virtualEventsFileName;
+				this.directory = newSettings.directory;
+				this.fileName = newSettings.virtualEventsFileName;
+				if (!dirChanged && !nameChanged) return;
 
-			if (!this.directory) {
-				if (this.binding) {
-					this.binding.unsubscribe();
-					this.binding = null;
-					this.events$.next([]);
+				if (!this.directory) {
+					if (this.binding) {
+						this.binding.unsubscribe();
+						this.binding = null;
+						this.events$.next([]);
+					}
+					return;
 				}
-				return;
-			}
 
-			if (this.binding) {
-				const epoch = ++this.bindEpoch;
-				this.repo
-					.rebind(this.binding, this.app, this.getFilePath(), {
-						onChange: () => this.emit(),
-						createIfMissing: true,
-					})
-					.then((b) => {
-						// Drop stale rebinds: if another rebind (or destroy) ran after us,
-						// unsubscribe this fresh binding rather than let it leak or shadow
-						// the newer one.
-						if (this.destroyed || epoch !== this.bindEpoch) {
-							b.unsubscribe();
-							return;
-						}
-						this.binding = b;
-					})
-					.catch((error) => {
-						console.error("[VirtualEventStore] rebind failed:", error);
-					});
-			} else {
-				void this.initialize();
-			}
-		});
+				if (this.binding) {
+					const epoch = ++this.bindEpoch;
+					this.repo
+						.rebind(this.binding, this.app, this.getFilePath(), {
+							onChange: () => this.emit(),
+							createIfMissing: true,
+						})
+						.then((b) => {
+							// Drop stale rebinds: if another rebind (or destroy) ran after us,
+							// unsubscribe this fresh binding rather than let it leak or shadow
+							// the newer one.
+							if (this.destroyed || epoch !== this.bindEpoch) {
+								b.unsubscribe();
+								return;
+							}
+							this.binding = b;
+						})
+						.catch((error) => {
+							console.error("[VirtualEventStore] rebind failed:", error);
+						});
+				} else {
+					void this.initialize();
+				}
+			});
 	}
 
 	get changes$(): BehaviorSubject<VirtualEventData[]> {

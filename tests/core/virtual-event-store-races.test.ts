@@ -25,7 +25,7 @@ import { createDeferred } from "@real1ty-obsidian-plugins/testing";
 import type { BehaviorSubject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { VirtualEventStore } from "../../src/core/virtual-event-store";
+import { VIRTUAL_EVENT_SETTINGS_DEBOUNCE_MS, VirtualEventStore } from "../../src/core/virtual-event-store";
 import { createMockSingleCalendarSettingsStore } from "../setup";
 
 type Binding = { unsubscribe: () => void; id: string; filePath: string };
@@ -102,6 +102,10 @@ describe("VirtualEventStore — rebind race conditions", () => {
 	let store: VirtualEventStore;
 
 	beforeEach(() => {
+		// Fake timers must be active before subscribing to debounceTime, otherwise
+		// the operator captures real timers and our advanceTimersByTimeAsync
+		// can't fire its trailing emissions.
+		vi.useFakeTimers();
 		settingsStore = createMockSingleCalendarSettingsStore({
 			directory: "Events",
 			virtualEventsFileName: "virtual",
@@ -115,6 +119,7 @@ describe("VirtualEventStore — rebind race conditions", () => {
 		} catch {
 			// destroy may have already run mid-test
 		}
+		vi.useRealTimers();
 	});
 
 	it("out-of-order rebind resolution: latest settings win regardless of resolve order", async () => {
@@ -124,9 +129,12 @@ describe("VirtualEventStore — rebind race conditions", () => {
 		const initialBinding: Binding = { id: "initial", filePath: "Events/virtual.md", unsubscribe: vi.fn() };
 		(store as unknown as { binding: Binding }).binding = initialBinding;
 
-		// Rapid A → B → C.
+		// Two settled directory changes — each one waits past the debounce window,
+		// so both rebinds actually start (rather than coalescing into one).
 		settingsStore.next({ ...settingsStore.value, directory: "EventsB" });
+		await vi.advanceTimersByTimeAsync(VIRTUAL_EVENT_SETTINGS_DEBOUNCE_MS);
 		settingsStore.next({ ...settingsStore.value, directory: "EventsC" });
+		await vi.advanceTimersByTimeAsync(VIRTUAL_EVENT_SETTINGS_DEBOUNCE_MS);
 
 		expect(rebindCalls).toHaveLength(2);
 		expect(rebindCalls[0].filePath).toBe("EventsB/virtual.md");
@@ -153,7 +161,9 @@ describe("VirtualEventStore — rebind race conditions", () => {
 		(store as unknown as { binding: Binding }).binding = initialBinding;
 
 		settingsStore.next({ ...settingsStore.value, directory: "EventsB" });
+		await vi.advanceTimersByTimeAsync(VIRTUAL_EVENT_SETTINGS_DEBOUNCE_MS);
 		settingsStore.next({ ...settingsStore.value, directory: "EventsC" });
+		await vi.advanceTimersByTimeAsync(VIRTUAL_EVENT_SETTINGS_DEBOUNCE_MS);
 
 		// Both rebinds received the SAME oldBinding reference (initial) — the
 		// second rebind could not see the first's .then result yet.
@@ -182,6 +192,7 @@ describe("VirtualEventStore — rebind race conditions", () => {
 		(store as unknown as { binding: Binding }).binding = initialBinding;
 
 		settingsStore.next({ ...settingsStore.value, directory: "EventsB" });
+		await vi.advanceTimersByTimeAsync(VIRTUAL_EVENT_SETTINGS_DEBOUNCE_MS);
 		expect(rebindCalls).toHaveLength(1);
 
 		// User removes calendar / reloads plugin mid-rebind.
@@ -206,6 +217,7 @@ describe("VirtualEventStore — rebind race conditions", () => {
 		(store as unknown as { binding: Binding }).binding = initialBinding;
 
 		settingsStore.next({ ...settingsStore.value, directory: "EventsB" });
+		await vi.advanceTimersByTimeAsync(VIRTUAL_EVENT_SETTINGS_DEBOUNCE_MS);
 
 		expect(rebindCalls).toHaveLength(1);
 		expect(initialBinding.unsubscribe).toHaveBeenCalledTimes(1);
@@ -224,6 +236,7 @@ describe("VirtualEventStore — rebind race conditions", () => {
 		(store as unknown as { binding: Binding }).binding = initialBinding;
 
 		settingsStore.next({ ...settingsStore.value, statusProperty: "Done" });
+		await vi.advanceTimersByTimeAsync(VIRTUAL_EVENT_SETTINGS_DEBOUNCE_MS);
 
 		expect(rebindCalls).toHaveLength(0);
 		expect(initialBinding.unsubscribe).not.toHaveBeenCalled();

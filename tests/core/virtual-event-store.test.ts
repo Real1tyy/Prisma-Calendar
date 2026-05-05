@@ -3,7 +3,11 @@ import type { BehaviorSubject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { VIRTUAL_EVENTS_CODE_FENCE } from "../../src/constants";
-import { toVirtualInput, VirtualEventStore } from "../../src/core/virtual-event-store";
+import {
+	toVirtualInput,
+	VIRTUAL_EVENT_SETTINGS_DEBOUNCE_MS,
+	VirtualEventStore,
+} from "../../src/core/virtual-event-store";
 import type { VirtualEventData } from "../../src/types/calendar";
 import type { EventSaveData } from "../../src/types/event-boundaries";
 import { createVirtualEventData } from "../fixtures";
@@ -715,6 +719,14 @@ describe("VirtualEventStore", () => {
 	});
 
 	describe("empty directory guard", () => {
+		beforeEach(() => {
+			vi.useFakeTimers();
+		});
+
+		afterEach(() => {
+			vi.useRealTimers();
+		});
+
 		it("should not bind or create a file when directory is empty on initialize", async () => {
 			const emptyDirStore = createStore(vault, createMockSingleCalendarSettingsStore({ directory: "" }));
 			await emptyDirStore.initialize();
@@ -741,6 +753,7 @@ describe("VirtualEventStore", () => {
 			expect(guardStore.getAll()).toHaveLength(1);
 
 			settings.next({ ...settings.value, directory: "" });
+			await vi.advanceTimersByTimeAsync(VIRTUAL_EVENT_SETTINGS_DEBOUNCE_MS);
 
 			expect(guardStore.getAll()).toEqual([]);
 			guardStore.destroy();
@@ -754,10 +767,10 @@ describe("VirtualEventStore", () => {
 			expect(vault.create).not.toHaveBeenCalled();
 
 			settings.next({ ...settings.value, directory: "events" });
+			await vi.advanceTimersByTimeAsync(VIRTUAL_EVENT_SETTINGS_DEBOUNCE_MS);
+			await vi.advanceTimersByTimeAsync(0);
 
-			await vi.waitFor(() => {
-				expect(vault.create).toHaveBeenCalled();
-			});
+			expect(vault.create).toHaveBeenCalled();
 			guardStore.destroy();
 		});
 	});
@@ -778,6 +791,43 @@ describe("VirtualEventStore", () => {
 			store.destroy();
 
 			expect(completed).toBe(true);
+		});
+	});
+
+	describe("settings debounce — directory typing", () => {
+		beforeEach(() => {
+			vi.useFakeTimers();
+		});
+
+		afterEach(() => {
+			vi.useRealTimers();
+		});
+
+		it("should not bind a new directory until typing settles", async () => {
+			const settings = createMockSingleCalendarSettingsStore({ directory: "" });
+			const app = { vault, workspace: { getActiveViewOfType: vi.fn().mockReturnValue(null) } } as any;
+			const debouncedStore = new VirtualEventStore(app, settings);
+			vault.getAbstractFileByPath.mockReturnValue(null);
+
+			settings.next({ ...settings.value, directory: "C" });
+			settings.next({ ...settings.value, directory: "Ca" });
+			settings.next({ ...settings.value, directory: "Cal" });
+
+			await vi.advanceTimersByTimeAsync(VIRTUAL_EVENT_SETTINGS_DEBOUNCE_MS - 1);
+			expect(vault.create).not.toHaveBeenCalled();
+
+			settings.next({ ...settings.value, directory: "Calendar" });
+			await vi.advanceTimersByTimeAsync(VIRTUAL_EVENT_SETTINGS_DEBOUNCE_MS - 1);
+			expect(vault.create).not.toHaveBeenCalled();
+
+			await vi.advanceTimersByTimeAsync(1);
+			// Allow the async repo.bind chain to settle.
+			await vi.advanceTimersByTimeAsync(0);
+
+			expect(vault.create).toHaveBeenCalledTimes(1);
+			expect(vault.create.mock.calls[0][0]).toMatch(/^Calendar\//);
+
+			debouncedStore.destroy();
 		});
 	});
 });
