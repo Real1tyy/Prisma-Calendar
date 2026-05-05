@@ -135,6 +135,11 @@ function buildVEvent(v: VEventInput): ICAL.Component {
 	if (v.dtend) {
 		vevent.addPropertyWithValue("dtend", toICALTime(v.dtend, Boolean(v.allDay)));
 	}
+	// Stamp LAST-MODIFIED with the current wall-clock time so the sync planner
+	// can detect that the remote feed changed between calls to buildIcs().
+	// Without this, every event has lastModified=undefined and the planner
+	// treats all re-syncs as "skip-unchanged".
+	vevent.addPropertyWithValue("last-modified", ICAL.Time.now());
 	if (v.categories) vevent.addPropertyWithValue("categories", v.categories);
 	if (v.location) vevent.addPropertyWithValue("location", v.location);
 	if (v.description) vevent.addPropertyWithValue("description", v.description);
