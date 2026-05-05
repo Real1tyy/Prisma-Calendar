@@ -86,6 +86,13 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 				throw new Error(parsed.error?.message || "Failed to parse ICS content");
 			}
 
+			if (parsed.skipped.length > 0) {
+				console.warn(
+					`[ICSSubscription] ${this.subscription.name}: skipped ${parsed.skipped.length} malformed event(s)`,
+					parsed.skipped
+				);
+			}
+
 			const plan = computeIcsSubscriptionSyncPlan({
 				subscriptionId: this.subscription.id,
 				remoteEvents: parsed.events,

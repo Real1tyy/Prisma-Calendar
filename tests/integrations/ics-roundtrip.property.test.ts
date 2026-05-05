@@ -186,6 +186,39 @@ describe("ICS export → import round-trip", () => {
 		);
 	});
 
+	// Regression: recurring instances use a hashed rRuleId (`hashRRuleIdToZettelFormat`)
+	// as the 14-digit suffix instead of a YYYYMMDDHHMMSS timestamp. When the hash
+	// starts with zeros, naive `zettelIdToICALTime` produced year=0 and emitted
+	// malformed `DTSTAMP:0-04-27T15:07:17Z`, which crashed re-import with
+	// "Could not extract integer from `:1`".
+	it("round-trips recurring-instance filenames with leading-zero hash zettels", () => {
+		fc.assert(
+			fc.property(
+				fc.record({
+					id: arbEventId,
+					title: arbTitle,
+					date: arbDate,
+					hashSuffix: fc.integer({ min: 0, max: 99_999_999_999_999 }),
+				}),
+				({ id, title, date, hashSuffix }) => {
+					const zettel = String(hashSuffix).padStart(14, "0");
+					const event = createMockTimedEvent({
+						id,
+						title,
+						start: `${date}T10:00:00`,
+						end: `${date}T11:00:00`,
+						ref: { filePath: `Events/${title} ${date}-${zettel}.md` },
+					});
+					const parsed = exportAndParse([event]);
+					expect(parsed.success).toBe(true);
+					expect(parsed.skipped).toEqual([]);
+					expect(parsed.events).toHaveLength(1);
+				}
+			),
+			{ numRuns: 50 }
+		);
+	});
+
 	it("preserves non-empty categories", () => {
 		fc.assert(
 			fc.property(
@@ -247,6 +280,168 @@ describe("ICS export → import round-trip", () => {
 					expect(parsed.events[0].reminderMinutes).toBe(minutesBefore);
 				}
 			),
+			{ numRuns: 50 }
+		);
+	});
+});
+
+describe("ICS round-trip: X-PRISMA-FM-* frontmatter preservation", () => {
+	function exportAndParseWithMeta(meta: Record<string, unknown>): {
+		frontmatter: Record<string, unknown> | undefined;
+		success: boolean;
+	} {
+		const event = createMockTimedEvent({
+			id: "fm-test",
+			title: "Frontmatter Test",
+			start: "2025-06-01T10:00:00",
+			end: "2025-06-01T11:00:00",
+			ref: { filePath: "Events/fm-test-20250601100000.md" },
+			meta,
+		});
+
+		const exportResult = createICSFromEvents([event], createICSExportOptions());
+		if (!exportResult.success || !exportResult.content) {
+			return { frontmatter: undefined, success: false };
+		}
+
+		const parsed = parseICSContent(exportResult.content);
+		return { frontmatter: parsed.events[0]?.frontmatter, success: parsed.success };
+	}
+
+	it("preserves string values", () => {
+		const { frontmatter, success } = exportAndParseWithMeta({ Status: "Done", Priority: "High" });
+		expect(success).toBe(true);
+		expect(frontmatter?.["Status"]).toBe("Done");
+		expect(frontmatter?.["Priority"]).toBe("High");
+	});
+
+	it("preserves numeric values", () => {
+		const { frontmatter, success } = exportAndParseWithMeta({ Score: 42, Rating: 3.5 });
+		expect(success).toBe(true);
+		expect(frontmatter?.["Score"]).toBe(42);
+		expect(frontmatter?.["Rating"]).toBe(3.5);
+	});
+
+	it("preserves boolean values", () => {
+		const { frontmatter, success } = exportAndParseWithMeta({ _Archived: false, Completed: true });
+		expect(success).toBe(true);
+		expect(frontmatter?.["_Archived"]).toBe(false);
+		expect(frontmatter?.["Completed"]).toBe(true);
+	});
+
+	it("preserves RRule property without ical.js parse errors", () => {
+		const { frontmatter, success } = exportAndParseWithMeta({
+			RRule: "daily",
+			RRuleID: "1777753288856-VEJGF",
+		});
+		expect(success).toBe(true);
+		expect(frontmatter?.["RRule"]).toBe("daily");
+		expect(frontmatter?.["RRuleID"]).toBe("1777753288856-VEJGF");
+	});
+
+	it("preserves RRule with YEARLY;INTERVAL=1 format", () => {
+		const { frontmatter, success } = exportAndParseWithMeta({
+			RRule: "YEARLY;INTERVAL=1",
+		});
+		expect(success).toBe(true);
+		expect(frontmatter?.["RRule"]).toBe("YEARLY;INTERVAL=1");
+	});
+
+	it("preserves JSON object values (CalDAV sync metadata)", () => {
+		const caldavMeta = {
+			accountId: "abc-123",
+			calendarHref: "http://localhost:8080/remote.php/dav/calendars/admin/personal/",
+			objectHref: "http://localhost:8080/remote.php/dav/calendars/admin/personal/event.ics",
+			etag: '"32c714eaabadd923"',
+			uid: "d1989b6e-eab7-4f7a-82e8-76389743b48b",
+			lastSyncedAt: 1777979452954,
+		};
+		const { frontmatter, success } = exportAndParseWithMeta({ CalDAV: caldavMeta });
+		expect(success).toBe(true);
+		expect(frontmatter?.["CalDAV"]).toEqual(caldavMeta);
+	});
+
+	it("preserves datetime string values (Sort Date)", () => {
+		const { frontmatter, success } = exportAndParseWithMeta({
+			"Sort Date": "2026-04-29T07:30:00",
+		});
+		expect(success).toBe(true);
+		expect(frontmatter?.["Sort Date"]).toBe("2026-04-29T07:30:00");
+	});
+
+	it("preserves wiki-link values", () => {
+		const { frontmatter, success } = exportAndParseWithMeta({
+			Template: "[[Templates/New Task Calendar|New Task Calendar]]",
+		});
+		expect(success).toBe(true);
+		expect(frontmatter?.["Template"]).toBe("[[Templates/New Task Calendar|New Task Calendar]]");
+	});
+
+	it("preserves _ZettelID and internal properties (numeric strings become numbers)", () => {
+		const { frontmatter, success } = exportAndParseWithMeta({
+			_ZettelID: "20240701000000",
+			_LastModifiedTime: "20240701000000",
+		});
+		expect(success).toBe(true);
+		expect(frontmatter?.["_ZettelID"]).toBe(20240701000000);
+		expect(frontmatter?.["_LastModifiedTime"]).toBe(20240701000000);
+	});
+
+	it("preserves empty string values", () => {
+		const { frontmatter, success } = exportAndParseWithMeta({ Prerequisite: "" });
+		expect(success).toBe(true);
+		expect(frontmatter?.["Prerequisite"]).toBe("");
+	});
+
+	it("preserves all Prisma properties together in a realistic event", () => {
+		const meta: Record<string, unknown> = {
+			Status: "Done",
+			_ZettelID: "20260502222128",
+			_Archived: false,
+			_LastModifiedTime: "20260502222128",
+			"Already Notified": false,
+			"Sort Date": "2026-04-29T07:30:00",
+			Prerequisite: "",
+			RRule: "daily",
+			RRuleID: "1777753288856-VEJGF",
+			test: "value",
+		};
+
+		const expected: Record<string, unknown> = {
+			...meta,
+			_ZettelID: 20260502222128,
+			_LastModifiedTime: 20260502222128,
+		};
+
+		const { frontmatter, success } = exportAndParseWithMeta(meta);
+		expect(success).toBe(true);
+
+		for (const [key, value] of Object.entries(expected)) {
+			expect(frontmatter?.[key]).toEqual(value);
+		}
+	});
+
+	it("property-based: arbitrary frontmatter keys round-trip", () => {
+		const arbKey = fc
+			.string({ minLength: 1, maxLength: 20 })
+			.filter((s) => /^[a-zA-Z][a-zA-Z0-9 _-]*$/.test(s) && s === s.trim());
+		// Exclude purely numeric strings since parseFrontmatterValue coerces them to numbers.
+		// Also exclude "true"/"false" which get coerced to booleans.
+		const arbStringValue = fc
+			.string({ minLength: 1, maxLength: 30 })
+			.filter((s) => !/[\r\n]/.test(s) && s === s.trim() && Number.isNaN(Number(s)) && s !== "true" && s !== "false");
+		const arbValue = fc.oneof(arbStringValue, fc.integer({ min: -1000, max: 1000 }), fc.boolean());
+
+		fc.assert(
+			fc.property(fc.array(fc.tuple(arbKey, arbValue), { minLength: 1, maxLength: 5 }), (entries) => {
+				const meta = Object.fromEntries(entries);
+				const { frontmatter, success } = exportAndParseWithMeta(meta);
+				expect(success).toBe(true);
+
+				for (const [key, value] of Object.entries(meta)) {
+					expect(frontmatter?.[key]).toEqual(value);
+				}
+			}),
 			{ numRuns: 50 }
 		);
 	});

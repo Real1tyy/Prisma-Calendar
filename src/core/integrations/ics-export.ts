@@ -1,11 +1,15 @@
-import { extractContentAfterFrontmatter, serializeFrontmatterValue } from "@real1ty-obsidian-plugins";
+import {
+	extractContentAfterFrontmatter,
+	getFilenameFromPath,
+	serializeFrontmatterValue,
+} from "@real1ty-obsidian-plugins";
 import ICAL from "ical.js";
 import { type App, Notice, TFile } from "obsidian";
 
 import type { CalendarEvent } from "../../types/calendar";
 import { isAllDayEvent, isTimedEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
-import { extractZettelId, removeZettelId } from "../../utils/events/zettel-id";
+import { extractZettelId, PHYSICAL_INSTANCE_PATTERN, removeZettelId } from "../../utils/events/zettel-id";
 import { appendZ } from "../../utils/iso";
 
 interface NotificationSettings {
@@ -41,6 +45,54 @@ interface ICSExportResult {
 	error?: Error;
 }
 
+/**
+ * Derive the ICAL.Time used ONLY for the event's record-metadata fields:
+ * DTSTAMP, CREATED, LAST-MODIFIED. Per RFC 5545 those describe *the iCal record*
+ * (when it was generated / first created / last revised) — they are NOT the
+ * event's actual time. The event's real hour/minute is in DTSTART / DTEND,
+ * which come from `event.start` / `event.end` and are untouched by this code.
+ *
+ * Why derive it from the filename at all? Stability across re-exports. The
+ * zettel-id timestamp gives us a deterministic value, so re-exporting the same
+ * calendar produces byte-identical ICS — external tools (and `git diff`) treat
+ * unchanged DTSTAMP as "nothing to re-sync." `ICAL.Time.now()` would shift on
+ * every export and force unnecessary churn downstream.
+ *
+ * Two filename shapes show up here:
+ *  - `Title-YYYYMMDDHHMMSS.md` (regular events) — trailing 14 digits are a real
+ *    timestamp from `generateZettelId()`. Parse it.
+ *  - `Title YYYY-MM-DD-HASH.md` (physical recurring instances) — trailing 14
+ *    digits are a deterministic *hash* from `hashRRuleIdToZettelFormat()`, NOT
+ *    a timestamp. Parsing it as one can produce year=0 etc., which
+ *    `ICAL.Time.toString()` doesn't zero-pad → malformed `DTSTAMP:0-04-27T...Z`
+ *    lines that crash every downstream parser (including ours on re-import).
+ *
+ * For the physical-instance case we use the embedded `YYYY-MM-DD` (the
+ * occurrence date) at midnight UTC. It's stable across re-exports and tied to
+ * the occurrence, which is the closest meaningful value we have. Using
+ * `ICAL.Time.now()` would also be correct — just less stable.
+ */
+function deriveCreatedICALTime(filePath: string): ICAL.Time {
+	const basename = getFilenameFromPath(filePath).replace(/\.md$/, "");
+
+	const physicalInstanceMatch = basename.match(PHYSICAL_INSTANCE_PATTERN);
+	if (physicalInstanceMatch) {
+		const [, , instanceDate] = physicalInstanceMatch;
+		const [y, m, d] = instanceDate.split("-").map((s) => Number.parseInt(s, 10));
+		return new ICAL.Time(
+			{ year: y, month: m, day: d, hour: 0, minute: 0, second: 0, isDate: false },
+			ICAL.Timezone.utcTimezone
+		);
+	}
+
+	return zettelIdToICALTime(extractZettelId(basename));
+}
+
+/**
+ * Parse a 14-digit YYYYMMDDHHMMSS zettelId into an ICAL.Time. Only meaningful
+ * for real timestamp zettels (those produced by `generateZettelId()`) — callers
+ * must filter out hashed zettels first (see `deriveCreatedICALTime`).
+ */
 function zettelIdToICALTime(zettelId: string | null): ICAL.Time {
 	if (!zettelId || zettelId.length !== 14) {
 		return ICAL.Time.now();
@@ -127,8 +179,7 @@ function parsedEventToVEvent(
 ): ICAL.Component {
 	const vevent = new ICAL.Component("vevent");
 
-	const zettelId = extractZettelId(event.ref.filePath);
-	const createdTime = zettelIdToICALTime(zettelId);
+	const createdTime = deriveCreatedICALTime(event.ref.filePath);
 	const strippedTitle = removeZettelId(event.title);
 
 	vevent.addPropertyWithValue("uid", event.id);

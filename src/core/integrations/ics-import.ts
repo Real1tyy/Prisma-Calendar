@@ -41,9 +41,22 @@ export interface ImportedEvent {
 	};
 }
 
+export interface SkippedEvent {
+	/** 1-based index of the VEVENT in the source ICS for human-readable messages. */
+	index: number;
+	/** UID if extractable, else null. */
+	uid: string | null;
+	/** Best-effort summary if extractable, else null. */
+	summary: string | null;
+	/** The error that prevented this event from being imported. */
+	error: Error;
+}
+
 export interface ICSImportResult {
 	success: boolean;
 	events: ImportedEvent[];
+	/** Events that could not be parsed but did not abort the whole import. */
+	skipped: SkippedEvent[];
 	error?: Error;
 }
 
@@ -145,6 +158,25 @@ export function parseICSRRule(vevent: ICAL.Component): { type: RecurrenceType } 
 	return { type: `${freq};INTERVAL=${interval}` };
 }
 
+/**
+ * Best-effort `last-modified` read. ical.js eagerly decorates date-time
+ * properties via `Time.fromString`, which `strictParseInt`s fixed offsets and
+ * throws on malformed values (we've seen `0-04-27T15:07:17Z` in the wild —
+ * see `zettelIdToICALTime` notes in ics-export.ts). DTSTAMP/CREATED/LAST-MODIFIED
+ * aren't load-bearing for import, so swallow the decode error and skip the field
+ * rather than aborting the whole event.
+ */
+function readLastModified(vevent: ICAL.Component): number | undefined {
+	try {
+		const lastModifiedTime = vevent.getFirstPropertyValue("last-modified") as ICAL.Time | null;
+		if (!lastModifiedTime) return undefined;
+		return icalTimeToDate(lastModifiedTime).getTime();
+	} catch (error) {
+		console.warn("[ICSImport] Skipping malformed LAST-MODIFIED:", error);
+		return undefined;
+	}
+}
+
 function parseVEvent(vevent: ICAL.Component): ImportedEvent | null {
 	const event = new ICAL.Event(vevent);
 
@@ -190,11 +222,7 @@ function parseVEvent(vevent: ICAL.Component): ImportedEvent | null {
 	const uid = event.uid;
 	const rrule = parseICSRRule(vevent);
 
-	let lastModified: number | undefined;
-	const lastModifiedTime = vevent.getFirstPropertyValue("last-modified") as ICAL.Time | null;
-	if (lastModifiedTime) {
-		lastModified = icalTimeToDate(lastModifiedTime).getTime();
-	}
+	const lastModified = readLastModified(vevent);
 
 	const imported: ImportedEvent = {
 		title: event.summary || "Untitled Event",
@@ -226,22 +254,49 @@ export function parseICSContent(icsContent: string): ICSImportResult {
 			return {
 				success: false,
 				events: [],
+				skipped: [],
 				error: new Error("No events found in ICS file"),
 			};
 		}
 
-		const events = vevents.map(parseVEvent).filter((e): e is ImportedEvent => e !== null);
+		const events: ImportedEvent[] = [];
+		const skipped: SkippedEvent[] = [];
+		for (let i = 0; i < vevents.length; i++) {
+			const vevent = vevents[i];
+			try {
+				const parsed = parseVEvent(vevent);
+				if (parsed) events.push(parsed);
+			} catch (error) {
+				const err = error instanceof Error ? error : new Error(String(error));
+				const summary = safeReadString(vevent, "summary");
+				const uid = safeReadString(vevent, "uid");
+				console.warn(
+					`[ICSImport] Skipping malformed VEVENT #${i + 1}` +
+						(summary ? ` (summary="${summary}")` : "") +
+						(uid ? ` (uid=${uid})` : ""),
+					err
+				);
+				skipped.push({ index: i + 1, uid, summary, error: err });
+			}
+		}
 
-		return {
-			success: true,
-			events,
-		};
+		return { success: true, events, skipped };
 	} catch (error) {
 		return {
 			success: false,
 			events: [],
+			skipped: [],
 			error: error instanceof Error ? error : new Error(String(error)),
 		};
+	}
+}
+
+function safeReadString(vevent: ICAL.Component, name: string): string | null {
+	try {
+		const value = vevent.getFirstPropertyValue(name);
+		return value ? String(value) : null;
+	} catch {
+		return null;
 	}
 }
 

@@ -126,6 +126,10 @@ For each imported event, Prisma Calendar:
    - Notification settings (from `VALARM` if present)
 4. Adds event description as note content
 
+### Malformed Events
+
+If any event is malformed (e.g., a corrupted timestamp from a third-party calendar tool), Prisma will **skip just that event** and import the rest. The import preview surfaces the skipped count and the full error for each one is logged to the developer console.
+
 ### Recurring Event Support
 
 Recurring events defined with ICS `RRULE` properties are automatically converted to Prisma's internal recurring event format. The following recurrence patterns are supported:

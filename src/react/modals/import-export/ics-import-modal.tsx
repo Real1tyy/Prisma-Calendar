@@ -6,7 +6,12 @@ import { z } from "zod";
 
 import { TIMEZONE_LABELS } from "../../../components/settings/integration-shared";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
-import { type ICSImportResult, type ImportedEvent, parseICSContent } from "../../../core/integrations/ics-import";
+import {
+	type ICSImportResult,
+	type ImportedEvent,
+	parseICSContent,
+	type SkippedEvent,
+} from "../../../core/integrations/ics-import";
 
 const ImportOptionsSchema = z.object({
 	calendar: z.string().min(1).default(""),
@@ -26,6 +31,33 @@ interface ICSImportFormProps {
 	onSubmit: (result: ICSImportSelection) => void;
 	onCancel: () => void;
 }
+
+const MAX_SKIPPED_DETAILS = 5;
+
+const SkippedEventsWarning = memo(function SkippedEventsWarning({ skipped }: { skipped: SkippedEvent[] }) {
+	const visible = skipped.slice(0, MAX_SKIPPED_DETAILS);
+	const remaining = skipped.length - visible.length;
+
+	return (
+		<div className="prisma-ics-import-preview" data-testid="prisma-ics-import-skipped">
+			<p className="prisma-ics-import-error">
+				{skipped.length} event{skipped.length !== 1 ? "s" : ""} will be skipped because{" "}
+				{skipped.length === 1 ? "it" : "they"} could not be parsed:
+			</p>
+			<ul className="prisma-ics-import-event-list">
+				{visible.map((s) => (
+					<li key={s.index}>
+						<strong>#{s.index}</strong>
+						{s.summary ? ` "${s.summary}"` : ""}
+						{" — "}
+						<span>{s.error.message}</span>
+					</li>
+				))}
+				{remaining > 0 && <li className="prisma-ics-import-more">... and {remaining} more (see console)</li>}
+			</ul>
+		</div>
+	);
+});
 
 const EventPreviewList = memo(function EventPreviewList({ events }: { events: ImportedEvent[] }) {
 	const visible = events.slice(0, MAX_PREVIEW_EVENTS);
@@ -52,6 +84,7 @@ const EventPreviewList = memo(function EventPreviewList({ events }: { events: Im
 
 function ICSImportForm({ calendars, onSubmit, onCancel }: ICSImportFormProps) {
 	const [parsedEvents, setParsedEvents] = useState<ImportedEvent[]>([]);
+	const [skippedEvents, setSkippedEvents] = useState<SkippedEvent[]>([]);
 	const [parseError, setParseError] = useState<string | null>(null);
 	const [fileSelected, setFileSelected] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -77,14 +110,17 @@ function ICSImportForm({ calendars, onSubmit, onCancel }: ICSImportFormProps) {
 				if (!result.success) {
 					setParseError(result.error?.message || "Failed to parse ICS file");
 					setParsedEvents([]);
+					setSkippedEvents([]);
 					return;
 				}
 				setParsedEvents(result.events);
+				setSkippedEvents(result.skipped);
 				setParseError(null);
 			})
 			.catch((error) => {
 				setParseError(error instanceof Error ? error.message : "Failed to read file");
 				setParsedEvents([]);
+				setSkippedEvents([]);
 			});
 	}, []);
 
@@ -143,6 +179,7 @@ function ICSImportForm({ calendars, onSubmit, onCancel }: ICSImportFormProps) {
 						<p className="prisma-ics-import-error">Error: {parseError}</p>
 					</div>
 				)}
+				{skippedEvents.length > 0 && <SkippedEventsWarning skipped={skippedEvents} />}
 				{parsedEvents.length > 0 && <EventPreviewList events={parsedEvents} />}
 				{fileSelected && parsedEvents.length === 0 && !parseError && (
 					<div className="prisma-ics-import-preview">

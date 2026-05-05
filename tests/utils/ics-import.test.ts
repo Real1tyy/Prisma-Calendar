@@ -134,6 +134,67 @@ describe("ICS Import", () => {
 			expect(result.error).toBeDefined();
 		});
 
+		// Regression: malformed LAST-MODIFIED used to throw
+		// "Could not extract integer from `:1`" from inside `vevents.map(parseVEvent)`,
+		// aborting every other event in the file. LAST-MODIFIED isn't load-bearing
+		// for import, so we now read it defensively and continue.
+		it("should silently skip malformed LAST-MODIFIED but still import the event", () => {
+			const ics = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Test//EN
+BEGIN:VEVENT
+UID:event-with-bad-lastmod
+SUMMARY:Event With Bad LastMod
+DTSTART:20260601T100000Z
+DTEND:20260601T110000Z
+LAST-MODIFIED:0-04-27T15:07:17Z
+END:VEVENT
+END:VCALENDAR`;
+
+			const result = parseICSContent(ics);
+
+			expect(result.success).toBe(true);
+			expect(result.events).toHaveLength(1);
+			expect(result.events[0].uid).toBe("event-with-bad-lastmod");
+			expect(result.events[0].lastModified).toBeUndefined();
+			expect(result.skipped).toHaveLength(0);
+		});
+
+		// When an event is genuinely unrecoverable (malformed DTSTART), it is now
+		// quarantined into `skipped` instead of aborting every other VEVENT in the file.
+		it("should quarantine an event with an unrecoverable error and continue with the rest", () => {
+			const ics = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Test//EN
+BEGIN:VEVENT
+UID:good-1
+SUMMARY:Good Event
+DTSTART:20260601T100000Z
+DTEND:20260601T110000Z
+END:VEVENT
+BEGIN:VEVENT
+UID:bad-1
+SUMMARY:Bad Event
+DTSTART:0-04-27T15:07:17Z
+DTEND:0-04-27T16:07:17Z
+END:VEVENT
+BEGIN:VEVENT
+UID:good-2
+SUMMARY:Another Good Event
+DTSTART:20260603T100000Z
+DTEND:20260603T110000Z
+END:VEVENT
+END:VCALENDAR`;
+
+			const result = parseICSContent(ics);
+
+			expect(result.success).toBe(true);
+			expect(result.events.map((e) => e.uid)).toEqual(["good-1", "good-2"]);
+			expect(result.skipped).toHaveLength(1);
+			expect(result.skipped[0]).toMatchObject({ index: 2, summary: "Bad Event", uid: "bad-1" });
+			expect(result.skipped[0].error).toBeInstanceOf(Error);
+		});
+
 		it("should parse categories when present", () => {
 			const result = parseICSContent(SAMPLE_ICS_WITH_CATEGORIES);
 
