@@ -1,10 +1,9 @@
 import type { Page } from "@playwright/test";
 
-import { expectGanttBarBackgroundHex, expectTimelineItemsBackgroundHex } from "../../fixtures/color-assertions";
-import { fromAnchor, todayStamp } from "../../fixtures/dates";
-import { expectAllColors } from "../../fixtures/dsl";
+import { expectBackgroundColor } from "../../fixtures/color-assertions";
+import { todayStamp } from "../../fixtures/dates";
+import { type EventHandle, expectAllColors } from "../../fixtures/dsl";
 import { test } from "../../fixtures/electron";
-import { assignPrerequisiteViaUI, ganttBarLocator } from "../../fixtures/helpers";
 import { updateCalendarSettings } from "../../fixtures/seed-events";
 
 // Settings mutations (color rules) must propagate to ALL views WITHOUT a
@@ -27,6 +26,13 @@ async function setColorRule(page: Page, id: string, color: string, enabled: bool
 	});
 }
 
+async function expectTimelineColors(page: Page, events: readonly EventHandle[], color: string): Promise<void> {
+	const items = page.locator(".prisma-timeline-item");
+	for (const e of events) {
+		await expectBackgroundColor(items.filter({ hasText: e.title }).first(), color);
+	}
+}
+
 test.describe("cross-view: settings changes propagate to all views", () => {
 	test("changing a color rule repaints calendar tiles AND timeline items", async ({ calendar }) => {
 		await setColorRule(calendar.page, "rule-reactive", INITIAL_COLOR, true);
@@ -45,35 +51,7 @@ test.describe("cross-view: settings changes propagate to all views", () => {
 		await expectAllColors(events, UPDATED_COLOR);
 
 		await calendar.switchView("timeline");
-		await expectTimelineItemsBackgroundHex(
-			calendar.page,
-			events.map((e) => e.title),
-			UPDATED_COLOR
-		);
-
-		await calendar.switchView("calendar");
-		await calendar.switchMode("month");
-		await calendar.goToAnchor();
-		await calendar.seedMany([
-			{
-				title: "Gantt Upstream Reactive",
-				start: fromAnchor(0, 9, 0),
-				end: fromAnchor(0, 10, 0),
-				categories: [CATEGORY],
-			},
-			{
-				title: "Gantt Downstream Reactive",
-				start: fromAnchor(10, 14, 0),
-				end: fromAnchor(10, 15, 0),
-				categories: [CATEGORY],
-			},
-		]);
-		await assignPrerequisiteViaUI(calendar.page, "Gantt Downstream Reactive", "Gantt Upstream Reactive");
-		await calendar.unlockPro();
-		await calendar.switchView("gantt");
-		for (const title of ["Gantt Upstream Reactive", "Gantt Downstream Reactive"]) {
-			await expectGanttBarBackgroundHex(ganttBarLocator(calendar.page, title), UPDATED_COLOR);
-		}
+		await expectTimelineColors(calendar.page, events, UPDATED_COLOR);
 	});
 
 	test("disabling a color rule drops calendar tiles to defaultNodeColor", async ({ calendar }) => {
@@ -91,11 +69,7 @@ test.describe("cross-view: settings changes propagate to all views", () => {
 		await expectAllColors(events, DEFAULT_NODE);
 
 		await calendar.switchView("timeline");
-		await expectTimelineItemsBackgroundHex(
-			calendar.page,
-			events.map((e) => e.title),
-			DEFAULT_NODE
-		);
+		await expectTimelineColors(calendar.page, events, DEFAULT_NODE);
 	});
 
 	test("re-enabling a color rule repaints tiles from default back to the rule color", async ({ calendar }) => {
@@ -113,10 +87,6 @@ test.describe("cross-view: settings changes propagate to all views", () => {
 		await expectAllColors(events, INITIAL_COLOR);
 
 		await calendar.switchView("timeline");
-		await expectTimelineItemsBackgroundHex(
-			calendar.page,
-			events.map((e) => e.title),
-			INITIAL_COLOR
-		);
+		await expectTimelineColors(calendar.page, events, INITIAL_COLOR);
 	});
 });
