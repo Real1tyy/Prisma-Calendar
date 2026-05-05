@@ -4,10 +4,20 @@
 // calendar-helpers. All output is local-time, matching the "local-time-as-UTC"
 // convention Prisma stores in frontmatter (see ics-export.ts).
 //
-// Prefer `anchorDate()` / `fromAnchor()` over the today-based helpers for new
-// specs — see `docs/specs/e2e-date-anchor-robustness.md`. The today-anchored
-// variants remain for recurring specs (which genuinely need future offsets
-// relative to "now") and for pre-migration specs.
+// TWO families of date helpers — pick the right one for your view:
+//
+//   `todayStamp` / `todayISO` / `isoLocal`
+//     Use for specs that assert on NON-CALENDAR views: timeline, dashboard,
+//     heatmap, stats, list. These views default to "today" and have no
+//     equivalent of `goToAnchor()` — anchor-dated events fall outside their
+//     default viewport and assertions fail silently.
+//
+//   `fromAnchor` / `anchorISO` / `anchorDayISO`
+//     Use ONLY for specs that operate exclusively within the FullCalendar
+//     week/day view AND call `calendar.goToAnchor()`. The anchor (most recent
+//     Wednesday) keeps events mid-week regardless of when the suite runs,
+//     preventing week-boundary flakes. Do NOT use for cross-view specs that
+//     switch to timeline, dashboard, heatmap, or stats.
 
 const pad = (n: number): string => String(n).padStart(2, "0");
 
