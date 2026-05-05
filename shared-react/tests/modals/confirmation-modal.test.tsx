@@ -19,22 +19,22 @@ describe("ConfirmationModalContent", () => {
 		renderReact(<ConfirmationModalContent {...defaultProps} />);
 
 		expect(screen.getByText("This cannot be undone.")).toBeInTheDocument();
-		expect(screen.getByTestId(`${PREFIX}confirmation-confirm`)).toHaveTextContent("Confirm");
-		expect(screen.getByTestId(`${PREFIX}confirmation-cancel`)).toHaveTextContent("Cancel");
+		expect(screen.getByTestId(`${PREFIX}confirmation-modal-confirm`)).toHaveTextContent("Confirm");
+		expect(screen.getByTestId(`${PREFIX}confirmation-modal-cancel`)).toHaveTextContent("Cancel");
 	});
 
 	it("uses custom button labels", () => {
 		renderReact(<ConfirmationModalContent {...defaultProps} confirmLabel="Delete" cancelLabel="Keep" />);
 
-		expect(screen.getByTestId(`${PREFIX}confirmation-confirm`)).toHaveTextContent("Delete");
-		expect(screen.getByTestId(`${PREFIX}confirmation-cancel`)).toHaveTextContent("Keep");
+		expect(screen.getByTestId(`${PREFIX}confirmation-modal-confirm`)).toHaveTextContent("Delete");
+		expect(screen.getByTestId(`${PREFIX}confirmation-modal-cancel`)).toHaveTextContent("Keep");
 	});
 
 	it("fires onConfirm when confirm button clicked", async () => {
 		const onConfirm = vi.fn();
 		const { user } = renderReact(<ConfirmationModalContent {...defaultProps} onConfirm={onConfirm} />);
 
-		await user.click(screen.getByTestId(`${PREFIX}confirmation-confirm`));
+		await user.click(screen.getByTestId(`${PREFIX}confirmation-modal-confirm`));
 
 		expect(onConfirm).toHaveBeenCalledOnce();
 	});
@@ -43,7 +43,7 @@ describe("ConfirmationModalContent", () => {
 		const onCancel = vi.fn();
 		const { user } = renderReact(<ConfirmationModalContent {...defaultProps} onCancel={onCancel} />);
 
-		await user.click(screen.getByTestId(`${PREFIX}confirmation-cancel`));
+		await user.click(screen.getByTestId(`${PREFIX}confirmation-modal-cancel`));
 
 		expect(onCancel).toHaveBeenCalledOnce();
 	});
@@ -51,13 +51,13 @@ describe("ConfirmationModalContent", () => {
 	it("renders confirm button with warning variant when destructive", () => {
 		renderReact(<ConfirmationModalContent {...defaultProps} destructive />);
 
-		expect(screen.getByTestId(`${PREFIX}confirmation-confirm`)).toHaveClass("mod-warning");
+		expect(screen.getByTestId(`${PREFIX}confirmation-modal-confirm`)).toHaveClass("mod-warning");
 	});
 
 	it("renders confirm button with primary variant by default", () => {
 		renderReact(<ConfirmationModalContent {...defaultProps} />);
 
-		expect(screen.getByTestId(`${PREFIX}confirmation-confirm`)).toHaveClass("mod-cta");
+		expect(screen.getByTestId(`${PREFIX}confirmation-modal-confirm`)).toHaveClass("mod-cta");
 	});
 
 	it("does not render message when not provided", () => {

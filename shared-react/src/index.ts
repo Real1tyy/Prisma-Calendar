@@ -23,6 +23,8 @@ export { ManagerEditForm } from "./components/manager-edit-form";
 export type { ManagerRowAction, ManagerRowProps } from "./components/manager-row";
 export type { EditableItem } from "./components/manager-row";
 export { ManagerRow } from "./components/manager-row";
+export type { ModalDescriptionProps } from "./components/modal-description";
+export { ModalDescription } from "./components/modal-description";
 export type { ModalFormProps, ModalSchemaFormProps } from "./components/modal-form";
 export { ModalForm, ModalSchemaForm } from "./components/modal-form";
 export { ObsidianIcon } from "./components/obsidian-icon";

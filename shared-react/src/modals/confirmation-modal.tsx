@@ -2,6 +2,7 @@ import type { App } from "obsidian";
 import { memo } from "react";
 
 import { Button } from "../components/button";
+import { ModalDescription } from "../components/modal-description";
 import { openReactModal } from "../show-react-modal";
 
 export interface ConfirmationModalProps {
@@ -26,13 +27,13 @@ export const ConfirmationModalContent = memo(function ConfirmationModalContent({
 }: ConfirmationModalProps) {
 	return (
 		<div data-testid={`${testIdPrefix}confirmation-modal`}>
-			{message && <p className="setting-item-description">{message}</p>}
+			{message && <ModalDescription>{message}</ModalDescription>}
 			<div style={{ display: "flex", gap: "8px", justifyContent: "flex-end", marginTop: "16px" }}>
-				<Button testId={`${testIdPrefix}confirmation-cancel`} onClick={onCancel}>
+				<Button testId={`${testIdPrefix}confirmation-modal-cancel`} onClick={onCancel}>
 					{cancelLabel}
 				</Button>
 				<Button
-					testId={`${testIdPrefix}confirmation-confirm`}
+					testId={`${testIdPrefix}confirmation-modal-confirm`}
 					onClick={onConfirm}
 					variant={destructive ? "warning" : "primary"}
 				>
