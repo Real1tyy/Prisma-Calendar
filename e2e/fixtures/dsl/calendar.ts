@@ -16,6 +16,21 @@ import { getEventCount, refreshCalendar, type SeedEventInput, waitForEventCount 
 import { sel, TID, type ToolbarActionKey, type ViewMode, type ViewTabKey } from "../testids";
 import { type BatchHandle, openBatch } from "./batch";
 import { createEventHandle, type EventHandle } from "./event";
+import { expectConfirmationModal } from "./shared";
+
+// `dashboard-by-name` slugifies titles to sentence-case, so specs that assert
+// on rankings need the same transform — `Renamed Event` becomes `Renamed event`.
+function dashboardItemSelector(title: string): string {
+	return `[data-item-title="${title}"]`;
+}
+
+const TIMELINE_CONTAINER_TID = "prisma-timeline-container";
+const TIMELINE_ITEM_CLASS = ".prisma-timeline-item";
+const HEATMAP_CONTAINER_TID = "prisma-heatmap-container";
+const HEATMAP_CELL_TID = "prisma-heatmap-cell";
+const DASHBOARD_RANKING_TID = "prisma-dashboard-cell-ranking";
+
+type DashboardGroup = "dashboard-by-name" | "dashboard-by-category";
 
 // CalendarHandle — root of the E2E DSL. Represents "a live calendar view in
 // an Obsidian session". Exposes every operation specs currently reach for
@@ -150,6 +165,18 @@ export interface CalendarHandle {
 
 	/** Fire a registered Obsidian command via the command palette. */
 	runCommand(name: string): Promise<void>;
+
+	/** Wait for the shared confirmation modal and click Confirm. Used by destructive flows. */
+	confirmDeletion(): Promise<void>;
+
+	/** Assert a timeline item rendering `title` is present (or absent) in the timeline view. */
+	expectTimelineItem(title: string, present?: boolean): Promise<void>;
+
+	/** Assert the heatmap cell for `iso` carries `data-count="<count>"`. */
+	expectHeatmapCount(iso: string, count: number): Promise<void>;
+
+	/** Assert a dashboard ranking row for `title` is present (or absent) in the active group. */
+	expectDashboardItem(group: DashboardGroup, title: string, present?: boolean): Promise<void>;
 }
 
 /**
@@ -275,6 +302,15 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 		const [newPath] = await waitForNewEventFiles(vaultDir, baseline, 1, undefined, subdir);
 		if (!newPath) throw new Error(`createEvent(${input.title}): no new event file appeared in ${subdir}`);
 		return createEventHandle({ page, vaultDir }, newPath, input.title);
+	};
+
+	const switchToGroupChild: CalendarHandle["switchToGroupChild"] = async (group, child) => {
+		const groupTab = page.locator(sel(TID.viewTab(group))).first();
+		await groupTab.waitFor({ state: "visible" });
+		await groupTab.click();
+		const childTab = page.locator(sel(TID.viewTab(child))).first();
+		await childTab.waitFor({ state: "visible" });
+		await childTab.click();
 	};
 
 	return {
@@ -417,14 +453,7 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 			await el.click();
 		},
 
-		async switchToGroupChild(group, child) {
-			const groupTab = page.locator(sel(TID.viewTab(group))).first();
-			await groupTab.waitFor({ state: "visible" });
-			await groupTab.click();
-			const childTab = page.locator(sel(TID.viewTab(child))).first();
-			await childTab.waitFor({ state: "visible" });
-			await childTab.click();
-		},
+		switchToGroupChild,
 
 		async switchMode(mode) {
 			const btn = page.locator(`${ACTIVE_CALENDAR_LEAF} ${sel(TID.toolbar(`view-${mode}`))}`).first();
@@ -485,6 +514,34 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 
 		async runCommand(name) {
 			await runCommand(page, name);
+		},
+
+		async confirmDeletion() {
+			const modal = await expectConfirmationModal(page);
+			await modal.confirm();
+		},
+
+		async expectTimelineItem(title, present = true) {
+			const container = page.locator(sel(TIMELINE_CONTAINER_TID)).first();
+			await container.waitFor({ state: "visible" });
+			const item = container.locator(TIMELINE_ITEM_CLASS).filter({ hasText: title });
+			if (present) await expect(item.first()).toBeVisible();
+			else await expect(item).toHaveCount(0);
+		},
+
+		async expectHeatmapCount(iso, count) {
+			const container = page.locator(sel(HEATMAP_CONTAINER_TID)).first();
+			await container.waitFor({ state: "visible" });
+			const cell = container.locator(`${sel(HEATMAP_CELL_TID)}[data-date="${iso}"]`).first();
+			await expect(cell).toHaveAttribute("data-count", String(count));
+		},
+
+		async expectDashboardItem(group, title, present = true) {
+			await switchToGroupChild("dashboard", group);
+			const ranking = page.locator(`${sel(DASHBOARD_RANKING_TID)}:visible`).first();
+			const item = ranking.locator(dashboardItemSelector(title));
+			if (present) await expect(item).toBeVisible();
+			else await expect(item).toHaveCount(0);
 		},
 	};
 }

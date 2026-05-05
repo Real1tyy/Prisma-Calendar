@@ -822,6 +822,13 @@ async function configureDemoViewport(page: Page, log: Logger): Promise<void> {
 	}
 }
 
+/**
+ * Returns true when the error text matches an Obsidian-internal teardown race.
+ * With parallel workers, `browser.close()` can race with Obsidian's metadata-
+ * cache IDB flush — `saveFileCache` transactions fail with "database connection
+ * is closing", "Internal error committing transaction", or generic network
+ * errors. None of these are plugin bugs; filter them in the error guard.
+ */
 export function isTransientObsidianTeardownError(text: string): boolean {
 	return (
 		text.includes("database connection is closing") ||

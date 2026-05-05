@@ -1,7 +1,7 @@
 import type { Locator, Page } from "@playwright/test";
 
 import { ACTIVE_CALENDAR_LEAF } from "./constants";
-import { todayISO } from "./dates";
+import { anchorISO, todayISO } from "./dates";
 import type { SeedEventInput } from "./seed-events";
 import { sel, TID, type ViewMode } from "./testids";
 
@@ -15,6 +15,7 @@ const EVENT_IN_LEAF = `${ACTIVE_CALENDAR_LEAF} ${sel(TID.block)}`;
 // Re-exported from `./dates` (single source of truth for local-TZ builders)
 // so existing consumers importing `todayISO` from here keep working.
 export { todayISO };
+export { anchorISO };
 
 /**
  * Convenience builder for seeding a timed event anchored to today. Produces a
@@ -22,6 +23,20 @@ export { todayISO };
  */
 export function todayTimedEvent(title: string, startHour: number, endHour: number): SeedEventInput {
 	const date = todayISO();
+	return {
+		title,
+		startDate: `${date}T${String(startHour).padStart(2, "0")}:00`,
+		endDate: `${date}T${String(endHour).padStart(2, "0")}:00`,
+	};
+}
+
+/**
+ * Convenience builder for seeding a timed event on the anchor Wednesday.
+ * Prefer over `todayTimedEvent` — the anchor stays mid-week/mid-month,
+ * preventing flakes near week/month boundaries.
+ */
+export function anchorTimedEvent(title: string, startHour: number, endHour: number): SeedEventInput {
+	const date = anchorISO();
 	return {
 		title,
 		startDate: `${date}T${String(startHour).padStart(2, "0")}:00`,
