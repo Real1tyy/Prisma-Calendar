@@ -3,16 +3,8 @@ import { memo, type ReactNode, useCallback, useState } from "react";
 
 import { useExternalSnapshot } from "../hooks/use-external-snapshot";
 import { useInjectedStyles } from "../hooks/use-injected-styles";
+import { buildLicenseStyles } from "./license-section.styles";
 import { SecretField } from "./secret-field";
-
-function buildLicenseStyles(p: string): string {
-	return `
-.${p}license-activations-badge {
-	display: inline-block; margin-left: 8px; padding: 2px 8px; font-size: 0.8em;
-	border-radius: 10px; background: var(--background-modifier-hover); color: var(--text-muted);
-}
-`;
-}
 import { SettingHeading, SettingItem } from "./setting-item";
 
 interface LicenseSectionProps {

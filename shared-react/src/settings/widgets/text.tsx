@@ -1,4 +1,5 @@
 import { TextareaInput, TextInput } from "../../components/setting-controls";
+import { testIdProp } from "../../utils/test-id";
 import { commitString, resolvePlaceholder, stringValue, type WidgetProps } from "./common";
 
 export function TextWidget({ descriptor, override, binding, testId }: WidgetProps) {
@@ -7,7 +8,7 @@ export function TextWidget({ descriptor, override, binding, testId }: WidgetProp
 			value={stringValue(binding.value)}
 			placeholder={resolvePlaceholder(descriptor, override)}
 			onChange={(v) => commitString(v, descriptor, binding.onChange)}
-			{...(testId ? { testId } : {})}
+			{...testIdProp(testId)}
 		/>
 	);
 }
@@ -19,7 +20,7 @@ export function TextareaWidget({ descriptor, override, binding, testId }: Widget
 			placeholder={resolvePlaceholder(descriptor, override)}
 			{...(override?.rows !== undefined ? { rows: override.rows } : {})}
 			onChange={(v) => commitString(v, descriptor, binding.onChange)}
-			{...(testId ? { testId } : {})}
+			{...testIdProp(testId)}
 		/>
 	);
 }

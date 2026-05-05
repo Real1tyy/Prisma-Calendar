@@ -1,9 +1,10 @@
-import { injectStyleSheet } from "@real1ty-obsidian-plugins";
 import { SliderComponent } from "obsidian";
 import { memo, useCallback, useEffect, useRef } from "react";
 
 import { useActivatable } from "../hooks/use-activatable";
 import { useDebouncedCommit } from "../hooks/use-debounced-commit";
+import { useInjectedStyles } from "../hooks/use-injected-styles";
+import { testIdAttr } from "../utils/test-id";
 
 interface ToggleProps {
 	value: boolean;
@@ -21,7 +22,7 @@ export const Toggle = memo(function Toggle({ value, onChange, testId }: TogglePr
 			className={`checkbox-container${value ? " is-enabled" : ""}`}
 			role="switch"
 			aria-checked={value}
-			{...(testId ? { "data-testid": testId } : {})}
+			{...testIdAttr(testId)}
 		/>
 	);
 });
@@ -52,7 +53,7 @@ export const TextInput = memo(function TextInput({ value, placeholder, onChange,
 			onKeyDown={(e) => {
 				if (e.key === "Enter") flush();
 			}}
-			{...(testId ? { "data-testid": testId } : {})}
+			{...testIdAttr(testId)}
 		/>
 	);
 });
@@ -66,12 +67,7 @@ interface DropdownProps {
 
 export const Dropdown = memo(function Dropdown({ value, options, onChange, testId }: DropdownProps) {
 	return (
-		<select
-			className="dropdown"
-			value={value}
-			onChange={(e) => onChange(e.target.value)}
-			{...(testId ? { "data-testid": testId } : {})}
-		>
+		<select className="dropdown" value={value} onChange={(e) => onChange(e.target.value)} {...testIdAttr(testId)}>
 			{Object.entries(options).map(([optValue, label]) => (
 				<option key={optValue} value={optValue}>
 					{label}
@@ -123,7 +119,7 @@ export const NumberInput = memo(function NumberInput({
 			onKeyDown={(e) => {
 				if (e.key === "Enter") flush();
 			}}
-			{...(testId ? { "data-testid": testId } : {})}
+			{...testIdAttr(testId)}
 		/>
 	);
 });
@@ -163,7 +159,7 @@ export const TextareaInput = memo(function TextareaInput({
 				// Multiline: only Ctrl/Cmd+Enter flushes; plain Enter inserts a newline.
 				if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) flush();
 			}}
-			{...(testId ? { "data-testid": testId } : {})}
+			{...testIdAttr(testId)}
 		/>
 	);
 });
@@ -181,7 +177,7 @@ export const DateInput = memo(function DateInput({ value, onChange, testId }: Da
 			className="setting-input"
 			value={value}
 			onChange={(e) => onChange(e.target.value)}
-			{...(testId ? { "data-testid": testId } : {})}
+			{...testIdAttr(testId)}
 		/>
 	);
 });
@@ -203,7 +199,7 @@ export const DatetimeLocalInput = memo(function DatetimeLocalInput({
 			className="setting-input"
 			value={value}
 			onChange={(e) => onChange(e.target.value)}
-			{...(testId ? { "data-testid": testId } : {})}
+			{...testIdAttr(testId)}
 		/>
 	);
 });
@@ -221,7 +217,7 @@ export const ColorInput = memo(function ColorInput({ value, onChange, testId }: 
 			className="setting-input setting-input--color"
 			value={value || "#000000"}
 			onChange={(e) => onChange(e.target.value)}
-			{...(testId ? { "data-testid": testId } : {})}
+			{...testIdAttr(testId)}
 		/>
 	);
 });
@@ -238,7 +234,7 @@ interface SliderProps {
 }
 
 export const Slider = memo(function Slider({ value, min, max, step, onChange, debounceMs, testId }: SliderProps) {
-	injectStyleSheet("setting-slider-host-styles", ".setting-slider-host { display: contents; }");
+	useInjectedStyles("setting-slider-host-styles", ".setting-slider-host { display: contents; }");
 	const hostRef = useRef<HTMLSpanElement>(null);
 	const componentRef = useRef<SliderComponent | null>(null);
 	const { draft, setDraft, flush } = useDebouncedCommit<number>({
@@ -281,5 +277,5 @@ export const Slider = memo(function Slider({ value, min, max, step, onChange, de
 		componentRef.current?.setValue(draft);
 	}, [draft]);
 
-	return <span ref={hostRef} className="setting-slider-host" {...(testId ? { "data-testid": testId } : {})} />;
+	return <span ref={hostRef} className="setting-slider-host" {...testIdAttr(testId)} />;
 });

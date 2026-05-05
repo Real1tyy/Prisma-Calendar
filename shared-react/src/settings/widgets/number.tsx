@@ -1,5 +1,6 @@
 import { NumberInput, Slider } from "../../components/setting-controls";
 import { TextInput } from "../../components/setting-controls";
+import { testIdProp } from "../../utils/test-id";
 import { numericMax, numericMin, resolvePlaceholder, type WidgetProps } from "./common";
 
 export function NumberWidget({ descriptor, override, binding, testId }: WidgetProps) {
@@ -16,7 +17,7 @@ export function NumberWidget({ descriptor, override, binding, testId }: WidgetPr
 			{...(min !== undefined ? { min } : {})}
 			{...(max !== undefined ? { max } : {})}
 			{...(override?.step !== undefined ? { step: override.step } : {})}
-			{...(testId ? { testId } : {})}
+			{...testIdProp(testId)}
 		/>
 	);
 }
@@ -41,7 +42,7 @@ function OptionalNumberInput({ descriptor, override, binding, testId }: WidgetPr
 					binding.onChange(num);
 				}
 			}}
-			{...(testId ? { testId } : {})}
+			{...testIdProp(testId)}
 		/>
 	);
 }
@@ -62,7 +63,7 @@ export function SliderWidget(props: WidgetProps) {
 			max={max}
 			{...(override?.step !== undefined ? { step: override.step } : {})}
 			onChange={binding.onChange}
-			{...(testId ? { testId } : {})}
+			{...testIdProp(testId)}
 		/>
 	);
 }

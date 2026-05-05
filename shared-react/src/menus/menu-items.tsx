@@ -1,7 +1,9 @@
 import type { KeyboardEvent } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import { ObsidianIcon } from "../components/obsidian-icon";
+import { useFocusOnIndex } from "../hooks/use-focus-on-index";
+import { cx } from "../utils/cx";
 import type { ContextMenuCheckboxDef, ContextMenuEntryDef, ContextMenuItemDef, ContextMenuSubmenuDef } from "./types";
 
 export interface MenuEntryProps {
@@ -26,10 +28,7 @@ function MenuItemRow({
 	testIdPrefix: string | undefined;
 }) {
 	const ref = useRef<HTMLDivElement>(null);
-
-	useEffect(() => {
-		if (focusIndex === index) ref.current?.focus();
-	}, [focusIndex, index]);
+	useFocusOnIndex(ref, index, focusIndex);
 
 	const handleClick = useCallback(() => {
 		if (entry.disabled) return;
@@ -42,7 +41,7 @@ function MenuItemRow({
 			ref={ref}
 			role="menuitem"
 			tabIndex={focusIndex === index ? 0 : -1}
-			className={`menu-item${entry.disabled ? " is-disabled" : ""}`}
+			className={cx("menu-item", entry.disabled && "is-disabled")}
 			onClick={handleClick}
 			data-testid={`${testIdPrefix ?? ""}ctx-item-${entry.id}`}
 		>
@@ -71,10 +70,7 @@ function MenuCheckboxRow({
 	testIdPrefix: string | undefined;
 }) {
 	const ref = useRef<HTMLDivElement>(null);
-
-	useEffect(() => {
-		if (focusIndex === index) ref.current?.focus();
-	}, [focusIndex, index]);
+	useFocusOnIndex(ref, index, focusIndex);
 
 	const handleClick = useCallback(() => {
 		entry.onChange(!entry.checked);
@@ -115,10 +111,7 @@ function SubmenuRow({
 	const [open, setOpen] = useState(false);
 	const ref = useRef<HTMLDivElement>(null);
 	const subRef = useRef<HTMLDivElement>(null);
-
-	useEffect(() => {
-		if (focusIndex === index) ref.current?.focus();
-	}, [focusIndex, index]);
+	useFocusOnIndex(ref, index, focusIndex);
 
 	const handleKeyDown = useCallback((e: KeyboardEvent) => {
 		if (e.key === "ArrowRight") {

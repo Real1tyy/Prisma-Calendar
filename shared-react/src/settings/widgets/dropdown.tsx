@@ -1,4 +1,5 @@
 import { Dropdown, TextInput } from "../../components/setting-controls";
+import { testIdProp } from "../../utils/test-id";
 import { stringValue, type WidgetProps } from "./common";
 
 export function DropdownWidget({ descriptor, override, binding, testId }: WidgetProps) {
@@ -6,16 +7,14 @@ export function DropdownWidget({ descriptor, override, binding, testId }: Widget
 	// without `options`, fall back to plain text rather than crashing.
 	if (descriptor.type !== "enum") {
 		if (!override?.options) {
-			return (
-				<TextInput value={stringValue(binding.value)} onChange={binding.onChange} {...(testId ? { testId } : {})} />
-			);
+			return <TextInput value={stringValue(binding.value)} onChange={binding.onChange} {...testIdProp(testId)} />;
 		}
 		return (
 			<Dropdown
 				value={stringValue(binding.value)}
 				options={override.options}
 				onChange={binding.onChange}
-				{...(testId ? { testId } : {})}
+				{...testIdProp(testId)}
 			/>
 		);
 	}
@@ -28,7 +27,7 @@ export function DropdownWidget({ descriptor, override, binding, testId }: Widget
 			value={String(binding.value ?? descriptor.enumValues[0] ?? "")}
 			options={options}
 			onChange={binding.onChange}
-			{...(testId ? { testId } : {})}
+			{...testIdProp(testId)}
 		/>
 	);
 }

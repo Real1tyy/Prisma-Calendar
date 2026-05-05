@@ -1,6 +1,8 @@
 import type { MouseEventHandler, ReactNode } from "react";
 import { memo } from "react";
 
+import { cx } from "../utils/cx";
+
 export type ButtonVariant = "default" | "primary" | "warning";
 
 const VARIANT_CLASS: Record<ButtonVariant, string> = {
@@ -26,11 +28,14 @@ export const Button = memo(function Button({
 	disabled,
 	className,
 }: ButtonProps) {
-	const variantCls = VARIANT_CLASS[variant];
-	const cls = [variantCls, className].filter(Boolean).join(" ") || undefined;
-
 	return (
-		<button type="button" className={cls} onClick={onClick} disabled={disabled} data-testid={testId}>
+		<button
+			type="button"
+			className={cx(VARIANT_CLASS[variant], className)}
+			onClick={onClick}
+			disabled={disabled}
+			data-testid={testId}
+		>
 			{children}
 		</button>
 	);

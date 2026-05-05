@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { memo } from "react";
 
+import { testIdAttr } from "../utils/test-id";
+
 interface SettingItemProps {
 	name: string;
 	description?: ReactNode;
@@ -11,7 +13,7 @@ interface SettingItemProps {
 
 export const SettingItem = memo(function SettingItem({ name, description, children, testId }: SettingItemProps) {
 	return (
-		<div className="setting-item" {...(testId ? { "data-testid": testId } : {})}>
+		<div className="setting-item" {...testIdAttr(testId)}>
 			<div className="setting-item-info">
 				<div className="setting-item-name">{name}</div>
 				{description !== undefined && description !== null && description !== false && (
@@ -30,7 +32,7 @@ interface SettingHeadingProps {
 
 export const SettingHeading = memo(function SettingHeading({ name, testId }: SettingHeadingProps) {
 	return (
-		<div className="setting-item setting-item-heading" {...(testId ? { "data-testid": testId } : {})}>
+		<div className="setting-item setting-item-heading" {...testIdAttr(testId)}>
 			<div className="setting-item-info">
 				<div className="setting-item-name">{name}</div>
 			</div>
@@ -46,7 +48,7 @@ interface SettingCardProps {
 
 export const SettingCard = memo(function SettingCard({ children, cssPrefix = "", testId }: SettingCardProps) {
 	return (
-		<div className={`${cssPrefix}settings-card`} {...(testId ? { "data-testid": testId } : {})}>
+		<div className={`${cssPrefix}settings-card`} {...testIdAttr(testId)}>
 			{children}
 		</div>
 	);

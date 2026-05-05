@@ -1,8 +1,9 @@
-import { injectStyleSheet } from "@real1ty-obsidian-plugins";
 import { SecretComponent } from "obsidian";
 import { memo, useEffect, useRef } from "react";
 
 import { useApp } from "../contexts/app-context";
+import { useInjectedStyles } from "../hooks/use-injected-styles";
+import { testIdAttr } from "../utils/test-id";
 
 interface SecretFieldProps {
 	/**
@@ -21,7 +22,7 @@ interface SecretFieldProps {
  * `ReactModal` / `registerReactView`).
  */
 export const SecretField = memo(function SecretField({ value, onChange, testId }: SecretFieldProps) {
-	injectStyleSheet("setting-secret-host-styles", ".setting-secret-host { display: contents; }");
+	useInjectedStyles("setting-secret-host-styles", ".setting-secret-host { display: contents; }");
 	const app = useApp();
 	const containerRef = useRef<HTMLSpanElement>(null);
 	const componentRef = useRef<SecretComponent | null>(null);
@@ -46,5 +47,5 @@ export const SecretField = memo(function SecretField({ value, onChange, testId }
 		componentRef.current?.setValue(value);
 	}, [value]);
 
-	return <span ref={containerRef} className="setting-secret-host" {...(testId ? { "data-testid": testId } : {})} />;
+	return <span ref={containerRef} className="setting-secret-host" {...testIdAttr(testId)} />;
 });

@@ -1,4 +1,5 @@
 import { CsvInput } from "../../components/csv-input";
+import { testIdProp } from "../../utils/test-id";
 import { resolvePlaceholder, type WidgetProps } from "./common";
 
 /**
@@ -15,7 +16,7 @@ export function ArrayCsvWidget({ descriptor, override, binding, testId }: Widget
 			itemType={itemType}
 			placeholder={resolvePlaceholder(descriptor, override)}
 			onChange={binding.onChange}
-			{...(testId ? { testId } : {})}
+			{...testIdProp(testId)}
 		/>
 	);
 }

@@ -1,18 +1,10 @@
 import { memo, useCallback, useState } from "react";
 
 import { useInjectedStyles } from "../hooks/use-injected-styles";
+import { buildManagerEditFormStyles } from "./manager-edit-form.styles";
 import { ObsidianIcon } from "./obsidian-icon";
 import { TextInput } from "./setting-controls";
 import { SettingItem } from "./setting-item";
-
-function buildManagerEditFormStyles(p: string, fp: string): string {
-	return `
-.${p}${fp}-edit-form {
-	width: 100%; padding: 8px 0 0 26px;
-	border-top: 1px solid var(--background-modifier-border); margin-top: 6px;
-}
-`;
-}
 
 export interface EditableItem {
 	id: string;
