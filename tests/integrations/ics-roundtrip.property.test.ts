@@ -211,4 +211,43 @@ describe("ICS export → import round-trip", () => {
 			{ numRuns: 50 }
 		);
 	});
+
+	it("round-trips events with alarm (VALARM TRIGGER) without parsing errors", () => {
+		fc.assert(
+			fc.property(
+				fc.record({
+					id: arbEventId,
+					title: arbTitle,
+					date: arbDate,
+					startHour: fc.integer({ min: 0, max: 22 }),
+					durationHours: fc.integer({ min: 1, max: 8 }),
+					minutesBefore: fc.integer({ min: 1, max: 1440 }),
+				}),
+				({ id, title, date, startHour, durationHours, minutesBefore }) => {
+					const sh = String(startHour).padStart(2, "0");
+					const eh = String(Math.min(startHour + durationHours, 23)).padStart(2, "0");
+					const event = createMockTimedEvent({
+						id,
+						title,
+						start: `${date}T${sh}:00:00`,
+						end: `${date}T${eh}:00:00`,
+						ref: { filePath: `Events/${id}.md` },
+						metadata: { minutesBefore },
+					});
+
+					const options = createICSExportOptions({
+						notifications: { minutesBeforeProp: "Minutes Before" },
+					});
+					const exportResult = createICSFromEvents([event], options);
+					expect(exportResult.success).toBe(true);
+
+					const parsed = parseICSContent(exportResult.content!);
+					expect(parsed.success).toBe(true);
+					expect(parsed.events).toHaveLength(1);
+					expect(parsed.events[0].reminderMinutes).toBe(minutesBefore);
+				}
+			),
+			{ numRuns: 50 }
+		);
+	});
 });

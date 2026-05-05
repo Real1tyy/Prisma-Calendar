@@ -92,7 +92,7 @@ function createVAlarm(triggerMinutes: number): ICAL.Component {
 	valarm.addPropertyWithValue("description", "Reminder");
 
 	const roundedMinutes = Math.round(triggerMinutes);
-	const duration = new ICAL.Duration({ minutes: -roundedMinutes });
+	const duration = new ICAL.Duration({ minutes: roundedMinutes, isNegative: true });
 	valarm.addPropertyWithValue("trigger", duration);
 
 	return valarm;
