@@ -23,13 +23,18 @@ const DEMO_ON = !!process.env.PW_DEMO && process.env.PW_DEMO !== "0" && process.
 // catches `--ui` and `--debug` passed directly to `playwright test`.
 const DEBUG_ON = !!process.env.PWDEBUG || process.argv.includes("--ui") || process.argv.includes("--debug");
 
-const TEST_TIMEOUT = DEBUG_ON ? 0 : DEMO_ON ? 1_800_000 : 90_000;
-const EXPECT_TIMEOUT = DEBUG_ON ? 0 : DEMO_ON ? 120_000 : 10_000;
+const TEST_TIMEOUT = DEBUG_ON ? 0 : DEMO_ON ? 1_800_000 : 45_000;
+// 5s assertion budget. If a UI element is genuinely going to appear, it does
+// so well within 5s under the test harness — the indexer is fast, debounces
+// are flipped to 0 by `window.E2E` (see `debounceMsForEnv`), and there are no
+// network calls. The previous 10s default just made failures take twice as
+// long without catching any real-world flake.
+const EXPECT_TIMEOUT = DEBUG_ON ? 0 : DEMO_ON ? 120_000 : 5_000;
 // `actionTimeout` caps every `waitFor` / `click` / `fill` that doesn't pass its
 // own `timeout`. Mirrors EXPECT_TIMEOUT so specs can omit per-call timeouts
 // entirely — see feedback_e2e_no_timeout_overrides. Without this, actions fall
 // back to testTimeout and a single hung wait eats the whole spec.
-const ACTION_TIMEOUT = DEBUG_ON ? 0 : DEMO_ON ? 120_000 : 10_000;
+const ACTION_TIMEOUT = DEBUG_ON ? 0 : DEMO_ON ? 120_000 : 5_000;
 
 export default defineConfig({
 	outputDir: "./test-results",

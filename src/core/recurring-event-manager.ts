@@ -4,6 +4,7 @@ import {
 	createFileAtPathAtomic,
 	createFileLink,
 	DebouncedNotifier,
+	debounceMsForEnv,
 	extractContentAfterFrontmatter,
 	type FrontmatterDiff,
 	FrontmatterPropagationDebouncer,
@@ -124,7 +125,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		super();
 		this.settings = settingsStore.value;
 		this.propagationDebouncer = new FrontmatterPropagationDebouncer({
-			debounceMs: PROPAGATION_DEBOUNCE_MS,
+			debounceMs: debounceMsForEnv(PROPAGATION_DEBOUNCE_MS),
 			filterDiff: (diff) =>
 				filterExcludedPropsFromDiff(
 					diff,

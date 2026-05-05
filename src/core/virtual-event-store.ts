@@ -1,4 +1,4 @@
-import { type CodeBlockBinding, CodeBlockRepository } from "@real1ty-obsidian-plugins";
+import { type CodeBlockBinding, CodeBlockRepository, debounceMsForEnv } from "@real1ty-obsidian-plugins";
 import type { DateTime } from "luxon";
 import type { App } from "obsidian";
 import { BehaviorSubject, debounceTime, type Subscription } from "rxjs";
@@ -38,7 +38,7 @@ export class VirtualEventStore {
 		this.fileName = settings.virtualEventsFileName;
 
 		this.settingsSubscription = settingsStore
-			.pipe(debounceTime(VIRTUAL_EVENT_SETTINGS_DEBOUNCE_MS))
+			.pipe(debounceTime(debounceMsForEnv(VIRTUAL_EVENT_SETTINGS_DEBOUNCE_MS)))
 			.subscribe((newSettings) => {
 				const dirChanged = this.directory !== newSettings.directory;
 				const nameChanged = this.fileName !== newSettings.virtualEventsFileName;

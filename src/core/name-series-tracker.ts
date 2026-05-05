@@ -1,4 +1,5 @@
 import {
+	debounceMsForEnv,
 	FrontmatterPropagator,
 	type ReactiveGroupBy,
 	showFrontmatterPropagationModal,
@@ -47,7 +48,7 @@ export class NameSeriesTracker extends VaultTableView<Frontmatter> {
 		this.nameGroups = this.createGroupBy((row) => this.getNameKey(row.data, row.filePath));
 
 		this.propagator = new FrontmatterPropagator(app, {
-			debounceMs: PROPAGATION_DEBOUNCE_MS,
+			debounceMs: debounceMsForEnv(PROPAGATION_DEBOUNCE_MS),
 			debounceKeyPrefix: "name",
 			isEnabled: () => this.settings.propagateFrontmatterToNameSeries,
 			isAskBefore: () => this.settings.askBeforePropagatingToNameSeries,

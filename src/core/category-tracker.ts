@@ -1,4 +1,5 @@
 import {
+	debounceMsForEnv,
 	FrontmatterPropagator,
 	parseIntoList,
 	type ReactiveMultiGroupBy,
@@ -61,7 +62,7 @@ export class CategoryTracker extends VaultTableView<Frontmatter> {
 		this.categoryGroups = this.buildCategoryGroups();
 
 		this.propagator = new FrontmatterPropagator(app, {
-			debounceMs: PROPAGATION_DEBOUNCE_MS,
+			debounceMs: debounceMsForEnv(PROPAGATION_DEBOUNCE_MS),
 			debounceKeyPrefix: "category",
 			isEnabled: () => this.settings.propagateFrontmatterToCategorySeries,
 			isAskBefore: () => this.settings.askBeforePropagatingToCategorySeries,
