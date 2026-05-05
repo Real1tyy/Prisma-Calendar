@@ -29,7 +29,6 @@ export default defineConfig({
 		exclude: SHARED_EXCLUDE,
 		...VITEST_POOL_OPTIONS,
 		pool: "threads",
-		isolate: false,
 		projects: [
 			{
 				extends: true,
@@ -38,6 +37,7 @@ export default defineConfig({
 					environment: "node",
 					include: ["tests/**/*.test.ts"],
 					exclude: [...SHARED_EXCLUDE, ...JSDOM_PATTERNS],
+					isolate: false,
 				},
 			},
 			{
