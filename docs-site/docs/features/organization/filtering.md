@@ -164,15 +164,15 @@ The **"Highlight events with category"** command opens a modal that lets you sel
 
 **How to use:**
 - **Command**: Open command palette (Ctrl/Cmd+P) and search for "Highlight events with category"
-- **Modal**: A dropdown modal appears with all available categories from your events
-- **Selection**: Choose a category from the dropdown and click "Highlight" (or press Enter)
+- **Modal**: All available categories are shown immediately with a search bar
+- **Selection**: Click a category to select it, then click "Highlight" or press Enter to confirm
+- **Quick submit**: Type to filter, then press Enter to highlight the first matching category
 - **Duration**: Events with the selected category are highlighted for 10 seconds
-- **Visual feedback**: Events with the selected category are visually highlighted in the calendar view
 - **Auto-close**: The modal automatically closes after highlighting
 
 **Features:**
-- Shows all unique categories found in your events
-- Displays "No categories found" if no events have categories assigned
+- All categories are visible immediately — no extra clicks needed
+- Search bar filters categories in real time as you type
 - Only one highlight can be active at a time (triggering a new highlight replaces the previous one)
 
 **Note**: The category property name is configurable in Settings → Properties → "Category property" (default: `Category`).
