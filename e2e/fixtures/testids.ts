@@ -161,7 +161,7 @@ export const ICON_PICKER_GRID_TID = "shared-icon-picker-grid";
 export const ICON_PICKER_SEARCH_TID = "shared-icon-picker-search";
 export const ICON_PICKER_NO_ICON_TID = "shared-icon-picker-no-icon";
 /** Plugin-agnostic shared confirmation modal (unprefixed by design). */
-export const CONFIRMATION_MODAL_TID = "confirmation-modal";
+export const CONFIRMATION_MODAL_TID = "confirmation-modal-container";
 export const CONFIRMATION_MODAL_CONFIRM_TID = "confirmation-modal-confirm";
 export const CONFIRMATION_MODAL_CANCEL_TID = "confirmation-modal-cancel";
 /** Shared progress modal used by ICS import and other batched flows. */

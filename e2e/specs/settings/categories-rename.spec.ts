@@ -73,9 +73,7 @@ test.describe("settings: Categories rename propagation", () => {
 		await input.waitFor({ state: "visible" });
 		await input.fill("Renamed");
 
-		const modal = obsidian.page.locator(".prisma-calendar-category-rename-modal");
-		const submit = modal.locator(".mod-cta").last();
-		await submit.click();
+		await obsidian.page.locator('[data-testid="prisma-category-rename-submit"]').click();
 
 		// Files on disk must carry the new category value.
 		await expect.poll(() => evt1.readCategory()).toEqual(["Renamed"]);
