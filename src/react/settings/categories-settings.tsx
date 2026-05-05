@@ -12,11 +12,12 @@ import { nanoid } from "nanoid";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import type { Observable } from "rxjs";
 
-import { showCategoryDeleteModal, showCategoryEventsModal, showCategoryRenameModal } from "../../components/modals";
+import { showCategoryEventsModal } from "../../components/modals";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CategoryInfo, CategoryTracker } from "../../core/category-tracker";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
+import { openCategoryDeleteModal, openCategoryRenameModal } from "../../react/modals";
 import { isAllDayEvent, isTimedEvent } from "../../types/calendar";
 import {
 	type CategoryAssignmentPreset,
@@ -174,14 +175,14 @@ const CategoriesListSection = memo(function CategoriesListSection({
 
 	const handleRename = useCallback(
 		(categoryName: string) => {
-			showCategoryRenameModal(app, categoryTracker, settingsStore, categoryName, () => {});
+			openCategoryRenameModal(app, categoryTracker, settingsStore, categoryName, () => {});
 		},
 		[app, categoryTracker, settingsStore]
 	);
 
 	const handleDelete = useCallback(
 		(categoryName: string) => {
-			showCategoryDeleteModal(app, categoryTracker, settingsStore, categoryName, () => {});
+			openCategoryDeleteModal(app, categoryTracker, settingsStore, categoryName, () => {});
 		},
 		[app, categoryTracker, settingsStore]
 	);

@@ -11,17 +11,19 @@ import {
 } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useState } from "react";
 
-import { showCalendarIntegrationDeleteEventsModal } from "../../components/modals";
-import { showAddCalDAVAccountModal } from "../../components/settings/caldav/add-modal";
-import { showEditCalDAVAccountModal } from "../../components/settings/caldav/edit-modal";
-import { showConfirmDeleteModal } from "../../components/settings/generic";
-import { showAddICSSubscriptionModal } from "../../components/settings/ics-subscriptions/add-modal";
-import { showEditICSSubscriptionModal } from "../../components/settings/ics-subscriptions/edit-modal";
 import { deleteTrackedIntegrationEvents } from "../../components/settings/integration-shared";
 import { COMMAND_IDS } from "../../constants";
 import { PRO_FEATURES } from "../../core/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
+import {
+	openCalDAVAddModal,
+	openCalDAVEditModal,
+	openCalendarIntegrationDeleteEventsModal,
+	openConfirmDeleteModal,
+	openICSAddModal,
+	openICSEditModal,
+} from "../../react/modals";
 import type { PrismaCalendarSettingsStore } from "../../types";
 import type { CalDAVAccount, ICSSubscription } from "../../types/integrations";
 import { CalDAVSettingsSchema, ICSSubscriptionSettingsSchema } from "../../types/integrations";
@@ -144,7 +146,9 @@ const CalDAVSection = memo(function CalDAVSection({ mainSettingsStore, plugin, c
 	const accounts = caldavSettings.accounts;
 
 	const handleAddAccount = useCallback(() => {
-		showAddCalDAVAccountModal(app, mainSettingsStore, calendarId, () => forceUpdate((n) => n + 1));
+		void openCalDAVAddModal(app, mainSettingsStore, calendarId).then((result) => {
+			if (result) forceUpdate((n) => n + 1);
+		});
 	}, [app, mainSettingsStore, calendarId]);
 
 	const handleSync = useCallback(
@@ -156,39 +160,42 @@ const CalDAVSection = memo(function CalDAVSection({ mainSettingsStore, plugin, c
 
 	const handleEdit = useCallback(
 		(account: CalDAVAccount) => {
-			showEditCalDAVAccountModal(app, mainSettingsStore, plugin, calendarId, account, () => forceUpdate((n) => n + 1));
+			void openCalDAVEditModal(app, mainSettingsStore, plugin, calendarId, account).then(() =>
+				forceUpdate((n) => n + 1)
+			);
 		},
 		[app, mainSettingsStore, plugin, calendarId]
 	);
 
 	const handleDelete = useCallback(
 		(account: CalDAVAccount) => {
+			const removeAccount = () =>
+				updateMainSettings((s) => ({
+					...s,
+					caldav: { ...s.caldav, accounts: s.caldav.accounts.filter((a) => a.id !== account.id) },
+				}));
+
 			const bundle = plugin.calendarBundles.find((b) => b.calendarId === account.calendarId);
 			if (!bundle) {
-				showConfirmDeleteModal(app, account.name, "account", () => {
-					void updateMainSettings((s) => ({
-						...s,
-						caldav: { ...s.caldav, accounts: s.caldav.accounts.filter((a) => a.id !== account.id) },
-					}));
+				void openConfirmDeleteModal(app, { entityName: account.name, entityType: "account" }).then((confirmed) => {
+					if (confirmed) void removeAccount();
 				});
 				return;
 			}
 
 			const events = bundle.caldavSyncStateManager.getAllForAccount(account.id);
 			if (events.length === 0) {
-				showConfirmDeleteModal(app, account.name, "account", () => {
-					void updateMainSettings((s) => ({
-						...s,
-						caldav: { ...s.caldav, accounts: s.caldav.accounts.filter((a) => a.id !== account.id) },
-					}));
+				void openConfirmDeleteModal(app, { entityName: account.name, entityType: "account" }).then((confirmed) => {
+					if (confirmed) void removeAccount();
 				});
 				return;
 			}
 
-			showCalendarIntegrationDeleteEventsModal(app, {
+			void openCalendarIntegrationDeleteEventsModal(app, {
 				accountName: account.name,
 				eventCount: events.length,
-				onConfirm: async () => {
+			}).then(async (result) => {
+				if (result === "confirm") {
 					await deleteTrackedIntegrationEvents(
 						app,
 						bundle,
@@ -197,17 +204,8 @@ const CalDAVSection = memo(function CalDAVSection({ mainSettingsStore, plugin, c
 						"CalDAV",
 						`account ${account.id}`
 					);
-					await updateMainSettings((s) => ({
-						...s,
-						caldav: { ...s.caldav, accounts: s.caldav.accounts.filter((a) => a.id !== account.id) },
-					}));
-				},
-				onCancel: async () => {
-					await updateMainSettings((s) => ({
-						...s,
-						caldav: { ...s.caldav, accounts: s.caldav.accounts.filter((a) => a.id !== account.id) },
-					}));
-				},
+				}
+				if (result) await removeAccount();
 			});
 		},
 		[app, plugin, mainSettingsStore, calendarId, updateMainSettings]
@@ -337,7 +335,9 @@ const ICSSection = memo(function ICSSection({ mainSettingsStore, plugin, calenda
 	const subscriptions = icsSettings.subscriptions;
 
 	const handleAddSubscription = useCallback(() => {
-		showAddICSSubscriptionModal(app, mainSettingsStore, calendarId, () => forceUpdate((n) => n + 1));
+		void openICSAddModal(app, mainSettingsStore, calendarId).then((result) => {
+			if (result) forceUpdate((n) => n + 1);
+		});
 	}, [app, mainSettingsStore, calendarId]);
 
 	const handleSync = useCallback(
@@ -349,45 +349,47 @@ const ICSSection = memo(function ICSSection({ mainSettingsStore, plugin, calenda
 
 	const handleEdit = useCallback(
 		(subscription: ICSSubscription) => {
-			showEditICSSubscriptionModal(app, mainSettingsStore, subscription, () => forceUpdate((n) => n + 1));
+			void openICSEditModal(app, mainSettingsStore, subscription).then(() => forceUpdate((n) => n + 1));
 		},
 		[app, mainSettingsStore]
 	);
 
 	const handleDelete = useCallback(
 		(subscription: ICSSubscription) => {
+			const removeSubscription = () =>
+				updateMainSettings((s) => ({
+					...s,
+					icsSubscriptions: {
+						...s.icsSubscriptions,
+						subscriptions: s.icsSubscriptions.subscriptions.filter((sub) => sub.id !== subscription.id),
+					},
+				}));
+
 			const bundle = plugin.calendarBundles.find((b) => b.calendarId === subscription.calendarId);
 			if (!bundle) {
-				showConfirmDeleteModal(app, subscription.name, "subscription", () => {
-					void updateMainSettings((s) => ({
-						...s,
-						icsSubscriptions: {
-							...s.icsSubscriptions,
-							subscriptions: s.icsSubscriptions.subscriptions.filter((sub) => sub.id !== subscription.id),
-						},
-					}));
-				});
+				void openConfirmDeleteModal(app, { entityName: subscription.name, entityType: "subscription" }).then(
+					(confirmed) => {
+						if (confirmed) void removeSubscription();
+					}
+				);
 				return;
 			}
 
 			const events = bundle.icsSubscriptionSyncStateManager.getAllForSubscription(subscription.id);
 			if (events.length === 0) {
-				showConfirmDeleteModal(app, subscription.name, "subscription", () => {
-					void updateMainSettings((s) => ({
-						...s,
-						icsSubscriptions: {
-							...s.icsSubscriptions,
-							subscriptions: s.icsSubscriptions.subscriptions.filter((sub) => sub.id !== subscription.id),
-						},
-					}));
-				});
+				void openConfirmDeleteModal(app, { entityName: subscription.name, entityType: "subscription" }).then(
+					(confirmed) => {
+						if (confirmed) void removeSubscription();
+					}
+				);
 				return;
 			}
 
-			showCalendarIntegrationDeleteEventsModal(app, {
+			void openCalendarIntegrationDeleteEventsModal(app, {
 				accountName: subscription.name,
 				eventCount: events.length,
-				onConfirm: async () => {
+			}).then(async (result) => {
+				if (result === "confirm") {
 					await deleteTrackedIntegrationEvents(
 						app,
 						bundle,
@@ -396,23 +398,8 @@ const ICSSection = memo(function ICSSection({ mainSettingsStore, plugin, calenda
 						"ICS Subscription",
 						`subscription ${subscription.id}`
 					);
-					await updateMainSettings((s) => ({
-						...s,
-						icsSubscriptions: {
-							...s.icsSubscriptions,
-							subscriptions: s.icsSubscriptions.subscriptions.filter((sub) => sub.id !== subscription.id),
-						},
-					}));
-				},
-				onCancel: async () => {
-					await updateMainSettings((s) => ({
-						...s,
-						icsSubscriptions: {
-							...s.icsSubscriptions,
-							subscriptions: s.icsSubscriptions.subscriptions.filter((sub) => sub.id !== subscription.id),
-						},
-					}));
-				},
+				}
+				if (result) await removeSubscription();
 			});
 		},
 		[app, plugin, mainSettingsStore, calendarId, updateMainSettings]
