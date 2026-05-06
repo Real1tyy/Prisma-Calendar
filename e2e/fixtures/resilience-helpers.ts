@@ -7,6 +7,7 @@ import { PLUGIN_ID } from "./constants";
 import { seedEvent, type SeedEventInput } from "./seed-events";
 
 export function dataJsonPath(vaultDir: string): string {
+	// eslint-disable-next-line obsidianmd/hardcoded-config-path
 	return join(vaultDir, ".obsidian", "plugins", PLUGIN_ID, "data.json");
 }
 
@@ -198,6 +199,22 @@ export async function addCalendar(page: Page, overrides: Record<string, unknown>
 		},
 		{ id: PLUGIN_ID, o: overrides }
 	);
+}
+
+/**
+ * Read the currently-active view tab id from the live settings store.
+ * Returns `null` when the settings haven't been written yet (e.g. first boot
+ * before any tab switch).
+ */
+export async function readActiveTab(page: Page): Promise<string | null> {
+	return page.evaluate((id) => {
+		const w = window as unknown as SettingsStoreWindow;
+		const settings = w.app.plugins.plugins[id]?.settingsStore?.currentSettings;
+		if (!settings) return null;
+		const activeTab = settings["activeTab"] as { visibleTabIds?: string[]; activeTabIndex?: number } | undefined;
+		if (!activeTab?.visibleTabIds || activeTab.activeTabIndex === undefined) return null;
+		return activeTab.visibleTabIds[activeTab.activeTabIndex] ?? null;
+	}, PLUGIN_ID);
 }
 
 /** Read the Nth (default: 0) calendar entry from the live settings store. */

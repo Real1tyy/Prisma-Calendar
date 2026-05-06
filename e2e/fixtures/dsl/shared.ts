@@ -162,12 +162,22 @@ export interface ConfirmationModalHandle {
 	cancel(): Promise<void>;
 }
 
-/** Wait for the shared confirmation modal to appear and return a handle. */
-export async function expectConfirmationModal(page: Page): Promise<ConfirmationModalHandle> {
-	const root = page.locator(sel(CONFIRMATION_MODAL_TID)).first();
+/**
+ * Wait for the shared confirmation modal to appear and return a handle.
+ *
+ * Pass `testIdPrefix` for prefixed instances (e.g. `"prisma-delete-recurring-"`
+ * for the recurring-delete modal opened via `openConfirmation({ testIdPrefix })`)
+ * — the prefix is concatenated with the standard `confirmation-modal-*` suffixes.
+ */
+export async function expectConfirmationModal(
+	page: Page,
+	options: { testIdPrefix?: string } = {}
+): Promise<ConfirmationModalHandle> {
+	const prefix = options.testIdPrefix ?? "";
+	const root = page.locator(sel(`${prefix}${CONFIRMATION_MODAL_TID}`)).first();
 	await root.waitFor({ state: "visible" });
-	const confirmBtn = root.locator(sel(CONFIRMATION_MODAL_CONFIRM_TID));
-	const cancelBtn = root.locator(sel(CONFIRMATION_MODAL_CANCEL_TID));
+	const confirmBtn = root.locator(sel(`${prefix}${CONFIRMATION_MODAL_CONFIRM_TID}`));
+	const cancelBtn = root.locator(sel(`${prefix}${CONFIRMATION_MODAL_CANCEL_TID}`));
 	return {
 		root,
 		confirmBtn,

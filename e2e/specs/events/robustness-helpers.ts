@@ -1,4 +1,16 @@
-import { listEventFiles } from "./events-helpers";
+import { expect, type Locator } from "@playwright/test";
+
+import {
+	createEventViaModal,
+	formatLocalDate,
+	listEventFiles,
+	monthsFromTodayTo,
+	navigateCalendar,
+	type ObsidianHandle,
+	openCalendarReady,
+	switchToMonthView,
+	virtualInstanceLocator,
+} from "./events-helpers";
 
 // Small helpers used only by the Round 2/3/4 robustness specs. Every helper
 // here composes existing primitives — nothing that belongs in shared/e2e
@@ -65,6 +77,13 @@ export function addDays(d: Date, days: number): Date {
 	return next;
 }
 
+/** Local midnight today — anchor for date-offset expectations across the recurring suite. */
+export function todayMidnight(): Date {
+	const t = new Date();
+	t.setHours(0, 0, 0, 0);
+	return t;
+}
+
 /**
  * Poll until `predicate()` returns true. Throws with `message` on timeout.
  * Used by propagation specs that poll for frontmatter changes after
@@ -81,4 +100,70 @@ export async function waitFor(
 		if (Date.now() > deadline) throw new Error(`waitFor timed out: ${message}`);
 		await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
 	}
+}
+
+const RECURRING_INSTANCE_TIMEOUT_MS = 15_000;
+const VIRTUAL_REVEAL_MAX_MONTHS = 12;
+
+/**
+ * Setup a weekly-recurring source event anchored at `dayOfMonth` of next
+ * month, wait for the two default physical instances to materialise at +7
+ * and +14, then navigate the active calendar to the anchor month so all
+ * three blocks (source + 2 physicals) are inside the rendered view.
+ *
+ * The next-month anchor is chosen so source, +7, and +14 all sit within one
+ * rendered month — avoids flakes near month boundaries that show up when
+ * anchoring near today.
+ */
+export async function setupWeeklyRecurringAtNextMonth(
+	obsidian: ObsidianHandle,
+	title: string,
+	dayOfMonth = 5
+): Promise<{ sourcePath: string; anchor: Date; expectedDates: [string, string] }> {
+	await openCalendarReady(obsidian.page);
+	await switchToMonthView(obsidian.page);
+
+	const today = todayMidnight();
+	const anchor = new Date(today.getFullYear(), today.getMonth() + 1, dayOfMonth);
+	const anchorStr = formatLocalDate(anchor);
+	const expectedDates: [string, string] = [toYMD(addDays(anchor, 7)), toYMD(addDays(anchor, 14))];
+
+	const sourcePath = await createEventViaModal(obsidian, {
+		title,
+		start: `${anchorStr}T09:00`,
+		end: `${anchorStr}T10:00`,
+		recurring: { rruleType: "custom", customFreq: "WEEKLY", customInterval: 1 },
+	});
+
+	await expect
+		.poll(() => collectInstanceDates(obsidian.vaultDir, title), { timeout: RECURRING_INSTANCE_TIMEOUT_MS })
+		.toEqual(expectedDates);
+
+	await navigateCalendar(obsidian.page, monthsFromTodayTo(anchorStr));
+
+	return { sourcePath, anchor, expectedDates };
+}
+
+/**
+ * Locate the first virtual-instance block for `title`, advancing the calendar
+ * forward one month at a time until at least one is rendered. Throws if none
+ * appears within `maxMonths` advances — that's a real defect because virtuals
+ * are unbounded for an open-ended weekly RRule.
+ *
+ * Used by drag-revert specs where a virtual instance must exist somewhere
+ * downstream of the source; skipping the test when none is in the current
+ * month would let regressions slip past on calendar months that happen to
+ * land on a boundary.
+ */
+export async function revealVirtualInstance(
+	obsidian: ObsidianHandle,
+	title: string,
+	maxMonths = VIRTUAL_REVEAL_MAX_MONTHS
+): Promise<Locator> {
+	const blocks = virtualInstanceLocator(obsidian.page, title);
+	for (let advanced = 0; advanced <= maxMonths; advanced++) {
+		if ((await blocks.count()) > 0) return blocks.first();
+		await navigateCalendar(obsidian.page, 1);
+	}
+	throw new Error(`revealVirtualInstance: no virtual instance for "${title}" within ${maxMonths} months`);
 }

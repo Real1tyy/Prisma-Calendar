@@ -201,6 +201,44 @@ export function eventBlockLocator(page: Page, title: string): Locator {
 	return page.locator(".fc-view-harness .fc-event", { hasText: title });
 }
 
+const ACTIVE_LEAF_BLOCK = `${ACTIVE_CALENDAR_LEAF} .fc-event`;
+
+/**
+ * Locator for the source / physical instance whose `data-event-file-path`
+ * exactly matches `filePath`. Use this when a single title may render multiple
+ * blocks (recurring source + physical instances) and the spec needs to target
+ * one by file path.
+ */
+export function eventBlockByFilePath(page: Page, title: string, filePath: string): Locator {
+	return page.locator(`${ACTIVE_LEAF_BLOCK}[data-event-title="${title}"][data-event-file-path="${filePath}"]`).first();
+}
+
+/**
+ * Locator for a physical instance block where the file path contains
+ * `datePart` (typically a `YYYY-MM-DD` instance date). Discriminates between
+ * the source block and a specific physical instance for recurring events.
+ * Excludes virtual blocks via `:not(.prisma-virtual-event)` — virtuals also
+ * carry `data-event-file-path` (pointing at the source).
+ */
+export function physicalInstanceBlock(page: Page, title: string, datePart: string): Locator {
+	return page
+		.locator(
+			`${ACTIVE_LEAF_BLOCK}[data-event-title="${title}"][data-event-file-path*="${datePart}"]:not(.prisma-virtual-event)`
+		)
+		.first();
+}
+
+/**
+ * Selector for virtual instance blocks of `title`. Virtuals carry the
+ * `prisma-virtual-event` class. `data-event-title` is matched as a substring
+ * because virtuals derive their title from the source's raw basename
+ * (still carrying the ZettelID, e.g. `My Event-20260506193430`) while physical
+ * instances use the clean display title — see recurring-event-manager.ts:902.
+ */
+export function virtualInstanceLocator(page: Page, title: string): Locator {
+	return page.locator(`${ACTIVE_LEAF_BLOCK}.prisma-virtual-event[data-event-title*="${title}"]`);
+}
+
 const SEED_ZETTEL_ID = "20250101000000";
 
 /**
@@ -328,6 +366,21 @@ export async function rightClickEventMenu(page: Page, eventTitle: string, menuIt
 	// legacy entry point for specs that pass both registry-valid ids and
 	// out-of-registry ones (e.g. `__manage`). The full typed path is
 	// `calendar.eventByTitle(...).rightClick(key)` in the DSL.
+	const menuItem = page.locator(`[data-testid="prisma-context-menu-item-${menuItemId}"]`);
+	await menuItem.waitFor({ state: "visible" });
+	await menuItem.click();
+}
+
+/**
+ * Right-click an already-resolved event block locator and click the context-menu
+ * entry by id. Use this when a single title renders multiple blocks (recurring
+ * source + physical instances) and the spec must target one specifically — pass
+ * the block from `eventBlockByFilePath` / `physicalInstanceBlock` rather than
+ * letting `rightClickEventMenu` pick the first match by title.
+ */
+export async function rightClickBlockMenu(block: Locator, page: Page, menuItemId: string): Promise<void> {
+	await block.waitFor({ state: "visible" });
+	await block.click({ button: "right" });
 	const menuItem = page.locator(`[data-testid="prisma-context-menu-item-${menuItemId}"]`);
 	await menuItem.waitFor({ state: "visible" });
 	await menuItem.click();
