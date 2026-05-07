@@ -39,13 +39,10 @@ export class NotificationManager {
 	// Sorted array of notification entries (sorted by notifyAt time)
 	private notificationQueue: NotificationEntry[] = [];
 
-	// Paths whose triggerNotification call is currently in-flight. The indexer
-	// can emit multiple file-changed events back-to-back for one seed write
-	// (create + modify), and `metadata.alreadyNotified` is captured at emit
-	// time — so a second event can race in before `markAsNotified` flushes.
-	// Without this guard, both events reach `showNotificationModal` and stack
-	// duplicate modals on the user.
-	private triggering = new Set<string>();
+	// Files already notified this session — guards against the indexer
+	// emitting multiple events for one effective change (create+modify, plus
+	// the manager's own `markAsNotified` rewrite). Cleared on snooze.
+	private alreadyFired = new Set<string>();
 
 	// ─── Lifecycle ────────────────────────────────────────────────
 
@@ -98,7 +95,7 @@ export class NotificationManager {
 
 		this.stopPeriodicCheck();
 		this.notificationQueue = [];
-		this.triggering.clear();
+		this.alreadyFired.clear();
 	}
 
 	// ─── Indexer Event Handling ───────────────────────────────────
@@ -249,8 +246,8 @@ export class NotificationManager {
 	// ─── Notification Trigger ─────────────────────────────────────
 
 	private async triggerNotification(entry: NotificationEntry): Promise<void> {
-		if (this.triggering.has(entry.filePath)) return;
-		this.triggering.add(entry.filePath);
+		if (this.alreadyFired.has(entry.filePath)) return;
+		this.alreadyFired.add(entry.filePath);
 		try {
 			this.removeNotification(entry.filePath);
 			await this.markAsNotified(entry.filePath);
@@ -258,8 +255,6 @@ export class NotificationManager {
 			this.showNotificationModal(entry);
 		} catch (error) {
 			console.error(`[NotificationManager] ❌ Error triggering notification for ${entry.filePath}:`, error);
-		} finally {
-			this.triggering.delete(entry.filePath);
 		}
 	}
 
@@ -346,6 +341,8 @@ export class NotificationManager {
 				console.warn(`[NotificationManager] ⚠️ Cannot snooze all-day event: ${entry.filePath}`);
 				return;
 			}
+
+			this.alreadyFired.delete(entry.filePath);
 
 			await this.app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
 				fm[this.settings.alreadyNotifiedProp] = false;
