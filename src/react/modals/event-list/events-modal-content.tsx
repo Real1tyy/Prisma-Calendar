@@ -1,0 +1,181 @@
+import { showReactModal } from "@real1ty-obsidian-plugins-react";
+import type { App } from "obsidian";
+import type { KeyboardEvent, ReactNode } from "react";
+import { useCallback, useMemo, useState } from "react";
+
+import type { CalendarComponent } from "../../../components/calendar-view";
+import type { CalendarBundle } from "../../../core/calendar-bundle";
+import { openEventSeriesModal } from "./event-series-modal-content";
+import {
+	EVENTS_MODAL_SORT_OPTIONS,
+	type EventsModalSortMode,
+	type EventsModalTabId,
+	filterEventsModalItemsByQuery,
+	sortEventsModalItems,
+} from "./events-modal-shared";
+import { RecurringEventsModalPanel } from "./recurring-events-modal-panel";
+import type { SimpleEventGroupItem } from "./simple-event-group-list";
+import { SimpleEventGroupList } from "./simple-event-group-list";
+
+function EventsModalContent({
+	bundle,
+	calendarComponent,
+	onClose,
+}: {
+	bundle: CalendarBundle;
+	calendarComponent: CalendarComponent;
+	onClose: () => void;
+}) {
+	const [recurringListEpoch, setRecurringListEpoch] = useState(0);
+	const enabledEvents = useMemo(
+		() => bundle.recurringEventManager.getEnabledRecurringEvents(),
+		[bundle, recurringListEpoch]
+	);
+	const disabledEvents = useMemo(
+		() => bundle.recurringEventManager.getDisabledRecurringEvents(),
+		[bundle, recurringListEpoch]
+	);
+
+	const recurringCount = enabledEvents.length + disabledEvents.length;
+	const categories = bundle.categoryTracker.getCategories();
+	const categoryCount = categories.length;
+	const nameSeriesEnabled = bundle.settingsStore.currentSettings.enableNameSeriesTracking;
+	const nameSeries = nameSeriesEnabled ? bundle.nameSeriesTracker.getNameBasedSeries() : new Map<string, Set<string>>();
+	const nameCount = nameSeries.size;
+
+	const defaultTab: EventsModalTabId = recurringCount > 0 ? "recurring" : categoryCount > 0 ? "byCategory" : "byName";
+	const [activeTab, setActiveTab] = useState<EventsModalTabId>(defaultTab);
+	const [searchQuery, setSearchQuery] = useState("");
+	const [sortMode, setSortMode] = useState<EventsModalSortMode>("count-desc");
+
+	const handleEscape = useCallback(
+		(e: KeyboardEvent<HTMLDivElement>) => {
+			if (e.key === "Escape") onClose();
+		},
+		[onClose]
+	);
+
+	const byCategoryItems = useMemo(() => {
+		const items: SimpleEventGroupItem[] = categories.map((categoryName) => ({
+			key: categoryName,
+			title: categoryName,
+			count: bundle.categoryTracker.getEventsWithCategory(categoryName).length,
+			onClick: () => openEventSeriesModal(bundle.plugin.app, bundle, null, null, [categoryName]),
+		}));
+		return filterEventsModalItemsByQuery(
+			sortEventsModalItems(items, (i) => i.count, sortMode),
+			searchQuery
+		);
+	}, [categories, bundle, sortMode, searchQuery]);
+
+	const byNameItems = useMemo(() => {
+		const items: SimpleEventGroupItem[] = Array.from(nameSeries.entries()).map(([nameKey, files]) => ({
+			key: nameKey,
+			title: nameKey.charAt(0).toUpperCase() + nameKey.slice(1),
+			count: files.size,
+			onClick: () => openEventSeriesModal(bundle.plugin.app, bundle, nameKey, null),
+		}));
+		return filterEventsModalItemsByQuery(
+			sortEventsModalItems(items, (i) => i.count, sortMode),
+			searchQuery
+		);
+	}, [nameSeries, bundle, sortMode, searchQuery]);
+
+	let content: ReactNode;
+	if (activeTab === "recurring") {
+		content = (
+			<RecurringEventsModalPanel
+				bundle={bundle}
+				calendarComponent={calendarComponent}
+				onClose={onClose}
+				enabledEvents={enabledEvents}
+				disabledEvents={disabledEvents}
+				sortMode={sortMode}
+				searchQuery={searchQuery}
+				onRecurringPoolsChanged={() => setRecurringListEpoch((n) => n + 1)}
+			/>
+		);
+	} else if (activeTab === "byCategory") {
+		content = (
+			<SimpleEventGroupList
+				items={byCategoryItems}
+				totalCount={categoryCount}
+				countLabel={`category group${categoryCount === 1 ? "" : "s"}`}
+				emptyMessage="No category groups found."
+			/>
+		);
+	} else {
+		content = (
+			<SimpleEventGroupList
+				items={byNameItems}
+				totalCount={nameSeries.size}
+				countLabel={`name group${nameSeries.size === 1 ? "" : "s"}`}
+				emptyMessage="No name groups found."
+			/>
+		);
+	}
+
+	return (
+		<div className="prisma-generic-event-list-modal" onKeyDown={handleEscape}>
+			<h2>Events</h2>
+
+			<div className="prisma-event-series-tabs">
+				<button
+					className={`prisma-event-series-tab-btn${activeTab === "recurring" ? " prisma-is-active" : ""}`}
+					data-testid="prisma-events-modal-tab-recurring"
+					onClick={() => setActiveTab("recurring")}
+				>
+					Recurring ({recurringCount})
+				</button>
+				<button
+					className={`prisma-event-series-tab-btn${activeTab === "byCategory" ? " prisma-is-active" : ""}`}
+					data-testid="prisma-events-modal-tab-byCategory"
+					onClick={() => setActiveTab("byCategory")}
+				>
+					By Category ({categoryCount})
+				</button>
+				{nameSeriesEnabled && (
+					<button
+						className={`prisma-event-series-tab-btn${activeTab === "byName" ? " prisma-is-active" : ""}`}
+						data-testid="prisma-events-modal-tab-byName"
+						onClick={() => setActiveTab("byName")}
+					>
+						By Name ({nameCount})
+					</button>
+				)}
+			</div>
+
+			<div className="prisma-generic-event-list-search">
+				<input
+					type="text"
+					placeholder="Search events... (Ctrl/Cmd+F)"
+					className="prisma-generic-event-search-input"
+					value={searchQuery}
+					onChange={(e) => setSearchQuery(e.target.value)}
+					autoFocus
+				/>
+				<select
+					className="prisma-events-modal-sort-select"
+					value={sortMode}
+					onChange={(e) => setSortMode(e.target.value as EventsModalSortMode)}
+				>
+					{Object.entries(EVENTS_MODAL_SORT_OPTIONS).map(([value, label]) => (
+						<option key={value} value={value}>
+							{label}
+						</option>
+					))}
+				</select>
+			</div>
+
+			<div className="prisma-events-modal-content">{content}</div>
+		</div>
+	);
+}
+
+export function openEventsModal(app: App, bundle: CalendarBundle, calendarComponent: CalendarComponent): void {
+	showReactModal({
+		app,
+		cls: "prisma-generic-event-list-modal",
+		render: (close) => <EventsModalContent bundle={bundle} calendarComponent={calendarComponent} onClose={close} />,
+	});
+}
