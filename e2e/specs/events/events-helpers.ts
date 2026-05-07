@@ -29,6 +29,22 @@ export function listEventFiles(vaultDir: string, subdir = "Events"): string[] {
 	return listAllMarkdownFiles(vaultDir, subdir).filter((p) => !p.endsWith(`/${VIRTUAL_EVENTS_FILE}`));
 }
 
+/**
+ * Match a physical instance filename for `title`: `Title YYYY-MM-DD-<zettel>.md`
+ * — the space-date-zettel suffix is what distinguishes instances from the
+ * source event note, which uses `Title-<zettel>.md` (no date token).
+ */
+export function instanceFileRegex(title: string): RegExp {
+	const escaped = title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	return new RegExp(`/${escaped} (\\d{4})-(\\d{2})-(\\d{2})-\\d+\\.md$`);
+}
+
+/** All physical-instance files for `title` under the events subdir. */
+export function collectInstanceFiles(vaultDir: string, title: string): string[] {
+	const regex = instanceFileRegex(title);
+	return listEventFiles(vaultDir).filter((p) => regex.test(p));
+}
+
 // Back-compat selector constants — every new `[data-testid="..."]` should go
 // through `sel(TID.*)` directly, but these aliases let existing call sites
 // keep working while they get migrated. All values derive from the TID

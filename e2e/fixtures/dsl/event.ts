@@ -1,7 +1,7 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
-import { listEventFiles } from "../../specs/events/events-helpers";
+import { collectInstanceFiles, listEventFiles } from "../../specs/events/events-helpers";
 import type { EventModalInput } from "../../specs/events/fill-event-modal";
 import { fillEventModal, saveEventModal } from "../../specs/events/fill-event-modal";
 import { ACTIVE_CALENDAR_LEAF } from "../constants";
@@ -66,6 +66,15 @@ export interface EventHandle {
 
 	/** Wait for (or assert the absence of) the event block in the active calendar leaf. */
 	expectVisible(yes?: boolean): Promise<void>;
+
+	/**
+	 * Polled assertion that exactly `count` physical instance files exist on
+	 * disk for this event's title. Use after creating a recurring source to
+	 * wait for the generator to materialise its instances — replaces inline
+	 * `collectInstanceFiles(...).length` polling and removes the need for
+	 * `refreshCalendar` cheat-paths in specs.
+	 */
+	expectInstanceCount(count: number, message?: string): Promise<void>;
 }
 
 interface EventHandleDeps {
@@ -177,6 +186,14 @@ export function createEventHandle(deps: EventHandleDeps, path: string, title: st
 		async expectVisible(yes = true) {
 			if (yes) await block().waitFor({ state: "visible" });
 			else await expect(block()).toHaveCount(0);
+		},
+
+		async expectInstanceCount(count, message) {
+			await expect
+				.poll(() => collectInstanceFiles(vaultDir, title).length, {
+					message: message ?? `expected ${count} instance files for ${title}`,
+				})
+				.toBe(count);
 		},
 	};
 }

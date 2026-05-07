@@ -1,9 +1,8 @@
 import { waitForEvent } from "../../fixtures/calendar-helpers";
-import { fromAnchor } from "../../fixtures/dates";
+import { fromAnchor, todayISO } from "../../fixtures/dates";
 import { expect, test } from "../../fixtures/electron";
-import { refreshCalendar, type SeedEventInput } from "../../fixtures/seed-events";
+import { type SeedEventInput } from "../../fixtures/seed-events";
 import { sel, TID } from "../../fixtures/testids";
-import { formatLocalDate, listEventFiles } from "./events-helpers";
 
 // `.prisma-recurring-events-list-modal` is now stamped on both Obsidian's
 // outer `.modal` host (via showReactModal `cls`) and the inner React content
@@ -14,20 +13,10 @@ const ROW_SEL = ".prisma-recurring-event-row";
 const TITLE_SEL = ".prisma-recurring-event-title";
 const STATS_SEL = ".prisma-recurring-events-stats-text";
 const TAB_SEL = (tab: string): string => `[data-testid="prisma-event-series-tab-${tab}"]`;
-const INSTANCE_FILE_TIMEOUT_MS = 10_000;
 const DEFAULT_FUTURE_INSTANCES = 2;
 
 function zettelSuffix(i: number): string {
 	return String(20260502090000 + i).padStart(14, "0");
-}
-
-function instanceFileRegex(title: string): RegExp {
-	const escaped = title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-	return new RegExp(`/${escaped} (\\d{4})-(\\d{2})-(\\d{2})-\\d+\\.md$`);
-}
-
-function collectInstanceFiles(vaultDir: string, title: string): string[] {
-	return listEventFiles(vaultDir).filter((p) => instanceFileRegex(title).test(p));
 }
 
 test.describe("context menu — series shortcut items", () => {
@@ -138,26 +127,21 @@ test.describe("context menu — series shortcut items", () => {
 	});
 
 	test("viewRecurringSeries shows physical instances for a daily recurring source", async ({ calendar }) => {
-		const { page, vaultDir } = calendar;
-		const todayStr = formatLocalDate(new Date());
+		const { page } = calendar;
+		const todayStr = todayISO();
 
-		await calendar.createEvent({
+		const evt = await calendar.createEvent({
 			title: "Daily Standup",
 			start: `${todayStr}T09:00`,
 			end: `${todayStr}T09:30`,
 			recurring: { rruleType: "daily" },
 		});
 
-		await expect
-			.poll(() => collectInstanceFiles(vaultDir, "Daily Standup").length, {
-				timeout: INSTANCE_FILE_TIMEOUT_MS,
-			})
-			.toBeGreaterThanOrEqual(DEFAULT_FUTURE_INSTANCES);
+		// Settings default for `futureInstancesCount` is 2 (settings.ts) and the
+		// generator stops the moment that count is reached, so an exact poll is
+		// safe and matches the `Total: N` stat the modal renders below.
+		await evt.expectInstanceCount(DEFAULT_FUTURE_INSTANCES);
 
-		await refreshCalendar(page);
-		await waitForEvent(page, "Daily Standup");
-
-		const evt = await calendar.eventByTitle("Daily Standup");
 		await evt.rightClick("viewRecurringSeries");
 
 		const modal = page.locator(MODAL_SEL);

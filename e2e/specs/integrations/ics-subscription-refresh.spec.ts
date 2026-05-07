@@ -135,7 +135,9 @@ test.describe("ICS subscription refresh: modified events", () => {
 		await ics.sync();
 		await ics.sync();
 
-		await ics.waitForRequest(3);
+		// Three syncs must produce exactly three requests — anything higher means
+		// the sync coalescing is broken and re-syncs duplicate work.
+		await expect.poll(() => ics.server.requests.length).toBe(3);
 		await ics.expectFileCount(1);
 	});
 });

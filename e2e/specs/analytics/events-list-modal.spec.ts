@@ -1,8 +1,8 @@
 import { closeOpenModal } from "../../fixtures/analytics-helpers";
-import { todayStamp } from "../../fixtures/dates";
+import { todayISO, todayStamp } from "../../fixtures/dates";
 import { expect, test } from "../../fixtures/electron";
 import { clickEventListItem, pickSeriesBasesView, switchEventsModalTab } from "../../fixtures/helpers";
-import type { SeedEventInput } from "../../fixtures/seed-events";
+import { type SeedEventInput } from "../../fixtures/seed-events";
 import { sel } from "../../fixtures/testids";
 
 // The FullCalendar "Events" toolbar button (`prisma-cal-toolbar-show-recurring`)
@@ -17,7 +17,9 @@ const SERIES_MODAL_SEL = ".modal.prisma-recurring-events-list-modal";
 const SERIES_ROW_SEL = ".prisma-recurring-event-row";
 const SERIES_TITLE_SEL = ".prisma-recurring-event-title";
 const SERIES_STATS_SEL = ".prisma-recurring-events-stats-text";
-const GROUP_COUNT_SEL = ".prisma-events-modal-content .prisma-generic-event-list-count";
+const EVENTS_MODAL_BODY_SEL = ".prisma-events-modal-content";
+const GROUP_COUNT_SEL = `${EVENTS_MODAL_BODY_SEL} .prisma-generic-event-list-count`;
+const GROUP_LIST_ITEM_SEL = `${EVENTS_MODAL_BODY_SEL} .prisma-generic-event-list .prisma-generic-event-list-item`;
 const GROUP_SUBTITLE_SEL = ".prisma-generic-event-subtitle";
 
 test.describe("analytics: events-list modal + series visualisations", () => {
@@ -101,6 +103,12 @@ test.describe("analytics: events-list modal + series visualisations", () => {
 		expect(workTitles).not.toContain("Workout");
 		await expect(seriesModal.locator(SERIES_STATS_SEL).first()).toContainText("Total: 2");
 
+		// Single-tab series modal: the source modal opened with `categoryValues=[Work]`,
+		// so `tabs.length === 1` and the tab bar is suppressed (event-series-modal-content.tsx
+		// renders tabs only when `tabs.length >= 2`). A regression that widened the
+		// payload would surface a name/recurring tab here.
+		await expect(seriesModal.locator('[data-testid^="prisma-event-series-tab-"]')).toHaveCount(0);
+
 		// Bases footer must expose every visualisation button for this category series.
 		for (const viewType of ["table", "list", "cards", "timeline", "heatmap"] as const) {
 			await expect(seriesModal.locator(sel(`prisma-event-series-bases-${viewType}`)).first()).toBeVisible();
@@ -137,11 +145,17 @@ test.describe("analytics: events-list modal + series visualisations", () => {
 		expect(titles.every((t) => t === "Team Meeting")).toBe(true);
 		await expect(seriesModal.locator(SERIES_STATS_SEL).first()).toContainText("Total: 2");
 
+		// Single-tab series modal: drilled in with only `nameKey` set, so no
+		// category/recurring tab and the tab bar is suppressed (see source-level
+		// `tabs.length >= 2` guard). Pin this so a regression that started passing
+		// `categoryValues` here can't silently widen the modal.
+		await expect(seriesModal.locator('[data-testid^="prisma-event-series-tab-"]')).toHaveCount(0);
+
 		// Bases footer is wired for the name series too.
 		await expect(seriesModal.locator(sel("prisma-event-series-bases-timeline")).first()).toBeVisible();
 	});
 
-	test("each Bases visualisation opens a follow-up modal", async ({ calendar }) => {
+	test("Bases visualisations receive the right payload (timeline rows, heatmap pro gate)", async ({ calendar }) => {
 		await calendar.clickToolbar("show-recurring");
 		await calendar.page.locator(".modal").first().waitFor({ state: "visible" });
 		await switchEventsModalTab(calendar.page, "byCategory");
@@ -150,16 +164,68 @@ test.describe("analytics: events-list modal + series visualisations", () => {
 		// Baseline modal count — the Events modal + Series modal are open on top of each other.
 		const baseline = await calendar.page.locator(".modal").count();
 
-		// "Timeline" opens a timeline modal; count should increase, then close.
+		// Timeline: opens with a header `<h2>` carrying the action's title string
+		// from `createCategorySeriesBasesActions` and renders one
+		// `.prisma-timeline-item` per event passed in (vis-timeline stamps the
+		// className onto the wrapping `.vis-item`). Two Work events → exactly two
+		// items; a regression that leaked Workout events would push this to 4.
 		await pickSeriesBasesView(calendar.page, "timeline");
 		await calendar.page.waitForFunction((prev) => document.querySelectorAll(".modal").length > prev, baseline);
+		const timelineContainer = calendar.page.locator(sel("prisma-timeline-container")).first();
+		await expect(timelineContainer).toBeVisible();
+		await expect(calendar.page.locator(".prisma-timeline-modal-header h2").first()).toHaveText(
+			"Timeline for Category - Work"
+		);
+		await expect(timelineContainer.locator(".prisma-timeline-item")).toHaveCount(2);
 		await closeOpenModal(calendar.page);
 		await expect(calendar.page.locator(".modal")).toHaveCount(baseline);
 
-		// "Heatmap" same: opens, then closes.
+		// Heatmap: pro-gated. The unlicensed e2e vault (see pro-gates.spec.ts)
+		// gets the upgrade banner instead of the canvas, stamped with
+		// `prisma-pro-gate-HEATMAP`. Asserting the banner specifically (not just
+		// "any modal opened") proves the gate path is wired through the Bases
+		// footer too.
 		await pickSeriesBasesView(calendar.page, "heatmap");
-		await calendar.page.waitForFunction((prev) => document.querySelectorAll(".modal").length > prev, baseline);
+		await expect(calendar.page.locator(sel("prisma-pro-gate-HEATMAP")).first()).toBeVisible();
 		await closeOpenModal(calendar.page);
 		await expect(calendar.page.locator(".modal")).toHaveCount(baseline);
+	});
+});
+
+// Recurring tab lives in its own describe so the daily-source seed (which
+// generates two on-disk instances + populates `recurringEventManager`) doesn't
+// contaminate the byCategory/byName precise-count assertions above. Default
+// `futureInstancesCount` is 2 — see `CalendarSettingsSchema` in settings.ts.
+const DEFAULT_FUTURE_INSTANCES = 2;
+
+test.describe("analytics: events-list modal — Recurring tab", () => {
+	test("Recurring tab lists each source event once with its physical instance count", async ({ calendar }) => {
+		const todayStr = todayISO();
+
+		const evt = await calendar.createEvent({
+			title: "Daily Standup",
+			start: `${todayStr}T09:00`,
+			end: `${todayStr}T09:30`,
+			recurring: { rruleType: "daily" },
+		});
+		await evt.expectInstanceCount(DEFAULT_FUTURE_INSTANCES);
+
+		await calendar.clickToolbar("show-recurring");
+		await calendar.page.locator(".modal").first().waitFor({ state: "visible" });
+
+		// Default tab is whichever has data; recurringCount > 0 → Recurring wins.
+		const recurringTab = calendar.page.locator(sel("prisma-events-modal-tab-recurring")).first();
+		await expect(recurringTab).toContainText("Recurring (1)");
+		await expect(recurringTab).toHaveClass(/is-active/);
+
+		// Count chip and rows are owned by `RecurringEventsModalPanel`. One
+		// source → one row, regardless of how many physical instances exist.
+		await expect(calendar.page.locator(GROUP_COUNT_SEL).first()).toHaveText("1 event");
+		const recurringRows = calendar.page.locator(GROUP_LIST_ITEM_SEL);
+		await expect(recurringRows).toHaveCount(1);
+
+		const onlyRow = recurringRows.first();
+		await expect(onlyRow.locator(".prisma-generic-event-title")).toHaveText("Daily Standup");
+		await expect(onlyRow.locator(".prisma-generic-event-subtitle")).toHaveText(`${DEFAULT_FUTURE_INSTANCES} instances`);
 	});
 });
