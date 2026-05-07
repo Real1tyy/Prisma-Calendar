@@ -1,0 +1,101 @@
+import { renderReactInline } from "@real1ty-obsidian-plugins-react";
+import type { App } from "obsidian";
+import { memo, type Ref,useCallback, useEffect, useImperativeHandle, useRef } from "react";
+import { distinctUntilChanged, map, merge, skip } from "rxjs";
+
+import { type HeatmapHandle,renderHeatmapInto } from "../../components/modals";
+import type { CalendarBundle } from "../../core/calendar-bundle";
+import { PRO_FEATURES } from "../../core/license";
+import { getHeatmapRenderingKey } from "../../utils/calendar-settings";
+import { FilterBar, type FilterBarHandle } from "./filter-bar";
+import { ProGatedContent } from "./pro-gated-content";
+
+export interface HeatmapTabHandle {
+	handleArrow(direction: "left" | "right" | "up" | "down"): void;
+}
+
+interface HeatmapTabProps {
+	app: App;
+	bundle: CalendarBundle;
+	handleRef?: Ref<HeatmapTabHandle>;
+}
+
+const PASS_ALL: FilterBarHandle = { shouldInclude: () => true };
+
+const HeatmapBody = memo(function HeatmapBody({ app, bundle, handleRef }: HeatmapTabProps) {
+	const containerRef = useRef<HTMLDivElement>(null);
+	const heatmapRef = useRef<HeatmapHandle | null>(null);
+	const filterRef = useRef<FilterBarHandle>(PASS_ALL);
+
+	const handleFilterReady = useCallback((handle: FilterBarHandle) => {
+		filterRef.current = handle;
+	}, []);
+
+	const getFilteredEvents = useCallback(
+		() => bundle.eventStore.getAllEvents().filter((event) => filterRef.current.shouldInclude(event)),
+		[bundle]
+	);
+
+	const handleFilterChange = useCallback(() => {
+		heatmapRef.current?.refresh(getFilteredEvents());
+	}, [getFilteredEvents]);
+
+	useEffect(() => {
+		const el = containerRef.current;
+		if (!el) return;
+
+		const handle = renderHeatmapInto(el, app, bundle, {
+			events: getFilteredEvents(),
+		});
+		heatmapRef.current = handle;
+
+		const unmountToolbar = renderReactInline(
+			handle.toolbarLeft,
+			<FilterBar bundle={bundle} onFilterChange={handleFilterChange} onHandleReady={handleFilterReady} />,
+			app
+		);
+
+		const renderingSettings$ = bundle.settingsStore.settings$.pipe(
+			skip(1),
+			map(getHeatmapRenderingKey),
+			distinctUntilChanged()
+		);
+
+		const sub = merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$, renderingSettings$).subscribe(
+			() => {
+				handle.refresh(getFilteredEvents());
+			}
+		);
+
+		return () => {
+			sub.unsubscribe();
+			unmountToolbar();
+			handle.destroy();
+			heatmapRef.current = null;
+			filterRef.current = PASS_ALL;
+		};
+	}, [app, bundle, getFilteredEvents, handleFilterChange, handleFilterReady]);
+
+	useImperativeHandle(
+		handleRef,
+		() => ({
+			handleArrow: (direction) => heatmapRef.current?.handleArrow(direction),
+		}),
+		[]
+	);
+
+	return <div ref={containerRef} style={{ flex: "1 1 auto", minHeight: 0 }} data-testid="prisma-heatmap-tab" />;
+});
+
+export const HeatmapTab = memo(function HeatmapTab(props: HeatmapTabProps) {
+	return (
+		<ProGatedContent
+			bundle={props.bundle}
+			featureName={PRO_FEATURES.HEATMAP}
+			description="Visualize your events over time with an interactive heatmap. See patterns, streaks, and activity density at a glance."
+			previewKey="HEATMAP"
+		>
+			<HeatmapBody {...props} />
+		</ProGatedContent>
+	);
+});
