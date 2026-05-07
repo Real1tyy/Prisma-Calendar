@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { createICSFromEvents } from "../../src/core/integrations/ics-export";
 import { buildFrontmatterFromImportedEvent, parseICSContent } from "../../src/core/integrations/ics-import";
@@ -139,6 +139,7 @@ describe("ICS Import", () => {
 		// aborting every other event in the file. LAST-MODIFIED isn't load-bearing
 		// for import, so we now read it defensively and continue.
 		it("should silently skip malformed LAST-MODIFIED but still import the event", () => {
+			const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 			const ics = `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Test//EN
@@ -158,11 +159,14 @@ END:VCALENDAR`;
 			expect(result.events[0].uid).toBe("event-with-bad-lastmod");
 			expect(result.events[0].lastModified).toBeUndefined();
 			expect(result.skipped).toHaveLength(0);
+			expect(warnSpy).toHaveBeenCalledWith("[ICSImport] Skipping malformed LAST-MODIFIED:", expect.any(Error));
+			warnSpy.mockRestore();
 		});
 
 		// When an event is genuinely unrecoverable (malformed DTSTART), it is now
 		// quarantined into `skipped` instead of aborting every other VEVENT in the file.
 		it("should quarantine an event with an unrecoverable error and continue with the rest", () => {
+			const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 			const ics = `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Test//EN
@@ -193,6 +197,8 @@ END:VCALENDAR`;
 			expect(result.skipped).toHaveLength(1);
 			expect(result.skipped[0]).toMatchObject({ index: 2, summary: "Bad Event", uid: "bad-1" });
 			expect(result.skipped[0].error).toBeInstanceOf(Error);
+			expect(warnSpy).toHaveBeenCalled();
+			warnSpy.mockRestore();
 		});
 
 		it("should parse categories when present", () => {

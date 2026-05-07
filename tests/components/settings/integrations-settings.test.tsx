@@ -21,11 +21,14 @@ vi.mock("../../../src/react/modals", () => ({
 	openICSAddModal: vi.fn().mockResolvedValue(null),
 	openICSEditModal: vi.fn().mockResolvedValue(undefined),
 	openCalendarIntegrationDeleteEventsModal: vi.fn().mockResolvedValue(null),
-	openConfirmDeleteModal: vi.fn().mockResolvedValue(false),
 }));
-vi.mock("../../../src/components/settings/integration-shared", () => ({
-	deleteTrackedIntegrationEvents: vi.fn().mockResolvedValue(undefined),
+vi.mock("../../../src/components/settings/generic", () => ({
+	showConfirmDeleteModal: vi.fn(),
 }));
+vi.mock("../../../src/components/settings/integration-shared", async (importOriginal) => {
+	const actual = await importOriginal<Record<string, unknown>>();
+	return { ...actual, deleteTrackedIntegrationEvents: vi.fn().mockResolvedValue(undefined) };
+});
 
 function createMockMainStore(overrides: Partial<CustomCalendarSettings> = {}) {
 	const defaults = CustomCalendarSettingsSchema.parse({});

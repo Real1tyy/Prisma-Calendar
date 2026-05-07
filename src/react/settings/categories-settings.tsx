@@ -17,13 +17,13 @@ import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CategoryInfo, CategoryTracker } from "../../core/category-tracker";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
-import { openCategoryDeleteModal, openCategoryRenameModal } from "../../react/modals";
 import { isAllDayEvent, isTimedEvent } from "../../types/calendar";
 import {
 	type CategoryAssignmentPreset,
 	type SingleCalendarConfig,
 	SingleCalendarConfigSchema,
 } from "../../types/settings";
+import { openCategoryDeleteModal, openCategoryRenameModal } from "../modals";
 import { ProUpgradeBanner } from "./pro-upgrade-banner";
 
 const S = SingleCalendarConfigSchema.shape;
