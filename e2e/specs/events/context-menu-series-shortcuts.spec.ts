@@ -5,7 +5,11 @@ import { refreshCalendar, type SeedEventInput } from "../../fixtures/seed-events
 import { sel, TID } from "../../fixtures/testids";
 import { formatLocalDate, listEventFiles } from "./events-helpers";
 
-const MODAL_SEL = ".prisma-recurring-events-list-modal";
+// `.prisma-recurring-events-list-modal` is now stamped on both Obsidian's
+// outer `.modal` host (via showReactModal `cls`) and the inner React content
+// div, so a bare class selector resolves to two elements. Anchor on `.modal`
+// to pin to the outer one.
+const MODAL_SEL = ".modal.prisma-recurring-events-list-modal";
 const ROW_SEL = ".prisma-recurring-event-row";
 const TITLE_SEL = ".prisma-recurring-event-title";
 const STATS_SEL = ".prisma-recurring-events-stats-text";
@@ -30,12 +34,21 @@ test.describe("context menu — series shortcut items", () => {
 	test("viewNameSeries lists all events sharing the same name and selects name tab", async ({ calendar }) => {
 		const { page } = calendar;
 		const count = 3;
-		const events: SeedEventInput[] = Array.from({ length: count }, (_, i) => ({
-			title: `Team Meeting-${zettelSuffix(i)}`,
-			startDate: fromAnchor(i, 9),
-			endDate: fromAnchor(i, 10),
-			category: "Work",
-		}));
+		const events: SeedEventInput[] = [
+			...Array.from({ length: count }, (_, i) => ({
+				title: `Team Meeting-${zettelSuffix(i)}`,
+				startDate: fromAnchor(i, 9),
+				endDate: fromAnchor(i, 10),
+				category: "Work",
+			})),
+			// Noise: same category, different name — must NOT surface in the name-series view.
+			{
+				title: `Workout-${zettelSuffix(count)}`,
+				startDate: fromAnchor(0, 14),
+				endDate: fromAnchor(0, 15),
+				category: "Work",
+			},
+		];
 
 		await calendar.switchMode("week");
 		await calendar.goToAnchor();
@@ -61,6 +74,7 @@ test.describe("context menu — series shortcut items", () => {
 
 		const titles = await modal.locator(TITLE_SEL).allTextContents();
 		expect(titles.every((t) => t === "Team Meeting")).toBe(true);
+		expect(titles).not.toContain("Workout");
 	});
 
 	test("viewCategorySeries lists only events in the same category and selects category tab", async ({ calendar }) => {
@@ -97,6 +111,10 @@ test.describe("context menu — series shortcut items", () => {
 
 		await expect(modal.locator(ROW_SEL)).toHaveCount(3);
 		await expect(modal.locator(STATS_SEL).first()).toContainText("Total: 3");
+
+		const titles = await modal.locator(TITLE_SEL).allTextContents();
+		expect(titles.every((t) => t.startsWith("Workout"))).toBe(true);
+		expect(titles.some((t) => t.startsWith("Review"))).toBe(false);
 	});
 
 	test("viewCategorySeries and viewRecurringSeries are hidden when not applicable", async ({ calendar }) => {
