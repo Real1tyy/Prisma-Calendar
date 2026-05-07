@@ -6,4 +6,9 @@ export interface Scenario {
 	width?: string | undefined;
 	/** Render the component into a fresh container and return it. */
 	render(): HTMLElement;
+	/**
+	 * Runs after fixture HTML is captured from `render()` output.
+	 * Use to unmount React roots, clear timers, etc. so jsdom teardown does not race async work.
+	 */
+	teardown?: (root: HTMLElement) => void;
 }

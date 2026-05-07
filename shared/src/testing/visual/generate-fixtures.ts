@@ -36,6 +36,7 @@ export function generateFixtures(options: GenerateFixturesOptions): GenerateFixt
 	for (const scenario of scenarios) {
 		const rendered = scenario.render();
 		const innerHtml = rendered.outerHTML;
+		scenario.teardown?.(rendered);
 		for (const theme of themes) {
 			const html = buildHarnessHtml(innerHtml, {
 				theme,
