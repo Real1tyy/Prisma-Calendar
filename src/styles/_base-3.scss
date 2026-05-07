@@ -11,7 +11,8 @@
 		border-radius: 8px;
 		z-index: 10;
 
-		.prisma-calendar-container > & {
+		.prisma-calendar-container > &,
+		.prisma-calendar-container > .prisma-sticky-banner-mount > & {
 			position: sticky;
 			bottom: 0;
 		}

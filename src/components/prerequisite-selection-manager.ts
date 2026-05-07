@@ -1,5 +1,5 @@
 import type { Calendar } from "@fullcalendar/core";
-import { Notice } from "obsidian";
+import { type App, Notice } from "obsidian";
 
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { addPrerequisite } from "../core/commands";
@@ -17,7 +17,8 @@ export class PrerequisiteSelectionManager {
 	constructor(
 		private calendar: Calendar,
 		private bundle: CalendarBundle,
-		private container: HTMLElement
+		private container: HTMLElement,
+		private app: App
 	) {}
 
 	// ─── Selection Mode ───────────────────────────────────────────
@@ -31,6 +32,7 @@ export class PrerequisiteSelectionManager {
 		const targetName = extractCleanDisplayName(targetFilePath);
 		this.banner = createStickyBanner(
 			this.container,
+			this.app,
 			`Click an event to assign it as a prerequisite for "${targetName}"`,
 			() => {
 				this.exit();

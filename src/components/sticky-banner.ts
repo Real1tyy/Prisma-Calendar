@@ -1,32 +1,29 @@
-import { addCls, cls } from "@real1ty-obsidian-plugins";
+import { addCls } from "@real1ty-obsidian-plugins";
+import { renderReactInline } from "@real1ty-obsidian-plugins-react";
+import type { App } from "obsidian";
+import { createElement } from "react";
+
+import { StickyBanner } from "../react/views/sticky-banner";
 
 export interface StickyBannerHandle {
 	destroy(): void;
 }
 
-export function createStickyBanner(container: HTMLElement, message: string, onCancel: () => void): StickyBannerHandle {
-	const bannerEl = container.createDiv(cls("prereq-selection-banner"));
+export function createStickyBanner(
+	container: HTMLElement,
+	app: App,
+	message: string,
+	onCancel: () => void
+): StickyBannerHandle {
+	const mount = container.createDiv();
+	addCls(mount, "sticky-banner-mount");
 
-	const textEl = bannerEl.createDiv(cls("prereq-selection-banner-text"));
-	textEl.setText(message);
-
-	const cancelBtn = bannerEl.createEl("button", { text: "Cancel" });
-	addCls(cancelBtn, "prereq-selection-btn");
-	cancelBtn.addEventListener("click", onCancel);
-
-	const escapeHandler = (e: KeyboardEvent): void => {
-		if (e.key === "Escape") {
-			e.preventDefault();
-			e.stopPropagation();
-			onCancel();
-		}
-	};
-	document.addEventListener("keydown", escapeHandler, true);
+	const unmount = renderReactInline(mount, createElement(StickyBanner, { message, onCancel }), app);
 
 	return {
 		destroy() {
-			bannerEl.remove();
-			document.removeEventListener("keydown", escapeHandler, true);
+			unmount();
+			mount.remove();
 		},
 	};
 }
