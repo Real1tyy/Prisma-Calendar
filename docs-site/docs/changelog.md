@@ -4,7 +4,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.16.0 - 5/4/2026
+## 2.16.0 - 5/6/2026
 
 > **TLDR:** New **series shortcut** context menu items let you jump directly to the name, category, or recurring tab in the Event Series Modal. Timeline, Heatmap, and Gantt views now react to settings and color changes in real time. Settings now remember your active tab and scroll position. Icons now have a **visual picker** with live previews, are **optional on all UI elements**, **tabs support inline icons**, and the **tab manager** now lets you edit icons and colors per tab. Two planning systems on the same directory with mismatched sort settings no longer fight each other.
 

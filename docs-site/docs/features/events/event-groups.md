@@ -140,8 +140,7 @@ Shows all events whose cleaned title matches.
 1. **Event name** — header showing the cleaned title (ZettelID stripped)
 2. **Statistics bar** — same format as other tabs
 3. **Filter toggles** — "Hide past events" and "Hide skipped events"
-4. **Search** — filter by title
-5. **Event list** — color-coded rows
+4. **Event list** — color-coded rows (instances differ by date; there is no title search because every row shares the same name)
 
 ## Modal Features
 

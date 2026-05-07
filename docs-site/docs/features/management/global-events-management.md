@@ -49,6 +49,8 @@ Filters combine with AND logic. Example: "Only Recurring + Skip All-day" shows o
 
 ## Notes
 
+- The result list uses **virtual scrolling** — only rows near the visible area are rendered, which keeps large calendars responsive.
+- **Cycle filters** update immediately; rebuilding thousands of rows runs at lower priority so clicks stay responsive (counts and rows may catch up a split-second later on huge vaults).
 - Shows only physical event files, not [virtual recurring previews](../events/virtual-events.md)
 - Respects calendar-level [filter rules](../organization/filtering.md) from settings
 - Events display with your configured [color rules](../organization/color-rules.md)
