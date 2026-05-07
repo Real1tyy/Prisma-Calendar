@@ -1,12 +1,13 @@
-import { showConfirmationModal } from "@real1ty-obsidian-plugins";
+import { openConfirmation } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 
 export function showConfirmDeleteModal(app: App, entityName: string, entityType: string, onConfirm: () => void): void {
-	showConfirmationModal(app, {
+	void openConfirmation(app, {
 		title: `Delete ${entityType}`,
 		message: `Are you sure you want to delete the ${entityType} "${entityName}"?`,
-		confirmButton: { text: "Delete", warning: true },
-		cancelButton: "Cancel",
+		confirmLabel: "Delete",
+		cancelLabel: "Cancel",
+		destructive: true,
 		onConfirm,
 	});
 }
