@@ -37,6 +37,8 @@ import { PRO_FEATURES } from "../core/license";
 import { MinimizedModalManager } from "../core/minimized-modal-manager";
 import { getProGateUrls } from "../core/pro-feature-previews";
 import { openBatchFrontmatterModal, openCategoryAssignModal, openCategorySelectModal } from "../react/modals";
+import { openFilteredEventsModal, openSelectedEventsModal, openSkippedEventsModal } from "../react/modals/event-list";
+import { openEventsModal } from "../react/modals/event-list/events-modal-content";
 import type {
 	CalendarEvent,
 	CalendarEventData,
@@ -73,13 +75,6 @@ import { EventContextMenu } from "./event-context-menu";
 import { FilterPresetSelector } from "./filter-preset-selector";
 import { ExpressionFilterInputManager } from "./input-managers/expression-filter";
 import { SearchFilterInputManager } from "./input-managers/search-filter";
-import {
-	EventsModal,
-	FilteredEventsModal,
-	GlobalSearchModal,
-	SelectedEventsModal,
-	SkippedEventsModal,
-} from "./list-modals";
 import type { PreviewEventData } from "./modals";
 import { EventCreateModal, showEventPreviewModal, showIntervalEventsModal } from "./modals";
 import { PrerequisiteSelectionManager } from "./prerequisite-selection-manager";
@@ -99,17 +94,12 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	private expressionFilter: ExpressionFilterInputManager;
 	private filterPresetSelector: FilterPresetSelector;
 	private container: HTMLElement;
-	private skippedEventsModal: SkippedEventsModal | null = null;
-	private eventsModal: EventsModal | null = null;
-	private filteredEventsModal: FilteredEventsModal | null = null;
 	private untrackedEventsDropdown: UntrackedEventsDropdown | null = null;
-	private selectedEventsModal: SelectedEventsModal | null = null;
-	private globalSearchModal: GlobalSearchModal | null = null;
 	private dailyStatsModal: DailyStatsModal | null = null;
 	private weeklyStatsModal: WeeklyStatsModal | null = null;
 	private monthlyStatsModal: MonthlyStatsModal | null = null;
 	private alltimeStatsModal: AllTimeStatsModal | null = null;
-	private filteredEvents: CalendarEvent[] = [];
+	filteredEvents: CalendarEvent[] = [];
 	private isIndexingComplete = false;
 	private currentUpcomingEventIds: Set<string> = new Set();
 	private upcomingEventCheckInterval: number | null = null;
@@ -965,23 +955,17 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			},
 			filteredEvents: {
 				text: "", // Don't set text here - it will be set by applyFilteredEventsButtonState
-				click: () => {
-					void this.showFilteredEventsModal();
-				},
+				click: () => openFilteredEventsModal(this.app, this.bundle, this.filteredEvents),
 				className: this.filteredEventsCount > 0 ? cls("fc-button-visible") : cls("fc-button-hidden"),
 			},
 			skippedEvents: {
 				text: "", // Don't set text here - it will be set by applySkippedEventsButtonState
-				click: () => {
-					void this.showSkippedEventsModal();
-				},
+				click: () => this.showSkippedEventsModal(),
 				className: this.skippedEventsCount > 0 ? cls("fc-button-visible") : cls("fc-button-hidden"),
 			},
 			eventsButton: {
 				text: "Events",
-				click: () => {
-					void this.showEventsModal();
-				},
+				click: () => openEventsModal(this.app, this.bundle, this),
 			},
 		};
 	}
@@ -993,9 +977,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		return {
 			batchCounter: {
 				text: this.getSelectedEventsButtonText(),
-				click: () => {
-					void this.showSelectedEventsModal();
-				},
+				click: () => this.showSelectedEventsModal(),
 				className: `${clsBase} ${cls("batch-counter")}`,
 			},
 			batchSelectAll: {
@@ -2249,76 +2231,21 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 	// ─── Modals ──────────────────────────────────────────────────
 
-	async showSkippedEventsModal(): Promise<void> {
-		await this.toggleModal(
-			() => this.skippedEventsModal,
-			(modal) => {
-				this.skippedEventsModal = modal;
-			},
-			async () => {
-				if (!this.calendar) throw new Error("Calendar not initialized");
-
-				const { view } = this.calendar;
-
-				const start = toLocalISOString(view.activeStart);
-				const end = toLocalISOString(view.activeEnd);
-				const skippedEvents = this.bundle.eventStore.getSkippedEvents({
-					start,
-					end,
-				});
-
-				return new SkippedEventsModal(this.app, this.bundle, skippedEvents);
-			}
-		);
+	showSkippedEventsModal(): void {
+		if (!this.calendar) return;
+		const { view } = this.calendar;
+		const start = toLocalISOString(view.activeStart);
+		const end = toLocalISOString(view.activeEnd);
+		const skippedEvents = this.bundle.eventStore.getSkippedEvents({ start, end });
+		openSkippedEventsModal(this.app, this.bundle, skippedEvents);
 	}
 
-	async showEventsModal(): Promise<void> {
-		await this.toggleModal(
-			() => this.eventsModal,
-			(modal) => {
-				this.eventsModal = modal;
-			},
-			() => {
-				return new EventsModal(this.app, this.bundle, this);
-			}
-		);
-	}
-
-	async showFilteredEventsModal(): Promise<void> {
-		await this.toggleModal(
-			() => this.filteredEventsModal,
-			(modal) => {
-				this.filteredEventsModal = modal;
-			},
-			() => new FilteredEventsModal(this.app, this.bundle, this.filteredEvents)
-		);
-	}
-
-	async showSelectedEventsModal(): Promise<void> {
-		await this.toggleModal(
-			() => this.selectedEventsModal,
-			(modal) => {
-				this.selectedEventsModal = modal;
-			},
-			() => {
-				if (!this.batchSelectionManager) throw new Error("Batch selection manager not initialized");
-
-				const selected = this.batchSelectionManager.getSelectedEvents();
-				return new SelectedEventsModal(this.app, this.bundle, selected, (eventId: string) => {
-					this.batchSelectionManager?.unselectEvent(eventId);
-				});
-			}
-		);
-	}
-
-	async showGlobalSearchModal(): Promise<void> {
-		await this.toggleModal(
-			() => this.globalSearchModal,
-			(modal) => {
-				this.globalSearchModal = modal;
-			},
-			() => new GlobalSearchModal(this.app, this.bundle, this)
-		);
+	showSelectedEventsModal(): void {
+		if (!this.batchSelectionManager) return;
+		const selected = this.batchSelectionManager.getSelectedEvents();
+		openSelectedEventsModal(this.app, this.bundle, selected, (eventId: string) => {
+			this.batchSelectionManager?.unselectEvent(eventId);
+		});
 	}
 
 	async showDailyStatsModal(date?: Date): Promise<void> {

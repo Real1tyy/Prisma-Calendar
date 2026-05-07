@@ -36,6 +36,8 @@ import { getProGateUrls } from "./core/pro-feature-previews";
 import { buildWhatsNewConfig } from "./core/whats-new-config";
 import { openFirstLaunchModal, scanVaultForDirectorySuggestions } from "./onboarding";
 import { openCalendarSelectModal, openICSImportModal } from "./react/modals";
+import { openFilteredEventsModal, openGlobalSearchModal } from "./react/modals/event-list";
+import { openEventsModal } from "./react/modals/event-list/events-modal-content";
 import { CustomCalendarSettingsSchema, type PrismaCalendarSettingsStore, PrismaSyncDataSchema } from "./types";
 import { type CalDAVAccount, type ICSSubscription } from "./types/integrations";
 import { createDefaultCalendarConfig } from "./utils/calendar-settings";
@@ -318,19 +320,19 @@ export default class CustomCalendarPlugin extends Plugin {
 			view.toggleBatchSelection();
 		});
 		addCalendarViewCommand(COMMAND_IDS.SHOW_SKIPPED_EVENTS, "Show skipped events", (view) => {
-			void view.showSkippedEventsModal();
+			view.showSkippedEventsModal();
 		});
 		addCalendarViewCommand(COMMAND_IDS.SHOW_RECURRING_EVENTS, "Show recurring events", (view) => {
-			void view.showEventsModal();
+			openEventsModal(view.app, view.getBundle(), view);
 		});
 		addCalendarViewCommand(COMMAND_IDS.SHOW_FILTERED_EVENTS, "Show filtered events", (view) => {
-			void view.showFilteredEventsModal();
+			openFilteredEventsModal(view.app, view.getBundle(), view.filteredEvents);
 		});
 		addCalendarViewCommand(COMMAND_IDS.SHOW_UNTRACKED_EVENTS, "Toggle untracked events dropdown", (view) => {
 			view.toggleUntrackedEventsDropdown();
 		});
 		addCalendarViewCommand(COMMAND_IDS.GLOBAL_SEARCH, "Global event search", (view) => {
-			void view.showGlobalSearchModal();
+			openGlobalSearchModal(view.app, view.getBundle(), view);
 		});
 		addCalendarViewCommand(COMMAND_IDS.FOCUS_SEARCH, "Focus search", (view) => {
 			void view.focusSearch();
