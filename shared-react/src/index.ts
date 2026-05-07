@@ -66,6 +66,7 @@ export type { SnapshotSubscribable } from "./hooks/use-external-snapshot";
 export { useExternalSnapshot } from "./hooks/use-external-snapshot";
 export { useInjectedStyles } from "./hooks/use-injected-styles";
 export { useKeyDown } from "./hooks/use-key-down";
+export { useObservable } from "./hooks/use-observable";
 export type { Emitterlike } from "./hooks/use-obsidian-event";
 export { useObsidianEvent } from "./hooks/use-obsidian-event";
 export type { SchemaFieldBinding, SettingsStorelike } from "./hooks/use-schema-field";

@@ -70,6 +70,13 @@ function setupObsidianDom(): void {
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- runtime check: Obsidian augments HTMLElement, but prototype may not have it yet
+	if (!proto.appendText) {
+		(proto as any).appendText = function (this: HTMLElement, text: string): void {
+			this.appendChild(document.createTextNode(text));
+		};
+	}
+
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- runtime check: Obsidian augments HTMLElement, but prototype may not have it yet
 	if (!proto.addClass) {
 		(proto as any).addClass = function (this: HTMLElement, ...classes: string[]): void {
 			for (const cls of classes) {
