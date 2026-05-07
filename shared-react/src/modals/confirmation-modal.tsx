@@ -51,20 +51,29 @@ export interface OpenConfirmationOptions {
 	cancelLabel?: string;
 	destructive?: boolean;
 	testIdPrefix?: string;
+	onConfirm?: () => void;
+	onCancel?: () => void;
 }
 
 export function openConfirmation(app: App, options: OpenConfirmationOptions): Promise<boolean> {
-	const testIdPrefix = options.testIdPrefix ?? "";
+	const { onConfirm, onCancel, testIdPrefix: testIdPrefixOpt, ...rest } = options;
+	const testIdPrefix = testIdPrefixOpt ?? "";
 	return openReactModal<boolean>({
 		app,
-		title: options.title,
+		title: rest.title,
 		testId: `${testIdPrefix}confirmation-modal-container`,
 		render: (submit, cancel) => (
 			<ConfirmationModalContent
-				{...options}
+				{...rest}
 				testIdPrefix={testIdPrefix}
-				onConfirm={() => submit(true)}
-				onCancel={() => cancel()}
+				onConfirm={() => {
+					onConfirm?.();
+					submit(true);
+				}}
+				onCancel={() => {
+					onCancel?.();
+					cancel();
+				}}
 			/>
 		),
 	}).then((result) => result ?? false);

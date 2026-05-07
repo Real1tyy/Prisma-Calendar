@@ -9,6 +9,7 @@ import { AppContext } from "./contexts/app-context";
 
 export interface ReactModalBaseConfig {
 	app: App;
+	/** Modal root classes; multiple tokens may be space-separated. */
 	cls?: string | undefined;
 	title?: string | undefined;
 	testId?: string | undefined;
@@ -34,7 +35,11 @@ function mountReactModal(
 		override onOpen(): void {
 			const { contentEl, modalEl } = this;
 			contentEl.empty();
-			if (options.cls) modalEl.addClass(options.cls);
+			if (options.cls) {
+				for (const token of options.cls.trim().split(/\s+/).filter(Boolean)) {
+					modalEl.addClass(token);
+				}
+			}
 			if (options.title) this.setTitle(options.title);
 			if (options.testId) modalEl.setAttribute("data-testid", options.testId);
 

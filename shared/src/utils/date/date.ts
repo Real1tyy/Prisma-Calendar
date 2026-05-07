@@ -261,6 +261,25 @@ export function formatMsToMMSS(ms: number): string {
 	return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 }
 
+const localeShortDateFormatter = new Intl.DateTimeFormat(undefined, {
+	year: "numeric",
+	month: "short",
+	day: "numeric",
+});
+
+const localeTimeHmFormatter = new Intl.DateTimeFormat(undefined, {
+	hour: "2-digit",
+	minute: "2-digit",
+});
+
+export function formatLocaleShortDate(date: Date): string {
+	return localeShortDateFormatter.format(date);
+}
+
+export function formatLocaleTimeHm(date: Date): string {
+	return localeTimeHmFormatter.format(date);
+}
+
 export function parseAsLocalDate(dateString: string): Date | null {
 	try {
 		const localDateString = String(dateString)
