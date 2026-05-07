@@ -9,9 +9,9 @@ import {
 import { type App, Notice, TFile } from "obsidian";
 import { distinctUntilChanged, filter, firstValueFrom, type Subscription } from "rxjs";
 
-import { type PrismaViewRef, registerPrismaCalendarView } from "../components/views/prisma-view";
 import { getCalendarViewType } from "../constants";
 import type CustomCalendarPlugin from "../main";
+import { type PrismaViewRef, registerPrismaReactView } from "../react/views/register-prisma-view";
 import type { PrismaCalendarSettingsStore } from "../types";
 import type { CreateEventData, UpdateEventData } from "../types/event-boundaries";
 import { generateUniqueEventPath } from "../utils/event-naming";
@@ -175,7 +175,7 @@ export class CalendarBundle {
 
 		if (this.destroyed) return;
 
-		registerPrismaCalendarView(this.plugin, this, this.viewRef);
+		registerPrismaReactView(this.plugin, this, this.viewRef);
 
 		(
 			this.app.workspace as unknown as {
