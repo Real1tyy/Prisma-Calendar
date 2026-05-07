@@ -1,6 +1,7 @@
 import { ItemView, type Plugin, type WorkspaceLeaf } from "obsidian";
 
 import { activateView, type LeafPlacement } from "../../utils/activate-view";
+import { applyClsTokens } from "../../utils/css-utils";
 import type { ViewActivator, ViewComponentConfig, ViewContext } from "./types";
 
 export function registerComponentView(plugin: Plugin, config: ViewComponentConfig): ViewActivator {
@@ -28,7 +29,7 @@ export function registerComponentView(plugin: Plugin, config: ViewComponentConfi
 			const headerEl = this.containerEl.children[0] as HTMLElement;
 			const root = this.containerEl.children[1] as HTMLElement;
 			root.empty();
-			root.addClass(config.cls);
+			applyClsTokens(root, config.cls);
 
 			const ctx: ViewContext = {
 				type: "view",

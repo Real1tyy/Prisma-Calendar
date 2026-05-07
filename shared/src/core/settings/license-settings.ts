@@ -1,6 +1,6 @@
 import { type App, SecretComponent, Setting } from "obsidian";
 
-import type { LicenseManager, LicenseStatus } from "../license";
+import { getLicenseStatusText, type LicenseManager } from "../license";
 
 export interface LicenseSettingsConfig {
 	app: App;
@@ -8,26 +8,6 @@ export interface LicenseSettingsConfig {
 	currentSecretName: string;
 	onSecretChange: (value: string) => Promise<void>;
 	cssPrefix: string;
-}
-
-function getLicenseStatusText(status: LicenseStatus): string {
-	if (status.state === "none") return "No license key configured";
-	if (status.state === "valid") {
-		if (status.expiresAt) {
-			const expiryDate = new Date(status.expiresAt).toLocaleDateString(undefined, {
-				year: "numeric",
-				month: "long",
-				day: "numeric",
-			});
-			return `License active — valid offline until ${expiryDate}`;
-		}
-		return "License active";
-	}
-	if (status.state === "expired") return "License expired. Click Verify to refresh.";
-	if (status.state === "invalid") return status.errorMessage ?? "Invalid license key.";
-	if (status.state === "device_limit") return status.errorMessage ?? "Device limit reached.";
-	if (status.state === "error") return status.errorMessage ?? "Could not verify license.";
-	return "";
 }
 
 function refreshStatusDesc(setting: Setting, licenseManager: LicenseManager, cssPrefix: string): void {

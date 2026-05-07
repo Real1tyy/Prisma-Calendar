@@ -244,6 +244,65 @@ export function applySourceTimeToInstanceDate(instanceDate: DateTime, sourceDate
 	});
 }
 
+// ─── Locale-Aware Display Formatting ─────────────────────────
+
+const dateTimeFormatterCache = new Map<string, Intl.DateTimeFormat>();
+
+function getDateTimeFormatter(locale: string | undefined, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
+	const key = `${locale ?? ""}|${JSON.stringify(options)}`;
+	let formatter = dateTimeFormatterCache.get(key);
+	if (!formatter) {
+		formatter = new Intl.DateTimeFormat(locale, options);
+		dateTimeFormatterCache.set(key, formatter);
+	}
+	return formatter;
+}
+
+export function formatLocaleShortDate(date: Date, locale?: string): string {
+	return getDateTimeFormatter(locale, { year: "numeric", month: "short", day: "numeric" }).format(date);
+}
+
+export function formatLocaleLongDate(date: Date, locale?: string): string {
+	return getDateTimeFormatter(locale, { year: "numeric", month: "long", day: "numeric" }).format(date);
+}
+
+export function formatLocaleMonthDay(date: Date, locale?: string, opts?: { withYear?: boolean }): string {
+	const options: Intl.DateTimeFormatOptions = opts?.withYear
+		? { month: "short", day: "numeric", year: "numeric" }
+		: { month: "short", day: "numeric" };
+	return getDateTimeFormatter(locale, options).format(date);
+}
+
+export function formatLocaleYearMonth(date: Date, locale?: string): string {
+	return getDateTimeFormatter(locale, { month: "long", year: "numeric" }).format(date);
+}
+
+export function formatLocaleTimeHm(date: Date, locale?: string, opts?: { hour12?: boolean }): string {
+	const options: Intl.DateTimeFormatOptions = { hour: "2-digit", minute: "2-digit" };
+	if (opts?.hour12 !== undefined) options.hour12 = opts.hour12;
+	return getDateTimeFormatter(locale, options).format(date);
+}
+
+export function formatLocaleShortDateTime(date: Date, locale?: string): string {
+	return getDateTimeFormatter(locale, {
+		year: "numeric",
+		month: "short",
+		day: "numeric",
+		hour: "2-digit",
+		minute: "2-digit",
+	}).format(date);
+}
+
+export function formatLocaleLongDateTime(date: Date, locale?: string): string {
+	return getDateTimeFormatter(locale, {
+		year: "numeric",
+		month: "long",
+		day: "numeric",
+		hour: "2-digit",
+		minute: "2-digit",
+	}).format(date);
+}
+
 // ─── Time Formatting ─────────────────────────────────────────
 
 export function formatMsToHHMMSS(ms: number): string {
@@ -259,25 +318,6 @@ export function formatMsToMMSS(ms: number): string {
 	const minutes = Math.floor(totalSeconds / 60);
 	const seconds = totalSeconds % 60;
 	return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-}
-
-const localeShortDateFormatter = new Intl.DateTimeFormat(undefined, {
-	year: "numeric",
-	month: "short",
-	day: "numeric",
-});
-
-const localeTimeHmFormatter = new Intl.DateTimeFormat(undefined, {
-	hour: "2-digit",
-	minute: "2-digit",
-});
-
-export function formatLocaleShortDate(date: Date): string {
-	return localeShortDateFormatter.format(date);
-}
-
-export function formatLocaleTimeHm(date: Date): string {
-	return localeTimeHmFormatter.format(date);
 }
 
 export function parseAsLocalDate(dateString: string): Date | null {

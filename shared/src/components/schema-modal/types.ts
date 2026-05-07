@@ -173,6 +173,7 @@ export interface SchemaFormModalConfig<S extends ZodRawShape = ZodRawShape> {
 	app: App;
 	prefix: string;
 	title?: string | undefined;
+	/** Space-separated class tokens applied to the modal root. */
 	cls?: string | undefined;
 	shape: S;
 	mode?: SchemaFormMode | undefined;

@@ -1,5 +1,6 @@
 import type { App } from "obsidian";
 
+import { applyClsTokens } from "../../utils/css-utils";
 import { injectStyleSheet } from "../../utils/styles/inject";
 import { showModal } from "./modal";
 
@@ -18,6 +19,7 @@ const CONFIRMATION_STYLES = `
 
 export interface ConfirmationButton {
 	text: string;
+	/** Space-separated class tokens applied to the button. */
 	cls?: string;
 	warning?: boolean;
 }
@@ -27,6 +29,7 @@ export interface ConfirmationModalConfig {
 	message: string | ((el: HTMLElement) => void);
 	confirmButton?: string | ConfirmationButton;
 	cancelButton?: string | ConfirmationButton;
+	/** Space-separated class tokens applied to the modal root. */
 	cls?: string;
 	onConfirm: () => void | Promise<void>;
 	onCancel?: () => void | Promise<void>;
@@ -60,7 +63,7 @@ function renderConfirmation(el: HTMLElement, config: ConfirmationModalConfig, cl
 
 	const cancelButton = buttonRow.createEl("button", { text: cancel.text });
 	cancelButton.setAttribute("data-testid", "confirmation-modal-cancel");
-	if (cancel.cls) cancelButton.addClass(cancel.cls);
+	applyClsTokens(cancelButton, cancel.cls);
 	cancelButton.addEventListener("click", () => {
 		const result = config.onCancel?.();
 		if (result instanceof Promise) {
@@ -71,7 +74,7 @@ function renderConfirmation(el: HTMLElement, config: ConfirmationModalConfig, cl
 
 	const confirmButton = buttonRow.createEl("button", { text: confirm.text });
 	confirmButton.setAttribute("data-testid", "confirmation-modal-confirm");
-	if (confirm.cls) confirmButton.addClass(confirm.cls);
+	applyClsTokens(confirmButton, confirm.cls);
 	confirmButton.addEventListener("click", () => {
 		void Promise.resolve(config.onConfirm())
 			.then(() => close())

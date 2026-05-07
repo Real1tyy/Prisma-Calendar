@@ -151,6 +151,26 @@ export const hasCls = defaultUtils.hasCls;
 // ============================================================================
 
 /**
+ * Applies a config-supplied class string (already-final, possibly multi-token,
+ * space-separated) to an element. Tokenizes and calls `addClass` per token —
+ * Obsidian's `addClass` does not split on whitespace, so a raw
+ * `el.addClass("foo bar")` produces an invalid single class with a space.
+ *
+ * Use this at every mount/config boundary that exposes a `cls?: string` prop
+ * (modals, views, button configs). Distinct from `addCls` (which prefixes with
+ * "prisma-") — this one consumes already-prefixed strings from caller config.
+ *
+ * @example
+ * applyClsTokens(modalEl, "prisma-generic-event-list-modal prisma-global-search-modal");
+ */
+export function applyClsTokens(element: HTMLElement, cls: string | undefined): void {
+	if (!cls) return;
+	for (const token of cls.trim().split(/\s+/)) {
+		if (token) element.addClass(token);
+	}
+}
+
+/**
  * Sets a CSS custom property (variable) on an element.
  *
  * @example

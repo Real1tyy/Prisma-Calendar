@@ -11,6 +11,7 @@ export interface SettingsTransferModalConfig {
 	filename: string;
 	onImport: (parsed: unknown) => Promise<void>;
 	strings?: Partial<SettingsTransferStrings> | undefined;
+	/** Space-separated class tokens applied to the modal root. */
 	cls?: string | undefined;
 	testIdPrefix?: string | undefined;
 }

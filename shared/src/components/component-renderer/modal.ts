@@ -1,6 +1,6 @@
 import { Modal } from "obsidian";
 
-import { createCssUtils } from "../../utils/css-utils";
+import { applyClsTokens, createCssUtils } from "../../utils/css-utils";
 import { injectStyleSheet } from "../../utils/styles/inject";
 import type { ModalComponentConfig, ModalContext } from "./types";
 
@@ -47,7 +47,7 @@ export function showModal(config: ModalComponentConfig): void {
 	class ComponentModal extends Modal {
 		override async onOpen(): Promise<void> {
 			const { contentEl, modalEl } = this;
-			modalEl.addClass(config.cls);
+			applyClsTokens(modalEl, config.cls);
 			if (config.title) this.setTitle(config.title);
 
 			const ctx: ModalContext = {

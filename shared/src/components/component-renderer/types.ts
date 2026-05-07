@@ -39,6 +39,7 @@ export type ComponentCleanup = () => void;
 
 export interface ModalComponentConfig {
 	app: App;
+	/** Space-separated class tokens applied to the modal root. */
 	cls: string;
 	render: ComponentRender;
 	cleanup?: ComponentCleanup;
@@ -49,6 +50,7 @@ export interface ModalComponentConfig {
 export interface ViewComponentConfig {
 	viewType: string;
 	displayText: string;
+	/** Space-separated class tokens applied to the view's root container. */
 	cls: string;
 	render: ComponentRender;
 	cleanup?: ComponentCleanup;
