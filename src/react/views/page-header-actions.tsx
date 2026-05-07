@@ -1,32 +1,17 @@
 import type { HeaderActionDefinition } from "@real1ty-obsidian-plugins";
-import type { App } from "obsidian";
+import { ObsidianIcon, useApp } from "@real1ty-obsidian-plugins-react";
+import { type CSSProperties, memo, useCallback } from "react";
 
 import { FULL_COMMAND_IDS } from "../../constants";
 
-type CommandActionSpec = Omit<HeaderActionDefinition, "onAction"> & { commandId: string };
+interface ActionSpec {
+	id: string;
+	commandId: string;
+	label: string;
+	icon: string;
+}
 
-export const DEFAULT_ACTION_IDS = new Set([
-	"create-event-stopwatch",
-	"undo",
-	"redo",
-	"navigate-back",
-	"navigate-forward",
-	"open-ai-chat",
-	"restore-minimized",
-	"toggle-prerequisites",
-	"global-search",
-	"daily-stats",
-	"weekly-stats",
-	"monthly-stats",
-	"alltime-stats",
-	"show-skipped",
-	"show-recurring",
-	"show-filtered",
-	"show-interval-bases",
-	"refresh",
-]);
-
-const ACTION_SPECS: CommandActionSpec[] = [
+const ACTION_SPECS: readonly ActionSpec[] = [
 	// ─── Core Actions ────────────────────────────────────────────
 	{ id: "create-event", commandId: FULL_COMMAND_IDS.CREATE_EVENT, label: "Create", icon: "calendar-plus" },
 	{
@@ -110,6 +95,7 @@ const ACTION_SPECS: CommandActionSpec[] = [
 		label: "All-Time Statistics",
 		icon: "trending-up",
 	},
+
 	// ─── Visualization ───────────────────────────────────────────
 	{
 		id: "toggle-prerequisites",
@@ -159,12 +145,108 @@ const ACTION_SPECS: CommandActionSpec[] = [
 	{ id: "open-ai-chat", commandId: FULL_COMMAND_IDS.OPEN_AI_CHAT, label: "Open AI Chat", icon: "bot" },
 ];
 
-export function buildPageHeaderActions(app: App): HeaderActionDefinition[] {
-	return ACTION_SPECS.map(({ commandId, ...rest }) => ({
-		...rest,
-		onAction: () => {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			(app as any).commands.executeCommandById(commandId);
-		},
-	}));
+export const DEFAULT_ACTION_IDS = new Set([
+	"create-event-stopwatch",
+	"undo",
+	"redo",
+	"navigate-back",
+	"navigate-forward",
+	"open-ai-chat",
+	"restore-minimized",
+	"toggle-prerequisites",
+	"global-search",
+	"daily-stats",
+	"weekly-stats",
+	"monthly-stats",
+	"alltime-stats",
+	"show-skipped",
+	"show-recurring",
+	"show-filtered",
+	"show-interval-bases",
+	"refresh",
+]);
+
+/** Default toolbar order (matches ACTION_SPECS order, filtered to defaults). */
+export const DEFAULT_ORDERED_ACTION_IDS: string[] = ACTION_SPECS.filter((a) => DEFAULT_ACTION_IDS.has(a.id)).map(
+	(a) => a.id
+);
+
+/** Declarative toolbar actions for createPageHeader and the manage-actions modal. */
+export const PRISMA_HEADER_TOOLBAR_ACTIONS: HeaderActionDefinition[] = ACTION_SPECS.map((spec) => ({
+	id: spec.id,
+	label: spec.label,
+	icon: spec.icon,
+	commandId: spec.commandId,
+}));
+
+const HEADER_BTN_CLASS = "header-btn";
+
+export interface PageHeaderActionsProps {
+	/** Visibility order; defaults to {@link DEFAULT_ORDERED_ACTION_IDS}. */
+	visibleActionIds?: string[];
+	renames?: Record<string, string>;
+	iconOverrides?: Record<string, string>;
+	colorOverrides?: Record<string, string>;
+	/** When set (page header mount), invoked instead of direct command execution. */
+	executeAction?: (actionId: string) => void;
+	/** Prepended to `${HEADER_BTN_CLASS}` (e.g. `prisma-` → `prisma-header-btn`). */
+	cssPrefix?: string;
 }
+
+export const PageHeaderActions = memo(function PageHeaderActions({
+	visibleActionIds = DEFAULT_ORDERED_ACTION_IDS,
+	renames,
+	iconOverrides,
+	colorOverrides,
+	executeAction: executeActionProp,
+	cssPrefix = "prisma-",
+}: PageHeaderActionsProps) {
+	const app = useApp();
+
+	const runCommand = useCallback(
+		(commandId: string) => {
+			(app as unknown as { commands: { executeCommandById: (id: string) => void } }).commands.executeCommandById(
+				commandId
+			);
+		},
+		[app]
+	);
+
+	const prefixBtn = `${cssPrefix}${HEADER_BTN_CLASS}`;
+
+	const rows = visibleActionIds
+		.map((id) => ACTION_SPECS.find((s) => s.id === id))
+		.filter((s): s is ActionSpec => s !== undefined);
+
+	return (
+		<div className="prisma-page-header-actions" data-testid="prisma-page-header-actions">
+			{rows.map((action) => {
+				const label = renames?.[action.id] ?? action.label;
+				const icon = iconOverrides?.[action.id] ?? action.icon;
+				const color = colorOverrides?.[action.id];
+				const style: CSSProperties | undefined = color && color !== "#000000" ? { color } : undefined;
+
+				return (
+					<button
+						key={action.id}
+						type="button"
+						className={`${prefixBtn} prisma-page-header-action clickable-icon`}
+						title={label}
+						aria-label={label}
+						data-testid={`${cssPrefix}toolbar-${action.id}`}
+						style={style}
+						onClick={() => {
+							if (executeActionProp) {
+								executeActionProp(action.id);
+							} else {
+								runCommand(action.commandId);
+							}
+						}}
+					>
+						<ObsidianIcon icon={icon} />
+					</button>
+				);
+			})}
+		</div>
+	);
+});
