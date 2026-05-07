@@ -39,6 +39,14 @@ export class NotificationManager {
 	// Sorted array of notification entries (sorted by notifyAt time)
 	private notificationQueue: NotificationEntry[] = [];
 
+	// Paths whose triggerNotification call is currently in-flight. The indexer
+	// can emit multiple file-changed events back-to-back for one seed write
+	// (create + modify), and `metadata.alreadyNotified` is captured at emit
+	// time — so a second event can race in before `markAsNotified` flushes.
+	// Without this guard, both events reach `showNotificationModal` and stack
+	// duplicate modals on the user.
+	private triggering = new Set<string>();
+
 	// ─── Lifecycle ────────────────────────────────────────────────
 
 	constructor(
@@ -90,6 +98,7 @@ export class NotificationManager {
 
 		this.stopPeriodicCheck();
 		this.notificationQueue = [];
+		this.triggering.clear();
 	}
 
 	// ─── Indexer Event Handling ───────────────────────────────────
@@ -240,6 +249,8 @@ export class NotificationManager {
 	// ─── Notification Trigger ─────────────────────────────────────
 
 	private async triggerNotification(entry: NotificationEntry): Promise<void> {
+		if (this.triggering.has(entry.filePath)) return;
+		this.triggering.add(entry.filePath);
 		try {
 			this.removeNotification(entry.filePath);
 			await this.markAsNotified(entry.filePath);
@@ -247,6 +258,8 @@ export class NotificationManager {
 			this.showNotificationModal(entry);
 		} catch (error) {
 			console.error(`[NotificationManager] ❌ Error triggering notification for ${entry.filePath}:`, error);
+		} finally {
+			this.triggering.delete(entry.filePath);
 		}
 	}
 
