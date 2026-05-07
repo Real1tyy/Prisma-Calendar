@@ -184,6 +184,15 @@ export async function bootstrapObsidian(
 				({ verbose }) => {
 					const w = window as unknown as ObsidianWindow;
 					w.E2E = true;
+					// Drop the Web Notifications API from the renderer. The
+					// notification manager guards every system-tray call with
+					// `"Notification" in window`, so removing it makes
+					// `showSystemNotification` short-circuit. Without this, every
+					// e2e run that exercises the notification path (or merely
+					// happens to ingest an event whose notifyAt has elapsed)
+					// pings the host OS's system tray — a real, audible nuisance
+					// for anyone running the suite on their workstation.
+					delete (w as { Notification?: unknown }).Notification;
 					// Obsidian success/error toasts (`.notice`) stack in a top-right
 					// container and intercept clicks on the calendar toolbar for
 					// several seconds after each create/edit/delete. Under E2E they
