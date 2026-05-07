@@ -1,20 +1,8 @@
-import {
-	type ChartDataItem,
-	createGridLayout,
-	type GridLayoutHandle,
-	type GroupTabDefinition,
-	type TabDefinition,
-} from "@real1ty-obsidian-plugins";
+import { type ChartDataItem, createGridLayout, type GridLayoutHandle } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
-import { debounceTime, distinctUntilChanged, merge, skip, type Subscription } from "rxjs";
+import { memo, type ReactElement, useEffect, useRef, useState } from "react";
+import { debounceTime, merge } from "rxjs";
 
-import type { CalendarBundle } from "../../core/calendar-bundle";
-import { PRO_FEATURES } from "../../core/license";
-import { openEventSeriesModal } from "../../react/modals/event-list";
-import { removeZettelId } from "../../utils/events/zettel-id";
-import { getCategoriesFromFilePath } from "../../utils/obsidian";
-import { formatRecurrenceLabel, isPresetType } from "../../utils/recurring-utils";
-import { renderProUpgradeBanner } from "../settings/pro-upgrade-banner";
 import {
 	buildChartDataFromItems,
 	type ColumnDef,
@@ -25,44 +13,61 @@ import {
 	renderDashboardRanking,
 	renderDashboardTable,
 	type StatEntry,
-} from "./dashboard-section";
+} from "../../components/views/dashboard-section";
+import type { CalendarBundle } from "../../core/calendar-bundle";
+import { PRO_FEATURES } from "../../core/license";
+import { openEventSeriesModal } from "../../react/modals/event-list";
+import { removeZettelId } from "../../utils/events/zettel-id";
+import { getCategoriesFromFilePath } from "../../utils/obsidian";
+import { formatRecurrenceLabel, isPresetType } from "../../utils/recurring-utils";
+import { ProGatedContent } from "./pro-gated-content";
 
 const DASHBOARD_CSS_PREFIX = "prisma-dashboard-";
 const REFRESH_DEBOUNCE_MS = 300;
 const TOOLTIP_FORMATTER = (label: string, value: number, percentage: string): string =>
 	`${label}: ${value} event${value === 1 ? "" : "s"} (${percentage}%)`;
 
-interface DashboardGridState {
-	gridHandle: GridLayoutHandle | null;
-	chartHandle: DashboardChartHandle | null;
-	tableHandle: DashboardTableHandle | null;
-	subscriptions: Subscription[];
+interface DashboardData {
+	items: DashboardItem[];
+	columns: ColumnDef[];
+	chartData: ChartDataItem[];
+	stats: StatEntry[];
+	onItemClick?: (item: DashboardItem) => void;
+	emptyMessage: string;
 }
 
-function createDashboardChild(
-	id: string,
-	label: string,
-	bundle: CalendarBundle,
-	buildData: () => {
-		items: DashboardItem[];
-		columns: ColumnDef[];
-		chartData: ChartDataItem[];
-		stats: StatEntry[];
-		onItemClick?: (item: DashboardItem) => void;
-		emptyMessage: string;
-	}
-): TabDefinition {
-	const state: DashboardGridState = {
-		gridHandle: null,
-		chartHandle: null,
-		tableHandle: null,
-		subscriptions: [],
-	};
+interface DashboardSectionProps {
+	id: string;
+	bundle: CalendarBundle;
+	buildData: () => DashboardData;
+}
 
-	function renderContent(el: HTMLElement): void {
+const DashboardSection = memo(function DashboardSection({ id, bundle, buildData }: DashboardSectionProps) {
+	const containerRef = useRef<HTMLDivElement>(null);
+	const [renderToken, setRenderToken] = useState(0);
+
+	useEffect(() => {
+		const sub = merge(
+			bundle.categoryTracker.categories$,
+			bundle.eventStore.changes$,
+			bundle.recurringEventManager.changes$
+		)
+			.pipe(debounceTime(REFRESH_DEBOUNCE_MS))
+			.subscribe(() => setRenderToken((n) => n + 1));
+		return () => sub.unsubscribe();
+	}, [bundle]);
+
+	useEffect(() => {
+		const el = containerRef.current;
+		if (!el) return;
+
+		let gridHandle: GridLayoutHandle | null = null;
+		let chartHandle: DashboardChartHandle | null = null;
+		let tableHandle: DashboardTableHandle | null = null;
+
 		const data = buildData();
 
-		state.gridHandle = createGridLayout(el, {
+		gridHandle = createGridLayout(el, {
 			cssPrefix: DASHBOARD_CSS_PREFIX,
 			columns: 2,
 			rows: 2,
@@ -86,11 +91,11 @@ function createDashboardChild(
 					col: 0,
 					render: (cellEl) => {
 						cellEl.setAttribute("data-testid", "prisma-dashboard-cell-chart");
-						state.chartHandle = renderDashboardChart(cellEl, data.chartData, id, TOOLTIP_FORMATTER);
+						chartHandle = renderDashboardChart(cellEl, data.chartData, id, TOOLTIP_FORMATTER);
 					},
 					cleanup: () => {
-						state.chartHandle?.destroy();
-						state.chartHandle = null;
+						chartHandle?.destroy();
+						chartHandle = null;
 					},
 				},
 				{
@@ -111,7 +116,7 @@ function createDashboardChild(
 					colSpan: 2,
 					render: (cellEl) => {
 						cellEl.setAttribute("data-testid", "prisma-dashboard-cell-table");
-						state.tableHandle = renderDashboardTable(cellEl, {
+						tableHandle = renderDashboardTable(cellEl, {
 							items: data.items,
 							columns: data.columns,
 							...(data.onItemClick ? { onItemClick: data.onItemClick } : {}),
@@ -119,74 +124,42 @@ function createDashboardChild(
 						});
 					},
 					cleanup: () => {
-						state.tableHandle?.destroy();
-						state.tableHandle = null;
+						tableHandle?.destroy();
+						tableHandle = null;
 					},
 				},
 			],
 		});
-	}
 
-	function doRender(el: HTMLElement): void {
-		state.chartHandle?.destroy();
-		state.tableHandle?.destroy();
-		state.gridHandle?.destroy();
-		state.gridHandle = null;
-		el.empty();
-		renderContent(el);
-	}
+		return () => {
+			chartHandle?.destroy();
+			tableHandle?.destroy();
+			gridHandle?.destroy();
+			gridHandle = null;
+		};
+	}, [id, buildData, renderToken]);
 
-	let isProSub: Subscription | null = null;
+	return <div ref={containerRef} style={{ flex: "1 1 auto", minHeight: 0 }} data-testid={`prisma-dashboard-${id}`} />;
+});
 
-	function cleanupContent(): void {
-		state.chartHandle?.destroy();
-		state.tableHandle?.destroy();
-		state.gridHandle?.destroy();
-		state.gridHandle = null;
-		for (const sub of state.subscriptions) sub.unsubscribe();
-		state.subscriptions = [];
-	}
-
-	return {
-		id,
-		label,
-		render: (el) => {
-			function renderTab(): void {
-				cleanupContent();
-				el.empty();
-
-				if (!bundle.plugin.licenseManager.isPro) {
-					renderProUpgradeBanner(
-						el,
-						PRO_FEATURES.DASHBOARD,
-						"Get a comprehensive overview of your calendar with charts, rankings, and key statistics — all in one place. Organized by name, category and recurring event series. ",
-						"DASHBOARD"
-					);
-					return;
-				}
-
-				renderContent(el);
-
-				state.subscriptions = [
-					merge(bundle.categoryTracker.categories$, bundle.eventStore.changes$, bundle.recurringEventManager.changes$)
-						.pipe(debounceTime(REFRESH_DEBOUNCE_MS))
-						.subscribe(() => doRender(el)),
-				];
-			}
-
-			renderTab();
-
-			isProSub = bundle.plugin.licenseManager.isPro$.pipe(skip(1), distinctUntilChanged()).subscribe(() => renderTab());
-		},
-		cleanup: () => {
-			isProSub?.unsubscribe();
-			isProSub = null;
-			cleanupContent();
-		},
-	};
+interface GatedSectionProps extends DashboardSectionProps {
+	previewKey: "DASHBOARD";
 }
 
-function buildByNameData(app: App, bundle: CalendarBundle) {
+const GatedDashboardSection = memo(function GatedDashboardSection(props: GatedSectionProps) {
+	return (
+		<ProGatedContent
+			bundle={props.bundle}
+			featureName={PRO_FEATURES.DASHBOARD}
+			description="Get a comprehensive overview of your calendar with charts, rankings, and key statistics — all in one place. Organized by name, category and recurring event series. "
+			previewKey={props.previewKey}
+		>
+			<DashboardSection {...props} />
+		</ProGatedContent>
+	);
+});
+
+function buildByNameData(app: App, bundle: CalendarBundle): () => DashboardData {
 	return () => {
 		const nameSeries = bundle.nameSeriesTracker.getNameBasedSeries();
 
@@ -219,7 +192,7 @@ function buildByNameData(app: App, bundle: CalendarBundle) {
 	};
 }
 
-function buildByCategoryData(app: App, bundle: CalendarBundle) {
+function buildByCategoryData(app: App, bundle: CalendarBundle): () => DashboardData {
 	return () => {
 		const categories = bundle.categoryTracker.getCategories();
 
@@ -268,7 +241,7 @@ function buildByCategoryData(app: App, bundle: CalendarBundle) {
 	};
 }
 
-function buildRecurringData(app: App, bundle: CalendarBundle) {
+function buildRecurringData(app: App, bundle: CalendarBundle): () => DashboardData {
 	return () => {
 		const allRecurring = bundle.recurringEventManager.getAllRecurringEvents();
 		const settings = bundle.settingsStore.currentSettings;
@@ -290,7 +263,7 @@ function buildRecurringData(app: App, bundle: CalendarBundle) {
 				extraProps: {
 					type: badgeLabel,
 					typeSort: isPresetType(recurrenceType) ? recurrenceType : "custom",
-					category: categories.join(", ") || "\u2014",
+					category: categories.join(", ") || "—",
 					status: isDisabled ? "Disabled" : "Enabled",
 				},
 			};
@@ -337,15 +310,49 @@ function buildRecurringData(app: App, bundle: CalendarBundle) {
 	};
 }
 
-export function createDashboardTabDefinition(app: App, bundle: CalendarBundle): GroupTabDefinition {
-	return {
-		id: "dashboard",
-		label: "Dashboard",
-		icon: "layout-dashboard",
-		children: [
-			createDashboardChild("dashboard-by-name", "By Name", bundle, buildByNameData(app, bundle)),
-			createDashboardChild("dashboard-by-category", "By Category", bundle, buildByCategoryData(app, bundle)),
-			createDashboardChild("dashboard-recurring", "Recurring", bundle, buildRecurringData(app, bundle)),
-		],
-	};
+export interface DashboardChildSpec {
+	id: string;
+	label: string;
+	component: () => ReactElement;
+}
+
+export function buildDashboardChildren(app: App, bundle: CalendarBundle): DashboardChildSpec[] {
+	return [
+		{
+			id: "dashboard-by-name",
+			label: "By Name",
+			component: () => (
+				<GatedDashboardSection
+					id="dashboard-by-name"
+					bundle={bundle}
+					buildData={buildByNameData(app, bundle)}
+					previewKey="DASHBOARD"
+				/>
+			),
+		},
+		{
+			id: "dashboard-by-category",
+			label: "By Category",
+			component: () => (
+				<GatedDashboardSection
+					id="dashboard-by-category"
+					bundle={bundle}
+					buildData={buildByCategoryData(app, bundle)}
+					previewKey="DASHBOARD"
+				/>
+			),
+		},
+		{
+			id: "dashboard-recurring",
+			label: "Recurring",
+			component: () => (
+				<GatedDashboardSection
+					id="dashboard-recurring"
+					bundle={bundle}
+					buildData={buildRecurringData(app, bundle)}
+					previewKey="DASHBOARD"
+				/>
+			),
+		},
+	];
 }
