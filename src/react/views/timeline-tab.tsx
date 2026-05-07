@@ -1,0 +1,71 @@
+import { renderReactInline } from "@real1ty-obsidian-plugins-react";
+import type { App } from "obsidian";
+import { memo, useCallback, useEffect, useRef } from "react";
+import { debounceTime, distinctUntilChanged, map, merge, skip } from "rxjs";
+
+import { renderTimelineInto, type TimelineHandle } from "../../components/modals";
+import type { CalendarBundle } from "../../core/calendar-bundle";
+import { getTimelineRenderingKey } from "../../utils/calendar-settings";
+import { FilterBar, type FilterBarHandle } from "./filter-bar";
+
+const REFRESH_DEBOUNCE_MS = 100;
+
+interface TimelineTabProps {
+	app: App;
+	bundle: CalendarBundle;
+}
+
+const PASS_ALL: FilterBarHandle = { shouldInclude: () => true };
+
+export const TimelineTab = memo(function TimelineTab({ app, bundle }: TimelineTabProps) {
+	const containerRef = useRef<HTMLDivElement>(null);
+	const handleRef = useRef<TimelineHandle | null>(null);
+	const filterRef = useRef<FilterBarHandle>(PASS_ALL);
+
+	const handleFilterReady = useCallback((handle: FilterBarHandle) => {
+		filterRef.current = handle;
+	}, []);
+
+	const handleFilterChange = useCallback(() => {
+		handleRef.current?.setEventFilter((event) => filterRef.current.shouldInclude(event));
+	}, []);
+
+	useEffect(() => {
+		const el = containerRef.current;
+		if (!el) return;
+
+		const handle = renderTimelineInto(el, app, bundle, {
+			fillContainer: true,
+			eventFilter: (event) => filterRef.current.shouldInclude(event),
+		});
+		handleRef.current = handle;
+
+		const unmountToolbar = renderReactInline(
+			handle.toolbarLeft,
+			<FilterBar bundle={bundle} onFilterChange={handleFilterChange} onHandleReady={handleFilterReady} />,
+			app
+		);
+
+		const renderingSettings$ = bundle.settingsStore.settings$.pipe(
+			skip(1),
+			map(getTimelineRenderingKey),
+			distinctUntilChanged()
+		);
+
+		const sub = merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$, renderingSettings$)
+			.pipe(debounceTime(REFRESH_DEBOUNCE_MS))
+			.subscribe(() => {
+				handle.invalidateAndRefetch();
+			});
+
+		return () => {
+			sub.unsubscribe();
+			unmountToolbar();
+			handle.destroy();
+			handleRef.current = null;
+			filterRef.current = PASS_ALL;
+		};
+	}, [app, bundle, handleFilterChange, handleFilterReady]);
+
+	return <div ref={containerRef} style={{ flex: "1 1 auto", minHeight: 0 }} data-testid="prisma-timeline-tab" />;
+});

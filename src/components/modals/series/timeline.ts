@@ -30,11 +30,11 @@ export interface EventSeriesTimelineConfig {
 	title?: string;
 	fillContainer?: boolean;
 	eventFilter?: (event: CalendarEvent) => boolean;
-	/** Element to place in the left side of the toolbar (e.g., filter bar). */
-	toolbarLeft?: HTMLElement;
 }
 
 export interface TimelineHandle {
+	/** Empty consumer slot in the toolbar — mount React widgets (e.g., FilterBar) here. */
+	readonly toolbarLeft: HTMLElement;
 	destroy: () => void;
 	invalidateAndRefetch: () => void;
 	setEventFilter: (filter: ((event: CalendarEvent) => boolean) | undefined) => void;
@@ -118,6 +118,7 @@ export function renderTimelineInto(
 	const colorEvaluator = new ColorEvaluator<SingleCalendarConfig>(bundle.settingsStore.settings$);
 	const rangeTracker = new FetchedRangeTracker();
 	let rangeChangeTimer: ReturnType<typeof setTimeout> | null = null;
+	let resizeObserver: ResizeObserver | null = null;
 
 	container.addClass(cls("timeline-modal"));
 
@@ -129,8 +130,6 @@ export function renderTimelineInto(
 	const headerRow = container.createDiv(cls("view-header-row"));
 	const headerLeft = headerRow.createDiv(cls("view-header-left"));
 	const headerRight = headerRow.createDiv(cls("view-header-right"));
-
-	if (config.toolbarLeft) headerLeft.appendChild(config.toolbarLeft);
 
 	const dateGroup = headerRight.createDiv(cls("timeline-nav-date-group"));
 
@@ -438,14 +437,17 @@ export function renderTimelineInto(
 		timeline = new Timeline(timelineContainer, items, options);
 
 		if (fillContainer) {
-			requestAnimationFrame(() => {
+			let lastAppliedHeight = -1;
+			const applyContainerHeight = () => {
 				if (!timeline) return;
-				const top = timelineContainer.getBoundingClientRect().top;
-				const available = window.innerHeight - top - 16;
-				if (available > 200) {
-					timeline.setOptions({ height: `${available}px` });
-				}
-			});
+				const h = timelineContainer.clientHeight;
+				if (h <= 0 || Math.abs(h - lastAppliedHeight) < 2) return;
+				lastAppliedHeight = h;
+				timeline.setOptions({ height: `${h}px` });
+			};
+			resizeObserver = new ResizeObserver(applyContainerHeight);
+			resizeObserver.observe(timelineContainer);
+			requestAnimationFrame(applyContainerHeight);
 		}
 
 		type TimelineInteraction = { item?: string | null; event?: MouseEvent };
@@ -465,10 +467,15 @@ export function renderTimelineInto(
 	void fetchVisibleRange();
 
 	return {
+		toolbarLeft: headerLeft,
 		destroy: () => {
 			if (rangeChangeTimer) {
 				clearTimeout(rangeChangeTimer);
 				rangeChangeTimer = null;
+			}
+			if (resizeObserver) {
+				resizeObserver.disconnect();
+				resizeObserver = null;
 			}
 			if (timeline) {
 				timeline.destroy();
