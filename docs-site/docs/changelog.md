@@ -4,9 +4,9 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.16.0 - 5/6/2026
+## 2.16.0 - 5/7/2026
 
-> **TLDR:** New **series shortcut** context menu items let you jump directly to the name, category, or recurring tab in the Event Series Modal. Timeline, Heatmap, and Gantt views now react to settings and color changes in real time. Settings now remember your active tab and scroll position. Icons now have a **visual picker** with live previews, are **optional on all UI elements**, **tabs support inline icons**, and the **tab manager** now lets you edit icons and colors per tab. Two planning systems on the same directory with mismatched sort settings no longer fight each other.
+> **TLDR:** New **series shortcut** context menu items let you jump directly to the name, category, or recurring tab in the Event Series Modal. Timeline, Heatmap, and Gantt views now react to settings and color changes in real time. **Daily + Stats**, **Monthly + Stats**, and **Heatmap Monthly + Stats** keep pie charts and totals live as vault events change. Settings now remember your active tab and scroll position. Icons now have a **visual picker** with live previews, are **optional on all UI elements**, **tabs support inline icons**, and the **tab manager** now lets you edit icons and colors per tab. Two planning systems on the same directory with mismatched sort settings no longer fight each other.
 
 ### Added
 - **Series shortcut context menu items**: Three new right-click items — **Show name series**, **Show category series**, and **Show recurring series** — open the Event Series Modal directly on the corresponding tab. Category and recurring shortcuts only appear when applicable. See [Event Groups → Series Shortcuts](./features/events/event-groups.md#series-shortcuts-in-context-menu).
@@ -15,6 +15,7 @@ All notable changes to this project will be documented here.
 - **Tab icons and color editing**: Tabs support optional inline icons and the tab manager lets you edit each tab's name, icon, and color. Icons are also now optional everywhere — context menu items, header actions, and tabs render cleanly without one. See [Tabbed Views](./features/views/tabbed-views.md#managing-tabs).
 
 ### Improved
+- **Embedded tab statistics react to event changes**: The statistics panels on **Daily + Stats**, **Monthly + Stats**, and **Heatmap Monthly + Stats** refresh automatically when vault events affecting the visible day or month change — totals, pie chart, table, and capacity stay aligned with additions, edits, deletions, and recurring updates without switching tabs. See [Daily + Stats → Live updates](./features/views/daily-stats.md#live-updates) (same engine on the monthly tabs).
 - **Settings remember active tab and scroll position**: Closing and reopening settings restores the tab you were on and your scroll position within it. See [Configuration](./configuration/index.md#settings-state-persistence).
 
 ### Fixed

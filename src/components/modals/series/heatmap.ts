@@ -32,8 +32,6 @@ export interface EventSeriesHeatmapConfig {
 	/** Optional title shown above the heatmap (used in modal context). */
 	title?: string;
 	categoryColor?: string;
-	/** Element to place in the left side of the toolbar (e.g., filter bar). */
-	toolbarLeft?: HTMLElement;
 	/** Initial view mode (defaults to "yearly"). */
 	initialMode?: HeatmapMode;
 	/** Hides the yearly/monthly toggle so the mode stays fixed. */
@@ -43,6 +41,8 @@ export interface EventSeriesHeatmapConfig {
 }
 
 export interface HeatmapHandle {
+	/** Empty consumer slot in the toolbar — mount React widgets (e.g., FilterBar) here. */
+	readonly toolbarLeft: HTMLElement;
 	destroy: () => void;
 	refresh: (events: CalendarEvent[]) => void;
 	navigate: (direction: number) => void;
@@ -97,8 +97,6 @@ export function renderHeatmapInto(
 	const toolbar = container.createDiv(cls("view-header-row"));
 	const toolbarLeft = toolbar.createDiv(cls("view-header-left"));
 	const toolbarRight = toolbar.createDiv(cls("view-header-right"));
-
-	if (config.toolbarLeft) toolbarLeft.appendChild(config.toolbarLeft);
 
 	if (!config.lockMode) {
 		const modeGroup = toolbarRight.createDiv(cls("heatmap-mode-group"));
@@ -293,6 +291,7 @@ export function renderHeatmapInto(
 	renderView();
 
 	return {
+		toolbarLeft,
 		destroy: () => {
 			colorEvaluator.destroy();
 			container.empty();

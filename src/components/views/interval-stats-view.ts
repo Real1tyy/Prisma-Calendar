@@ -1,4 +1,5 @@
 import { cls, toLocalISOString } from "@real1ty-obsidian-plugins";
+import { debounceTime, merge, type Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent } from "../../types/calendar";
@@ -7,6 +8,8 @@ import type { AggregationMode, Stats } from "../../utils/stats";
 import { formatDuration, formatDurationAsDecimalHours } from "../../utils/stats";
 import { ChartComponent } from "../weekly-stats/chart-component";
 import { TableComponent } from "../weekly-stats/table-component";
+
+const REFRESH_DEBOUNCE_MS = 100;
 
 export interface IntervalStatsViewConfig {
 	getBounds: (date: Date) => { start: Date; end: Date };
@@ -192,8 +195,15 @@ export function renderIntervalStatsInto(
 
 	void renderContent();
 
+	const changesSub: Subscription = merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$)
+		.pipe(debounceTime(REFRESH_DEBOUNCE_MS))
+		.subscribe(() => {
+			void renderContent();
+		});
+
 	return {
 		destroy: () => {
+			changesSub.unsubscribe();
 			destroyComponents();
 			container.empty();
 		},
