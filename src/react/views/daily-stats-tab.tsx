@@ -1,9 +1,9 @@
 import { createGridLayout, type GridLayoutHandle } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
-import { memo, type Ref,useEffect, useImperativeHandle, useRef } from "react";
+import { memo, type Ref, useEffect, useImperativeHandle, useRef } from "react";
 
 import { createDailyCalendar, type DailyCalendarHandle } from "../../components/views/daily-calendar";
-import { type DailyStatsHandle,renderDailyStatsInto } from "../../components/views/daily-stats-renderer";
+import { type DailyStatsHandle, renderDailyStatsInto } from "../../components/views/daily-stats-renderer";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 
 export interface DailyStatsTabHandle {
@@ -85,5 +85,5 @@ export const DailyStatsTab = memo(function DailyStatsTab({ app, bundle, handleRe
 		[]
 	);
 
-	return <div ref={containerRef} style={{ minHeight: "100%" }} data-testid="prisma-daily-stats-tab" />;
+	return <div ref={containerRef} style={{ flex: "1 1 auto", minHeight: 0 }} data-testid="prisma-daily-stats-tab" />;
 });

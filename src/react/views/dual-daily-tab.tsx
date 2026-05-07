@@ -1,9 +1,13 @@
+import { createGridLayout, type GridLayoutHandle } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
-import { memo, type Ref, useImperativeHandle, useRef, useState } from "react";
+import { memo, type Ref, useEffect, useImperativeHandle, useRef } from "react";
 
-import type { DailyDragState } from "../../components/views/daily-calendar";
+import {
+	createDailyCalendar,
+	type DailyCalendarHandle,
+	type DailyDragState,
+} from "../../components/views/daily-calendar";
 import type { CalendarBundle } from "../../core/calendar-bundle";
-import { DailyCalendarTab, type DailyCalendarTabHandle } from "./daily-calendar-tab";
 
 export interface DualDailyTabHandle {
 	prev(): void;
@@ -17,53 +21,74 @@ interface DualDailyTabProps {
 }
 
 export const DualDailyTab = memo(function DualDailyTab({ app, bundle, handleRef }: DualDailyTabProps) {
-	const sharedDragStateRef = useRef<DailyDragState>({ current: null });
-	const [focusedSide, setFocusedSide] = useState<"left" | "right">("left");
+	const containerRef = useRef<HTMLDivElement>(null);
+	const leftCalRef = useRef<DailyCalendarHandle | null>(null);
+	const rightCalRef = useRef<DailyCalendarHandle | null>(null);
 	const focusedSideRef = useRef<"left" | "right">("left");
-	const leftRef = useRef<DailyCalendarTabHandle>(null);
-	const rightRef = useRef<DailyCalendarTabHandle>(null);
+
+	useEffect(() => {
+		const el = containerRef.current;
+		if (!el) return;
+
+		let gridHandle: GridLayoutHandle | null = null;
+		const sharedDragState: DailyDragState = { current: null };
+
+		gridHandle = createGridLayout(el, {
+			cssPrefix: "prisma-dual-daily-",
+			columns: 2,
+			rows: 1,
+			gap: "12px",
+			dividers: true,
+			cells: [
+				{
+					id: "left-calendar",
+					label: "Calendar Left",
+					row: 0,
+					col: 0,
+					render: (cellEl) => {
+						leftCalRef.current = createDailyCalendar(cellEl, app, bundle, { sharedDragState });
+						cellEl.addEventListener("pointerdown", () => {
+							focusedSideRef.current = "left";
+						});
+					},
+					cleanup: () => {
+						leftCalRef.current?.destroy();
+						leftCalRef.current = null;
+					},
+				},
+				{
+					id: "right-calendar",
+					label: "Calendar Right",
+					row: 0,
+					col: 1,
+					render: (cellEl) => {
+						rightCalRef.current = createDailyCalendar(cellEl, app, bundle, { sharedDragState });
+						cellEl.addEventListener("pointerdown", () => {
+							focusedSideRef.current = "right";
+						});
+					},
+					cleanup: () => {
+						rightCalRef.current?.destroy();
+						rightCalRef.current = null;
+					},
+				},
+			],
+		});
+
+		return () => {
+			gridHandle?.destroy();
+			gridHandle = null;
+		};
+	}, [app, bundle]);
 
 	useImperativeHandle(
 		handleRef,
 		() => ({
-			prev: () => (focusedSideRef.current === "left" ? leftRef.current : rightRef.current)?.prev(),
-			next: () => (focusedSideRef.current === "left" ? leftRef.current : rightRef.current)?.next(),
+			prev: () => (focusedSideRef.current === "left" ? leftCalRef.current : rightCalRef.current)?.prev(),
+			next: () => (focusedSideRef.current === "left" ? leftCalRef.current : rightCalRef.current)?.next(),
 		}),
 		[]
 	);
 
-	const focus = (side: "left" | "right") => {
-		focusedSideRef.current = side;
-		setFocusedSide(side);
-	};
-
-	return (
-		<div
-			className="prisma-dual-daily-grid"
-			data-testid="prisma-dual-daily"
-			style={{
-				display: "grid",
-				gridTemplateColumns: "1fr 1fr",
-				gap: "12px",
-				minHeight: "100%",
-			}}
-		>
-			<div
-				className="prisma-dual-daily-left"
-				onPointerDown={() => focus("left")}
-				data-focused={focusedSide === "left" ? "" : undefined}
-				style={{ minHeight: "100%" }}
-			>
-				<DailyCalendarTab app={app} bundle={bundle} sharedDragState={sharedDragStateRef.current} handleRef={leftRef} />
-			</div>
-			<div
-				className="prisma-dual-daily-right"
-				onPointerDown={() => focus("right")}
-				data-focused={focusedSide === "right" ? "" : undefined}
-				style={{ minHeight: "100%" }}
-			>
-				<DailyCalendarTab app={app} bundle={bundle} sharedDragState={sharedDragStateRef.current} handleRef={rightRef} />
-			</div>
-		</div>
-	);
+	return <div ref={containerRef} style={{ flex: "1 1 auto", minHeight: 0 }} data-testid="prisma-dual-daily" />;
 });
