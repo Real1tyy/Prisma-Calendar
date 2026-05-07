@@ -11,6 +11,8 @@ import {
 	cls,
 	ColorEvaluator,
 	formatDuration,
+	formatLocaleMonthDay,
+	formatLocaleYearMonth,
 	MountableComponent,
 	type RgbColor,
 	roundToNearestHour,
@@ -2714,13 +2716,10 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		if (viewType.includes("Week")) {
 			const end = new Date(currentEnd);
 			end.setDate(end.getDate() - 1);
-			return `${new Date(currentStart).toLocaleDateString(locale, { month: "short", day: "numeric" })} - ${end.toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" })}`;
+			return `${formatLocaleMonthDay(new Date(currentStart), locale)} - ${formatLocaleMonthDay(end, locale, { withYear: true })}`;
 		}
 		if (viewType.includes("Month")) {
-			return new Date(currentStart).toLocaleDateString(locale, {
-				month: "long",
-				year: "numeric",
-			});
+			return formatLocaleYearMonth(new Date(currentStart), locale);
 		}
 		return "Current View";
 	}

@@ -1,5 +1,5 @@
 import type { SyncStore } from "@real1ty-obsidian-plugins";
-import { parseAsLocalDate, toSafeString } from "@real1ty-obsidian-plugins";
+import { formatLocaleTimeHm, parseAsLocalDate, toSafeString } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 
@@ -290,12 +290,7 @@ export class NotificationManager {
 
 			// Only show notification if permission is granted
 			if (Notification.permission === "granted") {
-				const eventTime = entry.isAllDay
-					? "All-day event"
-					: entry.startDate.toLocaleTimeString([], {
-							hour: "2-digit",
-							minute: "2-digit",
-						});
+				const eventTime = entry.isAllDay ? "All-day event" : formatLocaleTimeHm(entry.startDate);
 
 				const notification = new Notification("🔔 Prisma Calendar", {
 					body: `${entry.title}\n${eventTime}`,

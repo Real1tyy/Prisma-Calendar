@@ -1,3 +1,5 @@
+import { formatLocaleYearMonth } from "@real1ty-obsidian-plugins";
+
 import { aggregateMonthlyStats, getMonthBounds } from "../../utils/stats";
 import type { IntervalConfig } from "./interval-stats-modal";
 import { createNavigationConfig, IntervalStatsModal } from "./interval-stats-modal";
@@ -10,7 +12,7 @@ export class MonthlyStatsModal extends IntervalStatsModal {
 		),
 		getBounds: (date) => getMonthBounds(date),
 		aggregateStats: (events, date, mode, categoryProp) => aggregateMonthlyStats(events, date, mode, categoryProp),
-		formatDateRange: (start, _end, locale) => start.toLocaleDateString(locale, { month: "long", year: "numeric" }),
+		formatDateRange: (start, _end, locale) => formatLocaleYearMonth(start, locale),
 	};
 
 	protected getModalTitle(): string {

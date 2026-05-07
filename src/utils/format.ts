@@ -1,6 +1,10 @@
 import {
 	calculateDuration,
 	formatDurationHumanReadable,
+	formatLocaleMonthDay,
+	formatLocaleShortDate,
+	formatLocaleShortDateTime,
+	formatLocaleTimeHm,
 	intoDate,
 	isNotEmpty,
 	toDisplayLink,
@@ -66,24 +70,14 @@ export function formatDateTimeDisplay(dateInput: string | Date): string {
 	const dateStr = typeof dateInput === "string" ? stripZ(dateInput) : dateInput;
 	const date = intoDate(dateStr);
 	if (!date) return typeof dateInput === "string" ? dateInput : "";
-	return date.toLocaleString(undefined, {
-		year: "numeric",
-		month: "short",
-		day: "numeric",
-		hour: "2-digit",
-		minute: "2-digit",
-	});
+	return formatLocaleShortDateTime(date);
 }
 
 export function formatDateOnlyDisplay(dateInput: string | Date): string {
 	const dateStr = typeof dateInput === "string" ? stripZ(dateInput) : dateInput;
 	const date = intoDate(dateStr);
 	if (!date) return typeof dateInput === "string" ? dateInput : "";
-	return date.toLocaleDateString(undefined, {
-		year: "numeric",
-		month: "short",
-		day: "numeric",
-	});
+	return formatLocaleShortDate(date);
 }
 
 function formatEventDateSuffix(start: Date, end: Date | null, allDay: boolean, locale: string): string {
@@ -97,9 +91,9 @@ function formatEventDateSuffix(start: Date, end: Date | null, allDay: boolean, l
 		return ` - ${dateStr}`;
 	}
 
-	const startStr = start.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+	const startStr = formatLocaleTimeHm(start, locale);
 	if (end) {
-		const endStr = end.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+		const endStr = formatLocaleTimeHm(end, locale);
 		const duration = calculateDuration(start, end);
 		return ` - ${startStr} - ${endStr} (${duration})`;
 	}
@@ -167,9 +161,9 @@ export interface EventDisplayItem {
 
 export function formatEventDateLabel(event: CalendarEvent): string {
 	const startDate = new Date(event.start);
-	const date = startDate.toLocaleDateString([], { month: "short", day: "numeric" });
+	const date = formatLocaleMonthDay(startDate);
 	return isTimedEvent(event)
-		? `${date} ${startDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })}`
+		? `${date} ${formatLocaleTimeHm(startDate, undefined, { hour12: false })}`
 		: `${date} · all-day`;
 }
 

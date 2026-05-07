@@ -1,3 +1,5 @@
+import { formatLocaleMonthDay } from "@real1ty-obsidian-plugins";
+
 import { aggregateWeeklyStats, getWeekBounds } from "../../utils/stats";
 import type { IntervalConfig } from "./interval-stats-modal";
 import { createNavigationConfig, IntervalStatsModal } from "./interval-stats-modal";
@@ -11,8 +13,7 @@ export class WeeklyStatsModal extends IntervalStatsModal {
 		getBounds: (date) => getWeekBounds(date),
 		aggregateStats: (events, date, mode, categoryProp) => aggregateWeeklyStats(events, date, mode, categoryProp),
 		formatDateRange: (start, end, locale) => {
-			const fmt = (d: Date): string =>
-				d.toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" });
+			const fmt = (d: Date): string => formatLocaleMonthDay(d, locale, { withYear: true });
 			return `${fmt(start)} - ${fmt(end)}`;
 		},
 	};

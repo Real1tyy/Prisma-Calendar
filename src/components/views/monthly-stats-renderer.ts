@@ -1,3 +1,5 @@
+import { formatLocaleYearMonth } from "@real1ty-obsidian-plugins";
+
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { aggregateMonthlyStats, getMonthBounds } from "../../utils/stats";
 import { type IntervalStatsViewHandle, renderIntervalStatsInto } from "./interval-stats-view";
@@ -12,7 +14,7 @@ export function renderMonthlyStatsInto(container: HTMLElement, bundle: CalendarB
 	return renderIntervalStatsInto(container, bundle, {
 		getBounds: getMonthBounds,
 		aggregateStats: aggregateMonthlyStats,
-		formatDate: (date, locale) => date.toLocaleDateString(locale, { month: "long", year: "numeric" }),
+		formatDate: (date, locale) => formatLocaleYearMonth(date, locale),
 		emptyMessage: "No events found for this month.",
 	});
 }

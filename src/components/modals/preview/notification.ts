@@ -2,6 +2,9 @@ import {
 	addCls,
 	cls,
 	createDefaultSeparator,
+	formatLocaleLongDate,
+	formatLocaleLongDateTime,
+	formatLocaleTimeHm,
 	type PropertyRendererConfig,
 	renderPropertyValue,
 	showModal,
@@ -36,14 +39,14 @@ function getTimingInfo(eventData: NotificationEventData): string {
 	}
 
 	if (diffMinutes <= 0) {
-		return `Event started at ${eventTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+		return `Event started at ${formatLocaleTimeHm(eventTime)}`;
 	}
 	if (diffMinutes < 60) {
-		return `In ${diffMinutes} minutes → at ${eventTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+		return `In ${diffMinutes} minutes → at ${formatLocaleTimeHm(eventTime)}`;
 	}
 	const diffHours = Math.round(diffMinutes / 60);
 	if (diffHours < 24) {
-		return `In ${diffHours} hours → at ${eventTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+		return `In ${diffHours} hours → at ${formatLocaleTimeHm(eventTime)}`;
 	}
 	const diffDays = Math.round(diffHours / 24);
 	return `In ${diffDays} days → ${eventTime.toLocaleDateString([], {
@@ -56,10 +59,7 @@ function getTimingInfo(eventData: NotificationEventData): string {
 
 function formatNotificationDateTime(date: Date | null, allDay: boolean): string {
 	if (!date) return "N/A";
-	const options: Intl.DateTimeFormatOptions = allDay
-		? { year: "numeric", month: "long", day: "numeric" }
-		: { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" };
-	return date.toLocaleDateString(undefined, options);
+	return allDay ? formatLocaleLongDate(date) : formatLocaleLongDateTime(date);
 }
 
 function renderNotificationProperty(
