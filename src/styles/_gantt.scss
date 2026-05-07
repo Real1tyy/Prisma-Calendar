@@ -17,3 +17,20 @@
 	}
 }
 
+/* The shared `.prisma-tab-panel` defaults to `height: auto; min-height: 100%` and
+   `.prisma-tab-body` defaults to `flex: 1 0 auto; min-height: 100%` so the calendar
+   tab's sticky toolbar/headers can scroll with the page (panel grows with content).
+   Gantt needs a strictly bounded height so its inner flex column (the wrapper)
+   can fill the viewport instead of collapsing to its 400px min-height. */
+.view-content.prisma-calendar-view-root .prisma-tab-panel:has(.prisma-gantt-wrapper) {
+	height: 100%;
+	min-height: 0;
+	flex: 1 1 auto;
+
+	> .prisma-tab-body {
+		height: 100%;
+		min-height: 0;
+		flex: 1 1 auto;
+	}
+}
+

@@ -29,6 +29,17 @@
   min-height: 100%;
 }
 
+/* Default React tab body — flex column that grows with its content so the
+   calendar tab's sticky toolbar/headers can scroll with the page. Individual
+   tabs (e.g. timeline) override this where they need a strictly bounded
+   height for their own internal flex/scroll layout. */
+.prisma-tab-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+  min-height: 100%;
+}
+
 .prisma-calendar-container {
   position: relative;
   height: auto;
@@ -4430,19 +4441,18 @@
   cursor: not-allowed;
 }
 
-/* Timeline Modal */
+/* Timeline (used in both modal and tab contexts) */
+/* Common: inner element holding the header + timeline container.
+   Always a flex column that fills its parent — no fixed width/height
+   so it adapts to whatever ancestor (modal-content or tab body) it lives in. */
 .prisma-timeline-modal {
-  width: 98vw;
-  max-width: none;
-  height: 90vh;
-}
-.prisma-timeline-modal .modal-content {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  padding: 0;
+  min-width: 0;
+  min-height: 0;
 }
 .prisma-timeline-modal-header {
+  flex-shrink: 0;
   padding: 1.5rem 2rem 1rem;
   border-bottom: 1px solid var(--background-modifier-border);
 }
@@ -4451,11 +4461,27 @@
   font-size: 1.3rem;
   color: var(--text-normal);
 }
+.prisma-timeline-modal > .prisma-view-header-row {
+  flex-shrink: 0;
+}
 .prisma-timeline-modal-container {
   flex: 1;
   padding: 1rem;
-  overflow: auto;
+  overflow: hidden;
   min-height: 0;
+}
+
+/* Modal-only sizing: applies to the .modal wrapper that showModal tags. */
+.modal.prisma-timeline-modal {
+  width: 98vw;
+  max-width: none;
+  height: 90vh;
+}
+
+/* Modal content area — flush padding so the inner flex column owns the layout. */
+.modal-content.prisma-timeline-modal {
+  height: 100%;
+  padding: 0;
 }
 
 .prisma-timeline-nav-date-group {
@@ -4490,19 +4516,30 @@
   background: var(--background-modifier-hover);
 }
 
-/* Fill parent when timeline is in a tab leaf */
-.prisma-tab-panel {
-  display: flex;
-  flex-direction: column;
-}
-.prisma-tab-panel > .prisma-timeline-modal-header {
+/* Tab-context padding tweaks (less generous than the modal). */
+.prisma-tab-panel .prisma-timeline-modal > .prisma-timeline-modal-header {
   padding-left: 1rem;
   padding-right: 1rem;
 }
-.prisma-tab-panel > .prisma-timeline-modal-container {
-  flex: 1;
-  min-height: 0;
+.prisma-tab-panel .prisma-timeline-modal > .prisma-timeline-modal-container {
   padding: 0 1rem 1rem;
+}
+
+/* The shared `.prisma-tab-panel` defaults to `height: auto; min-height: 100%` and
+   `.prisma-tab-body` defaults to `flex: 1 0 auto; min-height: 100%` so the calendar
+   tab's sticky toolbar/headers can scroll with the page (panel grows with content).
+   The timeline needs the opposite: a strictly bounded height so its inner flex
+   column can resolve. Override both via the `:has(.prisma-timeline-modal)` scope
+   — purely structural specificity, no `!important`. */
+.view-content.prisma-calendar-view-root .prisma-tab-panel:has(.prisma-timeline-modal) {
+  height: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+.view-content.prisma-calendar-view-root .prisma-tab-panel:has(.prisma-timeline-modal) > .prisma-tab-body {
+  height: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
 }
 
 /* AI Chat Sidebar */
@@ -8865,6 +8902,22 @@ div.vis-tooltip {
 .prisma-gantt-create-btn:hover {
   color: var(--text-normal);
   background: var(--background-modifier-hover);
+}
+
+/* The shared `.prisma-tab-panel` defaults to `height: auto; min-height: 100%` and
+   `.prisma-tab-body` defaults to `flex: 1 0 auto; min-height: 100%` so the calendar
+   tab's sticky toolbar/headers can scroll with the page (panel grows with content).
+   Gantt needs a strictly bounded height so its inner flex column (the wrapper)
+   can fill the viewport instead of collapsing to its 400px min-height. */
+.view-content.prisma-calendar-view-root .prisma-tab-panel:has(.prisma-gantt-wrapper) {
+  height: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+.view-content.prisma-calendar-view-root .prisma-tab-panel:has(.prisma-gantt-wrapper) > .prisma-tab-body {
+  height: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
 }
 
 .prisma-welcome-tagline-headline {
