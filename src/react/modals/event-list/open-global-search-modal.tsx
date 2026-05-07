@@ -7,12 +7,13 @@ import { startTransition, useCallback, useDeferredValue, useEffect, useMemo, use
 import type { CalendarComponent } from "../../../components/calendar-view";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { CalendarEvent } from "../../../types/calendar";
+import type { SingleCalendarConfig } from "../../../types/settings";
 import { resolveEventColor } from "../../../utils/event-color";
 import { removeZettelId } from "../../../utils/events/zettel-id";
 import type { EventListAction, EventListItemData } from "./event-list-item";
 import { EventListModal } from "./event-list-modal";
 
-type FilterState = "none" | "skip" | "only";
+export type FilterState = "none" | "skip" | "only";
 
 interface GlobalSearchFilters {
 	recurring: FilterState;
@@ -22,7 +23,7 @@ interface GlobalSearchFilters {
 
 const SEARCH_YEAR_RANGE = 5;
 
-function formatEventSubtitle(event: CalendarEvent): string {
+export function formatEventSubtitle(event: CalendarEvent): string {
 	const parts: string[] = [];
 	parts.push(event.allDay ? "All-day" : "Timed");
 
@@ -56,18 +57,18 @@ function formatEventSubtitle(event: CalendarEvent): string {
 /** none → only → skip → none */
 const FILTER_STATE_CYCLE = ["none", "only", "skip"] as const satisfies readonly FilterState[];
 
-function cycleFilterState(current: FilterState): FilterState {
+export function cycleFilterState(current: FilterState): FilterState {
 	const i = FILTER_STATE_CYCLE.indexOf(current);
 	return FILTER_STATE_CYCLE[(i + 1) % FILTER_STATE_CYCLE.length] ?? "none";
 }
 
-function filterButtonText(label: string, state: FilterState): string {
+export function filterButtonText(label: string, state: FilterState): string {
 	if (state === "none") return label;
 	const prefix = state === "skip" ? "Skip " : "Only ";
 	return `${prefix}${label.toLowerCase()}`;
 }
 
-function applyTriStateFilter<T>(items: T[], state: FilterState, predicate: (item: T) => boolean): T[] {
+export function applyTriStateFilter<T>(items: T[], state: FilterState, predicate: (item: T) => boolean): T[] {
 	const strategies: Record<FilterState, (xs: T[]) => T[]> = {
 		none: (xs) => xs,
 		skip: (xs) => xs.filter((item) => !predicate(item)),
@@ -93,8 +94,17 @@ function GlobalSearchContent({
 	calendarComponent: CalendarComponent;
 	onClose: () => void;
 }) {
-	const colorEvaluator = useRef(new ColorEvaluator(bundle.settingsStore.settings$));
-	useEffect(() => () => colorEvaluator.current.destroy(), []);
+	const colorEvaluatorRef = useRef<ColorEvaluator<SingleCalendarConfig> | null>(null);
+	if (colorEvaluatorRef.current === null) {
+		colorEvaluatorRef.current = new ColorEvaluator(bundle.settingsStore.settings$);
+	}
+	useEffect(() => {
+		const ev = colorEvaluatorRef.current;
+		return () => {
+			ev?.destroy();
+			colorEvaluatorRef.current = null;
+		};
+	}, []);
 
 	const [filters, setFilters] = useState<GlobalSearchFilters>({
 		recurring: "none",
@@ -115,6 +125,8 @@ function GlobalSearchContent({
 	}, [bundle]);
 
 	const items = useMemo((): EventListItemData[] => {
+		const ev = colorEvaluatorRef.current;
+		if (!ev) return [];
 		let events = physicalEventsInRange;
 
 		events = applyTriStateFilter(events, deferredFilters.recurring, (e) => !!e.metadata.rruleType);
@@ -126,7 +138,7 @@ function GlobalSearchContent({
 			filePath: event.ref.filePath,
 			title: removeZettelId(event.title),
 			subtitle: formatEventSubtitle(event),
-			categoryColor: resolveEventColor(event.meta, bundle, colorEvaluator.current),
+			categoryColor: resolveEventColor(event.meta, bundle, ev),
 		}));
 	}, [bundle, deferredFilters, physicalEventsInRange]);
 

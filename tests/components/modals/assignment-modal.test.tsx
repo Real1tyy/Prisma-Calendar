@@ -16,7 +16,13 @@ vi.mock("@real1ty-obsidian-plugins-react", async (importOriginal) => {
 			renderItem: (item: T, index: number) => ReactNode;
 			className?: string;
 		}) {
-			return <div className={className}>{items.map((item, i) => renderItem(item, i))}</div>;
+			return (
+				<div className={className}>
+					{items.map((item, i) => (
+						<div key={i}>{renderItem(item, i)}</div>
+					))}
+				</div>
+			);
 		},
 	};
 });
