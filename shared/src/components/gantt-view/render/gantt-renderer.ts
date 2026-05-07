@@ -54,6 +54,7 @@ export function createGanttRenderer(
 	// ─── DOM scaffold ───────────────────────────────────────────
 
 	const toolbar = container.createDiv({ cls: cls("gantt-toolbar") });
+	const nav = toolbar.createDiv({ cls: cls("gantt-nav") });
 	const toolbarLeft = toolbar.createDiv({ cls: cls("gantt-toolbar-left") });
 	const toolbarRight = toolbar.createDiv({ cls: cls("gantt-toolbar-right") });
 
@@ -97,7 +98,6 @@ export function createGanttRenderer(
 		repaint();
 	}
 
-	const nav = toolbarLeft.createDiv({ cls: cls("gantt-nav") });
 	const makeBtn = (label: string, icon: string, onClick: () => void): void => {
 		const btn = nav.createEl("button", { cls: cls("gantt-nav-btn"), attr: { "aria-label": label } });
 		btn.textContent = icon;
