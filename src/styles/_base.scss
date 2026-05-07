@@ -5,11 +5,6 @@
 	display: none;
 }
 
-.prisma-fade-out {
-	opacity: 0;
-	transition: opacity 0.2s ease-out;
-}
-
 /* Keyboard-only focus rings for buttons */
 [class*="prisma-"] button:focus-visible, button[class*="prisma-"]:focus-visible {
 	outline: 2px solid var(--interactive-accent);

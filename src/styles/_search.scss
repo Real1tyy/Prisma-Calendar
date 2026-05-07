@@ -14,10 +14,28 @@
 		overflow: hidden;
 	}
 
-	.prisma-generic-event-list {
-		max-height: 50vh;
+	.modal-content {
+		min-height: 0;
+	}
+
+	.prisma-generic-event-list-modal {
 		flex: 1;
-		overflow-y: auto;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.prisma-generic-event-list {
+		flex: 1;
+		min-height: 0;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.prisma-generic-event-list-virtual {
+		flex: 1;
+		min-height: 0;
 	}
 
 	.prisma-generic-event-subtitle {
@@ -29,28 +47,6 @@
 }
 
 .prisma-global-search  {
-	&-load-more  {
-		display: block;
-		width: 100%;
-		padding: 0.5rem;
-		margin-top: 0.5rem;
-		background: var(--background-modifier-hover);
-		border: 1px solid var(--background-modifier-border);
-		border-radius: 4px;
-		color: var(--text-muted);
-		cursor: pointer;
-		font-size: var(--font-ui-small);
-
-		&:hover {
-			background: var(--background-modifier-active-hover);
-			color: var(--text-normal);
-		}
-
-		&.prisma-hidden {
-			display: none;
-		}
-	}
-
 	&-filters {
 		padding: 0.75rem;
 		border: 1px solid var(--background-modifier-border);
