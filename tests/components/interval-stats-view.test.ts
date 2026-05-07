@@ -1,4 +1,4 @@
-import { BehaviorSubject } from "rxjs";
+import { BehaviorSubject, Subject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { CalendarBundle } from "../../src/core/calendar-bundle";
@@ -56,13 +56,20 @@ function makeBundle(
 
 	const getEvents = vi.fn().mockResolvedValue(overrides.events ?? []);
 	const getSkippedEvents = vi.fn().mockReturnValue(overrides.skipped ?? []);
-	const eventStore = { getEvents, getSkippedEvents };
+	const eventStore = { getEvents, getSkippedEvents, changes$: new Subject<void>() };
 
 	const getCategoryColor = vi.fn().mockImplementation((label: string) => `color-${label}`);
 	const categoryTracker = { getCategoryColor };
 
+	const recurringEventManager = { changes$: new Subject<void>() };
+
 	return {
-		bundle: { settingsStore, eventStore, categoryTracker } as unknown as CalendarBundle,
+		bundle: {
+			settingsStore,
+			eventStore,
+			categoryTracker,
+			recurringEventManager,
+		} as unknown as CalendarBundle,
 		getEvents,
 		getSkippedEvents,
 		getCategoryColor,

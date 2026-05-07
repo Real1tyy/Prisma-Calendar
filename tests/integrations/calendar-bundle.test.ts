@@ -9,9 +9,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // Stub the view module — its transitive imports build a CalendarComponent on top
 // of MountableComponent(Component) which fails in the test environment because
 // obsidian's Component class isn't fully mocked. The bundle only invokes
-// registerPrismaCalendarView during initialize(), which we don't exercise here.
-vi.mock("../../src/components/views/prisma-view", () => ({
-	registerPrismaCalendarView: vi.fn(),
+// registerPrismaReactView during initialize(), which we don't exercise here.
+vi.mock("../../src/react/views/register-prisma-view", () => ({
+	registerPrismaReactView: vi.fn(),
 }));
 
 import { CalendarBundle } from "../../src/core/calendar-bundle";

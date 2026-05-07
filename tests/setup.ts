@@ -142,6 +142,10 @@ function polyfillObsidianDOM(): void {
 		this.textContent = text;
 	};
 
+	proto.appendText = function (this: HTMLElement, text: string) {
+		this.appendChild(document.createTextNode(text));
+	};
+
 	proto.setAttr = function (this: HTMLElement, name: string, value: string) {
 		this.setAttribute(name, value);
 	};
