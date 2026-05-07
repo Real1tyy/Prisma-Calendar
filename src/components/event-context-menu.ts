@@ -36,6 +36,7 @@ import {
 import { weekDuration } from "../core/commands/batch-commands";
 import { MinimizedModalManager } from "../core/minimized-modal-manager";
 import { openCategoryAssignModal, openDeleteRecurringEventsModal, openMoveByModal } from "../react/modals";
+import { openEventSeriesModal } from "../react/modals/event-list";
 import { isTimedEvent } from "../types";
 import type { CalendarEvent, EventKind } from "../types/calendar";
 import { isTimeUnitAllowedForAllDay } from "../types/calendar";
@@ -52,7 +53,6 @@ import {
 	openFileInNewWindow,
 } from "../utils/obsidian";
 import type { CalendarHost } from "./calendar-host";
-import { EventSeriesModal } from "./list-modals/event-series-modal";
 import type { PreviewEventData } from "./modals";
 import { EventEditModal, showEventPreviewModal } from "./modals";
 
@@ -680,14 +680,14 @@ export class EventContextMenu {
 		const categoryValues =
 			settings.categoryProp && frontmatter ? parseIntoList(frontmatter[settings.categoryProp]) : [];
 
-		new EventSeriesModal(
+		openEventSeriesModal(
 			this.app,
 			this.bundle,
 			nameKey,
 			rruleId,
 			categoryValues.length > 0 ? categoryValues : null,
 			preferredTab ?? null
-		).open();
+		);
 	}
 
 	// ─── Event Actions ────────────────────────────────────────────

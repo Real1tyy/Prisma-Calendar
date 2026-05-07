@@ -10,10 +10,10 @@ import { debounceTime, distinctUntilChanged, merge, skip, type Subscription } fr
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { PRO_FEATURES } from "../../core/license";
+import { openEventSeriesModal } from "../../react/modals/event-list";
 import { removeZettelId } from "../../utils/events/zettel-id";
 import { getCategoriesFromFilePath } from "../../utils/obsidian";
 import { formatRecurrenceLabel, isPresetType } from "../../utils/recurring-utils";
-import { EventSeriesModal } from "../list-modals/event-series-modal";
 import { renderProUpgradeBanner } from "../settings/pro-upgrade-banner";
 import {
 	buildChartDataFromItems,
@@ -212,7 +212,7 @@ function buildByNameData(app: App, bundle: CalendarBundle) {
 				{ label: "Avg / Series", value: items.length > 0 ? Math.round(totalEvents / items.length) : 0 },
 			],
 			onItemClick: (item: DashboardItem) => {
-				new EventSeriesModal(app, bundle, item.key, null).open();
+				openEventSeriesModal(app, bundle, item.key, null);
 			},
 			emptyMessage: "No name-based series found.",
 		};
@@ -261,7 +261,7 @@ function buildByCategoryData(app: App, bundle: CalendarBundle) {
 				{ label: "All-day", value: totalAllDay },
 			],
 			onItemClick: (item: DashboardItem) => {
-				new EventSeriesModal(app, bundle, null, null, [item.key]).open();
+				openEventSeriesModal(app, bundle, null, null, [item.key]);
 			},
 			emptyMessage: "No categories found. Add a category property to your events.",
 		};
@@ -330,7 +330,7 @@ function buildRecurringData(app: App, bundle: CalendarBundle) {
 				{ label: "Instances", value: totalInstances },
 			],
 			onItemClick: (item: DashboardItem) => {
-				new EventSeriesModal(app, bundle, item.title.toLowerCase(), item.key).open();
+				openEventSeriesModal(app, bundle, item.title.toLowerCase(), item.key);
 			},
 			emptyMessage: "No recurring events found.",
 		};
