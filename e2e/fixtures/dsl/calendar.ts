@@ -16,6 +16,7 @@ import { getEventCount, refreshCalendar, type SeedEventInput, waitForEventCount 
 import { sel, TID, type ToolbarActionKey, type ViewMode, type ViewTabKey } from "../testids";
 import { type BatchHandle, openBatch } from "./batch";
 import { createEventHandle, type EventHandle } from "./event";
+import { createEventsModalHandle, type EventsModalHandle } from "./events-modal";
 import { expectConfirmationModal } from "./shared";
 
 // `dashboard-by-name` slugifies titles to sentence-case, so specs that assert
@@ -121,6 +122,13 @@ export interface CalendarHandle {
 
 	/** Click a page-header toolbar action (create-event / daily-stats / refresh / …). */
 	clickToolbar(action: ToolbarActionKey): Promise<void>;
+
+	/**
+	 * Click the toolbar "show-recurring" button and resolve to a handle on the
+	 * resulting EventsModal (Recurring / By Category / By Name tabs). Wraps
+	 * the toolbar click + modal-visible wait that every analytics spec repeats.
+	 */
+	openEventsModal(): Promise<EventsModalHandle>;
 
 	/** Switch the analytics view tab. For group tabs use `switchToGroupChild`. */
 	switchView(tab: ViewTabKey): Promise<void>;
@@ -445,6 +453,15 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 			const btn = page.locator(`${ACTIVE_CALENDAR_LEAF} ${sel(TID.pageHeader(action))}`).first();
 			await btn.waitFor({ state: "visible" });
 			await btn.click();
+		},
+
+		async openEventsModal() {
+			const btn = page.locator(`${ACTIVE_CALENDAR_LEAF} ${sel(TID.pageHeader("show-recurring"))}`).first();
+			await btn.waitFor({ state: "visible" });
+			await btn.click();
+			const modal = page.locator(".modal").first();
+			await modal.waitFor({ state: "visible" });
+			return createEventsModalHandle(page, modal);
 		},
 
 		async switchView(tab) {

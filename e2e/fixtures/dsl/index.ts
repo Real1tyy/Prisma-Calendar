@@ -26,6 +26,14 @@ export {
 } from "./drag";
 export { createEventHandle, type EventHandle } from "./event";
 export {
+	createEventsModalHandle,
+	createSeriesModalHandle,
+	type EventsModalHandle,
+	type EventsModalTab,
+	type SeriesBasesView,
+	type SeriesModalHandle,
+} from "./events-modal";
+export {
 	type ActionManagerHandle,
 	type AssignmentModalHandle,
 	collapsibleSection,
