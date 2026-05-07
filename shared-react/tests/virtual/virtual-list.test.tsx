@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { VirtualList } from "../../src/virtual/virtual-list";
@@ -13,7 +13,6 @@ describe("VirtualList", () => {
 
 		const scrollContainer = container.firstElementChild as HTMLElement;
 		expect(scrollContainer.style.overflow).toBe("auto");
-		expect(scrollContainer.style.contain).toBe("strict");
 	});
 
 	it("renders an inner container with total estimated height", () => {

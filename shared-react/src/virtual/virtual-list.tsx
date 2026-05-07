@@ -44,7 +44,7 @@ function VirtualListInner<T>(
 	const virtualItems = virtualizer.getVirtualItems();
 
 	return (
-		<div ref={scrollRef} className={className} style={{ overflow: "auto", contain: "strict", ...style }}>
+		<div ref={scrollRef} className={className} style={{ overflow: "auto", ...style }}>
 			<div style={{ height: virtualizer.getTotalSize(), width: "100%", position: "relative" }}>
 				{virtualItems.map((virtualRow) => (
 					<div
