@@ -40,6 +40,18 @@ export function isoLocal(daysFromToday: number, hh = 10, mm = 0): string {
 	return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+/** `YYYY-MM-DDTHH:mm:ss` for the given Date in local TZ — second-precision variant of `isoLocal`. */
+export function localISOWithSeconds(d: Date): string {
+	return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(
+		d.getMinutes()
+	)}:${pad(d.getSeconds())}`;
+}
+
+/** A Date `minutes` minutes from now (negative values for the past). */
+export function dateOffsetMinutes(minutes: number): Date {
+	return new Date(Date.now() + minutes * 60_000);
+}
+
 // ─── Anchor helpers ──────────────────────────────────────────────────────
 //
 // The test suite runs on a moving wall clock. "Today" varies day-of-week,

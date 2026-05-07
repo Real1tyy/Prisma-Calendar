@@ -15,18 +15,21 @@ test.describe("analytics: global search modal", () => {
 		]);
 
 		await calendar.clickToolbar("global-search");
-		await expect(calendar.page.locator(".modal").first()).toBeVisible();
 
-		const searchInput = calendar.page.locator(sel("prisma-event-list-search")).first();
+		const modalRoot = calendar.page.locator(sel("prisma-list-modal")).first();
+		await expect(modalRoot).toBeVisible();
+
+		const searchInput = modalRoot.locator(sel("prisma-list-search")).first();
 		await searchInput.waitFor({ state: "visible" });
 
-		// Unfiltered — both events should be present.
-		await expect(calendar.page.locator(sel("prisma-event-list-item-Project Planning")).first()).toBeVisible();
-		await expect(calendar.page.locator(sel("prisma-event-list-item-Weekly Review")).first()).toBeVisible();
+		// Scope to the modal — calendar tiles also use `data-event-title` behind the overlay.
+		const rowByTitle = (title: string) => modalRoot.locator(`[data-event-title="${title}"]`);
 
-		// Filter by "Weekly" — only the Weekly Review row remains.
+		await expect(rowByTitle("Project Planning").first()).toBeVisible();
+		await expect(rowByTitle("Weekly Review").first()).toBeVisible();
+
 		await searchInput.fill("Weekly");
-		await expect(calendar.page.locator(sel("prisma-event-list-item-Project Planning"))).toHaveCount(0);
-		await expect(calendar.page.locator(sel("prisma-event-list-item-Weekly Review")).first()).toBeVisible();
+		await expect(rowByTitle("Project Planning")).toHaveCount(0);
+		await expect(rowByTitle("Weekly Review").first()).toBeVisible();
 	});
 });
