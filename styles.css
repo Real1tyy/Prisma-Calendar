@@ -29,17 +29,6 @@
   min-height: 100%;
 }
 
-/* Default React tab body — flex column that grows with its content so the
-   calendar tab's sticky toolbar/headers can scroll with the page. Individual
-   tabs (e.g. timeline) override this where they need a strictly bounded
-   height for their own internal flex/scroll layout. */
-.prisma-tab-body {
-  display: flex;
-  flex-direction: column;
-  flex: 1 0 auto;
-  min-height: 100%;
-}
-
 .prisma-calendar-container {
   position: relative;
   height: auto;
@@ -1669,7 +1658,7 @@
   border-radius: 8px;
   z-index: 10;
 }
-.prisma-calendar-container > .prisma-prereq-selection-banner {
+.prisma-calendar-container > .prisma-prereq-selection-banner, .prisma-calendar-container > .prisma-sticky-banner-mount > .prisma-prereq-selection-banner {
   position: sticky;
   bottom: 0;
 }

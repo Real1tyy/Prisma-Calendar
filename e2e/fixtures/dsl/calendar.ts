@@ -177,6 +177,14 @@ export interface CalendarHandle {
 	/** Wait for the shared confirmation modal and click Confirm. Used by destructive flows. */
 	confirmDeletion(): Promise<void>;
 
+	/**
+	 * Path of the currently-active workspace file, or `null` if no markdown leaf
+	 * is focused. Use with `expect.poll` to assert which file an action opened —
+	 * Obsidian's link-open APIs don't bubble through DOM, so workspace state is
+	 * the only reliable probe.
+	 */
+	activeFilePath(): Promise<string | null>;
+
 	/** Assert a timeline item rendering `title` is present (or absent) in the timeline view. */
 	expectTimelineItem(title: string, present?: boolean): Promise<void>;
 
@@ -536,6 +544,15 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 		async confirmDeletion() {
 			const modal = await expectConfirmationModal(page);
 			await modal.confirm();
+		},
+
+		async activeFilePath() {
+			return page.evaluate(() => {
+				const w = window as unknown as {
+					app: { workspace: { getActiveFile: () => { path: string } | null } };
+				};
+				return w.app.workspace.getActiveFile()?.path ?? null;
+			});
 		},
 
 		async expectTimelineItem(title, present = true) {

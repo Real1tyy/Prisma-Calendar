@@ -43,9 +43,19 @@ export const EventSeriesEventRow = memo(function EventSeriesEventRow({
 		};
 	}, [item.allColors, settings]);
 
+	const dateIso = item.date.toFormat("yyyy-MM-dd");
+
 	return (
-		<div ref={rowRef} className={classNames} style={style} onClick={onClick}>
-			<div className="prisma-recurring-event-date">{item.date.toFormat("yyyy-MM-dd (EEE)")}</div>
+		<div
+			ref={rowRef}
+			className={classNames}
+			style={style}
+			onClick={onClick}
+			data-event-file-path={item.filePath}
+			data-event-date={dateIso}
+			data-event-skipped={item.skipped ? "true" : "false"}
+		>
+			<div className="prisma-recurring-event-date">{`${dateIso} (${item.date.toFormat("EEE")})`}</div>
 			<div className={`prisma-recurring-event-title${item.skipped ? " prisma-recurring-event-skipped" : ""}`}>
 				{item.title}
 			</div>

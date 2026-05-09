@@ -1,18 +1,10 @@
 import { waitForEvent } from "../../fixtures/calendar-helpers";
 import { fromAnchor, todayISO } from "../../fixtures/dates";
+import { expectSeriesModalOpen } from "../../fixtures/dsl";
 import { expect, test } from "../../fixtures/electron";
 import { type SeedEventInput } from "../../fixtures/seed-events";
 import { sel, TID } from "../../fixtures/testids";
 
-// `.prisma-recurring-events-list-modal` is now stamped on both Obsidian's
-// outer `.modal` host (via showReactModal `cls`) and the inner React content
-// div, so a bare class selector resolves to two elements. Anchor on `.modal`
-// to pin to the outer one.
-const MODAL_SEL = ".modal.prisma-recurring-events-list-modal";
-const ROW_SEL = ".prisma-recurring-event-row";
-const TITLE_SEL = ".prisma-recurring-event-title";
-const STATS_SEL = ".prisma-recurring-events-stats-text";
-const TAB_SEL = (tab: string): string => `[data-testid="prisma-event-series-tab-${tab}"]`;
 const DEFAULT_FUTURE_INSTANCES = 2;
 
 function zettelSuffix(i: number): string {
@@ -47,23 +39,12 @@ test.describe("context menu — series shortcut items", () => {
 		const evt = await calendar.eventByTitle("Team Meeting");
 		await evt.rightClick("viewNameSeries");
 
-		const modal = page.locator(MODAL_SEL);
-		await expect(modal).toBeVisible();
-
-		const nameTab = modal.locator(TAB_SEL("name"));
-		await expect(nameTab).toBeVisible();
-		await expect(nameTab).toHaveClass(/is-active/);
-
-		const catTab = modal.locator(TAB_SEL("category"));
-		await expect(catTab).toBeVisible();
-		await expect(catTab).not.toHaveClass(/is-active/);
-
-		await expect(modal.locator(ROW_SEL)).toHaveCount(count);
-		await expect(modal.locator(STATS_SEL).first()).toContainText(`Total: ${count}`);
-
-		const titles = await modal.locator(TITLE_SEL).allTextContents();
-		expect(titles.every((t) => t === "Team Meeting")).toBe(true);
-		expect(titles).not.toContain("Workout");
+		const series = await expectSeriesModalOpen(page);
+		await series.expectTabActive("name");
+		await series.expectTabInactive("category");
+		await series.expectRowCount(count);
+		await series.expectTotal(count);
+		await series.expectAllTitles("Team Meeting");
 	});
 
 	test("viewCategorySeries lists only events in the same category and selects category tab", async ({ calendar }) => {
@@ -91,17 +72,13 @@ test.describe("context menu — series shortcut items", () => {
 		const evt = await calendar.eventByTitle("Workout 0");
 		await evt.rightClick("viewCategorySeries");
 
-		const modal = page.locator(MODAL_SEL);
-		await expect(modal).toBeVisible();
+		const series = await expectSeriesModalOpen(page);
+		await series.expectTabActive("category");
+		await series.expectRowCount(3);
+		await series.expectTotal(3);
 
-		const catTab = modal.locator(TAB_SEL("category"));
-		await expect(catTab).toBeVisible();
-		await expect(catTab).toHaveClass(/is-active/);
-
-		await expect(modal.locator(ROW_SEL)).toHaveCount(3);
-		await expect(modal.locator(STATS_SEL).first()).toContainText("Total: 3");
-
-		const titles = await modal.locator(TITLE_SEL).allTextContents();
+		// Workouts only — no Reviews bled in via the wrong category bucket.
+		const titles = await series.titles();
 		expect(titles.every((t) => t.startsWith("Workout"))).toBe(true);
 		expect(titles.some((t) => t.startsWith("Review"))).toBe(false);
 	});
@@ -127,7 +104,6 @@ test.describe("context menu — series shortcut items", () => {
 	});
 
 	test("viewRecurringSeries shows physical instances for a daily recurring source", async ({ calendar }) => {
-		const { page } = calendar;
 		const todayStr = todayISO();
 
 		const evt = await calendar.createEvent({
@@ -144,15 +120,10 @@ test.describe("context menu — series shortcut items", () => {
 
 		await evt.rightClick("viewRecurringSeries");
 
-		const modal = page.locator(MODAL_SEL);
-		await expect(modal).toBeVisible();
-
-		const recurTab = modal.locator(TAB_SEL("recurring"));
-		if (await recurTab.isVisible()) {
-			await expect(recurTab).toHaveClass(/is-active/);
-		}
-
-		await expect(modal.locator(ROW_SEL)).toHaveCount(DEFAULT_FUTURE_INSTANCES);
-		await expect(modal.locator(STATS_SEL).first()).toContainText(`Total: ${DEFAULT_FUTURE_INSTANCES}`);
+		const series = await expectSeriesModalOpen(calendar.page);
+		// `tabs.length >= 2` — recurring + name (both `rruleId` and `nameKey` are set).
+		await series.expectTabActive("recurring");
+		await series.expectRowCount(DEFAULT_FUTURE_INSTANCES);
+		await series.expectTotal(DEFAULT_FUTURE_INSTANCES);
 	});
 });

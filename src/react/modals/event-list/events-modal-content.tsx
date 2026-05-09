@@ -150,12 +150,14 @@ function EventsModalContent({
 					type="text"
 					placeholder="Search events... (Ctrl/Cmd+F)"
 					className="prisma-generic-event-search-input"
+					data-testid="prisma-events-modal-search"
 					value={searchQuery}
 					onChange={(e) => setSearchQuery(e.target.value)}
 					autoFocus
 				/>
 				<select
 					className="prisma-events-modal-sort-select"
+					data-testid="prisma-events-modal-sort"
 					value={sortMode}
 					onChange={(e) => setSortMode(e.target.value as EventsModalSortMode)}
 				>

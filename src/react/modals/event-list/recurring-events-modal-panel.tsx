@@ -197,6 +197,7 @@ export function RecurringEventsModalPanel({
 					<label className="prisma-recurring-events-filter-label">Type:</label>
 					<select
 						className="prisma-recurring-events-type-select"
+						data-testid="prisma-recurring-type-filter"
 						value={selectedTypeFilter}
 						onChange={(e) => setSelectedTypeFilter(e.target.value as keyof typeof RECURRENCE_TYPE_FILTER_OPTIONS)}
 					>
@@ -212,6 +213,7 @@ export function RecurringEventsModalPanel({
 						<label className="prisma-recurring-events-checkbox-label">
 							<input
 								type="checkbox"
+								data-testid="prisma-recurring-show-disabled"
 								checked={showDisabledOnly}
 								onChange={(e) => setShowDisabledOnly(e.target.checked)}
 							/>
@@ -237,6 +239,9 @@ export function RecurringEventsModalPanel({
 							<div
 								key={item.rruleId}
 								className={`prisma-generic-event-list-item${categoryColor ? " prisma-recurring-event-categorized" : ""}`}
+								data-testid={`prisma-recurring-row-${item.title}`}
+								data-recurring-type={item.recurrenceType}
+								data-event-file-path={item.filePath}
 								style={categoryColor ? ({ "--category-color": categoryColor } as CSSProperties) : undefined}
 								onClick={(e) => {
 									if (e.target instanceof HTMLButtonElement) return;
@@ -250,7 +255,10 @@ export function RecurringEventsModalPanel({
 								<div className="prisma-generic-event-info">
 									<div className="prisma-recurring-event-title-row">
 										<div className="prisma-generic-event-title">{item.title}</div>
-										<span className={`prisma-recurring-type-badge prisma-recurring-type-${badgeClassSuffix}`}>
+										<span
+											className={`prisma-recurring-type-badge prisma-recurring-type-${badgeClassSuffix}`}
+											data-testid="prisma-recurring-type-badge"
+										>
 											{formatRecurrenceLabel(item.recurrenceType)}
 										</span>
 									</div>
@@ -261,6 +269,7 @@ export function RecurringEventsModalPanel({
 								</div>
 								<div className="prisma-generic-event-actions">
 									<button
+										data-testid="prisma-recurring-row-category"
 										onClick={(e) => {
 											e.stopPropagation();
 											handleCategoryAssign(item);
@@ -269,6 +278,7 @@ export function RecurringEventsModalPanel({
 										Category
 									</button>
 									<button
+										data-testid="prisma-recurring-row-nav"
 										onClick={(e) => {
 											e.stopPropagation();
 											handleNavigate(item);
@@ -278,6 +288,7 @@ export function RecurringEventsModalPanel({
 									</button>
 									<button
 										className="mod-cta"
+										data-testid="prisma-recurring-row-toggle"
 										onClick={(e) => {
 											e.stopPropagation();
 											void handleToggleSkip(item);

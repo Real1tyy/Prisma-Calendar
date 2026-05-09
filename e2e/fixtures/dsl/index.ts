@@ -29,9 +29,15 @@ export {
 	createEventsModalHandle,
 	createSeriesModalHandle,
 	type EventsModalHandle,
+	type EventsModalSortMode,
 	type EventsModalTab,
+	expectSeriesModalOpen,
+	type RecurringRowHandle,
+	type RecurringTypeFilter,
 	type SeriesBasesView,
 	type SeriesModalHandle,
+	type SeriesModalTab,
+	type SeriesRowHandle,
 } from "./events-modal";
 export {
 	type ActionManagerHandle,

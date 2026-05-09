@@ -58,6 +58,7 @@ export function EventSeriesInstancesList({
 				<div className="prisma-recurring-events-list-header">
 					<h2
 						className="prisma-recurring-events-source-title"
+						data-testid="prisma-series-title"
 						onClick={options.onTitleClick}
 						style={options.onTitleClick ? { cursor: "pointer" } : undefined}
 					>
@@ -69,11 +70,11 @@ export function EventSeriesInstancesList({
 			{options.extraInfo}
 
 			<div className="prisma-recurring-events-stats">
-				<p className="prisma-recurring-events-stats-text">
+				<p className="prisma-recurring-events-stats-text" data-testid="prisma-series-stats-primary">
 					Total: {stats.total} &bull; Past: {stats.past} &bull; Skipped: {stats.skipped} &bull; Completed:{" "}
 					{stats.completedPercentage}%
 				</p>
-				<p className="prisma-recurring-events-stats-text-secondary">
+				<p className="prisma-recurring-events-stats-text-secondary" data-testid="prisma-series-stats-secondary">
 					This year: {stats.thisYear} &bull; This month: {stats.thisMonth} &bull; This week: {stats.thisWeek}
 					{stats.frequency ? ` • Frequency: ${stats.frequency}` : ""}
 				</p>
@@ -87,6 +88,7 @@ export function EventSeriesInstancesList({
 					<div className="setting-item-control">
 						<div
 							className={`checkbox-container${options.hidePast ? " is-enabled" : ""}`}
+							data-testid="prisma-series-hide-past"
 							onClick={() => options.onHidePastChange(!options.hidePast)}
 						/>
 					</div>
@@ -98,6 +100,7 @@ export function EventSeriesInstancesList({
 					<div className="setting-item-control">
 						<div
 							className={`checkbox-container${options.hideSkipped ? " is-enabled" : ""}`}
+							data-testid="prisma-series-hide-skipped"
 							onClick={() => options.onHideSkippedChange(!options.hideSkipped)}
 						/>
 					</div>
@@ -111,13 +114,14 @@ export function EventSeriesInstancesList({
 						type="text"
 						placeholder="Search instances... (Ctrl/Cmd+F)"
 						className="prisma-generic-event-search-input"
+						data-testid="prisma-series-search"
 						value={searchQuery}
 						onChange={(e) => onSearchChange(e.target.value)}
 					/>
 				</div>
 			)}
 
-			<div className="prisma-recurring-events-list-container">
+			<div className="prisma-recurring-events-list-container" data-testid="prisma-series-list-container">
 				{filtered.length === 0 ? (
 					<p className="prisma-recurring-events-list-empty">No events found</p>
 				) : (
