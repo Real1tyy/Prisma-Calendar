@@ -20,6 +20,7 @@ import { openEventSeriesModal } from "../../react/modals/event-list";
 import { removeZettelId } from "../../utils/events/zettel-id";
 import { getCategoriesFromFilePath } from "../../utils/obsidian";
 import { formatRecurrenceLabel, isPresetType } from "../../utils/recurring-utils";
+import { useBundle } from "../contexts/bundle-context";
 import { ProGatedContent } from "./pro-gated-content";
 
 const DASHBOARD_CSS_PREFIX = "prisma-dashboard-";
@@ -38,11 +39,11 @@ interface DashboardData {
 
 interface DashboardSectionProps {
 	id: string;
-	bundle: CalendarBundle;
 	buildData: () => DashboardData;
 }
 
-const DashboardSection = memo(function DashboardSection({ id, bundle, buildData }: DashboardSectionProps) {
+const DashboardSection = memo(function DashboardSection({ id, buildData }: DashboardSectionProps) {
+	const bundle = useBundle();
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [renderToken, setRenderToken] = useState(0);
 
@@ -149,7 +150,6 @@ interface GatedSectionProps extends DashboardSectionProps {
 const GatedDashboardSection = memo(function GatedDashboardSection(props: GatedSectionProps) {
 	return (
 		<ProGatedContent
-			bundle={props.bundle}
 			featureName={PRO_FEATURES.DASHBOARD}
 			description="Get a comprehensive overview of your calendar with charts, rankings, and key statistics — all in one place. Organized by name, category and recurring event series. "
 			previewKey={props.previewKey}
@@ -322,12 +322,7 @@ export function buildDashboardChildren(app: App, bundle: CalendarBundle): Dashbo
 			id: "dashboard-by-name",
 			label: "By Name",
 			component: () => (
-				<GatedDashboardSection
-					id="dashboard-by-name"
-					bundle={bundle}
-					buildData={buildByNameData(app, bundle)}
-					previewKey="DASHBOARD"
-				/>
+				<GatedDashboardSection id="dashboard-by-name" buildData={buildByNameData(app, bundle)} previewKey="DASHBOARD" />
 			),
 		},
 		{
@@ -336,7 +331,6 @@ export function buildDashboardChildren(app: App, bundle: CalendarBundle): Dashbo
 			component: () => (
 				<GatedDashboardSection
 					id="dashboard-by-category"
-					bundle={bundle}
 					buildData={buildByCategoryData(app, bundle)}
 					previewKey="DASHBOARD"
 				/>
@@ -348,7 +342,6 @@ export function buildDashboardChildren(app: App, bundle: CalendarBundle): Dashbo
 			component: () => (
 				<GatedDashboardSection
 					id="dashboard-recurring"
-					bundle={bundle}
 					buildData={buildRecurringData(app, bundle)}
 					previewKey="DASHBOARD"
 				/>

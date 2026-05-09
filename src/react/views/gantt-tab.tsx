@@ -6,7 +6,7 @@ import {
 	createContextMenu,
 	parseIntoList,
 } from "@real1ty-obsidian-plugins";
-import { renderReactInline, useObservable } from "@real1ty-obsidian-plugins-react";
+import { renderReactInline, useApp, useObservable } from "@real1ty-obsidian-plugins-react";
 import { type App, Menu, Notice } from "obsidian";
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { BehaviorSubject, debounceTime, distinctUntilChanged, map, merge, skip } from "rxjs";
@@ -49,6 +49,7 @@ import { getGanttRenderingKey } from "../../utils/calendar-settings";
 import { isEventDone } from "../../utils/event-frontmatter";
 import { extractCleanDisplayName } from "../../utils/events/naming";
 import { getFileAndFrontmatter, openFileInNewWindow } from "../../utils/obsidian";
+import { BundleContext, useBundle } from "../contexts/bundle-context";
 import { FilterBar, type FilterBarHandle } from "./filter-bar";
 import { ProGatedContent } from "./pro-gated-content";
 import { StickyBanner } from "./sticky-banner";
@@ -57,11 +58,6 @@ const REFRESH_DEBOUNCE_MS = 100;
 
 interface PrereqState {
 	targetFilePath: string;
-}
-
-interface GanttTabProps {
-	app: App;
-	bundle: CalendarBundle;
 }
 
 const PASS_ALL: FilterBarHandle = { shouldInclude: () => true };
@@ -183,7 +179,6 @@ function buildBarMenuItems(
 }
 
 interface GanttToolbarProps {
-	bundle: CalendarBundle;
 	prereqState$: BehaviorSubject<PrereqState | null>;
 	onCreate: () => void;
 	onCancelPrereq: () => void;
@@ -192,7 +187,6 @@ interface GanttToolbarProps {
 }
 
 const GanttToolbar = memo(function GanttToolbar({
-	bundle,
 	prereqState$,
 	onCreate,
 	onCancelPrereq,
@@ -206,7 +200,7 @@ const GanttToolbar = memo(function GanttToolbar({
 			<button className="prisma-gantt-create-btn" onClick={onCreate} data-testid="prisma-gantt-create">
 				Create
 			</button>
-			<FilterBar bundle={bundle} onFilterChange={onFilterChange} onHandleReady={onFilterReady} />
+			<FilterBar onFilterChange={onFilterChange} onHandleReady={onFilterReady} />
 			{prereq && (
 				<StickyBanner
 					message={`Click a bar to assign it as a prerequisite for "${extractCleanDisplayName(prereq.targetFilePath)}"`}
@@ -217,7 +211,9 @@ const GanttToolbar = memo(function GanttToolbar({
 	);
 });
 
-const GanttBody = memo(function GanttBody({ app, bundle }: GanttTabProps) {
+const GanttBody = memo(function GanttBody() {
+	const app = useApp();
+	const bundle = useBundle();
 	const containerRef = useRef<HTMLDivElement>(null);
 	const filterRef = useRef<FilterBarHandle>(PASS_ALL);
 	const rebuildRef = useRef<(centerOnData: boolean) => void>(() => {});
@@ -387,14 +383,15 @@ const GanttBody = memo(function GanttBody({ app, bundle }: GanttTabProps) {
 
 		const unmountToolbar = renderReactInline(
 			renderer.toolbarLeft,
-			<GanttToolbar
-				bundle={bundle}
-				prereqState$={prereqState$}
-				onCreate={handleCreate}
-				onCancelPrereq={handleCancelPrereq}
-				onFilterChange={handleFilterChange}
-				onFilterReady={handleFilterReady}
-			/>,
+			<BundleContext value={bundle}>
+				<GanttToolbar
+					prereqState$={prereqState$}
+					onCreate={handleCreate}
+					onCancelPrereq={handleCancelPrereq}
+					onFilterChange={handleFilterChange}
+					onFilterReady={handleFilterReady}
+				/>
+			</BundleContext>,
 			app
 		);
 
@@ -442,17 +439,17 @@ const GanttBody = memo(function GanttBody({ app, bundle }: GanttTabProps) {
 	);
 });
 
-export const GanttTab = memo(function GanttTab(props: GanttTabProps) {
-	const isPro = useObservable(props.bundle.plugin.licenseManager.isPro$, props.bundle.plugin.licenseManager.isPro);
+export const GanttTab = memo(function GanttTab() {
+	const bundle = useBundle();
+	const isPro = useObservable(bundle.plugin.licenseManager.isPro$, bundle.plugin.licenseManager.isPro);
 
 	return (
 		<ProGatedContent
-			bundle={props.bundle}
 			featureName={PRO_FEATURES.GANTT}
 			description="Define dependencies between events and visualize them in a Gantt chart. Track task order and project timelines."
 			previewKey="GANTT"
 		>
-			{isPro ? <GanttBody {...props} /> : null}
+			{isPro ? <GanttBody /> : null}
 		</ProGatedContent>
 	);
 });

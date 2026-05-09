@@ -2,11 +2,10 @@ import { useObservable } from "@real1ty-obsidian-plugins-react";
 import { memo, type ReactNode, useEffect, useRef } from "react";
 
 import { renderProUpgradeBanner } from "../../components/settings/pro-upgrade-banner";
-import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { ProFeatureKey } from "../../core/pro-feature-previews";
+import { useBundle } from "../contexts/bundle-context";
 
 interface ProGatedContentProps {
-	bundle: CalendarBundle;
 	featureName: string;
 	description: string;
 	previewKey?: ProFeatureKey;
@@ -14,12 +13,12 @@ interface ProGatedContentProps {
 }
 
 export const ProGatedContent = memo(function ProGatedContent({
-	bundle,
 	featureName,
 	description,
 	previewKey,
 	children,
 }: ProGatedContentProps) {
+	const bundle = useBundle();
 	const isPro = useObservable(bundle.plugin.licenseManager.isPro$, bundle.plugin.licenseManager.isPro);
 	const bannerRef = useRef<HTMLDivElement>(null);
 

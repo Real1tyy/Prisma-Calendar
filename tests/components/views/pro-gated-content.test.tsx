@@ -4,6 +4,7 @@ import { render, screen } from "@testing-library/react";
 import { BehaviorSubject } from "rxjs";
 import { describe, expect, it } from "vitest";
 
+import { BundleContext } from "../../../src/react/contexts/bundle-context";
 import { ProGatedContent } from "../../../src/react/views/pro-gated-content";
 
 function createMockBundle(isPro: boolean) {
@@ -20,9 +21,11 @@ function createMockBundle(isPro: boolean) {
 describe("ProGatedContent", () => {
 	it("renders children when Pro is active", () => {
 		render(
-			<ProGatedContent bundle={createMockBundle(true)} featureName="Heatmap" description="View event density">
-				<div data-testid="pro-child">Pro content</div>
-			</ProGatedContent>
+			<BundleContext value={createMockBundle(true)}>
+				<ProGatedContent featureName="Heatmap" description="View event density">
+					<div data-testid="pro-child">Pro content</div>
+				</ProGatedContent>
+			</BundleContext>
 		);
 		expect(screen.getByTestId("pro-child")).toBeInTheDocument();
 		expect(screen.queryByTestId("prisma-pro-gated")).not.toBeInTheDocument();
@@ -30,9 +33,11 @@ describe("ProGatedContent", () => {
 
 	it("renders upgrade banner when not Pro", () => {
 		render(
-			<ProGatedContent bundle={createMockBundle(false)} featureName="Heatmap" description="View event density">
-				<div data-testid="pro-child">Pro content</div>
-			</ProGatedContent>
+			<BundleContext value={createMockBundle(false)}>
+				<ProGatedContent featureName="Heatmap" description="View event density">
+					<div data-testid="pro-child">Pro content</div>
+				</ProGatedContent>
+			</BundleContext>
 		);
 		expect(screen.queryByTestId("pro-child")).not.toBeInTheDocument();
 		expect(screen.getByTestId("prisma-pro-gated")).toBeInTheDocument();

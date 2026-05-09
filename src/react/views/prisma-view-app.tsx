@@ -17,6 +17,8 @@ import { CalendarComponent } from "../../components/calendar-view";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type CustomCalendarPlugin from "../../main";
 import { getLeafContainerEl } from "../../utils/obsidian";
+import { BundleContext } from "../contexts/bundle-context";
+import { PluginContext } from "../contexts/plugin-context";
 import { CapacityIndicator, type CapacityIndicatorHandle } from "./capacity-indicator";
 import { DailyStatsTab, type DailyStatsTabHandle } from "./daily-stats-tab";
 import { buildDashboardChildren } from "./dashboard-tab";
@@ -84,14 +86,17 @@ interface TabHandleRefs {
 	dualDaily: RefObject<DualDailyTabHandle | null>;
 }
 
-function buildTabs(
-	app: App,
-	bundle: CalendarBundle,
-	leaf: WorkspaceLeaf,
-	viewRef: PrismaViewRef,
-	refs: TabHandleRefs
-): TabEntry[] {
+interface MountCtx {
+	app: App;
+	plugin: CustomCalendarPlugin;
+	bundle: CalendarBundle;
+	leaf: WorkspaceLeaf;
+}
+
+function buildTabs(ctx: MountCtx, viewRef: PrismaViewRef, refs: TabHandleRefs): TabEntry[] {
+	const { app, plugin, bundle, leaf } = ctx;
 	const hostEl = getLeafContainerEl(leaf);
+	const tabCtx = { app, plugin, bundle };
 
 	const calendarTab: TabDefinition = {
 		id: "calendar",
@@ -109,7 +114,7 @@ function buildTabs(
 
 	const dashboardChildren = buildDashboardChildren(app, bundle).map(
 		(child): TabDefinition =>
-			makeReactTab(app, {
+			makeReactTab(tabCtx, {
 				id: child.id,
 				label: child.label,
 				testId: `prisma-${child.id}`,
@@ -119,14 +124,14 @@ function buildTabs(
 
 	return [
 		calendarTab,
-		makeReactTab(app, {
+		makeReactTab(tabCtx, {
 			id: "timeline",
 			label: "Timeline",
 			icon: "clock",
 			testId: "prisma-timeline-tab",
-			render: () => createElement(TimelineTab, { app, bundle }),
+			render: () => createElement(TimelineTab),
 		}),
-		makeReactTab(app, {
+		makeReactTab(tabCtx, {
 			id: "heatmap",
 			label: "Heatmap",
 			icon: "flame",
@@ -137,16 +142,16 @@ function buildTabs(
 				ArrowUp: (h) => h.handleArrow("up"),
 				ArrowDown: (h) => h.handleArrow("down"),
 			}),
-			render: () => createElement(HeatmapTab, { app, bundle, handleRef: refs.heatmap }),
+			render: () => createElement(HeatmapTab, { handleRef: refs.heatmap }),
 		}),
-		makeReactTab(app, {
+		makeReactTab(tabCtx, {
 			id: "gantt",
 			label: "Gantt",
 			icon: "gantt-chart",
 			testId: "prisma-gantt-tab",
-			render: () => createElement(GanttTab, { app, bundle }),
+			render: () => createElement(GanttTab),
 		}),
-		makeReactTab(app, {
+		makeReactTab(tabCtx, {
 			id: "daily-stats",
 			label: "Daily + Stats",
 			icon: "bar-chart-3",
@@ -155,9 +160,9 @@ function buildTabs(
 				ArrowLeft: (h) => h.prev(),
 				ArrowRight: (h) => h.next(),
 			}),
-			render: () => createElement(DailyStatsTab, { app, bundle, handleRef: refs.dailyStats }),
+			render: () => createElement(DailyStatsTab, { handleRef: refs.dailyStats }),
 		}),
-		makeReactTab(app, {
+		makeReactTab(tabCtx, {
 			id: "monthly-calendar-stats",
 			label: "Monthly + Stats",
 			icon: "calendar-range",
@@ -166,9 +171,9 @@ function buildTabs(
 				ArrowLeft: (h) => h.prev(),
 				ArrowRight: (h) => h.next(),
 			}),
-			render: () => createElement(MonthlyCalendarStatsTab, { app, bundle, handleRef: refs.monthlyStats }),
+			render: () => createElement(MonthlyCalendarStatsTab, { handleRef: refs.monthlyStats }),
 		}),
-		makeReactTab(app, {
+		makeReactTab(tabCtx, {
 			id: "dual-daily",
 			label: "Dual Daily",
 			icon: "columns-2",
@@ -177,7 +182,7 @@ function buildTabs(
 				ArrowLeft: (h) => h.prev(),
 				ArrowRight: (h) => h.next(),
 			}),
-			render: () => createElement(DualDailyTab, { app, bundle, handleRef: refs.dualDaily }),
+			render: () => createElement(DualDailyTab, { handleRef: refs.dualDaily }),
 		}),
 		{
 			id: "dashboard",
@@ -185,7 +190,7 @@ function buildTabs(
 			icon: "layout-dashboard",
 			children: dashboardChildren,
 		},
-		makeReactTab(app, {
+		makeReactTab(tabCtx, {
 			id: "heatmap-monthly-stats",
 			label: "Heatmap Monthly + Stats",
 			icon: "flame",
@@ -196,7 +201,7 @@ function buildTabs(
 				ArrowUp: (h) => h.handleArrow("up"),
 				ArrowDown: (h) => h.handleArrow("down"),
 			}),
-			render: () => createElement(HeatmapMonthlyStatsTab, { app, bundle, handleRef: refs.heatmapMonthly }),
+			render: () => createElement(HeatmapMonthlyStatsTab, { handleRef: refs.heatmapMonthly }),
 		}),
 	];
 }
@@ -205,10 +210,7 @@ interface SetupTabbedContainerCtx {
 	el: HTMLElement;
 	headerEl: HTMLElement;
 	titleContainer: HTMLElement | null;
-	plugin: CustomCalendarPlugin;
-	app: App;
-	bundle: CalendarBundle;
-	leaf: WorkspaceLeaf;
+	mountCtx: MountCtx;
 	viewRef: PrismaViewRef;
 	refs: TabHandleRefs;
 }
@@ -217,14 +219,12 @@ function setupTabbedContainer({
 	el,
 	headerEl,
 	titleContainer,
-	plugin,
-	app,
-	bundle,
-	leaf,
+	mountCtx,
 	viewRef,
 	refs,
 }: SetupTabbedContainerCtx): () => void {
-	const tabs = buildTabs(app, bundle, leaf, viewRef, refs);
+	const { app, plugin, bundle } = mountCtx;
+	const tabs = buildTabs(mountCtx, viewRef, refs);
 	const savedState = bundle.settingsStore.currentSettings.activeTab;
 	const defaultState: TabbedContainerState = { visibleTabIds: [...DEFAULT_VISIBLE_TAB_IDS] };
 
@@ -254,21 +254,20 @@ function setupTabbedContainer({
 	return () => handle.destroy();
 }
 
-function setupCapacityIndicator(
-	titleContainer: HTMLElement,
-	app: App,
-	bundle: CalendarBundle,
-	viewRef: PrismaViewRef
-): () => void {
+function setupCapacityIndicator(titleContainer: HTMLElement, mountCtx: MountCtx, viewRef: PrismaViewRef): () => void {
+	const { app, plugin, bundle } = mountCtx;
 	const host = titleContainer.createDiv("prisma-capacity-indicator-host");
 	const unmount = renderReactInline(
 		host,
-		createElement(CapacityIndicator, {
-			bundle,
-			ref: (handle: CapacityIndicatorHandle | null) => {
-				viewRef.capacityIndicatorHandle = handle;
-			},
-		}),
+		<PluginContext value={plugin}>
+			<BundleContext value={bundle}>
+				<CapacityIndicator
+					ref={(handle: CapacityIndicatorHandle | null) => {
+						viewRef.capacityIndicatorHandle = handle;
+					}}
+				/>
+			</BundleContext>
+		</PluginContext>,
 		app
 	);
 	return () => {
@@ -277,13 +276,8 @@ function setupCapacityIndicator(
 	};
 }
 
-function setupPageHeader(
-	plugin: CustomCalendarPlugin,
-	app: App,
-	bundle: CalendarBundle,
-	leaf: WorkspaceLeaf,
-	viewRef: PrismaViewRef
-): () => void {
+function setupPageHeader(mountCtx: MountCtx, viewRef: PrismaViewRef): () => void {
+	const { app, plugin, bundle, leaf } = mountCtx;
 	const savedState = bundle.settingsStore.currentSettings.pageHeaderState;
 	const handle = createPageHeader({
 		actions: buildPageHeaderActions(app),
@@ -325,20 +319,18 @@ export const PrismaViewApp = memo(function PrismaViewApp({
 			monthlyStats: monthlyStatsRef,
 			dualDaily: dualDailyRef,
 		};
+		const mountCtx: MountCtx = { app, plugin, bundle, leaf };
 
 		const teardownTabs = setupTabbedContainer({
 			el,
 			headerEl,
 			titleContainer,
-			plugin,
-			app,
-			bundle,
-			leaf,
+			mountCtx,
 			viewRef,
 			refs,
 		});
-		const teardownCapacity = titleContainer ? setupCapacityIndicator(titleContainer, app, bundle, viewRef) : null;
-		const teardownPageHeader = setupPageHeader(plugin, app, bundle, leaf, viewRef);
+		const teardownCapacity = titleContainer ? setupCapacityIndicator(titleContainer, mountCtx, viewRef) : null;
+		const teardownPageHeader = setupPageHeader(mountCtx, viewRef);
 
 		return () => {
 			viewRef.calendarComponent?.unload();

@@ -1,21 +1,20 @@
 import { toLocalISOString } from "@real1ty-obsidian-plugins";
 import { useObservable } from "@real1ty-obsidian-plugins-react";
-import { memo, type Ref,useImperativeHandle, useMemo, useState } from "react";
+import { memo, type Ref, useImperativeHandle, useMemo, useState } from "react";
 import { combineLatest, from, of } from "rxjs";
 import { map, startWith, switchMap } from "rxjs/operators";
 
-import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { calculateCapacityFromEvents, formatBoundaryRange, formatCapacityLabel } from "../../utils/capacity";
 import { formatDuration, formatDurationAsDecimalHours, getDayBounds } from "../../utils/stats";
+import { useBundle } from "../contexts/bundle-context";
 
 export interface CapacityIndicatorHandle {
 	setRange: (start: Date, end: Date) => void;
 }
 
 interface CapacityIndicatorProps {
-	bundle: CalendarBundle;
 	ref?: Ref<CapacityIndicatorHandle>;
 	rangeStart?: Date;
 	rangeEnd?: Date;
@@ -36,11 +35,11 @@ function buildVM(events: CalendarEvent[], settings: SingleCalendarConfig, start:
 }
 
 export const CapacityIndicator = memo(function CapacityIndicator({
-	bundle,
 	ref,
 	rangeStart,
 	rangeEnd,
 }: CapacityIndicatorProps) {
+	const bundle = useBundle();
 	const initialRange = useMemo(() => getDayBounds(new Date()), []);
 	const [imperativeRange, setImperativeRange] = useState<{ start: Date; end: Date }>(initialRange);
 

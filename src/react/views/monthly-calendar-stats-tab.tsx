@@ -1,10 +1,10 @@
 import { createGridLayout, type GridLayoutHandle } from "@real1ty-obsidian-plugins";
-import type { App } from "obsidian";
-import { memo, type Ref,useEffect, useImperativeHandle, useRef } from "react";
+import { useApp } from "@real1ty-obsidian-plugins-react";
+import { memo, type Ref, useEffect, useImperativeHandle, useRef } from "react";
 
 import { createDailyCalendar, type DailyCalendarHandle } from "../../components/views/daily-calendar";
-import { type MonthlyStatsHandle,renderMonthlyStatsInto } from "../../components/views/monthly-stats-renderer";
-import type { CalendarBundle } from "../../core/calendar-bundle";
+import { type MonthlyStatsHandle, renderMonthlyStatsInto } from "../../components/views/monthly-stats-renderer";
+import { useBundle } from "../contexts/bundle-context";
 
 export interface MonthlyCalendarStatsTabHandle {
 	prev(): void;
@@ -12,16 +12,14 @@ export interface MonthlyCalendarStatsTabHandle {
 }
 
 interface MonthlyCalendarStatsTabProps {
-	app: App;
-	bundle: CalendarBundle;
 	handleRef?: Ref<MonthlyCalendarStatsTabHandle>;
 }
 
 export const MonthlyCalendarStatsTab = memo(function MonthlyCalendarStatsTab({
-	app,
-	bundle,
 	handleRef,
 }: MonthlyCalendarStatsTabProps) {
+	const app = useApp();
+	const bundle = useBundle();
 	const containerRef = useRef<HTMLDivElement>(null);
 	const calendarRef = useRef<DailyCalendarHandle | null>(null);
 

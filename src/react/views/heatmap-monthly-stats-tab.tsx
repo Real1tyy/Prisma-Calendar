@@ -1,13 +1,13 @@
 import { createGridLayout, type GridLayoutHandle } from "@real1ty-obsidian-plugins";
-import type { App } from "obsidian";
-import { memo, type Ref,useEffect, useImperativeHandle, useRef } from "react";
+import { useApp } from "@real1ty-obsidian-plugins-react";
+import { memo, type Ref, useEffect, useImperativeHandle, useRef } from "react";
 import { merge } from "rxjs";
 
-import { type HeatmapHandle,renderHeatmapInto } from "../../components/modals";
+import { type HeatmapHandle, renderHeatmapInto } from "../../components/modals";
 import type { IntervalStatsViewHandle } from "../../components/views/interval-stats-view";
 import { renderMonthlyStatsInto } from "../../components/views/monthly-stats-renderer";
-import type { CalendarBundle } from "../../core/calendar-bundle";
 import { PRO_FEATURES } from "../../core/license";
+import { useBundle } from "../contexts/bundle-context";
 import { ProGatedContent } from "./pro-gated-content";
 
 export interface HeatmapMonthlyStatsTabHandle {
@@ -15,16 +15,12 @@ export interface HeatmapMonthlyStatsTabHandle {
 }
 
 interface HeatmapMonthlyStatsTabProps {
-	app: App;
-	bundle: CalendarBundle;
 	handleRef?: Ref<HeatmapMonthlyStatsTabHandle>;
 }
 
-const HeatmapMonthlyStatsBody = memo(function HeatmapMonthlyStatsBody({
-	app,
-	bundle,
-	handleRef,
-}: HeatmapMonthlyStatsTabProps) {
+const HeatmapMonthlyStatsBody = memo(function HeatmapMonthlyStatsBody({ handleRef }: HeatmapMonthlyStatsTabProps) {
+	const app = useApp();
+	const bundle = useBundle();
 	const containerRef = useRef<HTMLDivElement>(null);
 	const heatmapRef = useRef<HeatmapHandle | null>(null);
 
@@ -105,7 +101,6 @@ const HeatmapMonthlyStatsBody = memo(function HeatmapMonthlyStatsBody({
 export const HeatmapMonthlyStatsTab = memo(function HeatmapMonthlyStatsTab(props: HeatmapMonthlyStatsTabProps) {
 	return (
 		<ProGatedContent
-			bundle={props.bundle}
 			featureName={PRO_FEATURES.HEATMAP_MONTHLY}
 			description="Pair a monthly activity heatmap with a breakdown pie chart — spot patterns and where your time actually went in one view."
 			previewKey="HEATMAP_MONTHLY"

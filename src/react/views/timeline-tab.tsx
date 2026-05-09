@@ -1,23 +1,19 @@
-import { renderReactInline } from "@real1ty-obsidian-plugins-react";
-import type { App } from "obsidian";
+import { renderReactInline, useApp } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useEffect, useRef } from "react";
 import { debounceTime, distinctUntilChanged, map, merge, skip } from "rxjs";
 
 import { renderTimelineInto, type TimelineHandle } from "../../components/modals";
-import type { CalendarBundle } from "../../core/calendar-bundle";
 import { getTimelineRenderingKey } from "../../utils/calendar-settings";
+import { BundleContext, useBundle } from "../contexts/bundle-context";
 import { FilterBar, type FilterBarHandle } from "./filter-bar";
 
 const REFRESH_DEBOUNCE_MS = 100;
 
-interface TimelineTabProps {
-	app: App;
-	bundle: CalendarBundle;
-}
-
 const PASS_ALL: FilterBarHandle = { shouldInclude: () => true };
 
-export const TimelineTab = memo(function TimelineTab({ app, bundle }: TimelineTabProps) {
+export const TimelineTab = memo(function TimelineTab() {
+	const app = useApp();
+	const bundle = useBundle();
 	const containerRef = useRef<HTMLDivElement>(null);
 	const handleRef = useRef<TimelineHandle | null>(null);
 	const filterRef = useRef<FilterBarHandle>(PASS_ALL);
@@ -42,7 +38,9 @@ export const TimelineTab = memo(function TimelineTab({ app, bundle }: TimelineTa
 
 		const unmountToolbar = renderReactInline(
 			handle.toolbarLeft,
-			<FilterBar bundle={bundle} onFilterChange={handleFilterChange} onHandleReady={handleFilterReady} />,
+			<BundleContext value={bundle}>
+				<FilterBar onFilterChange={handleFilterChange} onHandleReady={handleFilterReady} />
+			</BundleContext>,
 			app
 		);
 

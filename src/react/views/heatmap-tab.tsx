@@ -1,12 +1,11 @@
-import { renderReactInline } from "@real1ty-obsidian-plugins-react";
-import type { App } from "obsidian";
-import { memo, type Ref,useCallback, useEffect, useImperativeHandle, useRef } from "react";
+import { renderReactInline, useApp } from "@real1ty-obsidian-plugins-react";
+import { memo, type Ref, useCallback, useEffect, useImperativeHandle, useRef } from "react";
 import { distinctUntilChanged, map, merge, skip } from "rxjs";
 
-import { type HeatmapHandle,renderHeatmapInto } from "../../components/modals";
-import type { CalendarBundle } from "../../core/calendar-bundle";
+import { type HeatmapHandle, renderHeatmapInto } from "../../components/modals";
 import { PRO_FEATURES } from "../../core/license";
 import { getHeatmapRenderingKey } from "../../utils/calendar-settings";
+import { BundleContext, useBundle } from "../contexts/bundle-context";
 import { FilterBar, type FilterBarHandle } from "./filter-bar";
 import { ProGatedContent } from "./pro-gated-content";
 
@@ -15,14 +14,14 @@ export interface HeatmapTabHandle {
 }
 
 interface HeatmapTabProps {
-	app: App;
-	bundle: CalendarBundle;
 	handleRef?: Ref<HeatmapTabHandle>;
 }
 
 const PASS_ALL: FilterBarHandle = { shouldInclude: () => true };
 
-const HeatmapBody = memo(function HeatmapBody({ app, bundle, handleRef }: HeatmapTabProps) {
+const HeatmapBody = memo(function HeatmapBody({ handleRef }: HeatmapTabProps) {
+	const app = useApp();
+	const bundle = useBundle();
 	const containerRef = useRef<HTMLDivElement>(null);
 	const heatmapRef = useRef<HeatmapHandle | null>(null);
 	const filterRef = useRef<FilterBarHandle>(PASS_ALL);
@@ -51,7 +50,9 @@ const HeatmapBody = memo(function HeatmapBody({ app, bundle, handleRef }: Heatma
 
 		const unmountToolbar = renderReactInline(
 			handle.toolbarLeft,
-			<FilterBar bundle={bundle} onFilterChange={handleFilterChange} onHandleReady={handleFilterReady} />,
+			<BundleContext value={bundle}>
+				<FilterBar onFilterChange={handleFilterChange} onHandleReady={handleFilterReady} />
+			</BundleContext>,
 			app
 		);
 
@@ -90,7 +91,6 @@ const HeatmapBody = memo(function HeatmapBody({ app, bundle, handleRef }: Heatma
 export const HeatmapTab = memo(function HeatmapTab(props: HeatmapTabProps) {
 	return (
 		<ProGatedContent
-			bundle={props.bundle}
 			featureName={PRO_FEATURES.HEATMAP}
 			description="Visualize your events over time with an interactive heatmap. See patterns, streaks, and activity density at a glance."
 			previewKey="HEATMAP"

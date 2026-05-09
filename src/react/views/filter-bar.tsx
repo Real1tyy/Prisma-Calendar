@@ -1,7 +1,6 @@
 import { FilterInput } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent } from "../../types/calendar";
 import { createExpressionMatcher, matchesSearch } from "../../utils/filter-logic";
 import { FilterPresetSelector } from "./filter-preset-selector";
@@ -14,12 +13,11 @@ export interface FilterBarHandle {
 }
 
 interface FilterBarProps {
-	bundle: CalendarBundle;
 	onFilterChange: () => void;
 	onHandleReady: (handle: FilterBarHandle) => void;
 }
 
-export const FilterBar = memo(function FilterBar({ bundle, onFilterChange, onHandleReady }: FilterBarProps) {
+export const FilterBar = memo(function FilterBar({ onFilterChange, onHandleReady }: FilterBarProps) {
 	const [searchValue, setSearchValue] = useState("");
 	const [expressionValue, setExpressionValue] = useState("");
 
@@ -58,7 +56,7 @@ export const FilterBar = memo(function FilterBar({ bundle, onFilterChange, onHan
 
 	return (
 		<div className="prisma-view-filter-bar" data-testid="prisma-filter-bar">
-			<FilterPresetSelector bundle={bundle} onPresetSelected={commitExpression} />
+			<FilterPresetSelector onPresetSelected={commitExpression} />
 			<FilterInput
 				value={expressionValue}
 				onChange={commitExpression}

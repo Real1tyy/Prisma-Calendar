@@ -1,5 +1,5 @@
 import { createGridLayout, type GridLayoutHandle } from "@real1ty-obsidian-plugins";
-import type { App } from "obsidian";
+import { useApp } from "@real1ty-obsidian-plugins-react";
 import { memo, type Ref, useEffect, useImperativeHandle, useRef } from "react";
 
 import {
@@ -7,7 +7,7 @@ import {
 	type DailyCalendarHandle,
 	type DailyDragState,
 } from "../../components/views/daily-calendar";
-import type { CalendarBundle } from "../../core/calendar-bundle";
+import { useBundle } from "../contexts/bundle-context";
 
 export interface DualDailyTabHandle {
 	prev(): void;
@@ -15,12 +15,12 @@ export interface DualDailyTabHandle {
 }
 
 interface DualDailyTabProps {
-	app: App;
-	bundle: CalendarBundle;
 	handleRef?: Ref<DualDailyTabHandle>;
 }
 
-export const DualDailyTab = memo(function DualDailyTab({ app, bundle, handleRef }: DualDailyTabProps) {
+export const DualDailyTab = memo(function DualDailyTab({ handleRef }: DualDailyTabProps) {
+	const app = useApp();
+	const bundle = useBundle();
 	const containerRef = useRef<HTMLDivElement>(null);
 	const leftCalRef = useRef<DailyCalendarHandle | null>(null);
 	const rightCalRef = useRef<DailyCalendarHandle | null>(null);

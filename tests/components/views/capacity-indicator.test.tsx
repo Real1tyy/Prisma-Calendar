@@ -1,8 +1,10 @@
 import "@testing-library/jest-dom/vitest";
+
 import { render, screen, waitFor } from "@testing-library/react";
 import { Subject } from "rxjs";
 import { describe, expect, it, vi } from "vitest";
 
+import { BundleContext } from "../../../src/react/contexts/bundle-context";
 import { CapacityIndicator } from "../../../src/react/views/capacity-indicator";
 import { createMockCalendarSettingsStore } from "../../fixtures/settings-fixtures";
 
@@ -23,16 +25,23 @@ function createMockBundle(settingsOverride: Record<string, unknown> = {}) {
 	} as any;
 }
 
+function renderInBundle(bundle: any) {
+	return render(
+		<BundleContext value={bundle}>
+			<CapacityIndicator />
+		</BundleContext>
+	);
+}
+
 describe("CapacityIndicator", () => {
 	it("renders nothing when capacity tracking is disabled", () => {
 		const bundle = createMockBundle({ capacityTrackingEnabled: false });
-		const { container } = render(<CapacityIndicator bundle={bundle} />);
+		const { container } = renderInBundle(bundle);
 		expect(container.firstChild).toBeNull();
 	});
 
 	it("renders the indicator when tracking is enabled", async () => {
-		const bundle = createMockBundle();
-		render(<CapacityIndicator bundle={bundle} />);
+		renderInBundle(createMockBundle());
 
 		await waitFor(() => {
 			expect(screen.getByTestId("prisma-capacity-indicator")).toBeInTheDocument();
@@ -40,8 +49,7 @@ describe("CapacityIndicator", () => {
 	});
 
 	it("shows percentage in the label", async () => {
-		const bundle = createMockBundle();
-		render(<CapacityIndicator bundle={bundle} />);
+		renderInBundle(createMockBundle());
 
 		await waitFor(() => {
 			const indicator = screen.getByTestId("prisma-capacity-indicator");

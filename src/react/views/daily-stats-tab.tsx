@@ -1,10 +1,10 @@
 import { createGridLayout, type GridLayoutHandle } from "@real1ty-obsidian-plugins";
-import type { App } from "obsidian";
+import { useApp } from "@real1ty-obsidian-plugins-react";
 import { memo, type Ref, useEffect, useImperativeHandle, useRef } from "react";
 
 import { createDailyCalendar, type DailyCalendarHandle } from "../../components/views/daily-calendar";
 import { type DailyStatsHandle, renderDailyStatsInto } from "../../components/views/daily-stats-renderer";
-import type { CalendarBundle } from "../../core/calendar-bundle";
+import { useBundle } from "../contexts/bundle-context";
 
 export interface DailyStatsTabHandle {
 	prev(): void;
@@ -12,8 +12,6 @@ export interface DailyStatsTabHandle {
 }
 
 interface DailyStatsTabProps {
-	app: App;
-	bundle: CalendarBundle;
 	handleRef?: Ref<DailyStatsTabHandle>;
 }
 
@@ -21,7 +19,9 @@ interface DailyStatsTabProps {
 // across separate stats modals (weekly-stats/*-stats-modal.ts) — no single
 // toolbar exists. Stamping requires deciding on the modal vs inline toolbar
 // story first; left unstamped for now.
-export const DailyStatsTab = memo(function DailyStatsTab({ app, bundle, handleRef }: DailyStatsTabProps) {
+export const DailyStatsTab = memo(function DailyStatsTab({ handleRef }: DailyStatsTabProps) {
+	const app = useApp();
+	const bundle = useBundle();
 	const containerRef = useRef<HTMLDivElement>(null);
 	const calendarRef = useRef<DailyCalendarHandle | null>(null);
 
