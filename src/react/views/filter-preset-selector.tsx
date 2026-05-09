@@ -1,21 +1,18 @@
-import { useSettingsStore } from "@real1ty-obsidian-plugins-react";
 import { type ChangeEvent, memo, useCallback, useRef } from "react";
 
-import type { CalendarBundle } from "../../core/calendar-bundle";
+import { useBundleSettings } from "../contexts/bundle-context";
 
 const PLACEHOLDER_VALUE = "";
 const CLEAR_VALUE = "__clear__";
 
 interface FilterPresetSelectorProps {
-	bundle: CalendarBundle;
 	onPresetSelected: (expression: string) => void;
 }
 
 export const FilterPresetSelector = memo(function FilterPresetSelector({
-	bundle,
 	onPresetSelected,
 }: FilterPresetSelectorProps) {
-	const [settings] = useSettingsStore(bundle.settingsStore);
+	const [settings] = useBundleSettings();
 	const presets = settings.filterPresets;
 	const selectRef = useRef<HTMLSelectElement>(null);
 
