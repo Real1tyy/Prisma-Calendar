@@ -1,5 +1,6 @@
 import type { HeaderActionDefinition } from "@real1ty-obsidian-plugins";
 import { ObsidianIcon, useApp } from "@real1ty-obsidian-plugins-react";
+import type { App } from "obsidian";
 import { type CSSProperties, memo, useCallback } from "react";
 
 import { FULL_COMMAND_IDS } from "../../constants";
@@ -171,13 +172,16 @@ export const DEFAULT_ORDERED_ACTION_IDS: string[] = ACTION_SPECS.filter((a) => D
 	(a) => a.id
 );
 
-/** Declarative toolbar actions for createPageHeader and the manage-actions modal. */
-export const PRISMA_HEADER_TOOLBAR_ACTIONS: HeaderActionDefinition[] = ACTION_SPECS.map((spec) => ({
-	id: spec.id,
-	label: spec.label,
-	icon: spec.icon,
-	commandId: spec.commandId,
-}));
+/** Builds the toolbar action definitions, binding each onAction to the app's command registry. */
+export function buildPageHeaderActions(app: App): HeaderActionDefinition[] {
+	const commands = (app as unknown as { commands: { executeCommandById: (id: string) => void } }).commands;
+	return ACTION_SPECS.map((spec) => ({
+		id: spec.id,
+		label: spec.label,
+		icon: spec.icon,
+		onAction: () => commands.executeCommandById(spec.commandId),
+	}));
+}
 
 const HEADER_BTN_CLASS = "header-btn";
 

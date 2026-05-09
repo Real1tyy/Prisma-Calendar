@@ -26,7 +26,7 @@ import { HeatmapMonthlyStatsTab, type HeatmapMonthlyStatsTabHandle } from "./hea
 import { HeatmapTab, type HeatmapTabHandle } from "./heatmap-tab";
 import { makeReactTab } from "./make-react-tab";
 import { MonthlyCalendarStatsTab, type MonthlyCalendarStatsTabHandle } from "./monthly-calendar-stats-tab";
-import { DEFAULT_ORDERED_ACTION_IDS, PageHeaderActions, PRISMA_HEADER_TOOLBAR_ACTIONS } from "./page-header-actions";
+import { buildPageHeaderActions, DEFAULT_ORDERED_ACTION_IDS } from "./page-header-actions";
 import { TimelineTab } from "./timeline-tab";
 
 const DEFAULT_VISIBLE_TAB_IDS: readonly string[] = [
@@ -286,7 +286,7 @@ function setupPageHeader(
 ): () => void {
 	const savedState = bundle.settingsStore.currentSettings.pageHeaderState;
 	const handle = createPageHeader({
-		actions: PRISMA_HEADER_TOOLBAR_ACTIONS,
+		actions: buildPageHeaderActions(app),
 		cssPrefix: "prisma-",
 		app,
 		editable: true,
@@ -294,19 +294,6 @@ function setupPageHeader(
 		onStateChange: (state) => {
 			void bundle.settingsStore.updateSettings((s) => ({ ...s, pageHeaderState: state }));
 		},
-		mountActionBar: ({ host, displayState, executeAction }) =>
-			renderReactInline(
-				host,
-				createElement(PageHeaderActions, {
-					visibleActionIds: displayState.orderedIds,
-					renames: displayState.renames,
-					iconOverrides: displayState.iconOverrides,
-					colorOverrides: displayState.colorOverrides,
-					executeAction,
-					cssPrefix: "prisma-",
-				}),
-				app
-			),
 	});
 	viewRef.pageHeaderHandle = handle;
 	handle.apply(leaf);

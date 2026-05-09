@@ -540,7 +540,12 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			}
 			this.updateToolbar();
 		});
-		this.prerequisiteSelectionManager = new PrerequisiteSelectionManager(this.calendar, this.bundle, this.container);
+		this.prerequisiteSelectionManager = new PrerequisiteSelectionManager(
+			this.calendar,
+			this.bundle,
+			this.container,
+			this.app
+		);
 		this.updateToolbar();
 
 		this.zoomManager.initialize(this.calendar, this.container, this.hostEl);
@@ -2399,7 +2404,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 	private showConnectionBanner(): void {
 		this.removeConnectionBanner();
-		this.connectionBanner = createStickyBanner(this.container, "Prerequisite connections enabled", () =>
+		this.connectionBanner = createStickyBanner(this.container, this.app, "Prerequisite connections enabled", () =>
 			this.hideConnections()
 		);
 	}
