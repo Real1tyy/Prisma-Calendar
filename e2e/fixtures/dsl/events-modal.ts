@@ -443,7 +443,9 @@ export function createSeriesModalHandle(page: Page, modal: Locator): SeriesModal
 		},
 
 		async expectCategoryColorVar(color) {
-			const actual = await modal.evaluate((el) =>
+			const target = modal.locator(".prisma-recurring-events-list-modal-categorized").first();
+			await expect(target).toBeVisible();
+			const actual = await target.evaluate((el) =>
 				(el as HTMLElement).style.getPropertyValue("--source-category-color").trim()
 			);
 			expect(actual).toBe(color);
