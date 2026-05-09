@@ -1,9 +1,17 @@
 import { parseIntoList } from "@real1ty-obsidian-plugins";
-import type { App } from "obsidian";
+import type { App, WorkspaceLeaf } from "obsidian";
 import { Notice, TFile } from "obsidian";
 
 import { getCalendarViewType } from "../constants";
 import type { Frontmatter } from "../types";
+
+/**
+ * Returns the leaf's containerEl. Obsidian doesn't expose this on the public
+ * `WorkspaceLeaf` type, but it's the stable mount node for the leaf's view.
+ */
+export function getLeafContainerEl(leaf: WorkspaceLeaf): HTMLElement {
+	return (leaf as unknown as { containerEl: HTMLElement }).containerEl;
+}
 
 export const emitHover = (
 	app: App,
