@@ -105,15 +105,11 @@ export const Stopwatch = forwardRef<StopwatchHandle, StopwatchCallbacks>(functio
 	const continueFromExisting = useCallback(
 		(existingStartTime?: Date) => {
 			if (stateRef.current.state === "running") return;
-			setInternalState((prev) => {
-				let nextStart = prev.startTime;
-				if (existingStartTime) {
-					nextStart = existingStartTime;
-				} else if (!nextStart) {
-					nextStart = new Date();
-				}
-				return { ...prev, startTime: nextStart };
-			});
+			const candidate = existingStartTime ?? stateRef.current.startTime ?? new Date();
+			// Refuse to track from a future start time — elapsed = now - start
+			// would be negative, rendering as a "countdown" until that moment.
+			if (candidate.getTime() > Date.now()) return;
+			setInternalState((prev) => ({ ...prev, startTime: candidate }));
 			beginTracking();
 		},
 		[beginTracking, setInternalState]

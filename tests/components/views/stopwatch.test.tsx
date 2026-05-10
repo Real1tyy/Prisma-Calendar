@@ -81,6 +81,15 @@ describe("Stopwatch", () => {
 			expect(mockCallbacks.onContinueRequested).not.toHaveBeenCalled();
 		});
 
+		it("should refuse to continue from a future start time", () => {
+			const { stopwatch } = mountStopwatch();
+			const futureStartTime = new Date(Date.now() + 60_000); // 1 minute from now
+
+			drive(() => stopwatch.continueFromExisting(futureStartTime));
+			expect(stopwatch.getState()).toBe("idle");
+			expect(stopwatch.isActive()).toBe(false);
+		});
+
 		it("should transition to stopped state when stopped", () => {
 			const { stopwatch } = mountStopwatch();
 			drive(() => stopwatch.start());
