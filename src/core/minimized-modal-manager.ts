@@ -5,8 +5,8 @@ import type { Subscription } from "rxjs";
 
 import { EventCreateModal, EventEditModal, type EventModalData } from "../components/modals";
 import type { EventFormState } from "../components/modals/event/event-form-state";
-import type { StopwatchSnapshot } from "../components/stopwatch";
 import { openCategoryAssignModal } from "../react/modals";
+import type { StopwatchSnapshot } from "../react/views/stopwatch";
 import type { Frontmatter } from "../types";
 import type { IndexerEvent } from "../types/event-source";
 import type { EventPreset } from "../types/settings";

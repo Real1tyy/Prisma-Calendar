@@ -16,7 +16,10 @@ import {
 	toggleCls,
 	toLocalISOString,
 } from "@real1ty-obsidian-plugins";
+import { renderReactInline } from "@real1ty-obsidian-plugins-react";
 import { type App, Modal, Notice } from "obsidian";
+import { createElement } from "react";
+import { flushSync } from "react-dom";
 import type { Subscription } from "rxjs";
 import type { z } from "zod";
 
@@ -29,6 +32,7 @@ import {
 	type MinimizedModalState,
 } from "../../../core/minimized-modal-manager";
 import { openCategoryAssignModal, openPrerequisiteAssignModal, openSavePresetModal } from "../../../react/modals";
+import { Stopwatch, type StopwatchHandle } from "../../../react/views/stopwatch";
 import type { Frontmatter } from "../../../types";
 import { isTimedEvent } from "../../../types/calendar";
 import {
@@ -52,7 +56,6 @@ import {
 	isWeekdaySupported,
 	parseRecurrenceType,
 } from "../../../utils/recurring-utils";
-import { Stopwatch } from "../../stopwatch";
 import { TitleInputSuggest } from "../../title-input-suggest";
 import { showCategoryEventsModal } from "../series/bases-view";
 import {
@@ -125,8 +128,9 @@ export abstract class BaseEventModal extends Modal {
 	protected notificationLabel?: HTMLElement;
 
 	// Stopwatch for time tracking
-	protected stopwatch?: Stopwatch;
+	protected stopwatch: StopwatchHandle | undefined = undefined;
 	protected stopwatchContainer?: HTMLElement;
+	private stopwatchUnmount: (() => void) | null = null;
 	private initialBreakMinutes = 0;
 
 	// Custom properties
@@ -228,8 +232,12 @@ export abstract class BaseEventModal extends Modal {
 			MinimizedModalManager.saveState(state, this.bundle);
 		}
 
-		// Clean up stopwatch to stop any running intervals
+		// Unmount React stopwatch root before contentEl.empty() to release the
+		// React root cleanly. The handle's destroy() is a no-op for parity.
 		this.stopwatch?.destroy();
+		this.stopwatchUnmount?.();
+		this.stopwatchUnmount = null;
+		this.stopwatch = undefined;
 
 		this.titleSuggest?.destroy();
 		this.titleSuggest?.close();
@@ -488,49 +496,65 @@ export abstract class BaseEventModal extends Modal {
 			addCls(this.stopwatchContainer, "hidden");
 		}
 
-		this.stopwatch = new Stopwatch({
-			onStart: (startTime: Date) => {
-				this.initialBreakMinutes = PositiveFloat.parse(String(this.getSimpleFieldValues()["breakMinutes"] ?? "")) ?? 0;
-				this.startInput.value = formatDateTimeForInput(startTime);
+		const setStopwatchHandle = (h: StopwatchHandle | null): void => {
+			this.stopwatch = h ?? undefined;
+		};
+		const onStart = (startTime: Date): void => {
+			this.initialBreakMinutes = PositiveFloat.parse(String(this.getSimpleFieldValues()["breakMinutes"] ?? "")) ?? 0;
+			this.startInput.value = formatDateTimeForInput(startTime);
 
-				const endTime = new Date(startTime.getTime() + END_TIME_SYNC_INTERVAL_MS);
-				this.endInput.value = formatDateTimeForInput(endTime);
+			const endTime = new Date(startTime.getTime() + END_TIME_SYNC_INTERVAL_MS);
+			this.endInput.value = formatDateTimeForInput(endTime);
 
-				const event = new Event("change", { bubbles: true });
-				this.startInput.dispatchEvent(event);
-				this.endInput.dispatchEvent(event);
-			},
-			onContinueRequested: () => {
-				// Continue uses the existing start time from the input field
-				// Reset the break counter and return the current start time
-				this.initialBreakMinutes = PositiveFloat.parse(String(this.getSimpleFieldValues()["breakMinutes"] ?? "")) ?? 0;
-				const startValue = this.startInput.value;
-				if (startValue) {
-					// If end date is in the past, update it to now
-					const endValue = this.endInput.value;
-					if (endValue) {
-						const endDate = parseAsLocalDate(endValue);
-						if (endDate && endDate.getTime() < Date.now()) {
-							this.endInput.value = formatDateTimeForInput(new Date());
-							this.endInput.dispatchEvent(new Event("change", { bubbles: true }));
-						}
-					}
-					return parseAsLocalDate(startValue);
+			const event = new Event("change", { bubbles: true });
+			this.startInput.dispatchEvent(event);
+			this.endInput.dispatchEvent(event);
+		};
+		const onContinueRequested = (): Date | null => {
+			// Continue uses the existing start time from the input field;
+			// reset the break counter and return the current start time.
+			this.initialBreakMinutes = PositiveFloat.parse(String(this.getSimpleFieldValues()["breakMinutes"] ?? "")) ?? 0;
+			const startValue = this.startInput.value;
+			if (!startValue) return null;
+
+			// If end date is in the past, update it to now
+			const endValue = this.endInput.value;
+			if (endValue) {
+				const endDate = parseAsLocalDate(endValue);
+				if (endDate && endDate.getTime() < Date.now()) {
+					this.endInput.value = formatDateTimeForInput(new Date());
+					this.endInput.dispatchEvent(new Event("change", { bubbles: true }));
 				}
-				return null;
-			},
-			onStop: (endTime: Date) => {
-				this.endInput.value = formatDateTimeForInput(endTime);
-				const event = new Event("change", { bubbles: true });
-				this.endInput.dispatchEvent(event);
-			},
-			onBreakUpdate: (breakMinutes: number) => {
-				const totalBreak = this.initialBreakMinutes + breakMinutes;
-				this.setSimpleFieldValues({ breakMinutes: totalBreak.toString() });
-			},
-		});
+			}
+			return parseAsLocalDate(startValue);
+		};
+		const onStop = (endTime: Date): void => {
+			this.endInput.value = formatDateTimeForInput(endTime);
+			const event = new Event("change", { bubbles: true });
+			this.endInput.dispatchEvent(event);
+		};
+		const onBreakUpdate = (breakMinutes: number): void => {
+			const totalBreak = this.initialBreakMinutes + breakMinutes;
+			this.setSimpleFieldValues({ breakMinutes: totalBreak.toString() });
+		};
 
-		this.stopwatch.render(this.stopwatchContainer);
+		// flushSync forces React's initial commit synchronously so the imperative
+		// handle is populated before onOpen() proceeds to the silent-stop-and-save
+		// / restoreFromState branches that call this.stopwatch.* immediately.
+		const container = this.stopwatchContainer;
+		flushSync(() => {
+			this.stopwatchUnmount = renderReactInline(
+				container,
+				createElement(Stopwatch, {
+					ref: setStopwatchHandle,
+					onStart,
+					onContinueRequested,
+					onStop,
+					onBreakUpdate,
+				}),
+				this.app
+			);
+		});
 	}
 
 	private createVirtualEventToggle(headerContainer: HTMLElement): void {
