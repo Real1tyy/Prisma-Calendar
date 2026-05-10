@@ -260,7 +260,7 @@ export const Stopwatch = forwardRef<StopwatchHandle, StopwatchCallbacks>(functio
 	const isPaused = current.state === "paused";
 
 	const startBtnHidden = !isIdleOrStopped;
-	const continueBtnHidden = !isIdleOrStopped;
+	const continueBtnHidden = current.state !== "idle";
 	const pauseBtnHidden = !isRunningOrPaused;
 	const stopBtnHidden = !isRunningOrPaused;
 	const resumeBtnHidden = current.state !== "stopped";

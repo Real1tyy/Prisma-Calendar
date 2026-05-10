@@ -20,9 +20,13 @@ describe("Stopwatch", () => {
 		onBreakUpdate: ReturnType<typeof vi.fn>;
 	};
 
-	function mountStopwatch(): { stopwatch: StopwatchHandle; unmount: () => void } {
+	function mountStopwatch(): {
+		stopwatch: StopwatchHandle;
+		container: HTMLElement;
+		unmount: () => void;
+	} {
 		const ref = createRef<StopwatchHandle | null>();
-		const { unmount } = render(
+		const { container, unmount } = render(
 			<Stopwatch
 				ref={ref}
 				onStart={mockCallbacks.onStart}
@@ -31,7 +35,13 @@ describe("Stopwatch", () => {
 				onBreakUpdate={mockCallbacks.onBreakUpdate}
 			/>
 		);
-		return { stopwatch: ref.current!, unmount };
+		return { stopwatch: ref.current!, container, unmount };
+	}
+
+	function isVisible(container: HTMLElement, variant: string): boolean {
+		const btn = container.querySelector(`.prisma-stopwatch-${variant}-btn`);
+		if (!btn) throw new Error(`Button .prisma-stopwatch-${variant}-btn not in DOM`);
+		return !btn.classList.contains("prisma-hidden");
 	}
 
 	beforeEach(() => {
@@ -277,6 +287,60 @@ describe("Stopwatch", () => {
 
 			drive(() => stopwatch.start());
 			expect(mockCallbacks.onStart).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("Button visibility", () => {
+		it("idle: shows start + continue, hides pause/stop/resume", () => {
+			const { container } = mountStopwatch();
+			expect(isVisible(container, "start")).toBe(true);
+			expect(isVisible(container, "continue")).toBe(true);
+			expect(isVisible(container, "pause")).toBe(false);
+			expect(isVisible(container, "stop")).toBe(false);
+			expect(isVisible(container, "resume")).toBe(false);
+		});
+
+		it("running: shows pause + stop, hides start/continue/resume", () => {
+			const { stopwatch, container } = mountStopwatch();
+			drive(() => stopwatch.start());
+			expect(isVisible(container, "start")).toBe(false);
+			expect(isVisible(container, "continue")).toBe(false);
+			expect(isVisible(container, "pause")).toBe(true);
+			expect(isVisible(container, "stop")).toBe(true);
+			expect(isVisible(container, "resume")).toBe(false);
+		});
+
+		it("paused: shows pause-as-resume + stop, hides start/continue/standalone-resume", () => {
+			const { stopwatch, container } = mountStopwatch();
+			drive(() => stopwatch.start());
+			drive(() => stopwatch.togglePause());
+			expect(isVisible(container, "start")).toBe(false);
+			expect(isVisible(container, "continue")).toBe(false);
+			expect(isVisible(container, "stop")).toBe(true);
+			// The pause toggle swaps its class to .prisma-stopwatch-resume-btn in
+			// the paused branch — query that one instead. The "standalone" resume
+			// (visible only after stop) remains hidden, so two .resume-btn nodes
+			// exist; we need the one that is currently visible.
+			const resumeBtns = container.querySelectorAll(".prisma-stopwatch-resume-btn");
+			const visibleResume = Array.from(resumeBtns).find((el) => !el.classList.contains("prisma-hidden"));
+			expect(visibleResume).toBeDefined();
+		});
+
+		it("stopped: shows start-new + standalone resume, hides continue/pause/stop", () => {
+			const { stopwatch, container } = mountStopwatch();
+			drive(() => stopwatch.start());
+			drive(() => stopwatch.stop());
+			expect(isVisible(container, "start")).toBe(true);
+			// Regression guard: continue is NOT shown in stopped state. It would
+			// silently wipe the accumulated break tally on click (continueFromExisting
+			// → beginTracking() zeroes totalBreakMs). Use resume to restart instead.
+			expect(isVisible(container, "continue")).toBe(false);
+			expect(isVisible(container, "pause")).toBe(false);
+			expect(isVisible(container, "stop")).toBe(false);
+			// The standalone resume button (last in DOM order) becomes visible here.
+			const resumeBtns = container.querySelectorAll(".prisma-stopwatch-resume-btn");
+			const visibleResume = Array.from(resumeBtns).find((el) => !el.classList.contains("prisma-hidden"));
+			expect(visibleResume).toBeDefined();
 		});
 	});
 });
