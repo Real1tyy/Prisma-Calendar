@@ -1,6 +1,7 @@
 import { expect } from "@playwright/test";
 
 import { todayStamp } from "../../fixtures/dates";
+import { categoryRow } from "../../fixtures/dsl";
 import { test } from "../../fixtures/electron";
 import { closeSettings, openPrismaSettings, switchSettingsTab } from "../../fixtures/helpers";
 import { updateCalendarSettings } from "../../fixtures/seed-events";
@@ -62,18 +63,9 @@ test.describe("settings: Categories rename propagation", () => {
 		await openPrismaSettings(obsidian.page);
 		await switchSettingsTab(obsidian.page, "categories");
 
-		const originalRow = obsidian.page.locator(
-			'[data-testid="prisma-category-settings-item"][data-category="Renamable"]'
-		);
-		await expect(originalRow).toBeVisible();
-
-		await originalRow.locator('[data-testid="prisma-category-settings-rename-button"]').click();
-
-		const input = obsidian.page.locator('[data-testid="prisma-category-rename-input"]');
-		await input.waitFor({ state: "visible" });
-		await input.fill("Renamed");
-
-		await obsidian.page.locator('[data-testid="prisma-category-rename-submit"]').click();
+		const renameModal = await categoryRow(obsidian.page, "Renamable").openRename();
+		await renameModal.fill("Renamed");
+		await renameModal.submit();
 
 		// Files on disk must carry the new category value.
 		await expect.poll(() => evt1.readCategory()).toEqual(["Renamed"]);
@@ -81,11 +73,8 @@ test.describe("settings: Categories rename propagation", () => {
 
 		// The Categories settings list (driven by CategoryTracker, which sits
 		// on top of the VaultTable cache we fixed) must reflect the new name.
-		const renamedRow = obsidian.page.locator('[data-testid="prisma-category-settings-item"][data-category="Renamed"]');
-		const staleRow = obsidian.page.locator('[data-testid="prisma-category-settings-item"][data-category="Renamable"]');
-
-		await expect(renamedRow).toBeVisible();
-		await expect(staleRow).toHaveCount(0);
+		await expect(categoryRow(obsidian.page, "Renamed").row).toBeVisible();
+		await expect(categoryRow(obsidian.page, "Renamable").row).toHaveCount(0);
 
 		await closeSettings(obsidian.page);
 

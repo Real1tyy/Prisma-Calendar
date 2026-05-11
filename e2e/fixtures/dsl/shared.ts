@@ -11,6 +11,10 @@ import {
 	PROGRESS_DETAILS_TID,
 	PROGRESS_MODAL_TID,
 	PROGRESS_STATUS_TID,
+	RENAME_CANCEL_TID,
+	RENAME_INPUT_TID,
+	RENAME_MODAL_TID,
+	RENAME_SUBMIT_TID,
 	sel,
 	SHARED_ROW_PREFIX,
 	sharedTID,
@@ -184,6 +188,54 @@ export async function expectConfirmationModal(
 		cancelBtn,
 		async confirm() {
 			await confirmBtn.click();
+			await root.waitFor({ state: "detached" });
+		},
+		async cancel() {
+			await cancelBtn.click();
+			await root.waitFor({ state: "detached" });
+		},
+	};
+}
+
+// ── Rename modal ────────────────────────────────────────────────────────────
+
+export interface RenameModalHandle {
+	readonly root: Locator;
+	readonly input: Locator;
+	readonly submitBtn: Locator;
+	readonly cancelBtn: Locator;
+	fill(value: string): Promise<void>;
+	submit(): Promise<void>;
+	cancel(): Promise<void>;
+}
+
+/**
+ * Wait for the shared rename modal to appear and return a handle.
+ *
+ * Pass `testIdPrefix` for prefixed instances (e.g. `"prisma-category-"` for the
+ * category rename modal opened via `openRenameModal({ testIdPrefix })`) — the
+ * prefix is concatenated with the standard `rename-*` suffixes.
+ */
+export async function expectRenameModal(
+	page: Page,
+	options: { testIdPrefix?: string } = {}
+): Promise<RenameModalHandle> {
+	const prefix = options.testIdPrefix ?? "";
+	const root = page.locator(sel(`${prefix}${RENAME_MODAL_TID}`)).first();
+	await root.waitFor({ state: "visible" });
+	const input = page.locator(sel(`${prefix}${RENAME_INPUT_TID}`));
+	const submitBtn = page.locator(sel(`${prefix}${RENAME_SUBMIT_TID}`));
+	const cancelBtn = page.locator(sel(`${prefix}${RENAME_CANCEL_TID}`));
+	return {
+		root,
+		input,
+		submitBtn,
+		cancelBtn,
+		async fill(value) {
+			await input.fill(value);
+		},
+		async submit() {
+			await submitBtn.click();
 			await root.waitFor({ state: "detached" });
 		},
 		async cancel() {

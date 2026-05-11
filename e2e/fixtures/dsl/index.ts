@@ -15,6 +15,12 @@ export {
 	type SeedOptions,
 } from "./calendar";
 export {
+	type CategoryDeleteModalHandle,
+	type CategoryRenameModalHandle,
+	categoryRow,
+	type CategoryRowHandle,
+} from "./categories-settings";
+export {
 	type BoundingBox,
 	boundingBoxOrThrow,
 	centerOf,
@@ -49,10 +55,12 @@ export {
 	expectConfirmationModal,
 	expectItemManagerOpen,
 	expectProgressModal,
+	expectRenameModal,
 	type ItemManagerHandle,
 	openActionManager,
 	openTabManager,
 	type ProgressModalHandle,
+	type RenameModalHandle,
 	type TabManagerHandle,
 } from "./shared";
 export { batchActionRoundTrip, type BatchRoundTripHooks, type UndoRedoHooks, undoRedoRoundTrip } from "./templates";

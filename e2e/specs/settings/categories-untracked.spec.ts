@@ -3,6 +3,7 @@ import { join } from "node:path";
 
 import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
+import { categoryRow } from "../../fixtures/dsl";
 import { expect, test } from "../../fixtures/electron";
 import { closeSettings, openPrismaSettings, switchSettingsTab } from "../../fixtures/helpers";
 import { refreshCalendar } from "../../fixtures/seed-events";
@@ -32,11 +33,11 @@ test.describe("settings: Categories operations on untracked events", () => {
 		await openPrismaSettings(obsidian.page);
 		await switchSettingsTab(obsidian.page, "categories");
 
-		const row = obsidian.page.locator('[data-testid="prisma-category-settings-item"][data-category="OnlyUntracked"]');
-		await expect(row).toBeVisible();
+		const row = categoryRow(obsidian.page, "OnlyUntracked");
+		await expect(row.row).toBeVisible();
 
-		// The count line must reflect the untracked event — total = 1, untracked = 1,
-		const countText = await row.locator(".prisma-category-settings-count").textContent();
+		// The count line must reflect the untracked event — total = 1, untracked = 1.
+		const countText = await row.countText();
 		expect(countText).toContain("1 total");
 		expect(countText).toContain("1 untracked");
 
@@ -51,19 +52,13 @@ test.describe("settings: Categories operations on untracked events", () => {
 		await openPrismaSettings(obsidian.page);
 		await switchSettingsTab(obsidian.page, "categories");
 
-		const row = obsidian.page.locator('[data-testid="prisma-category-settings-item"][data-category="RenameMe"]');
-		await expect(row).toBeVisible();
-		await row.locator('[data-testid="prisma-category-settings-rename-button"]').click();
+		const renameModal = await categoryRow(obsidian.page, "RenameMe").openRename();
 
-		// The toggle defaults to ON — surface it and confirm the default state.
-		const toggle = obsidian.page.locator('[data-testid="prisma-category-include-untracked-toggle"]');
-		await expect(toggle).toBeVisible();
-		await expect(toggle).toBeChecked();
+		// The toggle defaults to ON.
+		await expect(renameModal.toggleUntracked).toBeChecked();
 
-		const input = obsidian.page.locator('[data-testid="prisma-category-rename-input"]');
-		await input.waitFor({ state: "visible" });
-		await input.fill("RenamedFromUntracked");
-		await obsidian.page.locator('[data-testid="prisma-category-rename-submit"]').click();
+		await renameModal.fill("RenamedFromUntracked");
+		await renameModal.submit();
 
 		await expect
 			.poll(() => readEventFrontmatter(vaultDir, relativePath)["Category"], {
@@ -82,15 +77,9 @@ test.describe("settings: Categories operations on untracked events", () => {
 		await openPrismaSettings(obsidian.page);
 		await switchSettingsTab(obsidian.page, "categories");
 
-		const row = obsidian.page.locator('[data-testid="prisma-category-settings-item"][data-category="DeleteMe"]');
-		await expect(row).toBeVisible();
-		await row.locator('[data-testid="prisma-category-settings-delete-button"]').click();
-
-		const toggle = obsidian.page.locator('[data-testid="prisma-category-include-untracked-toggle"]');
-		await expect(toggle).toBeVisible();
-		await expect(toggle).toBeChecked();
-
-		await obsidian.page.locator('[data-testid="prisma-category-delete-confirmation-modal-confirm"]').click();
+		const deleteModal = await categoryRow(obsidian.page, "DeleteMe").openDelete();
+		await expect(deleteModal.toggleUntracked).toBeChecked();
+		await deleteModal.confirm();
 
 		await expect
 			.poll(() => readEventFrontmatter(vaultDir, relativePath)["Category"], {
@@ -109,15 +98,12 @@ test.describe("settings: Categories operations on untracked events", () => {
 		await openPrismaSettings(obsidian.page);
 		await switchSettingsTab(obsidian.page, "categories");
 
-		const row = obsidian.page.locator('[data-testid="prisma-category-settings-item"][data-category="KeepUntracked"]');
-		await expect(row).toBeVisible();
-		await row.locator('[data-testid="prisma-category-settings-rename-button"]').click();
-
 		// Uncheck the toggle: the rename should target only tracked files. With
 		// no tracked files in scope, the on-disk frontmatter must stay intact.
-		await obsidian.page.locator('[data-testid="prisma-category-include-untracked-toggle"]').uncheck();
-		await obsidian.page.locator('[data-testid="prisma-category-rename-input"]').fill("DidNotRename");
-		await obsidian.page.locator('[data-testid="prisma-category-rename-submit"]').click();
+		const renameModal = await categoryRow(obsidian.page, "KeepUntracked").openRename();
+		await renameModal.setIncludeUntracked(false);
+		await renameModal.fill("DidNotRename");
+		await renameModal.submit();
 
 		// Wait briefly for any pending writes; then assert the untracked file is unchanged.
 		await obsidian.page.waitForTimeout(500);

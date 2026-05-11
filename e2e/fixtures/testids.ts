@@ -165,6 +165,11 @@ export const ICON_PICKER_NO_ICON_TID = "shared-icon-picker-no-icon";
 export const CONFIRMATION_MODAL_TID = "confirmation-modal-container";
 export const CONFIRMATION_MODAL_CONFIRM_TID = "confirmation-modal-confirm";
 export const CONFIRMATION_MODAL_CANCEL_TID = "confirmation-modal-cancel";
+/** Plugin-agnostic shared rename modal (unprefixed by design). */
+export const RENAME_MODAL_TID = "rename-modal-container";
+export const RENAME_INPUT_TID = "rename-input";
+export const RENAME_SUBMIT_TID = "rename-submit";
+export const RENAME_CANCEL_TID = "rename-cancel";
 /** Shared progress modal used by ICS import and other batched flows. */
 export const PROGRESS_MODAL_TID = "prisma-progress-modal";
 export const PROGRESS_STATUS_TID = "prisma-progress-status";
@@ -234,6 +239,19 @@ export const STOPWATCH_TIME_TID = "prisma-stopwatch-time";
 export const ICS_EXPORT_SUBMIT_TID = "prisma-ics-export-submit";
 export const ICS_IMPORT_FILE_TID = "prisma-ics-import-file";
 export const ICS_IMPORT_SUBMIT_TID = "prisma-ics-import-submit";
+
+// ── Categories settings ────────────────────────────────────────────────────
+
+export const CATEGORY_ROW_TID = "prisma-category-settings-item";
+export const CATEGORY_RENAME_BTN_TID = "prisma-category-settings-rename-button";
+export const CATEGORY_DELETE_BTN_TID = "prisma-category-settings-delete-button";
+export const CATEGORY_COUNT_CLASS = "prisma-category-settings-count";
+
+/** Test-id prefixes passed to shared rename / confirmation modals from the categories tab. */
+export const CATEGORY_RENAME_PREFIX = "prisma-category-";
+export const CATEGORY_DELETE_PREFIX = "prisma-category-delete-";
+
+export const CATEGORY_INCLUDE_UNTRACKED_TOGGLE_TID = "prisma-category-include-untracked-toggle";
 
 export const UNTRACKED_BUTTON_TID = "prisma-untracked-dropdown-button";
 export const UNTRACKED_DROPDOWN_TID = "prisma-untracked-dropdown";
