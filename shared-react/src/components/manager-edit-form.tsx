@@ -3,7 +3,7 @@ import { memo, useCallback, useState } from "react";
 import { useInjectedStyles } from "../hooks/use-injected-styles";
 import { buildManagerEditFormStyles } from "./manager-edit-form.styles";
 import { ObsidianIcon } from "./obsidian-icon";
-import { TextInput } from "./setting-controls";
+import { ColorInput, TextInput } from "./setting-controls";
 import { SettingItem } from "./setting-item";
 
 export interface EditableItem {
@@ -13,77 +13,88 @@ export interface EditableItem {
 	color?: string;
 }
 
-export interface ManagerEditFormProps {
+export interface ManagerEditValues {
+	label: string;
+	icon: string;
+	color: string;
+}
+
+export interface ManagerEditOverrides {
+	label: boolean;
+	icon: boolean;
+	color: boolean;
+}
+
+export interface ManagerEditActions {
+	rename: (label: string | undefined) => void;
+	changeIcon: (icon: string | undefined) => void;
+	changeColor: (color: string | undefined) => void;
+	pickIcon?: (callback: (icon: string | null) => void) => void;
+}
+
+export interface ManagerEditController {
 	item: EditableItem;
-	currentLabel: string;
-	currentIcon: string;
-	currentColor: string;
-	hasRenameOverride?: boolean;
-	hasIconOverride?: boolean;
-	hasColorOverride?: boolean;
-	onRename: (id: string, label: string | undefined) => void;
-	onIconChange: (id: string, icon: string | undefined) => void;
-	onColorChange: (id: string, color: string | undefined) => void;
-	onPickIcon?: (callback: (icon: string) => void) => void;
-	cssPrefix?: string | undefined;
+	values: ManagerEditValues;
+	overrides: ManagerEditOverrides;
+	actions: ManagerEditActions;
+}
+
+export interface ManagerEditFormProps {
+	controller: ManagerEditController;
+	cssPrefix?: string;
 	formPrefix?: string;
 }
 
 export const ManagerEditForm = memo(function ManagerEditForm({
-	item,
-	currentLabel,
-	currentIcon,
-	currentColor,
-	hasRenameOverride = false,
-	hasIconOverride = false,
-	hasColorOverride = false,
-	onRename,
-	onIconChange,
-	onColorChange,
-	onPickIcon,
+	controller,
 	cssPrefix = "",
 	formPrefix = "manager",
 }: ManagerEditFormProps) {
+	const { item, values, overrides, actions } = controller;
+
 	useInjectedStyles(`${cssPrefix}${formPrefix}-edit-form-styles`, buildManagerEditFormStyles(cssPrefix, formPrefix));
-	const [labelValue, setLabelValue] = useState(currentLabel);
+	const [labelValue, setLabelValue] = useState(values.label);
 
 	const handleLabelChange = useCallback(
 		(value: string) => {
 			setLabelValue(value);
 			const trimmed = value.trim();
 			const resolved = trimmed && trimmed !== item.label ? trimmed : undefined;
-			onRename(item.id, resolved);
+			actions.rename(resolved);
 		},
-		[item.id, item.label, onRename]
+		[item.label, actions]
 	);
 
 	const handleResetLabel = useCallback(() => {
-		onRename(item.id, undefined);
+		actions.rename(undefined);
 		setLabelValue(item.label);
-	}, [item.id, item.label, onRename]);
+	}, [item.label, actions]);
 
 	const handleResetIcon = useCallback(() => {
-		onIconChange(item.id, undefined);
-	}, [item.id, onIconChange]);
+		actions.changeIcon(undefined);
+	}, [actions]);
 
 	const handleResetColor = useCallback(() => {
-		onColorChange(item.id, undefined);
-	}, [item.id, onColorChange]);
+		actions.changeColor(undefined);
+	}, [actions]);
 
 	const handleIconClick = useCallback(() => {
-		onPickIcon?.((icon) => {
-			const resolved = icon !== item.icon ? icon : undefined;
-			onIconChange(item.id, resolved);
+		actions.pickIcon?.((icon) => {
+			// null = the user clicked "No icon" in the picker → clear the override.
+			// Picking the item's default icon also clears so we don't store a
+			// redundant override that would prevent future default changes.
+			const resolved = icon === null || icon === item.icon ? undefined : icon;
+			actions.changeIcon(resolved);
 		});
-	}, [item.id, item.icon, onPickIcon, onIconChange]);
+	}, [item.icon, actions]);
 
 	const handleColorChange = useCallback(
-		(e: React.ChangeEvent<HTMLInputElement>) => {
+		(next: string) => {
 			const defaultColor = item.color ?? "#ffffff";
-			const resolved = e.target.value !== defaultColor ? e.target.value : undefined;
-			onColorChange(item.id, resolved);
+			const resolved = next !== defaultColor ? next : undefined;
+			actions.changeColor(resolved);
 		},
-		[item.id, item.color, onColorChange]
+		[item.color, actions]
 	);
 
 	return (
@@ -98,7 +109,7 @@ export const ManagerEditForm = memo(function ManagerEditForm({
 					placeholder={item.label}
 					testId={`${cssPrefix}${formPrefix}-name-input-${item.id}`}
 				/>
-				{hasRenameOverride && (
+				{overrides.label && (
 					<button
 						type="button"
 						className="clickable-icon"
@@ -113,9 +124,9 @@ export const ManagerEditForm = memo(function ManagerEditForm({
 
 			<SettingItem name="Icon">
 				<button type="button" onClick={handleIconClick} data-testid={`${cssPrefix}${formPrefix}-icon-btn-${item.id}`}>
-					{currentIcon}
+					{values.icon}
 				</button>
-				{hasIconOverride && (
+				{overrides.icon && (
 					<button
 						type="button"
 						className="clickable-icon"
@@ -129,13 +140,12 @@ export const ManagerEditForm = memo(function ManagerEditForm({
 			</SettingItem>
 
 			<SettingItem name="Color">
-				<input
-					type="color"
-					value={currentColor}
+				<ColorInput
+					value={values.color}
 					onChange={handleColorChange}
-					data-testid={`${cssPrefix}${formPrefix}-color-input-${item.id}`}
+					testId={`${cssPrefix}${formPrefix}-color-input-${item.id}`}
 				/>
-				{hasColorOverride && (
+				{overrides.color && (
 					<button
 						type="button"
 						className="clickable-icon"

@@ -1,7 +1,8 @@
-import type { ReactNode } from "react";
-import { memo, useCallback, useState } from "react";
+import type { Dispatch, ReactNode, SetStateAction } from "react";
+import { createContext, memo, useCallback, useContext, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 
+import type { ManagerEditController } from "../../components/manager-edit-form";
 import { ManagerEditForm } from "../../components/manager-edit-form";
 import { ObsidianIcon } from "../../components/obsidian-icon";
 import { Toggle } from "../../components/setting-controls";
@@ -19,6 +20,28 @@ const ROW_PREFIX = "tab-manager";
 interface DragState {
 	id: string | null;
 	scope: "tab" | string;
+}
+
+interface TabManagerContextValue {
+	cssPrefix: string;
+	state: TabbedContainerStateAccess;
+	actions: TabbedContainerActions;
+	expandedId: string | null;
+	setExpandedId: Dispatch<SetStateAction<string | null>>;
+	expandedGroups: Set<string>;
+	toggleGroup: (id: string) => void;
+	drag: DragState;
+	setDrag: Dispatch<SetStateAction<DragState>>;
+	onTabDrop: (targetId: string) => void;
+	onChildDrop: (groupId: string, targetId: string) => void;
+}
+
+const TabManagerContext = createContext<TabManagerContextValue | null>(null);
+
+function useTabManagerContext(): TabManagerContextValue {
+	const value = useContext(TabManagerContext);
+	if (!value) throw new Error("useTabManagerContext must be used inside TabManagerContext.Provider");
+	return value;
 }
 
 export interface TabManagerModalProps {
@@ -74,10 +97,7 @@ export const TabManagerContent = memo(function TabManagerContent({
 		});
 	}, []);
 
-	const visibleIds = new Set(state.visibleTabs.map((t) => t.id));
-	const orderedTabs = [...state.visibleTabs, ...state.allTabs.filter((t) => !visibleIds.has(t.id))];
-
-	const handleTabDrop = useCallback(
+	const onTabDrop = useCallback(
 		(targetId: string) => {
 			if (!drag.id || drag.scope !== "tab" || drag.id === targetId) return;
 			actions.reorderTabs(drag.id, targetId);
@@ -85,7 +105,7 @@ export const TabManagerContent = memo(function TabManagerContent({
 		[drag, actions]
 	);
 
-	const handleChildDrop = useCallback(
+	const onChildDrop = useCallback(
 		(groupId: string, targetId: string) => {
 			if (!drag.id || drag.scope !== groupId || drag.id === targetId) return;
 			actions.reorderGroupChildren(groupId, drag.id, targetId);
@@ -93,48 +113,53 @@ export const TabManagerContent = memo(function TabManagerContent({
 		[drag, actions]
 	);
 
+	const contextValue = useMemo<TabManagerContextValue>(
+		() => ({
+			cssPrefix,
+			state,
+			actions,
+			expandedId,
+			setExpandedId,
+			expandedGroups,
+			toggleGroup,
+			drag,
+			setDrag,
+			onTabDrop,
+			onChildDrop,
+		}),
+		[cssPrefix, state, actions, expandedId, expandedGroups, toggleGroup, drag, onTabDrop, onChildDrop]
+	);
+
+	const visibleIds = useMemo(() => new Set(state.visibleTabs.map((t) => t.id)), [state.visibleTabs]);
+	const orderedTabs = useMemo(
+		() => [...state.visibleTabs, ...state.allTabs.filter((t) => !visibleIds.has(t.id))],
+		[state.visibleTabs, state.allTabs, visibleIds]
+	);
+
 	return (
-		<div data-testid={`${cssPrefix}tab-manager-content`}>
-			<SettingItem name="Show settings button">
-				<Toggle value={state.showSettingsButton} onChange={actions.setShowSettingsButton} />
-			</SettingItem>
+		<TabManagerContext value={contextValue}>
+			<div data-testid={`${cssPrefix}tab-manager-content`}>
+				<SettingItem name="Show settings button">
+					<Toggle value={state.showSettingsButton} onChange={actions.setShowSettingsButton} />
+				</SettingItem>
 
-			<div className={`${cssPrefix}tab-manager-list`}>
-				{orderedTabs.map((tab, idx) => {
-					const isVisible = visibleIds.has(tab.id);
-					const isExpanded = expandedId === tab.id;
-					const isGroupExpanded = isGroupTab(tab) && expandedGroups.has(tab.id);
-
-					return (
+				<div className={`${cssPrefix}tab-manager-list`}>
+					{orderedTabs.map((tab, index) => (
 						<TabManagerRow
 							key={tab.id}
-							cssPrefix={cssPrefix}
-							state={state}
-							actions={actions}
 							tab={tab}
-							isVisible={isVisible}
-							isExpanded={isExpanded}
-							isGroupExpanded={isGroupExpanded}
-							visibleIndex={idx}
+							index={index}
+							isVisible={visibleIds.has(tab.id)}
 							visibleCount={state.visibleTabs.length}
-							onToggleExpand={() => setExpandedId(isExpanded ? null : tab.id)}
-							onToggleGroup={() => toggleGroup(tab.id)}
-							drag={drag}
-							setDrag={setDrag}
-							onDrop={handleTabDrop}
-							onChildDrop={handleChildDrop}
-							childExpandedId={expandedId}
-							setChildExpandedId={setExpandedId}
 						/>
-					);
-				})}
+					))}
+				</div>
 			</div>
-		</div>
+		</TabManagerContext>
 	);
 });
 
-interface EditableRowProps {
-	cssPrefix: string;
+interface EditableRowModel {
 	id: string;
 	originalLabel: string;
 	displayLabel: string;
@@ -148,43 +173,46 @@ interface EditableRowProps {
 	isDragging: boolean;
 	isExpanded: boolean;
 	leadingSlot?: ReactNode;
-	onMove: (direction: -1 | 1) => void;
-	onToggleVisibility: () => void;
-	onToggleExpand: () => void;
-	onDragStart: () => void;
-	onDragEnd: () => void;
-	onDrop: () => void;
-	onRename: (value: string | undefined) => void;
-	onIconChange: (value: string | undefined) => void;
-	onColorChange: (value: string | undefined) => void;
 }
 
-const EditableRow = memo(function EditableRow({
-	cssPrefix,
-	id,
-	originalLabel,
-	displayLabel,
-	displayIcon,
-	displayColor,
-	hasIconOverride,
-	hasColorOverride,
-	isVisible,
-	visibleIndex,
-	visibleCount,
-	isDragging,
-	isExpanded,
-	leadingSlot,
-	onMove,
-	onToggleVisibility,
-	onToggleExpand,
-	onDragStart,
-	onDragEnd,
-	onDrop,
-	onRename,
-	onIconChange,
-	onColorChange,
-}: EditableRowProps) {
+interface EditableRowActions {
+	move: (direction: -1 | 1) => void;
+	toggleVisibility: () => void;
+	toggleExpand: () => void;
+	dragStart: () => void;
+	dragEnd: () => void;
+	drop: () => void;
+	rename: (value: string | undefined) => void;
+	changeIcon: (value: string | undefined) => void;
+	changeColor: (value: string | undefined) => void;
+}
+
+interface EditableRowProps {
+	row: EditableRowModel;
+	actions: EditableRowActions;
+}
+
+const EditableRow = memo(function EditableRow({ row, actions }: EditableRowProps) {
+	const { cssPrefix } = useTabManagerContext();
 	const app = useApp();
+
+	const {
+		id,
+		originalLabel,
+		displayLabel,
+		displayIcon,
+		displayColor,
+		hasIconOverride,
+		hasColorOverride,
+		isVisible,
+		visibleIndex,
+		visibleCount,
+		isDragging,
+		isExpanded,
+		leadingSlot,
+	} = row;
+	const { move, toggleVisibility, toggleExpand, dragStart, dragEnd, drop, rename, changeIcon, changeColor } = actions;
+
 	const cls = (suffix: string) => `${cssPrefix}${ROW_PREFIX}-${suffix}`;
 	const hasRename = displayLabel !== originalLabel;
 	const canMoveUp = isVisible && visibleIndex > 0;
@@ -194,29 +222,50 @@ const EditableRow = memo(function EditableRow({
 		? {
 				draggable: true,
 				onDragStart: (e: React.DragEvent) => {
-					onDragStart();
+					dragStart();
 					e.dataTransfer.effectAllowed = "move";
 				},
-				onDragEnd,
+				onDragEnd: dragEnd,
 				onDragOver: (e: React.DragEvent) => {
 					e.preventDefault();
 					e.dataTransfer.dropEffect = "move";
 				},
 				onDrop: (e: React.DragEvent) => {
 					e.preventDefault();
-					onDrop();
+					drop();
 				},
 			}
 		: {};
 
 	const pickIcon = useCallback(
-		(cb: (icon: string) => void) => {
-			showReactIconPicker(app, (picked) => {
-				if (picked !== null) cb(picked);
-			});
+		(cb: (icon: string | null) => void) => {
+			// Forward the picker's null (user clicked "No icon") through to the
+			// caller so it can clear the override — dropping null here was the
+			// reason "No icon" silently did nothing.
+			showReactIconPicker(app, (picked) => cb(picked));
 		},
 		[app]
 	);
+
+	const editController: ManagerEditController = {
+		item: {
+			id,
+			label: originalLabel,
+			icon: displayIcon ?? "",
+			...(displayColor !== undefined ? { color: displayColor } : {}),
+		},
+		values: {
+			label: displayLabel,
+			icon: displayIcon ?? "",
+			color: displayColor ?? "#ffffff",
+		},
+		overrides: {
+			label: hasRename,
+			icon: hasIconOverride,
+			color: hasColorOverride,
+		},
+		actions: { rename, changeIcon, changeColor, pickIcon },
+	};
 
 	return (
 		<div
@@ -240,7 +289,7 @@ const EditableRow = memo(function EditableRow({
 					<button
 						type="button"
 						className={cls("drag-btn")}
-						onClick={() => onMove(-1)}
+						onClick={() => move(-1)}
 						data-testid={cls(`up-${id}`)}
 						aria-label="Move up"
 					>
@@ -251,7 +300,7 @@ const EditableRow = memo(function EditableRow({
 					<button
 						type="button"
 						className={cls("drag-btn")}
-						onClick={() => onMove(1)}
+						onClick={() => move(1)}
 						data-testid={cls(`down-${id}`)}
 						aria-label="Move down"
 					>
@@ -278,7 +327,7 @@ const EditableRow = memo(function EditableRow({
 				<button
 					type="button"
 					className={cls("btn")}
-					onClick={onToggleExpand}
+					onClick={toggleExpand}
 					title={isExpanded ? "Collapse" : "Edit"}
 					data-testid={cls(`edit-${id}`)}
 				>
@@ -288,7 +337,7 @@ const EditableRow = memo(function EditableRow({
 					type="button"
 					className={cls("btn")}
 					disabled={isVisible && visibleCount <= 1}
-					onClick={onToggleVisibility}
+					onClick={toggleVisibility}
 					title={isVisible ? "Hide" : "Show"}
 					data-testid={cls(`toggle-${id}`)}
 				>
@@ -296,155 +345,103 @@ const EditableRow = memo(function EditableRow({
 				</button>
 			</div>
 
-			{isExpanded && (
-				<ManagerEditForm
-					item={{
-						id,
-						label: originalLabel,
-						icon: displayIcon ?? "",
-						...(displayColor !== undefined ? { color: displayColor } : {}),
-					}}
-					currentLabel={displayLabel}
-					currentIcon={displayIcon ?? ""}
-					currentColor={displayColor ?? "#ffffff"}
-					hasRenameOverride={hasRename}
-					hasIconOverride={hasIconOverride}
-					hasColorOverride={hasColorOverride}
-					onRename={(_id, value) => onRename(value)}
-					onIconChange={(_id, value) => onIconChange(value)}
-					onColorChange={(_id, value) => onColorChange(value)}
-					onPickIcon={pickIcon}
-					cssPrefix={cssPrefix}
-					formPrefix={ROW_PREFIX}
-				/>
-			)}
+			{isExpanded && <ManagerEditForm controller={editController} cssPrefix={cssPrefix} formPrefix={ROW_PREFIX} />}
 		</div>
 	);
 });
 
 interface TabManagerRowProps {
-	cssPrefix: string;
-	state: TabbedContainerStateAccess;
-	actions: TabbedContainerActions;
 	tab: TabEntry;
+	index: number;
 	isVisible: boolean;
-	isExpanded: boolean;
-	isGroupExpanded: boolean;
-	visibleIndex: number;
 	visibleCount: number;
-	onToggleExpand: () => void;
-	onToggleGroup: () => void;
-	drag: DragState;
-	setDrag: (d: DragState) => void;
-	onDrop: (targetId: string) => void;
-	onChildDrop: (groupId: string, targetId: string) => void;
-	childExpandedId: string | null;
-	setChildExpandedId: (id: string | null) => void;
 }
 
-const TabManagerRow = memo(function TabManagerRow({
-	cssPrefix,
-	state,
-	actions,
-	tab,
-	isVisible,
-	isExpanded,
-	isGroupExpanded,
-	visibleIndex,
-	visibleCount,
-	onToggleExpand,
-	onToggleGroup,
-	drag,
-	setDrag,
-	onDrop,
-	onChildDrop,
-	childExpandedId,
-	setChildExpandedId,
-}: TabManagerRowProps) {
-	const isGroup = isGroupTab(tab);
+const TabManagerRow = memo(function TabManagerRow({ tab, index, isVisible, visibleCount }: TabManagerRowProps) {
+	const {
+		cssPrefix,
+		state,
+		actions,
+		expandedId,
+		setExpandedId,
+		expandedGroups,
+		toggleGroup,
+		drag,
+		setDrag,
+		onTabDrop,
+	} = useTabManagerContext();
 
-	const leadingSlot = isGroup ? (
-		<button
-			type="button"
-			className={`${cssPrefix}${ROW_PREFIX}-group-toggle`}
-			onClick={onToggleGroup}
-			aria-label={isGroupExpanded ? "Collapse group" : "Expand group"}
-			data-testid={`${cssPrefix}${ROW_PREFIX}-group-toggle-${tab.id}`}
-		>
-			<ObsidianIcon icon={isGroupExpanded ? "chevron-down" : "chevron-right"} />
-		</button>
-	) : undefined;
+	const isGroup = isGroupTab(tab);
+	const isExpanded = expandedId === tab.id;
+	const isGroupExpanded = isGroup && expandedGroups.has(tab.id);
+
+	const leadingSlot = useMemo<ReactNode>(
+		() =>
+			isGroup ? (
+				<button
+					type="button"
+					className={`${cssPrefix}${ROW_PREFIX}-group-toggle`}
+					onClick={() => toggleGroup(tab.id)}
+					aria-label={isGroupExpanded ? "Collapse group" : "Expand group"}
+					data-testid={`${cssPrefix}${ROW_PREFIX}-group-toggle-${tab.id}`}
+				>
+					<ObsidianIcon icon={isGroupExpanded ? "chevron-down" : "chevron-right"} />
+				</button>
+			) : undefined,
+		[isGroup, isGroupExpanded, cssPrefix, toggleGroup, tab.id]
+	);
+
+	const row = useMemo<EditableRowModel>(
+		() => ({
+			id: tab.id,
+			originalLabel: tab.label,
+			displayLabel: state.getLabel(tab),
+			displayIcon: state.getIcon(tab),
+			displayColor: state.getColor(tab),
+			hasIconOverride: state.iconOverrides[tab.id] !== undefined,
+			hasColorOverride: state.colorOverrides[tab.id] !== undefined,
+			isVisible,
+			visibleIndex: index,
+			visibleCount,
+			isDragging: drag.id === tab.id && drag.scope === "tab",
+			isExpanded,
+			leadingSlot,
+		}),
+		[tab, state, isVisible, index, visibleCount, drag, isExpanded, leadingSlot]
+	);
+
+	const rowActions = useMemo<EditableRowActions>(
+		() => ({
+			move: (direction) => actions.moveTab(tab.id, direction),
+			toggleVisibility: () => (isVisible ? actions.hideTab(tab.id) : actions.restoreTab(tab.id)),
+			toggleExpand: () => setExpandedId(isExpanded ? null : tab.id),
+			dragStart: () => setDrag({ id: tab.id, scope: "tab" }),
+			dragEnd: () => setDrag({ id: null, scope: "tab" }),
+			drop: () => onTabDrop(tab.id),
+			rename: (value) => actions.rename(tab.id, value),
+			changeIcon: (value) => actions.setIcon(tab.id, value),
+			changeColor: (value) => actions.setColor(tab.id, value),
+		}),
+		[actions, tab.id, isVisible, isExpanded, setExpandedId, setDrag, onTabDrop]
+	);
 
 	return (
 		<>
-			<EditableRow
-				cssPrefix={cssPrefix}
-				id={tab.id}
-				originalLabel={tab.label}
-				displayLabel={state.getLabel(tab)}
-				displayIcon={state.getIcon(tab)}
-				displayColor={state.getColor(tab)}
-				hasIconOverride={state.iconOverrides[tab.id] !== undefined}
-				hasColorOverride={state.colorOverrides[tab.id] !== undefined}
-				isVisible={isVisible}
-				visibleIndex={visibleIndex}
-				visibleCount={visibleCount}
-				isDragging={drag.id === tab.id && drag.scope === "tab"}
-				isExpanded={isExpanded}
-				leadingSlot={leadingSlot}
-				onMove={(d) => actions.moveTab(tab.id, d)}
-				onToggleVisibility={() => (isVisible ? actions.hideTab(tab.id) : actions.restoreTab(tab.id))}
-				onToggleExpand={onToggleExpand}
-				onDragStart={() => setDrag({ id: tab.id, scope: "tab" })}
-				onDragEnd={() => setDrag({ id: null, scope: "tab" })}
-				onDrop={() => onDrop(tab.id)}
-				onRename={(v) => actions.rename(tab.id, v)}
-				onIconChange={(v) => actions.setIcon(tab.id, v)}
-				onColorChange={(v) => actions.setColor(tab.id, v)}
-			/>
-
-			{isGroup && isGroupExpanded && (
-				<GroupChildrenList
-					cssPrefix={cssPrefix}
-					state={state}
-					actions={actions}
-					group={tab}
-					drag={drag}
-					setDrag={setDrag}
-					onChildDrop={onChildDrop}
-					childExpandedId={childExpandedId}
-					setChildExpandedId={setChildExpandedId}
-				/>
-			)}
+			<EditableRow row={row} actions={rowActions} />
+			{isGroup && isGroupExpanded && <GroupChildrenList group={tab} />}
 		</>
 	);
 });
 
 interface GroupChildrenListProps {
-	cssPrefix: string;
-	state: TabbedContainerStateAccess;
-	actions: TabbedContainerActions;
 	group: GroupTabDefinition;
-	drag: DragState;
-	setDrag: (d: DragState) => void;
-	onChildDrop: (groupId: string, targetId: string) => void;
-	childExpandedId: string | null;
-	setChildExpandedId: (id: string | null) => void;
 }
 
-const GroupChildrenList = memo(function GroupChildrenList({
-	cssPrefix,
-	state,
-	actions,
-	group,
-	drag,
-	setDrag,
-	onChildDrop,
-	childExpandedId,
-	setChildExpandedId,
-}: GroupChildrenListProps) {
+const GroupChildrenList = memo(function GroupChildrenList({ group }: GroupChildrenListProps) {
+	const { cssPrefix, state } = useTabManagerContext();
 	const gs = state.groupStates.get(group.id);
 	if (!gs) return null;
+
 	const visibleChildIds = new Set(gs.visibleChildren.map((c) => c.id));
 	const orderedChildren = [...gs.visibleChildren, ...group.children.filter((c) => !visibleChildIds.has(c.id))];
 
@@ -453,20 +450,11 @@ const GroupChildrenList = memo(function GroupChildrenList({
 			{orderedChildren.map((child, idx) => (
 				<GroupChildRow
 					key={child.id}
-					cssPrefix={cssPrefix}
-					state={state}
-					actions={actions}
 					group={group}
 					child={child}
-					childIndex={idx}
-					childVisible={visibleChildIds.has(child.id)}
+					index={idx}
+					isVisible={visibleChildIds.has(child.id)}
 					visibleCount={gs.visibleChildren.length}
-					drag={drag}
-					setDrag={setDrag}
-					onChildDrop={onChildDrop}
-					expandedKey={`${group.id}:${child.id}`}
-					childExpandedId={childExpandedId}
-					setChildExpandedId={setChildExpandedId}
 				/>
 			))}
 		</div>
@@ -474,67 +462,59 @@ const GroupChildrenList = memo(function GroupChildrenList({
 });
 
 interface GroupChildRowProps {
-	cssPrefix: string;
-	state: TabbedContainerStateAccess;
-	actions: TabbedContainerActions;
 	group: GroupTabDefinition;
 	child: TabDefinition;
-	childIndex: number;
-	childVisible: boolean;
+	index: number;
+	isVisible: boolean;
 	visibleCount: number;
-	drag: DragState;
-	setDrag: (d: DragState) => void;
-	onChildDrop: (groupId: string, targetId: string) => void;
-	expandedKey: string;
-	childExpandedId: string | null;
-	setChildExpandedId: (id: string | null) => void;
 }
 
 const GroupChildRow = memo(function GroupChildRow({
-	cssPrefix,
-	state,
-	actions,
 	group,
 	child,
-	childIndex,
-	childVisible,
+	index,
+	isVisible,
 	visibleCount,
-	drag,
-	setDrag,
-	onChildDrop,
-	expandedKey,
-	childExpandedId,
-	setChildExpandedId,
 }: GroupChildRowProps) {
-	const isExpanded = childExpandedId === expandedKey;
+	const { state, actions, drag, setDrag, expandedId, setExpandedId, onChildDrop } = useTabManagerContext();
+
+	const expandedKey = `${group.id}:${child.id}`;
+	const isExpanded = expandedId === expandedKey;
 	const gs = state.groupStates.get(group.id);
 
-	return (
-		<EditableRow
-			cssPrefix={cssPrefix}
-			id={child.id}
-			originalLabel={child.label}
-			displayLabel={state.getChildLabel(group.id, child)}
-			displayIcon={state.getChildIcon(group.id, child)}
-			displayColor={state.getChildColor(group.id, child)}
-			hasIconOverride={gs?.childIconOverrides[child.id] !== undefined}
-			hasColorOverride={gs?.childColorOverrides[child.id] !== undefined}
-			isVisible={childVisible}
-			visibleIndex={childIndex}
-			visibleCount={visibleCount}
-			isDragging={drag.id === child.id && drag.scope === group.id}
-			isExpanded={isExpanded}
-			onMove={(d) => actions.moveGroupChild(group.id, child.id, d)}
-			onToggleVisibility={() =>
-				childVisible ? actions.hideGroupChild(group.id, child.id) : actions.restoreGroupChild(group.id, child.id)
-			}
-			onToggleExpand={() => setChildExpandedId(isExpanded ? null : expandedKey)}
-			onDragStart={() => setDrag({ id: child.id, scope: group.id })}
-			onDragEnd={() => setDrag({ id: null, scope: group.id })}
-			onDrop={() => onChildDrop(group.id, child.id)}
-			onRename={(v) => actions.renameChild(group.id, child.id, v)}
-			onIconChange={(v) => actions.setChildIcon(group.id, child.id, v)}
-			onColorChange={(v) => actions.setChildColor(group.id, child.id, v)}
-		/>
+	const row = useMemo<EditableRowModel>(
+		() => ({
+			id: child.id,
+			originalLabel: child.label,
+			displayLabel: state.getChildLabel(group.id, child),
+			displayIcon: state.getChildIcon(group.id, child),
+			displayColor: state.getChildColor(group.id, child),
+			hasIconOverride: gs?.childIconOverrides[child.id] !== undefined,
+			hasColorOverride: gs?.childColorOverrides[child.id] !== undefined,
+			isVisible,
+			visibleIndex: index,
+			visibleCount,
+			isDragging: drag.id === child.id && drag.scope === group.id,
+			isExpanded,
+		}),
+		[child, group.id, state, gs, isVisible, index, visibleCount, drag, isExpanded]
 	);
+
+	const rowActions = useMemo<EditableRowActions>(
+		() => ({
+			move: (direction) => actions.moveGroupChild(group.id, child.id, direction),
+			toggleVisibility: () =>
+				isVisible ? actions.hideGroupChild(group.id, child.id) : actions.restoreGroupChild(group.id, child.id),
+			toggleExpand: () => setExpandedId(isExpanded ? null : expandedKey),
+			dragStart: () => setDrag({ id: child.id, scope: group.id }),
+			dragEnd: () => setDrag({ id: null, scope: group.id }),
+			drop: () => onChildDrop(group.id, child.id),
+			rename: (value) => actions.renameChild(group.id, child.id, value),
+			changeIcon: (value) => actions.setChildIcon(group.id, child.id, value),
+			changeColor: (value) => actions.setChildColor(group.id, child.id, value),
+		}),
+		[actions, group.id, child.id, isVisible, isExpanded, expandedKey, setExpandedId, setDrag, onChildDrop]
+	);
+
+	return <EditableRow row={row} actions={rowActions} />;
 });

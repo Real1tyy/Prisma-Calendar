@@ -18,7 +18,14 @@ export { IconPickerButton, useIconPicker } from "./components/icon-picker-button
 export type { IconPickerGridProps } from "./components/icon-picker-grid";
 export { IconPickerGrid } from "./components/icon-picker-grid";
 export { LicenseSection } from "./components/license-section";
-export type { EditableItem as ManagerEditableItem, ManagerEditFormProps } from "./components/manager-edit-form";
+export type {
+	EditableItem as ManagerEditableItem,
+	ManagerEditActions,
+	ManagerEditController,
+	ManagerEditFormProps,
+	ManagerEditOverrides,
+	ManagerEditValues,
+} from "./components/manager-edit-form";
 export { ManagerEditForm } from "./components/manager-edit-form";
 export type { ManagerRowAction, ManagerRowProps } from "./components/manager-row";
 export type { EditableItem } from "./components/manager-row";

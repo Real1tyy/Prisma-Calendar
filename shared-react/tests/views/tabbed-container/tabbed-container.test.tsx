@@ -1,8 +1,10 @@
 import { act, screen } from "@testing-library/react";
 import type { App } from "obsidian";
 import type { RefObject } from "react";
+import { createElement } from "react";
 import { describe, expect, it, vi } from "vitest";
 
+import { MountImperative } from "../../../src/components/mount-imperative";
 import type { TabbedContainerHandle, TabEntry } from "../../../src/views/tabbed-container/index";
 import { TabbedContainer } from "../../../src/views/tabbed-container/index";
 import { renderReact } from "../../helpers/render-react";
@@ -80,6 +82,119 @@ describe("TabbedContainer", () => {
 
 		await user.click(screen.getByTestId("t-view-tab-tab-0"));
 		expect(screen.getByTestId("content-0")).toBeInTheDocument();
+	});
+
+	// Lazy gate: a tab's content thunk must not fire until the tab is first
+	// activated. Re-invocation on later re-renders is fine — the thunk only
+	// produces React elements that reconcile. The expensive work lives inside
+	// components like `MountImperative`, which is tested below.
+	it("never invokes a content thunk until its tab is first activated", async () => {
+		const thunk0 = vi.fn(() => <div data-testid="content-0">0</div>);
+		const thunk1 = vi.fn(() => <div data-testid="content-1">1</div>);
+		const thunk2 = vi.fn(() => <div data-testid="content-2">2</div>);
+		const tabs: TabEntry[] = [
+			{ id: "tab-0", label: "Tab 0", content: thunk0 },
+			{ id: "tab-1", label: "Tab 1", content: thunk1 },
+			{ id: "tab-2", label: "Tab 2", content: thunk2 },
+		];
+
+		const { user } = renderReact(<TabbedContainer tabs={tabs} cssPrefix="t-" />);
+
+		// Initial render: only the active tab's thunk fired.
+		expect(thunk0).toHaveBeenCalled();
+		expect(thunk1).not.toHaveBeenCalled();
+		expect(thunk2).not.toHaveBeenCalled();
+
+		// Switching to tab-1 invokes its thunk for the first time.
+		await user.click(screen.getByTestId("t-view-tab-tab-1"));
+		expect(thunk1).toHaveBeenCalled();
+		expect(thunk2).not.toHaveBeenCalled();
+
+		// Tab-2 still hasn't been touched, even after a switch.
+		await user.click(screen.getByTestId("t-view-tab-tab-0"));
+		expect(thunk2).not.toHaveBeenCalled();
+
+		// First visit to tab-2 finally invokes its thunk.
+		await user.click(screen.getByTestId("t-view-tab-tab-2"));
+		expect(thunk2).toHaveBeenCalled();
+	});
+
+	it("does not invoke any non-active tab's content thunk on initial mount", () => {
+		const thunk0 = vi.fn(() => <div data-testid="content-0">0</div>);
+		const thunk1 = vi.fn(() => <div data-testid="content-1">1</div>);
+		const thunk2 = vi.fn(() => <div data-testid="content-2">2</div>);
+		const tabs: TabEntry[] = [
+			{ id: "tab-0", label: "Tab 0", content: thunk0 },
+			{ id: "tab-1", label: "Tab 1", content: thunk1 },
+			{ id: "tab-2", label: "Tab 2", content: thunk2 },
+		];
+
+		renderReact(<TabbedContainer tabs={tabs} cssPrefix="t-" />);
+		expect(thunk1).not.toHaveBeenCalled();
+		expect(thunk2).not.toHaveBeenCalled();
+	});
+
+	it("invokes every tab's content thunk eagerly when lazy=false", () => {
+		const thunk0 = vi.fn(() => <div data-testid="content-0">0</div>);
+		const thunk1 = vi.fn(() => <div data-testid="content-1">1</div>);
+		const thunk2 = vi.fn(() => <div data-testid="content-2">2</div>);
+		const tabs: TabEntry[] = [
+			{ id: "tab-0", label: "Tab 0", content: thunk0 },
+			{ id: "tab-1", label: "Tab 1", content: thunk1 },
+			{ id: "tab-2", label: "Tab 2", content: thunk2 },
+		];
+
+		renderReact(<TabbedContainer tabs={tabs} cssPrefix="t-" lazy={false} />);
+		expect(thunk0).toHaveBeenCalledTimes(1);
+		expect(thunk1).toHaveBeenCalledTimes(1);
+		expect(thunk2).toHaveBeenCalledTimes(1);
+	});
+
+	// The real-world case: each tab's body is a `MountImperative` wrapping
+	// an expensive imperative engine (FullCalendar, Chart.js, etc.). The
+	// lazy gate must keep the engine from booting until the user actually
+	// visits the tab — that's what makes the calendar view affordable.
+	it("does not call MountImperative's render until the wrapping tab is first activated", async () => {
+		const render0 = vi.fn();
+		const render1 = vi.fn();
+		const render2 = vi.fn();
+		const tabs: TabEntry[] = [
+			{ id: "tab-0", label: "Tab 0", content: createElement(MountImperative, { render: render0 }) },
+			{
+				id: "tab-1",
+				label: "Tab 1",
+				content: () => createElement(MountImperative, { render: render1 }),
+			},
+			{
+				id: "tab-2",
+				label: "Tab 2",
+				content: () => createElement(MountImperative, { render: render2 }),
+			},
+		];
+
+		const { user } = renderReact(<TabbedContainer tabs={tabs} cssPrefix="t-" />);
+
+		// Initial render mounts only tab-0's imperative engine.
+		expect(render0).toHaveBeenCalledTimes(1);
+		expect(render1).not.toHaveBeenCalled();
+		expect(render2).not.toHaveBeenCalled();
+
+		// Visiting tab-1 boots tab-1's engine for the first time.
+		await user.click(screen.getByTestId("t-view-tab-tab-1"));
+		expect(render1).toHaveBeenCalledTimes(1);
+		expect(render2).not.toHaveBeenCalled();
+
+		// Going back to tab-0 must NOT re-boot its engine — MountImperative
+		// holds the same React instance, just unhides its panel.
+		await user.click(screen.getByTestId("t-view-tab-tab-0"));
+		expect(render0).toHaveBeenCalledTimes(1);
+
+		// And tab-2 is still untouched.
+		expect(render2).not.toHaveBeenCalled();
+
+		// First visit boots it.
+		await user.click(screen.getByTestId("t-view-tab-tab-2"));
+		expect(render2).toHaveBeenCalledTimes(1);
 	});
 
 	it("renames tabs from initialState", () => {
