@@ -1,6 +1,8 @@
-import { createPageHeader, type PageHeaderHandle, registerPageHeaderCommands } from "@real1ty-obsidian-plugins";
 import {
+	createPageHeader,
 	MountImperative,
+	type PageHeaderHandle,
+	registerPageHeaderCommands,
 	registerTabCommands,
 	renderReactInline,
 	TabbedContainer,

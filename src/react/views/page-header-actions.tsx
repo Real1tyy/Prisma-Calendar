@@ -1,5 +1,4 @@
-import type { HeaderActionDefinition } from "@real1ty-obsidian-plugins";
-import { ObsidianIcon, useApp } from "@real1ty-obsidian-plugins-react";
+import { type HeaderActionDefinition, ObsidianIcon, useApp } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { type CSSProperties, memo, useCallback } from "react";
 
