@@ -1,5 +1,6 @@
 import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
+import { isoLocal } from "../../fixtures/dates";
 import { expect, testWithNotifications as test } from "../../fixtures/electron";
 
 // Schema drift canary: a UI-driven create with every field populated must
@@ -18,19 +19,20 @@ import { expect, testWithNotifications as test } from "../../fixtures/electron";
 //     empty-list form (used here for `Prerequisite`).
 //   - 2-item lists are arrays; a single-item input would collapse to a scalar
 //     — using ≥2-item arrays keeps the array branch under test.
-//   - `dtstart` for May 10 2026 is in the future relative to the suite's
-//     wall-clock anchor (today = May 5 2026), so `skipNewlyCreatedNotifications`
+//   - `dtstart` is seeded 7 days from today so `skipNewlyCreatedNotifications`
 //     does NOT stamp `Already Notified` — the field must NOT appear in the
-//     output. Pulling the start back to today would flip that and break this
-//     assertion: that's by design — value drift in the notification path is
-//     a regression worth catching.
+//     output. A hardcoded date drifts into the past as the wall-clock advances
+//     and flips that branch, so we compute it relative to today.
 
 test.describe("frontmatter schema", () => {
 	test("create via toolbar writes exactly the expected frontmatter shape", async ({ calendar }) => {
+		const start = isoLocal(7, 9, 0);
+		const end = isoLocal(7, 10, 0);
+
 		const evt = await calendar.createEvent({
 			title: "Team Meeting",
-			start: "2026-05-10T09:00",
-			end: "2026-05-10T10:00",
+			start,
+			end,
 			categories: ["Work", "Personal"],
 			prerequisites: [],
 			participants: ["Alice", "Bob"],
@@ -42,8 +44,8 @@ test.describe("frontmatter schema", () => {
 		});
 
 		expect(readEventFrontmatter(calendar.vaultDir, evt.path)).toEqual({
-			"Start Date": "2026-05-10T09:00:00.000Z",
-			"End Date": "2026-05-10T10:00:00.000Z",
+			"Start Date": `${start}:00.000Z`,
+			"End Date": `${end}:00.000Z`,
 			"All Day": false,
 			Date: "",
 			Category: ["Work", "Personal"],
