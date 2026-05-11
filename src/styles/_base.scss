@@ -33,14 +33,31 @@
 		flex-direction: column;
 	}
 
+	/* The shared TabbedContainer ships `.tab-content` / `.tab-panel` as plain
+	   blocks. Prisma needs the active panel to be a real flex child of the
+	   scroll container and a flex column itself — otherwise every non-
+	   calendar tab's `flex: 1 1 auto` content collapses and the calendar
+	   tab's sticky-grow trick has no anchor. */
+	.prisma-tab-content {
+		display: flex;
+		flex-direction: column;
+	}
+
 	/* Calendar tab: grow with content so the sticky toolbar / day headers /
 	   all-day row stay attached to the outer scroll container
 	   (.prisma-tab-content). The calendar tab is the only one that mounts
 	   `.prisma-calendar-container` directly — every other tab is wrapped
-	   in `.prisma-tab-body`. */
-	.prisma-tab-panel:has(.prisma-calendar-container) {
+	   in `.prisma-tab-body`. The `:not(.prisma-tab-panel-hidden)` guard is
+	   load-bearing: the shared TabbedContainer hides inactive panels via
+	   that class with `display: none`, and our `display: flex` here would
+	   otherwise win on specificity and leak the prior tab's contents into
+	   the active tab. */
+	.prisma-tab-panel:has(.prisma-calendar-container):not(.prisma-tab-panel-hidden) {
 		height: auto;
 		min-height: 100%;
+		flex: 1 0 auto;
+		display: flex;
+		flex-direction: column;
 	}
 
 	/* Non-calendar tabs (timeline, heatmap, gantt, daily-stats, dual-daily,
@@ -48,11 +65,13 @@
 	   panel so their `flex: 1 1 auto` inner divs fill the viewport instead
 	   of growing forever (vis-timeline) or collapsing to content height
 	   (daily/dual-daily). The `:has(.prisma-tab-body)` scope keeps the
-	   calendar tab on its own track. */
-	.prisma-tab-panel:has(.prisma-tab-body) {
+	   calendar tab on its own track. See note above on the hidden guard. */
+	.prisma-tab-panel:has(.prisma-tab-body):not(.prisma-tab-panel-hidden) {
 		height: 100%;
 		min-height: 0;
 		flex: 1 1 auto;
+		display: flex;
+		flex-direction: column;
 	}
 
 	/* `.prisma-tab-body` is the Prisma wrapper inside every non-calendar
