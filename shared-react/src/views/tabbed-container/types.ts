@@ -1,7 +1,7 @@
+import { CustomizableUIBaseStateSchema } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
+import type { ReactNode } from "react";
 import { z } from "zod";
-
-import { CustomizableUIBaseStateSchema } from "../../core/customizable-ui-state";
 
 const optionalStringRecord = z.record(z.string(), z.string()).optional().catch(undefined);
 
@@ -37,8 +37,8 @@ export interface TabDefinition {
 	icon?: string;
 	/** Optional default color for the tab icon. */
 	color?: string;
-	render: (container: HTMLElement) => void | Promise<void>;
-	cleanup?: () => void;
+	/** React content rendered inside the tab panel when active. May be a node or a thunk for lazy evaluation. */
+	content: ReactNode | (() => ReactNode);
 	/** Key handlers dispatched when this tab is active and the container was last interacted with. Keys are `KeyboardEvent.key` values (e.g. "ArrowLeft"). */
 	keyHandlers?: Record<string, (e: KeyboardEvent) => void>;
 }
@@ -56,64 +56,45 @@ export interface GroupTabDefinition {
 export type TabEntry = TabDefinition | GroupTabDefinition;
 
 export function isGroupTab(entry: TabEntry): entry is GroupTabDefinition {
-	return "children" in entry && Array.isArray(entry.children);
+	return "children" in entry && Array.isArray((entry as GroupTabDefinition).children);
 }
 
-export interface GroupChildState {
-	allChildren: TabDefinition[];
-	visibleChildren: TabDefinition[];
-	activeChildIndex: number;
-	childRenames: Map<string, string>;
-	childIconOverrides: Map<string, string>;
-	childColorOverrides: Map<string, string>;
-}
-
-export interface TabbedContainerConfig {
+export interface TabbedContainerProps {
 	tabs: TabEntry[];
 	cssPrefix: string;
+	/** When true, panels are mounted only after the first activation. Default: true. */
 	lazy?: boolean;
-	/** Persisted state to restore. When provided, overrides tab order, visibility, and labels. */
+	/** Persisted state to restore. Overrides tab order, visibility, and labels. */
 	initialState?: TabbedContainerState;
 	onTabChange?: (tabId: string, index: number) => void;
 	/** Fires on any state mutation (tab switch, hide, reorder, rename). */
 	onStateChange?: (state: TabbedContainerState) => void;
-	/** When true, enables right-click context menu on tabs (hide, rename) and a "+" button to restore hidden tabs. Requires `app`. */
+	/** When true, renders the manage button + right-click menus (hide, rename, reorder). Requires `app`. */
 	editable?: boolean;
-	/** When true, hovering over a group tab button opens its dropdown; moving the mouse away closes it. Default: false. */
+	/** When true, hovering over a group tab opens its dropdown; moving away closes it. Default: false. */
 	hoverDropdown?: boolean;
 	/** Required when `editable: true`. */
 	app?: App;
-	/**
-	 * When provided, the tab bar buttons are rendered into this element
-	 * instead of inside the main container. The content panels are still
-	 * placed inside the main container passed to `createTabbedContainer`.
-	 */
-	tabBarContainer?: HTMLElement;
-	/**
-	 * When provided alongside `tabBarContainer`, the tab bar is inserted
-	 * before this sibling element instead of being appended at the end.
-	 */
-	tabBarInsertBefore?: Element;
+	/** When provided, the tab bar is portaled into this element instead of rendering inline. */
+	tabBarContainer?: HTMLElement | null;
+	/** When provided alongside `tabBarContainer`, the tab bar is inserted before this sibling. */
+	tabBarInsertBefore?: Element | null;
+	/** Imperative escape hatch for keyboard commands and external orchestration. */
+	handleRef?: { current: TabbedContainerHandle | null };
 }
 
+/** Imperative handle exposed for command registration and external orchestration. */
 export interface TabbedContainerHandle {
 	switchTo(indexOrId: number | string): void;
 	next(): void;
 	previous(): void;
-	/** Hides a tab by ID. No-op if only one tab visible. */
 	hideTab(id: string): void;
-	/** Restores a hidden tab by ID. */
 	restoreTab(id: string): void;
-	/** Moves a tab by ID left (-1) or right (+1). */
 	moveTab(id: string, direction: -1 | 1): void;
-	/** Opens the tab manager modal. No-op if not editable. */
 	showTabManager(): void;
-	/** Returns a serializable snapshot of the current tab state. */
 	getState(): TabbedContainerState;
-	/** Returns display labels for all visible tabs in their current order. */
 	getVisibleLabels(): string[];
 	readonly activeIndex: number;
 	readonly activeId: string;
 	readonly tabCount: number;
-	destroy(): void;
 }

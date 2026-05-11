@@ -11,4 +11,3 @@ export * from "./page-header";
 export * from "./primitives";
 export * from "./property-renderer";
 export * from "./schema-modal";
-export * from "./tabbed-container";

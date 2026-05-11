@@ -27,6 +27,8 @@ export type { ModalDescriptionProps } from "./components/modal-description";
 export { ModalDescription } from "./components/modal-description";
 export type { ModalFormProps, ModalSchemaFormProps } from "./components/modal-form";
 export { ModalForm, ModalSchemaForm } from "./components/modal-form";
+export type { MountImperativeProps } from "./components/mount-imperative";
+export { MountImperative } from "./components/mount-imperative";
 export { ObsidianIcon } from "./components/obsidian-icon";
 export type { ChartJSCtor, ChartTitleProps, PieCanvasProps, PieChartData, PieChartProps } from "./components/pie-chart";
 export { ChartTitle, PieCanvas, PieChart } from "./components/pie-chart";
@@ -130,8 +132,19 @@ export type {
 	PageHeaderProps,
 } from "./views/page-header";
 export { ActionBar, BackButton, PageHeader } from "./views/page-header";
-export type { ReactTabDefinition, TabbedContainerProps } from "./views/tabbed-container";
-export { TabbedContainer } from "./views/tabbed-container";
+export type { TabCommandUpdater } from "./views/tabbed-container";
+export {
+	type GroupTabDefinition,
+	isGroupTab,
+	registerTabCommands,
+	TabbedContainer,
+	type TabbedContainerHandle,
+	type TabbedContainerProps,
+	type TabbedContainerState,
+	TabbedContainerStateSchema,
+	type TabDefinition,
+	type TabEntry,
+} from "./views/tabbed-container";
 
 // ─── Virtual ───
 export * from "./virtual";

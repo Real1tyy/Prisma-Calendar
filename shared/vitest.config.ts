@@ -23,7 +23,6 @@ const JSDOM_PATTERNS = [
 	"tests/page-header/**/*.test.ts",
 	"tests/schema-modal/**/*.test.ts",
 	"tests/settings/**/*.test.ts",
-	"tests/tabbed-container/**/*.test.ts",
 	"tests/vault-table/**/*.test.ts",
 	"tests/core/css-utils.test.ts",
 	"tests/core/property-renderer.test.ts",
@@ -32,7 +31,6 @@ const JSDOM_PATTERNS = [
 ];
 
 export default defineConfig({
-	server: { fs: { allow: [".."] } },
 	plugins: [tsconfigPaths({ ignoreConfigErrors: true })],
 	test: {
 		globals: true,
