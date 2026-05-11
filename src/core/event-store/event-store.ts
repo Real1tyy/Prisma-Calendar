@@ -287,9 +287,13 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 			return;
 		}
 
+		// Tree is keyed on end-time, so forRange from `queryStart` inclusive would
+		// also visit events with end == queryStart. Those don't actually intersect
+		// [queryStart, queryEnd) — filter them out with the strict end > queryStart
+		// check to match `getEventsInRange` and `aggregateStats`.
 		const timedLowKey = `${queryStartNorm}${EventStore.SEP}`;
 		timedTree.forRange(timedLowKey, `${EventStore.MAX}`, true, (_key, event) => {
-			if (this.normIso(event.start) < queryEndNorm) {
+			if (this.normIso(event.start) < queryEndNorm && this.normIso(event.end) > queryStartNorm) {
 				visitor(event);
 			}
 		});

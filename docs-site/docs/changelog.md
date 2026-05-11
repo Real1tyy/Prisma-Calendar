@@ -27,6 +27,7 @@ All notable changes to this project will be documented here.
 - **Documentation links in changelog not clickable**: Relative documentation links in the What's New modal and in-app changelog viewer did nothing on click. They now open the corresponding page on the documentation site. See [General Settings → Changelog Viewer](./configuration/general.md#changelog-viewer).
 - **Stray virtual events files at half-typed directories**: Typing the calendar directory in settings created a `Virtual Events.md` at every intermediate path. The plugin now waits 3 seconds after the last keystroke before binding the new directory. See [Virtual Events → Storage](./features/events/virtual-events.md#storage).
 - **Two planning systems on the same directory could break each other**: When two systems shared a directory but used different sort settings, they fought over the same events. Settings now show a warning and pause sort updates until you fix it. See [Sorting Normalization](./configuration/properties.md#multiple-planning-systems-on-the-same-directory).
+- **Capacity indicator disagreeing with the stats panel**: Events with no category were silently dropped from the stats pie chart and table while still counting toward the capacity badge, so the two numbers showed different totals for the same period. See [Capacity Tracking](./features/views/capacity-tracking.md).
 
 ---
 

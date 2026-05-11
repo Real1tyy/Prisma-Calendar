@@ -232,6 +232,23 @@ describe("EventStore", () => {
 
 			expect(events).toHaveLength(0);
 		});
+
+		it("excludes events ending exactly at queryStart (strict overlap)", async () => {
+			const phantom = createMockEvent({
+				id: "phantom",
+				title: "Yesterday Late",
+				start: "2024-01-14T23:30:00",
+				end: "2024-01-15T00:00:00",
+			});
+			eventStore.updateEvent("Events/phantom.md", phantom);
+
+			const events = await eventStore.getEvents({
+				start: "2024-01-15T00:00:00",
+				end: "2024-01-16T00:00:00",
+			});
+
+			expect(events.map((e: any) => e.title)).not.toContain("Yesterday Late");
+		});
 	});
 
 	describe("RxJS subscriptions", () => {

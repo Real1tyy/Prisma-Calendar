@@ -61,8 +61,13 @@ export function aggregateStats(
 		let groupKeys: string[];
 
 		if (mode === "category") {
-			const categories = event.metadata.categories ?? parseCategories(event.meta[categoryProp]);
-			groupKeys = categories;
+			// `??` only falls through on null/undefined — an explicit empty `metadata.categories=[]`
+			// would otherwise drop the event from entries while still counting toward capacity.
+			// Treat empty as missing so it lands in "No Category" via parseCategories.
+			const parsedCategories = event.metadata.categories?.length
+				? event.metadata.categories
+				: parseCategories(event.meta[categoryProp]);
+			groupKeys = parsedCategories;
 		} else {
 			groupKeys = [extractNotesCoreName(event.title)];
 		}

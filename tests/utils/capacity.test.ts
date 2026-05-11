@@ -6,6 +6,7 @@ import {
 	formatCapacityLabel,
 	inferBoundaries,
 } from "../../src/utils/capacity";
+import { aggregateStats, getEventsInRange } from "../../src/utils/stats";
 import { createMockAllDayEvent, createMockTimedEvent } from "../fixtures/event-fixtures";
 
 const MS_PER_HOUR = 3_600_000;
@@ -128,6 +129,71 @@ describe("calculateCapacityFromEvents", () => {
 		expect(result.boundaryEnd).toBe(18);
 		expect(result.capacityMs).toBe(9 * MS_PER_HOUR);
 		expect(result.usedMs).toBe(7 * MS_PER_HOUR);
+	});
+});
+
+describe("calculateCapacity — parity with stats", () => {
+	const periodStart = new Date("2026-05-11T00:00:00");
+	const periodEnd = new Date("2026-05-12T00:00:00");
+
+	it("matches aggregateStats.totalDuration when caller pre-filters via getEventsInRange", () => {
+		const events = [
+			createMockTimedEvent({
+				id: "1",
+				title: "Project Planning",
+				start: "2026-05-11T08:00:00",
+				end: "2026-05-11T09:00:00",
+			}),
+			createMockTimedEvent({
+				id: "2",
+				title: "Project Planning",
+				start: "2026-05-11T13:00:00",
+				end: "2026-05-11T13:30:00",
+			}),
+			createMockTimedEvent({
+				id: "edge",
+				start: "2026-05-10T23:30:00",
+				end: "2026-05-11T00:00:00",
+			}),
+		];
+
+		const inRange = getEventsInRange(events, periodStart, periodEnd);
+		const stats = aggregateStats(inRange, periodStart, periodEnd, "name");
+		const capacity = calculateCapacity(inRange, periodStart, periodEnd, 7, 18);
+		expect(capacity.usedMs).toBe(stats.totalDuration);
+		expect(capacity.usedMs).toBe(1.5 * MS_PER_HOUR);
+	});
+});
+
+describe("aggregateStats / calculateCapacity parity — empty categories", () => {
+	it("keeps events with metadata.categories=[] visible in stats and matches capacity", () => {
+		const periodStart = new Date("2026-05-11T00:00:00");
+		const periodEnd = new Date("2026-05-12T00:00:00");
+
+		const visible = createMockTimedEvent({
+			id: "visible",
+			title: "Work",
+			start: "2026-05-11T07:00:00",
+			end: "2026-05-11T07:30:00",
+			metadata: { categories: ["Work"] },
+		});
+		const phantom = createMockTimedEvent({
+			id: "phantom",
+			title: "Work",
+			start: "2026-05-11T07:30:00",
+			end: "2026-05-11T08:00:00",
+			metadata: { categories: [] },
+		});
+
+		const stats = aggregateStats([visible, phantom], periodStart, periodEnd, "category");
+		const capacity = calculateCapacity([visible, phantom], periodStart, periodEnd, 7, 8);
+
+		expect(stats.totalDuration).toBe(MS_PER_HOUR);
+		expect(capacity.usedMs).toBe(MS_PER_HOUR);
+		expect(stats.totalDuration).toBe(capacity.usedMs);
+
+		const totalCount = stats.entries.reduce((sum, e) => sum + e.count, 0);
+		expect(totalCount).toBe(2);
 	});
 });
 

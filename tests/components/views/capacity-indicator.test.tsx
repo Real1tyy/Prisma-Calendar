@@ -8,7 +8,10 @@ import { BundleContext } from "../../../src/react/contexts/bundle-context";
 import { CapacityIndicator } from "../../../src/react/views/capacity-indicator";
 import { createMockCalendarSettingsStore } from "../../fixtures/settings-fixtures";
 
-function createMockBundle(settingsOverride: Record<string, unknown> = {}) {
+function createMockBundle(
+	settingsOverride: Record<string, unknown> = {},
+	getEventsImpl: (...args: any[]) => Promise<any[]> = async () => []
+) {
 	const store = createMockCalendarSettingsStore({
 		capacityTrackingEnabled: true,
 		hourStart: 8,
@@ -19,7 +22,7 @@ function createMockBundle(settingsOverride: Record<string, unknown> = {}) {
 	return {
 		settingsStore: store,
 		eventStore: {
-			getEvents: vi.fn().mockResolvedValue([]),
+			getEvents: vi.fn(getEventsImpl),
 			changes$: new Subject<void>().asObservable(),
 		},
 	} as any;
