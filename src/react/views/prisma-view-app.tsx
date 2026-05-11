@@ -1,15 +1,15 @@
+import { createPageHeader, type PageHeaderHandle, registerPageHeaderCommands } from "@real1ty-obsidian-plugins";
 import {
-	createPageHeader,
-	createTabbedContainer,
-	type PageHeaderHandle,
-	registerPageHeaderCommands,
+	MountImperative,
 	registerTabCommands,
+	renderReactInline,
+	TabbedContainer,
 	type TabbedContainerHandle,
 	type TabbedContainerState,
 	type TabDefinition,
 	type TabEntry,
-} from "@real1ty-obsidian-plugins";
-import { renderReactInline, useApp } from "@real1ty-obsidian-plugins-react";
+	useApp,
+} from "@real1ty-obsidian-plugins-react";
 import type { App, WorkspaceLeaf } from "obsidian";
 import { createElement, memo, type RefObject, useEffect, useRef } from "react";
 
@@ -102,14 +102,16 @@ function buildTabs(ctx: MountCtx, viewRef: PrismaViewRef, refs: TabHandleRefs): 
 		id: "calendar",
 		label: "Calendar",
 		icon: "calendar",
-		render: (tabEl) => {
-			viewRef.calendarComponent = new CalendarComponent(app, bundle, tabEl, hostEl, leaf);
-			viewRef.calendarComponent.load();
-		},
-		cleanup: () => {
-			viewRef.calendarComponent?.unload();
-			viewRef.calendarComponent = null;
-		},
+		content: createElement(MountImperative, {
+			render: (tabEl) => {
+				viewRef.calendarComponent = new CalendarComponent(app, bundle, tabEl, hostEl, leaf);
+				viewRef.calendarComponent.load();
+			},
+			cleanup: () => {
+				viewRef.calendarComponent?.unload();
+				viewRef.calendarComponent = null;
+			},
+		}),
 	};
 
 	const dashboardChildren = buildDashboardChildren(app, bundle).map(
@@ -228,30 +230,55 @@ function setupTabbedContainer({
 	const savedState = bundle.settingsStore.currentSettings.activeTab;
 	const defaultState: TabbedContainerState = { visibleTabIds: [...DEFAULT_VISIBLE_TAB_IDS] };
 
-	const handle = createTabbedContainer(el, {
-		tabs,
-		cssPrefix: "prisma-",
-		tabBarContainer: headerEl,
-		...(titleContainer ? { tabBarInsertBefore: titleContainer } : {}),
-		editable: true,
-		app,
-		initialState: savedState ?? defaultState,
-		onStateChange: (state) => {
-			void bundle.settingsStore.updateSettings((s) => ({ ...s, activeTab: state }));
-			tabCommandUpdater.updateLabels(handle.getVisibleLabels());
+	const tabbedHandleRef: { current: TabbedContainerHandle | null } = {
+		get current() {
+			return viewRef.tabbedHandle;
 		},
-	});
-	viewRef.tabbedHandle = handle;
+		set current(value: TabbedContainerHandle | null) {
+			viewRef.tabbedHandle = value;
+		},
+	};
+
+	// Mount the TabbedContainer into its own child node, not directly into `el`.
+	// `el` is already owned by the outer renderReactInline root that hosts
+	// PrismaViewApp; mounting a second root into the same DOM container makes
+	// React's two unmount passes race on shared children and throw
+	// `removeChild: not a child of this node` when the view closes.
+	const tabbedHost = el.createDiv("prisma-tabbed-host");
+
+	const unmount = renderReactInline(
+		tabbedHost,
+		createElement(TabbedContainer, {
+			tabs,
+			cssPrefix: "prisma-",
+			tabBarContainer: headerEl,
+			...(titleContainer ? { tabBarInsertBefore: titleContainer } : {}),
+			editable: true,
+			app,
+			initialState: savedState ?? defaultState,
+			onStateChange: (state) => {
+				void bundle.settingsStore.updateSettings((s) => ({ ...s, activeTab: state }));
+				const handle = tabbedHandleRef.current;
+				if (handle) tabCommandUpdater.updateLabels(handle.getVisibleLabels());
+			},
+			handleRef: tabbedHandleRef,
+		}),
+		app
+	);
 
 	const tabCommandUpdater = registerTabCommands(
 		plugin,
 		"prisma-calendar",
 		"Prisma Calendar",
-		handle,
+		() => tabbedHandleRef.current,
 		tabs.map((t) => t.label)
 	);
 
-	return () => handle.destroy();
+	return () => {
+		unmount();
+		tabbedHost.remove();
+		tabbedHandleRef.current = null;
+	};
 }
 
 function setupCapacityIndicator(titleContainer: HTMLElement, mountCtx: MountCtx, viewRef: PrismaViewRef): () => void {

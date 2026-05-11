@@ -4,8 +4,8 @@ import {
 	normalizeDirectoryPath,
 	PageHeaderStateSchema,
 	type SettingsStore,
-	TabbedContainerStateSchema,
 } from "@real1ty-obsidian-plugins";
+import { TabbedContainerStateSchema } from "@real1ty-obsidian-plugins-react";
 import { z } from "zod";
 
 import {
