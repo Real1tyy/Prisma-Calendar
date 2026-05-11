@@ -41,13 +41,18 @@ function buildTabStyles(p: string): string {
 	background: var(--interactive-accent-hover);
 }
 .${p}tab-content {
+	display: flex;
+	flex-direction: column;
 	flex: 1;
 	overflow-y: auto;
 	min-height: 0;
 }
 .${p}tab-panel {
 	padding: 0;
-	height: 100%;
+	flex: 1 0 auto;
+	min-height: 100%;
+	display: flex;
+	flex-direction: column;
 }
 .${p}tab-panel-hidden {
 	display: none;
