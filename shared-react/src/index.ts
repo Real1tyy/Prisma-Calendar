@@ -87,7 +87,7 @@ export type {
 export { ContextMenu } from "./menus";
 
 // ─── Modals ───
-export type { ConfirmationModalProps, OpenConfirmationOptions } from "./modals/confirmation-modal";
+export type { ConfirmationModalProps, ConfirmationResult, OpenConfirmationOptions } from "./modals/confirmation-modal";
 export { ConfirmationModalContent, openConfirmation } from "./modals/confirmation-modal";
 export type {
 	FrontmatterPropagationModalProps,
@@ -101,7 +101,7 @@ export type { ShowReactIconPickerOptions } from "./modals/icon-picker-modal";
 export { showReactIconPicker } from "./modals/icon-picker-modal";
 export type { ProgressModalConfig, ProgressModalHandle } from "./modals/progress-modal";
 export { openProgressModal } from "./modals/progress-modal";
-export type { OpenRenameOptions, RenameModalProps } from "./modals/rename-modal";
+export type { OpenRenameOptions, RenameModalProps, RenameModalResult } from "./modals/rename-modal";
 export { openRenameModal, RenameModalContent } from "./modals/rename-modal";
 export type { WhatsNewModalConfig } from "./modals/whats-new-modal";
 export { DEFAULT_WHATS_NEW_LINKS, showWhatsNewReactModal } from "./modals/whats-new-modal";

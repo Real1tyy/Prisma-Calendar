@@ -1,5 +1,6 @@
 import type { App } from "obsidian";
-import { memo } from "react";
+import type { ReactNode } from "react";
+import { memo, useCallback, useRef, useState } from "react";
 
 import { Button } from "../components/button";
 import { ModalDescription } from "../components/modal-description";
@@ -7,10 +8,11 @@ import { openReactModal } from "../show-react-modal";
 
 export interface ConfirmationModalProps {
 	title: string;
-	message?: string;
-	confirmLabel?: string;
-	cancelLabel?: string;
-	destructive?: boolean;
+	message?: string | undefined;
+	confirmLabel?: string | undefined;
+	cancelLabel?: string | undefined;
+	destructive?: boolean | undefined;
+	extras?: ReactNode | undefined;
 	testIdPrefix?: string | undefined;
 	onConfirm: () => void;
 	onCancel: () => void;
@@ -21,20 +23,36 @@ export const ConfirmationModalContent = memo(function ConfirmationModalContent({
 	confirmLabel = "Confirm",
 	cancelLabel = "Cancel",
 	destructive = false,
+	extras,
 	testIdPrefix = "",
 	onConfirm,
 	onCancel,
 }: ConfirmationModalProps) {
+	const settledRef = useRef(false);
+
+	const handleConfirm = useCallback(() => {
+		if (settledRef.current) return;
+		settledRef.current = true;
+		onConfirm();
+	}, [onConfirm]);
+
+	const handleCancel = useCallback(() => {
+		if (settledRef.current) return;
+		settledRef.current = true;
+		onCancel();
+	}, [onCancel]);
+
 	return (
 		<div data-testid={`${testIdPrefix}confirmation-modal`}>
 			{message && <ModalDescription>{message}</ModalDescription>}
+			{extras}
 			<div style={{ display: "flex", gap: "8px", justifyContent: "flex-end", marginTop: "16px" }}>
-				<Button testId={`${testIdPrefix}confirmation-modal-cancel`} onClick={onCancel}>
+				<Button testId={`${testIdPrefix}confirmation-modal-cancel`} onClick={handleCancel}>
 					{cancelLabel}
 				</Button>
 				<Button
 					testId={`${testIdPrefix}confirmation-modal-confirm`}
-					onClick={onConfirm}
+					onClick={handleConfirm}
 					variant={destructive ? "warning" : "primary"}
 				>
 					{confirmLabel}
@@ -44,37 +62,78 @@ export const ConfirmationModalContent = memo(function ConfirmationModalContent({
 	);
 });
 
-export interface OpenConfirmationOptions {
+interface BaseOpenConfirmationOptions {
 	title: string;
 	message?: string;
 	confirmLabel?: string;
 	cancelLabel?: string;
 	destructive?: boolean;
 	testIdPrefix?: string;
-	onConfirm?: () => void;
 	onCancel?: () => void;
 }
 
-export function openConfirmation(app: App, options: OpenConfirmationOptions): Promise<boolean> {
-	const { onConfirm, onCancel, testIdPrefix: testIdPrefixOpt, ...rest } = options;
-	const testIdPrefix = testIdPrefixOpt ?? "";
-	return openReactModal<boolean>({
+export type OpenConfirmationOptions<TExtras = undefined> =
+	| (BaseOpenConfirmationOptions & {
+			initialExtras?: undefined;
+			renderExtras?: undefined;
+			onConfirm?: () => void;
+	  })
+	| (BaseOpenConfirmationOptions & {
+			initialExtras: TExtras;
+			renderExtras: (state: TExtras, setState: (next: TExtras) => void) => ReactNode;
+			onConfirm?: (extras: TExtras) => void;
+	  });
+
+export interface ConfirmationResult<TExtras = undefined> {
+	extras: TExtras;
+}
+
+export function openConfirmation<TExtras = undefined>(
+	app: App,
+	options: OpenConfirmationOptions<TExtras>
+): Promise<ConfirmationResult<TExtras> | null> {
+	const testIdPrefix = options.testIdPrefix ?? "";
+	return openReactModal<ConfirmationResult<TExtras>>({
 		app,
-		title: rest.title,
+		title: options.title,
 		testId: `${testIdPrefix}confirmation-modal-container`,
 		render: (submit, cancel) => (
-			<ConfirmationModalContent
-				{...rest}
+			<ConfirmationShell<TExtras>
+				options={options}
 				testIdPrefix={testIdPrefix}
-				onConfirm={() => {
-					onConfirm?.();
-					submit(true);
+				onConfirm={(extras) => {
+					(options.onConfirm as ((extras: TExtras) => void) | undefined)?.(extras);
+					submit({ extras });
 				}}
 				onCancel={() => {
-					onCancel?.();
+					options.onCancel?.();
 					cancel();
 				}}
 			/>
 		),
-	}).then((result) => result ?? false);
+	});
+}
+
+interface ConfirmationShellProps<TExtras> {
+	options: OpenConfirmationOptions<TExtras>;
+	testIdPrefix: string;
+	onConfirm: (extras: TExtras) => void;
+	onCancel: () => void;
+}
+
+function ConfirmationShell<TExtras>({ options, testIdPrefix, onConfirm, onCancel }: ConfirmationShellProps<TExtras>) {
+	const [extras, setExtras] = useState<TExtras>(options.initialExtras as TExtras);
+	return (
+		<ConfirmationModalContent
+			title={options.title}
+			message={options.message}
+			confirmLabel={options.confirmLabel}
+			cancelLabel={options.cancelLabel}
+			destructive={options.destructive}
+			testIdPrefix={testIdPrefix}
+			extras={options.renderExtras?.(extras, setExtras)}
+			onConfirm={() => onConfirm(extras)}
+			onCancel={onCancel}
+		/>
+	);
 }

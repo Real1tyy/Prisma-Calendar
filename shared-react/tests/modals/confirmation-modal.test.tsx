@@ -71,4 +71,44 @@ describe("ConfirmationModalContent", () => {
 
 		expect(screen.getByTestId(`${PREFIX}confirmation-modal`)).toBeInTheDocument();
 	});
+
+	it("renders extras slot between message and footer", () => {
+		renderReact(
+			<ConfirmationModalContent {...defaultProps} extras={<div data-testid="confirm-extra-slot">extra content</div>} />
+		);
+
+		expect(screen.getByTestId("confirm-extra-slot")).toBeInTheDocument();
+	});
+
+	it("extras slot is omitted when not provided", () => {
+		renderReact(<ConfirmationModalContent {...defaultProps} />);
+
+		expect(screen.queryByTestId("confirm-extra-slot")).not.toBeInTheDocument();
+	});
+
+	it("ignores repeated confirm clicks (double-click guard)", async () => {
+		const onConfirm = vi.fn();
+		const { user } = renderReact(<ConfirmationModalContent {...defaultProps} onConfirm={onConfirm} />);
+
+		const button = screen.getByTestId(`${PREFIX}confirmation-modal-confirm`);
+		await user.click(button);
+		await user.click(button);
+		await user.click(button);
+
+		expect(onConfirm).toHaveBeenCalledOnce();
+	});
+
+	it("ignores cancel after confirm (settled guard)", async () => {
+		const onConfirm = vi.fn();
+		const onCancel = vi.fn();
+		const { user } = renderReact(
+			<ConfirmationModalContent {...defaultProps} onConfirm={onConfirm} onCancel={onCancel} />
+		);
+
+		await user.click(screen.getByTestId(`${PREFIX}confirmation-modal-confirm`));
+		await user.click(screen.getByTestId(`${PREFIX}confirmation-modal-cancel`));
+
+		expect(onConfirm).toHaveBeenCalledOnce();
+		expect(onCancel).not.toHaveBeenCalled();
+	});
 });
