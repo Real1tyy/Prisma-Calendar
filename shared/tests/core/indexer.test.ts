@@ -659,6 +659,67 @@ describe("Indexer", () => {
 				expect(events[0].oldFrontmatter).toEqual({ title: "Cached" });
 				expect(events[0].frontmatterDiff).toBeDefined();
 			});
+
+			it("should fall back to file-deleted when emitRenameEvents=true but rename leaves scope", async () => {
+				// emitRenameEvents is a within-scope contract: the rename event
+				// implies the consumer can correlate old and new state. When the
+				// file leaves scope, the consumer never tracked the old path
+				// (irrelevant) or the new path (out of reach), so a renamed
+				// event would be meaningless. Falling back to file-deleted is
+				// the only sound choice — and is what the source bundle in a
+				// cross-calendar move depends on.
+				const movedOutFile = createMockFile("OtherFolder/note.md", { parentPath: "OtherFolder" }) as TFile;
+
+				await renameIndexer.start();
+
+				const events = await collectEvents(renameIndexer, 1, () => emitVaultRename(movedOutFile, "TestFolder/note.md"));
+				expect(events).toHaveLength(1);
+				expect(events[0].type).toBe("file-deleted");
+				expect(events[0].filePath).toBe("TestFolder/note.md");
+				expect(events[0].isRename).toBe(true);
+			});
+
+			it("should fall back to file-changed when emitRenameEvents=true but rename enters scope", async () => {
+				vi.mocked(mockApp.metadataCache.getFileCache).mockReturnValue({
+					frontmatter: { title: "Moved" },
+				} as never);
+
+				await renameIndexer.start();
+
+				const events = await collectEvents(renameIndexer, 1, () => emitVaultRename(renamedFile, "OtherFolder/note.md"));
+				expect(events).toHaveLength(1);
+				expect(events[0].type).toBe("file-changed");
+				expect(events[0].filePath).toBe("TestFolder/renamed.md");
+				expect(events[0].oldPath).toBe("OtherFolder/note.md");
+			});
+		});
+
+		it("should evict frontmatter cache entry for the old path on out-of-scope rename", async () => {
+			// Regression: if the cache for the old path is left behind, a
+			// later metadataCache changed at the new path would still try to
+			// diff against the stale entry. With the rename filter fixed, the
+			// cache eviction now happens via the deleted intent — verify it.
+			vi.mocked(mockApp.vault.getMarkdownFiles).mockReturnValue([mockFile]);
+			vi.mocked(mockApp.metadataCache.getFileCache).mockReturnValue({
+				frontmatter: { title: "Note" },
+			} as never);
+
+			await indexer.start();
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			// File leaves scope — must emit file-deleted, evicting the cache.
+			const movedOutFile = createMockFile("OtherFolder/note.md", { parentPath: "OtherFolder" }) as TFile;
+			const renameEvents = await collectEvents(indexer, 1, () => emitVaultRename(movedOutFile, "TestFolder/note.md"));
+			expect(renameEvents[0].type).toBe("file-deleted");
+
+			// Bringing it back into scope under a different name must look
+			// like a fresh file — no oldFrontmatter on the next change event.
+			vi.mocked(mockApp.metadataCache.getFileCache).mockReturnValue({
+				frontmatter: { title: "Returned" },
+			} as never);
+			const reenterEvents = await collectEvents(indexer, 1, () => emitMetadataChanged(mockFile));
+			expect(reenterEvents[0].type).toBe("file-changed");
+			expect(reenterEvents[0].oldFrontmatter).toBeUndefined();
 		});
 
 		it("should filter out non-markdown files from rename events", async () => {
