@@ -33,12 +33,37 @@
 		flex-direction: column;
 	}
 
-	/* Override shared tab-panel height so sticky positioning works —
-	   the panel must grow with its content for sticky children to
-	   remain attached to the scroll container (.prisma-tab-content). */
-	.prisma-tab-panel {
+	/* Calendar tab: grow with content so the sticky toolbar / day headers /
+	   all-day row stay attached to the outer scroll container
+	   (.prisma-tab-content). The calendar tab is the only one that mounts
+	   `.prisma-calendar-container` directly — every other tab is wrapped
+	   in `.prisma-tab-body`. */
+	.prisma-tab-panel:has(.prisma-calendar-container) {
 		height: auto;
 		min-height: 100%;
+	}
+
+	/* Non-calendar tabs (timeline, heatmap, gantt, daily-stats, dual-daily,
+	   dashboard, monthly-stats…) need the *opposite*: a strictly bounded
+	   panel so their `flex: 1 1 auto` inner divs fill the viewport instead
+	   of growing forever (vis-timeline) or collapsing to content height
+	   (daily/dual-daily). The `:has(.prisma-tab-body)` scope keeps the
+	   calendar tab on its own track. */
+	.prisma-tab-panel:has(.prisma-tab-body) {
+		height: 100%;
+		min-height: 0;
+		flex: 1 1 auto;
+	}
+
+	/* `.prisma-tab-body` is the Prisma wrapper inside every non-calendar
+	   tab panel. It must be a flex column AND fill the (bounded) panel so
+	   the inner `flex: 1 1 auto` divs actually flex. */
+	.prisma-tab-body {
+		display: flex;
+		flex-direction: column;
+		flex: 1 1 auto;
+		min-height: 0;
+		height: 100%;
 	}
 }
 
