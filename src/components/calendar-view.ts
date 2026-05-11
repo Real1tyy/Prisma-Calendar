@@ -2114,21 +2114,12 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private scrollElementToCenter(element: Element): void {
-		const viewContent = this.hostEl.querySelector(".prisma-tab-content") ?? this.hostEl.querySelector(".view-content");
-		if (!viewContent) return;
-
-		const elementRect = element.getBoundingClientRect();
-		const viewContentRect = viewContent.getBoundingClientRect();
-
-		// Calculate scroll position to center the element
-		const scrollTop =
-			viewContent.scrollTop +
-			elementRect.top -
-			viewContentRect.top -
-			viewContent.clientHeight / 2 +
-			elementRect.height / 2;
-
-		viewContent.scrollTop = scrollTop;
+		// FullCalendar's timegrid nests its own `.fc-scroller` inside the outer
+		// `.prisma-tab-content`. Scrolling only the outer container leaves the
+		// now-indicator clipped inside FC's inner scroller. `scrollIntoView`
+		// walks every scrollable ancestor and brings the element into view in
+		// one call, which is what users expect from the "Now" button.
+		(element as HTMLElement).scrollIntoView({ block: "center", inline: "nearest" });
 	}
 
 	private recordNavigationState(): void {
