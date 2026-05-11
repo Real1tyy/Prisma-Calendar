@@ -1,5 +1,11 @@
 import type { ColorRule } from "@real1ty-obsidian-plugins";
-import { SchemaSection, SettingHeading, SettingItem, useSettingsStore } from "@real1ty-obsidian-plugins-react";
+import {
+	ColorInput,
+	SchemaSection,
+	SettingHeading,
+	SettingItem,
+	useSettingsStore,
+} from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useState } from "react";
 
 import type { CalendarSettingsStore } from "../../core/settings-store";
@@ -208,12 +214,10 @@ const ColorRuleItem = memo(function ColorRuleItem({
 					/>
 				</div>
 				<div className="prisma-color-rule-right">
-					<input
-						type="color"
+					<ColorInput
 						value={rule.color}
-						className="prisma-color-rule-picker"
-						onChange={(e) => onUpdate(rule.id, { color: e.target.value })}
-						data-testid={`prisma-rules-color-picker-${index}`}
+						onChange={(next) => onUpdate(rule.id, { color: next })}
+						testId={`prisma-rules-color-picker-${index}`}
 					/>
 					<div className="prisma-color-rule-controls">
 						{index > 0 && (

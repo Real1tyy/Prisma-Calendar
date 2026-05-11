@@ -1,5 +1,6 @@
 import { hexToRgb, type PieChartData } from "@real1ty-obsidian-plugins";
 import {
+	ColorInput,
 	ObsidianIcon,
 	PieChart,
 	SchemaSection,
@@ -262,11 +263,10 @@ const CategoriesListSection = memo(function CategoriesListSection({
 							>
 								<ObsidianIcon icon="trash" />
 							</button>
-							<input
-								type="color"
-								data-testid="prisma-category-settings-color-input"
+							<ColorInput
+								testId="prisma-category-settings-color-input"
 								value={info.color}
-								onChange={(e) => handleColorChange(info.name, e.target.value)}
+								onChange={(next) => handleColorChange(info.name, next)}
 							/>
 						</div>
 					</div>
