@@ -12,6 +12,14 @@ function drive(fn: () => void): void {
 	});
 }
 
+// Stopwatch installs a 1s interval that calls forceTick() while ticking;
+// advancing fake timers fires it, so the resulting re-renders must run inside act().
+function advanceTimers(ms: number): void {
+	act(() => {
+		vi.advanceTimersByTime(ms);
+	});
+}
+
 describe("Stopwatch", () => {
 	let mockCallbacks: {
 		onStart: ReturnType<typeof vi.fn>;
@@ -127,7 +135,7 @@ describe("Stopwatch", () => {
 			vi.useFakeTimers();
 			const { stopwatch } = mountStopwatch();
 			drive(() => stopwatch.start());
-			vi.advanceTimersByTime(1000);
+			advanceTimers(1000);
 			drive(() => stopwatch.stop());
 
 			const stateBeforeResume = stopwatch.exportState();
@@ -170,7 +178,7 @@ describe("Stopwatch", () => {
 			drive(() => stopwatch.togglePause());
 			expect(stopwatch.getState()).toBe("paused");
 
-			vi.advanceTimersByTime(60000);
+			advanceTimers(60000);
 			expect(stopwatch.getBreakMinutes()).toBeGreaterThan(0);
 			vi.useRealTimers();
 		});
@@ -192,13 +200,13 @@ describe("Stopwatch", () => {
 			drive(() => stopwatch.start());
 
 			drive(() => stopwatch.togglePause());
-			vi.advanceTimersByTime(30000);
+			advanceTimers(30000);
 			drive(() => stopwatch.togglePause());
 
 			const firstBreakTime = stopwatch.getBreakMinutes();
 
 			drive(() => stopwatch.togglePause());
-			vi.advanceTimersByTime(30000);
+			advanceTimers(30000);
 			drive(() => stopwatch.togglePause());
 
 			const totalBreakTime = stopwatch.getBreakMinutes();
@@ -237,7 +245,7 @@ describe("Stopwatch", () => {
 			const { stopwatch } = mountStopwatch();
 			drive(() => stopwatch.start());
 			drive(() => stopwatch.togglePause());
-			vi.advanceTimersByTime(60000);
+			advanceTimers(60000);
 
 			const state = stopwatch.exportState();
 			const { stopwatch: newStopwatch } = mountStopwatch();
@@ -264,7 +272,7 @@ describe("Stopwatch", () => {
 			const { stopwatch } = mountStopwatch();
 			drive(() => stopwatch.start());
 			drive(() => stopwatch.togglePause());
-			vi.advanceTimersByTime(60000);
+			advanceTimers(60000);
 
 			drive(() => stopwatch.reset());
 			expect(stopwatch.getBreakMinutes()).toBe(0);
