@@ -20,6 +20,19 @@
   height: 100%;
   overflow: hidden;
   padding: 0;
+  /* The shared TabbedContainer is mounted inside a `.prisma-tabbed-host`
+     wrapper. Without this rule the wrapper has no defined height, so the
+     `height: 100%` inside `.prisma-tabbed-container` collapses, the
+     `.prisma-tab-content` `flex: 1` loses its bound, and zoom-induced
+     overflow stops producing a scrollbar. */
+}
+.view-content.prisma-calendar-view-root .prisma-tabbed-host {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.view-content.prisma-calendar-view-root {
   /* Override shared tab-panel height so sticky positioning works —
      the panel must grow with its content for sticky children to
      remain attached to the scroll container (.prisma-tab-content). */
