@@ -4,12 +4,11 @@ import { basename, join } from "node:path";
 import { expect } from "@playwright/test";
 import { type BootstrappedObsidian, readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
-import { ACTIVE_CALENDAR_LEAF, DEFAULT_CALENDAR_ID } from "../../fixtures/constants";
+import { DEFAULT_CALENDAR_ID } from "../../fixtures/constants";
 import { fromAnchor } from "../../fixtures/dates";
 import { type CalendarHandle, createEventHandle, type EventHandle } from "../../fixtures/dsl";
 import { testResilience as test } from "../../fixtures/electron";
 import { activateCalendar, addCalendar } from "../../fixtures/resilience-helpers";
-import { EVENT_BLOCK_TID, sel } from "../../fixtures/testids";
 
 // Prisma calendars are differentiated by `directory` AND a per-system property
 // schema (start/end/category/etc. each carry a configurable frontmatter key).
@@ -95,14 +94,13 @@ async function expectMovedToSecondary(
 	// Primary drops the event reactively. The source bundle's indexer must
 	// observe the rename-out-of-scope and emit a file-deleted for the old
 	// path; otherwise the old tile sticks around even though the file has
-	// moved on disk. Poll because the indexer event flows through a debounce.
+	// moved on disk. The handle is pinned to the original path, so the DSL
+	// `expectVisible(false)` query looks for that exact tile in the active
+	// (now primary) leaf — which is precisely the regression signal.
 	await activateCalendar(obsidian.page, DEFAULT_CALENDAR_ID);
 	await calendar.switchMode("week");
 	await calendar.goToAnchor();
-	const primaryTile = obsidian.page.locator(
-		`${ACTIVE_CALENDAR_LEAF} ${sel(EVENT_BLOCK_TID)}[data-event-title="${source.title}"]`
-	);
-	await expect(primaryTile).toHaveCount(0);
+	await source.expectVisible(false);
 }
 
 test.describe("integrations: event move between calendars", () => {
