@@ -563,6 +563,39 @@ describe("Indexer", () => {
 				expect(events[1].filePath).toBe("TestFolder/renamed.md");
 				expect(events[1].oldPath).toBe("TestFolder/note.md");
 			});
+
+			it("should emit file-deleted only when file is renamed OUT of scope", async () => {
+				// Source bundle's perspective during cross-calendar move: the file
+				// leaves its directory, so the indexer must drop it via file-deleted.
+				// Without this, the source calendar keeps showing the moved event.
+				const movedOutFile = createMockFile("OtherFolder/note.md", { parentPath: "OtherFolder" }) as TFile;
+				(movedOutFile as unknown as { stat: { mtime: number } }).stat = { mtime: 1000 };
+
+				await indexer.start();
+
+				const events = await collectEvents(indexer, 1, () => emitVaultRename(movedOutFile, "TestFolder/note.md"));
+				expect(events).toHaveLength(1);
+				expect(events[0].type).toBe("file-deleted");
+				expect(events[0].filePath).toBe("TestFolder/note.md");
+				expect(events[0].isRename).toBe(true);
+			});
+
+			it("should emit file-changed only when file is renamed INTO scope", async () => {
+				// Destination bundle's perspective: the file enters this scope from
+				// elsewhere. The old path was never tracked here, so suppressing the
+				// stale file-deleted is the right behaviour.
+				vi.mocked(mockApp.metadataCache.getFileCache).mockReturnValue({
+					frontmatter: { title: "Moved" },
+				} as never);
+
+				await indexer.start();
+
+				const events = await collectEvents(indexer, 1, () => emitVaultRename(renamedFile, "OtherFolder/note.md"));
+				expect(events).toHaveLength(1);
+				expect(events[0].type).toBe("file-changed");
+				expect(events[0].filePath).toBe("TestFolder/renamed.md");
+				expect(events[0].oldPath).toBe("OtherFolder/note.md");
+			});
 		});
 
 		describe("rename with emitRenameEvents=true", () => {
@@ -640,12 +673,12 @@ describe("Indexer", () => {
 			expect(events).toHaveLength(0);
 		});
 
-		it("should filter out files outside configured directory from rename events", async () => {
+		it("should filter out renames where neither old nor new path is in scope", async () => {
 			const outsideFile = createMockFile("OtherFolder/note.md", { parentPath: "OtherFolder" }) as TFile;
 
 			await indexer.start();
 
-			const events = await collectEvents(indexer, 0, () => emitVaultRename(outsideFile, "TestFolder/note.md"));
+			const events = await collectEvents(indexer, 0, () => emitVaultRename(outsideFile, "AnotherFolder/note.md"));
 			expect(events).toHaveLength(0);
 		});
 

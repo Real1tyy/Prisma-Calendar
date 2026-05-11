@@ -403,15 +403,31 @@ export class Indexer {
 		const deletedIntents$ = metadataDeleted$.pipe(map((file): FileIntent => ({ kind: "deleted", path: file.path })));
 
 		const renamedIntents$ = renamed$.pipe(
-			filter(([f]) => Indexer.isMarkdownFile(f) && this.config.includeFile(f.path)),
+			filter(
+				([f, oldPath]) =>
+					Indexer.isMarkdownFile(f) && (this.config.includeFile(f.path) || this.config.includeFile(oldPath))
+			),
 			mergeMap(([f, oldPath]): FileIntent[] => {
 				const file = f as TFile;
-				return this.config.emitRenameEvents
-					? [{ kind: "renamed", file, path: file.path, oldPath }]
-					: [
-							{ kind: "deleted", path: oldPath, isRename: true },
-							{ kind: "changed", file, path: file.path, oldPath },
-						];
+				const newInScope = this.config.includeFile(file.path);
+				const oldInScope = this.config.includeFile(oldPath);
+
+				// emitRenameEvents only applies when the file stays in scope —
+				// a move into or out of scope is semantically a create or delete,
+				// not a rename, and downstream consumers can't react to an oldPath
+				// they never tracked (or a newPath outside their world).
+				if (this.config.emitRenameEvents && newInScope && oldInScope) {
+					return [{ kind: "renamed", file, path: file.path, oldPath }];
+				}
+
+				const intents: FileIntent[] = [];
+				if (oldInScope) {
+					intents.push({ kind: "deleted", path: oldPath, isRename: true });
+				}
+				if (newInScope) {
+					intents.push({ kind: "changed", file, path: file.path, oldPath });
+				}
+				return intents;
 			})
 		);
 
