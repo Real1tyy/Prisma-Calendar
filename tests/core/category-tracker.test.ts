@@ -13,6 +13,20 @@ function buildTracker(options: TrackerHarnessOptions = {}) {
 	});
 }
 
+// Frontmatter shorthands that mirror how the indexer sees timed/all-day/untracked rows.
+// Classification in CategoryTracker reads "Start Date" / "Date" directly off frontmatter.
+function timedRow(category: string | string[]): Frontmatter {
+	return { Category: category, "Start Date": "2026-05-07T09:00:00", "End Date": "2026-05-07T10:00:00" } as Frontmatter;
+}
+
+function allDayRow(category: string | string[]): Frontmatter {
+	return { Category: category, Date: "2026-05-07" } as Frontmatter;
+}
+
+function untrackedRow(category: string | string[]): Frontmatter {
+	return { Category: category } as Frontmatter;
+}
+
 describe("CategoryTracker", () => {
 	let tracker: CategoryTracker | null = null;
 
@@ -35,9 +49,9 @@ describe("CategoryTracker", () => {
 		it("groups files by category with categories sorted alphabetically", async () => {
 			const { tracker: t } = await buildTracker({
 				seed: [
-					{ key: "a", data: { Category: "Work" } as Frontmatter },
-					{ key: "b", data: { Category: "Fitness" } as Frontmatter },
-					{ key: "c", data: { Category: "Personal" } as Frontmatter },
+					{ key: "a", data: timedRow("Work") },
+					{ key: "b", data: timedRow("Fitness") },
+					{ key: "c", data: timedRow("Personal") },
 				],
 			});
 			tracker = t;
@@ -47,7 +61,7 @@ describe("CategoryTracker", () => {
 
 		it("supports multi-value categories (array)", async () => {
 			const { tracker: t } = await buildTracker({
-				seed: [{ key: "a", data: { Category: ["Work", "Urgent"] } as Frontmatter }],
+				seed: [{ key: "a", data: timedRow(["Work", "Urgent"]) }],
 			});
 			tracker = t;
 
@@ -57,9 +71,9 @@ describe("CategoryTracker", () => {
 		it("returns files grouped correctly via getAllFilesWithCategories", async () => {
 			const { tracker: t } = await buildTracker({
 				seed: [
-					{ key: "a", data: { Category: "Work" } as Frontmatter },
+					{ key: "a", data: timedRow("Work") },
 					{ key: "b", data: { Title: "No category" } as Frontmatter },
-					{ key: "c", data: { Category: "Work" } as Frontmatter },
+					{ key: "c", data: timedRow("Work") },
 				],
 			});
 			tracker = t;
@@ -77,14 +91,14 @@ describe("CategoryTracker", () => {
 			tracker = t;
 			expect(t.getCategories()).toEqual([]);
 
-			await table.create({ fileName: "a", data: { Category: "Work" } as Frontmatter });
+			await table.create({ fileName: "a", data: timedRow("Work") });
 
 			expect(t.getCategories()).toEqual(["Work"]);
 		});
 
 		it("removes category when last file with it is deleted", async () => {
 			const { tracker: t, table } = await buildTracker({
-				seed: [{ key: "a", data: { Category: "Work" } as Frontmatter }],
+				seed: [{ key: "a", data: timedRow("Work") }],
 			});
 			tracker = t;
 			expect(t.getCategories()).toEqual(["Work"]);
@@ -94,14 +108,26 @@ describe("CategoryTracker", () => {
 			expect(t.getCategories()).toEqual([]);
 		});
 
+		it("re-classifies when a row flips from untracked to timed", async () => {
+			const { tracker: t, table } = await buildTracker({
+				seed: [{ key: "a", data: untrackedRow("Work") }],
+			});
+			tracker = t;
+			expect(t.getCategoryStats("Work")).toEqual({ total: 1, timed: 0, allDay: 0, untracked: 1 });
+
+			await table.update("a", timedRow("Work"));
+
+			expect(t.getCategoryStats("Work")).toEqual({ total: 1, timed: 1, allDay: 0, untracked: 0 });
+		});
+
 		it("emits updated categories on categories$ observable", async () => {
 			const { tracker: t, table } = await buildTracker();
 			tracker = t;
 			const emitted: string[][] = [];
 			t.categories$.subscribe((cats) => emitted.push(cats.map((c) => c.name)));
 
-			await table.create({ fileName: "a", data: { Category: "Work" } as Frontmatter });
-			await table.create({ fileName: "b", data: { Category: "Fitness" } as Frontmatter });
+			await table.create({ fileName: "a", data: timedRow("Work") });
+			await table.create({ fileName: "b", data: timedRow("Fitness") });
 
 			expect(emitted.at(-1)).toEqual(["Fitness", "Work"]);
 		});
@@ -111,7 +137,7 @@ describe("CategoryTracker", () => {
 		it("falls back to defaultNodeColor when no rule matches", async () => {
 			const { tracker: t } = await buildTracker({
 				settings: { defaultNodeColor: "#abcdef" },
-				seed: [{ key: "a", data: { Category: "Work" } as Frontmatter }],
+				seed: [{ key: "a", data: timedRow("Work") }],
 			});
 			tracker = t;
 
@@ -126,7 +152,7 @@ describe("CategoryTracker", () => {
 						{ expression: "Category.includes('Work')", color: "#ff0000", enabled: true },
 					] as SingleCalendarConfig["colorRules"],
 				},
-				seed: [{ key: "a", data: { Category: "Work" } as Frontmatter }],
+				seed: [{ key: "a", data: timedRow("Work") }],
 			});
 			tracker = t;
 
@@ -141,7 +167,7 @@ describe("CategoryTracker", () => {
 						{ expression: "Category.includes('Work')", color: "#ff0000", enabled: false },
 					] as SingleCalendarConfig["colorRules"],
 				},
-				seed: [{ key: "a", data: { Category: "Work" } as Frontmatter }],
+				seed: [{ key: "a", data: timedRow("Work") }],
 			});
 			tracker = t;
 
@@ -165,15 +191,15 @@ describe("CategoryTracker", () => {
 	});
 
 	describe("getEventsWithCategory", () => {
-		it("returns events from EventStore for files in the category group", async () => {
+		it("returns events from EventStore for tracked files in the category group", async () => {
 			const events = new Map<string, CalendarEvent>([
 				["Events/a.md", createMockTimedEvent({ ref: { filePath: "Events/a.md" }, title: "A" })],
 				["Events/b.md", createMockTimedEvent({ ref: { filePath: "Events/b.md" }, title: "B" })],
 			]);
 			const { tracker: t } = await buildTracker({
 				seed: [
-					{ key: "a", data: { Category: "Work" } as Frontmatter },
-					{ key: "b", data: { Category: "Work" } as Frontmatter },
+					{ key: "a", data: timedRow("Work") },
+					{ key: "b", data: timedRow("Work") },
 				],
 				events,
 			});
@@ -189,15 +215,21 @@ describe("CategoryTracker", () => {
 			expect(t.getEventsWithCategory("Nonexistent")).toEqual([]);
 		});
 
-		it("filters out files whose events are missing from EventStore", async () => {
-			const events = new Map<string, CalendarEvent>();
+		it("does not include untracked rows", async () => {
+			// Only tracked rows hit EventStore; untracked rows live outside it.
+			const events = new Map<string, CalendarEvent>([
+				["Events/a.md", createMockTimedEvent({ ref: { filePath: "Events/a.md" }, title: "Tracked" })],
+			]);
 			const { tracker: t } = await buildTracker({
-				seed: [{ key: "a", data: { Category: "Work" } as Frontmatter }],
+				seed: [
+					{ key: "a", data: timedRow("Work") },
+					{ key: "b", data: untrackedRow("Work") },
+				],
 				events,
 			});
 			tracker = t;
 
-			expect(t.getEventsWithCategory("Work")).toEqual([]);
+			expect(t.getEventsWithCategory("Work").map((e) => e.title)).toEqual(["Tracked"]);
 		});
 	});
 
@@ -210,15 +242,84 @@ describe("CategoryTracker", () => {
 			]);
 			const { tracker: t } = await buildTracker({
 				seed: [
-					{ key: "a", data: { Category: "Work" } as Frontmatter },
-					{ key: "b", data: { Category: "Work" } as Frontmatter },
-					{ key: "c", data: { Category: "Work" } as Frontmatter },
+					{ key: "a", data: timedRow("Work") },
+					{ key: "b", data: allDayRow("Work") },
+					{ key: "c", data: timedRow("Work") },
 				],
 				events,
 			});
 			tracker = t;
 
-			expect(t.getCategoryStats("Work")).toEqual({ total: 3, timed: 2, allDay: 1 });
+			expect(t.getCategoryStats("Work")).toEqual({ total: 3, timed: 2, allDay: 1, untracked: 0 });
+		});
+
+		it("counts untracked events when only untracked rows use the category", async () => {
+			const { tracker: t } = await buildTracker({
+				seed: [
+					{ key: "a", data: untrackedRow("OnlyUntracked") },
+					{ key: "b", data: untrackedRow("OnlyUntracked") },
+				],
+			});
+			tracker = t;
+
+			expect(t.getCategoryStats("OnlyUntracked")).toEqual({ total: 2, timed: 0, allDay: 0, untracked: 2 });
+		});
+
+		it("sums tracked and untracked counts when both contribute to a category", async () => {
+			const { tracker: t } = await buildTracker({
+				seed: [
+					{ key: "a", data: timedRow("Mixed") },
+					{ key: "b", data: allDayRow("Mixed") },
+					{ key: "c", data: untrackedRow("Mixed") },
+				],
+			});
+			tracker = t;
+
+			expect(t.getCategoryStats("Mixed")).toEqual({ total: 3, timed: 1, allDay: 1, untracked: 1 });
+		});
+
+		it("returns zeros for an unknown category", async () => {
+			const { tracker: t } = await buildTracker();
+			tracker = t;
+			expect(t.getCategoryStats("Nope")).toEqual({ total: 0, timed: 0, allDay: 0, untracked: 0 });
+		});
+	});
+
+	describe("getFilePathsWithCategory", () => {
+		it("returns paths for both tracked and untracked files (used by bulk rename/delete)", async () => {
+			const { tracker: t } = await buildTracker({
+				seed: [
+					{ key: "tracked", data: timedRow("Work") },
+					{ key: "untracked", data: untrackedRow("Work") },
+				],
+			});
+			tracker = t;
+
+			expect(t.getFilePathsWithCategory("Work").sort()).toEqual(["Events/tracked.md", "Events/untracked.md"]);
+		});
+
+		it("returns empty array for unknown category", async () => {
+			const { tracker: t } = await buildTracker();
+			tracker = t;
+			expect(t.getFilePathsWithCategory("Nope")).toEqual([]);
+		});
+	});
+
+	describe("getUntrackedFilePathsWithCategory", () => {
+		it("returns only untracked file paths under the category", async () => {
+			const { tracker: t } = await buildTracker({
+				seed: [
+					{ key: "tracked", data: timedRow("Work") },
+					{ key: "untracked-1", data: untrackedRow("Work") },
+					{ key: "untracked-2", data: untrackedRow("Work") },
+				],
+			});
+			tracker = t;
+
+			expect(t.getUntrackedFilePathsWithCategory("Work").sort()).toEqual([
+				"Events/untracked-1.md",
+				"Events/untracked-2.md",
+			]);
 		});
 	});
 
@@ -227,8 +328,11 @@ describe("CategoryTracker", () => {
 			const { tracker: t, settingsStore } = await buildTracker({
 				settings: { categoryProp: "Category" },
 				seed: [
-					{ key: "a", data: { Category: "Work", Tags: "urgent" } as Frontmatter },
-					{ key: "b", data: { Category: "Fitness", Tags: "routine" } as Frontmatter },
+					{ key: "a", data: { Category: "Work", Tags: "urgent", "Start Date": "2026-05-07T09:00:00" } as Frontmatter },
+					{
+						key: "b",
+						data: { Category: "Fitness", Tags: "routine", "Start Date": "2026-05-07T10:00:00" } as Frontmatter,
+					},
 				],
 			});
 			tracker = t;
@@ -243,7 +347,7 @@ describe("CategoryTracker", () => {
 	describe("destroy", () => {
 		it("cleans up subscriptions and completes categories$", async () => {
 			const { tracker: t } = await buildTracker({
-				seed: [{ key: "a", data: { Category: "Work" } as Frontmatter }],
+				seed: [{ key: "a", data: timedRow("Work") }],
 			});
 
 			let completed = false;

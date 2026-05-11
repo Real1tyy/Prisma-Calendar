@@ -86,12 +86,12 @@ export const CategoriesSettingsReact = memo(function CategoriesSettingsReact({
 
 const EventStatsSection = memo(function EventStatsSection({ bundle }: { bundle: CalendarBundle }) {
 	const allEvents = bundle.eventStore.getAllEvents();
-	const totalEvents = allEvents.length;
+	const untrackedCount = bundle.untrackedEventStore.getUntrackedEvents().length;
 	const timedCount = allEvents.filter((e) => isTimedEvent(e)).length;
 	const allDayCount = allEvents.filter((e) => isAllDayEvent(e)).length;
+	const totalEvents = timedCount + allDayCount + untrackedCount;
 
-	const timedPercentage = totalEvents > 0 ? ((timedCount / totalEvents) * 100).toFixed(1) : "0.0";
-	const allDayPercentage = totalEvents > 0 ? ((allDayCount / totalEvents) * 100).toFixed(1) : "0.0";
+	const pct = (n: number) => (totalEvents > 0 ? ((n / totalEvents) * 100).toFixed(1) : "0.0");
 
 	return (
 		<div className="prisma-categories-stats-container">
@@ -103,13 +103,19 @@ const EventStatsSection = memo(function EventStatsSection({ bundle }: { bundle: 
 				<div className="prisma-category-stat-item">
 					<div className="prisma-category-stat-label">Timed</div>
 					<div className="prisma-category-stat-value">
-						{timedCount} ({timedPercentage}%)
+						{timedCount} ({pct(timedCount)}%)
 					</div>
 				</div>
 				<div className="prisma-category-stat-item">
 					<div className="prisma-category-stat-label">All-day</div>
 					<div className="prisma-category-stat-value">
-						{allDayCount} ({allDayPercentage}%)
+						{allDayCount} ({pct(allDayCount)}%)
+					</div>
+				</div>
+				<div className="prisma-category-stat-item">
+					<div className="prisma-category-stat-label">Untracked</div>
+					<div className="prisma-category-stat-value">
+						{untrackedCount} ({pct(untrackedCount)}%)
 					</div>
 				</div>
 			</div>
@@ -142,7 +148,14 @@ const CategoriesListSection = memo(function CategoriesListSection({
 		const infos = categories.map((category) => {
 			const stats = categoryTracker.getCategoryStats(category);
 			const color = getCategoryColor(category, settings.colorRules, categoryProp, settings.defaultNodeColor);
-			return { name: category, count: stats.total, timedCount: stats.timed, allDayCount: stats.allDay, color };
+			return {
+				name: category,
+				count: stats.total,
+				timedCount: stats.timed,
+				allDayCount: stats.allDay,
+				untrackedCount: stats.untracked,
+				color,
+			};
 		});
 		infos.sort((a, b) => b.count - a.count);
 		return infos;
@@ -208,6 +221,7 @@ const CategoriesListSection = memo(function CategoriesListSection({
 				const percentage = totalCount > 0 ? ((info.count / totalCount) * 100).toFixed(1) : "0.0";
 				const timedPct = info.count > 0 ? ((info.timedCount / info.count) * 100).toFixed(0) : "0";
 				const allDayPct = info.count > 0 ? ((info.allDayCount / info.count) * 100).toFixed(0) : "0";
+				const untrackedPct = info.count > 0 ? ((info.untrackedCount / info.count) * 100).toFixed(0) : "0";
 				const rgb = hexToRgb(info.color);
 
 				return (
@@ -225,7 +239,7 @@ const CategoriesListSection = memo(function CategoriesListSection({
 								<span className="prisma-category-settings-name">{info.name}</span>
 								<span className="prisma-category-settings-count">
 									{info.count} total ({percentage}%) &bull; {info.timedCount} timed ({timedPct}%) &bull;{" "}
-									{info.allDayCount} all-day ({allDayPct}%)
+									{info.allDayCount} all-day ({allDayPct}%) &bull; {info.untrackedCount} untracked ({untrackedPct}%)
 								</span>
 							</div>
 						</div>
@@ -280,9 +294,9 @@ const CategoryChartSection = memo(function CategoryChartSection({
 	const chartData = useMemo<PieChartData>(() => {
 		const categories = categoryTracker.getCategories();
 		const items = categories.map((category) => {
-			const events = categoryTracker.getEventsWithCategory(category);
+			const stats = categoryTracker.getCategoryStats(category);
 			const color = getCategoryColor(category, settings.colorRules, categoryProp, settings.defaultNodeColor);
-			return { label: category, value: events.length, color };
+			return { label: category, value: stats.total, color };
 		});
 		items.sort((a, b) => b.value - a.value);
 		return { labels: items.map((i) => i.label), values: items.map((i) => i.value), colors: items.map((i) => i.color) };

@@ -112,15 +112,15 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 	const handleRename = useCallback(async () => {
 		if (!selectedCalendar) return;
 
-		const newName = await openRenameModal(app, {
+		const result = await openRenameModal(app, {
 			title: "Rename planning system",
 			initialValue: selectedCalendar.name,
 			cssPrefix: "prisma-",
 			testIdPrefix: "prisma-settings-calendar-",
 		});
 
-		if (newName && newName !== selectedCalendar.name) {
-			await updateSelectedCalendar({ name: newName });
+		if (result && result.value !== selectedCalendar.name) {
+			await updateSelectedCalendar({ name: result.value });
 		}
 	}, [app, selectedCalendar, updateSelectedCalendar]);
 

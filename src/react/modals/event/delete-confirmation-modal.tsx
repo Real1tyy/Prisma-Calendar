@@ -9,7 +9,7 @@ export function openDeleteRecurringEventsModal(app: App): Promise<boolean> {
 		cancelLabel: "No",
 		destructive: true,
 		testIdPrefix: "prisma-delete-recurring-",
-	});
+	}).then((r) => r !== null);
 }
 
 export interface CalendarIntegrationDeleteEventsOptions {
@@ -57,5 +57,5 @@ export function openConfirmDeleteModal(app: App, props: { entityName: string; en
 		confirmLabel: "Delete",
 		cancelLabel: "Cancel",
 		destructive: true,
-	});
+	}).then((r) => r !== null);
 }

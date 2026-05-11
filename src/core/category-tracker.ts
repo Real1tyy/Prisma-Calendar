@@ -27,12 +27,20 @@ export interface CategoryStats {
 	total: number;
 	timed: number;
 	allDay: number;
+	untracked: number;
 }
+
+type EventKind = "timed" | "allDay" | "untracked";
 
 /**
  * Tracks all unique categories across events in the calendar.
  * Extends VaultTableView filtered to files that have categories.
- * Uses ReactiveMultiGroupBy for category grouping.
+ *
+ * Grouping is split by event kind so per-category stats are O(1) — three
+ * reactive multi-groups (timed / all-day / untracked) auto-update as the
+ * indexer fires row events. Classification is read straight off the row's
+ * frontmatter using the configured startProp / dateProp; a file with no
+ * date or time keys is "untracked", same definition the indexer applies.
  */
 export class CategoryTracker extends VaultTableView<Frontmatter> {
 	private categoriesSubject = new BehaviorSubject<CategoryInfo[]>([]);
@@ -41,6 +49,9 @@ export class CategoryTracker extends VaultTableView<Frontmatter> {
 	private settings: SingleCalendarConfig;
 	private readonly propagator: FrontmatterPropagator;
 	private categoryGroups: ReactiveMultiGroupBy<Frontmatter, string>;
+	private timedGroups: ReactiveMultiGroupBy<Frontmatter, string>;
+	private allDayGroups: ReactiveMultiGroupBy<Frontmatter, string>;
+	private untrackedGroups: ReactiveMultiGroupBy<Frontmatter, string>;
 
 	public readonly categories$: Observable<CategoryInfo[]>;
 
@@ -53,13 +64,16 @@ export class CategoryTracker extends VaultTableView<Frontmatter> {
 		const settings = settingsStore.value;
 		super(repo.getTable(), {
 			filter: (row) => this.hasCategoryValues(row.data, settings.categoryProp),
-			distinctBy: (oldRow, newRow) => this.categoryValuesEqual(oldRow.data, newRow.data, this.settings.categoryProp),
+			distinctBy: (oldRow, newRow) => this.rowsEquivalent(oldRow.data, newRow.data),
 		});
 
 		this.settings = settings;
 		this.categories$ = this.categoriesSubject.asObservable();
 
 		this.categoryGroups = this.buildCategoryGroups();
+		this.timedGroups = this.buildKindGroups("timed");
+		this.allDayGroups = this.buildKindGroups("allDay");
+		this.untrackedGroups = this.buildKindGroups("untracked");
 
 		this.propagator = new FrontmatterPropagator(app, {
 			debounceMs: debounceMsForEnv(PROPAGATION_DEBOUNCE_MS),
@@ -82,11 +96,14 @@ export class CategoryTracker extends VaultTableView<Frontmatter> {
 
 		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
 			const categoryPropChanged = newSettings.categoryProp !== this.settings.categoryProp;
+			const dateClassChanged =
+				newSettings.startProp !== this.settings.startProp ||
+				newSettings.dateProp !== this.settings.dateProp ||
+				newSettings.endProp !== this.settings.endProp;
 			this.settings = newSettings;
-			if (categoryPropChanged) {
+			if (categoryPropChanged || dateClassChanged) {
 				this.updateFilter((row) => this.hasCategoryValues(row.data, newSettings.categoryProp));
-				this.categoryGroups.destroy();
-				this.categoryGroups = this.buildCategoryGroups();
+				this.rebuildAllGroups();
 				this.categoriesSubject.next(this.buildCategoryInfoList());
 			}
 		});
@@ -118,19 +135,25 @@ export class CategoryTracker extends VaultTableView<Frontmatter> {
 	}
 
 	getEventsWithCategory(category: string): CalendarEvent[] {
-		return this.categoryGroups
-			.getGroup(category)
+		const trackedRows = [...this.timedGroups.getGroup(category), ...this.allDayGroups.getGroup(category)];
+		return trackedRows
 			.map((row) => this.eventStore.getEventByPath(row.filePath))
 			.filter((e): e is CalendarEvent => e !== null);
 	}
 
+	getFilePathsWithCategory(category: string): string[] {
+		return this.categoryGroups.getGroup(category).map((row) => row.filePath);
+	}
+
+	getUntrackedFilePathsWithCategory(category: string): string[] {
+		return this.untrackedGroups.getGroup(category).map((row) => row.filePath);
+	}
+
 	getCategoryStats(category: string): CategoryStats {
-		const events = this.getEventsWithCategory(category);
-		return {
-			total: events.length,
-			timed: events.filter((e) => e.type === "timed").length,
-			allDay: events.filter((e) => e.type === "allDay").length,
-		};
+		const timed = this.timedGroups.getGroup(category).length;
+		const allDay = this.allDayGroups.getGroup(category).length;
+		const untracked = this.untrackedGroups.getGroup(category).length;
+		return { total: timed + allDay + untracked, timed, allDay, untracked };
 	}
 
 	getAllFilesWithCategories(): Set<string> {
@@ -147,10 +170,6 @@ export class CategoryTracker extends VaultTableView<Frontmatter> {
 
 	// ─── Internal ────────────────────────────────────────────────
 
-	private getFilePathsWithCategory(category: string): string[] {
-		return this.categoryGroups.getGroup(category).map((row) => row.filePath);
-	}
-
 	private buildCategoryInfoList(): CategoryInfo[] {
 		return this.getCategories().map((name) => ({
 			name,
@@ -159,10 +178,33 @@ export class CategoryTracker extends VaultTableView<Frontmatter> {
 	}
 
 	private buildCategoryGroups(): ReactiveMultiGroupBy<Frontmatter, string> {
-		return this.createMultiGroupBy((row) => {
-			const prop = this.settings.categoryProp;
-			return prop ? parseIntoList(row.data[prop]) : [];
-		});
+		return this.createMultiGroupBy((row) => this.categoriesOf(row.data));
+	}
+
+	private buildKindGroups(kind: EventKind): ReactiveMultiGroupBy<Frontmatter, string> {
+		return this.createMultiGroupBy((row) => (this.classifyRow(row.data) === kind ? this.categoriesOf(row.data) : []));
+	}
+
+	private rebuildAllGroups(): void {
+		this.categoryGroups.destroy();
+		this.timedGroups.destroy();
+		this.allDayGroups.destroy();
+		this.untrackedGroups.destroy();
+		this.categoryGroups = this.buildCategoryGroups();
+		this.timedGroups = this.buildKindGroups("timed");
+		this.allDayGroups = this.buildKindGroups("allDay");
+		this.untrackedGroups = this.buildKindGroups("untracked");
+	}
+
+	private categoriesOf(data: Frontmatter): string[] {
+		const prop = this.settings.categoryProp;
+		return prop ? parseIntoList(data[prop]) : [];
+	}
+
+	private classifyRow(data: Frontmatter): EventKind {
+		if (data[this.settings.startProp] != null && data[this.settings.startProp] !== "") return "timed";
+		if (data[this.settings.dateProp] != null && data[this.settings.dateProp] !== "") return "allDay";
+		return "untracked";
 	}
 
 	private hasCategoryValues(data: Frontmatter, categoryProp: string | undefined): boolean {
@@ -170,11 +212,20 @@ export class CategoryTracker extends VaultTableView<Frontmatter> {
 		return parseIntoList(data[categoryProp]).length > 0;
 	}
 
-	private categoryValuesEqual(oldData: Frontmatter, newData: Frontmatter, categoryProp: string | undefined): boolean {
-		if (!categoryProp) return true;
-		const oldVal = oldData[categoryProp];
-		const newVal = newData[categoryProp];
-		return String(oldVal ?? "") === String(newVal ?? "");
+	/**
+	 * Suppress row-updated when neither the category list nor the kind changed —
+	 * the kind is part of the cache key now, not just the category set, so a
+	 * file flipping from "no Start Date" to "has Start Date" must still flow
+	 * through even if the categories were untouched.
+	 */
+	private rowsEquivalent(oldData: Frontmatter, newData: Frontmatter): boolean {
+		const prop = this.settings.categoryProp;
+		if (prop) {
+			const oldCat = String(oldData[prop] ?? "");
+			const newCat = String(newData[prop] ?? "");
+			if (oldCat !== newCat) return false;
+		}
+		return this.classifyRow(oldData) === this.classifyRow(newData);
 	}
 
 	private resolveCategoryColor(category: string): string {
@@ -200,6 +251,9 @@ export class CategoryTracker extends VaultTableView<Frontmatter> {
 		this.settingsSubscription = null;
 		this.propagator.destroy();
 		this.categoryGroups.destroy();
+		this.timedGroups.destroy();
+		this.allDayGroups.destroy();
+		this.untrackedGroups.destroy();
 		this.categoriesSubject.complete();
 		super.destroy();
 	}

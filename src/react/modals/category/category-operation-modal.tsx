@@ -6,6 +6,7 @@ import {
 } from "@real1ty-obsidian-plugins";
 import { openConfirmation, openRenameModal } from "@real1ty-obsidian-plugins-react";
 import { type App, TFile } from "obsidian";
+import { memo } from "react";
 
 import type { CategoryTracker } from "../../../core/category-tracker";
 import type { CalendarSettingsStore } from "../../../core/settings-store";
@@ -15,11 +16,39 @@ export function getCategoryExpression(category: string, categoryProp: string): s
 	return `${categoryProp}.includes('${escapedCategory}')`;
 }
 
+interface UntrackedToggleProps {
+	value: boolean;
+	untrackedCount: number;
+	onChange: (next: boolean) => void;
+}
+
+const UntrackedToggle = memo(function UntrackedToggle({ value, untrackedCount, onChange }: UntrackedToggleProps) {
+	if (untrackedCount === 0) return null;
+	return (
+		<label
+			className="prisma-category-operation-untracked-toggle"
+			data-testid="prisma-category-include-untracked-label"
+			style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "12px" }}
+		>
+			<input
+				type="checkbox"
+				checked={value}
+				onChange={(e) => onChange(e.target.checked)}
+				data-testid="prisma-category-include-untracked-toggle"
+			/>
+			<span>
+				Also apply to {untrackedCount} untracked event{untrackedCount === 1 ? "" : "s"} with this category
+			</span>
+		</label>
+	);
+});
+
 interface CategoryBulkOperationOptions {
 	app: App;
 	categoryTracker: CategoryTracker;
 	settingsStore: CalendarSettingsStore;
 	categoryName: string;
+	includeUntracked: boolean;
 	operationTitle: string;
 	statusVerb: string;
 	bulkFn: (
@@ -38,6 +67,7 @@ async function runCategoryBulkOperation({
 	categoryTracker,
 	settingsStore,
 	categoryName,
+	includeUntracked,
 	operationTitle,
 	statusVerb,
 	bulkFn,
@@ -45,9 +75,11 @@ async function runCategoryBulkOperation({
 	onSuccess,
 }: CategoryBulkOperationOptions): Promise<void> {
 	const settings = settingsStore.currentSettings;
-	const events = categoryTracker.getEventsWithCategory(categoryName);
-	const files = events
-		.map((event) => app.vault.getAbstractFileByPath(event.ref.filePath))
+	const paths = includeUntracked
+		? categoryTracker.getFilePathsWithCategory(categoryName)
+		: categoryTracker.getEventsWithCategory(categoryName).map((e) => e.ref.filePath);
+	const files = paths
+		.map((path) => app.vault.getAbstractFileByPath(path))
 		.filter((file): file is TFile => file instanceof TFile);
 
 	const progress = showProgressModal({
@@ -92,27 +124,38 @@ export function openCategoryRenameModal(
 	categoryName: string,
 	onSuccess: () => void
 ): void {
-	const eventsWithCategory = categoryTracker.getEventsWithCategory(categoryName);
+	const stats = categoryTracker.getCategoryStats(categoryName);
+	const trackedCount = stats.timed + stats.allDay;
 
-	void openRenameModal(app, {
-		title: `Rename category (${eventsWithCategory.length} event(s))`,
+	void openRenameModal<{ includeUntracked: boolean }>(app, {
+		title: `Rename category (${stats.total} event${stats.total === 1 ? "" : "s"})`,
 		initialValue: "",
+		description: `Renaming will update ${stats.total} event${stats.total === 1 ? "" : "s"} that use "${categoryName}".`,
 		testIdPrefix: "prisma-category-",
-	}).then(async (newCategoryName) => {
-		if (!newCategoryName || newCategoryName === categoryName) return;
+		initialExtras: { includeUntracked: true },
+		renderExtras: (state, setState) => (
+			<UntrackedToggle
+				value={state.includeUntracked}
+				untrackedCount={stats.untracked}
+				onChange={(includeUntracked) => setState({ includeUntracked })}
+			/>
+		),
+	}).then(async (result) => {
+		if (!result || result.value === categoryName) return;
+		const { value: newName, extras } = result;
 
 		await runCategoryBulkOperation({
 			app,
 			categoryTracker,
 			settingsStore,
 			categoryName,
-			operationTitle: "Renaming",
+			includeUntracked: extras.includeUntracked,
+			operationTitle: trackedCount === 0 && extras.includeUntracked ? "Renaming untracked" : "Renaming",
 			statusVerb: "renamed",
-			bulkFn: (a, files, catName, catProp, cbs) =>
-				bulkRenameCategoryInFiles(a, files, catName, newCategoryName, catProp, cbs),
+			bulkFn: (a, files, catName, catProp, cbs) => bulkRenameCategoryInFiles(a, files, catName, newName, catProp, cbs),
 			updateColorRules: (rules, categoryProp) => {
 				const oldExpr = getCategoryExpression(categoryName, categoryProp);
-				const newExpr = getCategoryExpression(newCategoryName, categoryProp);
+				const newExpr = getCategoryExpression(newName, categoryProp);
 				return rules.map((rule) => (rule.expression === oldExpr ? { ...rule, expression: newExpr } : rule));
 			},
 			onSuccess,
@@ -127,27 +170,37 @@ export function openCategoryDeleteModal(
 	categoryName: string,
 	onSuccess: () => void
 ): void {
-	const eventsWithCategory = categoryTracker.getEventsWithCategory(categoryName);
+	const stats = categoryTracker.getCategoryStats(categoryName);
+	const trackedCount = stats.timed + stats.allDay;
 
 	const message =
-		eventsWithCategory.length > 0
-			? `Are you sure you want to delete "${categoryName}"? This will remove the category from ${eventsWithCategory.length} event(s).`
+		trackedCount + stats.untracked > 0
+			? `Are you sure you want to delete "${categoryName}"? This will remove the category from ${trackedCount} tracked event(s).`
 			: `Are you sure you want to delete "${categoryName}"? This category is not currently used in any events.`;
 
-	void openConfirmation(app, {
+	void openConfirmation<{ includeUntracked: boolean }>(app, {
 		title: "Delete category",
 		message,
 		confirmLabel: "Delete",
 		destructive: true,
 		testIdPrefix: "prisma-category-delete-",
-	}).then(async (confirmed) => {
-		if (!confirmed) return;
+		initialExtras: { includeUntracked: true },
+		renderExtras: (state, setState) => (
+			<UntrackedToggle
+				value={state.includeUntracked}
+				untrackedCount={stats.untracked}
+				onChange={(includeUntracked) => setState({ includeUntracked })}
+			/>
+		),
+	}).then(async (result) => {
+		if (!result) return;
 
 		await runCategoryBulkOperation({
 			app,
 			categoryTracker,
 			settingsStore,
 			categoryName,
+			includeUntracked: result.extras.includeUntracked,
 			operationTitle: "Deleting",
 			statusVerb: "deleted",
 			bulkFn: (a, files, catName, catProp, cbs) => bulkDeleteCategoryFromFiles(a, files, catName, catProp, cbs),

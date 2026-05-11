@@ -220,9 +220,10 @@ The **Categories Settings** page (Settings → Categories) provides a comprehens
 #### Event Statistics Overview
 
 At the top of the page, you'll see overall event statistics showing:
-- **Total Events** - Total count of all events in your calendar
+- **Total Events** - Total count of all events in your calendar (timed + all-day + untracked)
 - **Timed Events** - Number and percentage of events with specific start/end times
 - **All-Day Events** - Number and percentage of all-day events
+- **Untracked Events** - Number and percentage of [untracked events](../events/untracked-events.md) that carry a category
 
 This provides an instant overview of your event distribution patterns.
 
@@ -234,17 +235,20 @@ Each category card displays:
 1. **Automatic Detection** - All categories from your events are automatically detected and listed
 2. **Visual Color Coding** - Each card has a subtle background tint in the category's color, making it easy to visually identify categories
 3. **Comprehensive Event Counts** - Each category shows:
-   - Total number of events
+   - Total number of events (timed + all-day + untracked)
    - Percentage of all events
    - Timed events count and percentage within that category
    - All-day events count and percentage within that category
+   - Untracked events count and percentage within that category
 4. **Interactive Controls** - Properly spaced buttons for easy access:
    - **Edit Button (Pencil Icon)** - Rename the category across all events
    - **Delete Button (Trash Icon)** - Remove the category from all events
    - **Color Picker** - Click to change the category's color
 5. **Real-time Updates** - Changes are reflected immediately on the calendar
 
-**Example**: `Work: 45 total (30%) • 40 timed (89%) • 5 all-day (11%)`
+**Example**: `Work: 45 total (30%) • 40 timed (89%) • 5 all-day (11%) • 0 untracked (0%)`
+
+A category that lives only on [untracked events](../events/untracked-events.md) (notes that carry your category property but have no Start Date / End Date / Date) still shows up in this list.
 
 This detailed breakdown helps you understand not just how many events are in each category, but also the nature of those events (timed vs all-day). The visual design makes it easy to scan through categories and quickly identify the ones you're looking for.
 
@@ -274,14 +278,15 @@ To rename a category across all your events:
    - The current category name
    - An input field for the new name
    - The number of events that will be affected
-4. Enter the new category name and click **"Rename"**
+   - An **"Also apply to N untracked events with this category"** checkbox (shown only when at least one untracked event uses the category, ticked by default)
+4. Enter the new category name and click **"Save"**
 5. The plugin automatically:
-   - Updates the category property in all affected event files
+   - Updates the category property in all affected event files (and untracked notes when the checkbox is ticked)
    - Adjusts the associated color rule to use the new category name
    - Shows a progress indicator during the operation
    - Refreshes the calendar, the Categories list, and statistics so every view shows the new name immediately — no restart needed
 
-**Example**: Renaming "Work" to "Business" will update all events with `Category: Work` to `Category: Business` and update the color rule from `Category.includes('Work')` to `Category.includes('Business')`.
+**Example**: Renaming "Work" to "Business" will update all events with `Category: Work` to `Category: Business` and update the color rule from `Category.includes('Work')` to `Category.includes('Business')`. Untracked notes carrying `Category: Work` are rewritten too unless you uncheck the toggle.
 
 ### Deleting Categories
 
@@ -293,14 +298,15 @@ To remove a category from all your events:
    - The category name being deleted
    - The number of events that will be affected
    - A warning message if events will be modified
+   - An **"Also apply to N untracked events with this category"** checkbox (shown only when at least one untracked event uses the category, ticked by default)
 4. Click **"Delete"** to confirm
 5. The plugin automatically:
-   - Removes the category from all affected event files
+   - Removes the category from all affected event files (and untracked notes when the checkbox is ticked)
    - Deletes the associated color rule
    - Shows a progress indicator during the operation
    - Refreshes the calendar, the Categories list, and statistics so the old name disappears everywhere immediately — no restart needed
 
-**Example**: Deleting the "Work" category will remove it from all events that have `Category: Work` or `Category: [Work, Meeting]`, and delete the `Category.includes('Work')` color rule.
+**Example**: Deleting the "Work" category will remove it from all events that have `Category: Work` or `Category: [Work, Meeting]`, and delete the `Category.includes('Work')` color rule. Untracked notes are cleaned up too unless you uncheck the toggle.
 
 #### Pie Chart Visualization
 
