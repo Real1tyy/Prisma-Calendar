@@ -6,6 +6,7 @@ export {
 	openDeleteRecurringEventsModal,
 } from "./event/delete-confirmation-modal";
 export { openMoveByModal } from "./event/move-by-modal";
+export { type MoveToCalendarOption, openMoveToCalendarModal } from "./event/move-to-calendar-modal";
 export type { SavePresetResult } from "./event/save-preset-modal";
 export { openSavePresetModal } from "./event/save-preset-modal";
 export { openUntrackedEventCreateModal } from "./event/untracked-event-create-modal";

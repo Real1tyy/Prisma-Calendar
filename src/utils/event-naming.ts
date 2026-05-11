@@ -1,4 +1,4 @@
-import { generateZettelId, isFolderNote, withFrontmatter } from "@real1ty-obsidian-plugins";
+import { generateZettelId, getUniqueFilePathFromFull, isFolderNote, withFrontmatter } from "@real1ty-obsidian-plugins";
 import type { App, TFile } from "obsidian";
 
 import { extractZettelId, hasTimestamp, removeZettelId } from "./events/zettel-id";
@@ -63,6 +63,19 @@ export const generateUniqueEventPath = (
 	const fullPath = `${basePath}${filename}.md`;
 
 	return { filename, fullPath, zettelId };
+};
+
+/**
+ * Computes the destination path for moving a file into another directory while
+ * preserving its basename. If the desired path collides with an existing file,
+ * a numeric suffix is appended. Returns the current path unchanged if the file
+ * is already at the desired location.
+ */
+export const computeMovePath = (app: App, file: TFile, targetDirectory: string): string => {
+	const folder = targetDirectory.replace(/\/+$/, "");
+	const desiredPath = `${folder ? `${folder}/` : ""}${file.basename}.md`;
+	if (desiredPath === file.path) return file.path;
+	return getUniqueFilePathFromFull(app, desiredPath);
 };
 
 /**

@@ -11,7 +11,13 @@ export {
 	toggleSkip,
 	updateFrontmatter,
 } from "./frontmatter-update-command";
-export { CloneEventCommand, CreateEventCommand, DeleteEventCommand, type EventData } from "./lifecycle-commands";
+export {
+	CloneEventCommand,
+	CreateEventCommand,
+	DeleteEventCommand,
+	type EventData,
+	MoveEventToCalendarCommand,
+} from "./lifecycle-commands";
 export { AddZettelIdCommand, ConvertFileToEventCommand, EditEventCommand, UpdateEventCommand } from "./update-commands";
 export {
 	ConvertToRealCommand,

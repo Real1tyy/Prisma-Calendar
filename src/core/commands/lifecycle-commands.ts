@@ -1,9 +1,12 @@
 import type { Command } from "@real1ty-obsidian-plugins";
 import {
+	backupFrontmatter,
 	createFileAtPath,
+	ensureDirectory,
 	extractContentAfterFrontmatter,
 	getTFileOrThrow,
 	getUniqueFilePathFromFull,
+	restoreFrontmatter,
 	sanitizeForFilename,
 } from "@real1ty-obsidian-plugins";
 import type { DurationLike } from "luxon";
@@ -11,10 +14,11 @@ import type { App } from "obsidian";
 import { getFrontMatterInfo, parseYaml, TFile } from "obsidian";
 
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
-import { ensureFileHasZettelId, generateUniqueEventPath } from "../../utils/event-naming";
+import { computeMovePath, ensureFileHasZettelId, generateUniqueEventPath } from "../../utils/event-naming";
 import { removeZettelId } from "../../utils/events/zettel-id";
 import { applyStartEndOffsets } from "../../utils/frontmatter/basics";
 import { removeNonCloneableProperties } from "../../utils/frontmatter/props";
+import { translateFrontmatterToCalendar } from "../../utils/frontmatter/translate-calendar";
 import type { CalendarBundle } from "../calendar-bundle";
 import type { EventFileRepository, FrontmatterSnapshot } from "../event-file-repository";
 
@@ -145,6 +149,56 @@ export class DeleteEventCommand implements Command {
 
 	canUndo(): boolean {
 		return this.snapshot !== null;
+	}
+}
+
+export class MoveEventToCalendarCommand implements Command {
+	private originalFrontmatter: Frontmatter | null = null;
+	private originalFilePath: string;
+	private newFilePath: string | null = null;
+
+	constructor(
+		private app: App,
+		private fromSettings: SingleCalendarConfig,
+		private toSettings: SingleCalendarConfig,
+		filePath: string
+	) {
+		this.originalFilePath = filePath;
+	}
+
+	async execute(): Promise<void> {
+		const file = getTFileOrThrow(this.app, this.originalFilePath);
+		this.originalFrontmatter ??= await backupFrontmatter(this.app, file);
+
+		await ensureDirectory(this.app, this.toSettings.directory);
+		const targetPath = computeMovePath(this.app, file, this.toSettings.directory);
+		await this.app.fileManager.renameFile(file, targetPath);
+		this.newFilePath = targetPath;
+
+		const movedFile = getTFileOrThrow(this.app, targetPath);
+		const translated = translateFrontmatterToCalendar(this.originalFrontmatter, this.fromSettings, this.toSettings);
+		await restoreFrontmatter(this.app, movedFile, translated);
+	}
+
+	async undo(): Promise<void> {
+		if (!this.originalFrontmatter || !this.newFilePath) return;
+
+		const movedFile = getTFileOrThrow(this.app, this.newFilePath);
+		await restoreFrontmatter(this.app, movedFile, this.originalFrontmatter);
+		await this.app.fileManager.renameFile(movedFile, this.originalFilePath);
+		this.newFilePath = null;
+	}
+
+	getType(): string {
+		return "move-event-to-calendar";
+	}
+
+	canUndo(): boolean {
+		return this.originalFrontmatter !== null && this.newFilePath !== null;
+	}
+
+	getMovedFilePath(): string | null {
+		return this.newFilePath;
 	}
 }
 

@@ -202,6 +202,7 @@ export const CONTEXT_MENU_BUTTON_LABELS = {
 	assignPrerequisites: "Assign prerequisites",
 	duplicateEvent: "Duplicate event",
 	moveBy: "Move by...",
+	moveToCalendar: "Move to planning system...",
 	markDone: "Mark as done/undone",
 	moveToNextWeek: "Move to next week",
 	cloneToNextWeek: "Clone to next week",

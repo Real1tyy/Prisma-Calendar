@@ -4,6 +4,7 @@ import { Notice, TFile } from "obsidian";
 import type CustomCalendarPlugin from "../../main";
 import { setUntrackedEventBasics } from "../../utils/frontmatter/basics";
 import type { CalendarBundle } from "../calendar-bundle";
+import { MoveEventToCalendarCommand } from "../commands/lifecycle-commands";
 import { ConvertFileToEventCommand } from "../commands/update-commands";
 import { withBundle } from "./bundle-resolver";
 import { buildDeleteEventCommand, buildEditEventCommand } from "./command-builders";
@@ -15,6 +16,8 @@ import type {
 	PrismaEditEventInput,
 	PrismaMakeRealInput,
 	PrismaMakeVirtualInput,
+	PrismaMoveEventToCalendarInput,
+	PrismaMoveEventToCalendarResult,
 } from "./types";
 
 async function executeBuiltCommand(result: { command: Command; bundle: CalendarBundle } | null): Promise<boolean> {
@@ -101,6 +104,46 @@ export async function makeEventVirtual(plugin: CustomCalendarPlugin, input: Pris
 		await bundle.convertToVirtual(input.filePath);
 		return true;
 	});
+}
+
+export async function moveEventToCalendar(
+	plugin: CustomCalendarPlugin,
+	input: PrismaMoveEventToCalendarInput
+): Promise<PrismaMoveEventToCalendarResult> {
+	return withBundle<PrismaMoveEventToCalendarResult>(
+		plugin,
+		input.calendarId,
+		{ success: false, error: "No source planning system available" },
+		async (sourceBundle) => {
+			if (input.targetCalendarId === sourceBundle.calendarId) {
+				return { success: false, error: "Source and destination planning systems must differ" };
+			}
+
+			const target = plugin.calendarBundles.find((b) => b.calendarId === input.targetCalendarId);
+			if (!target) {
+				new Notice(`Destination planning system not found: ${input.targetCalendarId}`);
+				return { success: false, error: `Destination planning system not found: ${input.targetCalendarId}` };
+			}
+
+			const file = plugin.app.vault.getAbstractFileByPath(input.filePath);
+			if (!(file instanceof TFile)) {
+				new Notice(`File not found: ${input.filePath}`);
+				return { success: false, error: `File not found: ${input.filePath}` };
+			}
+
+			const command = new MoveEventToCalendarCommand(
+				plugin.app,
+				sourceBundle.settingsStore.currentSettings,
+				target.settingsStore.currentSettings,
+				input.filePath
+			);
+			await sourceBundle.commandManager.executeCommand(command);
+
+			void plugin.rememberLastUsedCalendar(target.calendarId);
+			const movedPath = command.getMovedFilePath();
+			return movedPath ? { success: true, movedFilePath: movedPath } : { success: true };
+		}
+	);
 }
 
 export async function makeEventReal(plugin: CustomCalendarPlugin, input: PrismaMakeRealInput): Promise<boolean> {

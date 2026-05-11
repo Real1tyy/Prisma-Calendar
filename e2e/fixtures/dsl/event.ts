@@ -7,6 +7,10 @@ import { fillEventModal, saveEventModal } from "../../specs/events/fill-event-mo
 import { ACTIVE_CALENDAR_LEAF } from "../constants";
 import { type ContextMenuItemKey, EVENT_BLOCK_TID, sel, TID } from "../testids";
 
+const MOVE_TO_CALENDAR_MODAL_TID = "prisma-modal-move-to-calendar";
+const MOVE_TO_CALENDAR_CONTROL_TID = "prisma-move-to-calendar-control-calendarId";
+const MOVE_TO_CALENDAR_SUBMIT_TID = "prisma-move-to-calendar-submit";
+
 // EventHandle — an on-disk event pinned by vault-relative path, with fluent
 // methods for the operations every history / events spec performs: right-
 // click → context menu, edit via modal, expect frontmatter, expect existence.
@@ -24,6 +28,15 @@ export interface EventHandle {
 
 	edit(changes: EventModalInput): Promise<void>;
 	rightClick(item: ContextMenuItemKey): Promise<void>;
+
+	/**
+	 * Right-click → "Move to planning system…" → pick `targetCalendarId` →
+	 * submit. The destination modal is driven by `openMoveToCalendarModal`
+	 * (ModalSchemaForm). Returns once the modal has unmounted; callers should
+	 * still poll the disk for the moved file because the rename + frontmatter
+	 * rewrite settle across two `processFrontMatter` calls.
+	 */
+	moveToCalendar(targetCalendarId: string): Promise<void>;
 
 	readFrontmatter<T = unknown>(key: string): T;
 
@@ -110,6 +123,15 @@ export function createEventHandle(deps: EventHandleDeps, path: string, title: st
 			const menuItem = page.locator(sel(TID.ctxMenu(item))).first();
 			await menuItem.waitFor({ state: "visible" });
 			await menuItem.click();
+		},
+
+		async moveToCalendar(targetCalendarId) {
+			await this.rightClick("moveToCalendar");
+			const modal = page.locator(sel(MOVE_TO_CALENDAR_MODAL_TID)).first();
+			await modal.waitFor({ state: "visible" });
+			await modal.locator(sel(MOVE_TO_CALENDAR_CONTROL_TID)).first().selectOption(targetCalendarId);
+			await modal.locator(sel(MOVE_TO_CALENDAR_SUBMIT_TID)).first().click();
+			await modal.waitFor({ state: "hidden" });
 		},
 
 		readFrontmatter<T>(key: string): T {

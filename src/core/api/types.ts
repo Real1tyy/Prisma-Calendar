@@ -69,6 +69,18 @@ export interface PrismaMakeRealInput {
 	calendarId?: string;
 }
 
+export interface PrismaMoveEventToCalendarInput {
+	filePath: string;
+	targetCalendarId: string;
+	calendarId?: string;
+}
+
+export interface PrismaMoveEventToCalendarResult {
+	success: boolean;
+	movedFilePath?: string;
+	error?: string;
+}
+
 // ─── Public Output Schemas ──────────────────────────────────────────
 
 export const PrismaEventOutputSchema = z.object({

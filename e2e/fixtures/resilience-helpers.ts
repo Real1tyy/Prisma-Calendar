@@ -134,6 +134,7 @@ type SettingsStoreWindow = {
 						};
 						ensureCalendarBundlesReady?: () => Promise<void>;
 						refreshCalendarBundles?: () => Promise<void>;
+						addCalendarBundle?: (calendarId: string) => Promise<void>;
 				  }
 				| undefined
 			>;
@@ -174,30 +175,45 @@ export async function patchDefaultCalendar(
 
 /**
  * Append a calendar record to the settings store, cloning the first calendar's
- * fields as a base so defaults are carried over. `overrides` wins. Runs
- * `refreshCalendarBundles` so the new calendar gets a live bundle —
- * `ensureCalendarBundlesReady` only initializes existing bundles, not new ones.
+ * fields as a base so defaults are carried over. `overrides` wins.
+ *
+ * Default behaviour runs `refreshCalendarBundles` so the new calendar gets a
+ * live bundle — `ensureCalendarBundlesReady` only initializes existing bundles,
+ * not new ones.
+ *
+ * Pass `{ preserveActiveView: true }` to spin up ONLY the new bundle via
+ * `plugin.addCalendarBundle`. The primary's mounted view and painted events
+ * stay untouched — required when a spec has already rendered a tile in the
+ * primary calendar and is about to interact with it (e.g. right-click + move).
  */
-export async function addCalendar(page: Page, overrides: Record<string, unknown>): Promise<void> {
+export async function addCalendar(
+	page: Page,
+	overrides: Record<string, unknown>,
+	options: { preserveActiveView?: boolean } = {}
+): Promise<void> {
+	const preserveActiveView = options.preserveActiveView ?? false;
 	await page.evaluate(
-		async ({ id, o }) => {
+		async ({ id, o, preserve }) => {
 			const w = window as unknown as SettingsStoreWindow;
 			const plugin = w.app.plugins.plugins[id];
 			if (!plugin?.settingsStore?.updateSettings) throw new Error("settingsStore.updateSettings missing");
+			const targetId = String(o["id"]);
 			await plugin.settingsStore.updateSettings((current) => {
 				const calendars = (current["calendars"] as Array<Record<string, unknown>> | undefined) ?? [];
-				const targetId = o["id"];
 				if (calendars.some((c) => c["id"] === targetId)) return current;
 				const base = calendars[0] ?? {};
 				return { ...current, calendars: [...calendars, { ...base, ...o }] };
 			});
-			if (typeof plugin.refreshCalendarBundles === "function") {
+			if (preserve) {
+				if (typeof plugin.addCalendarBundle !== "function") throw new Error("plugin.addCalendarBundle missing");
+				await plugin.addCalendarBundle(targetId);
+			} else if (typeof plugin.refreshCalendarBundles === "function") {
 				await plugin.refreshCalendarBundles();
 			} else if (typeof plugin.ensureCalendarBundlesReady === "function") {
 				await plugin.ensureCalendarBundlesReady();
 			}
 		},
-		{ id: PLUGIN_ID, o: overrides }
+		{ id: PLUGIN_ID, o: overrides, preserve: preserveActiveView }
 	);
 }
 

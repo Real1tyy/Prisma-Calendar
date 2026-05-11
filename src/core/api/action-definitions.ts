@@ -21,6 +21,7 @@ import {
 	editEvent,
 	makeEventReal,
 	makeEventVirtual,
+	moveEventToCalendar,
 } from "./event-crud";
 import { activateLicense } from "./license-activation";
 import {
@@ -41,6 +42,7 @@ import type {
 	PrismaEditEventInput,
 	PrismaMakeRealInput,
 	PrismaMakeVirtualInput,
+	PrismaMoveEventToCalendarInput,
 } from "./types";
 
 export function buildActions(plugin: CustomCalendarPlugin): ActionDefMap {
@@ -167,6 +169,16 @@ export function buildActions(plugin: CustomCalendarPlugin): ActionDefMap {
 			},
 			parseParams: (raw: Record<string, string>) => ({
 				virtualEventId: ParamCoercion.required.string(raw, "virtualEventId"),
+				calendarId: ParamCoercion.string(raw, "calendarId"),
+			}),
+		},
+		moveEventToCalendar: {
+			handler: async (input: PrismaMoveEventToCalendarInput) => {
+				return await moveEventToCalendar(plugin, input);
+			},
+			parseParams: (raw: Record<string, string>) => ({
+				filePath: ParamCoercion.required.string(raw, "filePath"),
+				targetCalendarId: ParamCoercion.required.string(raw, "targetCalendarId"),
 				calendarId: ParamCoercion.string(raw, "calendarId"),
 			}),
 		},

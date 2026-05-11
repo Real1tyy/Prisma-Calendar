@@ -16,6 +16,7 @@ export type ContextMenuItemKey =
 	| "assignPrerequisites"
 	| "duplicateEvent"
 	| "moveBy"
+	| "moveToCalendar"
 	| "markDone"
 	| "moveToNextWeek"
 	| "cloneToNextWeek"

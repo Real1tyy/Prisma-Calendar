@@ -30,12 +30,18 @@ import {
 	markAsDone,
 	markAsUndone,
 	moveEvent,
+	MoveEventToCalendarCommand,
 	toggleSkip,
 	updateFrontmatter,
 } from "../core/commands";
 import { weekDuration } from "../core/commands/batch-commands";
 import { MinimizedModalManager } from "../core/minimized-modal-manager";
-import { openCategoryAssignModal, openDeleteRecurringEventsModal, openMoveByModal } from "../react/modals";
+import {
+	openCategoryAssignModal,
+	openDeleteRecurringEventsModal,
+	openMoveByModal,
+	openMoveToCalendarModal,
+} from "../react/modals";
 import { openEventSeriesModal } from "../react/modals/event-list";
 import { isTimedEvent } from "../types";
 import type { CalendarEvent, EventKind } from "../types/calendar";
@@ -161,6 +167,8 @@ export class EventContextMenu {
 						return isPhysical || kind === "virtual";
 					case "editEvent":
 						return kind !== "virtual";
+					case "moveToCalendar":
+						return isNormal && !!filePath && this.hasOtherCalendars();
 					case "triggerStopwatch":
 					case "assignCategories":
 					case "assignPrerequisites":
@@ -346,6 +354,15 @@ export class EventContextMenu {
 				icon: "move",
 				section: "move",
 				onAction: () => this.moveEventBy(this.currentEvent!),
+			},
+			{
+				id: "moveToCalendar",
+				label: CONTEXT_MENU_BUTTON_LABELS.moveToCalendar,
+				icon: "folder-tree",
+				section: "move",
+				onAction: () => {
+					void this.moveEventToCalendar(this.currentEvent!);
+				},
 			},
 			{
 				id: "markDone",
@@ -747,6 +764,41 @@ export class EventContextMenu {
 				success: `Event duplicated to ${remainingDays} remaining day${remainingDays > 1 ? "s" : ""} of the week`,
 				error: "Failed to duplicate event to remaining week days",
 			});
+		});
+	}
+
+	private hasOtherCalendars(): boolean {
+		return this.bundle.plugin.calendarBundles.some((b) => b.calendarId !== this.bundle.calendarId);
+	}
+
+	async moveEventToCalendar(event: CalendarEventInfo): Promise<void> {
+		await this.withFilePath(event, "move event", async (filePath) => {
+			const targetId = await openMoveToCalendarModal(
+				this.app,
+				this.bundle.calendarId,
+				this.bundle.plugin.calendarBundles
+			);
+			if (!targetId) return;
+
+			const target = this.bundle.plugin.calendarBundles.find((b) => b.calendarId === targetId);
+			if (!target) {
+				new Notice("Destination planning system not found");
+				return;
+			}
+
+			await this.runCommand(
+				() =>
+					new MoveEventToCalendarCommand(
+						this.app,
+						this.bundle.settingsStore.currentSettings,
+						target.settingsStore.currentSettings,
+						filePath
+					),
+				{
+					success: `Event moved to ${target.settingsStore.currentSettings.name}`,
+					error: "Failed to move event to planning system",
+				}
+			);
 		});
 	}
 

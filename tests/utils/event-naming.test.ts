@@ -1,5 +1,7 @@
-import { describe, expect, it } from "vitest";
+import type { App, TFile } from "obsidian";
+import { describe, expect, it, vi } from "vitest";
 
+import { computeMovePath } from "../../src/utils/event-naming";
 import { cleanupTitle, extractNotesCoreName, getEventName, removeInstanceDate } from "../../src/utils/events/naming";
 import {
 	extractInstanceDate,
@@ -160,6 +162,60 @@ describe("extractNotesCoreName", () => {
 
 	it("should strip full day name", () => {
 		expect(extractNotesCoreName("Meeting Monday")).toBe("Meeting");
+	});
+});
+
+describe("computeMovePath", () => {
+	function makeApp(existingPaths: string[] = []): App {
+		const existing = new Set(existingPaths);
+		return {
+			vault: {
+				getAbstractFileByPath: vi.fn((p: string) => (existing.has(p) ? ({ path: p } as unknown) : null)),
+			},
+		} as unknown as App;
+	}
+
+	function makeFile(path: string): TFile {
+		const slash = path.lastIndexOf("/");
+		const fileName = slash >= 0 ? path.slice(slash + 1) : path;
+		const dot = fileName.lastIndexOf(".");
+		const basename = dot >= 0 ? fileName.slice(0, dot) : fileName;
+		return { path, basename } as TFile;
+	}
+
+	it("joins the target directory with the file's basename", () => {
+		const app = makeApp();
+		const file = makeFile("Events/Meeting-20250203140530.md");
+
+		expect(computeMovePath(app, file, "Inbox")).toBe("Inbox/Meeting-20250203140530.md");
+	});
+
+	it("strips trailing slashes from the target directory", () => {
+		const app = makeApp();
+		const file = makeFile("Events/Task.md");
+
+		expect(computeMovePath(app, file, "Inbox///")).toBe("Inbox/Task.md");
+	});
+
+	it("returns the current path unchanged when the file is already at the desired location", () => {
+		const app = makeApp(["Events/Meeting.md"]);
+		const file = makeFile("Events/Meeting.md");
+
+		expect(computeMovePath(app, file, "Events")).toBe("Events/Meeting.md");
+	});
+
+	it("appends a numeric suffix when the destination already has a file with the same name", () => {
+		const app = makeApp(["Inbox/Meeting.md"]);
+		const file = makeFile("Events/Meeting.md");
+
+		expect(computeMovePath(app, file, "Inbox")).toBe("Inbox/Meeting 1.md");
+	});
+
+	it("treats an empty target directory as vault root", () => {
+		const app = makeApp();
+		const file = makeFile("Events/Meeting.md");
+
+		expect(computeMovePath(app, file, "")).toBe("Meeting.md");
 	});
 });
 

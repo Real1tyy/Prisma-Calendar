@@ -92,6 +92,18 @@ Planning System "Deadlines":
   Colors: Red theme
 ```
 
+## Moving an event between planning systems
+
+Right-click any event and pick **Move to planning system…** to send it to another configured system. A modal lists every other planning system with its name and target directory — choose one, hit **Move**, and Prisma will:
+
+- Rename the underlying note from the source directory into the destination directory (Obsidian's rename keeps wiki-link references consistent).
+- **Translate the frontmatter to the destination's schema.** If the source uses `Start Date` / `End Date` / `Category` and the destination uses `Begin` / `Finish` / `Topic`, Prisma rewrites the keys so the event matches the destination's property mapping. Custom user keys that aren't part of the schema (e.g., `priority`, `project`) are left alone.
+- Re-attribute the event reactively — it disappears from the source calendar and shows up in the destination without reload.
+
+The action is undoable from the command palette (**Prisma Calendar: Undo**) — the file moves back and the original frontmatter keys are restored.
+
+The same operation is exposed programmatically via `window.PrismaCalendar.moveEventToCalendar({ filePath, targetCalendarId })` for Pro users — useful for scripting bulk moves or wiring it into other plugins.
+
 ## Sharing Directories
 
 Planning systems never interfere with each other, even when pointing at the same directory with completely different configurations.
