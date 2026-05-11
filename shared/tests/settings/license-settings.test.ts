@@ -1,4 +1,17 @@
+/**
+ * @vitest-environment jsdom
+ *
+ * Partial vi.mock("obsidian") in other test files shares the module graph when
+ * pool isolate is off; restore the full testing mock so Setting has addComponent,
+ * SecretComponent, etc.
+ */
+import type * as ObsidianModule from "obsidian";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("obsidian", async (importOriginal) => {
+	const actual = await importOriginal<typeof ObsidianModule>();
+	return { ...actual };
+});
 
 import type { LicenseManager, LicenseStatus } from "../../src/core/license";
 import { type LicenseSettingsConfig, renderLicenseSettings } from "../../src/core/settings/license-settings";

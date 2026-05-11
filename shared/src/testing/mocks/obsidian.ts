@@ -193,16 +193,31 @@ export class Modal {
 	containerEl: HTMLElement;
 	titleEl: HTMLElement;
 	contentEl: HTMLElement;
+	modalEl: HTMLElement;
+	scope: { register: ReturnType<typeof vi.fn> };
 
 	constructor(app: unknown) {
 		this.app = app;
 		this.containerEl = document.createElement("div");
 		this.titleEl = document.createElement("div");
 		this.contentEl = document.createElement("div");
+		this.modalEl = document.createElement("div");
+		this.scope = { register: vi.fn() };
 	}
 
-	open = vi.fn();
+	open(): void {
+		const self = this as Modal & { onOpen?: () => void | Promise<void> };
+		const { onOpen } = self;
+		if (onOpen) {
+			void Promise.resolve(onOpen.call(self));
+		}
+	}
+
 	close = vi.fn();
+
+	setTitle(title: string): void {
+		this.titleEl.textContent = title;
+	}
 }
 
 // Menu mock
