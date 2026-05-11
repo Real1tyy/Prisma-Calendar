@@ -1,7 +1,6 @@
+import { CustomizableUIBaseStateSchema } from "@real1ty-obsidian-plugins";
 import type { App, ItemView, WorkspaceLeaf } from "obsidian";
 import { z } from "zod";
-
-import { CustomizableUIBaseStateSchema } from "../../core/customizable-ui-state";
 
 /** Zod schema for persisted page header state. Embed in plugin settings schemas. */
 export const PageHeaderStateSchema = CustomizableUIBaseStateSchema.extend({

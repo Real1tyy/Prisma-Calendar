@@ -7,7 +7,6 @@ export * from "./gantt-view";
 export * from "./grid-layout";
 export * from "./inputs";
 export * from "./mountable";
-export * from "./page-header";
 export * from "./primitives";
 export * from "./property-renderer";
 export * from "./schema-modal";

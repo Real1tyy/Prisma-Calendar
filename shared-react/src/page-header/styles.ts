@@ -1,6 +1,4 @@
-import { injectStyleSheet } from "../../utils/styles/inject";
-
-function buildPageHeaderStyles(p: string): string {
+export function buildPageHeaderStyles(p: string): string {
 	return `
 /* ─── Header Settings Button ─── */
 
@@ -20,14 +18,51 @@ function buildPageHeaderStyles(p: string): string {
 	height: 12px;
 }
 
-/* ─── Action Manager Modal ─── */
-
-.modal:has(.${p}action-manager-modal) {
-	width: 420px;
+.${p}page-header-host {
+	display: contents;
 }
 
+.${p}page-header-actions {
+	display: contents;
+}
+
+/* ─── Action Manager Modal ─── */
+
+.modal.${p}action-manager-modal,
+.modal:has(.${p}action-manager-modal) {
+	--modal-width: 560px;
+	width: 560px;
+}
+
+.modal.${p}action-manager-modal .modal-title,
 .modal:has(.${p}action-manager-modal) .modal-title {
 	text-align: center;
+}
+
+.${p}action-manager-search {
+	margin-bottom: 8px;
+}
+
+.${p}action-manager-search-input {
+	width: 100%;
+	padding: 8px 12px;
+	font-size: var(--font-ui-medium);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	background: var(--background-secondary);
+	color: var(--text-normal);
+}
+
+.${p}action-manager-search-input:focus {
+	border-color: var(--interactive-accent);
+	outline: none;
+}
+
+.${p}action-manager-empty {
+	text-align: center;
+	padding: 16px;
+	color: var(--text-faint);
+	font-size: var(--font-ui-medium);
 }
 
 .${p}action-manager-list {
@@ -197,56 +232,5 @@ function buildPageHeaderStyles(p: string): string {
 	border-top: 1px solid var(--background-modifier-border);
 	margin-top: 6px;
 }
-
-/* ─── Action Rename Modal ─── */
-
-.modal:has(.${p}action-rename-modal) {
-	width: 300px;
-}
-
-.modal:has(.${p}action-rename-modal) .modal-title {
-	text-align: center;
-}
-
-.${p}action-rename-input {
-	width: 100%;
-	padding: 8px 12px;
-	font-size: var(--font-ui-medium);
-	border: 1px solid var(--background-modifier-border);
-	border-radius: 6px;
-	background: var(--background-secondary);
-	color: var(--text-normal);
-	margin-bottom: 12px;
-}
-
-.${p}action-rename-input:focus {
-	border-color: var(--interactive-accent);
-	outline: none;
-}
-
-.${p}action-rename-actions {
-	display: flex;
-	gap: 8px;
-	justify-content: flex-end;
-}
-
-.${p}action-rename-btn {
-	padding: 6px 16px;
-	font-size: var(--font-ui-small);
-	font-weight: 600;
-	border-radius: 6px;
-	cursor: pointer;
-	border: none;
-	box-shadow: none;
-}
-
-.${p}action-rename-btn-save {
-	background: var(--interactive-accent);
-	color: var(--text-on-accent);
-}
 `;
-}
-
-export function injectPageHeaderStyles(prefix: string): void {
-	injectStyleSheet(`${prefix}page-header-styles`, buildPageHeaderStyles(prefix));
 }
