@@ -1,6 +1,7 @@
 // eslint.config.mjs
 import js from "@eslint/js";
 import obsidianmd from "eslint-plugin-obsidianmd";
+import reactHooks from "eslint-plugin-react-hooks";
 import { defineConfig } from "eslint/config";
 import tseslint from "typescript-eslint";
 
@@ -16,6 +17,7 @@ export default defineConfig([
 			"*.config.js",
 			"*.config.mjs",
 			"esbuild.config.mjs",
+			"vite.config.ts",
 			"version-bump.mjs",
 			".dependency-cruiser.mjs",
 			"package.json",
@@ -32,6 +34,7 @@ export default defineConfig([
 	...tseslint.configs.recommended,
 	...tseslint.configs.recommendedTypeChecked,
 	...obsidianmd.configs.recommended,
+	reactHooks.configs.flat.recommended,
 
 	{
 		files: ["**/*.ts", "**/*.tsx"],
