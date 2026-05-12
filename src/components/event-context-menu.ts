@@ -1,17 +1,17 @@
-import type {
-	ContextMenuHandle,
-	ContextMenuItemDefinition,
-	ContextMenuState,
-	Frontmatter,
-} from "@real1ty-obsidian-plugins";
+import type { Frontmatter } from "@real1ty-obsidian-plugins";
 import {
-	createContextMenu,
 	getObsidianLinkPath,
 	intoDate,
 	MacroCommand,
 	parseIntoList,
 	toLocalISOString,
 } from "@real1ty-obsidian-plugins";
+import type {
+	ContextMenuState,
+	CustomizableContextMenuHandle,
+	CustomizableContextMenuItem,
+} from "@real1ty-obsidian-plugins-react";
+import { createCustomizableContextMenu } from "@real1ty-obsidian-plugins-react";
 import { type App, Notice } from "obsidian";
 
 import {
@@ -84,7 +84,7 @@ export class EventContextMenu {
 	private app: App;
 	private bundle: CalendarBundle;
 	private calendarComponent: CalendarHost;
-	private handle: ContextMenuHandle;
+	private handle: CustomizableContextMenuHandle;
 	private currentEvent: CalendarEventInfo | null = null;
 	private currentTargetEl: HTMLElement | null = null;
 	private currentContainerEl: HTMLElement | null = null;
@@ -99,7 +99,7 @@ export class EventContextMenu {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const initialState = this.resolveInitialState(settings);
 
-		this.handle = createContextMenu({
+		this.handle = createCustomizableContextMenu({
 			items: this.buildItemDefinitions(),
 			cssPrefix: CSS_PREFIX,
 			...(initialState ? { initialState } : {}),
@@ -233,7 +233,7 @@ export class EventContextMenu {
 
 	// ─── Item Definitions ─────────────────────────────────────────
 
-	private buildItemDefinitions(): ContextMenuItemDefinition[] {
+	private buildItemDefinitions(): CustomizableContextMenuItem[] {
 		return [
 			{
 				id: "enlarge",

@@ -1,10 +1,9 @@
+import { ColorSchema, normalizeDirectoryPath, type SettingsStore } from "@real1ty-obsidian-plugins";
 import {
-	ColorSchema,
 	ContextMenuStateSchema,
-	normalizeDirectoryPath,
-	type SettingsStore,
-} from "@real1ty-obsidian-plugins";
-import { PageHeaderStateSchema, TabbedContainerStateSchema } from "@real1ty-obsidian-plugins-react";
+	PageHeaderStateSchema,
+	TabbedContainerStateSchema,
+} from "@real1ty-obsidian-plugins-react";
 import { z } from "zod";
 
 import {

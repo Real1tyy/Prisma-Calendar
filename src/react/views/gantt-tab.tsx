@@ -1,12 +1,12 @@
+import { cls, ColorEvaluator, parseIntoList } from "@real1ty-obsidian-plugins";
 import {
-	cls,
-	ColorEvaluator,
-	type ContextMenuHandle,
-	type ContextMenuItemDefinition,
-	createContextMenu,
-	parseIntoList,
-} from "@real1ty-obsidian-plugins";
-import { renderReactInline, useApp, useObservable } from "@real1ty-obsidian-plugins-react";
+	createCustomizableContextMenu,
+	type CustomizableContextMenuHandle,
+	type CustomizableContextMenuItem,
+	renderReactInline,
+	useApp,
+	useObservable,
+} from "@real1ty-obsidian-plugins-react";
 import { type App, Menu, Notice } from "obsidian";
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { BehaviorSubject, debounceTime, distinctUntilChanged, map, merge, skip } from "rxjs";
@@ -68,7 +68,7 @@ function buildBarMenuItems(
 	getEvent: () => CalendarEvent | undefined,
 	runCmd: (cmd: Parameters<typeof bundle.commandManager.executeCommand>[0]) => void,
 	onAssignPrerequisite: (ev: CalendarEvent) => void
-): ContextMenuItemDefinition[] {
+): CustomizableContextMenuItem[] {
 	const act = (action: (ev: CalendarEvent) => void): (() => void) => {
 		return () => {
 			const ev = getEvent();
@@ -244,7 +244,7 @@ const GanttBody = memo(function GanttBody() {
 		let wrapperEl: HTMLElement | null = null;
 		let eventsByPath = new Map<string, CalendarEvent>();
 		let colorEvaluator: ColorEvaluator<SingleCalendarConfig> | null = null;
-		let barContextMenu: ContextMenuHandle | null = null;
+		let barContextMenu: CustomizableContextMenuHandle | null = null;
 
 		let cachedPacked: PackedTask[] = [];
 		let cachedTaskMap = new Map<string, PackedTask>();
@@ -349,7 +349,7 @@ const GanttBody = memo(function GanttBody() {
 		}
 		rebuildRef.current = rebuild;
 
-		barContextMenu = createContextMenu({
+		barContextMenu = createCustomizableContextMenu({
 			items: buildBarMenuItems(app, bundle, getActiveEvent, runCmd, enterPrereqSelection),
 			cssPrefix: "prisma-",
 			...(bundle.settingsStore.currentSettings.ganttContextMenuState
