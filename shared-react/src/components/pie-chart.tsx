@@ -8,6 +8,7 @@ import {
 import type { Chart, ChartConfiguration } from "chart.js";
 import { memo, useEffect, useRef } from "react";
 
+import { useCls, useScoped } from "../contexts/theme-context";
 import { useInjectedStyles } from "../hooks/use-injected-styles";
 import { EmptyHint } from "./empty-hint";
 
@@ -22,11 +23,11 @@ const DEFAULT_EMPTY_TEXT = "No data";
 
 export interface ChartTitleProps {
 	text: string;
-	cssPrefix: string;
 }
 
-export const ChartTitle = memo(function ChartTitle({ text, cssPrefix }: ChartTitleProps) {
-	return <h3 className={`${cssPrefix}chart-title`}>{text}</h3>;
+export const ChartTitle = memo(function ChartTitle({ text }: ChartTitleProps) {
+	const cls = useCls();
+	return <h3 className={cls("chart-title")}>{text}</h3>;
 });
 
 // ─── PieCanvas ───
@@ -78,7 +79,6 @@ export const PieCanvas = memo(function PieCanvas({
 export interface PieChartProps {
 	data: PieChartData;
 	ChartJS: ChartJSCtor;
-	cssPrefix: string;
 	title?: string;
 	maxLegendItems?: number;
 	emptyText?: string;
@@ -93,25 +93,25 @@ export interface PieChartProps {
 export const PieChart = memo(function PieChart({
 	data,
 	ChartJS,
-	cssPrefix,
 	title,
 	maxLegendItems = DEFAULT_MAX_LEGEND_ITEMS,
 	emptyText = DEFAULT_EMPTY_TEXT,
 	valueFormatter,
 	legendFontSize,
 }: PieChartProps) {
+	const { cls, cssPrefix } = useScoped();
 	useInjectedStyles(`${cssPrefix}pie-chart-styles`, buildPieChartStyles(cssPrefix));
 
 	const normalized = normalizeData(data, maxLegendItems);
 	const isEmpty = normalized.values.length === 0;
 
 	return (
-		<div className={`${cssPrefix}chart-cell`}>
-			{title && <ChartTitle text={title} cssPrefix={cssPrefix} />}
+		<div className={cls("chart-cell")}>
+			{title && <ChartTitle text={title} />}
 			{isEmpty ? (
-				<EmptyHint text={emptyText} className={`${cssPrefix}chart-empty`} />
+				<EmptyHint text={emptyText} className={cls("chart-empty")} />
 			) : (
-				<div className={`${cssPrefix}chart-canvas-wrapper`}>
+				<div className={cls("chart-canvas-wrapper")}>
 					<PieCanvas
 						data={data}
 						ChartJS={ChartJS}

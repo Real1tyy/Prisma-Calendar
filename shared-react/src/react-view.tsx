@@ -7,6 +7,7 @@ import type { Root } from "react-dom/client";
 import { createRoot } from "react-dom/client";
 
 import { AppContext } from "./contexts/app-context";
+import { SharedReactThemeProvider } from "./contexts/theme-context";
 
 export interface ReactViewHandle {
 	[key: string]: (...args: never[]) => unknown;
@@ -18,6 +19,10 @@ export interface ReactViewConfig<THandle extends ReactViewHandle = ReactViewHand
 	icon?: string;
 	/** Space-separated class tokens applied to the view's root container. */
 	cls?: string;
+	/** CSS prefix shared by the view subtree (`prisma-`, `bases-`, …). */
+	cssPrefix?: string;
+	/** TestId prefix shared by the view subtree. */
+	testIdPrefix?: string;
 	render: (ref: RefCallback<THandle>) => ReactNode;
 }
 
@@ -61,7 +66,11 @@ export function registerReactView<THandle extends ReactViewHandle = ReactViewHan
 			this.root = createRoot(container);
 			this.root.render(
 				<StrictMode>
-					<AppContext value={this.app}>{config.render(setHandle)}</AppContext>
+					<AppContext value={this.app}>
+						<SharedReactThemeProvider cssPrefix={config.cssPrefix} testIdPrefix={config.testIdPrefix}>
+							{config.render(setHandle)}
+						</SharedReactThemeProvider>
+					</AppContext>
 				</StrictMode>
 			);
 		}

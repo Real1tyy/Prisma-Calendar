@@ -4,6 +4,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "../components/button";
 import { ModalDescription } from "../components/modal-description";
+import { useScoped } from "../contexts/theme-context";
 import { useInjectedStyles } from "../hooks/use-injected-styles";
 import { openReactModal } from "../show-react-modal";
 import { buildRenameStyles } from "./rename-modal.styles";
@@ -13,8 +14,6 @@ export interface RenameModalProps {
 	validationPattern?: RegExp | undefined;
 	description?: ReactNode | undefined;
 	extras?: ReactNode | undefined;
-	cssPrefix?: string | undefined;
-	testIdPrefix?: string | undefined;
 	onSubmit: (value: string) => void;
 	onCancel: () => void;
 }
@@ -32,11 +31,10 @@ export const RenameModalContent = memo(function RenameModalContent({
 	validationPattern,
 	description,
 	extras,
-	cssPrefix = "",
-	testIdPrefix = "",
 	onSubmit,
 	onCancel,
 }: RenameModalProps) {
+	const { cls, tid, cssPrefix } = useScoped("rename");
 	useInjectedStyles(`${cssPrefix}rename-styles`, buildRenameStyles(cssPrefix));
 	const [value, setValue] = useState(initialValue);
 	const inputRef = useRef<HTMLInputElement>(null);
@@ -77,23 +75,23 @@ export const RenameModalContent = memo(function RenameModalContent({
 	);
 
 	return (
-		<div data-testid={`${testIdPrefix}rename-modal`}>
+		<div data-testid={tid("modal")}>
 			{description ? <ModalDescription>{description}</ModalDescription> : null}
 			<input
 				ref={inputRef}
 				type="text"
-				className={`${cssPrefix}rename-input`}
+				className={cls("input")}
 				value={value}
 				onChange={(e) => setValue(e.target.value)}
 				onKeyDown={handleKeyDown}
-				data-testid={`${testIdPrefix}rename-input`}
+				data-testid={tid("input")}
 			/>
 			{extras}
 			<div style={{ display: "flex", gap: "8px", justifyContent: "flex-end", marginTop: "12px" }}>
-				<Button testId={`${testIdPrefix}rename-cancel`} onClick={handleCancel}>
+				<Button testId={tid("cancel")} onClick={handleCancel}>
 					Cancel
 				</Button>
-				<Button testId={`${testIdPrefix}rename-submit`} onClick={handleSubmit} variant="primary" disabled={!canSubmit}>
+				<Button testId={tid("submit")} onClick={handleSubmit} variant="primary" disabled={!canSubmit}>
 					Save
 				</Button>
 			</div>
@@ -106,7 +104,9 @@ interface BaseOpenRenameOptions {
 	initialValue: string;
 	validationPattern?: RegExp;
 	description?: ReactNode;
+	/** CSS prefix for the modal subtree. Propagated to `SharedReactThemeProvider`. */
 	cssPrefix?: string;
+	/** TestId prefix for the modal subtree. Propagated to `SharedReactThemeProvider`. */
 	testIdPrefix?: string;
 	onCancel?: () => void;
 }
@@ -132,15 +132,16 @@ export function openRenameModal<TExtras = undefined>(
 	app: App,
 	options: OpenRenameOptions<TExtras>
 ): Promise<RenameModalResult<TExtras> | null> {
-	const testIdPrefix = options.testIdPrefix ?? "";
+	const testIdPrefix = options.testIdPrefix ?? options.cssPrefix ?? "";
 	return openReactModal<RenameModalResult<TExtras>>({
 		app,
 		title: options.title ?? "Rename",
 		testId: `${testIdPrefix}rename-modal-container`,
+		...(options.cssPrefix !== undefined ? { cssPrefix: options.cssPrefix } : {}),
+		...(testIdPrefix !== "" ? { testIdPrefix } : {}),
 		render: (submit, cancel) => (
 			<RenameShell<TExtras>
 				options={options}
-				testIdPrefix={testIdPrefix}
 				onSubmit={(result) => {
 					(options.onSubmit as ((value: string, extras: TExtras) => void) | undefined)?.(result.value, result.extras);
 					submit(result);
@@ -156,12 +157,11 @@ export function openRenameModal<TExtras = undefined>(
 
 interface RenameShellProps<TExtras> {
 	options: OpenRenameOptions<TExtras>;
-	testIdPrefix: string;
 	onSubmit: (result: RenameModalResult<TExtras>) => void;
 	onCancel: () => void;
 }
 
-function RenameShell<TExtras>({ options, testIdPrefix, onSubmit, onCancel }: RenameShellProps<TExtras>) {
+function RenameShell<TExtras>({ options, onSubmit, onCancel }: RenameShellProps<TExtras>) {
 	const [extras, setExtras] = useState<TExtras>(options.initialExtras as TExtras);
 	return (
 		<RenameModalContent
@@ -169,8 +169,6 @@ function RenameShell<TExtras>({ options, testIdPrefix, onSubmit, onCancel }: Ren
 			validationPattern={options.validationPattern}
 			description={options.description}
 			extras={options.renderExtras?.(extras, setExtras)}
-			cssPrefix={options.cssPrefix}
-			testIdPrefix={testIdPrefix}
 			onSubmit={(value) => onSubmit({ value, extras })}
 			onCancel={onCancel}
 		/>

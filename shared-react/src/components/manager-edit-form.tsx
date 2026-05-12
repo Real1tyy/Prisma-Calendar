@@ -1,5 +1,6 @@
 import { memo, useCallback, useState } from "react";
 
+import { useScoped } from "../contexts/theme-context";
 import { useInjectedStyles } from "../hooks/use-injected-styles";
 import { buildManagerEditFormStyles } from "./manager-edit-form.styles";
 import { ObsidianIcon } from "./obsidian-icon";
@@ -41,17 +42,15 @@ export interface ManagerEditController {
 
 export interface ManagerEditFormProps {
 	controller: ManagerEditController;
-	cssPrefix?: string;
 	formPrefix?: string;
 }
 
 export const ManagerEditForm = memo(function ManagerEditForm({
 	controller,
-	cssPrefix = "",
 	formPrefix = "manager",
 }: ManagerEditFormProps) {
 	const { item, values, overrides, actions } = controller;
-
+	const { cls, tid, cssPrefix } = useScoped(formPrefix);
 	useInjectedStyles(`${cssPrefix}${formPrefix}-edit-form-styles`, buildManagerEditFormStyles(cssPrefix, formPrefix));
 	const [labelValue, setLabelValue] = useState(values.label);
 
@@ -98,16 +97,13 @@ export const ManagerEditForm = memo(function ManagerEditForm({
 	);
 
 	return (
-		<div
-			className={`${cssPrefix}${formPrefix}-edit-form`}
-			data-testid={`${cssPrefix}${formPrefix}-edit-form-${item.id}`}
-		>
+		<div className={cls("edit-form")} data-testid={tid("edit-form", item.id)}>
 			<SettingItem name="Name">
 				<TextInput
 					value={labelValue}
 					onChange={handleLabelChange}
 					placeholder={item.label}
-					testId={`${cssPrefix}${formPrefix}-name-input-${item.id}`}
+					testId={tid("name-input", item.id)}
 				/>
 				{overrides.label && (
 					<button
@@ -115,7 +111,7 @@ export const ManagerEditForm = memo(function ManagerEditForm({
 						className="clickable-icon"
 						onClick={handleResetLabel}
 						title={`Reset to "${item.label}"`}
-						data-testid={`${cssPrefix}${formPrefix}-name-reset-${item.id}`}
+						data-testid={tid("name-reset", item.id)}
 					>
 						<ObsidianIcon icon="rotate-ccw" />
 					</button>
@@ -123,7 +119,7 @@ export const ManagerEditForm = memo(function ManagerEditForm({
 			</SettingItem>
 
 			<SettingItem name="Icon">
-				<button type="button" onClick={handleIconClick} data-testid={`${cssPrefix}${formPrefix}-icon-btn-${item.id}`}>
+				<button type="button" onClick={handleIconClick} data-testid={tid("icon-btn", item.id)}>
 					{values.icon}
 				</button>
 				{overrides.icon && (
@@ -132,7 +128,7 @@ export const ManagerEditForm = memo(function ManagerEditForm({
 						className="clickable-icon"
 						onClick={handleResetIcon}
 						title={`Reset to "${item.icon}"`}
-						data-testid={`${cssPrefix}${formPrefix}-icon-reset-${item.id}`}
+						data-testid={tid("icon-reset", item.id)}
 					>
 						<ObsidianIcon icon="rotate-ccw" />
 					</button>
@@ -140,18 +136,14 @@ export const ManagerEditForm = memo(function ManagerEditForm({
 			</SettingItem>
 
 			<SettingItem name="Color">
-				<ColorInput
-					value={values.color}
-					onChange={handleColorChange}
-					testId={`${cssPrefix}${formPrefix}-color-input-${item.id}`}
-				/>
+				<ColorInput value={values.color} onChange={handleColorChange} testId={tid("color-input", item.id)} />
 				{overrides.color && (
 					<button
 						type="button"
 						className="clickable-icon"
 						onClick={handleResetColor}
 						title="Reset to default color"
-						data-testid={`${cssPrefix}${formPrefix}-color-reset-${item.id}`}
+						data-testid={tid("color-reset", item.id)}
 					>
 						<ObsidianIcon icon="rotate-ccw" />
 					</button>

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { memo } from "react";
 
+import { useCls } from "../contexts/theme-context";
 import { testIdAttr } from "../utils/test-id";
 
 interface SettingItemProps {
@@ -27,7 +28,7 @@ export const SettingItem = memo(function SettingItem({ name, description, childr
 
 interface SettingHeadingProps {
 	name: string;
-	testId?: string;
+	testId?: string | undefined;
 }
 
 export const SettingHeading = memo(function SettingHeading({ name, testId }: SettingHeadingProps) {
@@ -42,13 +43,13 @@ export const SettingHeading = memo(function SettingHeading({ name, testId }: Set
 
 interface SettingCardProps {
 	children: ReactNode;
-	cssPrefix?: string;
-	testId?: string;
+	testId?: string | undefined;
 }
 
-export const SettingCard = memo(function SettingCard({ children, cssPrefix = "", testId }: SettingCardProps) {
+export const SettingCard = memo(function SettingCard({ children, testId }: SettingCardProps) {
+	const cls = useCls();
 	return (
-		<div className={`${cssPrefix}settings-card`} {...testIdAttr(testId)}>
+		<div className={cls("settings-card")} {...testIdAttr(testId)}>
 			{children}
 		</div>
 	);

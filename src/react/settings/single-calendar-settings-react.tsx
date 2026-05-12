@@ -143,7 +143,6 @@ export const SingleCalendarSettingsReact = memo(function SingleCalendarSettingsR
 				searchValue={searchQuery}
 				onSearchChange={setSearchQuery}
 				footerLinks={FOOTER_LINKS}
-				cssPrefix="prisma-"
 			>
 				<div className="prisma-settings-tab-content">
 					{isSearching ? (

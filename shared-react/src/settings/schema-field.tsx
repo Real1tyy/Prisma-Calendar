@@ -19,7 +19,7 @@ interface SchemaFieldProps {
 	path?: string;
 	override?: SchemaFieldOverride;
 	/** When set, stamps `data-testid` on the outer `.setting-item` for E2E. */
-	testId?: string;
+	testId?: string | undefined;
 	controlTestId?: string;
 }
 

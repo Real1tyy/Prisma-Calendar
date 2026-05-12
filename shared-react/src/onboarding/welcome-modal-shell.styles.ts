@@ -1,29 +1,29 @@
-export function buildWelcomeShellStyles(prefix: string): string {
+export function buildWelcomeShellStyles(p: string): string {
 	return `
-@keyframes ${prefix}-welcome-fade-in {
+@keyframes ${p}welcome-fade-in {
 	from { opacity: 0; transform: translateY(8px); }
 	to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes ${prefix}-welcome-title-glow {
+@keyframes ${p}welcome-title-glow {
 	0%, 100% { text-shadow: 0 0 30px color-mix(in srgb, var(--interactive-accent) 20%, transparent); }
 	50% { text-shadow: 0 0 40px color-mix(in srgb, var(--interactive-accent) 35%, transparent); }
 }
 
-.${prefix}-welcome-modal {
+.${p}welcome-modal {
 	max-width: 980px;
 	width: min(980px, 94vw);
 }
 
-.${prefix}-welcome-root {
+.${p}welcome-root {
 	display: flex;
 	flex-direction: column;
 	gap: 1.15rem;
 	color: var(--text-normal);
-	animation: ${prefix}-welcome-fade-in 400ms ease-out both;
+	animation: ${p}welcome-fade-in 400ms ease-out both;
 }
 
-.${prefix}-welcome-title {
+.${p}welcome-title {
 	margin: 0;
 	padding-top: 0.25rem;
 	font-size: 2rem;
@@ -39,10 +39,10 @@ export function buildWelcomeShellStyles(prefix: string): string {
 	background-clip: text;
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
-	animation: ${prefix}-welcome-title-glow 4s ease-in-out infinite;
+	animation: ${p}welcome-title-glow 4s ease-in-out infinite;
 }
 
-.${prefix}-welcome-tagline {
+.${p}welcome-tagline {
 	display: flex;
 	flex-direction: column;
 	gap: 0.45rem;
@@ -57,13 +57,13 @@ export function buildWelcomeShellStyles(prefix: string): string {
 	);
 }
 
-.${prefix}-welcome-divider {
+.${p}welcome-divider {
 	border: none;
 	border-top: 1px solid color-mix(in srgb, var(--background-modifier-border) 70%, var(--interactive-accent) 30%);
 	margin: 0;
 }
 
-.${prefix}-welcome-video {
+.${p}welcome-video {
 	display: flex;
 	flex-direction: column;
 	gap: 0.65rem;
@@ -74,7 +74,7 @@ export function buildWelcomeShellStyles(prefix: string): string {
 	box-shadow: 0 2px 12px color-mix(in srgb, var(--background-primary) 60%, transparent);
 }
 
-.${prefix}-welcome-video-frame {
+.${p}welcome-video-frame {
 	width: 100%;
 	aspect-ratio: 16 / 9;
 	border: 0;
@@ -82,7 +82,7 @@ export function buildWelcomeShellStyles(prefix: string): string {
 	background: #000;
 }
 
-.${prefix}-welcome-video-caption {
+.${p}welcome-video-caption {
 	margin: 0;
 	color: var(--text-muted);
 	font-size: 0.9rem;
@@ -90,7 +90,7 @@ export function buildWelcomeShellStyles(prefix: string): string {
 	text-align: center;
 }
 
-.${prefix}-welcome-footer {
+.${p}welcome-footer {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
@@ -101,7 +101,7 @@ export function buildWelcomeShellStyles(prefix: string): string {
 	border-top: 1px solid var(--background-modifier-border);
 }
 
-.${prefix}-welcome-footer-links {
+.${p}welcome-footer-links {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.55rem;
@@ -109,7 +109,7 @@ export function buildWelcomeShellStyles(prefix: string): string {
 	min-width: 0;
 }
 
-.${prefix}-welcome-actions {
+.${p}welcome-actions {
 	display: flex;
 	flex-wrap: nowrap;
 	gap: 0.55rem;
@@ -117,7 +117,7 @@ export function buildWelcomeShellStyles(prefix: string): string {
 	flex-shrink: 0;
 }
 
-.${prefix}-welcome-footer-links .${prefix}-welcome-link-button {
+.${p}welcome-footer-links .${p}welcome-link-button {
 	box-sizing: border-box;
 	display: inline-flex;
 	align-items: center;
@@ -133,24 +133,24 @@ export function buildWelcomeShellStyles(prefix: string): string {
 	text-align: center;
 }
 
-.${prefix}-welcome-footer-links .${prefix}-welcome-link-button:hover {
+.${p}welcome-footer-links .${p}welcome-link-button:hover {
 	border-color: var(--interactive-accent);
 }
 
-.${prefix}-welcome-actions button {
+.${p}welcome-actions button {
 	padding: 0.6rem 1.25rem;
 	font-size: 0.95rem;
 	font-weight: 600;
 }
 
 @media (max-width: 720px) {
-	.${prefix}-welcome-footer {
+	.${p}welcome-footer {
 		flex-direction: column;
 		align-items: stretch;
 	}
 
-	.${prefix}-welcome-footer-links,
-	.${prefix}-welcome-actions {
+	.${p}welcome-footer-links,
+	.${p}welcome-actions {
 		width: 100%;
 	}
 }

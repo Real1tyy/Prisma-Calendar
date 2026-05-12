@@ -1,17 +1,22 @@
 import { screen } from "@testing-library/react";
+import type { ReactElement } from "react";
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { CollapsibleSection, SectionBody, SectionHeader } from "../../src/components/collapsible-section";
-import { renderReact } from "../helpers/render-react";
+import { renderReact, type RenderReactResult } from "../helpers/render-react";
 
 const PREFIX = "prisma-";
+
+function renderInTheme(ui: ReactElement): RenderReactResult {
+	return renderReact(ui, undefined, undefined, { cssPrefix: PREFIX, testIdPrefix: PREFIX });
+}
 
 // ─── Sub-components in isolation ─────────────────────────────────────────────
 
 describe("SectionHeader", () => {
 	it("renders the label and a ▼ toggle when expanded", () => {
-		renderReact(<SectionHeader label="Filters" collapsed={false} onToggle={vi.fn()} cssPrefix={PREFIX} />);
+		renderInTheme(<SectionHeader label="Filters" collapsed={false} onToggle={vi.fn()} />);
 
 		expect(screen.getByText("Filters")).toBeInTheDocument();
 		expect(screen.getByText("▼")).toBeInTheDocument();
@@ -19,7 +24,7 @@ describe("SectionHeader", () => {
 	});
 
 	it("renders a ▶ toggle when collapsed", () => {
-		renderReact(<SectionHeader label="Filters" collapsed={true} onToggle={vi.fn()} cssPrefix={PREFIX} />);
+		renderInTheme(<SectionHeader label="Filters" collapsed={true} onToggle={vi.fn()} />);
 
 		expect(screen.getByText("▶")).toBeInTheDocument();
 		expect(screen.getByRole("button")).toHaveAttribute("aria-expanded", "false");
@@ -27,9 +32,7 @@ describe("SectionHeader", () => {
 
 	it("fires onToggle on click", async () => {
 		const onToggle = vi.fn();
-		const { user } = renderReact(
-			<SectionHeader label="Filters" collapsed={false} onToggle={onToggle} cssPrefix={PREFIX} />
-		);
+		const { user } = renderInTheme(<SectionHeader label="Filters" collapsed={false} onToggle={onToggle} />);
 
 		await user.click(screen.getByRole("button"));
 
@@ -38,9 +41,7 @@ describe("SectionHeader", () => {
 
 	it("fires onToggle on Enter and Space keypress", async () => {
 		const onToggle = vi.fn();
-		const { user } = renderReact(
-			<SectionHeader label="Filters" collapsed={false} onToggle={onToggle} cssPrefix={PREFIX} />
-		);
+		const { user } = renderInTheme(<SectionHeader label="Filters" collapsed={false} onToggle={onToggle} />);
 		screen.getByRole("button").focus();
 
 		await user.keyboard("{Enter}");
@@ -50,12 +51,11 @@ describe("SectionHeader", () => {
 	});
 
 	it("renders the actions slot", () => {
-		renderReact(
+		renderInTheme(
 			<SectionHeader
 				label="Filters"
 				collapsed={false}
 				onToggle={vi.fn()}
-				cssPrefix={PREFIX}
 				actions={<button type="button">Reset</button>}
 			/>
 		);
@@ -66,8 +66,8 @@ describe("SectionHeader", () => {
 
 describe("SectionBody", () => {
 	it("renders children when expanded", () => {
-		renderReact(
-			<SectionBody collapsed={false} cssPrefix={PREFIX}>
+		renderInTheme(
+			<SectionBody collapsed={false}>
 				<span>body</span>
 			</SectionBody>
 		);
@@ -75,8 +75,8 @@ describe("SectionBody", () => {
 	});
 
 	it("applies the hidden class when collapsed", () => {
-		const { container } = renderReact(
-			<SectionBody collapsed={true} cssPrefix={PREFIX}>
+		const { container } = renderInTheme(
+			<SectionBody collapsed={true}>
 				<span>body</span>
 			</SectionBody>
 		);
@@ -84,8 +84,8 @@ describe("SectionBody", () => {
 	});
 
 	it("does NOT apply the hidden class when expanded", () => {
-		const { container } = renderReact(
-			<SectionBody collapsed={false} cssPrefix={PREFIX}>
+		const { container } = renderInTheme(
+			<SectionBody collapsed={false}>
 				<span>body</span>
 			</SectionBody>
 		);
@@ -97,8 +97,8 @@ describe("SectionBody", () => {
 
 describe("CollapsibleSection (composition)", () => {
 	it("starts expanded by default and renders children", () => {
-		renderReact(
-			<CollapsibleSection label="Filters" cssPrefix={PREFIX}>
+		renderInTheme(
+			<CollapsibleSection label="Filters">
 				<span>body content</span>
 			</CollapsibleSection>
 		);
@@ -108,8 +108,8 @@ describe("CollapsibleSection (composition)", () => {
 	});
 
 	it("honors `defaultCollapsed` in uncontrolled mode", () => {
-		renderReact(
-			<CollapsibleSection label="Filters" defaultCollapsed cssPrefix={PREFIX}>
+		renderInTheme(
+			<CollapsibleSection label="Filters" defaultCollapsed>
 				<span>body</span>
 			</CollapsibleSection>
 		);
@@ -117,8 +117,8 @@ describe("CollapsibleSection (composition)", () => {
 	});
 
 	it("toggles its own state in uncontrolled mode", async () => {
-		const { user } = renderReact(
-			<CollapsibleSection label="Filters" cssPrefix={PREFIX}>
+		const { user } = renderInTheme(
+			<CollapsibleSection label="Filters">
 				<span>body</span>
 			</CollapsibleSection>
 		);
@@ -137,15 +137,13 @@ describe("CollapsibleSection (composition)", () => {
 		function Harness() {
 			const [collapsed, setCollapsed] = useState(false);
 			return (
-				<>
-					<CollapsibleSection label="Filters" cssPrefix={PREFIX} collapsed={collapsed} onToggle={setCollapsed}>
-						<span>body</span>
-					</CollapsibleSection>
-				</>
+				<CollapsibleSection label="Filters" collapsed={collapsed} onToggle={setCollapsed}>
+					<span>body</span>
+				</CollapsibleSection>
 			);
 		}
 
-		const { user } = renderReact(<Harness />);
+		const { user } = renderInTheme(<Harness />);
 
 		const header = screen.getByRole("button");
 		expect(header).toHaveAttribute("aria-expanded", "true");
@@ -156,8 +154,8 @@ describe("CollapsibleSection (composition)", () => {
 
 	it("fires onToggle in controlled mode without mutating internal state", async () => {
 		const onToggle = vi.fn();
-		const { user } = renderReact(
-			<CollapsibleSection label="Filters" cssPrefix={PREFIX} collapsed={false} onToggle={onToggle}>
+		const { user } = renderInTheme(
+			<CollapsibleSection label="Filters" collapsed={false} onToggle={onToggle}>
 				<span>body</span>
 			</CollapsibleSection>
 		);
@@ -165,13 +163,12 @@ describe("CollapsibleSection (composition)", () => {
 		await user.click(screen.getByRole("button"));
 
 		expect(onToggle).toHaveBeenCalledExactlyOnceWith(true);
-		// Parent didn't update `collapsed`, so aria-expanded stays "true".
 		expect(screen.getByRole("button")).toHaveAttribute("aria-expanded", "true");
 	});
 
 	it("renders the actions slot passed through to the header", () => {
-		renderReact(
-			<CollapsibleSection label="Filters" cssPrefix={PREFIX} actions={<button type="button">Reset</button>}>
+		renderInTheme(
+			<CollapsibleSection label="Filters" actions={<button type="button">Reset</button>}>
 				<span>body</span>
 			</CollapsibleSection>
 		);

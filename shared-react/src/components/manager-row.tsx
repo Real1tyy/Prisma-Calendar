@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { memo, useCallback } from "react";
 
+import { useScoped } from "../contexts/theme-context";
 import { useInjectedStyles } from "../hooks/use-injected-styles";
 import { cx } from "../utils/cx";
 import { buildManagerRowStyles } from "./manager-row.styles";
@@ -18,7 +19,7 @@ export interface ManagerRowAction {
 	onClick: () => void;
 	label: string;
 	disabled?: boolean;
-	testId?: string;
+	testId?: string | undefined;
 }
 
 export interface ManagerRowProps {
@@ -34,8 +35,11 @@ export interface ManagerRowProps {
 	displayIcon?: string;
 	displayColor?: string;
 	hasRename?: boolean;
-	cssPrefix?: string | undefined;
-	testIdPrefix?: string;
+	/**
+	 * Sub-namespace for class names and testids — `"manager"` produces
+	 * `prisma-manager-row`. Override per-instance (the tab manager uses
+	 * `"tab-manager"`); defaults to `"manager"`.
+	 */
 	rowPrefix?: string;
 	children?: ReactNode;
 }
@@ -53,11 +57,10 @@ export const ManagerRow = memo(function ManagerRow({
 	displayIcon,
 	displayColor,
 	hasRename = false,
-	cssPrefix = "",
-	testIdPrefix,
 	rowPrefix = "manager",
 	children,
 }: ManagerRowProps) {
+	const { cls, tid, cssPrefix } = useScoped(rowPrefix);
 	useInjectedStyles(`${cssPrefix}${rowPrefix}-row-styles`, buildManagerRowStyles(cssPrefix, rowPrefix));
 	const label = displayLabel ?? item.label;
 	const icon = displayIcon ?? item.icon;
@@ -67,29 +70,26 @@ export const ManagerRow = memo(function ManagerRow({
 	const handleToggle = useCallback(() => onToggleVisibility?.(), [onToggleVisibility]);
 
 	return (
-		<div
-			className={cx(`${cssPrefix}${rowPrefix}-row`, !isVisible && `${cssPrefix}${rowPrefix}-row-hidden`)}
-			data-testid={testIdPrefix ? `${testIdPrefix}${rowPrefix}-row-${item.id}` : undefined}
-		>
+		<div className={cx(cls("row"), !isVisible && cls("row-hidden"))} data-testid={tid("row", item.id)}>
 			{chip}
-			<div className={`${cssPrefix}${rowPrefix}-label`}>
-				<span className={`${cssPrefix}${rowPrefix}-icon`} style={color && color !== "#000000" ? { color } : undefined}>
+			<div className={cls("label")}>
+				<span className={cls("icon")} style={color && color !== "#000000" ? { color } : undefined}>
 					<ObsidianIcon icon={icon} />
 				</span>
-				<span className={`${cssPrefix}${rowPrefix}-label-text`}>{label}</span>
+				<span className={cls("label-text")}>{label}</span>
 				{hasRename && (
-					<span className={`${cssPrefix}${rowPrefix}-label-original`} title="Original name">
+					<span className={cls("label-original")} title="Original name">
 						{item.label}
 					</span>
 				)}
 			</div>
 
-			<div className={`${cssPrefix}${rowPrefix}-controls`}>
+			<div className={cls("controls")}>
 				{actions?.map((action) => (
 					<button
 						key={action.label}
 						type="button"
-						className={`${cssPrefix}${rowPrefix}-btn`}
+						className={cls("btn")}
 						onClick={action.onClick}
 						disabled={action.disabled}
 						title={action.label}
@@ -102,10 +102,10 @@ export const ManagerRow = memo(function ManagerRow({
 				{onEdit && (
 					<button
 						type="button"
-						className={`${cssPrefix}${rowPrefix}-btn`}
+						className={cls("btn")}
 						onClick={handleEdit}
 						title={isExpanded ? "Collapse" : "Edit"}
-						data-testid={testIdPrefix ? `${testIdPrefix}${rowPrefix}-edit-${item.id}` : undefined}
+						data-testid={tid("edit", item.id)}
 					>
 						<ObsidianIcon icon={isExpanded ? "chevron-up" : "pencil"} />
 					</button>
@@ -114,11 +114,11 @@ export const ManagerRow = memo(function ManagerRow({
 				{onToggleVisibility && (
 					<button
 						type="button"
-						className={`${cssPrefix}${rowPrefix}-btn`}
+						className={cls("btn")}
 						onClick={handleToggle}
 						disabled={isVisible && visibleCount <= 1}
 						title={isVisible ? "Hide" : "Show"}
-						data-testid={testIdPrefix ? `${testIdPrefix}${rowPrefix}-toggle-${item.id}` : undefined}
+						data-testid={tid("toggle", item.id)}
 					>
 						<ObsidianIcon icon={isVisible ? "eye" : "eye-off"} />
 					</button>

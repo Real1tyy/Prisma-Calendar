@@ -5,7 +5,7 @@ import { testIdAttr } from "../utils/test-id";
 
 export interface ModalDescriptionProps {
 	children: ReactNode;
-	testId?: string;
+	testId?: string | undefined;
 }
 
 export const ModalDescription = memo(function ModalDescription({ children, testId }: ModalDescriptionProps) {

@@ -1,35 +1,40 @@
 import { screen } from "@testing-library/react";
+import type { ReactElement } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { Chip } from "../../src/components/chip";
-import { renderReact } from "../helpers/render-react";
+import { renderReact, type RenderReactResult } from "../helpers/render-react";
 
 const PREFIX = "prisma-";
 
+function renderInTheme(ui: ReactElement): RenderReactResult {
+	return renderReact(ui, undefined, undefined, { cssPrefix: PREFIX, testIdPrefix: PREFIX });
+}
+
 describe("Chip", () => {
 	it("renders `value` as the label when `label` is omitted", () => {
-		renderReact(<Chip value="alpha" cssPrefix={PREFIX} />);
+		renderInTheme(<Chip value="alpha" />);
 		expect(screen.getByText("alpha")).toBeInTheDocument();
 	});
 
 	it("prefers an explicit `label` over `value`", () => {
-		renderReact(<Chip value="alpha" label="Alpha ✨" cssPrefix={PREFIX} />);
+		renderInTheme(<Chip value="alpha" label="Alpha ✨" />);
 		expect(screen.getByText("Alpha ✨")).toBeInTheDocument();
 	});
 
 	it("renders the tooltip as the `title` attribute", () => {
-		renderReact(<Chip value="alpha" tooltip="Alpha category" cssPrefix={PREFIX} />);
+		renderInTheme(<Chip value="alpha" tooltip="Alpha category" />);
 		expect(screen.getByText("alpha")).toHaveAttribute("title", "Alpha category");
 	});
 
 	it("renders the prefix slot before the label", () => {
-		renderReact(<Chip value="alpha" cssPrefix={PREFIX} prefix={<span data-testid="dot">•</span>} />);
+		renderInTheme(<Chip value="alpha" prefix={<span data-testid="dot">•</span>} />);
 		expect(screen.getByTestId("dot")).toBeInTheDocument();
 	});
 
 	it("invokes onClick with the value on label click", async () => {
 		const onClick = vi.fn();
-		const { user } = renderReact(<Chip value="alpha" cssPrefix={PREFIX} onClick={onClick} />);
+		const { user } = renderInTheme(<Chip value="alpha" onClick={onClick} />);
 
 		await user.click(screen.getByRole("button", { name: "alpha" }));
 
@@ -38,7 +43,7 @@ describe("Chip", () => {
 
 	it("invokes onClick on Enter / Space keypress when focused", async () => {
 		const onClick = vi.fn();
-		const { user } = renderReact(<Chip value="alpha" cssPrefix={PREFIX} onClick={onClick} />);
+		const { user } = renderInTheme(<Chip value="alpha" onClick={onClick} />);
 		const label = screen.getByRole("button", { name: "alpha" });
 		label.focus();
 
@@ -49,13 +54,13 @@ describe("Chip", () => {
 	});
 
 	it("omits the remove button when `onRemove` is not provided", () => {
-		renderReact(<Chip value="alpha" cssPrefix={PREFIX} />);
+		renderInTheme(<Chip value="alpha" />);
 		expect(screen.queryByRole("button", { name: /Remove/ })).toBeNull();
 	});
 
 	it("invokes onRemove when the ✕ is clicked", async () => {
 		const onRemove = vi.fn();
-		const { user } = renderReact(<Chip value="alpha" cssPrefix={PREFIX} onRemove={onRemove} />);
+		const { user } = renderInTheme(<Chip value="alpha" onRemove={onRemove} />);
 
 		await user.click(screen.getByRole("button", { name: "Remove alpha" }));
 
@@ -65,7 +70,7 @@ describe("Chip", () => {
 	it("stops propagation so remove does not trigger the label's onClick", async () => {
 		const onClick = vi.fn();
 		const onRemove = vi.fn();
-		const { user } = renderReact(<Chip value="alpha" cssPrefix={PREFIX} onClick={onClick} onRemove={onRemove} />);
+		const { user } = renderInTheme(<Chip value="alpha" onClick={onClick} onRemove={onRemove} />);
 
 		await user.click(screen.getByRole("button", { name: "Remove alpha" }));
 

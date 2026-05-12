@@ -35,6 +35,8 @@ export function openCalendarIntegrationDeleteEventsModal(
 		app,
 		title,
 		testId: "prisma-modal-integration-delete",
+		cssPrefix: "prisma-integration-delete-",
+		testIdPrefix: "prisma-integration-delete-",
 		render: (submit) => (
 			<ConfirmationModalContent
 				title={title}
@@ -42,7 +44,6 @@ export function openCalendarIntegrationDeleteEventsModal(
 				confirmLabel={confirmText}
 				cancelLabel={cancelText}
 				destructive
-				testIdPrefix="prisma-integration-delete-"
 				onConfirm={() => submit("confirm")}
 				onCancel={() => submit("cancel")}
 			/>

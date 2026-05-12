@@ -7,7 +7,7 @@ export interface CsvInputProps {
 	itemType: "string" | "number";
 	placeholder?: string | undefined;
 	onChange: (next: string[] | number[]) => void;
-	testId?: string;
+	testId?: string | undefined;
 }
 
 /**

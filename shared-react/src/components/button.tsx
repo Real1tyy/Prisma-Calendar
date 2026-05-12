@@ -2,6 +2,7 @@ import type { MouseEventHandler, ReactNode } from "react";
 import { memo } from "react";
 
 import { cx } from "../utils/cx";
+import { testIdAttr } from "../utils/test-id";
 
 export type ButtonVariant = "default" | "primary" | "warning";
 
@@ -12,9 +13,9 @@ const VARIANT_CLASS: Record<ButtonVariant, string> = {
 };
 
 export interface ButtonProps {
-	testId: string;
 	onClick: MouseEventHandler<HTMLButtonElement>;
 	children: ReactNode;
+	testId?: string | undefined;
 	variant?: ButtonVariant | undefined;
 	disabled?: boolean | undefined;
 	className?: string | undefined;
@@ -34,7 +35,7 @@ export const Button = memo(function Button({
 			className={cx(VARIANT_CLASS[variant], className)}
 			onClick={onClick}
 			disabled={disabled}
-			data-testid={testId}
+			{...testIdAttr(testId)}
 		>
 			{children}
 		</button>

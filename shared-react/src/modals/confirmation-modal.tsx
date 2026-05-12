@@ -4,6 +4,7 @@ import { memo, useCallback, useRef, useState } from "react";
 
 import { Button } from "../components/button";
 import { ModalDescription } from "../components/modal-description";
+import { useScopedTid } from "../contexts/theme-context";
 import { openReactModal } from "../show-react-modal";
 
 export interface ConfirmationModalProps {
@@ -13,7 +14,6 @@ export interface ConfirmationModalProps {
 	cancelLabel?: string | undefined;
 	destructive?: boolean | undefined;
 	extras?: ReactNode | undefined;
-	testIdPrefix?: string | undefined;
 	onConfirm: () => void;
 	onCancel: () => void;
 }
@@ -24,10 +24,10 @@ export const ConfirmationModalContent = memo(function ConfirmationModalContent({
 	cancelLabel = "Cancel",
 	destructive = false,
 	extras,
-	testIdPrefix = "",
 	onConfirm,
 	onCancel,
 }: ConfirmationModalProps) {
+	const tid = useScopedTid("confirmation-modal");
 	const settledRef = useRef(false);
 
 	const handleConfirm = useCallback(() => {
@@ -43,18 +43,14 @@ export const ConfirmationModalContent = memo(function ConfirmationModalContent({
 	}, [onCancel]);
 
 	return (
-		<div data-testid={`${testIdPrefix}confirmation-modal`}>
+		<div data-testid={tid()}>
 			{message && <ModalDescription>{message}</ModalDescription>}
 			{extras}
 			<div style={{ display: "flex", gap: "8px", justifyContent: "flex-end", marginTop: "16px" }}>
-				<Button testId={`${testIdPrefix}confirmation-modal-cancel`} onClick={handleCancel}>
+				<Button testId={tid("cancel")} onClick={handleCancel}>
 					{cancelLabel}
 				</Button>
-				<Button
-					testId={`${testIdPrefix}confirmation-modal-confirm`}
-					onClick={handleConfirm}
-					variant={destructive ? "warning" : "primary"}
-				>
+				<Button testId={tid("confirm")} onClick={handleConfirm} variant={destructive ? "warning" : "primary"}>
 					{confirmLabel}
 				</Button>
 			</div>
@@ -68,7 +64,10 @@ interface BaseOpenConfirmationOptions {
 	confirmLabel?: string;
 	cancelLabel?: string;
 	destructive?: boolean;
+	/** TestId prefix for the modal subtree. Propagated to `SharedReactThemeProvider`. */
 	testIdPrefix?: string;
+	/** CSS prefix for the modal subtree. Propagated to `SharedReactThemeProvider`. */
+	cssPrefix?: string;
 	onCancel?: () => void;
 }
 
@@ -92,15 +91,16 @@ export function openConfirmation<TExtras = undefined>(
 	app: App,
 	options: OpenConfirmationOptions<TExtras>
 ): Promise<ConfirmationResult<TExtras> | null> {
-	const testIdPrefix = options.testIdPrefix ?? "";
+	const testIdPrefix = options.testIdPrefix ?? options.cssPrefix ?? "";
 	return openReactModal<ConfirmationResult<TExtras>>({
 		app,
 		title: options.title,
 		testId: `${testIdPrefix}confirmation-modal-container`,
+		...(options.cssPrefix !== undefined ? { cssPrefix: options.cssPrefix } : {}),
+		...(testIdPrefix !== "" ? { testIdPrefix } : {}),
 		render: (submit, cancel) => (
 			<ConfirmationShell<TExtras>
 				options={options}
-				testIdPrefix={testIdPrefix}
 				onConfirm={(extras) => {
 					(options.onConfirm as ((extras: TExtras) => void) | undefined)?.(extras);
 					submit({ extras });
@@ -116,12 +116,11 @@ export function openConfirmation<TExtras = undefined>(
 
 interface ConfirmationShellProps<TExtras> {
 	options: OpenConfirmationOptions<TExtras>;
-	testIdPrefix: string;
 	onConfirm: (extras: TExtras) => void;
 	onCancel: () => void;
 }
 
-function ConfirmationShell<TExtras>({ options, testIdPrefix, onConfirm, onCancel }: ConfirmationShellProps<TExtras>) {
+function ConfirmationShell<TExtras>({ options, onConfirm, onCancel }: ConfirmationShellProps<TExtras>) {
 	const [extras, setExtras] = useState<TExtras>(options.initialExtras as TExtras);
 	return (
 		<ConfirmationModalContent
@@ -130,7 +129,6 @@ function ConfirmationShell<TExtras>({ options, testIdPrefix, onConfirm, onCancel
 			confirmLabel={options.confirmLabel}
 			cancelLabel={options.cancelLabel}
 			destructive={options.destructive}
-			testIdPrefix={testIdPrefix}
 			extras={options.renderExtras?.(extras, setExtras)}
 			onConfirm={() => onConfirm(extras)}
 			onCancel={onCancel}

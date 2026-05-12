@@ -57,6 +57,22 @@ export { Textarea } from "./components/textarea";
 
 // ─── Contexts ───
 export { AppContext, useApp } from "./contexts/app-context";
+export type { ScopedTheme, SharedReactTheme, SharedReactThemeProviderProps } from "./contexts/theme-context";
+export {
+	SharedReactThemeProvider,
+	useCls,
+	useCssPrefix,
+	useResolvedCssPrefix,
+	useResolvedTestIdPrefix,
+	useScoped,
+	useScopedCls,
+	useScopedTid,
+	useTestId,
+	useTestIdPrefix,
+	useTheme,
+} from "./contexts/theme-context";
+export type { ThemedProps, ThemeOverrideProps } from "./contexts/with-theme";
+export { useThemed, withTheme } from "./contexts/with-theme";
 
 // ─── Forms ───
 export * from "./forms";
@@ -137,6 +153,7 @@ export {
 } from "./page-header";
 
 // ─── Mount bridges ───
+export type { RenderReactInlineOptions } from "./react-inline";
 export { renderReactInline } from "./react-inline";
 export type { ReactViewConfig, ReactViewHandle } from "./react-view";
 export { registerReactView } from "./react-view";

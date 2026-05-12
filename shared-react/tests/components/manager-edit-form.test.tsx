@@ -1,12 +1,25 @@
 import { screen } from "@testing-library/react";
+import type { ReactElement } from "react";
 import { describe, expect, it, vi } from "vitest";
 
-import type { ManagerEditController } from "../../src/components/manager-edit-form";
-import { ManagerEditForm } from "../../src/components/manager-edit-form";
-import { renderReact } from "../helpers/render-react";
+import { type ManagerEditController, ManagerEditForm } from "../../src/components/manager-edit-form";
+import { SharedReactThemeProvider } from "../../src/contexts/theme-context";
+import { renderReact, type RenderReactResult } from "../helpers/render-react";
 
 const ITEM = { id: "edit", label: "Edit", icon: "pencil", color: "#ff0000" };
 const PREFIX = "test-";
+
+function renderInTheme(ui: ReactElement): RenderReactResult {
+	return renderReact(
+		<SharedReactThemeProvider cssPrefix={PREFIX} testIdPrefix={PREFIX}>
+			{ui}
+		</SharedReactThemeProvider>
+	);
+}
+
+function renderForm(controller: ManagerEditController): RenderReactResult {
+	return renderInTheme(<ManagerEditForm controller={controller} formPrefix="action-manager" />);
+}
 
 interface BuildOpts {
 	values?: Partial<ManagerEditController["values"]>;
@@ -17,8 +30,18 @@ interface BuildOpts {
 function buildController({ values, overrides, actions }: BuildOpts = {}): ManagerEditController {
 	return {
 		item: ITEM,
-		values: { label: "Edit", icon: "pencil", color: "#ff0000", ...values },
-		overrides: { label: false, icon: false, color: false, ...overrides },
+		values: {
+			label: "Edit",
+			icon: "pencil",
+			color: "#ff0000",
+			...values,
+		},
+		overrides: {
+			label: false,
+			icon: false,
+			color: false,
+			...overrides,
+		},
 		actions: {
 			rename: vi.fn(),
 			changeIcon: vi.fn(),
@@ -26,10 +49,6 @@ function buildController({ values, overrides, actions }: BuildOpts = {}): Manage
 			...actions,
 		},
 	};
-}
-
-function renderForm(controller: ManagerEditController) {
-	return renderReact(<ManagerEditForm controller={controller} cssPrefix={PREFIX} formPrefix="action-manager" />);
 }
 
 describe("ManagerEditForm", () => {
@@ -42,7 +61,7 @@ describe("ManagerEditForm", () => {
 		expect(screen.getByTestId(`${PREFIX}action-manager-color-input-edit`)).toBeInTheDocument();
 	});
 
-	it("fires rename when name changes and committed via blur", async () => {
+	it("fires rename when name changes and is committed via blur", async () => {
 		const rename = vi.fn();
 		const { user } = renderForm(buildController({ actions: { rename } }));
 
@@ -136,5 +155,12 @@ describe("ManagerEditForm", () => {
 			await user.click(screen.getByTestId(`${PREFIX}action-manager-icon-btn-edit`));
 			expect(changeIcon).toHaveBeenCalledWith(undefined);
 		});
+	});
+
+	it("omits the test prefix when rendered with the default empty theme", () => {
+		// renderReact wraps in a SharedReactThemeProvider with empty prefixes by default,
+		// so the prefixed test-id (`test-action-manager-edit-form-edit`) shouldn't match.
+		renderReact(<ManagerEditForm controller={buildController()} formPrefix="action-manager" />);
+		expect(screen.queryByTestId(`${PREFIX}action-manager-edit-form-edit`)).not.toBeInTheDocument();
 	});
 });

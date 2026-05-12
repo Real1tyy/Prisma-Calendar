@@ -1,8 +1,9 @@
 import { screen } from "@testing-library/react";
+import type { ReactElement } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { SettingsNav } from "../../src/settings/settings-nav";
-import { renderReact } from "../helpers/render-react";
+import { renderReact, type RenderReactResult } from "../helpers/render-react";
 
 const TABS = [
 	{ id: "general", label: "General" },
@@ -12,9 +13,13 @@ const TABS = [
 
 const PREFIX = "prisma-";
 
+function renderInTheme(ui: ReactElement): RenderReactResult {
+	return renderReact(ui, undefined, undefined, { cssPrefix: PREFIX, testIdPrefix: PREFIX });
+}
+
 describe("SettingsNav", () => {
 	it("renders all visible tabs", () => {
-		renderReact(<SettingsNav tabs={TABS} activeId="general" onChange={vi.fn()} cssPrefix={PREFIX} />);
+		renderInTheme(<SettingsNav tabs={TABS} activeId="general" onChange={vi.fn()} />);
 
 		expect(screen.getByTestId("prisma-settings-nav-general")).toBeInTheDocument();
 		expect(screen.getByTestId("prisma-settings-nav-advanced")).toBeInTheDocument();
@@ -22,7 +27,7 @@ describe("SettingsNav", () => {
 	});
 
 	it("marks active tab with aria-selected", () => {
-		renderReact(<SettingsNav tabs={TABS} activeId="advanced" onChange={vi.fn()} cssPrefix={PREFIX} />);
+		renderInTheme(<SettingsNav tabs={TABS} activeId="advanced" onChange={vi.fn()} />);
 
 		expect(screen.getByTestId("prisma-settings-nav-advanced")).toHaveAttribute("aria-selected", "true");
 		expect(screen.getByTestId("prisma-settings-nav-general")).toHaveAttribute("aria-selected", "false");
@@ -30,7 +35,7 @@ describe("SettingsNav", () => {
 
 	it("fires onChange when tab clicked", async () => {
 		const onChange = vi.fn();
-		const { user } = renderReact(<SettingsNav tabs={TABS} activeId="general" onChange={onChange} cssPrefix={PREFIX} />);
+		const { user } = renderInTheme(<SettingsNav tabs={TABS} activeId="general" onChange={onChange} />);
 
 		await user.click(screen.getByTestId("prisma-settings-nav-advanced"));
 		expect(onChange).toHaveBeenCalledWith("advanced");
@@ -39,14 +44,13 @@ describe("SettingsNav", () => {
 	it("clears search on tab click when onSearchChange provided", async () => {
 		const onSearchChange = vi.fn();
 		const onChange = vi.fn();
-		const { user } = renderReact(
+		const { user } = renderInTheme(
 			<SettingsNav
 				tabs={TABS}
 				activeId="general"
 				onChange={onChange}
 				onSearchChange={onSearchChange}
 				searchValue="test"
-				cssPrefix={PREFIX}
 			/>
 		);
 
@@ -55,33 +59,30 @@ describe("SettingsNav", () => {
 	});
 
 	it("renders search input when onSearchChange provided", () => {
-		renderReact(
-			<SettingsNav tabs={TABS} activeId="general" onChange={vi.fn()} onSearchChange={vi.fn()} cssPrefix={PREFIX} />
-		);
+		renderInTheme(<SettingsNav tabs={TABS} activeId="general" onChange={vi.fn()} onSearchChange={vi.fn()} />);
 
 		expect(screen.getByTestId("prisma-settings-search")).toBeInTheDocument();
 	});
 
 	it("does not render search input without onSearchChange", () => {
-		renderReact(<SettingsNav tabs={TABS} activeId="general" onChange={vi.fn()} cssPrefix={PREFIX} />);
+		renderInTheme(<SettingsNav tabs={TABS} activeId="general" onChange={vi.fn()} />);
 
 		expect(screen.queryByTestId("prisma-settings-search")).not.toBeInTheDocument();
 	});
 
 	it("filters out tabs with visible: false", () => {
 		const tabsWithHidden = [...TABS, { id: "hidden", label: "Hidden", visible: false }];
-		renderReact(<SettingsNav tabs={tabsWithHidden} activeId="general" onChange={vi.fn()} cssPrefix={PREFIX} />);
+		renderInTheme(<SettingsNav tabs={tabsWithHidden} activeId="general" onChange={vi.fn()} />);
 
 		expect(screen.queryByTestId("prisma-settings-nav-hidden")).not.toBeInTheDocument();
 	});
 
 	it("renders footer links when provided", () => {
-		renderReact(
+		renderInTheme(
 			<SettingsNav
 				tabs={TABS}
 				activeId="general"
 				onChange={vi.fn()}
-				cssPrefix={PREFIX}
 				footerLinks={[{ text: "Support", href: "https://example.com" }]}
 			/>
 		);
@@ -90,14 +91,14 @@ describe("SettingsNav", () => {
 	});
 
 	it("has tablist role", () => {
-		renderReact(<SettingsNav tabs={TABS} activeId="general" onChange={vi.fn()} cssPrefix={PREFIX} />);
+		renderInTheme(<SettingsNav tabs={TABS} activeId="general" onChange={vi.fn()} />);
 
 		expect(screen.getByRole("tablist")).toBeInTheDocument();
 	});
 
 	it("renders children", () => {
-		renderReact(
-			<SettingsNav tabs={TABS} activeId="general" onChange={vi.fn()} cssPrefix={PREFIX}>
+		renderInTheme(
+			<SettingsNav tabs={TABS} activeId="general" onChange={vi.fn()}>
 				<div data-testid="child-content">Content area</div>
 			</SettingsNav>
 		);
@@ -107,7 +108,7 @@ describe("SettingsNav", () => {
 
 	it("supports keyboard navigation", async () => {
 		const onChange = vi.fn();
-		const { user } = renderReact(<SettingsNav tabs={TABS} activeId="general" onChange={onChange} cssPrefix={PREFIX} />);
+		const { user } = renderInTheme(<SettingsNav tabs={TABS} activeId="general" onChange={onChange} />);
 
 		const firstTab = screen.getByTestId("prisma-settings-nav-general");
 		firstTab.focus();

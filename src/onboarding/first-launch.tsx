@@ -48,6 +48,8 @@ export async function openFirstLaunchModal(
 		app: options.app,
 		cls: "prisma-welcome-modal",
 		testId: "prisma-welcome-modal",
+		cssPrefix: "prisma-",
+		testIdPrefix: "prisma-",
 		render: (submit) => (
 			<FirstLaunchController
 				initialProps={options.initialProps}
@@ -194,14 +196,12 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 
 	return (
 		<WelcomeModalShell
-			cssPrefix="prisma"
 			title="Welcome to Prisma Calendar"
 			tagline={TAGLINE}
 			videoEmbedUrl="https://www.youtube.com/embed/dziQK9UQhvE"
 			videoCaption="Start here — learn how to install, set up, and begin using Prisma Calendar in minutes."
 			footerLinks={FOOTER_LINKS}
 			submitDisabled={!currentDirectory.trim()}
-			testIdPrefix="prisma-welcome"
 			onSubmit={() => {
 				void submit();
 			}}

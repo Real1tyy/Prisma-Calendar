@@ -1,10 +1,15 @@
 import { screen } from "@testing-library/react";
+import type { ReactElement } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { ConfirmationModalContent } from "../../src/modals/confirmation-modal";
-import { renderReact } from "../helpers/render-react";
+import { renderReact, type RenderReactResult } from "../helpers/render-react";
 
 const PREFIX = "test-";
+
+function renderInTheme(ui: ReactElement): RenderReactResult {
+	return renderReact(ui, undefined, undefined, { cssPrefix: PREFIX, testIdPrefix: PREFIX });
+}
 
 describe("ConfirmationModalContent", () => {
 	const defaultProps = {
@@ -16,7 +21,7 @@ describe("ConfirmationModalContent", () => {
 	};
 
 	it("renders with message and default button labels", () => {
-		renderReact(<ConfirmationModalContent {...defaultProps} />);
+		renderInTheme(<ConfirmationModalContent {...defaultProps} />);
 
 		expect(screen.getByText("This cannot be undone.")).toBeInTheDocument();
 		expect(screen.getByTestId(`${PREFIX}confirmation-modal-confirm`)).toHaveTextContent("Confirm");
@@ -24,7 +29,7 @@ describe("ConfirmationModalContent", () => {
 	});
 
 	it("uses custom button labels", () => {
-		renderReact(<ConfirmationModalContent {...defaultProps} confirmLabel="Delete" cancelLabel="Keep" />);
+		renderInTheme(<ConfirmationModalContent {...defaultProps} confirmLabel="Delete" cancelLabel="Keep" />);
 
 		expect(screen.getByTestId(`${PREFIX}confirmation-modal-confirm`)).toHaveTextContent("Delete");
 		expect(screen.getByTestId(`${PREFIX}confirmation-modal-cancel`)).toHaveTextContent("Keep");
@@ -32,7 +37,7 @@ describe("ConfirmationModalContent", () => {
 
 	it("fires onConfirm when confirm button clicked", async () => {
 		const onConfirm = vi.fn();
-		const { user } = renderReact(<ConfirmationModalContent {...defaultProps} onConfirm={onConfirm} />);
+		const { user } = renderInTheme(<ConfirmationModalContent {...defaultProps} onConfirm={onConfirm} />);
 
 		await user.click(screen.getByTestId(`${PREFIX}confirmation-modal-confirm`));
 
@@ -41,7 +46,7 @@ describe("ConfirmationModalContent", () => {
 
 	it("fires onCancel when cancel button clicked", async () => {
 		const onCancel = vi.fn();
-		const { user } = renderReact(<ConfirmationModalContent {...defaultProps} onCancel={onCancel} />);
+		const { user } = renderInTheme(<ConfirmationModalContent {...defaultProps} onCancel={onCancel} />);
 
 		await user.click(screen.getByTestId(`${PREFIX}confirmation-modal-cancel`));
 
@@ -49,31 +54,31 @@ describe("ConfirmationModalContent", () => {
 	});
 
 	it("renders confirm button with warning variant when destructive", () => {
-		renderReact(<ConfirmationModalContent {...defaultProps} destructive />);
+		renderInTheme(<ConfirmationModalContent {...defaultProps} destructive />);
 
 		expect(screen.getByTestId(`${PREFIX}confirmation-modal-confirm`)).toHaveClass("mod-warning");
 	});
 
 	it("renders confirm button with primary variant by default", () => {
-		renderReact(<ConfirmationModalContent {...defaultProps} />);
+		renderInTheme(<ConfirmationModalContent {...defaultProps} />);
 
 		expect(screen.getByTestId(`${PREFIX}confirmation-modal-confirm`)).toHaveClass("mod-cta");
 	});
 
 	it("does not render message when not provided", () => {
-		renderReact(<ConfirmationModalContent {...defaultProps} message={undefined} />);
+		renderInTheme(<ConfirmationModalContent {...defaultProps} message={undefined} />);
 
 		expect(screen.queryByText("This cannot be undone.")).not.toBeInTheDocument();
 	});
 
 	it("has the expected testid on the container", () => {
-		renderReact(<ConfirmationModalContent {...defaultProps} />);
+		renderInTheme(<ConfirmationModalContent {...defaultProps} />);
 
 		expect(screen.getByTestId(`${PREFIX}confirmation-modal`)).toBeInTheDocument();
 	});
 
 	it("renders extras slot between message and footer", () => {
-		renderReact(
+		renderInTheme(
 			<ConfirmationModalContent {...defaultProps} extras={<div data-testid="confirm-extra-slot">extra content</div>} />
 		);
 
@@ -81,14 +86,14 @@ describe("ConfirmationModalContent", () => {
 	});
 
 	it("extras slot is omitted when not provided", () => {
-		renderReact(<ConfirmationModalContent {...defaultProps} />);
+		renderInTheme(<ConfirmationModalContent {...defaultProps} />);
 
 		expect(screen.queryByTestId("confirm-extra-slot")).not.toBeInTheDocument();
 	});
 
 	it("ignores repeated confirm clicks (double-click guard)", async () => {
 		const onConfirm = vi.fn();
-		const { user } = renderReact(<ConfirmationModalContent {...defaultProps} onConfirm={onConfirm} />);
+		const { user } = renderInTheme(<ConfirmationModalContent {...defaultProps} onConfirm={onConfirm} />);
 
 		const button = screen.getByTestId(`${PREFIX}confirmation-modal-confirm`);
 		await user.click(button);
@@ -101,7 +106,7 @@ describe("ConfirmationModalContent", () => {
 	it("ignores cancel after confirm (settled guard)", async () => {
 		const onConfirm = vi.fn();
 		const onCancel = vi.fn();
-		const { user } = renderReact(
+		const { user } = renderInTheme(
 			<ConfirmationModalContent {...defaultProps} onConfirm={onConfirm} onCancel={onCancel} />
 		);
 

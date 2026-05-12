@@ -1,4 +1,4 @@
-import { AppContext } from "@real1ty-obsidian-plugins-react";
+import { AppContext, SharedReactThemeProvider } from "@real1ty-obsidian-plugins-react";
 import { render } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { BehaviorSubject } from "rxjs";
@@ -74,14 +74,16 @@ function setup(opts: { initialTab?: string | undefined } = {}) {
 	const user = userEvent.setup();
 	const app = createMockApp();
 	const result = render(
-		<AppContext value={app as any}>
-			<SingleCalendarSettingsReact
-				settingsStore={calendarStore}
-				plugin={plugin}
-				mainSettingsStore={mainStore}
-				{...(opts.initialTab ? { initialTab: opts.initialTab } : {})}
-			/>
-		</AppContext>
+		<SharedReactThemeProvider cssPrefix="prisma-" testIdPrefix="prisma-">
+			<AppContext value={app as any}>
+				<SingleCalendarSettingsReact
+					settingsStore={calendarStore}
+					plugin={plugin}
+					mainSettingsStore={mainStore}
+					{...(opts.initialTab ? { initialTab: opts.initialTab } : {})}
+				/>
+			</AppContext>
+		</SharedReactThemeProvider>
 	);
 	return { calendarStore, mainStore, plugin, user, ...result };
 }

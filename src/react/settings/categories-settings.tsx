@@ -309,7 +309,6 @@ const CategoryChartSection = memo(function CategoryChartSection({
 			<PieChart
 				data={chartData}
 				ChartJS={Chart}
-				cssPrefix="prisma-"
 				title="Category distribution"
 				valueFormatter={(v) => `${v} ${v === 1 ? "event" : "events"}`}
 			/>

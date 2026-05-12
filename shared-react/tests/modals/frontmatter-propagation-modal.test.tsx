@@ -1,11 +1,16 @@
 import { screen } from "@testing-library/react";
+import type { ReactElement } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import type { FrontmatterPropagationModalProps } from "../../src/modals/frontmatter-propagation-modal";
 import { FrontmatterPropagationModalContent } from "../../src/modals/frontmatter-propagation-modal";
-import { renderReact } from "../helpers/render-react";
+import { renderReact, type RenderReactResult } from "../helpers/render-react";
 
 const PREFIX = "test-";
+
+function renderInTheme(ui: ReactElement): RenderReactResult {
+	return renderReact(ui, undefined, undefined, { cssPrefix: PREFIX, testIdPrefix: PREFIX });
+}
 
 function makeDiff(overrides: Partial<FrontmatterPropagationModalProps["diff"]> = {}) {
 	return {
@@ -26,20 +31,20 @@ const defaultProps: FrontmatterPropagationModalProps = {
 
 describe("FrontmatterPropagationModalContent", () => {
 	it("renders source label and target count in default description", () => {
-		renderReact(<FrontmatterPropagationModalContent {...defaultProps} />);
+		renderInTheme(<FrontmatterPropagationModalContent {...defaultProps} />);
 
 		expect(screen.getByText(/Weekly Review/)).toBeInTheDocument();
 		expect(screen.getByText(/5 targets/)).toBeInTheDocument();
 	});
 
 	it("uses singular 'target' when count is 1", () => {
-		renderReact(<FrontmatterPropagationModalContent {...defaultProps} targetCount={1} />);
+		renderInTheme(<FrontmatterPropagationModalContent {...defaultProps} targetCount={1} />);
 
 		expect(screen.getByText(/1 target\?/)).toBeInTheDocument();
 	});
 
 	it("renders custom description when provided", () => {
-		renderReact(
+		renderInTheme(
 			<FrontmatterPropagationModalContent {...defaultProps} description="Apply template changes to all linked notes?" />
 		);
 
@@ -50,7 +55,7 @@ describe("FrontmatterPropagationModalContent", () => {
 		const diff = makeDiff({
 			added: [{ changeType: "added", key: "status", newValue: "done" }],
 		});
-		renderReact(<FrontmatterPropagationModalContent {...defaultProps} diff={diff} />);
+		renderInTheme(<FrontmatterPropagationModalContent {...defaultProps} diff={diff} />);
 
 		expect(screen.getByText("Added properties:")).toBeInTheDocument();
 		expect(screen.getByText(/status/)).toBeInTheDocument();
@@ -60,7 +65,7 @@ describe("FrontmatterPropagationModalContent", () => {
 		const diff = makeDiff({
 			modified: [{ changeType: "modified", key: "priority", oldValue: "low", newValue: "high" }],
 		});
-		renderReact(<FrontmatterPropagationModalContent {...defaultProps} diff={diff} />);
+		renderInTheme(<FrontmatterPropagationModalContent {...defaultProps} diff={diff} />);
 
 		expect(screen.getByText("Modified properties:")).toBeInTheDocument();
 		expect(screen.getByText(/priority/)).toBeInTheDocument();
@@ -70,14 +75,14 @@ describe("FrontmatterPropagationModalContent", () => {
 		const diff = makeDiff({
 			deleted: [{ changeType: "deleted", key: "tags", oldValue: ["work"] }],
 		});
-		renderReact(<FrontmatterPropagationModalContent {...defaultProps} diff={diff} />);
+		renderInTheme(<FrontmatterPropagationModalContent {...defaultProps} diff={diff} />);
 
 		expect(screen.getByText("Deleted properties:")).toBeInTheDocument();
 		expect(screen.getByText(/tags/)).toBeInTheDocument();
 	});
 
 	it("hides empty diff sections", () => {
-		renderReact(<FrontmatterPropagationModalContent {...defaultProps} diff={makeDiff()} />);
+		renderInTheme(<FrontmatterPropagationModalContent {...defaultProps} diff={makeDiff()} />);
 
 		expect(screen.queryByText("Added properties:")).not.toBeInTheDocument();
 		expect(screen.queryByText("Modified properties:")).not.toBeInTheDocument();
@@ -90,7 +95,7 @@ describe("FrontmatterPropagationModalContent", () => {
 			modified: [{ changeType: "modified", key: "b", oldValue: 1, newValue: 2 }],
 			deleted: [{ changeType: "deleted", key: "c", oldValue: 3 }],
 		});
-		renderReact(<FrontmatterPropagationModalContent {...defaultProps} diff={diff} />);
+		renderInTheme(<FrontmatterPropagationModalContent {...defaultProps} diff={diff} />);
 
 		expect(screen.getByText("Added properties:")).toBeInTheDocument();
 		expect(screen.getByText("Modified properties:")).toBeInTheDocument();
@@ -99,7 +104,7 @@ describe("FrontmatterPropagationModalContent", () => {
 
 	it("fires onConfirm when confirm button clicked", async () => {
 		const onConfirm = vi.fn();
-		const { user } = renderReact(<FrontmatterPropagationModalContent {...defaultProps} onConfirm={onConfirm} />);
+		const { user } = renderInTheme(<FrontmatterPropagationModalContent {...defaultProps} onConfirm={onConfirm} />);
 
 		await user.click(screen.getByTestId(`${PREFIX}frontmatter-propagation-confirm`));
 		expect(onConfirm).toHaveBeenCalledOnce();
@@ -107,20 +112,20 @@ describe("FrontmatterPropagationModalContent", () => {
 
 	it("fires onCancel when cancel button clicked", async () => {
 		const onCancel = vi.fn();
-		const { user } = renderReact(<FrontmatterPropagationModalContent {...defaultProps} onCancel={onCancel} />);
+		const { user } = renderInTheme(<FrontmatterPropagationModalContent {...defaultProps} onCancel={onCancel} />);
 
 		await user.click(screen.getByTestId(`${PREFIX}frontmatter-propagation-cancel`));
 		expect(onCancel).toHaveBeenCalledOnce();
 	});
 
 	it("confirm button has primary variant", () => {
-		renderReact(<FrontmatterPropagationModalContent {...defaultProps} />);
+		renderInTheme(<FrontmatterPropagationModalContent {...defaultProps} />);
 
 		expect(screen.getByTestId(`${PREFIX}frontmatter-propagation-confirm`)).toHaveClass("mod-cta");
 	});
 
 	it("uses testIdPrefix for container", () => {
-		renderReact(<FrontmatterPropagationModalContent {...defaultProps} />);
+		renderInTheme(<FrontmatterPropagationModalContent {...defaultProps} />);
 
 		expect(screen.getByTestId(`${PREFIX}frontmatter-propagation-modal`)).toBeInTheDocument();
 	});
@@ -130,7 +135,10 @@ describe("FrontmatterPropagationModalContent", () => {
 			added: [{ changeType: "added", key: "x", newValue: "y" }],
 		});
 		const { container } = renderReact(
-			<FrontmatterPropagationModalContent {...defaultProps} diff={diff} cssPrefix="custom" />
+			<FrontmatterPropagationModalContent {...defaultProps} diff={diff} />,
+			undefined,
+			undefined,
+			{ cssPrefix: "custom-", testIdPrefix: "custom-" }
 		);
 
 		expect(container.querySelector(".custom-frontmatter-changes")).toBeInTheDocument();
@@ -138,13 +146,13 @@ describe("FrontmatterPropagationModalContent", () => {
 	});
 
 	it("confirm button says 'Yes, propagate'", () => {
-		renderReact(<FrontmatterPropagationModalContent {...defaultProps} />);
+		renderInTheme(<FrontmatterPropagationModalContent {...defaultProps} />);
 
 		expect(screen.getByTestId(`${PREFIX}frontmatter-propagation-confirm`)).toHaveTextContent("Yes, propagate");
 	});
 
 	it("cancel button says 'No, skip'", () => {
-		renderReact(<FrontmatterPropagationModalContent {...defaultProps} />);
+		renderInTheme(<FrontmatterPropagationModalContent {...defaultProps} />);
 
 		expect(screen.getByTestId(`${PREFIX}frontmatter-propagation-cancel`)).toHaveTextContent("No, skip");
 	});

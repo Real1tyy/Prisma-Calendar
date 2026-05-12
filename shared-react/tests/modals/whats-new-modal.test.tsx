@@ -18,9 +18,11 @@ vi.mock("@real1ty-obsidian-plugins", async (importOriginal) => {
 
 const mockedGetChangelogSince = vi.mocked(getChangelogSince);
 
+const DEFAULT_PREFIX = "test-";
+
 function makeConfig(overrides: Partial<WhatsNewModalConfig> = {}): WhatsNewModalConfig {
 	return {
-		cssPrefix: "test",
+		cssPrefix: DEFAULT_PREFIX,
 		pluginName: "Test Plugin",
 		changelogContent: "## 1.0.0\n- Initial release",
 		links: {
@@ -36,47 +38,34 @@ function makeConfig(overrides: Partial<WhatsNewModalConfig> = {}): WhatsNewModal
 
 const mockPlugin = { app: {} } as unknown as Plugin;
 
+function renderWhatsNew(config: WhatsNewModalConfig) {
+	return renderWithProviders(
+		<WhatsNewContent config={config} plugin={mockPlugin} fromVersion="0.9.0" toVersion="1.0.0" close={vi.fn()} />,
+		{ cssPrefix: config.cssPrefix, testIdPrefix: config.cssPrefix }
+	);
+}
+
 describe("WhatsNewContent", () => {
 	it("renders subtitle with fromVersion", () => {
-		renderWithProviders(
-			<WhatsNewContent
-				config={makeConfig()}
-				plugin={mockPlugin}
-				fromVersion="0.9.0"
-				toVersion="1.0.0"
-				close={vi.fn()}
-			/>
-		);
-
+		renderWhatsNew(makeConfig());
 		expect(screen.getByText("Changes since v0.9.0")).toBeInTheDocument();
 	});
 
 	it("renders default support section when none provided", () => {
-		renderWithProviders(
-			<WhatsNewContent
-				config={makeConfig()}
-				plugin={mockPlugin}
-				fromVersion="0.9.0"
-				toVersion="1.0.0"
-				close={vi.fn()}
-			/>
-		);
-
+		renderWhatsNew(makeConfig());
 		expect(screen.getByText("Support the development of this plugin")).toBeInTheDocument();
 		expect(screen.getByText("Support my work")).toBeInTheDocument();
 	});
 
 	it("renders custom support section when provided", () => {
-		const config = makeConfig({
-			supportSection: {
-				heading: "Help us grow",
-				description: "Your support matters.",
-				cta: { text: "Donate now", href: "https://example.com/donate" },
-			},
-		});
-
-		renderWithProviders(
-			<WhatsNewContent config={config} plugin={mockPlugin} fromVersion="0.9.0" toVersion="1.0.0" close={vi.fn()} />
+		renderWhatsNew(
+			makeConfig({
+				supportSection: {
+					heading: "Help us grow",
+					description: "Your support matters.",
+					cta: { text: "Donate now", href: "https://example.com/donate" },
+				},
+			})
 		);
 
 		expect(screen.getByText("Help us grow")).toBeInTheDocument();
@@ -85,12 +74,10 @@ describe("WhatsNewContent", () => {
 	});
 
 	it("renders custom support section without CTA when omitted", () => {
-		const config = makeConfig({
-			supportSection: { heading: "Thanks!", description: "We appreciate you." },
-		});
-
-		renderWithProviders(
-			<WhatsNewContent config={config} plugin={mockPlugin} fromVersion="0.9.0" toVersion="1.0.0" close={vi.fn()} />
+		renderWhatsNew(
+			makeConfig({
+				supportSection: { heading: "Thanks!", description: "We appreciate you." },
+			})
 		);
 
 		expect(screen.getByText("Thanks!")).toBeInTheDocument();
@@ -98,18 +85,16 @@ describe("WhatsNewContent", () => {
 	});
 
 	it("renders all footer buttons", () => {
-		const config = makeConfig({
-			links: {
-				support: "https://example.com/support",
-				changelog: "https://example.com/changelog",
-				documentation: "https://example.com/docs",
-				github: "https://example.com/github",
-				productPage: "https://example.com/product",
-			},
-		});
-
-		renderWithProviders(
-			<WhatsNewContent config={config} plugin={mockPlugin} fromVersion="0.9.0" toVersion="1.0.0" close={vi.fn()} />
+		renderWhatsNew(
+			makeConfig({
+				links: {
+					support: "https://example.com/support",
+					changelog: "https://example.com/changelog",
+					documentation: "https://example.com/docs",
+					github: "https://example.com/github",
+					productPage: "https://example.com/product",
+				},
+			})
 		);
 
 		expect(screen.getByText("GitHub")).toBeInTheDocument();
@@ -121,78 +106,34 @@ describe("WhatsNewContent", () => {
 	});
 
 	it("hides Product Page button when link not provided", () => {
-		renderWithProviders(
-			<WhatsNewContent
-				config={makeConfig()}
-				plugin={mockPlugin}
-				fromVersion="0.9.0"
-				toVersion="1.0.0"
-				close={vi.fn()}
-			/>
-		);
-
+		renderWhatsNew(makeConfig());
 		expect(screen.queryByText("Product Page")).not.toBeInTheDocument();
 	});
 
 	it("shows empty message when no changelog sections found", () => {
 		mockedGetChangelogSince.mockReturnValue([]);
-
-		renderWithProviders(
-			<WhatsNewContent
-				config={makeConfig()}
-				plugin={mockPlugin}
-				fromVersion="0.9.0"
-				toVersion="1.0.0"
-				close={vi.fn()}
-			/>
-		);
-
+		renderWhatsNew(makeConfig());
 		expect(screen.getByText("No significant changes found in this update.")).toBeInTheDocument();
 	});
 
 	it("renders changelog content div when sections exist", () => {
 		mockedGetChangelogSince.mockReturnValue([{ heading: "## 1.0.0", content: "- Feature" }]);
 
-		const { container } = renderWithProviders(
-			<WhatsNewContent
-				config={makeConfig()}
-				plugin={mockPlugin}
-				fromVersion="0.9.0"
-				toVersion="1.0.0"
-				close={vi.fn()}
-			/>
-		);
+		const { container } = renderWhatsNew(makeConfig());
 
 		expect(container.querySelector(".test-whats-new-content")).toBeInTheDocument();
 		expect(screen.queryByText("No significant changes found in this update.")).not.toBeInTheDocument();
 	});
 
 	it("uses cssPrefix for class names", () => {
-		const { container } = renderWithProviders(
-			<WhatsNewContent
-				config={makeConfig({ cssPrefix: "myprefix" })}
-				plugin={mockPlugin}
-				fromVersion="0.9.0"
-				toVersion="1.0.0"
-				close={vi.fn()}
-			/>
-		);
+		const { container } = renderWhatsNew(makeConfig({ cssPrefix: "myprefix-" }));
 
 		expect(container.querySelector(".myprefix-whats-new-subtitle")).toBeInTheDocument();
 		expect(container.querySelector(".myprefix-whats-new-support")).toBeInTheDocument();
 	});
 
 	it("uses cssPrefix for testId", () => {
-		renderWithProviders(
-			<WhatsNewContent
-				config={makeConfig({ cssPrefix: "myprefix" })}
-				plugin={mockPlugin}
-				fromVersion="0.9.0"
-				toVersion="1.0.0"
-				close={vi.fn()}
-			/>
-		);
-
+		renderWhatsNew(makeConfig({ cssPrefix: "myprefix-" }));
 		expect(screen.getByTestId("myprefix-whats-new-modal")).toBeInTheDocument();
 	});
 });

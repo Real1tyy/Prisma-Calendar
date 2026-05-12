@@ -8,6 +8,7 @@ import { ObsidianIcon } from "../../components/obsidian-icon";
 import { Toggle } from "../../components/setting-controls";
 import { SettingItem } from "../../components/setting-item";
 import { useApp } from "../../contexts/app-context";
+import { SharedReactThemeProvider } from "../../contexts/theme-context";
 import { showReactIconPicker } from "../../modals/icon-picker-modal";
 import { cx } from "../../utils/cx";
 import type { GroupTabDefinition, TabDefinition, TabEntry } from "./types";
@@ -70,7 +71,12 @@ export const TabManagerModal = memo(function TabManagerModal({
 	});
 
 	if (!contentEl) return null;
-	return createPortal(<TabManagerContent cssPrefix={cssPrefix} state={state} actions={actions} />, contentEl);
+	return createPortal(
+		<SharedReactThemeProvider cssPrefix={cssPrefix} testIdPrefix={cssPrefix}>
+			<TabManagerContent cssPrefix={cssPrefix} state={state} actions={actions} />
+		</SharedReactThemeProvider>,
+		contentEl
+	);
 });
 
 export interface TabManagerContentProps {
@@ -345,7 +351,7 @@ const EditableRow = memo(function EditableRow({ row, actions }: EditableRowProps
 				</button>
 			</div>
 
-			{isExpanded && <ManagerEditForm controller={editController} cssPrefix={cssPrefix} formPrefix={ROW_PREFIX} />}
+			{isExpanded && <ManagerEditForm controller={editController} formPrefix={ROW_PREFIX} />}
 		</div>
 	);
 });

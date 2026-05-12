@@ -1,11 +1,16 @@
 import { act, screen } from "@testing-library/react";
 import type { RefObject } from "react";
+import type { ReactElement } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { ProgressContent } from "../../src/modals/progress-modal";
-import { renderReact } from "../helpers/render-react";
+import { renderReact, type RenderReactResult } from "../helpers/render-react";
 
 const PREFIX = "test-";
+
+function renderInTheme(ui: ReactElement): RenderReactResult {
+	return renderReact(ui, undefined, undefined, { cssPrefix: PREFIX, testIdPrefix: PREFIX });
+}
 
 type StateRef = RefObject<{
 	update: (current: number, detail?: string) => void;
@@ -21,9 +26,8 @@ function renderProgress(overrides: Partial<React.ComponentProps<typeof ProgressC
 	const stateRef = overrides.stateRef ?? createStateRef();
 	const close = overrides.close ?? vi.fn();
 
-	const result = renderReact(
+	const result = renderInTheme(
 		<ProgressContent
-			cssPrefix={PREFIX}
 			title="Processing..."
 			total={10}
 			statusTemplate="Processing {current} of {total}..."
@@ -159,8 +163,23 @@ describe("ProgressContent", () => {
 		expect(screen.getByTestId(`${PREFIX}progress-details`)).toHaveTextContent("Warming up...");
 	});
 
-	it("uses cssPrefix for testIds", () => {
-		renderProgress({ cssPrefix: "custom-" });
+	it("uses the active theme prefix for testIds", () => {
+		const stateRef = createStateRef();
+		renderReact(
+			<ProgressContent
+				title="Processing..."
+				total={10}
+				statusTemplate="Processing {current} of {total}..."
+				initialDetails="Starting..."
+				stateRef={stateRef}
+				close={vi.fn()}
+				successCloseDelay={2000}
+				errorCloseDelay={3000}
+			/>,
+			undefined,
+			undefined,
+			{ cssPrefix: "custom-", testIdPrefix: "custom-" }
+		);
 
 		expect(screen.getByTestId("custom-progress-modal")).toBeInTheDocument();
 		expect(screen.getByTestId("custom-progress-status")).toBeInTheDocument();

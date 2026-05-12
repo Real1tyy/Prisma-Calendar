@@ -9,7 +9,7 @@ import { testIdAttr } from "../utils/test-id";
 interface ToggleProps {
 	value: boolean;
 	onChange: (value: boolean) => void;
-	testId?: string;
+	testId?: string | undefined;
 }
 
 export const Toggle = memo(function Toggle({ value, onChange, testId }: ToggleProps) {
@@ -33,7 +33,7 @@ interface TextInputProps {
 	onChange: (value: string) => void;
 	/** Override the default 300ms commit delay. Pass `0` to commit synchronously. */
 	debounceMs?: number;
-	testId?: string;
+	testId?: string | undefined;
 }
 
 export const TextInput = memo(function TextInput({ value, placeholder, onChange, debounceMs, testId }: TextInputProps) {
@@ -62,7 +62,7 @@ interface DropdownProps {
 	value: string;
 	options: Record<string, string>;
 	onChange: (value: string) => void;
-	testId?: string;
+	testId?: string | undefined;
 }
 
 export const Dropdown = memo(function Dropdown({ value, options, onChange, testId }: DropdownProps) {
@@ -85,7 +85,7 @@ interface NumberInputProps {
 	onChange: (value: number) => void;
 	/** Override the default 300ms commit delay. Pass `0` to commit synchronously. */
 	debounceMs?: number;
-	testId?: string;
+	testId?: string | undefined;
 }
 
 export const NumberInput = memo(function NumberInput({
@@ -131,7 +131,7 @@ interface TextareaInputProps {
 	onChange: (value: string) => void;
 	/** Override the default 300ms commit delay. Pass `0` to commit synchronously. */
 	debounceMs?: number;
-	testId?: string;
+	testId?: string | undefined;
 }
 
 export const TextareaInput = memo(function TextareaInput({
@@ -167,7 +167,7 @@ export const TextareaInput = memo(function TextareaInput({
 interface DateInputProps {
 	value: string;
 	onChange: (value: string) => void;
-	testId?: string;
+	testId?: string | undefined;
 }
 
 export const DateInput = memo(function DateInput({ value, onChange, testId }: DateInputProps) {
@@ -185,7 +185,7 @@ export const DateInput = memo(function DateInput({ value, onChange, testId }: Da
 interface DatetimeLocalInputProps {
 	value: string;
 	onChange: (value: string) => void;
-	testId?: string;
+	testId?: string | undefined;
 }
 
 export const DatetimeLocalInput = memo(function DatetimeLocalInput({
@@ -209,7 +209,7 @@ interface ColorInputProps {
 	onChange: (value: string) => void;
 	/** Override the default 300ms commit delay. Pass `0` to commit synchronously. */
 	debounceMs?: number;
-	testId?: string;
+	testId?: string | undefined;
 }
 
 export const ColorInput = memo(function ColorInput({ value, onChange, debounceMs, testId }: ColorInputProps) {
@@ -255,7 +255,7 @@ interface SliderProps {
 	onChange: (value: number) => void;
 	/** Override the default 300ms commit delay. Pass `0` to commit synchronously. */
 	debounceMs?: number;
-	testId?: string;
+	testId?: string | undefined;
 }
 
 export const Slider = memo(function Slider({ value, min, max, step, onChange, debounceMs, testId }: SliderProps) {

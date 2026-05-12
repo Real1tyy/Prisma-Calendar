@@ -190,7 +190,6 @@ const ActionRow = memo(function ActionRow({ cssPrefix, model, actions }: ActionR
 
 			{isExpanded && (
 				<EditFormSlot
-					cssPrefix={cssPrefix}
 					action={action}
 					displayLabel={displayLabel}
 					displayIcon={displayIcon ?? action.icon ?? ""}
@@ -206,7 +205,6 @@ const ActionRow = memo(function ActionRow({ cssPrefix, model, actions }: ActionR
 });
 
 interface EditFormSlotProps {
-	cssPrefix: string;
 	action: HeaderActionDefinition;
 	displayLabel: string;
 	displayIcon: string;
@@ -218,7 +216,6 @@ interface EditFormSlotProps {
 }
 
 function EditFormSlot({
-	cssPrefix,
 	action,
 	displayLabel,
 	displayIcon,
@@ -245,7 +242,7 @@ function EditFormSlot({
 		},
 	};
 
-	return <ManagerEditForm controller={controller} cssPrefix={cssPrefix} formPrefix={ROW_PREFIX} />;
+	return <ManagerEditForm controller={controller} formPrefix={ROW_PREFIX} />;
 }
 
 function matchesQuery(action: HeaderActionDefinition, snapshot: PageHeaderSnapshot, needle: string): boolean {

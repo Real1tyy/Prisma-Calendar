@@ -27,7 +27,7 @@ export interface FilterInputProps {
 	className?: string;
 	debounceMs?: number;
 	autoFocus?: boolean;
-	testId?: string;
+	testId?: string | undefined;
 	onEscape?: () => void;
 }
 

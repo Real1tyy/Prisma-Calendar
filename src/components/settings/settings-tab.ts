@@ -2,6 +2,7 @@ import { renderReactInline } from "@real1ty-obsidian-plugins-react";
 import { type App, PluginSettingTab } from "obsidian";
 import { createElement } from "react";
 
+import { CSS_PREFIX } from "../../constants";
 import type CustomCalendarPlugin from "../../main";
 import { SettingsRoot } from "../../react/settings/settings-root";
 
@@ -23,7 +24,10 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 	override display(): void {
 		this.unmount?.();
 		this.containerEl.empty();
-		this.unmount = renderReactInline(this.containerEl, createElement(SettingsRoot, { plugin: this.plugin }), this.app);
+		this.unmount = renderReactInline(this.containerEl, createElement(SettingsRoot, { plugin: this.plugin }), this.app, {
+			cssPrefix: CSS_PREFIX,
+			testIdPrefix: CSS_PREFIX,
+		});
 	}
 
 	override hide(): void {

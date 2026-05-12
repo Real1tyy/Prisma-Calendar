@@ -3,6 +3,7 @@ import { renderReactInline } from "@real1ty-obsidian-plugins-react";
 import type { WorkspaceLeaf } from "obsidian";
 import { createElement } from "react";
 
+import { CSS_PREFIX } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type CustomCalendarPlugin from "../../main";
 import { PrismaViewApp, type PrismaViewRef } from "./prisma-view-app";
@@ -34,7 +35,8 @@ export function registerPrismaReactView(
 					el,
 					viewRef: ref,
 				}),
-				ctx.app
+				ctx.app,
+				{ cssPrefix: CSS_PREFIX, testIdPrefix: CSS_PREFIX }
 			);
 		},
 		cleanup: () => {

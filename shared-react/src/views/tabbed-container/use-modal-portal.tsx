@@ -8,7 +8,7 @@ export interface UseModalPortalOptions {
 	open: boolean;
 	title?: string;
 	cls?: string;
-	testId?: string;
+	testId?: string | undefined;
 	onClose: () => void;
 }
 

@@ -1,6 +1,7 @@
 import { getLicenseStatusText, type LicenseManager, type LicenseStatus } from "@real1ty-obsidian-plugins";
 import { memo, type ReactNode, useCallback, useState } from "react";
 
+import { useCssPrefix, useScopedCls } from "../contexts/theme-context";
 import { useExternalSnapshot } from "../hooks/use-external-snapshot";
 import { useInjectedStyles } from "../hooks/use-injected-styles";
 import { buildLicenseStyles } from "./license-section.styles";
@@ -11,16 +12,16 @@ interface LicenseSectionProps {
 	licenseManager: LicenseManager;
 	currentSecretName: string;
 	onSecretChange: (value: string) => Promise<void>;
-	cssPrefix: string;
 	accountUrl?: string;
 }
 
-function StatusDescription({ status, cssPrefix }: { status: LicenseStatus; cssPrefix: string }): ReactNode {
+function StatusDescription({ status }: { status: LicenseStatus }): ReactNode {
+	const cls = useScopedCls("license");
 	return (
 		<>
 			{getLicenseStatusText(status)}
 			{status.state === "valid" && (
-				<span className={`${cssPrefix}license-activations-badge`}>
+				<span className={cls("activations-badge")}>
 					{status.activationsCurrent}/{status.activationsLimit} devices
 				</span>
 			)}
@@ -32,9 +33,9 @@ export const LicenseSection = memo(function LicenseSection({
 	licenseManager,
 	currentSecretName,
 	onSecretChange,
-	cssPrefix,
 	accountUrl,
 }: LicenseSectionProps) {
+	const cssPrefix = useCssPrefix();
 	useInjectedStyles(`${cssPrefix}license-styles`, buildLicenseStyles(cssPrefix));
 	const status = useExternalSnapshot(licenseManager.status$);
 	const [verifying, setVerifying] = useState(false);
@@ -65,7 +66,7 @@ export const LicenseSection = memo(function LicenseSection({
 			<SettingItem name="License key" description={keyDescription}>
 				<SecretField value={currentSecretName} onChange={(v) => void onSecretChange(v)} />
 			</SettingItem>
-			<SettingItem name="License status" description={<StatusDescription status={status} cssPrefix={cssPrefix} />}>
+			<SettingItem name="License status" description={<StatusDescription status={status} />}>
 				<button type="button" className="mod-cta" disabled={verifying} onClick={() => void handleVerify()}>
 					{verifying ? "Verifying..." : "Verify"}
 				</button>

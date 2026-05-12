@@ -9,6 +9,7 @@ import { MarkdownRenderer } from "obsidian";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 import { useApp } from "../contexts/app-context";
+import { useScoped } from "../contexts/theme-context";
 import { useInjectedStyles } from "../hooks/use-injected-styles";
 import { showReactModal } from "../show-react-modal";
 import { buildWhatsNewStyles } from "./whats-new-modal.styles";
@@ -21,6 +22,7 @@ export const DEFAULT_WHATS_NEW_LINKS = {
 } as const;
 
 export interface WhatsNewModalConfig {
+	/** Trailing-dash convention, e.g. `"prisma-"`. Drives the modal class, theme provider, and stylesheet selectors. */
 	cssPrefix: string;
 	pluginName: string;
 	changelogContent: string;
@@ -100,8 +102,8 @@ export const WhatsNewContent = memo(function WhatsNewContent({
 	const [supportCollapsed, setSupportCollapsed] = useState(false);
 	const [renderedCount, setRenderedCount] = useState(0);
 	const renderingRef = useRef(false);
-	useInjectedStyles(`${config.cssPrefix}-whats-new-styles`, buildWhatsNewStyles(config.cssPrefix));
-	const cls = (suffix: string) => `${config.cssPrefix}-${suffix}`;
+	const { cls, tid, cssPrefix } = useScoped("whats-new");
+	useInjectedStyles(`${cssPrefix}whats-new-styles`, buildWhatsNewStyles(cssPrefix));
 
 	const isFullChangelog = fromVersion === "0.0.0";
 	const changelogSections = getChangelogSince(config.changelogContent, fromVersion, toVersion);
@@ -145,18 +147,16 @@ export const WhatsNewContent = memo(function WhatsNewContent({
 	const headingText = config.supportSection ? config.supportSection.heading : "Support the development of this plugin";
 
 	return (
-		<div data-testid={`${config.cssPrefix}-whats-new-modal`}>
-			{!isFullChangelog && <p className={cls("whats-new-subtitle")}>Changes since v{fromVersion}</p>}
+		<div data-testid={tid("modal")}>
+			{!isFullChangelog && <p className={cls("subtitle")}>Changes since v{fromVersion}</p>}
 
-			<div className={cls("whats-new-support")}>
+			<div className={cls("support")}>
 				{/* biome-ignore lint/a11y/useKeyboardHandler: collapsible header */}
-				<div className={cls("whats-new-support-header")} onClick={toggleSupport} role="button" tabIndex={0}>
+				<div className={cls("support-header")} onClick={toggleSupport} role="button" tabIndex={0}>
 					<h3>{headingText}</h3>
-					<span className={cls("whats-new-support-chevron")}>{supportCollapsed ? "▶" : "▼"}</span>
+					<span className={cls("support-chevron")}>{supportCollapsed ? "▶" : "▼"}</span>
 				</div>
-				<div
-					className={`${cls("whats-new-support-body")}${supportCollapsed ? ` ${cls("whats-new-support-collapsed")}` : ""}`}
-				>
+				<div className={`${cls("support-body")}${supportCollapsed ? ` ${cls("support-collapsed")}` : ""}`}>
 					{config.supportSection ? (
 						<>
 							<p>{config.supportSection.description}</p>
@@ -187,20 +187,20 @@ export const WhatsNewContent = memo(function WhatsNewContent({
 			</div>
 
 			{changelogSections.length === 0 ? (
-				<p className={cls("whats-new-empty")}>No significant changes found in this update.</p>
+				<p className={cls("empty")}>No significant changes found in this update.</p>
 			) : (
-				<div className={cls("whats-new-content")}>
+				<div className={cls("content")}>
 					<div ref={changelogRef} />
 					{remaining > 0 && renderedCount > 0 && (
-						<button type="button" className={cls("whats-new-load-more")} onClick={handleLoadMore}>
+						<button type="button" className={cls("load-more")} onClick={handleLoadMore}>
 							Load more ({remaining} versions remaining)
 						</button>
 					)}
 				</div>
 			)}
 
-			<div className={cls("whats-new-sticky-footer")}>
-				<div className={cls("whats-new-buttons")}>
+			<div className={cls("sticky-footer")}>
+				<div className={cls("buttons")}>
 					{config.links.productPage && <FooterButton label="Product Page" href={config.links.productPage} />}
 					<FooterButton label="GitHub" href={config.links.github} />
 					<FooterButton label="Changelog" href={config.links.changelog} />
@@ -223,7 +223,9 @@ export function showWhatsNewReactModal(
 	const isFullChangelog = fromVersion === "0.0.0";
 	showReactModal({
 		app,
-		cls: `${config.cssPrefix}-whats-new-modal`,
+		cls: `${config.cssPrefix}whats-new-modal`,
+		cssPrefix: config.cssPrefix,
+		testIdPrefix: config.cssPrefix,
 		title: isFullChangelog ? `${config.pluginName} Changelog` : `${config.pluginName} updated to v${toVersion}`,
 		render: (close) => (
 			<WhatsNewContent config={config} plugin={plugin} fromVersion={fromVersion} toVersion={toVersion} close={close} />

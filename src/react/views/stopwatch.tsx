@@ -3,8 +3,6 @@ import { CollapsibleSection } from "@real1ty-obsidian-plugins-react";
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useReducer, useRef, useState } from "react";
 import { z } from "zod";
 
-import { CSS_PREFIX } from "../../constants";
-
 const STOPWATCH_STATES = ["idle", "running", "paused", "stopped"] as const;
 
 export type StopwatchState = (typeof STOPWATCH_STATES)[number];
@@ -274,7 +272,6 @@ export const Stopwatch = forwardRef<StopwatchHandle, StopwatchCallbacks>(functio
 	return (
 		<div className={cls("stopwatch-container")}>
 			<CollapsibleSection
-				cssPrefix={CSS_PREFIX}
 				label="Time tracker"
 				testIdSlug="time-tracker"
 				collapsed={collapsed}

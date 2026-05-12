@@ -2,6 +2,7 @@ import type { App } from "obsidian";
 import type { RefObject } from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
+import { useScoped } from "../contexts/theme-context";
 import { useInjectedStyles } from "../hooks/use-injected-styles";
 import { showReactModal } from "../show-react-modal";
 import { cx } from "../utils/cx";
@@ -21,7 +22,6 @@ interface ProgressState {
 }
 
 interface ProgressContentProps {
-	cssPrefix: string;
 	title: string;
 	total: number;
 	statusTemplate: string;
@@ -37,7 +37,6 @@ interface ProgressContentProps {
 }
 
 export const ProgressContent = memo(function ProgressContent({
-	cssPrefix,
 	title,
 	total,
 	statusTemplate,
@@ -47,6 +46,7 @@ export const ProgressContent = memo(function ProgressContent({
 	successCloseDelay,
 	errorCloseDelay,
 }: ProgressContentProps) {
+	const { cls, tid, cssPrefix } = useScoped("progress");
 	useInjectedStyles(`${cssPrefix}progress-modal-styles`, buildProgressStyles(cssPrefix));
 
 	const safeTotal = Math.max(total, 1);
@@ -118,21 +118,21 @@ export const ProgressContent = memo(function ProgressContent({
 
 	const percentage = Math.round((state.current / safeTotal) * 100);
 	const barClass = cx(
-		`${cssPrefix}progress-bar`,
-		state.status === "complete" && `${cssPrefix}progress-complete`,
-		state.status === "error" && `${cssPrefix}progress-error`
+		cls("bar"),
+		state.status === "complete" && cls("complete"),
+		state.status === "error" && cls("error")
 	);
 
 	return (
-		<div className={`${cssPrefix}progress-modal`} data-testid={`${cssPrefix}progress-modal`}>
+		<div className={cls("modal")} data-testid={tid("modal")}>
 			<h2>{title}</h2>
-			<div className={`${cssPrefix}progress-status`} data-testid={`${cssPrefix}progress-status`}>
+			<div className={cls("status")} data-testid={tid("status")}>
 				{state.statusText}
 			</div>
-			<div className={`${cssPrefix}progress-container`}>
-				<div className={barClass} style={{ width: `${percentage}%` }} data-testid={`${cssPrefix}progress-bar`} />
+			<div className={cls("container")}>
+				<div className={barClass} style={{ width: `${percentage}%` }} data-testid={tid("bar")} />
 			</div>
-			<div className={`${cssPrefix}progress-details`} data-testid={`${cssPrefix}progress-details`}>
+			<div className={cls("details")} data-testid={tid("details")}>
 				{state.detail}
 			</div>
 		</div>
@@ -179,11 +179,12 @@ export function openProgressModal(app: App, config: ProgressModalConfig): Progre
 	showReactModal({
 		app,
 		cls: `${cssPrefix}progress-modal-wrapper`,
+		cssPrefix,
+		testIdPrefix: cssPrefix,
 		render: (close) => {
 			closeModal = close;
 			return (
 				<ProgressContent
-					cssPrefix={cssPrefix}
 					title={title}
 					total={total}
 					statusTemplate={statusTemplate}

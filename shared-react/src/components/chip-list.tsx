@@ -2,6 +2,7 @@ import { buildChipListStyles } from "@real1ty-obsidian-plugins";
 import type { ReactNode } from "react";
 import { memo, useCallback } from "react";
 
+import { useScoped } from "../contexts/theme-context";
 import { useInjectedStyles } from "../hooks/use-injected-styles";
 import { Chip } from "./chip";
 import { EmptyHint } from "./empty-hint";
@@ -9,7 +10,6 @@ import { EmptyHint } from "./empty-hint";
 export interface ChipListProps {
 	value: string[];
 	onChange: (next: string[]) => void;
-	cssPrefix: string;
 	emptyText?: string;
 	getDisplayName?: (item: string) => string;
 	getTooltip?: (item: string) => string;
@@ -30,13 +30,13 @@ const DEFAULT_EMPTY_TEXT = "No items";
 export const ChipList = memo(function ChipList({
 	value,
 	onChange,
-	cssPrefix,
 	emptyText = DEFAULT_EMPTY_TEXT,
 	getDisplayName,
 	getTooltip,
 	renderPrefix,
 	onItemClick,
 }: ChipListProps) {
+	const { cls, cssPrefix } = useScoped("chip");
 	useInjectedStyles(`${cssPrefix}chip-list-styles`, buildChipListStyles(cssPrefix));
 
 	const handleRemove = useCallback(
@@ -48,14 +48,14 @@ export const ChipList = memo(function ChipList({
 
 	if (value.length === 0) {
 		return (
-			<div className={`${cssPrefix}chip-list`}>
-				<EmptyHint text={emptyText} className={`${cssPrefix}chip-empty`} />
+			<div className={cls("list")}>
+				<EmptyHint text={emptyText} className={cls("empty")} />
 			</div>
 		);
 	}
 
 	return (
-		<div className={`${cssPrefix}chip-list`}>
+		<div className={cls("list")}>
 			{value.map((item) => (
 				<Chip
 					key={item}
@@ -65,7 +65,6 @@ export const ChipList = memo(function ChipList({
 					prefix={renderPrefix?.(item)}
 					onClick={onItemClick}
 					onRemove={handleRemove}
-					cssPrefix={cssPrefix}
 				/>
 			))}
 		</div>

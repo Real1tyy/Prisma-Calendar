@@ -1,6 +1,7 @@
 import type { KeyboardEvent, ReactNode } from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
+import { useCls, useScoped } from "../contexts/theme-context";
 import { useInjectedStyles } from "../hooks/use-injected-styles";
 import { cx } from "../utils/cx";
 import { buildSettingsNavStyles } from "./settings-nav.styles";
@@ -25,7 +26,6 @@ export interface SettingsNavProps {
 	searchValue?: string;
 	onSearchChange?: (value: string) => void;
 	footerLinks?: SettingsFooterLink[];
-	cssPrefix?: string;
 	children?: ReactNode;
 }
 
@@ -36,9 +36,10 @@ export const SettingsNav = memo(function SettingsNav({
 	searchValue = "",
 	onSearchChange,
 	footerLinks,
-	cssPrefix = "",
 	children,
 }: SettingsNavProps) {
+	const cls = useCls();
+	const { cls: settingsCls, tid, cssPrefix } = useScoped("settings");
 	useInjectedStyles(`${cssPrefix}settings-nav-styles`, buildSettingsNavStyles(cssPrefix));
 	const [focusedIndex, setFocusedIndex] = useState(-1);
 	const [noResults, setNoResults] = useState(false);
@@ -51,7 +52,8 @@ export const SettingsNav = memo(function SettingsNav({
 		const root = rootRef.current;
 		if (!root) return;
 
-		const HIDDEN = `${cssPrefix}settings-search-hidden`;
+		const HIDDEN = settingsCls("search-hidden");
+		const FOOTER = settingsCls("footer");
 
 		if (!isSearching) {
 			root.querySelectorAll(`.${HIDDEN}`).forEach((el) => el.classList.remove(HIDDEN));
@@ -61,13 +63,13 @@ export const SettingsNav = memo(function SettingsNav({
 
 		const q = searchValue.trim().toLowerCase();
 		let visible = 0;
-		root.querySelectorAll<HTMLElement>(`.setting-item:not(.${cssPrefix}settings-footer)`).forEach((el) => {
+		root.querySelectorAll<HTMLElement>(`.setting-item:not(.${FOOTER})`).forEach((el) => {
 			const match = (el.textContent ?? "").toLowerCase().includes(q);
 			el.classList.toggle(HIDDEN, !match);
 			if (match) visible++;
 		});
 		setNoResults(visible === 0);
-	}, [searchValue, isSearching, cssPrefix]);
+	}, [searchValue, isSearching, settingsCls]);
 
 	const visibleTabs = tabs.filter((tab) => tab.visible !== false);
 
@@ -102,12 +104,10 @@ export const SettingsNav = memo(function SettingsNav({
 
 	return (
 		<div ref={rootRef}>
-			<nav className={`${cssPrefix}settings-nav`} role="tablist" aria-label="Settings navigation">
-				<div className={`${cssPrefix}nav-buttons`} onKeyDown={handleKeyDown}>
+			<nav className={settingsCls("nav")} role="tablist" aria-label="Settings navigation">
+				<div className={cls("nav-buttons")} onKeyDown={handleKeyDown}>
 					{visibleTabs.map((tab, index) => {
 						const isActive = !searchValue && tab.id === activeId;
-						const className = cx(isActive && `${cssPrefix}active`);
-
 						return (
 							<button
 								key={tab.id}
@@ -117,26 +117,26 @@ export const SettingsNav = memo(function SettingsNav({
 								type="button"
 								role="tab"
 								aria-selected={isActive}
-								className={className}
+								className={cx(isActive && cls("active"))}
 								onClick={() => handleTabClick(tab.id)}
 								onFocus={() => setFocusedIndex(index)}
-								data-testid={`${cssPrefix}settings-nav-${tab.id}`}
+								data-testid={tid("nav", tab.id)}
 							>
 								{tab.label}
-								{tab.badge !== undefined && <span className={`${cssPrefix}settings-nav-badge`}>{tab.badge}</span>}
+								{tab.badge !== undefined && <span className={settingsCls("nav-badge")}>{tab.badge}</span>}
 							</button>
 						);
 					})}
 
 					{onSearchChange && (
-						<div className={`${cssPrefix}settings-search`}>
+						<div className={settingsCls("search")}>
 							<input
 								type="text"
-								className={`${cssPrefix}settings-search-input`}
+								className={settingsCls("search-input")}
 								placeholder="Search settings..."
 								value={searchValue}
 								onChange={(e) => onSearchChange(e.target.value)}
-								data-testid={`${cssPrefix}settings-search`}
+								data-testid={tid("search")}
 							/>
 						</div>
 					)}
@@ -144,16 +144,16 @@ export const SettingsNav = memo(function SettingsNav({
 			</nav>
 
 			{isSearching && noResults && (
-				<div className={`${cssPrefix}settings-search-no-results`}>No settings found for &quot;{searchValue}&quot;</div>
+				<div className={settingsCls("search-no-results")}>No settings found for &quot;{searchValue}&quot;</div>
 			)}
 
 			{children}
 
 			{footerLinks && footerLinks.length > 0 && (
-				<div className={`setting-item ${cssPrefix}settings-footer`}>
-					<div className={`${cssPrefix}settings-footer-links`}>
+				<div className={`setting-item ${settingsCls("footer")}`}>
+					<div className={settingsCls("footer-links")}>
 						{footerLinks.map((link) => (
-							<a key={link.href} href={link.href} className={`${cssPrefix}settings-support-link`}>
+							<a key={link.href} href={link.href} className={settingsCls("support-link")}>
 								{link.text}
 							</a>
 						))}

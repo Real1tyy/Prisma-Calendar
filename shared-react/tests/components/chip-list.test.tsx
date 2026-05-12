@@ -1,11 +1,16 @@
 import { screen, within } from "@testing-library/react";
+import type { ReactElement } from "react";
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { ChipList } from "../../src/components/chip-list";
-import { renderReact } from "../helpers/render-react";
+import { renderReact, type RenderReactResult } from "../helpers/render-react";
 
 const PREFIX = "prisma-";
+
+function renderInTheme(ui: ReactElement): RenderReactResult {
+	return renderReact(ui, undefined, undefined, { cssPrefix: PREFIX, testIdPrefix: PREFIX });
+}
 
 function ControlledList({ initial, onCommit }: { initial: string[]; onCommit?: (v: string[]) => void }) {
 	const [value, setValue] = useState(initial);
@@ -16,14 +21,13 @@ function ControlledList({ initial, onCommit }: { initial: string[]; onCommit?: (
 				setValue(next);
 				onCommit?.(next);
 			}}
-			cssPrefix={PREFIX}
 		/>
 	);
 }
 
 describe("ChipList", () => {
 	it("renders one Chip per value", () => {
-		renderReact(<ChipList value={["a", "b", "c"]} onChange={vi.fn()} cssPrefix={PREFIX} />);
+		renderInTheme(<ChipList value={["a", "b", "c"]} onChange={vi.fn()} />);
 
 		expect(screen.getByText("a")).toBeInTheDocument();
 		expect(screen.getByText("b")).toBeInTheDocument();
@@ -31,18 +35,18 @@ describe("ChipList", () => {
 	});
 
 	it("renders the default empty hint when value is empty", () => {
-		renderReact(<ChipList value={[]} onChange={vi.fn()} cssPrefix={PREFIX} />);
+		renderInTheme(<ChipList value={[]} onChange={vi.fn()} />);
 		expect(screen.getByText("No items")).toBeInTheDocument();
 	});
 
 	it("renders a custom empty hint", () => {
-		renderReact(<ChipList value={[]} onChange={vi.fn()} cssPrefix={PREFIX} emptyText="Nothing tagged" />);
+		renderInTheme(<ChipList value={[]} onChange={vi.fn()} emptyText="Nothing tagged" />);
 		expect(screen.getByText("Nothing tagged")).toBeInTheDocument();
 	});
 
 	it("calls onChange with the value removed when a chip's ✕ is clicked", async () => {
 		const onCommit = vi.fn();
-		const { user } = renderReact(<ControlledList initial={["a", "b", "c"]} onCommit={onCommit} />);
+		const { user } = renderInTheme(<ControlledList initial={["a", "b", "c"]} onCommit={onCommit} />);
 
 		await user.click(screen.getByRole("button", { name: "Remove b" }));
 
@@ -52,8 +56,8 @@ describe("ChipList", () => {
 
 	it("transforms display names via getDisplayName without changing the canonical value", async () => {
 		const onCommit = vi.fn();
-		const { user } = renderReact(
-			<ChipList value={["alpha"]} onChange={onCommit} cssPrefix={PREFIX} getDisplayName={(v) => v.toUpperCase()} />
+		const { user } = renderInTheme(
+			<ChipList value={["alpha"]} onChange={onCommit} getDisplayName={(v) => v.toUpperCase()} />
 		);
 
 		expect(screen.getByText("ALPHA")).toBeInTheDocument();
@@ -63,19 +67,16 @@ describe("ChipList", () => {
 	});
 
 	it("renders a tooltip via getTooltip", () => {
-		renderReact(
-			<ChipList value={["alpha"]} onChange={vi.fn()} cssPrefix={PREFIX} getTooltip={(v) => `Tooltip for ${v}`} />
-		);
+		renderInTheme(<ChipList value={["alpha"]} onChange={vi.fn()} getTooltip={(v) => `Tooltip for ${v}`} />);
 
 		expect(screen.getByText("alpha")).toHaveAttribute("title", "Tooltip for alpha");
 	});
 
 	it("renders a per-chip prefix slot via renderPrefix", () => {
-		const { container } = renderReact(
+		const { container } = renderInTheme(
 			<ChipList
 				value={["alpha", "beta"]}
 				onChange={vi.fn()}
-				cssPrefix={PREFIX}
 				renderPrefix={(v) => <span data-testid={`dot-${v}`}>•</span>}
 			/>
 		);
@@ -86,9 +87,7 @@ describe("ChipList", () => {
 
 	it("invokes onItemClick with the clicked chip's value", async () => {
 		const onItemClick = vi.fn();
-		const { user } = renderReact(
-			<ChipList value={["alpha", "beta"]} onChange={vi.fn()} cssPrefix={PREFIX} onItemClick={onItemClick} />
-		);
+		const { user } = renderInTheme(<ChipList value={["alpha", "beta"]} onChange={vi.fn()} onItemClick={onItemClick} />);
 
 		await user.click(screen.getByRole("button", { name: "beta" }));
 

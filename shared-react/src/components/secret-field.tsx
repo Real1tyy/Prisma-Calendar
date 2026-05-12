@@ -13,7 +13,7 @@ interface SecretFieldProps {
 	 */
 	value: string;
 	onChange: (id: string) => void;
-	testId?: string;
+	testId?: string | undefined;
 }
 
 /**

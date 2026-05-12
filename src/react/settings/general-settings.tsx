@@ -65,7 +65,6 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 				licenseManager={plugin.licenseManager}
 				currentSecretName={mainSettings.licenseKeySecretName}
 				onSecretChange={onSecretChange}
-				cssPrefix="prisma-"
 				accountUrl={buildUtmUrl(ACCOUNT_URL, "prisma-calendar", "plugin", "settings", "manage_subscription")}
 			/>
 			<SchemaSection
@@ -279,7 +278,7 @@ export const HelpSection = memo(function HelpSection({ plugin }: { plugin: Custo
 	return (
 		<>
 			<SettingHeading name="Help & support" />
-			<SettingCard cssPrefix="prisma-" testId="prisma-settings-help">
+			<SettingCard testId="prisma-settings-help">
 				<p>
 					Thanks for giving Prisma a try. I hope you enjoy using it, and that it helps you become more productive and
 					organized inside Obsidian.

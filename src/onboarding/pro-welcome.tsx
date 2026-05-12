@@ -44,13 +44,11 @@ export interface ProWelcomeControllerProps {
 export const ProWelcomeController = memo(function ProWelcomeController({ onSubmit }: ProWelcomeControllerProps) {
 	return (
 		<WelcomeModalShell
-			cssPrefix="prisma"
 			title="Welcome to Prisma Pro"
 			tagline={TAGLINE}
 			videoEmbedUrl="https://www.youtube.com/embed/PLACEHOLDER_PRO_VIDEO_ID"
 			videoCaption="A quick tour of everything Pro unlocks for your planning workflow."
 			footerLinks={FOOTER_LINKS}
-			testIdPrefix="prisma-pro-welcome"
 			onSubmit={onSubmit}
 		>
 			<p className="prisma-pro-welcome-trial">30-day free trial — cancel anytime before billing starts.</p>
@@ -125,6 +123,8 @@ export function showProWelcomeModal(app: App): void {
 		app,
 		cls: "prisma-welcome-modal",
 		testId: "prisma-pro-welcome-modal",
+		cssPrefix: "prisma-",
+		testIdPrefix: "prisma-",
 		render: (close) => <ProWelcomeController onSubmit={close} />,
 	});
 }
