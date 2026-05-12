@@ -25,7 +25,8 @@ import { ICSSubscriptionSyncStateManager } from "../../src/core/integrations/ics
 import type { ICSSubscriptionSyncMetadata } from "../../src/core/integrations/ics-subscription/types";
 import type { CalendarEventSource } from "../../src/types/event-source";
 import type { SingleCalendarConfig } from "../../src/types/settings";
-import { createMockApp, createMockSingleCalendarSettings } from "../setup";
+import { createMockSingleCalendarSettings } from "../fixtures/settings-fixtures";
+import { createMockApp } from "../setup";
 
 function silentEventSource(): CalendarEventSource {
 	return {

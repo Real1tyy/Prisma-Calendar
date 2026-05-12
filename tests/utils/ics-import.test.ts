@@ -4,7 +4,7 @@ import { createICSFromEvents } from "../../src/core/integrations/ics-export";
 import { buildFrontmatterFromImportedEvent, parseICSContent } from "../../src/core/integrations/ics-import";
 import type { SingleCalendarConfig } from "../../src/types/settings";
 import { createDefaultMetadata, createICSExportOptions, createImportedEvent, createMockTimedEvent } from "../fixtures";
-import { createMockSingleCalendarSettings } from "../setup";
+import { createMockSingleCalendarSettings } from "../fixtures/settings-fixtures";
 
 const SAMPLE_ICS_SINGLE_EVENT = `BEGIN:VCALENDAR
 VERSION:2.0

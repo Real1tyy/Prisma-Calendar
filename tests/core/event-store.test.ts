@@ -5,7 +5,7 @@ import { type EventQuery, EventStore } from "../../src/core/event-store";
 import type { CalendarEvent } from "../../src/types/calendar";
 import type { IndexerEvent, RawEventSource } from "../../src/types/event-source";
 import { createMockAllDayEvent, createMockTimedEvent, createRawEventSource } from "../fixtures";
-import { createMockSingleCalendarSettingsStore } from "../setup";
+import { createMockSingleCalendarSettingsStore } from "../fixtures/settings-fixtures";
 
 describe("EventStore", () => {
 	let eventStore: EventStore;

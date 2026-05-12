@@ -8,8 +8,8 @@ import {
 } from "../../src/core/commands/virtual-event-commands";
 import { VirtualEventStore } from "../../src/core/virtual-event-store";
 import { createVirtualEventData } from "../fixtures";
+import { createMockSingleCalendarSettingsStore } from "../fixtures/settings-fixtures";
 import { createMockFile } from "../mocks/obsidian";
-import { createMockSingleCalendarSettingsStore } from "../setup";
 
 // ─── Helpers ─────────────────────────────────────────────────
 

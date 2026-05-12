@@ -7,7 +7,7 @@ import type { SingleCalendarConfig } from "../../src/types/settings";
 import { computeSortDateValue } from "../../src/utils/frontmatter/basics";
 import { isAllDayFrontmatterValue } from "../../src/utils/frontmatter/predicates";
 import { parseCustomDoneProperty } from "../../src/utils/frontmatter/props";
-import { createMockSingleCalendarSettings } from "../setup";
+import { createMockSingleCalendarSettings } from "../fixtures/settings-fixtures";
 
 function createSettings(overrides: Partial<SingleCalendarConfig> = {}): SingleCalendarConfig {
 	return {

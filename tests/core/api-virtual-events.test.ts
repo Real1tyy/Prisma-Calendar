@@ -3,8 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { makeEventReal, makeEventVirtual } from "../../src/core/api/event-crud";
 import { VirtualEventStore } from "../../src/core/virtual-event-store";
 import { createVirtualEventData } from "../fixtures";
+import { createMockSingleCalendarSettingsStore } from "../fixtures/settings-fixtures";
 import { createMockFile } from "../mocks/obsidian";
-import { createMockSingleCalendarSettingsStore } from "../setup";
 
 // ─── Helpers ─────────────────────────────────────────────────
 

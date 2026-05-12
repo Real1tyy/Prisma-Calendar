@@ -7,7 +7,8 @@ import { Parser } from "../../src/core/parser";
 import type { PrismaCalendarSettingsStore, SingleCalendarConfig } from "../../src/types";
 import { isAllDayEvent, isTimedEvent } from "../../src/types/calendar";
 import { createMockIntegrationApp, createMockMainSettingsStore, createRawEventSource } from "../fixtures";
-import { createMockFile, createMockSingleCalendarSettings, createMockSingleCalendarSettingsStore } from "../setup";
+import { createMockSingleCalendarSettings, createMockSingleCalendarSettingsStore } from "../fixtures/settings-fixtures";
+import { createMockFile } from "../setup";
 
 const mockApp = createMockIntegrationApp() as any;
 

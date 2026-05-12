@@ -26,7 +26,7 @@ import type { BehaviorSubject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { VIRTUAL_EVENT_SETTINGS_DEBOUNCE_MS, VirtualEventStore } from "../../src/core/virtual-event-store";
-import { createMockSingleCalendarSettingsStore } from "../setup";
+import { createMockSingleCalendarSettingsStore } from "../fixtures/settings-fixtures";
 
 type Binding = { unsubscribe: () => void; id: string; filePath: string };
 

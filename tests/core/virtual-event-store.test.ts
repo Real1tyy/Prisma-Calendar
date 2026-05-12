@@ -11,8 +11,8 @@ import {
 import type { VirtualEventData } from "../../src/types/calendar";
 import type { EventSaveData } from "../../src/types/event-boundaries";
 import { createVirtualEventData } from "../fixtures";
+import { createMockSingleCalendarSettingsStore } from "../fixtures/settings-fixtures";
 import { createMockFile } from "../mocks/obsidian";
-import { createMockSingleCalendarSettingsStore } from "../setup";
 
 // ─── Helpers ─────────────────────────────────────────────────
 

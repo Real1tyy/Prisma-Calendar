@@ -1,8 +1,4 @@
-import { BehaviorSubject } from "rxjs";
 import { beforeEach, vi } from "vitest";
-
-import type { CustomCalendarSettings } from "../src/types/index";
-import { CustomCalendarSettingsSchema } from "../src/types/index";
 
 // Mock problematic utils modules that depend on obsidian
 vi.mock("@real1ty-obsidian-plugins/utils/templater-utils", () => ({
@@ -70,33 +66,6 @@ export { debounce, ItemView, Modal, Notice, Plugin, PluginSettingTab, SuggestMod
 // Export mock helpers directly
 export const createMockApp = createMockAppImpl;
 export const createMockFile = createMockFileImpl;
-
-let cachedDefaultSettings: CustomCalendarSettings | undefined;
-function getDefaultSettings(): CustomCalendarSettings {
-	if (!cachedDefaultSettings) {
-		cachedDefaultSettings = CustomCalendarSettingsSchema.parse({});
-	}
-	return structuredClone(cachedDefaultSettings);
-}
-
-export function createMockSettingsStore(
-	initialSettings?: Partial<CustomCalendarSettings>
-): BehaviorSubject<CustomCalendarSettings> {
-	const settings = { ...getDefaultSettings(), ...initialSettings };
-	return new BehaviorSubject<CustomCalendarSettings>(settings);
-}
-
-// Create a mock single calendar config for testing individual calendar settings
-export function createMockSingleCalendarSettings() {
-	return getDefaultSettings().calendars[0]; // Return the default calendar
-}
-
-// Create a mock settings store that returns single calendar settings (for legacy test compatibility)
-export function createMockSingleCalendarSettingsStore(calendarOverrides?: any): BehaviorSubject<any> {
-	const singleCalendarSettings = createMockSingleCalendarSettings();
-	const settings = { ...singleCalendarSettings, ...calendarOverrides };
-	return new BehaviorSubject(settings);
-}
 
 // Polyfill Obsidian's DOM augmentations for test environment
 function polyfillObsidianDOM(): void {

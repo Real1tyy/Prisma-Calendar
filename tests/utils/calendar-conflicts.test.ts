@@ -6,7 +6,7 @@ import {
 	findConflictForCalendar,
 	findNormalizationConflicts,
 } from "../../src/utils/calendar-conflicts";
-import { createMockSingleCalendarSettings } from "../setup";
+import { createMockSingleCalendarSettings } from "../fixtures/settings-fixtures";
 
 const calendar = (overrides: Partial<SingleCalendarConfig>): SingleCalendarConfig =>
 	({

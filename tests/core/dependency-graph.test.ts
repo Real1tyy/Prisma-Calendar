@@ -8,7 +8,7 @@ import {
 	resolveWikiLinks,
 } from "../../src/core/dependency-graph";
 import { createMockTimedEvent } from "../fixtures";
-import { createMockSingleCalendarSettings } from "../setup";
+import { createMockSingleCalendarSettings } from "../fixtures/settings-fixtures";
 
 function makeMockApp(resolveMap: Record<string, string | null> = {}): any {
 	return {

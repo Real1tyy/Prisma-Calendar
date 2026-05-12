@@ -4,7 +4,26 @@ import type { CalendarSettingsStore, ToolbarButtonsKey } from "../../src/core/se
 import type { CustomCalendarSettings, PrismaCalendarSettingsStore } from "../../src/types";
 import { CustomCalendarSettingsSchema } from "../../src/types";
 import type { SingleCalendarConfig } from "../../src/types/settings";
-import { createMockSingleCalendarSettings } from "../setup";
+
+let cachedDefaultSettings: CustomCalendarSettings | undefined;
+function getDefaultSettings(): CustomCalendarSettings {
+	if (!cachedDefaultSettings) {
+		cachedDefaultSettings = CustomCalendarSettingsSchema.parse({});
+	}
+	return structuredClone(cachedDefaultSettings);
+}
+
+export function createMockSingleCalendarSettings(): SingleCalendarConfig {
+	return getDefaultSettings().calendars[0];
+}
+
+export function createMockSingleCalendarSettingsStore(
+	calendarOverrides?: Partial<SingleCalendarConfig>
+): BehaviorSubject<SingleCalendarConfig> {
+	const singleCalendarSettings = createMockSingleCalendarSettings();
+	const settings = { ...singleCalendarSettings, ...calendarOverrides } as SingleCalendarConfig;
+	return new BehaviorSubject(settings);
+}
 
 /** Factory for parser-style settings with standard property names configured. */
 export function createParserSettings(overrides: Partial<SingleCalendarConfig> = {}): SingleCalendarConfig {

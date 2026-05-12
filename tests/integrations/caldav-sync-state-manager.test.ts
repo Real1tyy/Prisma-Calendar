@@ -23,7 +23,8 @@ import { CalDAVSyncStateManager } from "../../src/core/integrations/caldav/sync-
 import type { CalDAVSyncMetadata } from "../../src/core/integrations/caldav/types";
 import type { CalendarEventSource } from "../../src/types/event-source";
 import type { SingleCalendarConfig } from "../../src/types/settings";
-import { createMockApp, createMockSingleCalendarSettings } from "../setup";
+import { createMockSingleCalendarSettings } from "../fixtures/settings-fixtures";
+import { createMockApp } from "../setup";
 
 const ACCOUNT_ID = "acc-local";
 const CALENDAR_HREF = "https://dav.example.com/acc-local/work/";
