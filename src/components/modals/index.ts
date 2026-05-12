@@ -15,8 +15,8 @@ export { renderTimelineInto, showTimelineModal } from "./series/timeline";
 export type { ICSImportProgressHandle } from "./import-export/ics-import-progress";
 export { showICSImportProgressModal } from "./import-export/ics-import-progress";
 
-// Preview modals
-export type { PreviewEventData } from "./preview/event-preview";
-export { showEventPreviewModal } from "./preview/event-preview";
-export type { NotificationEventData } from "./preview/notification";
-export { showNotificationModal } from "./preview/notification";
+// Preview modals (React)
+export type { PreviewEventData } from "../../react/modals/preview/event-preview-modal";
+export { showEventPreviewModal } from "../../react/modals/preview/event-preview-modal";
+export type { NotificationEventData } from "../../react/modals/preview/notification-modal";
+export { showNotificationModal } from "../../react/modals/preview/notification-modal";

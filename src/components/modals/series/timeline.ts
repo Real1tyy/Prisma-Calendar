@@ -11,13 +11,13 @@ import { DataSet } from "vis-data";
 import { type DataItem, Timeline, type TimelineOptions } from "vis-timeline";
 
 import type { CalendarBundle } from "../../../core/calendar-bundle";
+import { type PreviewEventData, showEventPreviewModal } from "../../../react/modals/preview/event-preview-modal";
 import type { CalendarEvent } from "../../../types/calendar";
 import type { SingleCalendarConfig } from "../../../types/settings";
 import { createTextColorResolver, resolveAllEventColors } from "../../../utils/event-color";
 import { cleanupTitle } from "../../../utils/events/naming";
 import { buildEventTooltip } from "../../../utils/format";
 import { injectOverflowDots } from "../../calendar-event-renderer";
-import { type PreviewEventData, showEventPreviewModal } from "../preview/event-preview";
 
 const RANGE_CHANGE_DEBOUNCE_MS = 200;
 const RANGE_BUFFER_FACTOR = 0.25;
