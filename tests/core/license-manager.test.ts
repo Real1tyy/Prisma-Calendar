@@ -1,12 +1,11 @@
 import type { CachedLicenseData, LicenseVerifyResponse } from "@real1ty-obsidian-plugins";
 import { silenceConsole } from "@real1ty-obsidian-plugins/testing";
 import { Notice, requestUrl } from "obsidian";
-import { BehaviorSubject } from "rxjs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { LicenseManagerConfig } from "../../src/core/license";
 import { DEVICE_ID_STORAGE_KEY, LICENSE_CACHE_STORAGE_KEY, LicenseManager } from "../../src/core/license";
-import { CustomCalendarSettingsSchema } from "../../src/types/settings";
+import { createMockLicenseSettingsStore } from "../fixtures/settings-fixtures";
 
 const TEST_CONFIG: LicenseManagerConfig = {
 	productName: "Prisma Calendar",
@@ -39,22 +38,6 @@ function createMockApp(localStorageData: Record<string, string> = {}) {
 	} as any;
 }
 
-function createMockSettingsStore(overrides: Record<string, unknown> = {}) {
-	const defaults = CustomCalendarSettingsSchema.parse({});
-	const settings = { ...defaults, ...overrides };
-	const subject = new BehaviorSubject(settings);
-
-	return {
-		currentSettings: settings,
-		settings$: subject.asObservable(),
-		updateSettings: vi.fn(async (updater: (s: unknown) => unknown) => {
-			const newSettings = updater(settings);
-			Object.assign(settings, newSettings);
-			subject.next(settings);
-		}),
-	} as any;
-}
-
 function successResponse(overrides: Partial<LicenseVerifyResponse> = {}) {
 	return mockResponse(200, {
 		token: "eyJhbGciOiJFUzI1NiIs.test-token.signature",
@@ -77,13 +60,13 @@ function cachedTokenData(overrides: Partial<CachedLicenseData> = {}): CachedLice
 
 describe("LicenseManager", () => {
 	let app: ReturnType<typeof createMockApp>;
-	let settingsStore: ReturnType<typeof createMockSettingsStore>;
+	let settingsStore: ReturnType<typeof createMockLicenseSettingsStore>;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
 		vi.spyOn(LicenseManager.prototype, "verifyToken").mockResolvedValue("valid");
 		app = createMockApp();
-		settingsStore = createMockSettingsStore({ licenseKeySecretName: "my-license-secret" });
+		settingsStore = createMockLicenseSettingsStore({ licenseKeySecretName: "my-license-secret" });
 	});
 
 	describe("Device ID management", () => {
@@ -125,7 +108,7 @@ describe("LicenseManager", () => {
 
 	describe("No license configured", () => {
 		it("should stay in 'none' state when no license key secret name is set", async () => {
-			settingsStore = createMockSettingsStore({ licenseKeySecretName: "" });
+			settingsStore = createMockLicenseSettingsStore({ licenseKeySecretName: "" });
 
 			const manager = new LicenseManager(
 				app,
@@ -786,7 +769,7 @@ describe("LicenseManager", () => {
 		});
 
 		it("should return false and show notice when pro is not active", async () => {
-			settingsStore = createMockSettingsStore({ licenseKeySecretName: "" });
+			settingsStore = createMockLicenseSettingsStore({ licenseKeySecretName: "" });
 
 			const manager = new LicenseManager(
 				app,

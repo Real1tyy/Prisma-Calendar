@@ -46,6 +46,7 @@ export default defineConfig({
 					name: "jsdom",
 					environment: "jsdom",
 					include: JSDOM_PATTERNS,
+					isolate: false,
 				},
 			},
 		],
