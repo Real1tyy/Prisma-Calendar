@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom/vitest";
 
-import { screen } from "@testing-library/react";
+import { act, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -9,8 +9,9 @@ import {
 	type PreviewEventData,
 	renderEventPreviewInto,
 } from "../../../../src/react/modals/preview/event-preview-modal";
+import { createMockSingleCalendarSettings } from "../../../fixtures/settings-fixtures";
 import { TFile } from "../../../mocks/obsidian";
-import { createMockApp, createMockSingleCalendarSettings } from "../../../setup";
+import { createMockApp } from "../../../setup";
 
 type MockApp = ReturnType<typeof createMockApp> & {
 	workspace: { openLinkText: ReturnType<typeof vi.fn> };
@@ -50,7 +51,9 @@ function mountPreview(
 
 	const el = document.createElement("div");
 	document.body.appendChild(el);
-	renderEventPreviewInto(el, app as never, options.bundle ?? buildBundle(), event, close);
+	act(() => {
+		renderEventPreviewInto(el, app as never, options.bundle ?? buildBundle(), event, close);
+	});
 	return { close, app };
 }
 

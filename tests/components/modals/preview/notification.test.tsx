@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom/vitest";
 
-import { screen } from "@testing-library/react";
+import { act, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -9,7 +9,8 @@ import {
 	renderNotificationContentInto,
 } from "../../../../src/react/modals/preview/notification-modal";
 import type { SingleCalendarConfig } from "../../../../src/types/settings";
-import { createMockApp, createMockSingleCalendarSettings } from "../../../setup";
+import { createMockSingleCalendarSettings } from "../../../fixtures/settings-fixtures";
+import { createMockApp } from "../../../setup";
 
 type MockApp = ReturnType<typeof createMockApp> & {
 	workspace: { openLinkText: ReturnType<typeof vi.fn> };
@@ -40,14 +41,16 @@ function mountNotification(
 
 	const el = document.createElement("div");
 	document.body.appendChild(el);
-	renderNotificationContentInto(
-		el,
-		app as never,
-		eventData,
-		options.settings ?? buildSettings(),
-		close,
-		options.withSnooze ? onSnooze : undefined
-	);
+	act(() => {
+		renderNotificationContentInto(
+			el,
+			app as never,
+			eventData,
+			options.settings ?? buildSettings(),
+			close,
+			options.withSnooze ? onSnooze : undefined
+		);
+	});
 	return { close, onSnooze, app };
 }
 
