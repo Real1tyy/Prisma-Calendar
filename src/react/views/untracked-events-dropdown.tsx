@@ -1,7 +1,6 @@
 import { Draggable } from "@fullcalendar/interaction";
 import { ColorEvaluator } from "@real1ty-obsidian-plugins";
-import { useApp, useEscapeKey, useExternalSnapshot, VirtualList } from "@real1ty-obsidian-plugins-react";
-import type { App } from "obsidian";
+import { PropertyValue, useApp, useEscapeKey, useExternalSnapshot, VirtualList } from "@real1ty-obsidian-plugins-react";
 import {
 	type CSSProperties,
 	forwardRef,
@@ -22,7 +21,7 @@ import type { ParsedEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { removeZettelId } from "../../utils/events/zettel-id";
 import { normalizeFrontmatterForColorEvaluation } from "../../utils/expression-utils";
-import { getDisplayProperties, renderPropertyValue } from "../../utils/property-display";
+import { getDisplayProperties } from "../../utils/property-display";
 
 const SEARCH_FOCUS_DELAY_MS = 50;
 const DROP_CLICK_IGNORE_MS = 500;
@@ -285,10 +284,9 @@ export const UntrackedEventsDropdown = memo(
 					onStartStopwatch={handleStartStopwatch}
 					onDoubleClick={handleDoubleClick}
 					onClose={close}
-					app={app}
 				/>
 			),
-			[settings, colorEvaluator, handleStartStopwatch, handleDoubleClick, close, app]
+			[settings, colorEvaluator, handleStartStopwatch, handleDoubleClick, close]
 		);
 
 		const getKey = useCallback((event: ParsedEvent) => event.ref.filePath, []);
@@ -367,7 +365,6 @@ interface UntrackedEventItemProps {
 	onStartStopwatch: (event: ParsedEvent) => void;
 	onDoubleClick: (filePath: string) => void;
 	onClose: () => void;
-	app: App;
 }
 
 const UntrackedEventItem = memo(function UntrackedEventItem({
@@ -378,7 +375,6 @@ const UntrackedEventItem = memo(function UntrackedEventItem({
 	onStartStopwatch,
 	onDoubleClick,
 	onClose,
-	app,
 }: UntrackedEventItemProps) {
 	const color = useMemo(() => {
 		const normalized = normalizeFrontmatterForColorEvaluation(
@@ -411,7 +407,14 @@ const UntrackedEventItem = memo(function UntrackedEventItem({
 					{displayProps.map(([key, value]) => (
 						<span key={key} className="prisma-untracked-dropdown-item-prop">
 							<span className="prisma-prop-key">{key}: </span>
-							<PropertyValue value={value} app={app} onLinkClick={onClose} />
+							<span
+								className="prisma-prop-value"
+								onPointerDown={(e) => e.stopPropagation()}
+								onMouseDown={(e) => e.stopPropagation()}
+								onTouchStart={(e) => e.stopPropagation()}
+							>
+								<PropertyValue value={value} linkClassName="prisma-prop-link" onLinkClick={onClose} />
+							</span>
 						</span>
 					))}
 				</div>
@@ -435,36 +438,5 @@ const UntrackedEventItem = memo(function UntrackedEventItem({
 				</button>
 			)}
 		</div>
-	);
-});
-
-interface PropertyValueProps {
-	value: unknown;
-	app: App;
-	onLinkClick: () => void;
-}
-
-const PropertyValue = memo(function PropertyValue({ value, app, onLinkClick }: PropertyValueProps) {
-	const ref = useRef<HTMLSpanElement>(null);
-
-	useEffect(() => {
-		const el = ref.current;
-		if (!el) return;
-		el.replaceChildren();
-		renderPropertyValue(el, value, {
-			app,
-			linkClassName: "prisma-prop-link",
-			onLinkClick,
-		});
-	}, [value, app, onLinkClick]);
-
-	return (
-		<span
-			ref={ref}
-			className="prisma-prop-value"
-			onPointerDown={(e) => e.stopPropagation()}
-			onMouseDown={(e) => e.stopPropagation()}
-			onTouchStart={(e) => e.stopPropagation()}
-		/>
 	);
 });

@@ -1,15 +1,7 @@
-import {
-	cls,
-	createDefaultSeparator,
-	formatLocaleLongDate,
-	formatLocaleLongDateTime,
-	formatLocaleTimeHm,
-	type PropertyRendererConfig,
-	renderPropertyValue,
-} from "@real1ty-obsidian-plugins";
-import { showReactModal } from "@real1ty-obsidian-plugins-react";
+import { cls, formatLocaleLongDate, formatLocaleLongDateTime, formatLocaleTimeHm } from "@real1ty-obsidian-plugins";
+import { AppContext, PropertyItem, SharedReactThemeProvider, showReactModal } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 
@@ -72,61 +64,20 @@ function formatNotificationDateTime(date: Date | null, allDay: boolean): string 
 	return allDay ? formatLocaleLongDate(date) : formatLocaleLongDateTime(date);
 }
 
-interface NotificationPropertyItemProps {
-	app: App;
-	propKey: string;
-	value: unknown;
-	onClose: () => void;
-}
-
-function NotificationPropertyItem({ app, propKey, value, onClose }: NotificationPropertyItemProps) {
-	const valueRef = useRef<HTMLDivElement>(null);
-
-	useEffect(() => {
-		const el = valueRef.current;
-		if (!el) return;
-		el.replaceChildren();
-		const config: PropertyRendererConfig = {
-			createLink: (text, path) => {
-				const link = document.createElement("a");
-				link.textContent = text;
-				link.className = cls("event-notification-prop-value-link");
-				link.onclick = (e) => {
-					e.preventDefault();
-					void app.workspace.openLinkText(path, "", false);
-					onClose();
-				};
-				return link;
-			},
-			createText: (text) => document.createTextNode(text),
-			createSeparator: createDefaultSeparator,
-		};
-		renderPropertyValue(el, value, config);
-	}, [app, value, onClose]);
-
-	return (
-		<div className={cls("event-notification-prop-item")}>
-			<div className={cls("event-notification-prop-key")}>{propKey}</div>
-			<div ref={valueRef} className={cls("event-notification-prop-value")} />
-		</div>
-	);
-}
-
 interface NotificationPropertiesSectionProps {
-	app: App;
 	title: string;
 	properties: [string, unknown][];
 	onClose: () => void;
 }
 
-function NotificationPropertiesSection({ app, title, properties, onClose }: NotificationPropertiesSectionProps) {
+function NotificationPropertiesSection({ title, properties, onClose }: NotificationPropertiesSectionProps) {
 	if (properties.length === 0) return null;
 	return (
 		<div className={cls("event-notification-section")}>
 			<div className={cls("event-notification-section-title")}>{title}</div>
 			<div className={cls("event-notification-props-grid")}>
 				{properties.map(([key, value]) => (
-					<NotificationPropertyItem key={key} app={app} propKey={key} value={value} onClose={onClose} />
+					<PropertyItem key={key} keyLabel={key} value={value} scope="event-notification-prop" onLinkClick={onClose} />
 				))}
 			</div>
 		</div>
@@ -225,18 +176,8 @@ export function NotificationContent({ app, eventData, settings, onClose, onSnooz
 				</div>
 			</div>
 
-			<NotificationPropertiesSection
-				app={app}
-				title="Event Properties"
-				properties={displayProperties}
-				onClose={onClose}
-			/>
-			<NotificationPropertiesSection
-				app={app}
-				title="Additional Properties"
-				properties={otherProperties}
-				onClose={onClose}
-			/>
+			<NotificationPropertiesSection title="Event Properties" properties={displayProperties} onClose={onClose} />
+			<NotificationPropertiesSection title="Additional Properties" properties={otherProperties} onClose={onClose} />
 
 			<div className={cls("event-notification-buttons")}>
 				<button type="button" className="mod-cta" data-testid="prisma-notification-open" onClick={handleFileClick}>
@@ -264,7 +205,17 @@ export function renderNotificationContentInto(
 	const root = createRoot(el);
 	flushSync(() => {
 		root.render(
-			<NotificationContent app={app} eventData={eventData} settings={settings} onClose={close} onSnooze={onSnooze} />
+			<AppContext value={app}>
+				<SharedReactThemeProvider cssPrefix={CSS_PREFIX}>
+					<NotificationContent
+						app={app}
+						eventData={eventData}
+						settings={settings}
+						onClose={close}
+						onSnooze={onSnooze}
+					/>
+				</SharedReactThemeProvider>
+			</AppContext>
 		);
 	});
 }

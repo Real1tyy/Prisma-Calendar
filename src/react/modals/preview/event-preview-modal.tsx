@@ -1,14 +1,6 @@
-import {
-	calculateDuration,
-	cls,
-	createDefaultSeparator,
-	intoDate,
-	type PropertyRendererConfig,
-	renderPropertyValue,
-} from "@real1ty-obsidian-plugins";
-import { showReactModal } from "@real1ty-obsidian-plugins-react";
+import { calculateDuration, cls, intoDate } from "@real1ty-obsidian-plugins";
+import { AppContext, PropertyItem, SharedReactThemeProvider, showReactModal } from "@real1ty-obsidian-plugins-react";
 import { type App, TFile } from "obsidian";
-import { useEffect, useRef } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 
@@ -38,10 +30,9 @@ interface EventPreviewProps {
 	onClose: () => void;
 }
 
-interface PropertyItemProps {
-	app: App;
-	propKey: string;
-	value: unknown;
+interface PropertiesSectionProps {
+	title: string;
+	properties: [string, unknown][];
 	onClose: () => void;
 }
 
@@ -63,54 +54,14 @@ function formatPreviewDateTime(date: Date | null, allDay: boolean): string {
 	return allDay ? formatDateOnlyDisplay(date) : formatDateTimeDisplay(date);
 }
 
-function PropertyItem({ app, propKey, value, onClose }: PropertyItemProps) {
-	const valueRef = useRef<HTMLDivElement>(null);
-
-	useEffect(() => {
-		const el = valueRef.current;
-		if (!el) return;
-		el.replaceChildren();
-		const config: PropertyRendererConfig = {
-			createLink: (text, path) => {
-				const link = document.createElement("a");
-				link.textContent = text;
-				link.className = cls("event-preview-prop-value-link");
-				link.onclick = (e) => {
-					e.preventDefault();
-					void app.workspace.openLinkText(path, "", false);
-					onClose();
-				};
-				return link;
-			},
-			createText: (text) => document.createTextNode(text),
-			createSeparator: createDefaultSeparator,
-		};
-		renderPropertyValue(el, value, config);
-	}, [app, value, onClose]);
-
-	return (
-		<div className={cls("event-preview-prop-item")}>
-			<div className={cls("event-preview-prop-key")}>{propKey}</div>
-			<div ref={valueRef} className={cls("event-preview-prop-value")} />
-		</div>
-	);
-}
-
-interface PropertiesSectionProps {
-	app: App;
-	title: string;
-	properties: [string, unknown][];
-	onClose: () => void;
-}
-
-function PropertiesSection({ app, title, properties, onClose }: PropertiesSectionProps) {
+function PropertiesSection({ title, properties, onClose }: PropertiesSectionProps) {
 	if (properties.length === 0) return null;
 	return (
 		<div className={`${cls("event-preview-section")} ${cls("event-preview-props-section")}`}>
 			<div className={cls("event-preview-section-title")}>{title}</div>
 			<div className={cls("event-preview-props-grid")}>
 				{properties.map(([key, value]) => (
-					<PropertyItem key={key} app={app} propKey={key} value={value} onClose={onClose} />
+					<PropertyItem key={key} keyLabel={key} value={value} scope="event-preview-prop" onLinkClick={onClose} />
 				))}
 			</div>
 		</div>
@@ -173,8 +124,8 @@ export function EventPreviewContent({ app, bundle, event, onClose }: EventPrevie
 				</div>
 			</div>
 
-			<PropertiesSection app={app} title="Display Properties" properties={displayProperties} onClose={onClose} />
-			<PropertiesSection app={app} title="Other Properties" properties={otherProperties} onClose={onClose} />
+			<PropertiesSection title="Display Properties" properties={displayProperties} onClose={onClose} />
+			<PropertiesSection title="Other Properties" properties={otherProperties} onClose={onClose} />
 		</div>
 	);
 }
@@ -188,7 +139,13 @@ export function renderEventPreviewInto(
 ): void {
 	const root = createRoot(el);
 	flushSync(() => {
-		root.render(<EventPreviewContent app={app} bundle={bundle} event={event} onClose={close} />);
+		root.render(
+			<AppContext value={app}>
+				<SharedReactThemeProvider cssPrefix={CSS_PREFIX}>
+					<EventPreviewContent app={app} bundle={bundle} event={event} onClose={close} />
+				</SharedReactThemeProvider>
+			</AppContext>
+		);
 	});
 }
 
