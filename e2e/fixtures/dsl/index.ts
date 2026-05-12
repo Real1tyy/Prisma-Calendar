@@ -12,6 +12,7 @@ export {
 	createCalendarHandle,
 	type EventCreate,
 	type EventOnDisk,
+	type LicenseStatusInput,
 	type SeedOptions,
 } from "./calendar";
 export {

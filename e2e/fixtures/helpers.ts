@@ -1,8 +1,9 @@
-import type { Locator, Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 
 import { ACTIVE_CALENDAR_LEAF, DEFAULT_CALENDAR_ID, PLUGIN_ID } from "./constants";
 import { getCalendars } from "./plugin-data";
 import { waitForCalendarCount } from "./seed-events";
+import { NOTICE_SELECTOR } from "./testids";
 
 // ── Schema-field accessors ──────────────────────────────────────────────────
 // Fields rendered via SchemaSection stamp the outer `.setting-item` wrapper
@@ -566,4 +567,22 @@ export async function addCalendar(page: Page, vaultDir: string): Promise<string>
  */
 export async function selectCalendarInSettings(page: Page, calendarId: string): Promise<void> {
 	await page.locator(".prisma-calendar-management select.dropdown").selectOption(calendarId);
+}
+
+/**
+ * Assert that the newest `.notice-container .notice` carries `text`. Pins the
+ * `.last()` match so older notices from setup don't satisfy the matcher.
+ * Used by every spec that asserts on a user-facing toast wording.
+ */
+export async function expectNoticeText(page: Page, text: string): Promise<void> {
+	await expect(page.locator(NOTICE_SELECTOR, { hasText: text }).last()).toBeVisible();
+}
+
+/**
+ * Frontmatter matcher that succeeds when the stored value starts with the
+ * given `YYYY-MM-DDTHH:mm` short form. Prisma normalises datetimes to
+ * `YYYY-MM-DDTHH:mm:ss.SSSZ`, so spec inputs need to be compared on prefix.
+ */
+export function startsWithStamp(expected: string): (v: unknown) => boolean {
+	return (v) => typeof v === "string" && v.startsWith(expected);
 }

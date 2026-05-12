@@ -13,25 +13,41 @@ import { runCommand } from "../commands";
 import { ACTIVE_CALENDAR_LEAF, PLUGIN_ID } from "../constants";
 import { anchorDate, anchorISO, isoLocal } from "../dates";
 import { getEventCount, refreshCalendar, type SeedEventInput, waitForEventCount } from "../seed-events";
-import { sel, TID, type ToolbarActionKey, type ViewMode, type ViewTabKey } from "../testids";
+import {
+	DASHBOARD_RANKING_TID,
+	dashboardItemByTitle,
+	HEATMAP_CELL_TID,
+	HEATMAP_CONTAINER_TID,
+	sel,
+	STATS_DATE_LABEL_TID,
+	TID,
+	TIMELINE_CONTAINER_TID,
+	TIMELINE_ITEM_CLASS,
+	type ToolbarActionKey,
+	type ViewMode,
+	type ViewTabKey,
+} from "../testids";
+import type { PrismaPlugin, PrismaWindow } from "../window-types";
 import { type BatchHandle, openBatch } from "./batch";
 import { createEventHandle, type EventHandle } from "./event";
 import { createEventsModalHandle, type EventsModalHandle } from "./events-modal";
 import { expectConfirmationModal } from "./shared";
 
-// `dashboard-by-name` slugifies titles to sentence-case, so specs that assert
-// on rankings need the same transform — `Renamed Event` becomes `Renamed event`.
-function dashboardItemSelector(title: string): string {
-	return `[data-item-title="${title}"]`;
-}
-
-const TIMELINE_CONTAINER_TID = "prisma-timeline-container";
-const TIMELINE_ITEM_CLASS = ".prisma-timeline-item";
-const HEATMAP_CONTAINER_TID = "prisma-heatmap-container";
-const HEATMAP_CELL_TID = "prisma-heatmap-cell";
-const DASHBOARD_RANKING_TID = "prisma-dashboard-cell-ranking";
-
 type DashboardGroup = "dashboard-by-name" | "dashboard-by-category";
+
+/**
+ * Mirror of the production `LicenseStatus` shape. Reproduced here (instead of
+ * imported from `src/`) so the e2e fixtures stay decoupled from the plugin's
+ * internal type layout — only the wire-shape `licenseManager.status$.next`
+ * accepts matters for the test seam.
+ */
+export interface LicenseStatusInput {
+	state: "none" | "valid" | "expired" | "invalid" | "device_limit" | "error";
+	activationsCurrent?: number;
+	activationsLimit?: number;
+	expiresAt?: string | null;
+	errorMessage?: string | null;
+}
 
 // CalendarHandle — root of the E2E DSL. Represents "a live calendar view in
 // an Obsidian session". Exposes every operation specs currently reach for
@@ -168,6 +184,62 @@ export interface CalendarHandle {
 	/** Flip the license to Pro via the `__setProForTesting` seam (guarded by `window.E2E`). */
 	unlockPro(): Promise<void>;
 
+	/**
+	 * Drive the licenseManager's `status$` BehaviorSubject (same path the
+	 * verified-activation flow flips) and toggle the testing isPro flag. Used
+	 * by license-surface specs that need to walk free/valid/expired transitions
+	 * without hitting the network. The status keys mirror `LicenseStatusInput`
+	 * in the plugin source.
+	 */
+	setLicenseStatus(input: LicenseStatusInput, options: { isPro: boolean }): Promise<void>;
+
+	/**
+	 * Read the count of events held by the currently-active bundle's event
+	 * store. Returns -1 when the bundle is missing — caller asserts on the
+	 * count to surface that case rather than swallowing it.
+	 */
+	eventStoreCount(): Promise<number>;
+
+	/**
+	 * Read each bundle's event store keyed by `calendarId`. Used by multi-
+	 * calendar isolation specs to prove that a mutation in calendar A does
+	 * not bleed into calendar B's reactive store.
+	 */
+	readPerBundleEventStores(): Promise<Record<string, { count: number; titles: string[] }>>;
+
+	/**
+	 * For each title, ask the active bundle's `prerequisiteTracker` whether
+	 * the corresponding event file is `isConnected`. Resolves to a record
+	 * keyed by title; titles that don't match any event resolve to `false`.
+	 */
+	isPrereqConnectedByTitle(titles: readonly string[]): Promise<Record<string, boolean>>;
+
+	/**
+	 * Seed a virtual event through the production code path
+	 * (`VirtualEventStore.add`) so the auto-created "Virtual Events.md" file
+	 * gets a new row. Returns the created event id.
+	 */
+	seedVirtualEvent(event: { title: string; start: string; end: string | null }): Promise<string>;
+
+	/** Open a new workspace leaf hosting the active bundle's calendar view. */
+	openInNewLeaf(): Promise<void>;
+
+	/** Count workspace leaves currently rendering the active bundle's view type. */
+	leafCount(): Promise<number>;
+
+	/**
+	 * Close every leaf rendering the active bundle's view type beyond the
+	 * first `keep`. Used by subscription-cleanup specs that walk open/close
+	 * cycles to surface stale subscribers.
+	 */
+	detachExtraLeaves(keep: number): Promise<void>;
+
+	/** Collapse the left workspace sidebar — used by visual specs that need maximum canvas width. */
+	collapseLeftSidebar(): Promise<void>;
+
+	/** Open a markdown file in reading (preview) mode — required for code-block processors to mount. */
+	openFileInReadingMode(path: string): Promise<void>;
+
 	/** Click the untracked-events dropdown toggle in the toolbar. */
 	openUntrackedDropdown(): Promise<void>;
 
@@ -274,23 +346,9 @@ function blockByTitle(page: Page, title: string): Locator {
 async function navigateCalendarTo(page: Page, iso: string): Promise<void> {
 	await page.evaluate(
 		({ dateIso, pid }) => {
-			const w = window as unknown as {
-				app: {
-					plugins: {
-						plugins: Record<
-							string,
-							{
-								calendarBundles?: Array<{
-									viewRef?: {
-										calendarComponent?: { calendar?: { gotoDate: (d: string) => void } } | null;
-									};
-								}>;
-							}
-						>;
-					};
-				};
-			};
-			const bundles = w.app.plugins.plugins[pid]?.calendarBundles ?? [];
+			const w = window as unknown as PrismaWindow;
+			const plugin = w.app.plugins.plugins[pid] as PrismaPlugin | undefined;
+			const bundles = plugin?.calendarBundles ?? [];
 			let navigated = false;
 			for (const bundle of bundles) {
 				const cal = bundle.viewRef?.calendarComponent?.calendar;
@@ -425,9 +483,8 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 				return { path: `${subdir}/${filename}`, content: `---\n${fmLines}\n---\n\n# ${event.title}\n` };
 			});
 			await page.evaluate(async (fileList) => {
-				const vault = (window as unknown as { app: { vault: { create: (p: string, c: string) => Promise<unknown> } } })
-					.app.vault;
-				for (const f of fileList) await vault.create(f.path, f.content);
+				const w = window as unknown as PrismaWindow;
+				for (const f of fileList) await w.app.vault.create(f.path, f.content);
 			}, files);
 			await refreshCalendar(page);
 			await waitForEventCount(page, baseline + events.length);
@@ -504,26 +561,14 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 				await cell.locator(".fc-prev-button").click();
 			}
 			const targetLabel = anchor.toLocaleDateString("en-US", { month: "long", year: "numeric" });
-			await expect(page.locator(sel("prisma-stats-date-label")).first()).toHaveText(targetLabel);
+			await expect(page.locator(sel(STATS_DATE_LABEL_TID)).first()).toHaveText(targetLabel);
 		},
 
 		async unlockPro() {
 			await page.evaluate((pid) => {
-				const w = window as unknown as {
-					app: {
-						plugins: {
-							plugins: Record<
-								string,
-								{
-									licenseManager?: {
-										__setProForTesting?: (v: boolean) => void;
-									};
-								}
-							>;
-						};
-					};
-				};
-				const lm = w.app.plugins.plugins[pid]?.licenseManager;
+				const w = window as unknown as PrismaWindow;
+				const plugin = w.app.plugins.plugins[pid] as PrismaPlugin | undefined;
+				const lm = plugin?.licenseManager;
 				if (!lm?.__setProForTesting) {
 					throw new Error(`licenseManager.__setProForTesting missing on ${pid}`);
 				}
@@ -548,9 +593,7 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 
 		async activeFilePath() {
 			return page.evaluate(() => {
-				const w = window as unknown as {
-					app: { workspace: { getActiveFile: () => { path: string } | null } };
-				};
+				const w = window as unknown as PrismaWindow;
 				return w.app.workspace.getActiveFile()?.path ?? null;
 			});
 		},
@@ -573,9 +616,143 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 		async expectDashboardItem(group, title, present = true) {
 			await switchToGroupChild("dashboard", group);
 			const ranking = page.locator(`${sel(DASHBOARD_RANKING_TID)}:visible`).first();
-			const item = ranking.locator(dashboardItemSelector(title));
+			const item = ranking.locator(dashboardItemByTitle(title));
 			if (present) await expect(item).toBeVisible();
 			else await expect(item).toHaveCount(0);
+		},
+
+		async setLicenseStatus(input, options) {
+			await page.evaluate(
+				({ pid, status, pro }) => {
+					const w = window as unknown as PrismaWindow;
+					const plugin = w.app.plugins.plugins[pid] as PrismaPlugin | undefined;
+					const lm = plugin?.licenseManager;
+					if (!lm) throw new Error("licenseManager missing");
+					lm.status$.next({
+						state: status.state,
+						activationsCurrent: status.activationsCurrent ?? 0,
+						activationsLimit: status.activationsLimit ?? 5,
+						expiresAt: status.expiresAt ?? null,
+						errorMessage: status.errorMessage ?? null,
+					});
+					lm.__setProForTesting?.(pro);
+				},
+				{ pid: PLUGIN_ID, status: input, pro: options.isPro }
+			);
+		},
+
+		async eventStoreCount() {
+			return page.evaluate((pid) => {
+				const w = window as unknown as PrismaWindow;
+				const bundle = (w.app.plugins.plugins[pid] as PrismaPlugin | undefined)?.calendarBundles?.[0];
+				return bundle?.eventStore.getAllEvents().length ?? -1;
+			}, PLUGIN_ID);
+		},
+
+		async readPerBundleEventStores() {
+			return page.evaluate((pid) => {
+				const w = window as unknown as PrismaWindow;
+				const bundles = (w.app.plugins.plugins[pid] as PrismaPlugin | undefined)?.calendarBundles ?? [];
+				const out: Record<string, { count: number; titles: string[] }> = {};
+				for (const b of bundles) {
+					const events = b.eventStore.getAllEvents();
+					out[b.calendarId] = {
+						count: events.length,
+						titles: events.map((e) => e.title).sort(),
+					};
+				}
+				return out;
+			}, PLUGIN_ID);
+		},
+
+		async isPrereqConnectedByTitle(titles) {
+			return page.evaluate(
+				({ pid, wanted }) => {
+					const w = window as unknown as PrismaWindow;
+					const bundle = (w.app.plugins.plugins[pid] as PrismaPlugin | undefined)?.calendarBundles?.[0];
+					if (!bundle) throw new Error("bundle missing");
+					const events = bundle.eventStore.getAllEvents();
+					const result: Record<string, boolean> = {};
+					for (const title of wanted) {
+						const found = events.find((e) => e.title === title);
+						result[title] = found ? bundle.prerequisiteTracker.isConnected(found.ref.filePath) : false;
+					}
+					return result;
+				},
+				{ pid: PLUGIN_ID, wanted: [...titles] }
+			);
+		},
+
+		async seedVirtualEvent(event) {
+			return page.evaluate(
+				async ({ pid, data }) => {
+					const w = window as unknown as PrismaWindow;
+					const bundle = (w.app.plugins.plugins[pid] as PrismaPlugin | undefined)?.calendarBundles?.[0];
+					if (!bundle) throw new Error("bundle missing");
+					const added = await bundle.virtualEventStore.add({
+						title: data.title,
+						start: data.start,
+						end: data.end,
+						allDay: false,
+						properties: {},
+					});
+					return added.id;
+				},
+				{ pid: PLUGIN_ID, data: event }
+			);
+		},
+
+		async openInNewLeaf() {
+			await page.evaluate((pid) => {
+				const w = window as unknown as PrismaWindow;
+				const bundle = (w.app.plugins.plugins[pid] as PrismaPlugin | undefined)?.calendarBundles?.[0];
+				if (!bundle) throw new Error("bundle missing");
+				const leaf = w.app.workspace.getLeaf("tab");
+				return leaf.setViewState({ type: bundle.viewType, active: true });
+			}, PLUGIN_ID);
+		},
+
+		async leafCount() {
+			return page.evaluate((pid) => {
+				const w = window as unknown as PrismaWindow;
+				const bundle = (w.app.plugins.plugins[pid] as PrismaPlugin | undefined)?.calendarBundles?.[0];
+				if (!bundle) return 0;
+				return w.app.workspace.getLeavesOfType(bundle.viewType).length;
+			}, PLUGIN_ID);
+		},
+
+		async detachExtraLeaves(keep) {
+			await page.evaluate(
+				({ pid, keepCount }) => {
+					const w = window as unknown as PrismaWindow;
+					const bundle = (w.app.plugins.plugins[pid] as PrismaPlugin | undefined)?.calendarBundles?.[0];
+					if (!bundle) return;
+					const leaves = w.app.workspace.getLeavesOfType(bundle.viewType);
+					for (let i = keepCount; i < leaves.length; i++) {
+						leaves[i].detach();
+					}
+				},
+				{ pid: PLUGIN_ID, keepCount: keep }
+			);
+		},
+
+		async collapseLeftSidebar() {
+			await page.evaluate(() => {
+				const w = window as unknown as PrismaWindow;
+				if (w.app.workspace.leftSplit && !w.app.workspace.leftSplit.collapsed) {
+					w.app.workspace.leftSplit.collapse();
+				}
+				document.querySelector(".workspace-ribbon.mod-left")?.remove();
+			});
+		},
+
+		async openFileInReadingMode(path) {
+			await page.evaluate(async (filePath) => {
+				const w = window as unknown as PrismaWindow;
+				await w.app.workspace.openLinkText(filePath, "", false, { state: { mode: "preview" } });
+				const leaf = w.app.workspace.getLeaf(false);
+				await leaf.setViewState({ type: "markdown", state: { file: filePath, mode: "preview" }, active: true });
+			}, path);
 		},
 	};
 }

@@ -257,6 +257,78 @@ export const UNTRACKED_BUTTON_TID = "prisma-untracked-dropdown-button";
 export const UNTRACKED_DROPDOWN_TID = "prisma-untracked-dropdown";
 export const UNTRACKED_ITEM_TID = "prisma-untracked-dropdown-item";
 
+// ── Cross-view + analytics surfaces ────────────────────────────────────────
+// CSS-class anchors and `data-testid`s that show up across more than one
+// spec. Keep raw selectors out of spec bodies — when the plugin renames a
+// CSS hook these constants give us one edit point.
+
+/** Timeline tab — individual item element. CSS class because the renderer doesn't stamp a testid. */
+export const TIMELINE_ITEM_CLASS = ".prisma-timeline-item";
+/** Timeline tab — root container `data-testid`. */
+export const TIMELINE_CONTAINER_TID = "prisma-timeline-container";
+/** Heatmap tab — container + cell testids. */
+export const HEATMAP_CONTAINER_TID = "prisma-heatmap-container";
+export const HEATMAP_CELL_TID = "prisma-heatmap-cell";
+/** Dashboard ranking cell that hosts the per-title rows. */
+export const DASHBOARD_RANKING_TID = "prisma-dashboard-cell-ranking";
+/** Stats / placeholder containers. */
+export const STATS_EMPTY_TID = "prisma-stats-empty";
+export const STATS_DATE_LABEL_TID = "prisma-stats-date-label";
+
+/** FullCalendar toolbar title (week-of label, etc.). */
+export const FC_TOOLBAR_TITLE = ".fc-toolbar-title";
+/** Prisma right-click context menu wrapper used by Obsidian. */
+export const OBSIDIAN_MENU_ROOT = ".menu";
+
+/** Connection-arrow overlay drawn between connected events on the calendar. */
+export const CONNECTION_ARROW_TID = "prisma-connection-arrow";
+/** Banner that appears while the prereq-selection workflow is active. */
+export const PREREQ_SELECTION_BANNER_CLASS = ".prisma-prereq-selection-banner";
+
+/** Pro-gate component testid template — call `proGate(area)` for the full id. */
+export const proGate = (area: string): string => `prisma-pro-gate-${area}`;
+
+/** Notice / toast container injected by Obsidian's Notice API. */
+export const NOTICE_SELECTOR = ".notice-container .notice";
+
+/** License-status row sub-elements (settings → general tab). */
+export const LICENSE_ACTIVATIONS_BADGE_CLASS = ".prisma-license-activations-badge";
+
+/** Virtual-events code-block renderer. */
+export const VIRTUAL_EVENTS_BLOCK_CLASS = ".prisma-virtual-events-block";
+export const VIRTUAL_EVENTS_TABLE_CLASS = ".prisma-virtual-events-table";
+
+/** CalDAV integrations tab surfaces. */
+export const CALDAV_MODAL_TID = "prisma-modal-caldav-add";
+export const CALDAV_TEST_CONNECTION_TID = "prisma-caldav-test-connection";
+export const CALDAV_PRESET_TID = "prisma-caldav-preset";
+export const CALDAV_ADD_ACCOUNT_BTN_CLASS = ".prisma-caldav-add-account-button";
+export const caldavField = (key: string): string => `prisma-caldav-add-control-${key}`;
+
+/** Move-by modal sub-elements. */
+export const MOVE_BY_MODAL_TID = "prisma-modal-move-by";
+export const MOVE_BY_VALUE_TID = "prisma-move-by-value";
+export const MOVE_BY_INCREMENT_TID = "prisma-move-by-increment";
+export const MOVE_BY_DECREMENT_TID = "prisma-move-by-decrement";
+export const MOVE_BY_TOGGLE_SIGN_TID = "prisma-move-by-toggle-sign";
+export const moveByUnit = (unit: string): string => `prisma-move-by-unit-${unit}`;
+
+/** Batch-frontmatter modal sub-elements. */
+export const BATCH_FM_MODAL_TID = "prisma-modal-batch-frontmatter";
+export const BATCH_FM_ROW_TID = "prisma-batch-property-row";
+export const BATCH_FM_KEY_TID = "prisma-batch-property-key";
+export const BATCH_FM_VALUE_TID = "prisma-batch-property-value";
+export const BATCH_FM_REMOVE_TID = "prisma-batch-property-remove";
+export const BATCH_FM_ADD_TID = "prisma-batch-add-property";
+export const BATCH_FM_DELETION_MARKED_CLASS = "prisma-batch-frontmatter-marked-deletion";
+
+/** Generic SchemaForm submit button used by every modal-form (move-by, batch-frontmatter, …). */
+export const FORM_SUBMIT_TID = "prisma-form-submit";
+
+/** Selector helpers — keep `data-event-title="…"` and friends out of spec bodies. */
+export const eventTileByTitle = (title: string): string => `${sel(EVENT_BLOCK_TID)}[data-event-title="${title}"]`;
+export const dashboardItemByTitle = (title: string): string => `[data-item-title="${title}"]`;
+
 export const TID = {
 	event: {
 		control: (key: EventControlKey): string => `prisma-event-control-${key}`,

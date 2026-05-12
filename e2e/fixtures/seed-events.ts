@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 import { expect, type Page } from "@playwright/test";
 
 import { PLUGIN_ID } from "./constants";
+import type { PrismaPlugin, PrismaWindow } from "./window-types";
 
 // Disk-level event seeding + runtime introspection. These utilities bypass
 // the create-event modal so specs that focus on integrations (ICS export,
@@ -126,22 +127,8 @@ export async function refreshCalendar(page: Page): Promise<void> {
 /** Read the default-calendar bundle's live settings snapshot. */
 export async function readCalendarSettings(page: Page): Promise<Record<string, unknown>> {
 	return page.evaluate((pid) => {
-		const w = window as unknown as {
-			app: {
-				plugins: {
-					plugins: Record<
-						string,
-						{
-							calendarBundles?: Array<{
-								settingsStore: { currentSettings: Record<string, unknown> };
-							}>;
-						}
-					>;
-				};
-			};
-		};
-		const plugin = w.app.plugins.plugins[pid];
-		const bundle = plugin?.calendarBundles?.[0];
+		const w = window as unknown as PrismaWindow;
+		const bundle = (w.app.plugins.plugins[pid] as PrismaPlugin | undefined)?.calendarBundles?.[0];
 		if (!bundle) throw new Error("No calendar bundle");
 		return bundle.settingsStore.currentSettings;
 	}, PLUGIN_ID);
@@ -151,27 +138,8 @@ export async function readCalendarSettings(page: Page): Promise<Record<string, u
 export async function updateCalendarSettings(page: Page, patch: Record<string, unknown>): Promise<void> {
 	await page.evaluate(
 		async ({ p, pid }) => {
-			const w = window as unknown as {
-				app: {
-					plugins: {
-						plugins: Record<
-							string,
-							{
-								calendarBundles?: Array<{
-									settingsStore: {
-										currentSettings: Record<string, unknown>;
-										updateSettings: (
-											updater: (current: Record<string, unknown>) => Record<string, unknown>
-										) => Promise<void>;
-									};
-								}>;
-							}
-						>;
-					};
-				};
-			};
-			const plugin = w.app.plugins.plugins[pid];
-			const bundle = plugin?.calendarBundles?.[0];
+			const w = window as unknown as PrismaWindow;
+			const bundle = (w.app.plugins.plugins[pid] as PrismaPlugin | undefined)?.calendarBundles?.[0];
 			if (!bundle) throw new Error("No calendar bundle");
 			await bundle.settingsStore.updateSettings((current) => ({ ...current, ...p }));
 		},
@@ -191,22 +159,8 @@ export async function waitForEventCount(page: Page, count: number, timeout = 30_
 /** Count events the plugin currently sees via the event store. */
 export async function getEventCount(page: Page): Promise<number> {
 	return page.evaluate((pid) => {
-		const w = window as unknown as {
-			app: {
-				plugins: {
-					plugins: Record<
-						string,
-						{
-							calendarBundles?: Array<{
-								eventStore: { getAllEvents: () => unknown[] };
-							}>;
-						}
-					>;
-				};
-			};
-		};
-		const plugin = w.app.plugins.plugins[pid];
-		const bundle = plugin?.calendarBundles?.[0];
+		const w = window as unknown as PrismaWindow;
+		const bundle = (w.app.plugins.plugins[pid] as PrismaPlugin | undefined)?.calendarBundles?.[0];
 		if (!bundle) throw new Error("No calendar bundle");
 		return bundle.eventStore.getAllEvents().length;
 	}, PLUGIN_ID);
@@ -217,10 +171,8 @@ export async function waitForCalendarCount(page: Page, count: number): Promise<v
 		.poll(
 			() =>
 				page.evaluate((pid) => {
-					const w = window as unknown as {
-						app: { plugins: { plugins: Record<string, { calendarBundles?: unknown[] }> } };
-					};
-					return w.app.plugins.plugins[pid]?.calendarBundles?.length ?? 0;
+					const w = window as unknown as PrismaWindow;
+					return (w.app.plugins.plugins[pid] as PrismaPlugin | undefined)?.calendarBundles?.length ?? 0;
 				}, PLUGIN_ID),
 			{ message: `waiting for ${count} calendar bundles` }
 		)
