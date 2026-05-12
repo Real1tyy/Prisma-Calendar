@@ -11,7 +11,7 @@ export function buildWhatsNewConfig(changelogContent: string, utmSection: string
 	const buildUrl = (baseUrl: string, campaignContent: string) =>
 		buildUtmUrl(baseUrl, "prisma-calendar", "plugin", utmSection, campaignContent);
 	return {
-		cssPrefix: "prisma",
+		cssPrefix: "prisma-",
 		pluginName: "Prisma Calendar",
 		changelogContent,
 		links: {
