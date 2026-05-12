@@ -4,13 +4,13 @@ import { createPortal } from "react-dom";
 
 import type { ManagerEditController } from "../../components/manager-edit-form";
 import { ManagerEditForm } from "../../components/manager-edit-form";
+import { ManagerRow } from "../../components/manager-row";
 import { ObsidianIcon } from "../../components/obsidian-icon";
 import { Toggle } from "../../components/setting-controls";
 import { SettingItem } from "../../components/setting-item";
 import { useApp } from "../../contexts/app-context";
 import { SharedReactThemeProvider } from "../../contexts/theme-context";
 import { showReactIconPicker } from "../../modals/icon-picker-modal";
-import { cx } from "../../utils/cx";
 import type { GroupTabDefinition, TabDefinition, TabEntry } from "./types";
 import { isGroupTab } from "./types";
 import { useModalPortal } from "./use-modal-portal";
@@ -149,7 +149,7 @@ export const TabManagerContent = memo(function TabManagerContent({
 					<Toggle value={state.showSettingsButton} onChange={actions.setShowSettingsButton} />
 				</SettingItem>
 
-				<div className={`${cssPrefix}tab-manager-list`}>
+				<div className={`${cssPrefix}${ROW_PREFIX}-list`}>
 					{orderedTabs.map((tab, index) => (
 						<TabManagerRow
 							key={tab.id}
@@ -199,7 +199,6 @@ interface EditableRowProps {
 }
 
 const EditableRow = memo(function EditableRow({ row, actions }: EditableRowProps) {
-	const { cssPrefix } = useTabManagerContext();
 	const app = useApp();
 
 	const {
@@ -217,31 +216,10 @@ const EditableRow = memo(function EditableRow({ row, actions }: EditableRowProps
 		isExpanded,
 		leadingSlot,
 	} = row;
-	const { move, toggleVisibility, toggleExpand, dragStart, dragEnd, drop, rename, changeIcon, changeColor } = actions;
 
-	const cls = (suffix: string) => `${cssPrefix}${ROW_PREFIX}-${suffix}`;
 	const hasRename = displayLabel !== originalLabel;
 	const canMoveUp = isVisible && visibleIndex > 0;
 	const canMoveDown = isVisible && visibleIndex < visibleCount - 1;
-
-	const dragHandlers = isVisible
-		? {
-				draggable: true,
-				onDragStart: (e: React.DragEvent) => {
-					dragStart();
-					e.dataTransfer.effectAllowed = "move";
-				},
-				onDragEnd: dragEnd,
-				onDragOver: (e: React.DragEvent) => {
-					e.preventDefault();
-					e.dataTransfer.dropEffect = "move";
-				},
-				onDrop: (e: React.DragEvent) => {
-					e.preventDefault();
-					drop();
-				},
-			}
-		: {};
 
 	const pickIcon = useCallback(
 		(cb: (icon: string | null) => void) => {
@@ -270,89 +248,40 @@ const EditableRow = memo(function EditableRow({ row, actions }: EditableRowProps
 			icon: hasIconOverride,
 			color: hasColorOverride,
 		},
-		actions: { rename, changeIcon, changeColor, pickIcon },
+		actions: { rename: actions.rename, changeIcon: actions.changeIcon, changeColor: actions.changeColor, pickIcon },
+	};
+
+	const item = {
+		id,
+		label: originalLabel,
+		icon: displayIcon ?? "",
+		...(displayColor !== undefined ? { color: displayColor } : {}),
 	};
 
 	return (
-		<div
-			className={cx(cls("row"), !isVisible && cls("row-hidden"), isDragging && cls("row-dragging"))}
-			{...dragHandlers}
-			data-tab-id={id}
-			data-testid={cls(`row-${id}`)}
+		<ManagerRow
+			item={item}
+			chip={leadingSlot}
+			rowPrefix={ROW_PREFIX}
+			displayLabel={displayLabel}
+			displayIcon={displayIcon ?? ""}
+			{...(displayColor !== undefined ? { displayColor } : {})}
+			hasRename={hasRename}
+			isVisible={isVisible}
+			isExpanded={isExpanded}
+			visibleCount={visibleCount}
+			isDragging={isDragging}
+			draggable={isVisible}
+			{...(canMoveUp ? { onMoveUp: () => actions.move(-1) } : {})}
+			{...(canMoveDown ? { onMoveDown: () => actions.move(1) } : {})}
+			onDragStart={actions.dragStart}
+			onDragEnd={actions.dragEnd}
+			onDrop={actions.drop}
+			onEdit={actions.toggleExpand}
+			onToggleVisibility={actions.toggleVisibility}
 		>
-			{leadingSlot}
-
-			<div className={cls("drag")}>
-				{isVisible && (
-					<span className={cls("grip")}>
-						<ObsidianIcon icon="grip-vertical" />
-					</span>
-				)}
-			</div>
-
-			<div className={cls("arrows")}>
-				{canMoveUp && (
-					<button
-						type="button"
-						className={cls("drag-btn")}
-						onClick={() => move(-1)}
-						data-testid={cls(`up-${id}`)}
-						aria-label="Move up"
-					>
-						<ObsidianIcon icon="chevron-up" />
-					</button>
-				)}
-				{canMoveDown && (
-					<button
-						type="button"
-						className={cls("drag-btn")}
-						onClick={() => move(1)}
-						data-testid={cls(`down-${id}`)}
-						aria-label="Move down"
-					>
-						<ObsidianIcon icon="chevron-down" />
-					</button>
-				)}
-			</div>
-
-			<div className={cls("label")}>
-				{displayIcon && (
-					<span className={cls("icon")} style={displayColor ? { color: displayColor } : undefined}>
-						<ObsidianIcon icon={displayIcon} />
-					</span>
-				)}
-				<span className={cls("label-text")}>{displayLabel}</span>
-				{hasRename && (
-					<span className={cls("label-original")} title="Original name">
-						{originalLabel}
-					</span>
-				)}
-			</div>
-
-			<div className={cls("controls")}>
-				<button
-					type="button"
-					className={cls("btn")}
-					onClick={toggleExpand}
-					title={isExpanded ? "Collapse" : "Edit"}
-					data-testid={cls(`edit-${id}`)}
-				>
-					<ObsidianIcon icon={isExpanded ? "chevron-up" : "pencil"} />
-				</button>
-				<button
-					type="button"
-					className={cls("btn")}
-					disabled={isVisible && visibleCount <= 1}
-					onClick={toggleVisibility}
-					title={isVisible ? "Hide" : "Show"}
-					data-testid={cls(`toggle-${id}`)}
-				>
-					<ObsidianIcon icon={isVisible ? "eye" : "eye-off"} />
-				</button>
-			</div>
-
 			{isExpanded && <ManagerEditForm controller={editController} formPrefix={ROW_PREFIX} />}
-		</div>
+		</ManagerRow>
 	);
 });
 

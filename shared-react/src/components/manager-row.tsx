@@ -1,5 +1,5 @@
-import type { ReactNode } from "react";
-import { memo, useCallback } from "react";
+import type { DragEvent, ReactNode } from "react";
+import { memo, useCallback, useState } from "react";
 
 import { useScoped } from "../contexts/theme-context";
 import { useInjectedStyles } from "../hooks/use-injected-styles";
@@ -42,6 +42,17 @@ export interface ManagerRowProps {
 	 */
 	rowPrefix?: string;
 	children?: ReactNode;
+	/** When true, renders the grip column and wires drag-and-drop handlers. */
+	draggable?: boolean;
+	/** Visual state when this row is the dragged source. */
+	isDragging?: boolean;
+	/** Renders the up-arrow when provided; omit to hide. */
+	onMoveUp?: () => void;
+	/** Renders the down-arrow when provided; omit to hide. */
+	onMoveDown?: () => void;
+	onDragStart?: () => void;
+	onDragEnd?: () => void;
+	onDrop?: () => void;
 }
 
 export const ManagerRow = memo(function ManagerRow({
@@ -59,9 +70,18 @@ export const ManagerRow = memo(function ManagerRow({
 	hasRename = false,
 	rowPrefix = "manager",
 	children,
+	draggable = false,
+	isDragging = false,
+	onMoveUp,
+	onMoveDown,
+	onDragStart,
+	onDragEnd,
+	onDrop,
 }: ManagerRowProps) {
 	const { cls, tid, cssPrefix } = useScoped(rowPrefix);
 	useInjectedStyles(`${cssPrefix}${rowPrefix}-row-styles`, buildManagerRowStyles(cssPrefix, rowPrefix));
+	const [dragOver, setDragOver] = useState(false);
+
 	const label = displayLabel ?? item.label;
 	const icon = displayIcon ?? item.icon;
 	const color = displayColor ?? item.color;
@@ -69,9 +89,79 @@ export const ManagerRow = memo(function ManagerRow({
 	const handleEdit = useCallback(() => onEdit?.(), [onEdit]);
 	const handleToggle = useCallback(() => onToggleVisibility?.(), [onToggleVisibility]);
 
+	const dragHandlers = draggable
+		? {
+				onDragStart: (e: DragEvent<HTMLDivElement>) => {
+					onDragStart?.();
+					e.dataTransfer.effectAllowed = "move";
+				},
+				onDragEnd: () => onDragEnd?.(),
+				onDragOver: (e: DragEvent<HTMLDivElement>) => {
+					e.preventDefault();
+					e.dataTransfer.dropEffect = "move";
+					setDragOver(true);
+				},
+				onDragLeave: () => setDragOver(false),
+				onDrop: (e: DragEvent<HTMLDivElement>) => {
+					e.preventDefault();
+					setDragOver(false);
+					onDrop?.();
+				},
+			}
+		: {};
+
+	const showArrows = onMoveUp !== undefined || onMoveDown !== undefined;
+
 	return (
-		<div className={cx(cls("row"), !isVisible && cls("row-hidden"))} data-testid={tid("row", item.id)}>
+		<div
+			className={cx(
+				cls("row"),
+				!isVisible && cls("row-hidden"),
+				isDragging && cls("row-dragging"),
+				dragOver && cls("row-dragover")
+			)}
+			data-testid={tid("row", item.id)}
+			data-row-id={item.id}
+			draggable={draggable}
+			{...dragHandlers}
+		>
 			{chip}
+
+			{draggable && (
+				<div className={cls("drag")}>
+					<span className={cls("grip")}>
+						<ObsidianIcon icon="grip-vertical" />
+					</span>
+				</div>
+			)}
+
+			{showArrows && (
+				<div className={cls("arrows")}>
+					{onMoveUp && (
+						<button
+							type="button"
+							className={cls("drag-btn")}
+							onClick={onMoveUp}
+							data-testid={tid("up", item.id)}
+							aria-label="Move up"
+						>
+							<ObsidianIcon icon="chevron-up" />
+						</button>
+					)}
+					{onMoveDown && (
+						<button
+							type="button"
+							className={cls("drag-btn")}
+							onClick={onMoveDown}
+							data-testid={tid("down", item.id)}
+							aria-label="Move down"
+						>
+							<ObsidianIcon icon="chevron-down" />
+						</button>
+					)}
+				</div>
+			)}
+
 			<div className={cls("label")}>
 				<span className={cls("icon")} style={color && color !== "#000000" ? { color } : undefined}>
 					<ObsidianIcon icon={icon} />

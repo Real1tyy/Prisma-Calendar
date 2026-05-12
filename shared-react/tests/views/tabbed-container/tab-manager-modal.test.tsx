@@ -84,8 +84,8 @@ describe("TabManagerContent", () => {
 		const { user } = renderInTheme(<Harness tabs={makeTabs()} />);
 		await user.click(screen.getByTestId(`${PREFIX}tab-manager-up-b`));
 
-		const orderedIds = Array.from(document.querySelectorAll(`.${PREFIX}tab-manager-list [data-tab-id]`)).map((el) =>
-			el.getAttribute("data-tab-id")
+		const orderedIds = Array.from(document.querySelectorAll(`.${PREFIX}tab-manager-list [data-row-id]`)).map((el) =>
+			el.getAttribute("data-row-id")
 		);
 		expect(orderedIds).toEqual(["b", "a", "c"]);
 	});
@@ -94,8 +94,8 @@ describe("TabManagerContent", () => {
 		const { user } = renderInTheme(<Harness tabs={makeTabs()} />);
 		await user.click(screen.getByTestId(`${PREFIX}tab-manager-down-b`));
 
-		const orderedIds = Array.from(document.querySelectorAll(`.${PREFIX}tab-manager-list [data-tab-id]`)).map((el) =>
-			el.getAttribute("data-tab-id")
+		const orderedIds = Array.from(document.querySelectorAll(`.${PREFIX}tab-manager-list [data-row-id]`)).map((el) =>
+			el.getAttribute("data-row-id")
 		);
 		expect(orderedIds).toEqual(["a", "c", "b"]);
 	});
@@ -157,8 +157,8 @@ describe("TabManagerContent groups", () => {
 		await user.click(screen.getByTestId(`${PREFIX}tab-manager-group-toggle-g`));
 		await user.click(screen.getByTestId(`${PREFIX}tab-manager-down-child-a`));
 
-		const childIds = Array.from(document.querySelectorAll(`.${PREFIX}tab-manager-children [data-tab-id]`)).map((el) =>
-			el.getAttribute("data-tab-id")
+		const childIds = Array.from(document.querySelectorAll(`.${PREFIX}tab-manager-children [data-row-id]`)).map((el) =>
+			el.getAttribute("data-row-id")
 		);
 		expect(childIds).toEqual(["child-b", "child-a"]);
 	});

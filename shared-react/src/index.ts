@@ -107,9 +107,25 @@ export type {
 	ContextMenuItemDef,
 	ContextMenuProps,
 	ContextMenuSeparatorDef,
+	ContextMenuState,
 	ContextMenuSubmenuDef,
+	CustomizableContextMenuConfig,
+	CustomizableContextMenuHandle,
+	CustomizableContextMenuItem,
+	CustomizableMenuSnapshot,
+	CustomizableMenuStoreOptions,
+	ItemManagerContentProps,
+	OpenItemManagerOptions,
 } from "./menus";
-export { ContextMenu } from "./menus";
+export {
+	ContextMenu,
+	ContextMenuStateSchema,
+	createCustomizableContextMenu,
+	CustomizableMenuStore,
+	ItemManagerContent,
+	openItemManagerModal,
+	registerCustomizableContextMenuCommand,
+} from "./menus";
 
 // ─── Modals ───
 export type { ConfirmationModalProps, ConfirmationResult, OpenConfirmationOptions } from "./modals/confirmation-modal";

@@ -1,7 +1,6 @@
 export * from "./charts";
 export * from "./code-editor";
 export * from "./component-renderer";
-export * from "./context-menu";
 export * from "./file-explorer";
 export * from "./gantt-view";
 export * from "./grid-layout";

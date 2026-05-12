@@ -1,16 +1,14 @@
 import type { App } from "obsidian";
-import type { CSSProperties, DragEvent, ReactNode } from "react";
 import { memo, useCallback, useMemo, useState } from "react";
 
 import { type ManagerEditController, ManagerEditForm } from "../components/manager-edit-form";
-import { ObsidianIcon } from "../components/obsidian-icon";
+import { ManagerRow } from "../components/manager-row";
 import { Toggle } from "../components/setting-controls";
 import { SettingItem } from "../components/setting-item";
 import { useExternalSnapshot } from "../hooks/use-external-snapshot";
 import { useInjectedStyles } from "../hooks/use-injected-styles";
 import { showReactIconPicker } from "../modals/icon-picker-modal";
 import { showReactModal } from "../show-react-modal";
-import { cx } from "../utils/cx";
 import { DEFAULT_COLOR_SENTINEL, FALLBACK_EDIT_COLOR } from "./constants";
 import type { PageHeaderSnapshot, PageHeaderStore } from "./store";
 import { buildPageHeaderStyles } from "./styles";
@@ -24,187 +22,7 @@ interface ActionManagerProps {
 	cssPrefix: string;
 }
 
-interface RowModel {
-	action: HeaderActionDefinition;
-	isVisible: boolean;
-	isExpanded: boolean;
-	isDragging: boolean;
-	isSearching: boolean;
-	visibleIndex: number;
-	visibleCount: number;
-	displayLabel: string;
-	displayIcon: string | undefined;
-	displayColor: string | undefined;
-	hasRenameOverride: boolean;
-	hasIconOverride: boolean;
-	hasColorOverride: boolean;
-}
-
-interface RowActions {
-	toggleExpand: () => void;
-	toggleVisibility: () => void;
-	move: (direction: -1 | 1) => void;
-	dragStart: () => void;
-	dragEnd: () => void;
-	drop: () => void;
-	rename: (label: string | undefined) => void;
-	changeIcon: (icon: string | undefined) => void;
-	changeColor: (color: string | undefined) => void;
-	pickIcon: (callback: (icon: string | null) => void) => void;
-}
-
-interface ActionRowProps {
-	cssPrefix: string;
-	model: RowModel;
-	actions: RowActions;
-}
-
-const ActionRow = memo(function ActionRow({ cssPrefix, model, actions }: ActionRowProps) {
-	const [dragOver, setDragOver] = useState(false);
-	const {
-		action,
-		isVisible,
-		isExpanded,
-		isDragging,
-		isSearching,
-		visibleIndex,
-		visibleCount,
-		displayLabel,
-		displayIcon,
-		displayColor,
-		hasRenameOverride,
-		hasIconOverride,
-		hasColorOverride,
-	} = model;
-
-	const cls = (suffix: string) => `${cssPrefix}${ROW_PREFIX}-${suffix}`;
-	const draggable = isVisible && !isSearching;
-	const canMoveUp = isVisible && visibleIndex > 0;
-	const canMoveDown = isVisible && visibleIndex < visibleCount - 1;
-
-	const iconStyle: CSSProperties | undefined =
-		displayColor && displayColor !== DEFAULT_COLOR_SENTINEL ? { color: displayColor } : undefined;
-
-	const dragHandlers = draggable
-		? {
-				onDragStart: (e: DragEvent<HTMLDivElement>) => {
-					actions.dragStart();
-					e.dataTransfer.effectAllowed = "move";
-				},
-				onDragEnd: actions.dragEnd,
-				onDragOver: (e: DragEvent<HTMLDivElement>) => {
-					e.preventDefault();
-					e.dataTransfer.dropEffect = "move";
-					setDragOver(true);
-				},
-				onDragLeave: () => setDragOver(false),
-				onDrop: (e: DragEvent<HTMLDivElement>) => {
-					e.preventDefault();
-					setDragOver(false);
-					actions.drop();
-				},
-			}
-		: {};
-
-	return (
-		<div
-			className={cx(
-				cls("row"),
-				!isVisible && cls("row-hidden"),
-				isDragging && cls("row-dragging"),
-				dragOver && cls("row-dragover")
-			)}
-			data-testid={cls(`row-${action.id}`)}
-			draggable={draggable}
-			{...dragHandlers}
-		>
-			{!isSearching && (
-				<>
-					<div className={cls("drag")}>
-						{isVisible && (
-							<span className={cls("grip")}>
-								<ObsidianIcon icon="grip-vertical" />
-							</span>
-						)}
-					</div>
-					<div className={cls("arrows")}>
-						{canMoveUp && (
-							<button
-								type="button"
-								className={cls("drag-btn")}
-								data-testid={cls(`up-${action.id}`)}
-								onClick={() => actions.move(-1)}
-							>
-								<ObsidianIcon icon="chevron-up" />
-							</button>
-						)}
-						{canMoveDown && (
-							<button
-								type="button"
-								className={cls("drag-btn")}
-								data-testid={cls(`down-${action.id}`)}
-								onClick={() => actions.move(1)}
-							>
-								<ObsidianIcon icon="chevron-down" />
-							</button>
-						)}
-					</div>
-				</>
-			)}
-
-			<div className={cls("label")}>
-				{displayIcon && (
-					<span className={cls("icon")} style={iconStyle}>
-						<ObsidianIcon icon={displayIcon} />
-					</span>
-				)}
-				<span className={cls("label-text")}>{displayLabel}</span>
-				{hasRenameOverride && (
-					<span className={cls("label-original")} title="Original name">
-						{action.label}
-					</span>
-				)}
-			</div>
-
-			<div className={cls("controls")}>
-				<button
-					type="button"
-					className={cls("btn")}
-					title={isExpanded ? "Collapse" : "Edit"}
-					data-testid={cls(`edit-${action.id}`)}
-					onClick={actions.toggleExpand}
-				>
-					<ObsidianIcon icon={isExpanded ? "chevron-up" : "pencil"} />
-				</button>
-				<button
-					type="button"
-					className={cls("btn")}
-					title={isVisible ? "Hide" : "Show"}
-					disabled={isVisible && visibleCount <= 1}
-					data-testid={cls(`toggle-${action.id}`)}
-					onClick={actions.toggleVisibility}
-				>
-					<ObsidianIcon icon={isVisible ? "eye" : "eye-off"} />
-				</button>
-			</div>
-
-			{isExpanded && (
-				<EditFormSlot
-					action={action}
-					displayLabel={displayLabel}
-					displayIcon={displayIcon ?? action.icon ?? ""}
-					displayColor={displayColor ?? FALLBACK_EDIT_COLOR}
-					hasRenameOverride={hasRenameOverride}
-					hasIconOverride={hasIconOverride}
-					hasColorOverride={hasColorOverride}
-					actions={actions}
-				/>
-			)}
-		</div>
-	);
-});
-
-interface EditFormSlotProps {
+interface ActionRowEditFormProps {
 	action: HeaderActionDefinition;
 	displayLabel: string;
 	displayIcon: string;
@@ -212,10 +30,13 @@ interface EditFormSlotProps {
 	hasRenameOverride: boolean;
 	hasIconOverride: boolean;
 	hasColorOverride: boolean;
-	actions: Pick<RowActions, "rename" | "changeIcon" | "changeColor" | "pickIcon">;
+	rename: (label: string | undefined) => void;
+	changeIcon: (icon: string | undefined) => void;
+	changeColor: (color: string | undefined) => void;
+	pickIcon: (callback: (icon: string | null) => void) => void;
 }
 
-function EditFormSlot({
+function ActionRowEditForm({
 	action,
 	displayLabel,
 	displayIcon,
@@ -223,8 +44,11 @@ function EditFormSlot({
 	hasRenameOverride,
 	hasIconOverride,
 	hasColorOverride,
-	actions,
-}: EditFormSlotProps): ReactNode {
+	rename,
+	changeIcon,
+	changeColor,
+	pickIcon,
+}: ActionRowEditFormProps) {
 	const item = useMemo(() => {
 		const base = { id: action.id, label: action.label, icon: action.icon ?? "" };
 		return action.color !== undefined ? { ...base, color: action.color } : base;
@@ -234,12 +58,7 @@ function EditFormSlot({
 		item,
 		values: { label: displayLabel, icon: displayIcon, color: displayColor },
 		overrides: { label: hasRenameOverride, icon: hasIconOverride, color: hasColorOverride },
-		actions: {
-			rename: actions.rename,
-			changeIcon: actions.changeIcon,
-			changeColor: actions.changeColor,
-			pickIcon: actions.pickIcon,
-		},
+		actions: { rename, changeIcon, changeColor, pickIcon },
 	};
 
 	return <ManagerEditForm controller={controller} formPrefix={ROW_PREFIX} />;
@@ -307,45 +126,71 @@ const ActionManagerContent = memo(function ActionManagerContent({ app, store, cs
 			{isSearching && filtered.length === 0 ? (
 				<div className={`${cssPrefix}action-manager-empty`}>No matching actions</div>
 			) : (
-				<div className={`${cssPrefix}action-manager-list`}>
+				<div className={`${cssPrefix}${ROW_PREFIX}-list`}>
 					{filtered.map((action) => {
 						const isVisible = visibleIds.has(action.id);
 						const visibleIndex = snapshot.visibleActions.findIndex((a) => a.id === action.id);
 						const isExpanded = expandedId === action.id;
+						const draggable = isVisible && !isSearching;
+						const displayLabel = snapshot.renames[action.id] ?? action.label;
+						const displayIcon = snapshot.iconOverrides[action.id] ?? action.icon;
+						const displayColor = snapshot.colorOverrides[action.id] ?? action.color;
+						const hasRenameOverride = action.id in snapshot.renames;
+						const hasIconOverride = action.id in snapshot.iconOverrides;
+						const hasColorOverride = action.id in snapshot.colorOverrides;
 
-						const model: RowModel = {
-							action,
-							isVisible,
-							isExpanded,
-							isDragging: draggedId === action.id,
-							isSearching,
-							visibleIndex,
-							visibleCount,
-							displayLabel: snapshot.renames[action.id] ?? action.label,
-							displayIcon: snapshot.iconOverrides[action.id] ?? action.icon,
-							displayColor: snapshot.colorOverrides[action.id] ?? action.color,
-							hasRenameOverride: action.id in snapshot.renames,
-							hasIconOverride: action.id in snapshot.iconOverrides,
-							hasColorOverride: action.id in snapshot.colorOverrides,
+						const item = {
+							id: action.id,
+							label: action.label,
+							icon: action.icon ?? "",
+							...(action.color !== undefined ? { color: action.color } : {}),
 						};
+						const effectiveColor = displayColor && displayColor !== DEFAULT_COLOR_SENTINEL ? displayColor : undefined;
 
-						const rowActions: RowActions = {
-							toggleExpand: () => setExpandedId(isExpanded ? null : action.id),
-							toggleVisibility: () => (isVisible ? store.hideAction(action.id) : store.restoreAction(action.id)),
-							move: (direction) => store.moveAction(action.id, direction),
-							dragStart: () => setDraggedId(action.id),
-							dragEnd: () => setDraggedId(null),
-							drop: () => {
-								if (!draggedId || draggedId === action.id) return;
-								store.reorderActions(draggedId, action.id);
-							},
-							rename: (label) => store.setRename(action.id, label),
-							changeIcon: (icon) => store.setIconOverride(action.id, icon),
-							changeColor: (color) => store.setColorOverride(action.id, color),
-							pickIcon,
-						};
-
-						return <ActionRow key={action.id} cssPrefix={cssPrefix} model={model} actions={rowActions} />;
+						return (
+							<ManagerRow
+								key={action.id}
+								item={item}
+								rowPrefix={ROW_PREFIX}
+								isVisible={isVisible}
+								isExpanded={isExpanded}
+								visibleCount={visibleCount}
+								displayLabel={displayLabel}
+								{...(displayIcon !== undefined ? { displayIcon } : {})}
+								{...(effectiveColor !== undefined ? { displayColor: effectiveColor } : {})}
+								hasRename={hasRenameOverride}
+								draggable={draggable}
+								isDragging={draggedId === action.id}
+								{...(draggable && visibleIndex > 0 ? { onMoveUp: () => store.moveAction(action.id, -1) } : {})}
+								{...(draggable && visibleIndex < visibleCount - 1
+									? { onMoveDown: () => store.moveAction(action.id, 1) }
+									: {})}
+								onDragStart={() => setDraggedId(action.id)}
+								onDragEnd={() => setDraggedId(null)}
+								onDrop={() => {
+									if (!draggedId || draggedId === action.id) return;
+									store.reorderActions(draggedId, action.id);
+								}}
+								onEdit={() => setExpandedId(isExpanded ? null : action.id)}
+								onToggleVisibility={() => (isVisible ? store.hideAction(action.id) : store.restoreAction(action.id))}
+							>
+								{isExpanded && (
+									<ActionRowEditForm
+										action={action}
+										displayLabel={displayLabel}
+										displayIcon={displayIcon ?? action.icon ?? ""}
+										displayColor={displayColor ?? FALLBACK_EDIT_COLOR}
+										hasRenameOverride={hasRenameOverride}
+										hasIconOverride={hasIconOverride}
+										hasColorOverride={hasColorOverride}
+										rename={(label) => store.setRename(action.id, label)}
+										changeIcon={(icon) => store.setIconOverride(action.id, icon)}
+										changeColor={(color) => store.setColorOverride(action.id, color)}
+										pickIcon={pickIcon}
+									/>
+								)}
+							</ManagerRow>
+						);
 					})}
 				</div>
 			)}
@@ -357,6 +202,8 @@ export function openPageHeaderActionManager(app: App, store: PageHeaderStore, cs
 	showReactModal({
 		app,
 		title: "Manage Header Actions",
+		cssPrefix,
+		testIdPrefix: cssPrefix,
 		cls: `${cssPrefix}action-manager-modal`,
 		render: () => <ActionManagerContent app={app} store={store} cssPrefix={cssPrefix} />,
 	});

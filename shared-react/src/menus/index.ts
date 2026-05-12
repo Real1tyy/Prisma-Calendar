@@ -11,6 +11,22 @@ import {
 } from "./context-menu-composable";
 
 export type { ContextMenuProps } from "./context-menu";
+export {
+	type ContextMenuState,
+	ContextMenuStateSchema,
+	createCustomizableContextMenu,
+	type CustomizableContextMenuConfig,
+	type CustomizableContextMenuHandle,
+	type CustomizableContextMenuItem,
+	type CustomizableMenuSnapshot,
+	CustomizableMenuStore,
+	type CustomizableMenuStoreOptions,
+	ItemManagerContent,
+	type ItemManagerContentProps,
+	openItemManagerModal,
+	type OpenItemManagerOptions,
+	registerCustomizableContextMenuCommand,
+} from "./customizable";
 export type {
 	ContextMenuCheckboxDef,
 	ContextMenuEntryDef,

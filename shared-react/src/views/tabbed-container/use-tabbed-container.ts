@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 
+import { setOrDelete } from "../../utils/string-record";
 import {
 	buildState,
 	type BuildStateInput,
@@ -68,13 +69,6 @@ export interface UseTabbedContainerResult {
 	actions: TabbedContainerActions;
 	getState: () => TabbedContainerState;
 	getVisibleLabels: () => string[];
-}
-
-function setOrDelete(record: Record<string, string>, key: string, value: string | undefined): Record<string, string> {
-	const next = { ...record };
-	if (value) next[key] = value;
-	else delete next[key];
-	return next;
 }
 
 function preserveActiveChild(gs: GroupChildState, visibleChildren: TabDefinition[]): GroupChildState | null {

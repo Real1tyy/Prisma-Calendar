@@ -1,7 +1,6 @@
+import { CustomizableUIBaseStateSchema } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { z } from "zod";
-
-import { CustomizableUIBaseStateSchema } from "../../core/customizable-ui-state";
 
 /** Zod schema for persisted context menu state. Embed in plugin settings schemas. */
 export const ContextMenuStateSchema = CustomizableUIBaseStateSchema.extend({
@@ -14,7 +13,7 @@ export const ContextMenuStateSchema = CustomizableUIBaseStateSchema.extend({
 /** Serializable snapshot of context menu state. Safe to persist in plugin settings. */
 export type ContextMenuState = z.infer<typeof ContextMenuStateSchema>;
 
-export interface ContextMenuItemDefinition {
+export interface CustomizableContextMenuItem {
 	id: string;
 	label: string;
 	icon?: string;
@@ -25,8 +24,8 @@ export interface ContextMenuItemDefinition {
 	onAction: () => void;
 }
 
-export interface ContextMenuConfig {
-	items: ContextMenuItemDefinition[];
+export interface CustomizableContextMenuConfig {
+	items: CustomizableContextMenuItem[];
 	cssPrefix: string;
 	/** Persisted state to restore. When provided, overrides visibility, order, labels, and icons. */
 	initialState?: ContextMenuState;
@@ -37,7 +36,7 @@ export interface ContextMenuConfig {
 	app: App;
 }
 
-export interface ContextMenuHandle {
+export interface CustomizableContextMenuHandle {
 	/**
 	 * Shows the context menu at the given position or mouse event.
 	 * @param filterFn Optional runtime filter — return false to hide an item for this invocation.
@@ -52,7 +51,7 @@ export interface ContextMenuHandle {
 	hideItem(id: string): void;
 	/** Restores a hidden item by ID. */
 	restoreItem(id: string): void;
-	/** Moves an item by ID up (-1) or down (+1). */
+	/** Moves an item by ID up (-1) or down (+1) within its section. */
 	moveItem(id: string, direction: -1 | 1): void;
 	/** Opens the item manager modal. No-op if not editable. */
 	showItemManager(): void;
@@ -60,6 +59,6 @@ export interface ContextMenuHandle {
 	getState(): ContextMenuState;
 	/** Number of currently visible items. */
 	readonly visibleCount: number;
-	/** Cleans up injected styles and state. */
+	/** Cleans up the React root, injected styles, and listeners. */
 	destroy(): void;
 }

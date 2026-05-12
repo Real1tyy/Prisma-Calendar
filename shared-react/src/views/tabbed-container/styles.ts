@@ -1,3 +1,5 @@
+import { buildManagerRowStyles } from "../../components/manager-row.styles";
+
 export function buildTabbedContainerStyles(p: string): string {
 	return `
 .${p}tabbed-container {
@@ -139,144 +141,11 @@ export function buildTabbedContainerStyles(p: string): string {
 .modal:has(.${p}tab-manager-modal) .modal-title {
 	text-align: center;
 }
-.${p}tab-manager-list {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-}
-.${p}tab-manager-row {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	padding: 8px 10px;
-	background: var(--background-secondary);
-	border: 1px solid var(--background-modifier-border);
-	border-radius: 8px;
-	transition: opacity 150ms ease, border-color 150ms ease, background 150ms ease;
-}
-.${p}tab-manager-row[draggable="true"] {
-	cursor: grab;
-}
-.${p}tab-manager-row-hidden {
-	opacity: 0.5;
-}
-.${p}tab-manager-row-dragging {
-	opacity: 0.4;
-}
-.${p}tab-manager-row-dragover {
-	border-color: var(--interactive-accent);
-	background: hsla(var(--color-accent-hsl), 0.06);
-}
-.${p}tab-manager-drag {
-	display: flex;
-	align-items: center;
-	min-width: 18px;
-	flex-shrink: 0;
-}
-.${p}tab-manager-grip {
-	color: var(--text-faint);
-	display: flex;
-	align-items: center;
-}
-.${p}tab-manager-grip svg {
-	width: 14px;
-	height: 14px;
-}
-.${p}tab-manager-arrows {
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
-	min-width: 22px;
-	flex-shrink: 0;
-}
-.${p}tab-manager-drag-btn {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 22px;
-	height: 16px;
-	background: none;
-	border: none;
-	border-radius: 3px;
-	color: var(--text-faint);
-	cursor: pointer;
-	padding: 0;
-	box-shadow: none;
-	transition: color 100ms ease, background 100ms ease;
-}
-.${p}tab-manager-drag-btn:hover {
-	color: var(--text-normal);
-	background: var(--background-modifier-hover);
-}
-.${p}tab-manager-drag-btn svg {
-	width: 14px;
-	height: 14px;
-}
-.${p}tab-manager-label {
-	flex: 1;
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	min-width: 0;
-}
-.${p}tab-manager-icon {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 16px;
-	height: 16px;
-	flex-shrink: 0;
-}
-.${p}tab-manager-icon svg {
-	width: 14px;
-	height: 14px;
-}
-.${p}tab-manager-label-text {
-	font-size: var(--font-ui-medium);
-	font-weight: 500;
-	color: var(--text-normal);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-.${p}tab-manager-label-original {
-	font-size: 0.7em;
-	color: var(--text-faint);
-	font-style: italic;
-	white-space: nowrap;
-}
-.${p}tab-manager-controls {
-	display: flex;
-	gap: 4px;
-	flex-shrink: 0;
-}
-.${p}tab-manager-btn {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 28px;
-	height: 28px;
-	background: none;
-	border: 1px solid transparent;
-	border-radius: 6px;
-	color: var(--text-faint);
-	cursor: pointer;
-	padding: 0;
-	box-shadow: none;
-	transition: color 120ms ease, border-color 120ms ease;
-}
-.${p}tab-manager-btn:hover:not([disabled]) {
-	color: var(--text-normal);
-	border-color: var(--background-modifier-border);
-}
-.${p}tab-manager-btn[disabled] {
-	opacity: 0.3;
-	cursor: not-allowed;
-}
-.${p}tab-manager-btn svg {
-	width: 14px;
-	height: 14px;
-}
+
+/* ─── Shared row scaffolding (list/row/drag/grip/arrows/label/controls) ─── */
+${buildManagerRowStyles(p, "tab-manager")}
+
+/* ─── Tab-manager specific row extras ─── */
 .${p}tab-manager-settings-toggle {
 	display: flex;
 	align-items: center;

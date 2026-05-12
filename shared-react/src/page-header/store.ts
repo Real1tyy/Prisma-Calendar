@@ -1,3 +1,5 @@
+import { moveItem, reorderList } from "../utils/list-reorder";
+import { loadStringRecord, nonEmptyRecord, setOrDelete } from "../utils/string-record";
 import type { HeaderActionDefinition, PageHeaderState } from "./types";
 
 export interface PageHeaderSnapshot {
@@ -6,21 +8,6 @@ export interface PageHeaderSnapshot {
 	iconOverrides: Readonly<Record<string, string>>;
 	colorOverrides: Readonly<Record<string, string>>;
 	showSettingsButton: boolean;
-}
-
-function loadRecord(source: Record<string, string> | undefined): Record<string, string> {
-	return { ...(source ?? {}) };
-}
-
-function nonEmpty(record: Record<string, string>): Record<string, string> | undefined {
-	return Object.keys(record).length > 0 ? { ...record } : undefined;
-}
-
-function setOrDelete(record: Record<string, string>, key: string, value: string | undefined): Record<string, string> {
-	const next = { ...record };
-	if (value !== undefined) next[key] = value;
-	else delete next[key];
-	return next;
 }
 
 interface ResolvedInitial {
@@ -32,9 +19,9 @@ interface ResolvedInitial {
 }
 
 function resolveInitial(allActions: HeaderActionDefinition[], initialState?: PageHeaderState): ResolvedInitial {
-	const renames = loadRecord(initialState?.renames);
-	const iconOverrides = loadRecord(initialState?.iconOverrides);
-	const colorOverrides = loadRecord(initialState?.colorOverrides);
+	const renames = loadStringRecord(initialState?.renames);
+	const iconOverrides = loadStringRecord(initialState?.iconOverrides);
+	const colorOverrides = loadStringRecord(initialState?.colorOverrides);
 	const showSettingsButton = initialState?.showSettingsButton !== false;
 
 	let visibleActions = allActions;
@@ -138,23 +125,17 @@ export class PageHeaderStore {
 	}
 
 	moveAction(id: string, direction: -1 | 1): boolean {
-		const idx = this.visibleActions.findIndex((a) => a.id === id);
-		const newIdx = idx + direction;
-		if (idx < 0 || newIdx < 0 || newIdx >= this.visibleActions.length) return false;
-		const updated = [...this.visibleActions];
-		[updated[idx], updated[newIdx]] = [updated[newIdx]!, updated[idx]!];
+		const updated = moveItem(this.visibleActions, id, direction);
+		if (updated === this.visibleActions) return false;
 		this.visibleActions = updated;
 		this.notify();
 		return true;
 	}
 
 	reorderActions(fromId: string, toId: string): boolean {
-		const fromIdx = this.visibleActions.findIndex((a) => a.id === fromId);
-		const toIdx = this.visibleActions.findIndex((a) => a.id === toId);
-		if (fromIdx < 0 || toIdx < 0 || fromIdx === toIdx) return false;
-		const updated = [...this.visibleActions];
-		const [moved] = updated.splice(fromIdx, 1);
-		updated.splice(toIdx, 0, moved!);
+		if (fromId === toId) return false;
+		const updated = reorderList(this.visibleActions, fromId, toId);
+		if (updated === this.visibleActions) return false;
 		this.visibleActions = updated;
 		this.notify();
 		return true;
@@ -192,11 +173,11 @@ export class PageHeaderStore {
 	serialize(): PageHeaderState {
 		const state: PageHeaderState = {};
 
-		const renamesOut = nonEmpty(this.renames);
+		const renamesOut = nonEmptyRecord(this.renames);
 		if (renamesOut) state.renames = renamesOut;
-		const iconsOut = nonEmpty(this.iconOverrides);
+		const iconsOut = nonEmptyRecord(this.iconOverrides);
 		if (iconsOut) state.iconOverrides = iconsOut;
-		const colorsOut = nonEmpty(this.colorOverrides);
+		const colorsOut = nonEmptyRecord(this.colorOverrides);
 		if (colorsOut) state.colorOverrides = colorsOut;
 
 		const currentOrder = this.visibleActions.map((a) => a.id);
