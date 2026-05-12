@@ -1,16 +1,20 @@
 
-/* Zoom Button Styles */
+/* Zoom Control Styles — the FullCalendar `.fc-zoomLevel-button` element is
+   repurposed as a transparent React mount slot (display: contents). The actual
+   button surface is rendered by ZoomControl as a real <button> inheriting
+   `.fc-button.fc-button-primary` for visual parity with the old imperative
+   button. Click opens an Obsidian Menu (menu-scroll) — same UX as before. */
 .prisma-calendar-container  {
-	.fc-zoomLevel-button  {
+	.fc-zoomLevel-button.prisma-zoom-host {
+		display: contents;
+	}
+
+	.prisma-fc-zoom-button  {
 		cursor: pointer;
 		position: relative;
 		padding-right: 24px;
 
-		&.prisma-zoom-button-hidden {
-			display: none;
-		}
-
-		/* Add dropdown indicator */
+		/* Dropdown indicator caret — matches the original imperative button. */
 		&::after {
 			content: "";
 			position: absolute;

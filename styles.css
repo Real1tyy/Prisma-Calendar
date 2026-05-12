@@ -1036,11 +1036,11 @@
     padding: 4px 20px 4px 6px;
   }
   .prisma-calendar-container .fc-toolbar-chunk {
-    /* Mobile: Hide zoom button text, show icon only would be nice but we hide it */
+    /* Mobile: Compact zoom button */
   }
-  .prisma-calendar-container .fc-toolbar-chunk .fc-zoomLevel-button {
+  .prisma-calendar-container .fc-toolbar-chunk .prisma-fc-zoom-button {
     font-size: 10px;
-    padding: 4px 6px;
+    padding: 4px 22px 4px 6px;
   }
   .prisma-calendar-container {
     /* Mobile: Collapse filter controls (zoom + preset + search + expression) by default, toggleable via "Filters" button */
@@ -2545,19 +2545,21 @@
     box-shadow: 0 0 15px 6px color-mix(in srgb, var(--event-color) 35%, transparent);
   }
 }
-/* Zoom Button Styles */
-.prisma-calendar-container .fc-zoomLevel-button {
+/* Zoom Control Styles — the FullCalendar `.fc-zoomLevel-button` element is
+   repurposed as a transparent React mount slot (display: contents). The actual
+   button surface is rendered by ZoomControl as a real <button> inheriting
+   `.fc-button.fc-button-primary` for visual parity with the old imperative
+   button. Click opens an Obsidian Menu (menu-scroll) — same UX as before. */
+.prisma-calendar-container .fc-zoomLevel-button.prisma-zoom-host {
+  display: contents;
+}
+.prisma-calendar-container .prisma-fc-zoom-button {
   cursor: pointer;
   position: relative;
   padding-right: 24px;
+  /* Dropdown indicator caret — matches the original imperative button. */
 }
-.prisma-calendar-container .fc-zoomLevel-button.prisma-zoom-button-hidden {
-  display: none;
-}
-.prisma-calendar-container .fc-zoomLevel-button {
-  /* Add dropdown indicator */
-}
-.prisma-calendar-container .fc-zoomLevel-button::after {
+.prisma-calendar-container .prisma-fc-zoom-button::after {
   content: "";
   position: absolute;
   right: 8px;
@@ -2570,7 +2572,7 @@
   border-top: 5px solid currentcolor;
   opacity: 0.7;
 }
-.prisma-calendar-container .fc-zoomLevel-button:hover::after {
+.prisma-calendar-container .prisma-fc-zoom-button:hover::after {
   opacity: 1;
 }
 

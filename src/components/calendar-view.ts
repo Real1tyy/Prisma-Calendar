@@ -19,7 +19,10 @@ import {
 	toggleCls,
 	toLocalISOString,
 } from "@real1ty-obsidian-plugins";
+import { renderReactInline } from "@real1ty-obsidian-plugins-react";
 import { type App, Component, type Modal, TFile, type WorkspaceLeaf } from "obsidian";
+import { createElement } from "react";
+import { BehaviorSubject } from "rxjs";
 
 import {
 	CATEGORY_HIGHLIGHT_DURATION_MS,
@@ -41,6 +44,7 @@ import { getProGateUrls } from "../core/pro-feature-previews";
 import { openBatchFrontmatterModal, openCategoryAssignModal, openCategorySelectModal } from "../react/modals";
 import { openFilteredEventsModal, openSelectedEventsModal, openSkippedEventsModal } from "../react/modals/event-list";
 import { openEventsModal } from "../react/modals/event-list/events-modal-content";
+import { ZoomControl } from "../react/views/zoom-control";
 import type {
 	CalendarEvent,
 	CalendarEventData,
@@ -83,7 +87,6 @@ import { PrerequisiteSelectionManager } from "./prerequisite-selection-manager";
 import { createStickyBanner, type StickyBannerHandle } from "./sticky-banner";
 import { UntrackedEventsDropdown } from "./untracked-events-dropdown";
 import { AllTimeStatsModal, DailyStatsModal, MonthlyStatsModal, WeeklyStatsModal } from "./weekly-stats";
-import { ZoomManager } from "./zoom-manager";
 
 export class CalendarComponent extends MountableComponent(Component, "prisma") implements CalendarHost {
 	calendar: Calendar | null = null;
@@ -91,7 +94,9 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	private colorEvaluator: ColorEvaluator<SingleCalendarConfig>;
 	private batchSelectionManager: BatchSelectionManager | null = null;
 	private prerequisiteSelectionManager: PrerequisiteSelectionManager | null = null;
-	private zoomManager: ZoomManager;
+	private viewType$ = new BehaviorSubject<string>("timeGridWeek");
+	private zoomMountEl: HTMLElement | null = null;
+	private zoomUnmount: (() => void) | null = null;
 	private searchFilter: SearchFilterInputManager;
 	private expressionFilter: ExpressionFilterInputManager;
 	private filterPresetSelector: FilterPresetSelector;
@@ -172,7 +177,6 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.container = rootEl;
 		this.eventContextMenu = new EventContextMenu(this.app, bundle, this);
 		this.colorEvaluator = new ColorEvaluator(bundle.settingsStore.settings$);
-		this.zoomManager = new ZoomManager(bundle.settingsStore);
 		this.searchFilter = new SearchFilterInputManager(() => this.scheduleRefreshEvents());
 		this.expressionFilter = new ExpressionFilterInputManager(() => this.scheduleRefreshEvents());
 		this.filterPresetSelector = new FilterPresetSelector(
@@ -271,7 +275,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.saveCurrentState();
 		this.stopUpcomingEventCheck();
 		this.cleanupDragEdgeScrolling();
-		this.zoomManager.destroy();
+		this.unmountZoomControl();
 		this.searchFilter.destroy();
 		this.expressionFilter.destroy();
 		this.untrackedEventsDropdown?.destroy();
@@ -495,14 +499,14 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 					this.bundle.viewRef.capacityIndicatorHandle?.setRange(view.activeStart, view.activeEnd);
 					this.currentViewStart = view.activeStart;
 					this.currentViewEnd = view.activeEnd;
+					this.viewType$.next(view.type);
 				}
 
 				this.recordNavigationState();
 
 				this.scheduleRefreshEvents();
-				// Update zoom button, save state, and highlight after FC re-renders
 				void afterRender().then(() => {
-					this.zoomManager.updateZoomLevelButton();
+					this.mountZoomControl();
 					this.saveCurrentState();
 					this.updateUpcomingEventHighlight();
 					this.scheduleStickyOffsetsUpdate();
@@ -548,11 +552,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		);
 		this.updateToolbar();
 
-		this.zoomManager.initialize(this.calendar, this.container, this.hostEl);
-		this.zoomManager.setOnZoomChangeCallback(() => {
-			this.saveCurrentState();
-			if (this.showConnections) this.renderConnections();
-		});
+		this.viewType$.next(this.calendar.view.type);
+		this.mountZoomControl();
 
 		this.initializeToolbarComponents(this.isMobileLayout ? settings.mobileToolbarButtons : settings.toolbarButtons);
 		this.scheduleStickyOffsetsUpdate();
@@ -561,8 +562,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			this.isRestoring = true;
 
 			const savedZoomLevel = this.bundle.viewStateManager.getSavedZoomLevel();
-			if (savedZoomLevel) {
-				this.zoomManager.setCurrentZoomLevel(savedZoomLevel);
+			if (savedZoomLevel && savedZoomLevel !== this.bundle.settingsStore.currentSettings.slotDurationMinutes) {
+				void this.bundle.settingsStore.updateSettings((s) => ({ ...s, slotDurationMinutes: savedZoomLevel }));
 			}
 
 			this.bundle.viewStateManager.restoreState(this.calendar);
@@ -598,8 +599,6 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 		this.calendar.setOption("slotDuration", formatDuration(settings.slotDurationMinutes));
 		this.calendar.setOption("snapDuration", formatDuration(settings.snapDurationMinutes));
-
-		this.zoomManager.updateZoomLevelButton();
 
 		this.calendar.setOption("locale", settings.locale);
 		this.calendar.setOption("weekends", !settings.hideWeekends);
@@ -667,6 +666,46 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 				component.init();
 			}
 		}
+	}
+
+	private mountZoomControl(): void {
+		const button = this.container.querySelector(".fc-zoomLevel-button") as HTMLElement | null;
+		if (!button) {
+			this.unmountZoomControl();
+			return;
+		}
+
+		// FullCalendar recreates this button across toolbar re-renders. When the
+		// element identity changes, tear down the old React root and remount on the
+		// fresh DOM node so the listener wiring stays correct.
+		if (button === this.zoomMountEl) return;
+
+		this.unmountZoomControl();
+
+		button.classList.add(cls("zoom-host"));
+		button.replaceChildren();
+
+		this.zoomMountEl = button;
+		this.zoomUnmount = renderReactInline(
+			button,
+			createElement(ZoomControl, {
+				settingsStore: this.bundle.settingsStore,
+				viewType$: this.viewType$,
+				container: this.container,
+				viewContainerEl: this.hostEl,
+				onZoomChange: () => {
+					this.saveCurrentState();
+					if (this.showConnections) this.renderConnections();
+				},
+			}),
+			this.app
+		);
+	}
+
+	private unmountZoomControl(): void {
+		this.zoomUnmount?.();
+		this.zoomUnmount = null;
+		this.zoomMountEl = null;
 	}
 
 	private rebuildCalendarIconCache(): void {
@@ -806,7 +845,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			if (!inSelectionMode) {
 				this.applyFilteredEventsButtonState();
 				this.applySkippedEventsButtonState();
-				this.zoomManager.updateZoomLevelButton();
+				this.mountZoomControl();
 			}
 			this.scheduleStickyOffsetsUpdate();
 			this.stampToolbarTestIds();
@@ -948,7 +987,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 				text: "Now",
 				click: () => this.scrollToNow(),
 			},
-			zoomLevel: this.zoomManager.createZoomLevelButton(),
+			zoomLevel: { text: " ", click: () => {} },
 			mobileControls: {
 				text: "Filters",
 				click: () => {
@@ -2665,7 +2704,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	private saveCurrentState(): void {
 		if (!this.calendar || this.isRestoring) return;
 
-		const currentZoomLevel = this.zoomManager.getCurrentZoomLevel();
+		const currentZoomLevel = this.bundle.settingsStore.currentSettings.slotDurationMinutes;
 		this.bundle.viewStateManager.saveState(this.calendar, currentZoomLevel);
 	}
 
