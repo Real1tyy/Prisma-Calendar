@@ -8,7 +8,6 @@ import {
 	Toggle,
 	useApp,
 	useSchemaField,
-	useSettingsStore,
 } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useState } from "react";
 
@@ -130,7 +129,7 @@ interface CalDAVSectionProps {
 }
 
 const CalDAVSection = memo(function CalDAVSection({ mainSettingsStore, plugin, calendarId, app }: CalDAVSectionProps) {
-	const [mainSettings, updateMainSettings] = useSettingsStore(mainSettingsStore);
+	const [caldavSettings, setCaldav] = useSchemaField(mainSettingsStore, "caldav");
 	const [, forceUpdate] = useState(0);
 
 	const handleAddAccount = useCallback(() => {
@@ -156,15 +155,12 @@ const CalDAVSection = memo(function CalDAVSection({ mainSettingsStore, plugin, c
 	const handleDelete = useCallback(
 		(account: CalDAVAccount) => {
 			const removeAccount = () =>
-				updateMainSettings((s) => ({
-					...s,
-					caldav: { ...s.caldav, accounts: s.caldav.accounts.filter((a) => a.id !== account.id) },
-				}));
+				setCaldav((prev) => ({ ...prev, accounts: prev.accounts.filter((a) => a.id !== account.id) }));
 
 			const bundle = plugin.calendarBundles.find((b) => b.calendarId === account.calendarId);
 			if (!bundle) {
 				showConfirmDeleteModal(app, account.name, "account", () => {
-					void removeAccount();
+					removeAccount();
 				});
 				return;
 			}
@@ -172,7 +168,7 @@ const CalDAVSection = memo(function CalDAVSection({ mainSettingsStore, plugin, c
 			const events = bundle.caldavSyncStateManager.getAllForAccount(account.id);
 			if (events.length === 0) {
 				showConfirmDeleteModal(app, account.name, "account", () => {
-					void removeAccount();
+					removeAccount();
 				});
 				return;
 			}
@@ -192,11 +188,11 @@ const CalDAVSection = memo(function CalDAVSection({ mainSettingsStore, plugin, c
 					);
 				}
 				if (result === "confirm" || result === "cancel") {
-					await removeAccount();
+					removeAccount();
 				}
 			});
 		},
-		[app, plugin, mainSettingsStore, calendarId, updateMainSettings]
+		[app, plugin, mainSettingsStore, calendarId, setCaldav]
 	);
 
 	if (!plugin.isProEnabled) {
@@ -209,7 +205,6 @@ const CalDAVSection = memo(function CalDAVSection({ mainSettingsStore, plugin, c
 		);
 	}
 
-	const caldavSettings = mainSettings.caldav;
 	const accounts = caldavSettings.accounts;
 
 	return (
@@ -319,7 +314,7 @@ interface ICSSectionProps {
 }
 
 const ICSSection = memo(function ICSSection({ mainSettingsStore, plugin, calendarId, app }: ICSSectionProps) {
-	const [mainSettings, updateMainSettings] = useSettingsStore(mainSettingsStore);
+	const [icsSettings, setIcs] = useSchemaField(mainSettingsStore, "icsSubscriptions");
 	const [, forceUpdate] = useState(0);
 
 	const handleAddSubscription = useCallback(() => {
@@ -343,19 +338,16 @@ const ICSSection = memo(function ICSSection({ mainSettingsStore, plugin, calenda
 	const handleDelete = useCallback(
 		(subscription: ICSSubscription) => {
 			const removeSubscription = () =>
-				updateMainSettings((s) => ({
-					...s,
-					icsSubscriptions: {
-						...s.icsSubscriptions,
-						subscriptions: s.icsSubscriptions.subscriptions.filter((sub) => sub.id !== subscription.id),
-					},
+				setIcs((prev) => ({
+					...prev,
+					subscriptions: prev.subscriptions.filter((sub) => sub.id !== subscription.id),
 				}));
 
 			const bundle = plugin.calendarBundles.find((b) => b.calendarId === subscription.calendarId);
 			const events = bundle?.icsSubscriptionSyncStateManager.getAllForSubscription(subscription.id) ?? [];
 			if (!bundle || events.length === 0) {
 				showConfirmDeleteModal(app, subscription.name, "subscription", () => {
-					void removeSubscription();
+					removeSubscription();
 				});
 				return;
 			}
@@ -375,11 +367,11 @@ const ICSSection = memo(function ICSSection({ mainSettingsStore, plugin, calenda
 					);
 				}
 				if (result === "confirm" || result === "cancel") {
-					await removeSubscription();
+					removeSubscription();
 				}
 			});
 		},
-		[app, plugin, mainSettingsStore, calendarId, updateMainSettings]
+		[app, plugin, mainSettingsStore, calendarId, setIcs]
 	);
 
 	if (!plugin.isProEnabled) {
@@ -392,7 +384,6 @@ const ICSSection = memo(function ICSSection({ mainSettingsStore, plugin, calenda
 		);
 	}
 
-	const icsSettings = mainSettings.icsSubscriptions;
 	const subscriptions = icsSettings.subscriptions;
 
 	return (

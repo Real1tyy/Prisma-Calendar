@@ -1,5 +1,5 @@
 import { cls } from "@real1ty-obsidian-plugins";
-import { useSettingsStore } from "@real1ty-obsidian-plugins-react";
+import { useSchemaField } from "@real1ty-obsidian-plugins-react";
 import { memo, useMemo } from "react";
 
 import type { PrismaCalendarSettingsStore } from "../../types";
@@ -14,11 +14,8 @@ export const NormalizationConflictBanner = memo(function NormalizationConflictBa
 	calendarId,
 	mainSettingsStore,
 }: NormalizationConflictBannerProps) {
-	const [mainSettings] = useSettingsStore(mainSettingsStore);
-	const conflict = useMemo(
-		() => findConflictForCalendar(calendarId, mainSettings.calendars),
-		[calendarId, mainSettings.calendars]
-	);
+	const [calendars] = useSchemaField(mainSettingsStore, "calendars");
+	const conflict = useMemo(() => findConflictForCalendar(calendarId, calendars), [calendarId, calendars]);
 
 	if (!conflict) return null;
 

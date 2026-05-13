@@ -8,7 +8,7 @@ import {
 	useApp,
 	useObservable,
 	useSchemaField,
-	useSettingsStore,
+	useSettingsFields,
 } from "@real1ty-obsidian-plugins-react";
 import Chart from "chart.js/auto";
 import { nanoid } from "nanoid";
@@ -31,6 +31,10 @@ import { ProUpgradeBanner } from "./pro-upgrade-banner";
 const S = SingleCalendarConfigSchema.shape;
 const EMPTY_CATEGORIES: ReadonlyArray<{ name: string; color: string }> = [];
 
+const CATEGORY_FIELDS = ["categoryProp", "colorRules", "defaultNodeColor", "categoryAssignmentPresets"] as const;
+
+type CategorySettings = Pick<SingleCalendarConfig, (typeof CATEGORY_FIELDS)[number]>;
+
 interface CategoriesSettingsProps {
 	settingsStore: CalendarSettingsStore;
 	plugin: CustomCalendarPlugin;
@@ -41,7 +45,7 @@ export const CategoriesSettingsReact = memo(function CategoriesSettingsReact({
 	plugin,
 }: CategoriesSettingsProps) {
 	const app = useApp();
-	const [settings] = useSettingsStore(settingsStore);
+	const [settings] = useSettingsFields(settingsStore, CATEGORY_FIELDS);
 
 	const bundle = useMemo(
 		() => plugin.calendarBundles.find((b) => b.calendarId === settingsStore.calendarId),
@@ -131,7 +135,7 @@ interface CategoriesListSectionProps {
 	categoryTracker: CategoryTracker;
 	categoryProp: string;
 	settingsStore: CalendarSettingsStore;
-	settings: SingleCalendarConfig;
+	settings: CategorySettings;
 	app: ReturnType<typeof useApp>;
 }
 
@@ -197,9 +201,9 @@ const CategoriesListSection = memo(function CategoriesListSection({
 
 	const handleClickCategory = useCallback(
 		(categoryName: string) => {
-			showCategoryEventsModal(app, categoryName, settings);
+			showCategoryEventsModal(app, categoryName, settingsStore.currentSettings);
 		},
-		[app, settings]
+		[app, settingsStore]
 	);
 
 	if (categories.length === 0) {
@@ -275,7 +279,7 @@ const CategoriesListSection = memo(function CategoriesListSection({
 interface CategoryChartSectionProps {
 	categoryTracker: CategoryTracker;
 	categoryProp: string;
-	settings: SingleCalendarConfig;
+	settings: CategorySettings;
 }
 
 const CategoryChartSection = memo(function CategoryChartSection({
@@ -313,7 +317,7 @@ const CategoryChartSection = memo(function CategoryChartSection({
 
 interface AutoAssignSectionProps {
 	settingsStore: CalendarSettingsStore;
-	settings: SingleCalendarConfig;
+	settings: CategorySettings;
 	plugin: CustomCalendarPlugin;
 	categoryTracker: CategoryTracker;
 }
@@ -383,7 +387,7 @@ const AutoAssignSection = memo(function AutoAssignSection({
 // ─── Category Assignment Presets List ────────────────────────────────────
 
 interface PresetsListProps {
-	settings: SingleCalendarConfig;
+	settings: CategorySettings;
 	settingsStore: CalendarSettingsStore;
 	categoryTracker: CategoryTracker;
 }
@@ -435,7 +439,7 @@ const CategoryAssignmentPresetsList = memo(function CategoryAssignmentPresetsLis
 
 interface PresetRowProps {
 	preset: CategoryAssignmentPreset;
-	settings: SingleCalendarConfig;
+	settings: CategorySettings;
 	categoryTracker: CategoryTracker;
 	onUpdate: (id: string, updated: CategoryAssignmentPreset) => void;
 	onDelete: (id: string) => void;

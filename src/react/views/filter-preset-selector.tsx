@@ -1,6 +1,7 @@
+import { useSchemaField } from "@real1ty-obsidian-plugins-react";
 import { type ChangeEvent, memo, useCallback, useRef } from "react";
 
-import { useBundleSettings } from "../contexts/bundle-context";
+import { useBundle } from "../contexts/bundle-context";
 
 const PLACEHOLDER_VALUE = "";
 const CLEAR_VALUE = "__clear__";
@@ -12,8 +13,8 @@ interface FilterPresetSelectorProps {
 export const FilterPresetSelector = memo(function FilterPresetSelector({
 	onPresetSelected,
 }: FilterPresetSelectorProps) {
-	const [settings] = useBundleSettings();
-	const presets = settings.filterPresets;
+	const bundle = useBundle();
+	const [presets] = useSchemaField(bundle.settingsStore, "filterPresets");
 	const selectRef = useRef<HTMLSelectElement>(null);
 
 	const handleChange = useCallback(

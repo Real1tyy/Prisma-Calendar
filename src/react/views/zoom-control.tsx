@@ -1,4 +1,4 @@
-import { type SnapshotSubscribable, useExternalSnapshot } from "@real1ty-obsidian-plugins-react";
+import { type SnapshotSubscribable, useExternalSnapshot, useSchemaField } from "@real1ty-obsidian-plugins-react";
 import { Menu } from "obsidian";
 import { memo, useCallback, useEffect, useRef } from "react";
 
@@ -19,7 +19,7 @@ export const ZoomControl = memo(function ZoomControl({
 	viewContainerEl,
 	onZoomChange,
 }: ZoomControlProps) {
-	const settings = useExternalSnapshot(settingsStore.settings$);
+	const [slotDurationMinutes] = useSchemaField(settingsStore, "slotDurationMinutes");
 	const viewType = useExternalSnapshot(viewType$);
 	const isTimeGridView = viewType.includes("timeGrid");
 
@@ -95,7 +95,7 @@ export const ZoomControl = memo(function ZoomControl({
 			data-testid="prisma-zoom-button"
 			aria-label="Zoom level"
 		>
-			<span>{`Zoom: ${settings.slotDurationMinutes}min`}</span>
+			<span>{`Zoom: ${slotDurationMinutes}min`}</span>
 		</button>
 	);
 });

@@ -1,6 +1,6 @@
 import { Draggable } from "@fullcalendar/interaction";
 import { ColorEvaluator } from "@real1ty-obsidian-plugins";
-import { PropertyValue, useApp, useEscapeKey, useExternalSnapshot, VirtualList } from "@real1ty-obsidian-plugins-react";
+import { PropertyValue, useApp, useEscapeKey, useSettingsFields, VirtualList } from "@real1ty-obsidian-plugins-react";
 import {
 	type CSSProperties,
 	forwardRef,
@@ -47,7 +47,11 @@ export const UntrackedEventsDropdown = memo(
 		ref
 	) {
 		const app = useApp();
-		const settings = useExternalSnapshot(bundle.settingsStore.settings$);
+		const [settings] = useSettingsFields(bundle.settingsStore, [
+			"showStopwatch",
+			"colorRules",
+			"frontmatterDisplayPropertiesUntracked",
+		]);
 		const [isOpen, setIsOpen] = useState(false);
 		const [searchQuery, setSearchQuery] = useState("");
 		const [refreshTick, setRefreshTick] = useState(0);
@@ -357,9 +361,11 @@ export const UntrackedEventsDropdown = memo(
 	})
 );
 
+type UntrackedEventItemSettings = Pick<SingleCalendarConfig, "colorRules" | "frontmatterDisplayPropertiesUntracked">;
+
 interface UntrackedEventItemProps {
 	event: ParsedEvent;
-	settings: SingleCalendarConfig;
+	settings: UntrackedEventItemSettings;
 	colorEvaluator: ColorEvaluator<SingleCalendarConfig>;
 	showStopwatch: boolean;
 	onStartStopwatch: (event: ParsedEvent) => void;
