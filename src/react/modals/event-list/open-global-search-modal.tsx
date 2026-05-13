@@ -1,8 +1,8 @@
-import { ColorEvaluator, formatLocaleShortDate, formatLocaleTimeHm, toLocalISOString } from "@real1ty-obsidian-plugins";
-import { showReactModal } from "@real1ty-obsidian-plugins-react";
+import { formatLocaleShortDate, formatLocaleTimeHm, toLocalISOString } from "@real1ty-obsidian-plugins";
+import { showReactModal, useColorEvaluator } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { Notice } from "obsidian";
-import { startTransition, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { startTransition, useCallback, useDeferredValue, useMemo, useState } from "react";
 
 import type { CalendarComponent } from "../../../components/calendar-view";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
@@ -94,17 +94,7 @@ function GlobalSearchContent({
 	calendarComponent: CalendarComponent;
 	onClose: () => void;
 }) {
-	const colorEvaluatorRef = useRef<ColorEvaluator<SingleCalendarConfig> | null>(null);
-	if (colorEvaluatorRef.current === null) {
-		colorEvaluatorRef.current = new ColorEvaluator(bundle.settingsStore.settings$);
-	}
-	useEffect(() => {
-		const ev = colorEvaluatorRef.current;
-		return () => {
-			ev?.destroy();
-			colorEvaluatorRef.current = null;
-		};
-	}, []);
+	const colorEvaluator = useColorEvaluator<SingleCalendarConfig>(bundle.settingsStore.settings$);
 
 	const [filters, setFilters] = useState<GlobalSearchFilters>({
 		recurring: "none",
@@ -125,8 +115,6 @@ function GlobalSearchContent({
 	}, [bundle]);
 
 	const items = useMemo((): EventListItemData[] => {
-		const ev = colorEvaluatorRef.current;
-		if (!ev) return [];
 		let events = physicalEventsInRange;
 
 		events = applyTriStateFilter(events, deferredFilters.recurring, (e) => !!e.metadata.rruleType);
@@ -138,9 +126,9 @@ function GlobalSearchContent({
 			filePath: event.ref.filePath,
 			title: removeZettelId(event.title),
 			subtitle: formatEventSubtitle(event),
-			categoryColor: resolveEventColor(event.meta, bundle, ev),
+			categoryColor: resolveEventColor(event.meta, bundle, colorEvaluator),
 		}));
-	}, [bundle, deferredFilters, physicalEventsInRange]);
+	}, [bundle, deferredFilters, physicalEventsInRange, colorEvaluator]);
 
 	const openFile = useCallback(
 		(item: EventListItemData) => {

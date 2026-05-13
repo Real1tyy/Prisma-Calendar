@@ -1,8 +1,7 @@
-import { ColorEvaluator } from "@real1ty-obsidian-plugins";
-import { showReactModal } from "@real1ty-obsidian-plugins-react";
+import { showReactModal, useColorEvaluator } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { Notice } from "obsidian";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { toggleSkip } from "../../../core/commands/frontmatter-update-command";
@@ -21,23 +20,11 @@ function SkippedEventsContent({
 	initialEvents: CalendarEvent[];
 	onClose: () => void;
 }) {
-	const colorEvaluatorRef = useRef<ColorEvaluator<SingleCalendarConfig> | null>(null);
-	if (colorEvaluatorRef.current === null) {
-		colorEvaluatorRef.current = new ColorEvaluator(bundle.settingsStore.settings$);
-	}
-	useEffect(() => {
-		const ev = colorEvaluatorRef.current;
-		return () => {
-			ev?.destroy();
-			colorEvaluatorRef.current = null;
-		};
-	}, []);
+	const colorEvaluator = useColorEvaluator<SingleCalendarConfig>(bundle.settingsStore.settings$);
 
-	const [items, setItems] = useState<EventListItemData[]>(() => {
-		const ev = colorEvaluatorRef.current;
-		if (!ev) return [];
-		return initialEvents.map((event) => mapEventToItem(event, bundle, ev));
-	});
+	const [items, setItems] = useState<EventListItemData[]>(() =>
+		initialEvents.map((event) => mapEventToItem(event, bundle, colorEvaluator))
+	);
 
 	const openFile = useCallback(
 		(item: EventListItemData) => {

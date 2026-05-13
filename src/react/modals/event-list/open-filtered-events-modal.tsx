@@ -1,7 +1,6 @@
-import { ColorEvaluator } from "@real1ty-obsidian-plugins";
-import { showReactModal } from "@real1ty-obsidian-plugins-react";
+import { showReactModal, useColorEvaluator } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useMemo } from "react";
 
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { CalendarEvent } from "../../../types/calendar";
@@ -19,23 +18,12 @@ function FilteredEventsContent({
 	filteredEvents: CalendarEvent[];
 	onClose: () => void;
 }) {
-	const colorEvaluatorRef = useRef<ColorEvaluator<SingleCalendarConfig> | null>(null);
-	if (colorEvaluatorRef.current === null) {
-		colorEvaluatorRef.current = new ColorEvaluator(bundle.settingsStore.settings$);
-	}
-	useEffect(() => {
-		const ev = colorEvaluatorRef.current;
-		return () => {
-			ev?.destroy();
-			colorEvaluatorRef.current = null;
-		};
-	}, []);
+	const colorEvaluator = useColorEvaluator<SingleCalendarConfig>(bundle.settingsStore.settings$);
 
-	const items: EventListItemData[] = useMemo(() => {
-		const ev = colorEvaluatorRef.current;
-		if (!ev) return [];
-		return filteredEvents.map((event) => mapEventToItem(event, bundle, ev));
-	}, [filteredEvents, bundle]);
+	const items: EventListItemData[] = useMemo(
+		() => filteredEvents.map((event) => mapEventToItem(event, bundle, colorEvaluator)),
+		[filteredEvents, bundle, colorEvaluator]
+	);
 
 	const openFile = useCallback(
 		(item: EventListItemData) => {

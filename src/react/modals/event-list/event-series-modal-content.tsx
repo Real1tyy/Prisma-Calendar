@@ -1,9 +1,8 @@
-import { ColorEvaluator } from "@real1ty-obsidian-plugins";
-import { showReactModal } from "@real1ty-obsidian-plugins-react";
+import { showReactModal, useColorEvaluator } from "@real1ty-obsidian-plugins-react";
 import { DateTime } from "luxon";
 import type { App } from "obsidian";
 import type { CSSProperties, ReactNode } from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { CalendarEvent } from "../../../types/calendar";
@@ -35,10 +34,7 @@ function EventSeriesModalContent({
 	preferredTab?: "name" | "category" | "recurring" | null | undefined;
 	onClose: () => void;
 }) {
-	const colorEvaluatorRef = useRef<ColorEvaluator<SingleCalendarConfig> | null>(null);
-	if (colorEvaluatorRef.current === null) {
-		colorEvaluatorRef.current = new ColorEvaluator(bundle.settingsStore.settings$);
-	}
+	const colorEvaluator = useColorEvaluator<SingleCalendarConfig>(bundle.settingsStore.settings$);
 	const [searchQuery, setSearchQuery] = useState("");
 
 	const tabs = useMemo<TabConfig[]>(() => {
@@ -66,21 +62,9 @@ function EventSeriesModalContent({
 		categoryValues && categoryValues.length === 1 ? categoryValues[0] : null
 	);
 
-	useEffect(() => {
-		const ev = colorEvaluatorRef.current;
-		return () => {
-			ev?.destroy();
-			colorEvaluatorRef.current = null;
-		};
-	}, []);
-
 	const getEventColors = useCallback(
-		(event: CalendarEvent): string[] => {
-			const ev = colorEvaluatorRef.current;
-			if (!ev) return [];
-			return resolveAllEventColors(event.meta, bundle, ev);
-		},
-		[bundle]
+		(event: CalendarEvent): string[] => resolveAllEventColors(event.meta, bundle, colorEvaluator),
+		[bundle, colorEvaluator]
 	);
 
 	const mapToEventRows = useCallback(
