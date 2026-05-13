@@ -42,12 +42,15 @@ export const FilterInput = memo(function FilterInput({
 	onEscape,
 }: FilterInputProps) {
 	const [localValue, setLocalValue] = useState(value);
+	const [lastExternalValue, setLastExternalValue] = useState(value);
 	const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
 
-	useEffect(() => {
+	// Adopt new external value into local draft when prop changes.
+	if (value !== lastExternalValue) {
+		setLastExternalValue(value);
 		setLocalValue(value);
-	}, [value]);
+	}
 
 	const flushChange = useCallback(
 		(newValue: string) => {

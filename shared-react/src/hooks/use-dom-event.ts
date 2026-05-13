@@ -14,7 +14,9 @@ export function useDomEvent<K extends keyof WindowEventMap>(
 	callback: (evt: WindowEventMap[K]) => void
 ): void {
 	const callbackRef = useRef(callback);
-	callbackRef.current = callback;
+	useEffect(() => {
+		callbackRef.current = callback;
+	});
 
 	useEffect(() => {
 		if (!target) return;

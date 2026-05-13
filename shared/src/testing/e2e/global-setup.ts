@@ -97,9 +97,9 @@ function pruneOrphanObsidianProcesses(): void {
 		const match = line.match(/^\s*(\d+)\s+(\d+)\s+(.*)$/);
 		if (!match) continue;
 
-		const pid = Number.parseInt(match[1]!, 10);
-		const pgid = Number.parseInt(match[2]!, 10);
-		const args = match[3]!;
+		const pid = Number.parseInt(match[1], 10);
+		const pgid = Number.parseInt(match[2], 10);
+		const args = match[3];
 
 		if (!Number.isFinite(pid) || pid <= 1) continue;
 		if (!Number.isFinite(pgid) || pgid <= 1) continue;

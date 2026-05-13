@@ -12,20 +12,22 @@ const DEFAULT_SUCCESS = "Copied!";
 const DEFAULT_FEEDBACK_MS = 1500;
 
 export function useCopyToClipboard(text: string, options?: UseCopyToClipboardOptions) {
+	const successMessage = options?.successMessage;
+	const feedbackMs = options?.feedbackMs;
 	const [copied, setCopied] = useState(false);
 	const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
 	const copy = useCallback(async () => {
 		try {
 			await navigator.clipboard.writeText(text);
-			new Notice(options?.successMessage ?? DEFAULT_SUCCESS);
+			new Notice(successMessage ?? DEFAULT_SUCCESS);
 			setCopied(true);
 			clearTimeout(timerRef.current);
-			timerRef.current = setTimeout(() => setCopied(false), options?.feedbackMs ?? DEFAULT_FEEDBACK_MS);
+			timerRef.current = setTimeout(() => setCopied(false), feedbackMs ?? DEFAULT_FEEDBACK_MS);
 		} catch {
 			new Notice("Failed to copy");
 		}
-	}, [text, options?.successMessage, options?.feedbackMs]);
+	}, [text, successMessage, feedbackMs]);
 
 	return { copy, copied } as const;
 }

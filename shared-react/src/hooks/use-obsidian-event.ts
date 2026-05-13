@@ -23,7 +23,9 @@ export function useObsidianEvent<E extends PropertyKey>(
 	callback: (...args: unknown[]) => void
 ): void {
 	const callbackRef = useRef(callback);
-	callbackRef.current = callback;
+	useEffect(() => {
+		callbackRef.current = callback;
+	});
 
 	useEffect(() => {
 		if (!emitter) return;

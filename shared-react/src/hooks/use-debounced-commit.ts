@@ -61,7 +61,9 @@ export function useDebouncedCommit<T>({
 	const pendingCommitRef = useRef<((next: T) => void) | null>(null);
 	const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const onCommitRef = useRef(onCommit);
-	onCommitRef.current = onCommit;
+	useEffect(() => {
+		onCommitRef.current = onCommit;
+	});
 
 	useEffect(() => {
 		if (!pendingRef.current) {

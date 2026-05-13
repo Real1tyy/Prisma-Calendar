@@ -22,7 +22,7 @@ export function useScrollRestore(scrollState: { current: number }, parentSelecto
 
 			if (!node) return;
 
-			const scrollParent = node.closest(parentSelector) as HTMLElement | null;
+			const scrollParent = node.closest(parentSelector);
 			if (!scrollParent) return;
 
 			if (scrollState.current) {

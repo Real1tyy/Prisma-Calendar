@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { setOrDelete } from "../../utils/string-record";
 import {
@@ -105,9 +105,11 @@ export function useTabbedContainer({
 	const renderedRef = useRef<Set<string>>(new Set());
 
 	const onStateChangeRef = useRef(onStateChange);
-	onStateChangeRef.current = onStateChange;
 	const onTabChangeRef = useRef(onTabChange);
-	onTabChangeRef.current = onTabChange;
+	useEffect(() => {
+		onStateChangeRef.current = onStateChange;
+		onTabChangeRef.current = onTabChange;
+	});
 
 	const allTabs = tabs;
 
@@ -162,7 +164,25 @@ export function useTabbedContainer({
 	);
 	const activeId = activeTab?.id ?? "";
 
-	if (activeTab) renderedRef.current.add(activeTab.id);
+	const markRendered = useCallback((id: string): void => {
+		setPreviouslyRendered((prev) => {
+			if (prev.has(id)) return prev;
+			const next = new Set(prev);
+			next.add(id);
+			return next;
+		});
+	}, []);
+
+	// Adjust state during render to mark the current tab as rendered. The set
+	// re-renders next frame; consumers read it immediately via the derived
+	// `rendered` below so the tab body still mounts on first paint.
+	if (activeTab && !previouslyRendered.has(activeTab.id)) {
+		markRendered(activeTab.id);
+	}
+	const rendered =
+		activeTab && !previouslyRendered.has(activeTab.id)
+			? new Set([...previouslyRendered, activeTab.id])
+			: previouslyRendered;
 
 	const commitVisibleTabs = useCallback(
 		(updated: TabEntry[]): void => {
@@ -181,11 +201,11 @@ export function useTabbedContainer({
 			setCurrentIndex(index);
 			const entry = visibleTabs[index];
 			const tab = getActiveChild(entry, groupStates);
-			renderedRef.current.add(tab.id);
+			markRendered(tab.id);
 			onTabChangeRef.current?.(entry.id, index);
 			emit();
 		},
-		[visibleTabs, currentIndex, groupStates, emit]
+		[visibleTabs, currentIndex, groupStates, emit, markRendered]
 	);
 
 	const switchTo = useCallback(
@@ -410,7 +430,7 @@ export function useTabbedContainer({
 		colorOverrides,
 		showSettingsButton,
 		groupStates,
-		rendered: renderedRef.current,
+		rendered,
 		getLabel,
 		getIcon,
 		getColor,

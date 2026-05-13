@@ -87,6 +87,7 @@ export * from "./forms";
 export type { Paths, PathValue } from "./hooks/path-types";
 export type { ActivatableProps } from "./hooks/use-activatable";
 export { useActivatable } from "./hooks/use-activatable";
+export { useColorEvaluator } from "./hooks/use-color-evaluator";
 export type { UseCopyToClipboardOptions } from "./hooks/use-copy-to-clipboard";
 export { useCopyToClipboard } from "./hooks/use-copy-to-clipboard";
 export type { DebouncedCommitHandle, UseDebouncedCommitOptions } from "./hooks/use-debounced-commit";

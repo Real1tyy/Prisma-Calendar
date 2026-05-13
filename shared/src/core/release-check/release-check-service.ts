@@ -77,7 +77,7 @@ export class ReleaseCheckService {
 		return this.acceptIfFresher({
 			version: release.tag_name.replace(/^v/i, ""),
 			publishedAt: release.published_at,
-			url: release.html_url,
+			url: release.html_url.replace(/\/tag\/v(?=\d)/i, "/tag/"),
 		});
 	}
 

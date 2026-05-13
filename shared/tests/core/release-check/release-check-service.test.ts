@@ -13,7 +13,7 @@ const CONFIG = {
 function makeRelease(overrides: Partial<GitHubRelease> = {}): GitHubRelease {
 	return {
 		tag_name: "v2.0.0",
-		html_url: "https://github.com/foo/bar/releases/tag/v2.0.0",
+		html_url: "https://github.com/foo/bar/releases/tag/2.0.0",
 		published_at: "2026-05-01T12:00:00Z",
 		draft: false,
 		prerelease: false,
@@ -35,7 +35,7 @@ describe("ReleaseCheckService", () => {
 		expect(notice).toEqual({
 			version: "2.0.0",
 			publishedAt: "2026-05-01T12:00:00Z",
-			url: "https://github.com/foo/bar/releases/tag/v2.0.0",
+			url: "https://github.com/foo/bar/releases/tag/2.0.0",
 		});
 		expect(service.notice$.getValue()).toEqual(notice);
 	});
@@ -50,6 +50,18 @@ describe("ReleaseCheckService", () => {
 		window.localStorage.clear();
 		const b = new ReleaseCheckService(CONFIG, { now: () => 1, fetchRelease });
 		expect(await b.checkForUpdates()).toBeNull();
+	});
+
+	it("strips a leading 'v' from the release URL tag segment", async () => {
+		const fetchRelease = vi.fn().mockResolvedValue(
+			makeRelease({
+				tag_name: "v2.0.0",
+				html_url: "https://github.com/foo/bar/releases/tag/v2.0.0",
+			})
+		);
+		const service = new ReleaseCheckService(CONFIG, { now: () => 1, fetchRelease });
+		const notice = await service.checkForUpdates();
+		expect(notice?.url).toBe("https://github.com/foo/bar/releases/tag/2.0.0");
 	});
 
 	it("filters out drafts and prereleases", async () => {
@@ -89,7 +101,7 @@ describe("ReleaseCheckService", () => {
 		expect(second.notice$.getValue()).toEqual({
 			version: "2.0.0",
 			publishedAt: "2026-05-01T12:00:00Z",
-			url: "https://github.com/foo/bar/releases/tag/v2.0.0",
+			url: "https://github.com/foo/bar/releases/tag/2.0.0",
 		});
 	});
 
