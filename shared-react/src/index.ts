@@ -111,12 +111,29 @@ export { useOutsideClick } from "./hooks/use-outside-click";
 export { useReleaseCheck } from "./hooks/use-release-check";
 export type { SchemaFieldBinding, SettingsStorelike } from "./hooks/use-schema-field";
 export { useSchemaField } from "./hooks/use-schema-field";
+export { useScopedStyles } from "./hooks/use-scoped-styles";
 export { useScrollRestore } from "./hooks/use-scroll-restore";
 export type { SettingsFieldsPatch, SettingsFieldsUpdater } from "./hooks/use-settings-fields";
 export { useSettingsFields } from "./hooks/use-settings-fields";
 export type { SettingsStorelike as SettingsStoreShape, SettingsUpdater } from "./hooks/use-settings-store";
 export { useSettingsStore } from "./hooks/use-settings-store";
 export { useSubscription } from "./hooks/use-subscription";
+
+// ─── Grid Layout (React wrapper + modal helpers) ───
+export type {
+	CellPickerContentProps,
+	LayoutEditorContentProps,
+	OpenCellPickerOptions,
+	OpenLayoutEditorOptions,
+	ReactGridLayoutConfig,
+} from "./grid-layout";
+export {
+	CellPickerContent,
+	createGridLayout,
+	LayoutEditorContent,
+	openCellPicker,
+	openLayoutEditor,
+} from "./grid-layout";
 
 // ─── Menus ───
 export type {

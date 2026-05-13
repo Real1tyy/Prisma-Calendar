@@ -1,6 +1,6 @@
 import { injectStyleSheet } from "../../utils/styles/inject";
 
-function buildGridStyles(p: string): string {
+export function buildGridStyles(p: string): string {
 	return `
 .${p}grid {
 	position: relative;

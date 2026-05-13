@@ -7,7 +7,7 @@ import { type ManagerEditController, ManagerEditForm } from "../../components/ma
 import { ManagerRow } from "../../components/manager-row";
 import { SettingItem } from "../../components/setting-item";
 import { useScoped } from "../../contexts/theme-context";
-import { useInjectedStyles } from "../../hooks/use-injected-styles";
+import { useScopedStyles } from "../../hooks/use-scoped-styles";
 import { showReactIconPicker } from "../../modals/icon-picker-modal";
 import { showReactModal } from "../../show-react-modal";
 import type { CustomizableMenuStore } from "./store";
@@ -42,8 +42,7 @@ export interface ItemManagerContentProps {
 }
 
 export const ItemManagerContent = memo(function ItemManagerContent({ app, store }: ItemManagerContentProps) {
-	const { cls, cssPrefix } = useScoped(ROW_PREFIX);
-	useInjectedStyles(`${cssPrefix}context-menu-customizable-styles`, buildCustomizableMenuStyles(cssPrefix));
+	const { cls, cssPrefix } = useScopedStyles(ROW_PREFIX, buildCustomizableMenuStyles);
 
 	const snapshot = useSyncExternalStore(store.subscribe, store.getSnapshot);
 	const [query, setQuery] = useState("");

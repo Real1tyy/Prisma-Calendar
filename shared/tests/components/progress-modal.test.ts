@@ -3,11 +3,15 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import type * as ObsidianMock from "../../src/testing/mocks/obsidian";
+
 let mockContentEl: HTMLElement;
 let mockModalEl: HTMLElement;
 let mockCloseFn: ReturnType<typeof vi.fn>;
 
-vi.mock("obsidian", () => {
+vi.mock("obsidian", async () => {
+	const actual = await vi.importActual<typeof ObsidianMock>("../../src/testing/mocks/obsidian");
+
 	class MockModal {
 		contentEl: HTMLElement;
 		modalEl: HTMLElement;
@@ -32,7 +36,7 @@ vi.mock("obsidian", () => {
 		setTitle(_title: string): void {}
 	}
 
-	return { Modal: MockModal };
+	return { ...actual, Modal: MockModal };
 });
 
 const { showProgressModal } = await import("../../src/components/primitives/progress-modal");

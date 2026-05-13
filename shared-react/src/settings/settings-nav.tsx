@@ -1,8 +1,8 @@
 import type { KeyboardEvent, ReactNode } from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
-import { useCls, useScoped } from "../contexts/theme-context";
-import { useInjectedStyles } from "../hooks/use-injected-styles";
+import { useCls } from "../contexts/theme-context";
+import { useScopedStyles } from "../hooks/use-scoped-styles";
 import { cx } from "../utils/cx";
 import { buildSettingsNavStyles } from "./settings-nav.styles";
 
@@ -39,8 +39,7 @@ export const SettingsNav = memo(function SettingsNav({
 	children,
 }: SettingsNavProps) {
 	const cls = useCls();
-	const { cls: settingsCls, tid, cssPrefix } = useScoped("settings");
-	useInjectedStyles(`${cssPrefix}settings-nav-styles`, buildSettingsNavStyles(cssPrefix));
+	const { cls: settingsCls, tid } = useScopedStyles("settings", buildSettingsNavStyles);
 	const [focusedIndex, setFocusedIndex] = useState(-1);
 	const [noResults, setNoResults] = useState(false);
 	const buttonsRef = useRef<(HTMLButtonElement | null)[]>([]);

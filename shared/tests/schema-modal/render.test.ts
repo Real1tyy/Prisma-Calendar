@@ -5,10 +5,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
 import type { ModalContext } from "../../src/components/component-renderer/types";
+import type * as ObsidianMock from "../../src/testing/mocks/obsidian";
 
 const noticeSpy = vi.fn();
 
-vi.mock("obsidian", () => {
+vi.mock("obsidian", async () => {
+	const actual = await vi.importActual<typeof ObsidianMock>("../../src/testing/mocks/obsidian");
+
 	class MockSetting {
 		nameEl: HTMLElement | null = null;
 		controlEl: HTMLElement;
@@ -147,7 +150,7 @@ vi.mock("obsidian", () => {
 		}
 	}
 
-	return { Setting: MockSetting, SecretComponent: MockSecretComponent, Notice: MockNotice };
+	return { ...actual, Setting: MockSetting, SecretComponent: MockSecretComponent, Notice: MockNotice };
 });
 
 const { createSchemaFormRenderer } = await import("../../src/components/schema-modal/render");

@@ -86,7 +86,30 @@ export interface GridLayoutConfig {
 	onCellChange?: (row: number, col: number, id?: string) => void;
 	/** Fires on any state mutation (swap, resize) with the new serializable state. */
 	onStateChange?: (state: GridLayoutState) => void;
-	/** When true, renders a gear button on the grid to open the layout editor. Requires `app` and `cellPalette`. */
+	/**
+	 * Invoked when the user triggers "edit layout" (via gear button or command).
+	 * Receives the current state and palette; caller is responsible for opening
+	 * a UI and calling `applyState` with the new state when the user submits.
+	 */
+	onOpenLayoutEditor?: (
+		currentState: GridLayoutState,
+		cellPalette: CellOption[],
+		applyState: (state: GridLayoutState) => void
+	) => void;
+	/**
+	 * Invoked when the user requests the cell palette picker for a specific cell
+	 * (via per-cell swap button or command). Caller opens a UI and calls
+	 * `selectOption` with the chosen palette option when the user picks one.
+	 */
+	onOpenCellPicker?: (
+		row: number,
+		col: number,
+		currentId: string | undefined,
+		usedIds: Set<string>,
+		cellPalette: CellOption[],
+		selectOption: (option: CellOption) => void
+	) => void;
+	/** When true, renders a gear button on the grid to open the layout editor. Requires `app`, `cellPalette`, and `onOpenLayoutEditor`. */
 	editable?: boolean;
 	/**
 	 * Enables drag handles for resizing. Mutually exclusive with `minCellWidth`.

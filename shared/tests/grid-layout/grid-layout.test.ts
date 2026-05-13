@@ -2,7 +2,7 @@ import type { App } from "obsidian";
 import { describe, expect, it, vi } from "vitest";
 
 import { createGridLayout } from "../../src/components/grid-layout/grid-layout";
-import type { CellPlacement, GridLayoutConfig } from "../../src/components/grid-layout/types";
+import type { CellPlacement, GridLayoutConfig, GridLayoutState } from "../../src/components/grid-layout/types";
 
 const mockApp = {} as App;
 
@@ -433,6 +433,7 @@ describe("createGridLayout", () => {
 				{ id: "opt-a", label: "Option A", render: vi.fn() },
 				{ id: "opt-b", label: "Option B", render: vi.fn() },
 			],
+			onOpenCellPicker: vi.fn(),
 		});
 
 		const swapButtons = container.querySelectorAll(".test-grid-cell-swap");
@@ -477,6 +478,85 @@ describe("createGridLayout", () => {
 		handle.showLayoutEditor();
 	});
 
+	it("showLayoutEditor invokes onOpenLayoutEditor callback with state, palette, and applyState", () => {
+		const container = document.createElement("div");
+		const palette = [{ id: "opt-a", label: "A", render: vi.fn() }];
+		const onOpenLayoutEditor = vi.fn();
+		const handle = createGridLayout(container, makeConfig({ cellPalette: palette, onOpenLayoutEditor, app: mockApp }));
+
+		handle.showLayoutEditor();
+
+		expect(onOpenLayoutEditor).toHaveBeenCalledTimes(1);
+		const [state, paletteArg, applyState] = onOpenLayoutEditor.mock.calls[0];
+		expect(state.columns).toBe(2);
+		expect(paletteArg).toBe(palette);
+		expect(typeof applyState).toBe("function");
+	});
+
+	it("applyState from onOpenLayoutEditor rebuilds the grid from the new state", () => {
+		const container = document.createElement("div");
+		const palette = [
+			{ id: "opt-a", label: "A", render: vi.fn() },
+			{ id: "opt-b", label: "B", render: vi.fn() },
+		];
+		const onOpenLayoutEditor = vi.fn();
+		const handle = createGridLayout(
+			container,
+			makeConfig({
+				cellPalette: palette,
+				onOpenLayoutEditor,
+				app: mockApp,
+				cells: [],
+			})
+		);
+
+		handle.showLayoutEditor();
+		const applyState = onOpenLayoutEditor.mock.calls[0][2] as (s: GridLayoutState) => void;
+		applyState({
+			columns: 1,
+			rows: 1,
+			cells: [{ optionId: "opt-a", row: 0, col: 0 }],
+			columnSizes: undefined,
+			rowSizes: undefined,
+			cellColumnSizes: undefined,
+			cellRowSizes: undefined,
+		});
+
+		expect(handle.columns).toBe(1);
+		expect(handle.rows).toBe(1);
+		expect(handle.getCellElement(0, 0)).toBeTruthy();
+	});
+
+	it("showCellPicker invokes onOpenCellPicker callback with row, col, currentId, usedIds, palette, and selectOption", () => {
+		const container = document.createElement("div");
+		const palette = [
+			{ id: "opt-a", label: "A", render: vi.fn() },
+			{ id: "opt-b", label: "B", render: vi.fn() },
+		];
+		const onOpenCellPicker = vi.fn();
+		const handle = createGridLayout(
+			container,
+			makeConfig({
+				cellPalette: palette,
+				onOpenCellPicker,
+				app: mockApp,
+				cells: [{ id: "opt-a", label: "A", row: 0, col: 0, render: vi.fn() }],
+			})
+		);
+
+		handle.showCellPicker(0, 0);
+
+		expect(onOpenCellPicker).toHaveBeenCalledTimes(1);
+		const [row, col, currentId, usedIds, paletteArg, selectOption] = onOpenCellPicker.mock.calls[0];
+		expect(row).toBe(0);
+		expect(col).toBe(0);
+		expect(currentId).toBe("opt-a");
+		expect(usedIds).toBeInstanceOf(Set);
+		expect(usedIds.has("opt-a")).toBe(true);
+		expect(paletteArg).toBe(palette);
+		expect(typeof selectOption).toBe("function");
+	});
+
 	it("editable adds edit button to grid", () => {
 		const container = document.createElement("div");
 		const nonDestructiveRender = vi.fn((el: HTMLElement) => el.createDiv({ text: "content" }));
@@ -494,6 +574,7 @@ describe("createGridLayout", () => {
 				{ id: "opt-a", label: "A", row: 0, col: 0, render: nonDestructiveRender },
 				{ id: "opt-b", label: "B", row: 0, col: 1, render: nonDestructiveRender },
 			],
+			onOpenLayoutEditor: vi.fn(),
 		});
 
 		const editBtn = container.querySelector(".test-grid-edit-btn");

@@ -3,7 +3,7 @@ import { memo, useCallback, useMemo } from "react";
 
 import { ObsidianIcon } from "../components/obsidian-icon";
 import { useScoped } from "../contexts/theme-context";
-import { useInjectedStyles } from "../hooks/use-injected-styles";
+import { useScopedStyles } from "../hooks/use-scoped-styles";
 import { buildPageHeaderStyles } from "./page-header.styles";
 
 export interface PageHeaderAction {
@@ -90,8 +90,7 @@ export const PageHeader = memo(function PageHeader({
 	breadcrumbs,
 	right,
 }: PageHeaderProps) {
-	const { cls, tid, cssPrefix } = useScoped("page-header");
-	useInjectedStyles(`${cssPrefix}page-header-styles`, buildPageHeaderStyles(cssPrefix));
+	const { cls, tid } = useScopedStyles("page-header", buildPageHeaderStyles);
 	const handleBack = useCallback(() => onBack?.(), [onBack]);
 
 	const memoizedActions = useMemo(

@@ -2,8 +2,7 @@ import { buildChipListStyles } from "@real1ty-obsidian-plugins";
 import type { ReactNode } from "react";
 import { memo, useCallback } from "react";
 
-import { useScoped } from "../contexts/theme-context";
-import { useInjectedStyles } from "../hooks/use-injected-styles";
+import { useScopedStyles } from "../hooks/use-scoped-styles";
 import { Chip } from "./chip";
 import { EmptyHint } from "./empty-hint";
 
@@ -36,8 +35,7 @@ export const ChipList = memo(function ChipList({
 	renderPrefix,
 	onItemClick,
 }: ChipListProps) {
-	const { cls, cssPrefix } = useScoped("chip");
-	useInjectedStyles(`${cssPrefix}chip-list-styles`, buildChipListStyles(cssPrefix));
+	const { cls } = useScopedStyles("chip", buildChipListStyles);
 
 	const handleRemove = useCallback(
 		(item: string) => {

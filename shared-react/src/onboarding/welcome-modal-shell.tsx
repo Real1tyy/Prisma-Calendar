@@ -1,8 +1,7 @@
 import type { ReactNode } from "react";
 
 import { Button } from "../components/button";
-import { useScoped } from "../contexts/theme-context";
-import { useInjectedStyles } from "../hooks/use-injected-styles";
+import { useScopedStyles } from "../hooks/use-scoped-styles";
 import { buildWelcomeShellStyles } from "./welcome-modal-shell.styles";
 
 export interface WelcomeModalFooterLink {
@@ -39,8 +38,7 @@ export function WelcomeModalShell({
 	onSubmit,
 	children,
 }: WelcomeModalShellProps) {
-	const { cls, tid, cssPrefix } = useScoped("welcome");
-	useInjectedStyles(`${cssPrefix}welcome-shell-styles`, buildWelcomeShellStyles(cssPrefix));
+	const { cls, tid } = useScopedStyles("welcome", buildWelcomeShellStyles);
 
 	return (
 		<div className={cls("root")}>

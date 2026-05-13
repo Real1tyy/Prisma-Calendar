@@ -5,9 +5,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
 import { SettingsStore, SettingsUIBuilder } from "../../src/core/settings";
+import type * as ObsidianMock from "../../src/testing/mocks/obsidian";
 
 // Mock Obsidian
-vi.mock("obsidian", () => {
+vi.mock("obsidian", async () => {
+	const actual = await vi.importActual<typeof ObsidianMock>("../../src/testing/mocks/obsidian");
+
 	class MockSetting {
 		nameEl: HTMLElement | null = null;
 		descEl: HTMLElement | null = null;
@@ -242,6 +245,7 @@ vi.mock("obsidian", () => {
 	}
 
 	return {
+		...actual,
 		Setting: MockSetting,
 		Plugin: vi.fn(),
 	};

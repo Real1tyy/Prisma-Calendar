@@ -4,7 +4,7 @@ import { memo, useState } from "react";
 
 import { useScoped } from "../contexts/theme-context";
 import { useActivatable } from "../hooks/use-activatable";
-import { useInjectedStyles } from "../hooks/use-injected-styles";
+import { useScopedStyles } from "../hooks/use-scoped-styles";
 
 // ─── SectionHeader ───
 
@@ -96,8 +96,7 @@ export const CollapsibleSection = memo(function CollapsibleSection({
 	defaultCollapsed = false,
 	testIdSlug,
 }: CollapsibleSectionProps) {
-	const { cls, tid, cssPrefix } = useScoped("collapsible");
-	useInjectedStyles(`${cssPrefix}collapsible-styles`, buildCollapsibleStyles(cssPrefix));
+	const { cls, tid } = useScopedStyles("collapsible", buildCollapsibleStyles);
 
 	const [uncontrolledCollapsed, setUncontrolledCollapsed] = useState(defaultCollapsed);
 	const collapsed = controlledCollapsed ?? uncontrolledCollapsed;

@@ -4,7 +4,6 @@ import { createCssUtils } from "../../utils/css-utils";
 import { showModal } from "../component-renderer/modal";
 import type { GridResizeHandle, ResizeAxisConfig } from "./grid-resize";
 import { setupGridResize } from "./grid-resize";
-import { openLayoutEditor } from "./layout-editor";
 import { injectGridStyles } from "./styles";
 import type {
 	CellCleanup,
@@ -255,7 +254,7 @@ export function createGridLayout(container: HTMLElement, config: GridLayoutConfi
 		}
 	}
 
-	if (editable && config.app && cellPalette?.length) {
+	if (editable && cellPalette?.length && config.onOpenLayoutEditor) {
 		const editBtn = gridEl.createEl("button", { cls: css.cls("grid-edit-btn") });
 		setIcon(editBtn, "settings-2");
 		editBtn.addEventListener("click", () => handle.showLayoutEditor());
@@ -441,7 +440,7 @@ export function createGridLayout(container: HTMLElement, config: GridLayoutConfi
 	}
 
 	function addSwapButton(element: HTMLElement, row: number, col: number): void {
-		if (!config.app || !cellPalette?.length) return;
+		if (!cellPalette?.length || !config.onOpenCellPicker) return;
 
 		const btn = element.createEl("button", { cls: css.cls("grid-cell-swap") });
 		setIcon(btn, "arrow-left-right");
@@ -457,63 +456,14 @@ export function createGridLayout(container: HTMLElement, config: GridLayoutConfi
 	}
 
 	function openCellPicker(row: number, col: number): void {
-		if (!config.app || !cellPalette?.length) return;
+		if (!cellPalette?.length || !config.onOpenCellPicker) return;
 
 		const currentEntry = cellMap.get(cellKey(row, col));
 		const currentId = currentEntry?.id;
 		const usedIds = getUsedOptionIds();
 
-		showModal({
-			app: config.app,
-			cls: css.cls("grid-picker-modal"),
-			title: `Swap cell (${row + 1}, ${col + 1})`,
-			render: (modalEl) => {
-				const list = modalEl.createDiv(css.cls("grid-picker-list"));
-				for (const option of cellPalette) {
-					const isCurrent = option.id === currentId;
-					const isUsed = usedIds.has(option.id) && !isCurrent;
-
-					const itemCls = [
-						css.cls("grid-picker-item"),
-						isCurrent ? css.cls("grid-picker-item-current") : "",
-						isUsed ? css.cls("grid-picker-item-used") : "",
-					]
-						.filter(Boolean)
-						.join(" ");
-
-					const item = list.createEl("button", {
-						cls: itemCls,
-						attr: { "data-option-id": option.id },
-					});
-
-					const labelSpan = item.createEl("span", {
-						text: option.label,
-						cls: css.cls("grid-picker-item-label"),
-					});
-
-					if (isCurrent) {
-						labelSpan.createEl("span", {
-							text: "Current",
-							cls: css.cls("grid-picker-item-badge"),
-						});
-					} else if (isUsed) {
-						labelSpan.createEl("span", {
-							text: "In use",
-							cls: css.cls("grid-picker-item-badge"),
-						});
-					}
-
-					item.addEventListener("click", () => {
-						if (isCurrent) return;
-						swapCellFromPalette(row, col, option);
-						const modal = modalEl.closest(".modal-container");
-						if (modal) {
-							const closeBtn = modal.querySelector<HTMLElement>(".modal-close-button");
-							closeBtn?.click();
-						}
-					});
-				}
-			},
+		config.onOpenCellPicker(row, col, currentId, usedIds, cellPalette, (option) => {
+			swapCellFromPalette(row, col, option);
 		});
 	}
 
@@ -722,14 +672,8 @@ export function createGridLayout(container: HTMLElement, config: GridLayoutConfi
 		},
 
 		showLayoutEditor(): void {
-			if (destroyed || !config.app || !cellPalette?.length) return;
-			openLayoutEditor({
-				app: config.app,
-				cssPrefix,
-				currentState: buildState(),
-				cellPalette,
-				onApply: (newState) => rebuildFromState(newState),
-			});
+			if (destroyed || !cellPalette?.length || !config.onOpenLayoutEditor) return;
+			config.onOpenLayoutEditor(buildState(), cellPalette, (newState) => rebuildFromState(newState));
 		},
 
 		getState(): GridLayoutState {

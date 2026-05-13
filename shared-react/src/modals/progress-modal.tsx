@@ -2,8 +2,7 @@ import type { App } from "obsidian";
 import type { RefObject } from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
-import { useScoped } from "../contexts/theme-context";
-import { useInjectedStyles } from "../hooks/use-injected-styles";
+import { useScopedStyles } from "../hooks/use-scoped-styles";
 import { showReactModal } from "../show-react-modal";
 import { cx } from "../utils/cx";
 import { buildProgressStyles } from "./progress-modal.styles";
@@ -46,8 +45,7 @@ export const ProgressContent = memo(function ProgressContent({
 	successCloseDelay,
 	errorCloseDelay,
 }: ProgressContentProps) {
-	const { cls, tid, cssPrefix } = useScoped("progress");
-	useInjectedStyles(`${cssPrefix}progress-modal-styles`, buildProgressStyles(cssPrefix));
+	const { cls, tid } = useScopedStyles("progress", buildProgressStyles);
 
 	const safeTotal = Math.max(total, 1);
 	const baseTitle = title.replace(/\.{3}$/, "");

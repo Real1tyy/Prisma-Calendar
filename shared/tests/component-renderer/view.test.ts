@@ -4,10 +4,13 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { ComponentContext, ViewComponentConfig, ViewContext } from "../../src/components/component-renderer/types";
+import type * as ObsidianMock from "../../src/testing/mocks/obsidian";
 
 const mockActivateView = vi.fn().mockResolvedValue(null);
 
-vi.mock("obsidian", () => {
+vi.mock("obsidian", async () => {
+	const actual = await vi.importActual<typeof ObsidianMock>("../../src/testing/mocks/obsidian");
+
 	class MockItemView {
 		containerEl: HTMLElement;
 		app: { name: string };
@@ -24,7 +27,7 @@ vi.mock("obsidian", () => {
 		}
 	}
 
-	return { ItemView: MockItemView };
+	return { ...actual, ItemView: MockItemView };
 });
 
 vi.mock("../../src/utils/activate-view", () => ({

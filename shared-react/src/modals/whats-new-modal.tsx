@@ -9,8 +9,7 @@ import { MarkdownRenderer } from "obsidian";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 import { useApp } from "../contexts/app-context";
-import { useScoped } from "../contexts/theme-context";
-import { useInjectedStyles } from "../hooks/use-injected-styles";
+import { useScopedStyles } from "../hooks/use-scoped-styles";
 import { showReactModal } from "../show-react-modal";
 import { buildWhatsNewStyles } from "./whats-new-modal.styles";
 
@@ -102,8 +101,7 @@ export const WhatsNewContent = memo(function WhatsNewContent({
 	const [supportCollapsed, setSupportCollapsed] = useState(false);
 	const [renderedCount, setRenderedCount] = useState(0);
 	const renderingRef = useRef(false);
-	const { cls, tid, cssPrefix } = useScoped("whats-new");
-	useInjectedStyles(`${cssPrefix}whats-new-styles`, buildWhatsNewStyles(cssPrefix));
+	const { cls, tid } = useScopedStyles("whats-new", buildWhatsNewStyles);
 
 	const isFullChangelog = fromVersion === "0.0.0";
 	const changelogSections = getChangelogSince(config.changelogContent, fromVersion, toVersion);

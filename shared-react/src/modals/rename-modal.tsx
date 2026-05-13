@@ -4,8 +4,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "../components/button";
 import { ModalDescription } from "../components/modal-description";
-import { useScoped } from "../contexts/theme-context";
-import { useInjectedStyles } from "../hooks/use-injected-styles";
+import { useScopedStyles } from "../hooks/use-scoped-styles";
 import { openReactModal } from "../show-react-modal";
 import { buildRenameStyles } from "./rename-modal.styles";
 
@@ -34,8 +33,7 @@ export const RenameModalContent = memo(function RenameModalContent({
 	onSubmit,
 	onCancel,
 }: RenameModalProps) {
-	const { cls, tid, cssPrefix } = useScoped("rename");
-	useInjectedStyles(`${cssPrefix}rename-styles`, buildRenameStyles(cssPrefix));
+	const { cls, tid } = useScopedStyles("rename", buildRenameStyles);
 	const [value, setValue] = useState(initialValue);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const settledRef = useRef(false);
