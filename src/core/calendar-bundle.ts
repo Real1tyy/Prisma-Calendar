@@ -167,6 +167,17 @@ export class CalendarBundle {
 		return this.initPromise;
 	}
 
+	/**
+	 * Register the workspace view type synchronously so Obsidian can restore
+	 * a leaf of this view from workspace.json *before* onLayoutReady fires.
+	 * Deferring this until doInitialize() runs causes reloads to drop the
+	 * active calendar leaf (it falls back to a "New tab" because the view
+	 * type is unknown when layout restoration runs).
+	 */
+	registerView(): void {
+		registerPrismaReactView(this.plugin, this, this.viewRef);
+	}
+
 	private async doInitialize(): Promise<void> {
 		await this.notificationManager.start();
 		await this.fileRepository.start();
@@ -174,8 +185,6 @@ export class CalendarBundle {
 		await firstValueFrom(this.fileRepository.indexingComplete$.pipe(filter((complete) => complete)));
 
 		if (this.destroyed) return;
-
-		registerPrismaReactView(this.plugin, this, this.viewRef);
 
 		(
 			this.app.workspace as unknown as {

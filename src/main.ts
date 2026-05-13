@@ -507,6 +507,10 @@ export default class CustomCalendarPlugin extends Plugin {
 		this.calendarBundles = settings.calendars
 			.filter((calendarConfig) => calendarConfig.enabled)
 			.map((calendarConfig) => new CalendarBundle(this, calendarConfig.id, this.settingsStore));
+
+		for (const bundle of this.calendarBundles) {
+			bundle.registerView();
+		}
 	}
 
 	async ensureCalendarBundlesReady(): Promise<void> {
@@ -533,6 +537,7 @@ export default class CustomCalendarPlugin extends Plugin {
 	async addCalendarBundle(calendarId: string): Promise<void> {
 		const bundle = new CalendarBundle(this, calendarId, this.settingsStore);
 		this.calendarBundles.push(bundle);
+		bundle.registerView();
 		await bundle.initialize();
 	}
 
