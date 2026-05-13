@@ -7,6 +7,8 @@ export type { ChipListProps } from "./components/chip-list";
 export { ChipList } from "./components/chip-list";
 export type { CollapsibleSectionProps, SectionBodyProps, SectionHeaderProps } from "./components/collapsible-section";
 export { CollapsibleSection, SectionBody, SectionHeader } from "./components/collapsible-section";
+export type { CommittedFilterInputHandle, CommittedFilterInputProps } from "./components/committed-filter-input";
+export { CommittedFilterInput } from "./components/committed-filter-input";
 export type { CopyableProps } from "./components/copyable";
 export { Copyable } from "./components/copyable";
 export type { EmptyHintProps } from "./components/empty-hint";

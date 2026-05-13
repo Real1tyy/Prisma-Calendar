@@ -57,6 +57,12 @@
 		appearance: none;
 		padding: 4px 8px;
 		text-align: center;
+		width: 90px;
+		max-width: 90px;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 		border: 1px solid var(--background-modifier-border);
 		border-radius: var(--radius-s);
 		background-color: var(--interactive-normal);

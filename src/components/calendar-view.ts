@@ -80,12 +80,11 @@ import type { CalendarHost } from "./calendar-host";
 import { ConnectionRenderer } from "./connection-renderer";
 import { EventContextMenu } from "./event-context-menu";
 import { FilterPresetSelector } from "./filter-preset-selector";
-import { ExpressionFilterInputManager } from "./input-managers/expression-filter";
-import { SearchFilterInputManager } from "./input-managers/search-filter";
 import type { PreviewEventData } from "./modals";
 import { EventCreateModal, showEventPreviewModal, showIntervalEventsModal } from "./modals";
 import { PrerequisiteSelectionManager } from "./prerequisite-selection-manager";
 import { createStickyBanner, type StickyBannerHandle } from "./sticky-banner";
+import { mountExpressionFilter, mountSearchFilter, type ToolbarFilterHandle } from "./toolbar-filter-mount";
 import { UntrackedEventsDropdown } from "./untracked-events-dropdown";
 import { AllTimeStatsModal, DailyStatsModal, MonthlyStatsModal, WeeklyStatsModal } from "./weekly-stats";
 
@@ -98,8 +97,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	private viewType$ = new BehaviorSubject<string>("timeGridWeek");
 	private zoomMountEl: HTMLElement | null = null;
 	private zoomUnmount: (() => void) | null = null;
-	private searchFilter: SearchFilterInputManager;
-	private expressionFilter: ExpressionFilterInputManager;
+	private searchFilter: ToolbarFilterHandle | null = null;
+	private expressionFilter: ToolbarFilterHandle | null = null;
 	private filterPresetSelector: FilterPresetSelector;
 	private container: HTMLElement;
 	private untrackedEventsDropdown: UntrackedEventsDropdown | null = null;
@@ -178,12 +177,10 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.container = rootEl;
 		this.eventContextMenu = new EventContextMenu(this.app, bundle, this);
 		this.colorEvaluator = new ColorEvaluator(bundle.settingsStore.settings$);
-		this.searchFilter = new SearchFilterInputManager(() => this.scheduleRefreshEvents());
-		this.expressionFilter = new ExpressionFilterInputManager(() => this.scheduleRefreshEvents());
 		this.filterPresetSelector = new FilterPresetSelector(
 			bundle.settingsStore.currentSettings.filterPresets,
 			(expression: string) => {
-				this.expressionFilter.setFilterValue(expression);
+				this.expressionFilter?.setFilterValue(expression);
 			}
 		);
 	}
@@ -277,8 +274,10 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.stopUpcomingEventCheck();
 		this.cleanupDragEdgeScrolling();
 		this.unmountZoomControl();
-		this.searchFilter.destroy();
-		this.expressionFilter.destroy();
+		this.searchFilter?.destroy();
+		this.searchFilter = null;
+		this.expressionFilter?.destroy();
+		this.expressionFilter = null;
 		this.untrackedEventsDropdown?.destroy();
 
 		if (this.refreshRafId !== null) {
@@ -1153,11 +1152,25 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		return [
 			{
 				id: "searchInput",
-				init: () => this.searchFilter.initialize(this.calendar!, this.container),
+				init: () => {
+					this.searchFilter?.destroy();
+					this.searchFilter = mountSearchFilter({
+						app: this.app,
+						container: this.container,
+						onFilterChange: () => this.scheduleRefreshEvents(),
+					});
+				},
 			},
 			{
 				id: "expressionFilter",
-				init: () => this.expressionFilter.initialize(this.calendar!, this.container),
+				init: () => {
+					this.expressionFilter?.destroy();
+					this.expressionFilter = mountExpressionFilter({
+						app: this.app,
+						container: this.container,
+						onFilterChange: () => this.scheduleRefreshEvents(),
+					});
+				},
 			},
 			{
 				id: "filterPresets",
@@ -1403,8 +1416,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 		for (const event of nonSkipped) {
 			const passesFilters =
-				this.searchFilter.shouldInclude({ meta: event.meta, title: event.title }) &&
-				this.expressionFilter.shouldInclude(event);
+				(this.searchFilter?.shouldInclude({ meta: event.meta, title: event.title }) ?? true) &&
+				(this.expressionFilter?.shouldInclude(event) ?? true);
 
 			(passesFilters ? visibleEvents : filteredEvents).push(event);
 		}
@@ -2654,7 +2667,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			if (!settings.enableKeyboardNavigation) return;
 
 			// Don't navigate if any filter input is focused
-			if (this.searchFilter.isFocused() || this.expressionFilter.isFocused()) return;
+			if (this.searchFilter?.isFocused() || this.expressionFilter?.isFocused()) return;
 
 			if (e.key === "ArrowLeft") {
 				e.preventDefault();
@@ -2693,12 +2706,12 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 	focusSearch(): void {
 		this.ensureMobileControlsExpanded();
-		this.searchFilter.focus();
+		this.searchFilter?.focus();
 	}
 
 	focusExpressionFilter(): void {
 		this.ensureMobileControlsExpanded();
-		this.expressionFilter.focus();
+		this.expressionFilter?.focus();
 	}
 
 	// ─── State ───────────────────────────────────────────────────

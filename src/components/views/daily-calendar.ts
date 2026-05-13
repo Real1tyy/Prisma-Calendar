@@ -13,7 +13,7 @@ import { isFileBackedEvent } from "../../utils/event-classification";
 import { parseFCExtendedProps } from "../../utils/extended-props";
 import type { CalendarHost } from "../calendar-host";
 import { EventContextMenu } from "../event-context-menu";
-import { SearchFilterInputManager } from "../input-managers/search-filter";
+import { mountSearchFilter } from "../toolbar-filter-mount";
 import {
 	applyContainerStyles,
 	buildCalendarIconCache,
@@ -96,8 +96,6 @@ export function createDailyCalendar(
 		highlightEventByPath: () => {},
 		enterPrerequisiteSelectionMode: () => {},
 	};
-
-	const searchFilter = new SearchFilterInputManager(() => scheduleRefresh());
 
 	const deps: SharedCalendarDeps = {
 		app,
@@ -256,7 +254,11 @@ export function createDailyCalendar(
 
 	calendar.render();
 
-	searchFilter.initialize(calendar, calendarContainer);
+	const searchFilter = mountSearchFilter({
+		app,
+		container: calendarContainer,
+		onFilterChange: () => scheduleRefresh(),
+	});
 
 	calendarContainer.addEventListener("mousedown", () => {
 		mouseDownTime = Date.now();

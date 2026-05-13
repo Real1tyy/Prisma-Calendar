@@ -1,343 +1,258 @@
+import "@testing-library/jest-dom/vitest";
+
+import { act, waitFor } from "@testing-library/react";
+import { userEvent } from "@testing-library/user-event";
+import type { App } from "obsidian";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { ExpressionFilterInputManager } from "../../src/components/input-managers/expression-filter";
+import { mountExpressionFilter, type ToolbarFilterHandle } from "../../src/components/toolbar-filter-mount";
 
-describe("ExpressionFilterManager", () => {
-	let expressionFilter: ExpressionFilterInputManager;
-	let onFilterChange: ReturnType<typeof vi.fn>;
+function makeContainer(): HTMLElement {
+	const container = document.createElement("div");
+	const toolbarLeft = document.createElement("div");
+	toolbarLeft.className = "fc-toolbar-chunk";
+	container.appendChild(toolbarLeft);
+	document.body.appendChild(container);
+	return container;
+}
+
+const STUB_APP = {} as App;
+const EXPR_INPUT_SELECTOR = ".prisma-fc-expression-input";
+
+async function commit(input: HTMLInputElement, user: ReturnType<typeof userEvent.setup>, value: string): Promise<void> {
+	await user.clear(input);
+	if (value.length > 0) {
+		// userEvent.type interprets `[` and `]` as Special chars; escape them with `[[`.
+		const escaped = value.replace(/\[/g, "[[").replace(/{/g, "{{");
+		await user.type(input, `${escaped}{Enter}`);
+	} else {
+		await user.type(input, "{Enter}");
+	}
+}
+
+describe("mountExpressionFilter", () => {
 	let container: HTMLElement;
+	let handle: ToolbarFilterHandle | null;
+	let onFilterChange: ReturnType<typeof vi.fn>;
+	let user: ReturnType<typeof userEvent.setup>;
 
 	beforeEach(() => {
+		container = makeContainer();
 		onFilterChange = vi.fn();
-		expressionFilter = new ExpressionFilterInputManager(onFilterChange);
-
-		container = document.createElement("div");
-		const toolbarLeft = document.createElement("div");
-		toolbarLeft.className = "fc-toolbar-chunk";
-		container.appendChild(toolbarLeft);
-
-		vi.useFakeTimers();
+		handle = null;
+		user = userEvent.setup();
 	});
 
 	afterEach(() => {
-		expressionFilter.destroy();
-		vi.restoreAllMocks();
-		vi.useRealTimers();
+		if (handle) {
+			act(() => handle?.destroy());
+		}
+		document.body.replaceChildren();
 	});
 
-	describe("initialization", () => {
-		it("should initialize with correct placeholder", () => {
-			const mockCalendar = {} as any;
-			expressionFilter.initialize(mockCalendar, container);
-			vi.advanceTimersByTime(100);
-
-			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
-			expect(input).toBeTruthy();
-			expect(input.placeholder).toBe("Status === 'Done'");
+	function mount(): ToolbarFilterHandle {
+		act(() => {
+			handle = mountExpressionFilter({ app: STUB_APP, container, onFilterChange });
 		});
+		return handle!;
+	}
 
-		it("should use correct CSS class", () => {
-			const mockCalendar = {} as any;
-			expressionFilter.initialize(mockCalendar, container);
-			vi.advanceTimersByTime(100);
-
-			const input = container.querySelector(".prisma-fc-expression-input");
+	describe("initialization", () => {
+		it("renders the input with the expression placeholder and testid", () => {
+			mount();
+			const input = container.querySelector<HTMLInputElement>(EXPR_INPUT_SELECTOR);
 			expect(input).toBeTruthy();
+			expect(input?.placeholder).toBe("Status === 'Done'");
 			expect(input?.className).toBe("prisma-fc-expression-input");
+			expect(input?.getAttribute("data-testid")).toBe("prisma-filter-expression");
 		});
 	});
 
 	describe("shouldInclude with expressions", () => {
-		it("should return true when no filter is set", () => {
-			const event = {
-				meta: { Status: "Done", Priority: "High" },
-			};
-
-			expect(expressionFilter.shouldInclude(event)).toBe(true);
+		it("returns true when no expression is set", () => {
+			mount();
+			expect(handle!.shouldInclude({ meta: { Status: "Done", Priority: "High" } })).toBe(true);
 		});
 
-		it("should evaluate simple equality expressions", () => {
-			const mockCalendar = {} as any;
-			expressionFilter.initialize(mockCalendar, container);
-			vi.advanceTimersByTime(100);
+		it("evaluates equality", async () => {
+			mount();
+			const input = container.querySelector<HTMLInputElement>(EXPR_INPUT_SELECTOR)!;
+			await commit(input, user, 'Status === "Done"');
 
-			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
-			input.value = 'Status === "Done"';
-			input.dispatchEvent(new Event("input"));
-			vi.advanceTimersByTime(50);
-
-			expect(expressionFilter.shouldInclude({ meta: { Status: "Done" } })).toBe(true);
-			expect(expressionFilter.shouldInclude({ meta: { Status: "Pending" } })).toBe(false);
+			expect(handle!.shouldInclude({ meta: { Status: "Done" } })).toBe(true);
+			expect(handle!.shouldInclude({ meta: { Status: "Pending" } })).toBe(false);
 		});
 
-		it("should evaluate inequality expressions", () => {
-			const mockCalendar = {} as any;
-			expressionFilter.initialize(mockCalendar, container);
-			vi.advanceTimersByTime(100);
+		it("evaluates inequality", async () => {
+			mount();
+			const input = container.querySelector<HTMLInputElement>(EXPR_INPUT_SELECTOR)!;
+			await commit(input, user, 'Status !== "Done"');
 
-			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
-			input.value = 'Status !== "Done"';
-			input.dispatchEvent(new Event("input"));
-			vi.advanceTimersByTime(50);
-
-			expect(expressionFilter.shouldInclude({ meta: { Status: "Pending" } })).toBe(true);
-			expect(expressionFilter.shouldInclude({ meta: { Status: "Done" } })).toBe(false);
+			expect(handle!.shouldInclude({ meta: { Status: "Pending" } })).toBe(true);
+			expect(handle!.shouldInclude({ meta: { Status: "Done" } })).toBe(false);
 		});
 
-		it("should evaluate numeric comparisons", () => {
-			const mockCalendar = {} as any;
-			expressionFilter.initialize(mockCalendar, container);
-			vi.advanceTimersByTime(100);
+		it("evaluates numeric comparisons", async () => {
+			mount();
+			const input = container.querySelector<HTMLInputElement>(EXPR_INPUT_SELECTOR)!;
+			await commit(input, user, "Priority > 5");
 
-			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
-			input.value = "Priority > 5";
-			input.dispatchEvent(new Event("input"));
-			vi.advanceTimersByTime(50);
-
-			expect(expressionFilter.shouldInclude({ meta: { Priority: 8 } })).toBe(true);
-			expect(expressionFilter.shouldInclude({ meta: { Priority: 3 } })).toBe(false);
-			expect(expressionFilter.shouldInclude({ meta: { Priority: 5 } })).toBe(false);
+			expect(handle!.shouldInclude({ meta: { Priority: 8 } })).toBe(true);
+			expect(handle!.shouldInclude({ meta: { Priority: 3 } })).toBe(false);
+			expect(handle!.shouldInclude({ meta: { Priority: 5 } })).toBe(false);
 		});
 
-		it("should evaluate boolean properties", () => {
-			const mockCalendar = {} as any;
-			expressionFilter.initialize(mockCalendar, container);
-			vi.advanceTimersByTime(100);
+		it("evaluates boolean checks", async () => {
+			mount();
+			const input = container.querySelector<HTMLInputElement>(EXPR_INPUT_SELECTOR)!;
+			await commit(input, user, "Important === true");
 
-			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
-			input.value = "Important === true";
-			input.dispatchEvent(new Event("input"));
-			vi.advanceTimersByTime(50);
-
-			expect(expressionFilter.shouldInclude({ meta: { Important: true } })).toBe(true);
-			expect(expressionFilter.shouldInclude({ meta: { Important: false } })).toBe(false);
+			expect(handle!.shouldInclude({ meta: { Important: true } })).toBe(true);
+			expect(handle!.shouldInclude({ meta: { Important: false } })).toBe(false);
 		});
 
-		it("should handle logical AND", () => {
-			const mockCalendar = {} as any;
-			expressionFilter.initialize(mockCalendar, container);
-			vi.advanceTimersByTime(100);
+		it("evaluates logical AND", async () => {
+			mount();
+			const input = container.querySelector<HTMLInputElement>(EXPR_INPUT_SELECTOR)!;
+			await commit(input, user, 'Status === "Done" && Priority > 5');
 
-			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
-			input.value = 'Status === "Done" && Priority > 5';
-			input.dispatchEvent(new Event("input"));
-			vi.advanceTimersByTime(50);
-
-			expect(expressionFilter.shouldInclude({ meta: { Status: "Done", Priority: 8 } })).toBe(true);
-			expect(expressionFilter.shouldInclude({ meta: { Status: "Done", Priority: 3 } })).toBe(false);
-			expect(expressionFilter.shouldInclude({ meta: { Status: "Pending", Priority: 8 } })).toBe(false);
+			expect(handle!.shouldInclude({ meta: { Status: "Done", Priority: 8 } })).toBe(true);
+			expect(handle!.shouldInclude({ meta: { Status: "Done", Priority: 3 } })).toBe(false);
+			expect(handle!.shouldInclude({ meta: { Status: "Pending", Priority: 8 } })).toBe(false);
 		});
 
-		it("should handle logical OR", () => {
-			const mockCalendar = {} as any;
-			expressionFilter.initialize(mockCalendar, container);
-			vi.advanceTimersByTime(100);
+		it("evaluates logical OR", async () => {
+			mount();
+			const input = container.querySelector<HTMLInputElement>(EXPR_INPUT_SELECTOR)!;
+			await commit(input, user, 'Status === "Done" || Status === "Archived"');
 
-			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
-			input.value = 'Status === "Done" || Status === "Archived"';
-			input.dispatchEvent(new Event("input"));
-			vi.advanceTimersByTime(50);
-
-			expect(expressionFilter.shouldInclude({ meta: { Status: "Done" } })).toBe(true);
-			expect(expressionFilter.shouldInclude({ meta: { Status: "Archived" } })).toBe(true);
-			expect(expressionFilter.shouldInclude({ meta: { Status: "Pending" } })).toBe(false);
+			expect(handle!.shouldInclude({ meta: { Status: "Done" } })).toBe(true);
+			expect(handle!.shouldInclude({ meta: { Status: "Archived" } })).toBe(true);
+			expect(handle!.shouldInclude({ meta: { Status: "Pending" } })).toBe(false);
 		});
 
-		it("should handle array contains check", () => {
-			const mockCalendar = {} as any;
-			expressionFilter.initialize(mockCalendar, container);
-			vi.advanceTimersByTime(100);
+		it("supports array includes", async () => {
+			mount();
+			const input = container.querySelector<HTMLInputElement>(EXPR_INPUT_SELECTOR)!;
+			await commit(input, user, 'Tags.includes("important")');
 
-			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
-			input.value = 'Tags.includes("important")';
-			input.dispatchEvent(new Event("input"));
-			vi.advanceTimersByTime(50);
-
-			expect(expressionFilter.shouldInclude({ meta: { Tags: ["important", "urgent"] } })).toBe(true);
-			expect(expressionFilter.shouldInclude({ meta: { Tags: ["normal", "routine"] } })).toBe(false);
+			expect(handle!.shouldInclude({ meta: { Tags: ["important", "urgent"] } })).toBe(true);
+			expect(handle!.shouldInclude({ meta: { Tags: ["normal", "routine"] } })).toBe(false);
 		});
 
-		it("should handle nested property access", () => {
-			const mockCalendar = {} as any;
-			expressionFilter.initialize(mockCalendar, container);
-			vi.advanceTimersByTime(100);
+		it("supports nested property access", async () => {
+			mount();
+			const input = container.querySelector<HTMLInputElement>(EXPR_INPUT_SELECTOR)!;
+			await commit(input, user, 'User.Name === "Alice"');
 
-			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
-			input.value = 'User.Name === "Alice"';
-			input.dispatchEvent(new Event("input"));
-			vi.advanceTimersByTime(50);
-
-			expect(expressionFilter.shouldInclude({ meta: { User: { Name: "Alice" } } })).toBe(true);
-			expect(expressionFilter.shouldInclude({ meta: { User: { Name: "Bob" } } })).toBe(false);
+			expect(handle!.shouldInclude({ meta: { User: { Name: "Alice" } } })).toBe(true);
+			expect(handle!.shouldInclude({ meta: { User: { Name: "Bob" } } })).toBe(false);
 		});
 
-		it("should handle undefined properties gracefully", () => {
-			const mockCalendar = {} as any;
-			expressionFilter.initialize(mockCalendar, container);
-			vi.advanceTimersByTime(100);
+		it("treats undefined properties as falsy without warning", async () => {
+			const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
+			try {
+				mount();
+				const input = container.querySelector<HTMLInputElement>(EXPR_INPUT_SELECTOR)!;
+				await commit(input, user, 'Status === "Done"');
 
-			const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+				expect(handle!.shouldInclude({ meta: {} })).toBe(false);
+				expect(handle!.shouldInclude({ meta: { OtherProp: "value" } })).toBe(false);
+				expect(consoleWarn).not.toHaveBeenCalled();
 
-			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
-			input.value = 'Status === "Done"';
-			input.dispatchEvent(new Event("input"));
-			vi.advanceTimersByTime(50);
-
-			// undefined === "Done" should naturally evaluate to false without errors
-			expect(expressionFilter.shouldInclude({ meta: {} })).toBe(false);
-			expect(expressionFilter.shouldInclude({ meta: { OtherProp: "value" } })).toBe(false);
-			expect(consoleWarnSpy).not.toHaveBeenCalled();
-
-			// Test inequality - undefined !== "Done" should evaluate to true
-			input.value = 'Status !== "Done"';
-			input.dispatchEvent(new Event("input"));
-			vi.advanceTimersByTime(50);
-			expect(expressionFilter.shouldInclude({ meta: {} })).toBe(true);
-			expect(expressionFilter.shouldInclude({ meta: { Status: "Pending" } })).toBe(true);
-			expect(expressionFilter.shouldInclude({ meta: { Status: "Done" } })).toBe(false);
-
-			consoleWarnSpy.mockRestore();
+				await commit(input, user, 'Status !== "Done"');
+				expect(handle!.shouldInclude({ meta: {} })).toBe(true);
+				expect(handle!.shouldInclude({ meta: { Status: "Pending" } })).toBe(true);
+				expect(handle!.shouldInclude({ meta: { Status: "Done" } })).toBe(false);
+			} finally {
+				consoleWarn.mockRestore();
+			}
 		});
 
-		it("should handle events with no meta", () => {
-			const mockCalendar = {} as any;
-			expressionFilter.initialize(mockCalendar, container);
-			vi.advanceTimersByTime(100);
+		it("handles events with no meta", async () => {
+			const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
+			try {
+				mount();
+				const input = container.querySelector<HTMLInputElement>(EXPR_INPUT_SELECTOR)!;
+				await commit(input, user, 'Status === "Done"');
 
-			const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-
-			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
-			input.value = 'Status === "Done"';
-			input.dispatchEvent(new Event("input"));
-			vi.advanceTimersByTime(50);
-
-			// Events with no meta should have undefined properties, which evaluates naturally
-			expect(expressionFilter.shouldInclude({})).toBe(false);
-			expect(consoleWarnSpy).not.toHaveBeenCalled();
-
-			consoleWarnSpy.mockRestore();
+				expect(handle!.shouldInclude({})).toBe(false);
+				expect(consoleWarn).not.toHaveBeenCalled();
+			} finally {
+				consoleWarn.mockRestore();
+			}
 		});
 	});
 
 	describe("error handling", () => {
-		it("should return false for invalid expressions", () => {
-			const mockCalendar = {} as any;
-			expressionFilter.initialize(mockCalendar, container);
-			vi.advanceTimersByTime(100);
+		it("returns false for invalid expressions and warns", async () => {
+			const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
+			try {
+				mount();
+				const input = container.querySelector<HTMLInputElement>(EXPR_INPUT_SELECTOR)!;
+				await commit(input, user, "Status === ");
 
-			const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-
-			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
-			input.value = "Status === ";
-			input.dispatchEvent(new Event("input"));
-			vi.advanceTimersByTime(50);
-
-			expect(expressionFilter.shouldInclude({ meta: { Status: "Done" } })).toBe(false);
-			expect(consoleWarnSpy).toHaveBeenCalled();
-
-			consoleWarnSpy.mockRestore();
+				expect(handle!.shouldInclude({ meta: { Status: "Done" } })).toBe(false);
+				expect(consoleWarn).toHaveBeenCalled();
+			} finally {
+				consoleWarn.mockRestore();
+			}
 		});
 
-		it("should handle syntax errors gracefully", () => {
-			const mockCalendar = {} as any;
-			expressionFilter.initialize(mockCalendar, container);
-			vi.advanceTimersByTime(100);
+		it("recovers from a syntax error", async () => {
+			const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
+			try {
+				mount();
+				const input = container.querySelector<HTMLInputElement>(EXPR_INPUT_SELECTOR)!;
+				await commit(input, user, "Status === 'unclosed string");
 
-			const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-
-			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
-			input.value = "Status === 'unclosed string";
-			input.dispatchEvent(new Event("input"));
-			vi.advanceTimersByTime(50);
-
-			expect(expressionFilter.shouldInclude({ meta: { Status: "Done" } })).toBe(false);
-			expect(consoleWarnSpy).toHaveBeenCalled();
-
-			consoleWarnSpy.mockRestore();
-		});
-
-		it("should handle runtime errors in expression", () => {
-			const mockCalendar = {} as any;
-			expressionFilter.initialize(mockCalendar, container);
-			vi.advanceTimersByTime(100);
-
-			const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-
-			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
-			// Set expression that will cause TypeError (calling method on undefined)
-			input.value = "NonExistentProperty.toString()";
-			input.dispatchEvent(new Event("input"));
-			vi.advanceTimersByTime(50);
-
-			// First call establishes NonExistentProperty in mapping
-			expressionFilter.shouldInclude({ meta: { NonExistentProperty: null } });
-
-			// Second call with empty meta will have undefined, causing TypeError on .toString()
-			expect(expressionFilter.shouldInclude({ meta: {} })).toBe(false);
-			expect(consoleWarnSpy).toHaveBeenCalled();
-
-			consoleWarnSpy.mockRestore();
+				expect(handle!.shouldInclude({ meta: { Status: "Done" } })).toBe(false);
+				expect(consoleWarn).toHaveBeenCalled();
+			} finally {
+				consoleWarn.mockRestore();
+			}
 		});
 	});
 
-	describe("property access", () => {
-		it("should allow direct property access without fm. prefix", () => {
-			const mockCalendar = {} as any;
-			expressionFilter.initialize(mockCalendar, container);
-			vi.advanceTimersByTime(100);
+	describe("setFilterValue", () => {
+		it("seeds the expression value and triggers a commit", () => {
+			mount();
+			act(() => handle!.setFilterValue('Status === "Done"'));
 
-			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
-			input.value = 'Status === "Done"';
-			input.dispatchEvent(new Event("input"));
-			vi.advanceTimersByTime(50);
+			expect(handle!.getCurrentFilterValue()).toBe('Status === "Done"');
+			expect(onFilterChange).toHaveBeenCalled();
+			expect(handle!.shouldInclude({ meta: { Status: "Done" } })).toBe(true);
+			expect(handle!.shouldInclude({ meta: { Status: "Pending" } })).toBe(false);
+		});
 
-			expect(expressionFilter.shouldInclude({ meta: { Status: "Done" } })).toBe(true);
+		it("invalidates the matcher when the expression changes via setFilterValue", () => {
+			mount();
+			act(() => handle!.setFilterValue('Status === "Done"'));
+			expect(handle!.shouldInclude({ meta: { Status: "Done" } })).toBe(true);
+
+			act(() => handle!.setFilterValue('Status === "Archived"'));
+			expect(handle!.shouldInclude({ meta: { Status: "Done" } })).toBe(false);
+			expect(handle!.shouldInclude({ meta: { Status: "Archived" } })).toBe(true);
 		});
 	});
 
 	describe("focus", () => {
-		it("should focus the expression input", () => {
-			const mockCalendar = {} as any;
-			expressionFilter.initialize(mockCalendar, container);
-			vi.advanceTimersByTime(100);
-
-			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
-			const focusSpy = vi.spyOn(input, "focus");
-
-			expressionFilter.focus();
-			expect(focusSpy).toHaveBeenCalled();
+		it("focuses the expression input", () => {
+			mount();
+			handle!.focus();
+			const input = container.querySelector<HTMLInputElement>(EXPR_INPUT_SELECTOR);
+			expect(document.activeElement).toBe(input);
 		});
 	});
 
-	describe("integration with debouncing", () => {
-		it("should debounce expression changes", () => {
-			const mockCalendar = {} as any;
-			expressionFilter.initialize(mockCalendar, container);
-			vi.advanceTimersByTime(100);
+	describe("debouncing", () => {
+		it("commits expression changes after the debounce window", async () => {
+			mount();
+			const input = container.querySelector<HTMLInputElement>(EXPR_INPUT_SELECTOR)!;
+			await user.type(input, 'Status === "Done"');
 
-			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
-
-			input.value = 'Status === "Done"';
-			input.dispatchEvent(new Event("input"));
-
-			expect(onFilterChange).not.toHaveBeenCalled();
-
-			vi.advanceTimersByTime(150);
-
-			expect(onFilterChange).toHaveBeenCalledTimes(1);
-		});
-
-		it("should trigger immediately on Enter for expressions", () => {
-			const mockCalendar = {} as any;
-			expressionFilter.initialize(mockCalendar, container);
-			vi.advanceTimersByTime(100);
-
-			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
-
-			input.value = 'Status === "Done"';
-			input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
-
-			expect(onFilterChange).toHaveBeenCalledTimes(1);
+			await waitFor(() => expect(onFilterChange).toHaveBeenCalled());
+			expect(handle!.getCurrentFilterValue()).toBe('Status === "Done"');
 		});
 	});
 });

@@ -13,7 +13,7 @@ import { sel, TID } from "../../fixtures/testids";
 // presets) against an unlocked-Pro, empty Gantt.
 //
 // Filter inputs (`prisma-filter-search`, `-preset`, `-expression`) are
-// shared between the calendar view's input-managers and gantt's own
+// shared between the calendar view's toolbar filters and gantt's own
 // view-filter-bar, so both render into the same leaf when tabs swap.
 // Every filter locator is scoped under `.prisma-gantt-wrapper` to avoid
 // `.first()` landing on the hidden calendar-view copy.

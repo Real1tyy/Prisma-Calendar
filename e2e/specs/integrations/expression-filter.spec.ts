@@ -2,7 +2,7 @@ import { expect, test } from "../../fixtures/electron";
 import { FILTER_EXPRESSION_TID, sel } from "../../fixtures/testids";
 
 // Expression filter is an <input data-testid="prisma-filter-expression">
-// injected into the calendar toolbar (input-managers/expression-filter.ts).
+// mounted into the calendar toolbar via toolbar-filter-mount.ts (React).
 // `focus-expression-filter` moves the cursor there. Invalid expressions are
 // swallowed by `createExpressionMatcher` (filter-logic.ts) — they never
 // throw at the page level, so we assert no SyntaxError / ReferenceError

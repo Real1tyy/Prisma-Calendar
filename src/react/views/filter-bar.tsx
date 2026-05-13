@@ -1,12 +1,12 @@
-import { FilterInput } from "@real1ty-obsidian-plugins-react";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { CommittedFilterInput, type CommittedFilterInputHandle } from "@real1ty-obsidian-plugins-react";
+import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 
 import type { CalendarEvent } from "../../types/calendar";
 import { createExpressionMatcher, matchesSearch } from "../../utils/filter-logic";
 import { FilterPresetSelector } from "./filter-preset-selector";
 
-const SEARCH_DEBOUNCE_MS = 150;
-const EXPRESSION_DEBOUNCE_MS = 50;
+const SEARCH_DEBOUNCE_MS = 300;
+const EXPRESSION_DEBOUNCE_MS = 300;
 
 export interface FilterBarHandle {
 	shouldInclude: (event: CalendarEvent) => boolean;
@@ -18,60 +18,50 @@ interface FilterBarProps {
 }
 
 export const FilterBar = memo(function FilterBar({ onFilterChange, onHandleReady }: FilterBarProps) {
-	const [searchValue, setSearchValue] = useState("");
-	const [expressionValue, setExpressionValue] = useState("");
+	const searchHandle = useRef<CommittedFilterInputHandle>(null);
+	const expressionHandle = useRef<CommittedFilterInputHandle>(null);
 
-	const committedSearch = useRef("");
-	const committedExpression = useRef("");
+	const matcher = useMemo(() => createExpressionMatcher(() => expressionHandle.current?.getValue() ?? ""), []);
 
-	const matcher = useMemo(() => createExpressionMatcher(() => committedExpression.current), []);
+	const onSearchCommit = useCallback(() => onFilterChange(), [onFilterChange]);
 
-	const commitSearch = useCallback(
-		(v: string) => {
-			setSearchValue(v);
-			if (v === committedSearch.current) return;
-			committedSearch.current = v;
-			onFilterChange();
-		},
-		[onFilterChange]
-	);
+	const onExpressionCommit = useCallback(() => {
+		matcher.invalidate();
+		onFilterChange();
+	}, [matcher, onFilterChange]);
 
-	const commitExpression = useCallback(
-		(v: string) => {
-			setExpressionValue(v);
-			if (v === committedExpression.current) return;
-			committedExpression.current = v;
-			matcher.invalidate();
-			onFilterChange();
-		},
-		[onFilterChange, matcher]
-	);
+	const onPresetSelected = useCallback((expression: string) => {
+		expressionHandle.current?.setValue(expression);
+	}, []);
 
 	useEffect(() => {
 		onHandleReady({
 			shouldInclude: (event: CalendarEvent) =>
-				matchesSearch(committedSearch.current, { title: event.title }) && matcher.evaluate(event.meta ?? {}),
+				matchesSearch(searchHandle.current?.getValue() ?? "", { title: event.title }) &&
+				matcher.evaluate(event.meta ?? {}),
 		});
 	}, [onHandleReady, matcher]);
 
 	return (
 		<div className="prisma-view-filter-bar" data-testid="prisma-filter-bar">
-			<FilterPresetSelector onPresetSelected={commitExpression} />
-			<FilterInput
-				value={expressionValue}
-				onChange={commitExpression}
+			<FilterPresetSelector onPresetSelected={onPresetSelected} />
+			<CommittedFilterInput
+				handleRef={expressionHandle}
 				placeholder="Status === 'Done'"
 				className="prisma-fc-expression-input"
 				debounceMs={EXPRESSION_DEBOUNCE_MS}
+				flushOnBlur
 				testId="prisma-filter-expression"
+				onCommit={onExpressionCommit}
 			/>
-			<FilterInput
-				value={searchValue}
-				onChange={commitSearch}
+			<CommittedFilterInput
+				handleRef={searchHandle}
 				placeholder="Search events..."
 				className="prisma-fc-search-input"
 				debounceMs={SEARCH_DEBOUNCE_MS}
+				flushOnBlur
 				testId="prisma-filter-search"
+				onCommit={onSearchCommit}
 			/>
 		</div>
 	);

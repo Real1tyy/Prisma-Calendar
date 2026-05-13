@@ -1,4 +1,5 @@
 import { screen, waitFor } from "@testing-library/react";
+import { createRef } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { FilterInput, useFilteredItems } from "../../src/components/filter-input";
@@ -51,6 +52,80 @@ describe("FilterInput", () => {
 		rerender(<FilterInput value="new" onChange={vi.fn()} testId="search" />);
 
 		expect(screen.getByTestId("search")).toHaveValue("new");
+	});
+
+	describe("flushOnBlur", () => {
+		it("commits the pending debounced value on blur when enabled", async () => {
+			const onChange = vi.fn();
+			const { user } = renderReact(
+				<FilterInput value="" onChange={onChange} debounceMs={5000} flushOnBlur testId="search" />
+			);
+
+			const input = screen.getByTestId("search");
+			await user.type(input, "abc");
+			expect(onChange).not.toHaveBeenCalled();
+
+			input.blur();
+
+			expect(onChange).toHaveBeenCalledExactlyOnceWith("abc");
+		});
+
+		it("does not commit on blur when flag is omitted (default)", async () => {
+			const onChange = vi.fn();
+			const { user } = renderReact(<FilterInput value="" onChange={onChange} debounceMs={5000} testId="search" />);
+
+			const input = screen.getByTestId("search");
+			await user.type(input, "abc");
+			input.blur();
+
+			expect(onChange).not.toHaveBeenCalled();
+		});
+
+		it("does not commit on blur when no debounce is pending", async () => {
+			const onChange = vi.fn();
+			const { user } = renderReact(
+				<FilterInput value="" onChange={onChange} debounceMs={50} flushOnBlur testId="search" />
+			);
+
+			const input = screen.getByTestId("search");
+			await user.type(input, "a");
+			await waitFor(() => expect(onChange).toHaveBeenCalledExactlyOnceWith("a"));
+
+			input.blur();
+			expect(onChange).toHaveBeenCalledOnce();
+		});
+
+		it("trims whitespace when flushing on blur", async () => {
+			const onChange = vi.fn();
+			const { user } = renderReact(
+				<FilterInput value="" onChange={onChange} debounceMs={5000} flushOnBlur testId="search" />
+			);
+
+			const input = screen.getByTestId("search");
+			await user.type(input, "  spaced  ");
+			input.blur();
+
+			expect(onChange).toHaveBeenCalledExactlyOnceWith("spaced");
+		});
+	});
+
+	describe("inputRef forwarding", () => {
+		it("forwards a ref to the underlying input element", () => {
+			const ref = createRef<HTMLInputElement>();
+			renderReact(<FilterInput value="hello" onChange={vi.fn()} inputRef={ref} testId="search" />);
+
+			expect(ref.current).toBeInstanceOf(HTMLInputElement);
+			expect(ref.current).toBe(screen.getByTestId("search"));
+		});
+
+		it("allows the caller to detect focus via the forwarded ref", () => {
+			const ref = createRef<HTMLInputElement>();
+			renderReact(<FilterInput value="" onChange={vi.fn()} inputRef={ref} testId="search" />);
+
+			expect(document.activeElement === ref.current).toBe(false);
+			ref.current?.focus();
+			expect(document.activeElement === ref.current).toBe(true);
+		});
 	});
 });
 

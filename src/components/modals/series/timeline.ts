@@ -336,6 +336,9 @@ export function renderTimelineInto(
 	function rebuildAllEvents(): void {
 		if (!timeline || !items) return;
 
+		// eventMap is the authoritative cache of every fetched event; filter
+		// changes must NEVER mutate it, otherwise clearing the filter has
+		// nothing to repopulate from until a full refetch.
 		const allEvents = [...eventMap.values()];
 		const filtered = config.eventFilter ? allEvents.filter(config.eventFilter) : allEvents;
 		const settings = bundle.settingsStore.currentSettings;
@@ -343,10 +346,9 @@ export function renderTimelineInto(
 		const filteredIds = new Set(filtered.map((e) => e.ref.filePath));
 		const toRemove: string[] = [];
 
-		for (const [id] of eventMap) {
-			if (!filteredIds.has(id)) {
-				toRemove.push(id);
-				eventMap.delete(id);
+		for (const id of items.getIds()) {
+			if (!filteredIds.has(String(id))) {
+				toRemove.push(String(id));
 			}
 		}
 
