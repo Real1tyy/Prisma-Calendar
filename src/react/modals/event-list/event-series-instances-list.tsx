@@ -1,5 +1,5 @@
 import { calculateEventStatistics } from "@real1ty-obsidian-plugins";
-import { useSettingsStore } from "@real1ty-obsidian-plugins-react";
+import { useSettingsFields } from "@real1ty-obsidian-plugins-react";
 import { DateTime } from "luxon";
 import { useMemo, useRef } from "react";
 
@@ -24,11 +24,7 @@ export function EventSeriesInstancesList({
 }) {
 	const searchRef = useRef<HTMLInputElement>(null);
 
-	const [settings] = useSettingsStore(bundle.settingsStore);
-	const multiColorSettings = useMemo(
-		() => ({ colorMode: settings.colorMode, showEventColorDots: settings.showEventColorDots }),
-		[settings.colorMode, settings.showEventColorDots]
-	);
+	const [multiColorSettings] = useSettingsFields(bundle.settingsStore, ["colorMode", "showEventColorDots"]);
 
 	const stats = useMemo(() => calculateEventStatistics(items, DateTime.now()), [items]);
 

@@ -9,8 +9,8 @@ import {
 	SettingsTransferButtons,
 	showWhatsNewReactModal,
 	Toggle,
+	useSchemaField,
 	useSettingsFields,
-	useSettingsStore,
 } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
@@ -50,20 +50,20 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 	settingsStore,
 	plugin,
 }: GeneralSettingsProps) {
-	const [mainSettings, updateMainSettings] = useSettingsStore(plugin.settingsStore);
+	const [licenseKeySecretName, setLicenseKeySecretName] = useSchemaField(plugin.settingsStore, "licenseKeySecretName");
 
 	const onSecretChange = useCallback(
 		async (value: string) => {
-			await updateMainSettings((s) => ({ ...s, licenseKeySecretName: value }));
+			setLicenseKeySecretName(value);
 		},
-		[updateMainSettings]
+		[setLicenseKeySecretName]
 	);
 
 	return (
 		<>
 			<LicenseSection
 				licenseManager={plugin.licenseManager}
-				currentSecretName={mainSettings.licenseKeySecretName}
+				currentSecretName={licenseKeySecretName}
 				onSecretChange={onSecretChange}
 				accountUrl={buildUtmUrl(ACCOUNT_URL, "prisma-calendar", "plugin", "settings", "manage_subscription")}
 			/>
@@ -160,11 +160,10 @@ interface EventPresetsSectionProps {
 }
 
 const EventPresetsSection = memo(function EventPresetsSection({ settingsStore, plugin }: EventPresetsSectionProps) {
-	const [{ eventPresets, defaultPresetId }, updateFields] = useSettingsFields(settingsStore, [
+	const [{ eventPresets: presets, defaultPresetId }, updatePresetFields] = useSettingsFields(settingsStore, [
 		"eventPresets",
 		"defaultPresetId",
 	]);
-	const presets = eventPresets;
 	const showBanner = !plugin.isProEnabled && presets.length >= FREE_MAX_EVENT_PRESETS;
 
 	const bannerRef = useRef<HTMLDivElement>(null);
@@ -183,19 +182,19 @@ const EventPresetsSection = memo(function EventPresetsSection({ settingsStore, p
 
 	const handleDelete = useCallback(
 		(presetId: string) => {
-			void updateFields({
-				eventPresets: presets.filter((p) => p.id !== presetId),
-				defaultPresetId: defaultPresetId === presetId ? undefined : defaultPresetId,
-			});
+			void updatePresetFields((prev) => ({
+				eventPresets: prev.eventPresets.filter((p) => p.id !== presetId),
+				defaultPresetId: prev.defaultPresetId === presetId ? undefined : prev.defaultPresetId,
+			}));
 		},
-		[presets, defaultPresetId, updateFields]
+		[updatePresetFields]
 	);
 
 	const handleDefaultChange = useCallback(
 		(v: string) => {
-			void updateFields({ defaultPresetId: v || undefined });
+			void updatePresetFields({ defaultPresetId: v || undefined });
 		},
-		[updateFields]
+		[updatePresetFields]
 	);
 
 	const presetOptions: Record<string, string> = { "": "None" };

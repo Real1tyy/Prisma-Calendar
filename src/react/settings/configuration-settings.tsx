@@ -45,7 +45,7 @@ const ToolbarSection = memo(function ToolbarSection({
 	description,
 	configKey,
 }: ToolbarSectionProps) {
-	const [buttons] = useSchemaField<string[]>(settingsStore, configKey);
+	const [buttons] = useSchemaField(settingsStore, configKey);
 	const enabled = useMemo(() => new Set(buttons), [buttons]);
 
 	const handleToggle = useCallback(

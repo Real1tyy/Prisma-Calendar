@@ -56,20 +56,20 @@ interface CustomPromptsSectionProps {
 const CustomPromptsSection = memo(function CustomPromptsSection({ mainSettingsStore }: CustomPromptsSectionProps) {
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [isAdding, setIsAdding] = useState(false);
-	const [prompts, setPrompts] = useSchemaField<CustomPrompt[]>(mainSettingsStore, "ai.customPrompts");
+	const [prompts, setPrompts] = useSchemaField(mainSettingsStore, "ai.customPrompts");
 
 	const handleDelete = useCallback(
 		(id: string) => {
-			setPrompts((prev) => prev.filter((p) => p.id !== id));
+			setPrompts((current) => current.filter((p) => p.id !== id));
 		},
 		[setPrompts]
 	);
 
 	const handleSave = useCallback(
 		(prompt: CustomPrompt) => {
-			setPrompts((prev) => {
-				const existing = prev.findIndex((p) => p.id === prompt.id);
-				return existing !== -1 ? prev.map((p, i) => (i === existing ? prompt : p)) : [...prev, prompt];
+			setPrompts((current) => {
+				const existing = current.findIndex((p) => p.id === prompt.id);
+				return existing !== -1 ? current.map((p, i) => (i === existing ? prompt : p)) : [...current, prompt];
 			});
 			setEditingId(null);
 			setIsAdding(false);
