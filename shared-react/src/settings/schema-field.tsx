@@ -42,7 +42,7 @@ export const SchemaField = memo(function SchemaField({
 	if (override?.render) {
 		return (
 			<SettingItem name={label} description={description} {...testIdProp(testId)}>
-				{override.render({ ...binding, descriptor })}
+				{override.render({ value: binding.value, onChange: binding.onChange, descriptor })}
 			</SettingItem>
 		);
 	}

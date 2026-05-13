@@ -36,22 +36,22 @@ interface ExclusiveToggleRowProps {
 }
 
 const ExclusiveToggleRow = memo(function ExclusiveToggleRow({ store, self, otherPath }: ExclusiveToggleRowProps) {
-	const selfBinding = useSchemaField<boolean>(store, self.path);
-	const otherBinding = useSchemaField<boolean>(store, otherPath);
+	const [selfValue, setSelf] = useSchemaField<boolean>(store, self.path);
+	const [otherValue, setOther] = useSchemaField<boolean>(store, otherPath);
 
 	const handleChange = useCallback(
 		(value: boolean) => {
-			selfBinding.onChange(value);
-			if (value && otherBinding.value) {
-				otherBinding.onChange(false);
+			setSelf(value);
+			if (value && otherValue) {
+				setOther(false);
 			}
 		},
-		[selfBinding, otherBinding]
+		[setSelf, setOther, otherValue]
 	);
 
 	return (
 		<SettingItem name={self.name} description={self.description}>
-			<Toggle value={Boolean(selfBinding.value)} onChange={handleChange} />
+			<Toggle value={Boolean(selfValue)} onChange={handleChange} />
 		</SettingItem>
 	);
 });

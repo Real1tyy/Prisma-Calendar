@@ -82,6 +82,7 @@ export { useThemed, withTheme } from "./contexts/with-theme";
 export * from "./forms";
 
 // ─── Hooks ───
+export type { Paths, PathValue } from "./hooks/path-types";
 export type { ActivatableProps } from "./hooks/use-activatable";
 export { useActivatable } from "./hooks/use-activatable";
 export type { UseCopyToClipboardOptions } from "./hooks/use-copy-to-clipboard";
@@ -101,6 +102,8 @@ export { useObsidianEvent } from "./hooks/use-obsidian-event";
 export type { SchemaFieldBinding, SettingsStorelike } from "./hooks/use-schema-field";
 export { useSchemaField } from "./hooks/use-schema-field";
 export { useScrollRestore } from "./hooks/use-scroll-restore";
+export type { SettingsFieldsPatch, SettingsFieldsUpdater } from "./hooks/use-settings-fields";
+export { useSettingsFields } from "./hooks/use-settings-fields";
 export type { SettingsStorelike as SettingsStoreShape, SettingsUpdater } from "./hooks/use-settings-store";
 export { useSettingsStore } from "./hooks/use-settings-store";
 

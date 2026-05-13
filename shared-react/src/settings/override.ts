@@ -1,8 +1,6 @@
 import type { SchemaFieldDescriptor } from "@real1ty-obsidian-plugins";
 import type { ReactNode } from "react";
 
-import type { SchemaFieldBinding } from "../hooks/use-schema-field";
-
 /**
  * Field-level override: tune rendering for a specific field without writing JSX.
  * `render` is the escape hatch — fully takes over the control when provided.
@@ -19,5 +17,9 @@ export interface SchemaFieldOverride {
 	rows?: number;
 	widget?: string;
 	hidden?: boolean;
-	render?: (props: SchemaFieldBinding<unknown> & { descriptor: SchemaFieldDescriptor }) => ReactNode;
+	render?: (props: {
+		value: unknown;
+		onChange: (next: unknown) => void;
+		descriptor: SchemaFieldDescriptor;
+	}) => ReactNode;
 }

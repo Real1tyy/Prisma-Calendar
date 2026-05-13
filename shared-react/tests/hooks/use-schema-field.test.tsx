@@ -88,4 +88,50 @@ describe("useSchemaField", () => {
 
 		expect(renders).toBe(initial);
 	});
+
+	it("destructures as a [value, setter] tuple matching the named-property form", async () => {
+		const store = makeStore(baseline);
+		const { result } = renderHook(() => useSchemaField<string>(store, "alpha"));
+
+		const [value, setter] = result.current;
+		expect(value).toBe(result.current.value);
+		expect(setter).toBe(result.current.onChange);
+
+		await act(async () => {
+			setter("via-tuple");
+			await Promise.resolve();
+		});
+
+		expect(store.settings$.getValue().alpha).toBe("via-tuple");
+		expect(result.current.value).toBe("via-tuple");
+	});
+
+	it("infers the value type from a typed store + literal path (no <V> annotation)", () => {
+		const store = makeStore<Settings>(baseline);
+		const { result } = renderHook(() => useSchemaField(store, "alpha"));
+
+		// Type-level assertion: result.current.value is `string` (not unknown).
+		const value: string = result.current.value;
+		expect(value).toBe("a0");
+		expect(typeof result.current.onChange).toBe("function");
+	});
+
+	it("setter accepts an updater function that sees the latest snapshot", async () => {
+		const store = makeStore<Settings>({ ...baseline, beta: 1 });
+		const { result } = renderHook(() => useSchemaField(store, "beta"));
+
+		// External mutation between render and setter — the updater must see the
+		// externally-mutated value, not the stale render value.
+		await act(async () => {
+			store.settings$.next({ ...baseline, beta: 10 });
+			await Promise.resolve();
+		});
+
+		await act(async () => {
+			result.current.onChange((prev) => prev + 1);
+			await Promise.resolve();
+		});
+
+		expect(store.settings$.getValue().beta).toBe(11);
+	});
 });
