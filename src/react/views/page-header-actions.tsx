@@ -1,3 +1,4 @@
+import { executeCommand } from "@real1ty-obsidian-plugins";
 import { type HeaderActionDefinition, ObsidianIcon, useApp } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { type CSSProperties, memo, useCallback } from "react";
@@ -173,12 +174,11 @@ export const DEFAULT_ORDERED_ACTION_IDS: string[] = ACTION_SPECS.filter((a) => D
 
 /** Builds the toolbar action definitions, binding each onAction to the app's command registry. */
 export function buildPageHeaderActions(app: App): HeaderActionDefinition[] {
-	const commands = (app as unknown as { commands: { executeCommandById: (id: string) => void } }).commands;
 	return ACTION_SPECS.map((spec) => ({
 		id: spec.id,
 		label: spec.label,
 		icon: spec.icon,
-		onAction: () => commands.executeCommandById(spec.commandId),
+		onAction: () => executeCommand(app, spec.commandId),
 	}));
 }
 
@@ -208,9 +208,7 @@ export const PageHeaderActions = memo(function PageHeaderActions({
 
 	const runCommand = useCallback(
 		(commandId: string) => {
-			(app as unknown as { commands: { executeCommandById: (id: string) => void } }).commands.executeCommandById(
-				commandId
-			);
+			executeCommand(app, commandId);
 		},
 		[app]
 	);

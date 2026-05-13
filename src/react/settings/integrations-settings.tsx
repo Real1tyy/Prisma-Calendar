@@ -1,4 +1,4 @@
-import { buildUtmUrl } from "@real1ty-obsidian-plugins";
+import { buildUtmUrl, executeCommand } from "@real1ty-obsidian-plugins";
 import {
 	Dropdown,
 	SchemaSection,
@@ -78,15 +78,11 @@ interface IntegrationsSectionProps {
 
 const IntegrationsSection = memo(function IntegrationsSection({ settingsStore, app }: IntegrationsSectionProps) {
 	const handleExport = useCallback(() => {
-		(app as unknown as { commands: { executeCommandById: (id: string) => void } }).commands.executeCommandById(
-			`prisma-calendar:${COMMAND_IDS.EXPORT_CALENDAR_ICS}`
-		);
+		executeCommand(app, `prisma-calendar:${COMMAND_IDS.EXPORT_CALENDAR_ICS}`);
 	}, [app]);
 
 	const handleImport = useCallback(() => {
-		(app as unknown as { commands: { executeCommandById: (id: string) => void } }).commands.executeCommandById(
-			`prisma-calendar:${COMMAND_IDS.IMPORT_CALENDAR_ICS}`
-		);
+		executeCommand(app, `prisma-calendar:${COMMAND_IDS.IMPORT_CALENDAR_ICS}`);
 	}, [app]);
 
 	return (

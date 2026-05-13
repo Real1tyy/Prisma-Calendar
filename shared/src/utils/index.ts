@@ -2,6 +2,7 @@ export * from "./activate-view";
 export * from "./async";
 export * from "./bounded-map";
 export * from "./color-utils";
+export * from "./commands";
 export * from "./css-utils";
 export * from "./date";
 export * from "./deep-equal";
