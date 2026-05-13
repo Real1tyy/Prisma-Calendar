@@ -1,9 +1,9 @@
-import { SchemaSection, SettingHeading, useSettingsStore } from "@real1ty-obsidian-plugins-react";
+import { SchemaSection, SettingHeading, useSchemaField } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useState } from "react";
 
 import type { PrismaCalendarSettingsStore } from "../../types";
 import { AI_DEFAULTS } from "../../types/ai";
-import { type CustomCalendarSettings, CustomCalendarSettingsSchema, type CustomPrompt } from "../../types/settings";
+import { CustomCalendarSettingsSchema, type CustomPrompt } from "../../types/settings";
 
 const AIShape = CustomCalendarSettingsSchema.shape.ai.unwrap().shape;
 
@@ -14,8 +14,6 @@ interface AISettingsProps {
 }
 
 export const AISettingsReact = memo(function AISettingsReact({ mainSettingsStore }: AISettingsProps) {
-	const [settings, updateSettings] = useSettingsStore(mainSettingsStore);
-
 	return (
 		<>
 			<SchemaSection
@@ -46,48 +44,37 @@ export const AISettingsReact = memo(function AISettingsReact({ mainSettingsStore
 				testIdPrefix="prisma-settings-"
 			/>
 
-			<CustomPromptsSection settings={settings} updateSettings={updateSettings} />
+			<CustomPromptsSection mainSettingsStore={mainSettingsStore} />
 		</>
 	);
 });
 
 interface CustomPromptsSectionProps {
-	settings: CustomCalendarSettings;
-	updateSettings: (updater: (s: CustomCalendarSettings) => CustomCalendarSettings) => Promise<void>;
+	mainSettingsStore: PrismaCalendarSettingsStore;
 }
 
-const CustomPromptsSection = memo(function CustomPromptsSection({
-	settings,
-	updateSettings,
-}: CustomPromptsSectionProps) {
+const CustomPromptsSection = memo(function CustomPromptsSection({ mainSettingsStore }: CustomPromptsSectionProps) {
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [isAdding, setIsAdding] = useState(false);
-	const prompts = settings.ai.customPrompts;
+	const [prompts, setPrompts] = useSchemaField<CustomPrompt[]>(mainSettingsStore, "ai.customPrompts");
 
 	const handleDelete = useCallback(
 		(id: string) => {
-			void updateSettings((s) => ({
-				...s,
-				ai: { ...s.ai, customPrompts: s.ai.customPrompts.filter((p) => p.id !== id) },
-			}));
+			setPrompts((prev) => prev.filter((p) => p.id !== id));
 		},
-		[updateSettings]
+		[setPrompts]
 	);
 
 	const handleSave = useCallback(
 		(prompt: CustomPrompt) => {
-			void updateSettings((s) => {
-				const existing = s.ai.customPrompts.findIndex((p) => p.id === prompt.id);
-				const updated =
-					existing !== -1
-						? s.ai.customPrompts.map((p, i) => (i === existing ? prompt : p))
-						: [...s.ai.customPrompts, prompt];
-				return { ...s, ai: { ...s.ai, customPrompts: updated } };
+			setPrompts((prev) => {
+				const existing = prev.findIndex((p) => p.id === prompt.id);
+				return existing !== -1 ? prev.map((p, i) => (i === existing ? prompt : p)) : [...prev, prompt];
 			});
 			setEditingId(null);
 			setIsAdding(false);
 		},
-		[updateSettings]
+		[setPrompts]
 	);
 
 	const handleCancel = useCallback(() => {

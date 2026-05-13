@@ -104,31 +104,31 @@ const FIRST_DAY_STRING_OPTIONS: Record<string, string> = Object.fromEntries(
 );
 
 const FirstDayOfWeekField = memo(function FirstDayOfWeekField({ settingsStore }: CalendarSettingsProps) {
-	const binding = useSchemaField<number>(settingsStore, "firstDayOfWeek");
+	const [firstDay, setFirstDay] = useSchemaField(settingsStore, "firstDayOfWeek");
 	const handleChange = useCallback(
 		(raw: string) => {
 			const n = Number.parseInt(raw, 10);
 			if (Number.isInteger(n) && n >= 0 && n <= 6) {
-				binding.onChange(n);
+				setFirstDay(n);
 			}
 		},
-		[binding]
+		[setFirstDay]
 	);
 	return (
 		<SettingItem name="First day of week" description="Which day should be the first day of the week in calendar views">
-			<Dropdown value={String(binding.value)} options={FIRST_DAY_STRING_OPTIONS} onChange={handleChange} />
+			<Dropdown value={String(firstDay)} options={FIRST_DAY_STRING_OPTIONS} onChange={handleChange} />
 		</SettingItem>
 	);
 });
 
 const DayCellColoringSection = memo(function DayCellColoringSection({ settingsStore }: CalendarSettingsProps) {
 	const shape = SingleCalendarConfigSchema.shape;
-	const mode = useSchemaField<"off" | "uniform" | "boundary">(settingsStore, "dayCellColoring");
+	const [mode] = useSchemaField(settingsStore, "dayCellColoring");
 
 	return (
 		<>
 			<SchemaSection store={settingsStore} shape={shape} fields={["dayCellColoring"]} />
-			{mode.value === "uniform" && (
+			{mode === "uniform" && (
 				<SchemaSection
 					store={settingsStore}
 					shape={shape}
@@ -141,7 +141,7 @@ const DayCellColoringSection = memo(function DayCellColoringSection({ settingsSt
 					}}
 				/>
 			)}
-			{mode.value === "boundary" && (
+			{mode === "boundary" && (
 				<SchemaSection
 					store={settingsStore}
 					shape={shape}

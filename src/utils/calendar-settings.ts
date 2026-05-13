@@ -81,7 +81,7 @@ export function getGanttRenderingKey(settings: SingleCalendarConfig): string {
 	return JSON.stringify(getSharedRenderingFields(settings));
 }
 
-export function generateUniqueCalendarId(settings: CustomCalendarSettings): string {
+export function generateUniqueCalendarId(settings: Pick<CustomCalendarSettings, "calendars">): string {
 	const existingIds = new Set(settings.calendars.map((calendar) => calendar.id));
 
 	if (!existingIds.has(BASE_NAME)) {

@@ -7,6 +7,7 @@ import {
 	TextInput,
 	Toggle,
 	useApp,
+	useSchemaField,
 	useSettingsStore,
 } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useState } from "react";
@@ -77,11 +78,15 @@ interface IntegrationsSectionProps {
 
 const IntegrationsSection = memo(function IntegrationsSection({ settingsStore, app }: IntegrationsSectionProps) {
 	const handleExport = useCallback(() => {
-		(app as any).commands.executeCommandById(`prisma-calendar:${COMMAND_IDS.EXPORT_CALENDAR_ICS}`);
+		(app as unknown as { commands: { executeCommandById: (id: string) => void } }).commands.executeCommandById(
+			`prisma-calendar:${COMMAND_IDS.EXPORT_CALENDAR_ICS}`
+		);
 	}, [app]);
 
 	const handleImport = useCallback(() => {
-		(app as any).commands.executeCommandById(`prisma-calendar:${COMMAND_IDS.IMPORT_CALENDAR_ICS}`);
+		(app as unknown as { commands: { executeCommandById: (id: string) => void } }).commands.executeCommandById(
+			`prisma-calendar:${COMMAND_IDS.IMPORT_CALENDAR_ICS}`
+		);
 	}, [app]);
 
 	return (
@@ -131,19 +136,6 @@ interface CalDAVSectionProps {
 const CalDAVSection = memo(function CalDAVSection({ mainSettingsStore, plugin, calendarId, app }: CalDAVSectionProps) {
 	const [mainSettings, updateMainSettings] = useSettingsStore(mainSettingsStore);
 	const [, forceUpdate] = useState(0);
-
-	if (!plugin.isProEnabled) {
-		return (
-			<ProUpgradeBanner
-				featureName={PRO_FEATURES.CALDAV_SYNC}
-				description="Sync events with CalDAV servers like Nextcloud, Radicale, Baikal, and other self-hosted solutions."
-				previewKey="CALDAV_SYNC"
-			/>
-		);
-	}
-
-	const caldavSettings = mainSettings.caldav;
-	const accounts = caldavSettings.accounts;
 
 	const handleAddAccount = useCallback(() => {
 		void openCalDAVAddModal(app, mainSettingsStore, calendarId).then(() => forceUpdate((n) => n + 1));
@@ -210,6 +202,19 @@ const CalDAVSection = memo(function CalDAVSection({ mainSettingsStore, plugin, c
 		},
 		[app, plugin, mainSettingsStore, calendarId, updateMainSettings]
 	);
+
+	if (!plugin.isProEnabled) {
+		return (
+			<ProUpgradeBanner
+				featureName={PRO_FEATURES.CALDAV_SYNC}
+				description="Sync events with CalDAV servers like Nextcloud, Radicale, Baikal, and other self-hosted solutions."
+				previewKey="CALDAV_SYNC"
+			/>
+		);
+	}
+
+	const caldavSettings = mainSettings.caldav;
+	const accounts = caldavSettings.accounts;
 
 	return (
 		<>
@@ -321,19 +326,6 @@ const ICSSection = memo(function ICSSection({ mainSettingsStore, plugin, calenda
 	const [mainSettings, updateMainSettings] = useSettingsStore(mainSettingsStore);
 	const [, forceUpdate] = useState(0);
 
-	if (!plugin.isProEnabled) {
-		return (
-			<ProUpgradeBanner
-				featureName={PRO_FEATURES.ICS_SYNC}
-				description="Subscribe to ICS calendar URLs from Google Calendar, Outlook, Apple Calendar, and other providers to sync events automatically."
-				previewKey="ICS_SYNC"
-			/>
-		);
-	}
-
-	const icsSettings = mainSettings.icsSubscriptions;
-	const subscriptions = icsSettings.subscriptions;
-
 	const handleAddSubscription = useCallback(() => {
 		void openICSAddModal(app, mainSettingsStore, calendarId).then(() => forceUpdate((n) => n + 1));
 	}, [app, mainSettingsStore, calendarId]);
@@ -393,6 +385,19 @@ const ICSSection = memo(function ICSSection({ mainSettingsStore, plugin, calenda
 		},
 		[app, plugin, mainSettingsStore, calendarId, updateMainSettings]
 	);
+
+	if (!plugin.isProEnabled) {
+		return (
+			<ProUpgradeBanner
+				featureName={PRO_FEATURES.ICS_SYNC}
+				description="Subscribe to ICS calendar URLs from Google Calendar, Outlook, Apple Calendar, and other providers to sync events automatically."
+				previewKey="ICS_SYNC"
+			/>
+		);
+	}
+
+	const icsSettings = mainSettings.icsSubscriptions;
+	const subscriptions = icsSettings.subscriptions;
 
 	return (
 		<>
@@ -507,30 +512,31 @@ const HOLIDAY_TYPE_OPTIONS: Record<string, string> = {
 	"public,bank,observance,school,optional": "All types",
 };
 
+type HolidayStringField = "country" | "state" | "region" | "timezone";
+
 const HolidaySection = memo(function HolidaySection({ settingsStore }: HolidaySectionProps) {
-	const [settings, updateSettings] = useSettingsStore(settingsStore);
-	const holidays = settings.holidays;
+	const [holidays, setHolidays] = useSchemaField(settingsStore, "holidays");
 
 	const handleEnabledChange = useCallback(
 		(enabled: boolean) => {
-			void updateSettings((s) => ({ ...s, holidays: { ...s.holidays, enabled } }));
+			setHolidays({ ...holidays, enabled });
 		},
-		[updateSettings]
+		[holidays, setHolidays]
 	);
 
 	const handleFieldChange = useCallback(
-		(field: string, value: string) => {
-			void updateSettings((s) => ({ ...s, holidays: { ...s.holidays, [field]: value } }));
+		(field: HolidayStringField, value: string) => {
+			setHolidays({ ...holidays, [field]: value });
 		},
-		[updateSettings]
+		[holidays, setHolidays]
 	);
 
 	const handleTypesChange = useCallback(
 		(value: string) => {
 			const types = value.split(",") as Array<"public" | "bank" | "school" | "observance" | "optional">;
-			void updateSettings((s) => ({ ...s, holidays: { ...s.holidays, types } }));
+			setHolidays({ ...holidays, types });
 		},
-		[updateSettings]
+		[holidays, setHolidays]
 	);
 
 	return (

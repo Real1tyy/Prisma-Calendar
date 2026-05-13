@@ -6,6 +6,7 @@ import {
 	SchemaSection,
 	SettingHeading,
 	useApp,
+	useSchemaField,
 	useSettingsStore,
 } from "@real1ty-obsidian-plugins-react";
 import Chart from "chart.js/auto";
@@ -39,7 +40,7 @@ export const CategoriesSettingsReact = memo(function CategoriesSettingsReact({
 	plugin,
 }: CategoriesSettingsProps) {
 	const app = useApp();
-	const [settings, updateSettings] = useSettingsStore(settingsStore);
+	const [settings] = useSettingsStore(settingsStore);
 
 	const bundle = useMemo(
 		() => plugin.calendarBundles.find((b) => b.calendarId === settingsStore.calendarId),
@@ -75,7 +76,6 @@ export const CategoriesSettingsReact = memo(function CategoriesSettingsReact({
 			<AutoAssignSection
 				settingsStore={settingsStore}
 				settings={settings}
-				updateSettings={updateSettings}
 				plugin={plugin}
 				categoryTracker={categoryTracker}
 			/>
@@ -142,8 +142,9 @@ const CategoriesListSection = memo(function CategoriesListSection({
 	app,
 }: CategoriesListSectionProps) {
 	const categoriesVersion = useCategoriesVersion(categoryTracker.categories$);
+	const [, setColorRules] = useSchemaField(settingsStore, "colorRules");
 
-	const categories = useMemo(() => categoryTracker.getCategories(), [categoriesVersion]);
+	const categories = useMemo(() => categoryTracker.getCategories(), [categoriesVersion, categoryTracker]);
 
 	const categoriesInfo = useMemo(() => {
 		const infos = categories.map((category) => {
@@ -167,24 +168,18 @@ const CategoriesListSection = memo(function CategoriesListSection({
 	const handleColorChange = useCallback(
 		(category: string, color: string) => {
 			const expectedExpression = getCategoryExpression(category, categoryProp);
-			const existingIndex = settings.colorRules.findIndex((r) => r.expression === expectedExpression);
-
-			if (existingIndex !== -1) {
-				void settingsStore.updateSettings((s) => ({
-					...s,
-					colorRules: s.colorRules.map((r, i) => (i === existingIndex ? { ...r, color } : r)),
-				}));
-			} else {
-				void settingsStore.updateSettings((s) => ({
-					...s,
-					colorRules: [
-						...s.colorRules,
-						{ id: `category-color-${category}-${Date.now()}`, expression: expectedExpression, color, enabled: true },
-					],
-				}));
-			}
+			setColorRules((prev) => {
+				const existingIndex = prev.findIndex((r) => r.expression === expectedExpression);
+				if (existingIndex !== -1) {
+					return prev.map((r, i) => (i === existingIndex ? { ...r, color } : r));
+				}
+				return [
+					...prev,
+					{ id: `category-color-${category}-${Date.now()}`, expression: expectedExpression, color, enabled: true },
+				];
+			});
 		},
-		[settings.colorRules, categoryProp, settingsStore]
+		[categoryProp, setColorRules]
 	);
 
 	const handleRename = useCallback(
@@ -292,6 +287,7 @@ const CategoryChartSection = memo(function CategoryChartSection({
 	const categoriesVersion = useCategoriesVersion(categoryTracker.categories$);
 
 	const chartData = useMemo<PieChartData>(() => {
+		void categoriesVersion;
 		const categories = categoryTracker.getCategories();
 		const items = categories.map((category) => {
 			const stats = categoryTracker.getCategoryStats(category);
@@ -321,7 +317,6 @@ const CategoryChartSection = memo(function CategoryChartSection({
 interface AutoAssignSectionProps {
 	settingsStore: CalendarSettingsStore;
 	settings: SingleCalendarConfig;
-	updateSettings: (updater: (s: SingleCalendarConfig) => SingleCalendarConfig) => Promise<void>;
 	plugin: CustomCalendarPlugin;
 	categoryTracker: CategoryTracker;
 }
@@ -329,19 +324,17 @@ interface AutoAssignSectionProps {
 const AutoAssignSection = memo(function AutoAssignSection({
 	settingsStore,
 	settings,
-	updateSettings,
 	plugin,
 	categoryTracker,
 }: AutoAssignSectionProps) {
+	const [, setPresets] = useSchemaField<CategoryAssignmentPreset[] | undefined>(
+		settingsStore,
+		"categoryAssignmentPresets"
+	);
+
 	const handleAddPreset = useCallback(() => {
-		void updateSettings((s) => ({
-			...s,
-			categoryAssignmentPresets: [
-				...(s.categoryAssignmentPresets || []),
-				{ id: nanoid(), eventName: "", categories: [] },
-			],
-		}));
-	}, [updateSettings]);
+		setPresets((prev) => [...(prev ?? []), { id: nanoid(), eventName: "", categories: [] }]);
+	}, [setPresets]);
 
 	return (
 		<>
@@ -377,7 +370,7 @@ const AutoAssignSection = memo(function AutoAssignSection({
 
 					<CategoryAssignmentPresetsList
 						settings={settings}
-						updateSettings={updateSettings}
+						settingsStore={settingsStore}
 						categoryTracker={categoryTracker}
 					/>
 
@@ -394,35 +387,33 @@ const AutoAssignSection = memo(function AutoAssignSection({
 
 interface PresetsListProps {
 	settings: SingleCalendarConfig;
-	updateSettings: (updater: (s: SingleCalendarConfig) => SingleCalendarConfig) => Promise<void>;
+	settingsStore: CalendarSettingsStore;
 	categoryTracker: CategoryTracker;
 }
 
 const CategoryAssignmentPresetsList = memo(function CategoryAssignmentPresetsList({
 	settings,
-	updateSettings,
+	settingsStore,
 	categoryTracker,
 }: PresetsListProps) {
-	const presets = settings.categoryAssignmentPresets || [];
+	const presets = settings.categoryAssignmentPresets;
+	const [, setPresets] = useSchemaField<CategoryAssignmentPreset[] | undefined>(
+		settingsStore,
+		"categoryAssignmentPresets"
+	);
 
 	const updatePreset = useCallback(
 		(id: string, updated: CategoryAssignmentPreset) => {
-			void updateSettings((s) => ({
-				...s,
-				categoryAssignmentPresets: (s.categoryAssignmentPresets || []).map((p) => (p.id === id ? updated : p)),
-			}));
+			setPresets((prev) => (prev ?? []).map((p) => (p.id === id ? updated : p)));
 		},
-		[updateSettings]
+		[setPresets]
 	);
 
 	const deletePreset = useCallback(
 		(id: string) => {
-			void updateSettings((s) => ({
-				...s,
-				categoryAssignmentPresets: (s.categoryAssignmentPresets || []).filter((p) => p.id !== id),
-			}));
+			setPresets((prev) => (prev ?? []).filter((p) => p.id !== id));
 		},
-		[updateSettings]
+		[setPresets]
 	);
 
 	if (presets.length === 0) {

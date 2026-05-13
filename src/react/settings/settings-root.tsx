@@ -6,8 +6,8 @@ import {
 	openRenameModal,
 	SettingItem,
 	useApp,
+	useSchemaField,
 	useScrollRestore,
-	useSettingsStore,
 } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useMemo, useState } from "react";
 
@@ -30,16 +30,15 @@ interface SettingsRootProps {
 
 export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootProps) {
 	const app = useApp();
-	const [mainSettings, updateMainSettings] = useSettingsStore(plugin.settingsStore);
+	const [calendars, setCalendars] = useSchemaField(plugin.settingsStore, "calendars");
 	const [selectedCalendarId, setSelectedCalendarId] = useState(() => {
 		const lastUsed = plugin.syncStore.data.lastUsedCalendarId;
-		if (lastUsed && mainSettings.calendars.some((c) => c.id === lastUsed)) return lastUsed;
-		return mainSettings.calendars[0]?.id ?? "default";
+		if (lastUsed && calendars.some((c) => c.id === lastUsed)) return lastUsed;
+		return calendars[0]?.id ?? "default";
 	});
 	const [managementCollapsed, setManagementCollapsed] = useState(false);
 
-	const version = plugin.manifest?.version ?? "?";
-	const calendars = mainSettings.calendars;
+	const version = plugin.manifest.version;
 	const maxCalendars = plugin.isProEnabled ? Infinity : FREE_MAX_CALENDARS;
 	const isAtMax = calendars.length >= maxCalendars;
 	const selectedCalendar = useMemo(
@@ -69,33 +68,30 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 		: undefined;
 
 	const updateSelectedCalendar = useCallback(
-		async (patch: Partial<(typeof calendars)[number]>) => {
-			await updateMainSettings((s) => ({
-				...s,
-				calendars: s.calendars.map((cal) => (cal.id === selectedCalendarId ? { ...cal, ...patch } : cal)),
-			}));
+		(patch: Partial<(typeof calendars)[number]>) => {
+			setCalendars((prev) => prev.map((cal) => (cal.id === selectedCalendarId ? { ...cal, ...patch } : cal)));
 		},
-		[selectedCalendarId, updateMainSettings]
+		[selectedCalendarId, setCalendars]
 	);
 
 	const handleCreate = useCallback(async () => {
 		if (isAtMax) return;
-		const newId = generateUniqueCalendarId(mainSettings);
+		const newId = generateUniqueCalendarId({ calendars });
 		const newName = `Planning System ${calendars.length + 1}`;
 		const newCalendar = createDefaultCalendarConfig(newId, newName);
-		await updateMainSettings((s) => ({ ...s, calendars: [...s.calendars, newCalendar] }));
+		setCalendars((prev) => [...prev, newCalendar]);
 		setSelectedCalendarId(newId);
 		await plugin.addCalendarBundle(newId);
-	}, [isAtMax, mainSettings, calendars.length, updateMainSettings, plugin]);
+	}, [isAtMax, calendars, setCalendars, plugin]);
 
 	const handleClone = useCallback(async () => {
 		if (isAtMax || !selectedCalendar) return;
-		const newId = generateUniqueCalendarId(mainSettings);
+		const newId = generateUniqueCalendarId({ calendars });
 		const cloned = duplicateCalendarConfig(selectedCalendar, newId, `${selectedCalendar.name} (Copy)`);
-		await updateMainSettings((s) => ({ ...s, calendars: [...s.calendars, cloned] }));
+		setCalendars((prev) => [...prev, cloned]);
 		setSelectedCalendarId(newId);
 		await plugin.addCalendarBundle(newId);
-	}, [isAtMax, selectedCalendar, mainSettings, updateMainSettings, plugin]);
+	}, [isAtMax, selectedCalendar, calendars, setCalendars, plugin]);
 
 	const handleDelete = useCallback(async () => {
 		if (calendars.length <= 1) return;
@@ -106,8 +102,8 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 		const next = updated[Math.min(currentIndex, updated.length - 1)];
 		setSelectedCalendarId(next.id);
 		await plugin.removeCalendarBundle(deletedId);
-		await updateMainSettings((s) => ({ ...s, calendars: updated }));
-	}, [calendars, selectedCalendarId, updateMainSettings, plugin]);
+		setCalendars(updated);
+	}, [calendars, selectedCalendarId, setCalendars, plugin]);
 
 	const handleRename = useCallback(async () => {
 		if (!selectedCalendar) return;
@@ -120,7 +116,7 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 		});
 
 		if (result && result.value !== selectedCalendar.name) {
-			await updateSelectedCalendar({ name: result.value });
+			updateSelectedCalendar({ name: result.value });
 		}
 	}, [app, selectedCalendar, updateSelectedCalendar]);
 
@@ -135,12 +131,9 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 		});
 
 		if (result) {
-			await updateMainSettings((s) => ({
-				...s,
-				calendars: s.calendars.map((cal) => (cal.id === selectedCalendarId ? { ...cal, ...result } : cal)),
-			}));
+			updateSelectedCalendar(result);
 		}
-	}, [app, selectedCalendar, selectedCalendarId, updateMainSettings]);
+	}, [app, selectedCalendar, updateSelectedCalendar]);
 
 	const scrollRef = useScrollRestore(plugin.settingsSessionState.scrollTop, ".vertical-tab-content");
 

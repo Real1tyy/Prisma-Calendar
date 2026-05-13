@@ -9,6 +9,7 @@ import {
 	SettingsTransferButtons,
 	showWhatsNewReactModal,
 	Toggle,
+	useSettingsFields,
 	useSettingsStore,
 } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
@@ -18,7 +19,7 @@ import { ACCOUNT_URL, FREE_MAX_EVENT_PRESETS } from "../../core/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import { buildWhatsNewConfig } from "../../core/whats-new-config";
 import type CustomCalendarPlugin from "../../main";
-import type { CustomCalendarSettings, SingleCalendarConfig } from "../../types/settings";
+import type { CustomCalendarSettings } from "../../types/settings";
 import { SingleCalendarConfigSchema } from "../../types/settings";
 
 const SHAPE = SingleCalendarConfigSchema.shape;
@@ -49,7 +50,6 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 	settingsStore,
 	plugin,
 }: GeneralSettingsProps) {
-	const [settings] = useSettingsStore(settingsStore);
 	const [mainSettings, updateMainSettings] = useSettingsStore(plugin.settingsStore);
 
 	const onSecretChange = useCallback(
@@ -103,7 +103,7 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 				fields={["showDecimalHours", "defaultAggregationMode"]}
 				testIdPrefix="prisma-settings-"
 			/>
-			<EventPresetsSection settings={settings} settingsStore={settingsStore} plugin={plugin} />
+			<EventPresetsSection settingsStore={settingsStore} plugin={plugin} />
 			<SettingsTransferSection plugin={plugin} />
 			<HelpSection plugin={plugin} />
 		</>
@@ -155,17 +155,16 @@ const PRESET_EXAMPLES: Array<{ name: string; description: string }> = [
 ];
 
 interface EventPresetsSectionProps {
-	settings: SingleCalendarConfig;
 	settingsStore: CalendarSettingsStore;
 	plugin: CustomCalendarPlugin;
 }
 
-const EventPresetsSection = memo(function EventPresetsSection({
-	settings,
-	settingsStore,
-	plugin,
-}: EventPresetsSectionProps) {
-	const presets = settings.eventPresets;
+const EventPresetsSection = memo(function EventPresetsSection({ settingsStore, plugin }: EventPresetsSectionProps) {
+	const [{ eventPresets, defaultPresetId }, updateFields] = useSettingsFields(settingsStore, [
+		"eventPresets",
+		"defaultPresetId",
+	]);
+	const presets = eventPresets;
 	const showBanner = !plugin.isProEnabled && presets.length >= FREE_MAX_EVENT_PRESETS;
 
 	const bannerRef = useRef<HTMLDivElement>(null);
@@ -184,13 +183,19 @@ const EventPresetsSection = memo(function EventPresetsSection({
 
 	const handleDelete = useCallback(
 		(presetId: string) => {
-			void settingsStore.updateSettings((s) => ({
-				...s,
-				eventPresets: s.eventPresets.filter((p) => p.id !== presetId),
-				defaultPresetId: s.defaultPresetId === presetId ? undefined : s.defaultPresetId,
-			}));
+			void updateFields({
+				eventPresets: presets.filter((p) => p.id !== presetId),
+				defaultPresetId: defaultPresetId === presetId ? undefined : defaultPresetId,
+			});
 		},
-		[settingsStore]
+		[presets, defaultPresetId, updateFields]
+	);
+
+	const handleDefaultChange = useCallback(
+		(v: string) => {
+			void updateFields({ defaultPresetId: v || undefined });
+		},
+		[updateFields]
 	);
 
 	const presetOptions: Record<string, string> = { "": "None" };
@@ -227,9 +232,9 @@ const EventPresetsSection = memo(function EventPresetsSection({
 				testId="prisma-settings-field-defaultPresetId"
 			>
 				<Dropdown
-					value={settings.defaultPresetId ?? ""}
+					value={defaultPresetId ?? ""}
 					options={presetOptions}
-					onChange={(v) => void settingsStore.updateSettings((s) => ({ ...s, defaultPresetId: v || undefined }))}
+					onChange={handleDefaultChange}
 					testId="prisma-settings-control-defaultPresetId"
 				/>
 			</SettingItem>

@@ -4,12 +4,12 @@ import {
 	SchemaSection,
 	SettingHeading,
 	SettingItem,
-	useSettingsStore,
+	useSchemaField,
 } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useState } from "react";
 
 import type { CalendarSettingsStore } from "../../core/settings-store";
-import { type FilterPreset, type SingleCalendarConfig, SingleCalendarConfigSchema } from "../../types/settings";
+import { type FilterPreset, SingleCalendarConfigSchema } from "../../types/settings";
 
 const S = SingleCalendarConfigSchema.shape;
 
@@ -18,14 +18,12 @@ interface RulesSettingsProps {
 }
 
 export const RulesSettingsReact = memo(function RulesSettingsReact({ settingsStore }: RulesSettingsProps) {
-	const [settings, updateSettings] = useSettingsStore(settingsStore);
-
 	return (
 		<>
-			<ColorRulesSection settings={settings} updateSettings={updateSettings} settingsStore={settingsStore} />
-			<FilterSection settings={settings} store={settingsStore} />
+			<ColorRulesSection settingsStore={settingsStore} />
+			<FilterSection store={settingsStore} />
 			<UntrackedFilterSection store={settingsStore} />
-			<FilterPresetsSection settings={settings} updateSettings={updateSettings} />
+			<FilterPresetsSection settingsStore={settingsStore} />
 		</>
 	);
 });
@@ -33,8 +31,6 @@ export const RulesSettingsReact = memo(function RulesSettingsReact({ settingsSto
 // ─── Color Rules ────────────────────────────────────────────────────────
 
 interface ColorRulesSectionProps {
-	settings: SingleCalendarConfig;
-	updateSettings: (updater: (s: SingleCalendarConfig) => SingleCalendarConfig) => Promise<void>;
 	settingsStore: CalendarSettingsStore;
 }
 
@@ -45,11 +41,9 @@ const COLOR_RULE_EXAMPLES = [
 	{ expression: "Type === 'Meeting'", color: "#f59e0b", description: "Meetings in orange" },
 ];
 
-const ColorRulesSection = memo(function ColorRulesSection({
-	settings,
-	updateSettings,
-	settingsStore,
-}: ColorRulesSectionProps) {
+const ColorRulesSection = memo(function ColorRulesSection({ settingsStore }: ColorRulesSectionProps) {
+	const [colorRules, setColorRules] = useSchemaField(settingsStore, "colorRules");
+
 	const handleAddRule = useCallback(() => {
 		const newRule: ColorRule = {
 			id: `color-rule-${Date.now()}`,
@@ -57,8 +51,8 @@ const ColorRulesSection = memo(function ColorRulesSection({
 			color: "hsl(200, 70%, 50%)",
 			enabled: true,
 		};
-		void updateSettings((s) => ({ ...s, colorRules: [...s.colorRules, newRule] }));
-	}, [updateSettings]);
+		setColorRules((prev) => [...prev, newRule]);
+	}, [setColorRules]);
 
 	return (
 		<>
@@ -82,7 +76,7 @@ const ColorRulesSection = memo(function ColorRulesSection({
 				</div>
 			</div>
 
-			<ColorRulesList settings={settings} updateSettings={updateSettings} />
+			<ColorRulesList colorRules={colorRules} setColorRules={setColorRules} />
 
 			<SettingItem name="Add color rule" description="Add a new color rule">
 				<button type="button" onClick={handleAddRule} data-testid="prisma-rules-add-color-rule">
@@ -96,44 +90,36 @@ const ColorRulesSection = memo(function ColorRulesSection({
 // ─── Color Rules List ───────────────────────────────────────────────────
 
 interface ColorRulesListProps {
-	settings: SingleCalendarConfig;
-	updateSettings: (updater: (s: SingleCalendarConfig) => SingleCalendarConfig) => Promise<void>;
+	colorRules: ColorRule[];
+	setColorRules: (next: ColorRule[] | ((prev: ColorRule[]) => ColorRule[])) => void;
 }
 
-const ColorRulesList = memo(function ColorRulesList({ settings, updateSettings }: ColorRulesListProps) {
-	const { colorRules } = settings;
-
+const ColorRulesList = memo(function ColorRulesList({ colorRules, setColorRules }: ColorRulesListProps) {
 	const updateRule = useCallback(
 		(id: string, patch: Partial<ColorRule>) => {
-			void updateSettings((s) => ({
-				...s,
-				colorRules: s.colorRules.map((r) => (r.id === id ? { ...r, ...patch } : r)),
-			}));
+			setColorRules((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
 		},
-		[updateSettings]
+		[setColorRules]
 	);
 
 	const deleteRule = useCallback(
 		(id: string) => {
-			void updateSettings((s) => ({
-				...s,
-				colorRules: s.colorRules.filter((r) => r.id !== id),
-			}));
+			setColorRules((prev) => prev.filter((r) => r.id !== id));
 		},
-		[updateSettings]
+		[setColorRules]
 	);
 
 	const moveRule = useCallback(
 		(index: number, direction: "up" | "down") => {
-			void updateSettings((s) => {
-				const rules = [...s.colorRules];
+			setColorRules((prev) => {
+				const rules = [...prev];
 				const toIndex = direction === "up" ? index - 1 : index + 1;
-				if (toIndex < 0 || toIndex >= rules.length) return s;
+				if (toIndex < 0 || toIndex >= rules.length) return prev;
 				[rules[index], rules[toIndex]] = [rules[toIndex], rules[index]];
-				return { ...s, colorRules: rules };
+				return rules;
 			});
 		},
-		[updateSettings]
+		[setColorRules]
 	);
 
 	if (colorRules.length === 0) {
@@ -272,7 +258,6 @@ const UNTRACKED_FILTER_EXAMPLES = [
 ];
 
 interface FilterSectionProps {
-	settings: SingleCalendarConfig;
 	store: CalendarSettingsStore;
 }
 
@@ -337,20 +322,15 @@ const FILTER_PRESET_EXAMPLES = [
 ];
 
 interface FilterPresetsSectionProps {
-	settings: SingleCalendarConfig;
-	updateSettings: (updater: (s: SingleCalendarConfig) => SingleCalendarConfig) => Promise<void>;
+	settingsStore: CalendarSettingsStore;
 }
 
-const FilterPresetsSection = memo(function FilterPresetsSection({
-	settings,
-	updateSettings,
-}: FilterPresetsSectionProps) {
+const FilterPresetsSection = memo(function FilterPresetsSection({ settingsStore }: FilterPresetsSectionProps) {
+	const [filterPresets, setFilterPresets] = useSchemaField(settingsStore, "filterPresets");
+
 	const handleAdd = useCallback(() => {
-		void updateSettings((s) => ({
-			...s,
-			filterPresets: [...s.filterPresets, { name: "", expression: "" }],
-		}));
-	}, [updateSettings]);
+		setFilterPresets((prev) => [...prev, { name: "", expression: "" }]);
+	}, [setFilterPresets]);
 
 	return (
 		<>
@@ -370,7 +350,7 @@ const FilterPresetsSection = memo(function FilterPresetsSection({
 				</div>
 			</div>
 
-			<FilterPresetsList settings={settings} updateSettings={updateSettings} />
+			<FilterPresetsList filterPresets={filterPresets} setFilterPresets={setFilterPresets} />
 
 			<SettingItem name="Add filter preset" description="Add a new filter preset">
 				<button type="button" onClick={handleAdd}>
@@ -382,31 +362,23 @@ const FilterPresetsSection = memo(function FilterPresetsSection({
 });
 
 interface FilterPresetsListProps {
-	settings: SingleCalendarConfig;
-	updateSettings: (updater: (s: SingleCalendarConfig) => SingleCalendarConfig) => Promise<void>;
+	filterPresets: FilterPreset[];
+	setFilterPresets: (next: FilterPreset[] | ((prev: FilterPreset[]) => FilterPreset[])) => void;
 }
 
-const FilterPresetsList = memo(function FilterPresetsList({ settings, updateSettings }: FilterPresetsListProps) {
-	const { filterPresets } = settings;
-
+const FilterPresetsList = memo(function FilterPresetsList({ filterPresets, setFilterPresets }: FilterPresetsListProps) {
 	const updatePreset = useCallback(
 		(index: number, patch: Partial<FilterPreset>) => {
-			void updateSettings((s) => ({
-				...s,
-				filterPresets: s.filterPresets.map((p, i) => (i === index ? { ...p, ...patch } : p)),
-			}));
+			setFilterPresets((prev) => prev.map((p, i) => (i === index ? { ...p, ...patch } : p)));
 		},
-		[updateSettings]
+		[setFilterPresets]
 	);
 
 	const deletePreset = useCallback(
 		(index: number) => {
-			void updateSettings((s) => ({
-				...s,
-				filterPresets: s.filterPresets.filter((_, i) => i !== index),
-			}));
+			setFilterPresets((prev) => prev.filter((_, i) => i !== index));
 		},
-		[updateSettings]
+		[setFilterPresets]
 	);
 
 	if (filterPresets.length === 0) {

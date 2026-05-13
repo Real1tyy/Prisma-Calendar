@@ -1,4 +1,4 @@
-import { SettingHeading, Toggle, useSettingsStore } from "@real1ty-obsidian-plugins-react";
+import { SettingHeading, Toggle, useSchemaField } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useMemo } from "react";
 
 import { BATCH_BUTTON_IDS, BATCH_BUTTON_LABELS, TOOLBAR_BUTTON_IDS, TOOLBAR_BUTTON_LABELS } from "../../constants";
@@ -45,8 +45,8 @@ const ToolbarSection = memo(function ToolbarSection({
 	description,
 	configKey,
 }: ToolbarSectionProps) {
-	const [settings] = useSettingsStore(settingsStore);
-	const enabled = useMemo(() => new Set(settings[configKey]), [settings, configKey]);
+	const [buttons] = useSchemaField<string[]>(settingsStore, configKey);
+	const enabled = useMemo(() => new Set(buttons), [buttons]);
 
 	const handleToggle = useCallback(
 		(buttonId: string, value: boolean) => {
@@ -94,20 +94,18 @@ interface BatchSelectionSectionProps {
 }
 
 const BatchSelectionSection = memo(function BatchSelectionSection({ settingsStore }: BatchSelectionSectionProps) {
-	const [settings, updateSettings] = useSettingsStore(settingsStore);
-	const enabled = useMemo(() => new Set(settings.batchActionButtons), [settings.batchActionButtons]);
+	const [batchActionButtons, setBatchActionButtons] = useSchemaField(settingsStore, "batchActionButtons");
+	const enabled = useMemo(() => new Set(batchActionButtons), [batchActionButtons]);
 
 	const handleToggle = useCallback(
 		(buttonId: string, value: boolean) => {
-			void updateSettings((s) => {
-				const current = s.batchActionButtons;
-				const updated = value
+			setBatchActionButtons((current) =>
+				value
 					? BATCH_BUTTON_IDS.filter((id) => current.includes(id) || id === buttonId)
-					: current.filter((id) => id !== buttonId);
-				return { ...s, batchActionButtons: updated };
-			});
+					: current.filter((id) => id !== buttonId)
+			);
 		},
-		[updateSettings]
+		[setBatchActionButtons]
 	);
 
 	return (
