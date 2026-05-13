@@ -13,6 +13,12 @@ export interface ReleaseCheckServiceConfig {
 	repo: string;
 	currentVersion: string;
 	storageKey: string;
+	/**
+	 * Called on every `checkForUpdates()` invocation. Returning `false` skips the
+	 * network request entirely (and leaves `notice$` untouched). Use it to wire
+	 * a user-facing toggle so disabled plugins never reach GitHub.
+	 */
+	isEnabled?: () => boolean;
 }
 
 export interface GitHubRelease {

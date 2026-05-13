@@ -105,6 +105,30 @@ describe("ReleaseCheckService", () => {
 		expect(upgraded.notice$.getValue()).toBeNull();
 	});
 
+	it("skips the fetch entirely when isEnabled returns false", async () => {
+		const fetchRelease = vi.fn().mockResolvedValue(makeRelease());
+		const service = new ReleaseCheckService({ ...CONFIG, isEnabled: () => false }, { now: () => 1_000, fetchRelease });
+		expect(await service.checkForUpdates()).toBeNull();
+		expect(fetchRelease).not.toHaveBeenCalled();
+		expect(service.notice$.getValue()).toBeNull();
+	});
+
+	it("resumes fetching once isEnabled flips back to true", async () => {
+		const fetchRelease = vi.fn().mockResolvedValue(makeRelease());
+		let enabled = false;
+		const service = new ReleaseCheckService(
+			{ ...CONFIG, isEnabled: () => enabled },
+			{ now: () => 1_000, fetchRelease }
+		);
+		await service.checkForUpdates();
+		expect(fetchRelease).not.toHaveBeenCalled();
+
+		enabled = true;
+		const notice = await service.checkForUpdates();
+		expect(fetchRelease).toHaveBeenCalledTimes(1);
+		expect(notice?.version).toBe("2.0.0");
+	});
+
 	it("returns null and logs when the fetch throws", async () => {
 		const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
 		const service = new ReleaseCheckService(CONFIG, {

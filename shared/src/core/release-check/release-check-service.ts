@@ -54,6 +54,8 @@ export class ReleaseCheckService {
 	}
 
 	async checkForUpdates(): Promise<ReleaseUpdateNotice | null> {
+		if (this.config.isEnabled?.() === false) return this.notice$.getValue();
+
 		const persisted = this.store.get("state");
 		if (persisted && this.now() - persisted.checkedAt < RELEASE_CHECK_INTERVAL_MS) {
 			return this.notice$.getValue();
