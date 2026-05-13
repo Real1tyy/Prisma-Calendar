@@ -1,8 +1,9 @@
-import { memo, useEffect, useRef } from "react";
+import { memo, useRef } from "react";
 import { createPortal } from "react-dom";
 
 import { ObsidianIcon } from "../../components/obsidian-icon";
 import { useEscapeKey } from "../../hooks/use-escape-key";
+import { useOutsideClick } from "../../hooks/use-outside-click";
 import type { TabDefinition } from "./types";
 
 export interface GroupDropdownProps {
@@ -40,15 +41,7 @@ export const GroupDropdown = memo(function GroupDropdown({
 
 	useEscapeKey(onDismiss);
 
-	useEffect(() => {
-		const handleClickOutside = (e: MouseEvent) => {
-			if (ref.current && !ref.current.contains(e.target as Node)) {
-				onDismiss();
-			}
-		};
-		document.addEventListener("mousedown", handleClickOutside);
-		return () => document.removeEventListener("mousedown", handleClickOutside);
-	}, [onDismiss]);
+	useOutsideClick([ref], onDismiss);
 
 	return createPortal(
 		<div

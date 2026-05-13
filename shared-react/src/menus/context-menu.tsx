@@ -1,8 +1,10 @@
 import type { KeyboardEvent } from "react";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { useEscapeKey } from "../hooks/use-escape-key";
+import { useFocusOnMount } from "../hooks/use-focus-on-mount";
+import { useOutsideClick } from "../hooks/use-outside-click";
 import { MenuEntry } from "./menu-items";
 import type { ContextMenuEntryDef, ContextMenuSeparatorDef } from "./types";
 
@@ -46,19 +48,9 @@ export const ContextMenu = memo(function ContextMenu({ items, position, onDismis
 		[focusableItems, focusIndex, onDismiss]
 	);
 
-	useEffect(() => {
-		const handleClickOutside = (e: MouseEvent) => {
-			if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-				onDismiss();
-			}
-		};
-		document.addEventListener("mousedown", handleClickOutside);
-		return () => document.removeEventListener("mousedown", handleClickOutside);
-	}, [onDismiss]);
+	useOutsideClick([menuRef], onDismiss);
 
-	useEffect(() => {
-		menuRef.current?.focus();
-	}, []);
+	useFocusOnMount(menuRef);
 
 	let focusableIdx = -1;
 

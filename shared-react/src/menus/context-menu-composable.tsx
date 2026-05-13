@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { ObsidianIcon } from "../components/obsidian-icon";
+import { useOutsideClick } from "../hooks/use-outside-click";
 
 interface ContextMenuRootState {
 	open: boolean;
@@ -50,16 +51,7 @@ export function ContextMenuContent({ children }: { children: ReactNode }) {
 	const { open, position, setOpen } = useContextMenuState();
 	const menuRef = useRef<HTMLDivElement>(null);
 
-	useEffect(() => {
-		if (!open) return;
-		const handleClick = (e: MouseEvent) => {
-			if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-				setOpen(false);
-			}
-		};
-		document.addEventListener("mousedown", handleClick);
-		return () => document.removeEventListener("mousedown", handleClick);
-	}, [open, setOpen]);
+	useOutsideClick([menuRef], () => setOpen(false), { enabled: open });
 
 	if (!open) return null;
 

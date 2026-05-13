@@ -1,4 +1,4 @@
-import { VirtualList, type VirtualListHandle } from "@real1ty-obsidian-plugins-react";
+import { useFocusOnMount, VirtualList, type VirtualListHandle } from "@real1ty-obsidian-plugins-react";
 import type { ReactNode } from "react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -64,10 +64,7 @@ export const EventListModal = memo(function EventListModal({
 		return isFiltered ? `${shown} of ${total} ${noun}${suffix}` : `${total} ${noun}${suffix}`;
 	}, [filtered.length, items.length, countSuffix]);
 
-	useEffect(() => {
-		const timer = setTimeout(() => searchRef.current?.focus(), 50);
-		return () => clearTimeout(timer);
-	}, []);
+	useFocusOnMount(searchRef, { delayMs: 50 });
 
 	useEffect(() => {
 		setActiveIndex(-1);
