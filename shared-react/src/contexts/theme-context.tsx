@@ -9,13 +9,14 @@ export interface SharedReactTheme {
 	 */
 	cssPrefix: string;
 	/**
-	 * Optional prefix prepended to every auto-stamped `data-testid`. When
-	 * `undefined`, components emit no testids unless they pass an explicit one.
+	 * Prefix prepended to every auto-stamped `data-testid`. Pass `""` for the
+	 * "emit testids without a prefix" mode (used by shared plugin-agnostic
+	 * modals such as `confirmation-modal`).
 	 */
-	testIdPrefix: string | undefined;
+	testIdPrefix: string;
 }
 
-const DEFAULT_THEME: SharedReactTheme = { cssPrefix: "", testIdPrefix: undefined };
+const DEFAULT_THEME: SharedReactTheme = { cssPrefix: "", testIdPrefix: "" };
 
 const ThemeContext = createContext<SharedReactTheme>(DEFAULT_THEME);
 
@@ -28,7 +29,8 @@ export interface SharedReactThemeProviderProps {
 /**
  * Scoped theme boundary. Every modal/view mount bridge wraps its subtree in one
  * so leaf components can pull `cssPrefix` / `testIdPrefix` via hooks instead of
- * accepting them as explicit props.
+ * accepting them as explicit props. Unspecified values inherit from the
+ * surrounding theme.
  */
 export function SharedReactThemeProvider({ cssPrefix, testIdPrefix, children }: SharedReactThemeProviderProps) {
 	const parent = useContext(ThemeContext);
@@ -50,7 +52,7 @@ export function useCssPrefix(): string {
 	return useContext(ThemeContext).cssPrefix;
 }
 
-export function useTestIdPrefix(): string | undefined {
+export function useTestIdPrefix(): string {
 	return useContext(ThemeContext).testIdPrefix;
 }
 
@@ -79,16 +81,12 @@ export function useCls(): (suffix?: string, ...parts: string[]) => string {
 }
 
 /**
- * TestId factory: `tid("row", id)` → `${testIdPrefix}row-${id}`, or
- * `undefined` when no prefix is configured (so `data-testid={tid(...)}` emits
- * no attribute and removes the need for ternaries at every call site).
+ * TestId factory: `tid("row", id)` → `${testIdPrefix}row-${id}`. Always returns
+ * a string — if no prefix is configured the result is `row-${id}` (unprefixed).
  */
-export function useTestId(): (suffix?: string, ...parts: string[]) => string | undefined {
+export function useTestId(): (suffix?: string, ...parts: string[]) => string {
 	const { testIdPrefix } = useContext(ThemeContext);
-	return useCallback(
-		(suffix = "", ...parts) => (testIdPrefix === undefined ? undefined : joinScoped(testIdPrefix, "", suffix, parts)),
-		[testIdPrefix]
-	);
+	return useCallback((suffix = "", ...parts) => joinScoped(testIdPrefix, "", suffix, parts), [testIdPrefix]);
 }
 
 /**
@@ -104,22 +102,19 @@ export function useScopedCls(scope: string): (suffix?: string, ...parts: string[
 }
 
 /**
- * Scoped testId factory. Returns `undefined` when the theme has no
- * `testIdPrefix` so callers don't need the ternary.
+ * Scoped testId factory: `useScopedTid("rename")("cancel")` →
+ * `${testIdPrefix}rename-cancel`. Always returns a string; the empty-prefix
+ * mode produces `rename-cancel` directly.
  */
-export function useScopedTid(scope: string): (suffix?: string, ...parts: string[]) => string | undefined {
+export function useScopedTid(scope: string): (suffix?: string, ...parts: string[]) => string {
 	const { testIdPrefix } = useContext(ThemeContext);
-	return useCallback(
-		(suffix = "", ...parts) =>
-			testIdPrefix === undefined ? undefined : joinScoped(testIdPrefix, scope, suffix, parts),
-		[testIdPrefix, scope]
-	);
+	return useCallback((suffix = "", ...parts) => joinScoped(testIdPrefix, scope, suffix, parts), [testIdPrefix, scope]);
 }
 
 export interface ScopedTheme {
 	cssPrefix: string;
 	cls: (suffix?: string, ...parts: string[]) => string;
-	tid: (suffix?: string, ...parts: string[]) => string | undefined;
+	tid: (suffix?: string, ...parts: string[]) => string;
 }
 
 /**
@@ -136,8 +131,7 @@ export function useScoped(scope = ""): ScopedTheme {
 		[cssPrefix, scope]
 	);
 	const tid = useCallback(
-		(suffix = "", ...parts: string[]) =>
-			testIdPrefix === undefined ? undefined : joinScoped(testIdPrefix, scope, suffix, parts),
+		(suffix = "", ...parts: string[]) => joinScoped(testIdPrefix, scope, suffix, parts),
 		[testIdPrefix, scope]
 	);
 	return { cssPrefix, cls, tid };
@@ -155,9 +149,9 @@ export function useResolvedCssPrefix(override: string | undefined): string {
 
 /**
  * Resolve the active testId prefix with an explicit override winning over
- * context. `undefined` means "emit no auto-stamped testids".
+ * context. Always returns a string ("" is valid and means unprefixed).
  */
-export function useResolvedTestIdPrefix(override: string | undefined): string | undefined {
+export function useResolvedTestIdPrefix(override: string | undefined): string {
 	const fromContext = useTestIdPrefix();
 	return override ?? fromContext;
 }

@@ -13,19 +13,19 @@ import {
 import { useThemed, withTheme } from "../../src/contexts/with-theme";
 
 describe("SharedReactThemeProvider", () => {
-	it("default theme has empty cssPrefix and no testIdPrefix", () => {
+	it("default theme has empty cssPrefix and empty testIdPrefix", () => {
 		function Probe() {
 			const theme = useTheme();
 			return (
 				<div data-testid="probe">
 					<span data-testid="css">{theme.cssPrefix}</span>
-					<span data-testid="tid">{theme.testIdPrefix ?? "<none>"}</span>
+					<span data-testid="tid">[{theme.testIdPrefix}]</span>
 				</div>
 			);
 		}
 		render(<Probe />);
 		expect(screen.getByTestId("css").textContent).toBe("");
-		expect(screen.getByTestId("tid").textContent).toBe("<none>");
+		expect(screen.getByTestId("tid").textContent).toBe("[]");
 	});
 
 	it("provides cssPrefix and testIdPrefix to descendants", () => {
@@ -92,18 +92,17 @@ describe("SharedReactThemeProvider", () => {
 		expect(screen.getByTestId("tid").textContent).toBe("override-tid");
 	});
 
-	it("tid() returns undefined when no testIdPrefix is configured", () => {
+	it("tid() emits unprefixed testids when no testIdPrefix is configured", () => {
 		function Probe() {
 			const tid = useTestId();
-			const value = tid("foo");
-			return <span data-testid="probe">{value === undefined ? "<none>" : value}</span>;
+			return <span data-testid="probe">{tid("foo")}</span>;
 		}
 		render(
 			<SharedReactThemeProvider cssPrefix="prisma-">
 				<Probe />
 			</SharedReactThemeProvider>
 		);
-		expect(screen.getByTestId("probe").textContent).toBe("<none>");
+		expect(screen.getByTestId("probe").textContent).toBe("foo");
 	});
 
 	it("useThemed bundles cssPrefix, testIdPrefix, cls and tid", () => {

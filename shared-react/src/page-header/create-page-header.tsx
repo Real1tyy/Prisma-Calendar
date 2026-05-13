@@ -108,7 +108,8 @@ export function createPageHeader(config: PageHeaderConfig): PageHeaderHandle {
 					if (editable) openPageHeaderActionManager(app, store, cssPrefix);
 				}}
 			/>,
-			app
+			app,
+			{ cssPrefix }
 		);
 		leafState.unmount = unmount;
 	}

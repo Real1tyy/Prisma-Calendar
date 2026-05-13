@@ -21,7 +21,11 @@ export interface ReactModalBaseConfig {
 	 * `useCssPrefix()` so the explicit `cssPrefix` prop can be dropped.
 	 */
 	cssPrefix?: string | undefined;
-	/** TestId prefix mirrored to the `SharedReactThemeProvider`. */
+	/**
+	 * TestId prefix mirrored to the `SharedReactThemeProvider`. Defaults to
+	 * `cssPrefix` when omitted. Pass an explicit `""` for the unprefixed-
+	 * testids mode used by shared plugin-agnostic modals.
+	 */
 	testIdPrefix?: string | undefined;
 }
 
@@ -52,11 +56,13 @@ class ReactModal extends Modal {
 		if (this.options.title) this.setTitle(this.options.title);
 		if (this.options.testId) modalEl.setAttribute("data-testid", this.options.testId);
 
+		const testIdPrefix = this.options.testIdPrefix ?? this.options.cssPrefix;
+
 		this.root = createRoot(contentEl);
 		this.root.render(
 			<StrictMode>
 				<AppContext value={this.app}>
-					<SharedReactThemeProvider cssPrefix={this.options.cssPrefix} testIdPrefix={this.options.testIdPrefix}>
+					<SharedReactThemeProvider cssPrefix={this.options.cssPrefix} testIdPrefix={testIdPrefix}>
 						{this.renderContent(() => this.close())}
 					</SharedReactThemeProvider>
 				</AppContext>

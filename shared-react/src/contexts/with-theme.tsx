@@ -10,11 +10,11 @@ import { useResolvedCssPrefix, useResolvedTestIdPrefix } from "./theme-context";
  */
 export interface ThemedProps {
 	cssPrefix: string;
-	testIdPrefix: string | undefined;
+	testIdPrefix: string;
 	/** `cls("foo")` → `${cssPrefix}foo`. `cls("foo", id)` → `${cssPrefix}foo-${id}`. */
 	cls: (suffix: string, ...parts: string[]) => string;
-	/** `tid("foo", id)` → `${testIdPrefix}foo-${id}` or `undefined`. */
-	tid: (suffix: string, ...parts: string[]) => string | undefined;
+	/** `tid("foo", id)` → `${testIdPrefix}foo-${id}` (empty prefix → unprefixed). */
+	tid: (suffix: string, ...parts: string[]) => string;
 }
 
 /** Props the caller may still override the auto-injected values with. */
@@ -33,8 +33,7 @@ function makeCls(cssPrefix: string): (suffix: string, ...parts: string[]) => str
 	return (suffix, ...parts) => `${cssPrefix}${suffix}${joinParts(parts)}`;
 }
 
-function makeTid(testIdPrefix: string | undefined): (suffix: string, ...parts: string[]) => string | undefined {
-	if (testIdPrefix === undefined) return () => undefined;
+function makeTid(testIdPrefix: string): (suffix: string, ...parts: string[]) => string {
 	return (suffix, ...parts) => `${testIdPrefix}${suffix}${joinParts(parts)}`;
 }
 

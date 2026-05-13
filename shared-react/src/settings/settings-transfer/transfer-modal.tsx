@@ -23,6 +23,7 @@ export function openTransferModal(config: SettingsTransferModalConfig): void {
 		cls: config.cls,
 		title: config.mode === "export" ? strings.exportTitle : strings.importTitle,
 		testId: config.testIdPrefix ? `${config.testIdPrefix}-modal` : undefined,
+		...(config.testIdPrefix !== undefined ? { testIdPrefix: config.testIdPrefix } : {}),
 		render: (close) => (
 			<TransferPanel
 				mode={config.mode}

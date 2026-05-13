@@ -10,7 +10,12 @@ import { SharedReactThemeProvider } from "./contexts/theme-context";
 export interface RenderReactInlineOptions {
 	/** CSS prefix shared by the rendered subtree. */
 	cssPrefix?: string | undefined;
-	/** TestId prefix shared by the rendered subtree. */
+	/**
+	 * TestId prefix shared by the rendered subtree. Defaults to `cssPrefix`
+	 * when omitted (so passing only `cssPrefix: "prisma-"` automatically
+	 * prefixes auto-stamped testids with `"prisma-"`). Pass `""` explicitly
+	 * for the unprefixed-testids mode used by shared plugin-agnostic modals.
+	 */
 	testIdPrefix?: string | undefined;
 }
 
@@ -21,10 +26,11 @@ export function renderReactInline(
 	options?: RenderReactInlineOptions
 ): () => void {
 	const root: Root = createRoot(container);
+	const testIdPrefix = options?.testIdPrefix ?? options?.cssPrefix;
 	root.render(
 		<StrictMode>
 			<AppContext value={app}>
-				<SharedReactThemeProvider cssPrefix={options?.cssPrefix} testIdPrefix={options?.testIdPrefix}>
+				<SharedReactThemeProvider cssPrefix={options?.cssPrefix} testIdPrefix={testIdPrefix}>
 					{content}
 				</SharedReactThemeProvider>
 			</AppContext>
