@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { addCls, cls, createCssUtils, hasCls, removeCls, toggleCls } from "../../src/utils/css-utils";
+import { addCls, cls, createCssUtils, hasCls, removeCls, tid, toggleCls } from "../../src/utils/css-utils";
 
 // ============================================================================
 // Tests for createCssUtils factory
@@ -365,5 +365,40 @@ describe("integration: DOM manipulation workflow", () => {
 		removeCls(element, "button");
 		expect(element.classList.contains("external-class")).toBe(true);
 		expect(hasCls(element, "button")).toBe(false);
+	});
+});
+
+// ============================================================================
+// Tests for default "prisma-" prefixed tid export
+// ============================================================================
+
+describe("tid", () => {
+	it("prefixes a single suffix", () => {
+		expect(tid("row")).toBe("prisma-row");
+	});
+
+	it("joins multiple parts with hyphens", () => {
+		expect(tid("settings", "field", "name")).toBe("prisma-settings-field-name");
+	});
+
+	it("stringifies number parts", () => {
+		expect(tid("row", 5)).toBe("prisma-row-5");
+	});
+
+	it("filters empty string parts", () => {
+		expect(tid("row", "", "5")).toBe("prisma-row-5");
+	});
+
+	it("returns just the prefix when called with no parts", () => {
+		expect(tid()).toBe("prisma-");
+	});
+
+	it("returns just the prefix when all parts are empty", () => {
+		expect(tid("", "")).toBe("prisma-");
+	});
+
+	it("works with custom prefix via factory", () => {
+		const { tid } = createCssUtils("nexus-");
+		expect(tid("row", "5")).toBe("nexus-row-5");
 	});
 });

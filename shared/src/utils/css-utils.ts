@@ -3,6 +3,14 @@
  */
 export type ClsFn = (...classNames: string[]) => string;
 
+/**
+ * TestId factory: `tid("row", id)` → `${prefix}row-${id}`. Same call shape
+ * as the React `useTestId()` hook so component code can swap between them
+ * without changing call sites. Empty inputs are filtered out, numbers are
+ * stringified.
+ */
+export type TidFn = (...parts: Array<string | number>) => string;
+
 export interface CssUtils {
 	/**
 	 * Prefixes class names with the plugin prefix.
@@ -46,6 +54,16 @@ export interface CssUtils {
 	 * hasCls(element, "active")
 	 */
 	hasCls: (element: HTMLElement, className: string) => boolean;
+
+	/**
+	 * Prefixes a testId with the plugin prefix. Mirrors `cls` but joins extra
+	 * parts with `-` instead of treating them as a class list.
+	 *
+	 * @example
+	 * tid("row") => "prefix-row"
+	 * tid("row", "5") => "prefix-row-5"
+	 */
+	tid: TidFn;
 }
 
 /**
@@ -57,10 +75,11 @@ export interface CssUtils {
  *
  * @example
  * // Create utilities for a specific plugin
- * const { cls, addCls, removeCls, toggleCls, hasCls } = createCssUtils("my-plugin-");
+ * const { cls, addCls, removeCls, toggleCls, hasCls, tid } = createCssUtils("my-plugin-");
  *
  * cls("button") // => "my-plugin-button"
  * addCls(element, "active") // adds "my-plugin-active" to element
+ * tid("row", "5") // => "my-plugin-row-5"
  */
 export function createCssUtils(prefix: string): CssUtils {
 	const cls = (...classNames: string[]): string => {
@@ -93,7 +112,12 @@ export function createCssUtils(prefix: string): CssUtils {
 		return element.classList.contains(cls(className));
 	};
 
-	return { cls, addCls, removeCls, toggleCls, hasCls };
+	const tid: TidFn = (...parts) => {
+		const segments = parts.map((p) => (typeof p === "number" ? String(p) : p)).filter((p) => p.length > 0);
+		return segments.length === 0 ? prefix : `${prefix}${segments.join("-")}`;
+	};
+
+	return { cls, addCls, removeCls, toggleCls, hasCls, tid };
 }
 
 // ============================================================================
@@ -145,6 +169,16 @@ export const toggleCls = defaultUtils.toggleCls;
  * hasCls(element, "active")
  */
 export const hasCls = defaultUtils.hasCls;
+
+/**
+ * Builds a "prisma-" prefixed testId. Mirrors `cls` for symmetry with the
+ * React `useTestId()` hook.
+ *
+ * @example
+ * tid("row") => "prisma-row"
+ * tid("settings", "field") => "prisma-settings-field"
+ */
+export const tid = defaultUtils.tid;
 
 // ============================================================================
 // DOM / style helpers
