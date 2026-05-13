@@ -6,17 +6,17 @@ import {
 	SchemaSection,
 	SettingHeading,
 	useApp,
+	useObservable,
 	useSchemaField,
 	useSettingsStore,
 } from "@real1ty-obsidian-plugins-react";
 import Chart from "chart.js/auto";
 import { nanoid } from "nanoid";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
-import type { Observable } from "rxjs";
+import { memo, useCallback, useMemo, useState } from "react";
 
 import { showCategoryEventsModal } from "../../components/modals";
 import type { CalendarBundle } from "../../core/calendar-bundle";
-import type { CategoryInfo, CategoryTracker } from "../../core/category-tracker";
+import type { CategoryTracker } from "../../core/category-tracker";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
 import { isAllDayEvent, isTimedEvent } from "../../types/calendar";
@@ -29,6 +29,7 @@ import { openCategoryDeleteModal, openCategoryRenameModal } from "../modals";
 import { ProUpgradeBanner } from "./pro-upgrade-banner";
 
 const S = SingleCalendarConfigSchema.shape;
+const EMPTY_CATEGORIES: ReadonlyArray<{ name: string; color: string }> = [];
 
 interface CategoriesSettingsProps {
 	settingsStore: CalendarSettingsStore;
@@ -141,17 +142,15 @@ const CategoriesListSection = memo(function CategoriesListSection({
 	settings,
 	app,
 }: CategoriesListSectionProps) {
-	const categoriesVersion = useCategoriesVersion(categoryTracker.categories$);
+	const categories = useObservable(categoryTracker.categories$, EMPTY_CATEGORIES);
 	const [, setColorRules] = useSchemaField(settingsStore, "colorRules");
 
-	const categories = useMemo(() => categoryTracker.getCategories(), [categoriesVersion, categoryTracker]);
-
 	const categoriesInfo = useMemo(() => {
-		const infos = categories.map((category) => {
-			const stats = categoryTracker.getCategoryStats(category);
-			const color = getCategoryColor(category, settings.colorRules, categoryProp, settings.defaultNodeColor);
+		const infos = categories.map(({ name }) => {
+			const stats = categoryTracker.getCategoryStats(name);
+			const color = getCategoryColor(name, settings.colorRules, categoryProp, settings.defaultNodeColor);
 			return {
-				name: category,
+				name,
 				count: stats.total,
 				timedCount: stats.timed,
 				allDayCount: stats.allDay,
@@ -284,19 +283,17 @@ const CategoryChartSection = memo(function CategoryChartSection({
 	categoryProp,
 	settings,
 }: CategoryChartSectionProps) {
-	const categoriesVersion = useCategoriesVersion(categoryTracker.categories$);
+	const categories = useObservable(categoryTracker.categories$, EMPTY_CATEGORIES);
 
 	const chartData = useMemo<PieChartData>(() => {
-		void categoriesVersion;
-		const categories = categoryTracker.getCategories();
-		const items = categories.map((category) => {
-			const stats = categoryTracker.getCategoryStats(category);
-			const color = getCategoryColor(category, settings.colorRules, categoryProp, settings.defaultNodeColor);
-			return { label: category, value: stats.total, color };
+		const items = categories.map(({ name }) => {
+			const stats = categoryTracker.getCategoryStats(name);
+			const color = getCategoryColor(name, settings.colorRules, categoryProp, settings.defaultNodeColor);
+			return { label: name, value: stats.total, color };
 		});
 		items.sort((a, b) => b.value - a.value);
 		return { labels: items.map((i) => i.label), values: items.map((i) => i.value), colors: items.map((i) => i.color) };
-	}, [categoriesVersion, categoryTracker, settings.colorRules, categoryProp, settings.defaultNodeColor]);
+	}, [categories, categoryTracker, settings.colorRules, categoryProp, settings.defaultNodeColor]);
 
 	if (chartData.values.length === 0) return null;
 
@@ -580,15 +577,6 @@ const CategoryAssignmentPresetRow = memo(function CategoryAssignmentPresetRow({
 function getCategoryExpression(category: string, categoryProp: string): string {
 	const escapedCategory = category.replace(/'/g, "\\'");
 	return `${categoryProp}.includes('${escapedCategory}')`;
-}
-
-function useCategoriesVersion(categories$: Observable<CategoryInfo[]>): number {
-	const [version, setVersion] = useState(0);
-	useEffect(() => {
-		const sub = categories$.subscribe(() => setVersion((v) => v + 1));
-		return () => sub.unsubscribe();
-	}, [categories$]);
-	return version;
 }
 
 function getCategoryColor(
