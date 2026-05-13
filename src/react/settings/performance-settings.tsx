@@ -1,8 +1,8 @@
-import { SchemaSection } from "@real1ty-obsidian-plugins-react";
 import { memo } from "react";
 
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import { SingleCalendarConfigSchema } from "../../types/settings";
+import { PrismaSection } from "./_section";
 
 interface PerformanceSettingsProps {
 	settingsStore: CalendarSettingsStore;
@@ -14,12 +14,11 @@ export const PerformanceSettingsReact = memo(function PerformanceSettingsReact({
 	settingsStore,
 }: PerformanceSettingsProps) {
 	return (
-		<SchemaSection
+		<PrismaSection
 			store={settingsStore}
 			shape={SingleCalendarConfigSchema.shape}
 			heading="Performance"
 			fields={FIELDS}
-			testIdPrefix="prisma-settings-"
 		/>
 	);
 });

@@ -1,9 +1,10 @@
-import { Dropdown, SchemaSection, SettingItem, useSchemaField } from "@real1ty-obsidian-plugins-react";
+import { Dropdown, SettingItem, useSchemaField } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback } from "react";
 
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import { FIRST_DAY_OPTIONS } from "../../types/index";
 import { SingleCalendarConfigSchema } from "../../types/settings";
+import { PrismaSection } from "./_section";
 
 interface CalendarSettingsProps {
 	settingsStore: CalendarSettingsStore;
@@ -48,53 +49,27 @@ const STEP_OVERRIDES = {
 
 export const CalendarSettingsReact = memo(function CalendarSettingsReact({ settingsStore }: CalendarSettingsProps) {
 	const shape = SingleCalendarConfigSchema.shape;
+	const section = (heading: string, fields: string[], overrides?: typeof STEP_OVERRIDES) => (
+		<PrismaSection
+			store={settingsStore}
+			shape={shape}
+			heading={heading}
+			fields={fields}
+			{...(overrides ? { overrides } : {})}
+		/>
+	);
 	return (
 		<>
-			<SchemaSection store={settingsStore} shape={shape} heading="Views" fields={VIEW_FIELDS} />
-
+			{section("Views", VIEW_FIELDS)}
 			<DayCellColoringSection settingsStore={settingsStore} />
-
-			<SchemaSection store={settingsStore} shape={shape} heading="Event appearance" fields={APPEARANCE_FIELDS} />
-
-			<SchemaSection
-				store={settingsStore}
-				shape={shape}
-				heading="Sticky & layout"
-				fields={LAYOUT_FIELDS}
-				overrides={STEP_OVERRIDES}
-			/>
-
-			<SchemaSection
-				store={settingsStore}
-				shape={shape}
-				heading="Time grid"
-				fields={TIME_GRID_FIELDS}
-				overrides={STEP_OVERRIDES}
-			/>
+			{section("Event appearance", APPEARANCE_FIELDS)}
+			{section("Sticky & layout", LAYOUT_FIELDS, STEP_OVERRIDES)}
+			{section("Time grid", TIME_GRID_FIELDS, STEP_OVERRIDES)}
 			<FirstDayOfWeekField settingsStore={settingsStore} />
-
-			<SchemaSection store={settingsStore} shape={shape} heading="Event overlap" fields={OVERLAP_FIELDS} />
-
-			<SchemaSection
-				store={settingsStore}
-				shape={shape}
-				heading="Event text colors"
-				fields={["eventTextColor", "eventTextColorAlt"]}
-			/>
-
-			<SchemaSection
-				store={settingsStore}
-				shape={shape}
-				heading="Capacity tracking"
-				fields={["capacityTrackingEnabled"]}
-			/>
-
-			<SchemaSection
-				store={settingsStore}
-				shape={shape}
-				heading="Prerequisite arrows"
-				fields={["connectionColor", "connectionStrokeWidth", "connectionArrowSize"]}
-			/>
+			{section("Event overlap", OVERLAP_FIELDS)}
+			{section("Event text colors", ["eventTextColor", "eventTextColorAlt"])}
+			{section("Capacity tracking", ["capacityTrackingEnabled"])}
+			{section("Prerequisite arrows", ["connectionColor", "connectionStrokeWidth", "connectionArrowSize"])}
 		</>
 	);
 });
@@ -127,9 +102,9 @@ const DayCellColoringSection = memo(function DayCellColoringSection({ settingsSt
 
 	return (
 		<>
-			<SchemaSection store={settingsStore} shape={shape} fields={["dayCellColoring"]} />
+			<PrismaSection store={settingsStore} shape={shape} fields={["dayCellColoring"]} />
 			{mode === "uniform" && (
-				<SchemaSection
+				<PrismaSection
 					store={settingsStore}
 					shape={shape}
 					fields={["monthEvenColor"]}
@@ -142,7 +117,7 @@ const DayCellColoringSection = memo(function DayCellColoringSection({ settingsSt
 				/>
 			)}
 			{mode === "boundary" && (
-				<SchemaSection
+				<PrismaSection
 					store={settingsStore}
 					shape={shape}
 					fields={["monthEvenColor", "monthOddColor"]}

@@ -1,15 +1,10 @@
 import type { ColorRule } from "@real1ty-obsidian-plugins";
-import {
-	ColorInput,
-	SchemaSection,
-	SettingHeading,
-	SettingItem,
-	useSchemaField,
-} from "@real1ty-obsidian-plugins-react";
+import { ColorInput, SettingHeading, SettingItem, useSchemaField } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useState } from "react";
 
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import { type FilterPreset, SingleCalendarConfigSchema } from "../../types/settings";
+import { PrismaSection } from "./_section";
 
 const S = SingleCalendarConfigSchema.shape;
 
@@ -56,12 +51,11 @@ const ColorRulesSection = memo(function ColorRulesSection({ settingsStore }: Col
 
 	return (
 		<>
-			<SchemaSection
+			<PrismaSection
 				store={settingsStore}
 				shape={S}
 				heading="Event colors"
 				fields={["colorMode", "showEventColorDots", "defaultNodeColor"]}
-				testIdPrefix="prisma-settings-"
 			/>
 
 			<div>
@@ -279,7 +273,7 @@ const FilterSection = memo(function FilterSection({ store }: FilterSectionProps)
 					</p>
 				</div>
 			</div>
-			<SchemaSection store={store} shape={{ filterExpressions: S.filterExpressions }} testIdPrefix="prisma-settings-" />
+			<PrismaSection store={store} shape={{ filterExpressions: S.filterExpressions }} />
 		</>
 	);
 });
@@ -303,11 +297,7 @@ const UntrackedFilterSection = memo(function UntrackedFilterSection({ store }: U
 					<p>Use property names directly. Invalid expressions will be ignored and logged to console.</p>
 				</div>
 			</div>
-			<SchemaSection
-				store={store}
-				shape={{ untrackedFilterExpressions: S.untrackedFilterExpressions }}
-				testIdPrefix="prisma-settings-"
-			/>
+			<PrismaSection store={store} shape={{ untrackedFilterExpressions: S.untrackedFilterExpressions }} />
 		</>
 	);
 });

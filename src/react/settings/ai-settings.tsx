@@ -1,9 +1,10 @@
-import { SchemaSection, SettingHeading, useSchemaField } from "@real1ty-obsidian-plugins-react";
+import { SettingHeading, useSchemaField } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useState } from "react";
 
 import type { PrismaCalendarSettingsStore } from "../../types";
 import { AI_DEFAULTS } from "../../types/ai";
 import { CustomCalendarSettingsSchema, type CustomPrompt } from "../../types/settings";
+import { PrismaSection } from "./_section";
 
 const AIShape = CustomCalendarSettingsSchema.shape.ai.unwrap().shape;
 
@@ -14,36 +15,21 @@ interface AISettingsProps {
 }
 
 export const AISettingsReact = memo(function AISettingsReact({ mainSettingsStore }: AISettingsProps) {
+	const aiSection = (heading: string, fields: string[]) => (
+		<PrismaSection store={mainSettingsStore} shape={AIShape} heading={heading} fields={fields} pathPrefix="ai" />
+	);
 	return (
 		<>
-			<SchemaSection
+			<PrismaSection
 				store={mainSettingsStore}
 				shape={AIShape}
 				heading="AI Assistant"
 				fields={["anthropicApiKeySecretName", "openaiApiKeySecretName", "aiModel"]}
 				pathPrefix="ai"
 				overrides={{ aiModel: { options: MODEL_OPTIONS, widget: "dropdown" } }}
-				testIdPrefix="prisma-settings-"
 			/>
-
-			<SchemaSection
-				store={mainSettingsStore}
-				shape={AIShape}
-				heading="Event Manipulation"
-				fields={["aiBatchExecution", "aiConfirmExecution"]}
-				pathPrefix="ai"
-				testIdPrefix="prisma-settings-"
-			/>
-
-			<SchemaSection
-				store={mainSettingsStore}
-				shape={AIShape}
-				heading="Planning"
-				fields={["aiPlanningGapDetection", "aiPlanningDayCoverage"]}
-				pathPrefix="ai"
-				testIdPrefix="prisma-settings-"
-			/>
-
+			{aiSection("Event Manipulation", ["aiBatchExecution", "aiConfirmExecution"])}
+			{aiSection("Planning", ["aiPlanningGapDetection", "aiPlanningDayCoverage"])}
 			<CustomPromptsSection mainSettingsStore={mainSettingsStore} />
 		</>
 	);

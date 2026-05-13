@@ -1,8 +1,9 @@
-import { MutuallyExclusiveToggles, SchemaSection, SettingHeading } from "@real1ty-obsidian-plugins-react";
+import { MutuallyExclusiveToggles, SettingHeading } from "@real1ty-obsidian-plugins-react";
 import { memo } from "react";
 
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import { SingleCalendarConfigSchema } from "../../types/settings";
+import { PrismaSection } from "./_section";
 
 interface EventGroupsSettingsProps {
 	settingsStore: CalendarSettingsStore;
@@ -66,18 +67,18 @@ export const EventGroupsSettingsReact = memo(function EventGroupsSettingsReact({
 	const shape = SingleCalendarConfigSchema.shape;
 	return (
 		<>
-			<SchemaSection store={settingsStore} shape={shape} heading="Recurring events" fields={["futureInstancesCount"]} />
+			<PrismaSection store={settingsStore} shape={shape} heading="Recurring events" fields={["futureInstancesCount"]} />
 			<MutuallyExclusiveToggles store={settingsStore} {...RECURRING_TOGGLES} />
-			<SchemaSection store={settingsStore} shape={shape} fields={["excludedRecurringInstanceProps"]} />
-			<SchemaSection store={settingsStore} shape={shape} heading="Event markers" fields={MARKERS_FIELDS} />
+			<PrismaSection store={settingsStore} shape={shape} fields={["excludedRecurringInstanceProps"]} />
+			<PrismaSection store={settingsStore} shape={shape} heading="Event markers" fields={MARKERS_FIELDS} />
 
 			<SettingHeading name="Name series propagation" />
 			<MutuallyExclusiveToggles store={settingsStore} {...NAME_SERIES_TOGGLES} />
-			<SchemaSection store={settingsStore} shape={shape} fields={["excludedNameSeriesProps"]} />
+			<PrismaSection store={settingsStore} shape={shape} fields={["excludedNameSeriesProps"]} />
 
 			<SettingHeading name="Category series propagation" />
 			<MutuallyExclusiveToggles store={settingsStore} {...CATEGORY_SERIES_TOGGLES} />
-			<SchemaSection store={settingsStore} shape={shape} fields={["excludedCategorySeriesProps"]} />
+			<PrismaSection store={settingsStore} shape={shape} fields={["excludedCategorySeriesProps"]} />
 		</>
 	);
 });

@@ -3,7 +3,6 @@ import {
 	ColorInput,
 	ObsidianIcon,
 	PieChart,
-	SchemaSection,
 	SettingHeading,
 	useApp,
 	useObservable,
@@ -26,6 +25,7 @@ import {
 	SingleCalendarConfigSchema,
 } from "../../types/settings";
 import { openCategoryDeleteModal, openCategoryRenameModal } from "../modals";
+import { PrismaSection } from "./_section";
 import { ProUpgradeBanner } from "./pro-upgrade-banner";
 
 const S = SingleCalendarConfigSchema.shape;
@@ -344,13 +344,12 @@ const AutoAssignSection = memo(function AutoAssignSection({
 				<p>Automatically assign categories to events during creation based on the event name.</p>
 			</div>
 
-			<SchemaSection
+			<PrismaSection
 				store={settingsStore}
 				shape={{
 					autoAssignCategoryByName: S.autoAssignCategoryByName,
 					autoAssignCategoryByIncludes: S.autoAssignCategoryByIncludes,
 				}}
-				testIdPrefix="prisma-settings-"
 			/>
 
 			{!plugin.isProEnabled ? (

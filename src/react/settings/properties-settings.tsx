@@ -1,16 +1,16 @@
 import { cls } from "@real1ty-obsidian-plugins";
-import { SchemaSection, useSettingsStore } from "@real1ty-obsidian-plugins-react";
+import { useSettingsStore } from "@real1ty-obsidian-plugins-react";
 import { memo } from "react";
 
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import { type SingleCalendarConfig, SingleCalendarConfigSchema } from "../../types/settings";
+import { PrismaSection } from "./_section";
 
 interface PropertiesSettingsProps {
 	settingsStore: CalendarSettingsStore;
 }
 
 const TIMING_FIELDS = ["startProp", "endProp", "dateProp", "allDayProp"];
-const SORTING_FIELDS = ["sortingStrategy", "sortDateProp"];
 const IDENTITY_FIELDS = ["titleProp", "calendarTitleProp", "zettelIdProp", "skipProp", "iconProp"];
 const RECURRENCE_FIELDS = [
 	"rruleProp",
@@ -25,7 +25,6 @@ const RECURRENCE_FIELDS = [
 const STATUS_FIELDS = ["statusProperty", "doneValue", "notDoneValue", "customDoneProperty", "customUndoneProperty"];
 const METADATA_FIELDS = ["categoryProp", "locationProp", "participantsProp", "breakProp", "prerequisiteProp"];
 const NOTIFICATION_PROP_FIELDS = ["minutesBeforeProp", "daysBeforeProp", "alreadyNotifiedProp"];
-const INTEGRATION_PROP_FIELDS = ["caldavProp", "icsSubscriptionProp"];
 const DISPLAY_FIELDS = [
 	"frontmatterDisplayProperties",
 	"frontmatterDisplayPropertiesAllDay",
@@ -42,90 +41,24 @@ export const PropertiesSettingsReact = memo(function PropertiesSettingsReact({
 }: PropertiesSettingsProps) {
 	const [settings] = useSettingsStore(settingsStore);
 
+	const propSection = (heading: string, fields: string[]) => (
+		<PrismaSection store={settingsStore} shape={SHAPE} heading={heading} fields={fields} labelTransform={propLabel} />
+	);
+
 	return (
 		<>
-			<SchemaSection
-				store={settingsStore}
-				shape={SHAPE}
-				heading="Event timing"
-				fields={TIMING_FIELDS}
-				labelTransform={propLabel}
-				testIdPrefix="prisma-settings-"
-			/>
+			{propSection("Event timing", TIMING_FIELDS)}
 			<EventTypesInfo settings={settings} />
-
-			<SchemaSection
-				store={settingsStore}
-				shape={SHAPE}
-				heading="Sorting"
-				fields={SORTING_FIELDS}
-				labelTransform={propLabel}
-				testIdPrefix="prisma-settings-"
-			/>
-
-			<SchemaSection
-				store={settingsStore}
-				shape={SHAPE}
-				heading="Identity"
-				fields={IDENTITY_FIELDS}
-				labelTransform={propLabel}
-				testIdPrefix="prisma-settings-"
-			/>
-
-			<SchemaSection
-				store={settingsStore}
-				shape={SHAPE}
-				heading="Recurrence"
-				fields={RECURRENCE_FIELDS}
-				labelTransform={propLabel}
-				testIdPrefix="prisma-settings-"
-			/>
+			{propSection("Sorting", ["sortingStrategy", "sortDateProp"])}
+			{propSection("Identity", IDENTITY_FIELDS)}
+			{propSection("Recurrence", RECURRENCE_FIELDS)}
 			<RecurringEventsInfo settings={settings} />
-
-			<SchemaSection
-				store={settingsStore}
-				shape={SHAPE}
-				heading="Status"
-				fields={STATUS_FIELDS}
-				labelTransform={propLabel}
-				testIdPrefix="prisma-settings-"
-			/>
-
-			<SchemaSection
-				store={settingsStore}
-				shape={SHAPE}
-				heading="Metadata"
-				fields={METADATA_FIELDS}
-				labelTransform={propLabel}
-				testIdPrefix="prisma-settings-"
-			/>
-
-			<SchemaSection
-				store={settingsStore}
-				shape={SHAPE}
-				heading="Notifications"
-				fields={NOTIFICATION_PROP_FIELDS}
-				labelTransform={propLabel}
-				testIdPrefix="prisma-settings-"
-			/>
-
-			<SchemaSection
-				store={settingsStore}
-				shape={SHAPE}
-				heading="Integrations"
-				fields={INTEGRATION_PROP_FIELDS}
-				labelTransform={propLabel}
-				testIdPrefix="prisma-settings-"
-			/>
-
+			{propSection("Status", STATUS_FIELDS)}
+			{propSection("Metadata", METADATA_FIELDS)}
+			{propSection("Notifications", NOTIFICATION_PROP_FIELDS)}
+			{propSection("Integrations", ["caldavProp", "icsSubscriptionProp"])}
 			<FrontmatterDisplayIntro />
-			<SchemaSection
-				store={settingsStore}
-				shape={SHAPE}
-				heading="Display in events"
-				fields={DISPLAY_FIELDS}
-				testIdPrefix="prisma-settings-"
-			/>
+			<PrismaSection store={settingsStore} shape={SHAPE} heading="Display in events" fields={DISPLAY_FIELDS} />
 		</>
 	);
 });

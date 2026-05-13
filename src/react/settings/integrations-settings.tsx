@@ -1,7 +1,6 @@
 import { buildUtmUrl, executeCommand } from "@real1ty-obsidian-plugins";
 import {
 	Dropdown,
-	SchemaSection,
 	SettingHeading,
 	SettingItem,
 	TextInput,
@@ -29,6 +28,7 @@ import {
 	openICSAddModal,
 	openICSEditModal,
 } from "../modals";
+import { PrismaSection } from "./_section";
 import { ProUpgradeBanner } from "./pro-upgrade-banner";
 
 const S = SingleCalendarConfigSchema.shape;
@@ -105,7 +105,7 @@ const IntegrationsSection = memo(function IntegrationsSection({ settingsStore, a
 				</a>
 			</div>
 
-			<SchemaSection store={settingsStore} shape={{ exportFolder: S.exportFolder }} testIdPrefix="prisma-settings-" />
+			<PrismaSection store={settingsStore} shape={{ exportFolder: S.exportFolder }} />
 
 			<div className="prisma-settings-integrations-buttons">
 				<button type="button" className="prisma-settings-integration-button" onClick={handleExport}>
@@ -236,12 +236,11 @@ const CalDAVSection = memo(function CalDAVSection({ mainSettingsStore, plugin, c
 				</button>
 			</div>
 
-			<SchemaSection
+			<PrismaSection
 				store={mainSettingsStore}
 				shape={CaldavShape}
 				fields={["syncOnStartup", "enableAutoSync", "notifyOnSync", "integrationEventColor"]}
 				pathPrefix="caldav"
-				testIdPrefix="prisma-settings-"
 			/>
 		</>
 	);
@@ -417,12 +416,11 @@ const ICSSection = memo(function ICSSection({ mainSettingsStore, plugin, calenda
 				</button>
 			</div>
 
-			<SchemaSection
+			<PrismaSection
 				store={mainSettingsStore}
 				shape={IcsShape}
 				fields={["syncOnStartup", "enableAutoSync", "notifyOnSync", "integrationEventColor"]}
 				pathPrefix="icsSubscriptions"
-				testIdPrefix="prisma-settings-"
 			/>
 		</>
 	);

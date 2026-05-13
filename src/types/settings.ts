@@ -905,6 +905,12 @@ export const CustomCalendarSettingsSchema = z
 	.object({
 		licenseKeySecretName: z.string().catch(""),
 		version: z.string().catch("1.1.0"),
+		checkForReleaseUpdates: z
+			.boolean()
+			.catch(true)
+			.describe(
+				"Quietly check GitHub once per day for new Prisma Calendar releases. When a newer version is published, an 'Update available' badge appears in settings next to the current version. No telemetry is sent — only a single anonymous HTTPS request to the GitHub releases API."
+			),
 		calendars: z
 			.array(SingleCalendarConfigSchema)
 			.min(1)

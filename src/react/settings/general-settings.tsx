@@ -2,7 +2,6 @@ import { buildUtmUrl } from "@real1ty-obsidian-plugins";
 import {
 	Dropdown,
 	LicenseSection,
-	SchemaSection,
 	SettingCard,
 	SettingHeading,
 	SettingItem,
@@ -20,9 +19,11 @@ import type { CalendarSettingsStore } from "../../core/settings-store";
 import { buildWhatsNewConfig } from "../../core/whats-new-config";
 import type CustomCalendarPlugin from "../../main";
 import type { CustomCalendarSettings } from "../../types/settings";
-import { SingleCalendarConfigSchema } from "../../types/settings";
+import { CustomCalendarSettingsSchema, SingleCalendarConfigSchema } from "../../types/settings";
+import { PrismaSection } from "./_section";
 
 const SHAPE = SingleCalendarConfigSchema.shape;
+const MAIN_SHAPE = CustomCalendarSettingsSchema.shape;
 
 const PRISMA_NON_TRANSFERABLE_SETTINGS: ReadonlyArray<keyof CustomCalendarSettings> = [
 	"licenseKeySecretName",
@@ -59,6 +60,13 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 		[setLicenseKeySecretName]
 	);
 
+	const calendarSection = (heading: string, fields: string[]) => (
+		<PrismaSection store={settingsStore} shape={SHAPE} heading={heading} fields={fields} />
+	);
+	const mainSection = (heading: string, fields: string[]) => (
+		<PrismaSection store={plugin.settingsStore} shape={MAIN_SHAPE} heading={heading} fields={fields} />
+	);
+
 	return (
 		<>
 			<LicenseSection
@@ -67,42 +75,13 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 				onSecretChange={onSecretChange}
 				accountUrl={buildUtmUrl(ACCOUNT_URL, "prisma-calendar", "plugin", "settings", "manage_subscription")}
 			/>
-			<SchemaSection
-				store={settingsStore}
-				shape={SHAPE}
-				heading="Planning system"
-				fields={PLANNING_FIELDS}
-				testIdPrefix="prisma-settings-"
-			/>
+			{calendarSection("Planning system", PLANNING_FIELDS)}
 			<ReadOnlyField plugin={plugin} />
-			<SchemaSection
-				store={settingsStore}
-				shape={SHAPE}
-				heading="Interface"
-				fields={INTERFACE_FIELDS}
-				testIdPrefix="prisma-settings-"
-			/>
-			<SchemaSection
-				store={settingsStore}
-				shape={SHAPE}
-				heading="Event defaults"
-				fields={EVENT_DEFAULTS_FIELDS}
-				testIdPrefix="prisma-settings-"
-			/>
-			<SchemaSection
-				store={settingsStore}
-				shape={SHAPE}
-				heading="Time tracker"
-				fields={["showStopwatch"]}
-				testIdPrefix="prisma-settings-"
-			/>
-			<SchemaSection
-				store={settingsStore}
-				shape={SHAPE}
-				heading="Statistics"
-				fields={["showDecimalHours", "defaultAggregationMode"]}
-				testIdPrefix="prisma-settings-"
-			/>
+			{calendarSection("Interface", INTERFACE_FIELDS)}
+			{mainSection("Updates", ["checkForReleaseUpdates"])}
+			{calendarSection("Event defaults", EVENT_DEFAULTS_FIELDS)}
+			{calendarSection("Time tracker", ["showStopwatch"])}
+			{calendarSection("Statistics", ["showDecimalHours", "defaultAggregationMode"])}
 			<EventPresetsSection settingsStore={settingsStore} plugin={plugin} />
 			<SettingsTransferSection plugin={plugin} />
 			<HelpSection plugin={plugin} />
