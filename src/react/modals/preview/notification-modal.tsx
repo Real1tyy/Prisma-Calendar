@@ -1,4 +1,10 @@
-import { cls, formatLocaleLongDate, formatLocaleLongDateTime, formatLocaleTimeHm } from "@real1ty-obsidian-plugins";
+import {
+	cls,
+	formatLocaleLongDate,
+	formatLocaleLongDateTime,
+	formatLocaleTimeHm,
+	tid,
+} from "@real1ty-obsidian-plugins";
 import { AppContext, PropertyItem, SharedReactThemeProvider, showReactModal } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { useState } from "react";
@@ -180,13 +186,13 @@ export function NotificationContent({ app, eventData, settings, onClose, onSnooz
 			<NotificationPropertiesSection title="Additional Properties" properties={otherProperties} onClose={onClose} />
 
 			<div className={cls("event-notification-buttons")}>
-				<button type="button" className="mod-cta" data-testid="prisma-notification-open" onClick={handleFileClick}>
+				<button type="button" className="mod-cta" data-testid={tid("notification-open")} onClick={handleFileClick}>
 					Open event
 				</button>
 				{showSnooze && onSnooze && (
 					<SnoozeControl defaultMinutes={settings.snoozeMinutes} onSnooze={onSnooze} onClose={onClose} />
 				)}
-				<button type="button" data-testid="prisma-notification-dismiss" onClick={onClose}>
+				<button type="button" data-testid={tid("notification-dismiss")} onClick={onClose}>
 					Dismiss
 				</button>
 			</div>
@@ -230,7 +236,7 @@ export function showNotificationModal(
 		app,
 		cls: cls("event-notification-modal"),
 		cssPrefix: CSS_PREFIX,
-		testId: "prisma-notification-modal",
+		testId: tid("notification-modal"),
 		render: (close) => (
 			<NotificationContent app={app} eventData={eventData} settings={settings} onClose={close} onSnooze={onSnooze} />
 		),

@@ -1,4 +1,4 @@
-import { buildUtmUrl, executeCommand } from "@real1ty-obsidian-plugins";
+import { buildUtmUrl, cls, executeCommand, tid } from "@real1ty-obsidian-plugins";
 import {
 	Dropdown,
 	SettingHeading,
@@ -87,7 +87,7 @@ const IntegrationsSection = memo(function IntegrationsSection({ settingsStore, a
 	return (
 		<>
 			<SettingHeading name="Integrations" />
-			<div className="prisma-settings-integrations-desc">
+			<div className={cls("settings-integrations-desc")}>
 				<p>Export and import events using the .ics format, compatible with most calendar apps.</p>
 				<a
 					href={buildUtmUrl(
@@ -97,7 +97,7 @@ const IntegrationsSection = memo(function IntegrationsSection({ settingsStore, a
 						"settings",
 						"integrations_docs"
 					)}
-					className="prisma-settings-docs-link"
+					className={cls("settings-docs-link")}
 					target="_blank"
 					rel="noopener"
 				>
@@ -107,11 +107,11 @@ const IntegrationsSection = memo(function IntegrationsSection({ settingsStore, a
 
 			<PrismaSection store={settingsStore} shape={{ exportFolder: S.exportFolder }} />
 
-			<div className="prisma-settings-integrations-buttons">
-				<button type="button" className="prisma-settings-integration-button" onClick={handleExport}>
+			<div className={cls("settings-integrations-buttons")}>
+				<button type="button" className={cls("settings-integration-button")} onClick={handleExport}>
 					Export calendar
 				</button>
-				<button type="button" className="prisma-settings-integration-button" onClick={handleImport}>
+				<button type="button" className={cls("settings-integration-button")} onClick={handleImport}>
 					Import .ics
 				</button>
 			</div>
@@ -210,15 +210,15 @@ const CalDAVSection = memo(function CalDAVSection({ mainSettingsStore, plugin, c
 	return (
 		<>
 			<SettingHeading name="Calendar sync (read-only)" />
-			<div className="prisma-settings-caldav-desc">
+			<div className={cls("settings-caldav-desc")}>
 				<p>Sync events from external calendar servers.</p>
-				<p className="prisma-settings-muted">Events are synced one-way from the server.</p>
+				<p className={cls("settings-muted")}>Events are synced one-way from the server.</p>
 			</div>
 
-			<div className="prisma-caldav-accounts-wrapper">
-				<div className="prisma-caldav-accounts-container">
+			<div className={cls("caldav-accounts-wrapper")}>
+				<div className={cls("caldav-accounts-container")}>
 					{accounts.length === 0 ? (
-						<div className="prisma-caldav-accounts-empty">No accounts configured.</div>
+						<div className={cls("caldav-accounts-empty")}>No accounts configured.</div>
 					) : (
 						accounts.map((account) => (
 							<CalDAVAccountItem
@@ -231,7 +231,7 @@ const CalDAVSection = memo(function CalDAVSection({ mainSettingsStore, plugin, c
 						))
 					)}
 				</div>
-				<button type="button" className="prisma-caldav-add-account-button" onClick={handleAddAccount}>
+				<button type="button" className={cls("caldav-add-account-button")} onClick={handleAddAccount}>
 					Add account
 				</button>
 			</div>
@@ -271,29 +271,29 @@ const CalDAVAccountItem = memo(function CalDAVAccountItem({
 	}, [account, onSync]);
 
 	return (
-		<div className="prisma-caldav-account-item">
-			<div className="prisma-caldav-account-info">
-				<div className="prisma-caldav-account-name">{account.name}</div>
-				<div className="prisma-caldav-account-url">{account.serverUrl}</div>
+		<div className={cls("caldav-account-item")}>
+			<div className={cls("caldav-account-info")}>
+				<div className={cls("caldav-account-name")}>{account.name}</div>
+				<div className={cls("caldav-account-url")}>{account.serverUrl}</div>
 				<div
-					className={`prisma-caldav-account-status ${account.enabled ? "prisma-caldav-status-enabled" : "prisma-caldav-status-disabled"}`}
+					className={cls("caldav-account-status", account.enabled ? "caldav-status-enabled" : "caldav-status-disabled")}
 				>
 					{account.enabled ? "Enabled" : "Disabled"}
 				</div>
 				{account.selectedCalendars.length > 0 && (
-					<div className="prisma-caldav-account-calendars">{account.selectedCalendars.length} calendar(s) selected</div>
+					<div className={cls("caldav-account-calendars")}>{account.selectedCalendars.length} calendar(s) selected</div>
 				)}
 			</div>
-			<div className="prisma-caldav-account-controls">
-				<button type="button" className="prisma-caldav-account-btn" onClick={handleSync} disabled={syncing}>
+			<div className={cls("caldav-account-controls")}>
+				<button type="button" className={cls("caldav-account-btn")} onClick={handleSync} disabled={syncing}>
 					{syncing ? "Syncing..." : "Sync now"}
 				</button>
-				<button type="button" className="prisma-caldav-account-btn" onClick={() => onEdit(account)}>
+				<button type="button" className={cls("caldav-account-btn")} onClick={() => onEdit(account)}>
 					Edit
 				</button>
 				<button
 					type="button"
-					className="prisma-caldav-account-btn prisma-caldav-account-btn-delete"
+					className={cls("caldav-account-btn", "caldav-account-btn-delete")}
 					onClick={() => onDelete(account)}
 				>
 					Delete
@@ -388,17 +388,17 @@ const ICSSection = memo(function ICSSection({ mainSettingsStore, plugin, calenda
 	return (
 		<>
 			<SettingHeading name="ICS URL subscriptions (read-only)" />
-			<div className="prisma-settings-caldav-desc">
+			<div className={cls("settings-caldav-desc")}>
 				<p>Subscribe to external calendars via public ICS URLs.</p>
-				<p className="prisma-settings-muted">
+				<p className={cls("settings-muted")}>
 					Events are synced one-way from the URL. Removed events are deleted locally.
 				</p>
 			</div>
 
-			<div className="prisma-caldav-accounts-wrapper">
-				<div className="prisma-caldav-accounts-container">
+			<div className={cls("caldav-accounts-wrapper")}>
+				<div className={cls("caldav-accounts-container")}>
 					{subscriptions.length === 0 ? (
-						<div className="prisma-caldav-accounts-empty">No subscriptions configured.</div>
+						<div className={cls("caldav-accounts-empty")}>No subscriptions configured.</div>
 					) : (
 						subscriptions.map((subscription) => (
 							<ICSSubscriptionItem
@@ -411,7 +411,7 @@ const ICSSection = memo(function ICSSection({ mainSettingsStore, plugin, calenda
 						))
 					)}
 				</div>
-				<button type="button" className="prisma-caldav-add-account-button" onClick={handleAddSubscription}>
+				<button type="button" className={cls("caldav-add-account-button")} onClick={handleAddSubscription}>
 					Add subscription
 				</button>
 			</div>
@@ -451,30 +451,33 @@ const ICSSubscriptionItem = memo(function ICSSubscriptionItem({
 	}, [subscription, onSync]);
 
 	return (
-		<div className="prisma-caldav-account-item">
-			<div className="prisma-caldav-account-info">
-				<div className="prisma-caldav-account-name">{subscription.name}</div>
-				<div className="prisma-caldav-account-url">
+		<div className={cls("caldav-account-item")}>
+			<div className={cls("caldav-account-info")}>
+				<div className={cls("caldav-account-name")}>{subscription.name}</div>
+				<div className={cls("caldav-account-url")}>
 					{subscription.urlSecretName ? `Secret: ${subscription.urlSecretName}` : "No URL configured"}
 				</div>
 				<div
-					className={`prisma-caldav-account-status ${subscription.enabled ? "prisma-caldav-status-enabled" : "prisma-caldav-status-disabled"}`}
+					className={cls(
+						"caldav-account-status",
+						subscription.enabled ? "caldav-status-enabled" : "caldav-status-disabled"
+					)}
 				>
 					{subscription.enabled ? "Enabled" : "Disabled"}
 				</div>
 			</div>
-			<div className="prisma-caldav-account-controls">
-				<button type="button" className="prisma-caldav-account-btn" onClick={handleSync} disabled={syncing}>
+			<div className={cls("caldav-account-controls")}>
+				<button type="button" className={cls("caldav-account-btn")} onClick={handleSync} disabled={syncing}>
 					{syncing ? "Syncing..." : "Sync now"}
 				</button>
-				<button type="button" className="prisma-caldav-account-btn" onClick={() => onEdit(subscription)}>
+				<button type="button" className={cls("caldav-account-btn")} onClick={() => onEdit(subscription)}>
 					Edit
 				</button>
 				<button
 					type="button"
-					className="prisma-caldav-account-btn prisma-caldav-account-btn-delete"
+					className={cls("caldav-account-btn", "caldav-account-btn-delete")}
 					onClick={() => onDelete(subscription)}
-					data-testid={`prisma-settings-ics-sub-delete-${subscription.id}`}
+					data-testid={tid("settings-ics-sub-delete", subscription.id)}
 				>
 					Delete
 				</button>
@@ -530,12 +533,12 @@ const HolidaySection = memo(function HolidaySection({ settingsStore }: HolidaySe
 			<SettingItem
 				name="Enable holidays"
 				description="Display public holidays on the calendar as virtual read-only events"
-				testId="prisma-settings-field-holidaysEnabled"
+				testId={tid("settings-field-holidaysEnabled")}
 			>
 				<Toggle
 					value={holidays.enabled}
 					onChange={handleEnabledChange}
-					testId="prisma-settings-control-holidaysEnabled"
+					testId={tid("settings-control-holidaysEnabled")}
 				/>
 			</SettingItem>
 
@@ -544,61 +547,61 @@ const HolidaySection = memo(function HolidaySection({ settingsStore }: HolidaySe
 					<SettingItem
 						name="Country"
 						description="ISO country code (e.g., US, GB, DE, CA)"
-						testId="prisma-settings-field-holidaysCountry"
+						testId={tid("settings-field-holidaysCountry")}
 					>
 						<TextInput
 							value={holidays.country}
 							placeholder="US"
 							onChange={(v) => handleFieldChange("country", v)}
-							testId="prisma-settings-control-holidaysCountry"
+							testId={tid("settings-control-holidaysCountry")}
 						/>
 					</SettingItem>
 					<SettingItem
 						name="State/Province"
 						description="Optional: State or province code (e.g., ca for California, ny for New York)"
-						testId="prisma-settings-field-holidaysState"
+						testId={tid("settings-field-holidaysState")}
 					>
 						<TextInput
 							value={holidays.state ?? ""}
 							placeholder="Optional"
 							onChange={(v) => handleFieldChange("state", v)}
-							testId="prisma-settings-control-holidaysState"
+							testId={tid("settings-control-holidaysState")}
 						/>
 					</SettingItem>
 					<SettingItem
 						name="Region"
 						description="Optional: Region code for more specific holidays"
-						testId="prisma-settings-field-holidaysRegion"
+						testId={tid("settings-field-holidaysRegion")}
 					>
 						<TextInput
 							value={holidays.region ?? ""}
 							placeholder="Optional"
 							onChange={(v) => handleFieldChange("region", v)}
-							testId="prisma-settings-control-holidaysRegion"
+							testId={tid("settings-control-holidaysRegion")}
 						/>
 					</SettingItem>
 					<SettingItem
 						name="Holiday types"
 						description="Select which types of holidays to display"
-						testId="prisma-settings-field-holidaysTypes"
+						testId={tid("settings-field-holidaysTypes")}
 					>
 						<Dropdown
 							value={holidays.types.join(",")}
 							options={HOLIDAY_TYPE_OPTIONS}
 							onChange={handleTypesChange}
-							testId="prisma-settings-control-holidaysTypes"
+							testId={tid("settings-control-holidaysTypes")}
 						/>
 					</SettingItem>
 					<SettingItem
 						name="Timezone"
 						description="Optional: Timezone for holiday calculations (e.g., America/New_York). Leave empty to use system timezone."
-						testId="prisma-settings-field-holidaysTimezone"
+						testId={tid("settings-field-holidaysTimezone")}
 					>
 						<TextInput
 							value={holidays.timezone ?? ""}
 							placeholder="Optional"
 							onChange={(v) => handleFieldChange("timezone", v)}
-							testId="prisma-settings-control-holidaysTimezone"
+							testId={tid("settings-control-holidaysTimezone")}
 						/>
 					</SettingItem>
 					<div className="setting-item-description" style={{ marginTop: 10 }}>

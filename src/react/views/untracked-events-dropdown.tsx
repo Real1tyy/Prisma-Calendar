@@ -1,5 +1,5 @@
 import { Draggable } from "@fullcalendar/interaction";
-import type { ColorEvaluator } from "@real1ty-obsidian-plugins";
+import { addCls, cls, type ColorEvaluator, removeCls, tid } from "@real1ty-obsidian-plugins";
 import {
 	PropertyValue,
 	useApp,
@@ -104,7 +104,7 @@ export const UntrackedEventsDropdown = memo(
 		const resetTempHide = useCallback(() => {
 			clearDragHoverTimeout();
 			tempHiddenRef.current = false;
-			dropdownRef.current?.classList.remove("prisma-hidden");
+			if (dropdownRef.current) removeCls(dropdownRef.current, "hidden");
 		}, [clearDragHoverTimeout]);
 
 		const close = useCallback(() => {
@@ -213,7 +213,7 @@ export const UntrackedEventsDropdown = memo(
 					dragHoverTimeoutRef.current = null;
 					if (!isDraggingRef.current) return;
 					tempHiddenRef.current = true;
-					dropEl.classList.add("prisma-hidden");
+					addCls(dropEl, "hidden");
 				}, DRAG_HOVER_HIDE_DELAY_MS);
 			};
 
@@ -224,7 +224,7 @@ export const UntrackedEventsDropdown = memo(
 				clearDragHoverTimeout();
 				if (tempHiddenRef.current) {
 					tempHiddenRef.current = false;
-					dropEl.classList.remove("prisma-hidden");
+					removeCls(dropEl, "hidden");
 				}
 			};
 
@@ -241,7 +241,7 @@ export const UntrackedEventsDropdown = memo(
 				clearDragHoverTimeout();
 				isDraggingRef.current = false;
 				tempHiddenRef.current = false;
-				dropEl.classList.remove("prisma-hidden");
+				removeCls(dropEl, "hidden");
 			};
 		}, [isOpen, clearDragHoverTimeout]);
 
@@ -292,9 +292,9 @@ export const UntrackedEventsDropdown = memo(
 				<button
 					ref={buttonRef}
 					type="button"
-					className={`prisma-untracked-dropdown-button fc-button fc-button-primary${isOpen ? " prisma-active" : ""}`}
+					className={`${cls("untracked-dropdown-button", isOpen ? "active" : "")} fc-button fc-button-primary`}
 					title="Untracked events"
-					data-testid="prisma-untracked-dropdown-button"
+					data-testid={tid("untracked-dropdown-button")}
 					onClick={(e) => {
 						e.stopPropagation();
 						toggle();
@@ -304,11 +304,11 @@ export const UntrackedEventsDropdown = memo(
 				</button>
 
 				{isOpen && (
-					<div ref={dropdownRef} className="prisma-untracked-dropdown" data-testid="prisma-untracked-dropdown">
+					<div ref={dropdownRef} className={cls("untracked-dropdown")} data-testid={tid("untracked-dropdown")}>
 						<button
 							type="button"
-							className="prisma-untracked-dropdown-create-btn"
-							data-testid="prisma-untracked-create"
+							className={cls("untracked-dropdown-create-btn")}
+							data-testid={tid("untracked-create")}
 							onClick={(e) => {
 								e.stopPropagation();
 								handleCreate();
@@ -317,22 +317,22 @@ export const UntrackedEventsDropdown = memo(
 							+ Create untracked event
 						</button>
 
-						<div className="prisma-untracked-dropdown-search">
+						<div className={cls("untracked-dropdown-search")}>
 							<input
 								ref={searchInputRef}
 								type="text"
-								className="prisma-untracked-dropdown-search-input"
+								className={cls("untracked-dropdown-search-input")}
 								placeholder="Search untracked events..."
 								value={searchQuery}
 								onChange={(e) => setSearchQuery(e.target.value)}
 								onClick={(e) => e.stopPropagation()}
-								data-testid="prisma-untracked-search"
+								data-testid={tid("untracked-search")}
 							/>
 						</div>
 
 						{filteredEvents.length === 0 ? (
-							<div className="prisma-untracked-dropdown-list">
-								<div className="prisma-untracked-dropdown-empty">
+							<div className={cls("untracked-dropdown-list")}>
+								<div className={cls("untracked-dropdown-empty")}>
 									{allEvents.length === 0 ? "No untracked events" : "No events match your search"}
 								</div>
 							</div>
@@ -342,7 +342,7 @@ export const UntrackedEventsDropdown = memo(
 								estimateSize={ITEM_ESTIMATE_PX}
 								renderItem={renderItem}
 								getKey={getKey}
-								className="prisma-untracked-dropdown-list"
+								className={cls("untracked-dropdown-list")}
 								style={{ flex: 1, minHeight: 0, overflow: "hidden auto" }}
 							/>
 						)}
@@ -389,29 +389,29 @@ const UntrackedEventItem = memo(function UntrackedEventItem({
 
 	return (
 		<div
-			className="prisma-untracked-dropdown-item fc-event"
+			className={`${cls("untracked-dropdown-item")} fc-event`}
 			style={color ? ({ "--event-color": color } as CSSProperties) : undefined}
-			data-testid="prisma-untracked-dropdown-item"
+			data-testid={tid("untracked-dropdown-item")}
 			data-file-path={event.ref.filePath}
 			onDoubleClick={(e) => {
 				e.stopPropagation();
 				onDoubleClick(event.ref.filePath);
 			}}
 		>
-			<div className="prisma-untracked-dropdown-item-title">{removeZettelId(event.title)}</div>
+			<div className={cls("untracked-dropdown-item-title")}>{removeZettelId(event.title)}</div>
 
 			{displayProps.length > 0 && (
-				<div className="prisma-untracked-dropdown-item-props">
+				<div className={cls("untracked-dropdown-item-props")}>
 					{displayProps.map(([key, value]) => (
-						<span key={key} className="prisma-untracked-dropdown-item-prop">
-							<span className="prisma-prop-key">{key}: </span>
+						<span key={key} className={cls("untracked-dropdown-item-prop")}>
+							<span className={cls("prop-key")}>{key}: </span>
 							<span
-								className="prisma-prop-value"
+								className={cls("prop-value")}
 								onPointerDown={(e) => e.stopPropagation()}
 								onMouseDown={(e) => e.stopPropagation()}
 								onTouchStart={(e) => e.stopPropagation()}
 							>
-								<PropertyValue value={value} linkClassName="prisma-prop-link" onLinkClick={onClose} />
+								<PropertyValue value={value} linkClassName={cls("prop-link")} onLinkClick={onClose} />
 							</span>
 						</span>
 					))}
@@ -421,7 +421,7 @@ const UntrackedEventItem = memo(function UntrackedEventItem({
 			{showStopwatch && (
 				<button
 					type="button"
-					className="prisma-untracked-dropdown-item-stopwatch"
+					className={cls("untracked-dropdown-item-stopwatch")}
 					title="Start tracking"
 					aria-label="Start tracking"
 					onPointerDown={(e) => e.stopPropagation()}

@@ -1,3 +1,4 @@
+import { cls, tid } from "@real1ty-obsidian-plugins";
 import { ModalForm, openReactModal, SchemaForm, SettingItem, useZodForm } from "@real1ty-obsidian-plugins-react";
 import { nanoid } from "nanoid";
 import type { App } from "obsidian";
@@ -135,7 +136,7 @@ function CalDAVAddForm({ app, settingsStore, calendarId, onSubmit, onCancel }: C
 				<select
 					className="dropdown"
 					onChange={(e) => handlePresetChange(e.target.value)}
-					data-testid="prisma-caldav-preset"
+					data-testid={tid("caldav-preset")}
 				>
 					{Object.entries(presetOptions).map(([value, label]) => (
 						<option key={value} value={value}>
@@ -151,15 +152,15 @@ function CalDAVAddForm({ app, settingsStore, calendarId, onSubmit, onCancel }: C
 				fieldOverrides={{
 					passwordSecretName: { label: "Password / app password" },
 				}}
-				testIdPrefix="prisma-caldav-add-"
+				testIdPrefix={tid("caldav-add-")}
 			/>
 
 			<button
 				type="button"
-				className="prisma-caldav-test-button"
+				className={cls("caldav-test-button")}
 				onClick={() => void runTest()}
 				disabled={testing}
-				data-testid="prisma-caldav-test-connection"
+				data-testid={tid("caldav-test-connection")}
 			>
 				{testing ? "Testing..." : "Test connection & discover calendars"}
 			</button>
@@ -181,8 +182,8 @@ export function openCalDAVAddModal(
 	return openReactModal<CalDAVAccount>({
 		app,
 		title: "Add account",
-		cls: "prisma-caldav-modal",
-		testId: "prisma-modal-caldav-add",
+		cls: cls("caldav-modal"),
+		testId: tid("modal-caldav-add"),
 		render: (submit, cancel) => (
 			<CalDAVAddForm
 				app={app}

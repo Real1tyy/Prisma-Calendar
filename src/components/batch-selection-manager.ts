@@ -7,6 +7,7 @@ import {
 	pluralize,
 	removeCls,
 	runBatchOperation,
+	tid,
 	toLocalISOString,
 } from "@real1ty-obsidian-plugins";
 import { type App, Modal, Notice } from "obsidian";
@@ -379,16 +380,16 @@ export class BatchSelectionManager {
 		});
 
 		const buttonContainer = contentEl.createDiv(cls("modal-button-container"));
-		buttonContainer.setAttribute("data-testid", "prisma-batch-confirm-modal");
+		buttonContainer.setAttribute("data-testid", tid("batch-confirm-modal"));
 		const cancelBtn = buttonContainer.createEl("button", { text: "Cancel" });
-		cancelBtn.setAttribute("data-testid", "prisma-batch-confirm-cancel");
+		cancelBtn.setAttribute("data-testid", tid("batch-confirm-cancel"));
 		cancelBtn.onclick = () => confirmModal.close();
 
 		const confirmBtn = buttonContainer.createEl("button", {
 			text: confirmationTitle,
 			cls: "mod-warning",
 		});
-		confirmBtn.setAttribute("data-testid", "prisma-batch-confirm-submit");
+		confirmBtn.setAttribute("data-testid", tid("batch-confirm-submit"));
 		confirmBtn.onclick = async () => {
 			confirmModal.close();
 

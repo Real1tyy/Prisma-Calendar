@@ -1,3 +1,4 @@
+import { cls, tid } from "@real1ty-obsidian-plugins";
 import { showReactModal } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import type { KeyboardEvent, ReactNode } from "react";
@@ -116,28 +117,28 @@ function EventsModalContent({
 	}
 
 	return (
-		<div className="prisma-generic-event-list-modal" onKeyDown={handleEscape}>
+		<div className={cls("generic-event-list-modal")} onKeyDown={handleEscape}>
 			<h2>Events</h2>
 
-			<div className="prisma-event-series-tabs">
+			<div className={cls("event-series-tabs")}>
 				<button
-					className={`prisma-event-series-tab-btn${activeTab === "recurring" ? " prisma-is-active" : ""}`}
-					data-testid="prisma-events-modal-tab-recurring"
+					className={cls("event-series-tab-btn", activeTab === "recurring" ? "is-active" : "")}
+					data-testid={tid("events-modal-tab-recurring")}
 					onClick={() => setActiveTab("recurring")}
 				>
 					Recurring ({recurringCount})
 				</button>
 				<button
-					className={`prisma-event-series-tab-btn${activeTab === "byCategory" ? " prisma-is-active" : ""}`}
-					data-testid="prisma-events-modal-tab-byCategory"
+					className={cls("event-series-tab-btn", activeTab === "byCategory" ? "is-active" : "")}
+					data-testid={tid("events-modal-tab-byCategory")}
 					onClick={() => setActiveTab("byCategory")}
 				>
 					By Category ({categoryCount})
 				</button>
 				{nameSeriesEnabled && (
 					<button
-						className={`prisma-event-series-tab-btn${activeTab === "byName" ? " prisma-is-active" : ""}`}
-						data-testid="prisma-events-modal-tab-byName"
+						className={cls("event-series-tab-btn", activeTab === "byName" ? "is-active" : "")}
+						data-testid={tid("events-modal-tab-byName")}
 						onClick={() => setActiveTab("byName")}
 					>
 						By Name ({nameCount})
@@ -145,19 +146,19 @@ function EventsModalContent({
 				)}
 			</div>
 
-			<div className="prisma-generic-event-list-search">
+			<div className={cls("generic-event-list-search")}>
 				<input
 					type="text"
 					placeholder="Search events... (Ctrl/Cmd+F)"
-					className="prisma-generic-event-search-input"
-					data-testid="prisma-events-modal-search"
+					className={cls("generic-event-search-input")}
+					data-testid={tid("events-modal-search")}
 					value={searchQuery}
 					onChange={(e) => setSearchQuery(e.target.value)}
 					autoFocus
 				/>
 				<select
-					className="prisma-events-modal-sort-select"
-					data-testid="prisma-events-modal-sort"
+					className={cls("events-modal-sort-select")}
+					data-testid={tid("events-modal-sort")}
 					value={sortMode}
 					onChange={(e) => setSortMode(e.target.value as EventsModalSortMode)}
 				>
@@ -169,7 +170,7 @@ function EventsModalContent({
 				</select>
 			</div>
 
-			<div className="prisma-events-modal-content">{content}</div>
+			<div className={cls("events-modal-content")}>{content}</div>
 		</div>
 	);
 }
@@ -177,7 +178,7 @@ function EventsModalContent({
 export function openEventsModal(app: App, bundle: CalendarBundle, calendarComponent: CalendarComponent): void {
 	showReactModal({
 		app,
-		cls: "prisma-generic-event-list-modal",
+		cls: cls("generic-event-list-modal"),
 		render: (close) => <EventsModalContent bundle={bundle} calendarComponent={calendarComponent} onClose={close} />,
 	});
 }

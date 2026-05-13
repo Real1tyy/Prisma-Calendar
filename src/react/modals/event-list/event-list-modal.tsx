@@ -1,3 +1,4 @@
+import { cls, tid } from "@real1ty-obsidian-plugins";
 import { useFocusOnMount, VirtualList, type VirtualListHandle } from "@real1ty-obsidian-plugins-react";
 import type { ReactNode } from "react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -110,7 +111,7 @@ export const EventListModal = memo(function EventListModal({
 
 	const renderItem = useCallback(
 		(item: EventListItemData, index: number) => (
-			<div className={index === activeIndex ? "prisma-list-row-active" : undefined}>
+			<div className={index === activeIndex ? cls("list-row-active") : undefined}>
 				<EventListItem
 					item={item}
 					actions={actions}
@@ -126,43 +127,43 @@ export const EventListModal = memo(function EventListModal({
 	const getKey = useCallback((item: EventListItemData) => item.id ?? item.filePath, []);
 
 	return (
-		<div className="prisma-generic-event-list-modal" onKeyDown={handleKeyDown} data-testid="prisma-list-modal">
+		<div className={cls("generic-event-list-modal")} onKeyDown={handleKeyDown} data-testid={tid("list-modal")}>
 			<h2>{title}</h2>
-			{subtitle && <p className="prisma-generic-event-list-subtitle">{subtitle}</p>}
+			{subtitle && <p className={cls("generic-event-list-subtitle")}>{subtitle}</p>}
 
 			{headerContent}
 
 			{items.length === 0 ? (
-				<p data-testid="prisma-list-empty">{emptyHint}</p>
+				<p data-testid={tid("list-empty")}>{emptyHint}</p>
 			) : (
 				<>
-					<div className="prisma-generic-event-list-search">
+					<div className={cls("generic-event-list-search")}>
 						<input
 							ref={searchRef}
 							type="text"
 							placeholder={searchPlaceholder}
-							className="prisma-generic-event-search-input"
-							data-testid="prisma-list-search"
+							className={cls("generic-event-search-input")}
+							data-testid={tid("list-search")}
 							value={query}
 							onChange={(e) => setQuery(e.target.value)}
 						/>
 					</div>
 
-					<p className="prisma-generic-event-list-count">{countText}</p>
+					<p className={cls("generic-event-list-count")}>{countText}</p>
 
 					{filtered.length === 0 ? (
-						<p className="prisma-generic-event-list-empty" data-testid="prisma-list-empty">
+						<p className={cls("generic-event-list-empty")} data-testid={tid("list-empty")}>
 							No events match your search.
 						</p>
 					) : (
-						<div className="prisma-generic-event-list" data-testid="prisma-event-list-container">
+						<div className={cls("generic-event-list")} data-testid={tid("event-list-container")}>
 							<VirtualList
 								ref={listRef}
 								items={filtered as EventListItemData[]}
 								estimateSize={ROW_ESTIMATE_SIZE}
 								renderItem={renderItem}
 								getKey={getKey}
-								className="prisma-generic-event-list-virtual"
+								className={cls("generic-event-list-virtual")}
 								style={{ maxHeight: "60vh", minHeight: "12rem" }}
 							/>
 						</div>

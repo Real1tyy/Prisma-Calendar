@@ -1,4 +1,4 @@
-import { cls } from "@real1ty-obsidian-plugins";
+import { cls, tid } from "@real1ty-obsidian-plugins";
 import {
 	Copyable,
 	Dropdown,
@@ -12,6 +12,7 @@ import {
 } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useMemo, useState } from "react";
 
+import { CSS_PREFIX } from "../../constants";
 import { FREE_MAX_CALENDARS } from "../../core/license";
 import { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
@@ -113,8 +114,8 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 		const result = await openRenameModal(app, {
 			title: "Rename planning system",
 			initialValue: selectedCalendar.name,
-			cssPrefix: "prisma-",
-			testIdPrefix: "prisma-settings-calendar-",
+			cssPrefix: CSS_PREFIX,
+			testIdPrefix: tid("settings-calendar-"),
 		});
 
 		if (result && result.value !== selectedCalendar.name) {
@@ -160,7 +161,7 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 							<button
 								type="button"
 								className={cls("settings-hero-collapse-toggle")}
-								data-testid="prisma-settings-management-toggle"
+								data-testid={tid("settings-management-toggle")}
 								onClick={() => setManagementCollapsed((prev) => !prev)}
 								aria-label={managementCollapsed ? "Expand planning systems" : "Collapse planning systems"}
 								aria-expanded={!managementCollapsed}
@@ -177,11 +178,11 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 							<Dropdown value={selectedCalendarId} options={calendarOptions} onChange={setSelectedCalendarId} />
 						</SettingItem>
 
-						<div className="prisma-calendar-actions">
+						<div className={cls("calendar-actions")}>
 							<button
 								type="button"
-								className="prisma-calendar-action-button prisma-calendar-create-button"
-								data-testid="prisma-settings-calendar-add"
+								className={cls("calendar-action-button", "calendar-create-button")}
+								data-testid={tid("settings-calendar-add")}
 								disabled={isAtMax}
 								title={maxTitle}
 								onClick={handleCreate}
@@ -190,8 +191,8 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 							</button>
 							<button
 								type="button"
-								className="prisma-calendar-action-button prisma-calendar-clone-button"
-								data-testid="prisma-settings-calendar-clone"
+								className={cls("calendar-action-button", "calendar-clone-button")}
+								data-testid={tid("settings-calendar-clone")}
 								disabled={isAtMax}
 								title={maxTitle}
 								onClick={handleClone}
@@ -200,24 +201,24 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 							</button>
 							<button
 								type="button"
-								className="prisma-calendar-action-button prisma-calendar-configure-button"
-								data-testid="prisma-settings-calendar-configure"
+								className={cls("calendar-action-button", "calendar-configure-button")}
+								data-testid={tid("settings-calendar-configure")}
 								onClick={handleConfigure}
 							>
 								Configure current
 							</button>
 							<button
 								type="button"
-								className="prisma-calendar-action-button prisma-calendar-rename-button"
-								data-testid="prisma-settings-calendar-rename"
+								className={cls("calendar-action-button", "calendar-rename-button")}
+								data-testid={tid("settings-calendar-rename")}
 								onClick={handleRename}
 							>
 								Rename current
 							</button>
 							<button
 								type="button"
-								className="prisma-calendar-action-button prisma-calendar-delete-button"
-								data-testid="prisma-settings-calendar-delete"
+								className={cls("calendar-action-button", "calendar-delete-button")}
+								data-testid={tid("settings-calendar-delete")}
 								disabled={calendars.length <= 1}
 								title={calendars.length <= 1 ? "At least one planning system is required" : undefined}
 								onClick={handleDelete}
@@ -226,12 +227,12 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 							</button>
 						</div>
 
-						<div className="prisma-calendar-count-info">{countText}</div>
+						<div className={cls("calendar-count-info")}>{countText}</div>
 					</>
 				)}
 			</div>
 
-			<div className="prisma-calendar-settings-container">
+			<div className={cls("calendar-settings-container")}>
 				{calendarStore ? (
 					<SingleCalendarSettingsReact
 						key={selectedCalendarId}

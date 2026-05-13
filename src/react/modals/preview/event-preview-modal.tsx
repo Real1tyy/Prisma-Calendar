@@ -1,4 +1,4 @@
-import { calculateDuration, cls, intoDate } from "@real1ty-obsidian-plugins";
+import { calculateDuration, cls, intoDate, tid } from "@real1ty-obsidian-plugins";
 import { AppContext, PropertyItem, SharedReactThemeProvider, showReactModal } from "@real1ty-obsidian-plugins-react";
 import { type App, TFile } from "obsidian";
 import { flushSync } from "react-dom";
@@ -92,10 +92,10 @@ export function EventPreviewContent({ app, bundle, event, onClose }: EventPrevie
 	}
 
 	return (
-		<div data-testid="prisma-event-preview-modal" className={cls("event-preview-modal")}>
+		<div data-testid={tid("event-preview-modal")} className={cls("event-preview-modal")}>
 			<div className={cls("event-preview-header")}>
 				<h2
-					data-testid="prisma-event-preview-title"
+					data-testid={tid("event-preview-title")}
 					onClick={filePath ? handleTitleClick : undefined}
 					style={filePath ? { cursor: "pointer" } : undefined}
 				>

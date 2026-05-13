@@ -1,3 +1,4 @@
+import { cls, tid } from "@real1ty-obsidian-plugins";
 import type { CSSProperties, MouseEvent, ReactNode } from "react";
 import { memo, useCallback } from "react";
 
@@ -45,22 +46,22 @@ export const EventListItem = memo(function EventListItem({
 
 	return (
 		<div
-			className={`prisma-generic-event-list-item${item.categoryColor ? " prisma-recurring-event-categorized" : ""}`}
+			className={cls("generic-event-list-item", item.categoryColor ? "recurring-event-categorized" : "")}
 			style={style}
-			data-testid={`prisma-list-row-${item.id ?? item.filePath}`}
+			data-testid={tid("list-row", item.id ?? item.filePath)}
 			data-event-title={item.title}
 			onClick={handleClick}
 			onContextMenu={handleContextMenu}
 		>
-			<div className="prisma-generic-event-info">
-				<div className="prisma-generic-event-title">{item.title}</div>
-				{item.subtitle && <div className="prisma-generic-event-subtitle">{item.subtitle}</div>}
+			<div className={cls("generic-event-info")}>
+				<div className={cls("generic-event-title")}>{item.title}</div>
+				{item.subtitle && <div className={cls("generic-event-subtitle")}>{item.subtitle}</div>}
 			</div>
 
 			{renderExtra?.(item)}
 
 			{actions.length > 0 && (
-				<div className="prisma-generic-event-actions">
+				<div className={cls("generic-event-actions")}>
 					{actions.map((action) => (
 						<ActionButton key={action.label} action={action} item={item} />
 					))}

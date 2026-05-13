@@ -2,6 +2,7 @@ import { cls, MountableView, MS_PER_DAY, renderCollapsibleSection } from "@real1
 import { Component, ItemView, MarkdownRenderer, Notice, type WorkspaceLeaf } from "obsidian";
 import { distinctUntilChanged, skip } from "rxjs";
 
+import { CSS_PREFIX } from "../constants";
 import { AIChatManager, type ChatMessage, ChatStore } from "../core/ai";
 import { type CategoryContext, type ManipulationContext, type PlanningContext } from "../core/ai/ai-context-builder";
 import {
@@ -217,7 +218,7 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 		const wrapper = container.createDiv({ cls: cls("ai-chat-thread-list") });
 
 		renderCollapsibleSection(wrapper, {
-			cssPrefix: "prisma-",
+			cssPrefix: CSS_PREFIX,
 			label: "Conversations",
 			startCollapsed: true,
 			renderBody: (body) => {

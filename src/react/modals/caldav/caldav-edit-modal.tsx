@@ -1,3 +1,4 @@
+import { cls, tid } from "@real1ty-obsidian-plugins";
 import { ModalForm, openReactModal, SchemaForm, useZodForm } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { Notice } from "obsidian";
@@ -109,14 +110,14 @@ function CalDAVEditForm({ app, settingsStore, plugin, calendarId, account, onSub
 
 	return (
 		<ModalForm onSubmit={handleSubmit} onCancel={onCancel}>
-			<SchemaForm form={form} schema={CalDAVEditSchema} testIdPrefix="prisma-caldav-edit-" />
+			<SchemaForm form={form} schema={CalDAVEditSchema} testIdPrefix={tid("caldav-edit-")} />
 
 			<button
 				type="button"
-				className="prisma-caldav-refresh-button"
+				className={cls("caldav-refresh-button")}
 				onClick={() => void handleRefresh()}
 				disabled={refreshing}
-				data-testid="prisma-caldav-refresh"
+				data-testid={tid("caldav-refresh")}
 			>
 				{refreshing ? "Refreshing..." : "Refresh calendars"}
 			</button>
@@ -166,8 +167,8 @@ export function openCalDAVEditModal(
 	return openReactModal<void>({
 		app,
 		title: `Edit: ${account.name}`,
-		cls: "prisma-caldav-modal",
-		testId: "prisma-modal-caldav-edit",
+		cls: cls("caldav-modal"),
+		testId: tid("modal-caldav-edit"),
 		render: (submit, cancel) => (
 			<CalDAVEditForm
 				app={app}

@@ -1,4 +1,4 @@
-import { cls } from "@real1ty-obsidian-plugins";
+import { cls, tid } from "@real1ty-obsidian-plugins";
 import { SVG, type Svg } from "@svgdotjs/svg.js";
 import { DateTime } from "luxon";
 
@@ -113,7 +113,7 @@ function createHeatmapCell(params: HeatmapCellParams): SVGRectElement {
 		.fill(getCellColor(bucket, categoryColor))
 		.addClass(cls("heatmap-cell"))
 		.attr({
-			"data-testid": "prisma-heatmap-cell",
+			"data-testid": tid("heatmap-cell"),
 			"data-date": dateKey,
 			"data-count": String(count),
 			"aria-label": titleText,

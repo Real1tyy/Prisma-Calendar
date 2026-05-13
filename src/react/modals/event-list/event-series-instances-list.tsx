@@ -1,4 +1,4 @@
-import { calculateEventStatistics } from "@real1ty-obsidian-plugins";
+import { calculateEventStatistics, cls, tid } from "@real1ty-obsidian-plugins";
 import { useSettingsFields } from "@real1ty-obsidian-plugins-react";
 import { DateTime } from "luxon";
 import { useMemo, useRef } from "react";
@@ -51,10 +51,10 @@ export function EventSeriesInstancesList({
 	return (
 		<>
 			{options.title && (
-				<div className="prisma-recurring-events-list-header">
+				<div className={cls("recurring-events-list-header")}>
 					<h2
-						className="prisma-recurring-events-source-title"
-						data-testid="prisma-series-title"
+						className={cls("recurring-events-source-title")}
+						data-testid={tid("series-title")}
 						onClick={options.onTitleClick}
 						style={options.onTitleClick ? { cursor: "pointer" } : undefined}
 					>
@@ -65,38 +65,38 @@ export function EventSeriesInstancesList({
 
 			{options.extraInfo}
 
-			<div className="prisma-recurring-events-stats">
-				<p className="prisma-recurring-events-stats-text" data-testid="prisma-series-stats-primary">
+			<div className={cls("recurring-events-stats")}>
+				<p className={cls("recurring-events-stats-text")} data-testid={tid("series-stats-primary")}>
 					Total: {stats.total} &bull; Past: {stats.past} &bull; Skipped: {stats.skipped} &bull; Completed:{" "}
 					{stats.completedPercentage}%
 				</p>
-				<p className="prisma-recurring-events-stats-text-secondary" data-testid="prisma-series-stats-secondary">
+				<p className={cls("recurring-events-stats-text-secondary")} data-testid={tid("series-stats-secondary")}>
 					This year: {stats.thisYear} &bull; This month: {stats.thisMonth} &bull; This week: {stats.thisWeek}
 					{stats.frequency ? ` • Frequency: ${stats.frequency}` : ""}
 				</p>
 			</div>
 
-			<div className="prisma-recurring-events-filters">
-				<div className="prisma-recurring-events-filter-toggle setting-item">
+			<div className={cls("recurring-events-filters")}>
+				<div className={`${cls("recurring-events-filter-toggle")} setting-item`}>
 					<div className="setting-item-info">
 						<div className="setting-item-name">Hide past events</div>
 					</div>
 					<div className="setting-item-control">
 						<div
 							className={`checkbox-container${options.hidePast ? " is-enabled" : ""}`}
-							data-testid="prisma-series-hide-past"
+							data-testid={tid("series-hide-past")}
 							onClick={() => options.onHidePastChange(!options.hidePast)}
 						/>
 					</div>
 				</div>
-				<div className="prisma-recurring-events-filter-toggle setting-item">
+				<div className={`${cls("recurring-events-filter-toggle")} setting-item`}>
 					<div className="setting-item-info">
 						<div className="setting-item-name">Hide skipped events</div>
 					</div>
 					<div className="setting-item-control">
 						<div
 							className={`checkbox-container${options.hideSkipped ? " is-enabled" : ""}`}
-							data-testid="prisma-series-hide-skipped"
+							data-testid={tid("series-hide-skipped")}
 							onClick={() => options.onHideSkippedChange(!options.hideSkipped)}
 						/>
 					</div>
@@ -104,22 +104,22 @@ export function EventSeriesInstancesList({
 			</div>
 
 			{showSearch && (
-				<div className="prisma-generic-event-list-search">
+				<div className={cls("generic-event-list-search")}>
 					<input
 						ref={searchRef}
 						type="text"
 						placeholder="Search instances... (Ctrl/Cmd+F)"
-						className="prisma-generic-event-search-input"
-						data-testid="prisma-series-search"
+						className={cls("generic-event-search-input")}
+						data-testid={tid("series-search")}
 						value={searchQuery}
 						onChange={(e) => onSearchChange(e.target.value)}
 					/>
 				</div>
 			)}
 
-			<div className="prisma-recurring-events-list-container" data-testid="prisma-series-list-container">
+			<div className={cls("recurring-events-list-container")} data-testid={tid("series-list-container")}>
 				{filtered.length === 0 ? (
-					<p className="prisma-recurring-events-list-empty">No events found</p>
+					<p className={cls("recurring-events-list-empty")}>No events found</p>
 				) : (
 					filtered.map((item) => (
 						<EventSeriesEventRow

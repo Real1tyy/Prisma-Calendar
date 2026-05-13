@@ -1,3 +1,4 @@
+import { cls } from "@real1ty-obsidian-plugins";
 import { TextInput } from "@real1ty-obsidian-plugins-react";
 import type { ReactNode } from "react";
 import { memo, useCallback, useState } from "react";
@@ -8,7 +9,7 @@ import type { DirectorySuggestion } from "./directory-suggestions";
 
 export function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
 	return (
-		<div className="prisma-first-launch-field">
+		<div className={cls("first-launch-field")}>
 			<label>{label}</label>
 			{hint ? <small>{hint}</small> : null}
 			{children}
@@ -34,7 +35,7 @@ function CopyableProp({ name, testId }: { name: string; testId: string }) {
 		<span
 			role="button"
 			tabIndex={0}
-			className={`prisma-first-launch-copyable-prop${copied ? " is-copied" : ""}`}
+			className={cls(`first-launch-copyable-prop${copied ? " is-copied" : ""}`)}
 			onClick={copy}
 			onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && copy()}
 			data-testid={testId}
@@ -57,8 +58,8 @@ export function PropCategoryLine({
 }) {
 	if (!props || props.length === 0) return null;
 	return (
-		<span className="prisma-first-launch-prop-category">
-			<span className="prisma-first-launch-prop-category-label">{label}:</span>{" "}
+		<span className={cls("first-launch-prop-category")}>
+			<span className={cls("first-launch-prop-category-label")}>{label}:</span>{" "}
 			{props.map((p) => (
 				<CopyableProp key={p} name={p} testId={`${testIdPrefix}-${p.replace(/[^\w-]+/g, "-").toLowerCase()}`} />
 			))}
@@ -79,13 +80,13 @@ export function PrefillButtons({
 }) {
 	if (!props || props.length === 0) return null;
 	return (
-		<div className="prisma-first-launch-prefill">
-			<span className="prisma-first-launch-prefill-label">Use</span>
+		<div className={cls("first-launch-prefill")}>
+			<span className={cls("first-launch-prefill-label")}>Use</span>
 			{props.map((p) => (
 				<button
 					key={p}
 					type="button"
-					className="prisma-first-launch-prefill-btn"
+					className={cls("first-launch-prefill-btn")}
 					onClick={() => onSelect(p)}
 					data-testid={`${testIdPrefix}-${p.replace(/[^\w-]+/g, "-").toLowerCase()}`}
 				>
@@ -139,13 +140,13 @@ export const SuggestionList = memo(function SuggestionList({
 
 	if (isLoading) {
 		return (
-			<div className="prisma-first-launch-muted">Scanning your vault for folders with date-like frontmatter...</div>
+			<div className={cls("first-launch-muted")}>Scanning your vault for folders with date-like frontmatter...</div>
 		);
 	}
 
 	if (suggestions.length === 0) {
 		return (
-			<div className="prisma-first-launch-muted">
+			<div className={cls("first-launch-muted")}>
 				No existing folders with date-like frontmatter were detected. You can still type a folder above.
 			</div>
 		);
@@ -158,16 +159,18 @@ export const SuggestionList = memo(function SuggestionList({
 					key={suggestion.directory}
 					role="button"
 					tabIndex={0}
-					className={`prisma-first-launch-suggestion${selectedDirectory.trim() === suggestion.directory ? " is-selected" : ""}`}
+					className={cls(
+						`first-launch-suggestion${selectedDirectory.trim() === suggestion.directory ? " is-selected" : ""}`
+					)}
 					onClick={() => onSelect(suggestion)}
 					onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onSelect(suggestion)}
 					data-testid={tid(`suggestion-${suggestion.directory.replace(/[^\w-]+/g, "-").toLowerCase()}`)}
 				>
-					<span className="prisma-first-launch-mode-title">{suggestion.directory}</span>
-					<span className="prisma-first-launch-mode-desc">
+					<span className={cls("first-launch-mode-title")}>{suggestion.directory}</span>
+					<span className={cls("first-launch-mode-desc")}>
 						{suggestion.fileCount} note{suggestion.fileCount === 1 ? "" : "s"}
 					</span>
-					<div className="prisma-first-launch-prop-categories">
+					<div className={cls("first-launch-prop-categories")}>
 						<PropCategoryLine
 							label="Datetime properties"
 							props={suggestion.datetimeProps}
@@ -182,7 +185,7 @@ export const SuggestionList = memo(function SuggestionList({
 				</div>
 			))}
 			{multiHint && suggestions.length > 1 ? (
-				<div className="prisma-first-launch-multi-hint">
+				<div className={cls("first-launch-multi-hint")}>
 					Each folder can be its own planning system with independent properties and configuration. You can create more
 					in Settings later.
 				</div>
@@ -221,7 +224,7 @@ export const PropertyFields = memo(function PropertyFields({
 	return (
 		<>
 			<Field label="Start property" hint="Starting datetime value for timed events.">
-				<div className="prisma-first-launch-field-row">
+				<div className={cls("first-launch-field-row")}>
 					<TextInput
 						value={startProp}
 						placeholder={placeholders.startProp}
@@ -239,7 +242,7 @@ export const PropertyFields = memo(function PropertyFields({
 				</div>
 			</Field>
 			<Field label="End property" hint="Ending datetime value for timed events.">
-				<div className="prisma-first-launch-field-row">
+				<div className={cls("first-launch-field-row")}>
 					<TextInput
 						value={endProp}
 						placeholder={placeholders.endProp}
@@ -257,7 +260,7 @@ export const PropertyFields = memo(function PropertyFields({
 				</div>
 			</Field>
 			<Field label="Date property" hint="Date value for all-day events.">
-				<div className="prisma-first-launch-field-row">
+				<div className={cls("first-launch-field-row")}>
 					<TextInput
 						value={dateProp}
 						placeholder={placeholders.dateProp}

@@ -1,3 +1,4 @@
+import { cls, tid } from "@real1ty-obsidian-plugins";
 import { useSchemaField } from "@real1ty-obsidian-plugins-react";
 import { type ChangeEvent, memo, useCallback, useRef } from "react";
 
@@ -33,8 +34,8 @@ export const FilterPresetSelector = memo(function FilterPresetSelector({
 	return (
 		<select
 			ref={selectRef}
-			className="prisma-fc-filter-preset-select fc-button fc-button-primary"
-			data-testid="prisma-filter-preset"
+			className={`${cls("fc-filter-preset-select")} fc-button fc-button-primary`}
+			data-testid={tid("filter-preset")}
 			defaultValue={PLACEHOLDER_VALUE}
 			onChange={handleChange}
 		>

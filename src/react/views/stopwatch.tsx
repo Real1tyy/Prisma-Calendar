@@ -1,4 +1,4 @@
-import { cls, formatMsToHHMMSS } from "@real1ty-obsidian-plugins";
+import { cls, formatMsToHHMMSS, tid } from "@real1ty-obsidian-plugins";
 import { CollapsibleSection } from "@real1ty-obsidian-plugins-react";
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useReducer, useRef, useState } from "react";
 import { z } from "zod";
@@ -280,7 +280,7 @@ export const Stopwatch = forwardRef<StopwatchHandle, StopwatchCallbacks>(functio
 				<div className={cls("stopwatch-display-section")}>
 					<div className={cls("stopwatch-main-display")}>
 						<span className={cls("stopwatch-label")}>Total:</span>
-						<span className={cls("stopwatch-time")} data-testid="prisma-stopwatch-time">
+						<span className={cls("stopwatch-time")} data-testid={tid("stopwatch-time")}>
 							{formatMsToHHMMSS(elapsedMs)}
 						</span>
 					</div>

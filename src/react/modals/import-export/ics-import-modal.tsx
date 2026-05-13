@@ -1,3 +1,4 @@
+import { cls, tid } from "@real1ty-obsidian-plugins";
 import { ModalForm, openReactModal, SchemaForm, useZodForm } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { Notice } from "obsidian";
@@ -39,12 +40,12 @@ const SkippedEventsWarning = memo(function SkippedEventsWarning({ skipped }: { s
 	const remaining = skipped.length - visible.length;
 
 	return (
-		<div className="prisma-ics-import-preview" data-testid="prisma-ics-import-skipped">
-			<p className="prisma-ics-import-error">
+		<div className={cls("ics-import-preview")} data-testid={tid("ics-import-skipped")}>
+			<p className={cls("ics-import-error")}>
 				{skipped.length} event{skipped.length !== 1 ? "s" : ""} will be skipped because{" "}
 				{skipped.length === 1 ? "it" : "they"} could not be parsed:
 			</p>
-			<ul className="prisma-ics-import-event-list">
+			<ul className={cls("ics-import-event-list")}>
 				{visible.map((s) => (
 					<li key={s.index}>
 						<strong>#{s.index}</strong>
@@ -53,7 +54,7 @@ const SkippedEventsWarning = memo(function SkippedEventsWarning({ skipped }: { s
 						<span>{s.error.message}</span>
 					</li>
 				))}
-				{remaining > 0 && <li className="prisma-ics-import-more">... and {remaining} more (see console)</li>}
+				{remaining > 0 && <li className={cls("ics-import-more")}>... and {remaining} more (see console)</li>}
 			</ul>
 		</div>
 	);
@@ -64,9 +65,9 @@ const EventPreviewList = memo(function EventPreviewList({ events }: { events: Im
 	const remaining = events.length - visible.length;
 
 	return (
-		<div className="prisma-ics-import-preview" data-testid="prisma-ics-import-preview">
+		<div className={cls("ics-import-preview")} data-testid={tid("ics-import-preview")}>
 			<h4>Found {events.length} events:</h4>
-			<ul className="prisma-ics-import-event-list">
+			<ul className={cls("ics-import-event-list")}>
 				{visible.map((event, i) => (
 					<li key={i}>
 						<strong>{event.title}</strong>
@@ -76,7 +77,7 @@ const EventPreviewList = memo(function EventPreviewList({ events }: { events: Im
 						</span>
 					</li>
 				))}
-				{remaining > 0 && <li className="prisma-ics-import-more">... and {remaining} more</li>}
+				{remaining > 0 && <li className={cls("ics-import-more")}>... and {remaining} more</li>}
 			</ul>
 		</div>
 	);
@@ -143,19 +144,19 @@ function ICSImportForm({ calendars, onSubmit, onCancel }: ICSImportFormProps) {
 			onCancel={onCancel}
 			submitLabel="Import"
 			submitDisabled={!canSubmit}
-			submitTestId="prisma-ics-import-submit"
-			cancelTestId="prisma-ics-import-cancel"
+			submitTestId={tid("ics-import-submit")}
+			cancelTestId={tid("ics-import-cancel")}
 		>
 			<h2>Import .ics file</h2>
-			<div className="prisma-ics-import-form">
-				<div className="prisma-ics-import-section">
+			<div className={cls("ics-import-form")}>
+				<div className={cls("ics-import-section")}>
 					<label>Select .ics file</label>
 					<input
 						ref={fileInputRef}
 						type="file"
 						accept=".ics,.ical"
 						onChange={handleFileChange}
-						data-testid="prisma-ics-import-file"
+						data-testid={tid("ics-import-file")}
 					/>
 				</div>
 
@@ -166,23 +167,23 @@ function ICSImportForm({ calendars, onSubmit, onCancel }: ICSImportFormProps) {
 						calendar: { label: "Import to calendar", options: calendarOptions },
 						timezone: { label: "Timezone", options: TIMEZONE_LABELS },
 					}}
-					testIdPrefix="prisma-ics-import-"
+					testIdPrefix={tid("ics-import-")}
 				/>
 
 				{!fileSelected && (
-					<div className="prisma-ics-import-preview">
-						<p className="prisma-ics-import-preview-placeholder">Select an .ics file to preview events</p>
+					<div className={cls("ics-import-preview")}>
+						<p className={cls("ics-import-preview-placeholder")}>Select an .ics file to preview events</p>
 					</div>
 				)}
 				{parseError && (
-					<div className="prisma-ics-import-preview">
-						<p className="prisma-ics-import-error">Error: {parseError}</p>
+					<div className={cls("ics-import-preview")}>
+						<p className={cls("ics-import-error")}>Error: {parseError}</p>
 					</div>
 				)}
 				{skippedEvents.length > 0 && <SkippedEventsWarning skipped={skippedEvents} />}
 				{parsedEvents.length > 0 && <EventPreviewList events={parsedEvents} />}
 				{fileSelected && parsedEvents.length === 0 && !parseError && (
-					<div className="prisma-ics-import-preview">
+					<div className={cls("ics-import-preview")}>
 						<p>No events found in file</p>
 					</div>
 				)}
@@ -194,8 +195,8 @@ function ICSImportForm({ calendars, onSubmit, onCancel }: ICSImportFormProps) {
 export function openICSImportModal(app: App, calendars: CalendarBundle[]): Promise<ICSImportSelection | null> {
 	return openReactModal<ICSImportSelection>({
 		app,
-		cls: "prisma-ics-import-modal",
-		testId: "prisma-modal-ics-import",
+		cls: cls("ics-import-modal"),
+		testId: tid("modal-ics-import"),
 		render: (submit, cancel) => <ICSImportForm calendars={calendars} onSubmit={submit} onCancel={cancel} />,
 	});
 }

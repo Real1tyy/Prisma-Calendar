@@ -1,3 +1,4 @@
+import { tid } from "@real1ty-obsidian-plugins";
 import { useObservable } from "@real1ty-obsidian-plugins-react";
 import { memo, type ReactNode, useEffect, useRef } from "react";
 
@@ -34,5 +35,5 @@ export const ProGatedContent = memo(function ProGatedContent({
 
 	if (isPro) return <>{children}</>;
 
-	return <div ref={bannerRef} data-testid="prisma-pro-gated" />;
+	return <div ref={bannerRef} data-testid={tid("pro-gated")} />;
 });

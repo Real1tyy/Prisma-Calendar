@@ -1,3 +1,4 @@
+import { cls, tid } from "@real1ty-obsidian-plugins";
 import { ModalForm, openReactModal } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { memo, useCallback, useMemo, useState } from "react";
@@ -21,12 +22,12 @@ const CategoryListItem = memo(function CategoryListItem({
 }) {
 	return (
 		<div
-			className={`prisma-category-list-item${selected ? " is-selected" : ""}`}
+			className={cls(`category-list-item${selected ? " is-selected" : ""}`)}
 			onClick={() => onSelect(category.name)}
-			data-testid={`prisma-category-item-${category.name}`}
+			data-testid={tid("category-item", category.name)}
 		>
 			<span
-				className="prisma-category-color-dot"
+				className={cls("category-color-dot")}
 				style={{ "--category-color": category.color } as React.CSSProperties}
 			/>
 			<span>{category.name}</span>
@@ -61,22 +62,22 @@ export function CategorySelectForm({ allCategories, onSelect, onCancel }: Catego
 	return (
 		<ModalForm onSubmit={handleConfirm} onCancel={onCancel} submitLabel="Highlight" submitDisabled={!selectedCategory}>
 			<h2>Highlight events with category</h2>
-			<div className="prisma-category-select-form">
-				<div className="prisma-category-select-section">
+			<div className={cls("category-select-form")}>
+				<div className={cls("category-select-section")}>
 					<label>Select category</label>
 					<input
 						type="text"
 						placeholder="Search categories..."
-						className="prisma-category-search-input"
+						className={cls("category-search-input")}
 						value={search}
 						onChange={(e) => setSearch(e.target.value)}
 						onKeyDown={handleKeyDown}
 						autoFocus
-						data-testid="prisma-category-search"
+						data-testid={tid("category-search")}
 					/>
-					<div className="prisma-category-list">
+					<div className={cls("category-list")}>
 						{filtered.length === 0 && (
-							<div className="prisma-category-empty-message">
+							<div className={cls("category-empty-message")}>
 								{search ? "No matching categories" : "No categories yet"}
 							</div>
 						)}
@@ -91,7 +92,7 @@ export function CategorySelectForm({ allCategories, onSelect, onCancel }: Catego
 					</div>
 				</div>
 
-				<div className="prisma-category-select-info">
+				<div className={cls("category-select-info")}>
 					<p>Select a category to temporarily highlight all events associated with it for 10 seconds.</p>
 				</div>
 			</div>
@@ -104,8 +105,8 @@ export function openCategorySelectModal(app: App, categoryTracker: CategoryTrack
 
 	return openReactModal<string>({
 		app,
-		cls: "prisma-category-select-modal",
-		testId: "prisma-modal-category-select",
+		cls: cls("category-select-modal"),
+		testId: tid("modal-category-select"),
 		render: (submit, cancel) => (
 			<CategorySelectForm allCategories={allCategories} onSelect={submit} onCancel={cancel} />
 		),

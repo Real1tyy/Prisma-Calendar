@@ -5,6 +5,7 @@ import {
 	cls,
 	type ColorEvaluator,
 	formatDuration,
+	tid,
 	toggleCls,
 	toLocalISOString,
 } from "@real1ty-obsidian-plugins";
@@ -231,7 +232,7 @@ export function buildSharedEventDidMount(
 			getBatchSelectionManager()?.handleEventMount(event.id, el);
 		}
 
-		el.setAttribute("data-testid", "prisma-cal-event");
+		el.setAttribute("data-testid", tid("cal-event"));
 		if (event.title) el.setAttribute("data-event-title", event.title);
 		if (eventFilePath) el.setAttribute("data-event-file-path", eventFilePath);
 

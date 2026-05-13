@@ -1,3 +1,4 @@
+import { cls, tid } from "@real1ty-obsidian-plugins";
 import { SettingHeading, useSchemaField } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useState } from "react";
 
@@ -71,13 +72,13 @@ const CustomPromptsSection = memo(function CustomPromptsSection({ mainSettingsSt
 	return (
 		<>
 			<SettingHeading name="Custom Prompts" />
-			<p className="prisma-hint">
+			<p className={cls("hint")}>
 				Define reusable context snippets that get prepended to your AI requests. For example, describe your calendar
 				conventions so the AI understands your terminology.
 			</p>
 
-			<div className="prisma-custom-prompt-list">
-				{prompts.length === 0 && !isAdding && <p className="prisma-hint">No custom prompts defined yet.</p>}
+			<div className={cls("custom-prompt-list")}>
+				{prompts.length === 0 && !isAdding && <p className={cls("hint")}>No custom prompts defined yet.</p>}
 
 				{prompts.map((prompt) =>
 					editingId === prompt.id ? (
@@ -98,9 +99,9 @@ const CustomPromptsSection = memo(function CustomPromptsSection({ mainSettingsSt
 			{!isAdding && editingId === null && (
 				<button
 					type="button"
-					className="prisma-btn prisma-btn-add prisma-custom-prompt-add"
+					className={cls("btn", "btn-add", "custom-prompt-add")}
 					onClick={() => setIsAdding(true)}
-					data-testid="prisma-settings-ai-add-prompt"
+					data-testid={tid("settings-ai-add-prompt")}
 				>
 					+ Add Prompt
 				</button>
@@ -119,16 +120,16 @@ const PromptItem = memo(function PromptItem({ prompt, onEdit, onDelete }: Prompt
 	const preview = prompt.content.length > 80 ? prompt.content.slice(0, 80) + "..." : prompt.content;
 
 	return (
-		<div className="prisma-custom-prompt-item">
-			<div className="prisma-custom-prompt-info">
-				<div className="prisma-custom-prompt-title">{prompt.title}</div>
-				<div className="prisma-custom-prompt-content">{preview}</div>
+		<div className={cls("custom-prompt-item")}>
+			<div className={cls("custom-prompt-info")}>
+				<div className={cls("custom-prompt-title")}>{prompt.title}</div>
+				<div className={cls("custom-prompt-content")}>{preview}</div>
 			</div>
-			<div className="prisma-custom-prompt-actions">
-				<button type="button" className="prisma-btn" onClick={onEdit}>
+			<div className={cls("custom-prompt-actions")}>
+				<button type="button" className={cls("btn")} onClick={onEdit}>
 					Edit
 				</button>
-				<button type="button" className="prisma-btn prisma-btn-warning" onClick={onDelete}>
+				<button type="button" className={cls("btn", "btn-warning")} onClick={onDelete}>
 					Delete
 				</button>
 			</div>
@@ -159,31 +160,31 @@ const PromptEditForm = memo(function PromptEditForm({ existing, onSave, onCancel
 	}, [title, content, existing, onSave]);
 
 	return (
-		<div className="prisma-custom-prompt-form">
-			<label className="prisma-filter-label">Title</label>
+		<div className={cls("custom-prompt-form")}>
+			<label className={cls("filter-label")}>Title</label>
 			<input
 				type="text"
-				className="prisma-filter-input"
+				className={cls("filter-input")}
 				placeholder="e.g. My calendar conventions"
 				value={title}
 				onChange={(e) => setTitle(e.target.value)}
-				data-testid="prisma-settings-ai-prompt-title"
+				data-testid={tid("settings-ai-prompt-title")}
 				autoFocus
 			/>
-			<label className="prisma-filter-label">Content</label>
+			<label className={cls("filter-label")}>Content</label>
 			<textarea
-				className="prisma-transform-editor"
+				className={cls("transform-editor")}
 				placeholder="e.g. All-day events use the Date property. Work events are in the Work category."
 				rows={4}
 				value={content}
 				onChange={(e) => setContent(e.target.value)}
-				data-testid="prisma-settings-ai-prompt-content"
+				data-testid={tid("settings-ai-prompt-content")}
 			/>
-			<div className="prisma-row">
-				<button type="button" className="prisma-btn prisma-btn-cta" onClick={handleSave}>
+			<div className={cls("row")}>
+				<button type="button" className={cls("btn", "btn-cta")} onClick={handleSave}>
 					Save
 				</button>
-				<button type="button" className="prisma-btn" onClick={onCancel}>
+				<button type="button" className={cls("btn")} onClick={onCancel}>
 					Cancel
 				</button>
 			</div>

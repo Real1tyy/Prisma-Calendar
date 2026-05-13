@@ -1,16 +1,17 @@
-import type { EventSeriesBasesFooterActions } from "./event-series-bases-actions";
+import { cls, tid } from "@real1ty-obsidian-plugins";
 
+import type { EventSeriesBasesFooterActions } from "./event-series-bases-actions";
 export function EventSeriesBasesFooter({ actions }: { actions: EventSeriesBasesFooterActions }) {
 	const viewTypes = ["table", "list", "cards", "timeline", "heatmap"] as const;
 
 	return (
-		<div className="prisma-event-series-bases-footer">
-			<div className="prisma-event-series-bases-footer-buttons">
+		<div className={cls("event-series-bases-footer")}>
+			<div className={cls("event-series-bases-footer-buttons")}>
 				{viewTypes.map((vt) => (
 					<button
 						key={vt}
-						className="prisma-event-series-bases-btn"
-						data-testid={`prisma-event-series-bases-${vt}`}
+						className={cls("event-series-bases-btn")}
+						data-testid={tid("event-series-bases", vt)}
 						onClick={() => {
 							if (vt === "timeline") actions.openTimeline();
 							else if (vt === "heatmap") actions.openHeatmap();

@@ -1,3 +1,4 @@
+import { cls, tid } from "@real1ty-obsidian-plugins";
 import { ModalSchemaForm, openReactModal, SchemaForm, useZodForm } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { z } from "zod";
@@ -18,7 +19,7 @@ function UntrackedEventCreateForm({ onSubmit, onCancel }: UntrackedEventCreateFo
 
 	return (
 		<ModalSchemaForm form={form} onSubmit={onSubmit} onCancel={onCancel} submitLabel="Create">
-			<SchemaForm form={form} schema={UntrackedEventSchema} testIdPrefix="prisma-untracked-event-" />
+			<SchemaForm form={form} schema={UntrackedEventSchema} testIdPrefix={tid("untracked-event-")} />
 		</ModalSchemaForm>
 	);
 }
@@ -27,8 +28,8 @@ export function openUntrackedEventCreateModal(app: App): Promise<string | null> 
 	return openReactModal<string>({
 		app,
 		title: "Create Untracked Event",
-		cls: "prisma-untracked-event-modal",
-		testId: "prisma-modal-untracked-event-create",
+		cls: cls("untracked-event-modal"),
+		testId: tid("modal-untracked-event-create"),
 		render: (submit, cancel) => (
 			<UntrackedEventCreateForm onSubmit={(values) => submit(values.name)} onCancel={cancel} />
 		),

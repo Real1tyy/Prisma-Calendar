@@ -1,3 +1,4 @@
+import { cls, tid } from "@real1ty-obsidian-plugins";
 import { ModalDescription, openReactModal, VirtualList } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { memo, useCallback, useMemo, useRef, useState } from "react";
@@ -48,15 +49,13 @@ const CheckboxItem = memo(function CheckboxItem({
 	highlighted,
 	onToggle,
 }: CheckboxItemProps) {
-	const className = [
-		"prisma-category-checkbox-item",
-		checked ? "prisma-checked" : "",
-		isNew ? "prisma-category-new-item" : "",
-		colorRows ? "prisma-colorized-row" : "",
-		highlighted ? "prisma-highlighted" : "",
-	]
-		.filter(Boolean)
-		.join(" ");
+	const className = cls(
+		"category-checkbox-item",
+		checked ? "checked" : "",
+		isNew ? "category-new-item" : "",
+		colorRows ? "colorized-row" : "",
+		highlighted ? "highlighted" : ""
+	);
 
 	const style = colorRows && item.color ? ({ "--category-color": item.color } as React.CSSProperties) : undefined;
 
@@ -66,27 +65,27 @@ const CheckboxItem = memo(function CheckboxItem({
 			style={style}
 			title={item.tooltip}
 			onClick={() => onToggle(item.name)}
-			data-testid="prisma-assign-item"
+			data-testid={tid("assign-item")}
 			data-assign-name={item.name}
 		>
 			<input
 				type="checkbox"
-				className="prisma-category-checkbox"
+				className={cls("category-checkbox")}
 				checked={checked}
 				onChange={() => onToggle(item.name)}
 				onClick={(e) => e.stopPropagation()}
 			/>
-			<label className="prisma-category-label">
+			<label className={cls("category-label")}>
 				{!colorRows && (
 					<span
-						className="prisma-category-color-dot"
+						className={cls("category-color-dot")}
 						style={{ "--category-color": item.color } as React.CSSProperties}
 					/>
 				)}
-				<span className="prisma-category-name">{item.displayName ?? item.name}</span>
-				{item.subtitle && <span className="prisma-category-item-subtitle">{item.subtitle}</span>}
-				{item.rightLabel && <span className="prisma-category-item-right-label">{item.rightLabel}</span>}
-				{isNew && <span className="prisma-category-new-badge">NEW</span>}
+				<span className={cls("category-name")}>{item.displayName ?? item.name}</span>
+				{item.subtitle && <span className={cls("category-item-subtitle")}>{item.subtitle}</span>}
+				{item.rightLabel && <span className={cls("category-item-right-label")}>{item.rightLabel}</span>}
+				{isNew && <span className={cls("category-new-badge")}>NEW</span>}
 			</label>
 		</div>
 	);
@@ -198,33 +197,33 @@ export function AssignmentForm({ items, config, preSelected, onSubmit, onCancel 
 	const buttonText = selected.size === 0 ? config.removeLabel : config.assignLabel;
 
 	return (
-		<div data-testid="prisma-assignment-form" onKeyDown={handleKeyDown}>
+		<div data-testid={tid("assignment-form")} onKeyDown={handleKeyDown}>
 			<h2>{config.title}</h2>
 			<ModalDescription>{config.description}</ModalDescription>
 
-			<div className="prisma-category-search-container">
+			<div className={cls("category-search-container")}>
 				<input
 					ref={searchRef}
 					type="text"
 					placeholder={config.searchPlaceholder}
-					className="prisma-category-search-input"
+					className={cls("category-search-input")}
 					value={search}
 					onChange={(e) => {
 						setSearch(e.target.value);
 						setHighlightedIndex(-1);
 					}}
 					autoFocus
-					data-testid="prisma-assign-search"
+					data-testid={tid("assign-search")}
 				/>
 			</div>
 
 			{showCreateNew && (
-				<div className="prisma-category-create-new-container">
+				<div className={cls("category-create-new-container")}>
 					<button
 						type="button"
-						className="prisma-category-create-new-button"
+						className={cls("category-create-new-button")}
 						onClick={handleCreateNew}
-						data-testid="prisma-assign-create-new"
+						data-testid={tid("assign-create-new")}
 					>
 						{config.createNewLabel(search.trim())}
 					</button>
@@ -232,15 +231,15 @@ export function AssignmentForm({ items, config, preSelected, onSubmit, onCancel 
 			)}
 
 			{allItems.length === 0 ? (
-				<div className="prisma-category-list-container">
-					<div className="prisma-category-empty-state">No items found. Type to create a new one.</div>
+				<div className={cls("category-list-container")}>
+					<div className={cls("category-empty-state")}>No items found. Type to create a new one.</div>
 				</div>
 			) : (
 				<VirtualList
 					items={filteredItems}
 					estimateSize={ITEM_HEIGHT_ESTIMATE}
 					getKey={(item) => item.name}
-					className="prisma-category-list-container"
+					className={cls("category-list-container")}
 					style={{ height: listHeight }}
 					renderItem={(item, i) => (
 						<CheckboxItem
@@ -256,10 +255,10 @@ export function AssignmentForm({ items, config, preSelected, onSubmit, onCancel 
 			)}
 
 			<div className="modal-button-container">
-				<button type="button" onClick={onCancel} data-testid="prisma-form-cancel">
+				<button type="button" onClick={onCancel} data-testid={tid("form-cancel")}>
 					Cancel
 				</button>
-				<button type="button" className="mod-cta" onClick={handleSubmit} data-testid="prisma-assign-submit">
+				<button type="button" className="mod-cta" onClick={handleSubmit} data-testid={tid("assign-submit")}>
 					{buttonText}
 				</button>
 			</div>
@@ -275,8 +274,8 @@ export function openAssignmentModal(
 ): Promise<string[] | null> {
 	return openReactModal<string[]>({
 		app,
-		cls: "prisma-assignment-modal",
-		testId: "prisma-modal-assignment",
+		cls: cls("assignment-modal"),
+		testId: tid("modal-assignment"),
 		render: (submit, cancel) => (
 			<AssignmentForm items={items} config={config} preSelected={preSelected} onSubmit={submit} onCancel={cancel} />
 		),

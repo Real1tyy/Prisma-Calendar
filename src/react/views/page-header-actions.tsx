@@ -1,9 +1,9 @@
-import { executeCommand } from "@real1ty-obsidian-plugins";
+import { cls, executeCommand, tid } from "@real1ty-obsidian-plugins";
 import { type HeaderActionDefinition, ObsidianIcon, useApp } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { type CSSProperties, memo, useCallback } from "react";
 
-import { FULL_COMMAND_IDS } from "../../constants";
+import { CSS_PREFIX, FULL_COMMAND_IDS } from "../../constants";
 
 interface ActionSpec {
 	id: string;
@@ -202,7 +202,7 @@ export const PageHeaderActions = memo(function PageHeaderActions({
 	iconOverrides,
 	colorOverrides,
 	executeAction: executeActionProp,
-	cssPrefix = "prisma-",
+	cssPrefix = CSS_PREFIX,
 }: PageHeaderActionsProps) {
 	const app = useApp();
 
@@ -220,7 +220,7 @@ export const PageHeaderActions = memo(function PageHeaderActions({
 		.filter((s): s is ActionSpec => s !== undefined);
 
 	return (
-		<div className="prisma-page-header-actions" data-testid="prisma-page-header-actions">
+		<div className={cls("page-header-actions")} data-testid={tid("page-header-actions")}>
 			{rows.map((action) => {
 				const label = renames?.[action.id] ?? action.label;
 				const icon = iconOverrides?.[action.id] ?? action.icon;

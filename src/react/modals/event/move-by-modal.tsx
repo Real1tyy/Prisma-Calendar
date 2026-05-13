@@ -1,3 +1,4 @@
+import { cls, tid } from "@real1ty-obsidian-plugins";
 import { ModalForm, openReactModal, SettingItem } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { useCallback, useRef, useState } from "react";
@@ -44,14 +45,14 @@ export function MoveByForm({ onSubmit, onCancel }: MoveByFormProps) {
 	return (
 		<ModalForm onSubmit={handleSubmit} onCancel={onCancel} submitLabel="Move" submitDisabled={isInvalid}>
 			<h3>Move event by</h3>
-			<div className="prisma-move-by-form">
+			<div className={cls("move-by-form")}>
 				<SettingItem name="Amount">
-					<div className="prisma-move-by-amount-group">
+					<div className={cls("move-by-amount-group")}>
 						<button
 							type="button"
-							className="prisma-move-by-increment-btn"
+							className={cls("move-by-increment-btn")}
 							onClick={() => adjustValue(-1)}
-							data-testid="prisma-move-by-decrement"
+							data-testid={tid("move-by-decrement")}
 						>
 							−
 						</button>
@@ -60,25 +61,25 @@ export function MoveByForm({ onSubmit, onCancel }: MoveByFormProps) {
 							type="number"
 							value={value}
 							step={1}
-							className="prisma-move-by-input"
+							className={cls("move-by-input")}
 							onChange={handleInputChange}
-							data-testid="prisma-move-by-value"
+							data-testid={tid("move-by-value")}
 							autoFocus
 						/>
 						<button
 							type="button"
-							className="prisma-move-by-increment-btn"
+							className={cls("move-by-increment-btn")}
 							onClick={() => adjustValue(1)}
-							data-testid="prisma-move-by-increment"
+							data-testid={tid("move-by-increment")}
 						>
 							+
 						</button>
 						<button
 							type="button"
-							className="prisma-move-by-toggle-btn"
+							className={cls("move-by-toggle-btn")}
 							onClick={toggleSign}
 							aria-label="Toggle sign"
-							data-testid="prisma-move-by-toggle-sign"
+							data-testid={tid("move-by-toggle-sign")}
 						>
 							+/−
 						</button>
@@ -86,14 +87,14 @@ export function MoveByForm({ onSubmit, onCancel }: MoveByFormProps) {
 				</SettingItem>
 
 				<SettingItem name="Time unit">
-					<div className="prisma-move-by-unit-group">
+					<div className={cls("move-by-unit-group")}>
 						{TIME_UNITS.map((u) => (
 							<button
 								key={u}
 								type="button"
-								className={`prisma-move-by-unit-btn${u === unit ? " prisma-is-active" : ""}`}
+								className={cls("move-by-unit-btn", u === unit ? "is-active" : "")}
 								onClick={() => setUnit(u)}
-								data-testid={`prisma-move-by-unit-${u}`}
+								data-testid={tid("move-by-unit", u)}
 							>
 								{UNIT_LABELS[u]}
 							</button>
@@ -108,8 +109,8 @@ export function MoveByForm({ onSubmit, onCancel }: MoveByFormProps) {
 export function openMoveByModal(app: App): Promise<MoveByResult | null> {
 	return openReactModal<MoveByResult>({
 		app,
-		cls: "prisma-move-by-modal",
-		testId: "prisma-modal-move-by",
+		cls: cls("move-by-modal"),
+		testId: tid("modal-move-by"),
 		render: (submit, cancel) => <MoveByForm onSubmit={submit} onCancel={cancel} />,
 	});
 }

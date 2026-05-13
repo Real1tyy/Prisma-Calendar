@@ -1,3 +1,4 @@
+import { cls } from "@real1ty-obsidian-plugins";
 import { type TabDefinition } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import type { ReactElement } from "react";
@@ -36,7 +37,7 @@ export function makeReactTab(ctx: TabContext, opts: ReactTabOptions): TabDefinit
 		content: () => (
 			<PluginContext value={ctx.plugin}>
 				<BundleContext value={ctx.bundle}>
-					<div className="prisma-tab-body" data-testid={opts.testId}>
+					<div className={cls("tab-body")} data-testid={opts.testId}>
 						{opts.render()}
 					</div>
 				</BundleContext>

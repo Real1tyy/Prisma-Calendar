@@ -2,6 +2,7 @@ import {
 	calculateDurationMinutes,
 	parseIntoList,
 	parsePositiveInt,
+	removeCls,
 	serializeFrontmatterValue,
 } from "@real1ty-obsidian-plugins";
 
@@ -75,7 +76,7 @@ export class EventEditModal extends BaseEventModal {
 		if (rruleType) {
 			// Event has recurring rule
 			this.recurringCheckbox.checked = true;
-			this.recurringContainer.classList.remove("prisma-hidden");
+			removeCls(this.recurringContainer, "hidden");
 
 			this.applyRruleTypeToForm(rruleType);
 

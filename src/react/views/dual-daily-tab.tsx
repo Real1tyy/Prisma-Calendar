@@ -1,4 +1,4 @@
-import { createGridLayout, type GridLayoutHandle } from "@real1ty-obsidian-plugins";
+import { cls, createGridLayout, type GridLayoutHandle, tid } from "@real1ty-obsidian-plugins";
 import { useApp } from "@real1ty-obsidian-plugins-react";
 import { memo, type Ref, useEffect, useImperativeHandle, useRef } from "react";
 
@@ -34,7 +34,7 @@ export const DualDailyTab = memo(function DualDailyTab({ handleRef }: DualDailyT
 		const sharedDragState: DailyDragState = { current: null };
 
 		gridHandle = createGridLayout(el, {
-			cssPrefix: "prisma-dual-daily-",
+			cssPrefix: cls("dual-daily-"),
 			columns: 2,
 			rows: 1,
 			gap: "12px",
@@ -90,5 +90,5 @@ export const DualDailyTab = memo(function DualDailyTab({ handleRef }: DualDailyT
 		[]
 	);
 
-	return <div ref={containerRef} style={{ flex: "1 1 auto", minHeight: 0 }} data-testid="prisma-dual-daily" />;
+	return <div ref={containerRef} style={{ flex: "1 1 auto", minHeight: 0 }} data-testid={tid("dual-daily")} />;
 });

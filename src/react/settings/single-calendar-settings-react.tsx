@@ -1,4 +1,4 @@
-import { buildUtmUrl } from "@real1ty-obsidian-plugins";
+import { buildUtmUrl, cls } from "@real1ty-obsidian-plugins";
 import { type SettingsFooterLink, SettingsNav } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useState } from "react";
 
@@ -134,7 +134,7 @@ export const SingleCalendarSettingsReact = memo(function SingleCalendarSettingsR
 	const isSearching = searchQuery.trim().length >= 2;
 
 	return (
-		<div className="prisma-settings-calendar">
+		<div className={cls("settings-calendar")}>
 			<NormalizationConflictBanner calendarId={settingsStore.calendarId} mainSettingsStore={mainSettingsStore} />
 			<SettingsNav
 				tabs={SETTINGS_TAB_DEFINITIONS}
@@ -144,7 +144,7 @@ export const SingleCalendarSettingsReact = memo(function SingleCalendarSettingsR
 				onSearchChange={setSearchQuery}
 				footerLinks={FOOTER_LINKS}
 			>
-				<div className="prisma-settings-tab-content">
+				<div className={cls("settings-tab-content")}>
 					{isSearching ? (
 						<SearchResults settingsStore={settingsStore} plugin={plugin} mainSettingsStore={mainSettingsStore} />
 					) : (
@@ -225,9 +225,9 @@ interface SearchResultsProps {
 
 const SearchResults = memo(function SearchResults({ settingsStore, plugin, mainSettingsStore }: SearchResultsProps) {
 	return (
-		<div className="prisma-settings-search-results">
+		<div className={cls("settings-search-results")}>
 			{SETTINGS_TAB_DEFINITIONS.map((tab) => (
-				<div key={tab.id} className="prisma-settings-search-section">
+				<div key={tab.id} className={cls("settings-search-section")}>
 					<TabContent
 						tabId={tab.id}
 						settingsStore={settingsStore}

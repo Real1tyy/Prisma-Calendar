@@ -1,4 +1,4 @@
-import { toLocalISOString } from "@real1ty-obsidian-plugins";
+import { cls, tid, toLocalISOString } from "@real1ty-obsidian-plugins";
 import { useObservable } from "@real1ty-obsidian-plugins-react";
 import { memo, type Ref, useImperativeHandle, useMemo, useState } from "react";
 import { combineLatest, from, of } from "rxjs";
@@ -78,7 +78,7 @@ export const CapacityIndicator = memo(function CapacityIndicator({
 	if (!vm) return null;
 
 	return (
-		<div className="prisma-capacity-indicator" title={vm.tooltip} data-testid="prisma-capacity-indicator">
+		<div className={cls("capacity-indicator")} title={vm.tooltip} data-testid={tid("capacity-indicator")}>
 			{vm.label}
 		</div>
 	);

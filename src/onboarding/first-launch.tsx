@@ -1,11 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { buildUtmUrl } from "@real1ty-obsidian-plugins";
+import { buildUtmUrl, cls, tid } from "@real1ty-obsidian-plugins";
 import { Button, openReactModal, TextInput, WelcomeModalShell } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { memo, useCallback, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { CSS_PREFIX } from "../constants";
 import type { DirectorySuggestion } from "./directory-suggestions";
 import { computePrefill, Field, PropertyFields, SuggestionList } from "./property-config";
 
@@ -46,10 +47,10 @@ export async function openFirstLaunchModal(
 ): Promise<FirstLaunchModalResult | null> {
 	return openReactModal<FirstLaunchModalResult>({
 		app: options.app,
-		cls: "prisma-welcome-modal",
-		testId: "prisma-welcome-modal",
-		cssPrefix: "prisma-",
-		testIdPrefix: "prisma-",
+		cls: cls("welcome-modal"),
+		testId: tid("welcome-modal"),
+		cssPrefix: CSS_PREFIX,
+		testIdPrefix: CSS_PREFIX,
 		render: (submit) => (
 			<FirstLaunchController
 				initialProps={options.initialProps}
@@ -80,13 +81,13 @@ function ModeCard({
 		<div
 			role="button"
 			tabIndex={0}
-			className={`prisma-first-launch-mode-card${selected ? " is-selected" : ""}`}
+			className={cls(`first-launch-mode-card${selected ? " is-selected" : ""}`)}
 			onClick={onSelect}
 			onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onSelect()}
 			data-testid={testId}
 		>
-			<span className="prisma-first-launch-mode-title">{title}</span>
-			<span className="prisma-first-launch-mode-desc">{desc}</span>
+			<span className={cls("first-launch-mode-title")}>{title}</span>
+			<span className={cls("first-launch-mode-desc")}>{desc}</span>
 		</div>
 	);
 }
@@ -95,12 +96,12 @@ function ModeCard({
 
 const TAGLINE = (
 	<>
-		<span className="prisma-welcome-tagline-headline">A calendar is just the beginning.</span>
-		<span className="prisma-welcome-tagline-sub">
+		<span className={cls("welcome-tagline-headline")}>A calendar is just the beginning.</span>
+		<span className={cls("welcome-tagline-sub")}>
 			Prisma turns any note with a date into a flexible planning system inside Obsidian. Start simple now, then dive
 			deeper and customize everything later.
 		</span>
-		<span className="prisma-welcome-tagline-sub">
+		<span className={cls("welcome-tagline-sub")}>
 			I recommend watching this quick tutorial where I explain everything you need to know so you can start using Prisma
 			without feeling overwhelmed.
 		</span>
@@ -147,7 +148,7 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 
 	const currentMode = watch("mode");
 	const currentDirectory = watch("directory");
-	const tid = (suffix: string) => `prisma-welcome-${suffix}`;
+	const welcomeTid = (suffix: string) => tid("welcome", suffix);
 	const matchedSuggestion = suggestions.find((s) => s.directory === currentDirectory.trim()) ?? null;
 
 	useEffect(() => {
@@ -206,12 +207,12 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 				void submit();
 			}}
 		>
-			<section className="prisma-first-launch-mode-grid">
+			<section className={cls("first-launch-mode-grid")}>
 				<ModeCard
 					title="Use notes you already have"
 					desc="Prisma reads an existing folder and turns your notes into events using your current properties."
 					selected={currentMode === "existing"}
-					testId={tid("mode-existing")}
+					testId={welcomeTid("mode-existing")}
 					onSelect={() => {
 						setValue("mode", "existing");
 						setValue("directory", "");
@@ -224,7 +225,7 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 					title="Start with a clean setup"
 					desc="Prisma creates a new dedicated folder with a simple property schema so you can start planning right away."
 					selected={currentMode === "new"}
-					testId={tid("mode-new")}
+					testId={welcomeTid("mode-new")}
 					onSelect={() => {
 						setValue("mode", "new");
 						setValue("directory", "Tasks");
@@ -235,8 +236,8 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 				/>
 			</section>
 
-			<section className="prisma-first-launch-panel">
-				<div className="prisma-first-launch-helper">
+			<section className={cls("first-launch-panel")}>
+				<div className={cls("first-launch-helper")}>
 					<p>
 						Choose the folder Prisma should use for events. Prisma will read those notes and visualize them for you.
 					</p>
@@ -264,20 +265,20 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 								placeholder={currentMode === "existing" ? "e.g. Calendar, Tasks, Work/Meetings" : "Tasks"}
 								onChange={field.onChange}
 								debounceMs={0}
-								testId={tid("directory-input")}
+								testId={welcomeTid("directory-input")}
 							/>
 						)}
 					/>
 				</Field>
 
 				{currentMode === "existing" ? (
-					<div className="prisma-first-launch-suggestions">
+					<div className={cls("first-launch-suggestions")}>
 						<SuggestionList
 							suggestions={suggestions}
 							isLoading={isLoadingSuggestions}
 							selectedDirectory={currentDirectory}
 							onSelect={selectSuggestion}
-							testIdPrefix="prisma-welcome"
+							testIdPrefix={welcomeTid("welcome")}
 							multiHint
 						/>
 					</div>
@@ -292,19 +293,19 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 					onDatePropChange={(v) => setValue("dateProp", v)}
 					placeholders={initialProps}
 					suggestion={currentMode === "existing" ? matchedSuggestion : null}
-					testIdPrefix="prisma-welcome"
+					testIdPrefix={welcomeTid("welcome")}
 				/>
 			</section>
 
-			<section className="prisma-first-launch-pro">
-				<span className="prisma-first-launch-pro-badge">PRO</span>
-				<p className="prisma-first-launch-pro-text">
+			<section className={cls("first-launch-pro")}>
+				<span className={cls("first-launch-pro-badge")}>PRO</span>
+				<p className={cls("first-launch-pro-text")}>
 					For more advanced workflows — Prisma Pro unlocks calendar sync, advanced visualizations, Bases integration,
 					and other power-user capabilities built for serious planning inside Obsidian. Try every Pro feature with a
 					30-day free trial — cancel anytime.
 				</p>
 				<Button
-					testId={tid("pro-upgrade")}
+					testId={welcomeTid("pro-upgrade")}
 					onClick={() =>
 						window.open(
 							welcomeUtm("https://matejvavroproductivity.com/tools/prisma-calendar/", "pro_callout"),
@@ -317,7 +318,7 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 				</Button>
 			</section>
 
-			<section className="prisma-first-launch-thanks">
+			<section className={cls("first-launch-thanks")}>
 				<p>
 					Thanks for giving Prisma a try. I hope you enjoy using it, and that it helps you become more productive and
 					organized inside Obsidian. If you spot any bugs or see ways to improve it, don't hesitate to share your

@@ -1,3 +1,4 @@
+import { cls, tid } from "@real1ty-obsidian-plugins";
 import { type SnapshotSubscribable, useExternalSnapshot, useSchemaField } from "@real1ty-obsidian-plugins-react";
 import { Menu } from "obsidian";
 import { memo, useCallback, useEffect, useRef } from "react";
@@ -90,9 +91,9 @@ export const ZoomControl = memo(function ZoomControl({
 	return (
 		<button
 			type="button"
-			className="prisma-fc-zoom-button fc-button fc-button-primary"
+			className={`${cls("fc-zoom-button")} fc-button fc-button-primary`}
 			onClick={openMenu}
-			data-testid="prisma-zoom-button"
+			data-testid={tid("zoom-button")}
 			aria-label="Zoom level"
 		>
 			<span>{`Zoom: ${slotDurationMinutes}min`}</span>

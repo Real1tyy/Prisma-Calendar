@@ -1,4 +1,4 @@
-import { type ChartDataItem, createGridLayout, type GridLayoutHandle } from "@real1ty-obsidian-plugins";
+import { type ChartDataItem, cls, createGridLayout, type GridLayoutHandle, tid } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { memo, type ReactElement, useEffect, useMemo, useRef } from "react";
 
@@ -23,7 +23,7 @@ import { formatRecurrenceLabel, isPresetType } from "../../utils/recurring-utils
 import { useBundle } from "../contexts/bundle-context";
 import { ProGatedContent } from "./pro-gated-content";
 
-const DASHBOARD_CSS_PREFIX = "prisma-dashboard-";
+const DASHBOARD_CSS_PREFIX = cls("dashboard-");
 const REFRESH_DEBOUNCE_MS = 300;
 const TOOLTIP_FORMATTER = (label: string, value: number, percentage: string): string =>
 	`${label}: ${value} event${value === 1 ? "" : "s"} (${percentage}%)`;
@@ -81,7 +81,7 @@ const DashboardSection = memo(function DashboardSection({ id, buildData }: Dashb
 					row: 0,
 					col: 0,
 					render: (cellEl) => {
-						cellEl.setAttribute("data-testid", "prisma-dashboard-cell-chart");
+						cellEl.setAttribute("data-testid", tid("dashboard-cell-chart"));
 						chartHandle = renderDashboardChart(cellEl, data.chartData, id, TOOLTIP_FORMATTER);
 					},
 					cleanup: () => {
@@ -95,7 +95,7 @@ const DashboardSection = memo(function DashboardSection({ id, buildData }: Dashb
 					row: 0,
 					col: 1,
 					render: (cellEl) => {
-						cellEl.setAttribute("data-testid", "prisma-dashboard-cell-ranking");
+						cellEl.setAttribute("data-testid", tid("dashboard-cell-ranking"));
 						renderDashboardRanking(cellEl, data.items, data.stats);
 					},
 				},
@@ -106,7 +106,7 @@ const DashboardSection = memo(function DashboardSection({ id, buildData }: Dashb
 					col: 0,
 					colSpan: 2,
 					render: (cellEl) => {
-						cellEl.setAttribute("data-testid", "prisma-dashboard-cell-table");
+						cellEl.setAttribute("data-testid", tid("dashboard-cell-table"));
 						tableHandle = renderDashboardTable(cellEl, {
 							items: data.items,
 							columns: data.columns,
@@ -130,7 +130,7 @@ const DashboardSection = memo(function DashboardSection({ id, buildData }: Dashb
 		};
 	}, [id, buildData, renderToken]);
 
-	return <div ref={containerRef} style={{ flex: "1 1 auto", minHeight: 0 }} data-testid={`prisma-dashboard-${id}`} />;
+	return <div ref={containerRef} style={{ flex: "1 1 auto", minHeight: 0 }} data-testid={tid("dashboard", id)} />;
 });
 
 interface GatedSectionProps extends DashboardSectionProps {

@@ -1,4 +1,4 @@
-import { hexToRgb, type PieChartData } from "@real1ty-obsidian-plugins";
+import { cls, hexToRgb, type PieChartData, tid } from "@real1ty-obsidian-plugins";
 import {
 	ColorInput,
 	ObsidianIcon,
@@ -100,27 +100,27 @@ const EventStatsSection = memo(function EventStatsSection({ bundle }: { bundle: 
 	const pct = (n: number) => (totalEvents > 0 ? ((n / totalEvents) * 100).toFixed(1) : "0.0");
 
 	return (
-		<div className="prisma-categories-stats-container">
-			<div className="prisma-categories-stats-grid">
-				<div className="prisma-category-stat-item">
-					<div className="prisma-category-stat-label">Total Events</div>
-					<div className="prisma-category-stat-value">{totalEvents}</div>
+		<div className={cls("categories-stats-container")}>
+			<div className={cls("categories-stats-grid")}>
+				<div className={cls("category-stat-item")}>
+					<div className={cls("category-stat-label")}>Total Events</div>
+					<div className={cls("category-stat-value")}>{totalEvents}</div>
 				</div>
-				<div className="prisma-category-stat-item">
-					<div className="prisma-category-stat-label">Timed</div>
-					<div className="prisma-category-stat-value">
+				<div className={cls("category-stat-item")}>
+					<div className={cls("category-stat-label")}>Timed</div>
+					<div className={cls("category-stat-value")}>
 						{timedCount} ({pct(timedCount)}%)
 					</div>
 				</div>
-				<div className="prisma-category-stat-item">
-					<div className="prisma-category-stat-label">All-day</div>
-					<div className="prisma-category-stat-value">
+				<div className={cls("category-stat-item")}>
+					<div className={cls("category-stat-label")}>All-day</div>
+					<div className={cls("category-stat-value")}>
 						{allDayCount} ({pct(allDayCount)}%)
 					</div>
 				</div>
-				<div className="prisma-category-stat-item">
-					<div className="prisma-category-stat-label">Untracked</div>
-					<div className="prisma-category-stat-value">
+				<div className={cls("category-stat-item")}>
+					<div className={cls("category-stat-label")}>Untracked</div>
+					<div className={cls("category-stat-value")}>
 						{untrackedCount} ({pct(untrackedCount)}%)
 					</div>
 				</div>
@@ -208,7 +208,7 @@ const CategoriesListSection = memo(function CategoriesListSection({
 
 	if (categories.length === 0) {
 		return (
-			<div className="prisma-categories-empty-state">
+			<div className={cls("categories-empty-state")}>
 				No categories found. Add a &quot;{categoryProp}&quot; property to your events to see them here.
 			</div>
 		);
@@ -226,43 +226,43 @@ const CategoriesListSection = memo(function CategoriesListSection({
 				return (
 					<div
 						key={info.name}
-						className="prisma-category-settings-item"
-						data-testid="prisma-category-settings-item"
+						className={cls("category-settings-item")}
+						data-testid={tid("category-settings-item")}
 						data-category={info.name}
 						style={
 							rgb ? ({ "--category-color-rgb": `${rgb.r}, ${rgb.g}, ${rgb.b}` } as React.CSSProperties) : undefined
 						}
 					>
-						<div className="prisma-category-settings-item-left">
-							<div className="prisma-category-settings-name-container" onClick={() => handleClickCategory(info.name)}>
-								<span className="prisma-category-settings-name">{info.name}</span>
-								<span className="prisma-category-settings-count">
+						<div className={cls("category-settings-item-left")}>
+							<div className={cls("category-settings-name-container")} onClick={() => handleClickCategory(info.name)}>
+								<span className={cls("category-settings-name")}>{info.name}</span>
+								<span className={cls("category-settings-count")}>
 									{info.count} total ({percentage}%) &bull; {info.timedCount} timed ({timedPct}%) &bull;{" "}
 									{info.allDayCount} all-day ({allDayPct}%) &bull; {info.untrackedCount} untracked ({untrackedPct}%)
 								</span>
 							</div>
 						</div>
-						<div className="prisma-category-settings-item-right">
+						<div className={cls("category-settings-item-right")}>
 							<button
 								type="button"
-								className="prisma-category-settings-edit-button"
+								className={cls("category-settings-edit-button")}
 								aria-label="Rename category"
-								data-testid="prisma-category-settings-rename-button"
+								data-testid={tid("category-settings-rename-button")}
 								onClick={() => handleRename(info.name)}
 							>
 								<ObsidianIcon icon="pencil" />
 							</button>
 							<button
 								type="button"
-								className="prisma-category-settings-delete-button"
+								className={cls("category-settings-delete-button")}
 								aria-label="Delete category"
-								data-testid="prisma-category-settings-delete-button"
+								data-testid={tid("category-settings-delete-button")}
 								onClick={() => handleDelete(info.name)}
 							>
 								<ObsidianIcon icon="trash" />
 							</button>
 							<ColorInput
-								testId="prisma-category-settings-color-input"
+								testId={tid("category-settings-color-input")}
 								value={info.color}
 								onChange={(next) => handleColorChange(info.name, next)}
 							/>
@@ -302,7 +302,7 @@ const CategoryChartSection = memo(function CategoryChartSection({
 	if (chartData.values.length === 0) return null;
 
 	return (
-		<div className="prisma-categories-chart-section">
+		<div className={cls("categories-chart-section")}>
 			<PieChart
 				data={chartData}
 				ChartJS={Chart}
@@ -360,7 +360,7 @@ const AutoAssignSection = memo(function AutoAssignSection({
 			) : (
 				<>
 					<SettingHeading name="Custom category assignment presets" />
-					<div className="prisma-settings-info-box">
+					<div className={cls("settings-info-box")}>
 						<strong>Examples:</strong>
 						<ul>
 							<li>Event names: &apos;Coding, Work, Dev&apos; &rarr; Auto-assign categories: Software, Business</li>
@@ -374,7 +374,7 @@ const AutoAssignSection = memo(function AutoAssignSection({
 						categoryTracker={categoryTracker}
 					/>
 
-					<button type="button" className="prisma-settings-button" onClick={handleAddPreset}>
+					<button type="button" className={cls("settings-button")} onClick={handleAddPreset}>
 						Add preset
 					</button>
 				</>
@@ -417,7 +417,7 @@ const CategoryAssignmentPresetsList = memo(function CategoryAssignmentPresetsLis
 	);
 
 	if (presets.length === 0) {
-		return <div className="prisma-category-assignment-empty">No custom category assignment presets defined.</div>;
+		return <div className={cls("category-assignment-empty")}>No custom category assignment presets defined.</div>;
 	}
 
 	return (
@@ -502,36 +502,36 @@ const CategoryAssignmentPresetRow = memo(function CategoryAssignmentPresetRow({
 	const categoryProp = settings.categoryProp;
 
 	return (
-		<div className="prisma-category-assignment-preset">
+		<div className={cls("category-assignment-preset")}>
 			<input
 				type="text"
 				value={localName}
 				placeholder="Event name(s) - comma separated (e.g., Coding, Work, Dev)"
-				className="prisma-category-assignment-name-input"
+				className={cls("category-assignment-name-input")}
 				data-preset-id={preset.id}
 				onChange={(e) => setLocalName(e.target.value)}
 				onBlur={commitName}
 				onKeyDown={handleKeyDown}
 			/>
-			<span className="prisma-category-assignment-arrow">&rarr;</span>
-			<div className="prisma-category-assignment-categories">
-				<div className="prisma-category-assignment-select-container">
-					<div className="prisma-category-assignment-selected">
+			<span className={cls("category-assignment-arrow")}>&rarr;</span>
+			<div className={cls("category-assignment-categories")}>
+				<div className={cls("category-assignment-select-container")}>
+					<div className={cls("category-assignment-selected")}>
 						{preset.categories.length === 0 ? (
-							<span className="prisma-category-assignment-empty-selection">No categories</span>
+							<span className={cls("category-assignment-empty-selection")}>No categories</span>
 						) : (
 							preset.categories.map((category) => {
 								const color = getCategoryColor(category, settings.colorRules, categoryProp, settings.defaultNodeColor);
 								return (
 									<div
 										key={category}
-										className="prisma-category-assignment-tag"
+										className={cls("category-assignment-tag")}
 										style={{ "--category-color": color } as React.CSSProperties}
 									>
 										<span>{category}</span>
 										<button
 											type="button"
-											className="prisma-category-assignment-tag-remove"
+											className={cls("category-assignment-tag-remove")}
 											onClick={() => handleRemoveCategory(category)}
 										>
 											&times;
@@ -541,9 +541,9 @@ const CategoryAssignmentPresetRow = memo(function CategoryAssignmentPresetRow({
 							})
 						)}
 					</div>
-					<div className="prisma-category-assignment-add-container">
+					<div className={cls("category-assignment-add-container")}>
 						<select
-							className="prisma-category-assignment-add-dropdown-hidden"
+							className={cls("category-assignment-add-dropdown-hidden")}
 							value=""
 							onChange={(e) => {
 								handleAddCategory(e.target.value);
@@ -557,7 +557,7 @@ const CategoryAssignmentPresetRow = memo(function CategoryAssignmentPresetRow({
 								</option>
 							))}
 						</select>
-						<button type="button" className="prisma-category-assignment-add-button" title="Add category">
+						<button type="button" className={cls("category-assignment-add-button")} title="Add category">
 							+
 						</button>
 					</div>
@@ -565,7 +565,7 @@ const CategoryAssignmentPresetRow = memo(function CategoryAssignmentPresetRow({
 			</div>
 			<button
 				type="button"
-				className="prisma-category-assignment-delete-button"
+				className={cls("category-assignment-delete-button")}
 				title="Delete preset"
 				onClick={() => onDelete(preset.id)}
 			>

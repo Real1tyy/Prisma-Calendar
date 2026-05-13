@@ -1,3 +1,4 @@
+import { cls, tid } from "@real1ty-obsidian-plugins";
 import { ModalSchemaForm, openReactModal, SchemaForm, useZodForm } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { useMemo } from "react";
@@ -53,7 +54,7 @@ export function SavePresetForm({ existingPresets, blockCreateNew, onSubmit, onCa
 					saveTo: { label: "Save to", options: saveToOptions },
 					presetName: { label: "Preset name", placeholder: "e.g., 30 min meeting, All-day event" },
 				}}
-				testIdPrefix="prisma-save-preset-"
+				testIdPrefix={tid("save-preset-")}
 			/>
 		</ModalSchemaForm>
 	);
@@ -72,8 +73,8 @@ export function openSavePresetModal(
 	return openReactModal<SavePresetResult>({
 		app,
 		title: "Save as preset",
-		cls: "prisma-save-preset-modal",
-		testId: "prisma-modal-save-preset",
+		cls: cls("save-preset-modal"),
+		testId: tid("modal-save-preset"),
 		render: (submit, cancel) => (
 			<SavePresetForm
 				existingPresets={existingPresets}

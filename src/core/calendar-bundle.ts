@@ -5,6 +5,7 @@ import {
 	intoDate,
 	sanitizeForFilename,
 	TemplaterService,
+	tid,
 } from "@real1ty-obsidian-plugins";
 import { type App, Notice, TFile } from "obsidian";
 import { distinctUntilChanged, filter, firstValueFrom, type Subscription } from "rxjs";
@@ -301,7 +302,7 @@ export class CalendarBundle {
 			this.ribbonIconEl = this.plugin.addRibbonIcon("calendar-days", name, () => {
 				void this.activateCalendarView();
 			});
-			this.ribbonIconEl.setAttribute("data-testid", `prisma-ribbon-open-${this.calendarId}`);
+			this.ribbonIconEl.setAttribute("data-testid", tid("ribbon-open", this.calendarId));
 		} else if (show && this.ribbonIconEl) {
 			this.ribbonIconEl.setAttribute("aria-label", name);
 		} else if (!show && this.ribbonIconEl) {

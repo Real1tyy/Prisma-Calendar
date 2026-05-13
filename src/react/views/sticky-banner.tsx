@@ -1,3 +1,4 @@
+import { cls, tid } from "@real1ty-obsidian-plugins";
 import { useEscapeKey } from "@real1ty-obsidian-plugins-react";
 import { memo } from "react";
 
@@ -10,9 +11,9 @@ export const StickyBanner = memo(function StickyBanner({ message, onCancel }: St
 	useEscapeKey(onCancel);
 
 	return (
-		<div className="prisma-prereq-selection-banner" data-testid="prisma-sticky-banner">
-			<div className="prisma-prereq-selection-banner-text">{message}</div>
-			<button className="prisma-prereq-selection-btn" onClick={onCancel}>
+		<div className={cls("prereq-selection-banner")} data-testid={tid("sticky-banner")}>
+			<div className={cls("prereq-selection-banner-text")}>{message}</div>
+			<button className={cls("prereq-selection-btn")} onClick={onCancel}>
 				Cancel
 			</button>
 		</div>

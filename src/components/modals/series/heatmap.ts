@@ -1,4 +1,4 @@
-import { addCls, buildColorGradient, cls, ColorEvaluator, hexToRgb, showModal } from "@real1ty-obsidian-plugins";
+import { addCls, buildColorGradient, cls, ColorEvaluator, hexToRgb, showModal, tid } from "@real1ty-obsidian-plugins";
 import { DateTime } from "luxon";
 import type { App } from "obsidian";
 
@@ -156,7 +156,7 @@ export function renderHeatmapInto(
 	const legendContainer = container.createDiv(cls("heatmap-legend-container"));
 	const svgContainer = container.createDiv({
 		cls: cls("heatmap-container"),
-		attr: { "data-testid": "prisma-heatmap-container" },
+		attr: { "data-testid": tid("heatmap-container") },
 	});
 	const dayDetailPanel = container.createDiv(cls("heatmap-day-detail"));
 

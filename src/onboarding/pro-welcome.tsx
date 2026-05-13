@@ -1,8 +1,9 @@
-import { buildUtmUrl } from "@real1ty-obsidian-plugins";
+import { buildUtmUrl, cls, tid } from "@real1ty-obsidian-plugins";
 import { showReactModal, WelcomeModalShell } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { memo } from "react";
 
+import { CSS_PREFIX } from "../constants";
 import { ACCOUNT_URL } from "../core/license";
 
 const proUtm = (url: string, content: string) =>
@@ -10,11 +11,11 @@ const proUtm = (url: string, content: string) =>
 
 const TAGLINE = (
 	<>
-		<span className="prisma-welcome-tagline-sub">
+		<span className={cls("welcome-tagline-sub")}>
 			You now have full access to all Pro features. Your 30-day free trial has started — take your time exploring
 			everything.
 		</span>
-		<span className="prisma-welcome-tagline-sub">
+		<span className={cls("welcome-tagline-sub")}>
 			Start by connecting your calendar, exploring advanced views, or using AI to plan your events.
 		</span>
 	</>
@@ -51,11 +52,11 @@ export const ProWelcomeController = memo(function ProWelcomeController({ onSubmi
 			footerLinks={FOOTER_LINKS}
 			onSubmit={onSubmit}
 		>
-			<p className="prisma-pro-welcome-trial">30-day free trial — cancel anytime before billing starts.</p>
+			<p className={cls("pro-welcome-trial")}>30-day free trial — cancel anytime before billing starts.</p>
 
-			<section className="prisma-pro-welcome-highlights">
-				<h3 className="prisma-pro-welcome-highlights-title">What's now unlocked</h3>
-				<div className="prisma-pro-welcome-grid">
+			<section className={cls("pro-welcome-highlights")}>
+				<h3 className={cls("pro-welcome-highlights-title")}>What's now unlocked</h3>
+				<div className={cls("pro-welcome-grid")}>
 					<HighlightCard
 						title="See your time differently"
 						desc="Use Gantt, Heatmap, and Dashboard to understand patterns and dependencies."
@@ -72,7 +73,7 @@ export const ProWelcomeController = memo(function ProWelcomeController({ onSubmi
 				</div>
 			</section>
 
-			<section className="prisma-pro-welcome-next">
+			<section className={cls("pro-welcome-next")}>
 				<h3>Start here</h3>
 				<ul>
 					<li>Connect your external calendar (CalDAV / ICS)</li>
@@ -81,7 +82,7 @@ export const ProWelcomeController = memo(function ProWelcomeController({ onSubmi
 				</ul>
 			</section>
 
-			<section className="prisma-pro-welcome-cta">
+			<section className={cls("pro-welcome-cta")}>
 				<p>
 					Prisma is in active development and improving continuously. Your feedback directly shapes what gets built
 					next.
@@ -111,9 +112,9 @@ export const ProWelcomeController = memo(function ProWelcomeController({ onSubmi
 
 function HighlightCard({ title, desc }: { title: string; desc: string }) {
 	return (
-		<div className="prisma-pro-welcome-highlight-card">
-			<span className="prisma-pro-welcome-highlight-title">{title}</span>
-			<span className="prisma-pro-welcome-highlight-desc">{desc}</span>
+		<div className={cls("pro-welcome-highlight-card")}>
+			<span className={cls("pro-welcome-highlight-title")}>{title}</span>
+			<span className={cls("pro-welcome-highlight-desc")}>{desc}</span>
 		</div>
 	);
 }
@@ -121,10 +122,10 @@ function HighlightCard({ title, desc }: { title: string; desc: string }) {
 export function showProWelcomeModal(app: App): void {
 	showReactModal({
 		app,
-		cls: "prisma-welcome-modal",
-		testId: "prisma-pro-welcome-modal",
-		cssPrefix: "prisma-",
-		testIdPrefix: "prisma-",
+		cls: cls("welcome-modal"),
+		testId: tid("pro-welcome-modal"),
+		cssPrefix: CSS_PREFIX,
+		testIdPrefix: CSS_PREFIX,
 		render: (close) => <ProWelcomeController onSubmit={close} />,
 	});
 }

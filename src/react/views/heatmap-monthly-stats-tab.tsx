@@ -1,4 +1,4 @@
-import { createGridLayout, type GridLayoutHandle } from "@real1ty-obsidian-plugins";
+import { cls, createGridLayout, type GridLayoutHandle, tid } from "@real1ty-obsidian-plugins";
 import { useApp, useSubscription } from "@real1ty-obsidian-plugins-react";
 import { memo, type Ref, useEffect, useImperativeHandle, useMemo, useRef } from "react";
 import { merge } from "rxjs";
@@ -32,7 +32,7 @@ const HeatmapMonthlyStatsBody = memo(function HeatmapMonthlyStatsBody({ handleRe
 		let statsHandle: IntervalStatsViewHandle | null = null;
 
 		gridHandle = createGridLayout(el, {
-			cssPrefix: "prisma-heatmap-monthly-stats-",
+			cssPrefix: cls("heatmap-monthly-stats-"),
 			columns: 2,
 			rows: 1,
 			gap: "12px",
@@ -94,7 +94,7 @@ const HeatmapMonthlyStatsBody = memo(function HeatmapMonthlyStatsBody({ handleRe
 	);
 
 	return (
-		<div ref={containerRef} style={{ flex: "1 1 auto", minHeight: 0 }} data-testid="prisma-heatmap-monthly-stats-tab" />
+		<div ref={containerRef} style={{ flex: "1 1 auto", minHeight: 0 }} data-testid={tid("heatmap-monthly-stats-tab")} />
 	);
 });
 

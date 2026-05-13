@@ -1,3 +1,4 @@
+import { cls, hasCls, tid } from "@real1ty-obsidian-plugins";
 import { SVG, type Svg } from "@svgdotjs/svg.js";
 import type { Subscription } from "rxjs";
 import { distinctUntilChanged, map } from "rxjs";
@@ -7,7 +8,7 @@ import type { DependencyGraph, EventIdMap } from "../core/dependency-graph";
 import type { CalendarSettingsStore } from "../core/settings-store";
 import type { CalendarEvent } from "../types/calendar";
 
-const ARROW_MARKER_ID = "prisma-arrow-head";
+const ARROW_MARKER_ID = tid("arrow-head");
 const SVG_Z_VAR = "--prisma-connection-z";
 const Z_ABOVE_ALLDAY = "12";
 const Z_BELOW_ALLDAY = "5";
@@ -45,7 +46,7 @@ export class ConnectionRenderer {
 		this.container = container;
 		container.style.setProperty(SVG_Z_VAR, Z_ABOVE_ALLDAY);
 
-		this.svg = SVG().addTo(container).addClass("prisma-connection-overlay");
+		this.svg = SVG().addTo(container).addClass(cls("connection-overlay"));
 		this.svg.css({ position: "absolute", inset: "0", "pointer-events": "none", overflow: "visible" });
 
 		this.resizeObserver = new ResizeObserver(() => this.syncSize());
@@ -148,7 +149,7 @@ export class ConnectionRenderer {
 	}
 
 	private updateZIndex(): void {
-		if (!this.container.classList.contains("prisma-sticky-all-day-events")) {
+		if (!hasCls(this.container, "sticky-all-day-events")) {
 			this.container.style.setProperty(SVG_Z_VAR, Z_ABOVE_ALLDAY);
 			return;
 		}
@@ -233,7 +234,7 @@ export class ConnectionRenderer {
 			.path(d)
 			.fill("none")
 			.stroke({ color: this.style.color, width: this.style.strokeWidth })
-			.attr({ "marker-end": `url(#${ARROW_MARKER_ID})`, "data-testid": "prisma-connection-arrow" });
+			.attr({ "marker-end": `url(#${ARROW_MARKER_ID})`, "data-testid": tid("connection-arrow") });
 		if (dashed) p.attr({ "stroke-dasharray": "8 5", "data-arrow-stub": "true" });
 	}
 }

@@ -1,4 +1,4 @@
-import { buildUtmUrl } from "@real1ty-obsidian-plugins";
+import { buildUtmUrl, cls, tid } from "@real1ty-obsidian-plugins";
 import { memo, useCallback } from "react";
 
 import { PRO_PURCHASE_URL } from "../../core/license";
@@ -32,14 +32,11 @@ export const ProUpgradeBanner = memo(function ProUpgradeBanner({
 	}, [previewSrc, featureName]);
 
 	return (
-		<div
-			className="prisma-pro-upgrade-banner"
-			{...(previewKey ? { "data-testid": `prisma-pro-gate-${previewKey}` } : {})}
-		>
+		<div className={cls("pro-upgrade-banner")} {...(previewKey ? { "data-testid": tid("pro-gate", previewKey) } : {})}>
 			{previewSrc && (
-				<div className="prisma-pro-upgrade-preview" onClick={handleImageClick}>
+				<div className={cls("pro-upgrade-preview")} onClick={handleImageClick}>
 					<img
-						className="prisma-pro-upgrade-preview-img"
+						className={cls("pro-upgrade-preview-img")}
 						src={previewSrc}
 						alt={`${featureName} preview`}
 						loading="lazy"
@@ -47,22 +44,22 @@ export const ProUpgradeBanner = memo(function ProUpgradeBanner({
 					/>
 				</div>
 			)}
-			<span className="prisma-pro-upgrade-badge">PRO</span>
-			<h3 className="prisma-pro-upgrade-title">{featureName}</h3>
-			<p className="prisma-pro-upgrade-description">{description}</p>
-			<p className="prisma-pro-upgrade-trial">
+			<span className={cls("pro-upgrade-badge")}>PRO</span>
+			<h3 className={cls("pro-upgrade-title")}>{featureName}</h3>
+			<p className={cls("pro-upgrade-description")}>{description}</p>
+			<p className={cls("pro-upgrade-trial")}>
 				Try every Pro feature with a 30-day free trial &mdash; cancel anytime.{" "}
-				<a className="prisma-pro-upgrade-learn-more" href={learnMoreUrl} target="_blank" rel="noopener">
+				<a className={cls("pro-upgrade-learn-more")} href={learnMoreUrl} target="_blank" rel="noopener">
 					Learn more about Pro
 				</a>
 			</p>
-			<div className="prisma-pro-upgrade-actions">
+			<div className={cls("pro-upgrade-actions")}>
 				{docUrl && (
-					<a className="prisma-pro-upgrade-doc-link" href={docUrl} target="_blank" rel="noopener">
+					<a className={cls("pro-upgrade-doc-link")} href={docUrl} target="_blank" rel="noopener">
 						View full feature documentation &rarr;
 					</a>
 				)}
-				<a className="prisma-pro-upgrade-link" href={purchaseUrl} target="_blank" rel="noopener">
+				<a className={cls("pro-upgrade-link")} href={purchaseUrl} target="_blank" rel="noopener">
 					Start your free trial
 				</a>
 			</div>
@@ -72,10 +69,10 @@ export const ProUpgradeBanner = memo(function ProUpgradeBanner({
 
 function openImageLightbox(src: string, alt: string): void {
 	const overlay = document.createElement("div");
-	overlay.className = "prisma-pro-lightbox-overlay";
+	overlay.className = cls("pro-lightbox-overlay");
 
 	const img = document.createElement("img");
-	img.className = "prisma-pro-lightbox-img";
+	img.className = cls("pro-lightbox-img");
 	img.src = src;
 	img.alt = alt;
 	img.draggable = false;

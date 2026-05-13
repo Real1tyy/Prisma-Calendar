@@ -1,4 +1,4 @@
-import { type ChartDataItem, cls, generateColors, PieChartBuilder } from "@real1ty-obsidian-plugins";
+import { addCls, type ChartDataItem, cls, generateColors, PieChartBuilder, removeCls } from "@real1ty-obsidian-plugins";
 
 import { createChartCanvas } from "../../utils/chart-utils";
 import { formatDuration, type WeeklyStatEntry } from "../../utils/stats";
@@ -42,10 +42,10 @@ export class ChartComponent {
 			toggleButton.addEventListener("click", () => {
 				this.chartVisible = !this.chartVisible;
 				if (this.chartVisible) {
-					chartContainer.classList.remove("prisma-hidden");
+					removeCls(chartContainer, "hidden");
 					toggleButton.setText("Hide chart");
 				} else {
-					chartContainer.classList.add("prisma-hidden");
+					addCls(chartContainer, "hidden");
 					toggleButton.setText("Show chart");
 				}
 			});

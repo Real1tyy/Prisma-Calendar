@@ -1,4 +1,4 @@
-import { registerComponentView, type ViewActivator, type ViewComponentConfig } from "@real1ty-obsidian-plugins";
+import { cls, registerComponentView, type ViewActivator, type ViewComponentConfig } from "@real1ty-obsidian-plugins";
 import { renderReactInline } from "@real1ty-obsidian-plugins-react";
 import type { WorkspaceLeaf } from "obsidian";
 import { createElement } from "react";
@@ -21,7 +21,7 @@ export function registerPrismaReactView(
 		viewType: bundle.viewType,
 		displayText: bundle.settingsStore.currentSettings.name,
 		icon: "calendar",
-		cls: "prisma-calendar-view-root",
+		cls: cls("calendar-view-root"),
 		render: (el, ctx) => {
 			if (ctx.type !== "view") return;
 			unmount?.();

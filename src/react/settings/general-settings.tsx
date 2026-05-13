@@ -1,4 +1,4 @@
-import { buildUtmUrl } from "@real1ty-obsidian-plugins";
+import { buildUtmUrl, cls, tid } from "@real1ty-obsidian-plugins";
 import {
 	Dropdown,
 	LicenseSection,
@@ -103,9 +103,9 @@ const ReadOnlyField = memo(function ReadOnlyField({ plugin }: { plugin: CustomCa
 		<SettingItem
 			name="Read-only mode"
 			description="Prevent automatic file modifications. When enabled, the plugin will not automatically write to files (notifications, recurring event generation). Manual actions like propagation will still work. Stored in sync.json to prevent syncing across devices."
-			testId="prisma-settings-field-readOnly"
+			testId={tid("settings-field-readOnly")}
 		>
-			<Toggle value={readOnly} onChange={handleChange} testId="prisma-settings-control-readOnly" />
+			<Toggle value={readOnly} onChange={handleChange} testId={tid("settings-control-readOnly")} />
 		</SettingItem>
 	);
 });
@@ -119,8 +119,8 @@ const SettingsTransferSection = memo(function SettingsTransferSection({ plugin }
 				defaults={plugin.settingsStore.getDefaults()}
 				nonTransferableKeys={PRISMA_NON_TRANSFERABLE_SETTINGS}
 				filename="prisma-calendar-settings.json"
-				modalClass="prisma-settings-transfer-modal"
-				testIdPrefix="prisma-settings-transfer"
+				modalClass={cls("settings-transfer-modal")}
+				testIdPrefix={tid("settings-transfer")}
 			/>
 		</>
 	);
@@ -189,57 +189,59 @@ const EventPresetsSection = memo(function EventPresetsSection({ settingsStore, p
 					Create presets with pre-configured event settings (duration, category, recurring pattern, etc.) for quick
 					event creation. Select a preset from the dropdown when creating an event to auto-fill the form.
 				</p>
-				<div className="prisma-settings-info-box">
+				<div className={cls("settings-info-box")}>
 					<strong>Example presets:</strong>
 					<ul>
 						{PRESET_EXAMPLES.map((ex) => (
-							<li key={ex.name} className="prisma-color-example-item">
+							<li key={ex.name} className={cls("color-example-item")}>
 								<strong>{ex.name}</strong>
 								<span>{` — ${ex.description}`}</span>
 							</li>
 						))}
 					</ul>
 				</div>
-				<p className="prisma-settings-muted">
+				<p className={cls("settings-muted")}>
 					Create and edit presets from the event modal. Here you can select a default preset and delete existing ones.
 				</p>
 			</div>
 			<SettingItem
 				name="Default preset"
 				description="Preset to auto-fill when opening the create event modal"
-				testId="prisma-settings-field-defaultPresetId"
+				testId={tid("settings-field-defaultPresetId")}
 			>
 				<Dropdown
 					value={defaultPresetId ?? ""}
 					options={presetOptions}
 					onChange={handleDefaultChange}
-					testId="prisma-settings-control-defaultPresetId"
+					testId={tid("settings-control-defaultPresetId")}
 				/>
 			</SettingItem>
 			<div ref={bannerRef} />
 			{presets.length === 0 ? (
-				<div className="prisma-event-preset-empty">No event presets defined. Create presets from the event modal.</div>
+				<div className={cls("event-preset-empty")}>No event presets defined. Create presets from the event modal.</div>
 			) : (
 				presets.map((preset) => (
-					<div key={preset.id} className="prisma-event-preset-item">
-						<div className="prisma-event-preset-name">{preset.name}</div>
-						<div className="prisma-event-preset-details">
+					<div key={preset.id} className={cls("event-preset-item")}>
+						<div className={cls("event-preset-name")}>{preset.name}</div>
+						<div className={cls("event-preset-details")}>
 							{preset.allDay !== undefined && (
-								<span className="prisma-event-preset-tag">{preset.allDay ? "All-day" : "Timed"}</span>
+								<span className={cls("event-preset-tag")}>{preset.allDay ? "All-day" : "Timed"}</span>
 							)}
-							{preset.categories && <span className="prisma-event-preset-tag">{preset.categories}</span>}
-							{preset.rruleType && <span className="prisma-event-preset-tag">{preset.rruleType}</span>}
+							{preset.categories && <span className={cls("event-preset-tag")}>{preset.categories}</span>}
+							{preset.rruleType && <span className={cls("event-preset-tag")}>{preset.rruleType}</span>}
 							{preset.futureInstancesCount && (
-								<span className="prisma-event-preset-tag">{`${preset.futureInstancesCount} instances`}</span>
+								<span className={cls("event-preset-tag")}>{`${preset.futureInstancesCount} instances`}</span>
 							)}
 							{Object.keys(preset.customProperties ?? {}).length > 0 && (
-								<span className="prisma-event-preset-tag">{`${Object.keys(preset.customProperties ?? {}).length} props`}</span>
+								<span
+									className={cls("event-preset-tag")}
+								>{`${Object.keys(preset.customProperties ?? {}).length} props`}</span>
 							)}
 						</div>
-						<div className="prisma-event-preset-controls">
+						<div className={cls("event-preset-controls")}>
 							<button
 								type="button"
-								className="prisma-event-preset-btn prisma-event-preset-btn-delete"
+								className={cls("event-preset-btn", "event-preset-btn-delete")}
 								onClick={() => handleDelete(preset.id)}
 							>
 								Delete
@@ -261,7 +263,7 @@ export const HelpSection = memo(function HelpSection({ plugin }: { plugin: Custo
 	return (
 		<>
 			<SettingHeading name="Help & support" />
-			<SettingCard testId="prisma-settings-help">
+			<SettingCard testId={tid("settings-help")}>
 				<p>
 					Thanks for giving Prisma a try. I hope you enjoy using it, and that it helps you become more productive and
 					organized inside Obsidian.
@@ -328,9 +330,9 @@ export const HelpSection = memo(function HelpSection({ plugin }: { plugin: Custo
 			<SettingItem
 				name="Changelog"
 				description="Browse the full changelog with every update since the first release"
-				testId="prisma-settings-field-changelog"
+				testId={tid("settings-field-changelog")}
 			>
-				<button type="button" onClick={handleViewChangelog} data-testid="prisma-settings-changelog-btn">
+				<button type="button" onClick={handleViewChangelog} data-testid={tid("settings-changelog-btn")}>
 					View changelog
 				</button>
 			</SettingItem>

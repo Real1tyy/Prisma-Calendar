@@ -1,3 +1,4 @@
+import { cls, tid } from "@real1ty-obsidian-plugins";
 import { ConfirmationModalContent, openConfirmation, openReactModal } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 
@@ -8,7 +9,7 @@ export function openDeleteRecurringEventsModal(app: App): Promise<boolean> {
 		confirmLabel: "Yes, delete all",
 		cancelLabel: "No",
 		destructive: true,
-		testIdPrefix: "prisma-delete-recurring-",
+		testIdPrefix: tid("delete-recurring-"),
 	}).then((r) => r !== null);
 }
 
@@ -34,9 +35,9 @@ export function openCalendarIntegrationDeleteEventsModal(
 	return openReactModal<"confirm" | "cancel">({
 		app,
 		title,
-		testId: "prisma-modal-integration-delete",
-		cssPrefix: "prisma-integration-delete-",
-		testIdPrefix: "prisma-integration-delete-",
+		testId: tid("modal-integration-delete"),
+		cssPrefix: cls("integration-delete-"),
+		testIdPrefix: tid("integration-delete-"),
 		render: (submit) => (
 			<ConfirmationModalContent
 				title={title}

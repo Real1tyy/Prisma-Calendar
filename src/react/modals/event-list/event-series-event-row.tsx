@@ -1,3 +1,4 @@
+import { cls } from "@real1ty-obsidian-plugins";
 import type { CSSProperties } from "react";
 import { memo, useEffect, useRef } from "react";
 
@@ -20,13 +21,11 @@ export const EventSeriesEventRow = memo(function EventSeriesEventRow({
 }) {
 	const rowRef = useRef<HTMLDivElement>(null);
 
-	const classNames = [
-		"prisma-recurring-event-row",
-		isPast && "prisma-recurring-event-past",
-		item.color && "prisma-recurring-event-colorized",
-	]
-		.filter(Boolean)
-		.join(" ");
+	const classNames = cls(
+		"recurring-event-row",
+		isPast ? "recurring-event-past" : "",
+		item.color ? "recurring-event-colorized" : ""
+	);
 
 	const style: CSSProperties | undefined = item.color ? ({ "--event-color": item.color } as CSSProperties) : undefined;
 
@@ -55,10 +54,8 @@ export const EventSeriesEventRow = memo(function EventSeriesEventRow({
 			data-event-date={dateIso}
 			data-event-skipped={item.skipped ? "true" : "false"}
 		>
-			<div className="prisma-recurring-event-date">{`${dateIso} (${item.date.toFormat("EEE")})`}</div>
-			<div className={`prisma-recurring-event-title${item.skipped ? " prisma-recurring-event-skipped" : ""}`}>
-				{item.title}
-			</div>
+			<div className={cls("recurring-event-date")}>{`${dateIso} (${item.date.toFormat("EEE")})`}</div>
+			<div className={cls("recurring-event-title", item.skipped ? "recurring-event-skipped" : "")}>{item.title}</div>
 		</div>
 	);
 });

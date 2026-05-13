@@ -1,4 +1,4 @@
-import { cls } from "@real1ty-obsidian-plugins";
+import { cls, tid } from "@real1ty-obsidian-plugins";
 import { useSchemaField } from "@real1ty-obsidian-plugins-react";
 import { memo, useMemo } from "react";
 
@@ -23,7 +23,7 @@ export const NormalizationConflictBanner = memo(function NormalizationConflictBa
 		<div
 			role="alert"
 			className={cls("normalization-conflict-banner")}
-			data-testid={`prisma-normalization-conflict-${calendarId}`}
+			data-testid={tid("normalization-conflict", calendarId)}
 		>
 			<span aria-hidden="true" className={cls("normalization-conflict-icon")}>
 				⚠

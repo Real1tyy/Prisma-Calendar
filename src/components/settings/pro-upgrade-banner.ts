@@ -1,4 +1,4 @@
-import { buildUtmUrl, cls } from "@real1ty-obsidian-plugins";
+import { buildUtmUrl, cls, tid } from "@real1ty-obsidian-plugins";
 
 import { PRO_PURCHASE_URL } from "../../core/license";
 import {
@@ -18,7 +18,7 @@ export function renderProUpgradeBanner(
 ): void {
 	const banner = containerEl.createDiv(cls("pro-upgrade-banner"));
 	if (previewKey) {
-		banner.setAttribute("data-testid", `prisma-pro-gate-${previewKey}`);
+		banner.setAttribute("data-testid", tid("pro-gate", previewKey));
 	}
 
 	if (previewKey) {

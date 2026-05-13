@@ -1,4 +1,4 @@
-import { cls, toLocalISOString } from "@real1ty-obsidian-plugins";
+import { cls, tid, toLocalISOString } from "@real1ty-obsidian-plugins";
 import { debounceTime, merge, type Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
@@ -66,7 +66,7 @@ export function renderIntervalStatsBody(
 
 	if (stats.entries.length === 0) {
 		const emptyEl = container.createDiv({ text: emptyMessage, cls: cls("stats-empty") });
-		emptyEl.setAttribute("data-testid", "prisma-stats-empty");
+		emptyEl.setAttribute("data-testid", tid("stats-empty"));
 		return { chart: null, table: null };
 	}
 
@@ -102,14 +102,14 @@ export function renderIntervalStatsInto(
 	const headerBar = container.createDiv(cls("daily-stats-header-bar"));
 	const headerLeft = headerBar.createDiv(cls("daily-stats-header-left"));
 	const dateLabel = headerBar.createDiv(cls("stats-tab-date-label"));
-	dateLabel.setAttribute("data-testid", "prisma-stats-date-label");
+	dateLabel.setAttribute("data-testid", tid("stats-date-label"));
 	const headerRight = headerBar.createDiv(cls("daily-stats-header-right"));
 
 	const skipLabel = headerRight.createEl("label", { cls: cls("stats-skip-checkbox-label") });
 	const skipCheckbox = skipLabel.createEl("input", {
 		type: "checkbox",
 		cls: cls("stats-skip-checkbox"),
-		attr: { "data-testid": "prisma-stats-skip-checkbox" },
+		attr: { "data-testid": tid("stats-skip-checkbox") },
 	});
 	skipLabel.createSpan({ text: "Include skipped", cls: cls("stats-skip-checkbox-text") });
 	skipCheckbox.addEventListener("change", () => {
@@ -122,7 +122,7 @@ export function renderIntervalStatsInto(
 	const toggleButton = aggregationToggle.createEl("button", {
 		text: aggregationMode === "name" ? "Event Name" : "Category",
 		cls: cls("stats-mode-button-compact"),
-		attr: { "data-testid": "prisma-stats-mode-button" },
+		attr: { "data-testid": tid("stats-mode-button") },
 	});
 	toggleButton.addEventListener("click", () => {
 		aggregationMode = aggregationMode === "name" ? "category" : "name";
@@ -164,7 +164,7 @@ export function renderIntervalStatsInto(
 		headerLeft.empty();
 		const durationStat = headerLeft.createEl("button", {
 			cls: cls("stats-header-stat", "stats-duration-toggle"),
-			attr: { "data-testid": "prisma-stats-total-duration" },
+			attr: { "data-testid": tid("stats-total-duration") },
 		});
 		durationStat.setText(
 			`⏱ ${showDecimalHours ? formatDurationAsDecimalHours(stats.totalDuration) : formatDuration(stats.totalDuration)}`
@@ -176,7 +176,7 @@ export function renderIntervalStatsInto(
 
 		const eventCount = stats.entries.reduce((sum, e) => sum + e.count, 0);
 		const countEl = headerLeft.createDiv({ cls: cls("stats-header-stat") });
-		countEl.setAttribute("data-testid", "prisma-stats-total-count");
+		countEl.setAttribute("data-testid", tid("stats-total-count"));
 		countEl.setText(`📅 ${eventCount} events`);
 
 		const body = renderIntervalStatsBody(contentContainer, bundle, {

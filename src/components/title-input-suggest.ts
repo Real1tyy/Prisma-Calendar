@@ -1,4 +1,4 @@
-import { cls } from "@real1ty-obsidian-plugins";
+import { cls, tid } from "@real1ty-obsidian-plugins";
 import { AbstractInputSuggest, type App } from "obsidian";
 
 import type { CalendarBundle } from "../core/calendar-bundle";
@@ -93,7 +93,7 @@ export class TitleInputSuggest extends AbstractInputSuggest<TitleSuggestion> {
 
 	override renderSuggestion(suggestion: TitleSuggestion, el: HTMLElement): void {
 		el.addClass(cls("suggest-item"));
-		el.setAttribute("data-testid", "prisma-title-suggest-item");
+		el.setAttribute("data-testid", tid("title-suggest-item"));
 		el.setAttribute("data-suggest-source", suggestion.source);
 		el.setAttribute("data-suggest-text", suggestion.text);
 

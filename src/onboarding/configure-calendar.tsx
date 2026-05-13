@@ -1,3 +1,4 @@
+import { cls, tid } from "@real1ty-obsidian-plugins";
 import { openReactModal, TextInput } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { memo, useCallback, useEffect, useState } from "react";
@@ -30,8 +31,8 @@ export async function openConfigureCalendarModal(
 ): Promise<ConfigureCalendarResult | null> {
 	return openReactModal<ConfigureCalendarResult>({
 		app,
-		cls: "prisma-configure-calendar-modal",
-		testId: "prisma-configure-calendar-modal",
+		cls: cls("configure-calendar-modal"),
+		testId: tid("configure-calendar-modal"),
 		render: (submit, cancel) => (
 			<ConfigureCalendarController
 				loadSuggestions={() => scanVaultForDirectorySuggestions(app)}
@@ -59,7 +60,7 @@ export const ConfigureCalendarController = memo(function ConfigureCalendarContro
 	const [endProp, setEndProp] = useState(initialValues.endProp);
 	const [dateProp, setDateProp] = useState(initialValues.dateProp);
 
-	const tid = (suffix: string) => `prisma-configure-${suffix}`;
+	const configureTid = (suffix: string) => tid("configure", suffix);
 	const matchedSuggestion = suggestions.find((s) => s.directory === directory.trim()) ?? null;
 
 	useEffect(() => {
@@ -100,9 +101,9 @@ export const ConfigureCalendarController = memo(function ConfigureCalendarContro
 	};
 
 	return (
-		<div className="prisma-configure-calendar">
-			<h2 className="prisma-configure-calendar-title">Configure calendar</h2>
-			<p className="prisma-configure-calendar-desc">
+		<div className={cls("configure-calendar")}>
+			<h2 className={cls("configure-calendar-title")}>Configure calendar</h2>
+			<p className={cls("configure-calendar-desc")}>
 				Set the directory and property names for this planning system. Prisma scans your vault to detect folders with
 				date-like frontmatter so you can pick one directly.
 			</p>
@@ -113,17 +114,17 @@ export const ConfigureCalendarController = memo(function ConfigureCalendarContro
 					placeholder={initialValues.directory || "e.g. Calendar, Tasks"}
 					onChange={setDirectory}
 					debounceMs={0}
-					testId={tid("directory-input")}
+					testId={configureTid("directory-input")}
 				/>
 			</Field>
 
-			<div className="prisma-first-launch-suggestions">
+			<div className={cls("first-launch-suggestions")}>
 				<SuggestionList
 					suggestions={suggestions}
 					isLoading={isLoading}
 					selectedDirectory={directory}
 					onSelect={selectSuggestion}
-					testIdPrefix="prisma-configure"
+					testIdPrefix={configureTid("configure")}
 				/>
 			</div>
 
@@ -136,14 +137,14 @@ export const ConfigureCalendarController = memo(function ConfigureCalendarContro
 				onDatePropChange={setDateProp}
 				placeholders={initialValues}
 				suggestion={matchedSuggestion}
-				testIdPrefix="prisma-configure"
+				testIdPrefix={configureTid("configure")}
 			/>
 
-			<div className="prisma-configure-calendar-actions">
-				<button type="button" onClick={onCancel} data-testid={tid("cancel")}>
+			<div className={cls("configure-calendar-actions")}>
+				<button type="button" onClick={onCancel} data-testid={configureTid("cancel")}>
 					Cancel
 				</button>
-				<button type="button" className="mod-cta" onClick={handleSubmit} data-testid={tid("save")}>
+				<button type="button" className="mod-cta" onClick={handleSubmit} data-testid={configureTid("save")}>
 					Save
 				</button>
 			</div>

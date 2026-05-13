@@ -1,4 +1,4 @@
-import { cls } from "@real1ty-obsidian-plugins";
+import { cls, tid } from "@real1ty-obsidian-plugins";
 
 import type { WeeklyStatEntry } from "../../utils/stats";
 import { formatDuration, formatDurationAsDecimalHours, formatPercentage } from "../../utils/stats";
@@ -30,7 +30,7 @@ export class TableComponent {
 
 		const table = tableContainer.createEl("table", {
 			cls: cls("stats-table"),
-			attr: { "data-testid": "prisma-stats-table" },
+			attr: { "data-testid": tid("stats-table") },
 		});
 
 		// Table header
@@ -63,7 +63,7 @@ export class TableComponent {
 		// Render current page entries
 		for (const entry of pageEntries) {
 			const row = this.tableBody.createEl("tr");
-			row.setAttribute("data-testid", `prisma-stats-entry-${entry.name}`);
+			row.setAttribute("data-testid", tid("stats-entry", entry.name));
 			row.setAttribute("data-entry-name", entry.name);
 			row.createEl("td", {
 				text: entry.name,
@@ -71,11 +71,11 @@ export class TableComponent {
 			});
 			row.createEl("td", {
 				text: entry.count.toString(),
-				attr: { "data-testid": `prisma-stats-entry-count-${entry.name}` },
+				attr: { "data-testid": tid("stats-entry-count", entry.name) },
 			});
 			row.createEl("td", {
 				text: this.showDecimalHours ? formatDurationAsDecimalHours(entry.duration) : formatDuration(entry.duration),
-				attr: { "data-testid": `prisma-stats-entry-duration-${entry.name}` },
+				attr: { "data-testid": tid("stats-entry-duration", entry.name) },
 			});
 			row.createEl("td", {
 				text: formatPercentage(entry.duration, this.totalDuration),

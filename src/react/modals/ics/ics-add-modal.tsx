@@ -1,3 +1,4 @@
+import { cls, tid } from "@real1ty-obsidian-plugins";
 import { ModalForm, openReactModal, SchemaForm, useZodForm } from "@real1ty-obsidian-plugins-react";
 import { nanoid } from "nanoid";
 import type { App } from "obsidian";
@@ -96,15 +97,15 @@ function ICSAddForm({ app, settingsStore, calendarId, onSubmit, onCancel }: ICSA
 				fieldOverrides={{
 					urlSecretName: { label: "ICS URL" },
 				}}
-				testIdPrefix="prisma-ics-add-"
+				testIdPrefix={tid("ics-add-")}
 			/>
 
 			<button
 				type="button"
-				className="prisma-caldav-test-button"
+				className={cls("caldav-test-button")}
 				onClick={() => void runTest()}
 				disabled={testing}
-				data-testid="prisma-ics-test-url"
+				data-testid={tid("ics-test-url")}
 			>
 				{testing ? "Testing..." : "Test URL"}
 			</button>
@@ -120,8 +121,8 @@ export function openICSAddModal(
 	return openReactModal<ICSSubscription>({
 		app,
 		title: "Add ICS subscription",
-		cls: "prisma-caldav-modal",
-		testId: "prisma-modal-ics-add",
+		cls: cls("caldav-modal"),
+		testId: tid("modal-ics-add"),
 		render: (submit, cancel) => (
 			<ICSAddForm app={app} settingsStore={settingsStore} calendarId={calendarId} onSubmit={submit} onCancel={cancel} />
 		),

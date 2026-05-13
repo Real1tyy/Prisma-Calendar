@@ -2,12 +2,15 @@ import {
 	bulkDeleteCategoryFromFiles,
 	bulkRenameCategoryInFiles,
 	type CategoryOperationResult,
+	cls,
 	showProgressModal,
+	tid,
 } from "@real1ty-obsidian-plugins";
 import { openConfirmation, openRenameModal } from "@real1ty-obsidian-plugins-react";
 import { type App, TFile } from "obsidian";
 import { memo } from "react";
 
+import { CSS_PREFIX } from "../../../constants";
 import type { CategoryTracker } from "../../../core/category-tracker";
 import type { CalendarSettingsStore } from "../../../core/settings-store";
 
@@ -26,15 +29,15 @@ const UntrackedToggle = memo(function UntrackedToggle({ value, untrackedCount, o
 	if (untrackedCount === 0) return null;
 	return (
 		<label
-			className="prisma-category-operation-untracked-toggle"
-			data-testid="prisma-category-include-untracked-label"
+			className={cls("category-operation-untracked-toggle")}
+			data-testid={tid("category-include-untracked-label")}
 			style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "12px" }}
 		>
 			<input
 				type="checkbox"
 				checked={value}
 				onChange={(e) => onChange(e.target.checked)}
-				data-testid="prisma-category-include-untracked-toggle"
+				data-testid={tid("category-include-untracked-toggle")}
 			/>
 			<span>
 				Also apply to {untrackedCount} untracked event{untrackedCount === 1 ? "" : "s"} with this category
@@ -84,7 +87,7 @@ async function runCategoryBulkOperation({
 
 	const progress = showProgressModal({
 		app,
-		cssPrefix: "prisma-",
+		cssPrefix: CSS_PREFIX,
 		total: files.length,
 		title: `${operationTitle}...`,
 		statusTemplate: `${operationTitle} {current} of {total}...`,
@@ -131,7 +134,7 @@ export function openCategoryRenameModal(
 		title: `Rename category (${stats.total} event${stats.total === 1 ? "" : "s"})`,
 		initialValue: "",
 		description: `Renaming will update ${stats.total} event${stats.total === 1 ? "" : "s"} that use "${categoryName}".`,
-		testIdPrefix: "prisma-category-",
+		testIdPrefix: tid("category-"),
 		initialExtras: { includeUntracked: true },
 		renderExtras: (state, setState) => (
 			<UntrackedToggle
@@ -183,7 +186,7 @@ export function openCategoryDeleteModal(
 		message,
 		confirmLabel: "Delete",
 		destructive: true,
-		testIdPrefix: "prisma-category-delete-",
+		testIdPrefix: tid("category-delete-"),
 		initialExtras: { includeUntracked: true },
 		renderExtras: (state, setState) => (
 			<UntrackedToggle

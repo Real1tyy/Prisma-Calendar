@@ -1,3 +1,4 @@
+import { cls, tid } from "@real1ty-obsidian-plugins";
 import { ModalForm, openReactModal, SchemaForm, useZodForm } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { Notice } from "obsidian";
@@ -60,7 +61,7 @@ function ICSEditForm({ settingsStore, subscription, onSubmit, onCancel }: ICSEdi
 
 	return (
 		<ModalForm onSubmit={handleSubmit} onCancel={onCancel}>
-			<SchemaForm form={form} schema={ICSEditSchema} testIdPrefix="prisma-ics-edit-" />
+			<SchemaForm form={form} schema={ICSEditSchema} testIdPrefix={tid("ics-edit-")} />
 		</ModalForm>
 	);
 }
@@ -73,8 +74,8 @@ export function openICSEditModal(
 	return openReactModal<void>({
 		app,
 		title: `Edit: ${subscription.name}`,
-		cls: "prisma-caldav-modal",
-		testId: "prisma-modal-ics-edit",
+		cls: cls("caldav-modal"),
+		testId: tid("modal-ics-edit"),
 		render: (submit, cancel) => (
 			<ICSEditForm
 				settingsStore={settingsStore}

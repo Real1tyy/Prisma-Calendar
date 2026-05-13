@@ -1,3 +1,4 @@
+import { tid } from "@real1ty-obsidian-plugins";
 import { ModalSchemaForm, openReactModal, SchemaForm, useZodForm } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { useMemo } from "react";
@@ -40,8 +41,8 @@ function MoveToCalendarForm({ options, onSubmit, onCancel }: MoveToCalendarFormP
 			onSubmit={(values: MoveToCalendarValues) => onSubmit(values.calendarId)}
 			onCancel={onCancel}
 			submitLabel="Move"
-			submitTestId="prisma-move-to-calendar-submit"
-			cancelTestId="prisma-move-to-calendar-cancel"
+			submitTestId={tid("move-to-calendar-submit")}
+			cancelTestId={tid("move-to-calendar-cancel")}
 		>
 			<SchemaForm
 				form={form}
@@ -49,7 +50,7 @@ function MoveToCalendarForm({ options, onSubmit, onCancel }: MoveToCalendarFormP
 				fieldOverrides={{
 					calendarId: { options: calendarOptions },
 				}}
-				testIdPrefix="prisma-move-to-calendar-"
+				testIdPrefix={tid("move-to-calendar-")}
 			/>
 		</ModalSchemaForm>
 	);
@@ -73,7 +74,7 @@ export function openMoveToCalendarModal(
 	return openReactModal<string>({
 		app,
 		title: "Move event to planning system",
-		testId: "prisma-modal-move-to-calendar",
+		testId: tid("modal-move-to-calendar"),
 		render: (submit, cancel) => <MoveToCalendarForm options={eligible} onSubmit={submit} onCancel={cancel} />,
 	});
 }

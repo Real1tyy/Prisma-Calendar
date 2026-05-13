@@ -1,3 +1,4 @@
+import { tid } from "@real1ty-obsidian-plugins";
 import { ModalSchemaForm, openReactModal, SchemaForm, useZodForm } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { useMemo } from "react";
@@ -48,8 +49,8 @@ function CalendarSelectForm({ calendars, onSubmit, onCancel }: CalendarSelectFor
 			onSubmit={onSubmit}
 			onCancel={onCancel}
 			submitLabel="Export"
-			submitTestId="prisma-ics-export-submit"
-			cancelTestId="prisma-ics-export-cancel"
+			submitTestId={tid("ics-export-submit")}
+			cancelTestId={tid("ics-export-cancel")}
 		>
 			<SchemaForm
 				form={form}
@@ -58,7 +59,7 @@ function CalendarSelectForm({ calendars, onSubmit, onCancel }: CalendarSelectFor
 					calendar: { options: calendarOptions },
 					timezone: { options: TIMEZONE_LABELS },
 				}}
-				testIdPrefix="prisma-ics-export-"
+				testIdPrefix={tid("ics-export-")}
 			/>
 		</ModalSchemaForm>
 	);
@@ -68,7 +69,7 @@ export function openCalendarSelectModal(app: App, calendars: CalendarBundle[]): 
 	return openReactModal<ExportOptions>({
 		app,
 		title: "Export calendar",
-		testId: "prisma-modal-calendar-select",
+		testId: tid("modal-calendar-select"),
 		render: (submit, cancel) => (
 			<CalendarSelectForm
 				calendars={calendars}

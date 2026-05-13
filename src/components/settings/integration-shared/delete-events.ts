@@ -1,6 +1,7 @@
 import { showProgressModal } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 
+import { CSS_PREFIX } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { TrackedSyncEvent } from "../../../core/integrations/base-sync-state-manager";
 import { deleteFilesByPaths } from "../../../utils/obsidian";
@@ -15,7 +16,7 @@ export async function deleteTrackedIntegrationEvents(
 ): Promise<void> {
 	const progress = showProgressModal({
 		app,
-		cssPrefix: "prisma-",
+		cssPrefix: CSS_PREFIX,
 		total: events.length,
 		title: "Deleting events...",
 		statusTemplate: "Deleting {current} of {total}...",

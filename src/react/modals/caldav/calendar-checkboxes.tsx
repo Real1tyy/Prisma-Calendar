@@ -1,5 +1,5 @@
+import { cls, tid } from "@real1ty-obsidian-plugins";
 import { memo, useCallback } from "react";
-
 interface CalendarInfo {
 	url: string;
 	displayName: string;
@@ -26,26 +26,26 @@ export const CalendarCheckboxes = memo(function CalendarCheckboxes({
 
 	if (calendars.length === 0) {
 		return (
-			<div className="prisma-caldav-calendar-selector">
-				<p className="prisma-settings-muted">Test connection to discover available calendars</p>
+			<div className={cls("caldav-calendar-selector")}>
+				<p className={cls("settings-muted")}>Test connection to discover available calendars</p>
 			</div>
 		);
 	}
 
 	return (
-		<div className="prisma-caldav-calendar-selector" data-testid="prisma-caldav-calendar-selector">
+		<div className={cls("caldav-calendar-selector")} data-testid={tid("caldav-calendar-selector")}>
 			<h3>Select calendars to sync</h3>
 			{calendars.map((cal) => (
-				<div key={cal.url} className="prisma-caldav-calendar-item">
+				<div key={cal.url} className={cls("caldav-calendar-item")}>
 					<input
 						type="checkbox"
 						checked={selected.includes(cal.url)}
 						onChange={(e) => handleToggle(cal.url, e.target.checked)}
-						data-testid={`prisma-caldav-calendar-${cal.url}`}
+						data-testid={tid("caldav-calendar", cal.url)}
 					/>
 					<label>
 						<strong>{cal.displayName}</strong>
-						{cal.description && <span className="prisma-settings-muted"> — {cal.description}</span>}
+						{cal.description && <span className={cls("settings-muted")}> — {cal.description}</span>}
 					</label>
 				</div>
 			))}

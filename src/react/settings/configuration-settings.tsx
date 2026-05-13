@@ -1,3 +1,4 @@
+import { cls, tid } from "@real1ty-obsidian-plugins";
 import { SettingHeading, Toggle, useSchemaField } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useMemo } from "react";
 
@@ -65,12 +66,12 @@ const ToolbarSection = memo(function ToolbarSection({
 				</div>
 				<div className="setting-item-control" />
 			</div>
-			<div className="prisma-batch-buttons-container">
+			<div className={cls("batch-buttons-container")}>
 				{TOOLBAR_BUTTON_IDS.map((buttonId) => (
 					<div
 						key={buttonId}
 						className="setting-item prisma-batch-button-setting"
-						data-testid={`prisma-settings-field-${configKey}-${buttonId}`}
+						data-testid={tid("settings-field", configKey, buttonId)}
 					>
 						<div className="setting-item-info">
 							<div className="setting-item-name">{TOOLBAR_BUTTON_LABELS[buttonId] || buttonId}</div>
@@ -79,7 +80,7 @@ const ToolbarSection = memo(function ToolbarSection({
 							<Toggle
 								value={enabled.has(buttonId)}
 								onChange={(v) => handleToggle(buttonId, v)}
-								testId={`prisma-settings-control-${configKey}-${buttonId}`}
+								testId={tid("settings-control", configKey, buttonId)}
 							/>
 						</div>
 					</div>
@@ -121,12 +122,12 @@ const BatchSelectionSection = memo(function BatchSelectionSection({ settingsStor
 				</div>
 				<div className="setting-item-control" />
 			</div>
-			<div className="prisma-batch-buttons-container">
+			<div className={cls("batch-buttons-container")}>
 				{BATCH_BUTTON_IDS.map((buttonId) => (
 					<div
 						key={buttonId}
 						className="setting-item prisma-batch-button-setting"
-						data-testid={`prisma-settings-field-batchActionButtons-${buttonId}`}
+						data-testid={tid("settings-field-batchActionButtons", buttonId)}
 					>
 						<div className="setting-item-info">
 							<div className="setting-item-name">{BATCH_BUTTON_LABELS[buttonId] || buttonId}</div>
@@ -135,7 +136,7 @@ const BatchSelectionSection = memo(function BatchSelectionSection({ settingsStor
 							<Toggle
 								value={enabled.has(buttonId)}
 								onChange={(v) => handleToggle(buttonId, v)}
-								testId={`prisma-settings-control-batchActionButtons-${buttonId}`}
+								testId={tid("settings-control-batchActionButtons", buttonId)}
 							/>
 						</div>
 					</div>

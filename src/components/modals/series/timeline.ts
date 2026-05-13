@@ -4,6 +4,7 @@ import {
 	ColorEvaluator,
 	MS_PER_DAY,
 	showModal,
+	tid,
 	toLocalISOString,
 } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
@@ -196,7 +197,7 @@ export function renderTimelineInto(
 
 	const timelineContainer = container.createDiv({
 		cls: cls("timeline-modal-container"),
-		attr: { "data-testid": "prisma-timeline-container" },
+		attr: { "data-testid": tid("timeline-container") },
 	});
 
 	function openPreviewModal(event: CalendarEvent): void {

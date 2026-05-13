@@ -1,4 +1,5 @@
 import type { ColorRule } from "@real1ty-obsidian-plugins";
+import { cls, tid } from "@real1ty-obsidian-plugins";
 import { ColorInput, SettingHeading, SettingItem, useSchemaField } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useState } from "react";
 
@@ -64,7 +65,7 @@ const ColorRulesSection = memo(function ColorRulesSection({ settingsStore }: Col
 					determines the event color.
 				</p>
 				<ExamplesList title="Example color rules:" examples={COLOR_RULE_EXAMPLES} />
-				<div className="prisma-settings-warning-box">
+				<div className={cls("settings-warning-box")}>
 					<strong>&#9888;&#65039; important:</strong>
 					<p>Use property names directly — invalid expressions will be ignored</p>
 				</div>
@@ -73,7 +74,7 @@ const ColorRulesSection = memo(function ColorRulesSection({ settingsStore }: Col
 			<ColorRulesList colorRules={colorRules} setColorRules={setColorRules} />
 
 			<SettingItem name="Add color rule" description="Add a new color rule">
-				<button type="button" onClick={handleAddRule} data-testid="prisma-rules-add-color-rule">
+				<button type="button" onClick={handleAddRule} data-testid={tid("rules-add-color-rule")}>
 					Add rule
 				</button>
 			</SettingItem>
@@ -173,10 +174,10 @@ const ColorRuleItem = memo(function ColorRuleItem({
 	);
 
 	return (
-		<div className="prisma-color-rule-item">
-			<div className="prisma-color-rule-main-row">
-				<div className="prisma-color-rule-left">
-					<span className="prisma-color-rule-order">#{index + 1}</span>
+		<div className={cls("color-rule-item")}>
+			<div className={cls("color-rule-main-row")}>
+				<div className={cls("color-rule-left")}>
+					<span className={cls("color-rule-order")}>#{index + 1}</span>
 					<input
 						type="checkbox"
 						checked={rule.enabled}
@@ -186,24 +187,24 @@ const ColorRuleItem = memo(function ColorRuleItem({
 						type="text"
 						value={localExpression}
 						placeholder="Priority === 'High'"
-						className="prisma-color-rule-expression-input"
+						className={cls("color-rule-expression-input")}
 						onChange={(e) => setLocalExpression(e.target.value)}
 						onBlur={commitExpression}
 						onKeyDown={handleKeyDown}
-						data-testid={`prisma-rules-color-expression-${index}`}
+						data-testid={tid("rules-color-expression", index)}
 					/>
 				</div>
-				<div className="prisma-color-rule-right">
+				<div className={cls("color-rule-right")}>
 					<ColorInput
 						value={rule.color}
 						onChange={(next) => onUpdate(rule.id, { color: next })}
-						testId={`prisma-rules-color-picker-${index}`}
+						testId={tid("rules-color-picker", index)}
 					/>
-					<div className="prisma-color-rule-controls">
+					<div className={cls("color-rule-controls")}>
 						{index > 0 && (
 							<button
 								type="button"
-								className="prisma-color-rule-btn"
+								className={cls("color-rule-btn")}
 								title="Move up"
 								onClick={() => onMove(index, "up")}
 							>
@@ -213,7 +214,7 @@ const ColorRuleItem = memo(function ColorRuleItem({
 						{index < total - 1 && (
 							<button
 								type="button"
-								className="prisma-color-rule-btn"
+								className={cls("color-rule-btn")}
 								title="Move down"
 								onClick={() => onMove(index, "down")}
 							>
@@ -222,7 +223,7 @@ const ColorRuleItem = memo(function ColorRuleItem({
 						)}
 						<button
 							type="button"
-							className="prisma-color-rule-btn prisma-color-rule-btn-delete"
+							className={cls("color-rule-btn", "color-rule-btn-delete")}
 							title="Delete rule"
 							onClick={() => onDelete(rule.id)}
 						>
@@ -265,7 +266,7 @@ const FilterSection = memo(function FilterSection({ store }: FilterSectionProps)
 					evaluate to true/false. Events must pass all filters to be included.
 				</p>
 				<ExamplesList title="Example filter expressions" examples={FILTER_EXAMPLES} />
-				<div className="prisma-settings-warning-box">
+				<div className={cls("settings-warning-box")}>
 					<strong>&#9888;&#65039; important:</strong>
 					<p>
 						Use property names directly (e.g., status, priority). Invalid expressions will be ignored and logged to
@@ -292,7 +293,7 @@ const UntrackedFilterSection = memo(function UntrackedFilterSection({ store }: U
 					event filtering but only applies to untracked events in the dropdown.
 				</p>
 				<ExamplesList title="Example filter expressions" examples={UNTRACKED_FILTER_EXAMPLES} />
-				<div className="prisma-settings-warning-box">
+				<div className={cls("settings-warning-box")}>
 					<strong>&#9888;&#65039; important:</strong>
 					<p>Use property names directly. Invalid expressions will be ignored and logged to console.</p>
 				</div>
@@ -331,7 +332,7 @@ const FilterPresetsSection = memo(function FilterPresetsSection({ settingsStore 
 					the filter expression input.
 				</p>
 				<ExamplesList title="Example filter presets" examples={FILTER_PRESET_EXAMPLES} />
-				<div className="prisma-settings-warning-box">
+				<div className={cls("settings-warning-box")}>
 					<strong>&#128161; tip:</strong>
 					<p>
 						Filter presets appear in a dropdown next to the zoom button. Click a preset to instantly apply its filter
@@ -424,12 +425,12 @@ const FilterPresetItem = memo(function FilterPresetItem({ preset, index, onUpdat
 	);
 
 	return (
-		<div className="prisma-filter-preset-item">
+		<div className={cls("filter-preset-item")}>
 			<input
 				type="text"
 				value={localName}
 				placeholder="Preset name (e.g., 'Done', 'High Priority')"
-				className="prisma-filter-preset-name-input"
+				className={cls("filter-preset-name-input")}
 				onChange={(e) => setLocalName(e.target.value)}
 				onBlur={commitName}
 				onKeyDown={handleNameKeyDown}
@@ -438,14 +439,14 @@ const FilterPresetItem = memo(function FilterPresetItem({ preset, index, onUpdat
 				type="text"
 				value={localExpression}
 				placeholder="Filter expression (e.g., Status === 'Done')"
-				className="prisma-filter-preset-expression-input"
+				className={cls("filter-preset-expression-input")}
 				onChange={(e) => setLocalExpression(e.target.value)}
 				onBlur={commitExpression}
 				onKeyDown={handleExpressionKeyDown}
 			/>
 			<button
 				type="button"
-				className="prisma-filter-preset-btn-delete"
+				className={cls("filter-preset-btn-delete")}
 				title="Delete preset"
 				onClick={() => onDelete(index)}
 			>
@@ -465,20 +466,20 @@ interface ExampleItem {
 
 const ExamplesList = memo(function ExamplesList({ title, examples }: { title: string; examples: ExampleItem[] }) {
 	return (
-		<div className="prisma-settings-info-box">
+		<div className={cls("settings-info-box")}>
 			<strong>{title}</strong>
 			<ul>
 				{examples.map((ex) => (
-					<li key={ex.expression} className="prisma-color-example-item">
-						<code className="prisma-settings-info-box-example">{ex.expression}</code>
-						<span className="prisma-color-arrow">&rarr;</span>
+					<li key={ex.expression} className={cls("color-example-item")}>
+						<code className={cls("settings-info-box-example")}>{ex.expression}</code>
+						<span className={cls("color-arrow")}>&rarr;</span>
 						{ex.color && (
 							<span
-								className="prisma-color-example-dot"
+								className={cls("color-example-dot")}
 								style={{ "--example-color": ex.color } as React.CSSProperties}
 							/>
 						)}
-						<span className="prisma-color-example-description">{ex.description}</span>
+						<span className={cls("color-example-description")}>{ex.description}</span>
 					</li>
 				))}
 			</ul>
