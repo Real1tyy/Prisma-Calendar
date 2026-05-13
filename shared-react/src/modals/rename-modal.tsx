@@ -138,7 +138,7 @@ export function openRenameModal<TExtras = undefined>(
 		title: options.title ?? "Rename",
 		testId: `${testIdPrefix}rename-modal-container`,
 		...(options.cssPrefix !== undefined ? { cssPrefix: options.cssPrefix } : {}),
-		...(testIdPrefix !== "" ? { testIdPrefix } : {}),
+		testIdPrefix,
 		render: (submit, cancel) => (
 			<RenameShell<TExtras>
 				options={options}

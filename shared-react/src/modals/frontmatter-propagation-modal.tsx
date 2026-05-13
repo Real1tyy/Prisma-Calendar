@@ -90,7 +90,7 @@ export function openFrontmatterPropagationModal(
 		title: options.title ?? "Propagate frontmatter changes?",
 		testId: `${testIdPrefix}frontmatter-propagation-modal-container`,
 		...(options.cssPrefix !== undefined ? { cssPrefix: options.cssPrefix } : {}),
-		...(testIdPrefix !== "" ? { testIdPrefix } : {}),
+		testIdPrefix,
 		render: (submit, cancel) => (
 			<FrontmatterPropagationModalContent
 				sourceLabel={options.sourceLabel}
