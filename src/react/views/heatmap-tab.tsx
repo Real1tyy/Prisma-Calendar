@@ -3,6 +3,7 @@ import { memo, type Ref, useCallback, useEffect, useImperativeHandle, useRef } f
 import { distinctUntilChanged, map, merge, skip } from "rxjs";
 
 import { type HeatmapHandle, renderHeatmapInto } from "../../components/modals";
+import { CSS_PREFIX } from "../../constants";
 import { PRO_FEATURES } from "../../core/license";
 import { getHeatmapRenderingKey } from "../../utils/calendar-settings";
 import { BundleContext, useBundle } from "../contexts/bundle-context";
@@ -53,7 +54,8 @@ const HeatmapBody = memo(function HeatmapBody({ handleRef }: HeatmapTabProps) {
 			<BundleContext value={bundle}>
 				<FilterBar onFilterChange={handleFilterChange} onHandleReady={handleFilterReady} />
 			</BundleContext>,
-			app
+			app,
+			{ cssPrefix: CSS_PREFIX }
 		);
 
 		const renderingSettings$ = bundle.settingsStore.settings$.pipe(
@@ -85,7 +87,7 @@ const HeatmapBody = memo(function HeatmapBody({ handleRef }: HeatmapTabProps) {
 		[]
 	);
 
-	return <div ref={containerRef} style={{ flex: "1 1 auto", minHeight: 0 }} data-testid="prisma-heatmap-tab" />;
+	return <div ref={containerRef} style={{ flex: "1 1 auto", minHeight: 0 }} data-testid={`${CSS_PREFIX}heatmap-tab`} />;
 });
 
 export const HeatmapTab = memo(function HeatmapTab(props: HeatmapTabProps) {

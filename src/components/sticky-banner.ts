@@ -3,6 +3,7 @@ import { renderReactInline } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { createElement } from "react";
 
+import { CSS_PREFIX } from "../constants";
 import { StickyBanner } from "../react/views/sticky-banner";
 
 export interface StickyBannerHandle {
@@ -18,7 +19,9 @@ export function createStickyBanner(
 	const mount = container.createDiv();
 	addCls(mount, "sticky-banner-mount");
 
-	const unmount = renderReactInline(mount, createElement(StickyBanner, { message, onCancel }), app);
+	const unmount = renderReactInline(mount, createElement(StickyBanner, { message, onCancel }), app, {
+		cssPrefix: CSS_PREFIX,
+	});
 
 	return {
 		destroy() {

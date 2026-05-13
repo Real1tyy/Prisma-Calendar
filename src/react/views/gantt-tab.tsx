@@ -31,6 +31,7 @@ import {
 import { showEventPreviewModal } from "../../components/modals";
 import { EventCreateModal } from "../../components/modals/event/event-create-modal";
 import { EventEditModal } from "../../components/modals/event/event-edit-modal";
+import { CSS_PREFIX } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import {
 	addPrerequisite,
@@ -197,7 +198,7 @@ const GanttToolbar = memo(function GanttToolbar({
 
 	return (
 		<>
-			<button className="prisma-gantt-create-btn" onClick={onCreate} data-testid="prisma-gantt-create">
+			<button className={`${CSS_PREFIX}gantt-create-btn`} onClick={onCreate} data-testid={`${CSS_PREFIX}gantt-create`}>
 				Create
 			</button>
 			<FilterBar onFilterChange={onFilterChange} onHandleReady={onFilterReady} />
@@ -351,7 +352,7 @@ const GanttBody = memo(function GanttBody() {
 
 		barContextMenu = createCustomizableContextMenu({
 			items: buildBarMenuItems(app, bundle, getActiveEvent, runCmd, enterPrereqSelection),
-			cssPrefix: "prisma-",
+			cssPrefix: CSS_PREFIX,
 			...(bundle.settingsStore.currentSettings.ganttContextMenuState
 				? { initialState: bundle.settingsStore.currentSettings.ganttContextMenuState }
 				: {}),
@@ -366,7 +367,7 @@ const GanttBody = memo(function GanttBody() {
 		});
 
 		wrapperEl = el.createDiv({ cls: cls("gantt-wrapper") });
-		renderer = createGanttRenderer(wrapperEl, hooks, { cssPrefix: "prisma-" });
+		renderer = createGanttRenderer(wrapperEl, hooks, { cssPrefix: CSS_PREFIX });
 
 		const barContainer = wrapperEl.querySelector(`.${cls("gantt-bar-container")}`);
 		if (barContainer) {
@@ -392,7 +393,8 @@ const GanttBody = memo(function GanttBody() {
 					onFilterReady={handleFilterReady}
 				/>
 			</BundleContext>,
-			app
+			app,
+			{ cssPrefix: CSS_PREFIX }
 		);
 
 		rebuild(false);
@@ -434,7 +436,7 @@ const GanttBody = memo(function GanttBody() {
 		<div
 			ref={containerRef}
 			style={{ flex: "1 1 auto", minHeight: 0, display: "flex", flexDirection: "column" }}
-			data-testid="prisma-gantt-tab"
+			data-testid={`${CSS_PREFIX}gantt-tab`}
 		/>
 	);
 });

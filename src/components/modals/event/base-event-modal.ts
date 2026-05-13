@@ -553,7 +553,7 @@ export abstract class BaseEventModal extends Modal {
 					onBreakUpdate,
 				}),
 				this.app,
-				{ cssPrefix: CSS_PREFIX, testIdPrefix: CSS_PREFIX }
+				{ cssPrefix: CSS_PREFIX }
 			);
 		});
 	}

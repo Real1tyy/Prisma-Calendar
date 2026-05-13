@@ -27,6 +27,7 @@ import { BehaviorSubject } from "rxjs";
 import {
 	CATEGORY_HIGHLIGHT_DURATION_MS,
 	CLICK_THRESHOLD_MS,
+	CSS_PREFIX,
 	DOUBLE_TAP_DELAY_MS,
 	DRAG_EDGE_THRESHOLD_PX,
 	EVENT_HIGHLIGHT_DURATION_MS,
@@ -698,7 +699,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 					if (this.showConnections) this.renderConnections();
 				},
 			}),
-			this.app
+			this.app,
+			{ cssPrefix: CSS_PREFIX }
 		);
 	}
 

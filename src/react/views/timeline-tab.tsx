@@ -3,6 +3,7 @@ import { memo, useCallback, useEffect, useRef } from "react";
 import { debounceTime, distinctUntilChanged, map, merge, skip } from "rxjs";
 
 import { renderTimelineInto, type TimelineHandle } from "../../components/modals";
+import { CSS_PREFIX } from "../../constants";
 import { getTimelineRenderingKey } from "../../utils/calendar-settings";
 import { BundleContext, useBundle } from "../contexts/bundle-context";
 import { FilterBar, type FilterBarHandle } from "./filter-bar";
@@ -41,7 +42,8 @@ export const TimelineTab = memo(function TimelineTab() {
 			<BundleContext value={bundle}>
 				<FilterBar onFilterChange={handleFilterChange} onHandleReady={handleFilterReady} />
 			</BundleContext>,
-			app
+			app,
+			{ cssPrefix: CSS_PREFIX }
 		);
 
 		const renderingSettings$ = bundle.settingsStore.settings$.pipe(
@@ -65,5 +67,7 @@ export const TimelineTab = memo(function TimelineTab() {
 		};
 	}, [app, bundle, handleFilterChange, handleFilterReady]);
 
-	return <div ref={containerRef} style={{ flex: "1 1 auto", minHeight: 0 }} data-testid="prisma-timeline-tab" />;
+	return (
+		<div ref={containerRef} style={{ flex: "1 1 auto", minHeight: 0 }} data-testid={`${CSS_PREFIX}timeline-tab`} />
+	);
 });

@@ -16,6 +16,7 @@ import type { App, WorkspaceLeaf } from "obsidian";
 import { createElement, memo, type RefObject, useEffect, useRef } from "react";
 
 import { CalendarComponent } from "../../components/calendar-view";
+import { CSS_PREFIX } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type CustomCalendarPlugin from "../../main";
 import { getLeafContainerEl } from "../../utils/obsidian";
@@ -121,7 +122,7 @@ function buildTabs(ctx: MountCtx, viewRef: PrismaViewRef, refs: TabHandleRefs): 
 			makeReactTab(tabCtx, {
 				id: child.id,
 				label: child.label,
-				testId: `prisma-${child.id}`,
+				testId: `${CSS_PREFIX}${child.id}`,
 				render: () => child.component(),
 			})
 	);
@@ -132,14 +133,14 @@ function buildTabs(ctx: MountCtx, viewRef: PrismaViewRef, refs: TabHandleRefs): 
 			id: "timeline",
 			label: "Timeline",
 			icon: "clock",
-			testId: "prisma-timeline-tab",
+			testId: `${CSS_PREFIX}timeline-tab`,
 			render: () => createElement(TimelineTab),
 		}),
 		makeReactTab(tabCtx, {
 			id: "heatmap",
 			label: "Heatmap",
 			icon: "flame",
-			testId: "prisma-heatmap-tab",
+			testId: `${CSS_PREFIX}heatmap-tab`,
 			keyHandlers: arrowKeyHandlers(refs.heatmap, {
 				ArrowLeft: (h) => h.handleArrow("left"),
 				ArrowRight: (h) => h.handleArrow("right"),
@@ -152,14 +153,14 @@ function buildTabs(ctx: MountCtx, viewRef: PrismaViewRef, refs: TabHandleRefs): 
 			id: "gantt",
 			label: "Gantt",
 			icon: "gantt-chart",
-			testId: "prisma-gantt-tab",
+			testId: `${CSS_PREFIX}gantt-tab`,
 			render: () => createElement(GanttTab),
 		}),
 		makeReactTab(tabCtx, {
 			id: "daily-stats",
 			label: "Daily + Stats",
 			icon: "bar-chart-3",
-			testId: "prisma-daily-stats-tab",
+			testId: `${CSS_PREFIX}daily-stats-tab`,
 			keyHandlers: arrowKeyHandlers(refs.dailyStats, {
 				ArrowLeft: (h) => h.prev(),
 				ArrowRight: (h) => h.next(),
@@ -170,7 +171,7 @@ function buildTabs(ctx: MountCtx, viewRef: PrismaViewRef, refs: TabHandleRefs): 
 			id: "monthly-calendar-stats",
 			label: "Monthly + Stats",
 			icon: "calendar-range",
-			testId: "prisma-monthly-calendar-stats-tab",
+			testId: `${CSS_PREFIX}monthly-calendar-stats-tab`,
 			keyHandlers: arrowKeyHandlers(refs.monthlyStats, {
 				ArrowLeft: (h) => h.prev(),
 				ArrowRight: (h) => h.next(),
@@ -181,7 +182,7 @@ function buildTabs(ctx: MountCtx, viewRef: PrismaViewRef, refs: TabHandleRefs): 
 			id: "dual-daily",
 			label: "Dual Daily",
 			icon: "columns-2",
-			testId: "prisma-dual-daily",
+			testId: `${CSS_PREFIX}dual-daily`,
 			keyHandlers: arrowKeyHandlers(refs.dualDaily, {
 				ArrowLeft: (h) => h.prev(),
 				ArrowRight: (h) => h.next(),
@@ -198,7 +199,7 @@ function buildTabs(ctx: MountCtx, viewRef: PrismaViewRef, refs: TabHandleRefs): 
 			id: "heatmap-monthly-stats",
 			label: "Heatmap Monthly + Stats",
 			icon: "flame",
-			testId: "prisma-heatmap-monthly-stats-tab",
+			testId: `${CSS_PREFIX}heatmap-monthly-stats-tab`,
 			keyHandlers: arrowKeyHandlers(refs.heatmapMonthly, {
 				ArrowLeft: (h) => h.handleArrow("left"),
 				ArrowRight: (h) => h.handleArrow("right"),
@@ -246,13 +247,13 @@ function setupTabbedContainer({
 	// PrismaViewApp; mounting a second root into the same DOM container makes
 	// React's two unmount passes race on shared children and throw
 	// `removeChild: not a child of this node` when the view closes.
-	const tabbedHost = el.createDiv("prisma-tabbed-host");
+	const tabbedHost = el.createDiv(`${CSS_PREFIX}tabbed-host`);
 
 	const unmount = renderReactInline(
 		tabbedHost,
 		createElement(TabbedContainer, {
 			tabs,
-			cssPrefix: "prisma-",
+			cssPrefix: CSS_PREFIX,
 			tabBarContainer: headerEl,
 			...(titleContainer ? { tabBarInsertBefore: titleContainer } : {}),
 			editable: true,
@@ -265,7 +266,8 @@ function setupTabbedContainer({
 			},
 			handleRef: tabbedHandleRef,
 		}),
-		app
+		app,
+		{ cssPrefix: CSS_PREFIX }
 	);
 
 	const tabCommandUpdater = registerTabCommands(
@@ -285,7 +287,7 @@ function setupTabbedContainer({
 
 function setupCapacityIndicator(titleContainer: HTMLElement, mountCtx: MountCtx, viewRef: PrismaViewRef): () => void {
 	const { app, plugin, bundle } = mountCtx;
-	const host = titleContainer.createDiv("prisma-capacity-indicator-host");
+	const host = titleContainer.createDiv(`${CSS_PREFIX}capacity-indicator-host`);
 	const unmount = renderReactInline(
 		host,
 		<PluginContext value={plugin}>
@@ -297,7 +299,8 @@ function setupCapacityIndicator(titleContainer: HTMLElement, mountCtx: MountCtx,
 				/>
 			</BundleContext>
 		</PluginContext>,
-		app
+		app,
+		{ cssPrefix: CSS_PREFIX }
 	);
 	return () => {
 		unmount();
@@ -310,7 +313,7 @@ function setupPageHeader(mountCtx: MountCtx, viewRef: PrismaViewRef): () => void
 	const savedState = bundle.settingsStore.currentSettings.pageHeaderState;
 	const handle = createPageHeader({
 		actions: buildPageHeaderActions(app),
-		cssPrefix: "prisma-",
+		cssPrefix: CSS_PREFIX,
 		app,
 		editable: true,
 		initialState: savedState ?? { visibleActionIds: DEFAULT_ORDERED_ACTION_IDS },
