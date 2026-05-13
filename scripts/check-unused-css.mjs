@@ -258,26 +258,55 @@ function analyzeSourceFile(sourceFile) {
 // ─── Dynamic Prefix Matching ─────────────────────────────────────────────────
 
 /**
- * Find code tokens that look like CSS prefixes (ending with -) and mark all
- * CSS classes starting with that prefix as used.
+ * Find code tokens that look like CSS prefixes and mark all CSS classes
+ * matching that prefix as used. Handles two shapes of dynamic class building:
  *
- * Handles patterns like: el.addClass("prisma-calendar-" + dayType)
- * where "prisma-calendar-" is a token that marks all prisma-calendar-* as used.
+ * 1. Explicit plugin-prefix on the call site:
+ *      el.addClass("prisma-calendar-" + dayType)
+ *    → token "prisma-calendar-" marks every prisma-calendar-* class as used.
+ *
+ * 2. Prefix added by a helper (cls/useScopedCls), so the call site only sees
+ *    the suffix portion:
+ *      cls(`stopwatch-${variant}-btn`)            → token "stopwatch-"
+ *      <PropertyItem scope="event-preview-prop">  → token "event-preview-prop"
+ *    → both mark prisma-{token}* classes (compared against the stripped class
+ *      name, i.e. with the plugin prefix removed).
+ *
+ * Kebab-prefix candidates are selected structurally: a token qualifies only
+ * if it contains a hyphen. JavaScript identifiers cannot contain hyphens, so
+ * any token with one came from a string literal shaped like a CSS class
+ * fragment — not a variable name like `item`, `btn`, or `onClick`. This is
+ * a property of the token itself, not an arbitrary length threshold.
  */
-function applyDynamicPrefixMatching(codeTokens, definedClasses, pluginPrefixes) {
+function applyDynamicPrefixMatching(codeTokens, definedClasses, pluginPrefixes, prefix) {
 	const usedByPrefix = new Set();
 	const pluginPrefixSet = new Set(pluginPrefixes);
-	const prefixTokens = [...codeTokens].filter(
+
+	const fullPrefixTokens = [...codeTokens].filter(
 		(t) => t.endsWith("-") && t.length > 6 && !pluginPrefixSet.has(t) && pluginPrefixes.some((p) => t.startsWith(p))
 	);
-
-	for (const prefixToken of prefixTokens) {
+	for (const prefixToken of fullPrefixTokens) {
 		for (const cls of definedClasses) {
-			if (cls.startsWith(prefixToken)) {
+			if (cls.startsWith(prefixToken)) usedByPrefix.add(cls);
+		}
+	}
+
+	const kebabSuffixTokens = [...codeTokens].filter(
+		(t) => t.includes("-") && !pluginPrefixes.some((p) => t.startsWith(p))
+	);
+	for (const cls of definedClasses) {
+		if (usedByPrefix.has(cls)) continue;
+		const stripped = cls.slice(prefix.length);
+		if (!stripped) continue;
+		for (const t of kebabSuffixTokens) {
+			const probe = t.endsWith("-") ? t : `${t}-`;
+			if (stripped === t || stripped.startsWith(probe)) {
 				usedByPrefix.add(cls);
+				break;
 			}
 		}
 	}
+
 	return usedByPrefix;
 }
 
@@ -348,8 +377,10 @@ export function scanPlugin(pluginDir) {
 	const dirsToScan = [srcDir];
 	try {
 		const monorepoRoot = findMonorepoRoot(pluginDir);
-		const sharedSrc = path.join(monorepoRoot, "shared", "src");
-		if (fs.existsSync(sharedSrc)) dirsToScan.push(sharedSrc);
+		for (const sharedDir of ["shared", "shared-react"]) {
+			const sharedSrc = path.join(monorepoRoot, sharedDir, "src");
+			if (fs.existsSync(sharedSrc)) dirsToScan.push(sharedSrc);
+		}
 	} catch {
 		// Not in a monorepo — skip shared
 	}
@@ -382,7 +413,7 @@ export function scanPlugin(pluginDir) {
 		}
 	}
 
-	const dynamicMatches = applyDynamicPrefixMatching(allCodeTokens, pluginClasses, pluginPrefixes);
+	const dynamicMatches = applyDynamicPrefixMatching(allCodeTokens, pluginClasses, pluginPrefixes, prefix);
 	for (const cls of dynamicMatches) usedClasses.add(cls);
 
 	for (const v of pluginVars) {
