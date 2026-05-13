@@ -44,6 +44,20 @@ See [Free vs Pro](../features/free-vs-pro.md) for details on what Pro includes a
 - **Show decimal hours**: display durations as decimal hours (e.g., 2.5h) instead of formatted (e.g., 2h 30m) in statistics modals. Can be temporarily toggled by clicking the duration in the statistics header (disabled by default)
 - **Default grouping mode**: default grouping mode for statistics modals — group by **Event Name** or by **Category** (default: Event Name)
 
+## Check for Updates
+
+Prisma Calendar can quietly check GitHub once a day for newer releases. When a newer version is available, an **Update available** pill appears in the settings header next to the current version — click it to open the release notes on GitHub and grab the update from inside Obsidian.
+
+**Behavior:**
+- The check runs at most once every 24 hours per device, started shortly after Obsidian finishes loading the plugin.
+- Only the GitHub Releases API for `Real1tyy/Prisma-Calendar` is contacted — a single anonymous HTTPS request. No telemetry, no identifying headers, no per-vault data.
+- The last-check timestamp is stored in browser `localStorage`, so it does not roam between devices.
+- Drafts, prereleases, and equal-or-older releases are ignored. The badge only appears when the remote version is strictly newer than the one you are running.
+
+**Toggle:**
+- Settings → General → "Check for updates" — enabled by default.
+- Turning it off skips the check entirely. The badge disappears immediately. Re-enabling triggers a fresh check on the next plugin load.
+
 ## Read-only Mode
 
 **Read-only mode** prevents the plugin from automatically writing to files without user interaction.

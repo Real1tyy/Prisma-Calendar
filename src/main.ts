@@ -2,6 +2,7 @@ import {
 	activateView,
 	ensureDirectory,
 	normalizeDirectory,
+	ReleaseCheckService,
 	setIconPickerImplementation,
 	SettingsStore,
 	SyncStore,
@@ -50,6 +51,7 @@ export default class CustomCalendarPlugin extends Plugin {
 	calendarBundles: CalendarBundle[] = [];
 	apiManager!: PrismaCalendarApiManager;
 	licenseManager!: LicenseManager;
+	releaseCheckService!: ReleaseCheckService;
 	settingsSessionState = { tab: "general", scrollTop: { current: 0 } };
 	private registeredViewTypes: Set<string> = new Set();
 
@@ -65,6 +67,13 @@ export default class CustomCalendarPlugin extends Plugin {
 		await this.settingsStore.loadSettings();
 
 		this.licenseManager = createLicenseManager(this.app, this.settingsStore, this.manifest.version);
+		this.releaseCheckService = new ReleaseCheckService({
+			owner: "Real1tyy",
+			repo: "Prisma-Calendar",
+			currentVersion: this.manifest.version,
+			storageKey: "prisma-calendar:release-check",
+			isEnabled: () => this.settingsStore.currentSettings.checkForReleaseUpdates,
+		});
 
 		this.syncStore = new SyncStore(this.app, this, PrismaSyncDataSchema);
 		await this.syncStore.loadData();
@@ -101,6 +110,7 @@ export default class CustomCalendarPlugin extends Plugin {
 				}
 				void this.ensureCalendarBundlesReady().then(() => {
 					void this.checkForUpdates();
+					void this.releaseCheckService.checkForUpdates();
 				});
 			});
 			void this.licenseManager.initialize();

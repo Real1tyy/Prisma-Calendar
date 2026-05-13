@@ -5,6 +5,7 @@ import {
 	ObsidianIcon,
 	openRenameModal,
 	SettingItem,
+	UpdateAvailableBadge,
 	useApp,
 	useSchemaField,
 	useScrollRestore,
@@ -31,6 +32,7 @@ interface SettingsRootProps {
 export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootProps) {
 	const app = useApp();
 	const [calendars, setCalendars] = useSchemaField(plugin.settingsStore, "calendars");
+	const [checkForReleaseUpdates] = useSchemaField(plugin.settingsStore, "checkForReleaseUpdates");
 	const [selectedCalendarId, setSelectedCalendarId] = useState(() => {
 		const lastUsed = plugin.syncStore.data.lastUsedCalendarId;
 		if (lastUsed && calendars.some((c) => c.id === lastUsed)) return lastUsed;
@@ -149,6 +151,9 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 							<span> turns any note with a date into a flexible planning system inside Obsidian.</span>
 						</div>
 						<div className={cls("settings-hero-controls")}>
+							{checkForReleaseUpdates && (
+								<UpdateAvailableBadge service={plugin.releaseCheckService} testId="prisma-settings-update-badge" />
+							)}
 							<Copyable text={version} className={cls("settings-hero-version")} successMessage={`Copied ${version}`}>
 								v{version}
 							</Copyable>
