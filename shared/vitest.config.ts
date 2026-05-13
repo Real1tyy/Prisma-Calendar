@@ -26,12 +26,12 @@ const JSDOM_PATTERNS = [
 	"tests/vault-table/**/*.test.ts",
 	"tests/core/css-utils.test.ts",
 	"tests/core/property-renderer.test.ts",
+	"tests/core/release-check/release-check-service.test.ts",
 	"tests/file/file.test.ts",
 	"tests/testing/approval.test.ts",
 ];
 
 export default defineConfig({
-	server: { fs: { allow: [".."] } },
 	plugins: [tsconfigPaths({ ignoreConfigErrors: true })],
 	test: {
 		globals: true,

@@ -58,6 +58,8 @@ export {
 export { SettingCard, SettingHeading, SettingItem } from "./components/setting-item";
 export type { TextareaProps } from "./components/textarea";
 export { Textarea } from "./components/textarea";
+export type { UpdateAvailableBadgeProps } from "./components/update-available-badge";
+export { UpdateAvailableBadge } from "./components/update-available-badge";
 
 // ─── Contexts ───
 export { AppContext, useApp } from "./contexts/app-context";
@@ -99,6 +101,7 @@ export { useKeyDown } from "./hooks/use-key-down";
 export { useObservable } from "./hooks/use-observable";
 export type { Emitterlike } from "./hooks/use-obsidian-event";
 export { useObsidianEvent } from "./hooks/use-obsidian-event";
+export { useReleaseCheck } from "./hooks/use-release-check";
 export type { SchemaFieldBinding, SettingsStorelike } from "./hooks/use-schema-field";
 export { useSchemaField } from "./hooks/use-schema-field";
 export { useScrollRestore } from "./hooks/use-scroll-restore";
