@@ -1,6 +1,13 @@
 import { Draggable } from "@fullcalendar/interaction";
-import { ColorEvaluator } from "@real1ty-obsidian-plugins";
-import { PropertyValue, useApp, useEscapeKey, useSettingsFields, VirtualList } from "@real1ty-obsidian-plugins-react";
+import type { ColorEvaluator } from "@real1ty-obsidian-plugins";
+import {
+	PropertyValue,
+	useApp,
+	useColorEvaluator,
+	useEscapeKey,
+	useSettingsFields,
+	VirtualList,
+} from "@real1ty-obsidian-plugins-react";
 import {
 	type CSSProperties,
 	forwardRef,
@@ -72,16 +79,7 @@ export const UntrackedEventsDropdown = memo(
 			}
 		}, []);
 
-		const colorEvaluator = useMemo(
-			() => new ColorEvaluator<SingleCalendarConfig>(bundle.settingsStore.settings$),
-			[bundle]
-		);
-
-		useEffect(() => {
-			return () => {
-				colorEvaluator.destroy();
-			};
-		}, [colorEvaluator]);
+		const colorEvaluator = useColorEvaluator<SingleCalendarConfig>(bundle.settingsStore.settings$);
 
 		useEffect(() => {
 			const sub = bundle.untrackedEventStore.changes$.pipe(debounceTime(REFRESH_DEBOUNCE_MS)).subscribe(() => {
