@@ -1,6 +1,6 @@
 import { Notice } from "obsidian";
 import type { CSSProperties } from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import type { CalendarComponent } from "../../../components/calendar-view";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
@@ -49,16 +49,15 @@ export function RecurringEventsModalPanel({
 	searchQuery: string;
 	onRecurringPoolsChanged?: () => void;
 }) {
-	const [showDisabledOnly, setShowDisabledOnly] = useState(false);
+	const [userToggle, setUserToggle] = useState<boolean | null>(null);
 	const [selectedTypeFilter, setSelectedTypeFilter] = useState<keyof typeof RECURRENCE_TYPE_FILTER_OPTIONS>("all");
 
-	useEffect(() => {
-		setShowDisabledOnly((prev) => {
-			if (prev && disabledEvents.length === 0) return false;
-			if (!prev && enabledEvents.length === 0 && disabledEvents.length > 0) return true;
-			return prev;
-		});
-	}, [enabledEvents.length, disabledEvents.length]);
+	const showDisabledOnly =
+		userToggle === true
+			? disabledEvents.length > 0
+			: userToggle === false
+				? false
+				: enabledEvents.length === 0 && disabledEvents.length > 0;
 
 	const activePool = showDisabledOnly ? disabledEvents : enabledEvents;
 
@@ -215,7 +214,7 @@ export function RecurringEventsModalPanel({
 								type="checkbox"
 								data-testid="prisma-recurring-show-disabled"
 								checked={showDisabledOnly}
-								onChange={(e) => setShowDisabledOnly(e.target.checked)}
+								onChange={(e) => setUserToggle(e.target.checked)}
 							/>
 							<span>Show disabled only</span>
 						</label>

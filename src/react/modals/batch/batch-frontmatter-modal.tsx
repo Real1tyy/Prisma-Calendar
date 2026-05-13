@@ -1,6 +1,6 @@
 import { ModalDescription, ModalForm, openReactModal } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
-import { memo, useCallback, useRef, useState } from "react";
+import { memo, useCallback, useState } from "react";
 
 import type { CalendarEvent } from "../../../types/calendar";
 import type { SingleCalendarConfig } from "../../../types/settings";
@@ -16,14 +16,16 @@ interface FrontmatterProperty {
 	originalValue: string;
 }
 
-function createProperty(
-	counter: React.MutableRefObject<number>,
-	key: string,
-	value: string,
-	isExisting: boolean
-): FrontmatterProperty {
+type IdGenerator = () => number;
+
+function createIdGenerator(): IdGenerator {
+	let next = 0;
+	return () => next++;
+}
+
+function createProperty(nextId: IdGenerator, key: string, value: string, isExisting: boolean): FrontmatterProperty {
 	return {
-		id: counter.current++,
+		id: nextId(),
 		key,
 		value,
 		isExisting,
@@ -121,25 +123,25 @@ interface BatchFrontmatterFormProps {
 }
 
 export function BatchFrontmatterForm({ app, settings, selectedEvents, onSubmit, onCancel }: BatchFrontmatterFormProps) {
-	const idCounter = useRef(0);
+	const [nextId] = useState(createIdGenerator);
 
 	const [properties, setProperties] = useState<FrontmatterProperty[]>(() => {
 		const existing = getAllFrontmatterProperties(app, selectedEvents, settings);
 		const initial: FrontmatterProperty[] = [];
 		if (existing.size === 0) {
-			initial.push(createProperty(idCounter, "", "", false));
+			initial.push(createProperty(nextId, "", "", false));
 		} else {
 			for (const [k, v] of existing.entries()) {
-				initial.push(createProperty(idCounter, k, v, true));
+				initial.push(createProperty(nextId, k, v, true));
 			}
-			initial.push(createProperty(idCounter, "", "", false));
+			initial.push(createProperty(nextId, "", "", false));
 		}
 		return initial;
 	});
 
 	const addProperty = useCallback(() => {
-		setProperties((prev) => [...prev, createProperty(idCounter, "", "", false)]);
-	}, []);
+		setProperties((prev) => [...prev, createProperty(nextId, "", "", false)]);
+	}, [nextId]);
 
 	const updateProperty = useCallback((id: number, updates: Partial<FrontmatterProperty>) => {
 		setProperties((prev) => prev.map((p) => (p.id === id ? { ...p, ...updates } : p)));

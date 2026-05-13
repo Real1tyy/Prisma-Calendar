@@ -117,7 +117,7 @@ function restoreScrollCenter(
 	{ scrollable, centerRatio }: { scrollable: HTMLElement; centerRatio: number },
 	viewContainerEl: HTMLElement
 ): void {
-	const newSlotsTable = viewContainerEl.querySelector(".fc-timegrid-slots") as HTMLElement | null;
+	const newSlotsTable = viewContainerEl.querySelector(".fc-timegrid-slots");
 	if (!newSlotsTable) return;
 
 	const newSlotsRect = newSlotsTable.getBoundingClientRect();

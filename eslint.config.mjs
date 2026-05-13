@@ -76,6 +76,10 @@ export default defineConfig([
 				Response: "readonly",
 				Headers: "readonly",
 				CustomEvent: "readonly",
+				React: "readonly",
+				navigator: "readonly",
+				activeDocument: "readonly",
+				queueMicrotask: "readonly",
 			},
 		},
 		rules: {
