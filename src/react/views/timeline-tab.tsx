@@ -1,5 +1,5 @@
-import { renderReactInline, useApp } from "@real1ty-obsidian-plugins-react";
-import { memo, useCallback, useEffect, useRef } from "react";
+import { renderReactInline, useApp, useSubscription } from "@real1ty-obsidian-plugins-react";
+import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { debounceTime, distinctUntilChanged, map, merge, skip } from "rxjs";
 
 import { renderTimelineInto, type TimelineHandle } from "../../components/modals";
@@ -46,26 +46,27 @@ export const TimelineTab = memo(function TimelineTab() {
 			{ cssPrefix: CSS_PREFIX }
 		);
 
-		const renderingSettings$ = bundle.settingsStore.settings$.pipe(
-			skip(1),
-			map(getTimelineRenderingKey),
-			distinctUntilChanged()
-		);
-
-		const sub = merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$, renderingSettings$)
-			.pipe(debounceTime(REFRESH_DEBOUNCE_MS))
-			.subscribe(() => {
-				handle.invalidateAndRefetch();
-			});
-
 		return () => {
-			sub.unsubscribe();
 			unmountToolbar();
 			handle.destroy();
 			handleRef.current = null;
 			filterRef.current = PASS_ALL;
 		};
 	}, [app, bundle, handleFilterChange, handleFilterReady]);
+
+	const changes$ = useMemo(() => {
+		const renderingSettings$ = bundle.settingsStore.settings$.pipe(
+			skip(1),
+			map(getTimelineRenderingKey),
+			distinctUntilChanged()
+		);
+		return merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$, renderingSettings$).pipe(
+			debounceTime(REFRESH_DEBOUNCE_MS)
+		);
+	}, [bundle]);
+	useSubscription(changes$, () => {
+		handleRef.current?.invalidateAndRefetch();
+	});
 
 	return (
 		<div ref={containerRef} style={{ flex: "1 1 auto", minHeight: 0 }} data-testid={`${CSS_PREFIX}timeline-tab`} />

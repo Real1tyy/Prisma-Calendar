@@ -5,7 +5,10 @@ import {
 	useApp,
 	useColorEvaluator,
 	useEscapeKey,
+	useFocusOnMount,
+	useOutsideClick,
 	useSettingsFields,
+	useSubscription,
 	VirtualList,
 } from "@real1ty-obsidian-plugins-react";
 import {
@@ -81,13 +84,14 @@ export const UntrackedEventsDropdown = memo(
 
 		const colorEvaluator = useColorEvaluator<SingleCalendarConfig>(bundle.settingsStore.settings$);
 
-		useEffect(() => {
-			const sub = bundle.untrackedEventStore.changes$.pipe(debounceTime(REFRESH_DEBOUNCE_MS)).subscribe(() => {
-				ignoreOutsideClicksUntilRef.current = Date.now() + DROP_CLICK_IGNORE_MS;
-				setRefreshTick((t) => t + 1);
-			});
-			return () => sub.unsubscribe();
-		}, [bundle]);
+		const untrackedChanges$ = useMemo(
+			() => bundle.untrackedEventStore.changes$.pipe(debounceTime(REFRESH_DEBOUNCE_MS)),
+			[bundle]
+		);
+		useSubscription(untrackedChanges$, () => {
+			ignoreOutsideClicksUntilRef.current = Date.now() + DROP_CLICK_IGNORE_MS;
+			setRefreshTick((t) => t + 1);
+		});
 
 		const allEvents = useMemo(() => bundle.untrackedEventStore.getUntrackedEvents(), [bundle, refreshTick]);
 
@@ -128,19 +132,11 @@ export const UntrackedEventsDropdown = memo(
 			ignoreOutsideClicksFor,
 		]);
 
-		useEffect(() => {
-			if (!isOpen) return;
-			const handler = (e: MouseEvent) => {
-				if (isDraggingRef.current) return;
-				if (Date.now() < ignoreOutsideClicksUntilRef.current) return;
-				const target = e.target as Node;
-				if (dropdownRef.current?.contains(target)) return;
-				if (buttonRef.current?.contains(target)) return;
-				close();
-			};
-			document.addEventListener("click", handler);
-			return () => document.removeEventListener("click", handler);
-		}, [isOpen, close]);
+		useOutsideClick([dropdownRef, buttonRef], close, {
+			event: "click",
+			enabled: isOpen,
+			shouldIgnore: () => isDraggingRef.current || Date.now() < ignoreOutsideClicksUntilRef.current,
+		});
 
 		useEscapeKey(
 			useCallback(
@@ -158,18 +154,16 @@ export const UntrackedEventsDropdown = memo(
 			)
 		);
 
+		useFocusOnMount(searchInputRef, { delayMs: SEARCH_FOCUS_DELAY_MS, enabled: isOpen });
+
 		useEffect(() => {
 			if (!isOpen) return;
-			const focusTimer = window.setTimeout(() => searchInputRef.current?.focus(), SEARCH_FOCUS_DELAY_MS);
-
 			const dropEl = dropdownRef.current;
 			const calCont = dropEl?.closest(".prisma-calendar-container");
 			if (dropEl && calCont) {
 				const available = calCont.getBoundingClientRect().right - dropEl.getBoundingClientRect().left;
 				dropEl.style.setProperty("--dropdown-max-width", `${available}px`);
 			}
-
-			return () => window.clearTimeout(focusTimer);
 		}, [isOpen]);
 
 		useEffect(() => {

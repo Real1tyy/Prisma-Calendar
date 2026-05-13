@@ -1,7 +1,6 @@
 import { type ChartDataItem, createGridLayout, type GridLayoutHandle } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
-import { memo, type ReactElement, useEffect, useRef, useState } from "react";
-import { debounceTime, merge } from "rxjs";
+import { memo, type ReactElement, useEffect, useMemo, useRef } from "react";
 
 import {
 	buildChartDataFromItems,
@@ -16,6 +15,7 @@ import {
 } from "../../components/views/dashboard-section";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { PRO_FEATURES } from "../../core/license";
+import { useBundleChanges } from "../../react/hooks/use-bundle-changes";
 import { openEventSeriesModal } from "../../react/modals/event-list";
 import { removeZettelId } from "../../utils/events/zettel-id";
 import { getCategoriesFromFilePath } from "../../utils/obsidian";
@@ -45,18 +45,8 @@ interface DashboardSectionProps {
 const DashboardSection = memo(function DashboardSection({ id, buildData }: DashboardSectionProps) {
 	const bundle = useBundle();
 	const containerRef = useRef<HTMLDivElement>(null);
-	const [renderToken, setRenderToken] = useState(0);
-
-	useEffect(() => {
-		const sub = merge(
-			bundle.categoryTracker.categories$,
-			bundle.eventStore.changes$,
-			bundle.recurringEventManager.changes$
-		)
-			.pipe(debounceTime(REFRESH_DEBOUNCE_MS))
-			.subscribe(() => setRenderToken((n) => n + 1));
-		return () => sub.unsubscribe();
-	}, [bundle]);
+	const extra = useMemo(() => [bundle.categoryTracker.categories$], [bundle]);
+	const renderToken = useBundleChanges(bundle, { debounceMs: REFRESH_DEBOUNCE_MS, extra });
 
 	useEffect(() => {
 		const el = containerRef.current;

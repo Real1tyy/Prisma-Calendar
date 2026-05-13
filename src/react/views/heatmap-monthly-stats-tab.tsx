@@ -1,6 +1,6 @@
 import { createGridLayout, type GridLayoutHandle } from "@real1ty-obsidian-plugins";
-import { useApp } from "@real1ty-obsidian-plugins-react";
-import { memo, type Ref, useEffect, useImperativeHandle, useRef } from "react";
+import { useApp, useSubscription } from "@real1ty-obsidian-plugins-react";
+import { memo, type Ref, useEffect, useImperativeHandle, useMemo, useRef } from "react";
 import { merge } from "rxjs";
 
 import { type HeatmapHandle, renderHeatmapInto } from "../../components/modals";
@@ -74,16 +74,16 @@ const HeatmapMonthlyStatsBody = memo(function HeatmapMonthlyStatsBody({ handleRe
 			],
 		});
 
-		const sub = merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$).subscribe(() => {
-			heatmapRef.current?.refresh(bundle.eventStore.getAllEvents());
-		});
-
 		return () => {
-			sub.unsubscribe();
 			gridHandle?.destroy();
 			gridHandle = null;
 		};
 	}, [app, bundle]);
+
+	const changes$ = useMemo(() => merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$), [bundle]);
+	useSubscription(changes$, () => {
+		heatmapRef.current?.refresh(bundle.eventStore.getAllEvents());
+	});
 
 	useImperativeHandle(
 		handleRef,
