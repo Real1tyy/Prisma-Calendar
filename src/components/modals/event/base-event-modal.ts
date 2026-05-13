@@ -552,7 +552,8 @@ export abstract class BaseEventModal extends Modal {
 					onStop,
 					onBreakUpdate,
 				}),
-				this.app
+				this.app,
+				{ cssPrefix: CSS_PREFIX, testIdPrefix: CSS_PREFIX }
 			);
 		});
 	}

@@ -97,7 +97,7 @@ export function openConfirmation<TExtras = undefined>(
 		title: options.title,
 		testId: `${testIdPrefix}confirmation-modal-container`,
 		...(options.cssPrefix !== undefined ? { cssPrefix: options.cssPrefix } : {}),
-		...(testIdPrefix !== "" ? { testIdPrefix } : {}),
+		testIdPrefix,
 		render: (submit, cancel) => (
 			<ConfirmationShell<TExtras>
 				options={options}

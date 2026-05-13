@@ -147,7 +147,7 @@ export function NotificationContent({ app, eventData, settings, onClose, onSnooz
 	const showSnooze = Boolean(onSnooze && !eventData.isAllDay);
 
 	return (
-		<div data-testid="prisma-notification-modal" className={cls("event-notification-modal")}>
+		<div className={cls("event-notification-modal")}>
 			<div className={cls("event-notification-header")}>
 				<div className={cls("event-notification-timing")}>{getTimingInfo(eventData)}</div>
 				<h2 className={cls("event-notification-title")} onClick={handleTitleClick} style={{ cursor: "pointer" }}>
