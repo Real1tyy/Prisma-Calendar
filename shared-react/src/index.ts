@@ -89,6 +89,14 @@ export * from "./forms";
 export type { Paths, PathValue } from "./hooks/path-types";
 export type { ActivatableProps } from "./hooks/use-activatable";
 export { useActivatable } from "./hooks/use-activatable";
+export {
+	useArrowDown,
+	useArrowKey,
+	type UseArrowKeyOptions,
+	useArrowLeft,
+	useArrowRight,
+	useArrowUp,
+} from "./hooks/use-arrow-key";
 export { useColorEvaluator } from "./hooks/use-color-evaluator";
 export type { UseCopyToClipboardOptions } from "./hooks/use-copy-to-clipboard";
 export { useCopyToClipboard } from "./hooks/use-copy-to-clipboard";

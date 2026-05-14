@@ -61,8 +61,22 @@ function resolveInitialState(config: GridLayoutConfig): {
 } {
 	const { initialState, cellPalette, cells: configCells } = config;
 
-	if (!initialState || !cellPalette?.length) {
+	if (!initialState) {
 		return { cols: config.columns, rows: config.rows, cells: configCells ?? [] };
+	}
+
+	const dimsAgree = initialState.columns === config.columns && initialState.rows === config.rows;
+	const persistedSizes = dimsAgree
+		? {
+				...(initialState.columnSizes !== undefined ? { columnSizes: initialState.columnSizes } : {}),
+				...(initialState.rowSizes !== undefined ? { rowSizes: initialState.rowSizes } : {}),
+				...(initialState.cellColumnSizes !== undefined ? { cellColumnSizes: initialState.cellColumnSizes } : {}),
+				...(initialState.cellRowSizes !== undefined ? { cellRowSizes: initialState.cellRowSizes } : {}),
+			}
+		: {};
+
+	if (!cellPalette?.length) {
+		return { cols: config.columns, rows: config.rows, cells: configCells ?? [], ...persistedSizes };
 	}
 
 	const paletteMap = new Map(cellPalette.map((o) => [o.id, o]));
@@ -79,10 +93,7 @@ function resolveInitialState(config: GridLayoutConfig): {
 		cols: initialState.columns,
 		rows: initialState.rows,
 		cells: resolvedCells,
-		...(initialState.columnSizes !== undefined ? { columnSizes: initialState.columnSizes } : {}),
-		...(initialState.rowSizes !== undefined ? { rowSizes: initialState.rowSizes } : {}),
-		...(initialState.cellColumnSizes !== undefined ? { cellColumnSizes: initialState.cellColumnSizes } : {}),
-		...(initialState.cellRowSizes !== undefined ? { cellRowSizes: initialState.cellRowSizes } : {}),
+		...persistedSizes,
 	};
 }
 

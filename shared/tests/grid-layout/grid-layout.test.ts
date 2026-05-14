@@ -642,6 +642,62 @@ describe("createGridLayout", () => {
 			expect(getVar(grid, "--grid-rows")).toBe("1fr 1fr");
 		});
 
+		// Regression: initialState.rowSizes / columnSizes were being silently dropped
+		// whenever cellPalette was absent (or empty), because resolveInitialState
+		// early-returned without carrying them over. Dashboards that hard-code their
+		// cells (no palette) saw persisted resize states ignored — the grid always
+		// rendered uniform 50/50 tracks regardless of saved sizes or initialState.
+		it("restores rowSizes from initialState even without cellPalette", () => {
+			const container = document.createElement("div");
+			createGridLayout(
+				container,
+				makeConfig({
+					columns: 2,
+					rows: 2,
+					resizable: "track",
+					cells: [],
+					initialState: { columns: 2, rows: 2, cells: [], rowSizes: [0.65, 0.35] },
+				})
+			);
+
+			const grid = container.querySelector<HTMLElement>(".test-grid")!;
+			expect(getVar(grid, "--grid-rows")).toBe("0.65fr 0.35fr");
+		});
+
+		it("restores columnSizes from initialState even without cellPalette", () => {
+			const container = document.createElement("div");
+			createGridLayout(
+				container,
+				makeConfig({
+					columns: 2,
+					rows: 1,
+					resizable: "track",
+					cells: [],
+					initialState: { columns: 2, rows: 1, cells: [], columnSizes: [3, 1] },
+				})
+			);
+
+			const grid = container.querySelector<HTMLElement>(".test-grid")!;
+			expect(getVar(grid, "--grid-columns")).toBe("3fr 1fr");
+		});
+
+		it("ignores persisted sizes when initialState dims disagree with config (no palette)", () => {
+			const container = document.createElement("div");
+			createGridLayout(
+				container,
+				makeConfig({
+					columns: 2,
+					rows: 2,
+					resizable: "track",
+					cells: [],
+					initialState: { columns: 3, rows: 2, cells: [], columnSizes: [1, 1, 1] },
+				})
+			);
+
+			const grid = container.querySelector<HTMLElement>(".test-grid")!;
+			expect(getVar(grid, "--grid-columns")).toBe("1fr 1fr");
+		});
+
 		it("restores custom column sizes from initialState", () => {
 			const container = document.createElement("div");
 			createGridLayout(
