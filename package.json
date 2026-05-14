@@ -34,7 +34,8 @@
 		"lint:css": "stylelint \"src/styles/**/*.scss\"",
 		"clean": "rm -f main.js",
 		"deps:check": "depcruise --config .dependency-cruiser.mjs src/main.ts",
-		"deps:graph": "depcruise --config .dependency-cruiser.mjs --output-type dot src/main.ts | dot -T svg > docs/dependency-graph.svg"
+		"deps:graph": "depcruise --config .dependency-cruiser.mjs --output-type dot src/main.ts | dot -T svg > docs/dependency-graph.svg",
+		"check-undefined-css": "node scripts/check-unused-css.mjs . --undefined-classes --no-unused --summary --no-fail"
 	},
 	"keywords": [
 		"obsidian",
