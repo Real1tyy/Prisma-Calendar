@@ -107,9 +107,9 @@ test.describe("settings: configure calendar with property detection", () => {
 		// Click Meetings — "Meeting Start"/"Meeting End" match start/end keywords
 		await suggestionCards.filter({ hasText: "Meetings" }).click();
 
-		const startInput = modal.locator('[data-testid="prisma-configure-start-prop"]');
-		const endInput = modal.locator('[data-testid="prisma-configure-end-prop"]');
-		const dateInput = modal.locator('[data-testid="prisma-configure-date-prop"]');
+		const startInput = modal.locator('[data-testid="prisma-configure-configure-start-prop"]');
+		const endInput = modal.locator('[data-testid="prisma-configure-configure-end-prop"]');
+		const dateInput = modal.locator('[data-testid="prisma-configure-configure-date-prop"]');
 		const dirInput = modal.locator('[data-testid="prisma-configure-directory-input"]');
 
 		await expect(dirInput).toHaveValue("Meetings");
@@ -152,9 +152,9 @@ test.describe("settings: configure calendar with property detection", () => {
 		const suggestionCards = modal.locator(".prisma-first-launch-suggestion");
 		await expect(suggestionCards.first()).toBeVisible();
 
-		const startInput = modal.locator('[data-testid="prisma-configure-start-prop"]');
-		const endInput = modal.locator('[data-testid="prisma-configure-end-prop"]');
-		const dateInput = modal.locator('[data-testid="prisma-configure-date-prop"]');
+		const startInput = modal.locator('[data-testid="prisma-configure-configure-start-prop"]');
+		const endInput = modal.locator('[data-testid="prisma-configure-configure-end-prop"]');
+		const dateInput = modal.locator('[data-testid="prisma-configure-configure-date-prop"]');
 
 		// Personal: "Start Time" matches start keyword, "End Time" matches end
 		await suggestionCards.filter({ hasText: "Personal" }).click();
@@ -189,11 +189,11 @@ test.describe("settings: configure calendar with property detection", () => {
 		await suggestionCards.filter({ hasText: "Personal" }).click();
 
 		// Click "End Time" prefill button on the start field
-		const startPrefillEndTime = modal.locator('[data-testid="prisma-configure-prefill-start-end-time"]');
+		const startPrefillEndTime = modal.locator('[data-testid="prisma-configure-configure-prefill-start-end-time"]');
 		await expect(startPrefillEndTime).toBeVisible();
 		await startPrefillEndTime.click();
 
-		const startInput = modal.locator('[data-testid="prisma-configure-start-prop"]');
+		const startInput = modal.locator('[data-testid="prisma-configure-configure-start-prop"]');
 		await expect(startInput).toHaveValue("End Time");
 	});
 

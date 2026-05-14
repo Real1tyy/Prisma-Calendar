@@ -40,6 +40,10 @@ export interface PrismaWindow extends Omit<BaseObsidianWindow, "app"> {
 			getLeavesOfType: (type: string) => WorkspaceLeaf[];
 			getActiveFile: () => { path: string } | null;
 			leftSplit?: { collapse: () => void; collapsed?: boolean };
+			// Obsidian `Debouncer`'s `.run()` — flushes any pending workspace-layout
+			// save synchronously. Needed before reloads so leaves persist to
+			// `workspace.json` instead of being lost to the debounce window.
+			requestSaveLayout: { run: () => Promise<void> };
 		};
 		vault: {
 			adapter?: { basePath?: string };

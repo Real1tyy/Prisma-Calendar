@@ -5,6 +5,7 @@ import type { Page } from "@playwright/test";
 
 import { PLUGIN_ID } from "./constants";
 import { seedEvent, type SeedEventInput } from "./seed-events";
+import type { PrismaWindow } from "./window-types";
 
 export function dataJsonPath(vaultDir: string): string {
 	// eslint-disable-next-line obsidianmd/hardcoded-config-path
@@ -55,6 +56,14 @@ type RendererWindow = {
  * builds still start with `setEnable(false)` on a fresh renderer.
  */
 export async function reloadAndWaitForPrisma(page: Page): Promise<void> {
+	// Obsidian debounces `workspace.requestSaveLayout`; if we reload before it
+	// fires, leaves opened via `setViewState` never reach `workspace.json` and
+	// the renderer reboots without them. Flush the debouncer synchronously
+	// before tearing the renderer down.
+	await page.evaluate(async () => {
+		await (window as unknown as PrismaWindow).app.workspace.requestSaveLayout.run();
+	});
+
 	await page.reload({ waitUntil: "domcontentloaded" });
 
 	await page.waitForFunction(() => Boolean((window as unknown as { app?: { plugins?: unknown } }).app?.plugins));
