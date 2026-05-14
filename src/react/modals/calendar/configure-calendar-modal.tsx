@@ -3,8 +3,8 @@ import { openReactModal, TextInput } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { memo, useCallback, useEffect, useState } from "react";
 
-import type { DirectorySuggestion } from "./directory-suggestions";
-import { scanVaultForDirectorySuggestions } from "./directory-suggestions";
+import type { DirectorySuggestion } from "../../../core/directory-suggestions";
+import { scanVaultForDirectorySuggestions } from "../../../core/directory-suggestions";
 import { computePrefill, Field, PropertyFields, SuggestionList } from "./property-config";
 
 // ─── Types ───────────────────────────────────────────────────────────────────

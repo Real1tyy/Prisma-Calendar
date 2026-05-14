@@ -16,12 +16,12 @@ import { CSS_PREFIX } from "../../constants";
 import { FREE_MAX_CALENDARS } from "../../core/license";
 import { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
-import { openConfigureCalendarModal } from "../../onboarding/configure-calendar";
 import {
 	createDefaultCalendarConfig,
 	duplicateCalendarConfig,
 	generateUniqueCalendarId,
 } from "../../utils/calendar-settings";
+import { openConfigureCalendarModal } from "../modals/calendar/configure-calendar-modal";
 import { SingleCalendarSettingsReact } from "./single-calendar-settings-react";
 
 const GITHUB_REPO_URL = "https://github.com/Real1tyy/Prisma-Calendar";

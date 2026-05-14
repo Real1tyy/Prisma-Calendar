@@ -29,14 +29,14 @@ import {
 	triggerCurrentEventStopwatch,
 } from "./core/api/modal-actions";
 import { redo, undo } from "./core/api/read-operations";
+import { scanVaultForDirectorySuggestions } from "./core/directory-suggestions";
 import { exportCalendarAsICS } from "./core/integrations/ics-export";
 import { importEventsToCalendar } from "./core/integrations/ics-import";
 import type { LicenseManager } from "./core/license";
 import { createLicenseManager, PRO_FEATURES } from "./core/license";
 import { getProGateUrls } from "./core/pro-feature-previews";
 import { buildWhatsNewConfig } from "./core/whats-new-config";
-import { openFirstLaunchModal, scanVaultForDirectorySuggestions } from "./onboarding";
-import { openCalendarSelectModal, openICSImportModal } from "./react/modals";
+import { openCalendarSelectModal, openFirstLaunchModal, openICSImportModal } from "./react/modals";
 import { openFilteredEventsModal, openGlobalSearchModal } from "./react/modals/event-list";
 import { openEventsModal } from "./react/modals/event-list/events-modal-content";
 import { CustomCalendarSettingsSchema, type PrismaCalendarSettingsStore, PrismaSyncDataSchema } from "./types";

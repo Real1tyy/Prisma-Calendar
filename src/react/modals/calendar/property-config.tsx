@@ -3,7 +3,7 @@ import { TextInput } from "@real1ty-obsidian-plugins-react";
 import type { ReactNode } from "react";
 import { memo, useCallback, useState } from "react";
 
-import type { DirectorySuggestion } from "./directory-suggestions";
+import type { DirectorySuggestion } from "../../../core/directory-suggestions";
 
 // ─── Shared layout ──────────────────────────────────────────────────────────
 

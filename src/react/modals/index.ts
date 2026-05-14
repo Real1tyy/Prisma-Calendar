@@ -32,3 +32,20 @@ export { openICSEditModal } from "./ics/ics-edit-modal";
 export { openCalendarSelectModal } from "./import-export/calendar-select-modal";
 export type { ICSImportSelection } from "./import-export/ics-import-modal";
 export { openICSImportModal } from "./import-export/ics-import-modal";
+
+// Calendar modals
+export type { ConfigureCalendarResult } from "./calendar/configure-calendar-modal";
+export { ConfigureCalendarController, openConfigureCalendarModal } from "./calendar/configure-calendar-modal";
+
+// Onboarding modals
+export type {
+	FirstLaunchControllerProps,
+	FirstLaunchInitialProps,
+	FirstLaunchInitialState,
+	FirstLaunchModalResult,
+	FirstLaunchMode,
+	OpenFirstLaunchModalOptions,
+} from "./onboarding/first-launch";
+export { FirstLaunchController, openFirstLaunchModal } from "./onboarding/first-launch";
+export type { ProWelcomeControllerProps } from "./onboarding/pro-welcome";
+export { ProWelcomeController, showProWelcomeModal } from "./onboarding/pro-welcome";

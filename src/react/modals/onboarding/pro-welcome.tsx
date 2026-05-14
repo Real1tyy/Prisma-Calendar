@@ -3,8 +3,8 @@ import { showReactModal, WelcomeModalShell } from "@real1ty-obsidian-plugins-rea
 import type { App } from "obsidian";
 import { memo } from "react";
 
-import { CSS_PREFIX } from "../constants";
-import { ACCOUNT_URL } from "../core/license";
+import { CSS_PREFIX } from "../../../constants";
+import { ACCOUNT_URL } from "../../../core/license";
 
 const proUtm = (url: string, content: string) =>
 	buildUtmUrl(url, "prisma-calendar", "plugin", "pro_welcome_modal", content);

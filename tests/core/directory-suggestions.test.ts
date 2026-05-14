@@ -4,7 +4,7 @@ import {
 	buildDirectorySuggestions,
 	formatDirectorySuggestionDescription,
 	formatDirectorySuggestionMeta,
-} from "../../src/onboarding/directory-suggestions";
+} from "../../src/core/directory-suggestions";
 
 describe("directory suggestions", () => {
 	it("aggregates likely event folders by top-level directory", () => {
