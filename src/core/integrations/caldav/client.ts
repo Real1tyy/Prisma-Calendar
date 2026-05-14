@@ -1,3 +1,4 @@
+import { describeError } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import type { DAVClient } from "tsdav";
 
@@ -105,7 +106,7 @@ export class CalDAVClientService {
 		} catch (error) {
 			return {
 				success: false,
-				error: error instanceof Error ? error.message : String(error),
+				error: describeError(error),
 			};
 		}
 	}

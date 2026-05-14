@@ -11,7 +11,7 @@ import {
 } from "@real1ty-obsidian-plugins-react";
 import Chart from "chart.js/auto";
 import { nanoid } from "nanoid";
-import { memo, useCallback, useMemo, useState } from "react";
+import React, { memo, useCallback, useMemo, useState } from "react";
 
 import { showCategoryEventsModal } from "../../components/modals";
 import type { CalendarBundle } from "../../core/calendar-bundle";

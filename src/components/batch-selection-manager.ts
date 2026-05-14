@@ -3,6 +3,7 @@ import type { Command } from "@real1ty-obsidian-plugins";
 import {
 	addCls,
 	cls,
+	describeError,
 	getWeekDirection,
 	pluralize,
 	removeCls,
@@ -352,7 +353,7 @@ export class BatchSelectionManager {
 		} catch (error) {
 			console.error(`[BatchSelection] Failed operation: ${errorMessage}`, error);
 
-			const errorMsg = error instanceof Error ? error.message : String(error);
+			const errorMsg = describeError(error);
 			if (errorMsg.includes("Completed")) {
 				new Notice(errorMsg, 6000);
 				this.clearSelection();
@@ -408,7 +409,7 @@ export class BatchSelectionManager {
 				console.error(`[BatchSelection] Failed operation: ${errorMessage}`, error);
 
 				// Check if this is a partial failure (some succeeded)
-				const errorMsg = error instanceof Error ? error.message : String(error);
+				const errorMsg = describeError(error);
 				if (errorMsg.includes("Completed")) {
 					// Partial success - show the detailed message
 					new Notice(errorMsg, 6000);

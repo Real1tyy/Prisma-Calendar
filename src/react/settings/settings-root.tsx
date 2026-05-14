@@ -185,7 +185,7 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 								data-testid={tid("settings-calendar-add")}
 								disabled={isAtMax}
 								title={maxTitle}
-								onClick={handleCreate}
+								onClick={() => void handleCreate()}
 							>
 								Create new
 							</button>
@@ -195,7 +195,7 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 								data-testid={tid("settings-calendar-clone")}
 								disabled={isAtMax}
 								title={maxTitle}
-								onClick={handleClone}
+								onClick={() => void handleClone()}
 							>
 								Clone current
 							</button>
@@ -203,7 +203,7 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 								type="button"
 								className={cls("calendar-action-button", "calendar-configure-button")}
 								data-testid={tid("settings-calendar-configure")}
-								onClick={handleConfigure}
+								onClick={() => void handleConfigure()}
 							>
 								Configure current
 							</button>
@@ -211,7 +211,7 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 								type="button"
 								className={cls("calendar-action-button", "calendar-rename-button")}
 								data-testid={tid("settings-calendar-rename")}
-								onClick={handleRename}
+								onClick={() => void handleRename()}
 							>
 								Rename current
 							</button>
@@ -221,7 +221,7 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 								data-testid={tid("settings-calendar-delete")}
 								disabled={calendars.length <= 1}
 								title={calendars.length <= 1 ? "At least one planning system is required" : undefined}
-								onClick={handleDelete}
+								onClick={() => void handleDelete()}
 							>
 								Delete current
 							</button>

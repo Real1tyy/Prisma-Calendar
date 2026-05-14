@@ -181,7 +181,11 @@ describe("EventFileRepository", () => {
 		it("should restore a snapshot to an existing row", async () => {
 			const fm = createTimedFrontmatter();
 			const row = repo.mockTable.seed("meeting", fm);
-			mockApp.vault.getAbstractFileByPath.mockReturnValue(row.file);
+			// Source code does an `instanceof TFile` check against the Prisma-Calendar
+			// `obsidian` mock; the row.file from MockVaultTable comes from the shared
+			// mock, so swap in a local TFile instance for the lookup.
+			const localFile = createMockFile(row.filePath);
+			mockApp.vault.getAbstractFileByPath.mockReturnValue(localFile);
 
 			await repo.restoreSnapshot({
 				key: "meeting",
@@ -191,7 +195,7 @@ describe("EventFileRepository", () => {
 				file: row.file,
 			});
 
-			expect(mockApp.vault.modify).toHaveBeenCalledWith(row.file, "---\nTitle: Team Meeting\n---\nRestored body");
+			expect(mockApp.vault.modify).toHaveBeenCalledWith(localFile, "---\nTitle: Team Meeting\n---\nRestored body");
 		});
 
 		it("should create a new file when restoring a snapshot for a deleted row", async () => {

@@ -278,7 +278,7 @@ export function renderDashboardTable(
 	}
 
 	function renderPagination(totalPages: number, totalItems: number): void {
-		const prevBtn = paginationEl.createEl("button", { text: "\u2190 Prev", cls: cls("dashboard-pagination-btn") });
+		const prevBtn = paginationEl.createEl("button", { text: "\u2190 prev", cls: cls("dashboard-pagination-btn") });
 		prevBtn.disabled = currentPage === 0;
 		prevBtn.addEventListener("click", () => {
 			if (currentPage > 0) {

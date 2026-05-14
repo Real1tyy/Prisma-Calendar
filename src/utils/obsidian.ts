@@ -152,7 +152,7 @@ export function getCategoriesFromFilePath(app: App, filePath: string, categoryPr
 		}
 
 		const cache = app.metadataCache.getFileCache(file);
-		const categoryValue = cache?.frontmatter?.[categoryProp];
+		const categoryValue: unknown = cache?.frontmatter?.[categoryProp];
 		if (!categoryValue) {
 			return [];
 		}

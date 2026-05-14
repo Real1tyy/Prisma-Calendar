@@ -27,7 +27,7 @@ export class VirtualEventsBlockRenderer extends MarkdownRenderChild {
 
 		let events: VirtualEventData[] = [];
 		try {
-			const data = JSON.parse(this.source);
+			const data: unknown = JSON.parse(this.source);
 			const result = VirtualEventsFileSchema.safeParse(data);
 			if (result.success) events = result.data;
 		} catch {

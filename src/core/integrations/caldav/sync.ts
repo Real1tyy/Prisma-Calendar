@@ -1,4 +1,4 @@
-import { type KVBackend, LocalKV } from "@real1ty-obsidian-plugins";
+import { describeError, type KVBackend, LocalKV } from "@real1ty-obsidian-plugins";
 import { TFile } from "obsidian";
 
 import {
@@ -227,7 +227,7 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 							: action.kind === "delete"
 								? action.objectHref
 								: action.kind;
-					const errorMsg = `Failed to sync event ${label}: ${error}`;
+					const errorMsg = `Failed to sync event ${label}: ${describeError(error)}`;
 					console.error(`[CalDAV Sync] ${errorMsg}`);
 					result.errors.push(errorMsg);
 				}
@@ -249,7 +249,7 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 			this.showSyncNotification(result);
 		} catch (error) {
 			result.success = false;
-			const errorMsg = error instanceof Error ? error.message : String(error);
+			const errorMsg = describeError(error);
 			console.error(`[CalDAV] Sync failed:`, errorMsg);
 			result.errors.push(errorMsg);
 			this.showSyncErrorNotification(errorMsg);

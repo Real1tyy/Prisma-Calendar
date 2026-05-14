@@ -643,7 +643,7 @@ export class EventContextMenu {
 			const eventDate = new Date(sourceEvent.start);
 			this.calendarComponent.navigateToDate(eventDate, "timeGridWeek");
 
-			setTimeout(() => {
+			window.setTimeout(() => {
 				this.calendarComponent.highlightEventByPath(sourceFilePath, EVENT_HIGHLIGHT_DURATION_MS);
 			}, GO_TO_SOURCE_HIGHLIGHT_DELAY_MS);
 

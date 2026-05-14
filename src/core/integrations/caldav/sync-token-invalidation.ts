@@ -1,3 +1,5 @@
+import { describeError } from "@real1ty-obsidian-plugins";
+
 /**
  * Heuristic for detecting when the server has rejected our stored CalDAV
  * sync-token (RFC 6578 §3.2 — the DAV:sync-collection report preconditions,
@@ -46,6 +48,6 @@ export function isSyncTokenInvalidated(error: unknown): boolean {
 		if (status === 410 || status === "410") return true;
 	}
 
-	const message = error instanceof Error ? error.message : typeof error === "string" ? error : String(error);
+	const message = describeError(error, "");
 	return TOKEN_INVALIDATED_PATTERNS.some((re) => re.test(message));
 }

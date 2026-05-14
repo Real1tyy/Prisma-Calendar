@@ -1,7 +1,7 @@
 import { cls, tid } from "@real1ty-obsidian-plugins";
 import { ModalDescription, openReactModal, VirtualList } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
-import { memo, useCallback, useMemo, useRef, useState } from "react";
+import React, { memo, useCallback, useMemo, useRef, useState } from "react";
 
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { mapEventsToDisplayItems } from "../../../utils/format";

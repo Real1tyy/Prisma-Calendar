@@ -102,9 +102,9 @@ class PrismaBasesView extends BasesView {
 			}
 		};
 
-		requestAnimationFrame(() => tryRender());
-		requestAnimationFrame(() => requestAnimationFrame(() => tryRender()));
-		setTimeout(() => tryRender(), 100);
+		window.requestAnimationFrame(() => tryRender());
+		window.requestAnimationFrame(() => window.requestAnimationFrame(() => tryRender()));
+		window.setTimeout(() => tryRender(), 100);
 
 		this.isProSub = this.plugin.licenseManager.isPro$
 			.pipe(skip(1), distinctUntilChanged())
@@ -325,7 +325,7 @@ class PrismaBasesView extends BasesView {
 				),
 			dateClick: (info: { date: Date; allDay: boolean }) => {
 				if (!this.isHandlingSelection) handleSharedDateClick(this.app, bundle, this.calendar!, info);
-				setTimeout(() => {
+				window.setTimeout(() => {
 					this.isHandlingSelection = false;
 				}, SELECTION_GUARD_DELAY_MS);
 			},
@@ -591,7 +591,7 @@ class PrismaBasesView extends BasesView {
 	private ensureEmptyMessage(): void {
 		if (this.calendarContainerEl?.querySelector(`.${cls("bases-view-empty")}`)) return;
 		new Notice(
-			"Prisma Calendar: No events found for this query. Ensure the Base's folder filter matches the calendar's directory.",
+			"Prisma Calendar: No events found for this query. Ensure the base's folder filter matches the calendar's directory.",
 			6000
 		);
 		this.calendarContainerEl?.createDiv({

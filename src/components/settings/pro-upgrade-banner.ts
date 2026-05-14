@@ -83,7 +83,7 @@ export function renderProUpgradeBanner(
 }
 
 function openImageLightbox(src: string, alt: string): void {
-	const overlay = document.body.createDiv(cls("pro-lightbox-overlay"));
+	const overlay = activeDocument.body.createDiv(cls("pro-lightbox-overlay"));
 
 	const img = overlay.createEl("img", {
 		cls: cls("pro-lightbox-img"),
@@ -95,10 +95,10 @@ function openImageLightbox(src: string, alt: string): void {
 	overlay.addEventListener("click", (e) => {
 		if (e.target === overlay) close();
 	});
-	document.addEventListener("keydown", function handler(e) {
+	activeDocument.addEventListener("keydown", function handler(e) {
 		if (e.key === "Escape") {
 			close();
-			document.removeEventListener("keydown", handler);
+			activeDocument.removeEventListener("keydown", handler);
 		}
 	});
 }

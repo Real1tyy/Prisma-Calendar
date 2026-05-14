@@ -204,12 +204,12 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 		// Detect calendar-event drag release point reliably (FullCalendar's jsEvent in eventDragStop can be stale
 		// when releasing outside the calendar grid, e.g. over toolbar/dropdowns).
-		document.addEventListener("pointerup", this.handleGlobalPointerUpForUntrackedDrop, true);
+		activeDocument.addEventListener("pointerup", this.handleGlobalPointerUpForUntrackedDrop, true);
 		this.register(() => {
-			document.removeEventListener("pointerup", this.handleGlobalPointerUpForUntrackedDrop, true);
+			activeDocument.removeEventListener("pointerup", this.handleGlobalPointerUpForUntrackedDrop, true);
 		});
 
-		requestAnimationFrame(() => this.hostEl.focus());
+		window.requestAnimationFrame(() => this.hostEl.focus());
 
 		// Re-focus container when this leaf becomes active (e.g. switching back from another tab)
 		// so keyboard navigation (arrow keys for intervals) works immediately without clicking
@@ -381,9 +381,9 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			droppable: true,
 
 			// Fix drag mirror positioning for all-day events
-			// Positions the drag mirror relative to document.body instead of calendar container
+			// Positions the drag mirror relative to activeDocument.body instead of calendar container
 			// This ensures the event box follows the cursor correctly for both all-day and timed events
-			fixedMirrorParent: document.body,
+			fixedMirrorParent: activeDocument.body,
 
 			eventReceive: (info) => {
 				// External draggable dropped - we handle this in the drop handler instead
@@ -417,10 +417,10 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			eventDragStart: (info) => {
 				this.dragNavigatedInterval = false;
 				this.setupDragEdgeScrolling();
-				const filePath = info.event.extendedProps["filePath"];
-				this.isDraggingCalendarEvent =
-					isFileBackedEvent(info.event) && typeof filePath === "string" && filePath.length > 0;
-				this.draggingCalendarEventFilePath = this.isDraggingCalendarEvent ? filePath : null;
+				const filePath = info.event.extendedProps["filePath"] as unknown;
+				const filePathString = typeof filePath === "string" ? filePath : "";
+				this.isDraggingCalendarEvent = isFileBackedEvent(info.event) && filePathString.length > 0;
+				this.draggingCalendarEventFilePath = this.isDraggingCalendarEvent ? filePathString : null;
 			},
 
 			eventDragStop: (_info) => {
@@ -457,7 +457,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 					this.handleDateClick(info);
 				}
 				// Reset flag after a short delay
-				setTimeout(() => {
+				window.setTimeout(() => {
 					this.isHandlingSelection = false;
 				}, 50);
 			},
@@ -569,12 +569,12 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			this.bundle.viewStateManager.restoreState(this.calendar);
 
 			// Allow state saving again after restoration is complete
-			setTimeout(() => {
+			window.setTimeout(() => {
 				this.isRestoring = false;
 			}, RESTORATION_DELAY_MS);
 		}
 
-		setTimeout(() => {
+		window.setTimeout(() => {
 			if (this.calendar) {
 				this.calendar.updateSize();
 			}
@@ -669,7 +669,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private mountZoomControl(): void {
-		const button = this.container.querySelector(".fc-zoomLevel-button") as HTMLElement | null;
+		const button = this.container.querySelector<HTMLElement>(".fc-zoomLevel-button");
 		if (!button) {
 			this.unmountZoomControl();
 			return;
@@ -1225,7 +1225,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 	private scheduleStickyOffsetsUpdate(): void {
 		if (this.stickyOffsetsRafId !== null) return;
-		this.stickyOffsetsRafId = requestAnimationFrame(() => {
+		this.stickyOffsetsRafId = window.requestAnimationFrame(() => {
 			this.stickyOffsetsRafId = null;
 			this.updateStickyOffsets();
 		});
@@ -1337,7 +1337,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		}
 		if (this.refreshRafId !== null) return;
 
-		this.refreshRafId = requestAnimationFrame(() => {
+		this.refreshRafId = window.requestAnimationFrame(() => {
 			this.refreshRafId = null;
 			this.isRefreshingEvents = true;
 			this.pendingRefreshRequest = false;
@@ -1383,7 +1383,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		}
 
 		if (hasStructuralChanges) {
-			requestAnimationFrame(() => {
+			window.requestAnimationFrame(() => {
 				const viewContentRestored =
 					this.hostEl.querySelector(".prisma-tab-content") ?? this.hostEl.querySelector(".view-content");
 				const inner = this.container.querySelector(".fc-scroller");
@@ -1649,7 +1649,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			const colors = this.colorDotIndex.get(dateAttr);
 			if (!colors || colors.size === 0) continue;
 
-			const frag = document.createDocumentFragment();
+			const frag = activeDocument.createDocumentFragment();
 			frag.appendChild(buildColorDotsContainer([...colors], maxDots));
 			dayCell.querySelector(".fc-daygrid-day-top")?.appendChild(frag);
 		}
@@ -2099,16 +2099,16 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			}
 		};
 
-		document.addEventListener("mousemove", this.dragEdgeScrollListener);
+		activeDocument.addEventListener("mousemove", this.dragEdgeScrollListener);
 	}
 
 	private cleanupDragEdgeScrolling(): void {
 		if (this.dragEdgeScrollListener) {
-			document.removeEventListener("mousemove", this.dragEdgeScrollListener);
+			activeDocument.removeEventListener("mousemove", this.dragEdgeScrollListener);
 			this.dragEdgeScrollListener = null;
 		}
 		if (this.dragEdgeScrollTimeout) {
-			clearTimeout(this.dragEdgeScrollTimeout);
+			window.clearTimeout(this.dragEdgeScrollTimeout);
 			this.dragEdgeScrollTimeout = null;
 		}
 		this.lastEdgeScrollTime = 0;
@@ -2418,7 +2418,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		for (let i = 0; i < elements.length; i++) {
 			const element = elements[i];
 			element.classList.add(cls("event-highlighted"));
-			setTimeout(() => {
+			window.setTimeout(() => {
 				element.classList.remove(cls("event-highlighted"));
 			}, durationMs);
 		}

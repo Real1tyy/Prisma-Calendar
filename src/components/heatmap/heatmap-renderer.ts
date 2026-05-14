@@ -119,7 +119,7 @@ function createHeatmapCell(params: HeatmapCellParams): SVGRectElement {
 			"aria-label": titleText,
 		});
 
-	const titleEl = document.createElementNS("http://www.w3.org/2000/svg", "title");
+	const titleEl = activeDocument.createElementNS("http://www.w3.org/2000/svg", "title");
 	titleEl.textContent = titleText;
 	rect.node.appendChild(titleEl);
 

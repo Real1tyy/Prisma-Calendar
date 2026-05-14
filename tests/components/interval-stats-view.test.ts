@@ -86,7 +86,7 @@ function entry(name: string, duration: number, count = 1): Stats["entries"][numb
 }
 
 function flush(): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, 0));
+	return new Promise((resolve) => window.setTimeout(resolve, 0));
 }
 
 beforeEach(() => {

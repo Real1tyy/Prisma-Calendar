@@ -442,7 +442,7 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 
 	// ─── Utilities ────────────────────────────────────────────────
 
-	private static compareByStart(a: CalendarEvent, b: CalendarEvent): number {
+	private static compareByStart(this: void, a: CalendarEvent, b: CalendarEvent): number {
 		return a.start.localeCompare(b.start);
 	}
 

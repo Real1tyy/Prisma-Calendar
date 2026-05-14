@@ -201,8 +201,8 @@ export class EventFileRepository implements CalendarEventSource {
 		// is the path at capture time (used as fallback for deleted files).
 		const currentPath = snapshot.file.path;
 		const file = this.app.vault.getAbstractFileByPath(currentPath);
-		if (file) {
-			await this.app.vault.modify(file as TFile, snapshot.content);
+		if (file instanceof TFile) {
+			await this.app.vault.modify(file, snapshot.content);
 		} else {
 			await this.app.vault.create(snapshot.filePath, snapshot.content);
 		}
@@ -379,7 +379,7 @@ export class EventFileRepository implements CalendarEventSource {
 			// vault.on("modify") fires BEFORE the metadata cache updates, so the rRuleId
 			// might already exist on disk but not be in the cache yet. Wait for the
 			// cache to catch up before deciding to generate a new ID — prevents duplicates.
-			await new Promise((resolve) => setTimeout(resolve, 200));
+			await new Promise((resolve) => window.setTimeout(resolve, 200));
 			const freshCache = this.app.metadataCache.getFileCache(row.file);
 			const cachedId = toSafeString(freshCache?.frontmatter?.[this.settings.rruleIdProp]);
 

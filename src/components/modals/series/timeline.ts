@@ -118,7 +118,7 @@ export function renderTimelineInto(
 	const eventMap = new Map<string, CalendarEvent>();
 	const colorEvaluator = new ColorEvaluator<SingleCalendarConfig>(bundle.settingsStore.settings$);
 	const rangeTracker = new FetchedRangeTracker();
-	let rangeChangeTimer: ReturnType<typeof setTimeout> | null = null;
+	let rangeChangeTimer: number | null = null;
 	let resizeObserver: ResizeObserver | null = null;
 
 	container.addClass(cls("timeline-modal"));
@@ -288,7 +288,7 @@ export function renderTimelineInto(
 	}
 
 	function scheduleInjectDots(): void {
-		requestAnimationFrame(() => injectTimelineDots());
+		window.requestAnimationFrame(() => injectTimelineDots());
 	}
 
 	// ─── Data Fetching ───────────────────────────────────────
@@ -392,8 +392,8 @@ export function renderTimelineInto(
 	}
 
 	function onRangeChanged(): void {
-		if (rangeChangeTimer) clearTimeout(rangeChangeTimer);
-		rangeChangeTimer = setTimeout(() => {
+		if (rangeChangeTimer) window.clearTimeout(rangeChangeTimer);
+		rangeChangeTimer = window.setTimeout(() => {
 			rangeChangeTimer = null;
 			void fetchVisibleRange();
 		}, RANGE_CHANGE_DEBOUNCE_MS);
@@ -450,7 +450,7 @@ export function renderTimelineInto(
 			};
 			resizeObserver = new ResizeObserver(applyContainerHeight);
 			resizeObserver.observe(timelineContainer);
-			requestAnimationFrame(applyContainerHeight);
+			window.requestAnimationFrame(applyContainerHeight);
 		}
 
 		type TimelineInteraction = { item?: string | null; event?: MouseEvent };
@@ -473,7 +473,7 @@ export function renderTimelineInto(
 		toolbarLeft: headerLeft,
 		destroy: () => {
 			if (rangeChangeTimer) {
-				clearTimeout(rangeChangeTimer);
+				window.clearTimeout(rangeChangeTimer);
 				rangeChangeTimer = null;
 			}
 			if (resizeObserver) {

@@ -59,6 +59,9 @@ importers:
       jose:
         specifier: ^6.2.1
         version: 6.2.2
+      jsep:
+        specifier: ^1.4.0
+        version: 1.4.0
       luxon:
         specifier: ^3.7.2
         version: 3.7.2
@@ -2287,6 +2290,10 @@ packages:
     peerDependenciesMeta:
       canvas:
         optional: true
+
+  jsep@1.4.0:
+    resolution: {integrity: sha512-B7qPcEVE3NVkmSJbaYxvv4cHkVW7DQsZz13pUMrfS8z8Q/BuShN+gcTXrUlPiGqM2/t/EEaI030bpxMqY8gMlw==}
+    engines: {node: '>= 10.16.0'}
 
   jsesc@3.1.0:
     resolution: {integrity: sha512-/sM3dO2FOzXjKQhJuo0Q173wf2KOo8t4I8vHy6lF9poUp7bKT0/NHE8fPX23PwfhnykfqnC2xRxOnVw5XuGIaA==}
@@ -5257,6 +5264,8 @@ snapshots:
       - bufferutil
       - supports-color
       - utf-8-validate
+
+  jsep@1.4.0: {}
 
   jsesc@3.1.0: {}
 

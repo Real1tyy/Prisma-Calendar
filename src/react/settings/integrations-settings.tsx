@@ -285,7 +285,12 @@ const CalDAVAccountItem = memo(function CalDAVAccountItem({
 				)}
 			</div>
 			<div className={cls("caldav-account-controls")}>
-				<button type="button" className={cls("caldav-account-btn")} onClick={handleSync} disabled={syncing}>
+				<button
+					type="button"
+					className={cls("caldav-account-btn")}
+					onClick={() => void handleSync()}
+					disabled={syncing}
+				>
 					{syncing ? "Syncing..." : "Sync now"}
 				</button>
 				<button type="button" className={cls("caldav-account-btn")} onClick={() => onEdit(account)}>
@@ -467,7 +472,12 @@ const ICSSubscriptionItem = memo(function ICSSubscriptionItem({
 				</div>
 			</div>
 			<div className={cls("caldav-account-controls")}>
-				<button type="button" className={cls("caldav-account-btn")} onClick={handleSync} disabled={syncing}>
+				<button
+					type="button"
+					className={cls("caldav-account-btn")}
+					onClick={() => void handleSync()}
+					disabled={syncing}
+				>
 					{syncing ? "Syncing..." : "Sync now"}
 				</button>
 				<button type="button" className={cls("caldav-account-btn")} onClick={() => onEdit(subscription)}>

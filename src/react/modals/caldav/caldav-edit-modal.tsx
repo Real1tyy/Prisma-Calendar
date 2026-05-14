@@ -1,4 +1,4 @@
-import { cls, tid } from "@real1ty-obsidian-plugins";
+import { cls, describeError, tid } from "@real1ty-obsidian-plugins";
 import { ModalForm, openReactModal, SchemaForm, useZodForm } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { Notice } from "obsidian";
@@ -64,7 +64,7 @@ function CalDAVEditForm({ app, settingsStore, plugin, calendarId, account, onSub
 			new Notice(`Found ${calendars.length} calendar(s)`);
 			setDiscoveredCalendars(calendars);
 		} catch (error) {
-			new Notice(`Failed to refresh: ${error}`);
+			new Notice(`Failed to refresh: ${describeError(error)}`);
 		} finally {
 			setRefreshing(false);
 		}

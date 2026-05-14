@@ -120,7 +120,7 @@ function buildBarMenuItems(
 			label: "Open file in new window",
 			icon: "external-link",
 			section: "view",
-			onAction: act((ev) => openFileInNewWindow(app, ev.ref.filePath)),
+			onAction: act((ev) => void openFileInNewWindow(app, ev.ref.filePath)),
 		},
 		{
 			id: "mark-done",

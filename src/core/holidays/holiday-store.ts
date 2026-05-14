@@ -110,8 +110,8 @@ export class HolidayStore {
 	private async loadFromStorage(year: number): Promise<CachedHolidays | null> {
 		try {
 			const key = this.getCacheKey(year);
-			const data = await this.app.loadLocalStorage(key);
-			if (data) {
+			const data: unknown = await this.app.loadLocalStorage(key);
+			if (typeof data === "string") {
 				const parsed = JSON.parse(data) as CachedHolidays;
 				// Cache for 30 days
 				if (Date.now() - parsed.timestamp < 30 * 24 * 60 * 60 * 1000) {

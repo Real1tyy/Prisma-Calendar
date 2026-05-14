@@ -55,7 +55,7 @@ function injectFilterWrapper(container: HTMLElement): HTMLElement | null {
 	const toolbarLeft = container.querySelector(".fc-toolbar-chunk:first-child");
 	if (!toolbarLeft) return null;
 
-	const wrapper = document.createElement("div");
+	const wrapper = activeDocument.createElement("div");
 	wrapper.className = cls("fc-filter-wrapper");
 
 	const zoomButton = toolbarLeft.querySelector(".fc-zoomLevel-button");

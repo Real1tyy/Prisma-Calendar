@@ -1,7 +1,7 @@
 import { cls, tid } from "@real1ty-obsidian-plugins";
 import { useFocusOnMount, VirtualList, type VirtualListHandle } from "@real1ty-obsidian-plugins-react";
 import type { ReactNode } from "react";
-import { memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import React, { memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 
 import { removeZettelId } from "../../../utils/events/zettel-id";
 import { type EventListAction, EventListItem, type EventListItemData } from "./event-list-item";
@@ -92,7 +92,7 @@ export const EventListModal = memo(function EventListModal({
 				e.preventDefault();
 				onItemClick?.(filtered[activeIndex]);
 			} else if (e.key === "Escape") {
-				if (searchRef.current && document.activeElement === searchRef.current) {
+				if (searchRef.current && activeDocument.activeElement === searchRef.current) {
 					if (query) {
 						setQuery("");
 						return;

@@ -1,3 +1,4 @@
+import { describeError } from "@real1ty-obsidian-plugins";
 import { requestUrl, TFile } from "obsidian";
 
 import type { ICSSubscription } from "../../../types/integrations";
@@ -129,7 +130,7 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 				} catch (error) {
 					const label =
 						"event" in action ? action.event.title : action.kind === "delete" ? action.filePath : action.kind;
-					const errorMsg = `Failed to sync "${label}": ${error}`;
+					const errorMsg = `Failed to sync "${label}": ${describeError(error)}`;
 					console.error(`[ICS Subscription] ${errorMsg}`);
 					result.errors.push(errorMsg);
 				}
@@ -138,7 +139,7 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 			this.showSyncNotification(result);
 		} catch (error) {
 			result.success = false;
-			const errorMsg = error instanceof Error ? error.message : String(error);
+			const errorMsg = describeError(error);
 			console.error(`[ICS Subscription] Sync failed:`, errorMsg);
 			result.errors.push(errorMsg);
 			this.showSyncErrorNotification(errorMsg);

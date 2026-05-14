@@ -146,7 +146,7 @@ export const UntrackedEventsDropdown = memo(
 					if (!isOpen) return;
 					e.preventDefault();
 					e.stopPropagation();
-					if (document.activeElement === searchInputRef.current && searchQuery) {
+					if (activeDocument.activeElement === searchInputRef.current && searchQuery) {
 						setSearchQuery("");
 						return;
 					}
@@ -231,15 +231,15 @@ export const UntrackedEventsDropdown = memo(
 			};
 
 			dropEl.addEventListener("pointerdown", onItemPointerDown);
-			document.addEventListener("pointermove", onPointerMove, true);
-			document.addEventListener("pointerup", onPointerEnd, true);
-			document.addEventListener("pointercancel", onPointerEnd, true);
+			activeDocument.addEventListener("pointermove", onPointerMove, true);
+			activeDocument.addEventListener("pointerup", onPointerEnd, true);
+			activeDocument.addEventListener("pointercancel", onPointerEnd, true);
 
 			return () => {
 				dropEl.removeEventListener("pointerdown", onItemPointerDown);
-				document.removeEventListener("pointermove", onPointerMove, true);
-				document.removeEventListener("pointerup", onPointerEnd, true);
-				document.removeEventListener("pointercancel", onPointerEnd, true);
+				activeDocument.removeEventListener("pointermove", onPointerMove, true);
+				activeDocument.removeEventListener("pointerup", onPointerEnd, true);
+				activeDocument.removeEventListener("pointercancel", onPointerEnd, true);
 				clearDragHoverTimeout();
 				isDraggingRef.current = false;
 				tempHiddenRef.current = false;

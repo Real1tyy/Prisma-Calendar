@@ -4,6 +4,7 @@ import {
 	parseIntoList,
 	type ReactiveMultiGroupBy,
 	showFrontmatterPropagationModal,
+	toSafeString,
 	VaultTableView,
 } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
@@ -221,8 +222,8 @@ export class CategoryTracker extends VaultTableView<Frontmatter> {
 	private rowsEquivalent(oldData: Frontmatter, newData: Frontmatter): boolean {
 		const prop = this.settings.categoryProp;
 		if (prop) {
-			const oldCat = String(oldData[prop] ?? "");
-			const newCat = String(newData[prop] ?? "");
+			const oldCat = toSafeString(oldData[prop]) ?? "";
+			const newCat = toSafeString(newData[prop]) ?? "";
 			if (oldCat !== newCat) return false;
 		}
 		return this.classifyRow(oldData) === this.classifyRow(newData);

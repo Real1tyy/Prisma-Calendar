@@ -1,7 +1,7 @@
 import { cls, tid } from "@real1ty-obsidian-plugins";
 import { type SnapshotSubscribable, useExternalSnapshot, useSchemaField } from "@real1ty-obsidian-plugins-react";
 import { Menu } from "obsidian";
-import { memo, useCallback, useEffect, useRef } from "react";
+import React, { memo, useCallback, useEffect, useRef } from "react";
 
 import type { CalendarSettingsStore } from "../../core/settings-store";
 
@@ -30,7 +30,7 @@ export const ZoomControl = memo(function ZoomControl({
 			const captured = captureScrollCenter(viewContainerEl);
 			void settingsStore.updateSettings((s) => ({ ...s, slotDurationMinutes: level }));
 			if (captured) {
-				requestAnimationFrame(() => restoreScrollCenter(captured, viewContainerEl));
+				window.requestAnimationFrame(() => restoreScrollCenter(captured, viewContainerEl));
 			}
 			onZoomChange?.();
 		},
@@ -102,9 +102,10 @@ export const ZoomControl = memo(function ZoomControl({
 });
 
 function captureScrollCenter(viewContainerEl: HTMLElement): { scrollable: HTMLElement; centerRatio: number } | null {
-	const scrollable = (viewContainerEl.querySelector(".prisma-tab-content") ??
-		viewContainerEl.querySelector(".view-content")) as HTMLElement | null;
-	const slotsTable = viewContainerEl.querySelector(".fc-timegrid-slots") as HTMLElement | null;
+	const scrollable =
+		viewContainerEl.querySelector<HTMLElement>(".prisma-tab-content") ??
+		viewContainerEl.querySelector<HTMLElement>(".view-content");
+	const slotsTable = viewContainerEl.querySelector<HTMLElement>(".fc-timegrid-slots");
 	if (!scrollable || !slotsTable) return null;
 
 	const slotsRect = slotsTable.getBoundingClientRect();

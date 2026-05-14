@@ -212,7 +212,7 @@ describe("mountSearchFilter", () => {
 
 			expect(container.querySelector(".prisma-fc-filter-wrapper")).toBeNull();
 			onFilterChange.mockClear();
-			await new Promise((r) => setTimeout(r, 200));
+			await new Promise((r) => window.setTimeout(r, 200));
 			expect(onFilterChange).not.toHaveBeenCalled();
 		});
 

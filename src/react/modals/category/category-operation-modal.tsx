@@ -3,6 +3,7 @@ import {
 	bulkRenameCategoryInFiles,
 	type CategoryOperationResult,
 	cls,
+	describeError,
 	showProgressModal,
 	tid,
 } from "@real1ty-obsidian-plugins";
@@ -97,7 +98,7 @@ async function runCategoryBulkOperation({
 	try {
 		const result = await bulkFn(app, files, categoryName, settings.categoryProp, {
 			onProgress: (completed: number) => progress.updateProgress(completed),
-			onComplete: () => setTimeout(onSuccess, 150),
+			onComplete: () => window.setTimeout(onSuccess, 150),
 		});
 
 		await settingsStore.updateSettings((s) => ({
@@ -116,7 +117,7 @@ async function runCategoryBulkOperation({
 		}
 	} catch (error) {
 		console.error(`[CategoryOperation] Error in ${statusVerb} operation:`, error);
-		progress.showError(`Error ${statusVerb} category: ${error instanceof Error ? error.message : String(error)}`);
+		progress.showError(`Error ${statusVerb} category: ${describeError(error)}`);
 	}
 }
 

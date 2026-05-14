@@ -171,7 +171,7 @@ export class ConnectionRenderer {
 
 	private scheduleRender(): void {
 		if (this.rafId !== null) return;
-		this.rafId = requestAnimationFrame(() => {
+		this.rafId = window.requestAnimationFrame(() => {
 			this.rafId = null;
 			if (this.renderArgs) {
 				const { graph, eventIdMap, allEvents, viewStart, viewEnd } = this.renderArgs;

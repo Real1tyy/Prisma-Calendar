@@ -116,7 +116,7 @@ describe("NotificationManager", () => {
 		}) as any;
 		mockNotification.permission = "granted" as NotificationPermission;
 		mockNotification.requestPermission = vi.fn().mockResolvedValue("granted");
-		(global as any).Notification = mockNotification;
+		(window as any).Notification = mockNotification;
 
 		// Initialize mock app and its components
 		mockApp = createMockIntegrationApp();
@@ -137,7 +137,7 @@ describe("NotificationManager", () => {
 	afterEach(() => {
 		notificationManager.stop();
 		vi.useRealTimers();
-		delete (global as any).Notification;
+		delete (window as any).Notification;
 	});
 
 	describe("Initialization and Lifecycle", () => {

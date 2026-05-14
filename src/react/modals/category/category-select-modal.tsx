@@ -1,7 +1,7 @@
 import { cls, tid } from "@real1ty-obsidian-plugins";
 import { ModalForm, openReactModal } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
-import { memo, useCallback, useMemo, useState } from "react";
+import React, { memo, useCallback, useMemo, useState } from "react";
 
 import type { CategoryInfo, CategoryTracker } from "../../../core/category-tracker";
 

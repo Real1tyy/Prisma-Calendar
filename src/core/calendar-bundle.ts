@@ -364,7 +364,7 @@ export class CalendarBundle {
 		if (component) {
 			component.navigateToDate(parsedDate, "timeGridWeek");
 			if (eventId) {
-				setTimeout(() => {
+				window.setTimeout(() => {
 					component.highlightEventById(eventId, 5000);
 				}, 100);
 			}
@@ -404,7 +404,7 @@ export class CalendarBundle {
 			const component = this.viewRef.calendarComponent;
 			if (component) {
 				component.navigateToDate(parsedDate, "timeGridWeek");
-				setTimeout(() => {
+				window.setTimeout(() => {
 					component.highlightEventByPath(file.path, 5000);
 				}, 100);
 			}

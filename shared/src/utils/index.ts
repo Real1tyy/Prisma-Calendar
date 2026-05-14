@@ -7,6 +7,7 @@ export * from "./css-utils";
 export * from "./date";
 export * from "./deep-equal";
 export * from "./e2e";
+export * from "./errors";
 export * from "./expression-utils";
 export * from "./generate";
 export * from "./history-stack";

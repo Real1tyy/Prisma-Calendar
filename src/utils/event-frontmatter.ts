@@ -169,7 +169,7 @@ export const applyDateNormalizationToFile = async (
 	}
 
 	const { targetProp, value } = result;
-	if (String(frontmatter[targetProp] ?? "") === value) return;
+	if ((toSafeString(frontmatter[targetProp]) ?? "") === value) return;
 
 	try {
 		const file = getFileByPathOrThrow(app, filePath);
@@ -291,7 +291,7 @@ export const parseCustomDoneProperty = (expression: string): { key: string; valu
 };
 
 const resolveKeys = (settings: SingleCalendarConfig, keys: readonly string[]): string[] =>
-	keys.map((key) => String(settings[key as keyof SingleCalendarConfig] ?? "")).filter((v) => v !== "");
+	keys.map((key) => toSafeString(settings[key as keyof SingleCalendarConfig]) ?? "").filter((v) => v !== "");
 
 /**
  * Returns per-instance system properties that should NOT be copied from a source

@@ -161,7 +161,7 @@ export class TitleInputSuggest extends AbstractInputSuggest<TitleSuggestion> {
 	private positionGhost(inputEl: HTMLInputElement): void {
 		if (!this.ghostEl) return;
 
-		const canvas = document.createElement("canvas");
+		const canvas = activeDocument.createElement("canvas");
 		const ctx = canvas.getContext("2d")!;
 		const style = getComputedStyle(inputEl);
 		ctx.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;

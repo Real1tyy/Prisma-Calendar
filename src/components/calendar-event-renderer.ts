@@ -31,10 +31,10 @@ export function renderEventContent(arg: EventContentArg, context: EventRenderCon
 	const { settings, isMobile, calendarIconCache } = context;
 	const isMonthView = arg.view.type === "dayGridMonth" || arg.view.type === "multiMonthYear";
 
-	const container = document.createElement("div");
+	const container = activeDocument.createElement("div");
 	container.className = cls("fc-event-content-wrapper");
 
-	const displayData = event.extendedProps["frontmatterDisplayData"];
+	const displayData = event.extendedProps["frontmatterDisplayData"] as Record<string, unknown> | undefined;
 	const isSourceRecurring = displayData?.[settings.rruleProp];
 	const isPhysicalRecurring = displayData?.[settings.sourceProp];
 	const holiday = isHolidayEvent(event);
@@ -46,7 +46,7 @@ export function renderEventContent(arg: EventContentArg, context: EventRenderCon
 		(isPhysicalRecurring && settings.showPhysicalRecurringMarker);
 
 	if (userIcon || hasRecurringMarker || integrationIcon || holiday) {
-		const markerEl = document.createElement("div");
+		const markerEl = activeDocument.createElement("div");
 		markerEl.className = cls("event-marker");
 
 		if (userIcon) {
@@ -64,18 +64,18 @@ export function renderEventContent(arg: EventContentArg, context: EventRenderCon
 		container.appendChild(markerEl);
 	}
 
-	const headerEl = document.createElement("div");
+	const headerEl = activeDocument.createElement("div");
 	headerEl.className = cls("fc-event-header");
 
 	const showTime = !event.allDay && event.start && !(isMobile && isMonthView);
 	if (showTime) {
-		const timeEl = document.createElement("div");
+		const timeEl = activeDocument.createElement("div");
 		timeEl.className = cls("fc-event-time");
 		timeEl.textContent = arg.timeText;
 		headerEl.appendChild(timeEl);
 	}
 
-	const titleEl = document.createElement("div");
+	const titleEl = activeDocument.createElement("div");
 	titleEl.className = cls("fc-event-title-custom");
 	let title = cleanupTitle(event.title);
 
@@ -98,19 +98,19 @@ export function renderEventContent(arg: EventContentArg, context: EventRenderCon
 
 		const displayProperties = displayData ? getDisplayProperties(displayData, displayPropertiesList) : [];
 		if (displayProperties.length > 0) {
-			const propsContainer = document.createElement("div");
+			const propsContainer = activeDocument.createElement("div");
 			propsContainer.className = cls("fc-event-props");
 
 			for (const [prop, value] of displayProperties) {
-				const propEl = document.createElement("div");
+				const propEl = activeDocument.createElement("div");
 				propEl.className = cls("fc-event-prop");
 
-				const keyEl = document.createElement("span");
+				const keyEl = activeDocument.createElement("span");
 				keyEl.className = cls("fc-event-prop-key");
 				keyEl.textContent = `${prop}:`;
 				propEl.appendChild(keyEl);
 
-				const valueEl = document.createElement("span");
+				const valueEl = activeDocument.createElement("span");
 				valueEl.className = cls("fc-event-prop-value");
 				renderPropertyValue(valueEl, value, {
 					app: context.app,
@@ -240,10 +240,10 @@ export function attachLazyNotePreview(element: HTMLElement, filePath: string, ap
 }
 
 export function buildColorDotsContainer(colors: string[], maxDots: number): HTMLDivElement {
-	const container = document.createElement("div");
+	const container = activeDocument.createElement("div");
 	container.className = cls("day-color-dots");
 	for (const color of colors.slice(0, maxDots)) {
-		const dot = document.createElement("div");
+		const dot = activeDocument.createElement("div");
 		dot.className = cls("day-color-dot");
 		dot.style.setProperty("--dot-color", color);
 		container.appendChild(dot);
@@ -260,10 +260,10 @@ export function injectOverflowDots(
 ): void {
 	parent.querySelector(`.${containerClass}`)?.remove();
 	if (colors.length === 0) return;
-	const container = document.createElement("div");
+	const container = activeDocument.createElement("div");
 	container.className = containerClass;
 	for (const color of colors.slice(0, maxDots)) {
-		const dot = document.createElement("div");
+		const dot = activeDocument.createElement("div");
 		dot.className = dotClass;
 		dot.style.setProperty("--dot-color", color);
 		container.appendChild(dot);

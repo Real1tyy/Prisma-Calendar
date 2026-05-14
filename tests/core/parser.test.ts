@@ -640,7 +640,7 @@ describe("Parser", () => {
 
 			const event = parser.parseEventSource(seedSource());
 			expect(event).not.toBeNull();
-			await new Promise((r) => setTimeout(r, 0));
+			await new Promise((r) => window.setTimeout(r, 0));
 
 			expect(processFrontMatter).toHaveBeenCalled();
 		});
@@ -651,7 +651,7 @@ describe("Parser", () => {
 			const { parser, processFrontMatter } = buildParser([writer, peer], "writer");
 
 			parser.parseEventSource(seedSource());
-			await new Promise((r) => setTimeout(r, 0));
+			await new Promise((r) => window.setTimeout(r, 0));
 
 			expect(processFrontMatter).not.toHaveBeenCalled();
 		});
@@ -666,7 +666,7 @@ describe("Parser", () => {
 				...seedSource(),
 				frontmatter: { "Start Date": "2026-01-15 10:00", "Sort Date": "2026-01-15T10:00:00" },
 			} as any);
-			await new Promise((r) => setTimeout(r, 0));
+			await new Promise((r) => window.setTimeout(r, 0));
 
 			expect(processFrontMatter).not.toHaveBeenCalled();
 		});
@@ -677,7 +677,7 @@ describe("Parser", () => {
 			const { parser, processFrontMatter, main } = buildParser([writer, peer], "writer");
 
 			parser.parseEventSource(seedSource());
-			await new Promise((r) => setTimeout(r, 0));
+			await new Promise((r) => window.setTimeout(r, 0));
 			expect(processFrontMatter).not.toHaveBeenCalled();
 
 			// User aligns the peer's strategy → conflict clears → next parse writes.
@@ -687,7 +687,7 @@ describe("Parser", () => {
 			});
 
 			parser.parseEventSource(seedSource());
-			await new Promise((r) => setTimeout(r, 0));
+			await new Promise((r) => window.setTimeout(r, 0));
 
 			expect(processFrontMatter).toHaveBeenCalled();
 		});

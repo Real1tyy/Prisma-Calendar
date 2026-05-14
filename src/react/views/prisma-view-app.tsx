@@ -343,7 +343,7 @@ export const PrismaViewApp = memo(function PrismaViewApp({
 	const dualDailyRef = useRef<DualDailyTabHandle>(null);
 
 	useEffect(() => {
-		const titleContainer = (headerEl.querySelector(".view-header-title-container") as HTMLElement | null) ?? null;
+		const titleContainer = headerEl.querySelector<HTMLElement>(".view-header-title-container") ?? null;
 		const refs: TabHandleRefs = {
 			heatmap: heatmapRef,
 			heatmapMonthly: heatmapMonthlyRef,

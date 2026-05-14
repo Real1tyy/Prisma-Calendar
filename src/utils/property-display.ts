@@ -25,7 +25,7 @@ export interface PropertyRendererOptions {
 export function renderPropertyValue(container: HTMLElement, value: unknown, options: PropertyRendererOptions): void {
 	const config: PropertyRendererConfig = {
 		createLink: (text: string, path: string) => {
-			const link = document.createElement("a");
+			const link = activeDocument.createElement("a");
 			if (options.linkClassName) {
 				link.className = options.linkClassName;
 			}
@@ -44,9 +44,9 @@ export function renderPropertyValue(container: HTMLElement, value: unknown, opti
 			if (options.addSpacePrefixToText) {
 				const isFirstChild = container.childNodes.length === 0;
 				const prefixedText = isFirstChild && text.trim() ? ` ${text}` : text;
-				return document.createTextNode(prefixedText);
+				return activeDocument.createTextNode(prefixedText);
 			}
-			return document.createTextNode(text);
+			return activeDocument.createTextNode(text);
 		},
 		createSeparator: createDefaultSeparator,
 	};
@@ -61,23 +61,23 @@ export function renderPropertyValue(container: HTMLElement, value: unknown, opti
 export function extractPropertyText(value: unknown): string {
 	if (value == null) return "";
 
-	const tempContainer = document.createElement("div");
+	const tempContainer = activeDocument.createElement("div");
 	const config: PropertyRendererConfig = {
 		createLink: (text: string, _path: string, _isObsidianLink: boolean) => {
-			const textNode = document.createTextNode(text);
-			const span = document.createElement("span");
+			const textNode = activeDocument.createTextNode(text);
+			const span = activeDocument.createElement("span");
 			span.appendChild(textNode);
 			return span;
 		},
 		createText: (text: string) => {
-			const textNode = document.createTextNode(text);
-			const span = document.createElement("span");
+			const textNode = activeDocument.createTextNode(text);
+			const span = activeDocument.createElement("span");
 			span.appendChild(textNode);
 			return span;
 		},
 		createSeparator: () => {
-			const textNode = document.createTextNode(", ");
-			const span = document.createElement("span");
+			const textNode = activeDocument.createTextNode(", ");
+			const span = activeDocument.createElement("span");
 			span.appendChild(textNode);
 			return span;
 		},

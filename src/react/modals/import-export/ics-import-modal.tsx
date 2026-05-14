@@ -1,8 +1,8 @@
-import { cls, tid } from "@real1ty-obsidian-plugins";
+import { cls, describeError, tid } from "@real1ty-obsidian-plugins";
 import { ModalForm, openReactModal, SchemaForm, useZodForm } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { Notice } from "obsidian";
-import { memo, useCallback, useMemo, useRef, useState } from "react";
+import React, { memo, useCallback, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
 import { TIMEZONE_LABELS } from "../../../components/settings/integration-shared";
@@ -119,7 +119,7 @@ function ICSImportForm({ calendars, onSubmit, onCancel }: ICSImportFormProps) {
 				setParseError(null);
 			})
 			.catch((error) => {
-				setParseError(error instanceof Error ? error.message : "Failed to read file");
+				setParseError(describeError(error, "Failed to read file"));
 				setParsedEvents([]);
 				setSkippedEvents([]);
 			});

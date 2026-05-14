@@ -1,3 +1,4 @@
+import { describeError } from "@real1ty-obsidian-plugins";
 import { Notice } from "obsidian";
 import { useCallback, useState } from "react";
 
@@ -37,7 +38,7 @@ export function useConnectionTest<T = void>(
 				setTestPassed(false);
 			}
 		} catch (error) {
-			new Notice(`Connection failed: ${error}`);
+			new Notice(`Connection failed: ${describeError(error)}`);
 			setTestPassed(false);
 		} finally {
 			setTesting(false);

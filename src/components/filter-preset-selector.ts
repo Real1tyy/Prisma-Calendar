@@ -14,7 +14,7 @@ export class FilterPresetSelector {
 	) {}
 
 	initialize(_calendar: Calendar, container: HTMLElement): void {
-		setTimeout(() => {
+		window.setTimeout(() => {
 			this.injectSelect(container);
 		}, 100);
 	}
@@ -36,15 +36,15 @@ export class FilterPresetSelector {
 		const toolbarLeft = container.querySelector(".fc-toolbar-chunk:first-child");
 		if (!toolbarLeft) return;
 
-		const wrapper = document.createElement("div");
+		const wrapper = activeDocument.createElement("div");
 		wrapper.className = cls("fc-filter-preset-wrapper");
 
-		this.select = document.createElement("select");
+		this.select = activeDocument.createElement("select");
 		this.select.className = `${cls("fc-filter-preset-select")} fc-button fc-button-primary`;
 		this.select.setAttribute("data-testid", tid("fc-filter-preset-select"));
 
 		// Hidden placeholder option that shows the arrow
-		const placeholderOption = document.createElement("option");
+		const placeholderOption = activeDocument.createElement("option");
 		placeholderOption.value = "";
 		placeholderOption.textContent = "▼";
 		placeholderOption.disabled = true;
@@ -53,14 +53,14 @@ export class FilterPresetSelector {
 		this.select.appendChild(placeholderOption);
 
 		// Clear option
-		const clearOption = document.createElement("option");
+		const clearOption = activeDocument.createElement("option");
 		clearOption.value = "clear";
 		clearOption.textContent = "Clear";
 		this.select.appendChild(clearOption);
 
 		// User presets
 		this.presets.forEach((preset) => {
-			const option = document.createElement("option");
+			const option = activeDocument.createElement("option");
 			option.value = preset.expression;
 			option.textContent = preset.name;
 			this.select?.appendChild(option);
@@ -99,7 +99,7 @@ export class FilterPresetSelector {
 
 		// Add user presets
 		this.presets.forEach((preset) => {
-			const option = document.createElement("option");
+			const option = activeDocument.createElement("option");
 			option.value = preset.expression;
 			option.textContent = preset.name;
 			this.select?.appendChild(option);

@@ -1,5 +1,5 @@
 import type { Frontmatter, VaultTableEvent } from "@real1ty-obsidian-plugins";
-import { areSetsEqual, parseLinkedList, VaultTableView } from "@real1ty-obsidian-plugins";
+import { areSetsEqual, parseLinkedList, toSafeString, VaultTableView } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { BehaviorSubject, type Observable, type Subscription } from "rxjs";
 
@@ -36,7 +36,7 @@ export class PrerequisiteTracker extends VaultTableView<Frontmatter> {
 			distinctBy: (oldRow, newRow) => {
 				const prereqProp = this.settings.prerequisiteProp;
 				if (!prereqProp) return true;
-				return String(oldRow.data[prereqProp] ?? "") === String(newRow.data[prereqProp] ?? "");
+				return (toSafeString(oldRow.data[prereqProp]) ?? "") === (toSafeString(newRow.data[prereqProp]) ?? "");
 			},
 		});
 

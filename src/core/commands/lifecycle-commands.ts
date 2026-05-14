@@ -75,7 +75,7 @@ async function prepareFileCopy(
 	// Parse frontmatter from the just-read file content rather than metadataCache —
 	// the cache can be stale immediately after ensureFileHasZettelId rewrites the file.
 	const fmInfo = getFrontMatterInfo(content);
-	const frontmatter: Frontmatter = fmInfo.exists ? (parseYaml(fmInfo.frontmatter) ?? {}) : {};
+	const frontmatter: Frontmatter = fmInfo.exists ? ((parseYaml(fmInfo.frontmatter) as Frontmatter | null) ?? {}) : {};
 	const body = extractContentAfterFrontmatter(content);
 
 	if (settings.zettelIdProp) {

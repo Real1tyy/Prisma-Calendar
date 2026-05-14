@@ -617,7 +617,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 				if (!(file instanceof TFile)) {
 					return;
 				}
-				await this.app.fileManager.processFrontMatter(file, (fm) => {
+				await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
 					if (fm[this.settings.rruleIdProp] !== newRRuleId) {
 						fm[this.settings.rruleIdProp] = newRRuleId;
 					}

@@ -1,4 +1,4 @@
-import { extractDisplayName } from "@real1ty-obsidian-plugins";
+import { extractDisplayName, toSafeString } from "@real1ty-obsidian-plugins";
 
 import { removeZettelId } from "./zettel-id";
 
@@ -42,7 +42,8 @@ export const getEventName = (
 	}
 
 	if (calendarTitleProp && frontmatter[calendarTitleProp]) {
-		return extractDisplayName(String(frontmatter[calendarTitleProp]));
+		const raw = toSafeString(frontmatter[calendarTitleProp]);
+		if (raw !== null) return extractDisplayName(raw);
 	}
 
 	if (filePath) {

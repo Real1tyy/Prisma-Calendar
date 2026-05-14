@@ -16,6 +16,7 @@ import {
 	tid,
 	toggleCls,
 	toLocalISOString,
+	toSafeString,
 } from "@real1ty-obsidian-plugins";
 import { renderReactInline } from "@real1ty-obsidian-plugins-react";
 import { type App, Modal, Notice } from "obsidian";
@@ -174,7 +175,7 @@ export abstract class BaseEventModal extends Modal {
 
 		// Hide modal immediately if doing a silent stop-and-save or trigger-stopwatch
 		if (this.silentStopAndSave || this.startStopwatchAndMinimize) {
-			this.containerEl.style.display = "none";
+			addCls(this.containerEl, "hidden");
 		}
 
 		addCls(this.modalEl, "event-modal");
@@ -501,7 +502,8 @@ export abstract class BaseEventModal extends Modal {
 			this.stopwatch = h ?? undefined;
 		};
 		const onStart = (startTime: Date): void => {
-			this.initialBreakMinutes = PositiveFloat.parse(String(this.getSimpleFieldValues()["breakMinutes"] ?? "")) ?? 0;
+			this.initialBreakMinutes =
+				PositiveFloat.parse(toSafeString(this.getSimpleFieldValues()["breakMinutes"]) ?? "") ?? 0;
 			this.startInput.value = formatDateTimeForInput(startTime);
 
 			const endTime = new Date(startTime.getTime() + END_TIME_SYNC_INTERVAL_MS);
@@ -514,7 +516,8 @@ export abstract class BaseEventModal extends Modal {
 		const onContinueRequested = (): Date | null => {
 			// Continue uses the existing start time from the input field;
 			// reset the break counter and return the current start time.
-			this.initialBreakMinutes = PositiveFloat.parse(String(this.getSimpleFieldValues()["breakMinutes"] ?? "")) ?? 0;
+			this.initialBreakMinutes =
+				PositiveFloat.parse(toSafeString(this.getSimpleFieldValues()["breakMinutes"]) ?? "") ?? 0;
 			const startValue = this.startInput.value;
 			if (!startValue) return null;
 
@@ -1348,9 +1351,9 @@ export abstract class BaseEventModal extends Modal {
 			categories: this.categoriesChipList?.value ?? [],
 			participants: this.participantsChipList?.value ?? [],
 			prerequisites: this.prerequisitesChipList?.value ?? [],
-			location: String(fv["location"] ?? ""),
-			icon: String(fv["icon"] ?? ""),
-			breakMinutes: String(fv["breakMinutes"] ?? ""),
+			location: toSafeString(fv["location"]) ?? "",
+			icon: toSafeString(fv["icon"]) ?? "",
+			breakMinutes: toSafeString(fv["breakMinutes"]) ?? "",
 			markAsDone: fv["markAsDone"] === true,
 			skip: fv["skip"] === true,
 			notifyBefore: this.notificationInput?.value ?? "",

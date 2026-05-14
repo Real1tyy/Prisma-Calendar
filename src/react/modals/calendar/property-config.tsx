@@ -27,7 +27,7 @@ function CopyableProp({ name, testId }: { name: string; testId: string }) {
 	const copy = useCallback(() => {
 		void navigator.clipboard.writeText(name).then(() => {
 			setCopied(true);
-			setTimeout(() => setCopied(false), COPIED_FEEDBACK_MS);
+			window.setTimeout(() => setCopied(false), COPIED_FEEDBACK_MS);
 		});
 	}, [name]);
 

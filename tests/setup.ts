@@ -154,7 +154,7 @@ function polyfillObsidianDOM(): void {
 		return createAndAppend(this, tag, options);
 	};
 
-	(globalThis as any).createDiv = function (arg?: string | ElOptions) {
+	(window as any).createDiv = function (arg?: string | ElOptions) {
 		const div = document.createElement("div");
 		if (typeof arg === "string") div.className = arg;
 		else if (arg) applyOptions(div, arg);
@@ -163,6 +163,21 @@ function polyfillObsidianDOM(): void {
 }
 
 polyfillObsidianDOM();
+
+// Polyfill Obsidian's popout-window globals + a `window` alias for the node
+// test environment. Source uses `window.setTimeout`, `activeDocument`, and
+// `activeWindow` per the popout-compat lint rules; in tests there is only one
+// window so they all alias the global. We reach via `globalThis` because in
+// the node project `window` itself is undefined at module-load.
+// eslint-disable-next-line obsidianmd/no-global-this -- test polyfill; popout rule doesn't apply here
+const _g = globalThis as unknown as Record<string, unknown>;
+// eslint-disable-next-line obsidianmd/no-global-this -- test polyfill; popout rule doesn't apply here
+if (typeof _g["window"] === "undefined") _g["window"] = globalThis;
+if (typeof document !== "undefined" && typeof _g["activeDocument"] === "undefined") {
+	_g["activeDocument"] = document;
+}
+// eslint-disable-next-line obsidianmd/no-global-this -- test polyfill; popout rule doesn't apply here
+if (typeof _g["activeWindow"] === "undefined") _g["activeWindow"] = globalThis;
 
 // Setup DOM environment for FullCalendar tests
 beforeEach(() => {

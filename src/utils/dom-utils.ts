@@ -10,7 +10,7 @@ export function toggleEventHighlight(
 	eventId: string,
 	className: string,
 	add: boolean,
-	scope: ParentNode = document
+	scope: ParentNode = activeDocument
 ): void {
 	const elements = scope.querySelectorAll<HTMLElement>(`[data-event-id="${eventId}"]`);
 	for (let i = 0; i < elements.length; i++) {

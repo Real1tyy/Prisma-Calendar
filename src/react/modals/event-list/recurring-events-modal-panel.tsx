@@ -138,7 +138,7 @@ export function RecurringEventsModalPanel({
 			const startDateTime = getStartDateTime(event.rrules);
 			const eventDate = new Date(startDateTime.toJSDate());
 			calendarComponent.navigateToDate(eventDate, "timeGridWeek");
-			setTimeout(() => {
+			window.setTimeout(() => {
 				calendarComponent.highlightEventByPath(event.sourceFilePath, 5000);
 			}, 300);
 			new Notice(`Navigated to source event: ${item.title}`);

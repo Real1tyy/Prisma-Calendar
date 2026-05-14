@@ -1,7 +1,7 @@
 import { cls, tid } from "@real1ty-obsidian-plugins";
 import { ModalForm, openReactModal, SettingItem } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
-import { useCallback, useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 
 import { type MoveByResult, TIME_UNITS, type TimeUnit } from "../../../types/calendar";
 

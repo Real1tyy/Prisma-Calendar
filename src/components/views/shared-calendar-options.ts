@@ -110,7 +110,7 @@ export function buildSharedEventContent(
 		const calendarIconCache = deps.getCalendarIconCache();
 		const { userIcon, integrationIcon } = getEventIcon(event, settings, calendarIconCache);
 
-		const container = document.createElement("div");
+		const container = activeDocument.createElement("div");
 		container.className = cls("fc-event-content-wrapper");
 
 		const hasRecurringMarker =
@@ -118,7 +118,7 @@ export function buildSharedEventContent(
 			(isPhysicalRecurring && settings.showPhysicalRecurringMarker);
 
 		if (userIcon || hasRecurringMarker || integrationIcon || holiday) {
-			const markerEl = document.createElement("div");
+			const markerEl = activeDocument.createElement("div");
 			markerEl.className = cls("event-marker");
 
 			if (userIcon) {
@@ -136,18 +136,18 @@ export function buildSharedEventContent(
 			container.appendChild(markerEl);
 		}
 
-		const headerEl = document.createElement("div");
+		const headerEl = activeDocument.createElement("div");
 		headerEl.className = cls("fc-event-header");
 
 		const showTime = !event.allDay && event.start;
 		if (showTime) {
-			const timeEl = document.createElement("div");
+			const timeEl = activeDocument.createElement("div");
 			timeEl.className = cls("fc-event-time");
 			timeEl.textContent = arg.timeText;
 			headerEl.appendChild(timeEl);
 		}
 
-		const titleEl = document.createElement("div");
+		const titleEl = activeDocument.createElement("div");
 		titleEl.className = cls("fc-event-title-custom");
 		let title = cleanupTitle(event.title);
 
@@ -167,19 +167,19 @@ export function buildSharedEventContent(
 
 		const displayProperties = getDisplayProperties(displayData, displayPropertiesList);
 		if (displayProperties.length > 0) {
-			const propsContainer = document.createElement("div");
+			const propsContainer = activeDocument.createElement("div");
 			propsContainer.className = cls("fc-event-props");
 
 			for (const [prop, value] of displayProperties) {
-				const propEl = document.createElement("div");
+				const propEl = activeDocument.createElement("div");
 				propEl.className = cls("fc-event-prop");
 
-				const keyEl = document.createElement("span");
+				const keyEl = activeDocument.createElement("span");
 				keyEl.className = cls("fc-event-prop-key");
 				keyEl.textContent = `${prop}:`;
 				propEl.appendChild(keyEl);
 
-				const valueEl = document.createElement("span");
+				const valueEl = activeDocument.createElement("span");
 				valueEl.className = cls("fc-event-prop-value");
 				renderPropertyValue(valueEl, value, {
 					app: deps.app,

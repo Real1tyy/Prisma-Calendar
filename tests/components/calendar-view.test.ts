@@ -191,7 +191,7 @@ describe.skip("CalendarView", () => {
 			const openPromise = calendarView.onOpen();
 
 			// Allow the promise to start executing
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 			// Check that loading state is shown (using mixin's loading implementation)
 			expect(createDivSpy).toHaveBeenCalledWith("watchdog-loading");

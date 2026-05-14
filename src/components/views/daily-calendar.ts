@@ -140,7 +140,7 @@ export function createDailyCalendar(
 
 		droppable: true,
 
-		fixedMirrorParent: document.body,
+		fixedMirrorParent: activeDocument.body,
 
 		eventAllow: (_dropInfo, draggedEvent) => {
 			return draggedEvent ? isFileBackedEvent(draggedEvent) : false;
@@ -224,7 +224,7 @@ export function createDailyCalendar(
 			if (!isHandlingSelection) {
 				handleSharedDateClick(app, bundle, calendar, info);
 			}
-			setTimeout(() => {
+			window.setTimeout(() => {
 				isHandlingSelection = false;
 			}, SELECTION_GUARD_DELAY_MS);
 		},
@@ -280,7 +280,7 @@ export function createDailyCalendar(
 		}
 		if (refreshRafId !== null) return;
 
-		refreshRafId = requestAnimationFrame(() => {
+		refreshRafId = window.requestAnimationFrame(() => {
 			refreshRafId = null;
 			isRefreshing = true;
 			pendingRefreshRequest = false;

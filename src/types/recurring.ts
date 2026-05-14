@@ -46,7 +46,7 @@ export const RECURRENCE_TYPE_OPTIONS = {
 
 export type RecurrencePreset = keyof typeof RECURRENCE_TYPE_OPTIONS;
 
-export type RecurrenceType = RecurrencePreset | string;
+export type RecurrenceType = RecurrencePreset | (string & {});
 
 export const WEEKDAY_SUPPORTED_TYPES = ["weekly", "bi-weekly", "weekdays", "weekends"] as const;
 

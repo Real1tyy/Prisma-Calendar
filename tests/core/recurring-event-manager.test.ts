@@ -939,7 +939,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 			mockIndexer.indexingComplete$.next(true);
 
 			// Wait for async processing to complete
-			await new Promise((resolve) => setTimeout(resolve, 200));
+			await new Promise((resolve) => window.setTimeout(resolve, 200));
 
 			// Should have received at least one notification after processing completes
 			expect(notificationCallback).toHaveBeenCalled();
@@ -994,7 +994,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 			mockIndexer.indexingComplete$.next(true);
 
 			// Wait a bit for the flush to happen
-			await new Promise((resolve) => setTimeout(resolve, 50));
+			await new Promise((resolve) => window.setTimeout(resolve, 50));
 
 			// Should have been notified immediately without waiting for debounce timeout
 			expect(notificationCallback).toHaveBeenCalled();
@@ -1005,7 +1005,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 			// Set indexing as complete first
 			mockIndexer.indexingComplete$.next(true);
-			await new Promise((resolve) => setTimeout(resolve, 50));
+			await new Promise((resolve) => window.setTimeout(resolve, 50));
 
 			const notificationCallback = vi.fn();
 			manager.subscribe(notificationCallback);
@@ -1036,7 +1036,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 			});
 
 			// Wait for async instance creation
-			await new Promise((resolve) => setTimeout(resolve, 200));
+			await new Promise((resolve) => window.setTimeout(resolve, 200));
 
 			// Should have been notified after adding the event and creating instances
 			expect(notificationCallback).toHaveBeenCalled();

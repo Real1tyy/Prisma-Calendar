@@ -1,6 +1,8 @@
 import { requestUrl, type RequestUrlResponse } from "obsidian";
 
-const initialFetch = globalThis.fetch;
+// Captured lazily so importing this module in node-environment test runners
+// (where there is no `window`) doesn't crash at module-load time.
+const initialFetch: typeof fetch | undefined = typeof window !== "undefined" ? window.fetch : undefined;
 
 /**
  * Response wrapper that makes Obsidian's RequestUrlResponse compatible with the Fetch API Response interface.
@@ -83,7 +85,7 @@ async function obsidianFetch(input: RequestInfo | URL, init?: RequestInit): Prom
 
 	const protocol = parsed?.protocol ?? "";
 	if (protocol && protocol !== "http:" && protocol !== "https:") {
-		const fallbackFetch = originalFetch ?? initialFetch;
+		const fallbackFetch = originalFetch ?? initialFetch ?? window.fetch;
 		return fallbackFetch(input as never, init as never);
 	}
 
@@ -128,21 +130,21 @@ async function obsidianFetch(input: RequestInfo | URL, init?: RequestInit): Prom
 	return new ObsidianResponse(res, url) as unknown as Response;
 }
 
-let originalFetch: typeof globalThis.fetch | undefined;
+let originalFetch: typeof window.fetch | undefined;
 
 /**
  * Patches globalThis.fetch with Obsidian's fetch implementation.
  * Call this before importing/using libraries that use fetch (like tsdav).
  */
 export function patchGlobalFetch(): () => void {
-	const prev = globalThis.fetch;
+	const prev = window.fetch;
 	if (!originalFetch) {
 		originalFetch = prev;
 	}
 
-	globalThis.fetch = obsidianFetch as typeof globalThis.fetch;
+	window.fetch = obsidianFetch as typeof window.fetch;
 
 	return () => {
-		globalThis.fetch = prev;
+		window.fetch = prev;
 	};
 }

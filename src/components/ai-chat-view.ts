@@ -1,4 +1,4 @@
-import { cls, MountableView, MS_PER_DAY, renderCollapsibleSection } from "@real1ty-obsidian-plugins";
+import { cls, describeError, MountableView, MS_PER_DAY, renderCollapsibleSection } from "@real1ty-obsidian-plugins";
 import { Component, ItemView, MarkdownRenderer, Notice, type WorkspaceLeaf } from "obsidian";
 import { distinctUntilChanged, skip } from "rxjs";
 
@@ -452,8 +452,7 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 				);
 			}
 		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred.";
-			new Notice(`Prisma AI: ${errorMessage}`);
+			new Notice(`Prisma AI: ${describeError(error, "An unexpected error occurred.")}`);
 		} finally {
 			this.setLoading(false);
 			this.renderMessages();

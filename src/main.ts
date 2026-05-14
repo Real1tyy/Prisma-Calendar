@@ -1,5 +1,6 @@
 import {
 	activateView,
+	describeError,
 	ensureDirectory,
 	normalizeDirectory,
 	ReleaseCheckService,
@@ -140,7 +141,7 @@ export default class CustomCalendarPlugin extends Plugin {
 		this.app.workspace.setActiveLeaf(leaf, { focus: true });
 
 		// Focus the view's container to make commands available
-		setTimeout(() => leaf.view.containerEl.focus(), 10);
+		window.setTimeout(() => leaf.view.containerEl.focus(), 10);
 	}
 
 	async rememberLastUsedCalendar(calendarId: string): Promise<void> {
@@ -225,7 +226,7 @@ export default class CustomCalendarPlugin extends Plugin {
 					}
 					if (component && !component.isInBatchSelectionMode()) {
 						if (!checking) {
-							new Notice("Prisma calendar: batch selection mode is not active");
+							new Notice("Prisma Calendar: batch selection mode is not active");
 						}
 						return true;
 					}
@@ -659,7 +660,7 @@ export default class CustomCalendarPlugin extends Plugin {
 
 			progressHandle.showComplete(result.successCount, result.errorCount, result.skippedCount);
 		} catch (error) {
-			progressHandle.showError(error instanceof Error ? error.message : "Import failed");
+			progressHandle.showError(describeError(error, "Import failed"));
 		}
 	}
 

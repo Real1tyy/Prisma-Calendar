@@ -153,7 +153,7 @@ function GlobalSearchContent({
 
 					const eventDate = new Date(event.start);
 					calendarComponent.navigateToDate(eventDate, "timeGridWeek");
-					setTimeout(() => {
+					window.setTimeout(() => {
 						calendarComponent.highlightEventByPath(item.filePath, 5000);
 					}, 300);
 					new Notice(`Navigated to: ${item.title}`);

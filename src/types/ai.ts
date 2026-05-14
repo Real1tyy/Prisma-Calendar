@@ -2,11 +2,9 @@ import { z } from "zod";
 
 // ─── AI Modes & Providers ────────────────────────────────────────────
 
-const _AIModeSchema = z.enum(["query", "manipulation", "planning"]);
-export type AIMode = z.infer<typeof _AIModeSchema>;
+export type AIMode = "query" | "manipulation" | "planning";
 
-const _AIProviderSchema = z.enum(["openai", "anthropic"]);
-export type AIProvider = z.infer<typeof _AIProviderSchema>;
+export type AIProvider = "openai" | "anthropic";
 
 export interface AIModelOption {
 	label: string;

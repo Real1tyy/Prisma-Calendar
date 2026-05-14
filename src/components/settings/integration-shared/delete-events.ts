@@ -1,4 +1,4 @@
-import { showProgressModal } from "@real1ty-obsidian-plugins";
+import { describeError, showProgressModal } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 
 import { CSS_PREFIX } from "../../../constants";
@@ -43,10 +43,9 @@ export async function deleteTrackedIntegrationEvents(
 		});
 		deleted += filesDeleted;
 
-		console.log(`[${logPrefix}] Deleted ${deleted} event(s) for ${logIdentifier}`);
 		progress.showComplete([`Deleted ${deleted} event(s) for ${logIdentifier}`]);
 	} catch (error) {
 		console.error(`[${logPrefix}] Failed to delete events for ${logIdentifier}:`, error);
-		progress.showError(`Failed to delete events: ${error}`);
+		progress.showError(`Failed to delete events: ${describeError(error)}`);
 	}
 }
