@@ -7,8 +7,8 @@ import { VITEST_POOL_OPTIONS, sharedVitestAliases } from "./shared/src/testing/v
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Test files/directories that need a DOM environment. Single source of truth
-// used by both the jsdom project's `include` and the node project's `exclude`.
-const JSDOM_PATTERNS = [
+// used by both the dom project's `include` and the node project's `exclude`.
+const DOM_PATTERNS = [
 	"tests/components/**/*.test.ts",
 	"tests/components/**/*.test.tsx",
 	"tests/integrations/calendar-bundle.test.ts",
@@ -17,6 +17,13 @@ const JSDOM_PATTERNS = [
 	"tests/utils/event-tooltip-snapshots.test.ts",
 	"tests/visual/generate-fixtures.test.ts",
 ];
+
+// A small set of specs are pinned to jsdom because their assertions depend on
+// jsdom-specific behavior that happy-dom doesn't match:
+//   - heatmap-renderer relies on jsdom's SVG/innerHTML serialization
+//   - zoom-control exercises Ctrl+wheel handling and happy-dom's WheelEvent
+//     differs in `preventDefault`/`ctrlKey` propagation through React handlers
+const JSDOM_PATTERNS = ["tests/components/heatmap-renderer.test.ts", "tests/components/views/zoom-control.test.tsx"];
 
 const SHARED_EXCLUDE = ["**/node_modules/**", "**/dist/**", "**/*.visual.spec.ts", "e2e/**"];
 
@@ -36,6 +43,16 @@ export default defineConfig({
 					name: "node",
 					environment: "node",
 					include: ["tests/**/*.test.ts"],
+					exclude: [...SHARED_EXCLUDE, ...DOM_PATTERNS],
+					isolate: false,
+				},
+			},
+			{
+				extends: true,
+				test: {
+					name: "dom",
+					environment: "happy-dom",
+					include: DOM_PATTERNS,
 					exclude: [...SHARED_EXCLUDE, ...JSDOM_PATTERNS],
 					isolate: false,
 				},
