@@ -1,6 +1,6 @@
-import { cls, createGridLayout, type GridLayoutHandle, tid } from "@real1ty-obsidian-plugins";
-import { useApp } from "@real1ty-obsidian-plugins-react";
-import { memo, type Ref, useEffect, useImperativeHandle, useRef } from "react";
+import { cls, tid } from "@real1ty-obsidian-plugins";
+import { GridLayout, useApp } from "@real1ty-obsidian-plugins-react";
+import { memo, type Ref, useImperativeHandle, useMemo, useRef } from "react";
 
 import {
 	createDailyCalendar,
@@ -21,64 +21,46 @@ interface DualDailyTabProps {
 export const DualDailyTab = memo(function DualDailyTab({ handleRef }: DualDailyTabProps) {
 	const app = useApp();
 	const bundle = useBundle();
-	const containerRef = useRef<HTMLDivElement>(null);
 	const leftCalRef = useRef<DailyCalendarHandle | null>(null);
 	const rightCalRef = useRef<DailyCalendarHandle | null>(null);
 	const focusedSideRef = useRef<"left" | "right">("left");
 
-	useEffect(() => {
-		const el = containerRef.current;
-		if (!el) return;
-
-		let gridHandle: GridLayoutHandle | null = null;
+	const cells = useMemo(() => {
 		const sharedDragState: DailyDragState = { current: null };
-
-		gridHandle = createGridLayout(el, {
-			cssPrefix: cls("dual-daily-"),
-			columns: 2,
-			rows: 1,
-			gap: "12px",
-			dividers: true,
-			cells: [
-				{
-					id: "left-calendar",
-					label: "Calendar Left",
-					row: 0,
-					col: 0,
-					render: (cellEl) => {
-						leftCalRef.current = createDailyCalendar(cellEl, app, bundle, { sharedDragState });
-						cellEl.addEventListener("pointerdown", () => {
-							focusedSideRef.current = "left";
-						});
-					},
-					cleanup: () => {
-						leftCalRef.current?.destroy();
-						leftCalRef.current = null;
-					},
+		return [
+			{
+				id: "left-calendar",
+				label: "Calendar Left",
+				row: 0,
+				col: 0,
+				render: (cellEl: HTMLElement) => {
+					leftCalRef.current = createDailyCalendar(cellEl, app, bundle, { sharedDragState });
+					cellEl.addEventListener("pointerdown", () => {
+						focusedSideRef.current = "left";
+					});
 				},
-				{
-					id: "right-calendar",
-					label: "Calendar Right",
-					row: 0,
-					col: 1,
-					render: (cellEl) => {
-						rightCalRef.current = createDailyCalendar(cellEl, app, bundle, { sharedDragState });
-						cellEl.addEventListener("pointerdown", () => {
-							focusedSideRef.current = "right";
-						});
-					},
-					cleanup: () => {
-						rightCalRef.current?.destroy();
-						rightCalRef.current = null;
-					},
+				cleanup: () => {
+					leftCalRef.current?.destroy();
+					leftCalRef.current = null;
 				},
-			],
-		});
-
-		return () => {
-			gridHandle?.destroy();
-			gridHandle = null;
-		};
+			},
+			{
+				id: "right-calendar",
+				label: "Calendar Right",
+				row: 0,
+				col: 1,
+				render: (cellEl: HTMLElement) => {
+					rightCalRef.current = createDailyCalendar(cellEl, app, bundle, { sharedDragState });
+					cellEl.addEventListener("pointerdown", () => {
+						focusedSideRef.current = "right";
+					});
+				},
+				cleanup: () => {
+					rightCalRef.current?.destroy();
+					rightCalRef.current = null;
+				},
+			},
+		];
 	}, [app, bundle]);
 
 	useImperativeHandle(
@@ -90,5 +72,17 @@ export const DualDailyTab = memo(function DualDailyTab({ handleRef }: DualDailyT
 		[]
 	);
 
-	return <div ref={containerRef} style={{ flex: "1 1 auto", minHeight: 0 }} data-testid={tid("dual-daily")} />;
+	return (
+		<GridLayout
+			app={app}
+			cssPrefix={cls("dual-daily-")}
+			columns={2}
+			rows={1}
+			gap="12px"
+			dividers
+			cells={cells}
+			style={{ flex: "1 1 auto", minHeight: 0 }}
+			data-testid={tid("dual-daily")}
+		/>
+	);
 });

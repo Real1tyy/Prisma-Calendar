@@ -1,6 +1,7 @@
-import { type ChartDataItem, cls, createGridLayout, type GridLayoutHandle, tid } from "@real1ty-obsidian-plugins";
+import { type ChartDataItem, cls, tid } from "@real1ty-obsidian-plugins";
+import { GridLayout } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
-import { memo, type ReactElement, useEffect, useMemo, useRef } from "react";
+import { memo, type ReactElement, useMemo } from "react";
 
 import {
 	buildChartDataFromItems,
@@ -27,6 +28,15 @@ const DASHBOARD_CSS_PREFIX = cls("dashboard-");
 const REFRESH_DEBOUNCE_MS = 300;
 const TOOLTIP_FORMATTER = (label: string, value: number, percentage: string): string =>
 	`${label}: ${value} event${value === 1 ? "" : "s"} (${percentage}%)`;
+const DASHBOARD_INITIAL_STATE = {
+	columns: 2,
+	rows: 2,
+	cells: [],
+	rowSizes: [0.25, 1],
+	columnSizes: undefined,
+	cellColumnSizes: undefined,
+	cellRowSizes: undefined,
+};
 
 interface DashboardData {
 	items: DashboardItem[];
@@ -44,93 +54,75 @@ interface DashboardSectionProps {
 
 const DashboardSection = memo(function DashboardSection({ id, buildData }: DashboardSectionProps) {
 	const bundle = useBundle();
-	const containerRef = useRef<HTMLDivElement>(null);
 	const extra = useMemo(() => [bundle.categoryTracker.categories$], [bundle]);
 	const renderToken = useBundleChanges(bundle, { debounceMs: REFRESH_DEBOUNCE_MS, extra });
+	const data = useMemo(() => buildData(), [buildData, renderToken]);
 
-	useEffect(() => {
-		const el = containerRef.current;
-		if (!el) return;
-
-		let gridHandle: GridLayoutHandle | null = null;
-		let chartHandle: DashboardChartHandle | null = null;
-		let tableHandle: DashboardTableHandle | null = null;
-
-		const data = buildData();
-
-		gridHandle = createGridLayout(el, {
-			cssPrefix: DASHBOARD_CSS_PREFIX,
-			columns: 2,
-			rows: 2,
-			gap: "12px",
-			dividers: true,
-			resizable: "track",
-			initialState: {
-				columns: 2,
-				rows: 2,
-				cells: [],
-				rowSizes: [0.25, 1],
-				columnSizes: undefined,
-				cellColumnSizes: undefined,
-				cellRowSizes: undefined,
+	const cells = useMemo(() => {
+		const chartHandle: { current: DashboardChartHandle | null } = { current: null };
+		const tableHandle: { current: DashboardTableHandle | null } = { current: null };
+		return [
+			{
+				id: "chart",
+				label: "Chart",
+				row: 0,
+				col: 0,
+				render: (cellEl: HTMLElement) => {
+					cellEl.setAttribute("data-testid", tid("dashboard-cell-chart"));
+					chartHandle.current = renderDashboardChart(cellEl, data.chartData, id, TOOLTIP_FORMATTER);
+				},
+				cleanup: () => {
+					chartHandle.current?.destroy();
+					chartHandle.current = null;
+				},
 			},
-			cells: [
-				{
-					id: "chart",
-					label: "Chart",
-					row: 0,
-					col: 0,
-					render: (cellEl) => {
-						cellEl.setAttribute("data-testid", tid("dashboard-cell-chart"));
-						chartHandle = renderDashboardChart(cellEl, data.chartData, id, TOOLTIP_FORMATTER);
-					},
-					cleanup: () => {
-						chartHandle?.destroy();
-						chartHandle = null;
-					},
+			{
+				id: "ranking",
+				label: "Top Items",
+				row: 0,
+				col: 1,
+				render: (cellEl: HTMLElement) => {
+					cellEl.setAttribute("data-testid", tid("dashboard-cell-ranking"));
+					renderDashboardRanking(cellEl, data.items, data.stats);
 				},
-				{
-					id: "ranking",
-					label: "Top Items",
-					row: 0,
-					col: 1,
-					render: (cellEl) => {
-						cellEl.setAttribute("data-testid", tid("dashboard-cell-ranking"));
-						renderDashboardRanking(cellEl, data.items, data.stats);
-					},
+			},
+			{
+				id: "table",
+				label: "Table",
+				row: 1,
+				col: 0,
+				colSpan: 2,
+				render: (cellEl: HTMLElement) => {
+					cellEl.setAttribute("data-testid", tid("dashboard-cell-table"));
+					tableHandle.current = renderDashboardTable(cellEl, {
+						items: data.items,
+						columns: data.columns,
+						...(data.onItemClick ? { onItemClick: data.onItemClick } : {}),
+						emptyMessage: data.emptyMessage,
+					});
 				},
-				{
-					id: "table",
-					label: "Table",
-					row: 1,
-					col: 0,
-					colSpan: 2,
-					render: (cellEl) => {
-						cellEl.setAttribute("data-testid", tid("dashboard-cell-table"));
-						tableHandle = renderDashboardTable(cellEl, {
-							items: data.items,
-							columns: data.columns,
-							...(data.onItemClick ? { onItemClick: data.onItemClick } : {}),
-							emptyMessage: data.emptyMessage,
-						});
-					},
-					cleanup: () => {
-						tableHandle?.destroy();
-						tableHandle = null;
-					},
+				cleanup: () => {
+					tableHandle.current?.destroy();
+					tableHandle.current = null;
 				},
-			],
-		});
+			},
+		];
+	}, [id, data]);
 
-		return () => {
-			chartHandle?.destroy();
-			tableHandle?.destroy();
-			gridHandle?.destroy();
-			gridHandle = null;
-		};
-	}, [id, buildData, renderToken]);
-
-	return <div ref={containerRef} style={{ flex: "1 1 auto", minHeight: 0 }} data-testid={tid("dashboard", id)} />;
+	return (
+		<GridLayout
+			cssPrefix={DASHBOARD_CSS_PREFIX}
+			columns={2}
+			rows={2}
+			gap="12px"
+			dividers
+			resizable="track"
+			initialState={DASHBOARD_INITIAL_STATE}
+			cells={cells}
+			style={{ flex: "1 1 auto", minHeight: 0 }}
+			data-testid={tid("dashboard", id)}
+		/>
+	);
 });
 
 interface GatedSectionProps extends DashboardSectionProps {

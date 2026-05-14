@@ -1,6 +1,6 @@
-import { cls, createGridLayout, type GridLayoutHandle, tid } from "@real1ty-obsidian-plugins";
-import { useApp, useSubscription } from "@real1ty-obsidian-plugins-react";
-import { memo, type Ref, useEffect, useImperativeHandle, useMemo, useRef } from "react";
+import { cls, tid } from "@real1ty-obsidian-plugins";
+import { GridLayout, useApp, useSubscription } from "@real1ty-obsidian-plugins-react";
+import { memo, type Ref, useImperativeHandle, useMemo, useRef } from "react";
 import { merge } from "rxjs";
 
 import { type HeatmapHandle, renderHeatmapInto } from "../../components/modals";
@@ -21,64 +21,47 @@ interface HeatmapMonthlyStatsTabProps {
 const HeatmapMonthlyStatsBody = memo(function HeatmapMonthlyStatsBody({ handleRef }: HeatmapMonthlyStatsTabProps) {
 	const app = useApp();
 	const bundle = useBundle();
-	const containerRef = useRef<HTMLDivElement>(null);
 	const heatmapRef = useRef<HeatmapHandle | null>(null);
+	const statsRef = useRef<IntervalStatsViewHandle | null>(null);
 
-	useEffect(() => {
-		const el = containerRef.current;
-		if (!el) return;
-
-		let gridHandle: GridLayoutHandle | null = null;
-		let statsHandle: IntervalStatsViewHandle | null = null;
-
-		gridHandle = createGridLayout(el, {
-			cssPrefix: cls("heatmap-monthly-stats-"),
-			columns: 2,
-			rows: 1,
-			gap: "12px",
-			dividers: true,
-			cells: [
-				{
-					id: "heatmap",
-					label: "Monthly Heatmap",
-					row: 0,
-					col: 0,
-					render: (cellEl) => {
-						heatmapRef.current = renderHeatmapInto(cellEl, app, bundle, {
-							events: bundle.eventStore.getAllEvents(),
-							initialMode: "monthly",
-							lockMode: true,
-							onNavigate: ({ year, month }) => {
-								statsHandle?.setDate(new Date(year, month - 1, 1));
-							},
-						});
-					},
-					cleanup: () => {
-						heatmapRef.current?.destroy();
-						heatmapRef.current = null;
-					},
+	const cells = useMemo(
+		() => [
+			{
+				id: "heatmap",
+				label: "Monthly Heatmap",
+				row: 0,
+				col: 0,
+				render: (cellEl: HTMLElement) => {
+					heatmapRef.current = renderHeatmapInto(cellEl, app, bundle, {
+						events: bundle.eventStore.getAllEvents(),
+						initialMode: "monthly",
+						lockMode: true,
+						onNavigate: ({ year, month }) => {
+							statsRef.current?.setDate(new Date(year, month - 1, 1));
+						},
+					});
 				},
-				{
-					id: "stats",
-					label: "Statistics",
-					row: 0,
-					col: 1,
-					render: (cellEl) => {
-						statsHandle = renderMonthlyStatsInto(cellEl, bundle);
-					},
-					cleanup: () => {
-						statsHandle?.destroy();
-						statsHandle = null;
-					},
+				cleanup: () => {
+					heatmapRef.current?.destroy();
+					heatmapRef.current = null;
 				},
-			],
-		});
-
-		return () => {
-			gridHandle?.destroy();
-			gridHandle = null;
-		};
-	}, [app, bundle]);
+			},
+			{
+				id: "stats",
+				label: "Statistics",
+				row: 0,
+				col: 1,
+				render: (cellEl: HTMLElement) => {
+					statsRef.current = renderMonthlyStatsInto(cellEl, bundle);
+				},
+				cleanup: () => {
+					statsRef.current?.destroy();
+					statsRef.current = null;
+				},
+			},
+		],
+		[app, bundle]
+	);
 
 	const changes$ = useMemo(() => merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$), [bundle]);
 	useSubscription(changes$, () => {
@@ -94,7 +77,17 @@ const HeatmapMonthlyStatsBody = memo(function HeatmapMonthlyStatsBody({ handleRe
 	);
 
 	return (
-		<div ref={containerRef} style={{ flex: "1 1 auto", minHeight: 0 }} data-testid={tid("heatmap-monthly-stats-tab")} />
+		<GridLayout
+			app={app}
+			cssPrefix={cls("heatmap-monthly-stats-")}
+			columns={2}
+			rows={1}
+			gap="12px"
+			dividers
+			cells={cells}
+			style={{ flex: "1 1 auto", minHeight: 0 }}
+			data-testid={tid("heatmap-monthly-stats-tab")}
+		/>
 	);
 });
 

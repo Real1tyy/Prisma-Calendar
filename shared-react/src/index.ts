@@ -122,6 +122,8 @@ export { useSubscription } from "./hooks/use-subscription";
 // ─── Grid Layout (React wrapper + modal helpers) ───
 export type {
 	CellPickerContentProps,
+	GridLayoutCommandsConfig,
+	GridLayoutProps,
 	LayoutEditorContentProps,
 	OpenCellPickerOptions,
 	OpenLayoutEditorOptions,
@@ -130,6 +132,7 @@ export type {
 export {
 	CellPickerContent,
 	createGridLayout,
+	GridLayout,
 	LayoutEditorContent,
 	openCellPicker,
 	openLayoutEditor,
