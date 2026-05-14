@@ -62,8 +62,8 @@ function msToBreakMinutes(ms: number): number {
 }
 
 function btnClass(variant: string, hidden: boolean): string {
-	const base = cls(`stopwatch-btn stopwatch-${variant}-btn`);
-	return hidden ? `${base} prisma-hidden` : base;
+	const base = `${cls("stopwatch-btn")} ${cls(`stopwatch-${variant}-btn`)}`;
+	return hidden ? `${base} ${cls("hidden")}` : base;
 }
 
 export const Stopwatch = forwardRef<StopwatchHandle, StopwatchCallbacks>(function Stopwatch(
