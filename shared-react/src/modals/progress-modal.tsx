@@ -62,11 +62,11 @@ export const ProgressContent = memo(function ProgressContent({
 		statusText: formatStatus(0),
 	});
 
-	const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const timerRef = useRef<number | null>(null);
 
 	useEffect(() => {
 		return () => {
-			if (timerRef.current) clearTimeout(timerRef.current);
+			if (timerRef.current) window.clearTimeout(timerRef.current);
 		};
 	}, []);
 
@@ -96,7 +96,7 @@ export const ProgressContent = memo(function ProgressContent({
 								statusText: baseTitle + " complete",
 							}
 				);
-				timerRef.current = setTimeout(close, successCloseDelay);
+				timerRef.current = window.setTimeout(close, successCloseDelay);
 			},
 			error: (message: string) => {
 				setState((prev) =>
@@ -109,7 +109,7 @@ export const ProgressContent = memo(function ProgressContent({
 								statusText: baseTitle + " failed",
 							}
 				);
-				timerRef.current = setTimeout(close, errorCloseDelay);
+				timerRef.current = window.setTimeout(close, errorCloseDelay);
 			},
 		};
 	}, [stateRef, safeTotal, formatStatus, baseTitle, close, successCloseDelay, errorCloseDelay]);

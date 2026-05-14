@@ -55,7 +55,7 @@ describe("NumberInput", () => {
 
 		await user.clear(input);
 		// Wait past the debounce window so any accidental commit would land.
-		await new Promise((r) => setTimeout(r, 40));
+		await new Promise((r) => window.setTimeout(r, 40));
 
 		// Clearing an `<input type=number>` yields NaN via valueAsNumber; the
 		// component swallows the event instead of emitting NaN downstream.

@@ -111,7 +111,7 @@ export async function refreshCalendar(page: Page): Promise<void> {
 	await page.evaluate(async () => {
 		const w = window as unknown as PrismaWindow;
 		w.app.commands.executeCommandById("prisma-calendar:refresh-calendar");
-		await new Promise((r) => setTimeout(r, 500));
+		await new Promise((r) => window.setTimeout(r, 500));
 	});
 }
 

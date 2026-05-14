@@ -388,7 +388,7 @@ describe("VaultTable", () => {
 
 			emitIndexerEvent(createFileChangedEvent("test-table/note.md", { title: "Task", priority: 0, tags: [] }, 100));
 
-			await new Promise((r) => setTimeout(r, 50));
+			await new Promise((r) => window.setTimeout(r, 50));
 
 			expect(events).toHaveLength(0);
 
@@ -442,7 +442,7 @@ describe("VaultTable", () => {
 
 			emitIndexerEvent(createFileChangedEvent("test-table/bad.md", { title: 123 }, 100));
 
-			await new Promise((r) => setTimeout(r, 50));
+			await new Promise((r) => window.setTimeout(r, 50));
 
 			expect(table.count()).toBe(0);
 
@@ -476,7 +476,7 @@ describe("VaultTable", () => {
 
 			emitIndexerEvent(createFileChangedEvent("test-table/fixable.md", { priority: "not-a-number" }, 100));
 
-			await new Promise((r) => setTimeout(r, 50));
+			await new Promise((r) => window.setTimeout(r, 50));
 
 			expect(table.count()).toBe(0);
 
@@ -493,7 +493,7 @@ describe("VaultTable", () => {
 
 			emitIndexerEvent(createFileChangedEvent("test-table/bad.md", { title: 123 }, 100));
 
-			await new Promise((r) => setTimeout(r, 50));
+			await new Promise((r) => window.setTimeout(r, 50));
 
 			expect(mockApp.vault.trash).toHaveBeenCalledWith(mockFile, true);
 
@@ -1000,7 +1000,7 @@ describe("VaultTable", () => {
 
 			emitIndexerEvent(createFileChangedEvent("test-table/note.md", { title: "Task", priority: 0, tags: [] }, 200));
 
-			await new Promise((r) => setTimeout(r, 50));
+			await new Promise((r) => window.setTimeout(r, 50));
 			expect(events).toHaveLength(0);
 
 			table.destroy();

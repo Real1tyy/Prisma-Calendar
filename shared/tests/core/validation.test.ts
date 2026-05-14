@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { isNotEmpty, parsePositiveInt } from "../../src/core/validation";
 
 describe("isNotEmpty", () => {

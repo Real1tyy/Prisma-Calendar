@@ -26,7 +26,7 @@ export function useScrollRestore(scrollState: { current: number }, parentSelecto
 			if (!scrollParent) return;
 
 			if (scrollState.current) {
-				requestAnimationFrame(() => {
+				window.requestAnimationFrame(() => {
 					scrollParent.scrollTop = scrollState.current;
 				});
 			}

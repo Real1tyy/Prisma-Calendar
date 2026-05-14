@@ -222,7 +222,7 @@ export class FolderCollapser {
 
 	private getFileExplorerView(): FileExplorerView | null {
 		const leaf = this.app.workspace.getLeavesOfType("file-explorer")[0];
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- array may be empty at runtime (noUncheckedIndexedAccess disabled)
+
 		if (!leaf) return null;
 		return leaf.view as unknown as FileExplorerView;
 	}
@@ -455,7 +455,7 @@ export class FolderCollapser {
 					if (folder) {
 						document.body.classList.remove(this.cls.bodyActive);
 						this.originalRevealInFolder!.call(fileExplorerPlugin, folder);
-						setTimeout(() => {
+						window.setTimeout(() => {
 							document.body.classList.add(this.cls.bodyActive);
 						}, 100);
 						return;

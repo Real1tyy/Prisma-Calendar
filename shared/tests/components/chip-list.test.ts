@@ -38,7 +38,7 @@ function polyfillObsidianDOM(): void {
 		return el;
 	};
 
-	(globalThis as any).createDiv = function (classNameOrOptions?: string | Record<string, any>) {
+	(window as any).createDiv = function (classNameOrOptions?: string | Record<string, any>) {
 		const div = document.createElement("div");
 		if (typeof classNameOrOptions === "string") {
 			div.className = classNameOrOptions;

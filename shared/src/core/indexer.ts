@@ -328,16 +328,16 @@ export class Indexer {
 	private debounceByPath<T>(ms: number, key: (x: T) => string) {
 		return (source: Observable<T>) =>
 			new Observable<T>((subscriber) => {
-				const pending = new Map<string, { timer: ReturnType<typeof setTimeout>; value: T }>();
+				const pending = new Map<string, { timer: number; value: T }>();
 
 				const sub = source.subscribe({
 					next: (value) => {
 						const k = key(value);
 						const existing = pending.get(k);
-						if (existing) clearTimeout(existing.timer);
+						if (existing) window.clearTimeout(existing.timer);
 						pending.set(k, {
 							value,
-							timer: setTimeout(() => {
+							timer: window.setTimeout(() => {
 								const entry = pending.get(k);
 								if (!entry) return;
 								pending.delete(k);
@@ -349,7 +349,7 @@ export class Indexer {
 					complete: () => {
 						// Flush pending debounced values on complete instead of dropping them
 						for (const { timer, value } of pending.values()) {
-							clearTimeout(timer);
+							window.clearTimeout(timer);
 							subscriber.next(value);
 						}
 						pending.clear();
@@ -359,7 +359,7 @@ export class Indexer {
 
 				return () => {
 					sub.unsubscribe();
-					for (const { timer } of pending.values()) clearTimeout(timer);
+					for (const { timer } of pending.values()) window.clearTimeout(timer);
 					pending.clear();
 				};
 			});

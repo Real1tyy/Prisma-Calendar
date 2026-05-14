@@ -93,8 +93,8 @@ export const IconPickerGrid = memo(function IconPickerGrid({ onSelect, allowNoIc
 	}, []);
 
 	useEffect(() => {
-		const timer = setTimeout(() => setDebouncedQuery(query), SEARCH_DEBOUNCE_MS);
-		return () => clearTimeout(timer);
+		const timer = window.setTimeout(() => setDebouncedQuery(query), SEARCH_DEBOUNCE_MS);
+		return () => window.clearTimeout(timer);
 	}, [query]);
 
 	const filteredIcons = useMemo(() => {

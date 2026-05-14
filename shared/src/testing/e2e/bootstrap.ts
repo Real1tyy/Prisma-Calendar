@@ -430,7 +430,7 @@ export async function bootstrapObsidian(options: BootstrapOptions): Promise<Boot
 		log.debug(`connected (contexts=${browser.contexts().length})`);
 
 		const context = browser.contexts()[0];
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- array may be empty at runtime (noUncheckedIndexedAccess disabled)
+
 		if (!context) throw new Error("no browser context after connect");
 
 		// Poll context.pages() directly instead of `browser.firstWindow()` —

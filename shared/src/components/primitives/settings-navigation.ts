@@ -188,7 +188,7 @@ export class SettingsNavigation {
 		this.searchInput.setValue(this.searchQuery);
 		this.css.addCls(this.searchInput.inputEl, "settings-search-input");
 
-		let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+		let debounceTimer: number | null = null;
 
 		const applySearch = () => {
 			const value = this.searchInput!.inputEl.value;
@@ -199,20 +199,20 @@ export class SettingsNavigation {
 		};
 
 		this.searchInput.inputEl.addEventListener("input", () => {
-			if (debounceTimer) clearTimeout(debounceTimer);
-			debounceTimer = setTimeout(applySearch, 300);
+			if (debounceTimer) window.clearTimeout(debounceTimer);
+			debounceTimer = window.setTimeout(applySearch, 300);
 		});
 
 		this.searchInput.inputEl.addEventListener("keydown", (e: KeyboardEvent) => {
 			if (e.key === "Enter") {
 				e.preventDefault();
-				if (debounceTimer) clearTimeout(debounceTimer);
+				if (debounceTimer) window.clearTimeout(debounceTimer);
 				applySearch();
 			}
 		});
 
 		this.searchInput.inputEl.addEventListener("blur", () => {
-			if (debounceTimer) clearTimeout(debounceTimer);
+			if (debounceTimer) window.clearTimeout(debounceTimer);
 			applySearch();
 		});
 	}

@@ -1,3 +1,5 @@
+import "@real1ty-obsidian-plugins/testing/setup-window";
+
 import { beforeEach, vi } from "vitest";
 
 // Mock problematic utils modules that depend on obsidian
@@ -169,14 +171,14 @@ polyfillObsidianDOM();
 // `activeWindow` per the popout-compat lint rules; in tests there is only one
 // window so they all alias the global. We reach via `globalThis` because in
 // the node project `window` itself is undefined at module-load.
-// eslint-disable-next-line obsidianmd/no-global-this -- test polyfill; popout rule doesn't apply here
+
 const _g = globalThis as unknown as Record<string, unknown>;
-// eslint-disable-next-line obsidianmd/no-global-this -- test polyfill; popout rule doesn't apply here
+
 if (typeof _g["window"] === "undefined") _g["window"] = globalThis;
 if (typeof document !== "undefined" && typeof _g["activeDocument"] === "undefined") {
 	_g["activeDocument"] = document;
 }
-// eslint-disable-next-line obsidianmd/no-global-this -- test polyfill; popout rule doesn't apply here
+
 if (typeof _g["activeWindow"] === "undefined") _g["activeWindow"] = globalThis;
 
 // Setup DOM environment for FullCalendar tests

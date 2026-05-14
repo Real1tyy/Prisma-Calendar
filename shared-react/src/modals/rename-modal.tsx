@@ -41,7 +41,7 @@ export const RenameModalContent = memo(function RenameModalContent({
 	const canSubmit = useMemo(() => isValidValue(value, validationPattern), [value, validationPattern]);
 
 	useEffect(() => {
-		const id = requestAnimationFrame(() => {
+		const id = window.requestAnimationFrame(() => {
 			inputRef.current?.focus();
 			inputRef.current?.select();
 		});

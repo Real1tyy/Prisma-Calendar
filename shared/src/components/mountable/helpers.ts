@@ -39,7 +39,7 @@ function buildLoadingStyles(prefix: string): string {
 export class MountableHelpers {
 	private loadingEl: HTMLElement | null = null;
 	private resizeObserver: ResizeObserver | null = null;
-	private resizeTimeout: ReturnType<typeof setTimeout> | null = null;
+	private resizeTimeout: number | null = null;
 	private readonly classPrefix: string;
 	private readonly prefix: string;
 
@@ -77,8 +77,8 @@ export class MountableHelpers {
 	observeResize(el: HTMLElement, cb: () => void, delay = 100): void {
 		if (!("ResizeObserver" in window)) return;
 		this.resizeObserver = new ResizeObserver(() => {
-			if (this.resizeTimeout) clearTimeout(this.resizeTimeout);
-			this.resizeTimeout = setTimeout(cb, delay);
+			if (this.resizeTimeout) window.clearTimeout(this.resizeTimeout);
+			this.resizeTimeout = window.setTimeout(cb, delay);
 		});
 		this.resizeObserver.observe(el);
 		this.registerCleanup?.(() => this.destroyResize());
@@ -91,11 +91,11 @@ export class MountableHelpers {
 				if (r.width > 0 && r.height > 0) {
 					resolve();
 				} else {
-					requestAnimationFrame(check);
+					window.requestAnimationFrame(check);
 				}
 			};
 			check();
-			setTimeout(resolve, fallbackMs);
+			window.setTimeout(resolve, fallbackMs);
 		});
 	}
 
@@ -106,7 +106,7 @@ export class MountableHelpers {
 
 	private destroyResize(): void {
 		if (this.resizeTimeout) {
-			clearTimeout(this.resizeTimeout);
+			window.clearTimeout(this.resizeTimeout);
 			this.resizeTimeout = null;
 		}
 		this.resizeObserver?.disconnect();

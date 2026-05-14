@@ -381,7 +381,7 @@ describe("SettingsUIBuilder", () => {
 			toggle.dispatchEvent(new Event("change"));
 
 			// Wait for async update
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 			expect(settingsStore.currentSettings.enabled).toBe(true);
 		});
@@ -421,7 +421,7 @@ describe("SettingsUIBuilder", () => {
 			slider.dispatchEvent(new Event("mouseup"));
 
 			// Wait for async update
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 			expect(settingsStore.currentSettings.maxItems).toBe(50);
 		});
@@ -442,7 +442,7 @@ describe("SettingsUIBuilder", () => {
 			slider.dispatchEvent(new Event("input"));
 
 			// Wait for async update
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 			expect(settingsStore.currentSettings.maxItems).toBe(50);
 		});
@@ -516,7 +516,7 @@ describe("SettingsUIBuilder", () => {
 			numberInput.value = "42";
 			numberInput.dispatchEvent(new Event("blur"));
 
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 			expect(settingsStore.currentSettings.maxItems).toBe(42);
 		});
@@ -534,7 +534,7 @@ describe("SettingsUIBuilder", () => {
 			numberInput.value = "150";
 			numberInput.dispatchEvent(new Event("blur"));
 
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 			expect(settingsStore.currentSettings.maxItems).toBe(100);
 			expect(numberInput.value).toBe("100");
@@ -555,7 +555,7 @@ describe("SettingsUIBuilder", () => {
 			numberInput.value = "42";
 			numberInput.dispatchEvent(new Event("blur"));
 
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 			expect(slider.value).toBe("42");
 		});
@@ -594,7 +594,7 @@ describe("SettingsUIBuilder", () => {
 			numberInput.value = "42";
 			numberInput.dispatchEvent(new Event("blur"));
 
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 			expect(settingsStore.currentSettings.maxItems).toBe(42);
 		});
@@ -612,7 +612,7 @@ describe("SettingsUIBuilder", () => {
 			numberInput.value = "200";
 			numberInput.dispatchEvent(new Event("blur"));
 
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 			expect(settingsStore.currentSettings.maxItems).toBe(100);
 			expect(numberInput.value).toBe("100");
@@ -660,7 +660,7 @@ describe("SettingsUIBuilder", () => {
 			input.dispatchEvent(new Event("blur"));
 
 			// Wait for async update
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 			expect(settingsStore.currentSettings.username).toBe("newuser");
 		});
@@ -678,7 +678,7 @@ describe("SettingsUIBuilder", () => {
 			input.dispatchEvent(new Event("input"));
 
 			// Wait for async update
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 			expect(settingsStore.currentSettings.username).toBe("newuser");
 		});
@@ -727,7 +727,7 @@ describe("SettingsUIBuilder", () => {
 			input.dispatchEvent(new Event("blur"));
 
 			// Wait for async update
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 			expect(settingsStore.currentSettings.tags).toEqual(["new1", "new2", "new3"]);
 		});
@@ -745,7 +745,7 @@ describe("SettingsUIBuilder", () => {
 			input.dispatchEvent(new Event("input"));
 
 			// Wait for async update
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 			expect(settingsStore.currentSettings.tags).toEqual(["new1", "new2", "new3"]);
 		});
@@ -763,7 +763,7 @@ describe("SettingsUIBuilder", () => {
 			textarea.dispatchEvent(new Event("blur"));
 
 			// Wait for async update
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 			expect(settingsStore.currentSettings.tags).toEqual(["line1", "line2", "line3"]);
 		});
@@ -806,7 +806,7 @@ describe("SettingsUIBuilder", () => {
 			addButton.click();
 
 			// Wait for async update
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 			expect(settingsStore.currentSettings.directories).toEqual(["dir1", "dir2"]);
 		});
@@ -826,7 +826,7 @@ describe("SettingsUIBuilder", () => {
 			firstRemoveButton.click();
 
 			// Wait for async update
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 			expect(settingsStore.currentSettings.directories).toEqual(["dir2"]);
 		});
@@ -846,7 +846,7 @@ describe("SettingsUIBuilder", () => {
 			removeButton.click();
 
 			// Wait for async update
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 			expect(settingsStore.currentSettings.directories).toEqual(["*"]);
 		});
@@ -876,7 +876,7 @@ describe("SettingsUIBuilder", () => {
 			addButton.click();
 
 			// Wait for async update
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 			expect(settingsStore.currentSettings.directories).toEqual(["specific-dir"]);
 		});
@@ -929,7 +929,7 @@ describe("SettingsUIBuilder", () => {
 			resetButton.click();
 
 			// Wait for async update
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 			expect(settingsStore.currentSettings.directories).toEqual(["*"]);
 		});
@@ -1027,7 +1027,7 @@ describe("SettingsUIBuilder", () => {
 				});
 
 				// Need to wait for next tick for DOM to update
-				await new Promise((resolve) => setTimeout(resolve, 0));
+				await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 				const toggle = nestedContainer.querySelector(".checkbox-toggle") as HTMLInputElement;
 				expect(toggle).toBeDefined();
@@ -1045,7 +1045,7 @@ describe("SettingsUIBuilder", () => {
 				toggle.checked = true;
 				toggle.dispatchEvent(new Event("change"));
 
-				await new Promise((resolve) => setTimeout(resolve, 0));
+				await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 				expect(nestedSettingsStore.currentSettings.nested.enabled).toBe(true);
 			});
@@ -1066,7 +1066,7 @@ describe("SettingsUIBuilder", () => {
 				toggle.checked = true;
 				toggle.dispatchEvent(new Event("change"));
 
-				await new Promise((resolve) => setTimeout(resolve, 0));
+				await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 				expect(nestedSettingsStore.currentSettings.nested.enabled).toBe(true);
 				expect(nestedSettingsStore.currentSettings.nested.name).toBe("preserved");
@@ -1108,7 +1108,7 @@ describe("SettingsUIBuilder", () => {
 				slider.value = "85";
 				slider.dispatchEvent(new Event("input"));
 
-				await new Promise((resolve) => setTimeout(resolve, 0));
+				await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 				expect(nestedSettingsStore.currentSettings.nested.count).toBe(85);
 			});
@@ -1156,7 +1156,7 @@ describe("SettingsUIBuilder", () => {
 				input.value = "updated-name";
 				input.dispatchEvent(new Event("input"));
 
-				await new Promise((resolve) => setTimeout(resolve, 0));
+				await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 				expect(nestedSettingsStore.currentSettings.nested.name).toBe("updated-name");
 			});
@@ -1192,7 +1192,7 @@ describe("SettingsUIBuilder", () => {
 				input.value = "new1, new2, new3";
 				input.dispatchEvent(new Event("input"));
 
-				await new Promise((resolve) => setTimeout(resolve, 0));
+				await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 				expect(nestedSettingsStore.currentSettings.nested.tags).toEqual(["new1", "new2", "new3"]);
 			});
@@ -1209,7 +1209,7 @@ describe("SettingsUIBuilder", () => {
 				textarea.value = "line1\nline2\nline3";
 				textarea.dispatchEvent(new Event("blur"));
 
-				await new Promise((resolve) => setTimeout(resolve, 0));
+				await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 				expect(nestedSettingsStore.currentSettings.nested.tags).toEqual(["line1", "line2", "line3"]);
 			});
@@ -1256,7 +1256,7 @@ describe("SettingsUIBuilder", () => {
 				input.value = "item2";
 				addButton.click();
 
-				await new Promise((resolve) => setTimeout(resolve, 0));
+				await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 				expect(nestedSettingsStore.currentSettings.nested.items).toEqual(["item1", "item2"]);
 			});
@@ -1278,7 +1278,7 @@ describe("SettingsUIBuilder", () => {
 
 				firstRemoveButton.click();
 
-				await new Promise((resolve) => setTimeout(resolve, 0));
+				await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 				expect(nestedSettingsStore.currentSettings.nested.items).toEqual(["item2"]);
 			});
@@ -1310,7 +1310,7 @@ describe("SettingsUIBuilder", () => {
 				input.value = "updated";
 				input.dispatchEvent(new Event("input"));
 
-				await new Promise((resolve) => setTimeout(resolve, 0));
+				await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 				expect(nestedSettingsStore.currentSettings.deeplyNested.level1.level2.value).toBe("updated");
 			});
@@ -1348,7 +1348,7 @@ describe("SettingsUIBuilder", () => {
 				expect(slider.value).toBe("100"); // Clamped by browser
 
 				slider.dispatchEvent(new Event("mouseup"));
-				await new Promise((resolve) => setTimeout(resolve, 10));
+				await new Promise((resolve) => window.setTimeout(resolve, 10));
 
 				// Value should be updated to 100 (the clamped max)
 				expect(nestedSettingsStore.currentSettings.nested.count).toBe(100);
@@ -1366,7 +1366,7 @@ describe("SettingsUIBuilder", () => {
 				input.value = "new-value";
 				input.dispatchEvent(new Event("input"));
 
-				await new Promise((resolve) => setTimeout(resolve, 0));
+				await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 				expect(nestedSettingsStore.currentSettings.nested.name).toBe("new-value");
 				// Other nested properties should still have their default values
@@ -1390,7 +1390,7 @@ describe("SettingsUIBuilder", () => {
 				input.value = "updated-simple";
 				input.dispatchEvent(new Event("input"));
 
-				await new Promise((resolve) => setTimeout(resolve, 0));
+				await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 				expect(nestedSettingsStore.currentSettings.simple).toBe("updated-simple");
 			});
@@ -1417,13 +1417,13 @@ describe("SettingsUIBuilder", () => {
 				inputs[0].value = "updated-flat";
 				inputs[0].dispatchEvent(new Event("input"));
 
-				await new Promise((resolve) => setTimeout(resolve, 0));
+				await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 				// Update nested key
 				inputs[1].value = "updated-nested";
 				inputs[1].dispatchEvent(new Event("input"));
 
-				await new Promise((resolve) => setTimeout(resolve, 0));
+				await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 				expect(nestedSettingsStore.currentSettings.simple).toBe("updated-flat");
 				expect(nestedSettingsStore.currentSettings.nested.name).toBe("updated-nested");

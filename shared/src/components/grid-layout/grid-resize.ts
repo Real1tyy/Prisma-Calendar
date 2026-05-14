@@ -125,7 +125,7 @@ export function setupGridResize(config: GridResizeConfig): GridResizeHandle {
 	gridEl.style.position = "relative";
 
 	buildHandles();
-	requestAnimationFrame(() => positionHandles());
+	window.requestAnimationFrame(() => positionHandles());
 
 	if (typeof ResizeObserver !== "undefined") {
 		observer = new ResizeObserver(() => {
@@ -217,7 +217,7 @@ export function setupGridResize(config: GridResizeConfig): GridResizeHandle {
 		update(): void {
 			if (destroyed) return;
 			buildHandles();
-			requestAnimationFrame(() => positionHandles());
+			window.requestAnimationFrame(() => positionHandles());
 		},
 		destroy(): void {
 			if (destroyed) return;

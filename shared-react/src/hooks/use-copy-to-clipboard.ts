@@ -15,15 +15,15 @@ export function useCopyToClipboard(text: string, options?: UseCopyToClipboardOpt
 	const successMessage = options?.successMessage;
 	const feedbackMs = options?.feedbackMs;
 	const [copied, setCopied] = useState(false);
-	const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+	const timerRef = useRef<number | undefined>(undefined);
 
 	const copy = useCallback(async () => {
 		try {
 			await navigator.clipboard.writeText(text);
 			new Notice(successMessage ?? DEFAULT_SUCCESS);
 			setCopied(true);
-			clearTimeout(timerRef.current);
-			timerRef.current = setTimeout(() => setCopied(false), feedbackMs ?? DEFAULT_FEEDBACK_MS);
+			window.clearTimeout(timerRef.current);
+			timerRef.current = window.setTimeout(() => setCopied(false), feedbackMs ?? DEFAULT_FEEDBACK_MS);
 		} catch {
 			new Notice("Failed to copy");
 		}

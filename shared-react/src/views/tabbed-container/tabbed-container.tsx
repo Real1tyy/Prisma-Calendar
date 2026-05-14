@@ -376,7 +376,7 @@ const GroupTabButton = memo(function GroupTabButton({
 }: GroupTabButtonProps) {
 	const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
 	const buttonRef = useRef<HTMLButtonElement>(null);
-	const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const hoverTimerRef = useRef<number | null>(null);
 	const skipNextClickRef = useRef(false);
 
 	const openAt = useCallback((target: HTMLElement) => {
@@ -408,15 +408,15 @@ const GroupTabButton = memo(function GroupTabButton({
 	const handleMouseEnter = useCallback(() => {
 		if (!hoverDropdown) return;
 		if (hoverTimerRef.current) {
-			clearTimeout(hoverTimerRef.current);
+			window.clearTimeout(hoverTimerRef.current);
 			hoverTimerRef.current = null;
 		}
 		if (!position && buttonRef.current) openAt(buttonRef.current);
 	}, [hoverDropdown, position, openAt]);
 
 	const scheduleClose = useCallback(() => {
-		if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
-		hoverTimerRef.current = setTimeout(() => {
+		if (hoverTimerRef.current) window.clearTimeout(hoverTimerRef.current);
+		hoverTimerRef.current = window.setTimeout(() => {
 			hoverTimerRef.current = null;
 			close();
 		}, 200);
@@ -429,7 +429,7 @@ const GroupTabButton = memo(function GroupTabButton({
 
 	useEffect(() => {
 		return () => {
-			if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+			if (hoverTimerRef.current) window.clearTimeout(hoverTimerRef.current);
 		};
 	}, []);
 

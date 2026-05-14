@@ -117,7 +117,7 @@ export class FrontmatterPropagator {
 			await Promise.all(targetFilePaths.map((fp) => apply(this.app, fp, sourceFrontmatter, diff)));
 		} finally {
 			// Delay cleanup to account for indexer processing latency
-			setTimeout(() => {
+			window.setTimeout(() => {
 				for (const fp of targetFilePaths) {
 					this.propagatingFilePaths.delete(fp);
 				}

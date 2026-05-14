@@ -49,7 +49,7 @@ async function waitForSeed(vaultDir: string, title: string): Promise<void> {
 	for (;;) {
 		if (pathsForTitle(vaultDir, title).length > 0) return;
 		if (Date.now() > deadline) throw new Error(`seed for "${title}" never appeared on disk`);
-		await new Promise((r) => setTimeout(r, 100));
+		await new Promise((r) => window.setTimeout(r, 100));
 	}
 }
 

@@ -96,7 +96,7 @@ describe("VaultTable + persistence (integration)", () => {
 		events$.next(fileChanged("events/a.md", { title: "A", priority: 1 }, 100));
 		events$.next(fileChanged("events/b.md", { title: "B", priority: 2 }, 200));
 		currentComplete$.next(true);
-		await new Promise((r) => setTimeout(r, 20));
+		await new Promise((r) => window.setTimeout(r, 20));
 		await table.destroyAsync();
 
 		// Reopen a fresh table — hydration should produce the same data without parsing.
@@ -112,7 +112,7 @@ describe("VaultTable + persistence (integration)", () => {
 
 		events$.next(fileChanged("events/a.md", { title: "A", priority: 1 }, 100));
 		events$.next(fileChanged("events/b.md", { title: "B", priority: 2 }, 200));
-		await new Promise((r) => setTimeout(r, 20));
+		await new Promise((r) => window.setTimeout(r, 20));
 
 		// Both events had matching mtime in cache → zero parses.
 		expect(parseSpy).not.toHaveBeenCalled();
@@ -134,7 +134,7 @@ describe("VaultTable + persistence (integration)", () => {
 		});
 		await t1.start();
 		events$.next(fileChanged("events/a.md", { title: "old", priority: 1 }, 100));
-		await new Promise((r) => setTimeout(r, 20));
+		await new Promise((r) => window.setTimeout(r, 20));
 		await t1.destroyAsync();
 
 		const t2 = new VaultTable({
@@ -148,7 +148,7 @@ describe("VaultTable + persistence (integration)", () => {
 		await t2.start();
 		// Newer mtime — cache miss → parse fires, fresh data wins.
 		events$.next(fileChanged("events/a.md", { title: "new", priority: 9 }, 500));
-		await new Promise((r) => setTimeout(r, 20));
+		await new Promise((r) => window.setTimeout(r, 20));
 
 		expect(parseSpy).toHaveBeenCalled();
 		expect(t2.get("a")?.data.title).toBe("new");
@@ -169,9 +169,9 @@ describe("VaultTable + persistence (integration)", () => {
 		});
 		await t1.start();
 		events$.next(fileChanged("events/a.md", { title: "A", priority: 1 }, 100));
-		await new Promise((r) => setTimeout(r, 10));
+		await new Promise((r) => window.setTimeout(r, 10));
 		events$.next({ type: "file-deleted", filePath: "events/a.md" });
-		await new Promise((r) => setTimeout(r, 10));
+		await new Promise((r) => window.setTimeout(r, 10));
 		await t1.destroyAsync();
 
 		const t2 = new VaultTable({
@@ -184,7 +184,7 @@ describe("VaultTable + persistence (integration)", () => {
 		parseSpy = vi.spyOn(TestSchema, "safeParse");
 		await t2.start();
 		events$.next(fileChanged("events/a.md", { title: "A2", priority: 2 }, 500));
-		await new Promise((r) => setTimeout(r, 10));
+		await new Promise((r) => window.setTimeout(r, 10));
 
 		// Deleted entry means fresh parse on reappearance.
 		expect(parseSpy).toHaveBeenCalled();
@@ -211,7 +211,7 @@ describe("VaultTable + persistence (integration)", () => {
 		await b.start();
 		events$.next(fileChanged("events/x.md", { title: "A-owned", priority: 1 }, 100));
 		// Both subscribe to the same mock events$; that's fine — cache is per-namespace.
-		await new Promise((r) => setTimeout(r, 10));
+		await new Promise((r) => window.setTimeout(r, 10));
 		await a.destroyAsync();
 		await b.destroyAsync();
 
@@ -235,7 +235,7 @@ describe("VaultTable + persistence (integration)", () => {
 		await b2.start();
 
 		events$.next(fileChanged("events/x.md", { title: "A-owned", priority: 1 }, 100));
-		await new Promise((r) => setTimeout(r, 10));
+		await new Promise((r) => window.setTimeout(r, 10));
 
 		// A was nuked (schema bump) → had to parse. B kept its cache → should NOT need to parse for the same event.
 		// Parse may be called once (for A's cache miss), but not twice.
@@ -257,7 +257,7 @@ describe("VaultTable + persistence (integration)", () => {
 		});
 		await t1.start();
 		events$.next(fileChanged("events/a.md", { title: "A", priority: 1 }, 100));
-		await new Promise((r) => setTimeout(r, 10));
+		await new Promise((r) => window.setTimeout(r, 10));
 		await t1.destroyAsync();
 
 		// Even without "enabled: false" this time, there should be no cached data to hydrate
@@ -272,7 +272,7 @@ describe("VaultTable + persistence (integration)", () => {
 		parseSpy = vi.spyOn(TestSchema, "safeParse");
 		await t2.start();
 		events$.next(fileChanged("events/a.md", { title: "A", priority: 1 }, 100));
-		await new Promise((r) => setTimeout(r, 10));
+		await new Promise((r) => window.setTimeout(r, 10));
 
 		expect(parseSpy).toHaveBeenCalled();
 		await t2.destroyAsync();
@@ -299,7 +299,7 @@ describe("VaultTable + persistence (integration)", () => {
 		await t1.start();
 		events$.next(fileChanged("events/a.md", { title: "stale", priority: 1 }, 100));
 		currentComplete$.next(true);
-		await new Promise((r) => setTimeout(r, 20));
+		await new Promise((r) => window.setTimeout(r, 20));
 		await t1.destroyAsync();
 
 		const t2 = new VaultTable({
@@ -315,7 +315,7 @@ describe("VaultTable + persistence (integration)", () => {
 		// processFrontMatter write that the previous session's live dedup
 		// dropped before it could persist.
 		events$.next(fileChanged("events/a.md", { title: "fresh", priority: 9 }, 100));
-		await new Promise((r) => setTimeout(r, 20));
+		await new Promise((r) => window.setTimeout(r, 20));
 
 		expect(t2.get("a")?.data.title).toBe("fresh");
 		expect(t2.get("a")?.data.priority).toBe(9);

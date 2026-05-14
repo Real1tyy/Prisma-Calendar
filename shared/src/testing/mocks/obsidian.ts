@@ -343,7 +343,7 @@ export const MarkdownRenderer = {
 
 // Debounce function mock
 export function debounce<T extends (...args: unknown[]) => unknown>(func: T, wait: number, immediate?: boolean): T {
-	let timeout: ReturnType<typeof setTimeout> | null = null;
+	let timeout: number | null = null;
 
 	return ((...args: Parameters<T>) => {
 		const later = () => {
@@ -354,10 +354,10 @@ export function debounce<T extends (...args: unknown[]) => unknown>(func: T, wai
 		const callNow = immediate && !timeout;
 
 		if (timeout !== null) {
-			clearTimeout(timeout);
+			window.clearTimeout(timeout);
 		}
 
-		timeout = setTimeout(later, wait);
+		timeout = window.setTimeout(later, wait);
 
 		if (callNow) func(...args);
 	}) as T;

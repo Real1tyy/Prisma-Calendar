@@ -74,7 +74,7 @@ describe("Indexer → VaultTable reactivity (integration)", () => {
 		await action();
 		// Indexer events flow through `mergeMap(buildEvent)` which awaits a
 		// `vault.cachedRead` — give it microtask + macrotask room to settle.
-		await new Promise((resolve) => setTimeout(resolve, 80));
+		await new Promise((resolve) => window.setTimeout(resolve, 80));
 		sub.unsubscribe();
 		return events.slice(0, count + 1);
 	}

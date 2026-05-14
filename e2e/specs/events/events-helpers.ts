@@ -102,7 +102,7 @@ export async function waitForNewEventFiles(
 				`timed out waiting for ${count} new event file(s) in ${subdir}; baseline=${baseline.size}, current=${current.length}, added=${added.length}`
 			);
 		}
-		await new Promise((resolve) => setTimeout(resolve, NEW_FILE_POLL_INTERVAL_MS));
+		await new Promise((resolve) => window.setTimeout(resolve, NEW_FILE_POLL_INTERVAL_MS));
 	}
 }
 

@@ -415,7 +415,7 @@ export function createGridLayout(container: HTMLElement, config: GridLayoutConfi
 
 	function createCellElement(row: number, col: number, rowSpan?: number, colSpan?: number): HTMLElement {
 		const parent = perCell ? perCell.containers[perCell.getContainerIndex(row, col)] : gridEl;
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- parent can be undefined at runtime (noUncheckedIndexedAccess disabled)
+
 		if (!parent) return gridEl.createDiv(css.cls("grid-cell"));
 
 		const el = parent.createDiv(css.cls("grid-cell"));

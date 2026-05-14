@@ -18,7 +18,7 @@ interface AccumulatedEntry<T> {
  * The latest context from the most recent schedule() call is passed to onFlush.
  */
 export class FrontmatterPropagationDebouncer<T = void> {
-	private timers = new Map<string, ReturnType<typeof setTimeout>>();
+	private timers = new Map<string, number>();
 	private accumulated = new Map<string, AccumulatedEntry<T>>();
 	private options: FrontmatterPropagationDebouncerOptions;
 
@@ -38,7 +38,7 @@ export class FrontmatterPropagationDebouncer<T = void> {
 	): void {
 		const existing = this.timers.get(key);
 		if (existing) {
-			clearTimeout(existing);
+			window.clearTimeout(existing);
 		}
 
 		const entry = this.accumulated.get(key);
@@ -49,7 +49,7 @@ export class FrontmatterPropagationDebouncer<T = void> {
 			this.accumulated.set(key, { diffs: [diff], latestContext: context });
 		}
 
-		const timer = setTimeout(() => {
+		const timer = window.setTimeout(() => {
 			const entry = this.accumulated.get(key);
 			this.timers.delete(key);
 			this.accumulated.delete(key);
@@ -69,7 +69,7 @@ export class FrontmatterPropagationDebouncer<T = void> {
 
 	destroy(): void {
 		for (const timer of this.timers.values()) {
-			clearTimeout(timer);
+			window.clearTimeout(timer);
 		}
 		this.timers.clear();
 		this.accumulated.clear();

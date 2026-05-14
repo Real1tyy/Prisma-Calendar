@@ -94,7 +94,7 @@ describe("Real-world usage scenarios", () => {
 		let isReady = false;
 		const initializeIndexer = onceAsync(async () => {
 			// Simulate expensive initialization
-			await new Promise((resolve) => setTimeout(resolve, 10));
+			await new Promise((resolve) => window.setTimeout(resolve, 10));
 			isReady = true;
 		});
 

@@ -17,20 +17,20 @@ const CACHE_READY_TIMEOUT_MS = 30_000;
  */
 export function waitForCacheReady(app: App): Promise<void> {
 	return new Promise<void>((resolve) => {
-		const timeout = setTimeout(() => {
+		const timeout = window.setTimeout(() => {
 			resolve();
 		}, CACHE_READY_TIMEOUT_MS);
 
 		app.workspace.onLayoutReady(() => {
 			const files = app.vault.getMarkdownFiles();
 			if (files.length === 0 || app.metadataCache.getFileCache(files[0]) !== null) {
-				clearTimeout(timeout);
+				window.clearTimeout(timeout);
 				resolve();
 				return;
 			}
 
 			const ref = app.metadataCache.on("resolved", () => {
-				clearTimeout(timeout);
+				window.clearTimeout(timeout);
 				app.metadataCache.offref(ref);
 				resolve();
 			});

@@ -6,7 +6,7 @@ describe("withFakeTimers", () => {
 	it("should enable fake timers during execution", async () => {
 		await withFakeTimers(() => {
 			const spy = vi.fn();
-			setTimeout(spy, 1000);
+			window.setTimeout(spy, 1000);
 
 			expect(spy).not.toHaveBeenCalled();
 			vi.advanceTimersByTime(1000);
@@ -39,7 +39,7 @@ describe("advanceDebounce", () => {
 	it("should advance by 300ms by default", async () => {
 		await withFakeTimers(() => {
 			const spy = vi.fn();
-			setTimeout(spy, 300);
+			window.setTimeout(spy, 300);
 			advanceDebounce();
 			expect(spy).toHaveBeenCalledOnce();
 		});
@@ -48,7 +48,7 @@ describe("advanceDebounce", () => {
 	it("should advance by custom amount", async () => {
 		await withFakeTimers(() => {
 			const spy = vi.fn();
-			setTimeout(spy, 500);
+			window.setTimeout(spy, 500);
 			advanceDebounce(500);
 			expect(spy).toHaveBeenCalledOnce();
 		});
@@ -60,7 +60,7 @@ describe("advanceTimersAndFlush", () => {
 		await withFakeTimers(async () => {
 			const order: string[] = [];
 
-			setTimeout(() => {
+			window.setTimeout(() => {
 				order.push("timer");
 				void Promise.resolve().then(() => order.push("microtask"));
 			}, 100);

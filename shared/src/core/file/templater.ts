@@ -105,7 +105,7 @@ async function waitForTemplater(app: App, timeoutMs = 8000): Promise<TemplaterLi
 		if (typeof createFn === "function") {
 			return { create_new_note_from_template: createFn };
 		}
-		await new Promise((r) => setTimeout(r, 150));
+		await new Promise((r) => window.setTimeout(r, 150));
 	}
 	return null;
 }
@@ -139,7 +139,7 @@ export function guardFromTemplater(app: App, filePath: string, releaseDelayMs = 
 	}
 	return () => {
 		// Hold the guard past Templater's 300ms delay + some margin, then release.
-		setTimeout(() => {
+		window.setTimeout(() => {
 			pending?.delete(filePath);
 		}, releaseDelayMs);
 	};

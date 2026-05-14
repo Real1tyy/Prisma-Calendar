@@ -148,7 +148,7 @@ export function showProgressModal(config: ProgressModalConfig): ProgressModalHan
 	let detailsText: HTMLElement;
 	let isComplete = false;
 	let closeModal: (() => void) | null = null;
-	let pendingTimer: ReturnType<typeof setTimeout> | null = null;
+	let pendingTimer: number | null = null;
 
 	const formatStatus = (current: number): string =>
 		statusTemplate.replace("{current}", String(current)).replace("{total}", String(safeTotal));
@@ -186,7 +186,7 @@ export function showProgressModal(config: ProgressModalConfig): ProgressModalHan
 	});
 
 	const scheduleClose = (delay: number): void => {
-		pendingTimer = setTimeout(() => {
+		pendingTimer = window.setTimeout(() => {
 			pendingTimer = null;
 			closeModal?.();
 		}, delay);
@@ -224,7 +224,7 @@ export function showProgressModal(config: ProgressModalConfig): ProgressModalHan
 		},
 
 		close(): void {
-			if (pendingTimer) clearTimeout(pendingTimer);
+			if (pendingTimer) window.clearTimeout(pendingTimer);
 			pendingTimer = null;
 			closeModal?.();
 		},

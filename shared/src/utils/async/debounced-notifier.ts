@@ -5,7 +5,7 @@ import { ChangeNotifier } from "./change-notifier";
  * Prevents excessive notifications when many changes happen rapidly by batching them.
  */
 export abstract class DebouncedNotifier extends ChangeNotifier {
-	private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
+	private refreshTimeout: number | null = null;
 	private readonly debounceMs: number;
 
 	constructor(debounceMs = 150) {
@@ -19,9 +19,9 @@ export abstract class DebouncedNotifier extends ChangeNotifier {
 	 */
 	protected scheduleRefresh(): void {
 		if (this.refreshTimeout) {
-			clearTimeout(this.refreshTimeout);
+			window.clearTimeout(this.refreshTimeout);
 		}
-		this.refreshTimeout = setTimeout(() => {
+		this.refreshTimeout = window.setTimeout(() => {
 			this.notifyChange();
 			this.refreshTimeout = null;
 		}, this.debounceMs);
@@ -33,7 +33,7 @@ export abstract class DebouncedNotifier extends ChangeNotifier {
 	 */
 	protected flushPendingRefresh(): void {
 		if (this.refreshTimeout) {
-			clearTimeout(this.refreshTimeout);
+			window.clearTimeout(this.refreshTimeout);
 			this.refreshTimeout = null;
 			this.notifyChange();
 		}
@@ -48,7 +48,7 @@ export abstract class DebouncedNotifier extends ChangeNotifier {
 
 	override destroy(): void {
 		if (this.refreshTimeout) {
-			clearTimeout(this.refreshTimeout);
+			window.clearTimeout(this.refreshTimeout);
 			this.refreshTimeout = null;
 		}
 		super.destroy();

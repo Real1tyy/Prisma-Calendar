@@ -126,8 +126,8 @@ export class CodeBlockFile<T> {
 		await app.vault.modify(file, updatedContent);
 
 		if (shouldPreserveEditorState && cursor && scrollInfo) {
-			await new Promise<void>((resolve) => setTimeout(resolve, 0));
-			requestAnimationFrame(() => {
+			await new Promise<void>((resolve) => window.setTimeout(resolve, 0));
+			window.requestAnimationFrame(() => {
 				const viewAfter = app.workspace.getActiveViewOfType(MarkdownView);
 				if (viewAfter?.file?.path !== file.path) return;
 

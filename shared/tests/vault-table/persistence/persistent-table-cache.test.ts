@@ -13,7 +13,7 @@ async function settle(): Promise<void> {
 	// fake-indexeddb runs tx in microtasks; yield to ensure fire-and-forget puts land
 	await Promise.resolve();
 	await Promise.resolve();
-	await new Promise((r) => setTimeout(r, 0));
+	await new Promise((r) => window.setTimeout(r, 0));
 }
 
 describe("PersistentTableCache", () => {

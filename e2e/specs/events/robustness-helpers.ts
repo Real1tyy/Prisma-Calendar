@@ -98,7 +98,7 @@ export async function waitFor(
 	for (;;) {
 		if (await predicate()) return;
 		if (Date.now() > deadline) throw new Error(`waitFor timed out: ${message}`);
-		await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
+		await new Promise((r) => window.setTimeout(r, POLL_INTERVAL_MS));
 	}
 }
 

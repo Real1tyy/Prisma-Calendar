@@ -271,7 +271,7 @@ describe("Indexer", () => {
 			});
 
 			// Wait a bit to ensure no scan happens
-			await new Promise((resolve) => setTimeout(resolve, 100));
+			await new Promise((resolve) => window.setTimeout(resolve, 100));
 
 			// Should not trigger new scan
 			expect(scanSpy).not.toHaveBeenCalled();
@@ -439,7 +439,7 @@ describe("Indexer", () => {
 
 			vi.mocked(mockApp.vault.getMarkdownFiles).mockReturnValue([]);
 			idx.resync();
-			await new Promise((resolve) => setTimeout(resolve, 50));
+			await new Promise((resolve) => window.setTimeout(resolve, 50));
 
 			expect(idx.descendantFiles).toHaveLength(0);
 
@@ -496,7 +496,7 @@ describe("Indexer", () => {
 			const events: IndexerEvent[] = [];
 			const sub = target.events$.subscribe((e) => events.push(e));
 			action();
-			await new Promise((resolve) => setTimeout(resolve, 50));
+			await new Promise((resolve) => window.setTimeout(resolve, 50));
 			sub.unsubscribe();
 			return events.slice(-count);
 		}
@@ -647,7 +647,7 @@ describe("Indexer", () => {
 				await renameIndexer.start();
 
 				emitVaultRename(renamedFile, "TestFolder/note.md");
-				await new Promise((resolve) => setTimeout(resolve, 50));
+				await new Promise((resolve) => window.setTimeout(resolve, 50));
 
 				vi.mocked(mockApp.metadataCache.getFileCache).mockReturnValue({
 					frontmatter: { title: "Modified After Rename" },
@@ -705,7 +705,7 @@ describe("Indexer", () => {
 			} as never);
 
 			await indexer.start();
-			await new Promise((resolve) => setTimeout(resolve, 50));
+			await new Promise((resolve) => window.setTimeout(resolve, 50));
 
 			// File leaves scope — must emit file-deleted, evicting the cache.
 			const movedOutFile = createMockFile("OtherFolder/note.md", { parentPath: "OtherFolder" }) as TFile;

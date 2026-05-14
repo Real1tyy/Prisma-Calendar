@@ -349,6 +349,6 @@ export function getNotePreviewLines(content: string, lineCount: number): string 
 
 export function afterRender(): Promise<void> {
 	return new Promise<void>((resolve) => {
-		requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+		window.requestAnimationFrame(() => window.requestAnimationFrame(() => resolve()));
 	});
 }

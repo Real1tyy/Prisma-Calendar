@@ -59,7 +59,7 @@ export function useDebouncedCommit<T>({
 	const pendingRef = useRef(false);
 	const pendingValueRef = useRef<T>(value);
 	const pendingCommitRef = useRef<((next: T) => void) | null>(null);
-	const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const timeoutRef = useRef<number | null>(null);
 	const onCommitRef = useRef(onCommit);
 	useEffect(() => {
 		onCommitRef.current = onCommit;
@@ -73,7 +73,7 @@ export function useDebouncedCommit<T>({
 
 	const clearTimer = useCallback(() => {
 		if (timeoutRef.current !== null) {
-			clearTimeout(timeoutRef.current);
+			window.clearTimeout(timeoutRef.current);
 			timeoutRef.current = null;
 		}
 	}, []);
@@ -96,7 +96,7 @@ export function useDebouncedCommit<T>({
 			pendingRef.current = true;
 			pendingCommitRef.current = onCommitRef.current;
 			clearTimer();
-			timeoutRef.current = setTimeout(() => {
+			timeoutRef.current = window.setTimeout(() => {
 				timeoutRef.current = null;
 				if (pendingRef.current) {
 					const commit = pendingCommitRef.current ?? onCommitRef.current;
@@ -124,7 +124,7 @@ export function useDebouncedCommit<T>({
 	useEffect(() => {
 		return () => {
 			if (timeoutRef.current !== null) {
-				clearTimeout(timeoutRef.current);
+				window.clearTimeout(timeoutRef.current);
 				timeoutRef.current = null;
 			}
 			if (pendingRef.current) {

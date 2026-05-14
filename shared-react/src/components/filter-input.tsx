@@ -56,7 +56,7 @@ export const FilterInput = memo(function FilterInput({
 }: FilterInputProps) {
 	const [localValue, setLocalValue] = useState(value);
 	const [lastExternalValue, setLastExternalValue] = useState(value);
-	const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const timerRef = useRef<number | null>(null);
 	// Last trimmed value handed to onChange — used to skip redundant commits so
 	// consumers never see the same value twice in a row (e.g. Enter on an
 	// already-committed value, blur after debounce, preset re-selection).
@@ -79,7 +79,7 @@ export const FilterInput = memo(function FilterInput({
 
 	const flushChange = useCallback(
 		(newValue: string) => {
-			if (timerRef.current) clearTimeout(timerRef.current);
+			if (timerRef.current) window.clearTimeout(timerRef.current);
 			timerRef.current = null;
 			const trimmed = newValue.trim();
 			if (trimmed === lastEmittedRef.current) return;
@@ -93,8 +93,8 @@ export const FilterInput = memo(function FilterInput({
 		(e: React.ChangeEvent<HTMLInputElement>) => {
 			const newValue = e.target.value;
 			setLocalValue(newValue);
-			if (timerRef.current) clearTimeout(timerRef.current);
-			timerRef.current = setTimeout(() => flushChange(newValue), debounceMs);
+			if (timerRef.current) window.clearTimeout(timerRef.current);
+			timerRef.current = window.setTimeout(() => flushChange(newValue), debounceMs);
 		},
 		[debounceMs, flushChange]
 	);
@@ -119,7 +119,7 @@ export const FilterInput = memo(function FilterInput({
 
 	useEffect(() => {
 		return () => {
-			if (timerRef.current) clearTimeout(timerRef.current);
+			if (timerRef.current) window.clearTimeout(timerRef.current);
 		};
 	}, []);
 

@@ -17,7 +17,7 @@ export async function waitForFileReady(app: App, filePath: string, timeoutMs = 5
 				return file;
 			}
 		}
-		await new Promise((r) => setTimeout(r, 50));
+		await new Promise((r) => window.setTimeout(r, 50));
 	}
 
 	return null;

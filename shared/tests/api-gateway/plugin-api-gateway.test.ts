@@ -193,7 +193,7 @@ describe("PluginApiGateway", () => {
 			protocolCallback({ call: "greet", name: "Bob" });
 
 			// Allow async dispatch to settle
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 			expect(actions.greet.handler).toHaveBeenCalledWith({ name: "Bob" });
 		});
@@ -213,7 +213,7 @@ describe("PluginApiGateway", () => {
 
 			protocolCallback({});
 
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 			expect(actions.greet.handler).not.toHaveBeenCalled();
 			expect(actions.farewell.handler).not.toHaveBeenCalled();
@@ -234,7 +234,7 @@ describe("PluginApiGateway", () => {
 
 			protocolCallback({ call: "nonexistent" });
 
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 			expect(actions.greet.handler).not.toHaveBeenCalled();
 		});
@@ -254,7 +254,7 @@ describe("PluginApiGateway", () => {
 
 			protocolCallback({ call: "windowOnly" });
 
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 			expect(actions.windowOnly.handler).not.toHaveBeenCalled();
 		});
@@ -285,7 +285,7 @@ describe("PluginApiGateway", () => {
 			// Should not throw
 			protocolCallback({ call: "broken" });
 
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 			expect(errorActions.broken.handler).not.toHaveBeenCalled();
 			expect(consoleSpy).toHaveBeenCalled();
@@ -316,7 +316,7 @@ describe("PluginApiGateway", () => {
 			// Should not throw
 			protocolCallback({ call: "failing" });
 
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 			expect(consoleSpy).toHaveBeenCalled();
 			consoleSpy.mockRestore();

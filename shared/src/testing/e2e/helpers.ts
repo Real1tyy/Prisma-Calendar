@@ -13,7 +13,7 @@ export async function executeCommand(page: Page, commandId: string): Promise<boo
 	return page.evaluate(async (id) => {
 		const w = window as unknown as ObsidianWindow;
 		const ok = w.app.commands.executeCommandById(id);
-		await new Promise((resolve) => setTimeout(resolve, 200));
+		await new Promise((resolve) => window.setTimeout(resolve, 200));
 		return ok;
 	}, commandId);
 }

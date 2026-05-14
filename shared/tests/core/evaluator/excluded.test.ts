@@ -1,5 +1,4 @@
 import { BehaviorSubject } from "rxjs";
-
 import { describe, expect, it } from "vitest";
 
 import type { PathExcludedProperties } from "../../../src/core/evaluator/excluded";
