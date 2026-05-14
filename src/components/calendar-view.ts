@@ -2260,7 +2260,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			settings.defaultNodeColor,
 			commonCategories
 		);
-		if (selectedCategories && this.batchSelectionManager) {
+		if (selectedCategories) {
 			this.batchSelectionManager.executeAssignCategories(selectedCategories);
 		}
 	}
@@ -2272,7 +2272,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const selectedEvents = this.batchSelectionManager.getSelectedEvents();
 
 		const propertyUpdates = await openBatchFrontmatterModal(this.app, settings, selectedEvents);
-		if (propertyUpdates && this.batchSelectionManager) {
+		if (propertyUpdates) {
 			this.batchSelectionManager.executeUpdateFrontmatter(propertyUpdates);
 		}
 	}

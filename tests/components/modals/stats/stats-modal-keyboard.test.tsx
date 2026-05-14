@@ -42,7 +42,7 @@ describe("StatsModalContent — keyboard navigation", () => {
 
 		fireEvent.keyDown(window, { key: "ArrowRight" });
 		const afterSlow = await screen.findByText(
-			(_text, node) => node === label && node.textContent !== null && node.textContent.length > 0
+			(_text, node) => node === label && node.textContent.length > 0
 		);
 		const slowText = afterSlow.textContent;
 

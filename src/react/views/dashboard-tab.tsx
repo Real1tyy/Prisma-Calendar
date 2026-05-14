@@ -55,7 +55,10 @@ const DashboardSection = memo(function DashboardSection({ id, buildData }: Dashb
 	const bundle = useBundle();
 	const extra = useMemo(() => [bundle.categoryTracker.categories$], [bundle]);
 	const renderToken = useBundleChanges(bundle, { debounceMs: REFRESH_DEBOUNCE_MS, extra });
-	const data = useMemo(() => buildData(), [buildData, renderToken]);
+	const data = useMemo(() => {
+		void renderToken;
+		return buildData();
+	}, [buildData, renderToken]);
 
 	const [savedGridStates, setGridStates] = useSchemaField<Record<string, GridLayoutState> | undefined>(
 		bundle.settingsStore,

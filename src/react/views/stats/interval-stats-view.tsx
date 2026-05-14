@@ -1,12 +1,12 @@
 import { toLocalISOString } from "@real1ty-obsidian-plugins";
-import { useSettingsStore, useSubscription } from "@real1ty-obsidian-plugins-react";
+import { useSettingsStore } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { debounceTime, merge } from "rxjs";
 
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { CalendarEvent } from "../../../types/calendar";
 import type { AggregationMode, Stats } from "../../../utils/stats";
 import { formatDuration, formatDurationAsDecimalHours } from "../../../utils/stats";
+import { useBundleChanges } from "../../hooks/use-bundle-changes";
 import { CapacityLabel } from "./capacity-label";
 import { StatsChart } from "./stats-chart";
 import { StatsTable } from "./stats-table";
@@ -42,13 +42,7 @@ export const IntervalStatsView = memo(function IntervalStatsView({ bundle, confi
 	const [statsData, setStatsData] = useState<StatsData | null>(null);
 	const renderTokenRef = useRef(0);
 
-	const changes$ = useMemo(
-		() =>
-			merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$).pipe(debounceTime(REFRESH_DEBOUNCE_MS)),
-		[bundle]
-	);
-	const [changeToken, setChangeToken] = useState(0);
-	useSubscription(changes$, () => setChangeToken((t) => t + 1));
+	const changeToken = useBundleChanges(bundle, { debounceMs: REFRESH_DEBOUNCE_MS });
 
 	useEffect(() => {
 		const token = ++renderTokenRef.current;

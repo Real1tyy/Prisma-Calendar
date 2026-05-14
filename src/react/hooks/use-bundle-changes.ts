@@ -12,9 +12,11 @@ interface UseBundleChangesOptions {
 /**
  * Subscribe to the canonical bundle "data changed" sources — event store +
  * recurring event manager — plus any extra streams a view also reacts to.
- * Returns a render token that increments on every emission so memos keyed on
- * it recompute. Replaces the ad-hoc `merge(eventStore.changes$, recurring.changes$, …)`
- * pattern duplicated across tab views.
+ * Returns a render token that increments on every emission so memos and
+ * effects keyed on it re-run. Replaces the hand-rolled
+ * `merge(eventStore.changes$, recurring.changes$, …).pipe(debounceTime(N))`
+ * + `useState` + `useSubscription` pattern duplicated across tabs and the
+ * stats modal.
  */
 export function useBundleChanges(bundle: CalendarBundle, options?: UseBundleChangesOptions): number {
 	const { debounceMs, extra } = options ?? {};
@@ -24,7 +26,7 @@ export function useBundleChanges(bundle: CalendarBundle, options?: UseBundleChan
 		const sources: Observable<unknown>[] = [bundle.eventStore.changes$, bundle.recurringEventManager.changes$];
 		if (extra) sources.push(...extra);
 		const merged = merge(...sources);
-		return debounceMs ? merged.pipe(debounceTime(debounceMs)) : merged;
+		return debounceMs && debounceMs > 0 ? merged.pipe(debounceTime(debounceMs)) : merged;
 	}, [bundle, extra, debounceMs]);
 
 	useSubscription(changes$, () => setToken((n) => n + 1));

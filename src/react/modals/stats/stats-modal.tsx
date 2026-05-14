@@ -1,14 +1,7 @@
 import { toLocalISOString } from "@real1ty-obsidian-plugins";
-import {
-	showReactModal,
-	useArrowLeft,
-	useArrowRight,
-	useSettingsStore,
-	useSubscription,
-} from "@real1ty-obsidian-plugins-react";
+import { showReactModal, useArrowLeft, useArrowRight, useSettingsStore } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { debounceTime, merge } from "rxjs";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { CalendarEvent } from "../../../types/calendar";
@@ -24,6 +17,7 @@ import {
 	getMonthBounds,
 	getWeekBounds,
 } from "../../../utils/stats";
+import { useBundleChanges } from "../../hooks/use-bundle-changes";
 import { CapacityLabel } from "../../views/stats/capacity-label";
 import { StatsChart } from "../../views/stats/stats-chart";
 import { StatsTable } from "../../views/stats/stats-table";
@@ -126,13 +120,7 @@ export const StatsModalContent = memo(function StatsModalContent({
 	useArrowLeft((e) => navigateBy(e, -1), undefined, { enabled: !!config });
 	useArrowRight((e) => navigateBy(e, 1), undefined, { enabled: !!config });
 
-	const changes$ = useMemo(
-		() =>
-			merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$).pipe(debounceTime(REFRESH_DEBOUNCE_MS)),
-		[bundle]
-	);
-	const [changeToken, setChangeToken] = useState(0);
-	useSubscription(changes$, () => setChangeToken((t) => t + 1));
+	const changeToken = useBundleChanges(bundle, { debounceMs: REFRESH_DEBOUNCE_MS });
 
 	useEffect(() => {
 		const token = ++renderTokenRef.current;
