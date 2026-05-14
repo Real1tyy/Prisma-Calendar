@@ -2,15 +2,17 @@ import type { CalendarEvent } from "../../types/calendar";
 import { isTimedEvent } from "../../types/calendar";
 
 /**
- * Filters events that fall within a given date range.
- * An event is included if it starts OR ends within the range.
+ * Filters events that fall within a given date range. All-day events have no
+ * `end`, so they're matched by their `start` falling inside the period; timed
+ * events overlap-check against `start`/`end`.
  */
 export function getEventsInRange(events: CalendarEvent[], rangeStart: Date, rangeEnd: Date): CalendarEvent[] {
 	return events.filter((event) => {
 		const start = new Date(event.start);
-		const end = isTimedEvent(event) ? new Date(event.end) : start;
-
-		// Event overlaps with range if it starts before range ends AND ends after range starts
+		if (!isTimedEvent(event)) {
+			return start >= rangeStart && start <= rangeEnd;
+		}
+		const end = new Date(event.end);
 		return start < rangeEnd && end > rangeStart;
 	});
 }

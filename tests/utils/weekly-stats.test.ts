@@ -687,6 +687,42 @@ describe("getEventsInRange", () => {
 		expect(result).toHaveLength(1);
 	});
 
+	// Regression: all-day events have start === end. Naïve half-open semantics
+	// (`start < rangeEnd && end > rangeStart`) drop them at the range start
+	// boundary because the zero-length range never strictly overlaps. The filter
+	// must expand the all-day event to a full day so it survives.
+	it("should include all-day events landing exactly on the range start", () => {
+		const events: CalendarEvent[] = [
+			createMockAllDayEvent({
+				id: "1",
+				ref: { filePath: "holiday.md" },
+				title: "Holiday",
+				start: "2025-02-03T00:00:00Z", // exactly weekStart
+			}),
+		];
+
+		const result = getEventsInRange(events, weekStart, weekEnd);
+		expect(result).toHaveLength(1);
+	});
+
+	// Regression: frontmatter `Date: YYYY-MM-DD` lands as a bare-date string on
+	// `event.start`. `new Date("YYYY-MM-DD")` parses as UTC midnight, which in
+	// negative-UTC timezones shifts into the prior local day. The filter must
+	// still include the event in the day's range.
+	it("should include all-day events stored as bare YYYY-MM-DD on the range start", () => {
+		const events: CalendarEvent[] = [
+			createMockAllDayEvent({
+				id: "1",
+				ref: { filePath: "holiday.md" },
+				title: "Holiday",
+				start: "2025-02-03",
+			}),
+		];
+
+		const result = getEventsInRange(events, weekStart, weekEnd);
+		expect(result).toHaveLength(1);
+	});
+
 	it("should filter out events both before and after the week", () => {
 		const events: CalendarEvent[] = [
 			{

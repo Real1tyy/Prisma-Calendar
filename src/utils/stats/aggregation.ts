@@ -92,7 +92,7 @@ export function aggregateStats(
 			count,
 			isRecurring,
 		}))
-		.sort((a, b) => b.duration - a.duration);
+		.sort((a, b) => b.duration - a.duration || b.count - a.count);
 
 	const totalDuration = entries.reduce((sum, entry) => sum + entry.duration, 0);
 
