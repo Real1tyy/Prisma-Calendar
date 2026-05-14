@@ -1,5 +1,6 @@
 import { bootstrapObsidian } from "../fixtures/electron";
 import { expect, test } from "../fixtures/electron";
+import type { PrismaPlugin, PrismaWindow } from "../fixtures/window-types";
 
 test.describe("bootstrap", () => {
 	test("obsidian launches with prisma-calendar ready", async () => {
@@ -8,27 +9,16 @@ test.describe("bootstrap", () => {
 		try {
 			// Renderer side: plugin visible in registry and at least one bundle initialized.
 			const summary = await ob.page.evaluate((id) => {
-				const w = window as unknown as {
-					app: {
-						plugins: {
-							plugins: Record<
-								string,
-								{
-									manifest?: { version?: string };
-									calendarBundles?: Array<{ calendarId: string }>;
-									settingsStore?: { currentSettings?: { calendars?: Array<{ directory?: string }> } };
-								}
-							>;
-						};
-						commands: { commands: Record<string, unknown> };
-					};
-				};
-				const plugin = w.app.plugins.plugins[id];
+				const w = window as unknown as PrismaWindow;
+				const plugin = w.app.plugins.plugins[id] as PrismaPlugin | undefined;
+				const calendars = plugin?.settingsStore?.currentSettings?.["calendars"] as
+					| Array<{ directory?: string }>
+					| undefined;
 				return {
 					pluginLoaded: Boolean(plugin),
 					version: plugin?.manifest?.version ?? null,
 					bundleIds: plugin?.calendarBundles?.map((b) => b.calendarId) ?? [],
-					directory: plugin?.settingsStore?.currentSettings?.calendars?.[0]?.directory ?? null,
+					directory: calendars?.[0]?.directory ?? null,
 					prismaCommands: Object.keys(w.app.commands.commands).filter((c) => c.startsWith(`${id}:`)),
 				};
 			}, "prisma-calendar");

@@ -11,6 +11,7 @@ import {
 	MULTI_CALENDAR_SECONDARY_ID,
 	testMultiCalendar as test,
 } from "../../fixtures/electron";
+import type { PrismaPlugin, PrismaWindow } from "../../fixtures/window-types";
 import { openCalendarView, waitForWorkspaceReady } from "../events/events-helpers";
 
 // Every calendar directory contains a `Virtual Events.md` sentinel created on
@@ -31,14 +32,9 @@ function countRealEvents(vaultDir: string, subdir: string): number {
 async function ensureLastUsedCalendar(page: Page, calendarId: string): Promise<void> {
 	await page.waitForFunction(
 		({ id, pid }) => {
-			const w = window as unknown as {
-				app: {
-					plugins: {
-						plugins: Record<string, { syncStore?: { data?: { lastUsedCalendarId?: string } } }>;
-					};
-				};
-			};
-			return w.app.plugins.plugins[pid]?.syncStore?.data?.lastUsedCalendarId === id;
+			const w = window as unknown as PrismaWindow;
+			const plugin = w.app.plugins.plugins[pid] as PrismaPlugin | undefined;
+			return plugin?.syncStore?.data?.lastUsedCalendarId === id;
 		},
 		{ id: calendarId, pid: PLUGIN_ID }
 	);

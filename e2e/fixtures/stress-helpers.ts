@@ -5,6 +5,7 @@ import { expect, type Page } from "@playwright/test";
 
 import { ACTIVE_CALENDAR_LEAF, PLUGIN_ID } from "./constants";
 import { seedEvent, type SeedEventInput, updateCalendarSettings } from "./seed-events";
+import type { PrismaPlugin, PrismaWindow } from "./window-types";
 
 // Helpers for high-volume / reactivity stress specs. The premise: the calendar
 // must be *eventually consistent* — after any batch mutation (move, clone,
@@ -182,19 +183,8 @@ export async function uniqueVisibleEventCount(page: Page): Promise<number> {
 /** Count events the plugin's indexer currently holds for the default bundle. */
 export async function indexerEventCount(page: Page): Promise<number> {
 	return page.evaluate((pid) => {
-		const w = window as unknown as {
-			app: {
-				plugins: {
-					plugins: Record<
-						string,
-						{
-							calendarBundles?: Array<{ eventStore: { getAllEvents: () => unknown[] } }>;
-						}
-					>;
-				};
-			};
-		};
-		const plugin = w.app.plugins.plugins[pid];
+		const w = window as unknown as PrismaWindow;
+		const plugin = w.app.plugins.plugins[pid] as PrismaPlugin | undefined;
 		const bundle = plugin?.calendarBundles?.[0];
 		return bundle?.eventStore.getAllEvents().length ?? 0;
 	}, PLUGIN_ID);

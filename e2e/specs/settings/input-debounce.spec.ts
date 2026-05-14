@@ -4,6 +4,7 @@ import { expectPluginData, settleSettings } from "@real1ty-obsidian-plugins/test
 import { PLUGIN_ID } from "../../fixtures/constants";
 import { expect, test } from "../../fixtures/electron";
 import { openPrismaSettings, switchSettingsTab } from "../../fixtures/helpers";
+import type { PrismaPlugin, PrismaWindow } from "../../fixtures/window-types";
 
 // Regression guard for the per-keystroke directory-creation bug. Without
 // debouncing, typing "events" into the directory field wrote "e" → "ev" →
@@ -15,24 +16,14 @@ import { openPrismaSettings, switchSettingsTab } from "../../fixtures/helpers";
 
 async function readInMemoryDirectory(page: Page): Promise<string> {
 	return page.evaluate((pid) => {
-		type CalendarConfig = { id: string; directory?: string };
-		type Settings = { calendars?: CalendarConfig[] };
-		const w = window as unknown as {
-			app: {
-				plugins: {
-					plugins: Record<
-						string,
-						{
-							settingsStore?: { currentSettings?: Settings };
-						}
-					>;
-				};
-			};
-		};
-		const plugin = w.app.plugins.plugins[pid];
-		const calendars = plugin?.settingsStore?.currentSettings?.calendars ?? [];
+		const w = window as unknown as PrismaWindow;
+		const plugin = w.app.plugins.plugins[pid] as PrismaPlugin | undefined;
+		const calendars =
+			(plugin?.settingsStore?.currentSettings?.["calendars"] as
+				| Array<{ id: string; directory?: string }>
+				| undefined) ?? [];
 		const def = calendars.find((c) => c.id === "default") ?? calendars[0];
-		return def?.directory ?? "";
+		return def.directory ?? "";
 	}, PLUGIN_ID);
 }
 

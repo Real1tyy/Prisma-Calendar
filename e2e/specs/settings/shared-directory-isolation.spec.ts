@@ -7,6 +7,7 @@ import { expect, testWithSeededFiles as test } from "../../fixtures/electron";
 import { closeSettings, openPrismaSettings, setSchemaTextInput, switchSettingsTab } from "../../fixtures/helpers";
 import { getCalendars } from "../../fixtures/plugin-data";
 import { type SeedEventInput, seedEvents, waitForCalendarCount } from "../../fixtures/seed-events";
+import type { PrismaPlugin, PrismaWindow } from "../../fixtures/window-types";
 import { expectGridEventVisible, navigateToAnchor, openCalendarView } from "../events/events-helpers";
 
 // ─── Dataset: one directory, two property schemas ────────────────────────────
@@ -117,17 +118,9 @@ test.describe("shared directory isolation: planning systems on the same folder",
 
 		// Verify exact counts via plugin API — no cross-contamination
 		const counts = await page.evaluate((pid) => {
-			const w = window as unknown as {
-				app: {
-					plugins: {
-						plugins: Record<
-							string,
-							{ calendarBundles?: Array<{ calendarId: string; eventStore: { getAllEvents: () => unknown[] } }> }
-						>;
-					};
-				};
-			};
-			const bundles = w.app.plugins.plugins[pid]?.calendarBundles ?? [];
+			const w = window as unknown as PrismaWindow;
+			const plugin = w.app.plugins.plugins[pid] as PrismaPlugin | undefined;
+			const bundles = plugin?.calendarBundles ?? [];
 			return Object.fromEntries(bundles.map((b) => [b.calendarId, b.eventStore.getAllEvents().length]));
 		}, PLUGIN_ID);
 

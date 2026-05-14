@@ -4,6 +4,7 @@ import { ACTIVE_CALENDAR_LEAF } from "./constants";
 import { anchorISO, todayISO } from "./dates";
 import type { SeedEventInput } from "./seed-events";
 import { sel, TID, type ViewMode } from "./testids";
+import type { PrismaWindow } from "./window-types";
 
 // Prisma-calendar-specific helpers — thin UI wrappers that don't belong in the
 // generic `helpers.ts`. Disk-level event seeding + refresh live in
@@ -64,22 +65,12 @@ export async function seedEventViaVault(
 		`---\n\n# ${event.title}\n`;
 	await page.evaluate(
 		async ({ path, body }) => {
-			const w = window as unknown as {
-				app: {
-					vault: {
-						adapter: { exists: (p: string) => Promise<boolean> };
-						createFolder: (p: string) => Promise<void>;
-						create: (p: string, content: string) => Promise<unknown>;
-						getAbstractFileByPath: (p: string) => unknown;
-						modify: (file: unknown, content: string) => Promise<void>;
-					};
-				};
-			};
+			const w = window as unknown as PrismaWindow;
 			const parts = path.split("/");
 			parts.pop();
 			if (parts.length > 0) {
 				const folderPath = parts.join("/");
-				if (!(await w.app.vault.adapter.exists(folderPath))) {
+				if (!(await w.app.vault.adapter?.exists(folderPath))) {
 					await w.app.vault.createFolder(folderPath).catch(() => {});
 				}
 			}

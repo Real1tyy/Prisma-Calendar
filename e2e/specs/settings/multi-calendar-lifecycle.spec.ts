@@ -7,6 +7,7 @@ import { expect, testWithSeededFiles as test } from "../../fixtures/electron";
 import { closeSettings, openPrismaSettings } from "../../fixtures/helpers";
 import { getCalendars } from "../../fixtures/plugin-data";
 import { type SeedEventInput, seedEvents, waitForCalendarCount } from "../../fixtures/seed-events";
+import type { PrismaPlugin, PrismaWindow } from "../../fixtures/window-types";
 import { expectEventVisible, navigateToAnchor, openCalendarView } from "../events/events-helpers";
 
 // ─── Dataset: three folders with distinct property schemas ───────────────────
@@ -281,9 +282,7 @@ test.describe("multi-calendar lifecycle: create, configure, delete without full 
 
 		// Command name updated
 		const commandName = await page.evaluate((pid) => {
-			const w = window as unknown as {
-				app: { commands: { commands: Record<string, { name: string }> } };
-			};
+			const w = window as unknown as PrismaWindow;
 			return w.app.commands.commands[`${pid}:open-calendar-default`]?.name;
 		}, PLUGIN_ID);
 		expect(commandName).toBe("Prisma Calendar: Open Work Schedule");
@@ -300,7 +299,10 @@ test.describe("multi-calendar lifecycle: create, configure, delete without full 
 		await expect(secondRibbon).toBeVisible();
 
 		let hasCommand = await page.evaluate(
-			({ pid, calId }) => `${pid}:open-calendar-${calId}` in (window as any).app.commands.commands,
+			({ pid, calId }) => {
+				const w = window as unknown as PrismaWindow;
+				return `${pid}:open-calendar-${calId}` in w.app.commands.commands;
+			},
 			{ pid: PLUGIN_ID, calId: secondId }
 		);
 		expect(hasCommand).toBe(true);
@@ -326,8 +328,8 @@ test.describe("multi-calendar lifecycle: create, configure, delete without full 
 		const countRibbonIcons = () => page.locator('[data-testid^="prisma-ribbon-open-"]').count();
 		const countCommands = () =>
 			page.evaluate((pid) => {
-				const cmds = (window as any).app.commands.commands as Record<string, unknown>;
-				return Object.keys(cmds).filter((k) => k.startsWith(`${pid}:open-calendar-`)).length;
+				const w = window as unknown as PrismaWindow;
+				return Object.keys(w.app.commands.commands).filter((k) => k.startsWith(`${pid}:open-calendar-`)).length;
 			}, PLUGIN_ID);
 
 		expect(await countRibbonIcons()).toBe(1);
@@ -376,14 +378,9 @@ test.describe("multi-calendar lifecycle: create, configure, delete without full 
 			.poll(() =>
 				page.evaluate(
 					({ pid, id }) => {
-						const w = window as unknown as {
-							app: {
-								plugins: {
-									plugins: Record<string, { syncStore?: { data?: { lastUsedCalendarId?: string } } }>;
-								};
-							};
-						};
-						return w.app.plugins.plugins[pid]?.syncStore?.data?.lastUsedCalendarId === id;
+						const w = window as unknown as PrismaWindow;
+						const plugin = w.app.plugins.plugins[pid] as PrismaPlugin | undefined;
+						return plugin?.syncStore?.data?.lastUsedCalendarId === id;
 					},
 					{ pid: PLUGIN_ID, id: secondId }
 				)

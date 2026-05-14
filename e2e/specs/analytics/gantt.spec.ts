@@ -4,6 +4,7 @@ import { expect, test } from "../../fixtures/electron";
 import { assignPrerequisiteViaUI, ganttBarLocator, rightClickGanttBar } from "../../fixtures/helpers";
 import { updateCalendarSettings } from "../../fixtures/seed-events";
 import { sel, TID } from "../../fixtures/testids";
+import type { PrismaWindow } from "../../fixtures/window-types";
 
 // Gantt filters events to only those connected in the prerequisite graph
 // (`normalize-events.ts`: `tracker.isConnected(filePath)`), so standalone
@@ -30,9 +31,7 @@ const GANTT_SCOPE = ".prisma-gantt-wrapper";
  */
 async function collapseLeftSidebar(calendar: CalendarHandle): Promise<void> {
 	await calendar.page.evaluate(() => {
-		const w = window as unknown as {
-			app: { workspace: { leftSplit?: { collapse: () => void; collapsed?: boolean } } };
-		};
+		const w = window as unknown as PrismaWindow;
 		if (w.app.workspace.leftSplit && !w.app.workspace.leftSplit.collapsed) {
 			w.app.workspace.leftSplit.collapse();
 		}

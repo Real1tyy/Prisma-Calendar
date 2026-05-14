@@ -17,6 +17,12 @@
 //
 // Playwright serialises the callback source so the types live on the Node
 // side only — they're erased at runtime.
+//
+// Maintenance contract: every renderer-side shape an e2e helper needs lives
+// here. If a helper needs a new field, add it to the appropriate type below —
+// do NOT re-declare a local `RendererWindow` / `SettingsStoreWindow` / etc.
+// next to the evaluate call. A hookify rule enforces this on edit (see
+// `.claude/hookify/rules/e2e-window-types.json`).
 
 import type { ObsidianWindow as BaseObsidianWindow } from "@real1ty-obsidian-plugins/testing/e2e";
 
@@ -28,7 +34,7 @@ export interface WorkspaceLeaf {
 }
 
 export interface PrismaWindow extends Omit<BaseObsidianWindow, "app"> {
-	app: Omit<BaseObsidianWindow["app"], "workspace" | "vault"> & {
+	app: Omit<BaseObsidianWindow["app"], "workspace" | "vault" | "plugins"> & {
 		workspace: Omit<BaseObsidianWindow["app"]["workspace"], "openLinkText"> & {
 			openLinkText: (
 				link: string,
@@ -40,15 +46,40 @@ export interface PrismaWindow extends Omit<BaseObsidianWindow, "app"> {
 			getLeavesOfType: (type: string) => WorkspaceLeaf[];
 			getActiveFile: () => { path: string } | null;
 			leftSplit?: { collapse: () => void; collapsed?: boolean };
+			onLayoutReady: (cb: () => void) => void;
 			// Obsidian `Debouncer`'s `.run()` — flushes any pending workspace-layout
 			// save synchronously. Needed before reloads so leaves persist to
 			// `workspace.json` instead of being lost to the debounce window.
 			requestSaveLayout: { run: () => Promise<void> };
 		};
 		vault: {
-			adapter?: { basePath?: string };
+			adapter?: {
+				basePath?: string;
+				exists: (path: string) => Promise<boolean>;
+			};
 			getMarkdownFiles: () => Array<{ path: string }>;
+			getFiles: () => Array<{ path: string }>;
+			getAbstractFileByPath: (path: string) => unknown;
 			create: (path: string, content: string) => Promise<unknown>;
+			createFolder: (path: string) => Promise<void>;
+			read: (file: unknown) => Promise<string>;
+			modify: (file: unknown, content: string) => Promise<void>;
+		};
+		plugins: BaseObsidianWindow["app"]["plugins"] & {
+			disablePlugin?: (id: string) => Promise<void>;
+			disablePluginAndSave?: (id: string) => Promise<void>;
+		};
+		commands: Omit<BaseObsidianWindow["app"]["commands"], "commands"> & {
+			commands: Record<string, { name: string } | undefined>;
+		};
+		metadataCache: {
+			getFileCache: (file: { path: string }) => { frontmatter?: Record<string, unknown> } | null;
+		};
+		fileManager: {
+			processFrontMatter: (file: unknown, fn: (fm: Record<string, unknown>) => void) => Promise<void>;
+		};
+		secretStorage: {
+			getSecret: (name: string) => unknown;
 		};
 	};
 }
@@ -66,10 +97,16 @@ export interface VirtualEventInput {
 	properties: Record<string, unknown>;
 }
 
+export interface PluginSettingsStore {
+	currentSettings?: Record<string, unknown>;
+	updateSettings?: (updater: (current: Record<string, unknown>) => Record<string, unknown>) => Promise<void>;
+}
+
 export interface CalendarBundle {
 	calendarId: string;
 	viewType: string;
 	initialize: () => Promise<void>;
+	activateCalendarView?: () => Promise<void>;
 	eventStore: { getAllEvents: () => EventRef[] };
 	settingsStore: {
 		currentSettings: Record<string, unknown>;
@@ -101,7 +138,12 @@ export interface LicenseManager {
 }
 
 export interface PrismaPlugin {
+	manifest?: { version?: string };
 	calendarBundles?: CalendarBundle[];
 	ensureCalendarBundlesReady?: () => Promise<void>;
+	refreshCalendarBundles?: () => Promise<void>;
+	addCalendarBundle?: (calendarId: string) => Promise<void>;
+	settingsStore?: PluginSettingsStore;
 	licenseManager?: LicenseManager;
+	syncStore?: { data?: { lastUsedCalendarId?: string } };
 }

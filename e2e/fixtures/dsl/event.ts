@@ -6,6 +6,7 @@ import type { EventModalInput } from "../../specs/events/fill-event-modal";
 import { fillEventModal, saveEventModal } from "../../specs/events/fill-event-modal";
 import { ACTIVE_CALENDAR_LEAF } from "../constants";
 import { type ContextMenuItemKey, EVENT_BLOCK_TID, sel, TID } from "../testids";
+import type { PrismaWindow } from "../window-types";
 
 const MOVE_TO_CALENDAR_MODAL_TID = "prisma-modal-move-to-calendar";
 const MOVE_TO_CALENDAR_CONTROL_TID = "prisma-move-to-calendar-control-calendarId";
@@ -174,15 +175,7 @@ export function createEventHandle(deps: EventHandleDeps, path: string, title: st
 		async writeNoteBody(body) {
 			await page.evaluate(
 				async ({ filePath, newBody }) => {
-					const w = window as unknown as {
-						app: {
-							vault: {
-								getAbstractFileByPath: (p: string) => unknown;
-								read: (file: unknown) => Promise<string>;
-								modify: (file: unknown, content: string) => Promise<void>;
-							};
-						};
-					};
+					const w = window as unknown as PrismaWindow;
 					const file = w.app.vault.getAbstractFileByPath(filePath);
 					if (!file) throw new Error(`writeNoteBody: no file at ${filePath}`);
 					const content = await w.app.vault.read(file);

@@ -8,6 +8,7 @@ import { runCommand } from "./commands";
 import { expect } from "./electron";
 import { unlockPro } from "./helpers";
 import { buildIcs, type IcsServer, startIcsServer, type VEventInput } from "./ics-server";
+import type { PrismaPlugin, PrismaWindow } from "./window-types";
 
 // High-level DSL for ICS subscription specs. Owns the mock HTTP server,
 // secret-storage stub, subscription seed, vault clean-up, and exposes polling
@@ -133,9 +134,7 @@ function findEventFile(vaultDir: string, summarySubstring: string): string | und
 async function stubSecretStorage(page: Page, secretName: string, secretValue: string): Promise<void> {
 	await page.evaluate(
 		({ name, value }) => {
-			const w = window as unknown as {
-				app: { secretStorage: { getSecret: (name: string) => unknown } };
-			};
+			const w = window as unknown as PrismaWindow;
 			const original = w.app.secretStorage.getSecret.bind(w.app.secretStorage);
 			w.app.secretStorage.getSecret = (requested: string) => (requested === name ? value : original(requested));
 		},
@@ -148,21 +147,9 @@ async function stubSecretStorage(page: Page, secretName: string, secretValue: st
 async function addSubscription(page: Page, sub: Required<IcsSubscriptionConfig>): Promise<void> {
 	await page.evaluate(
 		({ pid, sub, syncIntervalMinutes }) => {
-			const w = window as unknown as {
-				app: {
-					plugins: {
-						plugins: Record<
-							string,
-							{
-								settingsStore?: {
-									updateSettings?: (updater: (s: Record<string, unknown>) => Record<string, unknown>) => Promise<void>;
-								};
-							}
-						>;
-					};
-				};
-			};
-			const store = w.app.plugins.plugins[pid]?.settingsStore;
+			const w = window as unknown as PrismaWindow;
+			const plugin = w.app.plugins.plugins[pid] as PrismaPlugin | undefined;
+			const store = plugin?.settingsStore;
 			if (!store?.updateSettings) throw new Error("settingsStore.updateSettings missing");
 			return store.updateSettings((current) => {
 				const icsSubs = (current["icsSubscriptions"] as Record<string, unknown> | undefined) ?? {};

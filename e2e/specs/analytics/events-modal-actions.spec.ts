@@ -4,6 +4,7 @@ import { todayISO, todayStamp } from "../../fixtures/dates";
 import { expectAssignmentModal, expectSeriesModalOpen } from "../../fixtures/dsl";
 import { expect, test } from "../../fixtures/electron";
 import { type SeedEventInput, updateCalendarSettings } from "../../fixtures/seed-events";
+import type { PrismaWindow } from "../../fixtures/window-types";
 
 // Phase-3 coverage from docs/specs/e2e-events-modal-coverage.md.
 // Round-trips and link-out behaviour for the EventsModal + EventSeriesModal:
@@ -19,9 +20,7 @@ const DEFAULT_FUTURE_INSTANCES = 2;
 
 function markdownLeafCount(page: Page): Promise<number> {
 	return page.evaluate(() => {
-		const w = window as unknown as {
-			app: { workspace: { getLeavesOfType: (t: string) => unknown[] } };
-		};
+		const w = window as unknown as PrismaWindow;
 		return w.app.workspace.getLeavesOfType("markdown").length;
 	});
 }

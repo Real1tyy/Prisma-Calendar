@@ -7,6 +7,7 @@ import { listEventFiles as listAllMarkdownFiles } from "@real1ty-obsidian-plugin
 import { ACTIVE_CALENDAR_LEAF, PLUGIN_ID } from "../../fixtures/constants";
 import { anchorISO } from "../../fixtures/dates";
 import { sel, TID, UNTRACKED_BUTTON_TID, UNTRACKED_DROPDOWN_TID, UNTRACKED_ITEM_TID } from "../../fixtures/testids";
+import type { PrismaPlugin, PrismaWindow } from "../../fixtures/window-types";
 import { type EventModalInput, fillEventModal, saveEventModal } from "./fill-event-modal";
 
 export { PLUGIN_ID };
@@ -110,14 +111,7 @@ export async function waitForWorkspaceReady(page: Page): Promise<void> {
 	await page.evaluate(
 		() =>
 			new Promise<void>((resolve) => {
-				const w = window as unknown as {
-					app: {
-						workspace: {
-							layoutReady?: boolean;
-							onLayoutReady: (cb: () => void) => void;
-						};
-					};
-				};
+				const w = window as unknown as PrismaWindow;
 				if (w.app.workspace.layoutReady) {
 					resolve();
 					return;
@@ -135,22 +129,8 @@ export async function waitForWorkspaceReady(page: Page): Promise<void> {
 export async function openCalendarView(page: Page, calendarId = "default"): Promise<void> {
 	await page.evaluate(
 		async ({ id, pid }) => {
-			const w = window as unknown as {
-				app: {
-					plugins: {
-						plugins: Record<
-							string,
-							{
-								calendarBundles?: Array<{
-									calendarId: string;
-									activateCalendarView?: () => Promise<void>;
-								}>;
-							}
-						>;
-					};
-				};
-			};
-			const plugin = w.app.plugins.plugins[pid];
+			const w = window as unknown as PrismaWindow;
+			const plugin = w.app.plugins.plugins[pid] as PrismaPlugin | undefined;
 			const bundle = plugin?.calendarBundles?.find((b) => b.calendarId === id) ?? plugin?.calendarBundles?.[0];
 			if (!bundle || typeof bundle.activateCalendarView !== "function") {
 				throw new Error(`No CalendarBundle for id=${id} (bundles: ${plugin?.calendarBundles?.length ?? 0})`);
@@ -309,23 +289,9 @@ export async function navigateToAnchor(page: Page): Promise<void> {
 	const iso = anchorISO();
 	await page.evaluate(
 		({ dateIso, pid }) => {
-			const w = window as unknown as {
-				app: {
-					plugins: {
-						plugins: Record<
-							string,
-							{
-								calendarBundles?: Array<{
-									viewRef?: {
-										calendarComponent?: { calendar?: { gotoDate: (d: string) => void } } | null;
-									};
-								}>;
-							}
-						>;
-					};
-				};
-			};
-			const bundles = w.app.plugins.plugins[pid]?.calendarBundles ?? [];
+			const w = window as unknown as PrismaWindow;
+			const plugin = w.app.plugins.plugins[pid] as PrismaPlugin | undefined;
+			const bundles = plugin?.calendarBundles ?? [];
 			for (const bundle of bundles) {
 				const cal = bundle.viewRef?.calendarComponent?.calendar;
 				if (cal) cal.gotoDate(dateIso);

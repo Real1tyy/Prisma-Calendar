@@ -4,6 +4,7 @@ import { ACTIVE_CALENDAR_LEAF, DEFAULT_CALENDAR_ID, PLUGIN_ID } from "./constant
 import { getCalendars } from "./plugin-data";
 import { waitForCalendarCount } from "./seed-events";
 import { NOTICE_SELECTOR } from "./testids";
+import type { PrismaPlugin, PrismaWindow } from "./window-types";
 
 // ── Schema-field accessors ──────────────────────────────────────────────────
 // Fields rendered via SchemaSection stamp the outer `.setting-item` wrapper
@@ -151,22 +152,8 @@ export async function openCalendarViewViaRibbon(page: Page, calendarId = DEFAULT
 export async function openCalendarView(page: Page, calendarId = DEFAULT_CALENDAR_ID): Promise<void> {
 	await page.evaluate(
 		async ({ id, pid }) => {
-			const w = window as unknown as {
-				app: {
-					plugins: {
-						plugins: Record<
-							string,
-							{
-								calendarBundles?: Array<{
-									calendarId: string;
-									activateCalendarView?: () => Promise<void>;
-								}>;
-							}
-						>;
-					};
-				};
-			};
-			const plugin = w.app.plugins.plugins[pid];
+			const w = window as unknown as PrismaWindow;
+			const plugin = w.app.plugins.plugins[pid] as PrismaPlugin | undefined;
 			const bundle = plugin?.calendarBundles?.find((b) => b.calendarId === id) ?? plugin?.calendarBundles?.[0];
 			if (!bundle || typeof bundle.activateCalendarView !== "function") {
 				throw new Error(`No CalendarBundle for id=${id} (bundles: ${plugin?.calendarBundles?.length ?? 0})`);
@@ -419,21 +406,9 @@ export async function assignPrerequisiteViaUI(page: Page, dependant: string, pre
  */
 export async function unlockPro(page: Page): Promise<void> {
 	await page.evaluate((pid) => {
-		const w = window as unknown as {
-			app: {
-				plugins: {
-					plugins: Record<
-						string,
-						{
-							licenseManager?: {
-								__setProForTesting?: (v: boolean) => void;
-							};
-						}
-					>;
-				};
-			};
-		};
-		const lm = w.app.plugins.plugins[pid]?.licenseManager;
+		const w = window as unknown as PrismaWindow;
+		const plugin = w.app.plugins.plugins[pid] as PrismaPlugin | undefined;
+		const lm = plugin?.licenseManager;
 		if (!lm?.__setProForTesting) {
 			throw new Error(`licenseManager.__setProForTesting missing on ${pid}`);
 		}

@@ -3,6 +3,7 @@ import { expect } from "@playwright/test";
 import { PLUGIN_ID } from "../../fixtures/constants";
 import { test } from "../../fixtures/electron";
 import { openPrismaSettings, switchSettingsTab } from "../../fixtures/helpers";
+import type { PrismaPlugin, PrismaWindow } from "../../fixtures/window-types";
 
 test.describe("settings: Subscription button", () => {
 	test("shows Start free trial button when no license is active", async ({ obsidian }) => {
@@ -19,22 +20,9 @@ test.describe("settings: Subscription button", () => {
 
 	test("shows Manage Subscription button when license is valid", async ({ obsidian }) => {
 		await obsidian.page.evaluate((pid) => {
-			const w = window as unknown as {
-				app: {
-					plugins: {
-						plugins: Record<
-							string,
-							{
-								licenseManager?: {
-									status$: { next: (v: unknown) => void };
-									__setProForTesting?: (v: boolean) => void;
-								};
-							}
-						>;
-					};
-				};
-			};
-			const lm = w.app.plugins.plugins[pid]?.licenseManager;
+			const w = window as unknown as PrismaWindow;
+			const plugin = w.app.plugins.plugins[pid] as PrismaPlugin | undefined;
+			const lm = plugin?.licenseManager;
 			if (!lm) throw new Error("licenseManager missing");
 			lm.status$.next({
 				state: "valid",

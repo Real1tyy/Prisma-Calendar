@@ -2,6 +2,7 @@ import type { Page } from "@playwright/test";
 
 import { DEFAULT_CALENDAR_ID, PLUGIN_ID } from "../../fixtures/constants";
 import { expect, test } from "../../fixtures/electron";
+import type { PrismaWindow } from "../../fixtures/window-types";
 
 // The "Open virtual events file" command is per-bundle. VirtualEventStore
 // auto-creates `Events/Virtual Events.md` on plugin init
@@ -17,9 +18,7 @@ const VIRTUAL_EVENTS_PATH = "Events/Virtual Events.md";
 
 function activeFilePath(page: Page): Promise<string | null> {
 	return page.evaluate(() => {
-		const w = window as unknown as {
-			app: { workspace: { getActiveFile: () => { path: string } | null } };
-		};
+		const w = window as unknown as PrismaWindow;
 		return w.app.workspace.getActiveFile()?.path ?? null;
 	});
 }
@@ -27,9 +26,7 @@ function activeFilePath(page: Page): Promise<string | null> {
 test("virtual events: command opens the auto-created file", async ({ calendar }) => {
 	await calendar.page.evaluate(
 		({ pid, calId }) => {
-			const w = window as unknown as {
-				app: { commands: { executeCommandById: (id: string) => boolean } };
-			};
+			const w = window as unknown as PrismaWindow;
 			const ok = w.app.commands.executeCommandById(`${pid}:open-virtual-events-${calId}`);
 			if (!ok) throw new Error("command not found in registry");
 		},

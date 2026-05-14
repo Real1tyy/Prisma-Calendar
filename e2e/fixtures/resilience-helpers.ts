@@ -5,10 +5,9 @@ import type { Page } from "@playwright/test";
 
 import { PLUGIN_ID } from "./constants";
 import { seedEvent, type SeedEventInput } from "./seed-events";
-import type { PrismaWindow } from "./window-types";
+import type { PrismaPlugin, PrismaWindow } from "./window-types";
 
 export function dataJsonPath(vaultDir: string): string {
-	// eslint-disable-next-line obsidianmd/hardcoded-config-path
 	return join(vaultDir, ".obsidian", "plugins", PLUGIN_ID, "data.json");
 }
 
@@ -23,27 +22,6 @@ export function writeRawEventFile(vaultDir: string, fileName: string, content: s
 	writeFileSync(join(vaultDir, relative), content, "utf8");
 	return relative;
 }
-
-type RendererWindow = {
-	app: {
-		plugins: {
-			setEnable?: (enable: boolean) => Promise<void> | void;
-			enablePlugin?: (id: string) => Promise<void>;
-			enablePluginAndSave?: (id: string) => Promise<void>;
-			disablePlugin?: (id: string) => Promise<void>;
-			disablePluginAndSave?: (id: string) => Promise<void>;
-			loadManifests?: () => Promise<void>;
-			plugins: Record<
-				string,
-				| {
-						ensureCalendarBundlesReady?: () => Promise<void>;
-						calendarBundles?: Array<{ calendarId: string; initialize: () => Promise<void> }>;
-				  }
-				| undefined
-			>;
-		};
-	};
-};
 
 /**
  * Reload Obsidian's renderer and wait until prisma-calendar is fully ready
@@ -69,7 +47,7 @@ export async function reloadAndWaitForPrisma(page: Page): Promise<void> {
 	await page.waitForFunction(() => Boolean((window as unknown as { app?: { plugins?: unknown } }).app?.plugins));
 
 	await page.evaluate(async (id) => {
-		const w = window as unknown as RendererWindow;
+		const w = window as unknown as PrismaWindow;
 		const plugins = w.app.plugins;
 		try {
 			if (typeof plugins.setEnable === "function") await plugins.setEnable(true);
@@ -83,20 +61,20 @@ export async function reloadAndWaitForPrisma(page: Page): Promise<void> {
 		}
 	}, PLUGIN_ID);
 
-	await page.waitForFunction((id) => Boolean((window as unknown as RendererWindow).app.plugins.plugins[id]), PLUGIN_ID);
+	await page.waitForFunction((id) => Boolean((window as unknown as PrismaWindow).app.plugins.plugins[id]), PLUGIN_ID);
 
 	// Some malformed-state tests may end up with zero bundles — that's a
 	// valid assertion target rather than a harness failure.
 	await page
 		.waitForFunction((id) => {
-			const plugin = (window as unknown as RendererWindow).app.plugins.plugins[id];
+			const plugin = (window as unknown as PrismaWindow).app.plugins.plugins[id] as PrismaPlugin | undefined;
 			return Boolean(plugin?.calendarBundles?.length);
 		}, PLUGIN_ID)
 		.catch(() => {});
 
 	await page.evaluate(async (id) => {
-		const w = window as unknown as RendererWindow;
-		const plugin = w.app.plugins.plugins[id];
+		const w = window as unknown as PrismaWindow;
+		const plugin = w.app.plugins.plugins[id] as PrismaPlugin | undefined;
 		if (plugin && typeof plugin.ensureCalendarBundlesReady === "function") {
 			await plugin.ensureCalendarBundlesReady();
 		}
@@ -106,7 +84,7 @@ export async function reloadAndWaitForPrisma(page: Page): Promise<void> {
 /** Disable the plugin via the community-plugins runtime API. */
 export async function disablePrisma(page: Page): Promise<void> {
 	await page.evaluate(async (id) => {
-		const w = window as unknown as RendererWindow;
+		const w = window as unknown as PrismaWindow;
 		const plugins = w.app.plugins;
 		if (typeof plugins.disablePluginAndSave === "function") await plugins.disablePluginAndSave(id);
 		else if (typeof plugins.disablePlugin === "function") await plugins.disablePlugin(id);
@@ -117,7 +95,7 @@ export async function disablePrisma(page: Page): Promise<void> {
 /** Re-enable the plugin via the community-plugins runtime API and wait until bundles are back. */
 export async function enablePrisma(page: Page): Promise<void> {
 	await page.evaluate(async (id) => {
-		const w = window as unknown as RendererWindow;
+		const w = window as unknown as PrismaWindow;
 		const plugins = w.app.plugins;
 		if (typeof plugins.enablePluginAndSave === "function") await plugins.enablePluginAndSave(id);
 		else if (typeof plugins.enablePlugin === "function") await plugins.enablePlugin(id);
@@ -125,31 +103,14 @@ export async function enablePrisma(page: Page): Promise<void> {
 	}, PLUGIN_ID);
 
 	await page.waitForFunction(
-		(id) => Boolean((window as unknown as RendererWindow).app.plugins.plugins[id]?.calendarBundles?.length),
+		(id) => {
+			const plugin = (window as unknown as PrismaWindow).app.plugins.plugins[id] as PrismaPlugin | undefined;
+			return Boolean(plugin?.calendarBundles?.length);
+		},
 		PLUGIN_ID,
 		{ timeout: 30_000 }
 	);
 }
-
-type SettingsStoreWindow = {
-	app: {
-		plugins: {
-			plugins: Record<
-				string,
-				| {
-						settingsStore?: {
-							currentSettings?: Record<string, unknown>;
-							updateSettings?: (updater: (s: Record<string, unknown>) => Record<string, unknown>) => Promise<void>;
-						};
-						ensureCalendarBundlesReady?: () => Promise<void>;
-						refreshCalendarBundles?: () => Promise<void>;
-						addCalendarBundle?: (calendarId: string) => Promise<void>;
-				  }
-				| undefined
-			>;
-		};
-	};
-};
 
 /**
  * Shallow-merge `patch` into the default calendar entry (index 0 by default).
@@ -164,8 +125,8 @@ export async function patchDefaultCalendar(
 ): Promise<void> {
 	await page.evaluate(
 		async ({ id, p, i }) => {
-			const w = window as unknown as SettingsStoreWindow;
-			const plugin = w.app.plugins.plugins[id];
+			const w = window as unknown as PrismaWindow;
+			const plugin = w.app.plugins.plugins[id] as PrismaPlugin | undefined;
 			if (!plugin?.settingsStore?.updateSettings) throw new Error("settingsStore.updateSettings missing");
 			await plugin.settingsStore.updateSettings((current) => {
 				const calendars = (current["calendars"] as Array<Record<string, unknown>> | undefined) ?? [];
@@ -203,8 +164,8 @@ export async function addCalendar(
 	const preserveActiveView = options.preserveActiveView ?? false;
 	await page.evaluate(
 		async ({ id, o, preserve }) => {
-			const w = window as unknown as SettingsStoreWindow;
-			const plugin = w.app.plugins.plugins[id];
+			const w = window as unknown as PrismaWindow;
+			const plugin = w.app.plugins.plugins[id] as PrismaPlugin | undefined;
 			if (!plugin?.settingsStore?.updateSettings) throw new Error("settingsStore.updateSettings missing");
 			const targetId = String(o["id"]);
 			await plugin.settingsStore.updateSettings((current) => {
@@ -233,8 +194,9 @@ export async function addCalendar(
  */
 export async function readActiveTab(page: Page): Promise<string | null> {
 	return page.evaluate((id) => {
-		const w = window as unknown as SettingsStoreWindow;
-		const settings = w.app.plugins.plugins[id]?.settingsStore?.currentSettings;
+		const w = window as unknown as PrismaWindow;
+		const plugin = w.app.plugins.plugins[id] as PrismaPlugin | undefined;
+		const settings = plugin?.settingsStore?.currentSettings;
 		if (!settings) return null;
 		const activeTab = settings["activeTab"] as { visibleTabIds?: string[]; activeTabIndex?: number } | undefined;
 		if (!activeTab?.visibleTabIds || activeTab.activeTabIndex === undefined) return null;
@@ -246,8 +208,9 @@ export async function readActiveTab(page: Page): Promise<string | null> {
 export async function readLiveCalendar(page: Page, index = 0): Promise<Record<string, unknown> | null> {
 	return page.evaluate(
 		({ id, i }) => {
-			const w = window as unknown as SettingsStoreWindow;
-			const calendars = w.app.plugins.plugins[id]?.settingsStore?.currentSettings?.["calendars"] as
+			const w = window as unknown as PrismaWindow;
+			const plugin = w.app.plugins.plugins[id] as PrismaPlugin | undefined;
+			const calendars = plugin?.settingsStore?.currentSettings?.["calendars"] as
 				| Array<Record<string, unknown>>
 				| undefined;
 			return calendars?.[i] ?? null;
@@ -256,23 +219,6 @@ export async function readLiveCalendar(page: Page, index = 0): Promise<Record<st
 	);
 }
 
-type BundleWindow = {
-	app: {
-		plugins: {
-			plugins: Record<
-				string,
-				| {
-						calendarBundles?: Array<{
-							calendarId: string;
-							activateCalendarView?: () => Promise<void>;
-						}>;
-				  }
-				| undefined
-			>;
-		};
-	};
-};
-
 export async function activateCalendar(page: Page, calendarId: string): Promise<void> {
 	// `refreshCalendarBundles` resolves the promise before the new bundle's
 	// `initialize()` runs; the bundle array updates synchronously but the
@@ -280,16 +226,16 @@ export async function activateCalendar(page: Page, calendarId: string): Promise<
 	// rather than relying on the prior await to finish everything.
 	await page.waitForFunction(
 		({ id, pid }) => {
-			const w = window as unknown as BundleWindow;
-			const plugin = w.app.plugins.plugins[pid];
+			const w = window as unknown as PrismaWindow;
+			const plugin = w.app.plugins.plugins[pid] as PrismaPlugin | undefined;
 			return Boolean(plugin?.calendarBundles?.some((b) => b.calendarId === id));
 		},
 		{ id: calendarId, pid: PLUGIN_ID }
 	);
 	await page.evaluate(
 		async ({ id, pid }) => {
-			const w = window as unknown as BundleWindow;
-			const plugin = w.app.plugins.plugins[pid];
+			const w = window as unknown as PrismaWindow;
+			const plugin = w.app.plugins.plugins[pid] as PrismaPlugin | undefined;
 			const bundle = plugin?.calendarBundles?.find((b) => b.calendarId === id);
 			if (!bundle?.activateCalendarView) throw new Error(`no bundle for ${id}`);
 			await bundle.activateCalendarView();
@@ -298,25 +244,12 @@ export async function activateCalendar(page: Page, calendarId: string): Promise<
 	);
 }
 
-type WorkspaceWindow = {
-	app: { workspace: { getLeavesOfType: (t: string) => unknown[] } };
-};
-
 export async function countLeavesOfType(page: Page, viewType: string): Promise<number> {
 	return page.evaluate((t) => {
-		const w = window as unknown as WorkspaceWindow;
+		const w = window as unknown as PrismaWindow;
 		return w.app.workspace.getLeavesOfType(t).length;
 	}, viewType);
 }
-
-type VaultFilesWindow = {
-	app: {
-		vault: { getFiles: () => Array<{ path: string }> };
-		metadataCache: {
-			getFileCache: (f: { path: string }) => { frontmatter?: Record<string, unknown> } | null;
-		};
-	};
-};
 
 /**
  * Return vault paths whose frontmatter has `ZettelID` matching `zettelId`.
@@ -325,7 +258,7 @@ type VaultFilesWindow = {
  */
 export async function resolveByZettelId(page: Page, zettelId: string): Promise<string[]> {
 	return page.evaluate((id) => {
-		const w = window as unknown as VaultFilesWindow;
+		const w = window as unknown as PrismaWindow;
 		const winners: string[] = [];
 		for (const f of w.app.vault.getFiles()) {
 			const fm = w.app.metadataCache.getFileCache(f)?.frontmatter;
@@ -338,7 +271,7 @@ export async function resolveByZettelId(page: Page, zettelId: string): Promise<s
 /** For each `endsWith` needle, return whether any vault path ends with it. */
 export async function vaultHasFilesEndingWith(page: Page, needles: readonly string[]): Promise<boolean[]> {
 	return page.evaluate((ends) => {
-		const w = window as unknown as VaultFilesWindow;
+		const w = window as unknown as PrismaWindow;
 		const haystack = w.app.vault.getFiles().map((f) => f.path);
 		return ends.map((n) => haystack.some((h) => h.endsWith(n)));
 	}, needles);

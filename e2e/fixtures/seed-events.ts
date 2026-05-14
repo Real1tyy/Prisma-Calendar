@@ -95,14 +95,7 @@ export async function setFrontmatterField(
 ): Promise<void> {
 	await page.evaluate(
 		async ({ path, key, val }) => {
-			const w = window as unknown as {
-				app: {
-					vault: { getAbstractFileByPath: (p: string) => unknown };
-					fileManager: {
-						processFrontMatter: (file: unknown, fn: (fm: Record<string, unknown>) => void) => Promise<void>;
-					};
-				};
-			};
+			const w = window as unknown as PrismaWindow;
 			const file = w.app.vault.getAbstractFileByPath(path);
 			if (!file) throw new Error(`setFrontmatterField: no file at ${path}`);
 			await w.app.fileManager.processFrontMatter(file, (fm) => {
@@ -116,9 +109,7 @@ export async function setFrontmatterField(
 /** Force Prisma's indexer to pick up on-disk changes via the refresh command. */
 export async function refreshCalendar(page: Page): Promise<void> {
 	await page.evaluate(async () => {
-		const w = window as unknown as {
-			app: { commands: { executeCommandById: (id: string) => boolean } };
-		};
+		const w = window as unknown as PrismaWindow;
 		w.app.commands.executeCommandById("prisma-calendar:refresh-calendar");
 		await new Promise((r) => setTimeout(r, 500));
 	});
