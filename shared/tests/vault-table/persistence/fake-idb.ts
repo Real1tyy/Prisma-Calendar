@@ -2,6 +2,11 @@ import { IDBFactory as FakeIDBFactory, IDBKeyRange as FakeIDBKeyRange } from "fa
 
 import type { IdbFactory } from "../../../src/core/vault-table/persistence/types";
 
+// eslint-disable-next-line obsidianmd/no-global-this -- node-only test shim
+type GlobalWithIdbKeyRange = typeof globalThis & {
+	IDBKeyRange?: typeof FakeIDBKeyRange;
+};
+
 /**
  * Produce a fresh in-memory IDB factory so each test is fully isolated from
  * the others. Also patches the global `IDBKeyRange` used by OpenIdbConnection
@@ -9,10 +14,15 @@ import type { IdbFactory } from "../../../src/core/vault-table/persistence/types
  */
 export function makeFakeIdb(): IdbFactory {
 	const factory = new FakeIDBFactory();
-	// Ensure IDBKeyRange works regardless of test environment (node).
-	if (typeof (globalThis as { IDBKeyRange?: unknown }).IDBKeyRange === "undefined") {
-		(globalThis as unknown as { IDBKeyRange: typeof FakeIDBKeyRange }).IDBKeyRange = FakeIDBKeyRange;
-	}
+
+	// Reaches for `globalThis` so the polyfill lands in pure-node test runs too
+	// (where `window` is undefined). The `obsidianmd/no-global-this` rule exists
+	// to prevent popout-window foot-guns in plugin runtime code; this helper
+	// only runs in vitest / node, never in Obsidian.
+	// eslint-disable-next-line obsidianmd/no-global-this -- node-only test shim
+	const globalScope = globalThis as GlobalWithIdbKeyRange;
+	globalScope.IDBKeyRange ??= FakeIDBKeyRange;
+
 	return {
 		open: (name, version) => factory.open(name, version),
 		deleteDatabase: (name) => factory.deleteDatabase(name),

@@ -1,7 +1,10 @@
 import { requestUrl, type RequestUrlResponse } from "obsidian";
 
-// Captured lazily so importing this module in node-environment test runners
-// (where there is no `window`) doesn't crash at module-load time.
+// Captured lazily so importing this module from a node-environment test
+// runner (where `window` is undefined at module-load) doesn't crash before
+// the test setup polyfill installs the `window = globalThis` alias. Runtime
+// call sites below use `window.fetch` directly — they only execute from
+// inside Obsidian, where `window` is always defined.
 const initialFetch: typeof fetch | undefined = typeof window !== "undefined" ? window.fetch : undefined;
 
 /**
@@ -130,7 +133,7 @@ async function obsidianFetch(input: RequestInfo | URL, init?: RequestInit): Prom
 	return new ObsidianResponse(res, url) as unknown as Response;
 }
 
-let originalFetch: typeof window.fetch | undefined;
+let originalFetch: typeof fetch | undefined;
 
 /**
  * Patches globalThis.fetch with Obsidian's fetch implementation.
@@ -142,7 +145,7 @@ export function patchGlobalFetch(): () => void {
 		originalFetch = prev;
 	}
 
-	window.fetch = obsidianFetch as typeof window.fetch;
+	window.fetch = obsidianFetch as typeof fetch;
 
 	return () => {
 		window.fetch = prev;
