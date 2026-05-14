@@ -1,7 +1,7 @@
 import { cls, tid } from "@real1ty-obsidian-plugins";
 import { ModalDescription, openReactModal, VirtualList } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
-import React, { memo, useCallback, useMemo, useRef, useState } from "react";
+import React, { memo, useCallback, useDeferredValue, useMemo, useRef, useState } from "react";
 
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { mapEventsToDisplayItems } from "../../../utils/format";
@@ -101,6 +101,7 @@ interface AssignmentFormProps {
 
 export function AssignmentForm({ items, config, preSelected, onSubmit, onCancel }: AssignmentFormProps) {
 	const [search, setSearch] = useState("");
+	const deferredSearch = useDeferredValue(search);
 	const [selected, setSelected] = useState<Set<string>>(new Set(preSelected));
 	const [newItems, setNewItems] = useState<AssignmentItem[]>([]);
 	const [highlightedIndex, setHighlightedIndex] = useState(-1);
@@ -129,15 +130,15 @@ export function AssignmentForm({ items, config, preSelected, onSubmit, onCancel 
 	);
 
 	const filteredItems = useMemo(() => {
-		const lower = search.toLowerCase().trim();
+		const lower = deferredSearch.toLowerCase().trim();
 		if (!lower) return allItems;
 		return allItems.filter((item) => getSearchableText(item).includes(lower));
-	}, [allItems, search, getSearchableText]);
+	}, [allItems, deferredSearch, getSearchableText]);
 
 	const showCreateNew = useMemo(() => {
-		if (!allowCreateNew || !search.trim()) return false;
-		return !allItems.some((item) => item.name.toLowerCase() === search.trim().toLowerCase());
-	}, [allowCreateNew, search, allItems]);
+		if (!allowCreateNew || !deferredSearch.trim()) return false;
+		return !allItems.some((item) => item.name.toLowerCase() === deferredSearch.trim().toLowerCase());
+	}, [allowCreateNew, deferredSearch, allItems]);
 
 	const handleToggle = useCallback((name: string) => {
 		setSelected((prev) => {

@@ -1,13 +1,12 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { getIconIds, setIcon } from "obsidian";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 
 import { useInjectedStyles } from "../hooks/use-injected-styles";
 
 const GRID_COLUMNS = 8;
 const ROW_HEIGHT = 52;
 const GRID_MAX_HEIGHT = 360;
-const SEARCH_DEBOUNCE_MS = 150;
 const OVERSCAN = 3;
 
 const ICON_PICKER_CSS = `
@@ -84,7 +83,7 @@ export const IconPickerGrid = memo(function IconPickerGrid({ onSelect, allowNoIc
 	useInjectedStyles("shared-icon-picker-styles", ICON_PICKER_CSS);
 	const allIcons = useMemo(() => getIconIds(), []);
 	const [query, setQuery] = useState("");
-	const [debouncedQuery, setDebouncedQuery] = useState("");
+	const deferredQuery = useDeferredValue(query);
 	const gridRef = useRef<HTMLDivElement>(null);
 	const searchRef = useRef<HTMLInputElement>(null);
 
@@ -92,15 +91,10 @@ export const IconPickerGrid = memo(function IconPickerGrid({ onSelect, allowNoIc
 		searchRef.current?.focus();
 	}, []);
 
-	useEffect(() => {
-		const timer = window.setTimeout(() => setDebouncedQuery(query), SEARCH_DEBOUNCE_MS);
-		return () => window.clearTimeout(timer);
-	}, [query]);
-
 	const filteredIcons = useMemo(() => {
-		const q = debouncedQuery.toLowerCase().trim();
+		const q = deferredQuery.toLowerCase().trim();
 		return q ? allIcons.filter((id) => id.toLowerCase().includes(q)) : allIcons;
-	}, [allIcons, debouncedQuery]);
+	}, [allIcons, deferredQuery]);
 
 	const rowCount = Math.ceil(filteredIcons.length / GRID_COLUMNS);
 
@@ -113,7 +107,7 @@ export const IconPickerGrid = memo(function IconPickerGrid({ onSelect, allowNoIc
 
 	useEffect(() => {
 		virtualizer.scrollToOffset(0);
-	}, [debouncedQuery, virtualizer]);
+	}, [deferredQuery, virtualizer]);
 
 	const handleClick = useCallback((iconId: string) => onSelect(iconId), [onSelect]);
 
