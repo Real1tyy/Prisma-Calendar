@@ -5,8 +5,8 @@ import {
 	type VersionSection,
 } from "@real1ty-obsidian-plugins";
 import type { App, Plugin } from "obsidian";
-import { MarkdownRenderer } from "obsidian";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { Component, MarkdownRenderer } from "obsidian";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useApp } from "../contexts/app-context";
 import { useScopedStyles } from "../hooks/use-scoped-styles";
@@ -43,10 +43,14 @@ export interface WhatsNewModalConfig {
 
 interface WhatsNewContentProps {
 	config: WhatsNewModalConfig;
-	plugin: Plugin;
 	fromVersion: string;
 	toVersion: string;
 	close: () => void;
+}
+
+function openExternalFromElement(source: HTMLElement, href: string): void {
+	const ownerWindow = source.ownerDocument.defaultView ?? window;
+	ownerWindow.open(href, "_blank");
 }
 
 function makeExternalLinksClickable(container: HTMLElement): void {
@@ -57,7 +61,7 @@ function makeExternalLinksClickable(container: HTMLElement): void {
 
 		link.addEventListener("click", (e: MouseEvent) => {
 			e.preventDefault();
-			window.open(href, "_blank");
+			openExternalFromElement(link, href);
 		});
 		link.classList.add("external-link");
 	}
@@ -91,7 +95,6 @@ function FooterButton({ label, href }: { label: string; href: string }) {
 
 export const WhatsNewContent = memo(function WhatsNewContent({
 	config,
-	plugin,
 	fromVersion,
 	toVersion,
 	close: _close,
@@ -103,8 +106,26 @@ export const WhatsNewContent = memo(function WhatsNewContent({
 	const renderingRef = useRef(false);
 	const { cls, tid } = useScopedStyles("whats-new", buildWhatsNewStyles);
 
+	// Scoped Obsidian Component owns the lifecycle of MarkdownRenderer outputs
+	// (live preview workers, embedded views, link-event listeners). Tied to the
+	// modal lifetime so embeds tear down on close — passing the long-lived
+	// plugin instance here would leak.
+	const renderComponentRef = useRef<Component | null>(null);
+	useEffect(() => {
+		const component = new Component();
+		component.load();
+		renderComponentRef.current = component;
+		return () => {
+			component.unload();
+			renderComponentRef.current = null;
+		};
+	}, []);
+
 	const isFullChangelog = fromVersion === "0.0.0";
-	const changelogSections = getChangelogSince(config.changelogContent, fromVersion, toVersion);
+	const changelogSections = useMemo(
+		() => getChangelogSince(config.changelogContent, fromVersion, toVersion),
+		[config.changelogContent, fromVersion, toVersion]
+	);
 	const remaining = changelogSections.length - renderedCount;
 	const toolsUrl = config.links.tools ?? DEFAULT_WHATS_NEW_LINKS.TOOLS;
 	const youtubeUrl = config.links.youtube ?? DEFAULT_WHATS_NEW_LINKS.YOUTUBE;
@@ -112,22 +133,29 @@ export const WhatsNewContent = memo(function WhatsNewContent({
 	const renderBatch = useCallback(
 		async (el: HTMLElement, sections: VersionSection[]) => {
 			if (renderingRef.current) return;
+
+			const component = renderComponentRef.current;
+			if (!component) return;
+
 			renderingRef.current = true;
+			try {
+				const batch = computeNextBatch(sections, renderedCount);
+				if (batch.length === 0) return;
 
-			const batch = computeNextBatch(sections, renderedCount);
-			const batchMarkdown = resolveRelativeDocLinks(formatChangelogSections(batch), config.links.documentation);
+				const batchMarkdown = resolveRelativeDocLinks(formatChangelogSections(batch), config.links.documentation);
 
-			const batchContainer = document.createElement("div");
-			el.appendChild(batchContainer);
+				const batchContainer = el.ownerDocument.createElement("div");
+				el.appendChild(batchContainer);
 
-			// eslint-disable-next-line obsidianmd/no-plugin-as-component -- short-lived modal, cleaned up on close
-			await MarkdownRenderer.render(app, batchMarkdown, batchContainer, "/", plugin);
-			makeExternalLinksClickable(batchContainer);
+				await MarkdownRenderer.render(app, batchMarkdown, batchContainer, "/", component);
+				makeExternalLinksClickable(batchContainer);
 
-			setRenderedCount(renderedCount + batch.length);
-			renderingRef.current = false;
+				setRenderedCount((current) => current + batch.length);
+			} finally {
+				renderingRef.current = false;
+			}
 		},
-		[app, plugin, renderedCount, config.links.documentation]
+		[app, renderedCount, config.links.documentation]
 	);
 
 	useEffect(() => {
@@ -213,7 +241,7 @@ export const WhatsNewContent = memo(function WhatsNewContent({
 
 export function showWhatsNewReactModal(
 	app: App,
-	plugin: Plugin,
+	_plugin: Plugin,
 	config: WhatsNewModalConfig,
 	fromVersion: string,
 	toVersion: string
@@ -226,7 +254,7 @@ export function showWhatsNewReactModal(
 		testIdPrefix: config.cssPrefix,
 		title: isFullChangelog ? `${config.pluginName} Changelog` : `${config.pluginName} updated to v${toVersion}`,
 		render: (close) => (
-			<WhatsNewContent config={config} plugin={plugin} fromVersion={fromVersion} toVersion={toVersion} close={close} />
+			<WhatsNewContent config={config} fromVersion={fromVersion} toVersion={toVersion} close={close} />
 		),
 	});
 }
