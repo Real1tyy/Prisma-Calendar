@@ -1,6 +1,6 @@
 import { renderReactInline, useApp, useSubscription } from "@real1ty-obsidian-plugins-react";
 import { memo, type Ref, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from "react";
-import { distinctUntilChanged, map, merge, skip } from "rxjs";
+import { debounceTime, distinctUntilChanged, map, merge, skip } from "rxjs";
 
 import { type HeatmapHandle, renderHeatmapInto } from "../../components/modals";
 import { CSS_PREFIX } from "../../constants";
@@ -19,6 +19,7 @@ interface HeatmapTabProps {
 }
 
 const PASS_ALL: FilterBarHandle = { shouldInclude: () => true };
+const REFRESH_DEBOUNCE_MS = 100;
 
 const HeatmapBody = memo(function HeatmapBody({ handleRef }: HeatmapTabProps) {
 	const app = useApp();
@@ -72,7 +73,9 @@ const HeatmapBody = memo(function HeatmapBody({ handleRef }: HeatmapTabProps) {
 			map(getHeatmapRenderingKey),
 			distinctUntilChanged()
 		);
-		return merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$, renderingSettings$);
+		return merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$, renderingSettings$).pipe(
+			debounceTime(REFRESH_DEBOUNCE_MS)
+		);
 	}, [bundle]);
 	useSubscription(changes$, () => {
 		heatmapRef.current?.refresh(getFilteredEvents());

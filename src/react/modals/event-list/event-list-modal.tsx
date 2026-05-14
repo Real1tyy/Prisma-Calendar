@@ -1,7 +1,7 @@
 import { cls, tid } from "@real1ty-obsidian-plugins";
 import { useFocusOnMount, VirtualList, type VirtualListHandle } from "@real1ty-obsidian-plugins-react";
 import type { ReactNode } from "react";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 
 import { removeZettelId } from "../../../utils/events/zettel-id";
 import { type EventListAction, EventListItem, type EventListItemData } from "./event-list-item";
@@ -40,13 +40,14 @@ export const EventListModal = memo(function EventListModal({
 	onClose,
 }: EventListModalProps) {
 	const [query, setQuery] = useState("");
+	const deferredQuery = useDeferredValue(query);
 	const [activeIndex, setActiveIndex] = useState(-1);
 	const searchRef = useRef<HTMLInputElement>(null);
 	const listRef = useRef<VirtualListHandle>(null);
 
 	const filtered = useMemo(() => {
-		if (!query.trim()) return items;
-		const q = query.toLowerCase().trim();
+		if (!deferredQuery.trim()) return items;
+		const q = deferredQuery.toLowerCase().trim();
 		return items.filter((item) =>
 			(searchFields as readonly string[]).some((field) => {
 				const value = item[field as keyof EventListItemData];
@@ -54,7 +55,7 @@ export const EventListModal = memo(function EventListModal({
 				return removeZettelId(value).toLowerCase().includes(q);
 			})
 		);
-	}, [items, query, searchFields]);
+	}, [items, deferredQuery, searchFields]);
 
 	const countText = useMemo(() => {
 		const isFiltered = filtered.length !== items.length;

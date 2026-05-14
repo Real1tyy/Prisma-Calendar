@@ -2,7 +2,7 @@ import { cls, tid } from "@real1ty-obsidian-plugins";
 import { showReactModal } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import type { KeyboardEvent, ReactNode } from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useDeferredValue, useMemo, useState } from "react";
 
 import type { CalendarComponent } from "../../../components/calendar-view";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
@@ -47,6 +47,7 @@ function EventsModalContent({
 	const defaultTab: EventsModalTabId = recurringCount > 0 ? "recurring" : categoryCount > 0 ? "byCategory" : "byName";
 	const [activeTab, setActiveTab] = useState<EventsModalTabId>(defaultTab);
 	const [searchQuery, setSearchQuery] = useState("");
+	const deferredSearchQuery = useDeferredValue(searchQuery);
 	const [sortMode, setSortMode] = useState<EventsModalSortMode>("count-desc");
 
 	const handleEscape = useCallback(
@@ -65,9 +66,9 @@ function EventsModalContent({
 		}));
 		return filterEventsModalItemsByQuery(
 			sortEventsModalItems(items, (i) => i.count, sortMode),
-			searchQuery
+			deferredSearchQuery
 		);
-	}, [categories, bundle, sortMode, searchQuery]);
+	}, [categories, bundle, sortMode, deferredSearchQuery]);
 
 	const byNameItems = useMemo(() => {
 		const items: SimpleEventGroupItem[] = Array.from(nameSeries.entries()).map(([nameKey, files]) => ({
@@ -78,9 +79,9 @@ function EventsModalContent({
 		}));
 		return filterEventsModalItemsByQuery(
 			sortEventsModalItems(items, (i) => i.count, sortMode),
-			searchQuery
+			deferredSearchQuery
 		);
-	}, [nameSeries, bundle, sortMode, searchQuery]);
+	}, [nameSeries, bundle, sortMode, deferredSearchQuery]);
 
 	let content: ReactNode;
 	if (activeTab === "recurring") {
@@ -92,7 +93,7 @@ function EventsModalContent({
 				enabledEvents={enabledEvents}
 				disabledEvents={disabledEvents}
 				sortMode={sortMode}
-				searchQuery={searchQuery}
+				searchQuery={deferredSearchQuery}
 				onRecurringPoolsChanged={() => setRecurringListEpoch((n) => n + 1)}
 			/>
 		);

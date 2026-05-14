@@ -2,13 +2,15 @@ import { cls, tid, toLocalISOString } from "@real1ty-obsidian-plugins";
 import { useObservable } from "@real1ty-obsidian-plugins-react";
 import { memo, type Ref, useImperativeHandle, useMemo, useState } from "react";
 import { combineLatest, from, of } from "rxjs";
-import { map, startWith, switchMap } from "rxjs/operators";
+import { debounceTime, map, startWith, switchMap } from "rxjs/operators";
 
 import type { CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { calculateCapacityFromEvents, formatBoundaryRange, formatCapacityLabel } from "../../utils/capacity";
 import { formatDuration, formatDurationAsDecimalHours, getDayBounds } from "../../utils/stats";
 import { useBundle } from "../contexts/bundle-context";
+
+const CHANGES_DEBOUNCE_MS = 150;
 
 export interface CapacityIndicatorHandle {
 	setRange: (start: Date, end: Date) => void;
@@ -60,7 +62,10 @@ export const CapacityIndicator = memo(function CapacityIndicator({
 		const startDate = new Date(startMs);
 		const endDate = new Date(endMs);
 
-		return combineLatest([bundle.settingsStore.settings$, bundle.eventStore.changes$.pipe(startWith(null))]).pipe(
+		return combineLatest([
+			bundle.settingsStore.settings$,
+			bundle.eventStore.changes$.pipe(debounceTime(CHANGES_DEBOUNCE_MS), startWith(null)),
+		]).pipe(
 			switchMap(([settings]) =>
 				!settings.capacityTrackingEnabled
 					? of(null)

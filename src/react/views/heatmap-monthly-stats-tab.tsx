@@ -1,7 +1,7 @@
 import { cls, tid } from "@real1ty-obsidian-plugins";
 import { GridLayout, useApp, useSubscription } from "@real1ty-obsidian-plugins-react";
 import { memo, type Ref, useImperativeHandle, useMemo, useRef } from "react";
-import { merge } from "rxjs";
+import { debounceTime, merge } from "rxjs";
 
 import { type HeatmapHandle, renderHeatmapInto } from "../../components/modals";
 import type { IntervalStatsViewHandle } from "../../components/views/interval-stats-view";
@@ -9,6 +9,8 @@ import { renderMonthlyStatsInto } from "../../components/views/monthly-stats-ren
 import { PRO_FEATURES } from "../../core/license";
 import { useBundle } from "../contexts/bundle-context";
 import { ProGatedContent } from "./pro-gated-content";
+
+const REFRESH_DEBOUNCE_MS = 100;
 
 export interface HeatmapMonthlyStatsTabHandle {
 	handleArrow(direction: "left" | "right" | "up" | "down"): void;
@@ -63,7 +65,11 @@ const HeatmapMonthlyStatsBody = memo(function HeatmapMonthlyStatsBody({ handleRe
 		[app, bundle]
 	);
 
-	const changes$ = useMemo(() => merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$), [bundle]);
+	const changes$ = useMemo(
+		() =>
+			merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$).pipe(debounceTime(REFRESH_DEBOUNCE_MS)),
+		[bundle]
+	);
 	useSubscription(changes$, () => {
 		heatmapRef.current?.refresh(bundle.eventStore.getAllEvents());
 	});

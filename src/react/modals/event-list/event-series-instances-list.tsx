@@ -1,7 +1,7 @@
 import { calculateEventStatistics, cls, tid } from "@real1ty-obsidian-plugins";
 import { useSettingsFields } from "@real1ty-obsidian-plugins-react";
 import { DateTime } from "luxon";
-import { useMemo, useRef } from "react";
+import { useDeferredValue, useMemo, useRef } from "react";
 
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { EventSeriesEventRow } from "./event-series-event-row";
@@ -26,6 +26,8 @@ export function EventSeriesInstancesList({
 
 	const [multiColorSettings] = useSettingsFields(bundle.settingsStore, ["colorMode", "showEventColorDots"]);
 
+	const deferredSearchQuery = useDeferredValue(searchQuery);
+
 	const stats = useMemo(() => calculateEventStatistics(items, DateTime.now()), [items]);
 
 	const filtered = useMemo(() => {
@@ -33,8 +35,8 @@ export function EventSeriesInstancesList({
 		const result = items.filter((item) => {
 			if (options.hidePast && item.date < today) return false;
 			if (options.hideSkipped && item.skipped) return false;
-			if (showSearch && searchQuery.trim()) {
-				const q = searchQuery.toLowerCase().trim();
+			if (showSearch && deferredSearchQuery.trim()) {
+				const q = deferredSearchQuery.toLowerCase().trim();
 				if (!item.title.toLowerCase().includes(q)) return false;
 			}
 			return true;
@@ -44,7 +46,7 @@ export function EventSeriesInstancesList({
 			options.hidePast ? a.date.toMillis() - b.date.toMillis() : b.date.toMillis() - a.date.toMillis()
 		);
 		return result;
-	}, [items, options.hidePast, options.hideSkipped, searchQuery, showSearch]);
+	}, [items, options.hidePast, options.hideSkipped, deferredSearchQuery, showSearch]);
 
 	const todayStart = DateTime.now().startOf("day");
 

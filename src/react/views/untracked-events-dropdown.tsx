@@ -16,6 +16,7 @@ import {
 	forwardRef,
 	memo,
 	useCallback,
+	useDeferredValue,
 	useEffect,
 	useImperativeHandle,
 	useMemo,
@@ -64,6 +65,7 @@ export const UntrackedEventsDropdown = memo(
 		]);
 		const [isOpen, setIsOpen] = useState(false);
 		const [searchQuery, setSearchQuery] = useState("");
+		const deferredQuery = useDeferredValue(searchQuery);
 		const [refreshTick, setRefreshTick] = useState(0);
 
 		const dropdownRef = useRef<HTMLDivElement>(null);
@@ -96,10 +98,10 @@ export const UntrackedEventsDropdown = memo(
 		const allEvents = useMemo(() => bundle.untrackedEventStore.getUntrackedEvents(), [bundle, refreshTick]);
 
 		const filteredEvents = useMemo(() => {
-			if (!searchQuery) return allEvents;
-			const lower = searchQuery.toLowerCase();
+			if (!deferredQuery) return allEvents;
+			const lower = deferredQuery.toLowerCase();
 			return allEvents.filter((e) => removeZettelId(e.title).toLowerCase().includes(lower));
-		}, [allEvents, searchQuery]);
+		}, [allEvents, deferredQuery]);
 
 		const resetTempHide = useCallback(() => {
 			clearDragHoverTimeout();
