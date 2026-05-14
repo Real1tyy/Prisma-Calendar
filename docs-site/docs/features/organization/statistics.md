@@ -51,7 +51,7 @@ Each view generates a pie chart and detailed statistics table, making it easy to
 
 ## Key Features
 
-Color-coded pie chart, paginated breakdown table (20 entries/page), period navigation, smart grouping, timed events only
+Color-coded pie chart, paginated breakdown table (20 entries/page), period navigation, smart grouping. Both timed and all-day events are counted; only timed events contribute to total duration.
 
 ## Statistics Types
 

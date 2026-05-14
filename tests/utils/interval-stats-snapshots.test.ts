@@ -103,13 +103,13 @@ describe("aggregateStats — approval snapshots", () => {
 		await expect(asSnapshot(stats)).toMatchFileSnapshot("__snapshots__/stats-category-missing.approved.json");
 	});
 
-	it("all-day events are excluded from aggregation", async () => {
+	it("all-day events contribute to count but not duration", async () => {
 		const events = [
 			createMockTimedEvent({ id: "t", title: "Timed", start: "2026-04-15T09:00:00", end: "2026-04-15T10:00:00" }),
 			createMockAllDayEvent({ id: "a", title: "All Day", start: "2026-04-15T00:00:00" }),
 		];
 		const stats = aggregateStats(events, new Date("2026-04-13T00:00:00Z"), new Date("2026-04-20T00:00:00Z"));
-		await expect(asSnapshot(stats)).toMatchFileSnapshot("__snapshots__/stats-no-allday.approved.json");
+		await expect(asSnapshot(stats)).toMatchFileSnapshot("__snapshots__/stats-allday-counted.approved.json");
 	});
 
 	it("breakMinutes is subtracted from duration", async () => {

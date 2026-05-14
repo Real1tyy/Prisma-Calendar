@@ -2,7 +2,7 @@ import { parseCategories } from "@real1ty-obsidian-plugins";
 
 import { DEFAULT_CATEGORY_PROP } from "../../constants";
 import type { CalendarEvent } from "../../types/calendar";
-import { isTimedEvent } from "../../types/calendar";
+import { isAllDayEvent } from "../../types/calendar";
 import { extractNotesCoreName } from "../events/naming";
 import { getEventDuration } from "./duration";
 import { getDayBounds, getEventsInRange, getMonthBounds, getWeekBounds } from "./periods";
@@ -29,7 +29,8 @@ export type WeeklyStatEntry = StatEntry;
  * Aggregates events for a given date range, grouping by name or category.
  *
  * Rules:
- * 1. Only timed events are included (all-day events are skipped)
+ * 1. Both timed and all-day events are counted; all-day events contribute 0
+ *    duration (they bump the count but don't inflate `totalDuration`).
  * 2. Events are grouped by their cleaned name (with IDs and dates stripped) or category
  * 3. Both virtual (recurring) and regular events use their actual title/category
  * 4. Calculates total duration and count for each group
@@ -50,13 +51,11 @@ export function aggregateStats(
 		filteredEvents = getEventsInRange(events, periodStart, periodEnd);
 	}
 
-	const timedEvents = filteredEvents.filter((event) => isTimedEvent(event));
-
 	const groups = new Map<string, { duration: number; count: number; isRecurring: boolean }>();
 
-	for (const event of timedEvents) {
+	for (const event of filteredEvents) {
 		const isRecurring = event.virtualKind === "recurring";
-		const duration = getEventDuration(event);
+		const duration = isAllDayEvent(event) ? 0 : getEventDuration(event);
 
 		let groupKeys: string[];
 

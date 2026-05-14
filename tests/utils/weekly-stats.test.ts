@@ -782,7 +782,7 @@ describe("aggregateWeeklyStats", () => {
 		expect(stats.entries[0].duration).toBe(150 * 60 * 1000); // 150 minutes total
 	});
 
-	it("should skip all-day events", () => {
+	it("should count all-day events but assign them 0 duration", () => {
 		const events: CalendarEvent[] = [
 			{
 				id: "1",
@@ -814,8 +814,15 @@ describe("aggregateWeeklyStats", () => {
 		const date = new Date("2025-02-05");
 		const stats = aggregateWeeklyStats(events, date);
 
-		expect(stats.entries).toHaveLength(1);
-		expect(stats.entries[0].name).toBe("Timed Event");
+		expect(stats.entries).toHaveLength(2);
+		const allDay = stats.entries.find((e) => e.name === "All Day Event");
+		const timed = stats.entries.find((e) => e.name === "Timed Event");
+		expect(allDay?.count).toBe(1);
+		expect(allDay?.duration).toBe(0);
+		expect(timed?.count).toBe(1);
+		expect(timed?.duration).toBeGreaterThan(0);
+		// totalDuration only reflects timed events.
+		expect(stats.totalDuration).toBe(timed?.duration);
 	});
 
 	it("should group recurring events by their actual title", () => {
@@ -1551,7 +1558,7 @@ describe("aggregateDailyStats", () => {
 		expect(stats.entries[0].name).toBe("Today Event");
 	});
 
-	it("should skip all-day events", () => {
+	it("should count all-day events but assign them 0 duration", () => {
 		const events: CalendarEvent[] = [
 			{
 				id: "1",
@@ -1583,8 +1590,14 @@ describe("aggregateDailyStats", () => {
 		const dayDate = new Date("2025-02-15T12:00:00");
 		const stats = aggregateDailyStats(events, dayDate);
 
-		expect(stats.entries).toHaveLength(1);
-		expect(stats.entries[0].name).toBe("Timed Event");
+		expect(stats.entries).toHaveLength(2);
+		const allDay = stats.entries.find((e) => e.name === "All Day Event");
+		const timed = stats.entries.find((e) => e.name === "Timed Event");
+		expect(allDay?.count).toBe(1);
+		expect(allDay?.duration).toBe(0);
+		expect(timed?.count).toBe(1);
+		expect(timed?.duration).toBeGreaterThan(0);
+		expect(stats.totalDuration).toBe(timed?.duration);
 	});
 
 	it("should group events by cleaned name", () => {
@@ -1882,7 +1895,7 @@ describe("aggregateMonthlyStats", () => {
 		expect(stats.entries[0].name).toBe("February Event");
 	});
 
-	it("should skip all-day events", () => {
+	it("should count all-day events but assign them 0 duration", () => {
 		const events: CalendarEvent[] = [
 			{
 				id: "1",
@@ -1914,8 +1927,14 @@ describe("aggregateMonthlyStats", () => {
 		const monthDate = new Date("2025-02-15T12:00:00");
 		const stats = aggregateMonthlyStats(events, monthDate);
 
-		expect(stats.entries).toHaveLength(1);
-		expect(stats.entries[0].name).toBe("Timed Event");
+		expect(stats.entries).toHaveLength(2);
+		const allDay = stats.entries.find((e) => e.name === "All Day Event");
+		const timed = stats.entries.find((e) => e.name === "Timed Event");
+		expect(allDay?.count).toBe(1);
+		expect(allDay?.duration).toBe(0);
+		expect(timed?.count).toBe(1);
+		expect(timed?.duration).toBeGreaterThan(0);
+		expect(stats.totalDuration).toBe(timed?.duration);
 	});
 
 	it("should group events by cleaned name", () => {
@@ -2509,7 +2528,7 @@ describe("Category-based aggregation", () => {
 			expect(stats.entries.some((e) => e.name === "Task")).toBe(true);
 		});
 
-		it("should still skip all-day events in category mode", () => {
+		it("should count all-day events in category mode (0 duration contribution)", () => {
 			const events: CalendarEvent[] = [
 				createMockAllDayEvent({
 					id: "1",
@@ -2540,9 +2559,12 @@ describe("Category-based aggregation", () => {
 			const date = new Date("2025-02-05");
 			const stats = aggregateWeeklyStats(events, date, "category", "Category");
 
+			// Both events land in "Work"; count is 2, duration only reflects the timed one.
 			expect(stats.entries).toHaveLength(1);
 			expect(stats.entries[0].name).toBe("Work");
-			expect(stats.entries[0].count).toBe(1);
+			expect(stats.entries[0].count).toBe(2);
+			expect(stats.entries[0].duration).toBe(60 * 60 * 1000);
+			expect(stats.totalDuration).toBe(60 * 60 * 1000);
 		});
 
 		it("should preserve isRecurring flag for virtual events in category mode", () => {
