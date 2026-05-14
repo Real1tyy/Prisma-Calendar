@@ -1,4 +1,9 @@
-import { ColorSchema, normalizeDirectoryPath, type SettingsStore } from "@real1ty-obsidian-plugins";
+import {
+	ColorSchema,
+	GridLayoutStateSchema,
+	normalizeDirectoryPath,
+	type SettingsStore,
+} from "@real1ty-obsidian-plugins";
 import {
 	ContextMenuStateSchema,
 	PageHeaderStateSchema,
@@ -898,6 +903,7 @@ export const SingleCalendarConfigSchema = GeneralSettingsSchema.extend(PropsSett
 		name: z.string().catch("Calendar"),
 		enabled: z.boolean().catch(true),
 		holidays: HolidaySettingsSchema.catch(HolidaySettingsSchema.parse({})),
+		dashboardGridState: z.record(z.string(), GridLayoutStateSchema).optional().catch(undefined),
 	})
 	.strip();
 

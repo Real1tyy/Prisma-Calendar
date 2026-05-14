@@ -3,8 +3,9 @@ import { GridLayout, useApp } from "@real1ty-obsidian-plugins-react";
 import { memo, type Ref, useImperativeHandle, useMemo, useRef } from "react";
 
 import { createDailyCalendar, type DailyCalendarHandle } from "../../components/views/daily-calendar";
-import { type MonthlyStatsHandle, renderMonthlyStatsInto } from "../../components/views/monthly-stats-renderer";
 import { useBundle } from "../contexts/bundle-context";
+import { type IntervalStatsCellHandle, mountIntervalStatsCell } from "./stats/interval-stats-cell";
+import { MONTHLY_STATS_CONFIG } from "./stats/stats-configs";
 
 export interface MonthlyCalendarStatsTabHandle {
 	prev(): void;
@@ -21,7 +22,7 @@ export const MonthlyCalendarStatsTab = memo(function MonthlyCalendarStatsTab({
 	const app = useApp();
 	const bundle = useBundle();
 	const calendarRef = useRef<DailyCalendarHandle | null>(null);
-	const statsRef = useRef<MonthlyStatsHandle | null>(null);
+	const statsHandleRef = useRef<IntervalStatsCellHandle | null>(null);
 
 	const cells = useMemo(
 		() => [
@@ -33,7 +34,7 @@ export const MonthlyCalendarStatsTab = memo(function MonthlyCalendarStatsTab({
 				render: (cellEl: HTMLElement) => {
 					calendarRef.current = createDailyCalendar(cellEl, app, bundle, {
 						initialView: "dayGridMonth",
-						onDateChange: (date) => statsRef.current?.setDate(date),
+						onDateChange: (date) => statsHandleRef.current?.setDate(date),
 					});
 				},
 				cleanup: () => {
@@ -47,11 +48,11 @@ export const MonthlyCalendarStatsTab = memo(function MonthlyCalendarStatsTab({
 				row: 0,
 				col: 1,
 				render: (cellEl: HTMLElement) => {
-					statsRef.current = renderMonthlyStatsInto(cellEl, bundle);
+					statsHandleRef.current = mountIntervalStatsCell(cellEl, app, bundle, MONTHLY_STATS_CONFIG);
 				},
 				cleanup: () => {
-					statsRef.current?.destroy();
-					statsRef.current = null;
+					statsHandleRef.current?.unmount();
+					statsHandleRef.current = null;
 				},
 			},
 		],

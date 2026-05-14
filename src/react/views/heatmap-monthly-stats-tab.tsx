@@ -4,11 +4,11 @@ import { memo, type Ref, useImperativeHandle, useMemo, useRef } from "react";
 import { debounceTime, merge } from "rxjs";
 
 import { type HeatmapHandle, renderHeatmapInto } from "../../components/modals";
-import type { IntervalStatsViewHandle } from "../../components/views/interval-stats-view";
-import { renderMonthlyStatsInto } from "../../components/views/monthly-stats-renderer";
 import { PRO_FEATURES } from "../../core/license";
 import { useBundle } from "../contexts/bundle-context";
 import { ProGatedContent } from "./pro-gated-content";
+import { type IntervalStatsCellHandle, mountIntervalStatsCell } from "./stats/interval-stats-cell";
+import { MONTHLY_STATS_CONFIG } from "./stats/stats-configs";
 
 const REFRESH_DEBOUNCE_MS = 100;
 
@@ -24,7 +24,7 @@ const HeatmapMonthlyStatsBody = memo(function HeatmapMonthlyStatsBody({ handleRe
 	const app = useApp();
 	const bundle = useBundle();
 	const heatmapRef = useRef<HeatmapHandle | null>(null);
-	const statsRef = useRef<IntervalStatsViewHandle | null>(null);
+	const statsHandleRef = useRef<IntervalStatsCellHandle | null>(null);
 
 	const cells = useMemo(
 		() => [
@@ -39,7 +39,7 @@ const HeatmapMonthlyStatsBody = memo(function HeatmapMonthlyStatsBody({ handleRe
 						initialMode: "monthly",
 						lockMode: true,
 						onNavigate: ({ year, month }) => {
-							statsRef.current?.setDate(new Date(year, month - 1, 1));
+							statsHandleRef.current?.setDate(new Date(year, month - 1, 1));
 						},
 					});
 				},
@@ -54,11 +54,11 @@ const HeatmapMonthlyStatsBody = memo(function HeatmapMonthlyStatsBody({ handleRe
 				row: 0,
 				col: 1,
 				render: (cellEl: HTMLElement) => {
-					statsRef.current = renderMonthlyStatsInto(cellEl, bundle);
+					statsHandleRef.current = mountIntervalStatsCell(cellEl, app, bundle, MONTHLY_STATS_CONFIG);
 				},
 				cleanup: () => {
-					statsRef.current?.destroy();
-					statsRef.current = null;
+					statsHandleRef.current?.unmount();
+					statsHandleRef.current = null;
 				},
 			},
 		],

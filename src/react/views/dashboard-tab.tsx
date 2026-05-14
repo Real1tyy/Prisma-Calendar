@@ -1,19 +1,8 @@
-import { type ChartDataItem, cls, tid } from "@real1ty-obsidian-plugins";
-import { GridLayout } from "@real1ty-obsidian-plugins-react";
+import { type ChartDataItem, cls, type GridLayoutState, tid } from "@real1ty-obsidian-plugins";
+import { GridLayout, renderReactInline, useApp, useSchemaField } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
-import { memo, type ReactElement, useMemo } from "react";
+import { memo, type ReactElement, useCallback, useMemo, useState } from "react";
 
-import {
-	buildChartDataFromItems,
-	type ColumnDef,
-	type DashboardChartHandle,
-	type DashboardItem,
-	type DashboardTableHandle,
-	renderDashboardChart,
-	renderDashboardRanking,
-	renderDashboardTable,
-	type StatEntry,
-} from "../../components/views/dashboard-section";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { PRO_FEATURES } from "../../core/license";
 import { useBundleChanges } from "../../react/hooks/use-bundle-changes";
@@ -22,6 +11,15 @@ import { removeZettelId } from "../../utils/events/zettel-id";
 import { getCategoriesFromFilePath } from "../../utils/obsidian";
 import { formatRecurrenceLabel, isPresetType } from "../../utils/recurring-utils";
 import { useBundle } from "../contexts/bundle-context";
+import { DashboardChart } from "./dashboard/dashboard-chart";
+import { DashboardRanking } from "./dashboard/dashboard-ranking";
+import { DashboardTable } from "./dashboard/dashboard-table";
+import {
+	buildChartDataFromItems,
+	type ColumnDef,
+	type DashboardItem,
+	type StatEntry,
+} from "./dashboard/dashboard-types";
 import { ProGatedContent } from "./pro-gated-content";
 
 const DASHBOARD_CSS_PREFIX = cls("dashboard-");
@@ -32,7 +30,7 @@ const DASHBOARD_INITIAL_STATE = {
 	columns: 2,
 	rows: 2,
 	cells: [],
-	rowSizes: [0.25, 1],
+	rowSizes: [0.65, 0.35],
 	columnSizes: undefined,
 	cellColumnSizes: undefined,
 	cellRowSizes: undefined,
@@ -53,14 +51,30 @@ interface DashboardSectionProps {
 }
 
 const DashboardSection = memo(function DashboardSection({ id, buildData }: DashboardSectionProps) {
+	const app = useApp();
 	const bundle = useBundle();
 	const extra = useMemo(() => [bundle.categoryTracker.categories$], [bundle]);
 	const renderToken = useBundleChanges(bundle, { debounceMs: REFRESH_DEBOUNCE_MS, extra });
 	const data = useMemo(() => buildData(), [buildData, renderToken]);
 
+	const [savedGridStates, setGridStates] = useSchemaField<Record<string, GridLayoutState> | undefined>(
+		bundle.settingsStore,
+		"dashboardGridState"
+	);
+
+	const [initialState] = useState<GridLayoutState | typeof DASHBOARD_INITIAL_STATE>(
+		() => savedGridStates?.[id] ?? DASHBOARD_INITIAL_STATE
+	);
+
+	const handleStateChange = useCallback(
+		(next: GridLayoutState) => {
+			setGridStates((prev) => ({ ...(prev ?? {}), [id]: next }));
+		},
+		[id, setGridStates]
+	);
+
 	const cells = useMemo(() => {
-		const chartHandle: { current: DashboardChartHandle | null } = { current: null };
-		const tableHandle: { current: DashboardTableHandle | null } = { current: null };
+		const cellUnmounts: Array<() => void> = [];
 		return [
 			{
 				id: "chart",
@@ -69,11 +83,16 @@ const DashboardSection = memo(function DashboardSection({ id, buildData }: Dashb
 				col: 0,
 				render: (cellEl: HTMLElement) => {
 					cellEl.setAttribute("data-testid", tid("dashboard-cell-chart"));
-					chartHandle.current = renderDashboardChart(cellEl, data.chartData, id, TOOLTIP_FORMATTER);
+					cellUnmounts.push(
+						renderReactInline(
+							cellEl,
+							<DashboardChart chartData={data.chartData} chartId={id} tooltipFormatter={TOOLTIP_FORMATTER} />,
+							app
+						)
+					);
 				},
 				cleanup: () => {
-					chartHandle.current?.destroy();
-					chartHandle.current = null;
+					while (cellUnmounts.length > 0) cellUnmounts.pop()?.();
 				},
 			},
 			{
@@ -83,7 +102,7 @@ const DashboardSection = memo(function DashboardSection({ id, buildData }: Dashb
 				col: 1,
 				render: (cellEl: HTMLElement) => {
 					cellEl.setAttribute("data-testid", tid("dashboard-cell-ranking"));
-					renderDashboardRanking(cellEl, data.items, data.stats);
+					cellUnmounts.push(renderReactInline(cellEl, <DashboardRanking items={data.items} stats={data.stats} />, app));
 				},
 			},
 			{
@@ -94,31 +113,35 @@ const DashboardSection = memo(function DashboardSection({ id, buildData }: Dashb
 				colSpan: 2,
 				render: (cellEl: HTMLElement) => {
 					cellEl.setAttribute("data-testid", tid("dashboard-cell-table"));
-					tableHandle.current = renderDashboardTable(cellEl, {
-						items: data.items,
-						columns: data.columns,
-						...(data.onItemClick ? { onItemClick: data.onItemClick } : {}),
-						emptyMessage: data.emptyMessage,
-					});
-				},
-				cleanup: () => {
-					tableHandle.current?.destroy();
-					tableHandle.current = null;
+					cellUnmounts.push(
+						renderReactInline(
+							cellEl,
+							<DashboardTable
+								items={data.items}
+								columns={data.columns}
+								{...(data.onItemClick ? { onItemClick: data.onItemClick } : {})}
+								emptyMessage={data.emptyMessage}
+							/>,
+							app
+						)
+					);
 				},
 			},
 		];
-	}, [id, data]);
+	}, [app, id, data]);
 
 	return (
 		<GridLayout
+			app={app}
 			cssPrefix={DASHBOARD_CSS_PREFIX}
 			columns={2}
 			rows={2}
 			gap="12px"
 			dividers
 			resizable="track"
-			initialState={DASHBOARD_INITIAL_STATE}
+			initialState={initialState}
 			cells={cells}
+			onStateChange={handleStateChange}
 			style={{ flex: "1 1 auto", minHeight: 0 }}
 			data-testid={tid("dashboard", id)}
 		/>

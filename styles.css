@@ -6164,10 +6164,53 @@
   transform: translateY(0);
 }
 
+/* Stats body — used inside the modal AND inside grid-cell tabs (daily-stats,
+   monthly-calendar-stats, heatmap-monthly-stats). Make the table-container
+   shrink to remaining vertical space and scroll when entries overflow, so
+   long tables don't push the chart/header out of view. */
+.prisma-interval-stats-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.prisma-interval-stats-view .prisma-stats-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.prisma-interval-stats-view .prisma-stats-table-container {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.prisma-stats-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: var(--background-secondary);
+}
+
 .prisma-weekly-stats-modal .prisma-stats-chart-container canvas {
   max-height: 600px;
   width: 100%;
   height: 100%;
+}
+.prisma-weekly-stats-modal {
+  /* Cap the chart so the table always has room below it inside the modal.
+     Without this, a tall canvas can push the table-container to ~0 height. */
+}
+.prisma-weekly-stats-modal .prisma-stats-chart-container {
+  max-height: 360px;
+}
+.prisma-weekly-stats-modal .prisma-stats-table-container {
+  max-height: 400px;
+  overflow-y: auto;
 }
 .prisma-weekly-stats-modal .prisma-stats-table th {
   text-align: center;
@@ -6177,6 +6220,9 @@
   font-weight: var(--font-weight-medium);
   border-bottom: 2px solid var(--background-modifier-border);
   border-right: 1px solid rgba(255, 255, 255, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 .prisma-weekly-stats-modal .prisma-stats-table th:last-child {
   border-right: none;

@@ -20,7 +20,7 @@ import {
 	toLocalISOString,
 } from "@real1ty-obsidian-plugins";
 import { renderReactInline } from "@real1ty-obsidian-plugins-react";
-import { type App, Component, type Modal, TFile, type WorkspaceLeaf } from "obsidian";
+import { type App, Component, TFile, type WorkspaceLeaf } from "obsidian";
 import { createElement } from "react";
 import { BehaviorSubject } from "rxjs";
 
@@ -45,6 +45,7 @@ import { getProGateUrls } from "../core/pro-feature-previews";
 import { openBatchFrontmatterModal, openCategoryAssignModal, openCategorySelectModal } from "../react/modals";
 import { openFilteredEventsModal, openSelectedEventsModal, openSkippedEventsModal } from "../react/modals/event-list";
 import { openEventsModal } from "../react/modals/event-list/events-modal-content";
+import { showStatsModal } from "../react/modals/stats/stats-modal";
 import { ZoomControl } from "../react/views/zoom-control";
 import type {
 	CalendarEvent,
@@ -86,7 +87,6 @@ import { PrerequisiteSelectionManager } from "./prerequisite-selection-manager";
 import { createStickyBanner, type StickyBannerHandle } from "./sticky-banner";
 import { mountExpressionFilter, mountSearchFilter, type ToolbarFilterHandle } from "./toolbar-filter-mount";
 import { UntrackedEventsDropdown } from "./untracked-events-dropdown";
-import { AllTimeStatsModal, DailyStatsModal, MonthlyStatsModal, WeeklyStatsModal } from "./weekly-stats";
 
 export class CalendarComponent extends MountableComponent(Component, "prisma") implements CalendarHost {
 	calendar: Calendar | null = null;
@@ -102,10 +102,6 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	private filterPresetSelector: FilterPresetSelector;
 	private container: HTMLElement;
 	private untrackedEventsDropdown: UntrackedEventsDropdown | null = null;
-	private dailyStatsModal: DailyStatsModal | null = null;
-	private weeklyStatsModal: WeeklyStatsModal | null = null;
-	private monthlyStatsModal: MonthlyStatsModal | null = null;
-	private alltimeStatsModal: AllTimeStatsModal | null = null;
 	filteredEvents: CalendarEvent[] = [];
 	private isIndexingComplete = false;
 	private currentUpcomingEventIds: Set<string> = new Set();
@@ -2301,55 +2297,22 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	async showDailyStatsModal(date?: Date): Promise<void> {
-		await this.toggleModal(
-			() => this.dailyStatsModal,
-			(modal) => {
-				this.dailyStatsModal = modal;
-			},
-			() => {
-				const currentDate = date || this.calendar?.getDate() || new Date();
-				const viewType = this.calendar?.view.type;
-				return new DailyStatsModal(this.app, this.bundle, currentDate, viewType);
-			}
-		);
+		const currentDate = date || this.calendar?.getDate() || new Date();
+		showStatsModal(this.app, this.bundle, "daily", currentDate);
 	}
 
 	async showWeeklyStatsModal(date?: Date): Promise<void> {
-		await this.toggleModal(
-			() => this.weeklyStatsModal,
-			(modal) => {
-				this.weeklyStatsModal = modal;
-			},
-			() => {
-				const currentDate = date || this.calendar?.getDate() || new Date();
-				return new WeeklyStatsModal(this.app, this.bundle, currentDate);
-			}
-		);
+		const currentDate = date || this.calendar?.getDate() || new Date();
+		showStatsModal(this.app, this.bundle, "weekly", currentDate);
 	}
 
 	async showMonthlyStatsModal(date?: Date): Promise<void> {
-		await this.toggleModal(
-			() => this.monthlyStatsModal,
-			(modal) => {
-				this.monthlyStatsModal = modal;
-			},
-			() => {
-				const currentDate = date || this.calendar?.getDate() || new Date();
-				return new MonthlyStatsModal(this.app, this.bundle, currentDate);
-			}
-		);
+		const currentDate = date || this.calendar?.getDate() || new Date();
+		showStatsModal(this.app, this.bundle, "monthly", currentDate);
 	}
 
 	async showAllTimeStatsModal(): Promise<void> {
-		await this.toggleModal(
-			() => this.alltimeStatsModal,
-			(modal) => {
-				this.alltimeStatsModal = modal;
-			},
-			() => {
-				return new AllTimeStatsModal(this.app, this.bundle);
-			}
-		);
+		showStatsModal(this.app, this.bundle, "alltime");
 	}
 
 	async showIntervalEventsModal(): Promise<void> {
@@ -2369,31 +2332,6 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const settings = this.bundle.settingsStore.currentSettings;
 		const intervalLabel = this.formatIntervalLabel(viewType, view.currentStart, view.currentEnd, settings.locale);
 		showIntervalEventsModal(this.app, intervalLabel, startDate, endDate, settings);
-	}
-
-	private async toggleModal<T extends Modal>(
-		getCurrentModal: () => T | null,
-		setModal: (modal: T | null) => void,
-		modalFactory: () => Promise<T> | T
-	): Promise<void> {
-		const currentModal = getCurrentModal();
-
-		if (currentModal) {
-			setModal(null);
-			currentModal.close();
-			return;
-		}
-
-		const modal = await modalFactory();
-		setModal(modal);
-
-		const originalOnClose = modal.onClose.bind(modal) as () => void;
-		modal.onClose = () => {
-			originalOnClose();
-			setModal(null);
-		};
-
-		modal.open();
 	}
 
 	// ─── Highlighting ─────────────────────────────────────────────

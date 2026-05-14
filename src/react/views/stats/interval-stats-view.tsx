@@ -1,0 +1,204 @@
+import { toLocalISOString } from "@real1ty-obsidian-plugins";
+import { useSettingsStore, useSubscription } from "@real1ty-obsidian-plugins-react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { debounceTime, merge } from "rxjs";
+
+import type { CalendarBundle } from "../../../core/calendar-bundle";
+import type { CalendarEvent } from "../../../types/calendar";
+import type { AggregationMode, Stats } from "../../../utils/stats";
+import { formatDuration, formatDurationAsDecimalHours } from "../../../utils/stats";
+import { CapacityLabel } from "./capacity-label";
+import { StatsChart } from "./stats-chart";
+import { StatsTable } from "./stats-table";
+
+export interface IntervalStatsConfig {
+	getBounds: (date: Date) => { start: Date; end: Date };
+	aggregateStats: (events: CalendarEvent[], date: Date, mode: AggregationMode, categoryProp: string) => Stats;
+	formatDate: (date: Date, locale: string | undefined) => string;
+	emptyMessage: string;
+	includeCapacity?: boolean;
+}
+
+interface IntervalStatsViewProps {
+	bundle: CalendarBundle;
+	config: IntervalStatsConfig;
+	date: Date;
+}
+
+interface StatsData {
+	stats: Stats;
+	filteredEvents: CalendarEvent[];
+	start: Date;
+	end: Date;
+}
+
+const REFRESH_DEBOUNCE_MS = 100;
+
+export const IntervalStatsView = memo(function IntervalStatsView({ bundle, config, date }: IntervalStatsViewProps) {
+	const [settings] = useSettingsStore(bundle.settingsStore);
+	const [aggregationMode, setAggregationMode] = useState<AggregationMode>(settings.defaultAggregationMode);
+	const [showDecimalHours, setShowDecimalHours] = useState(settings.showDecimalHours);
+	const [includeSkipped, setIncludeSkipped] = useState(false);
+	const [statsData, setStatsData] = useState<StatsData | null>(null);
+	const renderTokenRef = useRef(0);
+
+	const changes$ = useMemo(
+		() =>
+			merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$).pipe(debounceTime(REFRESH_DEBOUNCE_MS)),
+		[bundle]
+	);
+	const [changeToken, setChangeToken] = useState(0);
+	useSubscription(changes$, () => setChangeToken((t) => t + 1));
+
+	useEffect(() => {
+		const token = ++renderTokenRef.current;
+
+		async function load(): Promise<void> {
+			const { start, end } = config.getBounds(date);
+			const query = { start: toLocalISOString(start), end: toLocalISOString(end) };
+			const events = await bundle.eventStore.getEvents(query);
+
+			if (token !== renderTokenRef.current) return;
+
+			const filteredEvents = includeSkipped ? [...events, ...bundle.eventStore.getSkippedEvents(query)] : events;
+
+			const stats = config.aggregateStats(filteredEvents, date, aggregationMode, settings.categoryProp);
+			setStatsData({ stats, filteredEvents, start, end });
+		}
+
+		void load();
+	}, [bundle, config, date, aggregationMode, includeSkipped, settings.categoryProp, changeToken]);
+
+	const toggleAggregation = useCallback(() => {
+		setAggregationMode((m) => (m === "name" ? "category" : "name"));
+	}, []);
+
+	const toggleDecimalHours = useCallback(() => {
+		setShowDecimalHours((v) => !v);
+	}, []);
+
+	const dateLabel = useMemo(() => config.formatDate(date, settings.locale), [config, date, settings.locale]);
+
+	if (!statsData) return null;
+
+	const { stats, filteredEvents, start, end } = statsData;
+	const eventCount = stats.entries.reduce((sum, e) => sum + e.count, 0);
+	const colorResolver =
+		aggregationMode === "category" ? (label: string) => bundle.categoryTracker.getCategoryColor(label) : undefined;
+
+	return (
+		<div className="prisma-interval-stats-view">
+			<StatsHeaderBar
+				dateLabel={dateLabel}
+				totalDuration={stats.totalDuration}
+				eventCount={eventCount}
+				showDecimalHours={showDecimalHours}
+				aggregationMode={aggregationMode}
+				includeSkipped={includeSkipped}
+				onToggleDecimalHours={toggleDecimalHours}
+				onToggleAggregation={toggleAggregation}
+				onToggleSkipped={setIncludeSkipped}
+			/>
+
+			<div className="prisma-stats-content">
+				{config.includeCapacity && settings.capacityTrackingEnabled && (
+					<CapacityLabel
+						events={filteredEvents}
+						start={start}
+						end={end}
+						hourStart={settings.hourStart}
+						hourEnd={settings.hourEnd}
+						showDecimalHours={showDecimalHours}
+					/>
+				)}
+
+				{stats.entries.length === 0 ? (
+					<div className="prisma-stats-empty" data-testid="prisma-stats-empty">
+						{config.emptyMessage}
+					</div>
+				) : (
+					<>
+						<StatsChart entries={stats.entries} colorResolver={colorResolver} />
+						<StatsTable
+							entries={stats.entries}
+							totalDuration={stats.totalDuration}
+							showDecimalHours={showDecimalHours}
+							aggregationMode={aggregationMode}
+						/>
+					</>
+				)}
+			</div>
+		</div>
+	);
+});
+
+interface StatsHeaderBarProps {
+	dateLabel: string;
+	totalDuration: number;
+	eventCount: number;
+	showDecimalHours: boolean;
+	aggregationMode: AggregationMode;
+	includeSkipped: boolean;
+	onToggleDecimalHours: () => void;
+	onToggleAggregation: () => void;
+	onToggleSkipped: (value: boolean) => void;
+}
+
+const StatsHeaderBar = memo(function StatsHeaderBar({
+	dateLabel,
+	totalDuration,
+	eventCount,
+	showDecimalHours,
+	aggregationMode,
+	includeSkipped,
+	onToggleDecimalHours,
+	onToggleAggregation,
+	onToggleSkipped,
+}: StatsHeaderBarProps) {
+	const formatDur = showDecimalHours ? formatDurationAsDecimalHours : formatDuration;
+
+	return (
+		<div className="prisma-daily-stats-header-bar">
+			<div className="prisma-daily-stats-header-left">
+				<button
+					className="prisma-stats-header-stat prisma-stats-duration-toggle"
+					data-testid="prisma-stats-total-duration"
+					onClick={onToggleDecimalHours}
+				>
+					⏱ {formatDur(totalDuration)}
+				</button>
+				<div className="prisma-stats-header-stat" data-testid="prisma-stats-total-count">
+					📅 {eventCount} events
+				</div>
+			</div>
+
+			<div className="prisma-stats-tab-date-label" data-testid="prisma-stats-date-label">
+				{dateLabel}
+			</div>
+
+			<div className="prisma-daily-stats-header-right">
+				<label className="prisma-stats-skip-checkbox-label">
+					<input
+						type="checkbox"
+						className="prisma-stats-skip-checkbox"
+						data-testid="prisma-stats-skip-checkbox"
+						checked={includeSkipped}
+						onChange={(e) => onToggleSkipped(e.target.checked)}
+					/>
+					<span className="prisma-stats-skip-checkbox-text">Include skipped</span>
+				</label>
+
+				<div className="prisma-stats-aggregation-toggle">
+					<span className="prisma-stats-mode-label">Group by:</span>
+					<button
+						className="prisma-stats-mode-button-compact"
+						data-testid="prisma-stats-mode-button"
+						onClick={onToggleAggregation}
+					>
+						{aggregationMode === "name" ? "Event Name" : "Category"}
+					</button>
+				</div>
+			</div>
+		</div>
+	);
+});
