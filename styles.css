@@ -3461,6 +3461,56 @@
   transform: scale(1.4);
 }
 
+/* Sliding switch for PrismaCheckbox style="switch" (markAsDone, skip).
+   Mirrors Obsidian's native .checkbox-container look so MetadataSection
+   doesn't visually diverge from the imperative schema-form output. */
+.prisma-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  margin-left: auto;
+}
+.prisma-switch.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.prisma-switch-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: inherit;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+}
+.prisma-switch-track {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  background-color: var(--background-modifier-border);
+  border-radius: 999px;
+  transition: background-color 0.15s ease;
+}
+.prisma-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background-color: var(--background-primary);
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s ease;
+}
+.prisma-switch.is-on .prisma-switch-track {
+  background-color: var(--interactive-accent);
+}
+.prisma-switch.is-on .prisma-switch-thumb {
+  transform: translateX(16px);
+}
+
 /* Event Preset Selector */
 .prisma-event-preset-selector-wrapper {
   display: flex;
