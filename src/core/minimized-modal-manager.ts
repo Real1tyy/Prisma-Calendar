@@ -6,11 +6,13 @@ import type { Subscription } from "rxjs";
 import { EventCreateModal, EventEditModal, type EventModalData } from "../components/modals";
 import type { EventFormState } from "../components/modals/event/event-form-state";
 import { openCategoryAssignModal } from "../react/modals";
+import { deriveEditFormState } from "../react/modals/event/event-edit-modal";
 import type { StopwatchSnapshot } from "../react/views/stopwatch";
 import type { Frontmatter } from "../types";
 import type { IndexerEvent } from "../types/event-source";
-import type { EventPreset } from "../types/settings";
+import type { EventPreset, SingleCalendarConfig } from "../types/settings";
 import { getEventName } from "../utils/events/naming";
+import { formatDateTimeForInput } from "../utils/format";
 import { getCategoriesFromFilePath } from "../utils/obsidian";
 import type { CalendarBundle } from "./calendar-bundle";
 import { assignCategories } from "./commands/frontmatter-update-command";
@@ -216,14 +218,87 @@ class MinimizedModalManagerClass {
 	// ─── Modal Operations ─────────────────────────────────────────
 
 	/**
-	 * Stop any running stopwatch session, then open an edit modal
-	 * with the stopwatch auto-started and minimized.
+	 * Stop any running stopwatch session, then immediately start a new one
+	 * for the given event and stash it as a minimized modal — no modal mount.
+	 *
+	 * Mirrors the old imperative `setStartStopwatchAndMinimize` flow:
+	 *  - converts all-day → timed
+	 *  - writes start/end to frontmatter so the file shows the new session
+	 *  - leaves the stopwatch running until the user stops & saves
 	 */
 	startStopwatchSession(app: App, bundle: CalendarBundle, eventData: EventModalData): void {
 		this.stopAndSaveCurrentEvent(app, bundle.plugin.calendarBundles);
-		const modal = new EventEditModal(app, bundle, eventData);
-		modal.setStartStopwatchAndMinimize();
-		modal.open();
+
+		const settings = bundle.settingsStore.currentSettings;
+		const filePath = eventData.extendedProps?.filePath ?? null;
+
+		const derived = deriveEditFormState(app, bundle, eventData);
+		const now = new Date();
+		const end = new Date(now.getTime() + 5 * 60 * 1000);
+		const nowIso = toLocalISOString(now);
+		const endIso = toLocalISOString(end);
+
+		const formState: EventFormState = {
+			...derived.initialState,
+			allDay: false,
+			start: formatDateTimeForInput(now),
+			end: formatDateTimeForInput(end),
+			date: "",
+		};
+
+		const stopwatch: StopwatchSnapshot = {
+			state: "running",
+			startTime: now.getTime(),
+			sessionStartTime: now.getTime(),
+			breakStartTime: null,
+			totalBreakMs: 0,
+		};
+
+		const state: MinimizedModalState = {
+			formState,
+			stopwatch,
+			modalType: "edit",
+			filePath,
+			originalFrontmatter: derived.originalFrontmatter,
+			calendarId: bundle.calendarId,
+			title: formState.title,
+			allDay: false,
+			categories: formState.categories.join(", "),
+			location: formState.location,
+			participants: formState.participants.join(", "),
+			startDate: nowIso,
+			endDate: endIso,
+		};
+
+		this.saveState(state, bundle);
+
+		if (filePath) {
+			void this.writeStopwatchStart(app, filePath, settings, nowIso, endIso);
+		}
+
+		new Notice("Time tracker started");
+	}
+
+	private async writeStopwatchStart(
+		app: App,
+		filePath: string,
+		settings: SingleCalendarConfig,
+		startIso: string,
+		endIso: string
+	): Promise<void> {
+		const file = app.vault.getAbstractFileByPath(filePath);
+		if (!(file instanceof TFile)) return;
+		try {
+			await app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
+				fm[settings.startProp] = ensureISOSuffix(startIso);
+				fm[settings.endProp] = ensureISOSuffix(endIso);
+				if (settings.allDayProp && fm[settings.allDayProp]) {
+					fm[settings.allDayProp] = false;
+				}
+			});
+		} catch (error) {
+			console.error("[MinimizedModal] Failed to write stopwatch start:", error);
+		}
 	}
 
 	/**
