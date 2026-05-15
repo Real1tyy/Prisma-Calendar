@@ -29,8 +29,6 @@ import {
 	packRows,
 } from "../../components/gantt";
 import { showEventPreviewModal } from "../../components/modals";
-import { EventCreateModal } from "../../components/modals/event/event-create-modal";
-import { EventEditModal } from "../../components/modals/event/event-edit-modal";
 import { CSS_PREFIX } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import {
@@ -51,6 +49,8 @@ import { isEventDone } from "../../utils/event-frontmatter";
 import { extractCleanDisplayName } from "../../utils/events/naming";
 import { getFileAndFrontmatter, openFileInNewWindow } from "../../utils/obsidian";
 import { BundleContext, useBundle } from "../contexts/bundle-context";
+import { openEventCreateModal } from "../modals/event/event-create-modal";
+import { openEventEditModal } from "../modals/event/event-edit-modal";
 import { FilterBar, type FilterBarHandle } from "./filter-bar";
 import { ProGatedContent } from "./pro-gated-content";
 import { StickyBanner } from "./sticky-banner";
@@ -99,13 +99,13 @@ function buildBarMenuItems(
 			icon: "pencil",
 			section: "view",
 			onAction: act((ev) => {
-				new EventEditModal(app, bundle, {
+				openEventEditModal(app, bundle, {
 					title: ev.title,
 					start: ev.start,
 					end: ev.type === "timed" ? ev.end : null,
 					allDay: ev.allDay,
 					extendedProps: { filePath: ev.ref.filePath },
-				}).open();
+				});
 			}),
 		},
 		{
@@ -229,7 +229,7 @@ const GanttBody = memo(function GanttBody() {
 	}, []);
 
 	const handleCreate = useCallback(() => {
-		new EventCreateModal(app, bundle, { title: "", start: null }).open();
+		openEventCreateModal(app, bundle, { title: "", start: null });
 	}, [app, bundle]);
 
 	const handleCancelPrereq = useCallback(() => {

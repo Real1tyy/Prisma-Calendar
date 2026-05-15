@@ -42,6 +42,7 @@ import {
 	openMoveByModal,
 	openMoveToCalendarModal,
 } from "../react/modals";
+import { openEventEditModal } from "../react/modals/event/event-edit-modal";
 import { openEventSeriesModal } from "../react/modals/event-list";
 import { isTimedEvent } from "../types";
 import type { CalendarEvent, EventKind } from "../types/calendar";
@@ -60,7 +61,7 @@ import {
 } from "../utils/obsidian";
 import type { CalendarHost } from "./calendar-host";
 import type { PreviewEventData } from "./modals";
-import { EventEditModal, showEventPreviewModal } from "./modals";
+import { showEventPreviewModal } from "./modals";
 
 interface CalendarEventInfo {
 	title: string;
@@ -635,7 +636,7 @@ export class EventContextMenu {
 	}
 
 	openEditModal(event: CalendarEventInfo): void {
-		new EventEditModal(this.app, this.bundle, event).open();
+		openEventEditModal(this.app, this.bundle, event);
 	}
 
 	private goToSourceEvent(event: CalendarEventInfo): void {

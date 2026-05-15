@@ -43,6 +43,7 @@ import { PRO_FEATURES } from "../core/license";
 import { MinimizedModalManager } from "../core/minimized-modal-manager";
 import { getProGateUrls } from "../core/pro-feature-previews";
 import { openBatchFrontmatterModal, openCategoryAssignModal, openCategorySelectModal } from "../react/modals";
+import { openEventCreateModal } from "../react/modals/event/event-create-modal";
 import { openFilteredEventsModal, openSelectedEventsModal, openSkippedEventsModal } from "../react/modals/event-list";
 import { openEventsModal } from "../react/modals/event-list/events-modal-content";
 import { showStatsModal } from "../react/modals/stats/stats-modal";
@@ -82,7 +83,7 @@ import { ConnectionRenderer } from "./connection-renderer";
 import { EventContextMenu } from "./event-context-menu";
 import { FilterPresetSelector } from "./filter-preset-selector";
 import type { PreviewEventData } from "./modals";
-import { EventCreateModal, showEventPreviewModal, showIntervalEventsModal } from "./modals";
+import { showEventPreviewModal, showIntervalEventsModal } from "./modals";
 import { PrerequisiteSelectionManager } from "./prerequisite-selection-manager";
 import { createStickyBanner, type StickyBannerHandle } from "./sticky-banner";
 import { mountExpressionFilter, mountSearchFilter, type ToolbarFilterHandle } from "./toolbar-filter-mount";
@@ -1754,7 +1755,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			},
 		};
 
-		new EventCreateModal(this.app, this.bundle, newEvent).open();
+		openEventCreateModal(this.app, this.bundle, newEvent);
 		this.calendar?.unselect();
 	}
 
@@ -1769,12 +1770,11 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			},
 		};
 
-		new EventCreateModal(this.app, this.bundle, newEvent).open();
+		openEventCreateModal(this.app, this.bundle, newEvent);
 		this.calendar?.unselect();
 	}
 
 	openCreateEventModal(autoStartStopwatch = false): void {
-		// If starting a new stopwatch, first stop and save any currently running stopwatch event
 		if (autoStartStopwatch && MinimizedModalManager.hasMinimizedModal()) {
 			MinimizedModalManager.stopAndSaveCurrentEvent(this.app, this.bundle.plugin.calendarBundles);
 		}
@@ -1796,13 +1796,9 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			},
 		};
 
-		const modal = new EventCreateModal(this.app, this.bundle, newEvent);
-
-		if (autoStartStopwatch) {
-			modal.setAutoStartStopwatch(true);
-		}
-
-		modal.open();
+		openEventCreateModal(this.app, this.bundle, newEvent, {
+			autoStartStopwatch,
+		});
 	}
 
 	openEditModalForFocusedEvent(): void {

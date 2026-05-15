@@ -13,6 +13,7 @@ import type { App } from "obsidian";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { UpdateEventCommand } from "../../core/commands";
+import { openEventCreateModal } from "../../react/modals/event/event-create-modal";
 import type {
 	CalendarEvent,
 	CalendarEventData,
@@ -34,7 +35,7 @@ import type { BatchSelectionManager } from "../batch-selection-manager";
 import { applyEventMountStyling, attachLazyNotePreview, type TextColorCache } from "../calendar-event-renderer";
 import type { CalendarHost } from "../calendar-host";
 import type { EventContextMenu } from "../event-context-menu";
-import { EventCreateModal, showEventPreviewModal } from "../modals";
+import { showEventPreviewModal } from "../modals";
 
 export interface ModalContext {
 	app: App;
@@ -400,13 +401,13 @@ export function handleSharedDateClick(
 	const endDate = new Date(info.date);
 	endDate.setMinutes(endDate.getMinutes() + settings.defaultDurationMinutes);
 
-	new EventCreateModal(app, bundle, {
+	openEventCreateModal(app, bundle, {
 		title: "",
 		start: toLocalISOString(info.date),
 		end: info.allDay ? null : toLocalISOString(endDate),
 		allDay: info.allDay,
 		extendedProps: { filePath: null as string | null },
-	}).open();
+	});
 	calendar.unselect();
 }
 
@@ -416,13 +417,13 @@ export function handleSharedDateSelection(
 	calendar: Calendar,
 	info: { start: Date; end: Date; allDay: boolean }
 ): void {
-	new EventCreateModal(app, bundle, {
+	openEventCreateModal(app, bundle, {
 		title: "",
 		start: toLocalISOString(info.start),
 		end: toLocalISOString(info.end),
 		allDay: info.allDay,
 		extendedProps: { filePath: null as string | null },
-	}).open();
+	});
 	calendar.unselect();
 }
 
