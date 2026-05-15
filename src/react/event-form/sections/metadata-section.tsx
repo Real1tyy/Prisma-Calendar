@@ -1,7 +1,7 @@
+import { Toggle } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback } from "react";
 
 import type { SingleCalendarConfig } from "../../../types/settings";
-import { PrismaCheckbox } from "../prisma-checkbox";
 import { PrismaSettingItem } from "../prisma-setting-item";
 
 interface MetadataField {
@@ -9,23 +9,16 @@ interface MetadataField {
 	guard: keyof SingleCalendarConfig;
 	label: string;
 	description?: string;
-	kind: "text" | "number" | "switch";
+	kind: "text" | "number" | "toggle";
 	placeholder?: string;
 }
 
 const FIELDS: readonly MetadataField[] = [
 	{ key: "location", guard: "locationProp", label: "Location", kind: "text", placeholder: "Event location" },
-	{ key: "icon", guard: "iconProp", label: "Icon", kind: "text", placeholder: "Emoji or text" },
-	{
-		key: "breakMinutes",
-		guard: "breakProp",
-		label: "Break minutes",
-		description: "Break time in minutes",
-		kind: "number",
-		placeholder: "0",
-	},
-	{ key: "markAsDone", guard: "statusProperty", label: "Mark as done", kind: "switch" },
-	{ key: "skip", guard: "skipProp", label: "Skip", description: "Hide event from calendar", kind: "switch" },
+	{ key: "icon", guard: "iconProp", label: "Icon", description: "Emoji or text", kind: "text", placeholder: "Emoji or text" },
+	{ key: "breakMinutes", guard: "breakProp", label: "Break minutes", kind: "number", placeholder: "0" },
+	{ key: "markAsDone", guard: "statusProperty", label: "Mark as done", kind: "toggle" },
+	{ key: "skip", guard: "skipProp", label: "Skip", kind: "toggle" },
 ];
 
 interface MetadataSectionProps {
@@ -53,7 +46,7 @@ export const MetadataSection = memo(function MetadataSection({ settings, values,
 				const controlTestId = `prisma-event-control-${field.key}`;
 				const description = field.description;
 
-				if (field.kind === "switch") {
+				if (field.kind === "toggle") {
 					return (
 						<PrismaSettingItem
 							key={field.key}
@@ -61,8 +54,7 @@ export const MetadataSection = memo(function MetadataSection({ settings, values,
 							{...(description ? { description } : {})}
 							testId={fieldTestId}
 						>
-							<PrismaCheckbox
-								style="switch"
+							<Toggle
 								value={Boolean(values[field.key])}
 								onChange={(v) => updateField(field.key, v)}
 								testId={controlTestId}

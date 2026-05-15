@@ -108,7 +108,7 @@ export const RecurrenceSection = memo(function RecurrenceSection({ form }: Recur
 				<div className="prisma-recurring-event-fields">
 					<PrismaSettingItem name="Recurrence pattern">
 						<select
-							className="prisma-setting-item-control dropdown"
+							className="prisma-setting-item-control"
 							value={selectValue}
 							onChange={(e) => handleRruleTypeChange(e.target.value)}
 							data-testid="prisma-event-control-rrule-type"

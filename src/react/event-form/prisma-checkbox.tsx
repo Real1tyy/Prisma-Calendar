@@ -1,7 +1,7 @@
 import type { ChangeEvent, KeyboardEvent } from "react";
 import { memo, useCallback } from "react";
 
-export type PrismaCheckboxStyle = "plain" | "labeled-toggle" | "switch";
+export type PrismaCheckboxStyle = "plain" | "labeled-toggle";
 
 interface BaseProps {
 	value: boolean;
@@ -19,11 +19,7 @@ interface LabeledToggleProps extends BaseProps {
 	label: string;
 }
 
-interface SwitchProps extends BaseProps {
-	style: "switch";
-}
-
-export type PrismaCheckboxProps = PlainProps | LabeledToggleProps | SwitchProps;
+export type PrismaCheckboxProps = PlainProps | LabeledToggleProps;
 
 export const PrismaCheckbox = memo(function PrismaCheckbox(props: PrismaCheckboxProps) {
 	const { value, onChange, testId, disabled } = props;
@@ -66,24 +62,6 @@ export const PrismaCheckbox = memo(function PrismaCheckbox(props: PrismaCheckbox
 					{...(testId ? { "data-testid": testId } : {})}
 				/>
 			</div>
-		);
-	}
-
-	if (style === "switch") {
-		return (
-			<label className={`prisma-switch${value ? " is-on" : ""}${disabled ? " is-disabled" : ""}`} onKeyDown={handleKey}>
-				<input
-					type="checkbox"
-					className="prisma-switch-input"
-					checked={value}
-					onChange={handleChange}
-					disabled={disabled}
-					{...(testId ? { "data-testid": testId } : {})}
-				/>
-				<span className="prisma-switch-track" aria-hidden="true">
-					<span className="prisma-switch-thumb" />
-				</span>
-			</label>
 		);
 	}
 

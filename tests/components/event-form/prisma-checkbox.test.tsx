@@ -23,11 +23,6 @@ function LabeledHarness({ initial = false, label = "Virtual" }: { initial?: bool
 	);
 }
 
-function SwitchHarness({ initial = false }: { initial?: boolean }) {
-	const [value, setValue] = useState(initial);
-	return <PrismaCheckbox style="switch" value={value} onChange={setValue} testId="prisma-test-switch" />;
-}
-
 describe("PrismaCheckbox", () => {
 	describe("style=plain (default)", () => {
 		it("emits the imperative DOM contract: <input type=checkbox class=prisma-setting-item-control>", () => {
@@ -130,39 +125,4 @@ describe("PrismaCheckbox", () => {
 		});
 	});
 
-	describe("style=switch", () => {
-		it("renders a prisma-switch wrapper with track and thumb", () => {
-			render(<SwitchHarness />);
-			const wrapper = document.querySelector(".prisma-switch");
-			expect(wrapper).not.toBeNull();
-			expect(wrapper!.querySelector(".prisma-switch-track")).not.toBeNull();
-			expect(wrapper!.querySelector(".prisma-switch-thumb")).not.toBeNull();
-		});
-
-		it("adds is-on modifier when value is true", () => {
-			render(<SwitchHarness initial={true} />);
-			const wrapper = document.querySelector(".prisma-switch");
-			expect(wrapper!.className).toContain("is-on");
-		});
-
-		it("does NOT add is-on modifier when value is false", () => {
-			render(<SwitchHarness initial={false} />);
-			const wrapper = document.querySelector(".prisma-switch");
-			expect(wrapper!.className).not.toContain("is-on");
-		});
-
-		it("calls onChange with boolean when toggled", async () => {
-			const user = userEvent.setup();
-			const onChange = vi.fn();
-			render(<PrismaCheckbox style="switch" value={false} onChange={onChange} testId="t" />);
-			await user.click(screen.getByTestId("t"));
-			expect(onChange).toHaveBeenCalledWith(true);
-		});
-
-		it("adds is-disabled modifier when disabled", () => {
-			render(<PrismaCheckbox style="switch" value={false} onChange={() => {}} disabled testId="t" />);
-			const wrapper = document.querySelector(".prisma-switch");
-			expect(wrapper!.className).toContain("is-disabled");
-		});
-	});
 });
