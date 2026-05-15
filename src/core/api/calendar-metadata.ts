@@ -14,7 +14,14 @@ import {
 } from "../../utils/stats";
 import type { CalendarBundle } from "../calendar-bundle";
 import { resolveBundle, resolveBundleOrNotice } from "./bundle-resolver";
-import type { PrismaCalendarInfo, PrismaStatEntry, PrismaStatisticsOutput } from "./types";
+import type {
+	PrismaCalendarIdInput,
+	PrismaCalendarInfo,
+	PrismaStatEntry,
+	PrismaStatisticsInput,
+	PrismaStatisticsOutput,
+	PrismaUpdateSettingsInput,
+} from "./types";
 
 function bundleToCalendarInfo(bundle: CalendarBundle): PrismaCalendarInfo {
 	const settings = bundle.settingsStore.currentSettings;
@@ -28,7 +35,7 @@ function bundleToCalendarInfo(bundle: CalendarBundle): PrismaCalendarInfo {
 	};
 }
 
-export function refreshCalendar(plugin: CustomCalendarPlugin, input?: { calendarId?: string }): void {
+export function refreshCalendar(plugin: CustomCalendarPlugin, input?: PrismaCalendarIdInput): void {
 	const bundle = resolveBundleOrNotice(plugin, input?.calendarId);
 	if (!bundle) return;
 	bundle.refreshCalendar();
@@ -36,7 +43,7 @@ export function refreshCalendar(plugin: CustomCalendarPlugin, input?: { calendar
 
 export function getCalendarInfo(
 	plugin: CustomCalendarPlugin,
-	input?: { calendarId?: string }
+	input?: PrismaCalendarIdInput
 ): PrismaCalendarInfo | null {
 	const bundle = resolveBundle(plugin, input?.calendarId);
 	if (!bundle) return null;
@@ -49,12 +56,7 @@ export function listCalendars(plugin: CustomCalendarPlugin): PrismaCalendarInfo[
 
 export async function getStatistics(
 	plugin: CustomCalendarPlugin,
-	input?: {
-		date?: string;
-		interval?: "day" | "week" | "month";
-		mode?: "name" | "category";
-		calendarId?: string;
-	}
+	input?: PrismaStatisticsInput
 ): Promise<PrismaStatisticsOutput | null> {
 	const bundle = resolveBundle(plugin, input?.calendarId);
 	if (!bundle) return null;
@@ -117,24 +119,23 @@ export async function getStatistics(
 	};
 }
 
-export function getSettings(
-	plugin: CustomCalendarPlugin,
-	input?: { calendarId?: string }
-): SingleCalendarConfig | null {
+export function getSettings(plugin: CustomCalendarPlugin, input?: PrismaCalendarIdInput): SingleCalendarConfig | null {
 	const bundle = resolveBundle(plugin, input?.calendarId);
 	if (!bundle) return null;
 	return { ...bundle.settingsStore.currentSettings };
 }
 
-export async function updateSettings(
-	plugin: CustomCalendarPlugin,
-	input: { settings: Partial<SingleCalendarConfig>; calendarId?: string }
-): Promise<boolean> {
+export async function updateSettings(plugin: CustomCalendarPlugin, input: PrismaUpdateSettingsInput): Promise<boolean> {
 	const bundle = resolveBundleOrNotice(plugin, input.calendarId);
 	if (!bundle) return false;
 
-	const patch = { ...input.settings };
-	delete (patch as Record<string, unknown>)["id"];
+	// Strip `undefined` values so a `{ foo: undefined }` patch doesn't clobber an
+	// existing required setting. Zod-inferred Partial<T> permits explicit-undefined,
+	// but the settings store expects "key present = set, key absent = unchanged."
+	const patch: Record<string, unknown> = {};
+	for (const [key, value] of Object.entries(input.settings)) {
+		if (value !== undefined && key !== "id") patch[key] = value;
+	}
 
 	await bundle.settingsStore.updateSettings((current) => ({
 		...current,

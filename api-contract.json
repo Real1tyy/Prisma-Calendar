@@ -1,0 +1,4647 @@
+{
+	"contractVersion": 1,
+	"globalKey": "PrismaCalendar",
+	"pluginVersion": "2.15.0",
+	"actions": {
+		"activate": {
+			"description": "Activate the Pro license by key. Persists the key to plugin settings.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"key": {
+						"type": "string"
+					}
+				},
+				"required": ["key"],
+				"type": "object"
+			},
+			"output": null,
+			"http": {
+				"method": "POST",
+				"path": "/activate"
+			}
+		},
+		"addZettelIdToActiveNote": {
+			"description": "Add a unique Zettel ID to the active note's frontmatter. Returns true on success.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "boolean"
+			},
+			"http": {
+				"method": "POST",
+				"path": "/add-zettel-id-to-active-note"
+			}
+		},
+		"aiQuery": {
+			"description": "Run an AI query against the calendar with optional execute=true to apply the resulting operations.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					},
+					"customPromptIds": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"execute": {
+						"type": "boolean"
+					},
+					"message": {
+						"type": "string"
+					},
+					"mode": {
+						"enum": ["query", "manipulation", "planning"],
+						"type": "string"
+					}
+				},
+				"required": ["message"],
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"error": {
+						"type": "string"
+					},
+					"executionResult": {
+						"additionalProperties": false,
+						"properties": {
+							"failed": {
+								"type": "number"
+							},
+							"succeeded": {
+								"type": "number"
+							},
+							"total": {
+								"type": "number"
+							}
+						},
+						"required": ["succeeded", "failed", "total"],
+						"type": "object"
+					},
+					"mode": {
+						"enum": ["query", "manipulation", "planning"],
+						"type": "string"
+					},
+					"operations": {
+						"items": {
+							"oneOf": [
+								{
+									"additionalProperties": false,
+									"properties": {
+										"allDay": {
+											"type": "boolean"
+										},
+										"categories": {
+											"items": {
+												"type": "string"
+											},
+											"type": "array"
+										},
+										"end": {
+											"pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$",
+											"type": "string"
+										},
+										"location": {
+											"type": "string"
+										},
+										"participants": {
+											"items": {
+												"type": "string"
+											},
+											"type": "array"
+										},
+										"start": {
+											"pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$",
+											"type": "string"
+										},
+										"title": {
+											"minLength": 1,
+											"type": "string"
+										},
+										"type": {
+											"const": "create",
+											"type": "string"
+										}
+									},
+									"required": ["title", "start", "end", "type"],
+									"type": "object"
+								},
+								{
+									"additionalProperties": false,
+									"properties": {
+										"allDay": {
+											"type": "boolean"
+										},
+										"categories": {
+											"items": {
+												"type": "string"
+											},
+											"type": "array"
+										},
+										"end": {
+											"pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$",
+											"type": "string"
+										},
+										"filePath": {
+											"minLength": 1,
+											"type": "string"
+										},
+										"location": {
+											"type": "string"
+										},
+										"participants": {
+											"items": {
+												"type": "string"
+											},
+											"type": "array"
+										},
+										"start": {
+											"pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$",
+											"type": "string"
+										},
+										"title": {
+											"minLength": 1,
+											"type": "string"
+										},
+										"type": {
+											"const": "edit",
+											"type": "string"
+										}
+									},
+									"required": ["type", "filePath"],
+									"type": "object"
+								},
+								{
+									"additionalProperties": false,
+									"properties": {
+										"filePath": {
+											"minLength": 1,
+											"type": "string"
+										},
+										"type": {
+											"const": "delete",
+											"type": "string"
+										}
+									},
+									"required": ["type", "filePath"],
+									"type": "object"
+								}
+							]
+						},
+						"type": "array"
+					},
+					"response": {
+						"type": "string"
+					},
+					"success": {
+						"type": "boolean"
+					},
+					"validationErrors": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"required": ["success"],
+				"type": "object"
+			},
+			"http": {
+				"method": "POST",
+				"path": "/ai-query"
+			}
+		},
+		"batchDelete": {
+			"description": "Delete every event note at the given filePaths. Returns true if all succeeded.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					},
+					"filePaths": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"required": ["filePaths"],
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "boolean"
+			},
+			"http": {
+				"method": "POST",
+				"path": "/batch-delete"
+			}
+		},
+		"batchMarkAsDone": {
+			"description": "Mark every event note at the given filePaths as done. Returns true if all succeeded.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					},
+					"filePaths": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"required": ["filePaths"],
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "boolean"
+			},
+			"http": {
+				"method": "POST",
+				"path": "/batch-mark-as-done"
+			}
+		},
+		"batchMarkAsUndone": {
+			"description": "Clear the done status from every event note at the given filePaths. Returns true if all succeeded.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					},
+					"filePaths": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"required": ["filePaths"],
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "boolean"
+			},
+			"http": {
+				"method": "POST",
+				"path": "/batch-mark-as-undone"
+			}
+		},
+		"batchToggleSkip": {
+			"description": "Toggle the skipped flag on every event note at the given filePaths. Returns true if all succeeded.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					},
+					"filePaths": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"required": ["filePaths"],
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "boolean"
+			},
+			"http": {
+				"method": "POST",
+				"path": "/batch-toggle-skip"
+			}
+		},
+		"cloneEvent": {
+			"description": "Clone an event, optionally offsetting the clone's start by offsetMs. Returns the new file path or null.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					},
+					"filePath": {
+						"type": "string"
+					},
+					"offsetMs": {
+						"type": "number"
+					}
+				},
+				"required": ["filePath"],
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"anyOf": [
+					{
+						"type": "string"
+					},
+					{
+						"type": "null"
+					}
+				]
+			},
+			"http": {
+				"method": "POST",
+				"path": "/clone-event"
+			}
+		},
+		"convertFileToEvent": {
+			"description": "Convert an existing file (e.g., a plain note) into a calendar event with the supplied metadata. Returns true on success.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"allDay": {
+						"type": "boolean"
+					},
+					"calendarId": {
+						"type": "string"
+					},
+					"categories": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"end": {
+						"type": "string"
+					},
+					"filePath": {
+						"type": "string"
+					},
+					"frontmatter": {
+						"additionalProperties": {},
+						"propertyNames": {
+							"type": "string"
+						},
+						"type": "object"
+					},
+					"location": {
+						"type": "string"
+					},
+					"markAsDone": {
+						"type": "boolean"
+					},
+					"participants": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"skip": {
+						"type": "boolean"
+					},
+					"start": {
+						"type": "string"
+					},
+					"title": {
+						"type": "string"
+					}
+				},
+				"required": ["filePath"],
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "boolean"
+			},
+			"http": {
+				"method": "POST",
+				"path": "/convert-file-to-event"
+			}
+		},
+		"createEvent": {
+			"description": "Create a new tracked event with the given title, start/end, and optional metadata. Returns the created file path, or null if creation failed.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"allDay": {
+						"type": "boolean"
+					},
+					"calendarId": {
+						"type": "string"
+					},
+					"categories": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"end": {
+						"type": "string"
+					},
+					"frontmatter": {
+						"additionalProperties": {},
+						"propertyNames": {
+							"type": "string"
+						},
+						"type": "object"
+					},
+					"location": {
+						"type": "string"
+					},
+					"markAsDone": {
+						"type": "boolean"
+					},
+					"participants": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"skip": {
+						"type": "boolean"
+					},
+					"start": {
+						"type": "string"
+					},
+					"title": {
+						"type": "string"
+					}
+				},
+				"required": ["title"],
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"anyOf": [
+					{
+						"type": "string"
+					},
+					{
+						"type": "null"
+					}
+				]
+			},
+			"http": {
+				"method": "POST",
+				"path": "/create-event"
+			}
+		},
+		"createUntrackedEvent": {
+			"description": "Create an untracked event note in the specified calendar. Returns the created file path, or null if creation failed.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					},
+					"title": {
+						"type": "string"
+					}
+				},
+				"required": ["title"],
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"anyOf": [
+					{
+						"type": "string"
+					},
+					{
+						"type": "null"
+					}
+				]
+			},
+			"http": {
+				"method": "POST",
+				"path": "/create-untracked-event"
+			}
+		},
+		"deleteEvent": {
+			"description": "Delete the event note at the given filePath. Returns true on success, false if the file did not exist.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					},
+					"filePath": {
+						"type": "string"
+					}
+				},
+				"required": ["filePath"],
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "boolean"
+			},
+			"http": {
+				"method": "POST",
+				"path": "/delete-event"
+			}
+		},
+		"duplicateCurrentEvent": {
+			"description": "Duplicate the event associated with the active note. Returns true on success.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "boolean"
+			},
+			"http": {
+				"method": "POST",
+				"path": "/duplicate-current-event"
+			}
+		},
+		"editEvent": {
+			"description": "Edit fields of an existing event identified by filePath. Returns true on success, false if the event was not found.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"allDay": {
+						"type": "boolean"
+					},
+					"calendarId": {
+						"type": "string"
+					},
+					"categories": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"end": {
+						"type": "string"
+					},
+					"filePath": {
+						"type": "string"
+					},
+					"frontmatter": {
+						"additionalProperties": {},
+						"propertyNames": {
+							"type": "string"
+						},
+						"type": "object"
+					},
+					"location": {
+						"type": "string"
+					},
+					"markAsDone": {
+						"type": "boolean"
+					},
+					"participants": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"skip": {
+						"type": "boolean"
+					},
+					"start": {
+						"type": "string"
+					},
+					"title": {
+						"type": "string"
+					}
+				},
+				"required": ["filePath"],
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "boolean"
+			},
+			"http": {
+				"method": "POST",
+				"path": "/edit-event"
+			}
+		},
+		"getAllEvents": {
+			"description": "Return every event known to the calendar (tracked + untracked).",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"items": {
+					"additionalProperties": false,
+					"properties": {
+						"allDay": {
+							"type": "boolean"
+						},
+						"categories": {
+							"items": {
+								"type": "string"
+							},
+							"type": "array"
+						},
+						"color": {
+							"type": "string"
+						},
+						"end": {
+							"type": "string"
+						},
+						"filePath": {
+							"type": "string"
+						},
+						"icon": {
+							"type": "string"
+						},
+						"instanceDate": {
+							"type": "string"
+						},
+						"location": {
+							"type": "string"
+						},
+						"participants": {
+							"items": {
+								"type": "string"
+							},
+							"type": "array"
+						},
+						"rruleId": {
+							"type": "string"
+						},
+						"rruleType": {
+							"type": "string"
+						},
+						"skipped": {
+							"type": "boolean"
+						},
+						"start": {
+							"type": "string"
+						},
+						"status": {
+							"type": "string"
+						},
+						"title": {
+							"type": "string"
+						},
+						"type": {
+							"enum": ["timed", "allDay", "untracked"],
+							"type": "string"
+						},
+						"virtualKind": {
+							"type": "string"
+						}
+					},
+					"required": ["filePath", "title", "type", "allDay", "virtualKind", "skipped"],
+					"type": "object"
+				},
+				"type": "array"
+			},
+			"http": {
+				"method": "POST",
+				"path": "/get-all-events"
+			}
+		},
+		"getCalendarInfo": {
+			"description": "Return summary info for one calendar bundle. Returns null if the calendarId is unknown.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"anyOf": [
+					{
+						"additionalProperties": false,
+						"properties": {
+							"calendarId": {
+								"type": "string"
+							},
+							"directory": {
+								"type": "string"
+							},
+							"enabled": {
+								"type": "boolean"
+							},
+							"eventCount": {
+								"type": "number"
+							},
+							"name": {
+								"type": "string"
+							},
+							"untrackedEventCount": {
+								"type": "number"
+							}
+						},
+						"required": ["calendarId", "name", "directory", "enabled", "eventCount", "untrackedEventCount"],
+						"type": "object"
+					},
+					{
+						"type": "null"
+					}
+				]
+			},
+			"http": {
+				"method": "POST",
+				"path": "/get-calendar-info"
+			}
+		},
+		"getCategories": {
+			"description": "Return all distinct categories with their colours for the active calendar.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"items": {
+					"additionalProperties": false,
+					"properties": {
+						"color": {
+							"type": "string"
+						},
+						"name": {
+							"type": "string"
+						}
+					},
+					"required": ["name", "color"],
+					"type": "object"
+				},
+				"type": "array"
+			},
+			"http": {
+				"method": "POST",
+				"path": "/get-categories"
+			}
+		},
+		"getEventByPath": {
+			"description": "Look up a single event by its file path. Returns the event payload, or null if not found.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					},
+					"filePath": {
+						"type": "string"
+					}
+				},
+				"required": ["filePath"],
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"anyOf": [
+					{
+						"additionalProperties": false,
+						"properties": {
+							"allDay": {
+								"type": "boolean"
+							},
+							"categories": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"color": {
+								"type": "string"
+							},
+							"end": {
+								"type": "string"
+							},
+							"filePath": {
+								"type": "string"
+							},
+							"icon": {
+								"type": "string"
+							},
+							"instanceDate": {
+								"type": "string"
+							},
+							"location": {
+								"type": "string"
+							},
+							"participants": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"rruleId": {
+								"type": "string"
+							},
+							"rruleType": {
+								"type": "string"
+							},
+							"skipped": {
+								"type": "boolean"
+							},
+							"start": {
+								"type": "string"
+							},
+							"status": {
+								"type": "string"
+							},
+							"title": {
+								"type": "string"
+							},
+							"type": {
+								"enum": ["timed", "allDay", "untracked"],
+								"type": "string"
+							},
+							"virtualKind": {
+								"type": "string"
+							}
+						},
+						"required": ["filePath", "title", "type", "allDay", "virtualKind", "skipped"],
+						"type": "object"
+					},
+					{
+						"type": "null"
+					}
+				]
+			},
+			"http": {
+				"method": "POST",
+				"path": "/get-event-by-path"
+			}
+		},
+		"getEvents": {
+			"description": "Return all events whose timed range overlaps [start, end). Both timestamps are ISO strings.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					},
+					"end": {
+						"type": "string"
+					},
+					"start": {
+						"type": "string"
+					}
+				},
+				"required": ["start", "end"],
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"items": {
+					"additionalProperties": false,
+					"properties": {
+						"allDay": {
+							"type": "boolean"
+						},
+						"categories": {
+							"items": {
+								"type": "string"
+							},
+							"type": "array"
+						},
+						"color": {
+							"type": "string"
+						},
+						"end": {
+							"type": "string"
+						},
+						"filePath": {
+							"type": "string"
+						},
+						"icon": {
+							"type": "string"
+						},
+						"instanceDate": {
+							"type": "string"
+						},
+						"location": {
+							"type": "string"
+						},
+						"participants": {
+							"items": {
+								"type": "string"
+							},
+							"type": "array"
+						},
+						"rruleId": {
+							"type": "string"
+						},
+						"rruleType": {
+							"type": "string"
+						},
+						"skipped": {
+							"type": "boolean"
+						},
+						"start": {
+							"type": "string"
+						},
+						"status": {
+							"type": "string"
+						},
+						"title": {
+							"type": "string"
+						},
+						"type": {
+							"enum": ["timed", "allDay", "untracked"],
+							"type": "string"
+						},
+						"virtualKind": {
+							"type": "string"
+						}
+					},
+					"required": ["filePath", "title", "type", "allDay", "virtualKind", "skipped"],
+					"type": "object"
+				},
+				"type": "array"
+			},
+			"http": {
+				"method": "POST",
+				"path": "/get-events"
+			}
+		},
+		"getSettings": {
+			"description": "Return the full settings snapshot for the resolved calendar bundle. Returns null if not found.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"anyOf": [
+					{
+						"additionalProperties": false,
+						"properties": {
+							"activeTab": {
+								"additionalProperties": false,
+								"properties": {
+									"colorOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"groupState": {
+										"additionalProperties": {
+											"additionalProperties": false,
+											"properties": {
+												"childColorOverrides": {
+													"additionalProperties": {
+														"type": "string"
+													},
+													"propertyNames": {
+														"type": "string"
+													},
+													"type": "object"
+												},
+												"childIconOverrides": {
+													"additionalProperties": {
+														"type": "string"
+													},
+													"propertyNames": {
+														"type": "string"
+													},
+													"type": "object"
+												},
+												"childRenames": {
+													"additionalProperties": {
+														"type": "string"
+													},
+													"propertyNames": {
+														"type": "string"
+													},
+													"type": "object"
+												},
+												"visibleChildIds": {
+													"items": {
+														"type": "string"
+													},
+													"type": "array"
+												}
+											},
+											"type": "object"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"iconOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"renames": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"showSettingsButton": {
+										"type": "boolean"
+									},
+									"visibleTabIds": {
+										"items": {
+											"type": "string"
+										},
+										"type": "array"
+									}
+								},
+								"type": "object"
+							},
+							"allDayEventHeight": {
+								"default": 75,
+								"description": "Maximum height in pixels for all-day events section before overflow",
+								"maximum": 500,
+								"minimum": 30,
+								"type": "integer"
+							},
+							"allDayProp": {
+								"default": "All Day",
+								"description": "Frontmatter property name for all-day flag",
+								"type": "string"
+							},
+							"alreadyNotifiedProp": {
+								"default": "Already Notified",
+								"description": "Frontmatter property name to mark events as already notified",
+								"type": "string"
+							},
+							"askBeforePropagatingFrontmatter": {
+								"default": false,
+								"description": "Show a confirmation modal before propagating frontmatter changes to instances. Allows you to review changes before applying them.",
+								"type": "boolean"
+							},
+							"askBeforePropagatingToCategorySeries": {
+								"default": false,
+								"description": "Show a confirmation modal before propagating frontmatter changes to category series members. Allows you to review changes before applying them.",
+								"type": "boolean"
+							},
+							"askBeforePropagatingToNameSeries": {
+								"default": false,
+								"description": "Show a confirmation modal before propagating frontmatter changes to name series members. Allows you to review changes before applying them.",
+								"type": "boolean"
+							},
+							"autoAssignCategoryByIncludes": {
+								"default": true,
+								"description": "Use substring matching (case-insensitive) for category auto-assignment and category assignment presets. When enabled, categories match if the event name contains the category name, and preset event names match if the event name contains the preset name. Example: 'Youtube Analysis' matches the 'Youtube' category and a preset with event name 'Youtube'.",
+								"title": "Substring matching for categories and presets",
+								"type": "boolean"
+							},
+							"autoAssignCategoryByName": {
+								"default": true,
+								"description": "Automatically assign a category when the event name (without ZettelID) matches a category name (case-insensitive). Example: creating an event named 'Health' will auto-assign the 'health' category.",
+								"title": "Auto-assign when name matches category",
+								"type": "boolean"
+							},
+							"autoAssignZettelId": {
+								"default": "disabled",
+								"description": "Automatically add a Zettel ID timestamp to filenames of events in the planning system directory that don't have one. Files are renamed from 'My Event.md' to 'My Event-20260216120000.md'.",
+								"enum": ["disabled", "calendarEvents", "allEvents"],
+								"enumLabels": {
+									"allEvents": "All events",
+									"calendarEvents": "Calendar events only",
+									"disabled": "Disabled"
+								},
+								"title": "Auto-assign Zettel ID",
+								"type": "string"
+							},
+							"basesViewProperties": {
+								"default": ["Category"],
+								"description": "Comma-separated list of frontmatter properties to include as columns in Bases views. These properties will appear after the default columns (file name, date, status).",
+								"items": {
+									"type": "string"
+								},
+								"placeholder": "priority, project, tags",
+								"title": "Additional properties",
+								"type": "array"
+							},
+							"basesViewType": {
+								"default": "cards",
+								"description": "Choose the default view type for Bases views (category events, interval views). Cards view displays events as visual cards, table view as a sortable table, and list view as a simple list.",
+								"enum": ["table", "cards", "list"],
+								"enumLabels": {
+									"cards": "Cards (Recommended)",
+									"list": "List",
+									"table": "Table"
+								},
+								"title": "View type",
+								"type": "string"
+							},
+							"batchActionButtons": {
+								"default": [
+									"batchSelectAll",
+									"batchClear",
+									"batchDuplicate",
+									"batchMarkAsDone",
+									"batchMarkAsNotDone",
+									"batchCategories",
+									"batchSkip",
+									"batchMakeVirtual",
+									"batchMakeReal",
+									"batchDelete"
+								],
+								"items": {
+									"enum": [
+										"batchSelectAll",
+										"batchClear",
+										"batchDuplicate",
+										"batchMoveBy",
+										"batchMarkAsDone",
+										"batchMarkAsNotDone",
+										"batchCategories",
+										"batchFrontmatter",
+										"batchCloneNext",
+										"batchClonePrev",
+										"batchMoveNext",
+										"batchMovePrev",
+										"batchOpenAll",
+										"batchSkip",
+										"batchMakeVirtual",
+										"batchMakeReal",
+										"batchDelete"
+									],
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"breakProp": {
+								"default": "Break",
+								"description": "Frontmatter property name for break time in minutes (subtracted from event duration in statistics, supports decimals)",
+								"type": "string"
+							},
+							"caldavProp": {
+								"default": "CalDAV",
+								"description": "Frontmatter property name for CalDAV integration metadata on synced events",
+								"title": "CalDAV property",
+								"type": "string"
+							},
+							"calendarTitleProp": {
+								"default": "Calendar Title",
+								"description": "Auto-computed display title property (wiki link with ZettelID stripped from filename). Used for clean rendering in planning system and Bases views. The value is always kept up to date automatically.",
+								"type": "string"
+							},
+							"capacityTrackingEnabled": {
+								"default": true,
+								"description": "Show used vs remaining hours in statistics and page header. Boundaries are inferred from the earliest and latest events in each period.",
+								"title": "Enable capacity tracking",
+								"type": "boolean"
+							},
+							"categoryAssignmentPresets": {
+								"default": [],
+								"items": {
+									"additionalProperties": false,
+									"properties": {
+										"categories": {
+											"items": {
+												"type": "string"
+											},
+											"type": "array"
+										},
+										"eventName": {
+											"type": "string"
+										},
+										"id": {
+											"type": "string"
+										}
+									},
+									"required": ["id", "eventName", "categories"],
+									"type": "object"
+								},
+								"type": "array"
+							},
+							"categoryProp": {
+								"default": "Category",
+								"description": "Frontmatter property name for event categories (used for grouping in statistics)",
+								"type": "string"
+							},
+							"colorMode": {
+								"default": "1",
+								"description": "Controls how many color rule matches are applied to each event. Off: no coloring. 1: single color (default). 2-5: split the event width into equal segments, each colored by a successive matching rule.",
+								"enum": ["1", "2", "3", "4", "5", "off"],
+								"enumLabels": {
+									"1": "Color events",
+									"2": "Color events with two colors",
+									"3": "Color events with three colors",
+									"4": "Color events with four colors",
+									"5": "Color events with five colors",
+									"off": "Don't color events"
+								},
+								"type": "string"
+							},
+							"colorRules": {
+								"default": [],
+								"items": {
+									"additionalProperties": false,
+									"properties": {
+										"color": {
+											"type": "string",
+											"widget": "color"
+										},
+										"enabled": {
+											"default": true,
+											"type": "boolean"
+										},
+										"expression": {
+											"type": "string"
+										},
+										"id": {
+											"type": "string"
+										}
+									},
+									"required": ["id", "expression", "color", "enabled"],
+									"type": "object"
+								},
+								"type": "array"
+							},
+							"connectionArrowSize": {
+								"default": 12,
+								"description": "Size of connection arrowheads in pixels",
+								"maximum": 24,
+								"minimum": 4,
+								"title": "Arrowhead size",
+								"type": "integer"
+							},
+							"connectionColor": {
+								"default": "#7c3aed",
+								"description": "Color of the prerequisite connection arrows on the Calendar tab",
+								"title": "Arrow color",
+								"type": "string",
+								"widget": "color"
+							},
+							"connectionStrokeWidth": {
+								"default": 3,
+								"description": "Thickness of connection arrow lines in pixels",
+								"maximum": 10,
+								"minimum": 1,
+								"title": "Line thickness",
+								"type": "integer"
+							},
+							"contextMenuItems": {
+								"default": [
+									"enlarge",
+									"preview",
+									"goToSource",
+									"editSourceEvent",
+									"viewEventGroups",
+									"viewNameSeries",
+									"viewCategorySeries",
+									"viewRecurringSeries",
+									"editEvent",
+									"assignCategories",
+									"assignPrerequisites",
+									"duplicateEvent",
+									"moveBy",
+									"moveToCalendar",
+									"markDone",
+									"moveToNextWeek",
+									"cloneToNextWeek",
+									"moveToPreviousWeek",
+									"cloneToPreviousWeek",
+									"fillStartTimeNow",
+									"fillEndTimeNow",
+									"fillStartTimePrevious",
+									"fillEndTimeNext",
+									"deleteEvent",
+									"skipEvent",
+									"openFile",
+									"openFileNewWindow",
+									"toggleRecurring",
+									"triggerStopwatch",
+									"makeVirtual",
+									"makeReal",
+									"makeUntracked"
+								],
+								"items": {
+									"enum": [
+										"enlarge",
+										"preview",
+										"goToSource",
+										"editSourceEvent",
+										"viewEventGroups",
+										"viewNameSeries",
+										"viewCategorySeries",
+										"viewRecurringSeries",
+										"editEvent",
+										"assignCategories",
+										"assignPrerequisites",
+										"duplicateEvent",
+										"moveBy",
+										"moveToCalendar",
+										"markDone",
+										"moveToNextWeek",
+										"cloneToNextWeek",
+										"moveToPreviousWeek",
+										"cloneToPreviousWeek",
+										"fillStartTimeNow",
+										"fillEndTimeNow",
+										"fillStartTimePrevious",
+										"fillEndTimeNext",
+										"deleteEvent",
+										"skipEvent",
+										"openFile",
+										"openFileNewWindow",
+										"toggleRecurring",
+										"triggerStopwatch",
+										"duplicateRemainingWeekDays",
+										"makeVirtual",
+										"makeReal",
+										"makeUntracked"
+									],
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"contextMenuState": {
+								"additionalProperties": false,
+								"properties": {
+									"colorOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"iconOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"renames": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"sectionOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"showSettingsButton": {
+										"type": "boolean"
+									},
+									"visibleItemIds": {
+										"items": {
+											"type": "string"
+										},
+										"type": "array"
+									}
+								},
+								"type": "object"
+							},
+							"customDoneProperty": {
+								"default": "",
+								"description": "Overrides the status property for manual mark-as-done actions. Format: \"propertyName value\" (e.g., \"archived true\"). When set, this is used instead of the status property. Leave empty to use the default behavior.",
+								"placeholder": "archived true",
+								"type": "string"
+							},
+							"customUndoneProperty": {
+								"default": "",
+								"description": "Overrides what happens when marking as undone. Format: \"propertyName value\" (e.g., \"archived false\"). Requires \"Custom done property\" to be configured. If empty, the custom done property key is removed on undone instead.",
+								"placeholder": "archived false",
+								"type": "string"
+							},
+							"dashboardGridState": {
+								"additionalProperties": {},
+								"propertyNames": {
+									"type": "string"
+								},
+								"type": "object"
+							},
+							"dateProp": {
+								"default": "Date",
+								"description": "Frontmatter property name for all-day events (date only, no time)",
+								"type": "string"
+							},
+							"dayCellColoring": {
+								"default": "off",
+								"description": "Controls the background coloring of day cells. Off: default calendar appearance. Uniform: applies a single gradient color to all day cells. Month boundary: alternates two gradient colors by even/odd month, making month transitions clearly visible.",
+								"enum": ["off", "uniform", "boundary"],
+								"enumLabels": {
+									"boundary": "Month boundary",
+									"off": "Off",
+									"uniform": "Uniform"
+								},
+								"title": "Day cell coloring",
+								"type": "string"
+							},
+							"daysBeforeProp": {
+								"default": "Days Before",
+								"description": "Frontmatter property name for per-event notification days (all-day events)",
+								"type": "string"
+							},
+							"defaultAggregationMode": {
+								"default": "name",
+								"description": "Default grouping mode for statistics modals: group by event name or by category",
+								"enum": ["name", "category"],
+								"enumLabels": {
+									"category": "Category",
+									"name": "Event Name"
+								},
+								"title": "Default grouping mode",
+								"type": "string"
+							},
+							"defaultDaysBefore": {
+								"description": "Default notification time for all-day events. Leave empty for no default. 0 = notify on the day of the event, 1 = notify 1 day before",
+								"maximum": 9007199254740991,
+								"minimum": 0,
+								"placeholder": "e.g., 1 (leave empty for no default)",
+								"title": "All-day events (days before)",
+								"type": "integer"
+							},
+							"defaultDurationMinutes": {
+								"default": 60,
+								"description": "Default event duration when only start time is provided",
+								"exclusiveMinimum": 0,
+								"maximum": 9007199254740991,
+								"title": "Default duration (minutes)",
+								"type": "integer"
+							},
+							"defaultMinutesBefore": {
+								"description": "Default notification time for timed events. Leave empty for no default. 0 = notify when event starts, 15 = notify 15 minutes before",
+								"maximum": 9007199254740991,
+								"minimum": 0,
+								"placeholder": "e.g., 15 (leave empty for no default)",
+								"title": "Timed events (minutes before)",
+								"type": "integer"
+							},
+							"defaultMobileView": {
+								"default": "timeGridWeek",
+								"description": "The calendar view to show when opening on mobile devices (screen width ≤ 768px)",
+								"enum": ["multiMonthYear", "dayGridMonth", "timeGridWeek", "timeGridDay", "listWeek"],
+								"enumLabels": {
+									"dayGridMonth": "Month",
+									"listWeek": "Week (List)",
+									"multiMonthYear": "Year",
+									"timeGridDay": "Day (Time)",
+									"timeGridWeek": "Week (Time)"
+								},
+								"title": "Default mobile view",
+								"type": "string"
+							},
+							"defaultNodeColor": {
+								"default": "hsl(270, 70%, 50%)",
+								"description": "Default color for events when no color rules match",
+								"title": "Default event color",
+								"type": "string",
+								"widget": "color"
+							},
+							"defaultPresetId": {
+								"type": "string"
+							},
+							"defaultView": {
+								"default": "timeGridWeek",
+								"description": "The calendar view to show when opening",
+								"enum": ["multiMonthYear", "dayGridMonth", "timeGridWeek", "timeGridDay", "listWeek"],
+								"enumLabels": {
+									"dayGridMonth": "Month",
+									"listWeek": "Week (List)",
+									"multiMonthYear": "Year",
+									"timeGridDay": "Day (Time)",
+									"timeGridWeek": "Week (Time)"
+								},
+								"title": "Default view",
+								"type": "string"
+							},
+							"density": {
+								"default": "comfortable",
+								"description": "How compact to make the calendar display",
+								"enum": ["comfortable", "compact"],
+								"enumLabels": {
+									"comfortable": "Comfortable",
+									"compact": "Compact"
+								},
+								"title": "Display density",
+								"type": "string"
+							},
+							"desktopMaxEventsPerDay": {
+								"default": 0,
+								"description": "Maximum events to show per day on desktop before showing '+more' link (0 = unlimited)",
+								"maximum": 20,
+								"minimum": 0,
+								"title": "Desktop events per day",
+								"type": "integer"
+							},
+							"directory": {
+								"description": "Folder to scan for events and create new events in",
+								"placeholder": "e.g., tasks, calendar, events"
+							},
+							"doneValue": {
+								"default": "Done",
+								"description": "Value to set in the status property when marking an event as done",
+								"type": "string"
+							},
+							"dragEdgeScrollDelayMs": {
+								"default": 600,
+								"description": "Delay in milliseconds before scrolling when dragging events near the edge",
+								"maximum": 2000,
+								"minimum": 50,
+								"type": "integer"
+							},
+							"enabled": {
+								"default": true,
+								"type": "boolean"
+							},
+							"enableEventPreview": {
+								"default": true,
+								"description": "Show preview of event notes when hovering over events",
+								"type": "boolean"
+							},
+							"enableKeyboardNavigation": {
+								"default": true,
+								"description": "Use left/right arrow keys to navigate between intervals. Automatically disabled when search or expression filter inputs are focused.",
+								"type": "boolean"
+							},
+							"enableNameSeriesTracking": {
+								"default": true,
+								"description": "Track name-based event series (groups events sharing the same title). Used for name series propagation and series views. Disable to reduce memory usage in large vaults.",
+								"type": "boolean"
+							},
+							"enableNotifications": {
+								"default": true,
+								"description": "Enable event notifications. When disabled, all notification settings below are ignored.",
+								"type": "boolean"
+							},
+							"endProp": {
+								"default": "End Date",
+								"description": "Frontmatter property name for event end date/time (for timed events)",
+								"type": "string"
+							},
+							"eventMaxStack": {
+								"default": 4,
+								"description": "Maximum number of events to stack vertically before showing '+ more' link",
+								"maximum": 10,
+								"minimum": 1,
+								"title": "Event stack limit",
+								"type": "integer"
+							},
+							"eventOverlap": {
+								"default": true,
+								"description": "Allow events with overlapping times to render on top of each other. When disabled, overlapping events render side-by-side in columns (like Google Calendar). Applies to all views.",
+								"title": "Allow event overlap",
+								"type": "boolean"
+							},
+							"eventPresets": {
+								"default": [],
+								"items": {
+									"additionalProperties": false,
+									"properties": {
+										"allDay": {
+											"type": "boolean"
+										},
+										"breakMinutes": {
+											"minimum": 0,
+											"type": "number"
+										},
+										"categories": {
+											"type": "string"
+										},
+										"createdAt": {
+											"exclusiveMinimum": 0,
+											"maximum": 9007199254740991,
+											"type": "integer"
+										},
+										"customProperties": {
+											"additionalProperties": {},
+											"propertyNames": {
+												"type": "string"
+											},
+											"type": "object"
+										},
+										"futureInstancesCount": {
+											"exclusiveMinimum": 0,
+											"maximum": 9007199254740991,
+											"type": "integer"
+										},
+										"icon": {
+											"type": "string"
+										},
+										"id": {
+											"type": "string"
+										},
+										"location": {
+											"type": "string"
+										},
+										"markAsDone": {
+											"type": "boolean"
+										},
+										"name": {
+											"type": "string"
+										},
+										"notifyBefore": {
+											"maximum": 9007199254740991,
+											"minimum": 0,
+											"type": "integer"
+										},
+										"participants": {
+											"type": "string"
+										},
+										"rruleSpec": {
+											"type": "string"
+										},
+										"rruleType": {
+											"type": "string"
+										},
+										"skip": {
+											"type": "boolean"
+										},
+										"title": {
+											"type": "string"
+										},
+										"updatedAt": {
+											"exclusiveMinimum": 0,
+											"maximum": 9007199254740991,
+											"type": "integer"
+										}
+									},
+									"required": ["id", "name", "createdAt"],
+									"type": "object"
+								},
+								"type": "array"
+							},
+							"eventTextColor": {
+								"default": "#ffffff",
+								"description": "Text color for events with dark backgrounds (default: white)",
+								"title": "Default event text color",
+								"type": "string",
+								"widget": "color"
+							},
+							"eventTextColorAlt": {
+								"default": "#000000",
+								"description": "Text color used when event background is light or white (e.g., pastel colors) for better contrast",
+								"title": "Alternative event text color",
+								"type": "string",
+								"widget": "color"
+							},
+							"excludedCategorySeriesProps": {
+								"default": "",
+								"description": "Comma-separated list of frontmatter property names to exclude when propagating changes across category series members.",
+								"placeholder": "tags, internal_id",
+								"title": "Excluded properties",
+								"type": "string"
+							},
+							"excludedNameSeriesProps": {
+								"default": "",
+								"description": "Comma-separated list of frontmatter property names to exclude when propagating changes across name series members.",
+								"placeholder": "tags, internal_id",
+								"title": "Excluded properties",
+								"type": "string"
+							},
+							"excludedRecurringInstanceProps": {
+								"default": "",
+								"description": "Comma-separated list of frontmatter property names to exclude when propagating changes from recurring event sources to physical instances.",
+								"placeholder": "tags, internal_id",
+								"title": "Excluded properties",
+								"type": "string"
+							},
+							"exportFolder": {
+								"default": "Prisma-Exports",
+								"description": "Folder where exported .ics files are saved",
+								"type": "string"
+							},
+							"fileConcurrencyLimit": {
+								"default": 10,
+								"description": "Maximum number of files to modify in parallel. Lower values reduce the risk of Obsidian freezing on large batch operations. Applies to recurring event propagation, name/category series propagation, and file deletions.",
+								"maximum": 50,
+								"minimum": 1,
+								"title": "File operation concurrency limit",
+								"type": "integer"
+							},
+							"filterExpressions": {
+								"default": [],
+								"description": "JavaScript expressions to filter events (one per line). Changes apply when you click outside or press Ctrl/Cmd+Enter. Note: Expect a brief lag when applying changes as it triggers full re-indexing.",
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"filterPresets": {
+								"default": [],
+								"items": {
+									"additionalProperties": false,
+									"properties": {
+										"expression": {
+											"type": "string"
+										},
+										"name": {
+											"type": "string"
+										}
+									},
+									"required": ["name", "expression"],
+									"type": "object"
+								},
+								"type": "array"
+							},
+							"firstDayOfWeek": {
+								"default": 0,
+								"maximum": 6,
+								"minimum": 0,
+								"type": "integer"
+							},
+							"frontmatterDisplayProperties": {
+								"default": ["Category"],
+								"description": "Comma-separated list of frontmatter property names to display in timed events (events with start and end times). Properties are shown in weekly and daily views, but hidden in monthly view to save space.",
+								"items": {
+									"type": "string"
+								},
+								"title": "Display properties (timed events)",
+								"type": "array"
+							},
+							"frontmatterDisplayPropertiesAllDay": {
+								"default": ["Category"],
+								"description": "Comma-separated list of frontmatter property names to display in all-day events. Properties are shown in weekly and daily views, but hidden in monthly view to save space.",
+								"items": {
+									"type": "string"
+								},
+								"title": "Display properties (all-day events)",
+								"type": "array"
+							},
+							"frontmatterDisplayPropertiesHeatmap": {
+								"default": ["Category"],
+								"description": "Comma-separated list of frontmatter property names to display in the heatmap day detail panel when inspecting events. Properties appear below each event title with links rendered interactively.",
+								"items": {
+									"type": "string"
+								},
+								"title": "Display properties (heatmap)",
+								"type": "array"
+							},
+							"frontmatterDisplayPropertiesUntracked": {
+								"default": ["Category"],
+								"description": "Comma-separated list of frontmatter property names to display in untracked events (events without dates). These appear in the untracked events sidebar.",
+								"items": {
+									"type": "string"
+								},
+								"title": "Display properties (untracked events)",
+								"type": "array"
+							},
+							"futureInstancesCount": {
+								"default": 2,
+								"description": "Maximum number of future recurring event instances to generate (1-52)",
+								"maximum": 52,
+								"minimum": 1,
+								"type": "integer"
+							},
+							"futureInstancesCountProp": {
+								"default": "Future Instances Count",
+								"description": "Frontmatter property name for per-event override of future instances count (defaults to global setting if not specified)",
+								"type": "string"
+							},
+							"ganttContextMenuState": {
+								"additionalProperties": false,
+								"properties": {
+									"colorOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"iconOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"renames": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"sectionOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"showSettingsButton": {
+										"type": "boolean"
+									},
+									"visibleItemIds": {
+										"items": {
+											"type": "string"
+										},
+										"type": "array"
+									}
+								},
+								"type": "object"
+							},
+							"generatePastEventsProp": {
+								"default": "Generate Past Events",
+								"description": "Frontmatter property name for generating past recurring instances from source event start date (set to true to enable)",
+								"type": "string"
+							},
+							"hideWeekends": {
+								"default": false,
+								"description": "Hide Saturday and Sunday in calendar views",
+								"type": "boolean"
+							},
+							"highlightUpcomingEvent": {
+								"default": true,
+								"description": "Subtly highlight events that are currently active (if any), or the next upcoming event. Only visible when the current time is within the visible date range.",
+								"type": "boolean"
+							},
+							"holidays": {
+								"additionalProperties": false,
+								"default": {
+									"country": "US",
+									"enabled": false,
+									"types": ["public"]
+								},
+								"properties": {
+									"country": {
+										"default": "US",
+										"type": "string"
+									},
+									"enabled": {
+										"default": false,
+										"type": "boolean"
+									},
+									"region": {
+										"type": "string"
+									},
+									"state": {
+										"type": "string"
+									},
+									"timezone": {
+										"type": "string"
+									},
+									"types": {
+										"default": ["public"],
+										"items": {
+											"enum": ["public", "bank", "school", "observance", "optional"],
+											"type": "string"
+										},
+										"type": "array"
+									}
+								},
+								"required": ["enabled", "country", "types"],
+								"type": "object"
+							},
+							"hourEnd": {
+								"default": 23,
+								"description": "Last hour to show in time grid views",
+								"maximum": 24,
+								"minimum": 1,
+								"title": "Day end hour",
+								"type": "integer"
+							},
+							"hourStart": {
+								"default": 7,
+								"description": "First hour to show in time grid views",
+								"maximum": 23,
+								"minimum": 0,
+								"title": "Day start hour",
+								"type": "integer"
+							},
+							"iconProp": {
+								"default": "Icon",
+								"description": "Frontmatter property name for event icon override (emoji or text, takes precedence over integration and recurring icons)",
+								"type": "string"
+							},
+							"icsSubscriptionProp": {
+								"default": "ICSSubscription",
+								"description": "Frontmatter property name for ICS subscription metadata on synced events",
+								"title": "ICS subscription property",
+								"type": "string"
+							},
+							"id": {
+								"type": "string"
+							},
+							"indexSubdirectories": {
+								"default": true,
+								"description": "Index event files in all subdirectories of the configured folder, not just the immediate children. When enabled, events stored at any depth (e.g., courses/CS101/assignments/HW1.md) appear in the planning system. When disabled, only files directly inside the configured folder are indexed.",
+								"type": "boolean"
+							},
+							"instanceDateProp": {
+								"default": "Recurring Instance Date",
+								"description": "Frontmatter property name for the date of a physical recurring event instance",
+								"title": "Recurring instance date property",
+								"type": "string"
+							},
+							"locale": {
+								"default": "en",
+								"description": "Language and date format for headings, day names, month names, toolbar labels, and date displays",
+								"enum": [
+									"en",
+									"fr",
+									"de",
+									"es",
+									"it",
+									"pt-br",
+									"nl",
+									"ja",
+									"ko",
+									"zh-cn",
+									"zh-tw",
+									"ru",
+									"ar",
+									"pl",
+									"tr",
+									"sv",
+									"da",
+									"fi",
+									"nb"
+								],
+								"enumLabels": {
+									"ar": "Arabic (العربية)",
+									"da": "Danish (Dansk)",
+									"de": "German (Deutsch)",
+									"en": "English",
+									"es": "Spanish (Español)",
+									"fi": "Finnish (Suomi)",
+									"fr": "French (Français)",
+									"it": "Italian (Italiano)",
+									"ja": "Japanese (日本語)",
+									"ko": "Korean (한국어)",
+									"nb": "Norwegian (Norsk bokmål)",
+									"nl": "Dutch (Nederlands)",
+									"pl": "Polish (Polski)",
+									"pt-br": "Portuguese - Brazil (Português)",
+									"ru": "Russian (Русский)",
+									"sv": "Swedish (Svenska)",
+									"tr": "Turkish (Türkçe)",
+									"zh-cn": "Chinese - Simplified (简体中文)",
+									"zh-tw": "Chinese - Traditional (繁體中文)"
+								},
+								"type": "string"
+							},
+							"locationProp": {
+								"default": "Location",
+								"description": "Frontmatter property name for event location (single string)",
+								"type": "string"
+							},
+							"markPastInstancesAsDone": {
+								"default": false,
+								"description": "Automatically mark past events as done during startup by updating their status property. Configure the status property and done value in the Properties section.",
+								"title": "Mark past events as done",
+								"type": "boolean"
+							},
+							"minutesBeforeProp": {
+								"default": "Minutes Before",
+								"description": "Frontmatter property name for per-event notification times (timed events)",
+								"type": "string"
+							},
+							"mobileMaxEventsPerDay": {
+								"default": 4,
+								"description": "Maximum events to show per day on mobile before showing '+more' link (0 = unlimited)",
+								"maximum": 20,
+								"minimum": 0,
+								"title": "Mobile events per day",
+								"type": "integer"
+							},
+							"mobileToolbarButtons": {
+								"default": [
+									"prevNext",
+									"today",
+									"now",
+									"createEvent",
+									"zoomLevel",
+									"filterPresets",
+									"searchInput",
+									"expressionFilter",
+									"untrackedEvents"
+								],
+								"items": {
+									"enum": [
+										"prevNext",
+										"today",
+										"now",
+										"createEvent",
+										"zoomLevel",
+										"filterPresets",
+										"searchInput",
+										"expressionFilter",
+										"untrackedEvents"
+									],
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"monthEvenColor": {
+								"default": "#131313",
+								"type": "string",
+								"widget": "color"
+							},
+							"monthOddColor": {
+								"default": "#6b9080",
+								"type": "string",
+								"widget": "color"
+							},
+							"name": {
+								"default": "Calendar",
+								"type": "string"
+							},
+							"notDoneValue": {
+								"default": "Not Done",
+								"description": "Value to set in the status property when marking an event as not done",
+								"type": "string"
+							},
+							"notificationSound": {
+								"default": false,
+								"description": "Play a system sound when notifications are shown",
+								"title": "Play notification sound",
+								"type": "boolean"
+							},
+							"nowIndicator": {
+								"default": true,
+								"description": "Display a line showing the current time in weekly and daily views",
+								"title": "Show current time indicator",
+								"type": "boolean"
+							},
+							"pageHeaderState": {
+								"additionalProperties": false,
+								"properties": {
+									"colorOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"iconOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"renames": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"showSettingsButton": {
+										"type": "boolean"
+									},
+									"visibleActionIds": {
+										"items": {
+											"type": "string"
+										},
+										"type": "array"
+									}
+								},
+								"type": "object"
+							},
+							"participantsProp": {
+								"default": "Participants",
+								"description": "Frontmatter property name for event participants (array of strings, supports comma-separated in YAML)",
+								"type": "string"
+							},
+							"pastEventContrast": {
+								"default": 70,
+								"description": "Visual contrast of past events (0% = invisible, 100% = normal)",
+								"maximum": 100,
+								"minimum": 0,
+								"type": "integer"
+							},
+							"physicalRecurringMarker": {
+								"default": "🔄",
+								"description": "Symbol/emoji to display on physical recurring instance events in the top-right corner.",
+								"type": "string"
+							},
+							"prerequisiteProp": {
+								"default": "Prerequisite",
+								"description": "Frontmatter property name for event prerequisites (wiki-links to other events that must complete before this event)",
+								"type": "string"
+							},
+							"propagateFrontmatterToCategorySeries": {
+								"default": false,
+								"description": "Automatically propagate frontmatter changes across events that share the same category. When you update custom properties on one event, all other events with the same category are updated immediately.",
+								"type": "boolean"
+							},
+							"propagateFrontmatterToInstances": {
+								"default": false,
+								"description": "Automatically propagate frontmatter changes from recurring event sources to all physical instances. When you update custom properties (like category, priority, status) in a source event, all existing instances are updated immediately.",
+								"type": "boolean"
+							},
+							"propagateFrontmatterToNameSeries": {
+								"default": false,
+								"description": "Automatically propagate frontmatter changes across events that share the same title. When you update custom properties on one event, all other events with the same name are updated immediately.",
+								"type": "boolean"
+							},
+							"rruleIdProp": {
+								"default": "RRuleID",
+								"description": "Frontmatter property name for recurring event unique identifier",
+								"title": "RRule ID property",
+								"type": "string"
+							},
+							"rruleProp": {
+								"default": "RRule",
+								"description": "Frontmatter property name for recurring event type (daily, weekly, monthly, etc.)",
+								"title": "RRule property",
+								"type": "string"
+							},
+							"rruleSpecProp": {
+								"default": "RRuleSpec",
+								"description": "Frontmatter property name for recurring event specification (weekdays for weekly/bi-weekly events)",
+								"title": "RRule specification property",
+								"type": "string"
+							},
+							"rruleUntilProp": {
+								"default": "RRuleUntil",
+								"description": "Frontmatter property name for recurring event end date (inclusive last occurrence day)",
+								"title": "RRule until property",
+								"type": "string"
+							},
+							"showColorDots": {
+								"default": true,
+								"description": "Show color indicator dots at the top of each day in month and year views",
+								"type": "boolean"
+							},
+							"showDecimalHours": {
+								"default": false,
+								"description": "Display durations as decimal hours (e.g., 2.5h) instead of formatted (e.g., 2h 30m) in statistics modals. Can be temporarily toggled by clicking the duration in the statistics header.",
+								"type": "boolean"
+							},
+							"showDurationField": {
+								"default": true,
+								"description": "Display a duration in minutes field in the event creation/edit modal for quick editing. Changes to duration automatically update the end date, and vice versa.",
+								"type": "boolean"
+							},
+							"showDurationInTitle": {
+								"default": true,
+								"description": "Display event duration (e.g., 2h 30m) in parentheses after the event title for timed events",
+								"title": "Show duration in event title",
+								"type": "boolean"
+							},
+							"showEventColorDots": {
+								"default": true,
+								"description": "Show color dots in the bottom-right corner of events for matched color rules that were not applied as the event background. Displays overflow colors that exceed the color mode limit, or all matched colors when coloring is disabled.",
+								"title": "Show overflow color dots",
+								"type": "boolean"
+							},
+							"showPhysicalRecurringMarker": {
+								"default": true,
+								"description": "Display a marker indicator on physical recurring instance events (actual instances created from source).",
+								"type": "boolean"
+							},
+							"showRibbonIcon": {
+								"default": true,
+								"description": "Display an icon in the left sidebar to quickly open this planning system",
+								"type": "boolean"
+							},
+							"showSourceRecurringMarker": {
+								"default": true,
+								"description": "Display a marker indicator on source recurring events (the original event that generates instances).",
+								"type": "boolean"
+							},
+							"showStopwatch": {
+								"default": true,
+								"description": "Display a stopwatch in the event creation/edit modal for precise time tracking. Start fills the start date, stop fills the end date, and break time is tracked automatically.",
+								"title": "Show time tracker in event modal",
+								"type": "boolean"
+							},
+							"skipNewlyCreatedNotifications": {
+								"default": true,
+								"description": "Automatically mark events as notified if they were created within the last minute. Prevents notifications for events created via Create Event, Stopwatch, or other creation methods.",
+								"title": "Skip newly created events",
+								"type": "boolean"
+							},
+							"skipProp": {
+								"default": "Skip",
+								"description": "Frontmatter property name to hide events from the planning system (when set to true)",
+								"type": "string"
+							},
+							"skipUnderscoreProperties": {
+								"default": true,
+								"description": "Hide frontmatter properties that start with underscore (e.g., _ZettelID) in event previews and edit modals",
+								"type": "boolean"
+							},
+							"slotDurationMinutes": {
+								"default": 30,
+								"description": "Duration of time slots in the calendar grid (1-60 minutes)",
+								"maximum": 60,
+								"minimum": 1,
+								"type": "integer"
+							},
+							"slotEventOverlap": {
+								"default": true,
+								"description": "In week/day time-grid views, allow events that share the exact same time-slot boundaries to render on top of each other. When disabled, events with identical start/end times are placed in separate columns within the slot. Has no effect when event overlap is disabled.",
+								"title": "Allow slot event overlap",
+								"type": "boolean"
+							},
+							"snapDurationMinutes": {
+								"default": 30,
+								"description": "Snap interval when dragging or resizing events (1-60 minutes)",
+								"maximum": 60,
+								"minimum": 1,
+								"type": "integer"
+							},
+							"snoozeMinutes": {
+								"default": 15,
+								"description": "How many minutes to snooze a notification when pressing the Snooze button. The notification will be triggered again after this duration.",
+								"exclusiveMinimum": 0,
+								"maximum": 9007199254740991,
+								"title": "Snooze duration (minutes)",
+								"type": "integer"
+							},
+							"sortDateProp": {
+								"default": "Sort Date",
+								"description": "Frontmatter property to write the normalized datetime to. This is a dedicated sorting property, separate from the Date property used by all-day events.",
+								"type": "string"
+							},
+							"sortingStrategy": {
+								"default": "none",
+								"description": "Write a normalized datetime to a dedicated sort property so external tools (Bases, Dataview) can sort all event types by a single field. Timed events use the full datetime. All-day events get T00:00:00 appended for consistent cross-type sorting. The value is written to the sort date property configured below.",
+								"enum": ["none", "startDate", "endDate", "allDayOnly", "allStartDate", "allEndDate"],
+								"enumLabels": {
+									"allDayOnly": "All-day events only",
+									"allEndDate": "All events — end datetime",
+									"allStartDate": "All events — start datetime (Recommended)",
+									"endDate": "Timed events only — end datetime",
+									"none": "None",
+									"startDate": "Timed events only — start datetime"
+								},
+								"title": "Sorting normalization strategy",
+								"type": "string"
+							},
+							"sourceProp": {
+								"default": "Source",
+								"description": "Frontmatter property name for linking recurring event instances to their source event file",
+								"type": "string"
+							},
+							"sourceRecurringMarker": {
+								"default": "⦿",
+								"description": "Symbol/emoji to display on source recurring events in the top-right corner.",
+								"type": "string"
+							},
+							"startProp": {
+								"default": "Start Date",
+								"description": "Frontmatter property name for event start date/time",
+								"type": "string"
+							},
+							"statusProperty": {
+								"default": "Status",
+								"description": "Frontmatter property name for event status (used when automatically marking past events as done)",
+								"type": "string"
+							},
+							"stickyAllDayEvents": {
+								"default": true,
+								"description": "Keep all-day event section visible at the top when scrolling down in weekly and daily views",
+								"type": "boolean"
+							},
+							"stickyDayHeaders": {
+								"default": true,
+								"description": "Keep day/date headers visible at the top when scrolling down in weekly and daily views",
+								"type": "boolean"
+							},
+							"templatePath": {
+								"description": "Path to Templater template file for new events (optional, requires Templater plugin)",
+								"placeholder": "e.g., Templates/event-template.md",
+								"type": "string"
+							},
+							"thickerHourLines": {
+								"default": true,
+								"description": "Make full-hour lines (12:00, 13:00, etc.) thicker in day and week views for better visual contrast",
+								"type": "boolean"
+							},
+							"titleAutocomplete": {
+								"default": true,
+								"description": "Show inline type-ahead suggestions when typing event titles in the create/edit modal. Suggests categories, event presets, and frequently used event names.",
+								"type": "boolean"
+							},
+							"titleProp": {
+								"description": "Frontmatter property name for event title (optional, defaults to file name)",
+								"placeholder": "Title",
+								"type": "string"
+							},
+							"toolbarButtons": {
+								"default": [
+									"prevNext",
+									"today",
+									"now",
+									"createEvent",
+									"zoomLevel",
+									"filterPresets",
+									"searchInput",
+									"expressionFilter",
+									"untrackedEvents"
+								],
+								"items": {
+									"enum": [
+										"prevNext",
+										"today",
+										"now",
+										"createEvent",
+										"zoomLevel",
+										"filterPresets",
+										"searchInput",
+										"expressionFilter",
+										"untrackedEvents"
+									],
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"untrackedFilterExpressions": {
+								"default": [],
+								"description": "JavaScript expressions to filter untracked events (one per line). Changes apply when you click outside or press Ctrl/Cmd+Enter.",
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"virtualEventsFileName": {
+								"default": "Virtual Events",
+								"description": "File name for the virtual events storage file (without .md extension)",
+								"type": "string"
+							},
+							"zettelIdProp": {
+								"description": "Frontmatter property name for auto-generated ZettelID (optional, generates timestamp-based ID on creation/cloning)",
+								"placeholder": "ZettelID",
+								"title": "ZettelID property",
+								"type": "string"
+							},
+							"zoomLevels": {
+								"default": [1, 2, 3, 5, 10, 15, 20, 30, 45, 60],
+								"description": "Available zoom levels for Ctrl+scroll zooming. Enter comma-separated values (1-60 minutes each)",
+								"items": {
+									"maximum": 60,
+									"minimum": 1,
+									"type": "integer"
+								},
+								"placeholder": "5, 10, 15, 30, 60",
+								"title": "Zoom levels (minutes)",
+								"type": "array"
+							}
+						},
+						"required": [
+							"directory",
+							"defaultDurationMinutes",
+							"showDurationField",
+							"showStopwatch",
+							"showRibbonIcon",
+							"locale",
+							"markPastInstancesAsDone",
+							"virtualEventsFileName",
+							"eventPresets",
+							"exportFolder",
+							"enableKeyboardNavigation",
+							"autoAssignZettelId",
+							"indexSubdirectories",
+							"startProp",
+							"endProp",
+							"dateProp",
+							"allDayProp",
+							"sortingStrategy",
+							"sortDateProp",
+							"calendarTitleProp",
+							"skipProp",
+							"rruleProp",
+							"rruleSpecProp",
+							"rruleUntilProp",
+							"rruleIdProp",
+							"sourceProp",
+							"instanceDateProp",
+							"frontmatterDisplayProperties",
+							"frontmatterDisplayPropertiesAllDay",
+							"frontmatterDisplayPropertiesUntracked",
+							"frontmatterDisplayPropertiesHeatmap",
+							"statusProperty",
+							"doneValue",
+							"notDoneValue",
+							"customDoneProperty",
+							"customUndoneProperty",
+							"categoryProp",
+							"locationProp",
+							"participantsProp",
+							"breakProp",
+							"futureInstancesCountProp",
+							"generatePastEventsProp",
+							"caldavProp",
+							"icsSubscriptionProp",
+							"iconProp",
+							"prerequisiteProp",
+							"basesViewProperties",
+							"basesViewType",
+							"futureInstancesCount",
+							"propagateFrontmatterToInstances",
+							"askBeforePropagatingFrontmatter",
+							"excludedRecurringInstanceProps",
+							"enableNameSeriesTracking",
+							"propagateFrontmatterToNameSeries",
+							"askBeforePropagatingToNameSeries",
+							"excludedNameSeriesProps",
+							"propagateFrontmatterToCategorySeries",
+							"askBeforePropagatingToCategorySeries",
+							"excludedCategorySeriesProps",
+							"defaultView",
+							"defaultMobileView",
+							"hideWeekends",
+							"showDecimalHours",
+							"defaultAggregationMode",
+							"capacityTrackingEnabled",
+							"hourStart",
+							"hourEnd",
+							"firstDayOfWeek",
+							"slotDurationMinutes",
+							"snapDurationMinutes",
+							"zoomLevels",
+							"density",
+							"enableEventPreview",
+							"nowIndicator",
+							"highlightUpcomingEvent",
+							"thickerHourLines",
+							"pastEventContrast",
+							"eventOverlap",
+							"slotEventOverlap",
+							"eventMaxStack",
+							"desktopMaxEventsPerDay",
+							"mobileMaxEventsPerDay",
+							"showColorDots",
+							"skipUnderscoreProperties",
+							"filterPresets",
+							"dragEdgeScrollDelayMs",
+							"batchActionButtons",
+							"toolbarButtons",
+							"mobileToolbarButtons",
+							"stickyDayHeaders",
+							"stickyAllDayEvents",
+							"allDayEventHeight",
+							"autoAssignCategoryByName",
+							"autoAssignCategoryByIncludes",
+							"titleAutocomplete",
+							"categoryAssignmentPresets",
+							"contextMenuItems",
+							"showSourceRecurringMarker",
+							"showPhysicalRecurringMarker",
+							"sourceRecurringMarker",
+							"physicalRecurringMarker",
+							"showDurationInTitle",
+							"dayCellColoring",
+							"monthEvenColor",
+							"monthOddColor",
+							"eventTextColor",
+							"eventTextColorAlt",
+							"connectionColor",
+							"connectionStrokeWidth",
+							"connectionArrowSize",
+							"fileConcurrencyLimit",
+							"filterExpressions",
+							"untrackedFilterExpressions",
+							"colorMode",
+							"showEventColorDots",
+							"defaultNodeColor",
+							"colorRules",
+							"enableNotifications",
+							"notificationSound",
+							"snoozeMinutes",
+							"skipNewlyCreatedNotifications",
+							"minutesBeforeProp",
+							"daysBeforeProp",
+							"alreadyNotifiedProp",
+							"id",
+							"name",
+							"enabled",
+							"holidays"
+						],
+						"type": "object"
+					},
+					{
+						"type": "null"
+					}
+				]
+			},
+			"http": {
+				"method": "POST",
+				"path": "/get-settings"
+			}
+		},
+		"getStatistics": {
+			"description": "Aggregate statistics for the given date and interval. Returns null if the calendar can't be resolved or the date is invalid.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					},
+					"date": {
+						"type": "string"
+					},
+					"interval": {
+						"enum": ["day", "week", "month"],
+						"type": "string"
+					},
+					"mode": {
+						"enum": ["name", "category"],
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"anyOf": [
+					{
+						"additionalProperties": false,
+						"properties": {
+							"allDayEvents": {
+								"type": "number"
+							},
+							"doneEvents": {
+								"type": "number"
+							},
+							"entries": {
+								"items": {
+									"additionalProperties": false,
+									"properties": {
+										"count": {
+											"type": "number"
+										},
+										"duration": {
+											"type": "number"
+										},
+										"durationFormatted": {
+											"type": "string"
+										},
+										"isRecurring": {
+											"type": "boolean"
+										},
+										"name": {
+											"type": "string"
+										},
+										"percentage": {
+											"type": "string"
+										}
+									},
+									"required": ["name", "duration", "durationFormatted", "percentage", "count", "isRecurring"],
+									"type": "object"
+								},
+								"type": "array"
+							},
+							"interval": {
+								"enum": ["day", "week", "month"],
+								"type": "string"
+							},
+							"mode": {
+								"enum": ["name", "category"],
+								"type": "string"
+							},
+							"periodEnd": {
+								"type": "string"
+							},
+							"periodStart": {
+								"type": "string"
+							},
+							"skippedEvents": {
+								"type": "number"
+							},
+							"timedEvents": {
+								"type": "number"
+							},
+							"totalDuration": {
+								"type": "number"
+							},
+							"totalDurationFormatted": {
+								"type": "string"
+							},
+							"totalEvents": {
+								"type": "number"
+							},
+							"undoneEvents": {
+								"type": "number"
+							}
+						},
+						"required": [
+							"periodStart",
+							"periodEnd",
+							"interval",
+							"mode",
+							"totalDuration",
+							"totalDurationFormatted",
+							"totalEvents",
+							"timedEvents",
+							"allDayEvents",
+							"skippedEvents",
+							"doneEvents",
+							"undoneEvents",
+							"entries"
+						],
+						"type": "object"
+					},
+					{
+						"type": "null"
+					}
+				]
+			},
+			"http": {
+				"method": "POST",
+				"path": "/get-statistics"
+			}
+		},
+		"getUntrackedEvents": {
+			"description": "Return the subset of events that are untracked (no Start Date).",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"items": {
+					"additionalProperties": false,
+					"properties": {
+						"allDay": {
+							"type": "boolean"
+						},
+						"categories": {
+							"items": {
+								"type": "string"
+							},
+							"type": "array"
+						},
+						"color": {
+							"type": "string"
+						},
+						"end": {
+							"type": "string"
+						},
+						"filePath": {
+							"type": "string"
+						},
+						"icon": {
+							"type": "string"
+						},
+						"instanceDate": {
+							"type": "string"
+						},
+						"location": {
+							"type": "string"
+						},
+						"participants": {
+							"items": {
+								"type": "string"
+							},
+							"type": "array"
+						},
+						"rruleId": {
+							"type": "string"
+						},
+						"rruleType": {
+							"type": "string"
+						},
+						"skipped": {
+							"type": "boolean"
+						},
+						"start": {
+							"type": "string"
+						},
+						"status": {
+							"type": "string"
+						},
+						"title": {
+							"type": "string"
+						},
+						"type": {
+							"enum": ["timed", "allDay", "untracked"],
+							"type": "string"
+						},
+						"virtualKind": {
+							"type": "string"
+						}
+					},
+					"required": ["filePath", "title", "type", "allDay", "virtualKind", "skipped"],
+					"type": "object"
+				},
+				"type": "array"
+			},
+			"http": {
+				"method": "POST",
+				"path": "/get-untracked-events"
+			}
+		},
+		"isPro": {
+			"description": "Return true if the Pro license is currently active.",
+			"urlAccessible": false,
+			"input": null,
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "boolean"
+			},
+			"http": {
+				"method": "GET",
+				"path": "/is-pro"
+			}
+		},
+		"listCalendars": {
+			"description": "List all calendar bundles configured in the plugin.",
+			"urlAccessible": false,
+			"input": null,
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"items": {
+					"additionalProperties": false,
+					"properties": {
+						"calendarId": {
+							"type": "string"
+						},
+						"directory": {
+							"type": "string"
+						},
+						"enabled": {
+							"type": "boolean"
+						},
+						"eventCount": {
+							"type": "number"
+						},
+						"name": {
+							"type": "string"
+						},
+						"untrackedEventCount": {
+							"type": "number"
+						}
+					},
+					"required": ["calendarId", "name", "directory", "enabled", "eventCount", "untrackedEventCount"],
+					"type": "object"
+				},
+				"type": "array"
+			},
+			"http": {
+				"method": "GET",
+				"path": "/list-calendars"
+			}
+		},
+		"makeEventReal": {
+			"description": "Promote a virtual event instance to a real note. Returns true on success.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					},
+					"virtualEventId": {
+						"type": "string"
+					}
+				},
+				"required": ["virtualEventId"],
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "boolean"
+			},
+			"http": {
+				"method": "POST",
+				"path": "/make-event-real"
+			}
+		},
+		"makeEventVirtual": {
+			"description": "Convert a real event note to a virtual instance. Returns true on success.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					},
+					"filePath": {
+						"type": "string"
+					}
+				},
+				"required": ["filePath"],
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "boolean"
+			},
+			"http": {
+				"method": "POST",
+				"path": "/make-event-virtual"
+			}
+		},
+		"markAsDone": {
+			"description": "Stamp the event with completion frontmatter. Returns true on success.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					},
+					"filePath": {
+						"type": "string"
+					}
+				},
+				"required": ["filePath"],
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "boolean"
+			},
+			"http": {
+				"method": "POST",
+				"path": "/mark-as-done"
+			}
+		},
+		"markAsUndone": {
+			"description": "Clear completion frontmatter from the event. Returns true on success.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					},
+					"filePath": {
+						"type": "string"
+					}
+				},
+				"required": ["filePath"],
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "boolean"
+			},
+			"http": {
+				"method": "POST",
+				"path": "/mark-as-undone"
+			}
+		},
+		"moveEvent": {
+			"description": "Shift an event's start (and end if timed) by offsetMs milliseconds. Returns true on success.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					},
+					"filePath": {
+						"type": "string"
+					},
+					"offsetMs": {
+						"type": "number"
+					}
+				},
+				"required": ["filePath", "offsetMs"],
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "boolean"
+			},
+			"http": {
+				"method": "POST",
+				"path": "/move-event"
+			}
+		},
+		"moveEventToCalendar": {
+			"description": "Move an event note from its current calendar to targetCalendarId. Returns a result envelope with success/movedFilePath/error fields.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					},
+					"filePath": {
+						"type": "string"
+					},
+					"targetCalendarId": {
+						"type": "string"
+					}
+				},
+				"required": ["filePath", "targetCalendarId"],
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"error": {
+						"type": "string"
+					},
+					"movedFilePath": {
+						"type": "string"
+					},
+					"success": {
+						"type": "boolean"
+					}
+				},
+				"required": ["success"],
+				"type": "object"
+			},
+			"http": {
+				"method": "POST",
+				"path": "/move-event-to-calendar"
+			}
+		},
+		"navigateToDate": {
+			"description": "Navigate the calendar to a specific date and optional view. Returns true if a view changed.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					},
+					"date": {
+						"type": "string"
+					},
+					"view": {
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "boolean"
+			},
+			"http": {
+				"method": "POST",
+				"path": "/navigate-to-date"
+			}
+		},
+		"openCreateEventModal": {
+			"description": "Open the modal that creates a new tracked event. Fire-and-forget — does not wait for submission.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"autoStartStopwatch": {
+						"type": "boolean"
+					},
+					"calendarId": {
+						"type": "string"
+					},
+					"openCreatedInNewTab": {
+						"type": "boolean"
+					}
+				},
+				"type": "object"
+			},
+			"output": null,
+			"http": {
+				"method": "POST",
+				"path": "/open-create-event-modal"
+			}
+		},
+		"openEditActiveNoteModal": {
+			"description": "Open the edit modal for the currently active note's event.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
+			"output": null,
+			"http": {
+				"method": "POST",
+				"path": "/open-edit-active-note-modal"
+			}
+		},
+		"refreshCalendar": {
+			"description": "Force a refresh of the calendar view, re-reading events from disk.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
+			"output": null,
+			"http": {
+				"method": "POST",
+				"path": "/refresh-calendar"
+			}
+		},
+		"toggleSkip": {
+			"description": "Toggle the skipped state of the event. Returns true on success.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					},
+					"filePath": {
+						"type": "string"
+					}
+				},
+				"required": ["filePath"],
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "boolean"
+			},
+			"http": {
+				"method": "POST",
+				"path": "/toggle-skip"
+			}
+		},
+		"updateSettings": {
+			"description": "Apply a partial patch to the resolved calendar's settings. Returns true on success. Window-API only — URL transport cannot represent the nested settings object.",
+			"urlAccessible": true,
+			"input": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"additionalProperties": false,
+				"properties": {
+					"calendarId": {
+						"type": "string"
+					},
+					"settings": {
+						"additionalProperties": false,
+						"properties": {
+							"activeTab": {
+								"additionalProperties": false,
+								"properties": {
+									"colorOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"groupState": {
+										"additionalProperties": {
+											"additionalProperties": false,
+											"properties": {
+												"childColorOverrides": {
+													"additionalProperties": {
+														"type": "string"
+													},
+													"propertyNames": {
+														"type": "string"
+													},
+													"type": "object"
+												},
+												"childIconOverrides": {
+													"additionalProperties": {
+														"type": "string"
+													},
+													"propertyNames": {
+														"type": "string"
+													},
+													"type": "object"
+												},
+												"childRenames": {
+													"additionalProperties": {
+														"type": "string"
+													},
+													"propertyNames": {
+														"type": "string"
+													},
+													"type": "object"
+												},
+												"visibleChildIds": {
+													"items": {
+														"type": "string"
+													},
+													"type": "array"
+												}
+											},
+											"type": "object"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"iconOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"renames": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"showSettingsButton": {
+										"type": "boolean"
+									},
+									"visibleTabIds": {
+										"items": {
+											"type": "string"
+										},
+										"type": "array"
+									}
+								},
+								"type": "object"
+							},
+							"allDayEventHeight": {
+								"default": 75,
+								"description": "Maximum height in pixels for all-day events section before overflow",
+								"maximum": 500,
+								"minimum": 30,
+								"type": "integer"
+							},
+							"allDayProp": {
+								"default": "All Day",
+								"description": "Frontmatter property name for all-day flag",
+								"type": "string"
+							},
+							"alreadyNotifiedProp": {
+								"default": "Already Notified",
+								"description": "Frontmatter property name to mark events as already notified",
+								"type": "string"
+							},
+							"askBeforePropagatingFrontmatter": {
+								"default": false,
+								"description": "Show a confirmation modal before propagating frontmatter changes to instances. Allows you to review changes before applying them.",
+								"type": "boolean"
+							},
+							"askBeforePropagatingToCategorySeries": {
+								"default": false,
+								"description": "Show a confirmation modal before propagating frontmatter changes to category series members. Allows you to review changes before applying them.",
+								"type": "boolean"
+							},
+							"askBeforePropagatingToNameSeries": {
+								"default": false,
+								"description": "Show a confirmation modal before propagating frontmatter changes to name series members. Allows you to review changes before applying them.",
+								"type": "boolean"
+							},
+							"autoAssignCategoryByIncludes": {
+								"default": true,
+								"description": "Use substring matching (case-insensitive) for category auto-assignment and category assignment presets. When enabled, categories match if the event name contains the category name, and preset event names match if the event name contains the preset name. Example: 'Youtube Analysis' matches the 'Youtube' category and a preset with event name 'Youtube'.",
+								"title": "Substring matching for categories and presets",
+								"type": "boolean"
+							},
+							"autoAssignCategoryByName": {
+								"default": true,
+								"description": "Automatically assign a category when the event name (without ZettelID) matches a category name (case-insensitive). Example: creating an event named 'Health' will auto-assign the 'health' category.",
+								"title": "Auto-assign when name matches category",
+								"type": "boolean"
+							},
+							"autoAssignZettelId": {
+								"default": "disabled",
+								"description": "Automatically add a Zettel ID timestamp to filenames of events in the planning system directory that don't have one. Files are renamed from 'My Event.md' to 'My Event-20260216120000.md'.",
+								"enum": ["disabled", "calendarEvents", "allEvents"],
+								"enumLabels": {
+									"allEvents": "All events",
+									"calendarEvents": "Calendar events only",
+									"disabled": "Disabled"
+								},
+								"title": "Auto-assign Zettel ID",
+								"type": "string"
+							},
+							"basesViewProperties": {
+								"default": ["Category"],
+								"description": "Comma-separated list of frontmatter properties to include as columns in Bases views. These properties will appear after the default columns (file name, date, status).",
+								"items": {
+									"type": "string"
+								},
+								"placeholder": "priority, project, tags",
+								"title": "Additional properties",
+								"type": "array"
+							},
+							"basesViewType": {
+								"default": "cards",
+								"description": "Choose the default view type for Bases views (category events, interval views). Cards view displays events as visual cards, table view as a sortable table, and list view as a simple list.",
+								"enum": ["table", "cards", "list"],
+								"enumLabels": {
+									"cards": "Cards (Recommended)",
+									"list": "List",
+									"table": "Table"
+								},
+								"title": "View type",
+								"type": "string"
+							},
+							"batchActionButtons": {
+								"default": [
+									"batchSelectAll",
+									"batchClear",
+									"batchDuplicate",
+									"batchMarkAsDone",
+									"batchMarkAsNotDone",
+									"batchCategories",
+									"batchSkip",
+									"batchMakeVirtual",
+									"batchMakeReal",
+									"batchDelete"
+								],
+								"items": {
+									"enum": [
+										"batchSelectAll",
+										"batchClear",
+										"batchDuplicate",
+										"batchMoveBy",
+										"batchMarkAsDone",
+										"batchMarkAsNotDone",
+										"batchCategories",
+										"batchFrontmatter",
+										"batchCloneNext",
+										"batchClonePrev",
+										"batchMoveNext",
+										"batchMovePrev",
+										"batchOpenAll",
+										"batchSkip",
+										"batchMakeVirtual",
+										"batchMakeReal",
+										"batchDelete"
+									],
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"breakProp": {
+								"default": "Break",
+								"description": "Frontmatter property name for break time in minutes (subtracted from event duration in statistics, supports decimals)",
+								"type": "string"
+							},
+							"caldavProp": {
+								"default": "CalDAV",
+								"description": "Frontmatter property name for CalDAV integration metadata on synced events",
+								"title": "CalDAV property",
+								"type": "string"
+							},
+							"calendarTitleProp": {
+								"default": "Calendar Title",
+								"description": "Auto-computed display title property (wiki link with ZettelID stripped from filename). Used for clean rendering in planning system and Bases views. The value is always kept up to date automatically.",
+								"type": "string"
+							},
+							"capacityTrackingEnabled": {
+								"default": true,
+								"description": "Show used vs remaining hours in statistics and page header. Boundaries are inferred from the earliest and latest events in each period.",
+								"title": "Enable capacity tracking",
+								"type": "boolean"
+							},
+							"categoryAssignmentPresets": {
+								"default": [],
+								"items": {
+									"additionalProperties": false,
+									"properties": {
+										"categories": {
+											"items": {
+												"type": "string"
+											},
+											"type": "array"
+										},
+										"eventName": {
+											"type": "string"
+										},
+										"id": {
+											"type": "string"
+										}
+									},
+									"required": ["id", "eventName", "categories"],
+									"type": "object"
+								},
+								"type": "array"
+							},
+							"categoryProp": {
+								"default": "Category",
+								"description": "Frontmatter property name for event categories (used for grouping in statistics)",
+								"type": "string"
+							},
+							"colorMode": {
+								"default": "1",
+								"description": "Controls how many color rule matches are applied to each event. Off: no coloring. 1: single color (default). 2-5: split the event width into equal segments, each colored by a successive matching rule.",
+								"enum": ["1", "2", "3", "4", "5", "off"],
+								"enumLabels": {
+									"1": "Color events",
+									"2": "Color events with two colors",
+									"3": "Color events with three colors",
+									"4": "Color events with four colors",
+									"5": "Color events with five colors",
+									"off": "Don't color events"
+								},
+								"type": "string"
+							},
+							"colorRules": {
+								"default": [],
+								"items": {
+									"additionalProperties": false,
+									"properties": {
+										"color": {
+											"type": "string",
+											"widget": "color"
+										},
+										"enabled": {
+											"default": true,
+											"type": "boolean"
+										},
+										"expression": {
+											"type": "string"
+										},
+										"id": {
+											"type": "string"
+										}
+									},
+									"required": ["id", "expression", "color", "enabled"],
+									"type": "object"
+								},
+								"type": "array"
+							},
+							"connectionArrowSize": {
+								"default": 12,
+								"description": "Size of connection arrowheads in pixels",
+								"maximum": 24,
+								"minimum": 4,
+								"title": "Arrowhead size",
+								"type": "integer"
+							},
+							"connectionColor": {
+								"default": "#7c3aed",
+								"description": "Color of the prerequisite connection arrows on the Calendar tab",
+								"title": "Arrow color",
+								"type": "string",
+								"widget": "color"
+							},
+							"connectionStrokeWidth": {
+								"default": 3,
+								"description": "Thickness of connection arrow lines in pixels",
+								"maximum": 10,
+								"minimum": 1,
+								"title": "Line thickness",
+								"type": "integer"
+							},
+							"contextMenuItems": {
+								"default": [
+									"enlarge",
+									"preview",
+									"goToSource",
+									"editSourceEvent",
+									"viewEventGroups",
+									"viewNameSeries",
+									"viewCategorySeries",
+									"viewRecurringSeries",
+									"editEvent",
+									"assignCategories",
+									"assignPrerequisites",
+									"duplicateEvent",
+									"moveBy",
+									"moveToCalendar",
+									"markDone",
+									"moveToNextWeek",
+									"cloneToNextWeek",
+									"moveToPreviousWeek",
+									"cloneToPreviousWeek",
+									"fillStartTimeNow",
+									"fillEndTimeNow",
+									"fillStartTimePrevious",
+									"fillEndTimeNext",
+									"deleteEvent",
+									"skipEvent",
+									"openFile",
+									"openFileNewWindow",
+									"toggleRecurring",
+									"triggerStopwatch",
+									"makeVirtual",
+									"makeReal",
+									"makeUntracked"
+								],
+								"items": {
+									"enum": [
+										"enlarge",
+										"preview",
+										"goToSource",
+										"editSourceEvent",
+										"viewEventGroups",
+										"viewNameSeries",
+										"viewCategorySeries",
+										"viewRecurringSeries",
+										"editEvent",
+										"assignCategories",
+										"assignPrerequisites",
+										"duplicateEvent",
+										"moveBy",
+										"moveToCalendar",
+										"markDone",
+										"moveToNextWeek",
+										"cloneToNextWeek",
+										"moveToPreviousWeek",
+										"cloneToPreviousWeek",
+										"fillStartTimeNow",
+										"fillEndTimeNow",
+										"fillStartTimePrevious",
+										"fillEndTimeNext",
+										"deleteEvent",
+										"skipEvent",
+										"openFile",
+										"openFileNewWindow",
+										"toggleRecurring",
+										"triggerStopwatch",
+										"duplicateRemainingWeekDays",
+										"makeVirtual",
+										"makeReal",
+										"makeUntracked"
+									],
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"contextMenuState": {
+								"additionalProperties": false,
+								"properties": {
+									"colorOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"iconOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"renames": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"sectionOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"showSettingsButton": {
+										"type": "boolean"
+									},
+									"visibleItemIds": {
+										"items": {
+											"type": "string"
+										},
+										"type": "array"
+									}
+								},
+								"type": "object"
+							},
+							"customDoneProperty": {
+								"default": "",
+								"description": "Overrides the status property for manual mark-as-done actions. Format: \"propertyName value\" (e.g., \"archived true\"). When set, this is used instead of the status property. Leave empty to use the default behavior.",
+								"placeholder": "archived true",
+								"type": "string"
+							},
+							"customUndoneProperty": {
+								"default": "",
+								"description": "Overrides what happens when marking as undone. Format: \"propertyName value\" (e.g., \"archived false\"). Requires \"Custom done property\" to be configured. If empty, the custom done property key is removed on undone instead.",
+								"placeholder": "archived false",
+								"type": "string"
+							},
+							"dashboardGridState": {
+								"additionalProperties": {},
+								"propertyNames": {
+									"type": "string"
+								},
+								"type": "object"
+							},
+							"dateProp": {
+								"default": "Date",
+								"description": "Frontmatter property name for all-day events (date only, no time)",
+								"type": "string"
+							},
+							"dayCellColoring": {
+								"default": "off",
+								"description": "Controls the background coloring of day cells. Off: default calendar appearance. Uniform: applies a single gradient color to all day cells. Month boundary: alternates two gradient colors by even/odd month, making month transitions clearly visible.",
+								"enum": ["off", "uniform", "boundary"],
+								"enumLabels": {
+									"boundary": "Month boundary",
+									"off": "Off",
+									"uniform": "Uniform"
+								},
+								"title": "Day cell coloring",
+								"type": "string"
+							},
+							"daysBeforeProp": {
+								"default": "Days Before",
+								"description": "Frontmatter property name for per-event notification days (all-day events)",
+								"type": "string"
+							},
+							"defaultAggregationMode": {
+								"default": "name",
+								"description": "Default grouping mode for statistics modals: group by event name or by category",
+								"enum": ["name", "category"],
+								"enumLabels": {
+									"category": "Category",
+									"name": "Event Name"
+								},
+								"title": "Default grouping mode",
+								"type": "string"
+							},
+							"defaultDaysBefore": {
+								"description": "Default notification time for all-day events. Leave empty for no default. 0 = notify on the day of the event, 1 = notify 1 day before",
+								"maximum": 9007199254740991,
+								"minimum": 0,
+								"placeholder": "e.g., 1 (leave empty for no default)",
+								"title": "All-day events (days before)",
+								"type": "integer"
+							},
+							"defaultDurationMinutes": {
+								"default": 60,
+								"description": "Default event duration when only start time is provided",
+								"exclusiveMinimum": 0,
+								"maximum": 9007199254740991,
+								"title": "Default duration (minutes)",
+								"type": "integer"
+							},
+							"defaultMinutesBefore": {
+								"description": "Default notification time for timed events. Leave empty for no default. 0 = notify when event starts, 15 = notify 15 minutes before",
+								"maximum": 9007199254740991,
+								"minimum": 0,
+								"placeholder": "e.g., 15 (leave empty for no default)",
+								"title": "Timed events (minutes before)",
+								"type": "integer"
+							},
+							"defaultMobileView": {
+								"default": "timeGridWeek",
+								"description": "The calendar view to show when opening on mobile devices (screen width ≤ 768px)",
+								"enum": ["multiMonthYear", "dayGridMonth", "timeGridWeek", "timeGridDay", "listWeek"],
+								"enumLabels": {
+									"dayGridMonth": "Month",
+									"listWeek": "Week (List)",
+									"multiMonthYear": "Year",
+									"timeGridDay": "Day (Time)",
+									"timeGridWeek": "Week (Time)"
+								},
+								"title": "Default mobile view",
+								"type": "string"
+							},
+							"defaultNodeColor": {
+								"default": "hsl(270, 70%, 50%)",
+								"description": "Default color for events when no color rules match",
+								"title": "Default event color",
+								"type": "string",
+								"widget": "color"
+							},
+							"defaultPresetId": {
+								"type": "string"
+							},
+							"defaultView": {
+								"default": "timeGridWeek",
+								"description": "The calendar view to show when opening",
+								"enum": ["multiMonthYear", "dayGridMonth", "timeGridWeek", "timeGridDay", "listWeek"],
+								"enumLabels": {
+									"dayGridMonth": "Month",
+									"listWeek": "Week (List)",
+									"multiMonthYear": "Year",
+									"timeGridDay": "Day (Time)",
+									"timeGridWeek": "Week (Time)"
+								},
+								"title": "Default view",
+								"type": "string"
+							},
+							"density": {
+								"default": "comfortable",
+								"description": "How compact to make the calendar display",
+								"enum": ["comfortable", "compact"],
+								"enumLabels": {
+									"comfortable": "Comfortable",
+									"compact": "Compact"
+								},
+								"title": "Display density",
+								"type": "string"
+							},
+							"desktopMaxEventsPerDay": {
+								"default": 0,
+								"description": "Maximum events to show per day on desktop before showing '+more' link (0 = unlimited)",
+								"maximum": 20,
+								"minimum": 0,
+								"title": "Desktop events per day",
+								"type": "integer"
+							},
+							"directory": {
+								"description": "Folder to scan for events and create new events in",
+								"placeholder": "e.g., tasks, calendar, events"
+							},
+							"doneValue": {
+								"default": "Done",
+								"description": "Value to set in the status property when marking an event as done",
+								"type": "string"
+							},
+							"dragEdgeScrollDelayMs": {
+								"default": 600,
+								"description": "Delay in milliseconds before scrolling when dragging events near the edge",
+								"maximum": 2000,
+								"minimum": 50,
+								"type": "integer"
+							},
+							"enabled": {
+								"default": true,
+								"type": "boolean"
+							},
+							"enableEventPreview": {
+								"default": true,
+								"description": "Show preview of event notes when hovering over events",
+								"type": "boolean"
+							},
+							"enableKeyboardNavigation": {
+								"default": true,
+								"description": "Use left/right arrow keys to navigate between intervals. Automatically disabled when search or expression filter inputs are focused.",
+								"type": "boolean"
+							},
+							"enableNameSeriesTracking": {
+								"default": true,
+								"description": "Track name-based event series (groups events sharing the same title). Used for name series propagation and series views. Disable to reduce memory usage in large vaults.",
+								"type": "boolean"
+							},
+							"enableNotifications": {
+								"default": true,
+								"description": "Enable event notifications. When disabled, all notification settings below are ignored.",
+								"type": "boolean"
+							},
+							"endProp": {
+								"default": "End Date",
+								"description": "Frontmatter property name for event end date/time (for timed events)",
+								"type": "string"
+							},
+							"eventMaxStack": {
+								"default": 4,
+								"description": "Maximum number of events to stack vertically before showing '+ more' link",
+								"maximum": 10,
+								"minimum": 1,
+								"title": "Event stack limit",
+								"type": "integer"
+							},
+							"eventOverlap": {
+								"default": true,
+								"description": "Allow events with overlapping times to render on top of each other. When disabled, overlapping events render side-by-side in columns (like Google Calendar). Applies to all views.",
+								"title": "Allow event overlap",
+								"type": "boolean"
+							},
+							"eventPresets": {
+								"default": [],
+								"items": {
+									"additionalProperties": false,
+									"properties": {
+										"allDay": {
+											"type": "boolean"
+										},
+										"breakMinutes": {
+											"minimum": 0,
+											"type": "number"
+										},
+										"categories": {
+											"type": "string"
+										},
+										"createdAt": {
+											"exclusiveMinimum": 0,
+											"maximum": 9007199254740991,
+											"type": "integer"
+										},
+										"customProperties": {
+											"additionalProperties": {},
+											"propertyNames": {
+												"type": "string"
+											},
+											"type": "object"
+										},
+										"futureInstancesCount": {
+											"exclusiveMinimum": 0,
+											"maximum": 9007199254740991,
+											"type": "integer"
+										},
+										"icon": {
+											"type": "string"
+										},
+										"id": {
+											"type": "string"
+										},
+										"location": {
+											"type": "string"
+										},
+										"markAsDone": {
+											"type": "boolean"
+										},
+										"name": {
+											"type": "string"
+										},
+										"notifyBefore": {
+											"maximum": 9007199254740991,
+											"minimum": 0,
+											"type": "integer"
+										},
+										"participants": {
+											"type": "string"
+										},
+										"rruleSpec": {
+											"type": "string"
+										},
+										"rruleType": {
+											"type": "string"
+										},
+										"skip": {
+											"type": "boolean"
+										},
+										"title": {
+											"type": "string"
+										},
+										"updatedAt": {
+											"exclusiveMinimum": 0,
+											"maximum": 9007199254740991,
+											"type": "integer"
+										}
+									},
+									"required": ["id", "name", "createdAt"],
+									"type": "object"
+								},
+								"type": "array"
+							},
+							"eventTextColor": {
+								"default": "#ffffff",
+								"description": "Text color for events with dark backgrounds (default: white)",
+								"title": "Default event text color",
+								"type": "string",
+								"widget": "color"
+							},
+							"eventTextColorAlt": {
+								"default": "#000000",
+								"description": "Text color used when event background is light or white (e.g., pastel colors) for better contrast",
+								"title": "Alternative event text color",
+								"type": "string",
+								"widget": "color"
+							},
+							"excludedCategorySeriesProps": {
+								"default": "",
+								"description": "Comma-separated list of frontmatter property names to exclude when propagating changes across category series members.",
+								"placeholder": "tags, internal_id",
+								"title": "Excluded properties",
+								"type": "string"
+							},
+							"excludedNameSeriesProps": {
+								"default": "",
+								"description": "Comma-separated list of frontmatter property names to exclude when propagating changes across name series members.",
+								"placeholder": "tags, internal_id",
+								"title": "Excluded properties",
+								"type": "string"
+							},
+							"excludedRecurringInstanceProps": {
+								"default": "",
+								"description": "Comma-separated list of frontmatter property names to exclude when propagating changes from recurring event sources to physical instances.",
+								"placeholder": "tags, internal_id",
+								"title": "Excluded properties",
+								"type": "string"
+							},
+							"exportFolder": {
+								"default": "Prisma-Exports",
+								"description": "Folder where exported .ics files are saved",
+								"type": "string"
+							},
+							"fileConcurrencyLimit": {
+								"default": 10,
+								"description": "Maximum number of files to modify in parallel. Lower values reduce the risk of Obsidian freezing on large batch operations. Applies to recurring event propagation, name/category series propagation, and file deletions.",
+								"maximum": 50,
+								"minimum": 1,
+								"title": "File operation concurrency limit",
+								"type": "integer"
+							},
+							"filterExpressions": {
+								"default": [],
+								"description": "JavaScript expressions to filter events (one per line). Changes apply when you click outside or press Ctrl/Cmd+Enter. Note: Expect a brief lag when applying changes as it triggers full re-indexing.",
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"filterPresets": {
+								"default": [],
+								"items": {
+									"additionalProperties": false,
+									"properties": {
+										"expression": {
+											"type": "string"
+										},
+										"name": {
+											"type": "string"
+										}
+									},
+									"required": ["name", "expression"],
+									"type": "object"
+								},
+								"type": "array"
+							},
+							"firstDayOfWeek": {
+								"default": 0,
+								"maximum": 6,
+								"minimum": 0,
+								"type": "integer"
+							},
+							"frontmatterDisplayProperties": {
+								"default": ["Category"],
+								"description": "Comma-separated list of frontmatter property names to display in timed events (events with start and end times). Properties are shown in weekly and daily views, but hidden in monthly view to save space.",
+								"items": {
+									"type": "string"
+								},
+								"title": "Display properties (timed events)",
+								"type": "array"
+							},
+							"frontmatterDisplayPropertiesAllDay": {
+								"default": ["Category"],
+								"description": "Comma-separated list of frontmatter property names to display in all-day events. Properties are shown in weekly and daily views, but hidden in monthly view to save space.",
+								"items": {
+									"type": "string"
+								},
+								"title": "Display properties (all-day events)",
+								"type": "array"
+							},
+							"frontmatterDisplayPropertiesHeatmap": {
+								"default": ["Category"],
+								"description": "Comma-separated list of frontmatter property names to display in the heatmap day detail panel when inspecting events. Properties appear below each event title with links rendered interactively.",
+								"items": {
+									"type": "string"
+								},
+								"title": "Display properties (heatmap)",
+								"type": "array"
+							},
+							"frontmatterDisplayPropertiesUntracked": {
+								"default": ["Category"],
+								"description": "Comma-separated list of frontmatter property names to display in untracked events (events without dates). These appear in the untracked events sidebar.",
+								"items": {
+									"type": "string"
+								},
+								"title": "Display properties (untracked events)",
+								"type": "array"
+							},
+							"futureInstancesCount": {
+								"default": 2,
+								"description": "Maximum number of future recurring event instances to generate (1-52)",
+								"maximum": 52,
+								"minimum": 1,
+								"type": "integer"
+							},
+							"futureInstancesCountProp": {
+								"default": "Future Instances Count",
+								"description": "Frontmatter property name for per-event override of future instances count (defaults to global setting if not specified)",
+								"type": "string"
+							},
+							"ganttContextMenuState": {
+								"additionalProperties": false,
+								"properties": {
+									"colorOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"iconOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"renames": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"sectionOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"showSettingsButton": {
+										"type": "boolean"
+									},
+									"visibleItemIds": {
+										"items": {
+											"type": "string"
+										},
+										"type": "array"
+									}
+								},
+								"type": "object"
+							},
+							"generatePastEventsProp": {
+								"default": "Generate Past Events",
+								"description": "Frontmatter property name for generating past recurring instances from source event start date (set to true to enable)",
+								"type": "string"
+							},
+							"hideWeekends": {
+								"default": false,
+								"description": "Hide Saturday and Sunday in calendar views",
+								"type": "boolean"
+							},
+							"highlightUpcomingEvent": {
+								"default": true,
+								"description": "Subtly highlight events that are currently active (if any), or the next upcoming event. Only visible when the current time is within the visible date range.",
+								"type": "boolean"
+							},
+							"holidays": {
+								"additionalProperties": false,
+								"default": {
+									"country": "US",
+									"enabled": false,
+									"types": ["public"]
+								},
+								"properties": {
+									"country": {
+										"default": "US",
+										"type": "string"
+									},
+									"enabled": {
+										"default": false,
+										"type": "boolean"
+									},
+									"region": {
+										"type": "string"
+									},
+									"state": {
+										"type": "string"
+									},
+									"timezone": {
+										"type": "string"
+									},
+									"types": {
+										"default": ["public"],
+										"items": {
+											"enum": ["public", "bank", "school", "observance", "optional"],
+											"type": "string"
+										},
+										"type": "array"
+									}
+								},
+								"required": ["enabled", "country", "types"],
+								"type": "object"
+							},
+							"hourEnd": {
+								"default": 23,
+								"description": "Last hour to show in time grid views",
+								"maximum": 24,
+								"minimum": 1,
+								"title": "Day end hour",
+								"type": "integer"
+							},
+							"hourStart": {
+								"default": 7,
+								"description": "First hour to show in time grid views",
+								"maximum": 23,
+								"minimum": 0,
+								"title": "Day start hour",
+								"type": "integer"
+							},
+							"iconProp": {
+								"default": "Icon",
+								"description": "Frontmatter property name for event icon override (emoji or text, takes precedence over integration and recurring icons)",
+								"type": "string"
+							},
+							"icsSubscriptionProp": {
+								"default": "ICSSubscription",
+								"description": "Frontmatter property name for ICS subscription metadata on synced events",
+								"title": "ICS subscription property",
+								"type": "string"
+							},
+							"id": {
+								"type": "string"
+							},
+							"indexSubdirectories": {
+								"default": true,
+								"description": "Index event files in all subdirectories of the configured folder, not just the immediate children. When enabled, events stored at any depth (e.g., courses/CS101/assignments/HW1.md) appear in the planning system. When disabled, only files directly inside the configured folder are indexed.",
+								"type": "boolean"
+							},
+							"instanceDateProp": {
+								"default": "Recurring Instance Date",
+								"description": "Frontmatter property name for the date of a physical recurring event instance",
+								"title": "Recurring instance date property",
+								"type": "string"
+							},
+							"locale": {
+								"default": "en",
+								"description": "Language and date format for headings, day names, month names, toolbar labels, and date displays",
+								"enum": [
+									"en",
+									"fr",
+									"de",
+									"es",
+									"it",
+									"pt-br",
+									"nl",
+									"ja",
+									"ko",
+									"zh-cn",
+									"zh-tw",
+									"ru",
+									"ar",
+									"pl",
+									"tr",
+									"sv",
+									"da",
+									"fi",
+									"nb"
+								],
+								"enumLabels": {
+									"ar": "Arabic (العربية)",
+									"da": "Danish (Dansk)",
+									"de": "German (Deutsch)",
+									"en": "English",
+									"es": "Spanish (Español)",
+									"fi": "Finnish (Suomi)",
+									"fr": "French (Français)",
+									"it": "Italian (Italiano)",
+									"ja": "Japanese (日本語)",
+									"ko": "Korean (한국어)",
+									"nb": "Norwegian (Norsk bokmål)",
+									"nl": "Dutch (Nederlands)",
+									"pl": "Polish (Polski)",
+									"pt-br": "Portuguese - Brazil (Português)",
+									"ru": "Russian (Русский)",
+									"sv": "Swedish (Svenska)",
+									"tr": "Turkish (Türkçe)",
+									"zh-cn": "Chinese - Simplified (简体中文)",
+									"zh-tw": "Chinese - Traditional (繁體中文)"
+								},
+								"type": "string"
+							},
+							"locationProp": {
+								"default": "Location",
+								"description": "Frontmatter property name for event location (single string)",
+								"type": "string"
+							},
+							"markPastInstancesAsDone": {
+								"default": false,
+								"description": "Automatically mark past events as done during startup by updating their status property. Configure the status property and done value in the Properties section.",
+								"title": "Mark past events as done",
+								"type": "boolean"
+							},
+							"minutesBeforeProp": {
+								"default": "Minutes Before",
+								"description": "Frontmatter property name for per-event notification times (timed events)",
+								"type": "string"
+							},
+							"mobileMaxEventsPerDay": {
+								"default": 4,
+								"description": "Maximum events to show per day on mobile before showing '+more' link (0 = unlimited)",
+								"maximum": 20,
+								"minimum": 0,
+								"title": "Mobile events per day",
+								"type": "integer"
+							},
+							"mobileToolbarButtons": {
+								"default": [
+									"prevNext",
+									"today",
+									"now",
+									"createEvent",
+									"zoomLevel",
+									"filterPresets",
+									"searchInput",
+									"expressionFilter",
+									"untrackedEvents"
+								],
+								"items": {
+									"enum": [
+										"prevNext",
+										"today",
+										"now",
+										"createEvent",
+										"zoomLevel",
+										"filterPresets",
+										"searchInput",
+										"expressionFilter",
+										"untrackedEvents"
+									],
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"monthEvenColor": {
+								"default": "#131313",
+								"type": "string",
+								"widget": "color"
+							},
+							"monthOddColor": {
+								"default": "#6b9080",
+								"type": "string",
+								"widget": "color"
+							},
+							"name": {
+								"default": "Calendar",
+								"type": "string"
+							},
+							"notDoneValue": {
+								"default": "Not Done",
+								"description": "Value to set in the status property when marking an event as not done",
+								"type": "string"
+							},
+							"notificationSound": {
+								"default": false,
+								"description": "Play a system sound when notifications are shown",
+								"title": "Play notification sound",
+								"type": "boolean"
+							},
+							"nowIndicator": {
+								"default": true,
+								"description": "Display a line showing the current time in weekly and daily views",
+								"title": "Show current time indicator",
+								"type": "boolean"
+							},
+							"pageHeaderState": {
+								"additionalProperties": false,
+								"properties": {
+									"colorOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"iconOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"renames": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
+									"showSettingsButton": {
+										"type": "boolean"
+									},
+									"visibleActionIds": {
+										"items": {
+											"type": "string"
+										},
+										"type": "array"
+									}
+								},
+								"type": "object"
+							},
+							"participantsProp": {
+								"default": "Participants",
+								"description": "Frontmatter property name for event participants (array of strings, supports comma-separated in YAML)",
+								"type": "string"
+							},
+							"pastEventContrast": {
+								"default": 70,
+								"description": "Visual contrast of past events (0% = invisible, 100% = normal)",
+								"maximum": 100,
+								"minimum": 0,
+								"type": "integer"
+							},
+							"physicalRecurringMarker": {
+								"default": "🔄",
+								"description": "Symbol/emoji to display on physical recurring instance events in the top-right corner.",
+								"type": "string"
+							},
+							"prerequisiteProp": {
+								"default": "Prerequisite",
+								"description": "Frontmatter property name for event prerequisites (wiki-links to other events that must complete before this event)",
+								"type": "string"
+							},
+							"propagateFrontmatterToCategorySeries": {
+								"default": false,
+								"description": "Automatically propagate frontmatter changes across events that share the same category. When you update custom properties on one event, all other events with the same category are updated immediately.",
+								"type": "boolean"
+							},
+							"propagateFrontmatterToInstances": {
+								"default": false,
+								"description": "Automatically propagate frontmatter changes from recurring event sources to all physical instances. When you update custom properties (like category, priority, status) in a source event, all existing instances are updated immediately.",
+								"type": "boolean"
+							},
+							"propagateFrontmatterToNameSeries": {
+								"default": false,
+								"description": "Automatically propagate frontmatter changes across events that share the same title. When you update custom properties on one event, all other events with the same name are updated immediately.",
+								"type": "boolean"
+							},
+							"rruleIdProp": {
+								"default": "RRuleID",
+								"description": "Frontmatter property name for recurring event unique identifier",
+								"title": "RRule ID property",
+								"type": "string"
+							},
+							"rruleProp": {
+								"default": "RRule",
+								"description": "Frontmatter property name for recurring event type (daily, weekly, monthly, etc.)",
+								"title": "RRule property",
+								"type": "string"
+							},
+							"rruleSpecProp": {
+								"default": "RRuleSpec",
+								"description": "Frontmatter property name for recurring event specification (weekdays for weekly/bi-weekly events)",
+								"title": "RRule specification property",
+								"type": "string"
+							},
+							"rruleUntilProp": {
+								"default": "RRuleUntil",
+								"description": "Frontmatter property name for recurring event end date (inclusive last occurrence day)",
+								"title": "RRule until property",
+								"type": "string"
+							},
+							"showColorDots": {
+								"default": true,
+								"description": "Show color indicator dots at the top of each day in month and year views",
+								"type": "boolean"
+							},
+							"showDecimalHours": {
+								"default": false,
+								"description": "Display durations as decimal hours (e.g., 2.5h) instead of formatted (e.g., 2h 30m) in statistics modals. Can be temporarily toggled by clicking the duration in the statistics header.",
+								"type": "boolean"
+							},
+							"showDurationField": {
+								"default": true,
+								"description": "Display a duration in minutes field in the event creation/edit modal for quick editing. Changes to duration automatically update the end date, and vice versa.",
+								"type": "boolean"
+							},
+							"showDurationInTitle": {
+								"default": true,
+								"description": "Display event duration (e.g., 2h 30m) in parentheses after the event title for timed events",
+								"title": "Show duration in event title",
+								"type": "boolean"
+							},
+							"showEventColorDots": {
+								"default": true,
+								"description": "Show color dots in the bottom-right corner of events for matched color rules that were not applied as the event background. Displays overflow colors that exceed the color mode limit, or all matched colors when coloring is disabled.",
+								"title": "Show overflow color dots",
+								"type": "boolean"
+							},
+							"showPhysicalRecurringMarker": {
+								"default": true,
+								"description": "Display a marker indicator on physical recurring instance events (actual instances created from source).",
+								"type": "boolean"
+							},
+							"showRibbonIcon": {
+								"default": true,
+								"description": "Display an icon in the left sidebar to quickly open this planning system",
+								"type": "boolean"
+							},
+							"showSourceRecurringMarker": {
+								"default": true,
+								"description": "Display a marker indicator on source recurring events (the original event that generates instances).",
+								"type": "boolean"
+							},
+							"showStopwatch": {
+								"default": true,
+								"description": "Display a stopwatch in the event creation/edit modal for precise time tracking. Start fills the start date, stop fills the end date, and break time is tracked automatically.",
+								"title": "Show time tracker in event modal",
+								"type": "boolean"
+							},
+							"skipNewlyCreatedNotifications": {
+								"default": true,
+								"description": "Automatically mark events as notified if they were created within the last minute. Prevents notifications for events created via Create Event, Stopwatch, or other creation methods.",
+								"title": "Skip newly created events",
+								"type": "boolean"
+							},
+							"skipProp": {
+								"default": "Skip",
+								"description": "Frontmatter property name to hide events from the planning system (when set to true)",
+								"type": "string"
+							},
+							"skipUnderscoreProperties": {
+								"default": true,
+								"description": "Hide frontmatter properties that start with underscore (e.g., _ZettelID) in event previews and edit modals",
+								"type": "boolean"
+							},
+							"slotDurationMinutes": {
+								"default": 30,
+								"description": "Duration of time slots in the calendar grid (1-60 minutes)",
+								"maximum": 60,
+								"minimum": 1,
+								"type": "integer"
+							},
+							"slotEventOverlap": {
+								"default": true,
+								"description": "In week/day time-grid views, allow events that share the exact same time-slot boundaries to render on top of each other. When disabled, events with identical start/end times are placed in separate columns within the slot. Has no effect when event overlap is disabled.",
+								"title": "Allow slot event overlap",
+								"type": "boolean"
+							},
+							"snapDurationMinutes": {
+								"default": 30,
+								"description": "Snap interval when dragging or resizing events (1-60 minutes)",
+								"maximum": 60,
+								"minimum": 1,
+								"type": "integer"
+							},
+							"snoozeMinutes": {
+								"default": 15,
+								"description": "How many minutes to snooze a notification when pressing the Snooze button. The notification will be triggered again after this duration.",
+								"exclusiveMinimum": 0,
+								"maximum": 9007199254740991,
+								"title": "Snooze duration (minutes)",
+								"type": "integer"
+							},
+							"sortDateProp": {
+								"default": "Sort Date",
+								"description": "Frontmatter property to write the normalized datetime to. This is a dedicated sorting property, separate from the Date property used by all-day events.",
+								"type": "string"
+							},
+							"sortingStrategy": {
+								"default": "none",
+								"description": "Write a normalized datetime to a dedicated sort property so external tools (Bases, Dataview) can sort all event types by a single field. Timed events use the full datetime. All-day events get T00:00:00 appended for consistent cross-type sorting. The value is written to the sort date property configured below.",
+								"enum": ["none", "startDate", "endDate", "allDayOnly", "allStartDate", "allEndDate"],
+								"enumLabels": {
+									"allDayOnly": "All-day events only",
+									"allEndDate": "All events — end datetime",
+									"allStartDate": "All events — start datetime (Recommended)",
+									"endDate": "Timed events only — end datetime",
+									"none": "None",
+									"startDate": "Timed events only — start datetime"
+								},
+								"title": "Sorting normalization strategy",
+								"type": "string"
+							},
+							"sourceProp": {
+								"default": "Source",
+								"description": "Frontmatter property name for linking recurring event instances to their source event file",
+								"type": "string"
+							},
+							"sourceRecurringMarker": {
+								"default": "⦿",
+								"description": "Symbol/emoji to display on source recurring events in the top-right corner.",
+								"type": "string"
+							},
+							"startProp": {
+								"default": "Start Date",
+								"description": "Frontmatter property name for event start date/time",
+								"type": "string"
+							},
+							"statusProperty": {
+								"default": "Status",
+								"description": "Frontmatter property name for event status (used when automatically marking past events as done)",
+								"type": "string"
+							},
+							"stickyAllDayEvents": {
+								"default": true,
+								"description": "Keep all-day event section visible at the top when scrolling down in weekly and daily views",
+								"type": "boolean"
+							},
+							"stickyDayHeaders": {
+								"default": true,
+								"description": "Keep day/date headers visible at the top when scrolling down in weekly and daily views",
+								"type": "boolean"
+							},
+							"templatePath": {
+								"description": "Path to Templater template file for new events (optional, requires Templater plugin)",
+								"placeholder": "e.g., Templates/event-template.md",
+								"type": "string"
+							},
+							"thickerHourLines": {
+								"default": true,
+								"description": "Make full-hour lines (12:00, 13:00, etc.) thicker in day and week views for better visual contrast",
+								"type": "boolean"
+							},
+							"titleAutocomplete": {
+								"default": true,
+								"description": "Show inline type-ahead suggestions when typing event titles in the create/edit modal. Suggests categories, event presets, and frequently used event names.",
+								"type": "boolean"
+							},
+							"titleProp": {
+								"description": "Frontmatter property name for event title (optional, defaults to file name)",
+								"placeholder": "Title",
+								"type": "string"
+							},
+							"toolbarButtons": {
+								"default": [
+									"prevNext",
+									"today",
+									"now",
+									"createEvent",
+									"zoomLevel",
+									"filterPresets",
+									"searchInput",
+									"expressionFilter",
+									"untrackedEvents"
+								],
+								"items": {
+									"enum": [
+										"prevNext",
+										"today",
+										"now",
+										"createEvent",
+										"zoomLevel",
+										"filterPresets",
+										"searchInput",
+										"expressionFilter",
+										"untrackedEvents"
+									],
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"untrackedFilterExpressions": {
+								"default": [],
+								"description": "JavaScript expressions to filter untracked events (one per line). Changes apply when you click outside or press Ctrl/Cmd+Enter.",
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"virtualEventsFileName": {
+								"default": "Virtual Events",
+								"description": "File name for the virtual events storage file (without .md extension)",
+								"type": "string"
+							},
+							"zettelIdProp": {
+								"description": "Frontmatter property name for auto-generated ZettelID (optional, generates timestamp-based ID on creation/cloning)",
+								"placeholder": "ZettelID",
+								"title": "ZettelID property",
+								"type": "string"
+							},
+							"zoomLevels": {
+								"default": [1, 2, 3, 5, 10, 15, 20, 30, 45, 60],
+								"description": "Available zoom levels for Ctrl+scroll zooming. Enter comma-separated values (1-60 minutes each)",
+								"items": {
+									"maximum": 60,
+									"minimum": 1,
+									"type": "integer"
+								},
+								"placeholder": "5, 10, 15, 30, 60",
+								"title": "Zoom levels (minutes)",
+								"type": "array"
+							}
+						},
+						"type": "object"
+					}
+				},
+				"required": ["settings"],
+				"type": "object"
+			},
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "boolean"
+			},
+			"http": {
+				"method": "POST",
+				"path": "/update-settings"
+			}
+		}
+	}
+}

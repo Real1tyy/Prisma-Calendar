@@ -1,10 +1,17 @@
 import type CustomCalendarPlugin from "../../main";
 import { resolveBundle } from "./bundle-resolver";
-import { type PrismaCategoryOutput, type PrismaEventOutput, serializeEvent } from "./types";
+import {
+	type PrismaCalendarIdInput,
+	type PrismaCategoryOutput,
+	type PrismaEventOutput,
+	type PrismaFilePathInput,
+	type PrismaGetEventsInput,
+	serializeEvent,
+} from "./types";
 
 export async function getEvents(
 	plugin: CustomCalendarPlugin,
-	input: { start: string; end: string; calendarId?: string }
+	input: PrismaGetEventsInput
 ): Promise<PrismaEventOutput[]> {
 	const bundle = resolveBundle(plugin, input.calendarId);
 	if (!bundle) return [];
@@ -12,10 +19,7 @@ export async function getEvents(
 	return events.map(serializeEvent);
 }
 
-export function getEventByPath(
-	plugin: CustomCalendarPlugin,
-	input: { filePath: string; calendarId?: string }
-): PrismaEventOutput | null {
+export function getEventByPath(plugin: CustomCalendarPlugin, input: PrismaFilePathInput): PrismaEventOutput | null {
 	const bundle = resolveBundle(plugin, input.calendarId);
 	if (!bundle) return null;
 
@@ -28,7 +32,7 @@ export function getEventByPath(
 	return null;
 }
 
-export function getAllEvents(plugin: CustomCalendarPlugin, input?: { calendarId?: string }): PrismaEventOutput[] {
+export function getAllEvents(plugin: CustomCalendarPlugin, input?: PrismaCalendarIdInput): PrismaEventOutput[] {
 	const bundle = resolveBundle(plugin, input?.calendarId);
 	if (!bundle) return [];
 	const tracked = bundle.eventStore.getAllEvents().map(serializeEvent);
@@ -36,7 +40,7 @@ export function getAllEvents(plugin: CustomCalendarPlugin, input?: { calendarId?
 	return [...tracked, ...untracked];
 }
 
-export function getCategories(plugin: CustomCalendarPlugin, input?: { calendarId?: string }): PrismaCategoryOutput[] {
+export function getCategories(plugin: CustomCalendarPlugin, input?: PrismaCalendarIdInput): PrismaCategoryOutput[] {
 	const bundle = resolveBundle(plugin, input?.calendarId);
 	if (!bundle) return [];
 	return bundle.categoryTracker.getCategoriesWithColors().map((c) => ({
@@ -45,7 +49,7 @@ export function getCategories(plugin: CustomCalendarPlugin, input?: { calendarId
 	}));
 }
 
-export function getUntrackedEvents(plugin: CustomCalendarPlugin, input?: { calendarId?: string }): PrismaEventOutput[] {
+export function getUntrackedEvents(plugin: CustomCalendarPlugin, input?: PrismaCalendarIdInput): PrismaEventOutput[] {
 	const bundle = resolveBundle(plugin, input?.calendarId);
 	if (!bundle) return [];
 	return bundle.untrackedEventStore.getUntrackedEvents().map(serializeEvent);

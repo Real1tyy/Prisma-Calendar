@@ -1,17 +1,20 @@
 import { z } from "zod";
 
 import type { ParsedEvent } from "../../types";
-import type { AIMode, AIOperation } from "../../types/ai";
+import { AIOperationsSchema } from "../../types/ai";
+import { SingleCalendarConfigSchema } from "../../types/settings";
 
-export type { AIOperation as PrismaAIOperation } from "../../types/ai";
+export type { AIMode, AIOperation as PrismaAIOperation } from "../../types/ai";
 
 // ─── Navigation ─────────────────────────────────────────────────────
 
-export type NavigateInput = {
-	date?: string;
-	view?: string;
-	calendarId?: string;
-};
+export const PrismaNavigateInputSchema = z.object({
+	date: z.string().optional(),
+	view: z.string().optional(),
+	calendarId: z.string().optional(),
+});
+
+export type NavigateInput = z.infer<typeof PrismaNavigateInputSchema>;
 
 // ─── Public Input Schemas ───────────────────────────────────────────
 // Validated at the API boundary when external consumers call our API.
@@ -52,6 +55,46 @@ export const PrismaDeleteEventInputSchema = z.object({
 
 export type PrismaDeleteEventInput = z.infer<typeof PrismaDeleteEventInputSchema>;
 
+// Read-side inputs — small, regular shapes used across getX / status / lifecycle
+// actions. Defining them once here keeps `defineAction` call sites tight.
+
+export const PrismaFilePathInputSchema = z.object({
+	filePath: z.string(),
+	calendarId: z.string().optional(),
+});
+
+export type PrismaFilePathInput = z.infer<typeof PrismaFilePathInputSchema>;
+
+export const PrismaCalendarIdInputSchema = z.object({
+	calendarId: z.string().optional(),
+});
+
+export type PrismaCalendarIdInput = z.infer<typeof PrismaCalendarIdInputSchema>;
+
+export const PrismaGetEventsInputSchema = z.object({
+	start: z.string(),
+	end: z.string(),
+	calendarId: z.string().optional(),
+});
+
+export type PrismaGetEventsInput = z.infer<typeof PrismaGetEventsInputSchema>;
+
+export const PrismaCloneEventInputSchema = z.object({
+	filePath: z.string(),
+	offsetMs: z.number().optional(),
+	calendarId: z.string().optional(),
+});
+
+export type PrismaCloneEventInput = z.infer<typeof PrismaCloneEventInputSchema>;
+
+export const PrismaMoveEventInputSchema = z.object({
+	filePath: z.string(),
+	offsetMs: z.number(),
+	calendarId: z.string().optional(),
+});
+
+export type PrismaMoveEventInput = z.infer<typeof PrismaMoveEventInputSchema>;
+
 export const PrismaConvertEventInputSchema = PrismaEventInputSchema.extend({
 	filePath: z.string(),
 	calendarId: z.string().optional(),
@@ -59,27 +102,60 @@ export const PrismaConvertEventInputSchema = PrismaEventInputSchema.extend({
 
 export type PrismaConvertEventInput = z.infer<typeof PrismaConvertEventInputSchema>;
 
-export interface PrismaMakeVirtualInput {
-	filePath: string;
-	calendarId?: string;
-}
+export const PrismaMakeVirtualInputSchema = z.object({
+	filePath: z.string(),
+	calendarId: z.string().optional(),
+});
 
-export interface PrismaMakeRealInput {
-	virtualEventId: string;
-	calendarId?: string;
-}
+export type PrismaMakeVirtualInput = z.infer<typeof PrismaMakeVirtualInputSchema>;
 
-export interface PrismaMoveEventToCalendarInput {
-	filePath: string;
-	targetCalendarId: string;
-	calendarId?: string;
-}
+export const PrismaMakeRealInputSchema = z.object({
+	virtualEventId: z.string(),
+	calendarId: z.string().optional(),
+});
 
-export interface PrismaMoveEventToCalendarResult {
-	success: boolean;
-	movedFilePath?: string;
-	error?: string;
-}
+export type PrismaMakeRealInput = z.infer<typeof PrismaMakeRealInputSchema>;
+
+export const PrismaMoveEventToCalendarInputSchema = z.object({
+	filePath: z.string(),
+	targetCalendarId: z.string(),
+	calendarId: z.string().optional(),
+});
+
+export type PrismaMoveEventToCalendarInput = z.infer<typeof PrismaMoveEventToCalendarInputSchema>;
+
+export const PrismaMoveEventToCalendarResultSchema = z.object({
+	success: z.boolean(),
+	movedFilePath: z.string().optional(),
+	error: z.string().optional(),
+});
+
+export type PrismaMoveEventToCalendarResult = z.infer<typeof PrismaMoveEventToCalendarResultSchema>;
+
+// ─── Modal-trigger Inputs ───────────────────────────────────────────
+
+export const PrismaActivateInputSchema = z.object({
+	key: z.string(),
+});
+
+export type PrismaActivateInput = z.infer<typeof PrismaActivateInputSchema>;
+
+export const PrismaOpenCreateEventModalInputSchema = z.object({
+	calendarId: z.string().optional(),
+	autoStartStopwatch: z.boolean().optional(),
+	openCreatedInNewTab: z.boolean().optional(),
+});
+
+export type PrismaOpenCreateEventModalInput = z.infer<typeof PrismaOpenCreateEventModalInputSchema>;
+
+// ─── Batch Operations ───────────────────────────────────────────────
+
+export const PrismaBatchInputSchema = z.object({
+	filePaths: z.array(z.string()),
+	calendarId: z.string().optional(),
+});
+
+export type PrismaBatchInput = z.infer<typeof PrismaBatchInputSchema>;
 
 // ─── Public Output Schemas ──────────────────────────────────────────
 
@@ -105,70 +181,109 @@ export const PrismaEventOutputSchema = z.object({
 
 export type PrismaEventOutput = z.infer<typeof PrismaEventOutputSchema>;
 
-export interface PrismaCategoryOutput {
-	name: string;
-	color: string;
-}
+export const PrismaCategoryOutputSchema = z.object({
+	name: z.string(),
+	color: z.string(),
+});
 
-export interface PrismaCalendarInfo {
-	calendarId: string;
-	name: string;
-	directory: string;
-	enabled: boolean;
-	eventCount: number;
-	untrackedEventCount: number;
-}
+export type PrismaCategoryOutput = z.infer<typeof PrismaCategoryOutputSchema>;
 
-export interface PrismaStatEntry {
-	name: string;
-	duration: number;
-	durationFormatted: string;
-	percentage: string;
-	count: number;
-	isRecurring: boolean;
-}
+export const PrismaCalendarInfoSchema = z.object({
+	calendarId: z.string(),
+	name: z.string(),
+	directory: z.string(),
+	enabled: z.boolean(),
+	eventCount: z.number(),
+	untrackedEventCount: z.number(),
+});
 
-export interface PrismaStatisticsOutput {
-	periodStart: string;
-	periodEnd: string;
-	interval: "day" | "week" | "month";
-	mode: "name" | "category";
-	totalDuration: number;
-	totalDurationFormatted: string;
-	totalEvents: number;
-	timedEvents: number;
-	allDayEvents: number;
-	skippedEvents: number;
-	doneEvents: number;
-	undoneEvents: number;
-	entries: PrismaStatEntry[];
-}
+export type PrismaCalendarInfo = z.infer<typeof PrismaCalendarInfoSchema>;
+
+// ─── Statistics ─────────────────────────────────────────────────────
+
+export const PrismaStatisticsIntervalSchema = z.enum(["day", "week", "month"]);
+export const PrismaStatisticsModeSchema = z.enum(["name", "category"]);
+
+export const PrismaStatisticsInputSchema = z.object({
+	date: z.string().optional(),
+	interval: PrismaStatisticsIntervalSchema.optional(),
+	mode: PrismaStatisticsModeSchema.optional(),
+	calendarId: z.string().optional(),
+});
+
+export type PrismaStatisticsInput = z.infer<typeof PrismaStatisticsInputSchema>;
+
+export const PrismaStatEntrySchema = z.object({
+	name: z.string(),
+	duration: z.number(),
+	durationFormatted: z.string(),
+	percentage: z.string(),
+	count: z.number(),
+	isRecurring: z.boolean(),
+});
+
+export type PrismaStatEntry = z.infer<typeof PrismaStatEntrySchema>;
+
+export const PrismaStatisticsOutputSchema = z.object({
+	periodStart: z.string(),
+	periodEnd: z.string(),
+	interval: PrismaStatisticsIntervalSchema,
+	mode: PrismaStatisticsModeSchema,
+	totalDuration: z.number(),
+	totalDurationFormatted: z.string(),
+	totalEvents: z.number(),
+	timedEvents: z.number(),
+	allDayEvents: z.number(),
+	skippedEvents: z.number(),
+	doneEvents: z.number(),
+	undoneEvents: z.number(),
+	entries: z.array(PrismaStatEntrySchema),
+});
+
+export type PrismaStatisticsOutput = z.infer<typeof PrismaStatisticsOutputSchema>;
+
+// ─── Settings ───────────────────────────────────────────────────────
+
+export const PrismaUpdateSettingsInputSchema = z.object({
+	settings: SingleCalendarConfigSchema.partial(),
+	calendarId: z.string().optional(),
+});
+
+export type PrismaUpdateSettingsInput = z.infer<typeof PrismaUpdateSettingsInputSchema>;
 
 // ─── AI API ─────────────────────────────────────────────────────────
 
-export interface PrismaAIQueryInput {
-	message: string;
-	mode?: AIMode;
-	execute?: boolean;
-	customPromptIds?: string[];
-	calendarId?: string;
-}
+export const PrismaAIModeSchema = z.enum(["query", "manipulation", "planning"]);
 
-export interface PrismaAIOperationResult {
-	succeeded: number;
-	failed: number;
-	total: number;
-}
+export const PrismaAIQueryInputSchema = z.object({
+	message: z.string(),
+	mode: PrismaAIModeSchema.optional(),
+	execute: z.boolean().optional(),
+	customPromptIds: z.array(z.string()).optional(),
+	calendarId: z.string().optional(),
+});
 
-export interface PrismaAIQueryResult {
-	success: boolean;
-	error?: string;
-	response?: string;
-	mode?: AIMode;
-	operations?: AIOperation[];
-	validationErrors?: string[];
-	executionResult?: PrismaAIOperationResult;
-}
+export type PrismaAIQueryInput = z.infer<typeof PrismaAIQueryInputSchema>;
+
+export const PrismaAIOperationResultSchema = z.object({
+	succeeded: z.number(),
+	failed: z.number(),
+	total: z.number(),
+});
+
+export type PrismaAIOperationResult = z.infer<typeof PrismaAIOperationResultSchema>;
+
+export const PrismaAIQueryResultSchema = z.object({
+	success: z.boolean(),
+	error: z.string().optional(),
+	response: z.string().optional(),
+	mode: PrismaAIModeSchema.optional(),
+	operations: AIOperationsSchema.optional(),
+	validationErrors: z.array(z.string()).optional(),
+	executionResult: PrismaAIOperationResultSchema.optional(),
+});
+
+export type PrismaAIQueryResult = z.infer<typeof PrismaAIQueryResultSchema>;
 
 export function serializeEvent(event: ParsedEvent): PrismaEventOutput {
 	const output: PrismaEventOutput = {

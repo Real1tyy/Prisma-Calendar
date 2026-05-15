@@ -10,11 +10,12 @@ import {
 } from "../commands/frontmatter-update-command";
 import { CloneEventCommand } from "../commands/lifecycle-commands";
 import { resolveBundleOrNotice } from "./bundle-resolver";
+import type { PrismaCloneEventInput, PrismaFilePathInput, PrismaMoveEventInput } from "./types";
 
 type CommandFactory = (bundle: CalendarBundle, filePath: string) => Command;
 
 function statusOp(factory: CommandFactory) {
-	return async (plugin: CustomCalendarPlugin, input: { filePath: string; calendarId?: string }): Promise<boolean> => {
+	return async (plugin: CustomCalendarPlugin, input: PrismaFilePathInput): Promise<boolean> => {
 		const bundle = resolveBundleOrNotice(plugin, input.calendarId);
 		if (!bundle) return false;
 		await bundle.commandManager.executeCommand(factory(bundle, input.filePath));
@@ -26,10 +27,7 @@ export const markAsDone = statusOp(markAsDoneCmd);
 export const markAsUndone = statusOp(markAsUndoneCmd);
 export const toggleSkip = statusOp(toggleSkipCmd);
 
-export async function cloneEvent(
-	plugin: CustomCalendarPlugin,
-	input: { filePath: string; offsetMs?: number; calendarId?: string }
-): Promise<string | null> {
+export async function cloneEvent(plugin: CustomCalendarPlugin, input: PrismaCloneEventInput): Promise<string | null> {
 	const bundle = resolveBundleOrNotice(plugin, input.calendarId);
 	if (!bundle) return null;
 	const offset = input.offsetMs ?? 0;
@@ -38,10 +36,7 @@ export async function cloneEvent(
 	return command.getCreatedFilePath();
 }
 
-export async function moveEvent(
-	plugin: CustomCalendarPlugin,
-	input: { filePath: string; offsetMs: number; calendarId?: string }
-): Promise<boolean> {
+export async function moveEvent(plugin: CustomCalendarPlugin, input: PrismaMoveEventInput): Promise<boolean> {
 	const bundle = resolveBundleOrNotice(plugin, input.calendarId);
 	if (!bundle) return false;
 	await bundle.commandManager.executeCommand(moveEventCmd(bundle, input.filePath, input.offsetMs, input.offsetMs));
