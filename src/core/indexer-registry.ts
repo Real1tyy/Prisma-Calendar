@@ -150,30 +150,26 @@ export class IndexerRegistry {
 		entry.refCount--;
 
 		if (entry.refCount <= 0) {
-			entry.fileRepository.destroy();
-			entry.eventStore.destroy();
-			entry.untrackedEventStore.destroy();
-			entry.parser.destroy();
-			entry.recurringEventManager.destroy();
-			entry.notificationManager.stop();
-			entry.categoryTracker.destroy();
-			entry.nameSeriesTracker.destroy();
-			entry.prerequisiteTracker.destroy();
+			this.cleanupEntry(entry);
 			this.registry.delete(registryKey);
 		}
 	}
 
+	private cleanupEntry(entry: RegistryEntry): void {
+		entry.fileRepository.destroy();
+		entry.eventStore.destroy();
+		entry.untrackedEventStore.destroy();
+		entry.parser.destroy();
+		entry.recurringEventManager.destroy();
+		entry.notificationManager.stop();
+		entry.categoryTracker.destroy();
+		entry.nameSeriesTracker.destroy();
+		entry.prerequisiteTracker.destroy();
+	}
+
 	destroy(): void {
 		for (const entry of this.registry.values()) {
-			entry.fileRepository.destroy();
-			entry.eventStore.destroy();
-			entry.untrackedEventStore.destroy();
-			entry.parser.destroy();
-			entry.recurringEventManager.destroy();
-			entry.notificationManager.stop();
-			entry.categoryTracker.destroy();
-			entry.nameSeriesTracker.destroy();
-			entry.prerequisiteTracker.destroy();
+			this.cleanupEntry(entry);
 		}
 
 		this.registry.clear();
