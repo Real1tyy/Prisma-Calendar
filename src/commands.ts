@@ -71,6 +71,18 @@ export function registerPrismaCalendarCommands(plugin: CustomCalendarPlugin): vo
 		});
 	};
 
+	const addMinimizedModalCommand = (id: string, name: string, action: () => void): void => {
+		plugin.addCommand({
+			id,
+			name,
+			checkCallback: (checking: boolean) => {
+				if (!MinimizedModalManager.hasMinimizedModal()) return false;
+				if (!checking) action();
+				return true;
+			},
+		});
+	};
+
 	addBatchCommand(COMMAND_IDS.BATCH_SELECT_ALL, "Select all", (view) => view.selectAll());
 	addBatchCommand(COMMAND_IDS.BATCH_CLEAR_SELECTION, "Clear selection", (view) => view.clearSelection());
 	addBatchCommand(COMMAND_IDS.BATCH_DUPLICATE_SELECTION, "Duplicate selection", (view) => view.duplicateSelection());
@@ -311,33 +323,17 @@ export function registerPrismaCalendarCommands(plugin: CustomCalendarPlugin): vo
 		},
 	});
 
-	plugin.addCommand({
-		id: COMMAND_IDS.RESTORE_MINIMIZED_MODAL,
-		name: "Restore minimized event modal",
-		checkCallback: (checking: boolean) => {
-			if (MinimizedModalManager.hasMinimizedModal()) {
-				if (!checking) {
-					MinimizedModalManager.restoreModal(plugin.app, plugin.calendarBundles);
-				}
-				return true;
-			}
-			return false;
-		},
+	addMinimizedModalCommand(COMMAND_IDS.RESTORE_MINIMIZED_MODAL, "Restore minimized event modal", () => {
+		MinimizedModalManager.restoreModal(plugin.app, plugin.calendarBundles);
 	});
 
-	plugin.addCommand({
-		id: COMMAND_IDS.ASSIGN_CATEGORIES_MINIMIZED_MODAL,
-		name: "Assign categories to minimized event",
-		checkCallback: (checking: boolean) => {
-			if (MinimizedModalManager.hasMinimizedModal()) {
-				if (!checking) {
-					MinimizedModalManager.assignCategories(plugin.app, plugin.calendarBundles);
-				}
-				return true;
-			}
-			return false;
-		},
-	});
+	addMinimizedModalCommand(
+		COMMAND_IDS.ASSIGN_CATEGORIES_MINIMIZED_MODAL,
+		"Assign categories to minimized event",
+		() => {
+			MinimizedModalManager.assignCategories(plugin.app, plugin.calendarBundles);
+		}
+	);
 
 	plugin.addCommand({
 		id: COMMAND_IDS.OPEN_AI_CHAT,

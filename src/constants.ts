@@ -1,33 +1,21 @@
 import { createCssUtils } from "@real1ty-obsidian-plugins";
 
-const PLUGIN_ID = "prisma-calendar";
-export const CSS_PREFIX = "prisma-";
+/** Obsidian plugin id (matches manifest) — used for full command palette ids. */
+export const PRISMA_CALENDAR_PLUGIN_ID = "prisma-calendar" as const;
 
-export const { cls, addCls, removeCls, toggleCls, hasCls, tid } = createCssUtils(CSS_PREFIX);
-
-const CALENDAR_VIEW_TYPE = "custom-calendar-view";
-
-export function getCalendarViewType(calendarId: string): string {
-	return `${CALENDAR_VIEW_TYPE}-${calendarId}`;
-}
-
-// Concurrency control for parallel file processing
-// Higher values = faster initial scan but more memory/CPU usage
-export const SCAN_CONCURRENCY = 10;
-
-// Interval for periodic scan that marks past events as done (5 minutes)
-export const MARK_DONE_SCAN_INTERVAL_MS = 5 * 60 * 1000;
-
-// Custom namespace UUID for Prisma Calendar events
-// This ensures our event IDs are unique to this application
-export const PRISMA_CALENDAR_NAMESPACE = "a8f9e6d4-7c2b-4e1a-9f3d-5b8c1a2e4d6f";
-
-// Command IDs — values derived from keys via kebab-case
 type ScreamingToKebab<S extends string> = S extends `${infer A}_${infer B}`
 	? `${Lowercase<A>}-${ScreamingToKebab<B>}`
 	: Lowercase<S>;
 
-const COMMAND_KEYS = [
+/**
+ * Authoritative list of every palette command key. `PRISMA_PALETTE_COMMANDS`
+ * in `./commands` is type-checked against this tuple so the two cannot drift.
+ *
+ * Lives here (not in `./commands`) to keep these ids importable from settings
+ * and header-action modules without dragging in the heavy command handler
+ * graph — which would trigger a circular import via `./core`.
+ */
+export const COMMAND_KEYS = [
 	"CREATE_EVENT",
 	"CREATE_EVENT_WITH_STOPWATCH",
 	"CREATE_UNTRACKED_EVENT",
@@ -91,17 +79,40 @@ const COMMAND_KEYS = [
 	"OPEN_VIRTUAL_EVENTS_FILE",
 ] as const;
 
-type CommandKey = (typeof COMMAND_KEYS)[number];
+export type CommandKey = (typeof COMMAND_KEYS)[number];
 
-export const COMMAND_IDS = Object.fromEntries(COMMAND_KEYS.map((k) => [k, k.toLowerCase().replace(/_/g, "-")])) as {
+export const COMMAND_IDS = Object.fromEntries(
+	COMMAND_KEYS.map((key) => [key, key.toLowerCase().replace(/_/g, "-")])
+) as {
 	readonly [K in CommandKey]: ScreamingToKebab<K>;
 };
 
 export const FULL_COMMAND_IDS = Object.fromEntries(
-	Object.entries(COMMAND_IDS).map(([key, value]) => [key, `${PLUGIN_ID}:${value}`])
+	Object.entries(COMMAND_IDS).map(([key, value]) => [key, `${PRISMA_CALENDAR_PLUGIN_ID}:${value}`])
 ) as {
-	[K in keyof typeof COMMAND_IDS]: `${typeof PLUGIN_ID}:${(typeof COMMAND_IDS)[K]}`;
+	[K in CommandKey]: `${typeof PRISMA_CALENDAR_PLUGIN_ID}:${(typeof COMMAND_IDS)[K]}`;
 };
+
+export const CSS_PREFIX = "prisma-";
+
+export const { cls, addCls, removeCls, toggleCls, hasCls, tid } = createCssUtils(CSS_PREFIX);
+
+const CALENDAR_VIEW_TYPE = "custom-calendar-view";
+
+export function getCalendarViewType(calendarId: string): string {
+	return `${CALENDAR_VIEW_TYPE}-${calendarId}`;
+}
+
+// Concurrency control for parallel file processing
+// Higher values = faster initial scan but more memory/CPU usage
+export const SCAN_CONCURRENCY = 10;
+
+// Interval for periodic scan that marks past events as done (5 minutes)
+export const MARK_DONE_SCAN_INTERVAL_MS = 5 * 60 * 1000;
+
+// Custom namespace UUID for Prisma Calendar events
+// This ensures our event IDs are unique to this application
+export const PRISMA_CALENDAR_NAMESPACE = "a8f9e6d4-7c2b-4e1a-9f3d-5b8c1a2e4d6f";
 
 export const PROPAGATION_DEBOUNCE_MS = 3000;
 

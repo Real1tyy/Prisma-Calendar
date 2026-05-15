@@ -12,7 +12,7 @@ import { memo, useCallback, useState } from "react";
 
 import { showConfirmDeleteModal } from "../../components/settings/generic";
 import { deleteTrackedIntegrationEvents } from "../../components/settings/integration-shared";
-import { COMMAND_IDS } from "../../constants";
+import { COMMAND_IDS, PRISMA_CALENDAR_PLUGIN_ID } from "../../constants";
 import { PRO_FEATURES } from "../../core/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
@@ -77,11 +77,11 @@ interface IntegrationsSectionProps {
 
 const IntegrationsSection = memo(function IntegrationsSection({ settingsStore, app }: IntegrationsSectionProps) {
 	const handleExport = useCallback(() => {
-		executeCommand(app, `prisma-calendar:${COMMAND_IDS.EXPORT_CALENDAR_ICS}`);
+		executeCommand(app, `${PRISMA_CALENDAR_PLUGIN_ID}:${COMMAND_IDS.EXPORT_CALENDAR_ICS}`);
 	}, [app]);
 
 	const handleImport = useCallback(() => {
-		executeCommand(app, `prisma-calendar:${COMMAND_IDS.IMPORT_CALENDAR_ICS}`);
+		executeCommand(app, `${PRISMA_CALENDAR_PLUGIN_ID}:${COMMAND_IDS.IMPORT_CALENDAR_ICS}`);
 	}, [app]);
 
 	return (
