@@ -5,10 +5,10 @@ import type { App } from "obsidian";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { CalendarEvent } from "../../../types/calendar";
 import type { SingleCalendarConfig } from "../../../types/settings";
-import { resolveAllEventColors } from "../../../utils/event-color";
+import { resolveAllEventColors } from "../../../utils/events/color";
 import { cleanupTitle } from "../../../utils/events/naming";
 import { emitHover } from "../../../utils/obsidian";
-import { getDisplayProperties, renderPropertyValue } from "../../../utils/property-display";
+import { getDisplayProperties, renderPropertyValue } from "../../../utils/frontmatter/display";
 import { injectOverflowDots } from "../../calendar-event-renderer";
 import { buildHeatmapDataset, type HeatmapDataset } from "../../heatmap/heatmap-data";
 import {

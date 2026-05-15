@@ -2,7 +2,7 @@ import { cls, tid } from "@real1ty-obsidian-plugins";
 import type { CSSProperties, MouseEvent, ReactNode } from "react";
 import { memo, useCallback } from "react";
 
-import type { EventListItemData } from "../../../utils/events/event-list-mapping";
+import type { EventListItemData } from "../../../utils/events/list-mapping";
 
 export type { EventListItemData };
 

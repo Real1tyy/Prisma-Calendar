@@ -22,8 +22,8 @@ const mockGetNextOccurrence = vi.fn();
 const mockIsDateOnWeekdays = vi.fn();
 const mockIterateOccurrencesInRange = vi.fn();
 
-vi.mock("@real1ty-obsidian-plugins/utils/date-recurrence-utils", async () => {
-	const actual = await vi.importActual("@real1ty-obsidian-plugins/utils/date-recurrence-utils");
+vi.mock("@real1ty-obsidian-plugins/utils/dates/recurrence-utils", async () => {
+	const actual = await vi.importActual("@real1ty-obsidian-plugins/utils/dates/recurrence-utils");
 	return {
 		...actual,
 		getNextOccurrence: mockGetNextOccurrence,

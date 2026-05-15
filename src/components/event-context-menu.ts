@@ -47,11 +47,11 @@ import { openEventSeriesModal } from "../react/modals/event-list";
 import { isTimedEvent } from "../types";
 import type { CalendarEvent, EventKind } from "../types/calendar";
 import { isTimeUnitAllowedForAllDay } from "../types/calendar";
-import { getEventKind, isRecurringEventKind } from "../utils/event-classification";
-import { isEventDone, parseCustomDoneProperty } from "../utils/event-frontmatter";
-import { findAdjacentEvent } from "../utils/event-matching";
+import { getEventKind, isRecurringEventKind } from "../utils/events/classification";
+import { isEventDone, parseCustomDoneProperty } from "../utils/events/frontmatter";
+import { findAdjacentEvent } from "../utils/events/matching";
 import { getEventName } from "../utils/events/naming";
-import { getVirtualKind } from "../utils/extended-props";
+import { getVirtualKind } from "../utils/frontmatter/extended-props";
 import {
 	emitHover,
 	getCategoriesFromFilePath,

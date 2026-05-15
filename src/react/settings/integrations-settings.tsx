@@ -20,7 +20,7 @@ import type { PrismaCalendarSettingsStore } from "../../types";
 import type { CalDAVAccount, ICSSubscription } from "../../types/integrations";
 import { CalDAVSettingsSchema, ICSSubscriptionSettingsSchema } from "../../types/integrations";
 import { SingleCalendarConfigSchema } from "../../types/settings";
-import { getCalendarById } from "../../utils/calendar-settings";
+import { getCalendarById } from "../../utils/calendar/settings";
 import {
 	openCalDAVAddModal,
 	openCalDAVEditModal,

@@ -6,11 +6,11 @@ import { BehaviorSubject, type Observable, Subject, type Subscription } from "rx
 import type { Frontmatter, PrismaSyncDataSchema, SingleCalendarConfig } from "../types";
 import type { CalendarEventSource, IndexerEvent, RawEventSource } from "../types/event-source";
 import type { NodeRecurringEvent } from "../types/recurring";
-import { parseEventMetadata, shouldEventBeMarkedAsDone } from "../utils/event-frontmatter";
-import { ensureFileHasZettelId } from "../utils/event-naming";
+import { parseEventMetadata, shouldEventBeMarkedAsDone } from "../utils/events/frontmatter";
+import { ensureFileHasZettelId } from "../utils/events/file-naming";
 import { cleanupTitle } from "../utils/events/naming";
 import { generateUniqueRruleId, hasTimestamp } from "../utils/events/zettel-id";
-import { parseRRuleFromFrontmatter } from "../utils/recurring-utils";
+import { parseRRuleFromFrontmatter } from "../utils/dates/recurring";
 import { createEventSchema } from "./event-schema";
 
 /**

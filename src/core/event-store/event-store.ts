@@ -9,7 +9,7 @@ import { eventDefaults, isAnyVirtual, isTimedEvent } from "../../types/calendar"
 import type { CalendarEventSource, IndexerEvent, RawEventSource } from "../../types/event-source";
 import type { ISO } from "../../types/index";
 import type { SingleCalendarConfig } from "../../types/settings";
-import { stripZ } from "../../utils/iso";
+import { stripZ } from "../../utils/dates/iso";
 import type { HolidayStore } from "../holidays";
 import { MinimizedModalManager } from "../minimized-modal-manager";
 import type { Parser } from "../parser";

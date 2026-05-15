@@ -23,7 +23,7 @@ import {
 	computeNotificationDedicatedUIPropKeys,
 	computeNotificationSystemPropKeys,
 	computeSystemPropKeys,
-} from "../utils/prop-classifications";
+} from "../utils/frontmatter/classifications";
 import { AI_DEFAULTS } from "./ai";
 import { CalDAVSettingsSchema, ICSSubscriptionSettingsSchema } from "./integrations";
 import {

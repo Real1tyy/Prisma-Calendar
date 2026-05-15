@@ -10,7 +10,7 @@ import { RECURRENCE_TYPE_OPTIONS } from "../../../types/recurring";
 import { getEventName } from "../../../utils/events/naming";
 import { removeZettelId } from "../../../utils/events/zettel-id";
 import { getCategoriesFromFilePath, openFileInNewTab } from "../../../utils/obsidian";
-import { formatRecurrenceLabel, getStartDateTime, isPresetType } from "../../../utils/recurring-utils";
+import { formatRecurrenceLabel, getStartDateTime, isPresetType } from "../../../utils/dates/recurring";
 import { openCategoryAssignModal } from "../";
 import { openEventSeriesModal } from "./event-series-modal-content";
 import { type EventsModalSortMode, filterEventsModalItemsByQuery, sortEventsModalItems } from "./events-modal-shared";

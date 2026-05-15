@@ -9,7 +9,7 @@ import { useBundleChanges } from "../../react/hooks/use-bundle-changes";
 import { openEventSeriesModal } from "../../react/modals/event-list";
 import { removeZettelId } from "../../utils/events/zettel-id";
 import { getCategoriesFromFilePath } from "../../utils/obsidian";
-import { formatRecurrenceLabel, isPresetType } from "../../utils/recurring-utils";
+import { formatRecurrenceLabel, isPresetType } from "../../utils/dates/recurring";
 import { useBundle } from "../contexts/bundle-context";
 import { DashboardChart } from "./dashboard/dashboard-chart";
 import { DashboardRanking } from "./dashboard/dashboard-ranking";

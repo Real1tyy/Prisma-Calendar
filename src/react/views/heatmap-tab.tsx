@@ -5,7 +5,7 @@ import { debounceTime, distinctUntilChanged, map, merge, skip } from "rxjs";
 import { type HeatmapHandle, renderHeatmapInto } from "../../components/modals";
 import { CSS_PREFIX } from "../../constants";
 import { PRO_FEATURES } from "../../core/license";
-import { getHeatmapRenderingKey } from "../../utils/calendar-settings";
+import { getHeatmapRenderingKey } from "../../utils/calendar/settings";
 import { BundleContext, useBundle } from "../contexts/bundle-context";
 import { FilterBar, type FilterBarHandle } from "./filter-bar";
 import { ProGatedContent } from "./pro-gated-content";

@@ -18,8 +18,8 @@ import { BatchCommandFactory } from "../core/commands/batch-commands";
 import { openMoveByModal } from "../react/modals";
 import type { CalendarEvent } from "../types/calendar";
 import { isTimeUnitAllowedForAllDay } from "../types/calendar";
-import { isBatchSelectable, isVirtualEvent } from "../utils/event-classification";
-import { parseFCExtendedProps } from "../utils/extended-props";
+import { isBatchSelectable, isVirtualEvent } from "../utils/events/classification";
+import { parseFCExtendedProps } from "../utils/frontmatter/extended-props";
 
 export class BatchSelectionManager {
 	private selectedEvents = new Map<string, CalendarEvent>();

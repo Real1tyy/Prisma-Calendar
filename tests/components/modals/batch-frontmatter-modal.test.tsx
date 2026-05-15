@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { BatchFrontmatterForm } from "../../../src/react/modals/batch/batch-frontmatter-modal";
 
-vi.mock("../../../src/utils/event-frontmatter", () => ({
+vi.mock("../../../src/utils/events/frontmatter", () => ({
 	getAllFrontmatterProperties: () => new Map<string, string>(),
 }));
 

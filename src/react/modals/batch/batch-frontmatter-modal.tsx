@@ -4,7 +4,7 @@ import { memo, useCallback, useState } from "react";
 
 import type { CalendarEvent } from "../../../types/calendar";
 import type { SingleCalendarConfig } from "../../../types/settings";
-import { getAllFrontmatterProperties } from "../../../utils/event-frontmatter";
+import { getAllFrontmatterProperties } from "../../../utils/events/frontmatter";
 
 interface FrontmatterProperty {
 	id: number;

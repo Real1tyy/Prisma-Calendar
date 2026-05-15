@@ -16,8 +16,8 @@ import { type CalendarEvent, type CalendarEventData, isAllDayEvent, isTimedEvent
 import type { SingleCalendarConfig } from "../types/settings";
 import { cleanupTitle } from "./events/naming";
 import { getInternalProperties } from "./frontmatter/props";
-import { stripZ } from "./iso";
-import { extractPropertyText, getDisplayProperties } from "./property-display";
+import { stripZ } from "./dates/iso";
+import { extractPropertyText, getDisplayProperties } from "./frontmatter/display";
 
 export function formatEventTimeInfo(event: CalendarEvent): string {
 	const startTime = DateTime.fromISO(event.start);

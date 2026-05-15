@@ -6,7 +6,7 @@ import type { DependencyGraph } from "../core/dependency-graph";
 import type { PrerequisiteTracker } from "../core/prerequisite-tracker";
 import type { CalendarEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/settings";
-import { resolveAllEventColors } from "../utils/event-color";
+import { resolveAllEventColors } from "../utils/events/color";
 
 export type {
 	ArrowLayout,

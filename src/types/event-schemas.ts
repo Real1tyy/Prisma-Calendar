@@ -3,7 +3,7 @@ import { v5 as uuidv5 } from "uuid";
 
 import { PRISMA_CALENDAR_NAMESPACE } from "../constants";
 import { cleanupTitle } from "../utils/events/naming";
-import { toInternalISO } from "../utils/iso";
+import { toInternalISO } from "../utils/dates/iso";
 import type { AllDayEvent, ParsedEvent, TimedEvent, UntrackedEvent } from "./calendar";
 import { eventDefaults } from "./calendar";
 import type { ParsedEventFrontmatter } from "./event-frontmatter-schema";

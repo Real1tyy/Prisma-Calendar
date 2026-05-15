@@ -10,7 +10,7 @@ import {
 import type { App, TFile } from "obsidian";
 
 import type { EventDateTime, Frontmatter, SingleCalendarConfig } from "../../types";
-import { ensureFileHasZettelId } from "../../utils/event-naming";
+import { ensureFileHasZettelId } from "../../utils/events/file-naming";
 import { extractZettelId, rebuildPhysicalInstanceWithNewDate } from "../../utils/events/zettel-id";
 import { setEventBasics } from "../../utils/frontmatter/basics";
 import { isPhysicalRecurringEvent } from "../../utils/frontmatter/predicates";

@@ -15,8 +15,8 @@ import { CalDAVClientService } from "../../../core/integrations/caldav";
 import type CustomCalendarPlugin from "../../../main";
 import type { PrismaCalendarSettingsStore } from "../../../types";
 import type { CalDAVAccount, CalDAVCalendarInfo } from "../../../types/integrations";
-import { getCalendarById } from "../../../utils/calendar-settings";
-import { friendlyCalendarName } from "../../../utils/calendar-settings";
+import { getCalendarById } from "../../../utils/calendar/settings";
+import { friendlyCalendarName } from "../../../utils/calendar/settings";
 import { openCalendarIntegrationDeleteEventsModal } from "../event/delete-confirmation-modal";
 import { CalendarCheckboxes } from "./calendar-checkboxes";
 

@@ -14,7 +14,7 @@ import type { App } from "obsidian";
 import { getFrontMatterInfo, parseYaml, TFile } from "obsidian";
 
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
-import { computeMovePath, ensureFileHasZettelId, generateUniqueEventPath } from "../../utils/event-naming";
+import { computeMovePath, ensureFileHasZettelId, generateUniqueEventPath } from "../../utils/events/file-naming";
 import { removeZettelId } from "../../utils/events/zettel-id";
 import { applyStartEndOffsets } from "../../utils/frontmatter/basics";
 import { removeNonCloneableProperties } from "../../utils/frontmatter/props";

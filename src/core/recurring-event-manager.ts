@@ -29,16 +29,16 @@ import type { EventMetadata } from "../types/event-metadata";
 import type { CalendarEventSource, IndexerEvent } from "../types/event-source";
 import type { NodeRecurringEvent, RecurringEventSeries } from "../types/recurring";
 import type { SingleCalendarConfig } from "../types/settings";
-import { getNextOccurrence } from "../utils/date-recurrence";
+import { getNextOccurrence } from "../utils/dates/recurrence";
 import {
 	applyFrontmatterChangesToInstance,
 	filterExcludedPropsFromDiff,
 	getExcludedProps,
 	setEventBasics,
 	type TimePropagationDiff,
-} from "../utils/event-frontmatter";
+} from "../utils/events/frontmatter";
 import { hashRRuleIdToZettelFormat, removeZettelId } from "../utils/events/zettel-id";
-import { stripZ, toInternalISO } from "../utils/iso";
+import { stripZ, toInternalISO } from "../utils/dates/iso";
 import {
 	batchedPromiseAll,
 	deleteFilesByPaths,
@@ -46,8 +46,8 @@ import {
 	getFileByPathOrThrow,
 	trashDuplicateFile,
 } from "../utils/obsidian";
-import { calculateTargetInstanceCount, findFirstValidStartDate, getStartDateTime } from "../utils/recurring-utils";
-import { isOccurrenceWithinUntil } from "../utils/recurring-utils";
+import { calculateTargetInstanceCount, findFirstValidStartDate, getStartDateTime } from "../utils/dates/recurring";
+import { isOccurrenceWithinUntil } from "../utils/dates/recurring";
 import type { CategoryTracker } from "./category-tracker";
 import type { EventStore } from "./event-store";
 

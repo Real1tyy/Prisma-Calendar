@@ -45,19 +45,19 @@ import {
 } from "../../../types/event-boundaries";
 import { RECURRENCE_TYPE_OPTIONS, type Weekday, WEEKDAY_OPTIONS, WEEKDAY_PRESET_DAYS } from "../../../types/recurring";
 import type { EventPreset } from "../../../types/settings";
-import { autoAssignCategories, findAdjacentEvent } from "../../../utils/event-matching";
-import { validateEventTitle } from "../../../utils/event-title-validation";
+import { autoAssignCategories, findAdjacentEvent } from "../../../utils/events/matching";
+import { validateEventTitle } from "../../../utils/events/title-validation";
 import { extractCleanDisplayName } from "../../../utils/events/naming";
-import { getVirtualKind } from "../../../utils/extended-props";
+import { getVirtualKind } from "../../../utils/frontmatter/extended-props";
 import { formatDateOnly, formatDateTimeForInput } from "../../../utils/format";
-import { writeMetadataToFrontmatter } from "../../../utils/frontmatter-writer";
+import { writeMetadataToFrontmatter } from "../../../utils/frontmatter/writer";
 import { getCategoriesFromFilePath, getFileAndFrontmatter } from "../../../utils/obsidian";
 import {
 	buildCustomIntervalDSL,
 	isPresetType,
 	isWeekdaySupported,
 	parseRecurrenceType,
-} from "../../../utils/recurring-utils";
+} from "../../../utils/dates/recurring";
 import { TitleInputSuggest } from "../../title-input-suggest";
 import { showCategoryEventsModal } from "../series/bases-view";
 import {

@@ -7,8 +7,8 @@ import type { CalendarEventParser } from "../types/event-schemas";
 import { buildEventSchemaInput, createEventSchema } from "../types/event-schemas";
 import type { RawEventSource } from "../types/event-source";
 import type { PrismaCalendarSettingsStore, SingleCalendarConfig } from "../types/index";
-import { findConflictForCalendar } from "../utils/calendar-conflicts";
-import { applyDateNormalizationToFile } from "../utils/event-frontmatter";
+import { findConflictForCalendar } from "../utils/calendar/conflicts";
+import { applyDateNormalizationToFile } from "../utils/events/frontmatter";
 
 export class Parser {
 	private settings: SingleCalendarConfig;

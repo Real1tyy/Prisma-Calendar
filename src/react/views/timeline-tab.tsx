@@ -4,7 +4,7 @@ import { debounceTime, distinctUntilChanged, map, merge, skip } from "rxjs";
 
 import { renderTimelineInto, type TimelineHandle } from "../../components/modals";
 import { CSS_PREFIX } from "../../constants";
-import { getTimelineRenderingKey } from "../../utils/calendar-settings";
+import { getTimelineRenderingKey } from "../../utils/calendar/settings";
 import { BundleContext, useBundle } from "../contexts/bundle-context";
 import { FilterBar, type FilterBarHandle } from "./filter-bar";
 

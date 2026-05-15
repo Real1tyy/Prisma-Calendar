@@ -1,7 +1,7 @@
 import { calculateDurationMinutes, intoDate, toLocalISOString } from "@real1ty-obsidian-plugins";
 
 import type { AIMode } from "../../types/ai";
-import { stripZ } from "../../utils/iso";
+import { stripZ } from "../../utils/dates/iso";
 import type { AIEventSummary } from "./ai-context-builder";
 
 // ─── Types ──────────────────────────────────────────────────────────

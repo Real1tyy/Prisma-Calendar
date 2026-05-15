@@ -3,7 +3,7 @@ import { useSchemaField } from "@real1ty-obsidian-plugins-react";
 import { memo, useMemo } from "react";
 
 import type { PrismaCalendarSettingsStore } from "../../types";
-import { describeConflict, findConflictForCalendar } from "../../utils/calendar-conflicts";
+import { describeConflict, findConflictForCalendar } from "../../utils/calendar/conflicts";
 
 interface NormalizationConflictBannerProps {
 	calendarId: string;

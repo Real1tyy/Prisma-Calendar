@@ -11,7 +11,7 @@ import type { EventSaveData, UpdateEventData } from "../../../types/event-bounda
 import type { Weekday } from "../../../types/recurring";
 import { extractInstanceDate, extractZettelId, removeZettelId } from "../../../utils/events/zettel-id";
 import { categorizeProperties, formatDateOnly, formatDateTimeForInput } from "../../../utils/format";
-import { isWeekdaySupported } from "../../../utils/recurring-utils";
+import { isWeekdaySupported } from "../../../utils/dates/recurring";
 import { BaseEventModal } from "./base-event-modal";
 import { loadSimpleFieldValues } from "./event-frontmatter-mapper";
 

@@ -30,8 +30,8 @@ import { buildWhatsNewConfig } from "./core/whats-new-config";
 import { openCalendarSelectModal, openFirstLaunchModal, openICSImportModal } from "./react/modals";
 import { CustomCalendarSettingsSchema, type PrismaCalendarSettingsStore, PrismaSyncDataSchema } from "./types";
 import { type CalDAVAccount, type ICSSubscription } from "./types/integrations";
-import { createDefaultCalendarConfig } from "./utils/calendar-settings";
-import { migrateSharedExcludedProps } from "./utils/settings-migrations";
+import { createDefaultCalendarConfig } from "./utils/calendar/settings";
+import { migrateSharedExcludedProps } from "./utils/calendar/migrations";
 
 export default class CustomCalendarPlugin extends Plugin {
 	readonly changelogContent: string = CHANGELOG_CONTENT;

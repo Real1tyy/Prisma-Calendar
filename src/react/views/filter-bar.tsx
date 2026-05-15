@@ -2,7 +2,7 @@ import { CommittedFilterInput, type CommittedFilterInputHandle } from "@real1ty-
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 
 import type { CalendarEvent } from "../../types/calendar";
-import { createExpressionMatcher, matchesSearch } from "../../utils/filter-logic";
+import { createExpressionMatcher, matchesSearch } from "../../utils/filters/logic";
 import { FilterPresetSelector } from "./filter-preset-selector";
 
 const SEARCH_DEBOUNCE_MS = 300;

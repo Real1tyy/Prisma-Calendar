@@ -20,7 +20,7 @@ import {
 	createDefaultCalendarConfig,
 	duplicateCalendarConfig,
 	generateUniqueCalendarId,
-} from "../../utils/calendar-settings";
+} from "../../utils/calendar/settings";
 import { openConfigureCalendarModal } from "../modals/calendar/configure-calendar-modal";
 import { SingleCalendarSettingsReact } from "./single-calendar-settings-react";
 

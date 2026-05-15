@@ -31,8 +31,8 @@ import { MinimizedModalManager } from "../../core/minimized-modal-manager";
 import type { ParsedEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { removeZettelId } from "../../utils/events/zettel-id";
-import { normalizeFrontmatterForColorEvaluation } from "../../utils/expression-utils";
-import { getDisplayProperties } from "../../utils/property-display";
+import { normalizeFrontmatterForColorEvaluation } from "../../utils/filters/expressions";
+import { getDisplayProperties } from "../../utils/frontmatter/display";
 
 const SEARCH_FOCUS_DELAY_MS = 50;
 const DROP_CLICK_IGNORE_MS = 500;

@@ -2,8 +2,8 @@ import type { Frontmatter } from "../../../types";
 import type { EventEditableFormFields } from "../../../types/event-boundaries";
 import { NonNegativeInt, PositiveInt } from "../../../types/event-boundaries";
 import type { SingleCalendarConfig } from "../../../types/settings";
-import { setEventBasics, setUntrackedEventBasics } from "../../../utils/event-frontmatter";
-import { setBooleanProp } from "../../../utils/frontmatter-writer";
+import { setEventBasics, setUntrackedEventBasics } from "../../../utils/events/frontmatter";
+import { setBooleanProp } from "../../../utils/frontmatter/writer";
 import type { RecurringFormState } from "./event-form-state";
 
 export function loadSimpleFieldValues(

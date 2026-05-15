@@ -1,7 +1,7 @@
 import type { CustomButtonInput, EventInput } from "@fullcalendar/core";
 import { z } from "zod";
 
-import type { FCExtendedProps } from "../utils/extended-props";
+import type { FCExtendedProps } from "../utils/frontmatter/extended-props";
 import { EventMetadataSchema } from "./event-metadata";
 
 // ─── Virtual Kind ────────────────────────────────────────────────────

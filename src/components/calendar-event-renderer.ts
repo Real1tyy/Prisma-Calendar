@@ -14,10 +14,10 @@ import { type App, TFile } from "obsidian";
 
 import type { CalendarEventData } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/settings";
-import { isHolidayEvent } from "../utils/event-classification";
+import { isHolidayEvent } from "../utils/events/classification";
 import { cleanupTitle } from "../utils/events/naming";
 import { buildEventTooltip } from "../utils/format";
-import { getDisplayProperties, renderPropertyValue } from "../utils/property-display";
+import { getDisplayProperties, renderPropertyValue } from "../utils/frontmatter/display";
 
 export interface EventRenderContext {
 	app: App;

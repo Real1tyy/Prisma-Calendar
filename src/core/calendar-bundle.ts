@@ -15,7 +15,7 @@ import type CustomCalendarPlugin from "../main";
 import { type PrismaViewRef, registerPrismaReactView } from "../react/views/register-prisma-view";
 import type { PrismaCalendarSettingsStore } from "../types";
 import type { CreateEventData, UpdateEventData } from "../types/event-boundaries";
-import { generateUniqueEventPath } from "../utils/event-naming";
+import { generateUniqueEventPath } from "../utils/events/file-naming";
 import { extractZettelId, removeZettelId } from "../utils/events/zettel-id";
 import { CalendarViewStateManager } from "./calendar-view-state-manager";
 import type { CategoryTracker } from "./category-tracker";

@@ -3,7 +3,7 @@ import type { DurationLike } from "luxon";
 import { DateTime } from "luxon";
 
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
-import { stripZ } from "../iso";
+import { stripZ } from "../dates/iso";
 import { isAllDayFrontmatterValue } from "./predicates";
 
 const normalizesTimedEvents = (mode: string): boolean =>

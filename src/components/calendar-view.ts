@@ -59,16 +59,16 @@ import type {
 } from "../types/calendar";
 import { isAnyVirtual, isTimedEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/index";
-import { getCalendarRenderingKey } from "../utils/calendar-settings";
+import { getCalendarRenderingKey } from "../utils/calendar/settings";
 import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
-import { isBatchSelectable, isFileBackedEvent } from "../utils/event-classification";
-import { resolveAllEventColors, resolveEventColor } from "../utils/event-color";
-import { diffEvents, eventFingerprint, hashFrontmatter } from "../utils/event-diff";
-import { getCommonCategories } from "../utils/event-frontmatter";
-import { findAdjacentEvent, getSourceEventInfoFromVirtual } from "../utils/event-matching";
-import { invalidatePropertyExtractionCache } from "../utils/expression-utils";
-import { getFilePath, getVirtualKind } from "../utils/extended-props";
-import { stripZ } from "../utils/iso";
+import { isBatchSelectable, isFileBackedEvent } from "../utils/events/classification";
+import { resolveAllEventColors, resolveEventColor } from "../utils/events/color";
+import { diffEvents, eventFingerprint, hashFrontmatter } from "../utils/events/diff";
+import { getCommonCategories } from "../utils/events/frontmatter";
+import { findAdjacentEvent, getSourceEventInfoFromVirtual } from "../utils/events/matching";
+import { invalidatePropertyExtractionCache } from "../utils/filters/expressions";
+import { getFilePath, getVirtualKind } from "../utils/frontmatter/extended-props";
+import { stripZ } from "../utils/dates/iso";
 import { emitHover, getFileByPathOrThrow } from "../utils/obsidian";
 import { BatchSelectionManager } from "./batch-selection-manager";
 import {

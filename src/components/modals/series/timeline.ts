@@ -15,7 +15,7 @@ import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { type PreviewEventData, showEventPreviewModal } from "../../../react/modals/preview/event-preview-modal";
 import type { CalendarEvent } from "../../../types/calendar";
 import type { SingleCalendarConfig } from "../../../types/settings";
-import { createTextColorResolver, resolveAllEventColors } from "../../../utils/event-color";
+import { createTextColorResolver, resolveAllEventColors } from "../../../utils/events/color";
 import { cleanupTitle } from "../../../utils/events/naming";
 import { buildEventTooltip } from "../../../utils/format";
 import { injectOverflowDots } from "../../calendar-event-renderer";

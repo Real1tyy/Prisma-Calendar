@@ -6,7 +6,7 @@ import { debounceTime, map, startWith, switchMap } from "rxjs/operators";
 
 import type { CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
-import { calculateCapacityFromEvents, formatBoundaryRange, formatCapacityLabel } from "../../utils/capacity";
+import { calculateCapacityFromEvents, formatBoundaryRange, formatCapacityLabel } from "../../utils/stats/capacity";
 import { formatDuration, formatDurationAsDecimalHours, getDayBounds } from "../../utils/stats";
 import { useBundle } from "../contexts/bundle-context";
 

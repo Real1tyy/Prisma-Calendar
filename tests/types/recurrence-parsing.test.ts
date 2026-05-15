@@ -6,7 +6,7 @@ import {
 	isPresetType,
 	isWeekdaySupported,
 	parseRecurrenceType,
-} from "../../src/utils/recurring-utils";
+} from "../../src/utils/dates/recurring";
 
 describe("recurrence-parsing", () => {
 	describe("parseRecurrenceType", () => {

@@ -11,7 +11,7 @@ import {
 	isPresetType,
 	isWeekdaySupported,
 	parseRecurrenceType,
-} from "../../../utils/recurring-utils";
+} from "../../../utils/dates/recurring";
 import { PrismaCheckbox } from "../prisma-checkbox";
 
 const FREQ_OPTIONS: Array<{ value: string; label: string }> = [

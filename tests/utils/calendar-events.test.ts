@@ -1,8 +1,12 @@
 import type { App } from "obsidian";
 import { describe, expect, it, vi } from "vitest";
 
-import { getCommonCategories, isEventDone } from "../../src/utils/event-frontmatter";
-import { ensureFileHasZettelId, generateUniqueEventPath, generateUniqueZettelId } from "../../src/utils/event-naming";
+import { getCommonCategories, isEventDone } from "../../src/utils/events/frontmatter";
+import {
+	ensureFileHasZettelId,
+	generateUniqueEventPath,
+	generateUniqueZettelId,
+} from "../../src/utils/events/file-naming";
 import { extractNotesCoreName } from "../../src/utils/events/naming";
 import {
 	extractZettelId,

@@ -9,7 +9,7 @@ import { createElement, createRef } from "react";
 
 import { CSS_PREFIX } from "../constants";
 import type { Frontmatter } from "../types";
-import { createExpressionMatcher, matchesSearch } from "../utils/filter-logic";
+import { createExpressionMatcher, matchesSearch } from "../utils/filters/logic";
 
 const SEARCH_DEBOUNCE_MS = 300;
 const EXPRESSION_DEBOUNCE_MS = 300;

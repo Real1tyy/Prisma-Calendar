@@ -5,7 +5,7 @@ import type { CalendarBundle } from "../core/calendar-bundle";
 import type CustomCalendarPlugin from "../main";
 import { type VirtualEventData, VirtualEventsFileSchema } from "../types/calendar";
 import { formatDateOnlyDisplay, formatDateTimeDisplay } from "../utils/format";
-import { extractPropertyText } from "../utils/property-display";
+import { extractPropertyText } from "../utils/frontmatter/display";
 
 export class VirtualEventsBlockRenderer extends MarkdownRenderChild {
 	constructor(

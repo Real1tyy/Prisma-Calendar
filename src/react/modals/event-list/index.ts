@@ -1,4 +1,4 @@
-export { mapEventToItem } from "../../../utils/events/event-list-mapping";
+export { mapEventToItem } from "../../../utils/events/list-mapping";
 export type { EventListAction, EventListItemData, EventListItemProps } from "./event-list-item";
 export { EventListItem } from "./event-list-item";
 export type { EventListModalProps } from "./event-list-modal";

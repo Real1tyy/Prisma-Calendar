@@ -4,7 +4,7 @@ import { type App, Notice } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { addPrerequisite } from "../core/commands";
 import { extractCleanDisplayName } from "../utils/events/naming";
-import { getFilePath } from "../utils/extended-props";
+import { getFilePath } from "../utils/frontmatter/extended-props";
 import { createStickyBanner, type StickyBannerHandle } from "./sticky-banner";
 
 export class PrerequisiteSelectionManager {

@@ -1,7 +1,7 @@
 import { ensureISOSuffix } from "@real1ty-obsidian-plugins";
 
 import type { Frontmatter } from "../../types";
-import { autoAssignCategories } from "../../utils/event-matching";
+import { autoAssignCategories } from "../../utils/events/matching";
 import { setEventBasics, setUntrackedEventBasics } from "../../utils/frontmatter/basics";
 import { assignListToFrontmatter, parseCustomDoneProperty } from "../../utils/frontmatter/props";
 import type { CalendarBundle } from "../calendar-bundle";

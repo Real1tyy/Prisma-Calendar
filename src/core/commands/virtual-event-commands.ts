@@ -4,7 +4,7 @@ import type { App } from "obsidian";
 import { TFile } from "obsidian";
 
 import type { VirtualEventData } from "../../types/calendar";
-import { stripZ } from "../../utils/iso";
+import { stripZ } from "../../utils/dates/iso";
 import { getFileAndFrontmatter } from "../../utils/obsidian";
 import type { CalendarBundle } from "../calendar-bundle";
 

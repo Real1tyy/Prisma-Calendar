@@ -6,7 +6,7 @@ import {
 	type SingleCalendarConfig,
 	SingleCalendarConfigSchema,
 } from "../types/index";
-import { getCalendarById } from "../utils/calendar-settings";
+import { getCalendarById } from "../utils/calendar/settings";
 
 export type ToolbarButtonsKey = "toolbarButtons" | "mobileToolbarButtons";
 

@@ -6,7 +6,7 @@ import { useCallback, useMemo, useState } from "react";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { CalendarEvent } from "../../../types/calendar";
 import type { SingleCalendarConfig } from "../../../types/settings";
-import { mapEventToItem } from "../../../utils/events/event-list-mapping";
+import { mapEventToItem } from "../../../utils/events/list-mapping";
 import type { EventListAction, EventListItemData } from "./event-list-item";
 import { EventListModal } from "./event-list-modal";
 

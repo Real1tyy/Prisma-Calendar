@@ -8,7 +8,7 @@ import type { CalendarComponent } from "../../../components/calendar-view";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { CalendarEvent } from "../../../types/calendar";
 import type { SingleCalendarConfig } from "../../../types/settings";
-import { resolveEventColor } from "../../../utils/event-color";
+import { resolveEventColor } from "../../../utils/events/color";
 import { removeZettelId } from "../../../utils/events/zettel-id";
 import type { EventListAction, EventListItemData } from "./event-list-item";
 import { EventListModal } from "./event-list-modal";

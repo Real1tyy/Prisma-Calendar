@@ -1,5 +1,5 @@
 import type { FCPrismaEventInput } from "../../src/types/calendar";
-import { eventFingerprint } from "../../src/utils/event-diff";
+import { eventFingerprint } from "../../src/utils/events/diff";
 
 /** Factory for FCPrismaEventInput (FullCalendar EventInput format). */
 export function createFCPrismaEventInput(overrides: Partial<FCPrismaEventInput> & { id: string }): FCPrismaEventInput {

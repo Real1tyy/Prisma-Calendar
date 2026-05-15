@@ -11,7 +11,7 @@ import type { BehaviorSubject, Subscription } from "rxjs";
 import { PROPAGATION_DEBOUNCE_MS } from "../constants";
 import type { CalendarEvent } from "../types/calendar";
 import type { Frontmatter, SingleCalendarConfig } from "../types/index";
-import { applyFrontmatterChangesToInstance } from "../utils/event-frontmatter";
+import { applyFrontmatterChangesToInstance } from "../utils/events/frontmatter";
 import { getEventName } from "../utils/events/naming";
 import { getExcludedProps } from "../utils/frontmatter/props";
 import type { EventFileRepository } from "./event-file-repository";
