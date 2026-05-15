@@ -1,5 +1,4 @@
 import {
-	activateView,
 	describeError,
 	ensureDirectory,
 	normalizeDirectory,
@@ -19,27 +18,16 @@ import type { CalendarComponent } from "./components/calendar-view";
 import { showICSImportProgressModal } from "./components/modals";
 import { registerPrismaBasesView } from "./components/views/bases-calendar-view";
 import { VirtualEventsBlockRenderer } from "./components/virtual-events-block";
-import { COMMAND_IDS, VIRTUAL_EVENTS_CODE_FENCE } from "./constants";
+import { registerPrismaCalendarCommands } from "./commands";
+import { VIRTUAL_EVENTS_CODE_FENCE } from "./constants";
 import { CalendarBundle, IndexerRegistry, MinimizedModalManager, PrismaCalendarApiManager } from "./core";
-import {
-	addZettelIdToActiveNote,
-	duplicateCurrentEvent,
-	openCreateEventModal,
-	openCreateUntrackedEventModal,
-	openEditActiveNoteModal,
-	triggerCurrentEventStopwatch,
-} from "./core/api/modal-actions";
-import { redo, undo } from "./core/api/read-operations";
 import { scanVaultForDirectorySuggestions } from "./core/directory-suggestions";
 import { exportCalendarAsICS } from "./core/integrations/ics-export";
 import { importEventsToCalendar } from "./core/integrations/ics-import";
 import type { LicenseManager } from "./core/license";
-import { createLicenseManager, PRO_FEATURES } from "./core/license";
-import { getProGateUrls } from "./core/pro-feature-previews";
+import { createLicenseManager } from "./core/license";
 import { buildWhatsNewConfig } from "./core/whats-new-config";
 import { openCalendarSelectModal, openFirstLaunchModal, openICSImportModal } from "./react/modals";
-import { openFilteredEventsModal, openGlobalSearchModal } from "./react/modals/event-list";
-import { openEventsModal } from "./react/modals/event-list/events-modal-content";
 import { CustomCalendarSettingsSchema, type PrismaCalendarSettingsStore, PrismaSyncDataSchema } from "./types";
 import { type CalDAVAccount, type ICSSubscription } from "./types/integrations";
 import { createDefaultCalendarConfig } from "./utils/calendar-settings";
@@ -91,8 +79,8 @@ export default class CustomCalendarPlugin extends Plugin {
 		this.apiManager.exposeFree();
 		this.addSettingTab(new CustomCalendarSettingsTab(this.app, this));
 
-		this.registerCommands();
 		this.registerAIChatView();
+		registerPrismaCalendarCommands(this);
 
 		const licenseSubscription = this.licenseManager.isPro$.subscribe((isPro) => {
 			if (isPro) {
@@ -163,353 +151,17 @@ export default class CustomCalendarPlugin extends Plugin {
 
 	private registerAIChatView(): void {
 		this.registerViewTypeSafe(AI_CHAT_VIEW_TYPE, (leaf) => new AIChatView(leaf, this));
-
-		this.addCommand({
-			id: COMMAND_IDS.OPEN_AI_CHAT,
-			name: "Open AI chat",
-			callback: () => {
-				void this.toggleAIChatPanel();
-			},
-		});
 	}
 
-	private async toggleAIChatPanel(): Promise<void> {
-		await activateView(this.app.workspace, {
-			viewType: AI_CHAT_VIEW_TYPE,
-			placement: "right-sidebar",
-			toggle: true,
-		});
-	}
-
-	private getActiveBundleFromLeaf(): CalendarBundle | null {
+	getActiveBundleFromLeaf(): CalendarBundle | null {
 		const leaf = this.app.workspace.getMostRecentLeaf();
 		if (!leaf) return null;
 		const viewType = leaf.view.getViewType();
 		return this.calendarBundles.find((b) => b.viewType === viewType) ?? null;
 	}
 
-	private getActiveCalendarComponent(): CalendarComponent | null {
+	getActiveCalendarComponent(): CalendarComponent | null {
 		return this.getActiveBundleFromLeaf()?.viewRef.calendarComponent ?? null;
-	}
-
-	private registerCommands(): void {
-		type CalendarComponentAction = (component: CalendarComponent) => void;
-
-		const addCalendarViewCommand = (id: string, name: string, action: CalendarComponentAction): void => {
-			this.addCommand({
-				id,
-				name,
-				checkCallback: (checking: boolean) => {
-					const component = this.getActiveCalendarComponent();
-					if (component) {
-						if (!checking) {
-							action(component);
-						}
-						return true;
-					}
-					return false;
-				},
-			});
-		};
-
-		const addBatchCommand = (id: string, name: string, action: CalendarComponentAction): void => {
-			this.addCommand({
-				id,
-				name: `Batch: ${name}`,
-				checkCallback: (checking: boolean) => {
-					const component = this.getActiveCalendarComponent();
-					if (component?.isInBatchSelectionMode()) {
-						if (!checking) {
-							action(component);
-						}
-						return true;
-					}
-					if (component && !component.isInBatchSelectionMode()) {
-						if (!checking) {
-							new Notice("Prisma Calendar: batch selection mode is not active");
-						}
-						return true;
-					}
-					return false;
-				},
-			});
-		};
-
-		const addApiCommand = (id: string, name: string, action: () => void): void => {
-			this.addCommand({
-				id,
-				name,
-				callback: action,
-			});
-		};
-
-		addBatchCommand(COMMAND_IDS.BATCH_SELECT_ALL, "Select all", (view) => view.selectAll());
-		addBatchCommand(COMMAND_IDS.BATCH_CLEAR_SELECTION, "Clear selection", (view) => view.clearSelection());
-		addBatchCommand(COMMAND_IDS.BATCH_DUPLICATE_SELECTION, "Duplicate selection", (view) => view.duplicateSelection());
-		addBatchCommand(COMMAND_IDS.BATCH_DELETE_SELECTION, "Delete selection", (view) => view.deleteSelection());
-		addBatchCommand(COMMAND_IDS.BATCH_SKIP_SELECTION, "Skip selection", (view) => view.skipSelection());
-		addBatchCommand(COMMAND_IDS.BATCH_MARK_AS_DONE, "Mark selection as done", (view) => view.markAsDoneSelection());
-		addBatchCommand(COMMAND_IDS.BATCH_MARK_AS_NOT_DONE, "Mark selection as not done", (view) =>
-			view.markAsNotDoneSelection()
-		);
-		addBatchCommand(COMMAND_IDS.BATCH_ASSIGN_CATEGORIES, "Assign categories to selection", (view) => {
-			void view.openCategoryAssignModal();
-		});
-		addBatchCommand(COMMAND_IDS.BATCH_UPDATE_FRONTMATTER, "Update frontmatter for selection", (view) => {
-			void view.openBatchFrontmatterModal();
-		});
-		addBatchCommand(COMMAND_IDS.BATCH_OPEN_SELECTION, "Open selection", (view) => view.openSelection());
-		addBatchCommand(COMMAND_IDS.BATCH_CLONE_NEXT_WEEK, "Clone to next week", (view) => view.cloneSelection(1));
-		addBatchCommand(COMMAND_IDS.BATCH_CLONE_PREV_WEEK, "Clone to previous week", (view) => view.cloneSelection(-1));
-		addBatchCommand(COMMAND_IDS.BATCH_MOVE_NEXT_WEEK, "Move to next week", (view) => view.moveSelection(1));
-		addBatchCommand(COMMAND_IDS.BATCH_MOVE_PREV_WEEK, "Move to previous week", (view) => view.moveSelection(-1));
-
-		addApiCommand(COMMAND_IDS.UNDO, "Undo", () => {
-			void undo(this).then((success) => {
-				if (!success) new Notice("Nothing to undo");
-			});
-		});
-		addApiCommand(COMMAND_IDS.REDO, "Redo", () => {
-			void redo(this).then((success) => {
-				if (!success) new Notice("Nothing to redo");
-			});
-		});
-
-		addApiCommand(COMMAND_IDS.CREATE_EVENT, "Create new event", () => {
-			void openCreateEventModal(this, undefined, false, true);
-		});
-		addApiCommand(COMMAND_IDS.CREATE_EVENT_WITH_STOPWATCH, "Create new event with stopwatch", () => {
-			void openCreateEventModal(this, undefined, true, true);
-		});
-		addApiCommand(COMMAND_IDS.CREATE_UNTRACKED_EVENT, "Create new untracked event", () => {
-			openCreateUntrackedEventModal(this);
-		});
-		addApiCommand(COMMAND_IDS.EDIT_CURRENT_NOTE_AS_EVENT, "Edit current note as event", () => {
-			void openEditActiveNoteModal(this);
-		});
-		addApiCommand(COMMAND_IDS.ADD_ZETTEL_ID_TO_CURRENT_NOTE, "Add ZettelID to current note", () => {
-			void addZettelIdToActiveNote(this);
-		});
-		addApiCommand(COMMAND_IDS.DUPLICATE_CURRENT_EVENT, "Duplicate current event", () => {
-			void duplicateCurrentEvent(this);
-		});
-		addApiCommand(COMMAND_IDS.TRIGGER_CURRENT_EVENT_STOPWATCH, "Trigger current event stopwatch", () => {
-			void triggerCurrentEventStopwatch(this);
-		});
-		addCalendarViewCommand(COMMAND_IDS.EDIT_LAST_FOCUSED_EVENT, "Edit last focused event", (view) => {
-			view.openEditModalForFocusedEvent();
-		});
-		addCalendarViewCommand(
-			COMMAND_IDS.SET_LAST_FOCUSED_EVENT_START_TO_NOW,
-			"Set start time to now (focused event)",
-			(view) => {
-				view.setFocusedEventStartToNow();
-			}
-		);
-		addCalendarViewCommand(
-			COMMAND_IDS.SET_LAST_FOCUSED_EVENT_END_TO_NOW,
-			"Set end time to now (focused event)",
-			(view) => {
-				view.setFocusedEventEndToNow();
-			}
-		);
-		addCalendarViewCommand(
-			COMMAND_IDS.FILL_LAST_FOCUSED_EVENT_START_FROM_PREVIOUS,
-			"Fill start time from previous event (focused event)",
-			(view) => {
-				view.fillFocusedEventStartFromPrevious();
-			}
-		);
-		addCalendarViewCommand(
-			COMMAND_IDS.FILL_LAST_FOCUSED_EVENT_END_FROM_NEXT,
-			"Fill end time from next event (focused event)",
-			(view) => {
-				view.fillFocusedEventEndFromNext();
-			}
-		);
-		addCalendarViewCommand(COMMAND_IDS.TOGGLE_BATCH_SELECTION, "Toggle batch selection", (view) => {
-			view.toggleBatchSelection();
-		});
-		addCalendarViewCommand(COMMAND_IDS.SHOW_SKIPPED_EVENTS, "Show skipped events", (view) => {
-			view.showSkippedEventsModal();
-		});
-		addCalendarViewCommand(COMMAND_IDS.SHOW_RECURRING_EVENTS, "Show recurring events", (view) => {
-			openEventsModal(view.app, view.getBundle(), view);
-		});
-		addCalendarViewCommand(COMMAND_IDS.SHOW_FILTERED_EVENTS, "Show filtered events", (view) => {
-			openFilteredEventsModal(view.app, view.getBundle(), view.filteredEvents);
-		});
-		addCalendarViewCommand(COMMAND_IDS.SHOW_UNTRACKED_EVENTS, "Toggle untracked events dropdown", (view) => {
-			view.toggleUntrackedEventsDropdown();
-		});
-		addCalendarViewCommand(COMMAND_IDS.GLOBAL_SEARCH, "Global event search", (view) => {
-			openGlobalSearchModal(view.app, view.getBundle(), view);
-		});
-		addCalendarViewCommand(COMMAND_IDS.FOCUS_SEARCH, "Focus search", (view) => {
-			void view.focusSearch();
-		});
-		addCalendarViewCommand(COMMAND_IDS.FOCUS_EXPRESSION_FILTER, "Focus expression filter", (view) => {
-			void view.focusExpressionFilter();
-		});
-		addCalendarViewCommand(COMMAND_IDS.OPEN_FILTER_PRESET_SELECTOR, "Open filter preset selector", (view) => {
-			void view.openFilterPresetSelector();
-		});
-		addCalendarViewCommand(COMMAND_IDS.SHOW_DAILY_STATS, "Show daily statistics", (view) => {
-			void view.showDailyStatsModal();
-		});
-		addCalendarViewCommand(COMMAND_IDS.SHOW_WEEKLY_STATS, "Show weekly statistics", (view) => {
-			void view.showWeeklyStatsModal();
-		});
-		addCalendarViewCommand(COMMAND_IDS.SHOW_MONTHLY_STATS, "Show monthly statistics", (view) => {
-			void view.showMonthlyStatsModal();
-		});
-		addCalendarViewCommand(COMMAND_IDS.SHOW_ALLTIME_STATS, "Show all-time statistics", (view) => {
-			void view.showAllTimeStatsModal();
-		});
-		addCalendarViewCommand(COMMAND_IDS.REFRESH_CALENDAR, "Refresh planning system", (view) => {
-			void view.refreshCalendar();
-		});
-		addCalendarViewCommand(
-			COMMAND_IDS.HIGHLIGHT_EVENTS_WITHOUT_CATEGORIES,
-			"Highlight events without categories",
-			(view) => {
-				view.highlightEventsWithoutCategories();
-			}
-		);
-		addCalendarViewCommand(COMMAND_IDS.HIGHLIGHT_EVENTS_WITH_CATEGORY, "Highlight events with category", (view) => {
-			view.showCategorySelectModal();
-		});
-		addCalendarViewCommand(COMMAND_IDS.NAVIGATE_BACK, "Navigate back", (view) => {
-			view.navigateBack();
-		});
-		addCalendarViewCommand(COMMAND_IDS.NAVIGATE_FORWARD, "Navigate forward", (view) => {
-			view.navigateForward();
-		});
-		addCalendarViewCommand(COMMAND_IDS.SHOW_INTERVAL_BASES, "Show current interval in Bases", (view) => {
-			void view.showIntervalEventsModal();
-		});
-		addCalendarViewCommand(COMMAND_IDS.GO_TO_TODAY, "Go to today", (view) => {
-			view.goToToday();
-		});
-		addCalendarViewCommand(COMMAND_IDS.SCROLL_TO_NOW, "Scroll to current time", (view) => {
-			view.scrollToNow();
-		});
-		addCalendarViewCommand(
-			COMMAND_IDS.TOGGLE_PREREQUISITE_CONNECTIONS,
-			"Toggle prerequisite connection arrows",
-			(view) => {
-				view.toggleConnections();
-			}
-		);
-		this.addCommand({
-			id: COMMAND_IDS.SHOW_ALL_EVENTS_TIMELINE,
-			name: "Show all events timeline",
-			checkCallback: (checking) => {
-				const bundle = this.getActiveBundleFromLeaf();
-				if (!bundle) return false;
-				if (!checking) {
-					bundle.viewRef.tabbedHandle?.switchTo("timeline");
-				}
-				return true;
-			},
-		});
-		this.addCommand({
-			id: COMMAND_IDS.SHOW_ALL_EVENTS_HEATMAP,
-			name: "Show all events heatmap",
-			checkCallback: (checking) => {
-				const bundle = this.getActiveBundleFromLeaf();
-				if (!bundle) return false;
-				if (!checking) {
-					if (!this.licenseManager.requirePro(PRO_FEATURES.HEATMAP, getProGateUrls("HEATMAP"))) return true;
-					bundle.viewRef.tabbedHandle?.switchTo("heatmap");
-				}
-				return true;
-			},
-		});
-
-		this.addCommand({
-			id: COMMAND_IDS.EXPORT_CALENDAR_ICS,
-			name: "Export calendar as .ics",
-			callback: () => {
-				this.showCalendarExportModal();
-			},
-		});
-
-		this.addCommand({
-			id: COMMAND_IDS.IMPORT_CALENDAR_ICS,
-			name: "Import .ics file",
-			callback: () => {
-				void this.showCalendarImportModal();
-			},
-		});
-
-		this.addCommand({
-			id: COMMAND_IDS.SYNC_CALDAV,
-			name: "Sync calendar accounts",
-			callback: async () => {
-				if (!this.licenseManager.requirePro(PRO_FEATURES.CALDAV_SYNC, getProGateUrls("CALDAV_SYNC"))) {
-					return;
-				}
-				const caldavAccounts = this.settingsStore.currentSettings.caldav.accounts;
-				for (const account of caldavAccounts) {
-					if (account.enabled) {
-						await this.syncSingleAccount(account);
-					}
-				}
-			},
-		});
-
-		this.addCommand({
-			id: COMMAND_IDS.SYNC_ICS_SUBSCRIPTIONS,
-			name: "Sync ICS subscriptions",
-			callback: async () => {
-				if (!this.licenseManager.requirePro(PRO_FEATURES.ICS_SYNC, getProGateUrls("ICS_SYNC"))) {
-					return;
-				}
-				const subscriptions = this.settingsStore.currentSettings.icsSubscriptions.subscriptions;
-				for (const sub of subscriptions) {
-					if (sub.enabled) {
-						await this.syncSingleICSSubscription(sub);
-					}
-				}
-			},
-		});
-
-		this.addCommand({
-			id: COMMAND_IDS.OPEN_CURRENT_NOTE_IN_CALENDAR,
-			name: "Open current note in calendar",
-			callback: async () => {
-				await this.openCurrentNoteInCalendar();
-			},
-		});
-
-		this.addCommand({
-			id: COMMAND_IDS.RESTORE_MINIMIZED_MODAL,
-			name: "Restore minimized event modal",
-			checkCallback: (checking: boolean) => {
-				if (MinimizedModalManager.hasMinimizedModal()) {
-					if (!checking) {
-						MinimizedModalManager.restoreModal(this.app, this.calendarBundles);
-					}
-					return true;
-				}
-				return false;
-			},
-		});
-
-		this.addCommand({
-			id: COMMAND_IDS.ASSIGN_CATEGORIES_MINIMIZED_MODAL,
-			name: "Assign categories to minimized event",
-			checkCallback: (checking: boolean) => {
-				if (MinimizedModalManager.hasMinimizedModal()) {
-					if (!checking) {
-						MinimizedModalManager.assignCategories(this.app, this.calendarBundles);
-					}
-					return true;
-				}
-				return false;
-			},
-		});
 	}
 
 	private initializeCalendarBundles(): void {
@@ -609,7 +261,7 @@ export default class CustomCalendarPlugin extends Plugin {
 		return true;
 	}
 
-	private async openCurrentNoteInCalendar(): Promise<void> {
+	async openCurrentNoteInCalendar(): Promise<void> {
 		const activeFile = this.app.workspace.getActiveFile();
 
 		if (!activeFile || !(activeFile instanceof TFile)) {
@@ -630,7 +282,7 @@ export default class CustomCalendarPlugin extends Plugin {
 		new Notice("This note is not a calendar event");
 	}
 
-	private showCalendarExportModal(): void {
+	showCalendarExportModal(): void {
 		if (this.calendarBundles.length === 0) {
 			new Notice("No planning systems available to export");
 			return;
@@ -641,7 +293,7 @@ export default class CustomCalendarPlugin extends Plugin {
 		});
 	}
 
-	private async showCalendarImportModal(): Promise<void> {
+	async showCalendarImportModal(): Promise<void> {
 		if (this.calendarBundles.length === 0) {
 			new Notice("No planning systems available to import to");
 			return;
