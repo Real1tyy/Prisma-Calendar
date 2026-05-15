@@ -1,8 +1,9 @@
 import { Notice } from "obsidian";
 
+import { canDeriveUrlCoercer, deriveUrlCoercer } from "./derive-url-coercer";
 import { DEFAULT_BASE_PATH, DEFAULT_HOST, HttpApiServer } from "./http-api-server";
 import type { HttpRoute, HttpServerConfig } from "./http-types";
-import type { ActionDefMap, InferWindowApi, PluginApiGatewayOptions, UrlAccessibleActions } from "./types";
+import type { ActionDef, ActionDefMap, InferWindowApi, PluginApiGatewayOptions, UrlAccessibleActions } from "./types";
 
 function camelToKebab(str: string): string {
 	return str.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
@@ -37,6 +38,10 @@ export class PluginApiGateway<TActions extends ActionDefMap> {
 	private isExposed = false;
 	private isProtocolRegistered = false;
 	private pendingHttpRoutes: HttpRoute[] = [];
+	private readonly urlCoercerCache = new WeakMap<
+		ActionDef<unknown, unknown>,
+		(raw: Record<string, string>) => unknown
+	>();
 
 	constructor(options: PluginApiGatewayOptions<TActions>) {
 		this.plugin = options.plugin;
@@ -193,7 +198,8 @@ export class PluginApiGateway<TActions extends ActionDefMap> {
 		for (const [name, def] of Object.entries(this.actions)) {
 			if (def.http?.disabled) continue;
 
-			const method = def.http?.method ?? (def.parseParams || def.http?.parseBody ? "POST" : "GET");
+			const urlCoercer = this.resolveUrlCoercer(def);
+			const method = def.http?.method ?? (urlCoercer || def.http?.parseBody ? "POST" : "GET");
 			const path = def.http?.path ?? `/${camelToKebab(name)}`;
 
 			const route: HttpRoute = {
@@ -201,7 +207,7 @@ export class PluginApiGateway<TActions extends ActionDefMap> {
 				path,
 				handler: async (req) => {
 					try {
-						const params = this.resolveHandlerParams(def, req);
+						const params = this.resolveHandlerParams(def, urlCoercer, req);
 						const result = await def.handler(params);
 						return { status: 200, body: result === undefined ? { success: true } : result };
 					} catch (error) {
@@ -217,15 +223,17 @@ export class PluginApiGateway<TActions extends ActionDefMap> {
 
 	/**
 	 * Resolves handler params from route/query params and body.
-	 * - `parseBody` defined → body-driven; merged with `parseParams` if both present
-	 * - `parseParams` defined → query/route-param driven
+	 * - `parseBody` defined → body-driven; merged with URL params if both present
+	 * - URL coercer present (explicit `parseParams` or derived from `input`)
+	 *   → query/route-param driven
 	 * - neither → raw body passthrough
 	 */
 	private resolveHandlerParams(
 		def: ActionDefMap[string],
+		urlCoercer: ((raw: Record<string, string>) => unknown) | null,
 		req: { query: Record<string, string>; params: Record<string, string>; body: unknown }
 	): unknown {
-		const routeParams = def.parseParams ? def.parseParams({ ...req.query, ...req.params }) : undefined;
+		const routeParams = urlCoercer ? urlCoercer({ ...req.query, ...req.params }) : undefined;
 
 		const bodyParams = def.http?.parseBody && req.body !== undefined ? def.http.parseBody(req.body) : undefined;
 
@@ -238,6 +246,30 @@ export class PluginApiGateway<TActions extends ActionDefMap> {
 		if (req.body !== undefined) return req.body;
 
 		return undefined;
+	}
+
+	/**
+	 * Returns the URL → handler-params coercer for an action, or `null` if the
+	 * action is window-only.
+	 *
+	 *   1. Explicit `parseParams` wins (escape hatch for renames, multi-key
+	 *      fan-in, or transports the schema can't express).
+	 *   2. Otherwise, if `input` is a (possibly Optional-wrapped) ZodObject,
+	 *      derive a coercer from the schema and cache it per action.
+	 *   3. Otherwise, the action is window-API-only and the protocol/HTTP
+	 *      paths refuse to dispatch it.
+	 */
+	private resolveUrlCoercer(def: ActionDefMap[string]): ((raw: Record<string, string>) => unknown) | null {
+		if (def.parseParams) return def.parseParams;
+		if (!def.input || !canDeriveUrlCoercer(def.input)) return null;
+
+		const typedDef = def as ActionDef<unknown, unknown>;
+		const cached = this.urlCoercerCache.get(typedDef);
+		if (cached) return cached;
+
+		const coercer = deriveUrlCoercer(def.input) as (raw: Record<string, string>) => unknown;
+		this.urlCoercerCache.set(typedDef, coercer);
+		return coercer;
 	}
 
 	private async dispatchProtocol(params: Record<string, string>): Promise<void> {
@@ -254,13 +286,14 @@ export class PluginApiGateway<TActions extends ActionDefMap> {
 			return;
 		}
 
-		if (!actionDef.parseParams) {
+		const urlCoercer = this.resolveUrlCoercer(actionDef);
+		if (!urlCoercer) {
 			new Notice(`Action "${call}" is not URL-accessible`);
 			return;
 		}
 
 		try {
-			const typedParams = actionDef.parseParams(params);
+			const typedParams = urlCoercer(params);
 			await actionDef.handler(typedParams);
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);

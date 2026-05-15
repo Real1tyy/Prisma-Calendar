@@ -1,3 +1,19 @@
+export type {
+	ContractDrift,
+	ContractMatch,
+	JsonSchemaFragment,
+	PluginApiContract,
+	PluginApiContractAction,
+} from "./contract";
+export {
+	assertNoContractDrift,
+	compareContracts,
+	ContractDriftError,
+	defineAction,
+	emitContract,
+	serializeContract,
+} from "./contract";
+export { canDeriveUrlCoercer, deriveUrlCoercer } from "./derive-url-coercer";
 export { DEFAULT_BASE_PATH, DEFAULT_CORS, DEFAULT_HOST, HttpApiServer } from "./http-api-server";
 export type {
 	HttpActionConfig,

@@ -1,4 +1,5 @@
 import type { Plugin } from "obsidian";
+import type { z } from "zod";
 
 import type { HttpActionConfig, HttpServerConfig } from "./http-types";
 
@@ -10,13 +11,19 @@ export type ActionHandler<TParams = void, TReturn = void> = (params: TParams) =>
  * - `handler`: the function that executes the action
  * - `parseParams`: optional converter from URL query params to typed params.
  *   If omitted, the action is window-API-only (not URL-accessible).
- * - `http`: optional HTTP transport configuration. Controls how (or whether)
- *   this action is exposed over the HTTP server.
+ * - `http`: optional HTTP transport configuration.
+ * - `description` / `input` / `output`: optional contract metadata read by
+ *   `emitContract()` to produce the committed JSON Schema artifact. Has no
+ *   runtime effect — purely documentation + drift detection.
+ *   See `docs/decisions/2026-05-14-plugin-api-contract-testing.md`.
  */
 export interface ActionDef<TParams = void, TReturn = void> {
 	handler: ActionHandler<TParams, TReturn>;
 	parseParams?: (raw: Record<string, string>) => TParams;
 	http?: HttpActionConfig;
+	description?: string;
+	input?: z.ZodType<TParams>;
+	output?: z.ZodType<TReturn>;
 }
 
 /**
@@ -41,10 +48,16 @@ export type InferWindowApi<TActions extends ActionDefMap> = {
 };
 
 /**
- * Names of actions that have `parseParams` defined (URL-accessible actions).
+ * Names of URL-accessible actions — either an explicit `parseParams` is
+ * provided, or an `input` Zod schema is present and the gateway can derive
+ * a coercer from it. Both produce a callable `obsidian://protocolKey?...` URL.
  */
 export type UrlAccessibleActions<TActions extends ActionDefMap> = {
-	[K in keyof TActions]: TActions[K]["parseParams"] extends undefined ? never : K;
+	[K in keyof TActions]: TActions[K]["parseParams"] extends undefined
+		? TActions[K]["input"] extends undefined
+			? never
+			: K
+		: K;
 }[keyof TActions];
 
 /**

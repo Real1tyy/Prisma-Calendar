@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { z } from "zod";
 
+import { defineAction } from "../../src/integrations/api-gateway/contract/define-action";
 import { PluginApiGateway } from "../../src/integrations/api-gateway/plugin-api-gateway";
 import type { ActionDefMap } from "../../src/integrations/api-gateway/types";
 import { createMockApp, Plugin } from "../../src/testing";
@@ -237,6 +239,38 @@ describe("PluginApiGateway", () => {
 			await new Promise((resolve) => window.setTimeout(resolve, 0));
 
 			expect(actions.greet.handler).not.toHaveBeenCalled();
+		});
+
+		it("should dispatch via a derived URL coercer when parseParams is absent but input schema is present", async () => {
+			const handler = vi.fn();
+			const schemaActions: ActionDefMap = {
+				createTask: defineAction({
+					description: "Create a task.",
+					input: z.object({
+						title: z.string(),
+						priority: z.number().optional(),
+						tags: z.array(z.string()).optional(),
+					}),
+					output: z.boolean(),
+					handler,
+				}),
+			};
+
+			const gateway = new PluginApiGateway({
+				plugin: plugin as any,
+				globalKey: "TestApi",
+				protocolKey: "test-plugin",
+				actions: schemaActions,
+			});
+
+			gateway.expose();
+			const registerCall = plugin.registerObsidianProtocolHandler.mock.calls[0];
+			const protocolCallback = registerCall[1] as (params: Record<string, string>) => void;
+
+			protocolCallback({ call: "createTask", title: "Write spec", priority: "3", tags: "a,b" });
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
+
+			expect(handler).toHaveBeenCalledWith({ title: "Write spec", priority: 3, tags: ["a", "b"] });
 		});
 
 		it("should not dispatch to window-only actions via protocol", async () => {

@@ -13,6 +13,8 @@
 		"test:watch": "vitest",
 		"test:changed": "python3 ../scripts/ci/unit_changed.py",
 		"test:since": "python3 ../scripts/ci/unit_changed.py --since=HEAD~1",
+		"contract:emit": "UPDATE_CONTRACT=1 vitest run tests/api/contract-drift.test.ts",
+		"contract:check": "vitest run tests/api/contract-drift.test.ts",
 		"test:visual": "pnpm build:css && pnpm exec vitest run tests/visual/generate-fixtures.test.ts && playwright test",
 		"test:visual:update": "pnpm build:css && pnpm exec vitest run tests/visual/generate-fixtures.test.ts && playwright test --update-snapshots",
 		"test:e2e:prepare": "tsx ../shared/scripts/e2e/build-plugin.ts --skip-if-built",

@@ -50,3 +50,7 @@ export { captureEvents, createTestEventEmitter, waitForEvent } from "./event-hel
 
 // ─── Console noise suppression ───────────────────────────────────
 export { silenceConsole } from "./silence-console";
+
+// API contract testing helpers live at the dedicated `./testing/api-contract`
+// subpath so Playwright specs (which must not pull vitest transitively) can
+// import them without going through this barrel.
