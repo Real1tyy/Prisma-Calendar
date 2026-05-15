@@ -267,7 +267,7 @@ export const Stopwatch = forwardRef<StopwatchHandle, StopwatchCallbacks>(functio
 	};
 
 	const startBtnLabel = current.state === "stopped" ? "▶ start new" : "▶ start";
-	const pauseBtnLabel = isPaused ? "▶ resume" : "⏸ break";
+	const pauseBtnLabel = isPaused ? "▶ continue" : "⏸ break";
 
 	return (
 		<div className={cls("stopwatch-container")}>
@@ -308,7 +308,7 @@ export const Stopwatch = forwardRef<StopwatchHandle, StopwatchCallbacks>(functio
 						⏹ stop
 					</button>
 					<button type="button" className={btnClass("resume", resumeBtnHidden)} onClick={resume}>
-						▶ resume
+						▶ continue
 					</button>
 				</div>
 
