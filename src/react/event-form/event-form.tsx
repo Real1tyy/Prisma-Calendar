@@ -27,7 +27,7 @@ import { validateEventTitle } from "../../utils/event-title-validation";
 import { extractCleanDisplayName } from "../../utils/events/naming";
 import { formatDateTimeForInput } from "../../utils/format";
 import { openCategoryAssignModal, openPrerequisiteAssignModal } from "../modals";
-import type { StopwatchSnapshot } from "../views/stopwatch";
+import { Stopwatch, type StopwatchHandle, type StopwatchSnapshot } from "../views/stopwatch";
 import { PrismaCheckbox } from "./prisma-checkbox";
 import { PrismaSettingItem } from "./prisma-setting-item";
 import {
@@ -38,7 +38,6 @@ import {
 	ParticipantSection,
 	PrerequisiteSection,
 	RecurrenceSection,
-	StopwatchWidget,
 	TimingSection,
 } from "./sections";
 
@@ -89,9 +88,26 @@ export const EventForm = memo(function EventForm({
 	);
 	const initialMarkAsDoneRef = useRef(initialState?.markAsDone ?? false);
 	const stopwatchSnapshotRef = useRef<StopwatchSnapshot | null>(initialStopwatchSnapshot ?? null);
+	const stopwatchRef = useRef<StopwatchHandle | null>(null);
 
-	const handleStopwatchSnapshot = useCallback((snapshot: StopwatchSnapshot) => {
-		stopwatchSnapshotRef.current = snapshot;
+	const setStopwatchHandle = useCallback(
+		(handle: StopwatchHandle | null) => {
+			stopwatchRef.current = handle;
+			if (handle) {
+				if (initialStopwatchSnapshot) handle.importState(initialStopwatchSnapshot);
+				if (autoStartStopwatch) {
+					handle.expand();
+					queueMicrotask(() => handle.start());
+				}
+			}
+		},
+		[autoStartStopwatch, initialStopwatchSnapshot]
+	);
+
+	const captureStopwatchSnapshot = useCallback(() => {
+		const handle = stopwatchRef.current;
+		if (!handle) return;
+		stopwatchSnapshotRef.current = handle.exportState();
 	}, []);
 
 	const displayKeySet = useMemo(
@@ -202,6 +218,7 @@ export const EventForm = memo(function EventForm({
 	}, [suppressAutoCategories, form, settings, bundle]);
 
 	const collectFormValues = useCallback((): EventFormValues => {
+		captureStopwatchSnapshot();
 		const state = applyMetadataToState(form.getValues(), metadataValues);
 		const customProps = parseFrontmatterRecord({ ...displayProperties, ...otherProperties });
 		return {
@@ -210,7 +227,7 @@ export const EventForm = memo(function EventForm({
 			stopwatchSnapshot: stopwatchSnapshotRef.current,
 			initialMarkAsDoneState: initialMarkAsDoneRef.current,
 		};
-	}, [form, metadataValues, displayProperties, otherProperties]);
+	}, [captureStopwatchSnapshot, form, metadataValues, displayProperties, otherProperties]);
 
 	const handleSubmit = useCallback(() => {
 		applyAutoCategories();
@@ -275,7 +292,6 @@ export const EventForm = memo(function EventForm({
 
 	// Preset selector
 	const [presets, setPresets] = useState<EventPreset[]>(settings.eventPresets || []);
-	const [selectedPresetId, setSelectedPresetId] = useState("");
 
 	useEffect(() => {
 		const sub = bundle.settingsStore.settings$.subscribe((s) => {
@@ -286,7 +302,6 @@ export const EventForm = memo(function EventForm({
 
 	const handlePresetChange = useCallback(
 		(presetId: string) => {
-			setSelectedPresetId(presetId);
 			if (!presetId) return;
 			const preset = presets.find((p) => p.id === presetId);
 			if (!preset) return;
@@ -376,7 +391,7 @@ export const EventForm = memo(function EventForm({
 						>
 							Clear
 						</button>
-						<PresetSelector presets={presets} selectedId={selectedPresetId} onChange={handlePresetChange} />
+						<PresetSelector presets={presets} onChange={handlePresetChange} />
 					</div>
 				</div>
 
@@ -392,17 +407,16 @@ export const EventForm = memo(function EventForm({
 				/>
 
 				{/* Stopwatch */}
-				{settings.showStopwatch && (
-					<StopwatchWidget
-						onStart={handleStopwatchStart}
-						onContinueRequested={handleStopwatchContinue}
-						onStop={handleStopwatchStop}
-						onBreakUpdate={handleBreakUpdate}
-						onSnapshotChange={handleStopwatchSnapshot}
-						initialSnapshot={initialStopwatchSnapshot ?? undefined}
-						hidden={allDay}
-						autoStart={autoStartStopwatch}
-					/>
+				{settings.showStopwatch && !allDay && (
+					<div className="prisma-stopwatch-field">
+						<Stopwatch
+							ref={setStopwatchHandle}
+							onStart={handleStopwatchStart}
+							onContinueRequested={handleStopwatchContinue}
+							onStop={handleStopwatchStop}
+							onBreakUpdate={handleBreakUpdate}
+						/>
+					</div>
 				)}
 
 				{/* Recurrence */}
@@ -543,25 +557,27 @@ function VirtualToggle({ form }: { form: UseFormReturn<EventFormState> }) {
 	);
 }
 
-function PresetSelector({
-	presets,
-	selectedId,
-	onChange,
-}: {
-	presets: EventPreset[];
-	selectedId: string;
-	onChange: (id: string) => void;
-}) {
+function PresetSelector({ presets, onChange }: { presets: EventPreset[]; onChange: (id: string) => void }) {
+	// Always-empty controlled select. Acts as a one-shot trigger: picking a
+	// preset fires onChange (which applies it to the form) and then the
+	// dropdown immediately resets to blank so the user can pick the same
+	// preset again to re-apply, and the initial state isn't tied to any
+	// option (no "first preset auto-selected" trap).
 	return (
 		<div className="prisma-event-preset-selector-wrapper">
 			<span className="prisma-event-preset-label">Preset:</span>
 			<select
 				className="prisma-event-preset-select"
-				value={selectedId}
-				onChange={(e) => onChange(e.target.value)}
+				value=""
+				onChange={(e) => {
+					const id = e.target.value;
+					if (!id) return;
+					onChange(id);
+					e.target.value = "";
+				}}
 				data-testid="prisma-event-control-preset"
 			>
-				<option value="">None</option>
+				<option value="" />
 				{presets.map((p) => (
 					<option key={p.id} value={p.id}>
 						{p.name}

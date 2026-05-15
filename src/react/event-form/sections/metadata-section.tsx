@@ -15,10 +15,10 @@ interface MetadataField {
 
 const FIELDS: readonly MetadataField[] = [
 	{ key: "location", guard: "locationProp", label: "Location", kind: "text", placeholder: "Event location" },
-	{ key: "icon", guard: "iconProp", label: "Icon", description: "Emoji or text", kind: "text", placeholder: "Emoji or text" },
+	{ key: "icon", guard: "iconProp", label: "Icon", kind: "text", placeholder: "Emoji or text" },
 	{ key: "breakMinutes", guard: "breakProp", label: "Break minutes", kind: "number", placeholder: "0" },
 	{ key: "markAsDone", guard: "statusProperty", label: "Mark as done", kind: "toggle" },
-	{ key: "skip", guard: "skipProp", label: "Skip", kind: "toggle" },
+	{ key: "skip", guard: "skipProp", label: "Skip", description: "Hide event from calendar", kind: "toggle" },
 ];
 
 interface MetadataSectionProps {

@@ -344,6 +344,14 @@
 			font-weight: var(--font-weight-semibold);
 			font-size: var(--font-ui-small);
 		}
+
+		/* Obsidian sliding-pill toggle (from shared-react <Toggle>) used for
+		   markAsDone / skip — right-align it the same way native checkboxes
+		   are right-aligned via `&[type="checkbox"] { margin-left: auto; }`. */
+		> .checkbox-container {
+			margin-left: auto;
+			flex-shrink: 0;
+		}
 	}
 
 	/* Inputs/selects styling */

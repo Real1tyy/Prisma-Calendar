@@ -3309,6 +3309,15 @@
   font-weight: var(--font-weight-semibold);
   font-size: var(--font-ui-small);
 }
+.prisma-event-modal .prisma-setting-item {
+  /* Obsidian sliding-pill toggle (from shared-react <Toggle>) used for
+     markAsDone / skip — right-align it the same way native checkboxes
+     are right-aligned via `&[type="checkbox"] { margin-left: auto; }`. */
+}
+.prisma-event-modal .prisma-setting-item > .checkbox-container {
+  margin-left: auto;
+  flex-shrink: 0;
+}
 .prisma-event-modal {
   /* Inputs/selects styling */
 }
