@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { memo, useCallback } from "react";
 
-import { useScopedCls } from "../contexts/theme-context";
+import { useScoped } from "../contexts/theme-context";
 import { useActivatable } from "../hooks/use-activatable";
 
 export interface ChipProps {
@@ -23,7 +23,7 @@ export interface ChipProps {
  * One visual chip. Fully controlled — all state lives in the parent.
  */
 export const Chip = memo(function Chip({ value, label, tooltip, prefix, onClick, onRemove }: ChipProps) {
-	const cls = useScopedCls("chip");
+	const { cls, tid } = useScoped("chip");
 	const displayLabel = label ?? value;
 
 	const clickBound = useCallback(() => onClick?.(value), [onClick, value]);
@@ -33,13 +33,19 @@ export const Chip = memo(function Chip({ value, label, tooltip, prefix, onClick,
 	const removeActivate = useActivatable(onRemove ? removeBound : undefined);
 
 	return (
-		<div className={cls("item")}>
+		<div className={cls("item")} data-testid={tid("item")} data-chip-value={value}>
 			{prefix}
 			<span {...labelActivate} className={cls("name")} title={tooltip} role={onClick ? "button" : undefined}>
 				{displayLabel}
 			</span>
 			{onRemove && (
-				<span {...removeActivate} className={cls("remove")} role="button" aria-label={`Remove ${displayLabel}`}>
+				<span
+					{...removeActivate}
+					className={cls("remove")}
+					role="button"
+					aria-label={`Remove ${displayLabel}`}
+					data-testid={tid("remove")}
+				>
 					{"×"}
 				</span>
 			)}
