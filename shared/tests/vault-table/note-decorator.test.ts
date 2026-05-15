@@ -1,4 +1,5 @@
-import type { Plugin, TFile } from "obsidian";
+import type { Plugin } from "obsidian";
+import { TFile } from "obsidian";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { SerializableSchema } from "../../src/core/vault-table/create-mapped-schema";
@@ -99,7 +100,7 @@ describe("NoteDecorator", () => {
 		});
 
 		it("should do nothing when file is outside the table directory", async () => {
-			const file = { path: "other-folder/note.md" } as TFile;
+			const file = new TFile("other-folder/note.md");
 			triggerFileOpen(file);
 			await vi.waitFor(() => {});
 
@@ -108,7 +109,7 @@ describe("NoteDecorator", () => {
 		});
 
 		it("should skip folder notes that match the table directory", async () => {
-			const file = { path: "projects/projects.md" } as TFile;
+			const file = new TFile("projects/projects.md");
 			triggerFileOpen(file);
 			await vi.waitFor(() => {});
 
@@ -117,7 +118,7 @@ describe("NoteDecorator", () => {
 		});
 
 		it("should do nothing when no MarkdownView is active", async () => {
-			const file = { path: "projects/task-a.md" } as TFile;
+			const file = new TFile("projects/task-a.md");
 			(plugin.app.workspace.getActiveViewOfType as ReturnType<typeof vi.fn>).mockReturnValue(null);
 
 			triggerFileOpen(file);
@@ -127,7 +128,7 @@ describe("NoteDecorator", () => {
 		});
 
 		it("should do nothing when the file is not in the table", async () => {
-			const file = { path: "projects/task-a.md" } as TFile;
+			const file = new TFile("projects/task-a.md");
 			const mockView = { contentEl: document.createElement("div") };
 			(plugin.app.workspace.getActiveViewOfType as ReturnType<typeof vi.fn>).mockReturnValue(mockView);
 			(table.get as ReturnType<typeof vi.fn>).mockReturnValue(undefined);
@@ -143,7 +144,7 @@ describe("NoteDecorator", () => {
 		});
 
 		it("should do nothing when hydrated row is not found", async () => {
-			const file = { path: "projects/task-a.md" } as TFile;
+			const file = new TFile("projects/task-a.md");
 			const mockView = { contentEl: document.createElement("div") };
 			(plugin.app.workspace.getActiveViewOfType as ReturnType<typeof vi.fn>).mockReturnValue(mockView);
 			(table.get as ReturnType<typeof vi.fn>).mockReturnValue({ id: "task-a" });
@@ -159,7 +160,7 @@ describe("NoteDecorator", () => {
 		});
 
 		it("should create a container, prepend it, and call render when everything succeeds", async () => {
-			const file = { path: "projects/task-a.md" } as TFile;
+			const file = new TFile("projects/task-a.md");
 			const contentEl = document.createElement("div");
 			const mockView = { contentEl };
 			(plugin.app.workspace.getActiveViewOfType as ReturnType<typeof vi.fn>).mockReturnValue(mockView);
@@ -199,7 +200,7 @@ describe("NoteDecorator", () => {
 			(table.get as ReturnType<typeof vi.fn>).mockReturnValue({ id: "task-a" });
 			(table.getHydrated as ReturnType<typeof vi.fn>).mockResolvedValue(hydratedRow);
 
-			const file1 = { path: "projects/task-a.md" } as TFile;
+			const file1 = new TFile("projects/task-a.md");
 			triggerFileOpen(file1);
 
 			await vi.waitFor(() => {

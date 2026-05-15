@@ -105,7 +105,7 @@ export abstract class BaseEventModal extends Modal {
 	protected timedContainer!: HTMLElement;
 	protected allDayContainer!: HTMLElement;
 
-	public virtualCheckbox!: HTMLInputElement;
+	public virtualCheckbox?: HTMLInputElement;
 
 	// Recurring event fields
 	public recurringCheckbox!: HTMLInputElement;
@@ -113,9 +113,9 @@ export abstract class BaseEventModal extends Modal {
 	protected rruleSelect?: HTMLSelectElement;
 	protected weekdayContainer!: HTMLElement;
 	protected weekdayCheckboxes: Map<Weekday, HTMLInputElement> = new Map();
-	protected rruleUntilInput!: HTMLInputElement;
-	protected futureInstancesCountInput!: HTMLInputElement;
-	protected generatePastEventsCheckbox!: HTMLInputElement;
+	protected rruleUntilInput?: HTMLInputElement;
+	protected futureInstancesCountInput?: HTMLInputElement;
+	protected generatePastEventsCheckbox?: HTMLInputElement;
 	protected customIntervalContainer!: HTMLElement;
 	protected customFreqSelect?: HTMLSelectElement;
 	protected customIntervalInput?: HTMLInputElement;
@@ -317,9 +317,7 @@ export abstract class BaseEventModal extends Modal {
 		this.createPresetSelector(controlsContainer);
 
 		this.settingsSubscription = this.bundle.settingsStore.settings$.subscribe((settings) => {
-			if (this.presetSelector) {
-				this.refreshPresetSelector(settings.eventPresets);
-			}
+			this.refreshPresetSelector(settings.eventPresets);
 		});
 	}
 
@@ -1293,8 +1291,8 @@ export abstract class BaseEventModal extends Modal {
 		if (this.durationInput) this.durationInput.value = "";
 		if (this.rruleSelect) this.rruleSelect.value = Object.keys(RECURRENCE_TYPE_OPTIONS)[0]!;
 		for (const checkbox of this.weekdayCheckboxes.values()) checkbox.checked = false;
-		this.rruleUntilInput.value = "";
-		this.futureInstancesCountInput.value = "";
+		if (this.rruleUntilInput) this.rruleUntilInput.value = "";
+		if (this.futureInstancesCountInput) this.futureInstancesCountInput.value = "";
 		this.suppressAutoCategories = false;
 		this.stopwatch?.reset();
 		this.displayPropertiesContainer.empty();
@@ -1381,9 +1379,7 @@ export abstract class BaseEventModal extends Modal {
 			this.allDayCheckbox.dispatchEvent(new Event("change", { bubbles: true }));
 		}
 
-		if (this.virtualCheckbox) {
-			this.virtualCheckbox.checked = state.virtual;
-		}
+		if (this.virtualCheckbox) this.virtualCheckbox.checked = state.virtual;
 
 		if (state.start) {
 			this.startInput.value = state.start;
@@ -1433,9 +1429,7 @@ export abstract class BaseEventModal extends Modal {
 				this.futureInstancesCountInput.value = state.recurring.futureInstancesCount;
 			}
 
-			if (this.rruleUntilInput) {
-				this.rruleUntilInput.value = state.recurring.untilDate;
-			}
+			if (this.rruleUntilInput) this.rruleUntilInput.value = state.recurring.untilDate;
 
 			if (state.recurring.generatePastEvents && this.generatePastEventsCheckbox) {
 				this.generatePastEventsCheckbox.checked = true;
@@ -1444,8 +1438,6 @@ export abstract class BaseEventModal extends Modal {
 	}
 
 	private refreshPresetSelector(presets: EventPreset[]): void {
-		if (!this.presetSelector) return;
-
 		const currentValue = this.presetSelector.value;
 
 		// Clear existing options except "None"

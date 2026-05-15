@@ -103,7 +103,8 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 
 			let processedCount = 0;
 			for (const action of plan.actions) {
-				if (this.destroyed) break;
+				// destroyed may flip mid-loop via destroy() called from outside this async flow
+				if ((this as unknown as { destroyed: boolean }).destroyed) break;
 
 				try {
 					if (action.kind === "create") {

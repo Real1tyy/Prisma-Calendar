@@ -278,6 +278,6 @@ export class LicenseManager {
 	}
 
 	private getObsidianVersion(): string {
-		return apiVersion ?? "unknown";
+		return apiVersion;
 	}
 }

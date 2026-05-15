@@ -23,11 +23,6 @@ export function DropdownWidget({ descriptor, override, binding, testId }: Widget
 		override?.options ?? descriptor.enumLabels ?? Object.fromEntries(descriptor.enumValues.map((v) => [v, v]));
 
 	return (
-		<Dropdown
-			value={String(binding.value ?? descriptor.enumValues[0] ?? "")}
-			options={options}
-			onChange={binding.onChange}
-			{...testIdProp(testId)}
-		/>
+		<Dropdown value={String(binding.value)} options={options} onChange={binding.onChange} {...testIdProp(testId)} />
 	);
 }

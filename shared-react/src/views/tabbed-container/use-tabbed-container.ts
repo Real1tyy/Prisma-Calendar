@@ -102,7 +102,7 @@ export function useTabbedContainer({
 		return map;
 	});
 
-	const renderedRef = useRef<Set<string>>(new Set());
+	const [previouslyRendered, setPreviouslyRendered] = useState<Set<string>>(() => new Set());
 
 	const onStateChangeRef = useRef(onStateChange);
 	const onTabChangeRef = useRef(onTabChange);
@@ -157,7 +157,7 @@ export function useTabbedContainer({
 		[allTabs, visibleTabs, renames, iconOverrides, colorOverrides, showSettingsButton, groupStates]
 	);
 
-	const activeEntry: TabEntry | undefined = visibleTabs[currentIndex];
+	const activeEntry: TabEntry | undefined = visibleTabs.at(currentIndex);
 	const activeTab: TabDefinition | null = useMemo(
 		() => (activeEntry ? getActiveChild(activeEntry, groupStates) : null),
 		[activeEntry, groupStates]

@@ -805,7 +805,7 @@ async function configureDemoViewport(page: Page, log: Logger): Promise<void> {
 		.evaluate(() => {
 			const w = window as unknown as ObsidianWindow;
 			const remote = w.require?.("@electron/remote") as { getCurrentWindow?: () => { maximize?: () => void } };
-			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
 			remote?.getCurrentWindow?.()?.maximize?.();
 		})
 		.catch((err) => log.debug(`demo viewport: maximize failed: ${String(err)}`));

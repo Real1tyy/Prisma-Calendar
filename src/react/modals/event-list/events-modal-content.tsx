@@ -27,21 +27,21 @@ function EventsModalContent({
 	calendarComponent: CalendarComponent;
 	onClose: () => void;
 }) {
-	const [recurringListEpoch, setRecurringListEpoch] = useState(0);
-	const enabledEvents = useMemo(
-		() => bundle.recurringEventManager.getEnabledRecurringEvents(),
-		[bundle, recurringListEpoch]
-	);
-	const disabledEvents = useMemo(
-		() => bundle.recurringEventManager.getDisabledRecurringEvents(),
-		[bundle, recurringListEpoch]
-	);
+	const [enabledEvents, setEnabledEvents] = useState(() => bundle.recurringEventManager.getEnabledRecurringEvents());
+	const [disabledEvents, setDisabledEvents] = useState(() => bundle.recurringEventManager.getDisabledRecurringEvents());
+	const refreshRecurringPools = useCallback(() => {
+		setEnabledEvents(bundle.recurringEventManager.getEnabledRecurringEvents());
+		setDisabledEvents(bundle.recurringEventManager.getDisabledRecurringEvents());
+	}, [bundle]);
 
 	const recurringCount = enabledEvents.length + disabledEvents.length;
 	const categories = bundle.categoryTracker.getCategories();
 	const categoryCount = categories.length;
 	const nameSeriesEnabled = bundle.settingsStore.currentSettings.enableNameSeriesTracking;
-	const nameSeries = nameSeriesEnabled ? bundle.nameSeriesTracker.getNameBasedSeries() : new Map<string, Set<string>>();
+	const nameSeries = useMemo(
+		() => (nameSeriesEnabled ? bundle.nameSeriesTracker.getNameBasedSeries() : new Map<string, Set<string>>()),
+		[nameSeriesEnabled, bundle]
+	);
 	const nameCount = nameSeries.size;
 
 	const defaultTab: EventsModalTabId = recurringCount > 0 ? "recurring" : categoryCount > 0 ? "byCategory" : "byName";
@@ -94,7 +94,7 @@ function EventsModalContent({
 				disabledEvents={disabledEvents}
 				sortMode={sortMode}
 				searchQuery={deferredSearchQuery}
-				onRecurringPoolsChanged={() => setRecurringListEpoch((n) => n + 1)}
+				onRecurringPoolsChanged={refreshRecurringPools}
 			/>
 		);
 	} else if (activeTab === "byCategory") {

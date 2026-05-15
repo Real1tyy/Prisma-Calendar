@@ -2,6 +2,9 @@ import type { ItemView } from "obsidian";
 
 import { MountableHelpers } from "./helpers";
 
+// WHY: TypeScript's mixin pattern requires `any[]` for variadic constructor args.
+// See shared/src/components/mountable/component.ts for the same rationale.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AbstractCtor<T = Record<string, never>> = abstract new (...args: any[]) => T;
 
 export function MountableView<TBase extends AbstractCtor<ItemView>>(Base: TBase, prefix?: string) {
@@ -9,6 +12,9 @@ export function MountableView<TBase extends AbstractCtor<ItemView>>(Base: TBase,
 		#helpers: MountableHelpers;
 		#mounted = false;
 
+		// WHY: mixin constructor must accept `any[]` to forward to the base class
+		// constructor regardless of its parameter list — see AbstractCtor above.
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		constructor(..._args: any[]) {
 			super(..._args);
 			this.#helpers = new MountableHelpers(prefix, (cb) => this.register(cb));

@@ -13,6 +13,5 @@ export function getLicenseStatusText(status: LicenseStatus): string {
 	if (status.state === "expired") return "License expired. Click Verify to refresh.";
 	if (status.state === "invalid") return status.errorMessage ?? "Invalid license key.";
 	if (status.state === "device_limit") return status.errorMessage ?? "Device limit reached.";
-	if (status.state === "error") return status.errorMessage ?? "Could not verify license.";
-	return "";
+	return status.errorMessage ?? "Could not verify license.";
 }

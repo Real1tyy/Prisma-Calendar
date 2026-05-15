@@ -105,12 +105,12 @@ export class EventEditModal extends BaseEventModal {
 
 			const futureCount = this.originalFrontmatter[settings.futureInstancesCountProp];
 			const parsed = parsePositiveInt(futureCount, 0);
-			if (parsed > 0) {
+			if (parsed > 0 && this.futureInstancesCountInput) {
 				this.futureInstancesCountInput.value = String(parsed);
 			}
 
 			const generatePast = this.originalFrontmatter[settings.generatePastEventsProp];
-			if (generatePast === true) {
+			if (generatePast === true && this.generatePastEventsCheckbox) {
 				this.generatePastEventsCheckbox.checked = true;
 			}
 		}
@@ -149,7 +149,7 @@ export class EventEditModal extends BaseEventModal {
 		}
 
 		// Check if this is a manual virtual event being edited
-		if (this.event.extendedProps?.["virtualKind"] === "manual") {
+		if (this.event.extendedProps?.["virtualKind"] === "manual" && this.virtualCheckbox) {
 			this.virtualCheckbox.checked = true;
 		}
 

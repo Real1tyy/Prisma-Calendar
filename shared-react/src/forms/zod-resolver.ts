@@ -11,7 +11,7 @@ function parseZodIssues(issues: ZodIssue[]): Record<string, FieldError> {
 	const errors: Record<string, FieldError> = {};
 	for (const issue of issues) {
 		const path = issue.path.join(".");
-		if (!errors[path]) {
+		if (!(path in errors)) {
 			errors[path] = { message: issue.message, type: issue.code };
 		}
 	}

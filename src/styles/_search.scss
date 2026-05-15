@@ -1,5 +1,5 @@
 /* Global Search Modal Styles */
-.prisma-global-search-modal  {
+.prisma-global-search-modal {
 	.modal {
 		width: 85vw;
 		max-width: 1170px;
@@ -46,7 +46,7 @@
 	}
 }
 
-.prisma-global-search  {
+.prisma-global-search {
 	&-filters {
 		padding: 0.75rem;
 		border: 1px solid var(--background-modifier-border);
@@ -62,7 +62,7 @@
 	}
 }
 
-.prisma-filter-cycle-button  {
+.prisma-filter-cycle-button {
 	padding: 0.5rem 1rem;
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 4px;

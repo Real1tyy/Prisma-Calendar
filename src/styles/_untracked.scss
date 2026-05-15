@@ -1,5 +1,5 @@
 /* Untracked Events Dropdown */
-.prisma-untracked-dropdown  {
+.prisma-untracked-dropdown {
 	&-wrapper {
 		position: relative;
 		display: inline-flex;
@@ -7,7 +7,7 @@
 		margin-left: 8px;
 	}
 
-	&-button  {
+	&-button {
 		padding: 4px 10px;
 		border: none;
 		border-radius: var(--radius-s);
@@ -50,7 +50,7 @@
 		display: none;
 	}
 
-	&-create-btn  {
+	&-create-btn {
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -70,12 +70,12 @@
 		}
 	}
 
-	&-search  {
+	&-search {
 		padding: 12px;
 		border-bottom: 1px solid var(--background-modifier-border);
 		background-color: var(--background-primary-alt);
 
-		&-input  {
+		&-input {
 			width: 100%;
 			padding: 6px 10px;
 			border: 1px solid var(--background-modifier-border);
@@ -106,7 +106,7 @@
 		font-size: var(--font-ui-small);
 	}
 
-	&-item  {
+	&-item {
 		position: relative;
 		padding: 10px 12px;
 		margin-bottom: 4px;
@@ -126,7 +126,7 @@
 			opacity: 0.5;
 		}
 
-		&-stopwatch  {
+		&-stopwatch {
 			position: absolute;
 			top: 6px;
 			right: 6px;
@@ -143,7 +143,10 @@
 			align-items: center;
 			justify-content: center;
 			opacity: 0;
-			transition: opacity 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+			transition:
+				opacity 0.15s ease,
+				color 0.15s ease,
+				background-color 0.15s ease;
 
 			&:hover {
 				color: var(--text-accent);
@@ -165,7 +168,7 @@
 			word-break: break-word;
 		}
 
-		&-props  {
+		&-props {
 			display: flex;
 			flex-wrap: wrap;
 			gap: 6px;
@@ -184,7 +187,7 @@
 			}
 		}
 
-		&-prop  {
+		&-prop {
 			font-size: var(--font-ui-smaller);
 			color: var(--text-muted);
 
@@ -197,7 +200,7 @@
 				color: var(--text-muted);
 			}
 
-			.prisma-prop-link  {
+			.prisma-prop-link {
 				color: var(--link-color);
 				text-decoration: none;
 				cursor: pointer;
@@ -213,7 +216,7 @@
 
 /* Mobile responsiveness */
 @media (width <= 768px) {
-	.prisma-untracked-dropdown  {
+	.prisma-untracked-dropdown {
 		width: calc(100vw - 32px);
 		max-height: 400px;
 		left: 50%;

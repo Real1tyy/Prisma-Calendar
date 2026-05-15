@@ -1,15 +1,14 @@
-
 /* Zoom Control Styles — the FullCalendar `.fc-zoomLevel-button` element is
    repurposed as a transparent React mount slot (display: contents). The actual
    button surface is rendered by ZoomControl as a real <button> inheriting
    `.fc-button.fc-button-primary` for visual parity with the old imperative
    button. Click opens an Obsidian Menu (menu-scroll) — same UX as before. */
-.prisma-calendar-container  {
+.prisma-calendar-container {
 	.fc-zoomLevel-button.prisma-zoom-host {
 		display: contents;
 	}
 
-	.prisma-fc-zoom-button  {
+	.prisma-fc-zoom-button {
 		cursor: pointer;
 		position: relative;
 		padding-right: 24px;
@@ -36,7 +35,7 @@
 }
 
 /* Filter Input Styles (Search & Expression) */
-.prisma-fc-filter  {
+.prisma-fc-filter {
 	&-wrapper {
 		position: relative;
 		display: inline-flex;
@@ -51,7 +50,7 @@
 		margin-left: 8px;
 	}
 
-	&-preset-select  {
+	&-preset-select {
 		-webkit-appearance: none;
 		-moz-appearance: none;
 		appearance: none;
@@ -95,7 +94,7 @@
 }
 
 .prisma-fc-search-input,
-.prisma-fc-expression-input  {
+.prisma-fc-expression-input {
 	padding: 4px 8px;
 	border: 1px solid var(--background-modifier-border);
 	border-radius: var(--radius-s);

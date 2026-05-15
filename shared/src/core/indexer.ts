@@ -404,11 +404,10 @@ export class Indexer {
 
 		const renamedIntents$ = renamed$.pipe(
 			filter(
-				([f, oldPath]) =>
-					Indexer.isMarkdownFile(f) && (this.config.includeFile(f.path) || this.config.includeFile(oldPath))
+				(pair): pair is [TFile, string] =>
+					Indexer.isMarkdownFile(pair[0]) && (this.config.includeFile(pair[0].path) || this.config.includeFile(pair[1]))
 			),
-			mergeMap(([f, oldPath]): FileIntent[] => {
-				const file = f as TFile;
+			mergeMap(([file, oldPath]): FileIntent[] => {
 				const newInScope = this.config.includeFile(file.path);
 				const oldInScope = this.config.includeFile(oldPath);
 

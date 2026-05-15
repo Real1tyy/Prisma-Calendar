@@ -167,12 +167,14 @@ export class AIChatManager {
 				{ role: "user", content: userMessage },
 			]);
 
-			if (this.currentThread) {
-				this.currentThread.title = title
+			// Re-check after await — another action could have cleared the thread in the meantime.
+			const thread = this.currentThread as ThreadData | null;
+			if (thread) {
+				thread.title = title
 					.trim()
 					.replace(/^["']|["']$/g, "")
 					.slice(0, MAX_TITLE_LENGTH);
-				await this.chatStore.saveThread(this.currentThread);
+				await this.chatStore.saveThread(thread);
 			}
 		} catch {
 			// Keep the truncated user message as title on failure

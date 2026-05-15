@@ -6,7 +6,8 @@
 }
 
 /* Keyboard-only focus rings for buttons */
-[class*=prisma-] button:focus-visible, button[class*=prisma-]:focus-visible {
+[class*=prisma-] button:focus-visible,
+button[class*=prisma-]:focus-visible {
   outline: 2px solid var(--interactive-accent);
   outline-offset: 2px;
 }
@@ -115,7 +116,8 @@
 .prisma-calendar-container .fc-theme-standard .fc-scrollgrid {
   border-color: var(--background-modifier-border);
 }
-.prisma-calendar-container .fc-theme-standard th, .prisma-calendar-container .fc-theme-standard td {
+.prisma-calendar-container .fc-theme-standard th,
+.prisma-calendar-container .fc-theme-standard td {
   border-color: var(--background-modifier-border);
 }
 .prisma-calendar-container .fc-theme-standard .fc-scrollgrid-section > * {
@@ -201,7 +203,8 @@
 .prisma-calendar-container {
   /* Day cell coloring — uniform mode: single color applied to all day cells */
 }
-.prisma-calendar-container.prisma-uniform-day-color .fc-daygrid-day, .prisma-calendar-container.prisma-uniform-day-color .fc-timegrid-col[data-date] {
+.prisma-calendar-container.prisma-uniform-day-color .fc-daygrid-day,
+.prisma-calendar-container.prisma-uniform-day-color .fc-timegrid-col[data-date] {
   background: linear-gradient(180deg, color-mix(in srgb, var(--month-even-color) 25%, transparent) 0%, color-mix(in srgb, var(--month-even-color) 12%, transparent) 100%);
 }
 .prisma-calendar-container.prisma-uniform-day-color .fc-day-other {
@@ -222,10 +225,12 @@
 .prisma-calendar-container {
   /* Day cell coloring — boundary mode: alternate gradient backgrounds by even/odd month */
 }
-.prisma-calendar-container.prisma-month-boundary-colors .fc-daygrid-day.prisma-month-even, .prisma-calendar-container.prisma-month-boundary-colors .fc-timegrid-col.prisma-month-even {
+.prisma-calendar-container.prisma-month-boundary-colors .fc-daygrid-day.prisma-month-even,
+.prisma-calendar-container.prisma-month-boundary-colors .fc-timegrid-col.prisma-month-even {
   background: linear-gradient(180deg, color-mix(in srgb, var(--month-even-color) 25%, transparent) 0%, color-mix(in srgb, var(--month-even-color) 12%, transparent) 100%);
 }
-.prisma-calendar-container.prisma-month-boundary-colors .fc-daygrid-day.prisma-month-odd, .prisma-calendar-container.prisma-month-boundary-colors .fc-timegrid-col.prisma-month-odd {
+.prisma-calendar-container.prisma-month-boundary-colors .fc-daygrid-day.prisma-month-odd,
+.prisma-calendar-container.prisma-month-boundary-colors .fc-timegrid-col.prisma-month-odd {
   background: linear-gradient(180deg, color-mix(in srgb, var(--month-odd-color) 25%, transparent) 0%, color-mix(in srgb, var(--month-odd-color) 12%, transparent) 100%);
 }
 .prisma-calendar-container.prisma-month-boundary-colors {
@@ -240,13 +245,15 @@
 .prisma-calendar-container.prisma-month-boundary-colors {
   /* Boundary — preserve today highlight */
 }
-.prisma-calendar-container.prisma-month-boundary-colors .fc-day-today.prisma-month-even, .prisma-calendar-container.prisma-month-boundary-colors .fc-day-today.prisma-month-odd {
+.prisma-calendar-container.prisma-month-boundary-colors .fc-day-today.prisma-month-even,
+.prisma-calendar-container.prisma-month-boundary-colors .fc-day-today.prisma-month-odd {
   background: var(--background-modifier-form-field);
 }
 .prisma-calendar-container.prisma-month-boundary-colors {
   /* Boundary — preserve hover */
 }
-.prisma-calendar-container.prisma-month-boundary-colors .fc-daygrid-day.prisma-month-even:hover, .prisma-calendar-container.prisma-month-boundary-colors .fc-daygrid-day.prisma-month-odd:hover {
+.prisma-calendar-container.prisma-month-boundary-colors .fc-daygrid-day.prisma-month-even:hover,
+.prisma-calendar-container.prisma-month-boundary-colors .fc-daygrid-day.prisma-month-odd:hover {
   background: var(--background-modifier-hover);
 }
 .prisma-calendar-container {
@@ -334,7 +341,9 @@
 }
 
 /* Prevent FullCalendar's default dark hover overlay */
-.prisma-calendar-container .fc-event:hover, .prisma-calendar-container .fc-daygrid-event:hover, .prisma-calendar-container .fc-daygrid-dot-event:hover {
+.prisma-calendar-container .fc-event:hover,
+.prisma-calendar-container .fc-daygrid-event:hover,
+.prisma-calendar-container .fc-daygrid-dot-event:hover {
   filter: brightness(1.15) saturate(1.1);
 }
 .prisma-calendar-container {
@@ -493,7 +502,8 @@
 }
 
 /* Time-grid / day-grid: ensure wrappers don't add extra padding */
-.prisma-calendar-container .fc-daygrid-event .fc-event-main, .prisma-calendar-container .fc-timegrid-event .fc-event-main {
+.prisma-calendar-container .fc-daygrid-event .fc-event-main,
+.prisma-calendar-container .fc-timegrid-event .fc-event-main {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -549,7 +559,8 @@
 .prisma-calendar-container .fc-dayGridMonth-view .fc-daygrid-event .prisma-fc-event-props {
   display: none;
 }
-.prisma-calendar-container .fc-daygrid-event, .prisma-calendar-container .fc-timegrid-event {
+.prisma-calendar-container .fc-daygrid-event,
+.prisma-calendar-container .fc-timegrid-event {
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1045,7 +1056,9 @@
   .prisma-calendar-container {
     /* Mobile: Collapse filter controls (zoom + preset + search + expression) by default, toggleable via "Filters" button */
   }
-  .prisma-calendar-container.prisma-mobile-controls-collapsed .fc-toolbar-chunk:first-child .fc-zoomLevel-button, .prisma-calendar-container.prisma-mobile-controls-collapsed .fc-toolbar-chunk:first-child .prisma-fc-filter-preset-wrapper, .prisma-calendar-container.prisma-mobile-controls-collapsed .fc-toolbar-chunk:first-child .prisma-fc-filter-wrapper {
+  .prisma-calendar-container.prisma-mobile-controls-collapsed .fc-toolbar-chunk:first-child .fc-zoomLevel-button,
+  .prisma-calendar-container.prisma-mobile-controls-collapsed .fc-toolbar-chunk:first-child .prisma-fc-filter-preset-wrapper,
+  .prisma-calendar-container.prisma-mobile-controls-collapsed .fc-toolbar-chunk:first-child .prisma-fc-filter-wrapper {
     display: none;
   }
   .prisma-calendar-container {
@@ -1102,7 +1115,8 @@
   .prisma-calendar-container {
     /* Mobile Weekly/Daily View: Compact event display */
   }
-  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-content-wrapper, .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-content-wrapper {
+  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-content-wrapper,
+  .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-content-wrapper {
     padding: 1px 3px;
     display: flex;
     flex-direction: column;
@@ -1112,7 +1126,8 @@
   .prisma-calendar-container {
     /* Header (time + title) always at top, never pushed down */
   }
-  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-header, .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-header {
+  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-header,
+  .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-header {
     flex-shrink: 0;
     order: -1;
     max-width: 100%;
@@ -1121,7 +1136,8 @@
     flex-direction: column;
     gap: 1px;
   }
-  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-title-custom, .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-title-custom {
+  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-title-custom,
+  .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-title-custom {
     font-size: 9px;
     word-break: break-word;
     overflow-wrap: break-word;
@@ -1130,20 +1146,23 @@
     max-width: 100%;
     font-weight: 500;
   }
-  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-time, .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-time {
+  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-time,
+  .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-time {
     font-size: 8px;
     opacity: 0.85;
   }
   .prisma-calendar-container {
     /* Mobile Weekly/Daily View: Compact frontmatter properties - lower priority, overflow downward */
   }
-  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-props, .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-props {
+  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-props,
+  .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-props {
     margin-top: 1px;
     gap: 1px;
     flex-shrink: 1;
     overflow: hidden;
   }
-  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-prop, .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-prop {
+  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-prop,
+  .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-prop {
     font-size: 7px;
     line-height: 1.1;
     padding: 0;
@@ -1153,12 +1172,14 @@
     align-items: baseline;
     max-width: 100%;
   }
-  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-prop-key, .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-prop-key {
+  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-prop-key,
+  .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-prop-key {
     font-size: 7px;
     opacity: 0.7;
     flex-shrink: 0;
   }
-  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-prop-value, .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-prop-value {
+  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-prop-value,
+  .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-prop-value {
     font-size: 7px;
     word-break: break-word;
     overflow-wrap: break-word;
@@ -1169,28 +1190,34 @@
   .prisma-calendar-container {
     /* Mobile Daily View ONLY: Larger text since we have more horizontal space */
   }
-  .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-title-custom, .prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-title-custom {
+  .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-title-custom,
+  .prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-title-custom {
     font-size: 13px;
     font-weight: 500;
     line-height: 1.3;
   }
-  .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-time, .prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-time {
+  .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-time,
+  .prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-time {
     font-size: 11px;
   }
-  .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-props, .prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-props {
+  .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-props,
+  .prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-props {
     margin-top: 4px;
     gap: 3px;
   }
-  .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-prop, .prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-prop {
+  .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-prop,
+  .prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-prop {
     font-size: 10px;
     line-height: 1.2;
     padding: 1px 4px;
     gap: 4px;
   }
-  .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-prop-key, .prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-prop-key {
+  .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-prop-key,
+  .prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-prop-key {
     font-size: 10px;
   }
-  .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-prop-value, .prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-prop-value {
+  .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-prop-value,
+  .prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-prop-value {
     font-size: 10px;
   }
   .prisma-calendar-container .fc-timeGridDay-view {
@@ -3234,7 +3261,8 @@
   /* Content container: flex column with scrollable body and sticky footer
      Note: Obsidian's actual scroll container is usually `.modal-content`, so we style both. */
 }
-.prisma-event-modal .modal-content, .prisma-event-modal .prisma-event-modal-content {
+.prisma-event-modal .modal-content,
+.prisma-event-modal .prisma-event-modal-content {
   display: flex;
   flex-direction: column;
   max-height: min(100vh, 740px);
@@ -3673,7 +3701,10 @@
   .prisma-event-modal .prisma-setting-item-control:is(input:not([type=checkbox]), select) {
     width: 100%;
   }
-  .prisma-event-modal .prisma-setting-item-control input[type=text], .prisma-event-modal .prisma-setting-item-control input[type=number], .prisma-event-modal .prisma-setting-item-control input[type=datetime-local], .prisma-event-modal .prisma-setting-item-control select {
+  .prisma-event-modal .prisma-setting-item-control input[type=text],
+  .prisma-event-modal .prisma-setting-item-control input[type=number],
+  .prisma-event-modal .prisma-setting-item-control input[type=datetime-local],
+  .prisma-event-modal .prisma-setting-item-control select {
     width: 100%;
   }
   .prisma-event-modal .prisma-setting-item-control[type=checkbox] {
@@ -5571,7 +5602,8 @@
 
 /* Responsive adjustments */
 @media (width <= 768px) {
-  .prisma-move-by-amount-group, .prisma-move-by-unit-group {
+  .prisma-move-by-amount-group,
+  .prisma-move-by-unit-group {
     width: 100%;
   }
   .prisma-move-by-btn {
@@ -5929,7 +5961,8 @@
    Weekly Statistics Modal
    =================================== */
 /* Use higher specificity to override default modal styles */
-.app-container .modal-container:has(.prisma-weekly-stats-modal) > .modal, body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
+.app-container .modal-container:has(.prisma-weekly-stats-modal) > .modal,
+body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
   max-width: 1120px;
   width: 90vw;
   min-width: 800px;
@@ -6301,7 +6334,8 @@
    ======================================== */
 @media (width <= 768px) {
   /* Override modal width for mobile */
-  .app-container .modal-container:has(.prisma-weekly-stats-modal) > .modal, body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
+  .app-container .modal-container:has(.prisma-weekly-stats-modal) > .modal,
+  body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
     max-width: 92vw;
     width: 92vw;
     min-width: unset;
@@ -6415,13 +6449,20 @@
     table-layout: fixed;
   }
   /* Column widths: Name 40%, others ~20% each */
-  .prisma-weekly-stats-modal .prisma-stats-table th:nth-child(1), .prisma-weekly-stats-modal .prisma-stats-table td:nth-child(1) {
+  .prisma-weekly-stats-modal .prisma-stats-table th:nth-child(1),
+  .prisma-weekly-stats-modal .prisma-stats-table td:nth-child(1) {
     width: 40%;
   }
-  .prisma-weekly-stats-modal .prisma-stats-table th:nth-child(2), .prisma-weekly-stats-modal .prisma-stats-table td:nth-child(2), .prisma-weekly-stats-modal .prisma-stats-table th:nth-child(3), .prisma-weekly-stats-modal .prisma-stats-table td:nth-child(3), .prisma-weekly-stats-modal .prisma-stats-table th:nth-child(4), .prisma-weekly-stats-modal .prisma-stats-table td:nth-child(4) {
+  .prisma-weekly-stats-modal .prisma-stats-table th:nth-child(2),
+  .prisma-weekly-stats-modal .prisma-stats-table td:nth-child(2),
+  .prisma-weekly-stats-modal .prisma-stats-table th:nth-child(3),
+  .prisma-weekly-stats-modal .prisma-stats-table td:nth-child(3),
+  .prisma-weekly-stats-modal .prisma-stats-table th:nth-child(4),
+  .prisma-weekly-stats-modal .prisma-stats-table td:nth-child(4) {
     width: 20%;
   }
-  .prisma-weekly-stats-modal .prisma-stats-table th, .prisma-weekly-stats-modal .prisma-stats-table td {
+  .prisma-weekly-stats-modal .prisma-stats-table th,
+  .prisma-weekly-stats-modal .prisma-stats-table td {
     padding: 8px 6px;
   }
   /* Compact pagination */
@@ -6809,7 +6850,8 @@
   min-width: 500px;
 }
 
-.prisma-caldav-test-button, .prisma-caldav-refresh-button {
+.prisma-caldav-test-button,
+.prisma-caldav-refresh-button {
   margin-top: 0.5rem;
   padding: 0.5rem 1rem;
   cursor: pointer;
@@ -7556,7 +7598,8 @@ input.vis-configuration.vis-config-range:focus::-ms-fill-upper {
   transition: opacity 0.3s ease-in-out;
 }
 
-.vis-configuration-popup::after, .vis-configuration-popup::before {
+.vis-configuration-popup::after,
+.vis-configuration-popup::before {
   left: 100%;
   top: 50%;
   border: solid transparent;
@@ -7601,23 +7644,23 @@ div.vis-tooltip {
 
 .vis-timeline {
   /*
-  -webkit-transition: height .4s ease-in-out;
-  transition:         height .4s ease-in-out;
-  */
+   -webkit-transition: height .4s ease-in-out;
+   transition:         height .4s ease-in-out;
+   */
 }
 
 .vis-panel {
   /*
-  -webkit-transition: height .4s ease-in-out, top .4s ease-in-out;
-  transition:         height .4s ease-in-out, top .4s ease-in-out;
-  */
+   -webkit-transition: height .4s ease-in-out, top .4s ease-in-out;
+   transition:         height .4s ease-in-out, top .4s ease-in-out;
+   */
 }
 
 .vis-axis {
   /*
-  -webkit-transition: top .4s ease-in-out;
-  transition:         top .4s ease-in-out;
-  */
+   -webkit-transition: top .4s ease-in-out;
+   transition:         top .4s ease-in-out;
+   */
 }
 
 /* TODO: get animation working nicely
@@ -7892,7 +7935,8 @@ div.vis-tooltip {
   -webkit-transition: 0.4s;
 }
 
-.vis-item .vis-delete, .vis-item .vis-delete-rtl {
+.vis-item .vis-delete,
+.vis-item .vis-delete-rtl {
   position: absolute;
   top: 0;
   width: 24px;
@@ -7915,7 +7959,8 @@ div.vis-tooltip {
   left: -24px;
 }
 
-.vis-item .vis-delete::after, .vis-item .vis-delete-rtl::after {
+.vis-item .vis-delete::after,
+.vis-item .vis-delete-rtl::after {
   content: "×"; /* MULTIPLICATION SIGN */
   color: red;
   font-family: arial, sans-serif;
@@ -7928,11 +7973,13 @@ div.vis-tooltip {
   transition: color 0.2s linear;
 }
 
-.vis-item .vis-delete:hover, .vis-item .vis-delete-rtl:hover {
+.vis-item .vis-delete:hover,
+.vis-item .vis-delete-rtl:hover {
   background: red;
 }
 
-.vis-item .vis-delete:hover::after, .vis-item .vis-delete-rtl:hover::after {
+.vis-item .vis-delete:hover::after,
+.vis-item .vis-delete-rtl:hover::after {
   color: white;
 }
 
@@ -7967,7 +8014,8 @@ div.vis-tooltip {
   cursor: e-resize;
 }
 
-.vis-range.vis-item.vis-readonly .vis-drag-left, .vis-range.vis-item.vis-readonly .vis-drag-right {
+.vis-range.vis-item.vis-readonly .vis-drag-left,
+.vis-range.vis-item.vis-readonly .vis-drag-right {
   cursor: auto;
 }
 
@@ -8001,7 +8049,8 @@ div.vis-tooltip {
   box-sizing: border-box;
 }
 
-.vis-itemset .vis-background, .vis-itemset .vis-foreground {
+.vis-itemset .vis-background,
+.vis-itemset .vis-foreground {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -8173,7 +8222,8 @@ div.vis-tooltip {
 }
 
 /* expanded/collapsed indicators */
-.vis-label.vis-nesting-group::before, .vis-label.vis-nesting-group::before {
+.vis-label.vis-nesting-group::before,
+.vis-label.vis-nesting-group::before {
   display: inline-block;
   width: 15px;
 }
@@ -8255,17 +8305,24 @@ div.vis-tooltip {
   box-sizing: border-box;
 }
 
-.vis-panel.vis-center, .vis-panel.vis-left, .vis-panel.vis-right, .vis-panel.vis-top, .vis-panel.vis-bottom {
+.vis-panel.vis-center,
+.vis-panel.vis-left,
+.vis-panel.vis-right,
+.vis-panel.vis-top,
+.vis-panel.vis-bottom {
   border: 1px #bfbfbf;
 }
 
-.vis-panel.vis-center, .vis-panel.vis-left, .vis-panel.vis-right {
+.vis-panel.vis-center,
+.vis-panel.vis-left,
+.vis-panel.vis-right {
   border-top-style: solid;
   border-bottom-style: solid;
   overflow: hidden;
 }
 
-.vis-left.vis-panel.vis-vertical-scroll, .vis-right.vis-panel.vis-vertical-scroll {
+.vis-left.vis-panel.vis-vertical-scroll,
+.vis-right.vis-panel.vis-vertical-scroll {
   height: 100%;
   overflow: hidden scroll;
 }
@@ -8286,7 +8343,9 @@ div.vis-tooltip {
   direction: rtl;
 }
 
-.vis-panel.vis-center, .vis-panel.vis-top, .vis-panel.vis-bottom {
+.vis-panel.vis-center,
+.vis-panel.vis-top,
+.vis-panel.vis-bottom {
   border-left-style: solid;
   border-right-style: solid;
 }
@@ -8305,8 +8364,8 @@ div.vis-tooltip {
   height: 1px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
   /* TODO: find a nice way to ensure vis-shadows are drawn on top of items
-  z-index: 1;
-  */
+   z-index: 1;
+   */
 }
 
 .vis-panel .vis-shadow.vis-top {
@@ -8672,7 +8731,8 @@ div.vis-tooltip {
 
 /* ─── Grid Layouts (Heatmap, Daily+Stats, Dual Daily) ────────── */
 /* ─── Daily + Stats / Dual Daily Grid Overrides ──────────────── */
-.prisma-daily-stats-grid, .prisma-dual-daily-grid {
+.prisma-daily-stats-grid,
+.prisma-dual-daily-grid {
   flex: 1;
   min-height: 0;
 }
@@ -9613,133 +9673,243 @@ div.vis-tooltip {
   }
 }
 /* Event modal — field containers (visibility toggled at runtime via .prisma-hidden) */
-.prisma-allday-event-fields { /* intentional stub */ }
+.prisma-allday-event-fields {
+  /* intentional stub */
+}
 
-.prisma-timed-event-fields { /* intentional stub */ }
+.prisma-timed-event-fields {
+  /* intentional stub */
+}
 
-.prisma-simple-fields-container { /* intentional stub */ }
+.prisma-simple-fields-container {
+  /* intentional stub */
+}
 
-.prisma-custom-interval { /* intentional stub */ }
+.prisma-custom-interval {
+  /* intentional stub */
+}
 
 /* Event preview modal */
-.prisma-event-preview-time-section { /* intentional stub */ }
+.prisma-event-preview-time-section {
+  /* intentional stub */
+}
 
-.prisma-event-preview-props-section { /* intentional stub */ }
+.prisma-event-preview-props-section {
+  /* intentional stub */
+}
 
 /* Event list modal */
-.prisma-events-modal-content { /* intentional stub */ }
+.prisma-events-modal-content {
+  /* intentional stub */
+}
 
-.prisma-generic-event-list-subtitle { /* intentional stub */ }
+.prisma-generic-event-list-subtitle {
+  /* intentional stub */
+}
 
-.prisma-list-row-active { /* intentional stub */ }
+.prisma-list-row-active {
+  /* intentional stub */
+}
 
 /* Modal containers */
-.prisma-assignment-modal { /* intentional stub */ }
+.prisma-assignment-modal {
+  /* intentional stub */
+}
 
-.prisma-save-preset-modal { /* intentional stub */ }
+.prisma-save-preset-modal {
+  /* intentional stub */
+}
 
-.prisma-untracked-event-modal { /* intentional stub */ }
+.prisma-untracked-event-modal {
+  /* intentional stub */
+}
 
-.prisma-welcome-modal { /* intentional stub */ }
+.prisma-welcome-modal {
+  /* intentional stub */
+}
 
-.prisma-heatmap-pro-gate-modal { /* intentional stub */ }
+.prisma-heatmap-pro-gate-modal {
+  /* intentional stub */
+}
 
 /* Settings — calendar management */
-.prisma-calendar-management { /* intentional stub */ }
+.prisma-calendar-management {
+  /* intentional stub */
+}
 
-.prisma-calendar-configure-button { /* intentional stub */ }
+.prisma-calendar-configure-button {
+  /* intentional stub */
+}
 
-.prisma-calendar-settings-container { /* intentional stub */ }
+.prisma-calendar-settings-container {
+  /* intentional stub */
+}
 
-.prisma-caldav-accounts-wrapper { /* intentional stub */ }
+.prisma-caldav-accounts-wrapper {
+  /* intentional stub */
+}
 
-.prisma-settings-tab-content { /* intentional stub */ }
+.prisma-settings-tab-content {
+  /* intentional stub */
+}
 
-.prisma-settings-search-results { /* intentional stub */ }
+.prisma-settings-search-results {
+  /* intentional stub */
+}
 
-.prisma-settings-calendar { /* intentional stub */ }
+.prisma-settings-calendar {
+  /* intentional stub */
+}
 
-.prisma-settings-button { /* intentional stub */ }
+.prisma-settings-button {
+  /* intentional stub */
+}
 
 /* Bases markdown render inside series modal */
-.prisma-bases-markdown-container { /* intentional stub */ }
+.prisma-bases-markdown-container {
+  /* intentional stub */
+}
 
 /* Category operation modal */
-.prisma-category-operation-untracked-toggle { /* intentional stub */ }
+.prisma-category-operation-untracked-toggle {
+  /* intentional stub */
+}
 
 /* Property config indicators */
-.prisma-is-copied { /* intentional stub */ }
+.prisma-is-copied {
+  /* intentional stub */
+}
 
-.prisma-is-selected { /* intentional stub */ }
+.prisma-is-selected {
+  /* intentional stub */
+}
 
 /* Mobile controls toggle */
-.prisma-mobile-controls-toggle-collapsed { /* intentional stub */ }
+.prisma-mobile-controls-toggle-collapsed {
+  /* intentional stub */
+}
 
-.prisma-move-by-toggle-btn { /* intentional stub */ }
+.prisma-move-by-toggle-btn {
+  /* intentional stub */
+}
 
 /* Page header (FullCalendar custom toolbar actions) */
-.prisma-page-header-actions { /* intentional stub */ }
+.prisma-page-header-actions {
+  /* intentional stub */
+}
 
-.prisma-page-header-action { /* intentional stub */ }
+.prisma-page-header-action {
+  /* intentional stub */
+}
 
 /* Gantt view */
-.gantt-create-btn { /* intentional stub */ }
+.gantt-create-btn {
+  /* intentional stub */
+}
 
-.prisma-gantt-bar-container { /* intentional stub */ }
+.prisma-gantt-bar-container {
+  /* intentional stub */
+}
 
-.prisma-gantt-bar-color-dots { /* intentional stub */ }
+.prisma-gantt-bar-color-dots {
+  /* intentional stub */
+}
 
 /* Action buttons (toolbar/context menu) */
-.prisma--btn { /* intentional stub */ }
+.prisma--btn {
+  /* intentional stub */
+}
 
-.prisma-categories-btn { /* intentional stub */ }
+.prisma-categories-btn {
+  /* intentional stub */
+}
 
-.prisma-frontmatter-btn { /* intentional stub */ }
+.prisma-frontmatter-btn {
+  /* intentional stub */
+}
 
-.prisma-make-real-btn { /* intentional stub */ }
+.prisma-make-real-btn {
+  /* intentional stub */
+}
 
-.prisma-make-virtual-btn { /* intentional stub */ }
+.prisma-make-virtual-btn {
+  /* intentional stub */
+}
 
-.prisma-mark-done-btn { /* intentional stub */ }
+.prisma-mark-done-btn {
+  /* intentional stub */
+}
 
-.prisma-mark-not-done-btn { /* intentional stub */ }
+.prisma-mark-not-done-btn {
+  /* intentional stub */
+}
 
 /* Stats view */
-.prisma-stats-content { /* intentional stub */ }
+.prisma-stats-content {
+  /* intentional stub */
+}
 
 /* Holiday calendar event marker */
-.prisma-holiday-event { /* intentional stub */ }
+.prisma-holiday-event {
+  /* intentional stub */
+}
 
 /* Series timeline list item */
-.prisma-timeline-item { /* intentional stub */ }
+.prisma-timeline-item {
+  /* intentional stub */
+}
 
 /* Heatmap monthly-stats family — `cls("heatmap-monthly-stats-")` is a dynamic
  * prefix concatenated at runtime with the stat-row id. We anchor the prefix
  * with one literal selector so the static scanner can resolve it. */
-.prisma-heatmap-monthly-stats-row { /* intentional stub — dynamic prefix anchor */ }
+.prisma-heatmap-monthly-stats-row {
+  /* intentional stub — dynamic prefix anchor */
+}
 
 /* Integration delete confirmation — class includes integrationId at runtime
  * (e.g. prisma-integration-delete-caldav-personal). One literal anchors the
  * prefix for the scanner. */
-.prisma-integration-delete-confirmation { /* intentional stub — dynamic prefix anchor */ }
+.prisma-integration-delete-confirmation {
+  /* intentional stub — dynamic prefix anchor */
+}
 
 /* AI chat — operation cards and execute button */
-.prisma-ai-chat-operations { /* intentional stub */ }
+.prisma-ai-chat-operations {
+  /* intentional stub */
+}
 
-.prisma-ai-chat-op-card { /* intentional stub */ }
+.prisma-ai-chat-op-card {
+  /* intentional stub */
+}
 
-.prisma-ai-chat-op-create { /* intentional stub */ }
+.prisma-ai-chat-op-create {
+  /* intentional stub */
+}
 
-.prisma-ai-chat-op-edit { /* intentional stub */ }
+.prisma-ai-chat-op-edit {
+  /* intentional stub */
+}
 
-.prisma-ai-chat-op-delete { /* intentional stub */ }
+.prisma-ai-chat-op-delete {
+  /* intentional stub */
+}
 
-.prisma-ai-chat-op-badge { /* intentional stub */ }
+.prisma-ai-chat-op-badge {
+  /* intentional stub */
+}
 
-.prisma-ai-chat-op-title { /* intentional stub */ }
+.prisma-ai-chat-op-title {
+  /* intentional stub */
+}
 
-.prisma-ai-chat-op-detail { /* intentional stub */ }
+.prisma-ai-chat-op-detail {
+  /* intentional stub */
+}
 
-.prisma-ai-chat-execute-btn { /* intentional stub */ }
+.prisma-ai-chat-execute-btn {
+  /* intentional stub */
+}
 
-.prisma-ai-chat-thinking { /* intentional stub */ }
+.prisma-ai-chat-thinking {
+  /* intentional stub */
+}

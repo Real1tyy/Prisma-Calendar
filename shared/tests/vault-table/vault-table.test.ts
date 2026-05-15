@@ -700,7 +700,7 @@ describe("VaultTable", () => {
 			const { config, mockApp, fileStore } = createTestConfig();
 			const table = new VaultTable(config);
 
-			fileStore.set("test-table", { path: "test-table" } as unknown as TFile);
+			fileStore.set("test-table", new TFile("test-table"));
 
 			await table.start();
 
@@ -1713,11 +1713,6 @@ describe("VaultTable", () => {
 				data: { title: "Skipped", priority: 0, tags: [], category: "general" },
 			});
 
-			// Simulate an updater that deletes a property
-			const existing = table.get("skipped-event")!;
-			const updated = { ...existing.data };
-			// In the real scenario this would be: delete updated[skipProp]
-			// Here we just pass a clean object without the extra fields
 			await table.replace("skipped-event", {
 				title: "Unskipped",
 				priority: 0,

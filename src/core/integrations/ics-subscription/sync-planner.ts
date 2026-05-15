@@ -101,7 +101,7 @@ export function computeIcsSubscriptionSyncPlan(inputs: PlanInputs): SyncPlan {
 		else if (action.kind === "delete") summary.delete++;
 		else if (action.kind === "skip-unchanged") summary.skipUnchanged++;
 		else if (action.kind === "skip-missing-uid") summary.skipMissingUid++;
-		else if (action.kind === "skip-foreign-uid") summary.skipForeignUid++;
+		else summary.skipForeignUid++;
 	}
 
 	return { actions, summary };

@@ -752,9 +752,9 @@ export class RecurringEventManager extends DebouncedNotifier {
 			}
 
 			// Lazy load content if not already loaded (deferred from initial scan)
-			// Note: content can be empty string ("") which is valid, so check for undefined/null specifically
+			// Note: content can be empty string ("") which is valid, so check for undefined specifically
 			let content = recurringEvent.content;
-			if (content === undefined || content === null) {
+			if (content === undefined) {
 				const sourceFile = getFileByPathOrThrow(this.app, recurringEvent.sourceFilePath);
 				const fullContent = await this.app.vault.cachedRead(sourceFile);
 				content = extractContentAfterFrontmatter(fullContent);

@@ -1,4 +1,4 @@
-import type { TFile, Vault } from "obsidian";
+import type { Vault } from "obsidian";
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
@@ -91,33 +91,33 @@ describe("CodeBlockFile", () => {
 	describe("extractRaw", () => {
 		it("should extract content from matching code block", async () => {
 			const vault = createMockVault("```test-block\nsome content\n```");
-			const result = await file.extractRaw(vault, createMockFile("test.md") as TFile);
+			const result = await file.extractRaw(vault, createMockFile("test.md"));
 			expect(result).toBe("some content\n");
 		});
 
 		it("should return null when no matching code block exists", async () => {
 			const vault = createMockVault("```other-block\ncontent\n```");
-			const result = await file.extractRaw(vault, createMockFile("test.md") as TFile);
+			const result = await file.extractRaw(vault, createMockFile("test.md"));
 			expect(result).toBeNull();
 		});
 
 		it("should return empty string for empty code block", async () => {
 			const vault = createMockVault("```test-block\n```");
-			const result = await file.extractRaw(vault, createMockFile("test.md") as TFile);
+			const result = await file.extractRaw(vault, createMockFile("test.md"));
 			expect(result).toBe("");
 		});
 
 		it("should handle vault read errors gracefully", async () => {
 			const vault = { read: vi.fn().mockRejectedValue(new Error("read error")) } as unknown as Vault;
 			const consoleSpy = vi.spyOn(console, "debug").mockImplementation(() => {});
-			const result = await file.extractRaw(vault, createMockFile("test.md") as TFile);
+			const result = await file.extractRaw(vault, createMockFile("test.md"));
 			expect(result).toBeNull();
 			consoleSpy.mockRestore();
 		});
 
 		it("should extract first block when multiple exist", async () => {
 			const vault = createMockVault("```test-block\nfirst\n```\n\n```test-block\nsecond\n```");
-			const result = await file.extractRaw(vault, createMockFile("test.md") as TFile);
+			const result = await file.extractRaw(vault, createMockFile("test.md"));
 			expect(result).toBe("first\n");
 		});
 	});
@@ -125,13 +125,13 @@ describe("CodeBlockFile", () => {
 	describe("read", () => {
 		it("should extract and parse JSON entries from file", async () => {
 			const vault = createMockVault('```test-block\n[{"id":"a","value":1}]\n```');
-			const result = await file.read(vault, createMockFile("test.md") as TFile);
+			const result = await file.read(vault, createMockFile("test.md"));
 			expect(result).toEqual([{ id: "a", value: 1 }]);
 		});
 
 		it("should return empty array when no block exists", async () => {
 			const vault = createMockVault("no code block");
-			expect(await file.read(vault, createMockFile("test.md") as TFile)).toEqual([]);
+			expect(await file.read(vault, createMockFile("test.md"))).toEqual([]);
 		});
 	});
 
@@ -188,7 +188,7 @@ describe("CodeBlockFile", () => {
 				workspace: { getActiveViewOfType: vi.fn().mockReturnValue(null) },
 			});
 			const tfile = createMockFile("test.md");
-			await file.write(mockApp as never, tfile as TFile, [{ id: "new", value: 42 }]);
+			await file.write(mockApp as never, tfile, [{ id: "new", value: 42 }]);
 			expect(mockApp.vault.modify).toHaveBeenCalledWith(tfile, '```test-block\n[\n  {"id":"new","value":42}\n]\n```');
 		});
 
@@ -198,7 +198,7 @@ describe("CodeBlockFile", () => {
 				workspace: { getActiveViewOfType: vi.fn().mockReturnValue(null) },
 			});
 			const onBeforeWrite = vi.fn();
-			await file.write(mockApp as never, createMockFile("t.md") as TFile, [{ id: "x", value: 1 }], onBeforeWrite);
+			await file.write(mockApp as never, createMockFile("t.md"), [{ id: "x", value: 1 }], onBeforeWrite);
 			expect(onBeforeWrite).toHaveBeenCalledTimes(1);
 		});
 	});
@@ -211,7 +211,7 @@ describe("CodeBlockFile", () => {
 				workspace: { getActiveViewOfType: vi.fn().mockReturnValue(null) },
 			});
 			const tfile = createMockFile("test.md");
-			await file.writeRaw(mockApp as never, tfile as TFile, "new content");
+			await file.writeRaw(mockApp as never, tfile, "new content");
 			expect(mockApp.vault.modify).toHaveBeenCalledWith(tfile, "```test-block\nnew content\n```");
 		});
 	});
@@ -221,7 +221,7 @@ describe("CodeBlockFile", () => {
 			const mockApp = createMockApp({
 				vault: { read: vi.fn().mockResolvedValue("```test-block\n[]\n```"), modify: vi.fn() },
 			});
-			await file.ensureBlock(mockApp as never, createMockFile("test.md") as TFile);
+			await file.ensureBlock(mockApp as never, createMockFile("test.md"));
 			expect(mockApp.vault.modify).not.toHaveBeenCalled();
 		});
 
@@ -231,7 +231,7 @@ describe("CodeBlockFile", () => {
 				vault: { read: vi.fn().mockResolvedValue(content), modify: vi.fn() },
 			});
 			const tfile = createMockFile("test.md");
-			await file.ensureBlock(mockApp as never, tfile as TFile);
+			await file.ensureBlock(mockApp as never, tfile);
 			expect(mockApp.vault.modify).toHaveBeenCalledWith(
 				tfile,
 				"---\ntitle: Test\n---\n\n```test-block\n[]\n```\n\nSome content"
@@ -243,7 +243,7 @@ describe("CodeBlockFile", () => {
 				vault: { read: vi.fn().mockResolvedValue("Some content"), modify: vi.fn() },
 			});
 			const tfile = createMockFile("test.md");
-			await file.ensureBlock(mockApp as never, tfile as TFile);
+			await file.ensureBlock(mockApp as never, tfile);
 			expect(mockApp.vault.modify).toHaveBeenCalledWith(tfile, "```test-block\n[]\n```\n\nSome content");
 		});
 
@@ -252,7 +252,7 @@ describe("CodeBlockFile", () => {
 				vault: { read: vi.fn().mockResolvedValue("Some content"), modify: vi.fn() },
 			});
 			const tfile = createMockFile("test.md");
-			await file.ensureBlock(mockApp as never, tfile as TFile, [{ id: "a", value: 1 }]);
+			await file.ensureBlock(mockApp as never, tfile, [{ id: "a", value: 1 }]);
 			expect(mockApp.vault.modify).toHaveBeenCalledWith(
 				tfile,
 				'```test-block\n[\n  {"id":"a","value":1}\n]\n```\n\nSome content'

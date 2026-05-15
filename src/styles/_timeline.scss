@@ -3,13 +3,13 @@
 /* Common: inner element holding the header + timeline container.
    Always a flex column that fills its parent — no fixed width/height
    so it adapts to whatever ancestor (modal-content or tab body) it lives in. */
-.prisma-timeline-modal  {
+.prisma-timeline-modal {
 	display: flex;
 	flex-direction: column;
 	min-width: 0;
 	min-height: 0;
 
-	&-header  {
+	&-header {
 		flex-shrink: 0;
 		padding: 1.5rem 2rem 1rem;
 		border-bottom: 1px solid var(--background-modifier-border);
@@ -46,15 +46,14 @@
 	padding: 0;
 }
 
-.prisma-timeline-nav  {
-
+.prisma-timeline-nav {
 	&-date-group {
 		display: flex;
 		align-items: center;
 		gap: 1rem;
 	}
 
-	&-input  {
+	&-input {
 		width: 65px;
 		padding: 4px 8px;
 		border-radius: 4px;
@@ -70,7 +69,7 @@
 		}
 	}
 
-	&-btn  {
+	&-btn {
 		padding: 4px 12px;
 		border-radius: 4px;
 		border: 1px solid var(--background-modifier-border);

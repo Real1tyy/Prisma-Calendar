@@ -335,8 +335,8 @@ export class CalendarBundle {
 	}
 
 	private updateCommandNames(name: string): void {
-		const commands = (this.app as unknown as { commands: { commands: Record<string, { name: string }> } }).commands
-			.commands;
+		const commands = (this.app as unknown as { commands: { commands: Partial<Record<string, { name: string }>> } })
+			.commands.commands;
 		const prefix = `${this.plugin.manifest.name}: `;
 		const openCmd = commands[`prisma-calendar:open-calendar-${this.calendarId}`];
 		if (openCmd) openCmd.name = `${prefix}Open ${name}`;
@@ -398,7 +398,7 @@ export class CalendarBundle {
 		// Get the calendar view and navigate to the date
 		const { workspace } = this.app;
 		const existingLeaves = workspace.getLeavesOfType(this.viewType);
-		const calendarLeaf = existingLeaves[0];
+		const calendarLeaf = existingLeaves.at(0);
 
 		if (calendarLeaf) {
 			const component = this.viewRef.calendarComponent;

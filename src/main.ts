@@ -389,7 +389,7 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		await this.ensureCalendarBundlesReady();
 
-		const bundle = this.calendarBundles[0];
+		const bundle = this.calendarBundles.at(0);
 		if (bundle) {
 			await bundle.activateCalendarView();
 		}

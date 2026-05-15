@@ -3,7 +3,7 @@
  */
 import { describe, expect, it, vi } from "vitest";
 
-import type { ComponentContext, ViewComponentConfig, ViewContext } from "../../src/components/component-renderer/types";
+import type { ViewComponentConfig, ViewContext } from "../../src/components/component-renderer/types";
 import type * as ObsidianMock from "../../src/testing/mocks/obsidian";
 
 const mockActivateView = vi.fn().mockResolvedValue(null);

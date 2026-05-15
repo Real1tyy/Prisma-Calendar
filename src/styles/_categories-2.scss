@@ -1,6 +1,6 @@
 /* Category Select Modal */
-.prisma-category-select  {
-	&-modal  {
+.prisma-category-select {
+	&-modal {
 		min-width: 400px;
 		max-width: 500px;
 
@@ -18,7 +18,7 @@
 		gap: 1rem;
 	}
 
-	&-section  {
+	&-section {
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
@@ -30,7 +30,7 @@
 		}
 	}
 
-	&-info  {
+	&-info {
 		padding: 0.75rem;
 		background: var(--background-secondary);
 		border-radius: var(--radius-s);

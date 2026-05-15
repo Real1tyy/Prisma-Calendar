@@ -1,4 +1,3 @@
-import type { TFile } from "obsidian";
 import { TFolder } from "obsidian";
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
@@ -44,7 +43,7 @@ describe("CodeBlockRepository", () => {
 			});
 			const repo = createRepo();
 			const file = createMockFile("test.md");
-			await repo.ensureBlock(mockApp as never, file as TFile);
+			await repo.ensureBlock(mockApp as never, file);
 			expect(mockApp.vault.modify).toHaveBeenCalledWith(file, "```test-block\n[]\n```\n\nSome content");
 		});
 	});
@@ -69,7 +68,7 @@ describe("CodeBlockRepository", () => {
 			const mockApp = mockAppWithContent(`\`\`\`test-block\n${SEED_DATA}\n\`\`\``);
 			const file = createMockFile("test.md");
 			const repo = createCrudRepo();
-			repo.loadFromRaw(SEED_DATA, mockApp as never, file as TFile);
+			repo.loadFromRaw(SEED_DATA, mockApp as never, file);
 			return { repo, mockApp, file };
 		}
 
@@ -79,7 +78,7 @@ describe("CodeBlockRepository", () => {
 				const file = createMockFile("test.md");
 				const repo = createCrudRepo();
 
-				await repo.load(mockApp as never, file as TFile);
+				await repo.load(mockApp as never, file);
 
 				expect(allItems(repo)).toEqual([
 					{ id: "a", value: 1 },
@@ -93,7 +92,7 @@ describe("CodeBlockRepository", () => {
 
 				const freshApp = mockAppWithContent('```test-block\n[{"id":"x","value":9}]\n```');
 				const freshFile = createMockFile("other.md");
-				await repo.load(freshApp as never, freshFile as TFile);
+				await repo.load(freshApp as never, freshFile);
 
 				expect(allItems(repo)).toEqual([{ id: "x", value: 9 }]);
 				expect(repo.get("a")).toBeUndefined();
@@ -106,7 +105,7 @@ describe("CodeBlockRepository", () => {
 				const mockApp = createMockApp({});
 				const file = createMockFile("test.md");
 
-				repo.loadFromRaw('[{"id":"c","value":3},{"id":"a","value":1}]', mockApp as never, file as TFile);
+				repo.loadFromRaw('[{"id":"c","value":3},{"id":"a","value":1}]', mockApp as never, file);
 
 				expect(allItems(repo)).toEqual([
 					{ id: "a", value: 1 },
@@ -116,13 +115,13 @@ describe("CodeBlockRepository", () => {
 
 			it("should handle empty array", () => {
 				const repo = createCrudRepo();
-				repo.loadFromRaw("[]", createMockApp({}) as never, createMockFile("t.md") as TFile);
+				repo.loadFromRaw("[]", createMockApp({}) as never, createMockFile("t.md"));
 				expect(allItems(repo)).toEqual([]);
 			});
 
 			it("should handle invalid JSON gracefully", () => {
 				const repo = createCrudRepo();
-				repo.loadFromRaw("not json", createMockApp({}) as never, createMockFile("t.md") as TFile);
+				repo.loadFromRaw("not json", createMockApp({}) as never, createMockFile("t.md"));
 				expect(allItems(repo)).toEqual([]);
 			});
 
@@ -131,7 +130,7 @@ describe("CodeBlockRepository", () => {
 				repo.loadFromRaw(
 					'[{"id":"ok","value":1},{"id":999,"value":"bad"}]',
 					createMockApp({}) as never,
-					createMockFile("t.md") as TFile
+					createMockFile("t.md")
 				);
 				expect(allItems(repo)).toEqual([{ id: "ok", value: 1 }]);
 			});
@@ -366,7 +365,7 @@ describe("CodeBlockRepository", () => {
 					sort: (a, b) => b.id.localeCompare(a.id),
 				});
 				const mockApp = mockAppWithContent(`\`\`\`test-block\n${SEED_DATA}\n\`\`\``);
-				repo.loadFromRaw(SEED_DATA, mockApp as never, createMockFile("t.md") as TFile);
+				repo.loadFromRaw(SEED_DATA, mockApp as never, createMockFile("t.md"));
 
 				expect(allItems(repo).map((i) => i.id)).toEqual(["b", "a"]);
 			});
@@ -376,19 +375,19 @@ describe("CodeBlockRepository", () => {
 			it("should throw on loadFromRaw with items when no idField configured", () => {
 				const repo = createRepo();
 				expect(() =>
-					repo.loadFromRaw('[{"id":"a","value":1}]', createMockApp({}) as never, createMockFile("t.md") as TFile)
+					repo.loadFromRaw('[{"id":"a","value":1}]', createMockApp({}) as never, createMockFile("t.md"))
 				).toThrow("idField");
 			});
 
 			it("should allow loadFromRaw with empty array when no idField configured", () => {
 				const repo = createRepo();
-				expect(() => repo.loadFromRaw("[]", createMockApp({}) as never, createMockFile("t.md") as TFile)).not.toThrow();
+				expect(() => repo.loadFromRaw("[]", createMockApp({}) as never, createMockFile("t.md"))).not.toThrow();
 			});
 
 			it("should throw on create without idField", async () => {
 				const repo = createRepo();
 				const mockApp = mockAppWithContent("```test-block\n[]\n```");
-				repo.loadFromRaw("[]", mockApp as never, createMockFile("t.md") as TFile);
+				repo.loadFromRaw("[]", mockApp as never, createMockFile("t.md"));
 				await expect(repo.create({ id: "a", value: 1 })).rejects.toThrow("idField");
 			});
 
@@ -543,7 +542,7 @@ describe("CodeBlockRepository", () => {
 			});
 			const file = createMockFile("test.md");
 			const repo = createCrudRepo();
-			repo.loadFromRaw(SEED_DATA, mockApp as never, file as TFile);
+			repo.loadFromRaw(SEED_DATA, mockApp as never, file);
 			return { repo, mockApp, file };
 		}
 
@@ -621,10 +620,10 @@ describe("CodeBlockRepository", () => {
 				const mockApp = createMockApp({});
 				const file = createMockFile("t.md");
 
-				repo.loadFromRaw("[]", mockApp as never, file as TFile);
+				repo.loadFromRaw("[]", mockApp as never, file);
 				const events = collectEvents(repo);
 
-				repo.loadFromRaw('[{"id":"a","value":1}]', mockApp as never, file as TFile);
+				repo.loadFromRaw('[{"id":"a","value":1}]', mockApp as never, file);
 
 				expect(events).toHaveLength(1);
 				expect(events[0]).toMatchObject({ type: "row-created", id: "a" });
@@ -635,10 +634,10 @@ describe("CodeBlockRepository", () => {
 				const mockApp = createMockApp({});
 				const file = createMockFile("t.md");
 
-				repo.loadFromRaw('[{"id":"a","value":1}]', mockApp as never, file as TFile);
+				repo.loadFromRaw('[{"id":"a","value":1}]', mockApp as never, file);
 				const events = collectEvents(repo);
 
-				repo.loadFromRaw("[]", mockApp as never, file as TFile);
+				repo.loadFromRaw("[]", mockApp as never, file);
 
 				expect(events).toHaveLength(1);
 				expect(events[0]).toMatchObject({ type: "row-deleted", id: "a" });
@@ -649,10 +648,10 @@ describe("CodeBlockRepository", () => {
 				const mockApp = createMockApp({});
 				const file = createMockFile("t.md");
 
-				repo.loadFromRaw('[{"id":"a","value":1}]', mockApp as never, file as TFile);
+				repo.loadFromRaw('[{"id":"a","value":1}]', mockApp as never, file);
 				const events = collectEvents(repo);
 
-				repo.loadFromRaw('[{"id":"a","value":99}]', mockApp as never, file as TFile);
+				repo.loadFromRaw('[{"id":"a","value":99}]', mockApp as never, file);
 
 				expect(events).toHaveLength(1);
 				expect(events[0]).toMatchObject({ type: "row-updated", id: "a" });
@@ -663,10 +662,10 @@ describe("CodeBlockRepository", () => {
 				const mockApp = createMockApp({});
 				const file = createMockFile("t.md");
 
-				repo.loadFromRaw('[{"id":"a","value":1}]', mockApp as never, file as TFile);
+				repo.loadFromRaw('[{"id":"a","value":1}]', mockApp as never, file);
 				const events = collectEvents(repo);
 
-				repo.loadFromRaw('[{"id":"a","value":1}]', mockApp as never, file as TFile);
+				repo.loadFromRaw('[{"id":"a","value":1}]', mockApp as never, file);
 
 				expect(events).toHaveLength(0);
 			});
@@ -676,10 +675,10 @@ describe("CodeBlockRepository", () => {
 				const mockApp = createMockApp({});
 				const file = createMockFile("t.md");
 
-				repo.loadFromRaw('[{"id":"a","value":1},{"id":"b","value":2}]', mockApp as never, file as TFile);
+				repo.loadFromRaw('[{"id":"a","value":1},{"id":"b","value":2}]', mockApp as never, file);
 				const events = collectEvents(repo);
 
-				repo.loadFromRaw('[{"id":"b","value":99},{"id":"c","value":3}]', mockApp as never, file as TFile);
+				repo.loadFromRaw('[{"id":"b","value":99},{"id":"c","value":3}]', mockApp as never, file);
 
 				const eventTypes = events.map((e) => `${e.type}:${e.id}`);
 				expect(eventTypes).toContain("row-deleted:a");
@@ -695,7 +694,7 @@ describe("CodeBlockRepository", () => {
 
 		function loadedQueryRepo() {
 			const repo = createCrudRepo();
-			repo.loadFromRaw(SEED_DATA, createMockApp({}) as never, createMockFile("t.md") as TFile);
+			repo.loadFromRaw(SEED_DATA, createMockApp({}) as never, createMockFile("t.md"));
 			return repo;
 		}
 
@@ -796,7 +795,7 @@ describe("CodeBlockRepository", () => {
 				workspace: { getActiveViewOfType: vi.fn().mockReturnValue(null) },
 			});
 			const file = createMockFile("t.md");
-			repo.loadFromRaw("[]", mockApp as never, file as TFile);
+			repo.loadFromRaw("[]", mockApp as never, file);
 
 			const arr1 = repo.toArray();
 			const arr2 = repo.toArray();
@@ -815,7 +814,7 @@ describe("CodeBlockRepository", () => {
 	describe("destroy", () => {
 		it("should complete events$ and clear data", () => {
 			const repo = createCrudRepo();
-			repo.loadFromRaw('[{"id":"a","value":1}]', createMockApp({}) as never, createMockFile("t.md") as TFile);
+			repo.loadFromRaw('[{"id":"a","value":1}]', createMockApp({}) as never, createMockFile("t.md"));
 
 			let completed = false;
 			repo.events$.subscribe({ complete: () => (completed = true) });

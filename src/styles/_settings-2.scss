@@ -1,5 +1,5 @@
 /* Settings Tab Styles */
-.prisma-settings  {
+.prisma-settings {
 	&-footer {
 		margin-top: 2rem;
 		text-align: center;
@@ -19,7 +19,7 @@
 		color: var(--text-accent);
 	}
 
-	&-integrations-desc  {
+	&-integrations-desc {
 		margin-bottom: 1rem;
 
 		p {
@@ -54,7 +54,9 @@
 		a {
 			color: var(--text-accent);
 			text-decoration: underline;
-			transition: color 0.15s ease, opacity 0.15s ease;
+			transition:
+				color 0.15s ease,
+				opacity 0.15s ease;
 
 			&:hover {
 				color: var(--text-accent-hover);
@@ -63,7 +65,7 @@
 		}
 	}
 
-	&-docs-link  {
+	&-docs-link {
 		display: inline-block;
 		margin-top: 0.5rem;
 		color: var(--text-accent);
@@ -80,7 +82,7 @@
 		margin-top: 1rem;
 	}
 
-	&-integration-button  {
+	&-integration-button {
 		padding: 0.5rem 1rem;
 		border-radius: var(--radius-s);
 		border: 1px solid var(--background-modifier-border);
@@ -95,7 +97,7 @@
 		}
 	}
 
-	&-caldav-desc  {
+	&-caldav-desc {
 		margin-bottom: 1rem;
 
 		p {
@@ -160,7 +162,9 @@
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 4px;
 	cursor: pointer;
-	transition: border-color 0.15s ease, color 0.15s ease;
+	transition:
+		border-color 0.15s ease,
+		color 0.15s ease;
 	flex-shrink: 0;
 
 	&:hover {
@@ -188,7 +192,9 @@
 	border: 1px solid transparent;
 	cursor: pointer;
 	flex-shrink: 0;
-	transition: filter 0.15s ease, transform 0.15s ease;
+	transition:
+		filter 0.15s ease,
+		transform 0.15s ease;
 
 	&:hover {
 		filter: brightness(1.1);
@@ -223,7 +229,9 @@
 	border-radius: 4px;
 	cursor: pointer;
 	color: var(--text-faint);
-	transition: color 0.15s ease, border-color 0.15s ease;
+	transition:
+		color 0.15s ease,
+		border-color 0.15s ease;
 
 	&:hover {
 		color: var(--text-muted);
@@ -251,7 +259,7 @@
 	flex-wrap: wrap;
 }
 
-.prisma-calendar-action-button  {
+.prisma-calendar-action-button {
 	padding: 6px 12px;
 	border-radius: 4px;
 	cursor: pointer;
@@ -271,7 +279,7 @@
 	}
 }
 
-.prisma-calendar-create-button  {
+.prisma-calendar-create-button {
 	border: 1px solid var(--interactive-accent);
 	background-color: var(--interactive-accent);
 	color: var(--text-on-accent);
@@ -283,7 +291,7 @@
 }
 
 .prisma-calendar-clone-button,
-.prisma-calendar-rename-button  {
+.prisma-calendar-rename-button {
 	border: 1px solid var(--background-modifier-border);
 	background-color: var(--background-secondary);
 	color: var(--text-normal);
@@ -294,7 +302,7 @@
 	}
 }
 
-.prisma-calendar-delete-button  {
+.prisma-calendar-delete-button {
 	border: 1px solid var(--text-error);
 	background-color: var(--background-primary);
 	color: var(--text-error);
@@ -304,7 +312,6 @@
 		border-color: var(--text-error);
 	}
 }
-
 
 .prisma-calendar-count-info {
 	margin-top: 8px;

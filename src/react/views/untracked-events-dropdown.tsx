@@ -66,7 +66,7 @@ export const UntrackedEventsDropdown = memo(
 		const [isOpen, setIsOpen] = useState(false);
 		const [searchQuery, setSearchQuery] = useState("");
 		const deferredQuery = useDeferredValue(searchQuery);
-		const [refreshTick, setRefreshTick] = useState(0);
+		const [allEvents, setAllEvents] = useState<ParsedEvent[]>(() => bundle.untrackedEventStore.getUntrackedEvents());
 
 		const dropdownRef = useRef<HTMLDivElement>(null);
 		const buttonRef = useRef<HTMLButtonElement>(null);
@@ -92,10 +92,8 @@ export const UntrackedEventsDropdown = memo(
 		);
 		useSubscription(untrackedChanges$, () => {
 			ignoreOutsideClicksUntilRef.current = Date.now() + DROP_CLICK_IGNORE_MS;
-			setRefreshTick((t) => t + 1);
+			setAllEvents(bundle.untrackedEventStore.getUntrackedEvents());
 		});
-
-		const allEvents = useMemo(() => bundle.untrackedEventStore.getUntrackedEvents(), [bundle, refreshTick]);
 
 		const filteredEvents = useMemo(() => {
 			if (!deferredQuery) return allEvents;

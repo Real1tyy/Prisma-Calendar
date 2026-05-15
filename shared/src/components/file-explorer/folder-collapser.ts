@@ -221,8 +221,7 @@ export class FolderCollapser {
 	// ─── Class Application ───────────────────────────────────────────────
 
 	private getFileExplorerView(): FileExplorerView | null {
-		const leaf = this.app.workspace.getLeavesOfType("file-explorer")[0];
-
+		const leaf = this.app.workspace.getLeavesOfType("file-explorer").at(0);
 		if (!leaf) return null;
 		return leaf.view as unknown as FileExplorerView;
 	}

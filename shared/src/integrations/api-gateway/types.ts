@@ -21,7 +21,15 @@ export interface ActionDef<TParams = void, TReturn = void> {
 
 /**
  * Map of action name → action definition.
+ *
+ * WHY (no-explicit-any): `any` is load-bearing here for variance — `ActionDef`'s
+ * `TParams` sits in a contravariant position (function parameter), so `unknown`
+ * would prevent concrete handlers like `(p: { id: string }) => string` from
+ * being assignable. The map intentionally erases the per-action generics;
+ * consumers narrow via `InferWindowApi<TActions>` which preserves the original
+ * handler signature.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ActionDefMap = Record<string, ActionDef<any, any>>;
 
 /**

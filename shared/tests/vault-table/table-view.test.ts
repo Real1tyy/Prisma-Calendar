@@ -1,4 +1,5 @@
-import type { Plugin, TFile } from "obsidian";
+import type { Plugin } from "obsidian";
+import { TFile } from "obsidian";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { SerializableSchema } from "../../src/core/vault-table/create-mapped-schema";
@@ -72,7 +73,7 @@ describe("TableView", () => {
 		});
 
 		it("should do nothing for a non-folder-note file", async () => {
-			const file = { path: "people/alice.md" } as TFile;
+			const file = new TFile("people/alice.md");
 			triggerFileOpen(file);
 			await vi.waitFor(() => {});
 
@@ -81,7 +82,7 @@ describe("TableView", () => {
 		});
 
 		it("should do nothing for a folder note in a different directory", async () => {
-			const file = { path: "projects/projects.md" } as TFile;
+			const file = new TFile("projects/projects.md");
 			triggerFileOpen(file);
 			await vi.waitFor(() => {});
 
@@ -90,7 +91,7 @@ describe("TableView", () => {
 		});
 
 		it("should do nothing when no MarkdownView is active", async () => {
-			const file = { path: "people/people.md" } as TFile;
+			const file = new TFile("people/people.md");
 			(plugin.app.workspace.getActiveViewOfType as ReturnType<typeof vi.fn>).mockReturnValue(null);
 
 			triggerFileOpen(file);
@@ -100,7 +101,7 @@ describe("TableView", () => {
 		});
 
 		it("should create a container, prepend it, and call render for the table folder note", async () => {
-			const file = { path: "people/people.md" } as TFile;
+			const file = new TFile("people/people.md");
 			const contentEl = document.createElement("div");
 			const mockView = { contentEl };
 			(plugin.app.workspace.getActiveViewOfType as ReturnType<typeof vi.fn>).mockReturnValue(mockView);
@@ -122,7 +123,7 @@ describe("TableView", () => {
 			const mockView = { contentEl };
 			(plugin.app.workspace.getActiveViewOfType as ReturnType<typeof vi.fn>).mockReturnValue(mockView);
 
-			const file = { path: "people/people.md" } as TFile;
+			const file = new TFile("people/people.md");
 			triggerFileOpen(file);
 
 			await vi.waitFor(() => {
@@ -142,7 +143,7 @@ describe("TableView", () => {
 			const mockView = { contentEl };
 			(plugin.app.workspace.getActiveViewOfType as ReturnType<typeof vi.fn>).mockReturnValue(mockView);
 
-			const file = { path: "people/people.md" } as TFile;
+			const file = new TFile("people/people.md");
 
 			triggerFileOpen(file);
 			await vi.waitFor(() => {
@@ -174,7 +175,7 @@ describe("TableView", () => {
 			const mockView = { contentEl };
 			(plugin.app.workspace.getActiveViewOfType as ReturnType<typeof vi.fn>).mockReturnValue(mockView);
 
-			const file = { path: "people/people.md" } as TFile;
+			const file = new TFile("people/people.md");
 			triggerFileOpen(file);
 
 			await vi.waitFor(() => {
@@ -197,15 +198,15 @@ describe("TableView", () => {
 			const mockView = { contentEl };
 			(plugin.app.workspace.getActiveViewOfType as ReturnType<typeof vi.fn>).mockReturnValue(mockView);
 
-			triggerFileOpen({ path: "people/alice.md" } as TFile);
+			triggerFileOpen(new TFile("people/alice.md"));
 			await vi.waitFor(() => {});
 			expect(renderFn).not.toHaveBeenCalled();
 
-			triggerFileOpen({ path: "people/subfolder/subfolder.md" } as TFile);
+			triggerFileOpen(new TFile("people/subfolder/subfolder.md"));
 			await vi.waitFor(() => {});
 			expect(renderFn).not.toHaveBeenCalled();
 
-			triggerFileOpen({ path: "people/people.md" } as TFile);
+			triggerFileOpen(new TFile("people/people.md"));
 			await vi.waitFor(() => {
 				expect(renderFn).toHaveBeenCalledOnce();
 			});

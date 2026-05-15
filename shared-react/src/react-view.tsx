@@ -82,7 +82,10 @@ export function registerReactView<THandle extends ReactViewHandle = ReactViewHan
 		}
 	}
 
-	const registry = (plugin.app as any).viewRegistry?.viewByType;
+	const appWithRegistry = plugin.app as Plugin["app"] & {
+		viewRegistry?: { viewByType?: Record<string, unknown> };
+	};
+	const registry = appWithRegistry.viewRegistry?.viewByType;
 	if (!registry || !registry[config.viewType]) {
 		plugin.registerView(config.viewType, (leaf) => new ReactView(leaf));
 	}

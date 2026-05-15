@@ -71,7 +71,7 @@ export function withTheme<TProps extends ThemedProps>(
 		return <Component {...(rest as unknown as TProps)} {...injected} />;
 	}
 
-	const baseName = Component.displayName ?? Component.name ?? "Component";
+	const baseName = Component.displayName ?? Component.name;
 	Themed.displayName = `withTheme(${baseName})`;
 	return Themed;
 }

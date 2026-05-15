@@ -1,13 +1,13 @@
 /* vis-timeline overrides for theme compatibility */
 
-.prisma-timeline-modal  {
+.prisma-timeline-modal {
 	.vis-timeline {
 		border: 1px solid var(--background-modifier-border);
 		background: var(--background-primary);
 		font-family: var(--font-interface);
 	}
 
-	.vis-item  {
+	.vis-item {
 		background-color: var(--interactive-accent);
 		color: var(--text-on-accent);
 		font-size: 0.9em;
@@ -17,7 +17,7 @@
 			overflow: visible;
 		}
 
-		&.vis-range  {
+		&.vis-range {
 			overflow: visible;
 			min-width: 80px;
 
@@ -39,7 +39,7 @@
 			border-style: none;
 		}
 
-		&.prisma-timeline-item-skipped  {
+		&.prisma-timeline-item-skipped {
 			opacity: 0.5;
 
 			.vis-item-content {
@@ -47,7 +47,7 @@
 			}
 		}
 
-		&.prisma-timeline-item-allday  {
+		&.prisma-timeline-item-allday {
 			.vis-dot {
 				background-color: transparent;
 				border-width: 3px;
@@ -60,7 +60,7 @@
 		}
 	}
 
-	.vis-time-axis  {
+	.vis-time-axis {
 		.vis-text {
 			color: var(--text-normal);
 		}
@@ -74,7 +74,7 @@
 		}
 	}
 
-	.vis-panel  {
+	.vis-panel {
 		&.vis-background {
 			background: var(--background-primary);
 		}

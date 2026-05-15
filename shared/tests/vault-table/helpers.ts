@@ -1,21 +1,19 @@
-import type { TFile } from "obsidian";
 import { Subject } from "rxjs";
 import { vi } from "vitest";
 
 import type { VaultRow, VaultTableEvent } from "../../src/core/vault-table/types";
 import type { VaultTable } from "../../src/core/vault-table/vault-table";
+import { createMockFile } from "../../src/testing/mocks/obsidian";
 
 /**
  * Creates a VaultRow with sensible defaults. Generic over any data type.
  */
 export function makeRow<TData>(id: string, data: TData, directory = "test"): VaultRow<TData> {
+	const filePath = `${directory}/${id}.md`;
 	return {
 		id,
-		file: {
-			path: `${directory}/${id}.md`,
-			stat: { mtime: Date.now(), ctime: Date.now(), size: 0 },
-		} as unknown as TFile,
-		filePath: `${directory}/${id}.md`,
+		file: createMockFile(filePath),
+		filePath,
 		data,
 		content: "",
 		mtime: Date.now(),

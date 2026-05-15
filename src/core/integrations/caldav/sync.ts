@@ -195,7 +195,8 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 
 			let processedCount = 0;
 			for (const action of plan.actions) {
-				if (this.destroyed) break;
+				// destroyed may flip mid-loop via destroy() called from outside this async flow
+				if ((this as unknown as { destroyed: boolean }).destroyed) break;
 
 				try {
 					if (action.kind === "create") {
@@ -239,7 +240,7 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 			// local note would stay orphaned forever. Reusing the old token
 			// means the next sync replays the batch; creates/updates are
 			// idempotent via etag, and the failed delete gets another shot.
-			if (!this.destroyed && result.errors.length === 0) {
+			if (!(this as unknown as { destroyed: boolean }).destroyed && result.errors.length === 0) {
 				this.saveCalendarSyncState({
 					syncToken: newSyncToken,
 					lastSuccessfulSyncAt: Date.now(),

@@ -115,13 +115,7 @@ describe("Indexer", () => {
 
 	describe("file scanning", () => {
 		it("should scan all markdown files in configured directory", async () => {
-			const mockFile: TFile = {
-				path: "TestFolder/note.md",
-				basename: "note",
-				extension: "md",
-				parent: { path: "TestFolder" },
-				stat: { mtime: Date.now() },
-			} as TFile;
+			const mockFile = createMockFile("TestFolder/note.md", { parentPath: "TestFolder" });
 
 			vi.mocked(mockApp.vault.getMarkdownFiles).mockReturnValue([mockFile]);
 			vi.mocked(mockApp.metadataCache.getFileCache).mockReturnValue({
@@ -147,20 +141,8 @@ describe("Indexer", () => {
 
 		it("should filter files not in configured directory", async () => {
 			const mockFiles: TFile[] = [
-				{
-					path: "TestFolder/note.md",
-					basename: "note",
-					extension: "md",
-					parent: { path: "TestFolder" },
-					stat: { mtime: Date.now() },
-				} as TFile,
-				{
-					path: "OtherFolder/other.md",
-					basename: "other",
-					extension: "md",
-					parent: { path: "OtherFolder" },
-					stat: { mtime: Date.now() },
-				} as TFile,
+				createMockFile("TestFolder/note.md", { parentPath: "TestFolder" }),
+				createMockFile("OtherFolder/other.md", { parentPath: "OtherFolder" }),
 			];
 
 			vi.mocked(mockApp.vault.getMarkdownFiles).mockReturnValue(mockFiles);
@@ -178,13 +160,7 @@ describe("Indexer", () => {
 		});
 
 		it("should skip files without frontmatter", async () => {
-			const mockFile: TFile = {
-				path: "TestFolder/note.md",
-				basename: "note",
-				extension: "md",
-				parent: { path: "TestFolder" },
-				stat: { mtime: Date.now() },
-			} as TFile;
+			const mockFile = createMockFile("TestFolder/note.md", { parentPath: "TestFolder" });
 
 			vi.mocked(mockApp.vault.getMarkdownFiles).mockReturnValue([mockFile]);
 			vi.mocked(mockApp.metadataCache.getFileCache).mockReturnValue(null);
@@ -203,13 +179,7 @@ describe("Indexer", () => {
 
 	describe("resync", () => {
 		it("should clear cache and rescan on resync", async () => {
-			const mockFile: TFile = {
-				path: "TestFolder/note.md",
-				basename: "note",
-				extension: "md",
-				parent: { path: "TestFolder" },
-				stat: { mtime: Date.now() },
-			} as TFile;
+			const mockFile = createMockFile("TestFolder/note.md", { parentPath: "TestFolder" });
 
 			vi.mocked(mockApp.vault.getMarkdownFiles).mockReturnValue([mockFile]);
 			vi.mocked(mockApp.metadataCache.getFileCache).mockReturnValue({
@@ -232,13 +202,7 @@ describe("Indexer", () => {
 		it("should rescan when includeFile config changes", async () => {
 			await indexer.start();
 
-			const mockFile: TFile = {
-				path: "NewFolder/note.md",
-				basename: "note",
-				extension: "md",
-				parent: { path: "NewFolder" },
-				stat: { mtime: Date.now() },
-			} as TFile;
+			const mockFile = createMockFile("NewFolder/note.md", { parentPath: "NewFolder" });
 
 			vi.mocked(mockApp.vault.getMarkdownFiles).mockReturnValue([mockFile]);
 			vi.mocked(mockApp.metadataCache.getFileCache).mockReturnValue({
@@ -280,13 +244,7 @@ describe("Indexer", () => {
 
 	describe("error handling", () => {
 		it("should handle errors during file processing", async () => {
-			const mockFile: TFile = {
-				path: "TestFolder/error.md",
-				basename: "error",
-				extension: "md",
-				parent: { path: "TestFolder" },
-				stat: { mtime: Date.now() },
-			} as TFile;
+			const mockFile = createMockFile("TestFolder/error.md", { parentPath: "TestFolder" });
 
 			vi.mocked(mockApp.vault.getMarkdownFiles).mockReturnValue([mockFile]);
 
@@ -308,21 +266,8 @@ describe("Indexer", () => {
 
 	describe("preloaded files", () => {
 		it("should use preloadedFiles instead of vault.getMarkdownFiles when provided", async () => {
-			const preloadedFile: TFile = {
-				path: "TestFolder/preloaded.md",
-				basename: "preloaded",
-				extension: "md",
-				parent: { path: "TestFolder" },
-				stat: { mtime: Date.now() },
-			} as TFile;
-
-			const vaultFile: TFile = {
-				path: "TestFolder/from-vault.md",
-				basename: "from-vault",
-				extension: "md",
-				parent: { path: "TestFolder" },
-				stat: { mtime: Date.now() },
-			} as TFile;
+			const preloadedFile = createMockFile("TestFolder/preloaded.md", { parentPath: "TestFolder" });
+			const vaultFile = createMockFile("TestFolder/from-vault.md", { parentPath: "TestFolder" });
 
 			vi.mocked(mockApp.vault.getMarkdownFiles).mockReturnValue([vaultFile]);
 			vi.mocked(mockApp.metadataCache.getFileCache).mockReturnValue({
@@ -347,29 +292,9 @@ describe("Indexer", () => {
 		});
 
 		it("should track descendant files when directoryPrefix is set", async () => {
-			const folderNote: TFile = {
-				path: "People/Alice/Alice.md",
-				basename: "Alice",
-				extension: "md",
-				parent: { path: "People/Alice" },
-				stat: { mtime: Date.now() },
-			} as TFile;
-
-			const meetingFile: TFile = {
-				path: "People/Alice/meeting-1.md",
-				basename: "meeting-1",
-				extension: "md",
-				parent: { path: "People/Alice" },
-				stat: { mtime: Date.now() },
-			} as TFile;
-
-			const outsideFile: TFile = {
-				path: "Other/note.md",
-				basename: "note",
-				extension: "md",
-				parent: { path: "Other" },
-				stat: { mtime: Date.now() },
-			} as TFile;
+			const folderNote = createMockFile("People/Alice/Alice.md", { parentPath: "People/Alice" });
+			const meetingFile = createMockFile("People/Alice/meeting-1.md", { parentPath: "People/Alice" });
+			const outsideFile = createMockFile("Other/note.md", { parentPath: "Other" });
 
 			vi.mocked(mockApp.vault.getMarkdownFiles).mockReturnValue([folderNote, meetingFile, outsideFile]);
 			vi.mocked(mockApp.metadataCache.getFileCache).mockReturnValue({
@@ -392,13 +317,7 @@ describe("Indexer", () => {
 		});
 
 		it("should clear descendant files on stop", async () => {
-			const meetingFile: TFile = {
-				path: "People/Alice/meeting.md",
-				basename: "meeting",
-				extension: "md",
-				parent: { path: "People/Alice" },
-				stat: { mtime: Date.now() },
-			} as TFile;
+			const meetingFile = createMockFile("People/Alice/meeting.md", { parentPath: "People/Alice" });
 
 			vi.mocked(mockApp.vault.getMarkdownFiles).mockReturnValue([meetingFile]);
 
@@ -417,13 +336,7 @@ describe("Indexer", () => {
 		});
 
 		it("should clear and repopulate descendant files on resync", async () => {
-			const meetingFile: TFile = {
-				path: "People/Alice/meeting.md",
-				basename: "meeting",
-				extension: "md",
-				parent: { path: "People/Alice" },
-				stat: { mtime: Date.now() },
-			} as TFile;
+			const meetingFile = createMockFile("People/Alice/meeting.md", { parentPath: "People/Alice" });
 
 			vi.mocked(mockApp.vault.getMarkdownFiles).mockReturnValue([meetingFile]);
 
@@ -447,13 +360,7 @@ describe("Indexer", () => {
 		});
 
 		it("should not track descendants when directoryPrefix is not set", async () => {
-			const file: TFile = {
-				path: "Anywhere/note.md",
-				basename: "note",
-				extension: "md",
-				parent: { path: "Anywhere" },
-				stat: { mtime: Date.now() },
-			} as TFile;
+			const file = createMockFile("Anywhere/note.md", { parentPath: "Anywhere" });
 
 			vi.mocked(mockApp.vault.getMarkdownFiles).mockReturnValue([file]);
 
@@ -471,10 +378,8 @@ describe("Indexer", () => {
 	});
 
 	describe("runtime events", () => {
-		const mockFile = createMockFile("TestFolder/note.md", { parentPath: "TestFolder" }) as TFile;
-		(mockFile as unknown as { stat: { mtime: number } }).stat = { mtime: 1000 };
-		const renamedFile = createMockFile("TestFolder/renamed.md", { parentPath: "TestFolder" }) as TFile;
-		(renamedFile as unknown as { stat: { mtime: number } }).stat = { mtime: 1000 };
+		const mockFile = createMockFile("TestFolder/note.md", { parentPath: "TestFolder", mtime: 1000 });
+		const renamedFile = createMockFile("TestFolder/renamed.md", { parentPath: "TestFolder", mtime: 1000 });
 
 		function emitMetadataChanged(file: TFile): void {
 			metadataCacheHandlers.get("changed")?.forEach((h) => h(file));
@@ -568,8 +473,10 @@ describe("Indexer", () => {
 				// Source bundle's perspective during cross-calendar move: the file
 				// leaves its directory, so the indexer must drop it via file-deleted.
 				// Without this, the source calendar keeps showing the moved event.
-				const movedOutFile = createMockFile("OtherFolder/note.md", { parentPath: "OtherFolder" }) as TFile;
-				(movedOutFile as unknown as { stat: { mtime: number } }).stat = { mtime: 1000 };
+				const movedOutFile = createMockFile("OtherFolder/note.md", {
+					parentPath: "OtherFolder",
+					mtime: 1000,
+				});
 
 				await indexer.start();
 
@@ -668,7 +575,7 @@ describe("Indexer", () => {
 				// event would be meaningless. Falling back to file-deleted is
 				// the only sound choice — and is what the source bundle in a
 				// cross-calendar move depends on.
-				const movedOutFile = createMockFile("OtherFolder/note.md", { parentPath: "OtherFolder" }) as TFile;
+				const movedOutFile = createMockFile("OtherFolder/note.md", { parentPath: "OtherFolder" });
 
 				await renameIndexer.start();
 
@@ -708,7 +615,7 @@ describe("Indexer", () => {
 			await new Promise((resolve) => window.setTimeout(resolve, 50));
 
 			// File leaves scope — must emit file-deleted, evicting the cache.
-			const movedOutFile = createMockFile("OtherFolder/note.md", { parentPath: "OtherFolder" }) as TFile;
+			const movedOutFile = createMockFile("OtherFolder/note.md", { parentPath: "OtherFolder" });
 			const renameEvents = await collectEvents(indexer, 1, () => emitVaultRename(movedOutFile, "TestFolder/note.md"));
 			expect(renameEvents[0].type).toBe("file-deleted");
 
@@ -726,7 +633,7 @@ describe("Indexer", () => {
 			const nonMdFile = createMockFile("TestFolder/image.png", {
 				extension: "png",
 				parentPath: "TestFolder",
-			}) as TFile;
+			});
 
 			await indexer.start();
 
@@ -735,7 +642,7 @@ describe("Indexer", () => {
 		});
 
 		it("should filter out renames where neither old nor new path is in scope", async () => {
-			const outsideFile = createMockFile("OtherFolder/note.md", { parentPath: "OtherFolder" }) as TFile;
+			const outsideFile = createMockFile("OtherFolder/note.md", { parentPath: "OtherFolder" });
 
 			await indexer.start();
 
@@ -774,8 +681,10 @@ describe("Indexer", () => {
 			});
 
 			it("should filter out non-relevant files from vault.modify", async () => {
-				const outsideFile = createMockFile("OtherFolder/note.md", { parentPath: "OtherFolder" }) as TFile;
-				(outsideFile as unknown as { stat: { mtime: number } }).stat = { mtime: 1000 };
+				const outsideFile = createMockFile("OtherFolder/note.md", {
+					parentPath: "OtherFolder",
+					mtime: 1000,
+				});
 
 				await indexer.start();
 

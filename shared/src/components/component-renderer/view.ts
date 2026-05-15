@@ -47,7 +47,10 @@ export function registerComponentView(plugin: Plugin, config: ViewComponentConfi
 		}
 	}
 
-	const registry = (plugin.app as any).viewRegistry?.viewByType;
+	const appWithRegistry = plugin.app as Plugin["app"] & {
+		viewRegistry?: { viewByType?: Record<string, unknown> };
+	};
+	const registry = appWithRegistry.viewRegistry?.viewByType;
 	if (!registry || !registry[config.viewType]) {
 		plugin.registerView(config.viewType, (leaf) => new ComponentView(leaf));
 	}

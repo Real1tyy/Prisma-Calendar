@@ -13,10 +13,13 @@ export class CalendarViewStateManager {
 	private state: CalendarViewState | null = null;
 
 	saveState(calendar: Calendar, zoomLevel: number): void {
-		if (!calendar.view) return;
-
+		// FullCalendar's typings say `view` is always present, but in practice it
+		// can be null while the calendar is mid-init/destroy. The guard matters
+		// for tests and for save-on-unload paths that fire before render.
+		const view = calendar.view as Calendar["view"] | null;
+		if (!view) return;
 		this.state = {
-			viewType: calendar.view.type,
+			viewType: view.type,
 			currentDate: calendar.getDate().toISOString(),
 			zoomLevel: zoomLevel,
 		};

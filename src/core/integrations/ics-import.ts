@@ -131,7 +131,7 @@ function parsePrismaFrontmatter(vevent: ICAL.Component): Frontmatter | undefined
 		const originalKey = extractOriginalKey(originalParam, propName.replace("x-prisma-fm-", ""));
 		const value = prop.getFirstValue();
 
-		if (value === undefined || value === null) continue;
+		if (value === null) continue;
 
 		frontmatter[originalKey] = parseFrontmatterValue(String(value));
 	}

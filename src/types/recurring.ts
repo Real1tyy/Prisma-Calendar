@@ -50,7 +50,7 @@ export type RecurrenceType = RecurrencePreset | (string & {});
 
 export const WEEKDAY_SUPPORTED_TYPES = ["weekly", "bi-weekly", "weekdays", "weekends"] as const;
 
-export const WEEKDAY_PRESET_DAYS: Record<string, Weekday[]> = {
+export const WEEKDAY_PRESET_DAYS: Partial<Record<string, Weekday[]>> = {
 	weekdays: ["monday", "tuesday", "wednesday", "thursday", "friday"],
 	weekends: ["saturday", "sunday"],
 };

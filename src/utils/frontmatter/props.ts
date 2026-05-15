@@ -118,7 +118,7 @@ export const getBatchFrontmatterExcludedProps = (settings: SingleCalendarConfig)
 			settings.categoryProp,
 			settings.calendarTitleProp,
 			"position",
-		].filter((prop): prop is string => prop !== undefined && prop !== "")
+		].filter((prop): prop is string => prop !== "")
 	);
 };
 

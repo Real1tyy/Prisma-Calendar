@@ -3,7 +3,7 @@ import { buildUtmUrl, cls, tid } from "@real1ty-obsidian-plugins";
 import { Button, openReactModal, TextInput, WelcomeModalShell } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { memo, useCallback, useEffect, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { CSS_PREFIX } from "../../../constants";
@@ -134,7 +134,7 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 	const [suggestions, setSuggestions] = useState<DirectorySuggestion[]>([]);
 	const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(true);
 
-	const { control, handleSubmit, watch, setValue } = useForm<FormValues>({
+	const { control, handleSubmit, setValue } = useForm<FormValues>({
 		resolver: zodResolver(FormSchema),
 		mode: "onChange",
 		defaultValues: {
@@ -146,8 +146,11 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 		},
 	});
 
-	const currentMode = watch("mode");
-	const currentDirectory = watch("directory");
+	const currentMode = useWatch({ control, name: "mode" });
+	const currentDirectory = useWatch({ control, name: "directory" });
+	const currentStartProp = useWatch({ control, name: "startProp" });
+	const currentEndProp = useWatch({ control, name: "endProp" });
+	const currentDateProp = useWatch({ control, name: "dateProp" });
 	const welcomeTid = (suffix: string) => tid("welcome", suffix);
 	const matchedSuggestion = suggestions.find((s) => s.directory === currentDirectory.trim()) ?? null;
 
@@ -285,9 +288,9 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 				) : null}
 
 				<PropertyFields
-					startProp={watch("startProp")}
-					endProp={watch("endProp")}
-					dateProp={watch("dateProp")}
+					startProp={currentStartProp}
+					endProp={currentEndProp}
+					dateProp={currentDateProp}
 					onStartPropChange={(v) => setValue("startProp", v)}
 					onEndPropChange={(v) => setValue("endProp", v)}
 					onDatePropChange={(v) => setValue("dateProp", v)}

@@ -13,7 +13,7 @@ export async function waitForFileReady(app: App, filePath: string, timeoutMs = 5
 		if (file instanceof TFile) {
 			// Check if file is readable by trying to get its metadata
 			const metadata = app.metadataCache.getFileCache(file);
-			if (metadata !== null && metadata !== undefined) {
+			if (metadata !== null) {
 				return file;
 			}
 		}

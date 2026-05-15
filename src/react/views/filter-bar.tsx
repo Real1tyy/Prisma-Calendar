@@ -37,8 +37,7 @@ export const FilterBar = memo(function FilterBar({ onFilterChange, onHandleReady
 	useEffect(() => {
 		onHandleReady({
 			shouldInclude: (event: CalendarEvent) =>
-				matchesSearch(searchHandle.current?.getValue() ?? "", { title: event.title }) &&
-				matcher.evaluate(event.meta ?? {}),
+				matchesSearch(searchHandle.current?.getValue() ?? "", { title: event.title }) && matcher.evaluate(event.meta),
 		});
 	}, [onHandleReady, matcher]);
 

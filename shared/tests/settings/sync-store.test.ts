@@ -12,8 +12,6 @@ const TestSchema = z
 	})
 	.strip();
 
-type TestData = z.infer<typeof TestSchema>;
-
 describe("SyncStore", () => {
 	let mockApp: ReturnType<typeof createMockApp>;
 	let mockPlugin: Plugin;

@@ -9,7 +9,7 @@ import { useExternalSnapshot } from "../hooks/use-external-snapshot";
 import { useInjectedStyles } from "../hooks/use-injected-styles";
 import { showReactIconPicker } from "../modals/icon-picker-modal";
 import { showReactModal } from "../show-react-modal";
-import { DEFAULT_COLOR_SENTINEL, FALLBACK_EDIT_COLOR } from "./constants";
+import { DEFAULT_COLOR_SENTINEL } from "./constants";
 import type { PageHeaderSnapshot, PageHeaderStore } from "./store";
 import { buildPageHeaderStyles } from "./styles";
 import type { HeaderActionDefinition } from "./types";
@@ -156,7 +156,7 @@ const ActionManagerContent = memo(function ActionManagerContent({ app, store, cs
 								isExpanded={isExpanded}
 								visibleCount={visibleCount}
 								displayLabel={displayLabel}
-								{...(displayIcon !== undefined ? { displayIcon } : {})}
+								displayIcon={displayIcon}
 								{...(effectiveColor !== undefined ? { displayColor: effectiveColor } : {})}
 								hasRename={hasRenameOverride}
 								draggable={draggable}
@@ -178,8 +178,8 @@ const ActionManagerContent = memo(function ActionManagerContent({ app, store, cs
 									<ActionRowEditForm
 										action={action}
 										displayLabel={displayLabel}
-										displayIcon={displayIcon ?? action.icon ?? ""}
-										displayColor={displayColor ?? FALLBACK_EDIT_COLOR}
+										displayIcon={displayIcon}
+										displayColor={displayColor}
 										hasRenameOverride={hasRenameOverride}
 										hasIconOverride={hasIconOverride}
 										hasColorOverride={hasColorOverride}

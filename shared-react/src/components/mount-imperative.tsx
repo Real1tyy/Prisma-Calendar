@@ -60,6 +60,7 @@ export const MountImperative = memo(function MountImperative({
 		if (!el) return;
 
 		const controller = new AbortController();
+		const cleanupFn = initialCleanupRef.current;
 
 		Promise.resolve(initialRenderRef.current(el, controller.signal)).catch((error: unknown) => {
 			if (!controller.signal.aborted) {
@@ -70,7 +71,7 @@ export const MountImperative = memo(function MountImperative({
 		return () => {
 			controller.abort();
 			try {
-				initialCleanupRef.current?.();
+				cleanupFn?.();
 			} finally {
 				el.replaceChildren();
 			}

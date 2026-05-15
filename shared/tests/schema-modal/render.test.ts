@@ -902,9 +902,6 @@ describe("createSchemaFormRenderer", () => {
 			});
 			render(el, ctx);
 
-			const input = el.querySelector("input[type='text']") as HTMLInputElement;
-			const onChangeCalls = vi.mocked(input as any).__onChangeFn;
-
 			const textMock = el.querySelector("input[type='text']");
 			const settingEl = textMock?.closest("div");
 			expect(settingEl).toBeTruthy();

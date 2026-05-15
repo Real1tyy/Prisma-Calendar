@@ -76,7 +76,7 @@ export class ItemView {
 
 	constructor(leaf: unknown) {
 		this.leaf = leaf;
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
 		this.app = (leaf as { app?: unknown })?.app;
 		this.containerEl = document.createElement("div");
 	}
@@ -463,6 +463,9 @@ export function createMockFile(
 		basename?: string;
 		parentPath?: string;
 		extension?: string;
+		mtime?: number;
+		ctime?: number;
+		size?: number;
 	}
 ): TFile {
 	const file = new TFile(path, options?.parentPath);
@@ -472,6 +475,11 @@ export function createMockFile(
 	if (options?.extension) {
 		file.extension = options.extension;
 	}
+	file.stat = {
+		mtime: options?.mtime ?? Date.now(),
+		ctime: options?.ctime ?? Date.now(),
+		size: options?.size ?? 0,
+	};
 	return file;
 }
 

@@ -93,11 +93,13 @@ class PrismaBasesView extends BasesView {
 		const tryRender = (): void => {
 			if (this.calendar) return;
 
-			if (!this.data && cachedQueryData) {
+			// Obsidian's types claim this.data is always set, but in practice it may be
+			// undefined on view-switch before the first animation frame. Narrow defensively.
+			if (!(this.data as BasesQueryResult | undefined) && cachedQueryData) {
 				this.data = cachedQueryData;
 			}
 
-			if (this.data) {
+			if (this.data as BasesQueryResult | undefined) {
 				this.onDataUpdated();
 			}
 		};
@@ -134,7 +136,9 @@ class PrismaBasesView extends BasesView {
 	}
 
 	onDataUpdated(): void {
-		if (this.data) {
+		// Obsidian's types claim this.data is always set, but in practice it may be
+		// undefined before the first animation frame. Narrow defensively.
+		if (this.data as BasesQueryResult | undefined) {
 			cachedQueryData = this.data;
 		}
 
@@ -564,7 +568,7 @@ class PrismaBasesView extends BasesView {
 			commonCategories
 		);
 		if (selectedCategories) {
-			this.batchSelectionManager?.executeAssignCategories(selectedCategories);
+			this.batchSelectionManager.executeAssignCategories(selectedCategories);
 		}
 	}
 
@@ -576,7 +580,7 @@ class PrismaBasesView extends BasesView {
 
 		const propertyUpdates = await openBatchFrontmatterModal(this.app, settings, selectedEvents);
 		if (propertyUpdates) {
-			this.batchSelectionManager?.executeUpdateFrontmatter(propertyUpdates);
+			this.batchSelectionManager.executeUpdateFrontmatter(propertyUpdates);
 		}
 	}
 

@@ -156,7 +156,7 @@ export class ConnectionRenderer {
 
 		const allDay = this.container.querySelector<HTMLElement>(".fc-scrollgrid-section-body:first-of-type");
 		const scrollParent = this.scrollTargets[0];
-		if (!allDay || !scrollParent) {
+		if (!allDay) {
 			this.container.style.setProperty(SVG_Z_VAR, Z_ABOVE_ALLDAY);
 			return;
 		}

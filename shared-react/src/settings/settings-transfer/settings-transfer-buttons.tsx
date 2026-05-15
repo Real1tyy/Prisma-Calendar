@@ -7,7 +7,7 @@ import {
 } from "@real1ty-obsidian-plugins";
 import { Notice } from "obsidian";
 import type { ReactNode } from "react";
-import { memo, useCallback } from "react";
+import { memo, useCallback, useMemo } from "react";
 
 import { Button } from "../../components/button";
 import { SettingItem } from "../../components/setting-item";
@@ -66,7 +66,10 @@ function SettingsTransferButtonsInner<T extends Record<string, unknown>>({
 	testIdPrefix,
 }: SettingsTransferButtonsProps<T>) {
 	const app = useApp();
-	const transferOpts: SettingsTransferOptions | undefined = nonTransferableKeys ? { nonTransferableKeys } : undefined;
+	const transferOpts = useMemo<SettingsTransferOptions | undefined>(
+		() => (nonTransferableKeys ? { nonTransferableKeys } : undefined),
+		[nonTransferableKeys]
+	);
 
 	const openModal = useCallback(
 		(mode: "export" | "import", initialJson: string, onModalImport: (parsed: unknown) => Promise<void>) => {

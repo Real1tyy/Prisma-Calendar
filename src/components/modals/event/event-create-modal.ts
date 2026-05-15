@@ -55,9 +55,7 @@ export class EventCreateModal extends BaseEventModal {
 				this.applyPreset(defaultPreset);
 
 				// Also set the selector to show the selected preset
-				if (this.presetSelector) {
-					this.presetSelector.value = defaultPreset.id;
-				}
+				this.presetSelector.value = defaultPreset.id;
 			}
 		}
 	}

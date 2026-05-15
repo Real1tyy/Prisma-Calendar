@@ -7,7 +7,6 @@ import { useCallback, useMemo, useState } from "react";
 import { z } from "zod";
 
 import { CalDAVAddFormShape, type CalDAVAddFormValues } from "../../../components/settings/integration-shared";
-import { CALDAV_DEFAULTS } from "../../../constants";
 import { CalDAVClientService } from "../../../core/integrations/caldav";
 import { useConnectionTest } from "../../../react/hooks/use-connection-test";
 import type { PrismaCalendarSettingsStore } from "../../../types";
@@ -53,8 +52,8 @@ function CalDAVAddForm({ app, settingsStore, calendarId, onSubmit, onCancel }: C
 				enabled: true,
 				calendarId,
 				selectedCalendars: [],
-				syncIntervalMinutes: values.syncIntervalMinutes ?? CALDAV_DEFAULTS.SYNC_INTERVAL_MINUTES,
-				timezone: values.timezone ?? "UTC",
+				syncIntervalMinutes: values.syncIntervalMinutes,
+				timezone: values.timezone,
 				createdAt: Date.now(),
 			});
 

@@ -172,7 +172,7 @@ export class CalDAVClientService {
 		const updated: CalDAVFetchedEvent[] = [];
 		const deleted: string[] = [];
 
-		if (syncResult.objects && typeof syncResult.objects === "object") {
+		if (typeof syncResult.objects === "object") {
 			const syncObjects = syncResult.objects as {
 				created?: Array<{ url: string; etag?: string; data?: string }>;
 				updated?: Array<{ url: string; etag?: string; data?: string }>;

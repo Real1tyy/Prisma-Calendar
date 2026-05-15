@@ -45,7 +45,7 @@ export const SettingsNav = memo(function SettingsNav({
 	const buttonsRef = useRef<(HTMLButtonElement | null)[]>([]);
 	const rootRef = useRef<HTMLDivElement>(null);
 
-	const isSearching = (searchValue ?? "").trim().length >= 2;
+	const isSearching = searchValue.trim().length >= 2;
 
 	useEffect(() => {
 		const root = rootRef.current;
@@ -63,7 +63,7 @@ export const SettingsNav = memo(function SettingsNav({
 		const q = searchValue.trim().toLowerCase();
 		let visible = 0;
 		root.querySelectorAll<HTMLElement>(`.setting-item:not(.${FOOTER})`).forEach((el) => {
-			const match = (el.textContent ?? "").toLowerCase().includes(q);
+			const match = String(el.textContent).toLowerCase().includes(q);
 			el.classList.toggle(HIDDEN, !match);
 			if (match) visible++;
 		});

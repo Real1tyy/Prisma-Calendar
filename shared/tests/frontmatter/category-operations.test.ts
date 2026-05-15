@@ -1,5 +1,4 @@
-import type { App } from "obsidian";
-import type { TFile } from "obsidian";
+import type { App, TFile } from "obsidian";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -219,11 +218,7 @@ describe("bulkDeleteCategoryFromFiles", () => {
 		mockApp = createMockApp() as unknown as App;
 		mockApp.fileManager.processFrontMatter = mockProcessFrontMatter;
 
-		mockFiles = [
-			{ path: "test1.md", name: "test1.md" } as TFile,
-			{ path: "test2.md", name: "test2.md" } as TFile,
-			{ path: "test3.md", name: "test3.md" } as TFile,
-		];
+		mockFiles = [createMockFile("test1.md"), createMockFile("test2.md"), createMockFile("test3.md")];
 	});
 
 	it("should delete category from all files", async () => {
@@ -302,7 +297,7 @@ describe("bulkRenameCategoryInFiles", () => {
 		mockApp = createMockApp() as unknown as App;
 		mockApp.fileManager.processFrontMatter = mockProcessFrontMatter;
 
-		mockFiles = [{ path: "test1.md", name: "test1.md" } as TFile, { path: "test2.md", name: "test2.md" } as TFile];
+		mockFiles = [createMockFile("test1.md"), createMockFile("test2.md")];
 	});
 
 	it("should rename category in all files", async () => {

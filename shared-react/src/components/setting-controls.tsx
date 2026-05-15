@@ -271,13 +271,14 @@ export const Slider = memo(function Slider({ value, min, max, step, onChange, de
 	setDraftRef.current = setDraft;
 	const flushRef = useRef(flush);
 	flushRef.current = flush;
+	const initialDraftRef = useRef(draft);
 
 	useEffect(() => {
 		const el = hostRef.current;
 		if (!el) return;
 		const component = new SliderComponent(el)
 			.setLimits(min, max, step ?? 1)
-			.setValue(draft)
+			.setValue(initialDraftRef.current)
 			.setDynamicTooltip()
 			.onChange((next) => setDraftRef.current(next));
 		componentRef.current = component;

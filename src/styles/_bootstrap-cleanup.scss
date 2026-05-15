@@ -12,96 +12,206 @@
 // selector. A single block comment keeps the rule alive in styles.css.
 
 /* Event modal — field containers (visibility toggled at runtime via .prisma-hidden) */
-.prisma-allday-event-fields { /* intentional stub */ }
-.prisma-timed-event-fields { /* intentional stub */ }
-.prisma-simple-fields-container { /* intentional stub */ }
-.prisma-custom-interval { /* intentional stub */ }
+.prisma-allday-event-fields {
+	/* intentional stub */
+}
+.prisma-timed-event-fields {
+	/* intentional stub */
+}
+.prisma-simple-fields-container {
+	/* intentional stub */
+}
+.prisma-custom-interval {
+	/* intentional stub */
+}
 
 /* Event preview modal */
-.prisma-event-preview-time-section { /* intentional stub */ }
-.prisma-event-preview-props-section { /* intentional stub */ }
+.prisma-event-preview-time-section {
+	/* intentional stub */
+}
+.prisma-event-preview-props-section {
+	/* intentional stub */
+}
 
 /* Event list modal */
-.prisma-events-modal-content { /* intentional stub */ }
-.prisma-generic-event-list-subtitle { /* intentional stub */ }
-.prisma-list-row-active { /* intentional stub */ }
+.prisma-events-modal-content {
+	/* intentional stub */
+}
+.prisma-generic-event-list-subtitle {
+	/* intentional stub */
+}
+.prisma-list-row-active {
+	/* intentional stub */
+}
 
 /* Modal containers */
-.prisma-assignment-modal { /* intentional stub */ }
-.prisma-save-preset-modal { /* intentional stub */ }
-.prisma-untracked-event-modal { /* intentional stub */ }
-.prisma-welcome-modal { /* intentional stub */ }
-.prisma-heatmap-pro-gate-modal { /* intentional stub */ }
+.prisma-assignment-modal {
+	/* intentional stub */
+}
+.prisma-save-preset-modal {
+	/* intentional stub */
+}
+.prisma-untracked-event-modal {
+	/* intentional stub */
+}
+.prisma-welcome-modal {
+	/* intentional stub */
+}
+.prisma-heatmap-pro-gate-modal {
+	/* intentional stub */
+}
 
 /* Settings — calendar management */
-.prisma-calendar-management { /* intentional stub */ }
-.prisma-calendar-configure-button { /* intentional stub */ }
-.prisma-calendar-settings-container { /* intentional stub */ }
-.prisma-caldav-accounts-wrapper { /* intentional stub */ }
-.prisma-settings-tab-content { /* intentional stub */ }
-.prisma-settings-search-results { /* intentional stub */ }
-.prisma-settings-calendar { /* intentional stub */ }
-.prisma-settings-button { /* intentional stub */ }
+.prisma-calendar-management {
+	/* intentional stub */
+}
+.prisma-calendar-configure-button {
+	/* intentional stub */
+}
+.prisma-calendar-settings-container {
+	/* intentional stub */
+}
+.prisma-caldav-accounts-wrapper {
+	/* intentional stub */
+}
+.prisma-settings-tab-content {
+	/* intentional stub */
+}
+.prisma-settings-search-results {
+	/* intentional stub */
+}
+.prisma-settings-calendar {
+	/* intentional stub */
+}
+.prisma-settings-button {
+	/* intentional stub */
+}
 
 /* Bases markdown render inside series modal */
-.prisma-bases-markdown-container { /* intentional stub */ }
+.prisma-bases-markdown-container {
+	/* intentional stub */
+}
 
 /* Category operation modal */
-.prisma-category-operation-untracked-toggle { /* intentional stub */ }
+.prisma-category-operation-untracked-toggle {
+	/* intentional stub */
+}
 
 /* Property config indicators */
-.prisma-is-copied { /* intentional stub */ }
-.prisma-is-selected { /* intentional stub */ }
+.prisma-is-copied {
+	/* intentional stub */
+}
+.prisma-is-selected {
+	/* intentional stub */
+}
 
 /* Mobile controls toggle */
-.prisma-mobile-controls-toggle-collapsed { /* intentional stub */ }
-.prisma-move-by-toggle-btn { /* intentional stub */ }
+.prisma-mobile-controls-toggle-collapsed {
+	/* intentional stub */
+}
+.prisma-move-by-toggle-btn {
+	/* intentional stub */
+}
 
 /* Page header (FullCalendar custom toolbar actions) */
-.prisma-page-header-actions { /* intentional stub */ }
-.prisma-page-header-action { /* intentional stub */ }
+.prisma-page-header-actions {
+	/* intentional stub */
+}
+.prisma-page-header-action {
+	/* intentional stub */
+}
 
 /* Gantt view */
-.gantt-create-btn { /* intentional stub */ }
-.prisma-gantt-bar-container { /* intentional stub */ }
-.prisma-gantt-bar-color-dots { /* intentional stub */ }
+.gantt-create-btn {
+	/* intentional stub */
+}
+.prisma-gantt-bar-container {
+	/* intentional stub */
+}
+.prisma-gantt-bar-color-dots {
+	/* intentional stub */
+}
 
 /* Action buttons (toolbar/context menu) */
-.prisma--btn { /* intentional stub */ }
-.prisma-categories-btn { /* intentional stub */ }
-.prisma-frontmatter-btn { /* intentional stub */ }
-.prisma-make-real-btn { /* intentional stub */ }
-.prisma-make-virtual-btn { /* intentional stub */ }
-.prisma-mark-done-btn { /* intentional stub */ }
-.prisma-mark-not-done-btn { /* intentional stub */ }
+.prisma--btn {
+	/* intentional stub */
+}
+.prisma-categories-btn {
+	/* intentional stub */
+}
+.prisma-frontmatter-btn {
+	/* intentional stub */
+}
+.prisma-make-real-btn {
+	/* intentional stub */
+}
+.prisma-make-virtual-btn {
+	/* intentional stub */
+}
+.prisma-mark-done-btn {
+	/* intentional stub */
+}
+.prisma-mark-not-done-btn {
+	/* intentional stub */
+}
 
 /* Stats view */
-.prisma-stats-content { /* intentional stub */ }
+.prisma-stats-content {
+	/* intentional stub */
+}
 
 /* Holiday calendar event marker */
-.prisma-holiday-event { /* intentional stub */ }
+.prisma-holiday-event {
+	/* intentional stub */
+}
 
 /* Series timeline list item */
-.prisma-timeline-item { /* intentional stub */ }
+.prisma-timeline-item {
+	/* intentional stub */
+}
 
 /* Heatmap monthly-stats family — `cls("heatmap-monthly-stats-")` is a dynamic
  * prefix concatenated at runtime with the stat-row id. We anchor the prefix
  * with one literal selector so the static scanner can resolve it. */
-.prisma-heatmap-monthly-stats-row { /* intentional stub — dynamic prefix anchor */ }
+.prisma-heatmap-monthly-stats-row {
+	/* intentional stub — dynamic prefix anchor */
+}
 
 /* Integration delete confirmation — class includes integrationId at runtime
  * (e.g. prisma-integration-delete-caldav-personal). One literal anchors the
  * prefix for the scanner. */
-.prisma-integration-delete-confirmation { /* intentional stub — dynamic prefix anchor */ }
+.prisma-integration-delete-confirmation {
+	/* intentional stub — dynamic prefix anchor */
+}
 
 /* AI chat — operation cards and execute button */
-.prisma-ai-chat-operations { /* intentional stub */ }
-.prisma-ai-chat-op-card { /* intentional stub */ }
-.prisma-ai-chat-op-create { /* intentional stub */ }
-.prisma-ai-chat-op-edit { /* intentional stub */ }
-.prisma-ai-chat-op-delete { /* intentional stub */ }
-.prisma-ai-chat-op-badge { /* intentional stub */ }
-.prisma-ai-chat-op-title { /* intentional stub */ }
-.prisma-ai-chat-op-detail { /* intentional stub */ }
-.prisma-ai-chat-execute-btn { /* intentional stub */ }
-.prisma-ai-chat-thinking { /* intentional stub */ }
+.prisma-ai-chat-operations {
+	/* intentional stub */
+}
+.prisma-ai-chat-op-card {
+	/* intentional stub */
+}
+.prisma-ai-chat-op-create {
+	/* intentional stub */
+}
+.prisma-ai-chat-op-edit {
+	/* intentional stub */
+}
+.prisma-ai-chat-op-delete {
+	/* intentional stub */
+}
+.prisma-ai-chat-op-badge {
+	/* intentional stub */
+}
+.prisma-ai-chat-op-title {
+	/* intentional stub */
+}
+.prisma-ai-chat-op-detail {
+	/* intentional stub */
+}
+.prisma-ai-chat-execute-btn {
+	/* intentional stub */
+}
+.prisma-ai-chat-thinking {
+	/* intentional stub */
+}

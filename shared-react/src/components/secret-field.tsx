@@ -28,11 +28,14 @@ export const SecretField = memo(function SecretField({ value, onChange, testId }
 	const componentRef = useRef<SecretComponent | null>(null);
 	const onChangeRef = useRef(onChange);
 	onChangeRef.current = onChange;
+	const initialValueRef = useRef(value);
 
 	useEffect(() => {
 		const el = containerRef.current;
 		if (!el) return;
-		const component = new SecretComponent(app, el).setValue(value).onChange((next) => onChangeRef.current(next));
+		const component = new SecretComponent(app, el)
+			.setValue(initialValueRef.current)
+			.onChange((next) => onChangeRef.current(next));
 		componentRef.current = component;
 		return () => {
 			el.replaceChildren();

@@ -41,9 +41,7 @@ describe("StatsModalContent — keyboard navigation", () => {
 		const label = await renderWeekly(new Date(2026, 4, 14, 12, 0, 0));
 
 		fireEvent.keyDown(window, { key: "ArrowRight" });
-		const afterSlow = await screen.findByText(
-			(_text, node) => node === label && node.textContent.length > 0
-		);
+		const afterSlow = await screen.findByText((_text, node) => node === label && node.textContent.length > 0);
 		const slowText = afterSlow.textContent;
 
 		fireEvent.keyDown(window, { key: "ArrowLeft" });

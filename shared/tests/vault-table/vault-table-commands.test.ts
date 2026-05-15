@@ -4,7 +4,7 @@ import { BehaviorSubject, Subject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
-import { Indexer, type IndexerConfig, type IndexerEvent } from "../../src/core/indexer";
+import { Indexer, type IndexerEvent } from "../../src/core/indexer";
 import { withSerialize } from "../../src/core/vault-table/create-mapped-schema";
 import { VaultTable } from "../../src/core/vault-table/vault-table";
 import { createMockApp } from "../../src/testing/mocks/obsidian";
@@ -18,8 +18,6 @@ const TestSchema = withSerialize(
 		tags: z.array(z.string()).default([]),
 	})
 );
-
-type TestData = z.infer<typeof TestSchema>;
 
 function createMockTFile(path: string, mtime = Date.now()): TFile {
 	const file = new TFile(path);

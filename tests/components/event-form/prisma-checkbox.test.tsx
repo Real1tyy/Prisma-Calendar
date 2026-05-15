@@ -124,5 +124,4 @@ describe("PrismaCheckbox", () => {
 			expect(cb.disabled).toBe(true);
 		});
 	});
-
 });

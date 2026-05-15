@@ -5,7 +5,6 @@ import { z } from "zod";
 import type { VaultRow } from "../../src/core/vault-table/types";
 import type { VaultTableChildRestConfig, VaultTableRestConfig } from "../../src/core/vault-table/vault-table-rest-api";
 import { VaultTableRestApi } from "../../src/core/vault-table/vault-table-rest-api";
-import type { ActionDefMap } from "../../src/integrations/api-gateway/types";
 
 // ─── Domain: a "Projects" table with child "Tasks" ─────────────
 

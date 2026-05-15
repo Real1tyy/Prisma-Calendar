@@ -177,7 +177,7 @@ export function AssignmentForm({ items, config, preSelected, onSubmit, onCancel 
 				if (highlightedIndex >= 0 && highlightedIndex < filteredItems.length) {
 					handleToggle(filteredItems[highlightedIndex].name);
 				} else if (search.trim()) {
-					const firstItem = filteredItems[0];
+					const firstItem = filteredItems.at(0);
 					if (firstItem) {
 						handleToggle(firstItem.name);
 						setSearch("");

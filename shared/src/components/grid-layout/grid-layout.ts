@@ -414,7 +414,7 @@ export function createGridLayout(container: HTMLElement, config: GridLayoutConfi
 	}
 
 	function createCellElement(row: number, col: number, rowSpan?: number, colSpan?: number): HTMLElement {
-		const parent = perCell ? perCell.containers[perCell.getContainerIndex(row, col)] : gridEl;
+		const parent = perCell ? perCell.containers.at(perCell.getContainerIndex(row, col)) : gridEl;
 
 		if (!parent) return gridEl.createDiv(css.cls("grid-cell"));
 

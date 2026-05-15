@@ -56,7 +56,7 @@ export function PropCategoryLine({
 	props: string[];
 	testIdPrefix: string;
 }) {
-	if (!props || props.length === 0) return null;
+	if (props.length === 0) return null;
 	return (
 		<span className={cls("first-launch-prop-category")}>
 			<span className={cls("first-launch-prop-category-label")}>{label}:</span>{" "}
@@ -78,7 +78,7 @@ export function PrefillButtons({
 	onSelect: (value: string) => void;
 	testIdPrefix: string;
 }) {
-	if (!props || props.length === 0) return null;
+	if (props.length === 0) return null;
 	return (
 		<div className={cls("first-launch-prefill")}>
 			<span className={cls("first-launch-prefill-label")}>Use</span>
@@ -106,13 +106,13 @@ export interface PrefillResult {
 }
 
 export function computePrefill(suggestion: DirectorySuggestion): PrefillResult {
-	const dt = suggestion.datetimeProps ?? [];
+	const dt = suggestion.datetimeProps;
 	const startMatch = dt.find((p) => p.toLowerCase().includes("start"));
 	const endMatch = dt.find((p) => p.toLowerCase().includes("end"));
 
-	const startProp = startMatch ?? dt[0] ?? "";
-	const endProp = endMatch ?? dt.find((p) => p !== startProp) ?? dt[1] ?? "";
-	const dateProp = (suggestion.dateProps ?? [])[0] ?? "";
+	const startProp = startMatch ?? dt.at(0) ?? "";
+	const endProp = endMatch ?? dt.find((p) => p !== startProp) ?? dt.at(1) ?? "";
+	const dateProp = suggestion.dateProps.at(0) ?? "";
 
 	return { startProp, endProp, dateProp };
 }

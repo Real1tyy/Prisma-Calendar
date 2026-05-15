@@ -103,8 +103,7 @@ export class VirtualEventsBlockRenderer extends MarkdownRenderChild {
 
 		return (
 			this.plugin.calendarBundles.find((b) => b.virtualEventStore.getFilePath() === filePath) ??
-			this.plugin.calendarBundles[0] ??
-			null
+			this.plugin.calendarBundles[0]
 		);
 	}
 }

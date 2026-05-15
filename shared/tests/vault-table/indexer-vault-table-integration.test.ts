@@ -59,9 +59,7 @@ describe("Indexer → VaultTable reactivity (integration)", () => {
 
 	function newFile(path: string, mtime = 1000): TFile {
 		const parent = path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : "";
-		const file = createMockFile(path, { parentPath: parent }) as TFile;
-		(file as unknown as { stat: { mtime: number } }).stat = { mtime };
-		return file;
+		return createMockFile(path, { parentPath: parent, mtime });
 	}
 
 	async function collectTableEvents(

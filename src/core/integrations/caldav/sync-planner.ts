@@ -159,7 +159,7 @@ export function computeCaldavSyncPlan(inputs: PlanInputs): SyncPlan {
 		else if (action.kind === "skip-unchanged") summary.skipUnchanged++;
 		else if (action.kind === "skip-missing-uid") summary.skipMissingUid++;
 		else if (action.kind === "skip-tombstone-untracked") summary.skipTombstoneUntracked++;
-		else if (action.kind === "skip-foreign-uid") summary.skipForeignUid++;
+		else summary.skipForeignUid++;
 	}
 
 	return { actions, summary };
