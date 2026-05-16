@@ -212,14 +212,17 @@ export type {
 	PageHeaderMode,
 	PageHeaderSnapshot,
 	PageHeaderState,
+	PersistedPageHeaderState,
 } from "./page-header";
 export {
 	createPageHeader,
 	openPageHeaderActionManager,
+	pageHeaderField,
 	PageHeaderActionBar,
 	PageHeaderStateSchema,
 	PageHeaderStore,
 	registerPageHeaderCommands,
+	usePersistedPageHeaderState,
 } from "./page-header";
 
 // ─── Mount bridges ───
@@ -244,18 +247,20 @@ export type {
 	PageBannerProps,
 } from "./views/page-banner";
 export { ActionBar, BackButton, PageBanner } from "./views/page-banner";
-export type { TabCommandUpdater } from "./views/tabbed-container";
+export type { PersistedTabbedContainerState, TabCommandUpdater } from "./views/tabbed-container";
 export {
 	type GroupTabDefinition,
 	isGroupTab,
 	registerTabCommands,
 	TabbedContainer,
+	tabbedContainerField,
 	type TabbedContainerHandle,
 	type TabbedContainerProps,
 	type TabbedContainerState,
 	TabbedContainerStateSchema,
 	type TabDefinition,
 	type TabEntry,
+	usePersistedTabbedContainerState,
 } from "./views/tabbed-container";
 
 // ─── Virtual ───

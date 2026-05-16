@@ -27,6 +27,21 @@ export const TabbedContainerStateSchema = CustomizableUIBaseStateSchema.extend({
 /** Serializable snapshot of tab container state. Safe to persist in plugin settings. */
 export type TabbedContainerState = z.infer<typeof TabbedContainerStateSchema>;
 
+/**
+ * Build a settings-side Zod field for `TabbedContainerState` whose parsed value
+ * is non-undefined (defaults to `{}` — components apply their own internal
+ * defaults for "no overrides yet"). Pairs with `usePersistedTabbedContainerState`
+ * on the React side; same shape as `gridStateField`.
+ *
+ * Pass `defaults` to bake in plugin-specific preferences (e.g. a curated
+ * `visibleTabIds` subset). When omitted, the empty object means "no
+ * customizations" and the consumer can leave the tab list / labels alone.
+ */
+export function tabbedContainerField(defaults?: TabbedContainerState) {
+	const seed: TabbedContainerState = defaults ?? {};
+	return TabbedContainerStateSchema.default(seed).catch(seed);
+}
+
 /** Shape of a single group's persisted child state — inferred from the Zod schema. */
 export type GroupStatePersisted = NonNullable<TabbedContainerState["groupState"]>[string];
 

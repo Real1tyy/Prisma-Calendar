@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { type SettingsStorelike, useSchemaField } from "../hooks/settings/use-schema-field";
 import { type GridLayoutState, type GridStateFieldDefaults, gridStateField } from "./types";
@@ -28,7 +28,10 @@ export function usePersistedGridState(store: SettingsStorelike, path: string): P
 	// re-render and tear the engine down.
 	const [initialState] = useState<GridLayoutState>(() => saved);
 	const onStateChange = useCallback((next: GridLayoutState) => setSaved(next), [setSaved]);
-	return { initialState, onStateChange };
+	// Memo the returned object so callers can put the whole bundle in effect
+	// deps (e.g. createPageHeader-in-useEffect patterns) without re-running on
+	// every parent render. Both inner fields are already stable.
+	return useMemo(() => ({ initialState, onStateChange }), [initialState, onStateChange]);
 }
 
 /**
@@ -59,5 +62,5 @@ export function usePersistedGridStateById(
 		},
 		[id, setRecord]
 	);
-	return { initialState, onStateChange };
+	return useMemo(() => ({ initialState, onStateChange }), [initialState, onStateChange]);
 }

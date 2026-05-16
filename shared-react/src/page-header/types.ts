@@ -11,6 +11,22 @@ export const PageHeaderStateSchema = CustomizableUIBaseStateSchema.extend({
 /** Serializable snapshot of page header state. Safe to persist in plugin settings. */
 export type PageHeaderState = z.infer<typeof PageHeaderStateSchema>;
 
+/**
+ * Build a settings-side Zod field for `PageHeaderState` whose parsed value is
+ * non-undefined (defaults to `{}` — the page-header bar applies its own
+ * internal defaults when nothing has been customized). Pairs with
+ * `usePersistedPageHeaderState` on the React side; same shape as
+ * `gridStateField` / `tabbedContainerField`.
+ *
+ * Pass `defaults` to bake in plugin-specific preferences (e.g. a curated
+ * `visibleActionIds` order). When omitted, the empty object means "no
+ * overrides".
+ */
+export function pageHeaderField(defaults?: PageHeaderState) {
+	const seed: PageHeaderState = defaults ?? {};
+	return PageHeaderStateSchema.default(seed).catch(seed);
+}
+
 export interface HeaderActionDefinition {
 	id: string;
 	label: string;
