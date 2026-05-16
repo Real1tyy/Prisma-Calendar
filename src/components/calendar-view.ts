@@ -81,7 +81,7 @@ import {
 import type { CalendarHost } from "./calendar-host";
 import { ConnectionRenderer } from "./connection-renderer";
 import { EventContextMenu } from "./event-context-menu";
-import { FilterPresetSelector } from "./filter-preset-selector";
+import { type FilterPresetSelectorMount, mountFilterPresetSelector } from "./filter-preset-selector-mount";
 import type { PreviewEventData } from "./modals";
 import { showEventPreviewModal, showIntervalEventsModal } from "./modals";
 import { PrerequisiteSelectionManager } from "./prerequisite-selection-manager";
@@ -100,7 +100,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	private zoomUnmount: (() => void) | null = null;
 	private searchFilter: ToolbarFilterHandle | null = null;
 	private expressionFilter: ToolbarFilterHandle | null = null;
-	private filterPresetSelector: FilterPresetSelector;
+	private filterPresetSelector: FilterPresetSelectorMount | null = null;
 	private container: HTMLElement;
 	private untrackedEventsDropdown: UntrackedEventsDropdown | null = null;
 	filteredEvents: CalendarEvent[] = [];
@@ -174,12 +174,6 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.container = rootEl;
 		this.eventContextMenu = new EventContextMenu(this.app, bundle, this);
 		this.colorEvaluator = new ColorEvaluator(bundle.settingsStore.settings$);
-		this.filterPresetSelector = new FilterPresetSelector(
-			bundle.settingsStore.currentSettings.filterPresets,
-			(expression: string) => {
-				this.expressionFilter?.setFilterValue(expression);
-			}
-		);
 	}
 
 	override async mount(): Promise<void> {
@@ -275,6 +269,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.searchFilter = null;
 		this.expressionFilter?.destroy();
 		this.expressionFilter = null;
+		this.filterPresetSelector?.destroy();
+		this.filterPresetSelector = null;
 		this.untrackedEventsDropdown?.destroy();
 
 		if (this.refreshRafId !== null) {
@@ -611,8 +607,6 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			"dayMaxEvents",
 			this.isMobileView() ? settings.mobileMaxEventsPerDay : settings.desktopMaxEventsPerDay || false
 		);
-
-		this.filterPresetSelector.updatePresets(settings.filterPresets);
 
 		this.applyContainerStyles(this.container, settings);
 		this.scheduleStickyOffsetsUpdate();
@@ -1171,7 +1165,17 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			},
 			{
 				id: "filterPresets",
-				init: () => this.filterPresetSelector.initialize(this.calendar!, this.container),
+				init: () => {
+					this.filterPresetSelector?.destroy();
+					this.filterPresetSelector = mountFilterPresetSelector({
+						app: this.app,
+						bundle: this.bundle,
+						container: this.container,
+						onPresetSelected: (expression: string) => {
+							this.expressionFilter?.setFilterValue(expression);
+						},
+					});
+				},
 			},
 			{
 				id: "untrackedEvents",
@@ -2631,7 +2635,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 	openFilterPresetSelector(): void {
 		this.ensureMobileControlsExpanded();
-		this.filterPresetSelector.open();
+		this.filterPresetSelector?.open();
 	}
 
 	toggleUntrackedEventsDropdown(): void {

@@ -1,12 +1,12 @@
 import { expect, test } from "../../fixtures/electron";
 import { readCalendarSettings, updateCalendarSettings } from "../../fixtures/seed-events";
-import { FC_FILTER_PRESET_SELECT_TID, sel } from "../../fixtures/testids";
+import { FILTER_PRESET_TID, sel } from "../../fixtures/testids";
 
 // FilterPreset shape: `{ name, expression }` (types/settings.ts).
 // Presets live under `filterPresets: []` on the calendar's own settings.
-// Selector DOM is stamped with data-testid="prisma-fc-filter-preset-select".
+// Selector DOM is stamped with data-testid="prisma-filter-preset".
 
-const FILTER_PRESET_SELECT = sel(FC_FILTER_PRESET_SELECT_TID);
+const FILTER_PRESET_SELECT = sel(FILTER_PRESET_TID);
 
 const INITIAL_PRESETS = [
 	{ name: "Work only", expression: "Category === 'Work'" },

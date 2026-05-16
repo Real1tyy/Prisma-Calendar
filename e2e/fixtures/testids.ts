@@ -232,7 +232,6 @@ export const sharedTID = {
 export const FILTER_SEARCH_TID = "prisma-filter-search";
 export const FILTER_EXPRESSION_TID = "prisma-filter-expression";
 export const FILTER_PRESET_TID = "prisma-filter-preset";
-export const FC_FILTER_PRESET_SELECT_TID = "prisma-fc-filter-preset-select";
 
 export const STOPWATCH_TIME_TID = "prisma-stopwatch-time";
 
