@@ -409,8 +409,10 @@ export type PrismaCalendarGetSettingsOutput = {
 	 * Overrides what happens when marking as undone. Format: "propertyName value" (e.g., "archived false"). Requires "Custom done property" to be configured. If empty, the custom done property key is removed on undone instead.
 	 */
 	customUndoneProperty: string;
-	dailyStatsGridState?: unknown;
-	dashboardGridState?: {
+	dailyStatsGridState: {
+		[k: string]: unknown;
+	};
+	dashboardGridState: {
 		[k: string]: unknown;
 	};
 	/**
@@ -446,7 +448,9 @@ export type PrismaCalendarGetSettingsOutput = {
 	 * Delay in milliseconds before scrolling when dragging events near the edge
 	 */
 	dragEdgeScrollDelayMs: number;
-	dualDailyGridState?: unknown;
+	dualDailyGridState: {
+		[k: string]: unknown;
+	};
 	enabled: boolean;
 	/**
 	 * Show preview of event notes when hovering over events
@@ -543,7 +547,9 @@ export type PrismaCalendarGetSettingsOutput = {
 	 * Frontmatter property name for generating past recurring instances from source event start date (set to true to enable)
 	 */
 	generatePastEventsProp: string;
-	heatmapMonthlyStatsGridState?: unknown;
+	heatmapMonthlyStatsGridState: {
+		[k: string]: unknown;
+	};
 	/**
 	 * Hide Saturday and Sunday in calendar views
 	 */
@@ -618,7 +624,9 @@ export type PrismaCalendarGetSettingsOutput = {
 		| "untrackedEvents"
 	)[];
 	monthEvenColor: string;
-	monthlyCalendarStatsGridState?: unknown;
+	monthlyCalendarStatsGridState: {
+		[k: string]: unknown;
+	};
 	monthOddColor: string;
 	name: string;
 	/**
@@ -1501,7 +1509,9 @@ export interface PrismaCalendarUpdateSettingsInput {
 		 * Overrides what happens when marking as undone. Format: "propertyName value" (e.g., "archived false"). Requires "Custom done property" to be configured. If empty, the custom done property key is removed on undone instead.
 		 */
 		customUndoneProperty?: string;
-		dailyStatsGridState?: unknown;
+		dailyStatsGridState?: {
+			[k: string]: unknown;
+		};
 		dashboardGridState?: {
 			[k: string]: unknown;
 		};
@@ -1538,7 +1548,9 @@ export interface PrismaCalendarUpdateSettingsInput {
 		 * Delay in milliseconds before scrolling when dragging events near the edge
 		 */
 		dragEdgeScrollDelayMs?: number;
-		dualDailyGridState?: unknown;
+		dualDailyGridState?: {
+			[k: string]: unknown;
+		};
 		enabled?: boolean;
 		/**
 		 * Show preview of event notes when hovering over events
@@ -1635,7 +1647,9 @@ export interface PrismaCalendarUpdateSettingsInput {
 		 * Frontmatter property name for generating past recurring instances from source event start date (set to true to enable)
 		 */
 		generatePastEventsProp?: string;
-		heatmapMonthlyStatsGridState?: unknown;
+		heatmapMonthlyStatsGridState?: {
+			[k: string]: unknown;
+		};
 		/**
 		 * Hide Saturday and Sunday in calendar views
 		 */
@@ -1710,7 +1724,9 @@ export interface PrismaCalendarUpdateSettingsInput {
 			| "untrackedEvents"
 		)[];
 		monthEvenColor?: string;
-		monthlyCalendarStatsGridState?: unknown;
+		monthlyCalendarStatsGridState?: {
+			[k: string]: unknown;
+		};
 		monthOddColor?: string;
 		name?: string;
 		/**

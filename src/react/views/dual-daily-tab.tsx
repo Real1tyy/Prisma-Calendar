@@ -1,7 +1,7 @@
-import { cls, type GridLayoutState, tid } from "@real1ty-obsidian-plugins";
-import { Cell, GridLayout, ImperativeCellHost, useApp, useSchemaField } from "@real1ty-obsidian-plugins-react";
+import { cls, tid } from "@real1ty-obsidian-plugins";
+import { Cell, GridLayout, ImperativeCellHost, useApp, usePersistedGridState } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
-import { type RefObject, memo, type Ref, useCallback, useImperativeHandle, useMemo, useRef, useState } from "react";
+import { type RefObject, memo, type Ref, useImperativeHandle, useMemo, useRef, useCallback } from "react";
 
 import {
 	createDailyCalendar,
@@ -10,16 +10,6 @@ import {
 } from "../../components/views/daily-calendar";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { useBundle } from "../contexts/bundle-context";
-
-const DEFAULT_DUAL_DAILY_GRID_STATE: GridLayoutState = {
-	columns: 2,
-	rows: 1,
-	cells: [],
-	columnSizes: [0.5, 0.5],
-	rowSizes: undefined,
-	cellColumnSizes: undefined,
-	cellRowSizes: undefined,
-};
 
 type Side = "left" | "right";
 
@@ -71,12 +61,7 @@ export const DualDailyTab = memo(function DualDailyTab({ handleRef }: DualDailyT
 	const left = useCalendarSide("left", app, bundle, sharedDragState, focusedSideRef);
 	const right = useCalendarSide("right", app, bundle, sharedDragState, focusedSideRef);
 
-	const [savedGridState, setGridState] = useSchemaField<GridLayoutState | undefined>(
-		bundle.settingsStore,
-		"dualDailyGridState"
-	);
-	const [initialGridState] = useState<GridLayoutState>(() => savedGridState ?? DEFAULT_DUAL_DAILY_GRID_STATE);
-	const handleStateChange = useCallback((next: GridLayoutState) => setGridState(next), [setGridState]);
+	const gridState = usePersistedGridState(bundle.settingsStore, "dualDailyGridState");
 
 	useImperativeHandle(
 		handleRef,
@@ -96,8 +81,7 @@ export const DualDailyTab = memo(function DualDailyTab({ handleRef }: DualDailyT
 			gap="12px"
 			dividers
 			resizable="track"
-			initialState={initialGridState}
-			onStateChange={handleStateChange}
+			{...gridState}
 			style={{ flex: "1 1 auto", minHeight: 0 }}
 			data-testid={tid("dual-daily")}
 		>

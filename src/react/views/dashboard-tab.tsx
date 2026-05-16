@@ -1,7 +1,7 @@
-import { type ChartDataItem, cls, type GridLayoutState, tid } from "@real1ty-obsidian-plugins";
-import { Cell, GridLayout, useApp, useSchemaField } from "@real1ty-obsidian-plugins-react";
+import { type ChartDataItem, cls, tid } from "@real1ty-obsidian-plugins";
+import { Cell, GridLayout, useApp, usePersistedGridStateById } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
-import { memo, type ReactElement, useCallback, useMemo, useState } from "react";
+import { memo, type ReactElement, useMemo } from "react";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { PRO_FEATURES } from "../../core/license";
@@ -26,15 +26,7 @@ const DASHBOARD_CSS_PREFIX = cls("dashboard-");
 const REFRESH_DEBOUNCE_MS = 300;
 const TOOLTIP_FORMATTER = (label: string, value: number, percentage: string): string =>
 	`${label}: ${value} event${value === 1 ? "" : "s"} (${percentage}%)`;
-const DASHBOARD_INITIAL_STATE = {
-	columns: 2,
-	rows: 2,
-	cells: [],
-	rowSizes: [0.65, 0.35],
-	columnSizes: undefined,
-	cellColumnSizes: undefined,
-	cellRowSizes: undefined,
-};
+const DASHBOARD_GRID_DEFAULTS = { columns: 2, rows: 2, rowSizes: [0.65, 0.35] };
 
 interface DashboardData {
 	items: DashboardItem[];
@@ -60,21 +52,7 @@ const DashboardSection = memo(function DashboardSection({ id, buildData }: Dashb
 		return buildData();
 	}, [buildData, renderToken]);
 
-	const [savedGridStates, setGridStates] = useSchemaField<Record<string, GridLayoutState> | undefined>(
-		bundle.settingsStore,
-		"dashboardGridState"
-	);
-
-	const [initialState] = useState<GridLayoutState | typeof DASHBOARD_INITIAL_STATE>(
-		() => savedGridStates?.[id] ?? DASHBOARD_INITIAL_STATE
-	);
-
-	const handleStateChange = useCallback(
-		(next: GridLayoutState) => {
-			setGridStates((prev) => ({ ...(prev ?? {}), [id]: next }));
-		},
-		[id, setGridStates]
-	);
+	const gridState = usePersistedGridStateById(bundle.settingsStore, "dashboardGridState", id, DASHBOARD_GRID_DEFAULTS);
 
 	return (
 		<GridLayout
@@ -85,8 +63,7 @@ const DashboardSection = memo(function DashboardSection({ id, buildData }: Dashb
 			gap="12px"
 			dividers
 			resizable="track"
-			initialState={initialState}
-			onStateChange={handleStateChange}
+			{...gridState}
 			style={{ flex: "1 1 auto", minHeight: 0 }}
 			data-testid={tid("dashboard", id)}
 		>

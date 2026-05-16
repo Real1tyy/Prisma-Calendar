@@ -1,11 +1,8 @@
-import {
-	ColorSchema,
-	GridLayoutStateSchema,
-	normalizeDirectoryPath,
-	type SettingsStore,
-} from "@real1ty-obsidian-plugins";
+import { ColorSchema, normalizeDirectoryPath, type SettingsStore } from "@real1ty-obsidian-plugins";
 import {
 	ContextMenuStateSchema,
+	gridStateField,
+	gridStateRecordField,
 	PageHeaderStateSchema,
 	TabbedContainerStateSchema,
 } from "@real1ty-obsidian-plugins-react";
@@ -894,6 +891,19 @@ const AISettingsSchema = z
 	})
 	.strip();
 
+// Single-instance "2 cols × 1 row, 50/50" grid — shared by Dual Daily, Daily Stats,
+// Monthly Calendar Stats, and Heatmap Monthly Stats. One field constant keeps
+// the schema and the calendar-default fallback (below) in lockstep without
+// re-declaring the defaults at every call site.
+const TWO_BY_ONE_GRID_FIELD = gridStateField({ columns: 2, rows: 1, columnSizes: [0.5, 0.5] });
+const TWO_BY_ONE_GRID_DEFAULT = TWO_BY_ONE_GRID_FIELD.parse(undefined);
+
+// Record-keyed field for the Dashboard's by-name / by-category / recurring
+// subsections. Each subsection's id is keyed inside the record; per-id seeds
+// are supplied by `usePersistedGridStateById` in dashboard-tab.tsx.
+const DASHBOARD_GRID_RECORD_FIELD = gridStateRecordField();
+const DASHBOARD_GRID_RECORD_DEFAULT = DASHBOARD_GRID_RECORD_FIELD.parse(undefined);
+
 export const SingleCalendarConfigSchema = GeneralSettingsSchema.extend(PropsSettingsSchema.shape)
 	.extend(CalendarSettingsSchema.shape)
 	.extend(RulesSettingsSchema.shape)
@@ -903,11 +913,11 @@ export const SingleCalendarConfigSchema = GeneralSettingsSchema.extend(PropsSett
 		name: z.string().catch("Calendar"),
 		enabled: z.boolean().catch(true),
 		holidays: HolidaySettingsSchema.catch(HolidaySettingsSchema.parse({})),
-		dashboardGridState: z.record(z.string(), GridLayoutStateSchema).optional().catch(undefined),
-		dualDailyGridState: GridLayoutStateSchema.optional().catch(undefined),
-		dailyStatsGridState: GridLayoutStateSchema.optional().catch(undefined),
-		monthlyCalendarStatsGridState: GridLayoutStateSchema.optional().catch(undefined),
-		heatmapMonthlyStatsGridState: GridLayoutStateSchema.optional().catch(undefined),
+		dashboardGridState: DASHBOARD_GRID_RECORD_FIELD,
+		dualDailyGridState: TWO_BY_ONE_GRID_FIELD,
+		dailyStatsGridState: TWO_BY_ONE_GRID_FIELD,
+		monthlyCalendarStatsGridState: TWO_BY_ONE_GRID_FIELD,
+		heatmapMonthlyStatsGridState: TWO_BY_ONE_GRID_FIELD,
 	})
 	.strip();
 
@@ -935,6 +945,11 @@ export const CustomCalendarSettingsSchema = z
 					...RulesSettingsSchema.parse({}),
 					...NotificationsSettingsSchema.parse({}),
 					holidays: HolidaySettingsSchema.parse({}),
+					dashboardGridState: DASHBOARD_GRID_RECORD_DEFAULT,
+					dualDailyGridState: TWO_BY_ONE_GRID_DEFAULT,
+					dailyStatsGridState: TWO_BY_ONE_GRID_DEFAULT,
+					monthlyCalendarStatsGridState: TWO_BY_ONE_GRID_DEFAULT,
+					heatmapMonthlyStatsGridState: TWO_BY_ONE_GRID_DEFAULT,
 				},
 			]),
 		ai: AISettingsSchema.catch(AISettingsSchema.parse({})),

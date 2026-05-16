@@ -1499,9 +1499,17 @@
 								"placeholder": "archived false",
 								"type": "string"
 							},
-							"dailyStatsGridState": {},
+							"dailyStatsGridState": {
+								"default": {
+									"cells": [],
+									"columns": 2,
+									"columnSizes": [0.5, 0.5],
+									"rows": 1
+								}
+							},
 							"dashboardGridState": {
 								"additionalProperties": {},
+								"default": {},
 								"propertyNames": {
 									"type": "string"
 								},
@@ -1637,7 +1645,14 @@
 								"minimum": 50,
 								"type": "integer"
 							},
-							"dualDailyGridState": {},
+							"dualDailyGridState": {
+								"default": {
+									"cells": [],
+									"columns": 2,
+									"columnSizes": [0.5, 0.5],
+									"rows": 1
+								}
+							},
 							"enabled": {
 								"default": true,
 								"type": "boolean"
@@ -1942,7 +1957,14 @@
 								"description": "Frontmatter property name for generating past recurring instances from source event start date (set to true to enable)",
 								"type": "string"
 							},
-							"heatmapMonthlyStatsGridState": {},
+							"heatmapMonthlyStatsGridState": {
+								"default": {
+									"cells": [],
+									"columns": 2,
+									"columnSizes": [0.5, 0.5],
+									"rows": 1
+								}
+							},
 							"hideWeekends": {
 								"default": false,
 								"description": "Hide Saturday and Sunday in calendar views",
@@ -2135,7 +2157,14 @@
 								"type": "string",
 								"widget": "color"
 							},
-							"monthlyCalendarStatsGridState": {},
+							"monthlyCalendarStatsGridState": {
+								"default": {
+									"cells": [],
+									"columns": 2,
+									"columnSizes": [0.5, 0.5],
+									"rows": 1
+								}
+							},
 							"monthOddColor": {
 								"default": "#6b9080",
 								"type": "string",
@@ -2615,7 +2644,12 @@
 							"id",
 							"name",
 							"enabled",
-							"holidays"
+							"holidays",
+							"dashboardGridState",
+							"dualDailyGridState",
+							"dailyStatsGridState",
+							"monthlyCalendarStatsGridState",
+							"heatmapMonthlyStatsGridState"
 						],
 						"type": "object"
 					},
@@ -3648,9 +3682,17 @@
 								"placeholder": "archived false",
 								"type": "string"
 							},
-							"dailyStatsGridState": {},
+							"dailyStatsGridState": {
+								"default": {
+									"cells": [],
+									"columns": 2,
+									"columnSizes": [0.5, 0.5],
+									"rows": 1
+								}
+							},
 							"dashboardGridState": {
 								"additionalProperties": {},
+								"default": {},
 								"propertyNames": {
 									"type": "string"
 								},
@@ -3786,7 +3828,14 @@
 								"minimum": 50,
 								"type": "integer"
 							},
-							"dualDailyGridState": {},
+							"dualDailyGridState": {
+								"default": {
+									"cells": [],
+									"columns": 2,
+									"columnSizes": [0.5, 0.5],
+									"rows": 1
+								}
+							},
 							"enabled": {
 								"default": true,
 								"type": "boolean"
@@ -4091,7 +4140,14 @@
 								"description": "Frontmatter property name for generating past recurring instances from source event start date (set to true to enable)",
 								"type": "string"
 							},
-							"heatmapMonthlyStatsGridState": {},
+							"heatmapMonthlyStatsGridState": {
+								"default": {
+									"cells": [],
+									"columns": 2,
+									"columnSizes": [0.5, 0.5],
+									"rows": 1
+								}
+							},
 							"hideWeekends": {
 								"default": false,
 								"description": "Hide Saturday and Sunday in calendar views",
@@ -4284,7 +4340,14 @@
 								"type": "string",
 								"widget": "color"
 							},
-							"monthlyCalendarStatsGridState": {},
+							"monthlyCalendarStatsGridState": {
+								"default": {
+									"cells": [],
+									"columns": 2,
+									"columnSizes": [0.5, 0.5],
+									"rows": 1
+								}
+							},
 							"monthOddColor": {
 								"default": "#6b9080",
 								"type": "string",
