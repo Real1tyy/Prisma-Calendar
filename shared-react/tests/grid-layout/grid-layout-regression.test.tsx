@@ -1,4 +1,4 @@
-import type { CellPlacement } from "@real1ty-obsidian-plugins";
+import type { CellPlacement } from "@real1ty-obsidian-plugins-react";
 import { useEffect, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";

@@ -1,4 +1,3 @@
-import type { CellOption, GridLayoutState } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import type { CSSProperties } from "react";
 import { memo, useCallback, useMemo, useReducer } from "react";
@@ -10,6 +9,7 @@ import { showReactModal } from "../show-react-modal";
 import { openCellPicker } from "./cell-picker-modal";
 import { adjustSizes } from "./engine-state";
 import { buildGridStyles } from "./styles";
+import type { CellOption, GridLayoutState } from "./types";
 
 const MIN_DIM = 1;
 const MAX_DIM = 6;

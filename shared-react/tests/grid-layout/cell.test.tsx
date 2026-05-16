@@ -1,4 +1,4 @@
-import type { GridLayoutHandle } from "@real1ty-obsidian-plugins";
+import type { GridLayoutHandle } from "@real1ty-obsidian-plugins-react";
 import { createRef } from "react";
 import { describe, expect, it, vi } from "vitest";
 

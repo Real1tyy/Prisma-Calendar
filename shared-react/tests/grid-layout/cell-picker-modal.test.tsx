@@ -1,4 +1,4 @@
-import type { CellOption } from "@real1ty-obsidian-plugins";
+import type { CellOption } from "@real1ty-obsidian-plugins-react";
 import { fireEvent } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 

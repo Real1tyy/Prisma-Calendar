@@ -118,25 +118,40 @@ export { type SettingsFieldsPatch, type SettingsFieldsUpdater, useSettingsFields
 export { type SettingsStorelike as SettingsStoreShape, type SettingsUpdater, useSettingsStore } from "./hooks/settings";
 export { useInjectedStyles, useScopedStyles } from "./hooks/styles";
 
-// ─── Grid Layout (React wrapper + modal helpers) ───
+// ─── Grid Layout (React wrapper + modal helpers + persisted-state hook + types) ───
 export type {
+	CellCleanup,
+	CellOption,
 	CellPickerContentProps,
+	CellPlacement,
 	CellProps,
+	CellRender,
 	GridLayoutCommandsConfig,
+	GridLayoutConfig,
+	GridLayoutHandle,
 	GridLayoutProps,
+	GridLayoutState,
+	GridStateFieldDefaults,
 	ImperativeCellHostProps,
 	LayoutEditorContentProps,
 	OpenCellPickerOptions,
 	OpenLayoutEditorOptions,
+	PersistedGridState,
+	ResizeMode,
 } from "./grid-layout";
 export {
 	Cell,
 	CellPickerContent,
 	GridLayout,
+	GridLayoutStateSchema,
+	gridStateField,
+	gridStateRecordField,
 	ImperativeCellHost,
 	LayoutEditorContent,
 	openCellPicker,
 	openLayoutEditor,
+	usePersistedGridState,
+	usePersistedGridStateById,
 } from "./grid-layout";
 
 // ─── Menus ───

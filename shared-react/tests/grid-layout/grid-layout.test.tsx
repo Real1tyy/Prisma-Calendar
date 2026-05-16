@@ -1,4 +1,4 @@
-import type { GridLayoutHandle, GridLayoutState } from "@real1ty-obsidian-plugins";
+import type { GridLayoutHandle, GridLayoutState } from "@real1ty-obsidian-plugins-react";
 import { waitFor } from "@testing-library/react";
 import type { Plugin } from "obsidian";
 import { createRef, useState } from "react";

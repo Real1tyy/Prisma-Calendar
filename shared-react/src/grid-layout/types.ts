@@ -72,6 +72,50 @@ export const GridLayoutStateSchema = z
 /** Serializable snapshot of grid layout state. Safe to persist in plugin settings. */
 export type GridLayoutState = z.infer<typeof GridLayoutStateSchema>;
 
+/**
+ * Shape of the defaults a settings-side `gridStateField()` declaration carries.
+ * Mirrors the persistable subset of `GridLayoutState` that's actually meaningful
+ * to seed at "no saved state yet" time — `cells` defaults to `[]` (the engine
+ * synthesizes initial placements from `<Cell>` children).
+ */
+export interface GridStateFieldDefaults {
+	columns: number;
+	rows: number;
+	columnSizes?: number[];
+	rowSizes?: number[];
+}
+
+/**
+ * Build a Zod field whose parsed value is a non-optional `GridLayoutState`
+ * seeded from `defaults` when nothing has been persisted yet. Pairs with the
+ * React `usePersistedGridState(store, path)` hook: the schema owns the initial
+ * layout (columns × rows + initial sizes) and the hook owns the read / persist
+ * wiring, so consumers don't hand-roll either side.
+ */
+export function gridStateField(defaults: GridStateFieldDefaults) {
+	const seed: GridLayoutState = {
+		columns: defaults.columns,
+		rows: defaults.rows,
+		cells: [],
+		columnSizes: defaults.columnSizes,
+		rowSizes: defaults.rowSizes,
+		cellColumnSizes: undefined,
+		cellRowSizes: undefined,
+	};
+	return GridLayoutStateSchema.default(seed).catch(seed);
+}
+
+/**
+ * Build a Zod field that holds a `Record<id, GridLayoutState>` — the
+ * settings-side counterpart to `usePersistedGridStateById`. Default is `{}`;
+ * per-id seeds are supplied by the React hook when the id is first rendered
+ * (the schema can't know which ids exist or what defaults each wants).
+ */
+export function gridStateRecordField() {
+	const empty: Record<string, GridLayoutState> = {};
+	return z.record(z.string(), GridLayoutStateSchema).default(empty).catch(empty);
+}
+
 export type ResizeMode = "track" | "cell-width" | "cell-height";
 
 export interface GridLayoutConfig {

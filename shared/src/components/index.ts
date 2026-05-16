@@ -3,7 +3,6 @@ export * from "./code-editor";
 export * from "./component-renderer";
 export * from "./file-explorer";
 export * from "./gantt-view";
-export * from "./grid-layout";
 export * from "./inputs";
 export * from "./mountable";
 export * from "./primitives";
