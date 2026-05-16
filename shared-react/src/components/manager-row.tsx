@@ -2,7 +2,7 @@ import type { DragEvent, ReactNode } from "react";
 import { memo, useCallback, useState } from "react";
 
 import { useScoped } from "../contexts/theme-context";
-import { useInjectedStyles } from "../hooks/use-injected-styles";
+import { useInjectedStyles } from "../hooks/styles/use-styles";
 import { cx } from "../utils/cx";
 import { buildManagerRowStyles } from "./manager-row.styles";
 import { ObsidianIcon } from "./obsidian-icon";

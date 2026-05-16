@@ -2,7 +2,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { getIconIds, setIcon } from "obsidian";
 import { memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 
-import { useInjectedStyles } from "../hooks/use-injected-styles";
+import { useInjectedStyles } from "../hooks/styles/use-styles";
 
 const GRID_COLUMNS = 8;
 const ROW_HEIGHT = 52;

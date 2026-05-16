@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { memo, useCallback } from "react";
 
 import { useScoped } from "../contexts/theme-context";
-import { useActivatable } from "../hooks/use-activatable";
+import { useActivatable } from "../hooks/interaction/use-activatable";
 
 export interface ChipProps {
 	/** Arbitrary value this chip represents — passed back to callbacks. */

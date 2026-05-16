@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { useSchemaField } from "../../src/hooks/use-schema-field";
+import { useSchemaField } from "../../src/hooks/settings/use-schema-field";
 import { makeStore } from "../helpers/make-store";
 
 interface Nested {

@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-	computeTrackPxs,
-	parseTracks,
-	redistributeTracks,
-	roundFr,
-} from "../../src/components/grid-layout/grid-resize";
+import { computeTrackPxs, parseTracks, redistributeTracks, roundFr } from "../../src/grid-layout/grid-resize-math";
 
 describe("roundFr", () => {
 	it("rounds to two decimal places", () => {

@@ -2,7 +2,7 @@ import { screen } from "@testing-library/react";
 import type { ReactElement } from "react";
 import { describe, expect, it, vi } from "vitest";
 
-import { ActionBar, BackButton, PageHeader } from "../../src/views/page-header";
+import { ActionBar, BackButton, PageBanner } from "../../src/views/page-banner";
 import { renderReact, type RenderReactResult } from "../helpers/render-react";
 
 const PREFIX = "test-";
@@ -16,7 +16,7 @@ describe("BackButton", () => {
 		const onClick = vi.fn();
 		const { user } = renderInTheme(<BackButton onClick={onClick} />);
 
-		const btn = screen.getByTestId(`${PREFIX}page-header-back`);
+		const btn = screen.getByTestId(`${PREFIX}page-banner-back`);
 		expect(btn).toBeInTheDocument();
 		expect(btn).toHaveAttribute("aria-label", "Go back");
 
@@ -34,14 +34,14 @@ describe("ActionBar", () => {
 	it("renders all actions with aria labels", () => {
 		renderInTheme(<ActionBar actions={actions} />);
 
-		expect(screen.getByTestId(`${PREFIX}page-header-action-edit`)).toHaveAttribute("aria-label", "Edit");
-		expect(screen.getByTestId(`${PREFIX}page-header-action-delete`)).toBeDisabled();
+		expect(screen.getByTestId(`${PREFIX}page-banner-action-edit`)).toHaveAttribute("aria-label", "Edit");
+		expect(screen.getByTestId(`${PREFIX}page-banner-action-delete`)).toBeDisabled();
 	});
 
 	it("fires onClick for enabled action", async () => {
 		const { user } = renderInTheme(<ActionBar actions={actions} />);
 
-		await user.click(screen.getByTestId(`${PREFIX}page-header-action-edit`));
+		await user.click(screen.getByTestId(`${PREFIX}page-banner-action-edit`));
 		expect(actions[0].onClick).toHaveBeenCalledOnce();
 	});
 
@@ -52,37 +52,37 @@ describe("ActionBar", () => {
 	});
 });
 
-describe("PageHeader", () => {
+describe("PageBanner", () => {
 	it("renders title", () => {
-		renderInTheme(<PageHeader title="Dashboard" />);
+		renderInTheme(<PageBanner title="Dashboard" />);
 
-		expect(screen.getByTestId(`${PREFIX}page-header-title`)).toHaveTextContent("Dashboard");
+		expect(screen.getByTestId(`${PREFIX}page-banner-title`)).toHaveTextContent("Dashboard");
 	});
 
 	it("renders subtitle when provided", () => {
-		renderInTheme(<PageHeader title="Dashboard" subtitle="Overview" />);
+		renderInTheme(<PageBanner title="Dashboard" subtitle="Overview" />);
 
 		expect(screen.getByText("Overview")).toBeInTheDocument();
 	});
 
 	it("renders back button when onBack provided", async () => {
 		const onBack = vi.fn();
-		const { user } = renderInTheme(<PageHeader title="Detail" onBack={onBack} />);
+		const { user } = renderInTheme(<PageBanner title="Detail" onBack={onBack} />);
 
-		await user.click(screen.getByTestId(`${PREFIX}page-header-back`));
+		await user.click(screen.getByTestId(`${PREFIX}page-banner-back`));
 		expect(onBack).toHaveBeenCalledOnce();
 	});
 
 	it("does not render back button without onBack", () => {
-		renderInTheme(<PageHeader title="Dashboard" />);
+		renderInTheme(<PageBanner title="Dashboard" />);
 
-		expect(screen.queryByTestId(`${PREFIX}page-header-back`)).not.toBeInTheDocument();
+		expect(screen.queryByTestId(`${PREFIX}page-banner-back`)).not.toBeInTheDocument();
 	});
 
 	it("renders breadcrumbs", async () => {
 		const onClick = vi.fn();
 		const { user } = renderInTheme(
-			<PageHeader title="Detail" breadcrumbs={[{ label: "Home", onClick }, { label: "Events" }]} />
+			<PageBanner title="Detail" breadcrumbs={[{ label: "Home", onClick }, { label: "Events" }]} />
 		);
 
 		expect(screen.getByText("Home")).toBeInTheDocument();
@@ -95,19 +95,19 @@ describe("PageHeader", () => {
 
 	it("renders actions", () => {
 		const actions = [{ id: "refresh", icon: "refresh-cw", label: "Refresh", onClick: vi.fn() }];
-		renderInTheme(<PageHeader title="Dashboard" actions={actions} />);
+		renderInTheme(<PageBanner title="Dashboard" actions={actions} />);
 
-		expect(screen.getByTestId(`${PREFIX}page-header-action-refresh`)).toBeInTheDocument();
+		expect(screen.getByTestId(`${PREFIX}page-banner-action-refresh`)).toBeInTheDocument();
 	});
 
 	it("renders right slot", () => {
-		renderInTheme(<PageHeader title="Dashboard" right={<span>Custom</span>} />);
+		renderInTheme(<PageBanner title="Dashboard" right={<span>Custom</span>} />);
 
 		expect(screen.getByText("Custom")).toBeInTheDocument();
 	});
 
 	it("has banner role", () => {
-		renderInTheme(<PageHeader title="Dashboard" />);
+		renderInTheme(<PageBanner title="Dashboard" />);
 
 		expect(screen.getByRole("banner")).toBeInTheDocument();
 	});

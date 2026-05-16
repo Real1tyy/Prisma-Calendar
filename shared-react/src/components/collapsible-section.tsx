@@ -3,8 +3,8 @@ import type { ReactNode } from "react";
 import { memo, useState } from "react";
 
 import { useScoped } from "../contexts/theme-context";
-import { useActivatable } from "../hooks/use-activatable";
-import { useScopedStyles } from "../hooks/use-scoped-styles";
+import { useActivatable } from "../hooks/interaction/use-activatable";
+import { useScopedStyles } from "../hooks/styles/use-styles";
 
 // ─── SectionHeader ───
 

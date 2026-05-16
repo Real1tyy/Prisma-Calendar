@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, it } from "vitest";
 
-import type { Paths, PathValue } from "../../src/hooks/path-types";
+import type { Paths, PathValue } from "../../src/hooks/settings/path-types";
 
 interface Sample {
 	alpha: string;

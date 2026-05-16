@@ -1,4 +1,4 @@
-import { injectStyleSheet } from "../../utils/styles/inject";
+import { injectStyleSheet } from "@real1ty-obsidian-plugins";
 
 export function buildGridStyles(p: string): string {
 	return `

@@ -86,9 +86,19 @@ export { useThemed, withTheme } from "./contexts/with-theme";
 export * from "./forms";
 
 // ─── Hooks ───
-export type { Paths, PathValue } from "./hooks/path-types";
-export type { ActivatableProps } from "./hooks/use-activatable";
-export { useActivatable } from "./hooks/use-activatable";
+export { useDomEvent } from "./hooks/dom";
+export { type Emitterlike, useObsidianEvent } from "./hooks/dom";
+export { type UseOutsideClickOptions, useOutsideClick } from "./hooks/dom";
+export { useScrollRestore } from "./hooks/dom";
+export { type UseFocusOnMountOptions, useFocusOnMount } from "./hooks/focus";
+export { type ActivatableProps, useActivatable } from "./hooks/interaction";
+export { type UseCopyToClipboardOptions, useCopyToClipboard } from "./hooks/interaction";
+export {
+	DEBOUNCED_COMMIT_DEFAULT_MS,
+	type DebouncedCommitHandle,
+	type UseDebouncedCommitOptions,
+	useDebouncedCommit,
+} from "./hooks/interaction";
 export {
 	useArrowDown,
 	useArrowKey,
@@ -96,36 +106,17 @@ export {
 	useArrowLeft,
 	useArrowRight,
 	useArrowUp,
-} from "./hooks/use-arrow-key";
-export { useColorEvaluator } from "./hooks/use-color-evaluator";
-export type { UseCopyToClipboardOptions } from "./hooks/use-copy-to-clipboard";
-export { useCopyToClipboard } from "./hooks/use-copy-to-clipboard";
-export type { DebouncedCommitHandle, UseDebouncedCommitOptions } from "./hooks/use-debounced-commit";
-export { DEBOUNCED_COMMIT_DEFAULT_MS, useDebouncedCommit } from "./hooks/use-debounced-commit";
-export { useDomEvent } from "./hooks/use-dom-event";
-export { useEnterKey, type UseEnterKeyOptions } from "./hooks/use-enter-key";
-export { useEscapeKey } from "./hooks/use-escape-key";
-export type { SnapshotSubscribable } from "./hooks/use-external-snapshot";
-export { useExternalSnapshot } from "./hooks/use-external-snapshot";
-export type { UseFocusOnMountOptions } from "./hooks/use-focus-on-mount";
-export { useFocusOnMount } from "./hooks/use-focus-on-mount";
-export { useInjectedStyles } from "./hooks/use-injected-styles";
-export { useKeyDown } from "./hooks/use-key-down";
-export { useObservable } from "./hooks/use-observable";
-export type { Emitterlike } from "./hooks/use-obsidian-event";
-export { useObsidianEvent } from "./hooks/use-obsidian-event";
-export type { UseOutsideClickOptions } from "./hooks/use-outside-click";
-export { useOutsideClick } from "./hooks/use-outside-click";
-export { useReleaseCheck } from "./hooks/use-release-check";
-export type { SchemaFieldBinding, SettingsStorelike } from "./hooks/use-schema-field";
-export { useSchemaField } from "./hooks/use-schema-field";
-export { useScopedStyles } from "./hooks/use-scoped-styles";
-export { useScrollRestore } from "./hooks/use-scroll-restore";
-export type { SettingsFieldsPatch, SettingsFieldsUpdater } from "./hooks/use-settings-fields";
-export { useSettingsFields } from "./hooks/use-settings-fields";
-export type { SettingsStorelike as SettingsStoreShape, SettingsUpdater } from "./hooks/use-settings-store";
-export { useSettingsStore } from "./hooks/use-settings-store";
-export { useSubscription } from "./hooks/use-subscription";
+} from "./hooks/keyboard";
+export { useKeyDown } from "./hooks/keyboard";
+export { useEnterKey, type UseEnterKeyOptions, useEscapeKey } from "./hooks/keyboard";
+export { type SnapshotSubscribable, useExternalSnapshot } from "./hooks/reactive";
+export { useObservable, useSubscription } from "./hooks/reactive";
+export { useColorEvaluator, useReleaseCheck } from "./hooks/services";
+export type { Paths, PathValue } from "./hooks/settings";
+export { type SchemaFieldBinding, type SettingsStorelike, useSchemaField } from "./hooks/settings";
+export { type SettingsFieldsPatch, type SettingsFieldsUpdater, useSettingsFields } from "./hooks/settings";
+export { type SettingsStorelike as SettingsStoreShape, type SettingsUpdater, useSettingsStore } from "./hooks/settings";
+export { useInjectedStyles, useScopedStyles } from "./hooks/styles";
 
 // ─── Grid Layout (React wrapper + modal helpers) ───
 export type {
@@ -232,10 +223,10 @@ export type {
 	ActionBarProps,
 	BackButtonProps,
 	BreadcrumbItem,
-	PageHeaderAction,
-	PageHeaderProps,
-} from "./views/page-header";
-export { ActionBar, BackButton, PageHeader } from "./views/page-header";
+	PageBannerAction,
+	PageBannerProps,
+} from "./views/page-banner";
+export { ActionBar, BackButton, PageBanner } from "./views/page-banner";
 export type { TabCommandUpdater } from "./views/tabbed-container";
 export {
 	type GroupTabDefinition,

@@ -2,7 +2,7 @@ import { SecretComponent } from "obsidian";
 import { memo, useEffect, useRef } from "react";
 
 import { useApp } from "../contexts/app-context";
-import { useInjectedStyles } from "../hooks/use-injected-styles";
+import { useInjectedStyles } from "../hooks/styles/use-styles";
 import { testIdAttr } from "../utils/test-id";
 
 interface SecretFieldProps {

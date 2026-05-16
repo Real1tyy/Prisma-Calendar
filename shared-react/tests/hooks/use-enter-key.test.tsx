@@ -1,7 +1,7 @@
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { useEnterKey } from "../../src/hooks/use-enter-key";
+import { useEnterKey } from "../../src/hooks/keyboard/use-trigger-keys";
 
 function press(target: EventTarget, init: KeyboardEventInit): void {
 	target.dispatchEvent(new KeyboardEvent("keydown", init));

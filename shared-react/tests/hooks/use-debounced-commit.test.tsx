@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { DEBOUNCED_COMMIT_DEFAULT_MS, useDebouncedCommit } from "../../src/hooks/use-debounced-commit";
+import { DEBOUNCED_COMMIT_DEFAULT_MS, useDebouncedCommit } from "../../src/hooks/interaction/use-debounced-commit";
 
 describe("useDebouncedCommit", () => {
 	beforeEach(() => {

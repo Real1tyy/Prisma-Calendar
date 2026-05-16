@@ -1,7 +1,7 @@
 import { screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { useActivatable } from "../../src/hooks/use-activatable";
+import { useActivatable } from "../../src/hooks/interaction/use-activatable";
 import { renderReact } from "../helpers/render-react";
 
 function Harness({ onActivate }: { onActivate: (() => void) | undefined }) {

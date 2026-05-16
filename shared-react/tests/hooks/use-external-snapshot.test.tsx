@@ -2,7 +2,7 @@ import { act, renderHook } from "@testing-library/react";
 import { BehaviorSubject } from "rxjs";
 import { describe, expect, it, vi } from "vitest";
 
-import { useExternalSnapshot } from "../../src/hooks/use-external-snapshot";
+import { useExternalSnapshot } from "../../src/hooks/reactive/use-external-snapshot";
 
 describe("useExternalSnapshot", () => {
 	it("returns the initial value from the source", () => {

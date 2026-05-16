@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import type { BehaviorSubject } from "rxjs";
 
-import { useExternalSnapshot } from "./use-external-snapshot";
+import { useExternalSnapshot } from "../reactive/use-external-snapshot";
 
 /**
  * Minimal shape the settings hook needs. `currentSettings` is intentionally

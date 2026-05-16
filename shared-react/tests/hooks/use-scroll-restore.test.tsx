@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useScrollRestore } from "../../src/hooks/use-scroll-restore";
+import { useScrollRestore } from "../../src/hooks/dom/use-scroll-restore";
 
 function createScrollableDOM(): { child: HTMLElement; scrollParent: HTMLElement } {
 	const scrollParent = document.createElement("div");

@@ -93,7 +93,7 @@ export function useTestId(): (suffix?: string, ...parts: string[]) => string {
  * Scoped variant: `useScopedCls("manager")()` → `${cssPrefix}manager`,
  * `useScopedCls("manager")("row")` → `${cssPrefix}manager-row`. Use inside
  * components that namespace their classes under a per-component prefix
- * (ManagerRow, PageHeader, CollapsibleSection, …) — replaces every
+ * (ManagerRow, PageBanner, CollapsibleSection, …) — replaces every
  * `\`${cssPrefix}${rowPrefix}-foo\`` template string with `cls("foo")`.
  */
 export function useScopedCls(scope: string): (suffix?: string, ...parts: string[]) => string {

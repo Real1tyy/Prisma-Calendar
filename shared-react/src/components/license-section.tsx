@@ -2,8 +2,8 @@ import { getLicenseStatusText, type LicenseManager, type LicenseStatus } from "@
 import { memo, type ReactNode, useCallback, useState } from "react";
 
 import { useCssPrefix, useScopedCls } from "../contexts/theme-context";
-import { useExternalSnapshot } from "../hooks/use-external-snapshot";
-import { useInjectedStyles } from "../hooks/use-injected-styles";
+import { useExternalSnapshot } from "../hooks/reactive/use-external-snapshot";
+import { useInjectedStyles } from "../hooks/styles/use-styles";
 import { buildLicenseStyles } from "./license-section.styles";
 import { SecretField } from "./secret-field";
 import { SettingHeading, SettingItem } from "./setting-item";

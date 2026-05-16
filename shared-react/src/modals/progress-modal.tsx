@@ -2,7 +2,7 @@ import type { App } from "obsidian";
 import type { RefObject } from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
-import { useScopedStyles } from "../hooks/use-scoped-styles";
+import { useScopedStyles } from "../hooks/styles/use-styles";
 import { showReactModal } from "../show-react-modal";
 import { cx } from "../utils/cx";
 import { buildProgressStyles } from "./progress-modal.styles";

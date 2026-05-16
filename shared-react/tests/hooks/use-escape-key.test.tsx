@@ -1,7 +1,7 @@
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { useEscapeKey } from "../../src/hooks/use-escape-key";
+import { useEscapeKey } from "../../src/hooks/keyboard/use-trigger-keys";
 
 function press(target: EventTarget, key: string): void {
 	target.dispatchEvent(new KeyboardEvent("keydown", { key }));

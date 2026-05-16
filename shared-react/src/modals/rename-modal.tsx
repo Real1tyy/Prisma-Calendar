@@ -4,7 +4,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "../components/button";
 import { ModalDescription } from "../components/modal-description";
-import { useScopedStyles } from "../hooks/use-scoped-styles";
+import { useScopedStyles } from "../hooks/styles/use-styles";
 import { openReactModal } from "../show-react-modal";
 import { buildRenameStyles } from "./rename-modal.styles";
 

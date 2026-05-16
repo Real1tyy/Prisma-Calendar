@@ -2,8 +2,8 @@ import { setIcon } from "obsidian";
 import type { CSSProperties } from "react";
 import { memo, useCallback, useEffect, useRef } from "react";
 
-import { useExternalSnapshot } from "../hooks/use-external-snapshot";
-import { useInjectedStyles } from "../hooks/use-injected-styles";
+import { useExternalSnapshot } from "../hooks/reactive/use-external-snapshot";
+import { useInjectedStyles } from "../hooks/styles/use-styles";
 import { DEFAULT_COLOR_SENTINEL } from "./constants";
 import type { PageHeaderStore } from "./store";
 import { buildPageHeaderStyles } from "./styles";

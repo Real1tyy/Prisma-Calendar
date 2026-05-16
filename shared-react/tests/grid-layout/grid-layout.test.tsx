@@ -2,17 +2,21 @@ import type { CellOption, CellPlacement, GridLayoutConfig, GridLayoutHandle } fr
 import type { Plugin } from "obsidian";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const createImperativeGridLayoutMock = vi.fn();
+const createGridLayoutCoreMock = vi.fn();
 const registerGridCommandsMock = vi.fn();
+const GridEngineViewMock = vi.fn(() => null);
 
-vi.mock("@real1ty-obsidian-plugins", async (importOriginal) => {
-	const actual = (await importOriginal()) as Record<string, unknown>;
-	return {
-		...actual,
-		createGridLayout: createImperativeGridLayoutMock,
-		registerGridCommands: registerGridCommandsMock,
-	};
-});
+vi.mock("../../src/grid-layout/engine-core", () => ({
+	createGridLayoutCore: createGridLayoutCoreMock,
+}));
+
+vi.mock("../../src/grid-layout/engine", () => ({
+	GridEngineView: GridEngineViewMock,
+}));
+
+vi.mock("../../src/grid-layout/commands", () => ({
+	registerGridCommands: registerGridCommandsMock,
+}));
 
 const { GridLayout } = await import("../../src/grid-layout/grid-layout");
 const { renderWithProviders } = await import("../harness/render-with-providers");
@@ -20,18 +24,18 @@ const { renderWithProviders } = await import("../harness/render-with-providers")
 const STABLE_APP = {} as never;
 
 interface CapturedRun {
-	container: HTMLElement;
 	config: GridLayoutConfig;
-	handle: { destroy: ReturnType<typeof vi.fn> };
+	handle: GridLayoutHandle;
 }
 
 let runs: CapturedRun[] = [];
 
 beforeEach(() => {
 	runs = [];
-	createImperativeGridLayoutMock.mockReset();
+	createGridLayoutCoreMock.mockReset();
 	registerGridCommandsMock.mockReset();
-	createImperativeGridLayoutMock.mockImplementation((container: HTMLElement, config: GridLayoutConfig) => {
+	GridEngineViewMock.mockClear();
+	createGridLayoutCoreMock.mockImplementation((config: GridLayoutConfig) => {
 		const handle = {
 			destroy: vi.fn(),
 			columns: config.columns,
@@ -43,18 +47,30 @@ beforeEach(() => {
 			resize: vi.fn(),
 			showCellPicker: vi.fn(),
 			showLayoutEditor: vi.fn(),
-			getState: vi.fn(() => ({
-				columns: config.columns,
+		} as unknown as GridLayoutHandle;
+		runs.push({ config, handle });
+		return {
+			handle,
+			config,
+			subscribe: () => () => {},
+			getSnapshot: () => ({
+				cols: config.columns,
 				rows: config.rows,
 				cells: [],
+				ghostKeys: new Set(),
 				columnSizes: undefined,
 				rowSizes: undefined,
 				cellColumnSizes: undefined,
 				cellRowSizes: undefined,
-			})),
+				destroyed: false,
+			}),
+			setCallbacks: vi.fn(),
+			registerElement: vi.fn(),
+			commitColumnSizes: vi.fn(),
+			commitRowSizes: vi.fn(),
+			commitCellColumnSizes: vi.fn(),
+			commitCellRowSizes: vi.fn(),
 		};
-		runs.push({ container, config, handle });
-		return handle as unknown as GridLayoutHandle;
 	});
 });
 
@@ -73,7 +89,7 @@ function makeCell(id: string, row: number, col: number): CellPlacement {
 }
 
 describe("GridLayout", () => {
-	it("creates the imperative engine on mount with forwarded config", () => {
+	it("creates the engine core on mount with forwarded config", () => {
 		const cells = [makeCell("a", 0, 0)];
 		renderWithProviders(
 			<GridLayout app={STABLE_APP} cssPrefix="test-" columns={2} rows={1} cells={cells} gap="12px" dividers />
@@ -88,7 +104,6 @@ describe("GridLayout", () => {
 			gap: "12px",
 			dividers: true,
 		});
-		expect(runs[0].container).toBeInstanceOf(HTMLDivElement);
 	});
 
 	it("forwards passthrough HTML attributes to the container div", () => {
@@ -109,7 +124,7 @@ describe("GridLayout", () => {
 		expect(el?.style.flex).toBe("1 1 auto");
 	});
 
-	it("destroys the imperative handle on unmount", () => {
+	it("destroys the engine handle on unmount", () => {
 		const { unmount } = renderWithProviders(<GridLayout app={STABLE_APP} cssPrefix="test-" columns={1} rows={1} />);
 		const handle = runs[0].handle;
 		unmount();
@@ -177,7 +192,7 @@ describe("GridLayout", () => {
 		expect(handle.destroy).toHaveBeenCalledTimes(1);
 	});
 
-	it("re-creates the engine when structural props change by reference", () => {
+	it("keeps the engine durable across structural prop changes (no rebuild)", () => {
 		const palette: CellOption[] = [{ id: "x", label: "X", render: vi.fn() }];
 		const { rerender } = renderWithProviders(
 			<GridLayout app={STABLE_APP} cssPrefix="test-" columns={1} rows={1} cellPalette={palette} />
@@ -186,11 +201,31 @@ describe("GridLayout", () => {
 
 		const newPalette: CellOption[] = [{ id: "y", label: "Y", render: vi.fn() }];
 		rerender(<GridLayout app={STABLE_APP} cssPrefix="test-" columns={1} rows={1} cellPalette={newPalette} />);
-		expect(runs).toHaveLength(2);
-		expect(runs[0].handle.destroy).toHaveBeenCalled();
+		expect(runs).toHaveLength(1);
+		expect(runs[0].handle.destroy).not.toHaveBeenCalled();
 	});
 
-	it("auto-wires the React modal openers via createGridLayout wrapper", () => {
+	it("refreshes cell render closures via setCellById when cells reference changes", () => {
+		const firstRender = vi.fn();
+		const firstCleanup = vi.fn();
+		const cellsV1 = [{ id: "a", label: "A", row: 0, col: 0, render: firstRender, cleanup: firstCleanup }];
+		const { rerender } = renderWithProviders(
+			<GridLayout app={STABLE_APP} cssPrefix="test-" columns={1} rows={1} cells={cellsV1} />
+		);
+		expect(runs).toHaveLength(1);
+		const handle = runs[0].handle;
+		expect(handle.setCellById).not.toHaveBeenCalled();
+
+		const secondRender = vi.fn();
+		const secondCleanup = vi.fn();
+		const cellsV2 = [{ id: "a", label: "A", row: 0, col: 0, render: secondRender, cleanup: secondCleanup }];
+		rerender(<GridLayout app={STABLE_APP} cssPrefix="test-" columns={1} rows={1} cells={cellsV2} />);
+
+		expect(runs).toHaveLength(1);
+		expect(handle.setCellById).toHaveBeenCalledWith("a", secondRender, secondCleanup);
+	});
+
+	it("auto-wires the React modal openers in the core config", () => {
 		renderWithProviders(<GridLayout app={STABLE_APP} cssPrefix="test-" columns={1} rows={1} cellPalette={[]} />);
 		expect(runs[0].config.onOpenLayoutEditor).toBeTypeOf("function");
 		expect(runs[0].config.onOpenCellPicker).toBeTypeOf("function");
@@ -208,5 +243,17 @@ describe("GridLayout", () => {
 		runs[0].config.onCellChange?.(0, 0, "cell-a");
 		expect(firstHandler).not.toHaveBeenCalled();
 		expect(secondHandler).toHaveBeenCalledWith(0, 0, "cell-a");
+	});
+
+	it("renders <GridEngineView> as a JSX child of the container (no nested createRoot)", () => {
+		const { container } = renderWithProviders(
+			<GridLayout app={STABLE_APP} cssPrefix="test-" columns={1} rows={1} data-testid="grid-root" />
+		);
+		expect(GridEngineViewMock).toHaveBeenCalled();
+		// The container div is the JSX-owned element; GridEngineView mounts inside it
+		// as a child, not via an inner createRoot — so the outer React tree's reconciliation
+		// is the single source of truth for this DOM subtree.
+		const root = container.querySelector('[data-testid="grid-root"]');
+		expect(root).not.toBeNull();
 	});
 });

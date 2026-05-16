@@ -7,7 +7,7 @@ import { type ManagerEditController, ManagerEditForm } from "../../components/ma
 import { ManagerRow } from "../../components/manager-row";
 import { SettingItem } from "../../components/setting-item";
 import { useScoped } from "../../contexts/theme-context";
-import { useScopedStyles } from "../../hooks/use-scoped-styles";
+import { useScopedStyles } from "../../hooks/styles/use-styles";
 import { showReactIconPicker } from "../../modals/icon-picker-modal";
 import { showReactModal } from "../../show-react-modal";
 import type { CustomizableMenuStore } from "./store";

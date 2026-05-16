@@ -1,6 +1,21 @@
-import type { ScopedTheme } from "../contexts/theme-context";
-import { useScoped } from "../contexts/theme-context";
-import { useInjectedStyles } from "./use-injected-styles";
+import { injectStyleSheet } from "@real1ty-obsidian-plugins";
+import { useEffect } from "react";
+
+import type { ScopedTheme } from "../../contexts/theme-context";
+import { useScoped } from "../../contexts/theme-context";
+
+/**
+ * Inject a stylesheet into `document.head` once per id on mount. Idempotent —
+ * safe to call from multiple components referencing the same id.
+ *
+ * Used by React ports of imperative DSLs so they carry their own baseline
+ * styling and don't depend on the imperative component being rendered first.
+ */
+export function useInjectedStyles(id: string, css: string): void {
+	useEffect(() => {
+		injectStyleSheet(id, css);
+	}, [id, css]);
+}
 
 /**
  * Combines `useScoped` + `useInjectedStyles` into one call. Resolves the

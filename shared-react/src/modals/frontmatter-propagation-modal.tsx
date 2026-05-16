@@ -5,7 +5,7 @@ import { memo } from "react";
 
 import { Button } from "../components/button";
 import { useScoped, useScopedTid } from "../contexts/theme-context";
-import { useInjectedStyles } from "../hooks/use-injected-styles";
+import { useInjectedStyles } from "../hooks/styles/use-styles";
 import { openReactModal } from "../show-react-modal";
 import { buildFrontmatterPropagationStyles } from "./frontmatter-propagation-modal.styles";
 

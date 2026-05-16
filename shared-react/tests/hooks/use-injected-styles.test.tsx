@@ -1,7 +1,7 @@
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { useInjectedStyles } from "../../src/hooks/use-injected-styles";
+import { useInjectedStyles } from "../../src/hooks/styles/use-styles";
 
 describe("useInjectedStyles", () => {
 	it("injects a <style> element with the given id and css", () => {

@@ -1,7 +1,7 @@
 import { BehaviorSubject } from "rxjs";
 import { describe, expect, it, vi } from "vitest";
 
-import { pathFilteredSnapshot } from "../src/hooks/use-schema-field";
+import { pathFilteredSnapshot } from "../src/hooks/settings/use-schema-field";
 
 interface TestSettings {
 	alpha: string;

@@ -1,9 +1,9 @@
 import { SliderComponent } from "obsidian";
 import { memo, useCallback, useEffect, useRef } from "react";
 
-import { useActivatable } from "../hooks/use-activatable";
-import { useDebouncedCommit } from "../hooks/use-debounced-commit";
-import { useInjectedStyles } from "../hooks/use-injected-styles";
+import { useActivatable } from "../hooks/interaction/use-activatable";
+import { useDebouncedCommit } from "../hooks/interaction/use-debounced-commit";
+import { useInjectedStyles } from "../hooks/styles/use-styles";
 import { testIdAttr } from "../utils/test-id";
 
 interface ToggleProps {

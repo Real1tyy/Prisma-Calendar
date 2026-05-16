@@ -2,7 +2,7 @@ import { renderHook } from "@testing-library/react";
 import { type RefObject, useRef } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useFocusOnMount, type UseFocusOnMountOptions } from "../../src/hooks/use-focus-on-mount";
+import { useFocusOnMount, type UseFocusOnMountOptions } from "../../src/hooks/focus/use-focus";
 
 function renderFocusHook(el: HTMLElement, options?: UseFocusOnMountOptions) {
 	return renderHook(

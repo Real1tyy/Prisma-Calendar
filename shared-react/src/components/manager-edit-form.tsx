@@ -1,7 +1,7 @@
 import { memo, useCallback, useState } from "react";
 
 import { useScoped } from "../contexts/theme-context";
-import { useInjectedStyles } from "../hooks/use-injected-styles";
+import { useInjectedStyles } from "../hooks/styles/use-styles";
 import { buildManagerEditFormStyles } from "./manager-edit-form.styles";
 import { ObsidianIcon } from "./obsidian-icon";
 import { ColorInput, TextInput } from "./setting-controls";

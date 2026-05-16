@@ -5,8 +5,8 @@ import { type ManagerEditController, ManagerEditForm } from "../components/manag
 import { ManagerRow } from "../components/manager-row";
 import { Toggle } from "../components/setting-controls";
 import { SettingItem } from "../components/setting-item";
-import { useExternalSnapshot } from "../hooks/use-external-snapshot";
-import { useInjectedStyles } from "../hooks/use-injected-styles";
+import { useExternalSnapshot } from "../hooks/reactive/use-external-snapshot";
+import { useInjectedStyles } from "../hooks/styles/use-styles";
 import { showReactIconPicker } from "../modals/icon-picker-modal";
 import { showReactModal } from "../show-react-modal";
 import { DEFAULT_COLOR_SENTINEL } from "./constants";

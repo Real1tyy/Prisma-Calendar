@@ -12,7 +12,7 @@ import { memo, useCallback, useMemo } from "react";
 import { Button } from "../../components/button";
 import { SettingItem } from "../../components/setting-item";
 import { useApp } from "../../contexts/app-context";
-import type { SettingsStorelike } from "../../hooks/use-settings-store";
+import type { SettingsStorelike } from "../../hooks/settings/use-settings-store";
 import { openTransferModal } from "./transfer-modal";
 import type { SettingsTransferStrings } from "./transfer-panel";
 

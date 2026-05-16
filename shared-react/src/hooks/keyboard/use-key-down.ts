@@ -1,4 +1,4 @@
-import { useDomEvent } from "./use-dom-event";
+import { useDomEvent } from "../dom/use-dom-event";
 
 /**
  * Mounts a `keydown` listener on `target` that fires only when `key` matches.

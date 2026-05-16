@@ -1,6 +1,6 @@
 import { BehaviorSubject } from "rxjs";
 
-import type { SettingsStorelike } from "../../src/hooks/use-settings-store";
+import type { SettingsStorelike } from "../../src/hooks/settings/use-settings-store";
 
 export interface TestStore<T> extends SettingsStorelike<T> {
 	currentSettings: T;

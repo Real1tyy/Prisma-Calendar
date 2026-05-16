@@ -3,8 +3,8 @@ import { introspectField } from "@real1ty-obsidian-plugins";
 import { memo, useMemo } from "react";
 
 import { SettingItem } from "../components/setting-item";
-import type { SettingsStorelike } from "../hooks/use-schema-field";
-import { useSchemaField } from "../hooks/use-schema-field";
+import type { SettingsStorelike } from "../hooks/settings/use-schema-field";
+import { useSchemaField } from "../hooks/settings/use-schema-field";
 import { testIdProp } from "../utils/test-id";
 import type { SchemaFieldOverride } from "./override";
 import { resolveWidget } from "./resolve-widget";

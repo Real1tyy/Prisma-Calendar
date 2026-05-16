@@ -2,7 +2,7 @@ import type { ReleaseCheckService } from "@real1ty-obsidian-plugins";
 import { memo, useCallback } from "react";
 
 import { useScopedCls } from "../contexts/theme-context";
-import { useReleaseCheck } from "../hooks/use-release-check";
+import { useReleaseCheck } from "../hooks/services/use-release-check";
 
 export interface UpdateAvailableBadgeProps {
 	service: ReleaseCheckService | null | undefined;

@@ -1,9 +1,10 @@
-import { buildGridStyles, type CellOption } from "@real1ty-obsidian-plugins";
+import type { CellOption } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { memo, useMemo } from "react";
 
-import { useScopedStyles } from "../hooks/use-scoped-styles";
+import { useScopedStyles } from "../hooks/styles/use-styles";
 import { showReactModal } from "../show-react-modal";
+import { buildGridStyles } from "./styles";
 
 export interface CellPickerContentProps {
 	cellPalette: CellOption[];

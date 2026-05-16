@@ -4,8 +4,8 @@ import { createPortal } from "react-dom";
 
 import { ObsidianIcon } from "../../components/obsidian-icon";
 import { AppContext } from "../../contexts/app-context";
-import { useDomEvent } from "../../hooks/use-dom-event";
-import { useInjectedStyles } from "../../hooks/use-injected-styles";
+import { useDomEvent } from "../../hooks/dom/use-dom-event";
+import { useInjectedStyles } from "../../hooks/styles/use-styles";
 import { cx } from "../../utils/cx";
 import { GroupDropdown } from "./group-dropdown";
 import { getActiveChild, type GroupChildState } from "./reorder";

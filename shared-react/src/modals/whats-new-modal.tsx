@@ -9,7 +9,7 @@ import { Component, MarkdownRenderer } from "obsidian";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useApp } from "../contexts/app-context";
-import { useScopedStyles } from "../hooks/use-scoped-styles";
+import { useScopedStyles } from "../hooks/styles/use-styles";
 import { showReactModal } from "../show-react-modal";
 import { buildWhatsNewStyles } from "./whats-new-modal.styles";
 

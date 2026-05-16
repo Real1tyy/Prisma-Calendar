@@ -1,7 +1,7 @@
 import type { ReleaseCheckService, ReleaseUpdateNotice } from "@real1ty-obsidian-plugins";
 import { useEffect } from "react";
 
-import { useExternalSnapshot } from "./use-external-snapshot";
+import { useExternalSnapshot } from "../reactive/use-external-snapshot";
 
 /**
  * React binding for `ReleaseCheckService`. Subscribes to the service's notice

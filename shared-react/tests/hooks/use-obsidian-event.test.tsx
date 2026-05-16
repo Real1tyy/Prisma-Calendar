@@ -1,8 +1,8 @@
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import type { Emitterlike } from "../../src/hooks/use-obsidian-event";
-import { useObsidianEvent } from "../../src/hooks/use-obsidian-event";
+import type { Emitterlike } from "../../src/hooks/dom/use-obsidian-event";
+import { useObsidianEvent } from "../../src/hooks/dom/use-obsidian-event";
 
 function makeEmitter(): Emitterlike & { fire: (name: string, ...args: unknown[]) => void } {
 	const listeners = new Map<string, Array<(...args: unknown[]) => void>>();

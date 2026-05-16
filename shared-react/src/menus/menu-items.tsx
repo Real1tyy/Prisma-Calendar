@@ -2,7 +2,7 @@ import type { KeyboardEvent } from "react";
 import { useCallback, useRef, useState } from "react";
 
 import { ObsidianIcon } from "../components/obsidian-icon";
-import { useFocusOnIndex } from "../hooks/use-focus-on-index";
+import { useFocusOnIndex } from "../hooks/focus/use-focus";
 import { cx } from "../utils/cx";
 import type { ContextMenuCheckboxDef, ContextMenuEntryDef, ContextMenuItemDef, ContextMenuSubmenuDef } from "./types";
 

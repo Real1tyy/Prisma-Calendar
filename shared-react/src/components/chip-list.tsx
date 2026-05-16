@@ -2,7 +2,7 @@ import { buildChipListStyles } from "@real1ty-obsidian-plugins";
 import type { ReactNode } from "react";
 import { memo, useCallback } from "react";
 
-import { useScopedStyles } from "../hooks/use-scoped-styles";
+import { useScopedStyles } from "../hooks/styles/use-styles";
 import { Chip } from "./chip";
 import { EmptyHint } from "./empty-hint";
 

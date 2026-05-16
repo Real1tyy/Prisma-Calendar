@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 import { Button } from "../components/button";
-import { useScopedStyles } from "../hooks/use-scoped-styles";
+import { useScopedStyles } from "../hooks/styles/use-styles";
 import { buildWelcomeShellStyles } from "./welcome-modal-shell.styles";
 
 export interface WelcomeModalFooterLink {

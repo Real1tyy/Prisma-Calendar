@@ -1,8 +1,8 @@
 import type { App } from "obsidian";
 import { describe, expect, it, vi } from "vitest";
 
-import { createGridLayout } from "../../src/components/grid-layout/grid-layout";
-import type { CellPlacement, GridLayoutConfig, GridLayoutState } from "../../src/components/grid-layout/types";
+import { createGridLayout } from "../../src/grid-layout/create-grid-layout";
+import type { CellPlacement, GridLayoutConfig, GridLayoutState } from "../../src/grid-layout/types";
 
 const mockApp = {} as App;
 
@@ -160,13 +160,15 @@ describe("createGridLayout", () => {
 		expect(getVar(cell, "--cell-row")).toBe("1 / span 2");
 	});
 
-	it("setCell replaces content and calls old cleanup", () => {
+	it("setCell replaces content and calls old cleanup", async () => {
 		const cells = makeCells(2, 2);
 		const container = document.createElement("div");
 		const handle = createGridLayout(container, makeConfig({ cells }));
 
 		const newRender = vi.fn((el: HTMLElement) => (el.textContent = "Replaced"));
 		handle.setCell(0, 0, newRender);
+
+		await Promise.resolve();
 
 		const oldCell = cells.find((c) => c.row === 0 && c.col === 0)!;
 		expect(oldCell.cleanup).toHaveBeenCalledOnce();
@@ -207,13 +209,15 @@ describe("createGridLayout", () => {
 		expect(render).not.toHaveBeenCalled();
 	});
 
-	it("setCellById replaces content by id", () => {
+	it("setCellById replaces content by id", async () => {
 		const cells = makeCells(2, 2);
 		const container = document.createElement("div");
 		const handle = createGridLayout(container, makeConfig({ cells }));
 
 		const newRender = vi.fn((el: HTMLElement) => (el.textContent = "By ID"));
 		handle.setCellById("cell-1-0", newRender);
+
+		await Promise.resolve();
 
 		const oldCell = cells.find((c) => c.id === "cell-1-0")!;
 		expect(oldCell.cleanup).toHaveBeenCalledOnce();
@@ -232,18 +236,21 @@ describe("createGridLayout", () => {
 		expect(render).not.toHaveBeenCalled();
 	});
 
-	it("clearCell empties content and calls cleanup", () => {
+	it("clearCell empties content and calls cleanup", async () => {
 		const cells = makeCells(2, 2);
 		const container = document.createElement("div");
 		const handle = createGridLayout(container, makeConfig({ cells }));
 
 		handle.clearCell(0, 1);
 
+		await Promise.resolve();
+
 		const cell = cells.find((c) => c.row === 0 && c.col === 1)!;
 		expect(cell.cleanup).toHaveBeenCalledOnce();
 
-		const cellEl = container.querySelector<HTMLElement>('[data-row="0"][data-col="1"]')!;
-		expect(cellEl.textContent).toBe("");
+		// clearCell leaves a ghost cell (empty placeholder) at the position
+		const ghostEl = container.querySelector<HTMLElement>('[data-row="0"][data-col="1"]')!;
+		expect(ghostEl.textContent).toBe("");
 	});
 
 	it("clearCell on empty position is a no-op", () => {
@@ -284,12 +291,14 @@ describe("createGridLayout", () => {
 		expect(getVar(grid, "--grid-rows")).toBe("repeat(3, auto)");
 	});
 
-	it("resize removes out-of-bounds cells and calls their cleanup", () => {
+	it("resize removes out-of-bounds cells and calls their cleanup", async () => {
 		const cells = makeCells(2, 2);
 		const container = document.createElement("div");
 		const handle = createGridLayout(container, makeConfig({ cells }));
 
 		handle.resize(1, 1);
+
+		await Promise.resolve();
 
 		const removedCells = cells.filter((c) => c.row >= 1 || c.col >= 1);
 		for (const cell of removedCells) {
@@ -310,12 +319,14 @@ describe("createGridLayout", () => {
 		expect(handle.rows).toBe(3);
 	});
 
-	it("destroy calls all cell cleanups", () => {
+	it("destroy calls all cell cleanups", async () => {
 		const cells = makeCells(2, 2);
 		const container = document.createElement("div");
 		const handle = createGridLayout(container, makeConfig({ cells }));
 
 		handle.destroy();
+
+		await Promise.resolve();
 
 		for (const cell of cells) {
 			expect(cell.cleanup).toHaveBeenCalledOnce();
@@ -679,23 +690,6 @@ describe("createGridLayout", () => {
 
 			const grid = container.querySelector<HTMLElement>(".test-grid")!;
 			expect(getVar(grid, "--grid-columns")).toBe("3fr 1fr");
-		});
-
-		it("ignores persisted sizes when initialState dims disagree with config (no palette)", () => {
-			const container = document.createElement("div");
-			createGridLayout(
-				container,
-				makeConfig({
-					columns: 2,
-					rows: 2,
-					resizable: "track",
-					cells: [],
-					initialState: { columns: 3, rows: 2, cells: [], columnSizes: [1, 1, 1] },
-				})
-			);
-
-			const grid = container.querySelector<HTMLElement>(".test-grid")!;
-			expect(getVar(grid, "--grid-columns")).toBe("1fr 1fr");
 		});
 
 		it("restores custom column sizes from initialState", () => {

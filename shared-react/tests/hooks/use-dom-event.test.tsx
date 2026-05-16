@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { useDomEvent } from "../../src/hooks/use-dom-event";
+import { useDomEvent } from "../../src/hooks/dom/use-dom-event";
 
 describe("useDomEvent", () => {
 	it("attaches the listener on mount and fires when the event dispatches", () => {

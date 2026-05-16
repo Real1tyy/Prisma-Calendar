@@ -1,6 +1,6 @@
 import type { SchemaFieldDescriptor } from "@real1ty-obsidian-plugins";
 
-import type { SchemaFieldBinding } from "../../hooks/use-schema-field";
+import type { SchemaFieldBinding } from "../../hooks/settings/use-schema-field";
 import type { SchemaFieldOverride } from "../override";
 
 /**

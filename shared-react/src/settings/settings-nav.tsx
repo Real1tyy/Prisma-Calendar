@@ -2,7 +2,7 @@ import type { KeyboardEvent, ReactNode } from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 import { useCls } from "../contexts/theme-context";
-import { useScopedStyles } from "../hooks/use-scoped-styles";
+import { useScopedStyles } from "../hooks/styles/use-styles";
 import { cx } from "../utils/cx";
 import { buildSettingsNavStyles } from "./settings-nav.styles";
 

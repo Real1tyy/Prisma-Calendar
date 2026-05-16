@@ -3,10 +3,10 @@ import { memo, useCallback, useMemo } from "react";
 
 import { ObsidianIcon } from "../components/obsidian-icon";
 import { useScoped } from "../contexts/theme-context";
-import { useScopedStyles } from "../hooks/use-scoped-styles";
-import { buildPageHeaderStyles } from "./page-header.styles";
+import { useScopedStyles } from "../hooks/styles/use-styles";
+import { buildPageBannerStyles } from "./page-banner.styles";
 
-export interface PageHeaderAction {
+export interface PageBannerAction {
 	id: string;
 	icon: string;
 	label: string;
@@ -24,11 +24,11 @@ export interface BreadcrumbItem {
 // ─── ActionBar ───
 
 export interface ActionBarProps {
-	actions: PageHeaderAction[];
+	actions: PageBannerAction[];
 }
 
 export const ActionBar = memo(function ActionBar({ actions }: ActionBarProps) {
-	const { cls, tid } = useScoped("page-header");
+	const { cls, tid } = useScoped("page-banner");
 	return (
 		<div className={cls("actions")} role="toolbar" aria-label="Page actions">
 			{actions.map((action) => (
@@ -57,7 +57,7 @@ export interface BackButtonProps {
 }
 
 export const BackButton = memo(function BackButton({ onClick }: BackButtonProps) {
-	const { cls, tid } = useScoped("page-header");
+	const { cls, tid } = useScoped("page-banner");
 	return (
 		<button
 			type="button"
@@ -71,26 +71,26 @@ export const BackButton = memo(function BackButton({ onClick }: BackButtonProps)
 	);
 });
 
-// ─── PageHeader ───
+// ─── PageBanner ───
 
-export interface PageHeaderProps {
+export interface PageBannerProps {
 	title: string;
 	subtitle?: string | undefined;
-	actions?: PageHeaderAction[] | undefined;
+	actions?: PageBannerAction[] | undefined;
 	onBack?: (() => void) | undefined;
 	breadcrumbs?: BreadcrumbItem[] | undefined;
 	right?: ReactNode;
 }
 
-export const PageHeader = memo(function PageHeader({
+export const PageBanner = memo(function PageBanner({
 	title,
 	subtitle,
 	actions,
 	onBack,
 	breadcrumbs,
 	right,
-}: PageHeaderProps) {
-	const { cls, tid } = useScopedStyles("page-header", buildPageHeaderStyles);
+}: PageBannerProps) {
+	const { cls, tid } = useScopedStyles("page-banner", buildPageBannerStyles);
 	const handleBack = useCallback(() => onBack?.(), [onBack]);
 
 	const memoizedActions = useMemo(

@@ -1,27 +1,19 @@
-import {
-	createGridLayout as createImperativeGridLayout,
-	type GridLayoutConfig,
-	type GridLayoutHandle,
-} from "@real1ty-obsidian-plugins";
+import type { GridLayoutConfig, GridLayoutHandle } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
+import { createElement } from "react";
+import { type Root, createRoot } from "react-dom/client";
+import { flushSync } from "react-dom";
 
 import { openCellPicker } from "./cell-picker-modal";
+import { createGridLayoutCore } from "./engine-core";
+import { GridEngineView } from "./engine";
 import { openLayoutEditor } from "./layout-editor-modal";
 
 export interface ReactGridLayoutConfig extends GridLayoutConfig {
 	app?: App;
 }
 
-/**
- * Wrapper around the imperative `createGridLayout` that auto-wires the
- * `onOpenLayoutEditor` / `onOpenCellPicker` callbacks to the React modal
- * openers in this package. Consumers that prefer custom modal handling can
- * pass their own callbacks — explicit values win over the defaults.
- *
- * `app` is required only when the grid uses `editable` or `cellPalette` modals.
- * Pure-layout grids can omit it.
- */
-export function createGridLayout(container: HTMLElement, config: ReactGridLayoutConfig): GridLayoutHandle {
+function withModalDefaults(config: ReactGridLayoutConfig): ReactGridLayoutConfig {
 	const { app, cssPrefix } = config;
 
 	const defaultOpenLayoutEditor: GridLayoutConfig["onOpenLayoutEditor"] | undefined = app
@@ -50,9 +42,26 @@ export function createGridLayout(container: HTMLElement, config: ReactGridLayout
 	const onOpenLayoutEditor = config.onOpenLayoutEditor ?? defaultOpenLayoutEditor;
 	const onOpenCellPicker = config.onOpenCellPicker ?? defaultOpenCellPicker;
 
-	return createImperativeGridLayout(container, {
+	return {
 		...config,
 		...(onOpenLayoutEditor ? { onOpenLayoutEditor } : {}),
 		...(onOpenCellPicker ? { onOpenCellPicker } : {}),
+	};
+}
+
+export function createGridLayout(container: HTMLElement, config: ReactGridLayoutConfig): GridLayoutHandle {
+	const resolved = withModalDefaults(config);
+	const core = createGridLayoutCore(resolved, { flush: flushSync });
+	const root: Root = createRoot(container);
+	flushSync(() => {
+		root.render(createElement(GridEngineView, { core }));
 	});
+
+	const innerDestroy = core.handle.destroy.bind(core.handle);
+	core.handle.destroy = (): void => {
+		innerDestroy();
+		flushSync(() => root.unmount());
+	};
+
+	return core.handle;
 }

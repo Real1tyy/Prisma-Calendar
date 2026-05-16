@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { memo } from "react";
 
-import { useCopyToClipboard } from "../hooks/use-copy-to-clipboard";
+import { useCopyToClipboard } from "../hooks/interaction/use-copy-to-clipboard";
 
 export interface CopyableProps {
 	/** The text copied to the clipboard on click. */

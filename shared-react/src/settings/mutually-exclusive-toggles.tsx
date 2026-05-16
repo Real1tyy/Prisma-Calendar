@@ -2,7 +2,7 @@ import { memo, useCallback } from "react";
 
 import { Toggle } from "../components/setting-controls";
 import { SettingItem } from "../components/setting-item";
-import { type SettingsStorelike, useSchemaField } from "../hooks/use-schema-field";
+import { type SettingsStorelike, useSchemaField } from "../hooks/settings/use-schema-field";
 
 interface ToggleConfig {
 	path: string;

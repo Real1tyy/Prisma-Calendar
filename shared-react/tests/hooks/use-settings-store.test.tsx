@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { useSettingsStore } from "../../src/hooks/use-settings-store";
+import { useSettingsStore } from "../../src/hooks/settings/use-settings-store";
 import { makeStore } from "../helpers/make-store";
 
 interface TestSettings {

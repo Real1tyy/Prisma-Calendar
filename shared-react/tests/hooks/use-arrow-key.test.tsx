@@ -1,7 +1,13 @@
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { useArrowDown, useArrowKey, useArrowLeft, useArrowRight, useArrowUp } from "../../src/hooks/use-arrow-key";
+import {
+	useArrowDown,
+	useArrowKey,
+	useArrowLeft,
+	useArrowRight,
+	useArrowUp,
+} from "../../src/hooks/keyboard/use-arrow-key";
 
 function press(target: EventTarget, init: KeyboardEventInit): void {
 	target.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, ...init }));

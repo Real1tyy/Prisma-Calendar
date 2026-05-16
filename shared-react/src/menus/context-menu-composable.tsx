@@ -3,7 +3,7 @@ import { createContext, useCallback, useContext, useMemo, useRef, useState } fro
 import { createPortal } from "react-dom";
 
 import { ObsidianIcon } from "../components/obsidian-icon";
-import { useOutsideClick } from "../hooks/use-outside-click";
+import { useOutsideClick } from "../hooks/dom/use-outside-click";
 
 interface ContextMenuRootState {
 	open: boolean;

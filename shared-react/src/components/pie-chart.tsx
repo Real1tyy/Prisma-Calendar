@@ -9,7 +9,7 @@ import type { Chart, ChartConfiguration } from "chart.js";
 import { memo, useEffect, useRef } from "react";
 
 import { useCls, useScoped } from "../contexts/theme-context";
-import { useInjectedStyles } from "../hooks/use-injected-styles";
+import { useInjectedStyles } from "../hooks/styles/use-styles";
 import { EmptyHint } from "./empty-hint";
 
 export type { PieChartData };

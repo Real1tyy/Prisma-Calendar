@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { fieldsFilteredSnapshot, useSettingsFields } from "../../src/hooks/use-settings-fields";
+import { fieldsFilteredSnapshot, useSettingsFields } from "../../src/hooks/settings/use-settings-fields";
 import { makeStore } from "../helpers/make-store";
 
 interface Settings {
