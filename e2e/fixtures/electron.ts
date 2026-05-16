@@ -1,14 +1,15 @@
-import { readFileSync, writeFileSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-import { type ConsoleMessage, type Page, test as base } from "@playwright/test";
+import { type Page, test as base } from "@playwright/test";
 import {
+	applyStandardRendererBoilerplate,
 	bootstrapObsidian as sharedBootstrap,
 	type BootstrappedObsidian,
-	createFileLogger,
-	isTransientObsidianTeardownError,
+	createConsoleErrorGuard,
+	createPluginE2eHarness,
 	type ObsidianWindow,
-	pruneStaleE2eResources,
+	writeStandardAppJson,
 } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { openCalendarReady } from "../specs/events/events-helpers";
@@ -17,6 +18,7 @@ import { type CalendarHandle, createCalendarHandle } from "./dsl/calendar";
 
 const E2E_ROOT = resolve(__dirname, "..");
 const PLUGIN_ROOT = resolve(E2E_ROOT, "..");
+const harness = createPluginE2eHarness({ e2eRoot: E2E_ROOT });
 
 // Batch buttons seeded into every calendar so specs can exercise ones the
 // production default hides (batchCloneNext / batchMoveNext / etc. — see
@@ -82,16 +84,6 @@ export interface BootstrapOverrides {
 	settings?: Record<string, unknown>;
 }
 
-const CACHE_ROOT = join(E2E_ROOT, ".cache");
-const VAULTS_ROOT = join(CACHE_ROOT, "vaults");
-const LOG_FILE = join(CACHE_ROOT, "last-run.log");
-const VERSION_FILE = join(E2E_ROOT, "obsidian-version.json");
-
-const VERBOSE = process.env["E2E_VERBOSE"] === "1" || process.env["E2E_DEBUG"] === "1";
-const log = createFileLogger(LOG_FILE, { verbose: VERBOSE });
-
-pruneStaleE2eResources({ vaultsRoot: VAULTS_ROOT });
-
 // Demo mode: `PW_DEMO=1` (or any positive int value, interpreted as ms) slows
 // every Playwright operation so you can watch what the suite does. The wrapper
 // script also forces headed mode when PW_DEMO is set, so a visible Obsidian
@@ -151,75 +143,28 @@ export const demoMode = {
 export async function bootstrapObsidian(
 	options: { prefix?: string; overrides?: BootstrapOverrides } = {}
 ): Promise<BootstrappedObsidian> {
-	const version = JSON.parse(readFileSync(VERSION_FILE, "utf8")) as {
-		appVersion: string;
-		installerVersion: string;
-	};
-
 	const calendars = options.overrides?.calendars ?? [DEFAULT_CALENDAR];
 	const keepDirs = options.overrides?.keepDirs ?? ["Events"];
 	const extraSettings = options.overrides?.settings ?? {};
 
 	return sharedBootstrap({
-		version,
+		version: harness.readVersion(),
 		slowMoMs: DEMO_SLOW_MO_MS,
 		polishVisibleWindow: HEADED_VISIBLE,
-		vaultSeedDir: join(E2E_ROOT, "fixtures", "vault-seed"),
-		vaultsRoot: VAULTS_ROOT,
+		vaultSeedDir: harness.vaultSeedDir,
+		vaultsRoot: harness.vaultsRoot,
 		prefix: options.prefix ?? "run",
 		plugin: { id: PLUGIN_ID, rootDir: PLUGIN_ROOT },
-		logger: log,
+		logger: harness.log,
 		// Retained vaults are trimmed to just the events folder(s) and the
 		// plugin's data.json on close — everything else (seeded Obsidian
 		// config, staged plugin artifacts) is regeneratable and bloats the
 		// cache.
 		leanVaultOnClose: { keep: keepDirs },
 		env: {
-			PRISMA_LOG_LEVEL: VERBOSE ? "debug" : "warn",
+			PRISMA_LOG_LEVEL: harness.verbose ? "debug" : "warn",
 		},
-		onRendererReady: async (page: Page) => {
-			// Always mark the renderer as E2E — plugin code uses this flag to enable
-			// testability hooks (e.g., exposing the active event modal instance).
-			await page.evaluate(
-				({ verbose }) => {
-					const w = window as unknown as ObsidianWindow;
-					w.E2E = true;
-					// Drop the Web Notifications API from the renderer. The
-					// notification manager guards every system-tray call with
-					// `"Notification" in window`, so removing it makes
-					// `showSystemNotification` short-circuit. Without this, every
-					// e2e run that exercises the notification path (or merely
-					// happens to ingest an event whose notifyAt has elapsed)
-					// pings the host OS's system tray — a real, audible nuisance
-					// for anyone running the suite on their workstation.
-					delete (w as { Notification?: unknown }).Notification;
-					// Obsidian success/error toasts (`.notice`) stack in a top-right
-					// container and intercept clicks on the calendar toolbar for
-					// several seconds after each create/edit/delete. Under E2E they
-					// carry no signal — we assert against disk state, not toast
-					// text — so neutralise pointer events on the whole container.
-					// Notices still render for anyone watching a headed run, they
-					// just never block a click, which lets every spec skip the
-					// "wait for notices to drain" step.
-					// eslint-disable-next-line obsidianmd/no-forbidden-elements
-					const style = document.createElement("style");
-					style.textContent = ".notice-container, .notice-container .notice { pointer-events: none !important; }";
-					document.head.appendChild(style);
-					if (verbose) return;
-					// Silence Prisma's raw `console.log/info/debug` under the default
-					// E2E run; they drown out Playwright's summary. `warn`/`error`
-					// still flow through. Restore everything with E2E_VERBOSE=1.
-					const noop = (): void => {};
-
-					console.log = noop;
-
-					console.info = noop;
-
-					console.debug = noop;
-				},
-				{ verbose: VERBOSE }
-			);
-		},
+		onRendererReady: (page: Page) => applyStandardRendererBoilerplate(page, { verbose: harness.verbose }),
 		seedPluginData: (pluginDir, { manifest }) => {
 			// Pre-seed Prisma data.json so the calendar points at Events/, AND
 			// suppress the "What's new" modal by pre-setting `version` to the
@@ -230,18 +175,12 @@ export async function bootstrapObsidian(
 			// production defaults hide several (including the plain "Create"
 			// action) behind the gear menu.
 			//
-			// Also write `.obsidian/app.json` with `alwaysUpdateLinks: true` so
-			// the "Update links" modal never appears when the plugin renames an
-			// event file (e.g. on zettel-id assignment or title change). That
-			// modal blocks subsequent test clicks.
-			const obsidianDir = join(pluginDir, "..", "..");
-			writeFileSync(
-				join(obsidianDir, "app.json"),
-				JSON.stringify({ alwaysUpdateLinks: true, promptDelete: false }, null, 2),
-				"utf8"
-			);
+			// `writeStandardAppJson` writes `.obsidian/app.json` with
+			// `alwaysUpdateLinks: true` so the "Update links" modal never appears
+			// when the plugin renames an event file (e.g. on zettel-id assignment
+			// or title change). That modal blocks subsequent test clicks.
+			writeStandardAppJson(pluginDir);
 
-			const manifestVersion = manifest["version"] as string;
 			// Notifications default to ON in production. Tests seed events at wall-
 			// clock-relative times (e.g. `today T09:00`) which fire the
 			// notification-manager modal whenever the test runs within
@@ -255,7 +194,7 @@ export async function bootstrapObsidian(
 				join(pluginDir, "data.json"),
 				JSON.stringify(
 					{
-						version: manifestVersion,
+						version: manifest["version"] as string,
 						calendars,
 						pageHeaderState: DEFAULT_PAGE_HEADER_STATE,
 						...extraSettings,
@@ -296,88 +235,49 @@ export async function bootstrapObsidian(
 					}
 				}
 			}, PLUGIN_ID);
-			log.debug(`afterPluginLoaded: calendarBundles ready`);
+			harness.log.debug(`afterPluginLoaded: calendarBundles ready`);
 		},
 	});
 }
 
 type UseObsidian = (handle: BootstrappedObsidian) => Promise<void>;
 
+// Plugin-specific transient pattern: some flows (undo-of-create / undo-of-clone)
+// delete a file the metadata cache still has a pending read for. Obsidian
+// surfaces that race as an `ENOENT … .md` console.error at teardown time —
+// assertions on the actual disk state pass, but the console-error guard would
+// otherwise fail the spec.
+const PRISMA_TRANSIENT_PATTERNS: readonly RegExp[] = [/ENOENT.*\/Events\/[^/]+\.md/];
+
 async function runWithObsidianHandle(
 	options: { prefix: string; overrides?: BootstrapOverrides; expectedErrorPatterns?: readonly RegExp[] },
 	use: UseObsidian
 ): Promise<void> {
 	const handle = await bootstrapObsidian(options);
-	// Surface renderer-side failures as spec failures. `console.error` is
-	// kept live by the onRendererReady silencer (only log/info/debug are
-	// nooped), and uncaught exceptions reach us via `pageerror`. Collecting
-	// both here replaces the standalone plugin-load "no console errors"
-	// smoke test with a guard that fires on every spec.
-	const consoleErrors: string[] = [];
-	// Some plugin flows (undo-of-create / undo-of-clone) delete a file the
-	// metadata cache still has a pending read for. Obsidian surfaces that
-	// race as an `ENOENT … .md` console.error at teardown time — assertions
-	// on the actual disk state pass, but the console-error guard would
-	// otherwise fail the spec. Filter that specific shape out; anything
-	// else still fails loudly.
-	const isTransientEventFileEnoent = (text: string): boolean =>
-		text.includes("ENOENT") && /\/Events\/[^/]+\.md/.test(text);
-	// `page.reload()` races with Obsidian's own workspace-flush: on startup the
-	// renderer reads `.obsidian/app.json`, occasionally catching the file mid-
-	// rewrite (empty bytes) and logging `failed to read JSON .obsidian/app.json
-	// SyntaxError: Unexpected end of JSON input`. Obsidian recovers by falling
-	// back to defaults — plugin state isn't affected. Not a plugin bug, so
-	// filter it out; every other "failed to read JSON" still fails loudly.
+	const guard = createConsoleErrorGuard({
+		extraTransientPatterns: PRISMA_TRANSIENT_PATTERNS,
+		expectedErrorPatterns: options.expectedErrorPatterns ?? [],
+	});
+	guard.attach(handle.page);
 
-	const isTransientAppJsonReadError = (text: string): boolean =>
-		text.includes("failed to read JSON") &&
-		(text.includes(".obsidian/app.json") ||
-			text.includes(".obsidian/community-plugins.json") ||
-			text.includes(".obsidian/appearance.json"));
-
-	// Resilience specs deliberately induce broken on-disk state (corrupt
-	// data.json, unreadable files) to prove the plugin recovers. Those flows
-	// DO legitimately emit console.errors from Obsidian's own JSON reader /
-	// EACCES read. Specs that target recovery can pass a list of RegExps via
-	// the `testWithExpectedErrors` fixture to whitelist the expected shapes.
-	const expectedErrorPatterns = options.expectedErrorPatterns ?? [];
-	const isExpectedError = (text: string): boolean => expectedErrorPatterns.some((re) => re.test(text));
-	const onConsole = (msg: ConsoleMessage): void => {
-		if (msg.type() !== "error") return;
-		const text = msg.text();
-		if (isTransientEventFileEnoent(text)) return;
-		if (isTransientAppJsonReadError(text)) return;
-		if (isTransientObsidianTeardownError(text)) return;
-		if (isExpectedError(text)) return;
-		consoleErrors.push(text);
-	};
-	const onPageError = (err: Error): void => {
-		if (isTransientEventFileEnoent(err.message)) return;
-		if (isTransientAppJsonReadError(err.message)) return;
-		if (isTransientObsidianTeardownError(err.message)) return;
-		if (isExpectedError(err.message)) return;
-		consoleErrors.push(`pageerror: ${err.message}`);
-	};
-	handle.page.on("console", onConsole);
-	handle.page.on("pageerror", onPageError);
-
-	await use(handle);
-	// Demo mode: hold the window open so a human can poke around the vault
-	// state before teardown. If the user closes Obsidian manually during the
-	// hold the subsequent `handle.close()` no-ops (browser/process `close()`
-	// already tolerates a dead target).
-	if (DEMO_HOLD_MS > 0) {
-		log.info(
-			`demo hold: keeping Obsidian open for ${DEMO_HOLD_MS / 1000}s — inspect the vault, close manually to skip`
-		);
-		await handle.page.waitForTimeout(DEMO_HOLD_MS).catch(() => {});
+	try {
+		await use(handle);
+	} finally {
+		// Demo mode: hold the window open so a human can poke around the vault
+		// state before teardown. If the user closes Obsidian manually during the
+		// hold the subsequent `handle.close()` no-ops (browser/process `close()`
+		// already tolerates a dead target).
+		if (DEMO_HOLD_MS > 0) {
+			harness.log.info(
+				`demo hold: keeping Obsidian open for ${DEMO_HOLD_MS / 1000}s — inspect the vault, close manually to skip`
+			);
+			await handle.page.waitForTimeout(DEMO_HOLD_MS).catch(() => {});
+		}
+		guard.detach(handle.page);
+		await handle.close();
 	}
-	handle.page.off("console", onConsole);
-	handle.page.off("pageerror", onPageError);
-	await handle.close();
-	if (consoleErrors.length > 0) {
-		throw new Error(`renderer emitted ${consoleErrors.length} error(s):\n${consoleErrors.join("\n")}`);
-	}
+
+	guard.throwIfErrors();
 }
 
 // Opt-in DSL fixture shared across every `test*` variant. Factored out so each
