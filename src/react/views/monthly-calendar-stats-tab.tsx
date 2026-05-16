@@ -1,11 +1,21 @@
-import { cls, tid } from "@real1ty-obsidian-plugins";
-import { Cell, GridLayout, ImperativeCellHost, useApp } from "@real1ty-obsidian-plugins-react";
-import { memo, type Ref, useCallback, useImperativeHandle, useRef } from "react";
+import { cls, type GridLayoutState, tid } from "@real1ty-obsidian-plugins";
+import { Cell, GridLayout, ImperativeCellHost, useApp, useSchemaField } from "@real1ty-obsidian-plugins-react";
+import { memo, type Ref, useCallback, useImperativeHandle, useRef, useState } from "react";
 
 import { createDailyCalendar, type DailyCalendarHandle } from "../../components/views/daily-calendar";
 import { useBundle } from "../contexts/bundle-context";
 import { type IntervalStatsCellHandle, mountIntervalStatsCell } from "./stats/interval-stats-cell";
 import { MONTHLY_STATS_CONFIG } from "./stats/stats-configs";
+
+const DEFAULT_MONTHLY_CALENDAR_STATS_GRID_STATE: GridLayoutState = {
+	columns: 2,
+	rows: 1,
+	cells: [],
+	columnSizes: [0.5, 0.5],
+	rowSizes: undefined,
+	cellColumnSizes: undefined,
+	cellRowSizes: undefined,
+};
 
 export interface MonthlyCalendarStatsTabHandle {
 	prev(): void;
@@ -23,6 +33,15 @@ export const MonthlyCalendarStatsTab = memo(function MonthlyCalendarStatsTab({
 	const bundle = useBundle();
 	const calendarRef = useRef<DailyCalendarHandle | null>(null);
 	const statsHandleRef = useRef<IntervalStatsCellHandle | null>(null);
+
+	const [savedGridState, setGridState] = useSchemaField<GridLayoutState | undefined>(
+		bundle.settingsStore,
+		"monthlyCalendarStatsGridState"
+	);
+	const [initialGridState] = useState<GridLayoutState>(
+		() => savedGridState ?? DEFAULT_MONTHLY_CALENDAR_STATS_GRID_STATE
+	);
+	const handleStateChange = useCallback((next: GridLayoutState) => setGridState(next), [setGridState]);
 
 	useImperativeHandle(
 		handleRef,
@@ -65,6 +84,9 @@ export const MonthlyCalendarStatsTab = memo(function MonthlyCalendarStatsTab({
 			rows={1}
 			gap="12px"
 			dividers
+			resizable="track"
+			initialState={initialGridState}
+			onStateChange={handleStateChange}
 			style={{ flex: "1 1 auto", minHeight: 0 }}
 			data-testid={tid("monthly-calendar-stats-tab")}
 		>

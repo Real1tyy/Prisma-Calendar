@@ -1,6 +1,13 @@
-import { cls, tid } from "@real1ty-obsidian-plugins";
-import { Cell, GridLayout, ImperativeCellHost, useApp, useSubscription } from "@real1ty-obsidian-plugins-react";
-import { memo, type Ref, useCallback, useImperativeHandle, useMemo, useRef } from "react";
+import { cls, type GridLayoutState, tid } from "@real1ty-obsidian-plugins";
+import {
+	Cell,
+	GridLayout,
+	ImperativeCellHost,
+	useApp,
+	useSchemaField,
+	useSubscription,
+} from "@real1ty-obsidian-plugins-react";
+import { memo, type Ref, useCallback, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { debounceTime, merge } from "rxjs";
 
 import { type HeatmapHandle, renderHeatmapInto } from "../../components/modals";
@@ -11,6 +18,16 @@ import { type IntervalStatsCellHandle, mountIntervalStatsCell } from "./stats/in
 import { MONTHLY_STATS_CONFIG } from "./stats/stats-configs";
 
 const REFRESH_DEBOUNCE_MS = 100;
+
+const DEFAULT_HEATMAP_MONTHLY_STATS_GRID_STATE: GridLayoutState = {
+	columns: 2,
+	rows: 1,
+	cells: [],
+	columnSizes: [0.5, 0.5],
+	rowSizes: undefined,
+	cellColumnSizes: undefined,
+	cellRowSizes: undefined,
+};
 
 export interface HeatmapMonthlyStatsTabHandle {
 	handleArrow(direction: "left" | "right" | "up" | "down"): void;
@@ -25,6 +42,15 @@ const HeatmapMonthlyStatsBody = memo(function HeatmapMonthlyStatsBody({ handleRe
 	const bundle = useBundle();
 	const heatmapRef = useRef<HeatmapHandle | null>(null);
 	const statsHandleRef = useRef<IntervalStatsCellHandle | null>(null);
+
+	const [savedGridState, setGridState] = useSchemaField<GridLayoutState | undefined>(
+		bundle.settingsStore,
+		"heatmapMonthlyStatsGridState"
+	);
+	const [initialGridState] = useState<GridLayoutState>(
+		() => savedGridState ?? DEFAULT_HEATMAP_MONTHLY_STATS_GRID_STATE
+	);
+	const handleStateChange = useCallback((next: GridLayoutState) => setGridState(next), [setGridState]);
 
 	const renderHeatmap = useCallback(
 		(el: HTMLElement) => {
@@ -79,6 +105,9 @@ const HeatmapMonthlyStatsBody = memo(function HeatmapMonthlyStatsBody({ handleRe
 			rows={1}
 			gap="12px"
 			dividers
+			resizable="track"
+			initialState={initialGridState}
+			onStateChange={handleStateChange}
 			style={{ flex: "1 1 auto", minHeight: 0 }}
 			data-testid={tid("heatmap-monthly-stats-tab")}
 		>

@@ -904,6 +904,10 @@ export const SingleCalendarConfigSchema = GeneralSettingsSchema.extend(PropsSett
 		enabled: z.boolean().catch(true),
 		holidays: HolidaySettingsSchema.catch(HolidaySettingsSchema.parse({})),
 		dashboardGridState: z.record(z.string(), GridLayoutStateSchema).optional().catch(undefined),
+		dualDailyGridState: GridLayoutStateSchema.optional().catch(undefined),
+		dailyStatsGridState: GridLayoutStateSchema.optional().catch(undefined),
+		monthlyCalendarStatsGridState: GridLayoutStateSchema.optional().catch(undefined),
+		heatmapMonthlyStatsGridState: GridLayoutStateSchema.optional().catch(undefined),
 	})
 	.strip();
 
