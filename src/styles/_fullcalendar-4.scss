@@ -1,8 +1,13 @@
-/* Zoom Control Styles — the FullCalendar `.fc-zoomLevel-button` element is
-   repurposed as a transparent React mount slot (display: contents). The actual
-   button surface is rendered by ZoomControl as a real <button> inheriting
-   `.fc-button.fc-button-primary` for visual parity with the old imperative
-   button. Click opens an Obsidian Menu (menu-scroll) — same UX as before. */
+// Zoom Control Styles — the FullCalendar `.fc-zoomLevel-button` element is
+// repurposed as a transparent React mount slot. The actual button surface is
+// rendered by ZoomControl as a real <button> inheriting
+// `.fc-button.fc-button-primary` for visual parity with the old imperative
+// button. Click opens an Obsidian Menu (menu-scroll) — same UX as before.
+// `display: contents` is the only way to make the host a no-op in layout
+// (without it the host would add inline-flex padding around the React
+// button). Baseline since Chrome 65 / Safari 11.1, and the manifest pins
+// `minAppVersion: 1.11.4` so every supported Obsidian build ships a Chromium
+// where the feature is fully supported.
 .prisma-calendar-container {
 	.fc-zoomLevel-button.prisma-zoom-host {
 		display: contents;
@@ -13,7 +18,7 @@
 		position: relative;
 		padding-right: 24px;
 
-		/* Dropdown indicator caret — matches the original imperative button. */
+		// Dropdown indicator caret — matches the original imperative button.
 		&::after {
 			content: "";
 			position: absolute;
@@ -34,7 +39,7 @@
 	}
 }
 
-/* Filter Input Styles (Search & Expression) */
+// Filter Input Styles (Search & Expression)
 .prisma-fc-filter {
 	&-wrapper {
 		position: relative;

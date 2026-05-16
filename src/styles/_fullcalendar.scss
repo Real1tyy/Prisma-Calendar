@@ -1,4 +1,4 @@
-/* FullCalendar theme integration with Obsidian */
+// FullCalendar theme integration with Obsidian
 .prisma-calendar-container {
 	.fc {
 		font-family: var(--font-interface);
@@ -25,7 +25,7 @@
 		}
 	}
 
-	/* Header styling */
+	// Header styling
 	.fc-header-toolbar.fc-toolbar {
 		margin-bottom: 0;
 		position: sticky;
@@ -70,7 +70,7 @@
 		color: var(--text-on-accent);
 	}
 
-	/* Day headers */
+	// Day headers
 	.fc-col-header-cell {
 		background-color: var(--background-secondary);
 		color: var(--text-muted);
@@ -78,7 +78,7 @@
 		font-size: var(--font-ui-smaller);
 	}
 
-	/* Day cells */
+	// Day cells
 	.fc-daygrid-day {
 		background-color: var(--background-primary);
 
@@ -94,7 +94,7 @@
 		min-width: 0;
 	}
 
-	/* Day number - fixed, never shrinks */
+	// Day number - fixed, never shrinks
 	.fc-daygrid-day-number {
 		flex-shrink: 0;
 	}
@@ -108,7 +108,7 @@
 		color: var(--text-faint);
 	}
 
-	/* Day cell coloring — uniform mode: single color applied to all day cells */
+	// Day cell coloring — uniform mode: single color applied to all day cells
 	&.prisma-uniform-day-color {
 		.fc-daygrid-day,
 		.fc-timegrid-col[data-date] {
@@ -127,18 +127,18 @@
 			);
 		}
 
-		/* Uniform — preserve today highlight */
+		// Uniform — preserve today highlight
 		.fc-day-today {
 			background: var(--background-modifier-form-field);
 		}
 
-		/* Uniform — preserve hover */
+		// Uniform — preserve hover
 		.fc-daygrid-day:hover {
 			background: var(--background-modifier-hover);
 		}
 	}
 
-	/* Day cell coloring — boundary mode: alternate gradient backgrounds by even/odd month */
+	// Day cell coloring — boundary mode: alternate gradient backgrounds by even/odd month
 	&.prisma-month-boundary-colors {
 		.fc-daygrid-day.prisma-month-even,
 		.fc-timegrid-col.prisma-month-even {
@@ -158,7 +158,7 @@
 			);
 		}
 
-		/* Boundary — stronger tint for out-of-month overflow days */
+		// Boundary — stronger tint for out-of-month overflow days
 		.fc-day-other.prisma-month-even {
 			background: linear-gradient(
 				180deg,
@@ -175,20 +175,20 @@
 			);
 		}
 
-		/* Boundary — preserve today highlight */
+		// Boundary — preserve today highlight
 		.fc-day-today.prisma-month-even,
 		.fc-day-today.prisma-month-odd {
 			background: var(--background-modifier-form-field);
 		}
 
-		/* Boundary — preserve hover */
+		// Boundary — preserve hover
 		.fc-daygrid-day.prisma-month-even:hover,
 		.fc-daygrid-day.prisma-month-odd:hover {
 			background: var(--background-modifier-hover);
 		}
 	}
 
-	/* Button visibility utilities - using proper selector chain for specificity without !important */
+	// Button visibility utilities - using proper selector chain for specificity without !important
 	.fc-header-toolbar .fc-toolbar-chunk .fc-button {
 		&.prisma-fc-button-hidden {
 			display: none;

@@ -1,18 +1,10 @@
-/* Color Picker Styles */
+// Color Picker Styles
+// `.prisma-color-example-dot` lives in `_settings.scss` nested under
+// `.prisma-color-example` — keep a single source of truth there. The orphaned
+// override that used to live here only set `margin-right`, which was unwanted
+// (the parent uses flex `gap`) and merely duplicated the selector in the build.
 
-/* Color Example Dot */
-.prisma-color-example-dot {
-	display: inline-block;
-	width: 16px;
-	height: 16px;
-	border: 1px solid var(--background-modifier-border);
-	border-radius: 3px;
-	margin-right: 8px;
-	vertical-align: middle;
-	background-color: var(--example-color);
-}
-
-/* Event Preview Modal */
+// Event Preview Modal
 .prisma-event-preview {
 	&-modal {
 		.modal {
@@ -169,7 +161,7 @@
 	}
 }
 
-/* Responsive adjustments for event preview modal */
+// Responsive adjustments for event preview modal
 @media (width <= 768px) {
 	.prisma-event-preview {
 		&-modal .modal {
@@ -195,7 +187,7 @@
 	}
 }
 
-/* Event Modal - Header with Preset Selector */
+// Event Modal - Header with Preset Selector
 .prisma-event-modal {
 	&-header {
 		display: flex;
@@ -262,10 +254,10 @@
 	}
 }
 
-/* Event Modal - Content and internal layout */
+// Event Modal - Content and internal layout
 .prisma-event-modal {
-	/* Content container: flex column with scrollable body and sticky footer
-	   Note: Obsidian's actual scroll container is usually `.modal-content`, so we style both. */
+	// Content container: flex column with scrollable body and sticky footer
+	// Note: Obsidian's actual scroll container is usually `.modal-content`, so we style both. 
 	.modal-content,
 	.prisma-event-modal-content {
 		display: flex;
@@ -275,7 +267,7 @@
 		gap: 0;
 	}
 
-	/* Scrollable body (header + form fields) */
+	// Scrollable body (header + form fields)
 	.prisma-event-modal-body {
 		flex: 1;
 		min-height: 0;
@@ -285,7 +277,7 @@
 		gap: 0.5rem;
 	}
 
-	/* Sticky footer (always visible) */
+	// Sticky footer (always visible)
 	.prisma-event-modal-footer {
 		flex-shrink: 0;
 		position: sticky;
@@ -294,7 +286,7 @@
 		background: var(--background-primary);
 	}
 
-	/* Obsidian-like setting layout (prefixed classes) */
+	// Obsidian-like setting layout (prefixed classes)
 	.prisma-setting-item {
 		display: flex;
 		align-items: center;
@@ -346,16 +338,16 @@
 			font-size: var(--font-ui-small);
 		}
 
-		/* Obsidian sliding-pill toggle (from shared-react <Toggle>) used for
-		   markAsDone / skip — right-align it the same way native checkboxes
-		   are right-aligned via `&[type="checkbox"] { margin-left: auto; }`. */
+		// Obsidian sliding-pill toggle (from shared-react <Toggle>) used for
+		// markAsDone / skip — right-align it the same way native checkboxes
+		// are right-aligned via `&[type="checkbox"] { margin-left: auto; }`. 
 		> .checkbox-container {
 			margin-left: auto;
 			flex-shrink: 0;
 		}
 	}
 
-	/* Inputs/selects styling */
+	// Inputs/selects styling
 	.prisma-setting-item-control:is(input:not([type="checkbox"]), select),
 	input.prisma-setting-item-control:not([type="checkbox"]),
 	select.prisma-setting-item-control {
@@ -377,7 +369,7 @@
 		}
 	}
 
-	/* Custom interval controls - right-aligned row with gap */
+	// Custom interval controls - right-aligned row with gap
 	.prisma-custom-interval-controls {
 		display: flex;
 		align-items: center;
@@ -430,7 +422,7 @@
 		}
 	}
 
-	/* Modal action buttons container */
+	// Modal action buttons container
 	.prisma-modal-button-container {
 		display: flex;
 		gap: 8px;
@@ -446,7 +438,7 @@
 	}
 }
 
-/* Title input autocomplete */
+// Title input autocomplete
 .prisma-title {
 	&-input-wrapper {
 		position: relative;
@@ -499,7 +491,7 @@
 	}
 }
 
-/* Virtual event toggle in modal header */
+// Virtual event toggle in modal header
 .prisma-virtual-toggle {
 	display: flex;
 	align-items: center;
@@ -520,9 +512,9 @@
 	}
 }
 
-/* Sliding switch for PrismaCheckbox style="switch" (markAsDone, skip).
-   Mirrors Obsidian's native .checkbox-container look so MetadataSection
-   doesn't visually diverge from the imperative schema-form output. */
+// Sliding switch for PrismaCheckbox style="switch" (markAsDone, skip).
+// Mirrors Obsidian's native .checkbox-container look so MetadataSection
+// doesn't visually diverge from the imperative schema-form output. 
 .prisma-switch {
 	position: relative;
 	display: inline-flex;
@@ -576,7 +568,7 @@
 	}
 }
 
-/* Event Preset Selector */
+// Event Preset Selector
 .prisma-event-preset {
 	&-selector-wrapper {
 		display: flex;
@@ -716,7 +708,7 @@
 	}
 }
 
-/* Responsive adjustments for event modal */
+// Responsive adjustments for event modal
 @media (width <= 768px) {
 	.prisma-event-modal {
 		&-header {
@@ -738,7 +730,7 @@
 			font-size: 11px;
 		}
 
-		/* Mobile: Stack setting item label above control */
+		// Mobile: Stack setting item label above control
 		.prisma-setting-item {
 			flex-direction: column;
 			align-items: stretch;
@@ -802,7 +794,7 @@
 	}
 }
 
-/* Event Modal - Recurring Event Section */
+// Event Modal - Recurring Event Section
 .prisma-recurring-event-fields {
 	margin-top: 16px;
 	padding: 16px;
@@ -849,7 +841,7 @@
 	}
 }
 
-/* Event Modal - Custom Properties Section */
+// Event Modal - Custom Properties Section
 .prisma-property-container {
 	display: flex;
 	flex-direction: column;
@@ -879,7 +871,7 @@
 	margin-top: 16px;
 }
 
-/* Button positioning in setting-item for property sections - scoped to plugin modals only */
+// Button positioning in setting-item for property sections - scoped to plugin modals only
 .modal.prisma-generic-event-list-modal .prisma-setting-item button.prisma-mod-cta {
 	margin-left: auto;
 }
@@ -926,7 +918,7 @@
 	}
 }
 
-/* Batch Frontmatter Modal Styles */
+// Batch Frontmatter Modal Styles
 .prisma-batch-frontmatter {
 	&-modal {
 		min-width: 500px;
@@ -1054,7 +1046,7 @@
 	}
 }
 
-/* Event Modal DateTime Input with Now Button */
+// Event Modal DateTime Input with Now Button
 .prisma-datetime-input-wrapper {
 	display: flex;
 	align-items: center;
@@ -1120,106 +1112,18 @@
 	}
 }
 
-/* Event Modal Category Field */
-.prisma-category {
-	&-input-wrapper {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		flex: 1;
+// The pre-React inline category dropdown styles
+// (`.prisma-category-input-wrapper`, `.prisma-category-dropdown-*`,
+// `.prisma-category-search-input`, `.prisma-category-list*`,
+// `.prisma-category-empty-message`) used to live here. None of those classes
+// are emitted by the current React components — the live consumers (category
+// select modal and assignment modal) are styled by `_categories-2.scss` and
+// `_categories-3.scss`. Removing the dead block also resolves the
+// duplicate-selector warnings the two copies produced.
 
-		input[type="text"] {
-			flex: 1;
-			min-width: 0;
-		}
-	}
-
-	/* Searchable Category Dropdown */
-	&-dropdown {
-		&-container {
-			position: relative;
-			flex-shrink: 0;
-		}
-
-		&-panel {
-			position: absolute;
-			top: 100%;
-			right: 0;
-			margin-top: 4px;
-			min-width: 200px;
-			max-width: 280px;
-			background-color: var(--background-primary);
-			border: 1px solid var(--background-modifier-border);
-			border-radius: var(--radius-m);
-			box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
-			z-index: 100;
-			overflow: hidden;
-		}
-	}
-
-	&-search-input {
-		width: 100%;
-		padding: 8px 12px;
-		border: none;
-		border-bottom: 1px solid var(--background-modifier-border);
-		background-color: var(--background-secondary);
-		color: var(--text-normal);
-		font-size: var(--font-ui-small);
-		outline: none;
-		box-sizing: border-box;
-
-		&::placeholder {
-			color: var(--text-muted);
-		}
-
-		&:focus {
-			background-color: var(--background-primary);
-		}
-	}
-
-	&-list {
-		max-height: 200px;
-		overflow-y: auto;
-
-		&-item {
-			padding: 8px 12px;
-			cursor: pointer;
-			color: var(--text-normal);
-			font-size: var(--font-ui-small);
-			transition: background-color 0.1s ease;
-			display: flex;
-			align-items: center;
-			gap: 8px;
-
-			&:hover {
-				background-color: var(--background-modifier-hover);
-			}
-
-			&:active {
-				background-color: var(--interactive-accent);
-				color: var(--text-on-accent);
-			}
-
-			.prisma-category-color-dot {
-				width: 12px;
-				height: 12px;
-				flex-shrink: 0;
-			}
-		}
-	}
-
-	&-empty-message {
-		padding: 12px;
-		color: var(--text-muted);
-		font-size: var(--font-ui-small);
-		font-style: italic;
-		text-align: center;
-	}
-}
-
-/* ===================================
-   Stopwatch / Time Tracker
-   =================================== */
+// ===================================
+// Stopwatch / Time Tracker
+// =================================== 
 .prisma-stopwatch {
 	&-field {
 		margin-bottom: 8px;
@@ -1418,7 +1322,7 @@
 	}
 }
 
-/* Responsive stopwatch adjustments */
+// Responsive stopwatch adjustments
 @media (width <= 768px) {
 	.prisma-stopwatch {
 		&-display-section {
@@ -1448,7 +1352,7 @@
 	}
 }
 
-/* Event Modal Responsive */
+// Event Modal Responsive
 @media (width <= 768px) {
 	.prisma-weekday-grid {
 		grid-template-columns: 1fr;
@@ -1478,7 +1382,7 @@
 	}
 }
 
-/* Generic Event List Modal (used by Skipped Events and Recurring Events) */
+// Generic Event List Modal (used by Skipped Events and Recurring Events)
 .prisma-generic-event {
 	&-list {
 		&-modal h2 {
@@ -1593,16 +1497,7 @@
 	flex-shrink: 0;
 }
 
-/* Recurring Events Modal - Toggle Styles */
-.prisma-recurring-events-toggle {
-	margin-bottom: 1rem;
-
-	input[type="checkbox"] {
-		cursor: pointer;
-	}
-}
-
-/* Recurring Events List Modal (Legacy) */
+// Recurring Events List Modal (Legacy)
 .prisma-recurring-events {
 	&-list {
 		&-modal {
@@ -1716,7 +1611,7 @@
 	}
 }
 
-/* Recurring events filter toggle overrides (high specificity needed) */
+// Recurring events filter toggle overrides (high specificity needed)
 .modal .prisma-recurring-events-list-modal .prisma-recurring-events-filter-toggle.setting-item.setting-item {
 	border: none;
 	padding: 0;
@@ -1749,7 +1644,7 @@
 	}
 }
 
-/* Recurring Event Row */
+// Recurring Event Row
 .prisma-recurring-event {
 	&-row {
 		display: flex;
@@ -1801,7 +1696,7 @@
 	}
 }
 
-/* Event Series Tab Buttons */
+// Event Series Tab Buttons
 .prisma-event-series {
 	&-tabs {
 		display: flex;

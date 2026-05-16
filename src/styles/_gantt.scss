@@ -1,5 +1,4 @@
-/* ─── Gantt Tab (overrides — base styles injected by shared library) ── */
-
+// ─── Gantt Tab (overrides — base styles injected by shared library) ──
 .prisma-gantt-create-btn {
 	display: flex;
 	align-items: center;
@@ -17,12 +16,12 @@
 	}
 }
 
-/* The shared `.prisma-tab-panel` defaults to `height: auto; min-height: 100%` and
-   `.prisma-tab-body` defaults to `flex: 1 0 auto; min-height: 100%` so the calendar
-   tab's sticky toolbar/headers can scroll with the page (panel grows with content).
-   Gantt needs a strictly bounded height so its inner flex column (the wrapper)
-   can fill the viewport instead of collapsing to its 400px min-height. */
-.view-content.prisma-calendar-view-root .prisma-tab-panel:has(.prisma-gantt-wrapper) {
+// The shared `.prisma-tab-panel` defaults to `height: auto; min-height: 100%` and
+// `.prisma-tab-body` defaults to `flex: 1 0 auto; min-height: 100%` so the calendar
+// tab's sticky toolbar/headers can scroll with the page (panel grows with content).
+// Gantt needs a strictly bounded height so its inner flex column (the wrapper)
+// can fill the viewport instead of collapsing to its 400px min-height. 
+.view-content.prisma-calendar-view-root .prisma-tab-panel[data-tab-id="gantt"] {
 	height: 100%;
 	min-height: 0;
 	flex: 1 1 auto;
@@ -33,3 +32,9 @@
 		flex: 1 1 auto;
 	}
 }
+
+// `.prisma-gantt-wrapper` is created in TS (`gantt-tab.tsx`) and used as the
+// flex column inside the panel. It carries no plugin-owned styling (the shared
+// library injects layout) but we keep a stub here so the CSS allowlist scanner
+// resolves the class reference.
+.prisma-gantt-wrapper { /* intentional stub — TS-created flex column with no plugin-owned styling */ }

@@ -1,4 +1,4 @@
-/* Virtual Event Styles */
+// Virtual Event Styles
 .prisma-virtual-event {
 	&-opacity {
 		opacity: 0.6;
@@ -14,14 +14,10 @@
 	}
 }
 
-/* Holiday Event Styles - special styling to distinguish from regular virtual events */
-
-/* Hidden Element */
-
-/* Past Event Contrast - Applied via JavaScript based on settings */
+// Holiday Event Styles - special styling to distinguish from regular virtual events
+// Hidden Element
+// Past Event Contrast - Applied via JavaScript based on settings
 .prisma-calendar-container {
-	--prisma-highlight-gold: hsl(45deg 85% 55%);
-
 	.prisma-past-event-hidden {
 		display: none;
 	}
@@ -30,7 +26,7 @@
 		opacity: var(--past-event-opacity, 0.7);
 	}
 
-	/* Event Highlight - Temporary highlight when navigating to an event */
+	// Event Highlight - Temporary highlight when navigating to an event
 	.fc-event.prisma-event-highlighted {
 		animation: prisma-event-highlight-pulse 0.7s ease-in-out;
 		box-shadow:
@@ -45,7 +41,7 @@
 		}
 	}
 
-	/* Upcoming Event Highlight - Persistent highlight for active/next upcoming event */
+	// Upcoming Event Highlight - Persistent highlight for active/next upcoming event
 	.fc-event.prisma-calendar-event.prisma-event-upcoming {
 		box-shadow:
 			0 0 20px 9px color-mix(in srgb, var(--event-color) 55%, transparent),
@@ -62,7 +58,7 @@
 			border-radius: var(--radius-s);
 		}
 
-		/* Enhance upcoming highlight on hover */
+		// Enhance upcoming highlight on hover
 		&:hover {
 			box-shadow:
 				0 0 24px 11px color-mix(in srgb, var(--event-color) 60%, transparent),
@@ -71,7 +67,7 @@
 			filter: brightness(1.22) saturate(1.26) contrast(1.08);
 		}
 
-		/* Maintain upcoming highlight when clicked/focused */
+		// Maintain upcoming highlight when clicked/focused
 		&:active,
 		&:focus {
 			box-shadow:
@@ -82,7 +78,7 @@
 		}
 	}
 
-	/* List view highlight */
+	// List view highlight
 	.fc-list-event.prisma-event-highlighted {
 		animation: prisma-event-highlight-pulse-list 0.7s ease-in-out;
 		background: color-mix(in srgb, var(--event-color) 20%, var(--background-primary));
@@ -97,7 +93,7 @@
 		}
 	}
 
-	/* List view upcoming event highlight - Persistent */
+	// List view upcoming event highlight - Persistent
 	.fc-list-event.prisma-calendar-event.prisma-event-upcoming {
 		background: linear-gradient(
 			90deg,
@@ -124,7 +120,7 @@
 			transition: all 0.5s ease;
 		}
 
-		/* Enhance list view upcoming highlight on hover */
+		// Enhance list view upcoming highlight on hover
 		&:hover {
 			background: linear-gradient(
 				90deg,
@@ -146,7 +142,7 @@
 			}
 		}
 
-		/* Maintain list view upcoming highlight when clicked/focused */
+		// Maintain list view upcoming highlight when clicked/focused
 		&:active,
 		&:focus {
 			background: linear-gradient(
@@ -162,9 +158,9 @@
 		}
 	}
 
-	/* ========================================
-	   CATEGORY HIGHLIGHT (for both with/without category)
-	   ======================================== */
+	// ========================================
+	// CATEGORY HIGHLIGHT (for both with/without category)
+	// ======================================== 
 
 	.fc-event.prisma-calendar-event.prisma-event-category-highlight {
 		box-shadow:
@@ -217,7 +213,7 @@
 	}
 }
 
-/* Pulse animation for initial highlight */
+// Pulse animation for initial highlight
 @keyframes prisma-event-highlight-pulse {
 	0% {
 		box-shadow: 0 0 0 0 color-mix(in srgb, var(--event-color) 85%, transparent);

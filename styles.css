@@ -1,31 +1,20 @@
 @charset "UTF-8";
-/* Custom Calendar Plugin Styles */
-/* Utility classes */
 .prisma-hidden {
   display: none;
 }
 
-/* Keyboard-only focus rings for buttons */
 [class*=prisma-] button:focus-visible,
 button[class*=prisma-]:focus-visible {
   outline: 2px solid var(--interactive-accent);
   outline-offset: 2px;
 }
 
-/* Tabbed view root: prevent Obsidian's .view-content from creating a competing
-   scroll context — .prisma-tab-content is the sole scroll container so that
-   position: sticky on the toolbar / day-headers / all-day section works. */
 .view-content.prisma-calendar-view-root {
   display: flex;
   flex-direction: column;
   height: 100%;
   overflow: hidden;
   padding: 0;
-  /* The shared TabbedContainer is mounted inside a `.prisma-tabbed-host`
-     wrapper. Without this rule the wrapper has no defined height, so the
-     `height: 100%` inside `.prisma-tabbed-container` collapses, the
-     `.prisma-tab-content` `flex: 1` loses its bound, and zoom-induced
-     overflow stops producing a scrollbar. */
 }
 .view-content.prisma-calendar-view-root .prisma-tabbed-host {
   flex: 1;
@@ -33,54 +22,23 @@ button[class*=prisma-]:focus-visible {
   display: flex;
   flex-direction: column;
 }
-.view-content.prisma-calendar-view-root {
-  /* The shared TabbedContainer ships `.tab-content` / `.tab-panel` as plain
-     blocks. Prisma needs the active panel to be a real flex child of the
-     scroll container and a flex column itself — otherwise every non-
-     calendar tab's `flex: 1 1 auto` content collapses and the calendar
-     tab's sticky-grow trick has no anchor. */
-}
 .view-content.prisma-calendar-view-root .prisma-tab-content {
   display: flex;
   flex-direction: column;
 }
-.view-content.prisma-calendar-view-root {
-  /* Calendar tab: grow with content so the sticky toolbar / day headers /
-     all-day row stay attached to the outer scroll container
-     (.prisma-tab-content). The calendar tab is the only one that mounts
-     `.prisma-calendar-container` directly — every other tab is wrapped
-     in `.prisma-tab-body`. The `:not(.prisma-tab-panel-hidden)` guard is
-     load-bearing: the shared TabbedContainer hides inactive panels via
-     that class with `display: none`, and our `display: flex` here would
-     otherwise win on specificity and leak the prior tab's contents into
-     the active tab. */
-}
-.view-content.prisma-calendar-view-root .prisma-tab-panel:has(.prisma-calendar-container):not(.prisma-tab-panel-hidden) {
+.view-content.prisma-calendar-view-root .prisma-tab-panel[data-tab-id=calendar]:not(.prisma-tab-panel-hidden) {
   height: auto;
   min-height: 100%;
   flex: 1 0 auto;
   display: flex;
   flex-direction: column;
 }
-.view-content.prisma-calendar-view-root {
-  /* Non-calendar tabs (timeline, heatmap, gantt, daily-stats, dual-daily,
-     dashboard, monthly-stats…) need the *opposite*: a strictly bounded
-     panel so their `flex: 1 1 auto` inner divs fill the viewport instead
-     of growing forever (vis-timeline) or collapsing to content height
-     (daily/dual-daily). The `:has(.prisma-tab-body)` scope keeps the
-     calendar tab on its own track. See note above on the hidden guard. */
-}
-.view-content.prisma-calendar-view-root .prisma-tab-panel:has(.prisma-tab-body):not(.prisma-tab-panel-hidden) {
+.view-content.prisma-calendar-view-root .prisma-tab-panel:not([data-tab-id=calendar], .prisma-tab-panel-hidden) {
   height: 100%;
   min-height: 0;
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-}
-.view-content.prisma-calendar-view-root {
-  /* `.prisma-tab-body` is the Prisma wrapper inside every non-calendar
-     tab panel. It must be a flex column AND fill the (bounded) panel so
-     the inner `flex: 1 1 auto` divs actually flex. */
 }
 .view-content.prisma-calendar-view-root .prisma-tab-body {
   display: flex;
@@ -98,13 +56,13 @@ button[class*=prisma-]:focus-visible {
   --prisma-sticky-toolbar-offset: 0px;
   --prisma-sticky-day-header-height: 0px;
   --prisma-connection-z: 12;
+  --prisma-highlight-gold: hsl(45deg 85% 55%);
 }
 
 .prisma-connection-overlay {
   z-index: var(--prisma-connection-z);
 }
 
-/* FullCalendar theme integration with Obsidian */
 .prisma-calendar-container .fc {
   font-family: var(--font-interface);
   font-size: var(--font-ui-small);
@@ -122,9 +80,6 @@ button[class*=prisma-]:focus-visible {
 }
 .prisma-calendar-container .fc-theme-standard .fc-scrollgrid-section > * {
   border-color: var(--background-modifier-border);
-}
-.prisma-calendar-container {
-  /* Header styling */
 }
 .prisma-calendar-container .fc-header-toolbar.fc-toolbar {
   margin-bottom: 0;
@@ -163,17 +118,11 @@ button[class*=prisma-]:focus-visible {
   background-color: var(--interactive-accent);
   color: var(--text-on-accent);
 }
-.prisma-calendar-container {
-  /* Day headers */
-}
 .prisma-calendar-container .fc-col-header-cell {
   background-color: var(--background-secondary);
   color: var(--text-muted);
   font-weight: var(--font-weight-medium);
   font-size: var(--font-ui-smaller);
-}
-.prisma-calendar-container {
-  /* Day cells */
 }
 .prisma-calendar-container .fc-daygrid-day {
   background-color: var(--background-primary);
@@ -187,9 +136,6 @@ button[class*=prisma-]:focus-visible {
   gap: 4px;
   min-width: 0;
 }
-.prisma-calendar-container {
-  /* Day number - fixed, never shrinks */
-}
 .prisma-calendar-container .fc-daygrid-day-number {
   flex-shrink: 0;
 }
@@ -200,9 +146,6 @@ button[class*=prisma-]:focus-visible {
   background-color: var(--background-secondary-alt);
   color: var(--text-faint);
 }
-.prisma-calendar-container {
-  /* Day cell coloring — uniform mode: single color applied to all day cells */
-}
 .prisma-calendar-container.prisma-uniform-day-color .fc-daygrid-day,
 .prisma-calendar-container.prisma-uniform-day-color .fc-timegrid-col[data-date] {
   background: linear-gradient(180deg, color-mix(in srgb, var(--month-even-color) 25%, transparent) 0%, color-mix(in srgb, var(--month-even-color) 12%, transparent) 100%);
@@ -210,20 +153,11 @@ button[class*=prisma-]:focus-visible {
 .prisma-calendar-container.prisma-uniform-day-color .fc-day-other {
   background: linear-gradient(180deg, color-mix(in srgb, var(--month-even-color) 38%, transparent) 0%, color-mix(in srgb, var(--month-even-color) 22%, transparent) 100%);
 }
-.prisma-calendar-container.prisma-uniform-day-color {
-  /* Uniform — preserve today highlight */
-}
 .prisma-calendar-container.prisma-uniform-day-color .fc-day-today {
   background: var(--background-modifier-form-field);
 }
-.prisma-calendar-container.prisma-uniform-day-color {
-  /* Uniform — preserve hover */
-}
 .prisma-calendar-container.prisma-uniform-day-color .fc-daygrid-day:hover {
   background: var(--background-modifier-hover);
-}
-.prisma-calendar-container {
-  /* Day cell coloring — boundary mode: alternate gradient backgrounds by even/odd month */
 }
 .prisma-calendar-container.prisma-month-boundary-colors .fc-daygrid-day.prisma-month-even,
 .prisma-calendar-container.prisma-month-boundary-colors .fc-timegrid-col.prisma-month-even {
@@ -233,31 +167,19 @@ button[class*=prisma-]:focus-visible {
 .prisma-calendar-container.prisma-month-boundary-colors .fc-timegrid-col.prisma-month-odd {
   background: linear-gradient(180deg, color-mix(in srgb, var(--month-odd-color) 25%, transparent) 0%, color-mix(in srgb, var(--month-odd-color) 12%, transparent) 100%);
 }
-.prisma-calendar-container.prisma-month-boundary-colors {
-  /* Boundary — stronger tint for out-of-month overflow days */
-}
 .prisma-calendar-container.prisma-month-boundary-colors .fc-day-other.prisma-month-even {
   background: linear-gradient(180deg, color-mix(in srgb, var(--month-even-color) 38%, transparent) 0%, color-mix(in srgb, var(--month-even-color) 22%, transparent) 100%);
 }
 .prisma-calendar-container.prisma-month-boundary-colors .fc-day-other.prisma-month-odd {
   background: linear-gradient(180deg, color-mix(in srgb, var(--month-odd-color) 38%, transparent) 0%, color-mix(in srgb, var(--month-odd-color) 22%, transparent) 100%);
 }
-.prisma-calendar-container.prisma-month-boundary-colors {
-  /* Boundary — preserve today highlight */
-}
 .prisma-calendar-container.prisma-month-boundary-colors .fc-day-today.prisma-month-even,
 .prisma-calendar-container.prisma-month-boundary-colors .fc-day-today.prisma-month-odd {
   background: var(--background-modifier-form-field);
 }
-.prisma-calendar-container.prisma-month-boundary-colors {
-  /* Boundary — preserve hover */
-}
 .prisma-calendar-container.prisma-month-boundary-colors .fc-daygrid-day.prisma-month-even:hover,
 .prisma-calendar-container.prisma-month-boundary-colors .fc-daygrid-day.prisma-month-odd:hover {
   background: var(--background-modifier-hover);
-}
-.prisma-calendar-container {
-  /* Button visibility utilities - using proper selector chain for specificity without !important */
 }
 .prisma-calendar-container .fc-header-toolbar .fc-toolbar-chunk .fc-button.prisma-fc-button-hidden {
   display: none;
@@ -266,7 +188,6 @@ button[class*=prisma-]:focus-visible {
   display: inline-block;
 }
 
-/* --- Event card base --- */
 .prisma-calendar-event {
   border-radius: var(--radius-s);
   font-size: var(--font-ui-smaller);
@@ -275,10 +196,8 @@ button[class*=prisma-]:focus-visible {
   flex-direction: column;
   position: relative;
   overflow: visible;
-  /* add subtle depth without harsh borders */
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
   transition: transform 0.06s ease, box-shadow 0.2s ease, opacity 0.2s ease;
-  /* Use CSS custom property for dynamic colors */
   background-color: var(--event-color);
   border-color: var(--event-color);
 }
@@ -287,7 +206,6 @@ button[class*=prisma-]:focus-visible {
   filter: brightness(1.15) saturate(1.1);
 }
 
-/* Event Color Dots — overflow color indicators positioned inside individual events */
 .prisma-event-color-dots {
   position: absolute;
   bottom: 2px;
@@ -303,7 +221,6 @@ button[class*=prisma-]:focus-visible {
   border: 0.5px solid rgba(255, 255, 255, 0.4);
 }
 
-/* Inline Color Dots — reusable multi-color indicators for list rows and detail panels */
 .prisma-inline-color-dots {
   display: inline-flex;
   align-items: center;
@@ -320,7 +237,6 @@ button[class*=prisma-]:focus-visible {
   border: 0.5px solid rgba(0, 0, 0, 0.15);
 }
 
-/* Compact overflow dots — bottom-right indicators for gantt bars, timeline items, etc. */
 .prisma-compact-color-dots {
   display: flex;
   flex-direction: row-reverse;
@@ -340,32 +256,25 @@ button[class*=prisma-]:focus-visible {
   flex-shrink: 0;
 }
 
-/* Prevent FullCalendar's default dark hover overlay */
 .prisma-calendar-container .fc-event:hover,
 .prisma-calendar-container .fc-daygrid-event:hover,
 .prisma-calendar-container .fc-daygrid-dot-event:hover {
   filter: brightness(1.15) saturate(1.1);
-}
-.prisma-calendar-container {
-  /* Keep background color from being overridden on hover */
 }
 .prisma-calendar-container .fc-event:hover {
   background-color: var(--event-color);
   border-color: var(--event-color);
 }
 
-/* unified padding; remove inner borders */
 .prisma-fc-event-content-wrapper {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  /* spacing instead of dividers */
   padding: 6px 8px;
   height: 100%;
   overflow: hidden auto;
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb-bg) transparent;
-  /* Webkit scrollbar for event content wrapper */
 }
 .prisma-fc-event-content-wrapper::-webkit-scrollbar {
   width: 4px;
@@ -378,7 +287,6 @@ button[class*=prisma-]:focus-visible {
   border-radius: 2px;
 }
 
-/* Event marker indicator for recurring events */
 .prisma-event-marker {
   position: absolute;
   top: 2px;
@@ -397,7 +305,6 @@ button[class*=prisma-]:focus-visible {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-/* --- Header: time + title --- */
 .prisma-fc-event-header {
   display: block;
   line-height: 1.2;
@@ -406,7 +313,6 @@ button[class*=prisma-]:focus-visible {
   width: 100%;
 }
 
-/* Time as a pill — same weight as title but visually distinct */
 .prisma-fc-event-time {
   margin: 0 6px 0 0;
   padding: 2px 6px;
@@ -421,7 +327,6 @@ button[class*=prisma-]:focus-visible {
   white-space: normal;
 }
 
-/* Title, bold, wraps to multiple lines */
 .prisma-fc-event-title-custom {
   margin: 0;
   padding: 0;
@@ -432,7 +337,6 @@ button[class*=prisma-]:focus-visible {
   word-break: break-word;
   overflow-wrap: break-word;
   line-height: 1.3;
-  /* Optional subtle dot between time and title (no divider lines) */
 }
 .prisma-fc-event-title-custom::before {
   content: "•";
@@ -440,13 +344,11 @@ button[class*=prisma-]:focus-visible {
   margin-right: 6px;
 }
 
-/* --- Properties: inline, chip-like, subdued --- */
 .prisma-fc-event-props {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   line-height: 1.25;
-  /* slightly deemphasized compared to header */
   opacity: 0.95;
 }
 
@@ -458,15 +360,12 @@ button[class*=prisma-]:focus-visible {
   margin: 0;
   padding: 1px 6px;
   border-radius: 999px;
-  /* pill feel */
   background: rgba(255, 255, 255, 0.1);
-  /* translucent */
   color: var(--event-text-color, white);
   max-width: 100%;
 }
 .prisma-fc-event-prop-key {
   opacity: 0.85;
-  /* keys lighter */
   flex: 0 0 auto;
 }
 .prisma-fc-event-prop-value {
@@ -480,9 +379,7 @@ button[class*=prisma-]:focus-visible {
 }
 .prisma-fc-event-prop-link {
   color: var(--event-text-color, white);
-  text-decoration: underline;
-  text-decoration-style: dotted;
-  text-decoration-thickness: 1.5px;
+  text-decoration: underline dotted 1.5px;
   text-underline-offset: 2px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -494,14 +391,12 @@ button[class*=prisma-]:focus-visible {
 }
 .prisma-fc-event-prop-link:hover {
   color: var(--event-text-color, white);
-  text-decoration-style: solid;
-  text-decoration-thickness: 2px;
+  text-decoration: underline solid 2px;
   background: rgba(255, 255, 255, 0.2);
   text-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
   transform: translateY(-1px);
 }
 
-/* Time-grid / day-grid: ensure wrappers don't add extra padding */
 .prisma-calendar-container .fc-daygrid-event .fc-event-main,
 .prisma-calendar-container .fc-timegrid-event .fc-event-main {
   display: flex;
@@ -518,9 +413,8 @@ button[class*=prisma-]:focus-visible {
 }
 .prisma-calendar-container .fc-daygrid-event-harness {
   min-height: auto;
-}
-.prisma-calendar-container {
-  /* Month view specific styling - desktop defaults */
+  max-height: var(--all-day-event-height, 75px);
+  overflow: visible;
 }
 .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-content-wrapper {
   padding: 4px 6px;
@@ -553,9 +447,6 @@ button[class*=prisma-]:focus-visible {
   word-break: break-word;
   display: inline;
 }
-.prisma-calendar-container {
-  /* Hide properties in month view to save space */
-}
 .prisma-calendar-container .fc-dayGridMonth-view .fc-daygrid-event .prisma-fc-event-props {
   display: none;
 }
@@ -566,18 +457,9 @@ button[class*=prisma-]:focus-visible {
   overflow: hidden;
 }
 
-/* ========================================
-   LIST VIEW STYLING - MODERN & PROFESSIONAL
-   ======================================== */
-.prisma-calendar-container {
-  /* List view table structure */
-}
 .prisma-calendar-container .fc-list {
   border: none;
   background: var(--background-primary);
-}
-.prisma-calendar-container {
-  /* Date headers in list view - compact */
 }
 .prisma-calendar-container .fc-list-day-cushion {
   background: var(--background-secondary);
@@ -593,9 +475,6 @@ button[class*=prisma-]:focus-visible {
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
-.prisma-calendar-container {
-  /* Empty state - no events message */
-}
 .prisma-calendar-container .fc-list-empty {
   background: var(--background-primary);
   color: var(--text-muted);
@@ -610,68 +489,45 @@ button[class*=prisma-]:focus-visible {
   border-radius: var(--radius-m);
   margin: 16px;
 }
-.prisma-calendar-container {
-  /* List table structure */
-}
 .prisma-calendar-container .fc-list-table {
   border: none;
 }
 .prisma-calendar-container .fc-list-table tbody > tr:first-child > td {
   border-top: none;
 }
-.prisma-calendar-container {
-  /* Event row container */
-}
 .prisma-calendar-container .fc-list-event {
   cursor: pointer;
   transition: all 0.15s ease;
   border-bottom: 1px solid var(--background-modifier-border);
   background: var(--background-primary);
-  /* Apply event color to list view rows with transparency */
 }
 .prisma-calendar-container .fc-list-event.prisma-calendar-event {
   background: linear-gradient(90deg, color-mix(in srgb, var(--event-color) 8%, var(--background-primary)) 0%, var(--background-primary) 100%);
   border-left: 3px solid var(--event-color);
-  /* Hover state - subtle blue accent, NO WHITE */
 }
 .prisma-calendar-container .fc-list-event.prisma-calendar-event:hover {
   background: rgb(var(--interactive-accent-rgb), 0.08);
   background-color: rgb(var(--interactive-accent-rgb), 0.08);
   border-left-color: var(--interactive-accent);
 }
-.prisma-calendar-container .fc-list-event.prisma-calendar-event {
-  /* Active/focus state - slightly more accent, still NO WHITE */
-}
 .prisma-calendar-container .fc-list-event.prisma-calendar-event:active, .prisma-calendar-container .fc-list-event.prisma-calendar-event:focus {
   background: rgb(var(--interactive-accent-rgb), 0.06);
   background-color: rgb(var(--interactive-accent-rgb), 0.06);
   outline: none;
-}
-.prisma-calendar-container .fc-list-event {
-  /* Hover state - subtle blue accent, NO WHITE */
 }
 .prisma-calendar-container .fc-list-event:hover {
   background: rgb(var(--interactive-accent-rgb), 0.08);
   background-color: rgb(var(--interactive-accent-rgb), 0.08);
   border-left-color: var(--interactive-accent);
 }
-.prisma-calendar-container .fc-list-event {
-  /* Active/focus state - slightly more accent, still NO WHITE */
-}
 .prisma-calendar-container .fc-list-event:active, .prisma-calendar-container .fc-list-event:focus {
   background: rgb(var(--interactive-accent-rgb), 0.06);
   background-color: rgb(var(--interactive-accent-rgb), 0.06);
   outline: none;
 }
-.prisma-calendar-container .fc-list-event {
-  /* Event row cells - more compact */
-}
 .prisma-calendar-container .fc-list-event > td {
   padding: 8px 12px;
   border: none;
-}
-.prisma-calendar-container .fc-list-event {
-  /* Event content wrapper - compact vertical layout */
 }
 .prisma-calendar-container .fc-list-event .prisma-fc-event-content-wrapper {
   display: flex;
@@ -679,9 +535,6 @@ button[class*=prisma-]:focus-visible {
   align-items: flex-start;
   gap: 4px;
   padding: 0;
-}
-.prisma-calendar-container .fc-list-event {
-  /* Event title styling - prominent but compact */
 }
 .prisma-calendar-container .fc-list-event .prisma-fc-event-title-custom {
   font-weight: var(--font-weight-semibold);
@@ -695,14 +548,8 @@ button[class*=prisma-]:focus-visible {
   font-weight: var(--font-weight-bold);
   color: var(--text-accent);
 }
-.prisma-calendar-container .fc-list-event {
-  /* Hide default FullCalendar title */
-}
 .prisma-calendar-container .fc-list-event .fc-list-event-title > a {
   display: none;
-}
-.prisma-calendar-container .fc-list-event {
-  /* Event properties in list view - compact */
 }
 .prisma-calendar-container .fc-list-event .prisma-fc-event-props {
   display: flex;
@@ -736,9 +583,6 @@ button[class*=prisma-]:focus-visible {
   color: var(--text-normal);
   opacity: 0.9;
 }
-.prisma-calendar-container .fc-list-event {
-  /* Property links in list view */
-}
 .prisma-calendar-container .fc-list-event .prisma-fc-event-prop-link {
   color: var(--text-accent);
   text-decoration: none;
@@ -752,9 +596,6 @@ button[class*=prisma-]:focus-visible {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
-.prisma-calendar-container .fc-list-event {
-  /* Virtual events in list view */
-}
 .prisma-calendar-container .fc-list-event.prisma-virtual-event {
   opacity: 0.5;
   font-style: italic;
@@ -762,9 +603,6 @@ button[class*=prisma-]:focus-visible {
 .prisma-calendar-container .fc-list-event.prisma-virtual-event .fc-list-event-dot {
   opacity: 0.4;
   border-style: dashed;
-}
-.prisma-calendar-container {
-  /* Hover state for tr-level selectors */
 }
 .prisma-calendar-container tr.fc-list-event:hover td {
   background: rgb(var(--interactive-accent-rgb), 0.08);
@@ -774,17 +612,11 @@ button[class*=prisma-]:focus-visible {
   background: rgb(var(--interactive-accent-rgb), 0.06);
   background-color: rgb(var(--interactive-accent-rgb), 0.06);
 }
-.prisma-calendar-container {
-  /* Event dot/graphic column - compact */
-}
 .prisma-calendar-container .fc-list-event-graphic {
   padding: 8px 10px;
   width: 32px;
   min-width: 32px;
   text-align: center;
-}
-.prisma-calendar-container {
-  /* Event color dot - inherit event color */
 }
 .prisma-calendar-container .fc-list-event-dot {
   width: 10px;
@@ -799,9 +631,6 @@ button[class*=prisma-]:focus-visible {
   transform: scale(1.15);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
-.prisma-calendar-container {
-  /* Event time column - compact */
-}
 .prisma-calendar-container .fc-list-event-time {
   width: 90px;
   min-width: 90px;
@@ -812,16 +641,12 @@ button[class*=prisma-]:focus-visible {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-.prisma-calendar-container {
-  /* Event title/content column - compact */
-}
 .prisma-calendar-container .fc-list-event-title {
   padding: 8px 12px;
   color: var(--text-normal);
   font-size: var(--font-ui-medium);
 }
 
-/* Responsive list view */
 @media (width <= 768px) {
   .prisma-calendar-container .fc-list-event-time {
     width: 80px;
@@ -847,7 +672,6 @@ button[class*=prisma-]:focus-visible {
     font-size: 11px;
   }
 }
-/* Dark mode refinements for list view */
 .theme-dark .prisma-calendar-container .fc-list-day-cushion {
   background: var(--background-secondary);
 }
@@ -864,7 +688,6 @@ button[class*=prisma-]:focus-visible {
   background: var(--background-modifier-hover);
 }
 
-/* "+more" link styling for dayMaxEventRows */
 .prisma-calendar-container .fc-daygrid-more-link {
   font-size: var(--font-ui-smaller);
   font-weight: var(--font-weight-medium);
@@ -879,9 +702,6 @@ button[class*=prisma-]:focus-visible {
 .prisma-calendar-container .fc-daygrid-more-link:hover {
   background: var(--interactive-hover);
   color: var(--text-accent-hover);
-}
-.prisma-calendar-container {
-  /* Popover styling for "+more" events */
 }
 .prisma-calendar-container .fc-popover {
   background: var(--background-primary);
@@ -912,21 +732,12 @@ button[class*=prisma-]:focus-visible {
   color: var(--text-normal);
 }
 
-/* Time grid styling */
 .prisma-calendar-container .fc-timegrid-slot {
   border-color: var(--background-modifier-border);
-}
-.prisma-calendar-container {
-  /* Make full-hour lines thicker for better visual contrast (when enabled) */
 }
 .prisma-calendar-container.prisma-thicker-hour-lines .fc-timegrid-slot[data-time$=":00:00"] {
   border-top-width: 1.5px;
   border-top-color: var(--background-modifier-border-hover);
-}
-.prisma-calendar-container {
-  /* Sticky all-day events section (when enabled)
-     FullCalendar's built-in stickyHeaderDates handles day/date headers.
-     This CSS handles making the all-day event section sticky as well. */
 }
 .prisma-calendar-container.prisma-sticky-day-headers .fc-scrollgrid-section-header.fc-scrollgrid-section-sticky > * {
   top: calc(var(--prisma-sticky-toolbar-offset) + 1px);
@@ -938,36 +749,16 @@ button[class*=prisma-]:focus-visible {
   z-index: 11;
   background-color: var(--background-primary);
 }
-.prisma-calendar-container {
-  /* Position all-day section below sticky day headers when both are enabled
-     FullCalendar's sticky headers are at a higher z-index, so we position below them */
-}
 .prisma-calendar-container.prisma-sticky-day-headers.prisma-sticky-all-day-events .fc-scrollgrid-section-body:first-of-type {
   top: calc(var(--prisma-sticky-toolbar-offset) + var(--prisma-sticky-day-header-height) + 1px);
 }
-.prisma-calendar-container {
-  /* Position all-day section at top when only sticky all-day is enabled */
-}
 .prisma-calendar-container.prisma-sticky-all-day-events:not(.prisma-sticky-day-headers) .fc-scrollgrid-section-body:first-of-type {
   top: calc(var(--prisma-sticky-toolbar-offset) + 1px);
-}
-.prisma-calendar-container {
-  /* Remove FullCalendar's extra divider row border between all-day and timed grid.
-     The sticky stack already provides the intended single separator line. */
 }
 .prisma-calendar-container .fc-timegrid-divider.fc-cell-shaded {
   background: transparent;
   border-width: 0;
   padding: 0;
-}
-.prisma-calendar-container {
-  /* Limit individual all-day event height and enable overflow
-     Target the event harness and the event itself */
-}
-.prisma-calendar-container .fc-daygrid-event-harness {
-  max-height: var(--all-day-event-height, 75px);
-  overflow: visible;
-  /* Allow the event inside to handle overflow */
 }
 .prisma-calendar-container .fc-daygrid-block-event {
   max-height: var(--all-day-event-height, 75px);
@@ -976,11 +767,6 @@ button[class*=prisma-]:focus-visible {
 .prisma-calendar-container .fc-daygrid-block-event .fc-event-main {
   overflow: hidden auto;
   max-height: inherit;
-}
-.prisma-calendar-container {
-  /* All-day events as columns in daily view — events sit side by side when there
-     is enough horizontal space. Wraps to new rows when events don't fit.
-     Uses auto basis so width is proportional to content, not forced equal. */
 }
 .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-day-events {
   display: flex;
@@ -1000,7 +786,6 @@ button[class*=prisma-]:focus-visible {
   background-color: var(--background-secondary);
 }
 
-/* Responsive adjustments */
 @media (width <= 768px) {
   .prisma-calendar-container .fc-toolbar {
     flex-direction: column;
@@ -1013,20 +798,13 @@ button[class*=prisma-]:focus-visible {
     gap: 6px;
     width: 100%;
     padding: 0 4px;
-    /* Mobile: Make buttons smaller */
   }
   .prisma-calendar-container .fc-toolbar-chunk .fc-button {
     font-size: 11px;
     padding: 4px 8px;
   }
-  .prisma-calendar-container .fc-toolbar-chunk {
-    /* Mobile: Navigation buttons stay compact */
-  }
   .prisma-calendar-container .fc-toolbar-chunk .fc-button-group {
     flex-shrink: 0;
-  }
-  .prisma-calendar-container .fc-toolbar-chunk {
-    /* Mobile: Filter inputs take full width on their own row */
   }
   .prisma-calendar-container .fc-toolbar-chunk .prisma-fc-filter-wrapper {
     flex: 1 1 100%;
@@ -1036,9 +814,6 @@ button[class*=prisma-]:focus-visible {
     width: 100%;
     font-size: 12px;
   }
-  .prisma-calendar-container .fc-toolbar-chunk {
-    /* Mobile: Filter preset selector */
-  }
   .prisma-calendar-container .fc-toolbar-chunk .prisma-fc-filter-preset-wrapper {
     flex: 0 1 auto;
   }
@@ -1046,23 +821,14 @@ button[class*=prisma-]:focus-visible {
     font-size: 11px;
     padding: 4px 20px 4px 6px;
   }
-  .prisma-calendar-container .fc-toolbar-chunk {
-    /* Mobile: Compact zoom button */
-  }
   .prisma-calendar-container .fc-toolbar-chunk .prisma-fc-zoom-button {
     font-size: 10px;
     padding: 4px 22px 4px 6px;
-  }
-  .prisma-calendar-container {
-    /* Mobile: Collapse filter controls (zoom + preset + search + expression) by default, toggleable via "Filters" button */
   }
   .prisma-calendar-container.prisma-mobile-controls-collapsed .fc-toolbar-chunk:first-child .fc-zoomLevel-button,
   .prisma-calendar-container.prisma-mobile-controls-collapsed .fc-toolbar-chunk:first-child .prisma-fc-filter-preset-wrapper,
   .prisma-calendar-container.prisma-mobile-controls-collapsed .fc-toolbar-chunk:first-child .prisma-fc-filter-wrapper {
     display: none;
-  }
-  .prisma-calendar-container {
-    /* Mobile: "Filters" toggle button affordance */
   }
   .prisma-calendar-container .fc-mobileControls-button.prisma-mobile-controls-toggle {
     position: relative;
@@ -1078,9 +844,6 @@ button[class*=prisma-]:focus-visible {
   }
   .prisma-calendar-container .fc-mobileControls-button.prisma-mobile-controls-toggle.prisma-mobile-controls-toggle-expanded::after {
     content: "▾";
-  }
-  .prisma-calendar-container {
-    /* Mobile Monthly View: Compact event display - minimize gaps */
   }
   .prisma-calendar-container .fc-daygrid-event-harness {
     min-height: auto;
@@ -1112,9 +875,6 @@ button[class*=prisma-]:focus-visible {
     overflow-wrap: break-word;
     line-height: 1.2;
   }
-  .prisma-calendar-container {
-    /* Mobile Weekly/Daily View: Compact event display */
-  }
   .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-content-wrapper,
   .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-content-wrapper {
     padding: 1px 3px;
@@ -1122,9 +882,6 @@ button[class*=prisma-]:focus-visible {
     flex-direction: column;
     overflow: visible;
     max-width: 100%;
-  }
-  .prisma-calendar-container {
-    /* Header (time + title) always at top, never pushed down */
   }
   .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-header,
   .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-header {
@@ -1150,9 +907,6 @@ button[class*=prisma-]:focus-visible {
   .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-time {
     font-size: 8px;
     opacity: 0.85;
-  }
-  .prisma-calendar-container {
-    /* Mobile Weekly/Daily View: Compact frontmatter properties - lower priority, overflow downward */
   }
   .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-props,
   .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-props {
@@ -1187,9 +941,6 @@ button[class*=prisma-]:focus-visible {
     min-width: 0;
     max-width: 100%;
   }
-  .prisma-calendar-container {
-    /* Mobile Daily View ONLY: Larger text since we have more horizontal space */
-  }
   .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-title-custom,
   .prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-title-custom {
     font-size: 13px;
@@ -1220,9 +971,6 @@ button[class*=prisma-]:focus-visible {
   .prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-prop-value {
     font-size: 10px;
   }
-  .prisma-calendar-container .fc-timeGridDay-view {
-    /* Mobile Daily View: All-day events - larger text */
-  }
   .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-title-custom {
     font-size: 13px;
     font-weight: 500;
@@ -1232,12 +980,10 @@ button[class*=prisma-]:focus-visible {
     padding: 4px 8px;
   }
 }
-/* Hide FullCalendar's default event dots - we use our own color indicator system */
 .prisma-calendar-container .fc-daygrid-event-dot {
   display: none;
 }
 
-/* Color Indicator Dots - Shows event colors at the top of each day cell (monthly view) */
 .prisma-day-color-dots {
   display: flex;
   flex-wrap: nowrap;
@@ -1258,14 +1004,12 @@ button[class*=prisma-]:focus-visible {
   flex-shrink: 0;
 }
 
-/* Desktop: Slightly larger dots */
 @media (width >= 769px) {
   .prisma-day-color-dot {
     width: 12px;
     height: 12px;
   }
 }
-/* Popover styling - show time for events in the +more popover */
 .prisma-calendar-container .fc-popover .fc-popover-body .fc-daygrid-event {
   display: flex;
   align-items: center;
@@ -1286,10 +1030,6 @@ button[class*=prisma-]:focus-visible {
   white-space: nowrap;
 }
 
-/* Multi-Month Year View — theme integration with Obsidian variables */
-.prisma-calendar-container {
-  /* Override FullCalendar's injected CSS variables for multimonth only */
-}
 .prisma-calendar-container .fc-multimonth {
   --fc-page-bg-color: var(--background-primary);
   --fc-border-color: var(--background-modifier-border);
@@ -1299,17 +1039,11 @@ button[class*=prisma-]:focus-visible {
   --fc-event-border-color: var(--background-modifier-border);
   overflow-y: hidden;
 }
-.prisma-calendar-container {
-  /* Month title headers */
-}
 .prisma-calendar-container .fc-multimonth-title {
   color: var(--text-normal);
   font-weight: var(--font-weight-medium);
   font-size: var(--font-ui-medium);
   padding: 8px 12px;
-}
-.prisma-calendar-container {
-  /* Column headers (Mon, Tue, ...) */
 }
 .prisma-calendar-container .fc-multimonth-header .fc-col-header-cell {
   background-color: var(--background-secondary);
@@ -1318,50 +1052,29 @@ button[class*=prisma-]:focus-visible {
   font-size: var(--font-ui-smaller);
   padding: 4px 0;
 }
-.prisma-calendar-container {
-  /* Day cells — match monthly view */
-}
 .prisma-calendar-container .fc-multimonth-daygrid .fc-daygrid-day {
   background-color: var(--background-primary);
 }
 .prisma-calendar-container .fc-multimonth-daygrid .fc-daygrid-day:hover {
   background-color: var(--background-modifier-hover);
 }
-.prisma-calendar-container {
-  /* Today highlight — match monthly view */
-}
 .prisma-calendar-container .fc-multimonth-daygrid .fc-day-today {
   background-color: var(--background-modifier-form-field);
-}
-.prisma-calendar-container {
-  /* Other-month overflow days */
 }
 .prisma-calendar-container .fc-multimonth-daygrid .fc-day-other {
   background-color: var(--background-secondary-alt);
   color: var(--text-faint);
-}
-.prisma-calendar-container {
-  /* Day number styling */
 }
 .prisma-calendar-container .fc-multimonth-daygrid .fc-daygrid-day-number {
   color: var(--text-muted);
   font-size: var(--font-ui-smaller);
   padding: 2px 4px;
 }
-.prisma-calendar-container {
-  /* Override FullCalendar's default highlight (white) with subtle gray */
-}
 .prisma-calendar-container .fc-multimonth-daygrid .fc-highlight {
   background: var(--background-modifier-hover);
 }
-.prisma-calendar-container {
-  /* Month grid borders */
-}
 .prisma-calendar-container .fc-multimonth-month {
   border-color: var(--background-modifier-border);
-}
-.prisma-calendar-container {
-  /* Scrollgrid borders */
 }
 .prisma-calendar-container .fc-multimonth .fc-scrollgrid {
   border-color: var(--background-modifier-border);
@@ -1370,31 +1083,19 @@ button[class*=prisma-]:focus-visible {
 .prisma-calendar-container .fc-multimonth td {
   border-color: var(--background-modifier-border);
 }
-.prisma-calendar-container {
-  /* "+more" link in year view — smaller to fit compact cells */
-}
 .prisma-calendar-container .fc-multimonth-daygrid .fc-daygrid-more-link {
   font-size: 10px;
   padding: 1px 4px;
   margin-top: 1px;
 }
-.prisma-calendar-container {
-  /* Day cell rows — enough height for 1-2 events before "+more" auto-limit */
-}
 .prisma-calendar-container .fc-multimonth-daygrid .fc-daygrid-day-frame {
   min-height: 3.5em;
-}
-.prisma-calendar-container {
-  /* Events in year view — compact styling */
 }
 .prisma-calendar-container .fc-multimonth-daygrid .fc-daygrid-event {
   font-size: 10px;
   padding: 0 2px;
   margin-bottom: 1px;
   border-radius: var(--radius-s);
-}
-.prisma-calendar-container {
-  /* Color dots — smaller for year view compact cells */
 }
 .prisma-calendar-container .fc-multimonth-daygrid .prisma-day-color-dots {
   gap: 2px;
@@ -1403,9 +1104,6 @@ button[class*=prisma-]:focus-visible {
 .prisma-calendar-container .fc-multimonth-daygrid .prisma-day-color-dot {
   width: 6px;
   height: 6px;
-}
-.prisma-calendar-container {
-  /* Day cell coloring — uniform mode */
 }
 .prisma-calendar-container.prisma-uniform-day-color .fc-multimonth-daygrid .fc-daygrid-day {
   background: linear-gradient(180deg, color-mix(in srgb, var(--month-even-color) 25%, transparent) 0%, color-mix(in srgb, var(--month-even-color) 12%, transparent) 100%);
@@ -1418,9 +1116,6 @@ button[class*=prisma-]:focus-visible {
 }
 .prisma-calendar-container.prisma-uniform-day-color .fc-multimonth-daygrid .fc-daygrid-day:hover {
   background: var(--background-modifier-hover);
-}
-.prisma-calendar-container {
-  /* Day cell coloring — boundary mode */
 }
 .prisma-calendar-container.prisma-month-boundary-colors .fc-multimonth-daygrid .fc-daygrid-day.prisma-month-even {
   background: linear-gradient(180deg, color-mix(in srgb, var(--month-even-color) 25%, transparent) 0%, color-mix(in srgb, var(--month-even-color) 12%, transparent) 100%);
@@ -1443,7 +1138,6 @@ button[class*=prisma-]:focus-visible {
   background: var(--background-modifier-hover);
 }
 
-/* Year view responsive — even more compact on mobile */
 @media (width <= 768px) {
   .prisma-calendar-container .fc-multimonth-title {
     font-size: var(--font-ui-small);
@@ -1461,7 +1155,8 @@ button[class*=prisma-]:focus-visible {
     height: 4px;
   }
 }
-/* Loading state */
+.prisma-calendar-loading { /* intentional stub — class is a DOM hook only; the spinner element renders its own visuals */ }
+
 @keyframes prisma-calendar-spin {
   0% {
     transform: rotate(0deg);
@@ -1470,7 +1165,6 @@ button[class*=prisma-]:focus-visible {
     transform: rotate(360deg);
   }
 }
-/* Dark theme adjustments */
 .theme-dark .prisma-calendar-container .fc-button {
   background-color: var(--background-modifier-form-field);
 }
@@ -1478,7 +1172,6 @@ button[class*=prisma-]:focus-visible {
   background-color: var(--background-modifier-form-field-highlighted);
 }
 
-/* Batch Selection Styles - Now integrated into calendar toolbar */
 .fc-button.prisma-batch-action-btn {
   background: var(--interactive-normal);
   border: 1px solid var(--background-modifier-border);
@@ -1569,7 +1262,6 @@ button[class*=prisma-]:focus-visible {
   border-color: var(--color-cyan);
 }
 
-/* Fix event collapsing in month view */
 .fc-daygrid-event.prisma-batch-selectable {
   overflow: visible;
 }
@@ -1577,12 +1269,10 @@ button[class*=prisma-]:focus-visible {
   overflow: visible;
 }
 
-/* Checkbox for dot events (timed events in month view) - no .fc-event-main */
 .fc-daygrid-dot-event.prisma-batch-selectable {
   position: relative;
 }
 
-/* Shared checkbox styling for both block events (.fc-event-main::before) and dot events (::before) */
 .fc-event.prisma-batch-selectable .fc-event-main::before {
   content: "";
   position: absolute;
@@ -1620,20 +1310,11 @@ button[class*=prisma-]:focus-visible {
   transition: all 0.2s ease;
 }
 
-/* Adjust checkbox position for compact month view block events (all-day events only, not dots) */
 .fc-daygrid-block-event.prisma-batch-selectable .fc-event-main::before {
   top: 1px;
   right: 1px;
   width: 14px;
   height: 14px;
-}
-
-/* Ensure dot events always use full size (override any compact sizing) */
-.fc-daygrid-dot-event.prisma-batch-selectable::before {
-  top: 4px;
-  right: 4px;
-  width: 16px;
-  height: 16px;
 }
 
 .fc-daygrid-dot-event.prisma-batch-selectable:hover::before {
@@ -1668,21 +1349,13 @@ button[class*=prisma-]:focus-visible {
   opacity: 1;
 }
 
-/* Smaller checkmark for compact month view block events (all-day events only, not dots) */
 .fc-daygrid-block-event.prisma-batch-selected .fc-event-main::before {
   font-size: 9px;
 }
 
-/* Ensure dot events always use full size checkmark */
-.fc-daygrid-dot-event.prisma-batch-selected::before {
-  font-size: 10px;
-}
-
-/* Event Selection States - Updated for FullCalendar DOM structure */
 .fc-event.prisma-batch-selectable {
   cursor: pointer;
   transition: box-shadow 0.2s ease, z-index 0.2s ease;
-  /* Apply relative positioning to an inner element to avoid breaking FC's layout */
 }
 .fc-event.prisma-batch-selectable .fc-event-main {
   position: relative;
@@ -1700,10 +1373,6 @@ button[class*=prisma-]:focus-visible {
   box-shadow: 0 0 0 2px var(--interactive-accent), 0 6px 20px rgb(var(--interactive-accent-rgb), 0.4), 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Selection animations */
-/* Removed animations that could affect event sizing */
-/* Removed keyframes that could cause event sizing issues */
-/* List view batch selection adjustments */
 .prisma-calendar-container .fc-list-event.prisma-batch-selectable {
   position: relative;
 }
@@ -1734,7 +1403,6 @@ button[class*=prisma-]:focus-visible {
   color: white;
 }
 
-/* Responsive batch selection */
 @media (width <= 768px) {
   .prisma-batch-action-btn {
     flex: 1;
@@ -1749,7 +1417,6 @@ button[class*=prisma-]:focus-visible {
     font-size: 9px;
   }
 }
-/* Accessibility: reduce motion */
 @media (prefers-reduced-motion: reduce) {
   .prisma-calendar-event {
     transition: none;
@@ -1762,7 +1429,6 @@ button[class*=prisma-]:focus-visible {
     transition: none;
   }
 }
-/* ─── Prerequisite Selection Banner ─────────────────────────── */
 .prisma-prereq-selection-banner {
   display: flex;
   align-items: center;
@@ -1855,7 +1521,6 @@ button[class*=prisma-]:focus-visible {
   flex-shrink: 0;
 }
 
-/* Settings Search */
 .prisma-settings-search {
   margin-left: auto;
   flex-shrink: 0;
@@ -1885,7 +1550,6 @@ button[class*=prisma-]:focus-visible {
   font-style: italic;
 }
 
-/* Settings Tabs */
 .prisma-settings-nav {
   margin-bottom: 24px;
   border-bottom: 1px solid var(--background-modifier-border);
@@ -1950,7 +1614,6 @@ button[class*=prisma-]:focus-visible {
   color: var(--text-error);
 }
 
-/* Color example list items */
 .prisma-color-example-item {
   display: flex;
   align-items: center;
@@ -1980,7 +1643,6 @@ button[class*=prisma-]:focus-visible {
   color: var(--text-muted);
 }
 
-/* Color rule items - Compact single row layout */
 .prisma-color-rule-item {
   border: 1px solid var(--background-modifier-border);
   border-radius: 6px;
@@ -2058,7 +1720,6 @@ button[class*=prisma-]:focus-visible {
   border-color: var(--text-error);
 }
 
-/* Filter preset items */
 .prisma-filter-preset-item {
   display: flex;
   align-items: center;
@@ -2138,7 +1799,6 @@ button[class*=prisma-]:focus-visible {
   justify-content: flex-end;
 }
 
-/* Categories settings */
 .prisma-categories-empty-state {
   padding: 16px;
   text-align: center;
@@ -2221,7 +1881,6 @@ button[class*=prisma-]:focus-visible {
   margin-bottom: 16px;
 }
 
-/* Event Statistics */
 .prisma-categories-stats-container {
   margin-bottom: 24px;
   margin-top: 16px;
@@ -2262,7 +1921,6 @@ button[class*=prisma-]:focus-visible {
   line-height: 1.2;
 }
 
-/* Category Assignment Presets */
 .prisma-category-assignment-empty {
   padding: 16px;
   text-align: center;
@@ -2422,7 +2080,6 @@ button[class*=prisma-]:focus-visible {
   border-color: var(--text-error);
 }
 
-/* Virtual Event Styles */
 .prisma-virtual-event-opacity {
   opacity: 0.6;
 }
@@ -2434,20 +2091,11 @@ button[class*=prisma-]:focus-visible {
   font-style: italic;
 }
 
-/* Holiday Event Styles - special styling to distinguish from regular virtual events */
-/* Hidden Element */
-/* Past Event Contrast - Applied via JavaScript based on settings */
-.prisma-calendar-container {
-  --prisma-highlight-gold: hsl(45deg 85% 55%);
-}
 .prisma-calendar-container .prisma-past-event-hidden {
   display: none;
 }
 .prisma-calendar-container .prisma-past-event-faded {
   opacity: var(--past-event-opacity, 0.7);
-}
-.prisma-calendar-container {
-  /* Event Highlight - Temporary highlight when navigating to an event */
 }
 .prisma-calendar-container .fc-event.prisma-event-highlighted {
   animation: prisma-event-highlight-pulse 0.7s ease-in-out;
@@ -2459,9 +2107,6 @@ button[class*=prisma-]:focus-visible {
 .prisma-calendar-container .fc-event.prisma-event-highlighted .fc-event-main {
   border: 2.5px solid color-mix(in srgb, var(--event-color) 85%, white);
 }
-.prisma-calendar-container {
-  /* Upcoming Event Highlight - Persistent highlight for active/next upcoming event */
-}
 .prisma-calendar-container .fc-event.prisma-calendar-event.prisma-event-upcoming {
   box-shadow: 0 0 20px 9px color-mix(in srgb, var(--event-color) 55%, transparent), 0 0 38px 16px color-mix(in srgb, var(--event-color) 35%, transparent), 0 2px 8px rgba(0, 0, 0, 0.15);
   z-index: 10;
@@ -2472,22 +2117,13 @@ button[class*=prisma-]:focus-visible {
   border: 2.5px solid color-mix(in srgb, var(--event-color) 85%, white);
   border-radius: var(--radius-s);
 }
-.prisma-calendar-container .fc-event.prisma-calendar-event.prisma-event-upcoming {
-  /* Enhance upcoming highlight on hover */
-}
 .prisma-calendar-container .fc-event.prisma-calendar-event.prisma-event-upcoming:hover {
   box-shadow: 0 0 24px 11px color-mix(in srgb, var(--event-color) 60%, transparent), 0 0 44px 18px color-mix(in srgb, var(--event-color) 40%, transparent), 0 4px 12px rgba(0, 0, 0, 0.2);
   filter: brightness(1.22) saturate(1.26) contrast(1.08);
 }
-.prisma-calendar-container .fc-event.prisma-calendar-event.prisma-event-upcoming {
-  /* Maintain upcoming highlight when clicked/focused */
-}
 .prisma-calendar-container .fc-event.prisma-calendar-event.prisma-event-upcoming:active, .prisma-calendar-container .fc-event.prisma-calendar-event.prisma-event-upcoming:focus {
   box-shadow: 0 0 22px 10px color-mix(in srgb, var(--event-color) 58%, transparent), 0 0 40px 17px color-mix(in srgb, var(--event-color) 38%, transparent), 0 3px 10px rgba(0, 0, 0, 0.18);
   filter: brightness(1.2) saturate(1.24) contrast(1.06);
-}
-.prisma-calendar-container {
-  /* List view highlight */
 }
 .prisma-calendar-container .fc-list-event.prisma-event-highlighted {
   animation: prisma-event-highlight-pulse-list 0.7s ease-in-out;
@@ -2500,9 +2136,6 @@ button[class*=prisma-]:focus-visible {
   box-shadow: 0 0 15px 6px color-mix(in srgb, var(--event-color) 70%, transparent);
   transform: scale(1.4);
   filter: brightness(1.25);
-}
-.prisma-calendar-container {
-  /* List view upcoming event highlight - Persistent */
 }
 .prisma-calendar-container .fc-list-event.prisma-calendar-event.prisma-event-upcoming {
   background: linear-gradient(90deg, color-mix(in srgb, var(--event-color) 20%, var(--background-primary)) 0%, color-mix(in srgb, var(--event-color) 12%, var(--background-primary)) 100%);
@@ -2517,9 +2150,6 @@ button[class*=prisma-]:focus-visible {
   filter: brightness(1.28) saturate(1.15);
   transition: all 0.5s ease;
 }
-.prisma-calendar-container .fc-list-event.prisma-calendar-event.prisma-event-upcoming {
-  /* Enhance list view upcoming highlight on hover */
-}
 .prisma-calendar-container .fc-list-event.prisma-calendar-event.prisma-event-upcoming:hover {
   background: linear-gradient(90deg, color-mix(in srgb, var(--event-color) 24%, var(--background-primary)) 0%, color-mix(in srgb, var(--event-color) 14%, var(--background-primary)) 100%);
   border-left: 4.5px solid color-mix(in srgb, var(--event-color) 95%, white);
@@ -2531,19 +2161,11 @@ button[class*=prisma-]:focus-visible {
   transform: scale(1.4);
   filter: brightness(1.32) saturate(1.2);
 }
-.prisma-calendar-container .fc-list-event.prisma-calendar-event.prisma-event-upcoming {
-  /* Maintain list view upcoming highlight when clicked/focused */
-}
 .prisma-calendar-container .fc-list-event.prisma-calendar-event.prisma-event-upcoming:active, .prisma-calendar-container .fc-list-event.prisma-calendar-event.prisma-event-upcoming:focus {
   background: linear-gradient(90deg, color-mix(in srgb, var(--event-color) 22%, var(--background-primary)) 0%, color-mix(in srgb, var(--event-color) 13%, var(--background-primary)) 100%);
   border-left: 4.5px solid color-mix(in srgb, var(--event-color) 92%, white);
   box-shadow: 0 0 18px 8px color-mix(in srgb, var(--event-color) 38%, transparent), 0 2px 7px rgba(0, 0, 0, 0.14);
   filter: brightness(1.13) saturate(1.1);
-}
-.prisma-calendar-container {
-  /* ========================================
-     CATEGORY HIGHLIGHT (for both with/without category)
-     ======================================== */
 }
 .prisma-calendar-container .fc-event.prisma-calendar-event.prisma-event-category-highlight {
   box-shadow: 0 0 16px 6px color-mix(in srgb, var(--prisma-highlight-gold) 50%, transparent), 0 0 30px 12px color-mix(in srgb, var(--prisma-highlight-gold) 30%, transparent), 0 2px 6px rgba(0, 0, 0, 0.12);
@@ -2571,7 +2193,6 @@ button[class*=prisma-]:focus-visible {
   box-shadow: 0 0 14px 6px color-mix(in srgb, var(--prisma-highlight-gold) 35%, transparent), 0 3px 6px rgba(0, 0, 0, 0.12);
 }
 
-/* Pulse animation for initial highlight */
 @keyframes prisma-event-highlight-pulse {
   0% {
     box-shadow: 0 0 0 0 color-mix(in srgb, var(--event-color) 85%, transparent);
@@ -2600,11 +2221,6 @@ button[class*=prisma-]:focus-visible {
     box-shadow: 0 0 15px 6px color-mix(in srgb, var(--event-color) 35%, transparent);
   }
 }
-/* Zoom Control Styles — the FullCalendar `.fc-zoomLevel-button` element is
-   repurposed as a transparent React mount slot (display: contents). The actual
-   button surface is rendered by ZoomControl as a real <button> inheriting
-   `.fc-button.fc-button-primary` for visual parity with the old imperative
-   button. Click opens an Obsidian Menu (menu-scroll) — same UX as before. */
 .prisma-calendar-container .fc-zoomLevel-button.prisma-zoom-host {
   display: contents;
 }
@@ -2612,7 +2228,6 @@ button[class*=prisma-]:focus-visible {
   cursor: pointer;
   position: relative;
   padding-right: 24px;
-  /* Dropdown indicator caret — matches the original imperative button. */
 }
 .prisma-calendar-container .prisma-fc-zoom-button::after {
   content: "";
@@ -2631,7 +2246,6 @@ button[class*=prisma-]:focus-visible {
   opacity: 1;
 }
 
-/* Filter Input Styles (Search & Expression) */
 .prisma-fc-filter-wrapper {
   position: relative;
   display: inline-flex;
@@ -2704,7 +2318,6 @@ button[class*=prisma-]:focus-visible {
   font-style: italic;
 }
 
-/* Settings Tab Styles */
 .prisma-settings-footer {
   margin-top: 2rem;
   text-align: center;
@@ -2791,7 +2404,6 @@ button[class*=prisma-]:focus-visible {
   margin: 0 0 0.5rem;
 }
 
-/* Batch Action Buttons Settings */
 .prisma-batch-buttons-container {
   margin-top: 10px;
 }
@@ -2885,7 +2497,7 @@ button[class*=prisma-]:focus-visible {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: currentColor;
+  background: currentcolor;
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
   flex-shrink: 0;
 }
@@ -3009,7 +2621,7 @@ button[class*=prisma-]:focus-visible {
   height: 28px;
   border-radius: 50%;
   background-color: var(--background-modifier-error);
-  color: var(--text-on-accent, #fff);
+  color: var(--text-on-accent, #ffffff);
   font-size: 16px;
   line-height: 1;
 }
@@ -3034,20 +2646,6 @@ button[class*=prisma-]:focus-visible {
   line-height: 1.5;
 }
 
-/* Color Picker Styles */
-/* Color Example Dot */
-.prisma-color-example-dot {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 3px;
-  margin-right: 8px;
-  vertical-align: middle;
-  background-color: var(--example-color);
-}
-
-/* Event Preview Modal */
 .prisma-event-preview-modal .modal {
   max-width: 600px;
   width: 90%;
@@ -3178,7 +2776,6 @@ button[class*=prisma-]:focus-visible {
   text-decoration: underline;
 }
 
-/* Responsive adjustments for event preview modal */
 @media (width <= 768px) {
   .prisma-event-preview-modal .modal {
     max-width: 95%;
@@ -3197,7 +2794,6 @@ button[class*=prisma-]:focus-visible {
     grid-template-columns: 1fr;
   }
 }
-/* Event Modal - Header with Preset Selector */
 .prisma-event-modal-header {
   display: flex;
   align-items: center;
@@ -3256,11 +2852,6 @@ button[class*=prisma-]:focus-visible {
   color: var(--text-normal);
 }
 
-/* Event Modal - Content and internal layout */
-.prisma-event-modal {
-  /* Content container: flex column with scrollable body and sticky footer
-     Note: Obsidian's actual scroll container is usually `.modal-content`, so we style both. */
-}
 .prisma-event-modal .modal-content,
 .prisma-event-modal .prisma-event-modal-content {
   display: flex;
@@ -3268,9 +2859,6 @@ button[class*=prisma-]:focus-visible {
   max-height: min(100vh, 740px);
   overflow: hidden;
   gap: 0;
-}
-.prisma-event-modal {
-  /* Scrollable body (header + form fields) */
 }
 .prisma-event-modal .prisma-event-modal-body {
   flex: 1;
@@ -3280,18 +2868,12 @@ button[class*=prisma-]:focus-visible {
   flex-direction: column;
   gap: 0.5rem;
 }
-.prisma-event-modal {
-  /* Sticky footer (always visible) */
-}
 .prisma-event-modal .prisma-event-modal-footer {
   flex-shrink: 0;
   position: sticky;
   bottom: 0;
   z-index: 20;
   background: var(--background-primary);
-}
-.prisma-event-modal {
-  /* Obsidian-like setting layout (prefixed classes) */
 }
 .prisma-event-modal .prisma-setting-item {
   display: flex;
@@ -3337,17 +2919,9 @@ button[class*=prisma-]:focus-visible {
   font-weight: var(--font-weight-semibold);
   font-size: var(--font-ui-small);
 }
-.prisma-event-modal .prisma-setting-item {
-  /* Obsidian sliding-pill toggle (from shared-react <Toggle>) used for
-     markAsDone / skip — right-align it the same way native checkboxes
-     are right-aligned via `&[type="checkbox"] { margin-left: auto; }`. */
-}
 .prisma-event-modal .prisma-setting-item > .checkbox-container {
   margin-left: auto;
   flex-shrink: 0;
-}
-.prisma-event-modal {
-  /* Inputs/selects styling */
 }
 .prisma-event-modal .prisma-setting-item-control:is(input:not([type=checkbox]), select),
 .prisma-event-modal input.prisma-setting-item-control:not([type=checkbox]),
@@ -3369,9 +2943,6 @@ button[class*=prisma-]:focus-visible {
   outline: none;
   border-color: var(--interactive-accent);
   box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
-}
-.prisma-event-modal {
-  /* Custom interval controls - right-aligned row with gap */
 }
 .prisma-event-modal .prisma-custom-interval-controls {
   display: flex;
@@ -3417,9 +2988,6 @@ button[class*=prisma-]:focus-visible {
   background-color: var(--interactive-accent-hover);
   border-color: var(--interactive-accent-hover);
 }
-.prisma-event-modal {
-  /* Modal action buttons container */
-}
 .prisma-event-modal .prisma-modal-button-container {
   display: flex;
   gap: 8px;
@@ -3434,7 +3002,6 @@ button[class*=prisma-]:focus-visible {
   background: var(--background-primary);
 }
 
-/* Title input autocomplete */
 .prisma-title-input-wrapper {
   position: relative;
   flex: 1;
@@ -3479,7 +3046,6 @@ button[class*=prisma-]:focus-visible {
   flex-shrink: 0;
 }
 
-/* Virtual event toggle in modal header */
 .prisma-virtual-toggle {
   display: flex;
   align-items: center;
@@ -3498,9 +3064,6 @@ button[class*=prisma-]:focus-visible {
   transform: scale(1.4);
 }
 
-/* Sliding switch for PrismaCheckbox style="switch" (markAsDone, skip).
-   Mirrors Obsidian's native .checkbox-container look so MetadataSection
-   doesn't visually diverge from the imperative schema-form output. */
 .prisma-switch {
   position: relative;
   display: inline-flex;
@@ -3548,7 +3111,6 @@ button[class*=prisma-]:focus-visible {
   transform: translateX(16px);
 }
 
-/* Event Preset Selector */
 .prisma-event-preset-selector-wrapper {
   display: flex;
   align-items: center;
@@ -3670,7 +3232,6 @@ button[class*=prisma-]:focus-visible {
   border: 1px dashed var(--background-modifier-border);
 }
 
-/* Responsive adjustments for event modal */
 @media (width <= 768px) {
   .prisma-event-modal-header {
     flex-direction: column;
@@ -3686,9 +3247,6 @@ button[class*=prisma-]:focus-visible {
   .prisma-event-modal-minimize-button, .prisma-event-modal-clear-button {
     padding: 4px 8px;
     font-size: 11px;
-  }
-  .prisma-event-modal {
-    /* Mobile: Stack setting item label above control */
   }
   .prisma-event-modal .prisma-setting-item {
     flex-direction: column;
@@ -3737,7 +3295,6 @@ button[class*=prisma-]:focus-visible {
     justify-content: flex-end;
   }
 }
-/* Event Modal - Recurring Event Section */
 .prisma-recurring-event-fields {
   margin-top: 16px;
   padding: 16px;
@@ -3777,7 +3334,6 @@ button[class*=prisma-]:focus-visible {
   flex: 1;
 }
 
-/* Event Modal - Custom Properties Section */
 .prisma-property-container {
   display: flex;
   flex-direction: column;
@@ -3803,7 +3359,6 @@ button[class*=prisma-]:focus-visible {
   margin-top: 16px;
 }
 
-/* Button positioning in setting-item for property sections - scoped to plugin modals only */
 .modal.prisma-generic-event-list-modal .prisma-setting-item button.prisma-mod-cta {
   margin-left: auto;
 }
@@ -3846,7 +3401,6 @@ button[class*=prisma-]:focus-visible {
   border-color: var(--text-error);
 }
 
-/* Batch Frontmatter Modal Styles */
 .prisma-batch-frontmatter-modal {
   min-width: 500px;
   max-width: 700px;
@@ -3952,7 +3506,6 @@ button[class*=prisma-]:focus-visible {
   border-color: var(--text-error);
 }
 
-/* Event Modal DateTime Input with Now Button */
 .prisma-datetime-input-wrapper {
   display: flex;
   align-items: center;
@@ -4013,92 +3566,6 @@ button[class*=prisma-]:focus-visible {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* Event Modal Category Field */
-.prisma-category-input-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-}
-.prisma-category-input-wrapper input[type=text] {
-  flex: 1;
-  min-width: 0;
-}
-.prisma-category {
-  /* Searchable Category Dropdown */
-}
-.prisma-category-dropdown-container {
-  position: relative;
-  flex-shrink: 0;
-}
-.prisma-category-dropdown-panel {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 4px;
-  min-width: 200px;
-  max-width: 280px;
-  background-color: var(--background-primary);
-  border: 1px solid var(--background-modifier-border);
-  border-radius: var(--radius-m);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 100;
-  overflow: hidden;
-}
-.prisma-category-search-input {
-  width: 100%;
-  padding: 8px 12px;
-  border: none;
-  border-bottom: 1px solid var(--background-modifier-border);
-  background-color: var(--background-secondary);
-  color: var(--text-normal);
-  font-size: var(--font-ui-small);
-  outline: none;
-  box-sizing: border-box;
-}
-.prisma-category-search-input::placeholder {
-  color: var(--text-muted);
-}
-.prisma-category-search-input:focus {
-  background-color: var(--background-primary);
-}
-.prisma-category-list {
-  max-height: 200px;
-  overflow-y: auto;
-}
-.prisma-category-list-item {
-  padding: 8px 12px;
-  cursor: pointer;
-  color: var(--text-normal);
-  font-size: var(--font-ui-small);
-  transition: background-color 0.1s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.prisma-category-list-item:hover {
-  background-color: var(--background-modifier-hover);
-}
-.prisma-category-list-item:active {
-  background-color: var(--interactive-accent);
-  color: var(--text-on-accent);
-}
-.prisma-category-list-item .prisma-category-color-dot {
-  width: 12px;
-  height: 12px;
-  flex-shrink: 0;
-}
-.prisma-category-empty-message {
-  padding: 12px;
-  color: var(--text-muted);
-  font-size: var(--font-ui-small);
-  font-style: italic;
-  text-align: center;
-}
-
-/* ===================================
-   Stopwatch / Time Tracker
-   =================================== */
 .prisma-stopwatch-field {
   margin-bottom: 8px;
 }
@@ -4256,7 +3723,6 @@ button[class*=prisma-]:focus-visible {
   background: linear-gradient(135deg, color-mix(in srgb, var(--color-red) 90%, white) 0%, var(--color-red) 100%);
 }
 
-/* Responsive stopwatch adjustments */
 @media (width <= 768px) {
   .prisma-stopwatch-display-section {
     flex-direction: column;
@@ -4279,7 +3745,6 @@ button[class*=prisma-]:focus-visible {
     min-width: 80px;
   }
 }
-/* Event Modal Responsive */
 @media (width <= 768px) {
   .prisma-weekday-grid {
     grid-template-columns: 1fr;
@@ -4303,7 +3768,6 @@ button[class*=prisma-]:focus-visible {
     min-width: 80px;
   }
 }
-/* Generic Event List Modal (used by Skipped Events and Recurring Events) */
 .prisma-generic-event-list-modal h2 {
   margin-bottom: 1rem;
 }
@@ -4399,15 +3863,6 @@ button[class*=prisma-]:focus-visible {
   flex-shrink: 0;
 }
 
-/* Recurring Events Modal - Toggle Styles */
-.prisma-recurring-events-toggle {
-  margin-bottom: 1rem;
-}
-.prisma-recurring-events-toggle input[type=checkbox] {
-  cursor: pointer;
-}
-
-/* Recurring Events List Modal (Legacy) */
 .prisma-recurring-events-list-modal {
   padding: 1.5rem;
 }
@@ -4497,7 +3952,6 @@ button[class*=prisma-]:focus-visible {
   word-spacing: 2px;
 }
 
-/* Recurring events filter toggle overrides (high specificity needed) */
 .modal .prisma-recurring-events-list-modal .prisma-recurring-events-filter-toggle.setting-item.setting-item {
   border: none;
   padding: 0;
@@ -4525,7 +3979,6 @@ button[class*=prisma-]:focus-visible {
   padding: 0;
 }
 
-/* Recurring Event Row */
 .prisma-recurring-event-row {
   display: flex;
   gap: 1rem;
@@ -4568,7 +4021,6 @@ button[class*=prisma-]:focus-visible {
   color: var(--text-muted);
 }
 
-/* Event Series Tab Buttons */
 .prisma-event-series-tabs {
   display: flex;
   flex-direction: row;
@@ -4653,10 +4105,6 @@ button[class*=prisma-]:focus-visible {
   cursor: not-allowed;
 }
 
-/* Timeline (used in both modal and tab contexts) */
-/* Common: inner element holding the header + timeline container.
-   Always a flex column that fills its parent — no fixed width/height
-   so it adapts to whatever ancestor (modal-content or tab body) it lives in. */
 .prisma-timeline-modal {
   display: flex;
   flex-direction: column;
@@ -4683,14 +4131,12 @@ button[class*=prisma-]:focus-visible {
   min-height: 0;
 }
 
-/* Modal-only sizing: applies to the .modal wrapper that showModal tags. */
 .modal.prisma-timeline-modal {
   width: 98vw;
   max-width: none;
   height: 90vh;
 }
 
-/* Modal content area — flush padding so the inner flex column owns the layout. */
 .modal-content.prisma-timeline-modal {
   height: 100%;
   padding: 0;
@@ -4728,7 +4174,6 @@ button[class*=prisma-]:focus-visible {
   background: var(--background-modifier-hover);
 }
 
-/* Tab-context padding tweaks (less generous than the modal). */
 .prisma-tab-panel .prisma-timeline-modal > .prisma-timeline-modal-header {
   padding-left: 1rem;
   padding-right: 1rem;
@@ -4737,24 +4182,17 @@ button[class*=prisma-]:focus-visible {
   padding: 0 1rem 1rem;
 }
 
-/* The shared `.prisma-tab-panel` defaults to `height: auto; min-height: 100%` and
-   `.prisma-tab-body` defaults to `flex: 1 0 auto; min-height: 100%` so the calendar
-   tab's sticky toolbar/headers can scroll with the page (panel grows with content).
-   The timeline needs the opposite: a strictly bounded height so its inner flex
-   column can resolve. Override both via the `:has(.prisma-timeline-modal)` scope
-   — purely structural specificity, no `!important`. */
-.view-content.prisma-calendar-view-root .prisma-tab-panel:has(.prisma-timeline-modal) {
+.view-content.prisma-calendar-view-root .prisma-tab-panel[data-tab-id=timeline] {
   height: 100%;
   min-height: 0;
   flex: 1 1 auto;
 }
-.view-content.prisma-calendar-view-root .prisma-tab-panel:has(.prisma-timeline-modal) > .prisma-tab-body {
+.view-content.prisma-calendar-view-root .prisma-tab-panel[data-tab-id=timeline] > .prisma-tab-body {
   height: 100%;
   min-height: 0;
   flex: 1 1 auto;
 }
 
-/* AI Chat Sidebar */
 .prisma-ai-chat-container {
   display: flex;
   flex-direction: column;
@@ -5056,7 +4494,6 @@ button[class*=prisma-]:focus-visible {
     transform: scale(1);
   }
 }
-/* AI Settings — shared UI primitives */
 .prisma-hint {
   font-size: 12px;
   color: var(--text-muted);
@@ -5125,7 +4562,6 @@ button[class*=prisma-]:focus-visible {
   resize: vertical;
 }
 
-/* AI Settings — custom prompts */
 .prisma-custom-prompt-list {
   display: flex;
   flex-direction: column;
@@ -5175,7 +4611,6 @@ button[class*=prisma-]:focus-visible {
   gap: 10px;
 }
 
-/* vis-timeline overrides for theme compatibility */
 .prisma-timeline-modal .vis-timeline {
   border: 1px solid var(--background-modifier-border);
   background: var(--background-primary);
@@ -5215,9 +4650,6 @@ button[class*=prisma-]:focus-visible {
 .prisma-timeline-modal .vis-item.prisma-timeline-item-allday .vis-dot {
   background-color: transparent;
   border-width: 3px;
-}
-.prisma-timeline-modal .vis-item {
-  /* Timed events: square dot */
 }
 .prisma-timeline-modal .vis-item.prisma-timeline-item-timed .vis-dot {
   border-radius: 2px;
@@ -5260,7 +4692,6 @@ button[class*=prisma-]:focus-visible {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-/* Heatmap Modal */
 .prisma-heatmap-modal {
   width: 68vw;
   max-width: 900px;
@@ -5501,7 +4932,6 @@ button[class*=prisma-]:focus-visible {
   text-decoration: underline;
 }
 
-/* Move By Modal - Compact Button-Based UI */
 .prisma-move-by-modal h3 {
   margin: 0 0 16px;
   font-size: var(--font-ui-large);
@@ -5600,7 +5030,6 @@ button[class*=prisma-]:focus-visible {
   border-color: var(--interactive-accent);
 }
 
-/* Responsive adjustments */
 @media (width <= 768px) {
   .prisma-move-by-amount-group,
   .prisma-move-by-unit-group {
@@ -5613,7 +5042,6 @@ button[class*=prisma-]:focus-visible {
     flex: 1 1 calc(33.333% - 4px);
   }
 }
-/* Event Notification Modal */
 .prisma-event-notification-modal .modal {
   max-width: 600px;
   width: 90%;
@@ -5792,7 +5220,6 @@ button[class*=prisma-]:focus-visible {
   user-select: none;
 }
 
-/* Responsive adjustments for notification modal */
 @media (width <= 768px) {
   .prisma-event-notification-modal .modal {
     max-width: 95%;
@@ -5865,7 +5292,6 @@ button[class*=prisma-]:focus-visible {
     font-size: 12px;
   }
 }
-/* Global Search Modal Styles */
 .prisma-global-search-modal .modal {
   width: 85vw;
   max-width: 1170px;
@@ -5874,12 +5300,10 @@ button[class*=prisma-]:focus-visible {
 }
 .prisma-global-search-modal .modal-content {
   height: 100%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
-.prisma-global-search-modal .modal-content {
-  min-height: 0;
 }
 .prisma-global-search-modal .prisma-generic-event-list-modal {
   flex: 1;
@@ -5932,24 +5356,15 @@ button[class*=prisma-]:focus-visible {
 .prisma-filter-cycle-button:hover {
   background-color: var(--background-modifier-hover);
 }
-.prisma-filter-cycle-button {
-  /* State: none (normal) */
-}
 .prisma-filter-cycle-button.prisma-filter-state-none {
   border-color: var(--background-modifier-border);
   background-color: var(--background-primary);
   color: var(--text-muted);
 }
-.prisma-filter-cycle-button {
-  /* State: skip (hiding events) */
-}
 .prisma-filter-cycle-button.prisma-filter-state-skip {
   border-color: var(--text-error);
   background-color: rgb(var(--color-red-rgb), 0.1);
   color: var(--text-error);
-}
-.prisma-filter-cycle-button {
-  /* State: only (showing only certain events) */
 }
 .prisma-filter-cycle-button.prisma-filter-state-only {
   border-color: var(--interactive-accent);
@@ -5957,12 +5372,8 @@ button[class*=prisma-]:focus-visible {
   color: var(--text-on-accent);
 }
 
-/* ===================================
-   Weekly Statistics Modal
-   =================================== */
-/* Use higher specificity to override default modal styles */
-.app-container .modal-container:has(.prisma-weekly-stats-modal) > .modal,
-body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
+.app-container .modal.prisma-weekly-stats-modal,
+body .modal.prisma-weekly-stats-modal {
   max-width: 1120px;
   width: 90vw;
   min-width: 800px;
@@ -6256,10 +5667,6 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
   transform: translateY(0);
 }
 
-/* Stats body — used inside the modal AND inside grid-cell tabs (daily-stats,
-   monthly-calendar-stats, heatmap-monthly-stats). Make the table-container
-   shrink to remaining vertical space and scroll when entries overflow, so
-   long tables don't push the chart/header out of view. */
 .prisma-interval-stats-view {
   display: flex;
   flex-direction: column;
@@ -6293,10 +5700,6 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
   width: 100%;
   height: 100%;
 }
-.prisma-weekly-stats-modal {
-  /* Cap the chart so the table always has room below it inside the modal.
-     Without this, a tall canvas can push the table-container to ~0 height. */
-}
 .prisma-weekly-stats-modal .prisma-stats-chart-container {
   max-height: 360px;
 }
@@ -6329,19 +5732,14 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
   border-right: none;
 }
 
-/* ========================================
-   STATISTICS MODAL - MOBILE RESPONSIVE
-   ======================================== */
 @media (width <= 768px) {
-  /* Override modal width for mobile */
-  .app-container .modal-container:has(.prisma-weekly-stats-modal) > .modal,
-  body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
+  .app-container .modal.prisma-weekly-stats-modal,
+  body .modal.prisma-weekly-stats-modal {
     max-width: 92vw;
     width: 92vw;
     min-width: unset;
     margin: 0 auto;
   }
-  /* Header: 2 rows instead of 6 */
   .prisma-stats-header {
     display: grid;
     grid-template-columns: auto 1fr auto;
@@ -6350,7 +5748,6 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
     padding-bottom: 12px;
     align-items: center;
   }
-  /* Row 1: Previous | Duration + Date + Events | Next */
   .prisma-stats-nav-button:first-child {
     grid-column: 1;
     grid-row: 1;
@@ -6373,7 +5770,6 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
     font-size: 11px;
     padding: 4px 8px;
   }
-  /* Row 2: Controls spanning full width */
   .prisma-stats-middle-section {
     grid-column: 1/-1;
     grid-row: 2;
@@ -6423,7 +5819,6 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
     width: 14px;
     height: 14px;
   }
-  /* Chart: Much bigger pie chart */
   .prisma-stats-chart-section {
     margin-bottom: 1rem;
   }
@@ -6442,13 +5837,11 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
   .prisma-weekly-stats-modal .prisma-stats-chart-container canvas {
     max-height: 575px;
   }
-  /* Table: Bigger text, better column proportions */
   .prisma-stats-table {
     font-size: 13px;
     width: 100%;
     table-layout: fixed;
   }
-  /* Column widths: Name 40%, others ~20% each */
   .prisma-weekly-stats-modal .prisma-stats-table th:nth-child(1),
   .prisma-weekly-stats-modal .prisma-stats-table td:nth-child(1) {
     width: 40%;
@@ -6465,7 +5858,6 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
   .prisma-weekly-stats-modal .prisma-stats-table td {
     padding: 8px 6px;
   }
-  /* Compact pagination */
   .prisma-stats-pagination {
     flex-wrap: wrap;
     gap: 6px;
@@ -6484,10 +5876,6 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
     font-size: 11px;
   }
 }
-/* ===================================
-   Recurring Events Modal - Type Filter & Badges
-   =================================== */
-/* Filters container - horizontal layout with items */
 .prisma-recurring-events-modal-filters {
   display: flex;
   align-items: center;
@@ -6500,7 +5888,6 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
   flex-wrap: wrap;
 }
 
-/* Type filter section */
 .prisma-recurring-events-type-filter {
   display: flex;
   align-items: center;
@@ -6541,6 +5928,7 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
   display: flex;
   align-items: center;
   margin-top: 0.75rem;
+  margin-bottom: 1rem;
 }
 .prisma-recurring-events-checkbox-label {
   display: flex;
@@ -6558,7 +5946,6 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
   accent-color: var(--interactive-accent);
 }
 
-/* Title row with type badge */
 .prisma-recurring-event-title-row {
   display: flex;
   align-items: center;
@@ -6566,7 +5953,6 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
   flex-wrap: wrap;
 }
 
-/* Type badge base styles */
 .prisma-recurring-type-badge {
   display: inline-flex;
   align-items: center;
@@ -6618,7 +6004,6 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
   color: rgb(var(--badge-color-dark));
 }
 
-/* Responsive adjustments */
 @media (width <= 768px) {
   .prisma-recurring-events-modal-filters {
     flex-direction: column;
@@ -6635,7 +6020,6 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
     padding: 0.15rem 0.5rem;
   }
 }
-/* Category Select Modal */
 .prisma-category-select-modal {
   min-width: 400px;
   max-width: 500px;
@@ -6690,11 +6074,22 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 .prisma-category-list-item:hover {
   background-color: var(--background-modifier-hover);
 }
+.prisma-category-list-item:active {
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
 .prisma-category-list-item.is-selected {
   background-color: var(--background-modifier-active-hover);
 }
 
-/* General modal button container - used across all modals */
+.prisma-category-empty-message {
+  padding: 12px;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  font-style: italic;
+  text-align: center;
+}
+
 .prisma-modal-button-container {
   display: flex;
   gap: 8px;
@@ -6703,7 +6098,6 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
   margin-top: 16px;
 }
 
-/* ICS Import Modal */
 .prisma-ics-import-modal h2 {
   margin-bottom: 1rem;
   font-size: 1.2rem;
@@ -6755,7 +6149,6 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
   margin: 0;
 }
 
-/* ICS Import Progress Modal */
 .prisma-caldav-accounts-container {
   margin: 1rem 0;
   display: flex;
@@ -6845,7 +6238,6 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
   cursor: pointer;
 }
 
-/* CalDAV Modal */
 .prisma-caldav-modal {
   min-width: 500px;
 }
@@ -6886,7 +6278,6 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
   cursor: pointer;
 }
 
-/* Frontmatter Propagation Modal */
 .prisma-frontmatter-changes {
   margin: 1.5rem 0;
   padding: 1rem;
@@ -6906,7 +6297,6 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
   color: var(--text-error);
 }
 
-/* Category Assign Modal */
 .prisma-category-search-container {
   margin-bottom: 1rem;
 }
@@ -6918,6 +6308,9 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
   background-color: var(--background-primary);
   color: var(--text-normal);
   font-size: var(--font-ui-small);
+}
+.prisma-category-search-input::placeholder {
+  color: var(--text-muted);
 }
 .prisma-category-search-input:focus {
   outline: none;
@@ -7062,7 +6455,6 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
   display: none;
 }
 
-/* Category display in event modal */
 .prisma-category-display-content {
   display: flex;
   align-items: center;
@@ -7109,7 +6501,6 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
   max-width: 1100px;
 }
 
-/* Untracked Events Dropdown */
 .prisma-untracked-dropdown-wrapper {
   position: relative;
   display: inline-flex;
@@ -7295,7 +6686,6 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
   color: var(--link-color-hover);
 }
 
-/* Mobile responsiveness */
 @media (width <= 768px) {
   .prisma-untracked-dropdown {
     width: calc(100vw - 32px);
@@ -7350,7 +6740,7 @@ div.vis-configuration-wrapper::after {
 div.vis-configuration.vis-config-option-container {
   display: block;
   width: 495px;
-  background-color: #fff;
+  background-color: #ffffff;
   border: 2px solid #f7f8fa;
   border-radius: 4px;
   margin-top: 20px;
@@ -7377,7 +6767,7 @@ div.vis-configuration.vis-config-button {
 div.vis-configuration.vis-config-button.hover {
   background-color: #4588e6;
   border: 2px solid #214373;
-  color: #fff;
+  color: #ffffff;
 }
 
 div.vis-configuration.vis-config-item {
@@ -7433,7 +6823,7 @@ div.vis-configuration.vis-config-colorBlock {
   top: 1px;
   width: 30px;
   height: 19px;
-  border: 1px solid #444;
+  border: 1px solid #444444;
   border-radius: 2px;
   padding: 0;
   margin: 0;
@@ -7468,16 +6858,9 @@ input.vis-configuration.vis-config-range {
 input.vis-configuration.vis-config-range::-webkit-slider-runnable-track {
   width: 300px;
   height: 5px;
-  background: #dedede; /* Old browsers */
-  background: linear-gradient(top, #dedede 0%, #c8c8c8 99%); /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #dedede), color-stop(99%, #c8c8c8)); /* Chrome,Safari4+ */
-  background: linear-gradient(top, #dedede 0%, #c8c8c8 99%); /* Chrome10+,Safari5.1+ */
-  background: linear-gradient(top, #dedede 0%, #c8c8c8 99%); /* Opera 11.10+ */
-  background: linear-gradient(top, #dedede 0%, #c8c8c8 99%); /* IE10+ */
-  background: linear-gradient(to bottom, #dedede 0%, #c8c8c8 99%); /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#dedede', endColorstr='#c8c8c8',GradientType=0 ); /* IE6-9 */
-  border: 1px solid #999;
-  box-shadow: #aaa 0 0 3px 0;
+  background: linear-gradient(to bottom, #dedede 0%, #c8c8c8 99%);
+  border: 1px solid #999999;
+  box-shadow: #aaaaaa 0 0 3px 0;
   border-radius: 3px;
 }
 
@@ -7487,14 +6870,7 @@ input.vis-configuration.vis-config-range::-webkit-slider-thumb {
   height: 17px;
   width: 17px;
   border-radius: 50%;
-  background: #3876c2; /* Old browsers */
-  background: linear-gradient(top, #3876c2 0%, #385380 100%); /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #3876c2), color-stop(100%, #385380)); /* Chrome,Safari4+ */
-  background: linear-gradient(top, #3876c2 0%, #385380 100%); /* Chrome10+,Safari5.1+ */
-  background: linear-gradient(top, #3876c2 0%, #385380 100%); /* Opera 11.10+ */
-  background: linear-gradient(top, #3876c2 0%, #385380 100%); /* IE10+ */
-  background: linear-gradient(to bottom, #3876c2 0%, #385380 100%); /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#3876c2', endColorstr='#385380',GradientType=0 ); /* IE6-9 */
+  background: linear-gradient(to bottom, #3876c2 0%, #385380 100%);
   box-shadow: #111927 0 0 1px 0;
   margin-top: -7px;
 }
@@ -7504,29 +6880,15 @@ input.vis-configuration.vis-config-range:focus {
 }
 
 input.vis-configuration.vis-config-range:focus::-webkit-slider-runnable-track {
-  background: #9d9d9d; /* Old browsers */
-  background: linear-gradient(top, #9d9d9d 0%, #c8c8c8 99%); /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #9d9d9d), color-stop(99%, #c8c8c8)); /* Chrome,Safari4+ */
-  background: linear-gradient(top, #9d9d9d 0%, #c8c8c8 99%); /* Chrome10+,Safari5.1+ */
-  background: linear-gradient(top, #9d9d9d 0%, #c8c8c8 99%); /* Opera 11.10+ */
-  background: linear-gradient(top, #9d9d9d 0%, #c8c8c8 99%); /* IE10+ */
-  background: linear-gradient(to bottom, #9d9d9d 0%, #c8c8c8 99%); /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#9d9d9d', endColorstr='#c8c8c8',GradientType=0 ); /* IE6-9 */
+  background: linear-gradient(to bottom, #9d9d9d 0%, #c8c8c8 99%);
 }
 
 input.vis-configuration.vis-config-range::-moz-range-track {
   width: 300px;
   height: 10px;
-  background: #dedede; /* Old browsers */
-  background: linear-gradient(top, #dedede 0%, #c8c8c8 99%); /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #dedede), color-stop(99%, #c8c8c8)); /* Chrome,Safari4+ */
-  background: linear-gradient(top, #dedede 0%, #c8c8c8 99%); /* Chrome10+,Safari5.1+ */
-  background: linear-gradient(top, #dedede 0%, #c8c8c8 99%); /* Opera 11.10+ */
-  background: linear-gradient(top, #dedede 0%, #c8c8c8 99%); /* IE10+ */
-  background: linear-gradient(to bottom, #dedede 0%, #c8c8c8 99%); /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#dedede', endColorstr='#c8c8c8',GradientType=0 ); /* IE6-9 */
-  border: 1px solid #999;
-  box-shadow: #aaa 0 0 3px 0;
+  background: linear-gradient(to bottom, #dedede 0%, #c8c8c8 99%);
+  border: 1px solid #999999;
+  box-shadow: #aaaaaa 0 0 3px 0;
   border-radius: 3px;
 }
 
@@ -7557,12 +6919,12 @@ input.vis-configuration.vis-config-range::-ms-track {
 }
 
 input.vis-configuration.vis-config-range::-ms-fill-lower {
-  background: #777;
+  background: #777777;
   border-radius: 10px;
 }
 
 input.vis-configuration.vis-config-range::-ms-fill-upper {
-  background: #ddd;
+  background: #dddddd;
   border-radius: 10px;
 }
 
@@ -7575,11 +6937,11 @@ input.vis-configuration.vis-config-range::-ms-thumb {
 }
 
 input.vis-configuration.vis-config-range:focus::-ms-fill-lower {
-  background: #888;
+  background: #888888;
 }
 
 input.vis-configuration.vis-config-range:focus::-ms-fill-upper {
-  background: #ccc;
+  background: #cccccc;
 }
 
 .vis-configuration-popup {
@@ -7590,7 +6952,7 @@ input.vis-configuration.vis-config-range:focus::-ms-fill-upper {
   height: 30px;
   width: 150px;
   text-align: center;
-  color: #fff;
+  color: #ffffff;
   font-size: 14px;
   border-radius: 4px;
   -webkit-transition: opacity 0.3s ease-in-out;
@@ -7631,7 +6993,7 @@ div.vis-tooltip {
   white-space: nowrap;
   font-family: verdana;
   font-size: 14px;
-  color: #000;
+  color: #000000;
   background-color: #f5f4ed;
   -moz-border-radius: 3px;
   -webkit-border-radius: 3px;
@@ -7642,39 +7004,6 @@ div.vis-tooltip {
   z-index: 5;
 }
 
-.vis-timeline {
-  /*
-   -webkit-transition: height .4s ease-in-out;
-   transition:         height .4s ease-in-out;
-   */
-}
-
-.vis-panel {
-  /*
-   -webkit-transition: height .4s ease-in-out, top .4s ease-in-out;
-   transition:         height .4s ease-in-out, top .4s ease-in-out;
-   */
-}
-
-.vis-axis {
-  /*
-   -webkit-transition: top .4s ease-in-out;
-   transition:         top .4s ease-in-out;
-   */
-}
-
-/* TODO: get animation working nicely
-
-.vis-item {
-  -webkit-transition: top .4s ease-in-out;
-  transition:         top .4s ease-in-out;
-}
-
-.vis-item.line {
-  -webkit-transition: height .4s ease-in-out, top .4s ease-in-out;
-  transition:         height .4s ease-in-out, top .4s ease-in-out;
-}
-/ **/
 .vis-current-time {
   background-color: #ff7f6e;
   width: 2px;
@@ -8084,7 +7413,7 @@ div.vis-tooltip {
 }
 
 .vis-label.vis-nested-group.vis-group-level-0 {
-  background-color: #fff;
+  background-color: #ffffff;
 }
 
 .vis-ltr .vis-label.vis-nested-group.vis-group-level-0 .vis-inner {
@@ -8435,10 +7764,10 @@ div.vis-tooltip {
 }
 
 .vis-graph-group8 {
-  fill: #f0f;
+  fill: #ff00ff;
   fill-opacity: 0;
   stroke-width: 2px;
-  stroke: #f0f;
+  stroke: #ff00ff;
 }
 
 .vis-graph-group9 {
@@ -8466,14 +7795,14 @@ div.vis-tooltip {
 .vis-timeline .vis-legend-background {
   stroke-width: 1px;
   fill-opacity: 0.9;
-  fill: #fff;
+  fill: #ffffff;
   stroke: #c2c2c2;
 }
 
 .vis-timeline .vis-outline {
   stroke-width: 1px;
   fill-opacity: 1;
-  fill: #fff;
+  fill: #ffffff;
   stroke: #e5e5e5;
 }
 
@@ -8554,7 +7883,6 @@ div.vis-tooltip {
   left: 0;
 }
 
-/* ─── Pro Upgrade Banner ──────────────────────────────────────── */
 .prisma-pro-upgrade-banner {
   display: flex;
   flex-direction: column;
@@ -8676,7 +8004,6 @@ div.vis-tooltip {
   color: var(--text-on-accent);
 }
 
-/* ─── Pro Feature Lightbox ────────────────────────────────────── */
 .prisma-pro-lightbox-overlay {
   position: fixed;
   inset: 0;
@@ -8705,7 +8032,6 @@ div.vis-tooltip {
     opacity: 1;
   }
 }
-/* ─── License Activations Badge ──────────────────────────────── */
 .prisma-license-activations-badge {
   display: inline-block;
   margin-left: 8px;
@@ -8718,8 +8044,6 @@ div.vis-tooltip {
   vertical-align: middle;
 }
 
-/* ─── Tab Pro Gate ───────────────────────────────────────────── */
-/* ─── Bases Calendar View ────────────────────────────────────── */
 .prisma-bases-view-empty {
   display: flex;
   align-items: center;
@@ -8729,8 +8053,6 @@ div.vis-tooltip {
   font-size: var(--font-ui-medium);
 }
 
-/* ─── Grid Layouts (Heatmap, Daily+Stats, Dual Daily) ────────── */
-/* ─── Daily + Stats / Dual Daily Grid Overrides ──────────────── */
 .prisma-daily-stats-grid,
 .prisma-dual-daily-grid {
   flex: 1;
@@ -8747,21 +8069,13 @@ div.vis-tooltip {
   min-height: 0;
 }
 
-/* ─── Monthly Calendar + Stats Grid Overrides ────────────────── */
-/* The left cell embeds the full month calendar. Because the cell is roughly
- * half the usual calendar width, FullCalendar's month grid would crush day
- * cells to unreadable sizes. We let the cell scroll vertically and give the
- * inner FullCalendar a generous minimum height so rows stay usable even when
- * the grid has 6 visible weeks. Horizontal overflow is clipped — widths
- * shrink to fit the cell. */
 .prisma-monthly-calendar-stats-grid {
   flex: 1;
   min-height: 0;
 }
 
 .prisma-monthly-calendar-stats-grid-cell {
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden auto;
 }
 .prisma-monthly-calendar-stats-grid-cell .prisma-calendar-container {
   flex: 1;
@@ -8774,7 +8088,6 @@ div.vis-tooltip {
   min-height: 72px;
 }
 
-/* ─── Capacity Tracking ──────────────────────────────────────── */
 .prisma-capacity-indicator {
   display: inline-flex;
   align-items: center;
@@ -8789,6 +8102,7 @@ div.vis-tooltip {
   white-space: nowrap;
   vertical-align: middle;
 }
+.prisma-capacity-chart { /* intentional stub — chart canvas styles itself via Chart.js */ }
 .prisma-capacity-label {
   display: flex;
   align-items: center;
@@ -8816,7 +8130,6 @@ div.vis-tooltip {
   font-size: 0.9em;
 }
 
-/* ─── Daily Stats Renderer ───────────────────────────────────── */
 .prisma-daily-stats-header-bar {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -8859,7 +8172,6 @@ div.vis-tooltip {
   text-align: center;
 }
 
-/* ─── Dashboard Tab ─────────────────────────────────────────── */
 .prisma-dashboard-container {
   overflow-y: auto;
   padding: 16px;
@@ -9108,24 +8420,6 @@ div.vis-tooltip {
     max-height: 300px;
   }
 }
-/* ─── Gantt Tab (overrides — base styles injected by shared library) ── */
-.prisma-gantt-create-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  border-radius: var(--radius-s);
-  cursor: pointer;
-  background: none;
-  border: none;
-  color: var(--text-muted);
-}
-.prisma-gantt-create-btn:hover {
-  color: var(--text-normal);
-  background: var(--background-modifier-hover);
-}
-
-/* ─── View Filter Bar (Timeline, Heatmap, Gantt) ─────────── */
 .prisma-view-filter-bar {
   display: flex;
   align-items: center;
@@ -9154,7 +8448,6 @@ div.vis-tooltip {
   background-size: 10px;
 }
 
-/* ─── View Toolbar (shared across Timeline, Heatmap, Gantt) ── */
 .prisma-view-header-row {
   display: flex;
   align-items: center;
@@ -9180,7 +8473,6 @@ div.vis-tooltip {
   flex: 0 0 auto;
 }
 
-/* ─── Gantt Tab (overrides — base styles injected by shared library) ── */
 .prisma-gantt-create-btn {
   display: flex;
   align-items: center;
@@ -9197,21 +8489,18 @@ div.vis-tooltip {
   background: var(--background-modifier-hover);
 }
 
-/* The shared `.prisma-tab-panel` defaults to `height: auto; min-height: 100%` and
-   `.prisma-tab-body` defaults to `flex: 1 0 auto; min-height: 100%` so the calendar
-   tab's sticky toolbar/headers can scroll with the page (panel grows with content).
-   Gantt needs a strictly bounded height so its inner flex column (the wrapper)
-   can fill the viewport instead of collapsing to its 400px min-height. */
-.view-content.prisma-calendar-view-root .prisma-tab-panel:has(.prisma-gantt-wrapper) {
+.view-content.prisma-calendar-view-root .prisma-tab-panel[data-tab-id=gantt] {
   height: 100%;
   min-height: 0;
   flex: 1 1 auto;
 }
-.view-content.prisma-calendar-view-root .prisma-tab-panel:has(.prisma-gantt-wrapper) > .prisma-tab-body {
+.view-content.prisma-calendar-view-root .prisma-tab-panel[data-tab-id=gantt] > .prisma-tab-body {
   height: 100%;
   min-height: 0;
   flex: 1 1 auto;
 }
+
+.prisma-gantt-wrapper { /* intentional stub — TS-created flex column with no plugin-owned styling */ }
 
 .prisma-welcome-tagline-headline {
   display: block;
@@ -9310,7 +8599,7 @@ div.vis-tooltip {
   background: var(--background-secondary);
 }
 .prisma-first-launch-panel h3 {
-  margin: 0 0 0.25rem 0;
+  margin: 0 0 0.25rem;
 }
 
 .prisma-first-launch-helper {
@@ -9622,7 +8911,7 @@ div.vis-tooltip {
   background: var(--background-secondary);
 }
 .prisma-pro-welcome-next h3 {
-  margin: 0 0 0.55rem 0;
+  margin: 0 0 0.55rem;
   font-size: 1.05rem;
   font-weight: 700;
   color: var(--text-normal);
@@ -9664,7 +8953,7 @@ div.vis-tooltip {
   color: var(--text-accent-hover);
 }
 
-@media (max-width: 720px) {
+@media (width <= 720px) {
   .prisma-first-launch-mode-grid {
     grid-template-columns: 1fr;
   }
@@ -9672,7 +8961,6 @@ div.vis-tooltip {
     grid-template-columns: 1fr;
   }
 }
-/* Event modal — field containers (visibility toggled at runtime via .prisma-hidden) */
 .prisma-allday-event-fields {
   /* intentional stub */
 }
@@ -9689,7 +8977,6 @@ div.vis-tooltip {
   /* intentional stub */
 }
 
-/* Event preview modal */
 .prisma-event-preview-time-section {
   /* intentional stub */
 }
@@ -9698,7 +8985,6 @@ div.vis-tooltip {
   /* intentional stub */
 }
 
-/* Event list modal */
 .prisma-events-modal-content {
   /* intentional stub */
 }
@@ -9711,7 +8997,6 @@ div.vis-tooltip {
   /* intentional stub */
 }
 
-/* Modal containers */
 .prisma-assignment-modal {
   /* intentional stub */
 }
@@ -9732,7 +9017,6 @@ div.vis-tooltip {
   /* intentional stub */
 }
 
-/* Settings — calendar management */
 .prisma-calendar-management {
   /* intentional stub */
 }
@@ -9765,17 +9049,14 @@ div.vis-tooltip {
   /* intentional stub */
 }
 
-/* Bases markdown render inside series modal */
 .prisma-bases-markdown-container {
   /* intentional stub */
 }
 
-/* Category operation modal */
 .prisma-category-operation-untracked-toggle {
   /* intentional stub */
 }
 
-/* Property config indicators */
 .prisma-is-copied {
   /* intentional stub */
 }
@@ -9784,7 +9065,6 @@ div.vis-tooltip {
   /* intentional stub */
 }
 
-/* Mobile controls toggle */
 .prisma-mobile-controls-toggle-collapsed {
   /* intentional stub */
 }
@@ -9793,7 +9073,6 @@ div.vis-tooltip {
   /* intentional stub */
 }
 
-/* Page header (FullCalendar custom toolbar actions) */
 .prisma-page-header-actions {
   /* intentional stub */
 }
@@ -9802,7 +9081,6 @@ div.vis-tooltip {
   /* intentional stub */
 }
 
-/* Gantt view */
 .gantt-create-btn {
   /* intentional stub */
 }
@@ -9815,7 +9093,6 @@ div.vis-tooltip {
   /* intentional stub */
 }
 
-/* Action buttons (toolbar/context menu) */
 .prisma--btn {
   /* intentional stub */
 }
@@ -9844,36 +9121,26 @@ div.vis-tooltip {
   /* intentional stub */
 }
 
-/* Stats view */
 .prisma-stats-content {
   /* intentional stub */
 }
 
-/* Holiday calendar event marker */
 .prisma-holiday-event {
   /* intentional stub */
 }
 
-/* Series timeline list item */
 .prisma-timeline-item {
   /* intentional stub */
 }
 
-/* Heatmap monthly-stats family — `cls("heatmap-monthly-stats-")` is a dynamic
- * prefix concatenated at runtime with the stat-row id. We anchor the prefix
- * with one literal selector so the static scanner can resolve it. */
 .prisma-heatmap-monthly-stats-row {
   /* intentional stub — dynamic prefix anchor */
 }
 
-/* Integration delete confirmation — class includes integrationId at runtime
- * (e.g. prisma-integration-delete-caldav-personal). One literal anchors the
- * prefix for the scanner. */
 .prisma-integration-delete-confirmation {
   /* intentional stub — dynamic prefix anchor */
 }
 
-/* AI chat — operation cards and execute button */
 .prisma-ai-chat-operations {
   /* intentional stub */
 }

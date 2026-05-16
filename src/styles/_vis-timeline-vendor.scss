@@ -1,4 +1,15 @@
 /* stylelint-disable */
+
+// Vis-timeline's original CSS stacked six redundant `background:` declarations
+// per range-slider rule for browsers we don't ship to (Chrome <26, FF <16,
+// Opera <12, IE10, plus the IE filter() fallback). Obsidian runs on modern
+// Chromium-Electron, so the standard `linear-gradient(to bottom, …)` is the
+// only declaration that matters. Mixins keep the four track/thumb rules to a
+// single declaration each.
+@mixin range-slider-gradient($start, $end, $stop: 99%) {
+	background: linear-gradient(to bottom, $start 0%, $end $stop);
+}
+
 .vis .overlay {
 	position: absolute;
 	top: 0;
@@ -42,7 +53,7 @@ div.vis-configuration-wrapper::after {
 div.vis-configuration.vis-config-option-container {
 	display: block;
 	width: 495px;
-	background-color: #fff;
+	background-color: #ffffff;
 	border: 2px solid #f7f8fa;
 	border-radius: 4px;
 	margin-top: 20px;
@@ -69,7 +80,7 @@ div.vis-configuration.vis-config-button {
 div.vis-configuration.vis-config-button.hover {
 	background-color: #4588e6;
 	border: 2px solid #214373;
-	color: #fff;
+	color: #ffffff;
 }
 
 div.vis-configuration.vis-config-item {
@@ -125,7 +136,7 @@ div.vis-configuration.vis-config-colorBlock {
 	top: 1px;
 	width: 30px;
 	height: 19px;
-	border: 1px solid #444;
+	border: 1px solid #444444;
 	border-radius: 2px;
 	padding: 0;
 	margin: 0;
@@ -163,25 +174,9 @@ input.vis-configuration.vis-config-range {
 input.vis-configuration.vis-config-range::-webkit-slider-runnable-track {
 	width: 300px;
 	height: 5px;
-	background: #dedede; /* Old browsers */
-	background: linear-gradient(top, #dedede 0%, #c8c8c8 99%); /* FF3.6+ */
-	background: -webkit-gradient(
-		linear,
-		left top,
-		left bottom,
-		color-stop(0%, #dedede),
-		color-stop(99%, #c8c8c8)
-	); /* Chrome,Safari4+ */
-
-	background: linear-gradient(top, #dedede 0%, #c8c8c8 99%); /* Chrome10+,Safari5.1+ */
-
-	background: linear-gradient(top, #dedede 0%, #c8c8c8 99%); /* Opera 11.10+ */
-
-	background: linear-gradient(top, #dedede 0%, #c8c8c8 99%); /* IE10+ */
-	background: linear-gradient(to bottom, #dedede 0%, #c8c8c8 99%); /* W3C */
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#dedede', endColorstr='#c8c8c8',GradientType=0 ); /* IE6-9 */
-	border: 1px solid #999;
-	box-shadow: #aaa 0 0 3px 0;
+	@include range-slider-gradient(#dedede, #c8c8c8);
+	border: 1px solid #999999;
+	box-shadow: #aaaaaa 0 0 3px 0;
 	border-radius: 3px;
 }
 
@@ -191,23 +186,7 @@ input.vis-configuration.vis-config-range::-webkit-slider-thumb {
 	height: 17px;
 	width: 17px;
 	border-radius: 50%;
-	background: #3876c2; /* Old browsers */
-	background: linear-gradient(top, #3876c2 0%, #385380 100%); /* FF3.6+ */
-	background: -webkit-gradient(
-		linear,
-		left top,
-		left bottom,
-		color-stop(0%, #3876c2),
-		color-stop(100%, #385380)
-	); /* Chrome,Safari4+ */
-
-	background: linear-gradient(top, #3876c2 0%, #385380 100%); /* Chrome10+,Safari5.1+ */
-
-	background: linear-gradient(top, #3876c2 0%, #385380 100%); /* Opera 11.10+ */
-
-	background: linear-gradient(top, #3876c2 0%, #385380 100%); /* IE10+ */
-	background: linear-gradient(to bottom, #3876c2 0%, #385380 100%); /* W3C */
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#3876c2', endColorstr='#385380',GradientType=0 ); /* IE6-9 */
+	@include range-slider-gradient(#3876c2, #385380, 100%);
 	box-shadow: #111927 0 0 1px 0;
 	margin-top: -7px;
 }
@@ -217,47 +196,15 @@ input.vis-configuration.vis-config-range:focus {
 }
 
 input.vis-configuration.vis-config-range:focus::-webkit-slider-runnable-track {
-	background: #9d9d9d; /* Old browsers */
-	background: linear-gradient(top, #9d9d9d 0%, #c8c8c8 99%); /* FF3.6+ */
-	background: -webkit-gradient(
-		linear,
-		left top,
-		left bottom,
-		color-stop(0%, #9d9d9d),
-		color-stop(99%, #c8c8c8)
-	); /* Chrome,Safari4+ */
-
-	background: linear-gradient(top, #9d9d9d 0%, #c8c8c8 99%); /* Chrome10+,Safari5.1+ */
-
-	background: linear-gradient(top, #9d9d9d 0%, #c8c8c8 99%); /* Opera 11.10+ */
-
-	background: linear-gradient(top, #9d9d9d 0%, #c8c8c8 99%); /* IE10+ */
-	background: linear-gradient(to bottom, #9d9d9d 0%, #c8c8c8 99%); /* W3C */
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#9d9d9d', endColorstr='#c8c8c8',GradientType=0 ); /* IE6-9 */
+	@include range-slider-gradient(#9d9d9d, #c8c8c8);
 }
 
 input.vis-configuration.vis-config-range::-moz-range-track {
 	width: 300px;
 	height: 10px;
-	background: #dedede; /* Old browsers */
-	background: linear-gradient(top, #dedede 0%, #c8c8c8 99%); /* FF3.6+ */
-	background: -webkit-gradient(
-		linear,
-		left top,
-		left bottom,
-		color-stop(0%, #dedede),
-		color-stop(99%, #c8c8c8)
-	); /* Chrome,Safari4+ */
-
-	background: linear-gradient(top, #dedede 0%, #c8c8c8 99%); /* Chrome10+,Safari5.1+ */
-
-	background: linear-gradient(top, #dedede 0%, #c8c8c8 99%); /* Opera 11.10+ */
-
-	background: linear-gradient(top, #dedede 0%, #c8c8c8 99%); /* IE10+ */
-	background: linear-gradient(to bottom, #dedede 0%, #c8c8c8 99%); /* W3C */
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#dedede', endColorstr='#c8c8c8',GradientType=0 ); /* IE6-9 */
-	border: 1px solid #999;
-	box-shadow: #aaa 0 0 3px 0;
+	@include range-slider-gradient(#dedede, #c8c8c8);
+	border: 1px solid #999999;
+	box-shadow: #aaaaaa 0 0 3px 0;
 	border-radius: 3px;
 }
 
@@ -291,12 +238,12 @@ input.vis-configuration.vis-config-range::-ms-track {
 }
 
 input.vis-configuration.vis-config-range::-ms-fill-lower {
-	background: #777;
+	background: #777777;
 	border-radius: 10px;
 }
 
 input.vis-configuration.vis-config-range::-ms-fill-upper {
-	background: #ddd;
+	background: #dddddd;
 	border-radius: 10px;
 }
 
@@ -309,11 +256,11 @@ input.vis-configuration.vis-config-range::-ms-thumb {
 }
 
 input.vis-configuration.vis-config-range:focus::-ms-fill-lower {
-	background: #888;
+	background: #888888;
 }
 
 input.vis-configuration.vis-config-range:focus::-ms-fill-upper {
-	background: #ccc;
+	background: #cccccc;
 }
 
 .vis-configuration-popup {
@@ -324,7 +271,7 @@ input.vis-configuration.vis-config-range:focus::-ms-fill-upper {
 	height: 30px;
 	width: 150px;
 	text-align: center;
-	color: #fff;
+	color: #ffffff;
 	font-size: 14px;
 	border-radius: 4px;
 	-webkit-transition: opacity 0.3s ease-in-out;
@@ -365,7 +312,7 @@ div.vis-tooltip {
 	white-space: nowrap;
 	font-family: verdana;
 	font-size: 14px;
-	color: #000;
+	color: #000000;
 	background-color: #f5f4ed;
 	-moz-border-radius: 3px;
 	-webkit-border-radius: 3px;
@@ -376,39 +323,10 @@ div.vis-tooltip {
 	z-index: 5;
 }
 
-.vis-timeline {
-	/*
-  -webkit-transition: height .4s ease-in-out;
-  transition:         height .4s ease-in-out;
-  */
-}
-
-.vis-panel {
-	/*
-  -webkit-transition: height .4s ease-in-out, top .4s ease-in-out;
-  transition:         height .4s ease-in-out, top .4s ease-in-out;
-  */
-}
-
-.vis-axis {
-	/*
-  -webkit-transition: top .4s ease-in-out;
-  transition:         top .4s ease-in-out;
-  */
-}
-
-/* TODO: get animation working nicely
-
-.vis-item {
-  -webkit-transition: top .4s ease-in-out;
-  transition:         top .4s ease-in-out;
-}
-
-.vis-item.line {
-  -webkit-transition: height .4s ease-in-out, top .4s ease-in-out;
-  transition:         height .4s ease-in-out, top .4s ease-in-out;
-}
-/ **/
+// Animation stubs for `.vis-timeline`, `.vis-panel`, `.vis-axis`, `.vis-item`,
+// and `.vis-item.line` previously sat here with only commented-out transition
+// rules. They emitted empty selectors that re-appeared later in this file as
+// real rules, tripping the duplicate-selector lint without adding any styling.
 
 .vis-current-time {
 	background-color: #ff7f6e;
@@ -821,7 +739,7 @@ div.vis-tooltip {
 }
 
 .vis-label.vis-nested-group.vis-group-level-0 {
-	background-color: #fff;
+	background-color: #ffffff;
 }
 
 .vis-ltr .vis-label.vis-nested-group.vis-group-level-0 .vis-inner {
@@ -1173,10 +1091,10 @@ div.vis-tooltip {
 }
 
 .vis-graph-group8 {
-	fill: #f0f;
+	fill: #ff00ff;
 	fill-opacity: 0;
 	stroke-width: 2px;
-	stroke: #f0f;
+	stroke: #ff00ff;
 }
 
 .vis-graph-group9 {
@@ -1204,14 +1122,14 @@ div.vis-tooltip {
 .vis-timeline .vis-legend-background {
 	stroke-width: 1px;
 	fill-opacity: 0.9;
-	fill: #fff;
+	fill: #ffffff;
 	stroke: #c2c2c2;
 }
 
 .vis-timeline .vis-outline {
 	stroke-width: 1px;
 	fill-opacity: 1;
-	fill: #fff;
+	fill: #ffffff;
 	stroke: #e5e5e5;
 }
 

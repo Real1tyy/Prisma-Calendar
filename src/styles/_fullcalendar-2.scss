@@ -1,4 +1,4 @@
-/* "+more" link styling for dayMaxEventRows */
+// "+more" link styling for dayMaxEventRows
 .prisma-calendar-container {
 	.fc-daygrid-more-link {
 		font-size: var(--font-ui-smaller);
@@ -17,7 +17,7 @@
 		}
 	}
 
-	/* Popover styling for "+more" events */
+	// Popover styling for "+more" events
 	.fc-popover {
 		background: var(--background-primary);
 		border: 1px solid var(--background-modifier-border);

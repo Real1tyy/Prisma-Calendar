@@ -1,4 +1,4 @@
-/* Category Assign Modal */
+// Category Assign Modal
 .prisma-category-search {
 	&-container {
 		margin-bottom: 1rem;
@@ -12,6 +12,10 @@
 		background-color: var(--background-primary);
 		color: var(--text-normal);
 		font-size: var(--font-ui-small);
+
+		&::placeholder {
+			color: var(--text-muted);
+		}
 
 		&:focus {
 			outline: none;
@@ -181,7 +185,7 @@
 	}
 }
 
-/* Category display in event modal */
+// Category display in event modal
 .prisma-category-display-content {
 	display: flex;
 	align-items: center;

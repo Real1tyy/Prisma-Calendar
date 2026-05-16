@@ -1,5 +1,4 @@
-/* vis-timeline overrides for theme compatibility */
-
+// vis-timeline overrides for theme compatibility
 .prisma-timeline-modal {
 	.vis-timeline {
 		border: 1px solid var(--background-modifier-border);
@@ -54,7 +53,7 @@
 			}
 		}
 
-		/* Timed events: square dot */
+		// Timed events: square dot
 		&.prisma-timeline-item-timed .vis-dot {
 			border-radius: 2px;
 		}

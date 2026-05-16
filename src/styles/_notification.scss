@@ -1,4 +1,4 @@
-/* Move By Modal - Compact Button-Based UI */
+// Move By Modal - Compact Button-Based UI
 .prisma-move-by {
 	&-modal h3 {
 		margin: 0 0 16px;
@@ -113,7 +113,7 @@
 	}
 }
 
-/* Responsive adjustments */
+// Responsive adjustments
 @media (width <= 768px) {
 	.prisma-move-by-amount-group,
 	.prisma-move-by-unit-group {
@@ -129,7 +129,7 @@
 	}
 }
 
-/* Event Notification Modal */
+// Event Notification Modal
 .prisma-event-notification {
 	&-modal {
 		.modal {
@@ -346,7 +346,7 @@
 	}
 }
 
-/* Responsive adjustments for notification modal */
+// Responsive adjustments for notification modal
 @media (width <= 768px) {
 	.prisma-event-notification-modal .modal {
 		max-width: 95%;

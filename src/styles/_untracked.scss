@@ -1,4 +1,4 @@
-/* Untracked Events Dropdown */
+// Untracked Events Dropdown
 .prisma-untracked-dropdown {
 	&-wrapper {
 		position: relative;
@@ -214,7 +214,7 @@
 	}
 }
 
-/* Mobile responsiveness */
+// Mobile responsiveness
 @media (width <= 768px) {
 	.prisma-untracked-dropdown {
 		width: calc(100vw - 32px);

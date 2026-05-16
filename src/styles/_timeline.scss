@@ -1,8 +1,7 @@
-/* Timeline (used in both modal and tab contexts) */
-
-/* Common: inner element holding the header + timeline container.
-   Always a flex column that fills its parent — no fixed width/height
-   so it adapts to whatever ancestor (modal-content or tab body) it lives in. */
+// Timeline (used in both modal and tab contexts)
+// Common: inner element holding the header + timeline container.
+// Always a flex column that fills its parent — no fixed width/height
+// so it adapts to whatever ancestor (modal-content or tab body) it lives in. 
 .prisma-timeline-modal {
 	display: flex;
 	flex-direction: column;
@@ -33,14 +32,14 @@
 	}
 }
 
-/* Modal-only sizing: applies to the .modal wrapper that showModal tags. */
+// Modal-only sizing: applies to the .modal wrapper that showModal tags.
 .modal.prisma-timeline-modal {
 	width: 98vw;
 	max-width: none;
 	height: 90vh;
 }
 
-/* Modal content area — flush padding so the inner flex column owns the layout. */
+// Modal content area — flush padding so the inner flex column owns the layout.
 .modal-content.prisma-timeline-modal {
 	height: 100%;
 	padding: 0;
@@ -84,7 +83,7 @@
 	}
 }
 
-/* Tab-context padding tweaks (less generous than the modal). */
+// Tab-context padding tweaks (less generous than the modal).
 .prisma-tab-panel .prisma-timeline-modal {
 	> .prisma-timeline-modal-header {
 		padding-left: 1rem;
@@ -96,13 +95,13 @@
 	}
 }
 
-/* The shared `.prisma-tab-panel` defaults to `height: auto; min-height: 100%` and
-   `.prisma-tab-body` defaults to `flex: 1 0 auto; min-height: 100%` so the calendar
-   tab's sticky toolbar/headers can scroll with the page (panel grows with content).
-   The timeline needs the opposite: a strictly bounded height so its inner flex
-   column can resolve. Override both via the `:has(.prisma-timeline-modal)` scope
-   — purely structural specificity, no `!important`. */
-.view-content.prisma-calendar-view-root .prisma-tab-panel:has(.prisma-timeline-modal) {
+// The shared `.prisma-tab-panel` defaults to `height: auto; min-height: 100%` and
+// `.prisma-tab-body` defaults to `flex: 1 0 auto; min-height: 100%` so the calendar
+// tab's sticky toolbar/headers can scroll with the page (panel grows with content).
+// The timeline needs the opposite: a strictly bounded height so its inner flex
+// column can resolve. Target the timeline panel via its stable `data-tab-id`
+// attribute — purely structural specificity, no `!important`.
+.view-content.prisma-calendar-view-root .prisma-tab-panel[data-tab-id="timeline"] {
 	height: 100%;
 	min-height: 0;
 	flex: 1 1 auto;

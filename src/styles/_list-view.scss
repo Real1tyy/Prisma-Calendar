@@ -1,15 +1,15 @@
-/* ========================================
-   LIST VIEW STYLING - MODERN & PROFESSIONAL
-   ======================================== */
+// ========================================
+// LIST VIEW STYLING - MODERN & PROFESSIONAL
+// ======================================== 
 
 .prisma-calendar-container {
-	/* List view table structure */
+	// List view table structure
 	.fc-list {
 		border: none;
 		background: var(--background-primary);
 	}
 
-	/* Date headers in list view - compact */
+	// Date headers in list view - compact
 	.fc-list-day-cushion {
 		background: var(--background-secondary);
 		padding: 6px 12px;
@@ -25,7 +25,7 @@
 		letter-spacing: 0.5px;
 	}
 
-	/* Empty state - no events message */
+	// Empty state - no events message
 	.fc-list-empty {
 		background: var(--background-primary);
 		color: var(--text-muted);
@@ -42,7 +42,7 @@
 		margin: 16px;
 	}
 
-	/* List table structure */
+	// List table structure
 	.fc-list-table {
 		border: none;
 
@@ -51,14 +51,14 @@
 		}
 	}
 
-	/* Event row container */
+	// Event row container
 	.fc-list-event {
 		cursor: pointer;
 		transition: all 0.15s ease;
 		border-bottom: 1px solid var(--background-modifier-border);
 		background: var(--background-primary);
 
-		/* Apply event color to list view rows with transparency */
+		// Apply event color to list view rows with transparency
 		&.prisma-calendar-event {
 			background: linear-gradient(
 				90deg,
@@ -67,14 +67,14 @@
 			);
 			border-left: 3px solid var(--event-color);
 
-			/* Hover state - subtle blue accent, NO WHITE */
+			// Hover state - subtle blue accent, NO WHITE
 			&:hover {
 				background: rgb(var(--interactive-accent-rgb), 0.08);
 				background-color: rgb(var(--interactive-accent-rgb), 0.08);
 				border-left-color: var(--interactive-accent);
 			}
 
-			/* Active/focus state - slightly more accent, still NO WHITE */
+			// Active/focus state - slightly more accent, still NO WHITE
 			&:active,
 			&:focus {
 				background: rgb(var(--interactive-accent-rgb), 0.06);
@@ -83,14 +83,14 @@
 			}
 		}
 
-		/* Hover state - subtle blue accent, NO WHITE */
+		// Hover state - subtle blue accent, NO WHITE
 		&:hover {
 			background: rgb(var(--interactive-accent-rgb), 0.08);
 			background-color: rgb(var(--interactive-accent-rgb), 0.08);
 			border-left-color: var(--interactive-accent);
 		}
 
-		/* Active/focus state - slightly more accent, still NO WHITE */
+		// Active/focus state - slightly more accent, still NO WHITE
 		&:active,
 		&:focus {
 			background: rgb(var(--interactive-accent-rgb), 0.06);
@@ -98,13 +98,13 @@
 			outline: none;
 		}
 
-		/* Event row cells - more compact */
+		// Event row cells - more compact
 		& > td {
 			padding: 8px 12px;
 			border: none;
 		}
 
-		/* Event content wrapper - compact vertical layout */
+		// Event content wrapper - compact vertical layout
 		.prisma-fc-event-content-wrapper {
 			display: flex;
 			flex-direction: column;
@@ -113,7 +113,7 @@
 			padding: 0;
 		}
 
-		/* Event title styling - prominent but compact */
+		// Event title styling - prominent but compact
 		.prisma-fc-event-title-custom {
 			font-weight: var(--font-weight-semibold);
 			color: var(--text-normal);
@@ -128,12 +128,12 @@
 			color: var(--text-accent);
 		}
 
-		/* Hide default FullCalendar title */
+		// Hide default FullCalendar title
 		.fc-list-event-title > a {
 			display: none;
 		}
 
-		/* Event properties in list view - compact */
+		// Event properties in list view - compact
 		.prisma-fc-event-props {
 			display: flex;
 			flex-wrap: wrap;
@@ -171,7 +171,7 @@
 			opacity: 0.9;
 		}
 
-		/* Property links in list view */
+		// Property links in list view
 		.prisma-fc-event-prop-link {
 			color: var(--text-accent);
 			text-decoration: none;
@@ -187,7 +187,7 @@
 			}
 		}
 
-		/* Virtual events in list view */
+		// Virtual events in list view
 		&.prisma-virtual-event {
 			opacity: 0.5;
 			font-style: italic;
@@ -199,7 +199,7 @@
 		}
 	}
 
-	/* Hover state for tr-level selectors */
+	// Hover state for tr-level selectors
 	tr.fc-list-event:hover td {
 		background: rgb(var(--interactive-accent-rgb), 0.08);
 		background-color: rgb(var(--interactive-accent-rgb), 0.08);
@@ -213,7 +213,7 @@
 		}
 	}
 
-	/* Event dot/graphic column - compact */
+	// Event dot/graphic column - compact
 	.fc-list-event-graphic {
 		padding: 8px 10px;
 		width: 32px;
@@ -221,7 +221,7 @@
 		text-align: center;
 	}
 
-	/* Event color dot - inherit event color */
+	// Event color dot - inherit event color
 	.fc-list-event-dot {
 		width: 10px;
 		height: 10px;
@@ -237,7 +237,7 @@
 		box-shadow: 0 2px 6px rgb(0 0 0 / 30%);
 	}
 
-	/* Event time column - compact */
+	// Event time column - compact
 	.fc-list-event-time {
 		width: 90px;
 		min-width: 90px;
@@ -249,7 +249,7 @@
 		white-space: nowrap;
 	}
 
-	/* Event title/content column - compact */
+	// Event title/content column - compact
 	.fc-list-event-title {
 		padding: 8px 12px;
 		color: var(--text-normal);
@@ -257,7 +257,7 @@
 	}
 }
 
-/* Responsive list view */
+// Responsive list view
 @media (width <= 768px) {
 	.prisma-calendar-container {
 		.fc-list-event-time {
@@ -291,7 +291,7 @@
 	}
 }
 
-/* Dark mode refinements for list view */
+// Dark mode refinements for list view
 .theme-dark .prisma-calendar-container {
 	.fc-list-day-cushion {
 		background: var(--background-secondary);

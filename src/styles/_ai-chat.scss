@@ -1,5 +1,4 @@
-/* AI Chat Sidebar */
-
+// AI Chat Sidebar
 .prisma-ai-chat {
 	&-container {
 		display: flex;
@@ -366,8 +365,7 @@
 	}
 }
 
-/* AI Settings — shared UI primitives */
-
+// AI Settings — shared UI primitives
 .prisma-hint {
 	font-size: 12px;
 	color: var(--text-muted);
@@ -444,8 +442,7 @@
 	resize: vertical;
 }
 
-/* AI Settings — custom prompts */
-
+// AI Settings — custom prompts
 .prisma-custom-prompt {
 	&-list {
 		display: flex;

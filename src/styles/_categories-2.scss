@@ -1,4 +1,4 @@
-/* Category Select Modal */
+// Category Select Modal
 .prisma-category-select {
 	&-modal {
 		min-width: 400px;
@@ -62,12 +62,25 @@
 		background-color: var(--background-modifier-hover);
 	}
 
+	&:active {
+		background-color: var(--interactive-accent);
+		color: var(--text-on-accent);
+	}
+
 	&.is-selected {
 		background-color: var(--background-modifier-active-hover);
 	}
 }
 
-/* General modal button container - used across all modals */
+.prisma-category-empty-message {
+	padding: 12px;
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+	font-style: italic;
+	text-align: center;
+}
+
+// General modal button container - used across all modals
 .prisma-modal-button-container {
 	display: flex;
 	gap: 8px;

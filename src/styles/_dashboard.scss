@@ -1,5 +1,4 @@
-/* ─── Capacity Tracking ──────────────────────────────────────── */
-
+// ─── Capacity Tracking ────────────────────────────────────────
 .prisma-capacity {
 	&-indicator {
 		display: inline-flex;
@@ -16,8 +15,7 @@
 		vertical-align: middle;
 	}
 
-	&-chart {
-	}
+	&-chart { /* intentional stub — chart canvas styles itself via Chart.js */ }
 
 	&-label {
 		display: flex;
@@ -50,8 +48,7 @@
 	}
 }
 
-/* ─── Daily Stats Renderer ───────────────────────────────────── */
-
+// ─── Daily Stats Renderer ─────────────────────────────────────
 .prisma-daily-stats-header {
 	&-bar {
 		display: grid;
@@ -100,8 +97,7 @@
 	text-align: center;
 }
 
-/* ─── Dashboard Tab ─────────────────────────────────────────── */
-
+// ─── Dashboard Tab ───────────────────────────────────────────
 .prisma-dashboard {
 	&-container {
 		overflow-y: auto;

@@ -1,4 +1,4 @@
-/* Settings Search */
+// Settings Search
 .prisma-settings-search {
 	margin-left: auto;
 	flex-shrink: 0;
@@ -32,7 +32,7 @@
 	}
 }
 
-/* Settings Tabs */
+// Settings Tabs
 .prisma-settings-nav {
 	margin-bottom: 24px;
 	border-bottom: 1px solid var(--background-modifier-border);
@@ -104,7 +104,7 @@
 	}
 }
 
-/* Color example list items */
+// Color example list items
 .prisma-color-example {
 	&-item {
 		display: flex;
@@ -139,7 +139,7 @@
 	color: var(--text-muted);
 }
 
-/* Color rule items - Compact single row layout */
+// Color rule items - Compact single row layout
 .prisma-color-rule {
 	&-item {
 		border: 1px solid var(--background-modifier-border);
@@ -231,7 +231,7 @@
 	}
 }
 
-/* Filter preset items */
+// Filter preset items
 .prisma-filter-preset {
 	&-item {
 		display: flex;

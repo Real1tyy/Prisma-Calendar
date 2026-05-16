@@ -1,5 +1,4 @@
-/* ─── View Filter Bar (Timeline, Heatmap, Gantt) ─────────── */
-
+// ─── View Filter Bar (Timeline, Heatmap, Gantt) ───────────
 .prisma-view-filter-bar {
 	display: flex;
 	align-items: center;
@@ -28,8 +27,7 @@
 	background-size: 10px;
 }
 
-/* ─── View Toolbar (shared across Timeline, Heatmap, Gantt) ── */
-
+// ─── View Toolbar (shared across Timeline, Heatmap, Gantt) ──
 .prisma-view-header-row {
 	display: flex;
 	align-items: center;

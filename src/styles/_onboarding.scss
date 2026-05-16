@@ -122,7 +122,7 @@
 	background: var(--background-secondary);
 
 	h3 {
-		margin: 0 0 0.25rem 0;
+		margin: 0 0 0.25rem;
 	}
 }
 
@@ -491,7 +491,7 @@
 	background: var(--background-secondary);
 
 	h3 {
-		margin: 0 0 0.55rem 0;
+		margin: 0 0 0.55rem;
 		font-size: 1.05rem;
 		font-weight: 700;
 		color: var(--text-normal);
@@ -544,7 +544,7 @@
 
 // ─── Responsive ───────────────────────────────────────────────────────────────
 
-@media (max-width: 720px) {
+@media (width <= 720px) {
 	.prisma-first-launch-mode-grid {
 		grid-template-columns: 1fr;
 	}

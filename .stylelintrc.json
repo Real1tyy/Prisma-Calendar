@@ -8,6 +8,8 @@
 		"declaration-property-value-keyword-no-deprecated": null,
 		"keyframes-name-pattern": null,
 		"no-duplicate-selectors": null,
-		"declaration-block-single-line-max-declarations": null
+		"declaration-block-single-line-max-declarations": null,
+		"color-hex-length": "long",
+		"no-empty-source": null
 	}
 }

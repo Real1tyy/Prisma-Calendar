@@ -1,4 +1,4 @@
-/* Batch Selection Styles - Now integrated into calendar toolbar */
+// Batch Selection Styles - Now integrated into calendar toolbar
 .fc-button.prisma-batch-action-btn {
 	background: var(--interactive-normal);
 	border: 1px solid var(--background-modifier-border);
@@ -110,7 +110,7 @@
 	}
 }
 
-/* Fix event collapsing in month view */
+// Fix event collapsing in month view
 .fc-daygrid-event.prisma-batch-selectable {
 	overflow: visible;
 
@@ -119,12 +119,12 @@
 	}
 }
 
-/* Checkbox for dot events (timed events in month view) - no .fc-event-main */
+// Checkbox for dot events (timed events in month view) - no .fc-event-main
 .fc-daygrid-dot-event.prisma-batch-selectable {
 	position: relative;
 }
 
-/* Shared checkbox styling for both block events (.fc-event-main::before) and dot events (::before) */
+// Shared checkbox styling for both block events (.fc-event-main::before) and dot events (::before)
 .fc-event.prisma-batch-selectable {
 	.fc-event-main::before {
 		content: "";
@@ -165,20 +165,14 @@
 	transition: all 0.2s ease;
 }
 
-/* Adjust checkbox position for compact month view block events (all-day events only, not dots) */
+// Adjust checkbox position for compact month view block events (all-day events only, not dots).
+// Dot events keep the base sizing defined above — the compact rule below only
+// matches `.fc-daygrid-block-event`, so no override is needed for dots.
 .fc-daygrid-block-event.prisma-batch-selectable .fc-event-main::before {
 	top: 1px;
 	right: 1px;
 	width: 14px;
 	height: 14px;
-}
-
-/* Ensure dot events always use full size (override any compact sizing) */
-.fc-daygrid-dot-event.prisma-batch-selectable::before {
-	top: 4px;
-	right: 4px;
-	width: 16px;
-	height: 16px;
 }
 
 .fc-daygrid-dot-event.prisma-batch-selectable:hover::before {
@@ -215,24 +209,20 @@
 	opacity: 1;
 }
 
-/* Smaller checkmark for compact month view block events (all-day events only, not dots) */
+// Smaller checkmark for compact month view block events (all-day events only, not dots).
+// Dot events inherit the base 10px size — the compact rule only targets `.fc-daygrid-block-event`.
 .fc-daygrid-block-event.prisma-batch-selected .fc-event-main::before {
 	font-size: 9px;
 }
 
-/* Ensure dot events always use full size checkmark */
-.fc-daygrid-dot-event.prisma-batch-selected::before {
-	font-size: 10px;
-}
-
-/* Event Selection States - Updated for FullCalendar DOM structure */
+// Event Selection States - Updated for FullCalendar DOM structure
 .fc-event.prisma-batch-selectable {
 	cursor: pointer;
 	transition:
 		box-shadow 0.2s ease,
 		z-index 0.2s ease;
 
-	/* Apply relative positioning to an inner element to avoid breaking FC's layout */
+	// Apply relative positioning to an inner element to avoid breaking FC's layout
 	.fc-event-main {
 		position: relative;
 		height: 100%;
@@ -256,13 +246,10 @@
 		0 4px 8px rgb(0 0 0 / 10%);
 }
 
-/* Selection animations */
-
-/* Removed animations that could affect event sizing */
-
-/* Removed keyframes that could cause event sizing issues */
-
-/* List view batch selection adjustments */
+// Selection animations
+// Removed animations that could affect event sizing
+// Removed keyframes that could cause event sizing issues
+// List view batch selection adjustments
 .prisma-calendar-container {
 	.fc-list-event.prisma-batch-selectable {
 		position: relative;
@@ -298,7 +285,7 @@
 	}
 }
 
-/* Responsive batch selection */
+// Responsive batch selection
 @media (width <= 768px) {
 	.prisma-batch-action-btn {
 		flex: 1;
@@ -315,7 +302,7 @@
 	}
 }
 
-/* Accessibility: reduce motion */
+// Accessibility: reduce motion
 @media (prefers-reduced-motion: reduce) {
 	.prisma-calendar-event {
 		transition: none;

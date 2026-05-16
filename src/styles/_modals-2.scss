@@ -1,4 +1,4 @@
-/* ICS Import Modal */
+// ICS Import Modal
 .prisma-ics-import {
 	&-modal h2 {
 		margin-bottom: 1rem;
@@ -62,8 +62,7 @@
 	}
 }
 
-/* ICS Import Progress Modal */
-
+// ICS Import Progress Modal
 .prisma-caldav-accounts {
 	&-container {
 		margin: 1rem 0;
@@ -171,8 +170,7 @@
 	cursor: pointer;
 }
 
-/* CalDAV Modal */
-
+// CalDAV Modal
 .prisma-caldav-modal {
 	min-width: 500px;
 }
@@ -220,7 +218,7 @@
 	}
 }
 
-/* Frontmatter Propagation Modal */
+// Frontmatter Propagation Modal
 .prisma-frontmatter-changes {
 	margin: 1.5rem 0;
 	padding: 1rem;

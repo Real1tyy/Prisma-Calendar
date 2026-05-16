@@ -13,7 +13,7 @@ article details {
 	border-radius: 8px;
 	margin-bottom: 0.75em;
 	background: rgba(109, 40, 217, 0.5);
-	color: #fff;
+	color: #ffffff;
 }
 
 .markdown details summary,
@@ -21,7 +21,7 @@ article details summary {
 	padding: 0.75em 1em;
 	font-weight: 600;
 	cursor: pointer;
-	color: #fff;
+	color: #ffffff;
 	transition: background 0.15s ease;
 }
 
@@ -55,7 +55,7 @@ article details a {
 
 [data-theme="light"] .markdown details summary,
 [data-theme="light"] article details summary {
-	color: #fff;
+	color: #ffffff;
 }
 
 [data-theme="light"] .markdown details a,
