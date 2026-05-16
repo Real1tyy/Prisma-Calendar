@@ -1,8 +1,7 @@
 import { type ActionDefMap, PluginApiGateway } from "@real1ty-obsidian-plugins";
 
 import type CustomCalendarPlugin from "../../main";
-import { buildActions } from "./action-definitions";
-import { GLOBAL_KEY } from "./contract-actions";
+import { buildActions, GLOBAL_KEY } from "./action-definitions";
 
 export class PrismaCalendarApiManager {
 	private readonly gateway: PluginApiGateway<ActionDefMap>;

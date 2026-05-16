@@ -14,6 +14,12 @@ export {
 	serializeContract,
 } from "./contract";
 export { canDeriveUrlCoercer, deriveUrlCoercer } from "./derive-url-coercer";
+// NOTE: external-apis (emitExternalApiDts, serializeExternalApiDts) is
+// deliberately NOT re-exported here. The emitter pulls in `prettier` and
+// `json-schema-to-typescript` — Node-only build-time deps that would bloat
+// (and break) Obsidian plugin bundles when this barrel is tree-shaken into
+// `main.js`. Callers (CLI script, drift tests) must import via the deep
+// subpath: `@real1ty-obsidian-plugins/integrations/api-gateway/external-apis`.
 export { DEFAULT_BASE_PATH, DEFAULT_CORS, DEFAULT_HOST, HttpApiServer } from "./http-api-server";
 export type {
 	HttpActionConfig,

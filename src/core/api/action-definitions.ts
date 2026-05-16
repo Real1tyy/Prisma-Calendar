@@ -2,6 +2,9 @@ import { type ActionDefMap, defineAction } from "@real1ty-obsidian-plugins";
 import { z } from "zod";
 
 import type CustomCalendarPlugin from "../../main";
+
+export const GLOBAL_KEY = "PrismaCalendar";
+
 import { SingleCalendarConfigSchema } from "../../types/settings";
 import { aiQuery } from "./ai-operations";
 import { batchDelete, batchMarkAsDone, batchMarkAsUndone, batchToggleSkip } from "./batch-operations";

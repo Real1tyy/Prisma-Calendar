@@ -1499,6 +1499,7 @@
 								"placeholder": "archived false",
 								"type": "string"
 							},
+							"dailyStatsGridState": {},
 							"dashboardGridState": {
 								"additionalProperties": {},
 								"propertyNames": {
@@ -1636,6 +1637,7 @@
 								"minimum": 50,
 								"type": "integer"
 							},
+							"dualDailyGridState": {},
 							"enabled": {
 								"default": true,
 								"type": "boolean"
@@ -1940,6 +1942,7 @@
 								"description": "Frontmatter property name for generating past recurring instances from source event start date (set to true to enable)",
 								"type": "string"
 							},
+							"heatmapMonthlyStatsGridState": {},
 							"hideWeekends": {
 								"default": false,
 								"description": "Hide Saturday and Sunday in calendar views",
@@ -2132,6 +2135,7 @@
 								"type": "string",
 								"widget": "color"
 							},
+							"monthlyCalendarStatsGridState": {},
 							"monthOddColor": {
 								"default": "#6b9080",
 								"type": "string",
@@ -3644,6 +3648,7 @@
 								"placeholder": "archived false",
 								"type": "string"
 							},
+							"dailyStatsGridState": {},
 							"dashboardGridState": {
 								"additionalProperties": {},
 								"propertyNames": {
@@ -3781,6 +3786,7 @@
 								"minimum": 50,
 								"type": "integer"
 							},
+							"dualDailyGridState": {},
 							"enabled": {
 								"default": true,
 								"type": "boolean"
@@ -4085,6 +4091,7 @@
 								"description": "Frontmatter property name for generating past recurring instances from source event start date (set to true to enable)",
 								"type": "string"
 							},
+							"heatmapMonthlyStatsGridState": {},
 							"hideWeekends": {
 								"default": false,
 								"description": "Hide Saturday and Sunday in calendar views",
@@ -4277,6 +4284,7 @@
 								"type": "string",
 								"widget": "color"
 							},
+							"monthlyCalendarStatsGridState": {},
 							"monthOddColor": {
 								"default": "#6b9080",
 								"type": "string",

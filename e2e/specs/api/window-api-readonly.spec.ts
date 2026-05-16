@@ -1,40 +1,23 @@
+import type {
+	PrismaCalendarGetCalendarInfoOutput,
+	PrismaCalendarGetCategoriesOutput,
+	PrismaCalendarGetEventsOutput,
+} from "@real1ty-obsidian-plugins/external-apis/prisma-calendar";
 import { type Invoker, pageEvaluateInvoker } from "@real1ty-obsidian-plugins/testing/api-contract";
 
 import { todayISO, todayStamp } from "../../fixtures/dates";
 import { expect, test } from "../../fixtures/electron";
 
-// Schemas live in `src/core/api/types.ts`. Importing them at runtime here
-// would transitively load `obsidian` (via `SingleCalendarConfigSchema`), which
-// Playwright's Node runner can't resolve. The drift test in
-// `tests/api/contract-drift.test.ts` owns JSON-Schema conformance against the
-// committed artifact; this spec asserts the load-bearing fields exist and
-// carry the right types/values.
+// The .d.ts is generated from `api-contract.json` and is type-only — no
+// runtime, no obsidian transitive import. Element types are extracted via
+// `[number]` (arrays) and `NonNullable<…>` (point lookups that return null).
+// The drift test in `tests/api/contract-drift.test.ts` owns JSON-Schema
+// conformance against the committed artifact; this spec exercises the runtime
+// shape with type-checked structural assertions.
 
-interface EventOutput {
-	filePath: string;
-	title: string;
-	type: "timed" | "allDay" | "untracked";
-	allDay: boolean;
-	skipped: boolean;
-	virtualKind: string;
-	start?: string;
-	end?: string;
-	categories?: string[];
-}
-
-interface CategoryOutput {
-	name: string;
-	color: string;
-}
-
-interface CalendarInfo {
-	calendarId: string;
-	name: string;
-	directory: string;
-	enabled: boolean;
-	eventCount: number;
-	untrackedEventCount: number;
-}
+type EventOutput = PrismaCalendarGetEventsOutput[number];
+type CategoryOutput = PrismaCalendarGetCategoriesOutput[number];
+type CalendarInfo = NonNullable<PrismaCalendarGetCalendarInfoOutput>;
 
 function assertEventArray(value: unknown): asserts value is EventOutput[] {
 	expect(Array.isArray(value), "expected an array of events").toBe(true);

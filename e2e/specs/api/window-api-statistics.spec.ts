@@ -1,36 +1,15 @@
+import type { PrismaCalendarGetStatisticsOutput } from "@real1ty-obsidian-plugins/external-apis/prisma-calendar";
 import { type Invoker, pageEvaluateInvoker } from "@real1ty-obsidian-plugins/testing/api-contract";
 
 import { todayStamp } from "../../fixtures/dates";
 import { expect, test } from "../../fixtures/electron";
 
-// The Zod schema for the wire-shape lives in `src/core/api/types.ts`. Importing
-// it at runtime here would transitively load `obsidian` (via the settings
-// schema), which Playwright's Node runner can't resolve. The drift test in
-// `tests/api/contract-drift.test.ts` already does the schema-conformance proof
-// against the committed artifact, so this spec sticks to structural assertions
-// over the known fields.
-interface StatisticsOutput {
-	periodStart: string;
-	periodEnd: string;
-	interval: "day" | "week" | "month";
-	mode: "name" | "category";
-	totalDuration: number;
-	totalDurationFormatted: string;
-	totalEvents: number;
-	timedEvents: number;
-	allDayEvents: number;
-	skippedEvents: number;
-	doneEvents: number;
-	undoneEvents: number;
-	entries: Array<{
-		name: string;
-		duration: number;
-		durationFormatted: string;
-		percentage: string;
-		count: number;
-		isRecurring: boolean;
-	}>;
-}
+// `getStatistics` returns `null` when the date is invalid, hence `NonNullable`.
+// The .d.ts is generated from `api-contract.json` and is type-only, so it has
+// no runtime/obsidian footprint. The drift test in
+// `tests/api/contract-drift.test.ts` owns JSON-Schema conformance; this spec
+// asserts the runtime shape with type-checked structural assertions.
+type StatisticsOutput = NonNullable<PrismaCalendarGetStatisticsOutput>;
 
 function assertStatisticsShape(value: unknown): asserts value is StatisticsOutput {
 	expect(value, "expected statistics payload").not.toBeNull();

@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
+import type { PrismaCalendarMoveEventToCalendarOutput } from "@real1ty-obsidian-plugins/external-apis/prisma-calendar";
 import { type Invoker, pageEvaluateInvoker } from "@real1ty-obsidian-plugins/testing/api-contract";
 
 import { todayStamp } from "../../fixtures/dates";
@@ -15,16 +16,10 @@ import { openCalendarView, waitForWorkspaceReady } from "../events/events-helper
 
 const expect = test.expect;
 
-// Schemas live in `src/core/api/types.ts` but importing them at runtime here
-// would transitively load `obsidian`, which Playwright's Node runner can't
-// resolve. The drift test owns JSON-Schema conformance; this spec asserts the
-// load-bearing envelope fields directly.
-
-interface MoveResult {
-	success: boolean;
-	movedFilePath?: string;
-	error?: string;
-}
+// The .d.ts is generated from `api-contract.json` and is type-only — no
+// runtime/obsidian footprint. The drift test owns JSON-Schema conformance;
+// this spec asserts the load-bearing envelope fields directly.
+type MoveResult = PrismaCalendarMoveEventToCalendarOutput;
 
 function assertMoveResultShape(value: unknown): asserts value is MoveResult {
 	expect(value, "expected move result envelope").not.toBeNull();
