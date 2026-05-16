@@ -1,13 +1,47 @@
 import { cls, tid } from "@real1ty-obsidian-plugins";
-import { GridLayout, useApp } from "@real1ty-obsidian-plugins-react";
-import { memo, type Ref, useImperativeHandle, useMemo, useRef } from "react";
+import { Cell, GridLayout, ImperativeCellHost, useApp } from "@real1ty-obsidian-plugins-react";
+import type { App } from "obsidian";
+import { type RefObject, memo, type Ref, useCallback, useImperativeHandle, useMemo, useRef } from "react";
 
 import {
 	createDailyCalendar,
 	type DailyCalendarHandle,
 	type DailyDragState,
 } from "../../components/views/daily-calendar";
+import type { CalendarBundle } from "../../core/calendar-bundle";
 import { useBundle } from "../contexts/bundle-context";
+
+type Side = "left" | "right";
+
+interface CalendarSide {
+	ref: RefObject<DailyCalendarHandle | null>;
+	render: (el: HTMLElement) => void;
+	cleanup: () => void;
+}
+
+function useCalendarSide(
+	side: Side,
+	app: App,
+	bundle: CalendarBundle,
+	sharedDragState: DailyDragState,
+	focusedSideRef: RefObject<Side>
+): CalendarSide {
+	const ref = useRef<DailyCalendarHandle | null>(null);
+	const render = useCallback(
+		(el: HTMLElement) => {
+			ref.current = createDailyCalendar(el, app, bundle, { sharedDragState });
+			el.addEventListener("pointerdown", () => {
+				focusedSideRef.current = side;
+			});
+		},
+		[side, app, bundle, sharedDragState, focusedSideRef]
+	);
+	const cleanup = useCallback(() => {
+		ref.current?.destroy();
+		ref.current = null;
+	}, []);
+	return { ref, render, cleanup };
+}
 
 export interface DualDailyTabHandle {
 	prev(): void;
@@ -21,55 +55,19 @@ interface DualDailyTabProps {
 export const DualDailyTab = memo(function DualDailyTab({ handleRef }: DualDailyTabProps) {
 	const app = useApp();
 	const bundle = useBundle();
-	const leftCalRef = useRef<DailyCalendarHandle | null>(null);
-	const rightCalRef = useRef<DailyCalendarHandle | null>(null);
-	const focusedSideRef = useRef<"left" | "right">("left");
+	const focusedSideRef = useRef<Side>("left");
+	const sharedDragState = useMemo<DailyDragState>(() => ({ current: null }), []);
 
-	const cells = useMemo(() => {
-		const sharedDragState: DailyDragState = { current: null };
-		return [
-			{
-				id: "left-calendar",
-				label: "Calendar Left",
-				row: 0,
-				col: 0,
-				render: (cellEl: HTMLElement) => {
-					leftCalRef.current = createDailyCalendar(cellEl, app, bundle, { sharedDragState });
-					cellEl.addEventListener("pointerdown", () => {
-						focusedSideRef.current = "left";
-					});
-				},
-				cleanup: () => {
-					leftCalRef.current?.destroy();
-					leftCalRef.current = null;
-				},
-			},
-			{
-				id: "right-calendar",
-				label: "Calendar Right",
-				row: 0,
-				col: 1,
-				render: (cellEl: HTMLElement) => {
-					rightCalRef.current = createDailyCalendar(cellEl, app, bundle, { sharedDragState });
-					cellEl.addEventListener("pointerdown", () => {
-						focusedSideRef.current = "right";
-					});
-				},
-				cleanup: () => {
-					rightCalRef.current?.destroy();
-					rightCalRef.current = null;
-				},
-			},
-		];
-	}, [app, bundle]);
+	const left = useCalendarSide("left", app, bundle, sharedDragState, focusedSideRef);
+	const right = useCalendarSide("right", app, bundle, sharedDragState, focusedSideRef);
 
 	useImperativeHandle(
 		handleRef,
 		() => ({
-			prev: () => (focusedSideRef.current === "left" ? leftCalRef.current : rightCalRef.current)?.prev(),
-			next: () => (focusedSideRef.current === "left" ? leftCalRef.current : rightCalRef.current)?.next(),
+			prev: () => (focusedSideRef.current === "left" ? left.ref.current : right.ref.current)?.prev(),
+			next: () => (focusedSideRef.current === "left" ? left.ref.current : right.ref.current)?.next(),
 		}),
-		[]
+		[left, right]
 	);
 
 	return (
@@ -80,9 +78,15 @@ export const DualDailyTab = memo(function DualDailyTab({ handleRef }: DualDailyT
 			rows={1}
 			gap="12px"
 			dividers
-			cells={cells}
 			style={{ flex: "1 1 auto", minHeight: 0 }}
 			data-testid={tid("dual-daily")}
-		/>
+		>
+			<Cell id="left-calendar" label="Calendar Left">
+				<ImperativeCellHost render={left.render} cleanup={left.cleanup} />
+			</Cell>
+			<Cell id="right-calendar" label="Calendar Right">
+				<ImperativeCellHost render={right.render} cleanup={right.cleanup} />
+			</Cell>
+		</GridLayout>
 	);
 });

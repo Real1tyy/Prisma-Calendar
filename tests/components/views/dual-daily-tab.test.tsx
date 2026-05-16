@@ -8,22 +8,6 @@ import { renderWithContexts } from "../../fixtures/react-view-fixtures";
 
 let createCount = 0;
 
-vi.mock("@real1ty-obsidian-plugins", async (importOriginal) => {
-	const actual: Record<string, unknown> = await importOriginal();
-	return {
-		...actual,
-		createGridLayout: vi.fn((el: HTMLElement, opts: any) => {
-			for (const cell of opts.cells) {
-				const cellEl = document.createElement("div");
-				cellEl.dataset["cellId"] = cell.id;
-				el.appendChild(cellEl);
-				cell.render?.(cellEl);
-			}
-			return { destroy: vi.fn() };
-		}),
-	};
-});
-
 vi.mock("../../../src/components/views/daily-calendar", () => ({
 	createDailyCalendar: vi.fn(() => {
 		createCount++;
@@ -41,8 +25,9 @@ describe("DualDailyTab", () => {
 		createCount = 0;
 		renderWithContexts(<DualDailyTab />);
 		const container = screen.getByTestId("prisma-dual-daily");
-		expect(container.querySelector('[data-cell-id="left-calendar"]')).toBeTruthy();
-		expect(container.querySelector('[data-cell-id="right-calendar"]')).toBeTruthy();
+		// React-native engine renders cells at row=0, col=0/1
+		expect(container.querySelector('[data-row="0"][data-col="0"]')).toBeTruthy();
+		expect(container.querySelector('[data-row="0"][data-col="1"]')).toBeTruthy();
 		expect(createCount).toBe(2);
 	});
 });

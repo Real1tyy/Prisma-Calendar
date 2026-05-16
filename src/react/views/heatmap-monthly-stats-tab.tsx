@@ -1,6 +1,6 @@
 import { cls, tid } from "@real1ty-obsidian-plugins";
-import { GridLayout, useApp, useSubscription } from "@real1ty-obsidian-plugins-react";
-import { memo, type Ref, useImperativeHandle, useMemo, useRef } from "react";
+import { Cell, GridLayout, ImperativeCellHost, useApp, useSubscription } from "@real1ty-obsidian-plugins-react";
+import { memo, type Ref, useCallback, useImperativeHandle, useMemo, useRef } from "react";
 import { debounceTime, merge } from "rxjs";
 
 import { type HeatmapHandle, renderHeatmapInto } from "../../components/modals";
@@ -26,44 +26,33 @@ const HeatmapMonthlyStatsBody = memo(function HeatmapMonthlyStatsBody({ handleRe
 	const heatmapRef = useRef<HeatmapHandle | null>(null);
 	const statsHandleRef = useRef<IntervalStatsCellHandle | null>(null);
 
-	const cells = useMemo(
-		() => [
-			{
-				id: "heatmap",
-				label: "Monthly Heatmap",
-				row: 0,
-				col: 0,
-				render: (cellEl: HTMLElement) => {
-					heatmapRef.current = renderHeatmapInto(cellEl, app, bundle, {
-						events: bundle.eventStore.getAllEvents(),
-						initialMode: "monthly",
-						lockMode: true,
-						onNavigate: ({ year, month }) => {
-							statsHandleRef.current?.setDate(new Date(year, month - 1, 1));
-						},
-					});
+	const renderHeatmap = useCallback(
+		(el: HTMLElement) => {
+			heatmapRef.current = renderHeatmapInto(el, app, bundle, {
+				events: bundle.eventStore.getAllEvents(),
+				initialMode: "monthly",
+				lockMode: true,
+				onNavigate: ({ year, month }) => {
+					statsHandleRef.current?.setDate(new Date(year, month - 1, 1));
 				},
-				cleanup: () => {
-					heatmapRef.current?.destroy();
-					heatmapRef.current = null;
-				},
-			},
-			{
-				id: "stats",
-				label: "Statistics",
-				row: 0,
-				col: 1,
-				render: (cellEl: HTMLElement) => {
-					statsHandleRef.current = mountIntervalStatsCell(cellEl, app, bundle, MONTHLY_STATS_CONFIG);
-				},
-				cleanup: () => {
-					statsHandleRef.current?.unmount();
-					statsHandleRef.current = null;
-				},
-			},
-		],
+			});
+		},
 		[app, bundle]
 	);
+	const cleanupHeatmap = useCallback(() => {
+		heatmapRef.current?.destroy();
+		heatmapRef.current = null;
+	}, []);
+	const renderStats = useCallback(
+		(el: HTMLElement) => {
+			statsHandleRef.current = mountIntervalStatsCell(el, app, bundle, MONTHLY_STATS_CONFIG);
+		},
+		[app, bundle]
+	);
+	const cleanupStats = useCallback(() => {
+		statsHandleRef.current?.unmount();
+		statsHandleRef.current = null;
+	}, []);
 
 	const changes$ = useMemo(
 		() =>
@@ -90,10 +79,16 @@ const HeatmapMonthlyStatsBody = memo(function HeatmapMonthlyStatsBody({ handleRe
 			rows={1}
 			gap="12px"
 			dividers
-			cells={cells}
 			style={{ flex: "1 1 auto", minHeight: 0 }}
 			data-testid={tid("heatmap-monthly-stats-tab")}
-		/>
+		>
+			<Cell id="heatmap" label="Monthly Heatmap">
+				<ImperativeCellHost render={renderHeatmap} cleanup={cleanupHeatmap} />
+			</Cell>
+			<Cell id="stats" label="Statistics">
+				<ImperativeCellHost render={renderStats} cleanup={cleanupStats} />
+			</Cell>
+		</GridLayout>
 	);
 });
 

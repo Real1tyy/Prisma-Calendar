@@ -1,259 +1,205 @@
-import type { CellOption, CellPlacement, GridLayoutConfig, GridLayoutHandle } from "@real1ty-obsidian-plugins";
+import type { GridLayoutHandle, GridLayoutState } from "@real1ty-obsidian-plugins";
+import { waitFor } from "@testing-library/react";
 import type { Plugin } from "obsidian";
+import { createRef, useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const createGridLayoutCoreMock = vi.fn();
 const registerGridCommandsMock = vi.fn();
-const GridEngineViewMock = vi.fn(() => null);
-
-vi.mock("../../src/grid-layout/engine-core", () => ({
-	createGridLayoutCore: createGridLayoutCoreMock,
-}));
-
-vi.mock("../../src/grid-layout/engine", () => ({
-	GridEngineView: GridEngineViewMock,
-}));
-
 vi.mock("../../src/grid-layout/commands", () => ({
 	registerGridCommands: registerGridCommandsMock,
 }));
 
 const { GridLayout } = await import("../../src/grid-layout/grid-layout");
+const { Cell } = await import("../../src/grid-layout/cell");
 const { renderWithProviders } = await import("../harness/render-with-providers");
 
 const STABLE_APP = {} as never;
 
-interface CapturedRun {
-	config: GridLayoutConfig;
-	handle: GridLayoutHandle;
-}
-
-let runs: CapturedRun[] = [];
-
 beforeEach(() => {
-	runs = [];
-	createGridLayoutCoreMock.mockReset();
 	registerGridCommandsMock.mockReset();
-	GridEngineViewMock.mockClear();
-	createGridLayoutCoreMock.mockImplementation((config: GridLayoutConfig) => {
-		const handle = {
-			destroy: vi.fn(),
-			columns: config.columns,
-			rows: config.rows,
-			setCell: vi.fn(),
-			setCellById: vi.fn(),
-			clearCell: vi.fn(),
-			getCellElement: vi.fn(),
-			resize: vi.fn(),
-			showCellPicker: vi.fn(),
-			showLayoutEditor: vi.fn(),
-		} as unknown as GridLayoutHandle;
-		runs.push({ config, handle });
-		return {
-			handle,
-			config,
-			subscribe: () => () => {},
-			getSnapshot: () => ({
-				cols: config.columns,
-				rows: config.rows,
-				cells: [],
-				ghostKeys: new Set(),
-				columnSizes: undefined,
-				rowSizes: undefined,
-				cellColumnSizes: undefined,
-				cellRowSizes: undefined,
-				destroyed: false,
-			}),
-			setCallbacks: vi.fn(),
-			registerElement: vi.fn(),
-			commitColumnSizes: vi.fn(),
-			commitRowSizes: vi.fn(),
-			commitCellColumnSizes: vi.fn(),
-			commitCellRowSizes: vi.fn(),
-		};
-	});
 });
 
 afterEach(() => {
-	runs = [];
+	registerGridCommandsMock.mockReset();
 });
 
-function makeCell(id: string, row: number, col: number): CellPlacement {
-	return {
-		id,
-		label: id,
-		row,
-		col,
-		render: vi.fn(),
-	};
-}
-
-describe("GridLayout", () => {
-	it("creates the engine core on mount with forwarded config", () => {
-		const cells = [makeCell("a", 0, 0)];
-		renderWithProviders(
-			<GridLayout app={STABLE_APP} cssPrefix="test-" columns={2} rows={1} cells={cells} gap="12px" dividers />
+describe("GridLayout (React-native engine)", () => {
+	it("renders an empty grid container with the configured cssPrefix", () => {
+		const { container } = renderWithProviders(
+			<GridLayout cssPrefix="test-" columns={2} rows={2} data-testid="my-grid" />
 		);
-
-		expect(runs).toHaveLength(1);
-		expect(runs[0].config).toMatchObject({
-			cssPrefix: "test-",
-			columns: 2,
-			rows: 1,
-			cells,
-			gap: "12px",
-			dividers: true,
-		});
+		const grid = container.querySelector(".test-grid") as HTMLElement | null;
+		expect(grid).not.toBeNull();
+		const root = container.querySelector('[data-testid="my-grid"]') as HTMLElement | null;
+		expect(root).toBe(grid);
 	});
 
-	it("forwards passthrough HTML attributes to the container div", () => {
+	it("forwards passthrough HTML attributes to the root", () => {
 		const { container } = renderWithProviders(
 			<GridLayout
-				app={STABLE_APP}
 				cssPrefix="test-"
 				columns={1}
 				rows={1}
-				data-testid="my-grid"
+				data-testid="grid"
 				className="my-class"
 				style={{ flex: "1 1 auto" }}
 			/>
 		);
-		const el = container.querySelector('[data-testid="my-grid"]') as HTMLDivElement | null;
+		const el = container.querySelector('[data-testid="grid"]') as HTMLElement | null;
 		expect(el).not.toBeNull();
 		expect(el?.classList.contains("my-class")).toBe(true);
 		expect(el?.style.flex).toBe("1 1 auto");
 	});
 
-	it("destroys the engine handle on unmount", () => {
-		const { unmount } = renderWithProviders(<GridLayout app={STABLE_APP} cssPrefix="test-" columns={1} rows={1} />);
-		const handle = runs[0].handle;
-		unmount();
-		expect(handle.destroy).toHaveBeenCalledTimes(1);
+	// Regression: consumer `style` was being spread via {...rest} AFTER the engine
+	// applied `style={gridStyle}`. React's last-write-wins meant the consumer's
+	// style object replaced the engine's, dropping --grid-columns / --grid-rows.
+	// Every consumer passes `style={{ flex: '1 1 auto', minHeight: 0 }}`, so the
+	// CSS variables never made it to the DOM — the grid silently fell back to
+	// `repeat(2, 1fr)` regardless of `columns` / `rows` props. dual-daily/1-row
+	// layouts rendered as 2×2 grids, and saved rowSizes were ignored.
+	it("merges consumer style with internal CSS vars (does not let style override --grid-columns/--grid-rows)", () => {
+		const { container } = renderWithProviders(
+			<GridLayout cssPrefix="t-" columns={2} rows={1} data-testid="grid" style={{ flex: "1 1 auto", minHeight: 0 }}>
+				<Cell label="A">a</Cell>
+				<Cell label="B">b</Cell>
+			</GridLayout>
+		);
+		const el = container.querySelector('[data-testid="grid"]') as HTMLElement | null;
+		expect(el).not.toBeNull();
+		expect(el?.style.flex).toBe("1 1 auto");
+		expect(el?.style.minHeight).toBe("0");
+		expect(el?.style.getPropertyValue("--grid-columns")).toBe("repeat(2, 1fr)");
+		expect(el?.style.getPropertyValue("--grid-rows")).toBe("repeat(1, auto)");
 	});
 
-	it("invokes the latest onStateChange callback without re-creating the engine", () => {
-		const firstOnStateChange = vi.fn();
-		const secondOnStateChange = vi.fn();
-
-		const { rerender } = renderWithProviders(
-			<GridLayout app={STABLE_APP} cssPrefix="test-" columns={1} rows={1} onStateChange={firstOnStateChange} />
-		);
-		expect(runs).toHaveLength(1);
-
-		rerender(
-			<GridLayout app={STABLE_APP} cssPrefix="test-" columns={1} rows={1} onStateChange={secondOnStateChange} />
-		);
-		expect(runs).toHaveLength(1);
-
-		const state = {
-			columns: 1,
-			rows: 1,
+	it("preserves rowSizes from initialState in --grid-rows (track mode)", () => {
+		const initialState: GridLayoutState = {
+			columns: 2,
+			rows: 2,
 			cells: [],
-			columnSizes: undefined,
-			rowSizes: undefined,
-			cellColumnSizes: undefined,
-			cellRowSizes: undefined,
+			rowSizes: [0.65, 0.35],
 		};
-		runs[0].config.onStateChange?.(state);
-		expect(firstOnStateChange).not.toHaveBeenCalled();
-		expect(secondOnStateChange).toHaveBeenCalledWith(state);
+		const { container } = renderWithProviders(
+			<GridLayout
+				cssPrefix="t-"
+				columns={2}
+				rows={2}
+				resizable="track"
+				initialState={initialState}
+				data-testid="grid"
+				style={{ flex: "1 1 auto", minHeight: 0 }}
+			>
+				<Cell label="A">a</Cell>
+				<Cell label="B">b</Cell>
+			</GridLayout>
+		);
+		const el = container.querySelector('[data-testid="grid"]') as HTMLElement | null;
+		expect(el?.style.getPropertyValue("--grid-rows")).toBe("0.65fr 0.35fr");
 	});
 
-	it("registers grid commands when commands prop is provided", () => {
+	it("renders <Cell> children directly as React subtrees — no createRoot, no render(cellEl) shim", () => {
+		const { container } = renderWithProviders(
+			<GridLayout cssPrefix="t-" columns={2} rows={1}>
+				<Cell label="Alpha">
+					<span data-testid="alpha-content">Alpha content</span>
+				</Cell>
+				<Cell label="Beta">
+					<span data-testid="beta-content">Beta content</span>
+				</Cell>
+			</GridLayout>
+		);
+		expect(container.querySelector('[data-testid="alpha-content"]')?.textContent).toBe("Alpha content");
+		expect(container.querySelector('[data-testid="beta-content"]')?.textContent).toBe("Beta content");
+	});
+
+	it("invokes onStateChange when the layout mutates", async () => {
+		const onStateChange = vi.fn();
+		const ref = createRef<GridLayoutHandle>();
+		renderWithProviders(
+			<GridLayout cssPrefix="t-" columns={2} rows={1} onStateChange={onStateChange} handleRef={ref}>
+				<Cell label="A">x</Cell>
+			</GridLayout>
+		);
+		ref.current?.resize(3, 2);
+		await waitFor(() => expect(onStateChange).toHaveBeenCalled());
+		const state = onStateChange.mock.calls.at(-1)?.[0] as GridLayoutState;
+		expect(state.columns).toBe(3);
+		expect(state.rows).toBe(2);
+	});
+
+	it("uses the latest onStateChange ref without rebuilding the engine", async () => {
+		const first = vi.fn();
+		const second = vi.fn();
+		const ref = createRef<GridLayoutHandle>();
+		const { rerender } = renderWithProviders(
+			<GridLayout cssPrefix="t-" columns={1} rows={1} onStateChange={first} handleRef={ref} />
+		);
+		rerender(<GridLayout cssPrefix="t-" columns={1} rows={1} onStateChange={second} handleRef={ref} />);
+		ref.current?.resize(2, 2);
+		await waitFor(() => expect(second).toHaveBeenCalled());
+		expect(first).not.toHaveBeenCalled();
+	});
+
+	it("registers grid commands when the `commands` prop is provided", () => {
 		const plugin = { addCommand: vi.fn() } as unknown as Plugin;
 		renderWithProviders(
-			<GridLayout
-				app={STABLE_APP}
-				cssPrefix="test-"
-				columns={1}
-				rows={1}
-				commands={{ plugin, id: "my-grid", label: "My Grid" }}
-			/>
+			<GridLayout cssPrefix="t-" columns={1} rows={1} commands={{ plugin, id: "my-grid", label: "My Grid" }} />
 		);
 		expect(registerGridCommandsMock).toHaveBeenCalledTimes(1);
 		expect(registerGridCommandsMock).toHaveBeenCalledWith(plugin, "my-grid", "My Grid", expect.any(Object));
 	});
 
-	it("does not call registerGridCommands when commands prop is omitted", () => {
-		renderWithProviders(<GridLayout app={STABLE_APP} cssPrefix="test-" columns={1} rows={1} />);
+	it("does NOT register commands when the prop is omitted", () => {
+		renderWithProviders(<GridLayout cssPrefix="t-" columns={1} rows={1} />);
 		expect(registerGridCommandsMock).not.toHaveBeenCalled();
 	});
 
-	it("passes the handle to onReady and invokes its returned cleanup on unmount", () => {
+	it("passes the handle to onReady and runs the returned cleanup on unmount", () => {
 		const customCleanup = vi.fn();
 		const onReady = vi.fn(() => customCleanup);
-		const { unmount } = renderWithProviders(
-			<GridLayout app={STABLE_APP} cssPrefix="test-" columns={1} rows={1} onReady={onReady} />
-		);
-		const handle = runs[0].handle;
-		expect(onReady).toHaveBeenCalledWith(handle);
+		const { unmount } = renderWithProviders(<GridLayout cssPrefix="t-" columns={1} rows={1} onReady={onReady} />);
+		expect(onReady).toHaveBeenCalled();
+		const handle = onReady.mock.calls[0]?.[0] as GridLayoutHandle;
+		expect(handle.columns).toBe(1);
 		unmount();
 		expect(customCleanup).toHaveBeenCalledTimes(1);
-		expect(handle.destroy).toHaveBeenCalledTimes(1);
 	});
 
-	it("keeps the engine durable across structural prop changes (no rebuild)", () => {
-		const palette: CellOption[] = [{ id: "x", label: "X", render: vi.fn() }];
-		const { rerender } = renderWithProviders(
-			<GridLayout app={STABLE_APP} cssPrefix="test-" columns={1} rows={1} cellPalette={palette} />
+	it("exposes the imperative handle via the handleRef prop", () => {
+		const ref = createRef<GridLayoutHandle>();
+		renderWithProviders(<GridLayout cssPrefix="t-" columns={3} rows={2} handleRef={ref} />);
+		expect(ref.current?.columns).toBe(3);
+		expect(ref.current?.rows).toBe(2);
+	});
+
+	it("auto-wires React modal openers when `app` is provided", () => {
+		const ref = createRef<GridLayoutHandle>();
+		renderWithProviders(
+			<GridLayout app={STABLE_APP} cssPrefix="t-" columns={1} rows={1} handleRef={ref}>
+				<Cell label="X">x</Cell>
+			</GridLayout>
 		);
-		expect(runs).toHaveLength(1);
-
-		const newPalette: CellOption[] = [{ id: "y", label: "Y", render: vi.fn() }];
-		rerender(<GridLayout app={STABLE_APP} cssPrefix="test-" columns={1} rows={1} cellPalette={newPalette} />);
-		expect(runs).toHaveLength(1);
-		expect(runs[0].handle.destroy).not.toHaveBeenCalled();
+		expect(() => ref.current?.showLayoutEditor()).not.toThrow();
 	});
 
-	it("refreshes cell render closures via setCellById when cells reference changes", () => {
-		const firstRender = vi.fn();
-		const firstCleanup = vi.fn();
-		const cellsV1 = [{ id: "a", label: "A", row: 0, col: 0, render: firstRender, cleanup: firstCleanup }];
-		const { rerender } = renderWithProviders(
-			<GridLayout app={STABLE_APP} cssPrefix="test-" columns={1} rows={1} cells={cellsV1} />
-		);
-		expect(runs).toHaveLength(1);
-		const handle = runs[0].handle;
-		expect(handle.setCellById).not.toHaveBeenCalled();
-
-		const secondRender = vi.fn();
-		const secondCleanup = vi.fn();
-		const cellsV2 = [{ id: "a", label: "A", row: 0, col: 0, render: secondRender, cleanup: secondCleanup }];
-		rerender(<GridLayout app={STABLE_APP} cssPrefix="test-" columns={1} rows={1} cells={cellsV2} />);
-
-		expect(runs).toHaveLength(1);
-		expect(handle.setCellById).toHaveBeenCalledWith("a", secondRender, secondCleanup);
-	});
-
-	it("auto-wires the React modal openers in the core config", () => {
-		renderWithProviders(<GridLayout app={STABLE_APP} cssPrefix="test-" columns={1} rows={1} cellPalette={[]} />);
-		expect(runs[0].config.onOpenLayoutEditor).toBeTypeOf("function");
-		expect(runs[0].config.onOpenCellPicker).toBeTypeOf("function");
-	});
-
-	it("forwards onCellChange via a stable ref", () => {
-		const firstHandler = vi.fn();
-		const secondHandler = vi.fn();
-
-		const { rerender } = renderWithProviders(
-			<GridLayout app={STABLE_APP} cssPrefix="test-" columns={1} rows={1} onCellChange={firstHandler} />
-		);
-		rerender(<GridLayout app={STABLE_APP} cssPrefix="test-" columns={1} rows={1} onCellChange={secondHandler} />);
-
-		runs[0].config.onCellChange?.(0, 0, "cell-a");
-		expect(firstHandler).not.toHaveBeenCalled();
-		expect(secondHandler).toHaveBeenCalledWith(0, 0, "cell-a");
-	});
-
-	it("renders <GridEngineView> as a JSX child of the container (no nested createRoot)", () => {
-		const { container } = renderWithProviders(
-			<GridLayout app={STABLE_APP} cssPrefix="test-" columns={1} rows={1} data-testid="grid-root" />
-		);
-		expect(GridEngineViewMock).toHaveBeenCalled();
-		// The container div is the JSX-owned element; GridEngineView mounts inside it
-		// as a child, not via an inner createRoot — so the outer React tree's reconciliation
-		// is the single source of truth for this DOM subtree.
-		const root = container.querySelector('[data-testid="grid-root"]');
-		expect(root).not.toBeNull();
+	it("does not tear down the engine on unrelated parent re-renders", () => {
+		const ref = createRef<GridLayoutHandle>();
+		function Wrapper() {
+			const [tick, setTick] = useState(0);
+			return (
+				<>
+					<button type="button" onClick={() => setTick(tick + 1)}>
+						bump-{tick}
+					</button>
+					<GridLayout cssPrefix="t-" columns={2} rows={1} handleRef={ref} />
+				</>
+			);
+		}
+		const { container } = renderWithProviders(<Wrapper />);
+		const initialHandle = ref.current;
+		expect(initialHandle).toBeTruthy();
+		(container.querySelector("button") as HTMLButtonElement).click();
+		expect(ref.current).toBe(initialHandle);
 	});
 });

@@ -1,6 +1,13 @@
 import type { App } from "obsidian";
 import { z } from "zod";
 
+/**
+ * Imperative cell content callback. Receives a host `<div>`; consumer mounts
+ * arbitrary DOM into it. Cleanup, if provided, runs when the cell is replaced
+ * or unmounted. Use this for libraries that need a real DOM element
+ * (Chart.js, FullCalendar, Cytoscape). For React content, use the `<Cell>`
+ * children API on `<GridLayout>` instead — no shim, no cleanup boilerplate.
+ */
 export type CellRender = (container: HTMLElement) => void | Promise<void>;
 export type CellCleanup = () => void;
 

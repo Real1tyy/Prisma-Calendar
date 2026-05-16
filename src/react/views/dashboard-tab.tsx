@@ -1,5 +1,5 @@
 import { type ChartDataItem, cls, type GridLayoutState, tid } from "@real1ty-obsidian-plugins";
-import { GridLayout, renderReactInline, useApp, useSchemaField } from "@real1ty-obsidian-plugins-react";
+import { Cell, GridLayout, useApp, useSchemaField } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { memo, type ReactElement, useCallback, useMemo, useState } from "react";
 
@@ -76,63 +76,6 @@ const DashboardSection = memo(function DashboardSection({ id, buildData }: Dashb
 		[id, setGridStates]
 	);
 
-	const cells = useMemo(() => {
-		const cellUnmounts: Array<() => void> = [];
-		return [
-			{
-				id: "chart",
-				label: "Chart",
-				row: 0,
-				col: 0,
-				render: (cellEl: HTMLElement) => {
-					cellEl.setAttribute("data-testid", tid("dashboard-cell-chart"));
-					cellUnmounts.push(
-						renderReactInline(
-							cellEl,
-							<DashboardChart chartData={data.chartData} chartId={id} tooltipFormatter={TOOLTIP_FORMATTER} />,
-							app
-						)
-					);
-				},
-				cleanup: () => {
-					while (cellUnmounts.length > 0) cellUnmounts.pop()?.();
-				},
-			},
-			{
-				id: "ranking",
-				label: "Top Items",
-				row: 0,
-				col: 1,
-				render: (cellEl: HTMLElement) => {
-					cellEl.setAttribute("data-testid", tid("dashboard-cell-ranking"));
-					cellUnmounts.push(renderReactInline(cellEl, <DashboardRanking items={data.items} stats={data.stats} />, app));
-				},
-			},
-			{
-				id: "table",
-				label: "Table",
-				row: 1,
-				col: 0,
-				colSpan: 2,
-				render: (cellEl: HTMLElement) => {
-					cellEl.setAttribute("data-testid", tid("dashboard-cell-table"));
-					cellUnmounts.push(
-						renderReactInline(
-							cellEl,
-							<DashboardTable
-								items={data.items}
-								columns={data.columns}
-								{...(data.onItemClick ? { onItemClick: data.onItemClick } : {})}
-								emptyMessage={data.emptyMessage}
-							/>,
-							app
-						)
-					);
-				},
-			},
-		];
-	}, [app, id, data]);
-
 	return (
 		<GridLayout
 			app={app}
@@ -143,11 +86,31 @@ const DashboardSection = memo(function DashboardSection({ id, buildData }: Dashb
 			dividers
 			resizable="track"
 			initialState={initialState}
-			cells={cells}
 			onStateChange={handleStateChange}
 			style={{ flex: "1 1 auto", minHeight: 0 }}
 			data-testid={tid("dashboard", id)}
-		/>
+		>
+			<Cell id="chart" label="Chart">
+				<div data-testid={tid("dashboard-cell-chart")} style={{ width: "100%", height: "100%" }}>
+					<DashboardChart chartData={data.chartData} chartId={id} tooltipFormatter={TOOLTIP_FORMATTER} />
+				</div>
+			</Cell>
+			<Cell id="ranking" label="Top Items">
+				<div data-testid={tid("dashboard-cell-ranking")} style={{ width: "100%", height: "100%" }}>
+					<DashboardRanking items={data.items} stats={data.stats} />
+				</div>
+			</Cell>
+			<Cell id="table" label="Table" colSpan={2}>
+				<div data-testid={tid("dashboard-cell-table")} style={{ width: "100%", height: "100%" }}>
+					<DashboardTable
+						items={data.items}
+						columns={data.columns}
+						{...(data.onItemClick ? { onItemClick: data.onItemClick } : {})}
+						emptyMessage={data.emptyMessage}
+					/>
+				</div>
+			</Cell>
+		</GridLayout>
 	);
 });
 

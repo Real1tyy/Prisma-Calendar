@@ -1,6 +1,6 @@
 import { cls, tid } from "@real1ty-obsidian-plugins";
-import { GridLayout, useApp } from "@real1ty-obsidian-plugins-react";
-import { memo, type Ref, useImperativeHandle, useMemo, useRef } from "react";
+import { Cell, GridLayout, ImperativeCellHost, useApp } from "@real1ty-obsidian-plugins-react";
+import { memo, type Ref, useCallback, useImperativeHandle, useRef } from "react";
 
 import { createDailyCalendar, type DailyCalendarHandle } from "../../components/views/daily-calendar";
 import { useBundle } from "../contexts/bundle-context";
@@ -22,40 +22,6 @@ export const DailyStatsTab = memo(function DailyStatsTab({ handleRef }: DailySta
 	const calendarRef = useRef<DailyCalendarHandle | null>(null);
 	const statsHandleRef = useRef<IntervalStatsCellHandle | null>(null);
 
-	const cells = useMemo(
-		() => [
-			{
-				id: "calendar",
-				label: "Calendar",
-				row: 0,
-				col: 0,
-				render: (cellEl: HTMLElement) => {
-					calendarRef.current = createDailyCalendar(cellEl, app, bundle, {
-						onDateChange: (date) => statsHandleRef.current?.setDate(date),
-					});
-				},
-				cleanup: () => {
-					calendarRef.current?.destroy();
-					calendarRef.current = null;
-				},
-			},
-			{
-				id: "stats",
-				label: "Statistics",
-				row: 0,
-				col: 1,
-				render: (cellEl: HTMLElement) => {
-					statsHandleRef.current = mountIntervalStatsCell(cellEl, app, bundle, DAILY_STATS_CONFIG);
-				},
-				cleanup: () => {
-					statsHandleRef.current?.unmount();
-					statsHandleRef.current = null;
-				},
-			},
-		],
-		[app, bundle]
-	);
-
 	useImperativeHandle(
 		handleRef,
 		() => ({
@@ -65,6 +31,29 @@ export const DailyStatsTab = memo(function DailyStatsTab({ handleRef }: DailySta
 		[]
 	);
 
+	const renderCalendar = useCallback(
+		(el: HTMLElement) => {
+			calendarRef.current = createDailyCalendar(el, app, bundle, {
+				onDateChange: (date) => statsHandleRef.current?.setDate(date),
+			});
+		},
+		[app, bundle]
+	);
+	const cleanupCalendar = useCallback(() => {
+		calendarRef.current?.destroy();
+		calendarRef.current = null;
+	}, []);
+	const renderStats = useCallback(
+		(el: HTMLElement) => {
+			statsHandleRef.current = mountIntervalStatsCell(el, app, bundle, DAILY_STATS_CONFIG);
+		},
+		[app, bundle]
+	);
+	const cleanupStats = useCallback(() => {
+		statsHandleRef.current?.unmount();
+		statsHandleRef.current = null;
+	}, []);
+
 	return (
 		<GridLayout
 			app={app}
@@ -73,9 +62,15 @@ export const DailyStatsTab = memo(function DailyStatsTab({ handleRef }: DailySta
 			rows={1}
 			gap="12px"
 			dividers
-			cells={cells}
 			style={{ flex: "1 1 auto", minHeight: 0 }}
 			data-testid={tid("daily-stats-tab")}
-		/>
+		>
+			<Cell id="calendar" label="Calendar">
+				<ImperativeCellHost render={renderCalendar} cleanup={cleanupCalendar} />
+			</Cell>
+			<Cell id="stats" label="Statistics">
+				<ImperativeCellHost render={renderStats} cleanup={cleanupStats} />
+			</Cell>
+		</GridLayout>
 	);
 });

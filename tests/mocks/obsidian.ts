@@ -413,6 +413,9 @@ export function createMockApp(): MockApp {
 	};
 }
 
+// No-op stand-in for Obsidian's setIcon — paint-only utility, not relevant in jsdom.
+export function setIcon(_el: HTMLElement, _iconId: string): void {}
+
 // Helper to create mock TFile instances
 export function createMockFile(
 	path: string,

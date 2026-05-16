@@ -1,5 +1,5 @@
 import { createCssUtils } from "@real1ty-obsidian-plugins";
-import { type CSSProperties, memo, useEffect, useRef } from "react";
+import { type CSSProperties, memo, useEffect, useLayoutEffect, useRef } from "react";
 
 import {
 	type AxisLayout,
@@ -40,6 +40,7 @@ export const GridResizeHandles = memo(function GridResizeHandles({
 	const getSizesRef = useRef(getSizes);
 	const onSizesChangeRef = useRef(onSizesChange);
 	const getContainerRef = useRef(getContainer);
+	const positionHandlesRef = useRef<(() => void) | null>(null);
 	getSizesRef.current = getSizes;
 	onSizesChangeRef.current = onSizesChange;
 	getContainerRef.current = getContainer;
@@ -70,6 +71,7 @@ export const GridResizeHandles = memo(function GridResizeHandles({
 		};
 
 		const raf = window.requestAnimationFrame(positionHandles);
+		positionHandlesRef.current = positionHandles;
 
 		let observer: ResizeObserver | null = null;
 		if (typeof ResizeObserver !== "undefined") {
@@ -80,8 +82,17 @@ export const GridResizeHandles = memo(function GridResizeHandles({
 		return () => {
 			cancelAnimationFrame(raf);
 			observer?.disconnect();
+			positionHandlesRef.current = null;
 		};
 	}, [layout, count]);
+
+	// Re-position handles after every commit. The ResizeObserver above only
+	// fires on container-size changes; an internal track-size commit leaves the
+	// container size unchanged, so without this the handles stayed pinned at
+	// their first-mount offsets and the user could only drag once.
+	useLayoutEffect(() => {
+		positionHandlesRef.current?.();
+	});
 
 	const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>, index: number): void => {
 		const gridEl = getContainerRef.current();

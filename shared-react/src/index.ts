@@ -121,17 +121,19 @@ export { useInjectedStyles, useScopedStyles } from "./hooks/styles";
 // ─── Grid Layout (React wrapper + modal helpers) ───
 export type {
 	CellPickerContentProps,
+	CellProps,
 	GridLayoutCommandsConfig,
 	GridLayoutProps,
+	ImperativeCellHostProps,
 	LayoutEditorContentProps,
 	OpenCellPickerOptions,
 	OpenLayoutEditorOptions,
-	ReactGridLayoutConfig,
 } from "./grid-layout";
 export {
+	Cell,
 	CellPickerContent,
-	createGridLayout,
 	GridLayout,
+	ImperativeCellHost,
 	LayoutEditorContent,
 	openCellPicker,
 	openLayoutEditor,
