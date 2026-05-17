@@ -3,6 +3,7 @@ import type { DurationLike } from "luxon";
 import type { App } from "obsidian";
 
 import type { CalendarBundle } from "../calendar-bundle";
+import { deleteCategoryCommand, renameCategoryCommand } from "./category-commands";
 import {
 	assignCategories,
 	markAsDone,
@@ -70,4 +71,25 @@ export function createBatchMakeVirtual(app: App, bundle: CalendarBundle, filePat
 
 export function createBatchMakeReal(app: App, bundle: CalendarBundle, virtualEventIds: string[]): MacroCommand {
 	return batchCommand(virtualEventIds, (id) => new ConvertToRealCommand(app, bundle, id));
+}
+
+export function createBatchRenameCategory(
+	bundle: CalendarBundle,
+	filePaths: string[],
+	oldName: string,
+	newName: string
+): MacroCommand {
+	const categoryProp = bundle.settingsStore.currentSettings.categoryProp;
+	return batchCommand(filePaths, (fp) =>
+		renameCategoryCommand(bundle.fileRepository, fp, oldName, newName, categoryProp)
+	);
+}
+
+export function createBatchDeleteCategory(
+	bundle: CalendarBundle,
+	filePaths: string[],
+	categoryName: string
+): MacroCommand {
+	const categoryProp = bundle.settingsStore.currentSettings.categoryProp;
+	return batchCommand(filePaths, (fp) => deleteCategoryCommand(bundle.fileRepository, fp, categoryName, categoryProp));
 }

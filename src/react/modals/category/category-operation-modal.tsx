@@ -1,18 +1,12 @@
-import {
-	bulkDeleteCategoryFromFiles,
-	bulkRenameCategoryInFiles,
-	type CategoryOperationResult,
-	describeError,
-	showProgressModal,
-} from "@real1ty-obsidian-plugins";
-import { cls, tid } from "../../../constants";
+import { describeError, type MacroCommand, showProgressModal } from "@real1ty-obsidian-plugins";
 import { openConfirmation, openRenameModal } from "@real1ty-obsidian-plugins-react";
-import { type App, TFile } from "obsidian";
+import { type App, Notice } from "obsidian";
 import { memo } from "react";
 
-import { CSS_PREFIX } from "../../../constants";
+import { cls, CSS_PREFIX, tid } from "../../../constants";
+import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { CategoryTracker } from "../../../core/category-tracker";
-import type { CalendarSettingsStore } from "../../../core/settings-store";
+import { createBatchDeleteCategory, createBatchRenameCategory } from "./../../../core/commands";
 
 export function getCategoryExpression(category: string, categoryProp: string): string {
 	const escapedCategory = category.replace(/'/g, "\\'");
@@ -46,87 +40,91 @@ const UntrackedToggle = memo(function UntrackedToggle({ value, untrackedCount, o
 	);
 });
 
-interface CategoryBulkOperationOptions {
-	app: App;
-	categoryTracker: CategoryTracker;
-	settingsStore: CalendarSettingsStore;
-	categoryName: string;
-	includeUntracked: boolean;
-	operationTitle: string;
-	statusVerb: string;
-	bulkFn: (
-		app: App,
-		files: TFile[],
-		categoryName: string,
-		categoryProp: string,
-		callbacks: { onProgress: (n: number) => void; onComplete: () => void }
-	) => Promise<CategoryOperationResult>;
-	updateColorRules: <T extends { expression: string }>(rules: T[], categoryProp: string) => T[];
-	onSuccess: () => void;
-}
-
-async function runCategoryBulkOperation({
-	app,
-	categoryTracker,
-	settingsStore,
-	categoryName,
-	includeUntracked,
-	operationTitle,
-	statusVerb,
-	bulkFn,
-	updateColorRules,
-	onSuccess,
-}: CategoryBulkOperationOptions): Promise<void> {
-	const settings = settingsStore.currentSettings;
-	const paths = includeUntracked
+function resolveTargetPaths(
+	categoryTracker: CategoryTracker,
+	categoryName: string,
+	includeUntracked: boolean
+): string[] {
+	return includeUntracked
 		? categoryTracker.getFilePathsWithCategory(categoryName)
 		: categoryTracker.getEventsWithCategory(categoryName).map((e) => e.ref.filePath);
-	const files = paths
-		.map((path) => app.vault.getAbstractFileByPath(path))
-		.filter((file): file is TFile => file instanceof TFile);
+}
 
+function showUndoNotice(message: string, bundle: CalendarBundle): void {
+	const notice = new Notice("", 7000);
+	const frag = document.createDocumentFragment();
+	frag.appendText(`${message} `);
+	const link = document.createElement("a");
+	link.textContent = "Undo";
+	link.style.cursor = "pointer";
+	link.style.textDecoration = "underline";
+	link.addEventListener("click", () => {
+		void bundle.undo();
+		notice.hide();
+	});
+	frag.appendChild(link);
+	notice.setMessage(frag);
+}
+
+interface RunOptions {
+	app: App;
+	bundle: CalendarBundle;
+	macro: MacroCommand;
+	operationTitle: string;
+	statusVerb: string;
+	categoryName: string;
+	successMessage: string;
+}
+
+async function executeCategoryMacro({
+	app,
+	bundle,
+	macro,
+	operationTitle,
+	statusVerb,
+	categoryName,
+	successMessage,
+}: RunOptions): Promise<boolean> {
+	const total = macro.getCommandCount();
 	const progress = showProgressModal({
 		app,
 		cssPrefix: CSS_PREFIX,
-		total: files.length,
+		total,
 		title: `${operationTitle}...`,
 		statusTemplate: `${operationTitle} {current} of {total}...`,
 		initialDetails: `Processing "${categoryName}"...`,
 	});
 
 	try {
-		const result = await bulkFn(app, files, categoryName, settings.categoryProp, {
-			onProgress: (completed: number) => progress.updateProgress(completed),
-			onComplete: () => window.setTimeout(onSuccess, 150),
-		});
+		await macro.executeWithProgress((completed) => progress.updateProgress(completed));
+		bundle.commandManager.registerExecutedCommand(macro);
 
-		await settingsStore.updateSettings((s) => ({
-			...s,
-			colorRules: updateColorRules(s.colorRules, s.categoryProp),
-		}));
-
-		if (result.filesWithErrors.length > 0) {
-			console.error(`[CategoryOperation] Errors in ${statusVerb} operation:`, result.filesWithErrors);
+		const summary = macro.getExecutionSummary();
+		if (summary.failCount > 0) {
+			console.error(`[CategoryOperation] Errors in ${statusVerb} operation:`, summary.errors);
 			progress.showComplete([
-				`Successfully ${statusVerb} category in ${result.filesModified.length} event(s)`,
-				`${result.filesWithErrors.length} failed`,
+				`Successfully ${statusVerb} category in ${summary.successCount} event(s)`,
+				`${summary.failCount} failed`,
 			]);
 		} else {
-			progress.showComplete([`Successfully ${statusVerb} category in ${result.filesModified.length} event(s)`]);
+			progress.showComplete([`Successfully ${statusVerb} category in ${summary.successCount} event(s)`]);
+			showUndoNotice(successMessage, bundle);
 		}
+		return true;
 	} catch (error) {
 		console.error(`[CategoryOperation] Error in ${statusVerb} operation:`, error);
 		progress.showError(`Error ${statusVerb} category: ${describeError(error)}`);
+		return false;
 	}
 }
 
 export function runCategoryRenameFlow(
 	app: App,
-	categoryTracker: CategoryTracker,
-	settingsStore: CalendarSettingsStore,
+	bundle: CalendarBundle,
 	categoryName: string,
 	onSuccess: () => void
 ): void {
+	const { categoryTracker, settingsStore } = bundle;
 	const stats = categoryTracker.getCategoryStats(categoryName);
 	const trackedCount = stats.timed + stats.allDay;
 
@@ -147,32 +145,40 @@ export function runCategoryRenameFlow(
 		if (!result || result.value === categoryName) return;
 		const { value: newName, extras } = result;
 
-		await runCategoryBulkOperation({
+		const filePaths = resolveTargetPaths(categoryTracker, categoryName, extras.includeUntracked);
+
+		const macro = createBatchRenameCategory(bundle, filePaths, categoryName, newName);
+
+		const completed = await executeCategoryMacro({
 			app,
-			categoryTracker,
-			settingsStore,
-			categoryName,
-			includeUntracked: extras.includeUntracked,
+			bundle,
+			macro,
 			operationTitle: trackedCount === 0 && extras.includeUntracked ? "Renaming untracked" : "Renaming",
 			statusVerb: "renamed",
-			bulkFn: (a, files, catName, catProp, cbs) => bulkRenameCategoryInFiles(a, files, catName, newName, catProp, cbs),
-			updateColorRules: (rules, categoryProp) => {
-				const oldExpr = getCategoryExpression(categoryName, categoryProp);
-				const newExpr = getCategoryExpression(newName, categoryProp);
-				return rules.map((rule) => (rule.expression === oldExpr ? { ...rule, expression: newExpr } : rule));
-			},
-			onSuccess,
+			categoryName,
+			successMessage: `Renamed "${categoryName}" → "${newName}".`,
 		});
+
+		if (completed) {
+			const categoryProp = settingsStore.currentSettings.categoryProp;
+			const oldExpr = getCategoryExpression(categoryName, categoryProp);
+			const newExpr = getCategoryExpression(newName, categoryProp);
+			await settingsStore.updateSettings((s) => ({
+				...s,
+				colorRules: s.colorRules.map((rule) => (rule.expression === oldExpr ? { ...rule, expression: newExpr } : rule)),
+			}));
+		}
+		onSuccess();
 	});
 }
 
 export function runCategoryDeleteFlow(
 	app: App,
-	categoryTracker: CategoryTracker,
-	settingsStore: CalendarSettingsStore,
+	bundle: CalendarBundle,
 	categoryName: string,
 	onSuccess: () => void
 ): void {
+	const { categoryTracker, settingsStore } = bundle;
 	const stats = categoryTracker.getCategoryStats(categoryName);
 	const trackedCount = stats.timed + stats.allDay;
 
@@ -198,20 +204,28 @@ export function runCategoryDeleteFlow(
 	}).then(async (result) => {
 		if (!result) return;
 
-		await runCategoryBulkOperation({
+		const filePaths = resolveTargetPaths(categoryTracker, categoryName, result.extras.includeUntracked);
+
+		const macro = createBatchDeleteCategory(bundle, filePaths, categoryName);
+
+		const completed = await executeCategoryMacro({
 			app,
-			categoryTracker,
-			settingsStore,
-			categoryName,
-			includeUntracked: result.extras.includeUntracked,
+			bundle,
+			macro,
 			operationTitle: "Deleting",
 			statusVerb: "deleted",
-			bulkFn: (a, files, catName, catProp, cbs) => bulkDeleteCategoryFromFiles(a, files, catName, catProp, cbs),
-			updateColorRules: (rules, categoryProp) => {
-				const expr = getCategoryExpression(categoryName, categoryProp);
-				return rules.filter((rule) => rule.expression !== expr);
-			},
-			onSuccess,
+			categoryName,
+			successMessage: `Deleted "${categoryName}".`,
 		});
+
+		if (completed) {
+			const categoryProp = settingsStore.currentSettings.categoryProp;
+			const expr = getCategoryExpression(categoryName, categoryProp);
+			await settingsStore.updateSettings((s) => ({
+				...s,
+				colorRules: s.colorRules.filter((rule) => rule.expression !== expr),
+			}));
+		}
+		onSuccess();
 	});
 }

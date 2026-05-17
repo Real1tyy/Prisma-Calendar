@@ -72,6 +72,7 @@ export const CategoriesSettingsReact = memo(function CategoriesSettingsReact({
 
 			<EventStatsSection bundle={bundle} />
 			<CategoriesListSection
+				bundle={bundle}
 				categoryTracker={categoryTracker}
 				categoryProp={categoryProp}
 				settingsStore={settingsStore}
@@ -133,6 +134,7 @@ const EventStatsSection = memo(function EventStatsSection({ bundle }: { bundle: 
 // ─── Categories List ────────────────────────────────────────────────────
 
 interface CategoriesListSectionProps {
+	bundle: CalendarBundle;
 	categoryTracker: CategoryTracker;
 	categoryProp: string;
 	settingsStore: CalendarSettingsStore;
@@ -141,6 +143,7 @@ interface CategoriesListSectionProps {
 }
 
 const CategoriesListSection = memo(function CategoriesListSection({
+	bundle,
 	categoryTracker,
 	categoryProp,
 	settingsStore,
@@ -188,16 +191,16 @@ const CategoriesListSection = memo(function CategoriesListSection({
 
 	const handleRename = useCallback(
 		(categoryName: string) => {
-			runCategoryRenameFlow(app, categoryTracker, settingsStore, categoryName, () => {});
+			runCategoryRenameFlow(app, bundle, categoryName, () => {});
 		},
-		[app, categoryTracker, settingsStore]
+		[app, bundle]
 	);
 
 	const handleDelete = useCallback(
 		(categoryName: string) => {
-			runCategoryDeleteFlow(app, categoryTracker, settingsStore, categoryName, () => {});
+			runCategoryDeleteFlow(app, bundle, categoryName, () => {});
 		},
-		[app, categoryTracker, settingsStore]
+		[app, bundle]
 	);
 
 	const handleClickCategory = useCallback(

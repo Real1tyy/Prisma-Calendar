@@ -288,6 +288,8 @@ To rename a category across all your events:
 
 **Example**: Renaming "Work" to "Business" will update all events with `Category: Work` to `Category: Business` and update the color rule from `Category.includes('Work')` to `Category.includes('Business')`. Untracked notes carrying `Category: Work` are rewritten too unless you uncheck the toggle.
 
+After the rename, a notice shows an **Undo** link. Click it (or run **Prisma Calendar: Undo** from the command palette) to revert the frontmatter rewrites on every affected note. **Prisma Calendar: Redo** re-applies them. The color rule update happens as a side effect and is not part of the undo step.
+
 ### Deleting Categories
 
 To remove a category from all your events:
@@ -307,6 +309,8 @@ To remove a category from all your events:
    - Refreshes the calendar, the Categories list, and statistics so the old name disappears everywhere immediately — no restart needed
 
 **Example**: Deleting the "Work" category will remove it from all events that have `Category: Work` or `Category: [Work, Meeting]`, and delete the `Category.includes('Work')` color rule. Untracked notes are cleaned up too unless you uncheck the toggle.
+
+Deletion is also undoable: the post-action notice exposes an **Undo** link that restores the frontmatter on every affected note. **Prisma Calendar: Redo** re-applies the deletion. The associated color rule is removed as a side effect and is not restored by undo — re-add it manually if needed.
 
 #### Pie Chart Visualization
 
