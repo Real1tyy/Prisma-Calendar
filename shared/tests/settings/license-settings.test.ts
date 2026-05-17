@@ -1,16 +1,42 @@
 /**
  * @vitest-environment jsdom
  *
- * Partial vi.mock("obsidian") in other test files shares the module graph when
- * pool isolate is off; restore the full testing mock so Setting has addComponent,
- * SecretComponent, etc.
+ * vitest.config.ts uses pool isolate: false, so `vi.mock("obsidian", …)`
+ * factories from other test files can win the shared module-cache race —
+ * `importOriginal()` here is not guaranteed to return the testing mock's
+ * full Setting surface. Define the exports this test actually exercises
+ * inline so the mock is self-contained and immune to pollution. See
+ * vitest.config.ts for the broader contract.
  */
-import type * as ObsidianModule from "obsidian";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("obsidian", async (importOriginal) => {
-	const actual = await importOriginal<typeof ObsidianModule>();
-	return { ...actual };
+vi.mock("obsidian", () => {
+	class Setting {
+		settingEl = document.createElement("div");
+		nameEl = document.createElement("div");
+		descEl = document.createElement("div");
+		controlEl = document.createElement("div");
+		constructor(_containerEl: HTMLElement) {}
+		setName = vi.fn().mockReturnThis();
+		setDesc = vi.fn().mockReturnThis();
+		setHeading = vi.fn().mockReturnThis();
+		addComponent = vi.fn().mockReturnThis();
+		addButton = vi.fn((cb: (button: unknown) => void) => {
+			cb({
+				setButtonText: vi.fn().mockReturnThis(),
+				setCta: vi.fn().mockReturnThis(),
+				onClick: vi.fn().mockReturnThis(),
+				setDisabled: vi.fn().mockReturnThis(),
+			});
+			return this;
+		});
+	}
+	class SecretComponent {
+		constructor(_app: unknown, _el: unknown) {}
+		setValue = vi.fn().mockReturnThis();
+		onChange = vi.fn().mockReturnThis();
+	}
+	return { Setting, SecretComponent };
 });
 
 import type { LicenseManager, LicenseStatus } from "../../src/core/license";

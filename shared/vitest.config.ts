@@ -32,7 +32,6 @@ const JSDOM_PATTERNS = [
 ];
 
 export default defineConfig({
-	server: { fs: { allow: [".."] } },
 	plugins: [tsconfigPaths({ ignoreConfigErrors: true })],
 	test: {
 		globals: true,
@@ -41,6 +40,19 @@ export default defineConfig({
 		setupFiles: ["./src/testing/obsidian-dom-setup.ts"],
 		...VITEST_POOL_OPTIONS,
 		pool: "threads",
+		// `isolate: false` keeps a single worker per thread and shares the
+		// module cache across test files — ~3× faster than per-file isolation
+		// on this suite, but it leaks `vi.mock("obsidian", …)` overrides
+		// between files. Any test file that registers a partial `MockSetting`
+		// (or `MockModal` / `MockItemView` / etc.) MUST mirror the full method
+		// surface of `src/testing/mocks/obsidian.ts` — missing methods become
+		// `undefined is not a function` in unrelated tests that happen to
+		// share the worker. New polluters: add no-op `mockReturnThis()` stubs
+		// for every method on the shared mock, even ones you don't exercise.
+		// Consumer side: tests that depend on the full surface should define
+		// their own self-contained mock factory instead of trusting
+		// `importOriginal()` — see `tests/settings/license-settings.test.ts`.
+		// Flip this to `true` only if pollution becomes unmanageable.
 		isolate: false,
 		coverage: {
 			provider: "v8",

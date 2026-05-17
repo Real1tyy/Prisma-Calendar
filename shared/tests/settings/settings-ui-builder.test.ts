@@ -242,6 +242,29 @@ vi.mock("obsidian", async () => {
 			callback(button);
 			return this;
 		}
+
+		// Surface parity with src/testing/mocks/obsidian.ts. vitest.config.ts
+		// runs with pool isolate: false; if this MockSetting wins the shared
+		// module-cache race, unrelated tests that call these methods would hit
+		// `undefined is not a function`. See vitest.config.ts for the contract.
+		addComponent(): this {
+			return this;
+		}
+		addColorPicker(): this {
+			return this;
+		}
+		addExtraButton(): this {
+			return this;
+		}
+		setClass(): this {
+			return this;
+		}
+		setDisabled(): this {
+			return this;
+		}
+		then(): this {
+			return this;
+		}
 	}
 
 	return {
