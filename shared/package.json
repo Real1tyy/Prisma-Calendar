@@ -47,7 +47,7 @@
 		"test:watch": "vitest watch",
 		"test:coverage": "vitest run --coverage",
 		"typecheck": "tsc -noEmit",
-		"lint": "eslint src/ tests/",
+		"lint": "eslint --config ../eslint.config.js --cache --cache-location=node_modules/.cache/eslint/.eslintcache --max-warnings=0 .",
 		"format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
 		"format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\""
 	}
