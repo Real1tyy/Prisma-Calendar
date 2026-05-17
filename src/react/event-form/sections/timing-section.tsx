@@ -11,16 +11,10 @@ import { PrismaSettingItem } from "../prisma-setting-item";
 interface TimingSectionProps {
 	form: UseFormReturn<EventFormState>;
 	showDurationField: boolean;
-	onFillPrevious?: (() => Date | null) | undefined;
-	onFillNext?: (() => Date | null) | undefined;
+	onFill?: ((direction: "previous" | "next") => Date | null) | undefined;
 }
 
-export const TimingSection = memo(function TimingSection({
-	form,
-	showDurationField,
-	onFillPrevious,
-	onFillNext,
-}: TimingSectionProps) {
+export const TimingSection = memo(function TimingSection({ form, showDurationField, onFill }: TimingSectionProps) {
 	const { field: allDayField } = useController({ control: form.control, name: "allDay" });
 	const { field: startField } = useController({ control: form.control, name: "start" });
 	const { field: endField } = useController({ control: form.control, name: "end" });
@@ -81,18 +75,18 @@ export const TimingSection = memo(function TimingSection({
 		[startField, endField]
 	);
 
-	const handleFillPrevious = useCallback(() => {
-		const time = onFillPrevious?.();
-		if (time) startField.onChange(formatDateTimeForInput(time));
-	}, [onFillPrevious, startField]);
+	const handleFill = useCallback(
+		(direction: "previous" | "next") => {
+			const time = onFill?.(direction);
+			if (!time) return;
+			const target = direction === "previous" ? startField : endField;
+			target.onChange(formatDateTimeForInput(time));
+		},
+		[onFill, startField, endField]
+	);
 
-	const handleFillNext = useCallback(() => {
-		const time = onFillNext?.();
-		if (time) endField.onChange(formatDateTimeForInput(time));
-	}, [onFillNext, endField]);
-
-	const fillPreviousCb = onFillPrevious ? handleFillPrevious : undefined;
-	const fillNextCb = onFillNext ? handleFillNext : undefined;
+	const fillPreviousCb = onFill ? () => handleFill("previous") : undefined;
+	const fillNextCb = onFill ? () => handleFill("next") : undefined;
 
 	const durationValue =
 		startField.value && endField.value ? calculateDurationMinutes(startField.value, endField.value).toString() : "";

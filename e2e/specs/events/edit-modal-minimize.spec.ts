@@ -53,14 +53,7 @@ Already Notified: true
 		await expect(calendar.page.locator(sel(TID.event.control("title"))).first()).toHaveValue("Renamed Pending");
 	});
 
-	// KNOWN REGRESSION: minimize→restore on an edit modal does NOT carry
-	// metadata fields (location/icon/break) through. `MinimizedModalManager
-	// .openRestoredModal` constructs an imperative `EventEditModal` and calls
-	// `setRestoreState(state)`, but the imperative modal's initialize() loads
-	// the simple-field values back from the original frontmatter, overwriting
-	// the pending edit. Surfacing here so the fix lands before the imperative
-	// modal is fully removed (it's still the restore-side renderer).
-	test.fail("minimize then restore preserves a pending location edit", async ({ calendar }) => {
+	test("minimize then restore preserves a pending location edit", async ({ calendar }) => {
 		const today = formatLocalDate(new Date());
 		const seedPath = "Events/Editable LocMini-20250101000000.md";
 		writeFileSync(

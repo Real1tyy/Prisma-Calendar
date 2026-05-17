@@ -24,14 +24,11 @@ function TimingWrapper({
 }) {
 	const defaults = { ...createDefaultState(), ...initial };
 	const form = useForm<EventFormState>({ defaultValues: defaults });
-	return (
-		<TimingSection
-			form={form}
-			showDurationField={showDuration}
-			onFillPrevious={withFill ? () => new Date("2026-04-25T08:00") : undefined}
-			onFillNext={withFill ? () => new Date("2026-04-25T11:00") : undefined}
-		/>
-	);
+	const fill = withFill
+		? (direction: "previous" | "next") =>
+				direction === "previous" ? new Date("2026-04-25T08:00") : new Date("2026-04-25T11:00")
+		: undefined;
+	return <TimingSection form={form} showDurationField={showDuration} onFill={fill} />;
 }
 
 function RecurrenceWrapper({ initial }: { initial?: Partial<EventFormState> }) {
