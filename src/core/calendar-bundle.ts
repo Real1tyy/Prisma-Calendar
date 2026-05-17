@@ -21,7 +21,6 @@ import { CalendarViewStateManager } from "./calendar-view-state-manager";
 import type { CategoryTracker } from "./category-tracker";
 import {
 	AddZettelIdCommand,
-	BatchCommandFactory,
 	CommandManager,
 	ConvertToRealCommand,
 	ConvertToVirtualCommand,
@@ -64,7 +63,6 @@ export class CalendarBundle {
 	public readonly viewStateManager: CalendarViewStateManager;
 	public readonly navigationHistory: HistoryStack<NavigationEntry>;
 	public readonly commandManager: CommandManager;
-	public readonly batchCommandFactory: BatchCommandFactory;
 	public readonly caldavSyncStateManager: CalDAVSyncStateManager;
 	public readonly icsSubscriptionSyncStateManager: ICSSubscriptionSyncStateManager;
 	public readonly holidayStore: HolidayStore;
@@ -137,7 +135,6 @@ export class CalendarBundle {
 		this.viewStateManager = new CalendarViewStateManager();
 		this.navigationHistory = createNavigationHistory();
 		this.commandManager = new CommandManager();
-		this.batchCommandFactory = new BatchCommandFactory(this.app, this);
 		this.holidayStore = new HolidayStore(this.app, this.settingsStore.currentSettings.holidays as HolidayConfig);
 		this.virtualEventStore = new VirtualEventStore(this.app, this.settingsStore.settings$);
 		this.eventStore.setHolidayStore(this.holidayStore);

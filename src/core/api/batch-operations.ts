@@ -2,6 +2,12 @@ import type { Command } from "@real1ty-obsidian-plugins";
 
 import type CustomCalendarPlugin from "../../main";
 import type { CalendarBundle } from "../calendar-bundle";
+import {
+	createBatchDelete,
+	createBatchMarkAsDone,
+	createBatchMarkAsNotDone,
+	createBatchSkip,
+} from "../commands/batch-commands";
 import { resolveBundleOrNotice } from "./bundle-resolver";
 import type { PrismaBatchInput } from "./types";
 
@@ -14,7 +20,7 @@ function batchOp(getCommand: (bundle: CalendarBundle, filePaths: string[]) => Co
 	};
 }
 
-export const batchMarkAsDone = batchOp((b, paths) => b.batchCommandFactory.createMarkAsDone(paths));
-export const batchMarkAsUndone = batchOp((b, paths) => b.batchCommandFactory.createMarkAsNotDone(paths));
-export const batchDelete = batchOp((b, paths) => b.batchCommandFactory.createDelete(paths));
-export const batchToggleSkip = batchOp((b, paths) => b.batchCommandFactory.createSkip(paths));
+export const batchMarkAsDone = batchOp(createBatchMarkAsDone);
+export const batchMarkAsUndone = batchOp(createBatchMarkAsNotDone);
+export const batchDelete = batchOp(createBatchDelete);
+export const batchToggleSkip = batchOp(createBatchSkip);

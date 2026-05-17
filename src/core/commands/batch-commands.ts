@@ -14,63 +14,60 @@ import {
 import { CloneEventCommand, DeleteEventCommand } from "./lifecycle-commands";
 import { ConvertToRealCommand, ConvertToVirtualCommand } from "./virtual-event-commands";
 
-export function weekDuration(weeks: number): DurationLike {
-	return { weeks };
+export function createBatchDelete(bundle: CalendarBundle, filePaths: string[]): MacroCommand {
+	return batchCommand(filePaths, (fp) => new DeleteEventCommand(bundle.fileRepository, fp));
 }
 
-export class BatchCommandFactory {
-	constructor(
-		private app: App,
-		private bundle: CalendarBundle
-	) {}
+export function createBatchDuplicate(app: App, bundle: CalendarBundle, filePaths: string[]): MacroCommand {
+	return batchCommand(filePaths, (fp) => new CloneEventCommand(app, bundle, fp));
+}
 
-	createDelete(filePaths: string[]): MacroCommand {
-		return batchCommand(filePaths, (fp) => new DeleteEventCommand(this.bundle.fileRepository, fp));
-	}
+export function createBatchMove(bundle: CalendarBundle, filePaths: string[], weeks: number): MacroCommand {
+	const d: DurationLike = { weeks };
+	return batchCommand(filePaths, (fp) => moveEvent(bundle, fp, d, d));
+}
 
-	createDuplicate(filePaths: string[]): MacroCommand {
-		return batchCommand(filePaths, (fp) => new CloneEventCommand(this.app, this.bundle, fp));
-	}
+export function createBatchClone(app: App, bundle: CalendarBundle, filePaths: string[], weeks: number): MacroCommand {
+	const d: DurationLike = { weeks };
+	return batchCommand(filePaths, (fp) => new CloneEventCommand(app, bundle, fp, d, d));
+}
 
-	createMove(filePaths: string[], weeks: number): MacroCommand {
-		const d = weekDuration(weeks);
-		return batchCommand(filePaths, (fp) => moveEvent(this.bundle, fp, d, d));
-	}
+export function createBatchSkip(bundle: CalendarBundle, filePaths: string[]): MacroCommand {
+	return batchCommand(filePaths, (fp) => toggleSkip(bundle, fp));
+}
 
-	createClone(filePaths: string[], weeks: number): MacroCommand {
-		const d = weekDuration(weeks);
-		return batchCommand(filePaths, (fp) => new CloneEventCommand(this.app, this.bundle, fp, d, d));
-	}
+export function createBatchMoveBy(bundle: CalendarBundle, filePaths: string[], offset: DurationLike): MacroCommand {
+	return batchCommand(filePaths, (fp) => moveEvent(bundle, fp, offset, offset));
+}
 
-	createSkip(filePaths: string[]): MacroCommand {
-		return batchCommand(filePaths, (fp) => toggleSkip(this.bundle, fp));
-	}
+export function createBatchMarkAsDone(bundle: CalendarBundle, filePaths: string[]): MacroCommand {
+	return batchCommand(filePaths, (fp) => markAsDone(bundle, fp));
+}
 
-	createMoveBy(filePaths: string[], offset: DurationLike): MacroCommand {
-		return batchCommand(filePaths, (fp) => moveEvent(this.bundle, fp, offset, offset));
-	}
+export function createBatchMarkAsNotDone(bundle: CalendarBundle, filePaths: string[]): MacroCommand {
+	return batchCommand(filePaths, (fp) => markAsUndone(bundle, fp));
+}
 
-	createMarkAsDone(filePaths: string[]): MacroCommand {
-		return batchCommand(filePaths, (fp) => markAsDone(this.bundle, fp));
-	}
+export function createBatchAssignCategories(
+	bundle: CalendarBundle,
+	filePaths: string[],
+	categories: string[]
+): MacroCommand {
+	return batchCommand(filePaths, (fp) => assignCategories(bundle, fp, categories));
+}
 
-	createMarkAsNotDone(filePaths: string[]): MacroCommand {
-		return batchCommand(filePaths, (fp) => markAsUndone(this.bundle, fp));
-	}
+export function createBatchUpdateFrontmatter(
+	bundle: CalendarBundle,
+	filePaths: string[],
+	propertyUpdates: Map<string, string | null>
+): MacroCommand {
+	return batchCommand(filePaths, (fp) => updateFrontmatter(bundle, fp, propertyUpdates));
+}
 
-	createAssignCategories(filePaths: string[], categories: string[]): MacroCommand {
-		return batchCommand(filePaths, (fp) => assignCategories(this.bundle, fp, categories));
-	}
+export function createBatchMakeVirtual(app: App, bundle: CalendarBundle, filePaths: string[]): MacroCommand {
+	return batchCommand(filePaths, (fp) => new ConvertToVirtualCommand(app, bundle, fp));
+}
 
-	createUpdateFrontmatter(filePaths: string[], propertyUpdates: Map<string, string | null>): MacroCommand {
-		return batchCommand(filePaths, (fp) => updateFrontmatter(this.bundle, fp, propertyUpdates));
-	}
-
-	createMakeVirtual(filePaths: string[]): MacroCommand {
-		return batchCommand(filePaths, (fp) => new ConvertToVirtualCommand(this.app, this.bundle, fp));
-	}
-
-	createMakeReal(virtualEventIds: string[]): MacroCommand {
-		return batchCommand(virtualEventIds, (id) => new ConvertToRealCommand(this.app, this.bundle, id));
-	}
+export function createBatchMakeReal(app: App, bundle: CalendarBundle, virtualEventIds: string[]): MacroCommand {
+	return batchCommand(virtualEventIds, (id) => new ConvertToRealCommand(app, bundle, id));
 }

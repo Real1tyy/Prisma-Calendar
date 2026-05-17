@@ -1,4 +1,17 @@
-export { BatchCommandFactory } from "./batch-commands";
+export {
+	createBatchAssignCategories,
+	createBatchClone,
+	createBatchDelete,
+	createBatchDuplicate,
+	createBatchMakeReal,
+	createBatchMakeVirtual,
+	createBatchMarkAsDone,
+	createBatchMarkAsNotDone,
+	createBatchMove,
+	createBatchMoveBy,
+	createBatchSkip,
+	createBatchUpdateFrontmatter,
+} from "./batch-commands";
 export {
 	addPrerequisite,
 	assignCategories,

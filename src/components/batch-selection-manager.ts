@@ -11,7 +11,20 @@ import { addCls, cls, removeCls, tid } from "../constants";
 import { type App, Modal, Notice } from "obsidian";
 
 import type { CalendarBundle } from "../core/calendar-bundle";
-import { BatchCommandFactory } from "../core/commands/batch-commands";
+import {
+	createBatchAssignCategories,
+	createBatchClone,
+	createBatchDelete,
+	createBatchDuplicate,
+	createBatchMakeReal,
+	createBatchMakeVirtual,
+	createBatchMarkAsDone,
+	createBatchMarkAsNotDone,
+	createBatchMove,
+	createBatchMoveBy,
+	createBatchSkip,
+	createBatchUpdateFrontmatter,
+} from "../core/commands/batch-commands";
 import { openMoveByModal } from "../react/modals";
 import type { CalendarEvent } from "../types/calendar";
 import { isTimeUnitAllowedForAllDay } from "../types/calendar";
@@ -22,7 +35,6 @@ export class BatchSelectionManager {
 	private selectedEvents = new Map<string, CalendarEvent>();
 	private isSelectionMode = false;
 	private onSelectionChangeCallback: () => void = () => {};
-	private batchCommandFactory: BatchCommandFactory;
 	private clickHandlers = new Map<HTMLElement, (e: Event) => void>();
 
 	// ─── Lifecycle ────────────────────────────────────────────────
@@ -31,9 +43,7 @@ export class BatchSelectionManager {
 		private app: App,
 		private calendar: Calendar,
 		private bundle: CalendarBundle
-	) {
-		this.batchCommandFactory = new BatchCommandFactory(app, bundle);
-	}
+	) {}
 
 	// ─── Selection Mode ───────────────────────────────────────────
 
@@ -178,7 +188,7 @@ export class BatchSelectionManager {
 		this.executeWithConfirmation(
 			"Delete",
 			(count) => `Are you sure you want to delete ${count} event${pluralize(count)}? This action can be undone.`,
-			(filePaths) => this.batchCommandFactory.createDelete(filePaths),
+			(filePaths) => createBatchDelete(this.bundle, filePaths),
 			(count) => `Deleted ${count} event${pluralize(count)}`,
 			"Failed to delete events"
 		);
@@ -186,7 +196,7 @@ export class BatchSelectionManager {
 
 	async executeDuplicate(): Promise<void> {
 		await this.executeWithSelection(
-			(filePaths) => this.batchCommandFactory.createDuplicate(filePaths),
+			(filePaths) => createBatchDuplicate(this.app, this.bundle, filePaths),
 			(count) => `Duplicated ${count} event${pluralize(count)}`,
 			"Failed to duplicate events"
 		);
@@ -195,7 +205,7 @@ export class BatchSelectionManager {
 	async executeClone(weeks: number): Promise<void> {
 		const direction = getWeekDirection(weeks);
 		await this.executeWithSelection(
-			(filePaths) => this.batchCommandFactory.createClone(filePaths, weeks),
+			(filePaths) => createBatchClone(this.app, this.bundle, filePaths, weeks),
 			(count) => `Cloned ${count} event${pluralize(count)} to ${direction} week`,
 			"Failed to clone events"
 		);
@@ -204,7 +214,7 @@ export class BatchSelectionManager {
 	async executeMove(weeks: number): Promise<void> {
 		const direction = getWeekDirection(weeks);
 		await this.executeWithSelection(
-			(filePaths) => this.batchCommandFactory.createMove(filePaths, weeks),
+			(filePaths) => createBatchMove(this.bundle, filePaths, weeks),
 			(count) => `Moved ${count} event${pluralize(count)} to ${direction} week`,
 			"Failed to move events"
 		);
@@ -227,7 +237,7 @@ export class BatchSelectionManager {
 
 	async executeSkip(): Promise<void> {
 		await this.executeWithSelection(
-			(filePaths) => this.batchCommandFactory.createSkip(filePaths),
+			(filePaths) => createBatchSkip(this.bundle, filePaths),
 			(count) => `Toggled skip for ${count} event${pluralize(count)}`,
 			"Failed to skip events"
 		);
@@ -235,7 +245,7 @@ export class BatchSelectionManager {
 
 	async executeMarkAsDone(): Promise<void> {
 		await this.executeWithSelection(
-			(filePaths) => this.batchCommandFactory.createMarkAsDone(filePaths),
+			(filePaths) => createBatchMarkAsDone(this.bundle, filePaths),
 			(count) => `Marked ${count} event${pluralize(count)} as done`,
 			"Failed to mark events as done"
 		);
@@ -243,7 +253,7 @@ export class BatchSelectionManager {
 
 	async executeMarkAsNotDone(): Promise<void> {
 		await this.executeWithSelection(
-			(filePaths) => this.batchCommandFactory.createMarkAsNotDone(filePaths),
+			(filePaths) => createBatchMarkAsNotDone(this.bundle, filePaths),
 			(count) => `Marked ${count} event${pluralize(count)} as not done`,
 			"Failed to mark events as not done"
 		);
@@ -269,7 +279,7 @@ export class BatchSelectionManager {
 
 			const offset = { [result.unit]: result.value };
 			await this.executeWithSelection(
-				(filePaths) => this.batchCommandFactory.createMoveBy(filePaths, offset),
+				(filePaths) => createBatchMoveBy(this.bundle, filePaths, offset),
 				(count) => `Moved ${count} event${pluralize(count)} by ${result.value} ${result.unit}`,
 				"Failed to move events by custom offset"
 			);
@@ -278,7 +288,7 @@ export class BatchSelectionManager {
 
 	executeAssignCategories(categories: string[]): void {
 		void this.executeWithSelection(
-			(filePaths) => this.batchCommandFactory.createAssignCategories(filePaths, categories),
+			(filePaths) => createBatchAssignCategories(this.bundle, filePaths, categories),
 			(count) => `Assigned categories to ${count} event${pluralize(count)}`,
 			"Failed to assign categories"
 		);
@@ -286,7 +296,7 @@ export class BatchSelectionManager {
 
 	executeUpdateFrontmatter(propertyUpdates: Map<string, string | null>): void {
 		void this.executeWithSelection(
-			(filePaths) => this.batchCommandFactory.createUpdateFrontmatter(filePaths, propertyUpdates),
+			(filePaths) => createBatchUpdateFrontmatter(this.bundle, filePaths, propertyUpdates),
 			(count) => `Updated frontmatter for ${count} event${pluralize(count)}`,
 			"Failed to update frontmatter"
 		);
@@ -294,7 +304,7 @@ export class BatchSelectionManager {
 
 	async executeMakeVirtual(): Promise<void> {
 		await this.executeWithSelection(
-			(filePaths) => this.batchCommandFactory.createMakeVirtual(filePaths),
+			(filePaths) => createBatchMakeVirtual(this.app, this.bundle, filePaths),
 			(count) => `Converted ${count} event${pluralize(count)} to virtual`,
 			"Failed to make events virtual"
 		);
@@ -314,7 +324,7 @@ export class BatchSelectionManager {
 		}
 
 		await this.executeCommand(
-			this.batchCommandFactory.createMakeReal(virtualEventIds),
+			createBatchMakeReal(this.app, this.bundle, virtualEventIds),
 			virtualEventIds.length,
 			(count) => `Converted ${count} event${pluralize(count)} to real`,
 			"Failed to make events real"

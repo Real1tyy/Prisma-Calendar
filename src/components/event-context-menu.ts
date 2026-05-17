@@ -34,7 +34,6 @@ import {
 	toggleSkip,
 	updateFrontmatter,
 } from "../core/commands";
-import { weekDuration } from "../core/commands/batch-commands";
 import { MinimizedModalManager } from "../core/minimized-modal-manager";
 import {
 	openCategoryAssignModal,
@@ -837,7 +836,7 @@ export class EventContextMenu {
 	private async eventByWeeks(event: CalendarEventInfo, weeks: number, mode: "move" | "clone"): Promise<void> {
 		const direction = weeks > 0 ? "next" : "previous";
 		await this.withFilePath(event, `${mode} event`, async (filePath) => {
-			const offset = weekDuration(weeks);
+			const offset = { weeks };
 			const command =
 				mode === "move"
 					? () => moveEvent(this.bundle, filePath, offset, offset)
