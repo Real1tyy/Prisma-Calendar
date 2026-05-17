@@ -40,6 +40,7 @@ export type EventControlKey =
 	| "location"
 	| "icon"
 	| "skip"
+	| "markAsDone"
 	| "breakMinutes"
 	| "notify-before"
 	| "rrule"
