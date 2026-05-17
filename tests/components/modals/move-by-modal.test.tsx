@@ -58,6 +58,14 @@ describe("MoveByForm", () => {
 		expect(onSubmit).toHaveBeenCalledWith({ value: 15, unit: "days" });
 	});
 
+	it("toggle-sign then submit dispatches the negated value to onSubmit", async () => {
+		const { user, onSubmit } = setup();
+		await user.click(screen.getByTestId("prisma-move-by-unit-hours"));
+		await user.click(screen.getByTestId("prisma-move-by-toggle-sign"));
+		await user.click(screen.getByTestId("prisma-form-submit"));
+		expect(onSubmit).toHaveBeenCalledWith({ value: -15, unit: "hours" });
+	});
+
 	it("cancel calls onCancel", async () => {
 		const { user, onCancel } = setup();
 		await user.click(screen.getByTestId("prisma-form-cancel"));

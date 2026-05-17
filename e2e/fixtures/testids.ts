@@ -46,8 +46,12 @@ export type EventControlKey =
 	| "rrule-type"
 	| "custom-freq"
 	| "custom-interval"
+	| "rrule-until"
+	| "future-instances-count"
+	| "generate-past-events"
 	| "preset"
-	| "participants";
+	| "participants"
+	| "virtual";
 
 export type EventFieldKey = "title" | "categories" | "prerequisites" | "participants";
 
@@ -55,9 +59,14 @@ export type EventBtnKey =
 	| "save"
 	| "cancel"
 	| "minimize"
+	| "save-preset"
 	| "assign-categories"
 	| "assign-prerequisites"
-	| "add-custom-prop-other";
+	| "add-participant"
+	| "add-custom-prop-other"
+	| "add-custom-prop-display"
+	| "remove-custom-prop-other"
+	| "remove-custom-prop-display";
 
 export type ToolbarKey =
 	| "create"

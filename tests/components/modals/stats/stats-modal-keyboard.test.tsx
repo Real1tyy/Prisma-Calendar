@@ -76,3 +76,38 @@ describe("StatsModalContent — keyboard navigation", () => {
 		expect(screen.queryByTestId("prisma-stats-modal-period-label")).toBeNull();
 	});
 });
+
+describe("StatsModalContent — button navigation", () => {
+	it("Next button advances the weekly view (label changes)", async () => {
+		const label = await renderWeekly(new Date(2026, 4, 14, 12, 0, 0));
+		const before = label.textContent;
+
+		fireEvent.click(screen.getByTestId("prisma-stats-modal-next"));
+
+		await screen.findByText((_text, node) => node === label && node.textContent !== before);
+	});
+
+	it("Today button changes the label away from a navigated-to state", async () => {
+		const label = await renderWeekly(new Date(2026, 4, 14, 12, 0, 0));
+		const initial = label.textContent;
+
+		fireEvent.click(screen.getByTestId("prisma-stats-modal-next"));
+		const afterNext = await screen.findByText((_text, node) => node === label && node.textContent !== initial);
+		const afterNextText = afterNext.textContent;
+
+		// "Today" navigates to `new Date()` — different from `afterNext` because
+		// `afterNext` is `initial + 1 week`. Asserting the label moves *off*
+		// `afterNext` proves the Today click fired and re-rendered.
+		fireEvent.click(screen.getByTestId("prisma-stats-modal-today"));
+		await screen.findByText((_text, node) => node === label && node.textContent !== afterNextText);
+	});
+
+	it("Prev button retreats the weekly view (label changes)", async () => {
+		const label = await renderWeekly(new Date(2026, 4, 14, 12, 0, 0));
+		const before = label.textContent;
+
+		fireEvent.click(screen.getByTestId("prisma-stats-modal-prev"));
+
+		await screen.findByText((_text, node) => node === label && node.textContent !== before);
+	});
+});

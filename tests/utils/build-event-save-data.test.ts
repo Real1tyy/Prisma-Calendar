@@ -33,6 +33,20 @@ describe("buildEventSaveData", () => {
 		expect(data.preservedFrontmatter["Title"]).toBe("Team Meeting");
 	});
 
+	it("tolerates a blank title — skips titleProp write and preserves timing fields", () => {
+		const settings = makeSettings({ titleProp: "Title" });
+		const values = makeValues({
+			formState: { ...createDefaultState(), title: "", start: "2026-04-25T09:00", end: "2026-04-25T10:00" },
+		});
+
+		const data = buildEventSaveData(values, settings, {}, new Set(), false);
+
+		expect(data.title).toBe("");
+		expect("Title" in data.preservedFrontmatter, "blank title must NOT write titleProp").toBe(false);
+		expect(data.start).toMatch(/^2026-04-25T09:00/);
+		expect(data.end).toMatch(/^2026-04-25T10:00/);
+	});
+
 	it("returns title in save data even when titleProp is unset (no frontmatter write)", () => {
 		const settings = makeSettings();
 		expect(settings.titleProp).toBeUndefined();
