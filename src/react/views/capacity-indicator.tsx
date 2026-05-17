@@ -8,7 +8,7 @@ import { debounceTime, map, startWith, switchMap } from "rxjs/operators";
 import type { CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { calculateCapacityFromEvents, formatBoundaryRange, formatCapacityLabel } from "../../utils/stats/capacity";
-import { formatDuration, formatDurationAsDecimalHours, getDayBounds } from "../../utils/stats";
+import { getDayBounds, pickDurationFormatter } from "../../utils/stats";
 import { useBundle } from "../contexts/bundle-context";
 
 const CHANGES_DEBOUNCE_MS = 150;
@@ -30,7 +30,7 @@ interface CapacityVM {
 
 function buildVM(events: CalendarEvent[], settings: SingleCalendarConfig, start: Date, end: Date): CapacityVM {
 	const capacity = calculateCapacityFromEvents(events, start, end, settings.hourStart, settings.hourEnd);
-	const fmt = settings.showDecimalHours ? formatDurationAsDecimalHours : formatDuration;
+	const fmt = pickDurationFormatter(settings);
 	return {
 		label: `⏱ ${formatCapacityLabel(capacity, settings.showDecimalHours)} (${capacity.percentUsed.toFixed(0)}%)`,
 		tooltip: `Bounds: ${formatBoundaryRange(capacity)}\nRemaining: ${fmt(capacity.remainingMs)}`,

@@ -47,6 +47,15 @@ import type { RecurringEventManager } from "./recurring-event-manager";
 import { CalendarSettingsStore } from "./settings-store";
 import { VirtualEventStore } from "./virtual-event-store";
 
+export interface CalendarBundleInfo {
+	calendarId: string;
+	name: string;
+	directory: string;
+	enabled: boolean;
+	eventCount: number;
+	untrackedEventCount: number;
+}
+
 export class CalendarBundle {
 	// ─── Lifecycle ───────────────────────────────────────────────
 	public readonly settingsStore: CalendarSettingsStore;
@@ -427,6 +436,18 @@ export class CalendarBundle {
 		this.eventStore.clearWithoutNotify();
 		this.recurringEventManager.clearWithoutNotify();
 		this.fileRepository.resync();
+	}
+
+	getInfo(): CalendarBundleInfo {
+		const settings = this.settingsStore.currentSettings;
+		return {
+			calendarId: this.calendarId,
+			name: settings.name,
+			directory: settings.directory,
+			enabled: true,
+			eventCount: this.eventStore.getAllEvents().length,
+			untrackedEventCount: this.untrackedEventStore.getUntrackedEvents().length,
+		};
 	}
 
 	getCalDAVSettings() {

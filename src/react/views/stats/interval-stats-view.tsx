@@ -1,19 +1,17 @@
-import { toLocalISOString } from "@real1ty-obsidian-plugins";
 import { useSettingsStore } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { CalendarEvent } from "../../../types/calendar";
-import type { AggregationMode, Stats } from "../../../utils/stats";
-import { formatDuration, formatDurationAsDecimalHours } from "../../../utils/stats";
+import type { AggregationMode, Stats, StatsInterval } from "../../../utils/stats";
+import { buildStatsSnapshot, pickDurationFormatter } from "../../../utils/stats";
 import { useBundleChanges } from "../../hooks/use-bundle-changes";
 import { CapacityLabel } from "./capacity-label";
 import { StatsChart } from "./stats-chart";
 import { StatsTable } from "./stats-table";
 
 export interface IntervalStatsConfig {
-	getBounds: (date: Date) => { start: Date; end: Date };
-	aggregateStats: (events: CalendarEvent[], date: Date, mode: AggregationMode, categoryProp: string) => Stats;
+	interval: StatsInterval;
 	formatDate: (date: Date, locale: string | undefined) => string;
 	emptyMessage: string;
 	includeCapacity?: boolean;
@@ -48,20 +46,26 @@ export const IntervalStatsView = memo(function IntervalStatsView({ bundle, confi
 		const token = ++renderTokenRef.current;
 
 		async function load(): Promise<void> {
-			const { start, end } = config.getBounds(date);
-			const query = { start: toLocalISOString(start), end: toLocalISOString(end) };
-			const events = await bundle.eventStore.getEvents(query);
+			const snapshot = await buildStatsSnapshot(bundle.eventStore, {
+				date,
+				interval: config.interval,
+				mode: aggregationMode,
+				categoryProp: settings.categoryProp,
+				includeSkipped,
+			});
 
 			if (token !== renderTokenRef.current) return;
 
-			const filteredEvents = includeSkipped ? [...events, ...bundle.eventStore.getSkippedEvents(query)] : events;
-
-			const stats = config.aggregateStats(filteredEvents, date, aggregationMode, settings.categoryProp);
-			setStatsData({ stats, filteredEvents, start, end });
+			setStatsData({
+				stats: snapshot.stats,
+				filteredEvents: snapshot.filteredEvents,
+				start: snapshot.bounds.start,
+				end: snapshot.bounds.end,
+			});
 		}
 
 		void load();
-	}, [bundle, config, date, aggregationMode, includeSkipped, settings.categoryProp, changeToken]);
+	}, [bundle, config.interval, date, aggregationMode, includeSkipped, settings.categoryProp, changeToken]);
 
 	const toggleAggregation = useCallback(() => {
 		setAggregationMode((m) => (m === "name" ? "category" : "name"));
@@ -149,7 +153,7 @@ const StatsHeaderBar = memo(function StatsHeaderBar({
 	onToggleAggregation,
 	onToggleSkipped,
 }: StatsHeaderBarProps) {
-	const formatDur = showDecimalHours ? formatDurationAsDecimalHours : formatDuration;
+	const formatDur = pickDurationFormatter({ showDecimalHours });
 
 	return (
 		<div className="prisma-daily-stats-header-bar">

@@ -1,7 +1,7 @@
 import { memo, useCallback, useMemo, useState } from "react";
 
 import type { AggregationMode, WeeklyStatEntry } from "../../../utils/stats";
-import { formatDuration, formatDurationAsDecimalHours, formatPercentage } from "../../../utils/stats";
+import { formatPercentage, pickDurationFormatter } from "../../../utils/stats";
 
 const ENTRIES_PER_PAGE = 20;
 
@@ -35,7 +35,7 @@ export const StatsTable = memo(function StatsTable({
 		[totalPages]
 	);
 
-	const formatDur = showDecimalHours ? formatDurationAsDecimalHours : formatDuration;
+	const formatDur = pickDurationFormatter({ showDecimalHours });
 
 	return (
 		<div className="prisma-stats-table-container">

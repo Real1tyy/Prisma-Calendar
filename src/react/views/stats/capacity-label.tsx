@@ -2,7 +2,7 @@ import { memo, useMemo } from "react";
 
 import type { CalendarEvent } from "../../../types/calendar";
 import { calculateCapacityFromEvents, formatBoundaryRange, formatCapacityLabel } from "../../../utils/stats/capacity";
-import { formatDuration, formatDurationAsDecimalHours } from "../../../utils/stats";
+import { pickDurationFormatter } from "../../../utils/stats";
 
 interface CapacityLabelProps {
 	events: CalendarEvent[];
@@ -26,7 +26,7 @@ export const CapacityLabel = memo(function CapacityLabel({
 		[events, start, end, hourStart, hourEnd]
 	);
 
-	const formatDur = showDecimalHours ? formatDurationAsDecimalHours : formatDuration;
+	const formatDur = pickDurationFormatter({ showDecimalHours });
 	const label = formatCapacityLabel(capacity, showDecimalHours);
 
 	return (

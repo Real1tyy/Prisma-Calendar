@@ -1,6 +1,6 @@
 import type { CalendarEvent } from "../../types/calendar";
 import { isTimedEvent } from "../../types/calendar";
-import { formatDuration, formatDurationAsDecimalHours, getEventDuration } from "./duration";
+import { getEventDuration, pickDurationFormatter } from "./duration";
 
 export interface CapacityResult {
 	capacityMs: number;
@@ -88,7 +88,7 @@ export function calculateCapacityFromEvents(
 }
 
 export function formatCapacityLabel(result: CapacityResult, showDecimalHours: boolean): string {
-	const fmt = showDecimalHours ? formatDurationAsDecimalHours : formatDuration;
+	const fmt = pickDurationFormatter({ showDecimalHours });
 	return `${fmt(result.usedMs)} / ${fmt(result.capacityMs)}`;
 }
 

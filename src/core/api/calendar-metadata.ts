@@ -2,17 +2,7 @@ import { toLocalISOString } from "@real1ty-obsidian-plugins";
 
 import type CustomCalendarPlugin from "../../main";
 import type { SingleCalendarConfig } from "../../types";
-import {
-	aggregateStats,
-	type AggregationMode,
-	formatDuration,
-	formatDurationAsDecimalHours,
-	formatPercentage,
-	getDayBounds,
-	getMonthBounds,
-	getWeekBounds,
-} from "../../utils/stats";
-import type { CalendarBundle } from "../calendar-bundle";
+import { buildStatsSnapshot, formatPercentage, pickDurationFormatter } from "../../utils/stats";
 import { resolveBundle, resolveBundleOrNotice } from "./bundle-resolver";
 import type {
 	PrismaCalendarIdInput,
@@ -23,35 +13,16 @@ import type {
 	PrismaUpdateSettingsInput,
 } from "./types";
 
-function bundleToCalendarInfo(bundle: CalendarBundle): PrismaCalendarInfo {
-	const settings = bundle.settingsStore.currentSettings;
-	return {
-		calendarId: bundle.calendarId,
-		name: settings.name,
-		directory: settings.directory,
-		enabled: true,
-		eventCount: bundle.eventStore.getAllEvents().length,
-		untrackedEventCount: bundle.untrackedEventStore.getUntrackedEvents().length,
-	};
-}
-
-export function refreshCalendar(plugin: CustomCalendarPlugin, input?: PrismaCalendarIdInput): void {
-	const bundle = resolveBundleOrNotice(plugin, input?.calendarId);
-	if (!bundle) return;
-	bundle.refreshCalendar();
-}
-
 export function getCalendarInfo(
 	plugin: CustomCalendarPlugin,
 	input?: PrismaCalendarIdInput
 ): PrismaCalendarInfo | null {
 	const bundle = resolveBundle(plugin, input?.calendarId);
-	if (!bundle) return null;
-	return bundleToCalendarInfo(bundle);
+	return bundle?.getInfo() ?? null;
 }
 
 export function listCalendars(plugin: CustomCalendarPlugin): PrismaCalendarInfo[] {
-	return plugin.calendarBundles.map(bundleToCalendarInfo);
+	return plugin.calendarBundles.map((bundle) => bundle.getInfo());
 }
 
 export async function getStatistics(
@@ -66,21 +37,24 @@ export async function getStatistics(
 	if (isNaN(date.getTime())) return null;
 
 	const interval = input?.interval ?? "week";
-	const mode: AggregationMode = input?.mode ?? settings.defaultAggregationMode;
-
-	const bounds =
-		interval === "day" ? getDayBounds(date) : interval === "month" ? getMonthBounds(date) : getWeekBounds(date);
-
-	const query = { start: toLocalISOString(bounds.start), end: toLocalISOString(bounds.end) };
-	const events = await bundle.eventStore.getEvents(query);
-	const skippedCount = bundle.eventStore.countSkippedEvents(query);
+	const mode = input?.mode ?? settings.defaultAggregationMode;
+	const snapshot = await buildStatsSnapshot(bundle.eventStore, {
+		date,
+		interval,
+		mode,
+		categoryProp: settings.categoryProp,
+	});
+	const skippedCount = bundle.eventStore.countSkippedEvents({
+		start: toLocalISOString(snapshot.bounds.start),
+		end: toLocalISOString(snapshot.bounds.end),
+	});
 
 	let timedEvents = 0;
 	let allDayEvents = 0;
 	let doneEvents = 0;
 	let undoneEvents = 0;
 
-	for (const event of events) {
+	for (const event of snapshot.events) {
 		if (event.type === "timed") timedEvents++;
 		else allDayEvents++;
 
@@ -90,26 +64,24 @@ export async function getStatistics(
 		}
 	}
 
-	const stats = aggregateStats(events, bounds.start, bounds.end, mode, settings.categoryProp);
-	const formatFn = settings.showDecimalHours ? formatDurationAsDecimalHours : formatDuration;
-
-	const entries: PrismaStatEntry[] = stats.entries.map((entry) => ({
+	const formatFn = pickDurationFormatter(settings);
+	const entries: PrismaStatEntry[] = snapshot.stats.entries.map((entry) => ({
 		name: entry.name,
 		duration: entry.duration,
 		durationFormatted: formatFn(entry.duration),
-		percentage: formatPercentage(entry.duration, stats.totalDuration),
+		percentage: formatPercentage(entry.duration, snapshot.stats.totalDuration),
 		count: entry.count,
 		isRecurring: entry.isRecurring,
 	}));
 
 	return {
-		periodStart: toLocalISOString(bounds.start),
-		periodEnd: toLocalISOString(bounds.end),
+		periodStart: toLocalISOString(snapshot.bounds.start),
+		periodEnd: toLocalISOString(snapshot.bounds.end),
 		interval,
 		mode,
-		totalDuration: stats.totalDuration,
-		totalDurationFormatted: formatFn(stats.totalDuration),
-		totalEvents: events.length,
+		totalDuration: snapshot.stats.totalDuration,
+		totalDurationFormatted: formatFn(snapshot.stats.totalDuration),
+		totalEvents: snapshot.events.length,
 		timedEvents,
 		allDayEvents,
 		skippedEvents: skippedCount,

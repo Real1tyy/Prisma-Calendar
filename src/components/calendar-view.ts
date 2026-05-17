@@ -2683,10 +2683,6 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		return this.bundle;
 	}
 
-	refreshCalendar(): void {
-		this.bundle.refreshCalendar();
-	}
-
 	isInBatchSelectionMode(): boolean {
 		return this.batchSelectionManager?.isInSelectionMode() ?? false;
 	}

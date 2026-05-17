@@ -8,14 +8,8 @@ export const GLOBAL_KEY = "PrismaCalendar";
 import { SingleCalendarConfigSchema } from "../../types/settings";
 import { aiQuery } from "./ai-operations";
 import { batchDelete, batchMarkAsDone, batchMarkAsUndone, batchToggleSkip } from "./batch-operations";
-import {
-	getCalendarInfo,
-	getSettings,
-	getStatistics,
-	listCalendars,
-	refreshCalendar,
-	updateSettings,
-} from "./calendar-metadata";
+import { resolveBundleOrNotice } from "./bundle-resolver";
+import { getCalendarInfo, getSettings, getStatistics, listCalendars, updateSettings } from "./calendar-metadata";
 import {
 	convertFileToEvent,
 	createEvent,
@@ -283,7 +277,7 @@ export function buildActions(plugin: CustomCalendarPlugin): ActionDefMap {
 			description: "Force a refresh of the calendar view, re-reading events from disk.",
 			input: PrismaCalendarIdInputSchema,
 			handler: (input) => {
-				refreshCalendar(plugin, input);
+				resolveBundleOrNotice(plugin, input.calendarId)?.refreshCalendar();
 			},
 		}),
 		getCalendarInfo: defineAction({

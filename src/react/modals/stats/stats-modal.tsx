@@ -1,22 +1,11 @@
-import { toLocalISOString } from "@real1ty-obsidian-plugins";
 import { showReactModal, useArrowLeft, useArrowRight, useSettingsStore } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { CalendarEvent } from "../../../types/calendar";
-import type { AggregationMode, Stats } from "../../../utils/stats";
-import {
-	aggregateDailyStats,
-	aggregateMonthlyStats,
-	aggregateStats,
-	aggregateWeeklyStats,
-	formatDuration,
-	formatDurationAsDecimalHours,
-	getDayBounds,
-	getMonthBounds,
-	getWeekBounds,
-} from "../../../utils/stats";
+import type { AggregationMode, Stats, StatsInterval } from "../../../utils/stats";
+import { aggregateStats, boundsByInterval, buildStatsSnapshot, pickDurationFormatter } from "../../../utils/stats";
 import { useBundleChanges } from "../../hooks/use-bundle-changes";
 import { CapacityLabel } from "../../views/stats/capacity-label";
 import { StatsChart } from "../../views/stats/stats-chart";
@@ -27,10 +16,9 @@ type StatsRange = "daily" | "weekly" | "monthly" | "alltime";
 const REFRESH_DEBOUNCE_MS = 100;
 
 interface IntervalConfig {
-	getBounds(date: Date): { start: Date; end: Date };
+	interval: StatsInterval;
 	navigate(date: Date, direction: number): Date;
 	navigateFast(date: Date, direction: number): Date;
-	aggregateStats(events: CalendarEvent[], date: Date, mode: AggregationMode, categoryProp: string): Stats;
 	formatDateRange(start: Date, end: Date, locale?: string): string;
 }
 
@@ -54,18 +42,16 @@ function addYears(date: Date, years: number): Date {
 
 const INTERVAL_CONFIGS: Record<Exclude<StatsRange, "alltime">, IntervalConfig> = {
 	daily: {
-		getBounds: getDayBounds,
+		interval: "day",
 		navigate: (date, direction) => addDays(date, direction),
 		navigateFast: (date, direction) => addDays(date, 10 * direction),
-		aggregateStats: aggregateDailyStats,
 		formatDateRange: (start, _end, locale) =>
 			start.toLocaleDateString(locale, { weekday: "long", month: "short", day: "numeric", year: "numeric" }),
 	},
 	weekly: {
-		getBounds: getWeekBounds,
+		interval: "week",
 		navigate: (date, direction) => addDays(date, 7 * direction),
 		navigateFast: (date, direction) => addDays(date, 28 * direction),
-		aggregateStats: aggregateWeeklyStats,
 		formatDateRange: (start, end, locale) => {
 			const fmt = (d: Date): string =>
 				d.toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" });
@@ -73,10 +59,9 @@ const INTERVAL_CONFIGS: Record<Exclude<StatsRange, "alltime">, IntervalConfig> =
 		},
 	},
 	monthly: {
-		getBounds: getMonthBounds,
+		interval: "month",
 		navigate: (date, direction) => addMonths(date, direction),
 		navigateFast: (date, direction) => addYears(date, direction),
-		aggregateStats: aggregateMonthlyStats,
 		formatDateRange: (start, _end, locale) => start.toLocaleDateString(locale, { month: "long", year: "numeric" }),
 	},
 };
@@ -129,25 +114,28 @@ export const StatsModalContent = memo(function StatsModalContent({
 			let events: CalendarEvent[];
 			let start: Date;
 			let end: Date;
+			let stats: Stats;
 
 			if (config) {
-				const bounds = config.getBounds(currentDate);
-				start = bounds.start;
-				end = bounds.end;
-				const query = { start: toLocalISOString(start), end: toLocalISOString(end) };
-				const fetched = await bundle.eventStore.getEvents(query);
+				const snapshot = await buildStatsSnapshot(bundle.eventStore, {
+					date: currentDate,
+					interval: config.interval,
+					mode: aggregationMode,
+					categoryProp: settings.categoryProp,
+					includeSkipped,
+				});
 				if (token !== renderTokenRef.current) return;
-				events = includeSkipped ? [...fetched, ...bundle.eventStore.getSkippedEvents(query)] : fetched;
+				events = snapshot.filteredEvents;
+				start = snapshot.bounds.start;
+				end = snapshot.bounds.end;
+				stats = snapshot.stats;
 			} else {
 				const allEvents = bundle.eventStore.getAllEvents();
 				events = includeSkipped ? allEvents : allEvents.filter((e) => !e.skipped);
 				start = new Date(0);
 				end = new Date();
+				stats = aggregateStats(events, undefined, undefined, aggregationMode, settings.categoryProp);
 			}
-
-			const stats = config
-				? config.aggregateStats(events, currentDate, aggregationMode, settings.categoryProp)
-				: aggregateStats(events, undefined, undefined, aggregationMode, settings.categoryProp);
 
 			setStatsData({ stats, filteredEvents: events, start, end });
 		}
@@ -259,8 +247,8 @@ const NavigableHeader = memo(function NavigableHeader({
 	onToggleAggregation,
 	onToggleSkipped,
 }: NavigableHeaderProps) {
-	const { start, end } = config.getBounds(currentDate);
-	const formatDur = showDecimalHours ? formatDurationAsDecimalHours : formatDuration;
+	const { start, end } = boundsByInterval(currentDate, config.interval);
+	const formatDur = pickDurationFormatter({ showDecimalHours });
 
 	return (
 		<div className="prisma-stats-header">
@@ -353,7 +341,7 @@ const AllTimeHeader = memo(function AllTimeHeader({
 	onToggleAggregation,
 	onToggleSkipped,
 }: AllTimeHeaderProps) {
-	const formatDur = showDecimalHours ? formatDurationAsDecimalHours : formatDuration;
+	const formatDur = pickDurationFormatter({ showDecimalHours });
 
 	return (
 		<div className="prisma-stats-header">

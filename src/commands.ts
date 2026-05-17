@@ -207,7 +207,7 @@ export function registerPrismaCalendarCommands(plugin: CustomCalendarPlugin): vo
 		void view.showAllTimeStatsModal();
 	});
 	addCalendarViewCommand(COMMAND_IDS.REFRESH_CALENDAR, "Refresh planning system", (view) => {
-		void view.refreshCalendar();
+		view.getBundle().refreshCalendar();
 	});
 	addCalendarViewCommand(
 		COMMAND_IDS.HIGHLIGHT_EVENTS_WITHOUT_CATEGORIES,

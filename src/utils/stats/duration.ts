@@ -77,3 +77,9 @@ export function formatPercentage(duration: number, total: number): string {
 	if (total === 0) return "0%";
 	return `${((duration / total) * 100).toFixed(1)}%`;
 }
+
+export type DurationFormatter = (ms: number) => string;
+
+export function pickDurationFormatter(settings: { showDecimalHours: boolean }): DurationFormatter {
+	return settings.showDecimalHours ? formatDurationAsDecimalHours : formatDuration;
+}

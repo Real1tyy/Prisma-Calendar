@@ -60,3 +60,16 @@ export function getDayBounds(date: Date): { start: Date; end: Date } {
 
 	return { start, end };
 }
+
+export type StatsInterval = "day" | "week" | "month";
+
+export function boundsByInterval(date: Date, interval: StatsInterval): { start: Date; end: Date } {
+	switch (interval) {
+		case "day":
+			return getDayBounds(date);
+		case "month":
+			return getMonthBounds(date);
+		case "week":
+			return getWeekBounds(date);
+	}
+}
