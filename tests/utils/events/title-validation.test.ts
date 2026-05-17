@@ -3,9 +3,19 @@ import { describe, expect, it } from "vitest";
 import { ILLEGAL_TITLE_CHARS, validateEventTitle } from "../../../src/utils/events/title-validation";
 
 describe("validateEventTitle", () => {
-	it("accepts empty titles (untitled events are allowed elsewhere in the flow)", () => {
-		expect(validateEventTitle("")).toEqual({ ok: true });
-		expect(validateEventTitle("   ")).toEqual({ ok: true });
+	it("rejects empty and whitespace-only titles", () => {
+		const empty = validateEventTitle("");
+		expect(empty.ok).toBe(false);
+		if (!empty.ok) {
+			expect(empty.illegalChars).toEqual([]);
+			expect(empty.message).toMatch(/required/i);
+		}
+
+		const spaces = validateEventTitle("   ");
+		expect(spaces.ok).toBe(false);
+		if (!spaces.ok) {
+			expect(spaces.illegalChars).toEqual([]);
+		}
 	});
 
 	it("accepts normal titles including spaces, punctuation, unicode and emoji", () => {

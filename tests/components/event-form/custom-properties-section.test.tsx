@@ -1,3 +1,5 @@
+import "@testing-library/jest-dom/vitest";
+
 import { render, screen, within } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { useForm } from "react-hook-form";
@@ -113,6 +115,62 @@ describe("CustomPropertiesSection", () => {
 		await user.type(valInput, "lonely-value");
 
 		expect(lastRecord).toEqual({});
+	});
+
+	// Regression: imperative base-event-modal `addCustomProperty` flow auto-expanded
+	// the section and never collapsed it. Pressing "Add property" while collapsed
+	// must expand the section so the new row is visible; pressing it while
+	// expanded must NOT collapse it (the action button's click was bubbling to
+	// the collapsible header, snapping the section closed).
+	it("auto-expands the section when Add property is clicked while collapsed", async () => {
+		const user = userEvent.setup();
+		render(<Harness section="display" name="customPropertiesDisplay" />);
+
+		// Section starts collapsed (defaultCollapsed=true).
+		const wrapper = screen.getByTestId("prisma-event-custom-props-display");
+		const header = wrapper.querySelector<HTMLElement>('[role="button"]');
+		expect(header).not.toBeNull();
+		expect(header).toHaveAttribute("aria-expanded", "false");
+
+		await user.click(screen.getByTestId("prisma-event-btn-add-custom-prop-display"));
+
+		expect(header).toHaveAttribute("aria-expanded", "true");
+		expect(getRows().length).toBe(1);
+	});
+
+	it("does NOT collapse the section when Add property is clicked while expanded", async () => {
+		const user = userEvent.setup();
+		render(<Harness section="display" name="customPropertiesDisplay" />);
+
+		const wrapper = screen.getByTestId("prisma-event-custom-props-display");
+		const header = wrapper.querySelector<HTMLElement>('[role="button"]');
+		expect(header).not.toBeNull();
+
+		// Manually expand the section via the user clicking the header.
+		await user.click(header!);
+		expect(header).toHaveAttribute("aria-expanded", "true");
+
+		await user.click(screen.getByTestId("prisma-event-btn-add-custom-prop-display"));
+
+		// Section must remain expanded — the button click must NOT bubble to the header.
+		expect(header).toHaveAttribute("aria-expanded", "true");
+		expect(getRows().length).toBe(1);
+	});
+
+	it("Add property keeps section expanded across multiple presses", async () => {
+		const user = userEvent.setup();
+		render(<Harness section="other" name="customPropertiesOther" />);
+
+		const wrapper = screen.getByTestId("prisma-event-custom-props-other");
+		const header = wrapper.querySelector<HTMLElement>('[role="button"]');
+		const addBtn = screen.getByTestId("prisma-event-btn-add-custom-prop-other");
+
+		await user.click(addBtn); // expands + 1 row
+		await user.click(addBtn); // stays expanded, 2 rows
+		await user.click(addBtn); // stays expanded, 3 rows
+
+		expect(header).toHaveAttribute("aria-expanded", "true");
+		expect(getRows("other").length).toBe(3);
 	});
 
 	it("removes a row and updates the record", async () => {

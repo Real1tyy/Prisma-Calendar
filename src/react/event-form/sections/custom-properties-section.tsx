@@ -1,5 +1,5 @@
 import { CollapsibleSection } from "@real1ty-obsidian-plugins-react";
-import { memo, useCallback } from "react";
+import { memo, useCallback, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { useFieldArray } from "react-hook-form";
 
@@ -21,8 +21,12 @@ export const CustomPropertiesSection = memo(function CustomPropertiesSection({
 	name,
 }: CustomPropertiesSectionProps) {
 	const { fields, append, remove } = useFieldArray({ control: form.control, name });
+	const [collapsed, setCollapsed] = useState(true);
 
+	// Mirror base-event-modal.ts addButton handler: auto-expand the section
+	// when the user adds a property so the new row is visible.
 	const handleAdd = useCallback(() => {
+		setCollapsed(false);
 		append({ key: "", value: "" });
 	}, [append]);
 
@@ -30,7 +34,8 @@ export const CustomPropertiesSection = memo(function CustomPropertiesSection({
 		<div data-testid={`prisma-event-custom-props-${section}`}>
 			<CollapsibleSection
 				label={title}
-				defaultCollapsed={true}
+				collapsed={collapsed}
+				onToggle={setCollapsed}
 				actions={
 					<button
 						type="button"

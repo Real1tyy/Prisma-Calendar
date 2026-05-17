@@ -3,12 +3,16 @@ import type { App } from "obsidian";
 import { Notice, TFile } from "obsidian";
 import type { Subscription } from "rxjs";
 
-import { EventCreateModal, EventEditModal, type EventModalData } from "../components/modals";
+import type { EventModalData } from "../components/modals";
 import type { EventFormState } from "../components/modals/event/event-form-state";
+import { buildEventSaveData } from "../react/event-form/build-event-save-data";
+import type { EventFormValues } from "../react/event-form/event-form";
 import { openCategoryAssignModal } from "../react/modals";
-import { deriveEditFormState } from "../react/modals/event/event-edit-modal";
+import { openEventCreateModal } from "../react/modals/event/event-create-modal";
+import { deriveEditFormState, openEventEditModal } from "../react/modals/event/event-edit-modal";
 import type { StopwatchSnapshot } from "../react/views/stopwatch";
 import type { Frontmatter } from "../types";
+import type { UpdateEventData } from "../types/event-boundaries";
 import type { IndexerEvent } from "../types/event-source";
 import type { EventPreset, SingleCalendarConfig } from "../types/settings";
 import { getEventName } from "../utils/events/naming";
@@ -319,16 +323,17 @@ class MinimizedModalManagerClass {
 			return;
 		}
 
-		this.openRestoredModal(app, bundle, state, false);
+		this.openRestoredModal(app, bundle, state);
 	}
 
 	/**
-	 * Stop the running stopwatch and save the current minimized event.
-	 * Restores the modal hidden, stops the stopwatch (which updates end time
-	 * and break via callbacks), then triggers the normal save path.
-	 * This reuses the full modal save logic without duplicating event building.
+	 * Stop the running stopwatch and save the current minimized event without
+	 * mounting a modal. Drives the React save path (`buildEventSaveData` →
+	 * `bundle.updateEvent` / `bundle.createEvent`) directly with the in-memory
+	 * snapshot, mirroring what the imperative `setSilentStopAndSave` flow did
+	 * via a hidden modal mount (see base-event-modal.ts:217-222).
 	 */
-	stopAndSaveCurrentEvent(app: App, calendarBundles: CalendarBundle[]): void {
+	stopAndSaveCurrentEvent(_app: App, calendarBundles: CalendarBundle[]): void {
 		const state = this.getState();
 		if (!state) return;
 
@@ -344,30 +349,79 @@ class MinimizedModalManagerClass {
 			return;
 		}
 
-		this.openRestoredModal(app, bundle, state, true);
+		// Snapshot the inputs we need before we clear our state.
+		const settings = bundle.settingsStore.currentSettings;
+		const originalFrontmatter = state.originalFrontmatter ?? {};
+		const customProperties = state.customProperties ?? {};
+		const filePath = state.filePath;
+		const modalType = state.modalType;
+
+		// Compute the "stopped" snapshot — applyStop folds any pending paused
+		// break (now − breakStartTime) into totalBreakMs so the additional
+		// break time accrued between minimize and silent-stop is captured.
+		const stoppedSnapshot = applyStop(state.stopwatch);
+
+		// Mirror the imperative onStop + onBreakUpdate callbacks: write the
+		// current time as End, and roll any additional break minutes since the
+		// modal was minimized into the form's breakMinutes field so the saved
+		// frontmatter matches what stopwatch.stop() would have produced.
+		const now = new Date();
+		const additionalBreakMs = stoppedSnapshot.totalBreakMs - state.stopwatch.totalBreakMs;
+		const breakMinutes =
+			additionalBreakMs > 0
+				? mergeBreakMinutes(state.formState.breakMinutes, additionalBreakMs)
+				: state.formState.breakMinutes;
+		const formState: EventFormState = {
+			...state.formState,
+			end: formatDateTimeForInput(now),
+			breakMinutes,
+		};
+
+		const values: EventFormValues = {
+			formState,
+			customProperties,
+			stopwatchSnapshot: stoppedSnapshot,
+			// initialMarkAsDone: best-effort from the saved formState; we don't
+			// track the original explicitly in MinimizedModalState. False is a
+			// safe default — markAsDone toggles produce no side-effects when the
+			// "before" matches the "after" (writeMetadataToFrontmatter handles
+			// the comparison).
+			initialMarkAsDoneState: formState.markAsDone ?? false,
+		};
+
+		const saveData = buildEventSaveData(
+			values,
+			settings,
+			originalFrontmatter,
+			new Set(Object.keys(customProperties)),
+			bundle.plugin.syncStore.data.readOnly
+		);
+
+		this.clear();
+
+		if (modalType === "edit" && filePath) {
+			saveData.filePath = filePath;
+			bundle.updateEvent(saveData as UpdateEventData, { ensureZettelId: true }).catch((error: unknown) => {
+				console.error("[MinimizedModal] silent stop & save (edit) failed:", error);
+			});
+			return;
+		}
+
+		bundle.createEvent(saveData).catch((error: unknown) => {
+			console.error("[MinimizedModal] silent stop & save (create) failed:", error);
+		});
 	}
 
-	private openRestoredModal(
-		app: App,
-		bundle: CalendarBundle,
-		state: MinimizedModalState,
-		silentStopAndSave: boolean
-	): void {
+	private openRestoredModal(app: App, bundle: CalendarBundle, state: MinimizedModalState): void {
 		const eventData = this.buildEventDataFromState(state);
 
-		let modal: EventCreateModal | EventEditModal;
-		if (state.modalType === "edit" && state.filePath) {
-			modal = new EventEditModal(app, bundle, eventData);
-		} else {
-			modal = new EventCreateModal(app, bundle, eventData);
-		}
-
-		modal.setRestoreState(state);
-		if (silentStopAndSave) {
-			modal.setSilentStopAndSave();
-		}
 		this.clear();
-		modal.open();
+
+		if (state.modalType === "edit" && state.filePath) {
+			openEventEditModal(app, bundle, eventData, { restoreState: state });
+		} else {
+			openEventCreateModal(app, bundle, eventData, { restoreState: state });
+		}
 	}
 
 	/**
@@ -466,3 +520,36 @@ class MinimizedModalManagerClass {
 }
 
 export const MinimizedModalManager = new MinimizedModalManagerClass();
+
+/**
+ * Compute the snapshot a stopwatch would have after firing `stop()`. Used by
+ * the silent-stop-and-save path so the saved frontmatter / values reflect the
+ * final break time. Mirrors stopwatch.tsx:139-153.
+ */
+function applyStop(snapshot: StopwatchSnapshot): StopwatchSnapshot {
+	let totalBreakMs = snapshot.totalBreakMs;
+	if (snapshot.state === "paused" && snapshot.breakStartTime !== null) {
+		totalBreakMs += Date.now() - snapshot.breakStartTime;
+	}
+	return {
+		...snapshot,
+		state: "stopped",
+		breakStartTime: null,
+		totalBreakMs,
+	};
+}
+
+/**
+ * Add additional break milliseconds to the form's breakMinutes field.
+ * Mirrors the imperative onBreakUpdate handler:
+ * `setSimpleFieldValues({ breakMinutes: initial + accumulated })`. The
+ * pre-minimize total is already baked into `current`, so we only need to
+ * fold in the delta since minimize.
+ */
+function mergeBreakMinutes(current: string, additionalMs: number): string {
+	const additionalMinutes = Math.round((additionalMs / 60000) * 100) / 100;
+	const existing = Number.parseFloat(current || "0");
+	const base = Number.isFinite(existing) ? existing : 0;
+	const total = Math.round((base + additionalMinutes) * 100) / 100;
+	return total.toString();
+}

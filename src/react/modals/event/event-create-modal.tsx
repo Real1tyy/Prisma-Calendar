@@ -14,6 +14,7 @@ import { openFileInNewTab } from "../../../utils/obsidian";
 import { buildEventSaveData } from "../../event-form/build-event-save-data";
 import { EventForm, type EventFormValues } from "../../event-form/event-form";
 import {
+	buildMinimizedState,
 	openSavePresetFlow,
 	saveMinimizedModalState,
 	serializeProps,
@@ -92,6 +93,14 @@ export function openEventCreateModal(
 				onSavePreset={(state, customProps) => {
 					openSavePresetFlow(app, bundle, state, customProps);
 				}}
+				onUnmountWithActiveStopwatch={(values) =>
+					buildMinimizedState(values, {
+						modalType: "create",
+						filePath: null,
+						originalFrontmatter: {},
+						bundle,
+					})
+				}
 			/>
 		),
 	});

@@ -6,7 +6,7 @@ import { createDefaultState, type EventFormState } from "../../../components/mod
 import { loadSimpleFieldValues } from "../../../components/modals/event/event-frontmatter-mapper";
 import { CSS_PREFIX } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
-import type { MinimizedModalState } from "../../../core/minimized-modal-manager";
+import { MinimizedModalManager, type MinimizedModalState } from "../../../core/minimized-modal-manager";
 import type { Frontmatter } from "../../../types";
 import type { UpdateEventData } from "../../../types/event-boundaries";
 import type { SingleCalendarConfig } from "../../../types/settings";
@@ -19,6 +19,7 @@ import { buildEventSaveData } from "../../event-form/build-event-save-data";
 import { EventForm, type EventFormValues } from "../../event-form/event-form";
 import type { EventModalData } from "./event-create-modal";
 import {
+	buildMinimizedState,
 	openSavePresetFlow,
 	saveMinimizedModalState,
 	serializeProps,
@@ -28,6 +29,13 @@ import {
 interface OpenEditModalOptions {
 	restoreState?: MinimizedModalState;
 	onBeforeOpen?: () => void;
+	/**
+	 * Whether to ensure a ZettelID is appended to the event on save. Defaults to
+	 * true. Mirrors the imperative `EventEditModal.setEnsureZettelIdOnSave(...)`
+	 * setter so callers that need to bypass ZettelID generation (e.g. importing
+	 * external events with their own IDs) can opt out.
+	 */
+	ensureZettelIdOnSave?: boolean;
 }
 
 export interface EditFormDerivedState {
@@ -137,6 +145,7 @@ export function openEventEditModal(
 	const restoreState = options.restoreState;
 
 	options.onBeforeOpen?.();
+	const ensureZettelIdOnSave = options.ensureZettelIdOnSave ?? true;
 
 	showReactModal({
 		app,
@@ -163,7 +172,8 @@ export function openEventEditModal(
 						originalCustomPropertyKeys,
 						originalZettelId,
 						instanceDateStr,
-						titleHadInstanceDate
+						titleHadInstanceDate,
+						ensureZettelIdOnSave
 					);
 					close();
 				}}
@@ -175,6 +185,14 @@ export function openEventEditModal(
 				onSavePreset={(state, customProps) => {
 					openSavePresetFlow(app, bundle, state, customProps);
 				}}
+				onUnmountWithActiveStopwatch={(values) =>
+					buildMinimizedState(values, {
+						modalType: "edit",
+						filePath: filePath ?? null,
+						originalFrontmatter,
+						bundle,
+					})
+				}
 			/>
 		),
 	});
@@ -226,7 +244,8 @@ function handleEditSubmit(
 	originalCustomPropertyKeys: Set<string>,
 	originalZettelId: string | null,
 	instanceDateStr: string | null,
-	titleHadInstanceDate: boolean
+	titleHadInstanceDate: boolean,
+	ensureZettelIdOnSave: boolean
 ): void {
 	const settings = bundle.settingsStore.currentSettings;
 	const saveData = buildEventSaveData(
@@ -269,10 +288,19 @@ function handleEditSubmit(
 	}
 
 	bundle
-		.updateEvent(saveData as UpdateEventData, { ensureZettelId: true })
+		.updateEvent(saveData as UpdateEventData, { ensureZettelId: ensureZettelIdOnSave })
 		.then((newFilePath) => {
 			if (newFilePath && newFilePath !== saveData.filePath) {
 				setExtendedPropSafe(eventData, "filePath", newFilePath);
+				// Mirror base-event-modal-edit-modal.ts:314-321 — if the user
+				// saved with a still-active stopwatch, the modal is closing now
+				// and EventForm's unmount-cleanup will save state under the OLD
+				// filePath. Patch the manager state so subsequent persists hit
+				// the renamed file.
+				const minState = MinimizedModalManager.getState();
+				if (minState && minState.modalType === "edit" && minState.filePath === saveData.filePath) {
+					MinimizedModalManager.saveState({ ...minState, filePath: newFilePath }, bundle);
+				}
 			}
 		})
 		.catch((error) => {

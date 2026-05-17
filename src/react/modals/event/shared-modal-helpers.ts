@@ -20,14 +20,24 @@ const IDLE_STOPWATCH = {
 	totalBreakMs: 0,
 };
 
-export function saveMinimizedModalState(
+export interface MinimizedStateOptions {
+	modalType: "create" | "edit";
+	filePath: string | null;
+	originalFrontmatter: Frontmatter;
+	bundle: CalendarBundle;
+}
+
+/**
+ * Project an `EventFormValues` into a `MinimizedModalState`. Single source of
+ * truth for the shape — used by the Minimize button (`saveMinimizedModalState`)
+ * and by `EventForm`'s unmount-with-active-stopwatch auto-save in both the
+ * create and edit modals, so all three paths produce identical state.
+ */
+export function buildMinimizedState(
 	values: EventFormValues,
-	modalType: "create" | "edit",
-	filePath: string | null,
-	originalFrontmatter: Frontmatter,
-	bundle: CalendarBundle
-): void {
-	const state: MinimizedModalState = {
+	{ modalType, filePath, originalFrontmatter, bundle }: MinimizedStateOptions
+): MinimizedModalState {
+	return {
 		formState: values.formState,
 		...(Object.keys(values.customProperties).length > 0 && {
 			customProperties: values.customProperties as Record<string, unknown>,
@@ -38,6 +48,16 @@ export function saveMinimizedModalState(
 		originalFrontmatter,
 		calendarId: bundle.calendarId,
 	};
+}
+
+export function saveMinimizedModalState(
+	values: EventFormValues,
+	modalType: "create" | "edit",
+	filePath: string | null,
+	originalFrontmatter: Frontmatter,
+	bundle: CalendarBundle
+): void {
+	const state = buildMinimizedState(values, { modalType, filePath, originalFrontmatter, bundle });
 	MinimizedModalManager.saveState(state, bundle);
 	new Notice("Modal minimized. Run command: restore minimized event modal");
 }

@@ -12,13 +12,23 @@ export const ILLEGAL_TITLE_CHARS = ["<", ">", ":", '"', "/", "\\", "|", "?", "*"
 export type EventTitleValidationResult = { ok: true } | { ok: false; illegalChars: string[]; message: string };
 
 /**
- * Validate a user-typed event title for characters that would produce an
- * invalid filename. The modal save path calls this and surfaces a user
- * notice on failure; the backing file is never written.
+ * Validate a user-typed event title. Rejects:
+ *   1. Empty / whitespace-only — events without a title produce files with
+ *      no usable name and confuse downstream views.
+ *   2. Filename-illegal characters — would produce an invalid filename.
+ *
+ * The modal save path calls this and surfaces a user notice on failure; the
+ * backing file is never written.
  */
 export function validateEventTitle(title: string): EventTitleValidationResult {
 	const trimmed = title.trim();
-	if (trimmed.length === 0) return { ok: true };
+	if (trimmed.length === 0) {
+		return {
+			ok: false,
+			illegalChars: [],
+			message: "Event title is required.",
+		};
+	}
 
 	const hits = new Set<string>();
 	for (const ch of ILLEGAL_TITLE_CHARS) {

@@ -115,7 +115,15 @@ describe("EventForm", () => {
 		const bundle = createMockBundle();
 		const user = userEvent.setup();
 
-		render(<EventForm mode="create" bundle={bundle} onSubmit={onSubmit} onCancel={vi.fn()} />);
+		render(
+			<EventForm
+				mode="create"
+				bundle={bundle}
+				initialState={{ ...createDefaultState(), start: "2026-05-17T09:00" }}
+				onSubmit={onSubmit}
+				onCancel={vi.fn()}
+			/>
+		);
 
 		const titleInput = screen.getByTestId("prisma-event-control-title") as HTMLInputElement;
 		await user.type(titleInput, "Weekly Review");

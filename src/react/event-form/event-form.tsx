@@ -1,12 +1,16 @@
 import {
+	afterRender,
 	isObsidianLink,
+	parseAsLocalDate,
 	parseFrontmatterRecord,
 	serializeFrontmatterValue,
 	toLocalISOString,
+	toSafeString,
 } from "@real1ty-obsidian-plugins";
 import { useZodForm } from "@real1ty-obsidian-plugins-react";
 import { Notice } from "obsidian";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { MutableRefObject } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { useController, useWatch } from "react-hook-form";
 
@@ -20,8 +24,10 @@ import {
 import { showCategoryEventsModal } from "../../components/modals/series/bases-view";
 import { TitleInputSuggest } from "../../components/title-input-suggest";
 import type { CalendarBundle } from "../../core/calendar-bundle";
+import { MinimizedModalManager, type MinimizedModalState } from "../../core/minimized-modal-manager";
 import type { Frontmatter } from "../../types";
 import { isTimedEvent } from "../../types/calendar";
+import { PositiveFloat } from "../../types/event-boundaries";
 import type { EventPreset } from "../../types/settings";
 import { autoAssignCategories, findAdjacentEvent } from "../../utils/events/matching";
 import { extractCleanDisplayName } from "../../utils/events/naming";
@@ -64,6 +70,12 @@ export interface EventFormConfig {
 	onCancel: () => void;
 	onMinimize?: ((values: EventFormValues) => void) | undefined;
 	onSavePreset?: ((state: EventFormState, customProperties: Record<string, unknown>) => void) | undefined;
+	/**
+	 * Auto-save state on unmount when the stopwatch is still active. Wires the
+	 * imperative-modal `onClose` "if isStopwatchActive && !isMinimizing, save"
+	 * behaviour (see base-event-modal.ts:229-235) into the React lifecycle.
+	 */
+	onUnmountWithActiveStopwatch?: ((values: EventFormValues) => MinimizedModalState) | undefined;
 }
 
 export const EventForm = memo(function EventForm({
@@ -78,6 +90,7 @@ export const EventForm = memo(function EventForm({
 	onCancel,
 	onMinimize,
 	onSavePreset,
+	onUnmountWithActiveStopwatch,
 }: EventFormConfig) {
 	const settings = bundle.settingsStore.currentSettings;
 
@@ -112,6 +125,17 @@ export const EventForm = memo(function EventForm({
 	const initialMarkAsDoneRef = useRef(initialState?.markAsDone ?? false);
 	const stopwatchSnapshotRef = useRef<StopwatchSnapshot | null>(initialStopwatchSnapshot ?? null);
 	const stopwatchRef = useRef<StopwatchHandle | null>(null);
+	// Baseline break minutes captured at stopwatch Start / Continue, so subsequent
+	// onBreakUpdate callbacks emit `initial + session` and don't overwrite the
+	// user-entered value. Mirrors base-event-modal.ts:504-543.
+	const initialBreakMinutesRef = useRef(0);
+	const titleInputRef = useRef<HTMLInputElement | null>(null);
+	// Skip the unmount auto-save when the user clicked Minimize explicitly
+	// (avoids double-save). Save button does NOT set a parallel flag — imperative
+	// parity (base-event-modal.ts onClose) keeps the running stopwatch's
+	// minimized state alive after a save so the user can restore and continue
+	// tracking.
+	const isMinimizingRef = useRef(false);
 
 	const setStopwatchHandle = useCallback(
 		(handle: StopwatchHandle | null) => {
@@ -128,6 +152,17 @@ export const EventForm = memo(function EventForm({
 	);
 
 	const captureStopwatchSnapshot = useCallback(() => {
+		const handle = stopwatchRef.current;
+		if (!handle) return;
+		stopwatchSnapshotRef.current = handle.exportState();
+	}, []);
+
+	// Cache the latest snapshot whenever the stopwatch fires a callback. The
+	// useEffect cleanup that auto-saves on dismiss runs AFTER the Stopwatch
+	// child unmounts (and its ref is nulled), so we cannot inspect the handle
+	// at teardown — we rely on this cached snapshot instead. Mirrors the
+	// imperative `extractMinimizedState` capturing live state via callbacks.
+	const refreshSnapshotFromHandle = useCallback(() => {
 		const handle = stopwatchRef.current;
 		if (!handle) return;
 		stopwatchSnapshotRef.current = handle.exportState();
@@ -237,17 +272,34 @@ export const EventForm = memo(function EventForm({
 	}, [captureStopwatchSnapshot, form, metadataValues]);
 
 	const handleSubmit = useCallback(() => {
-		applyAutoCategories();
-		const title = form.getValues("title");
-		const titleCheck = validateEventTitle(title);
+		const titleCheck = validateEventTitle(form.getValues("title"));
 		if (!titleCheck.ok) {
 			new Notice(titleCheck.message);
+			// Mirror base-event-modal.ts:1591 — focus the title field so the user
+			// can correct the offending input without clicking back into it.
+			titleInputRef.current?.focus();
 			return;
 		}
+		// Reject submits with no temporal anchor: timed events need a start,
+		// all-day events need a date. Without one, buildEventSaveData silently
+		// falls back to isUntracked=true and writes an empty placeholder file —
+		// not what the user expects when clicking Save on a Clear'd form.
+		const isAllDay = form.getValues("allDay");
+		if (isAllDay) {
+			if (!form.getValues("date")) {
+				new Notice("Pick a date before saving.");
+				return;
+			}
+		} else if (!form.getValues("start")) {
+			new Notice("Pick a start time before saving.");
+			return;
+		}
+		applyAutoCategories();
 		onSubmit(collectFormValues());
 	}, [applyAutoCategories, form, onSubmit, collectFormValues]);
 
 	const handleMinimize = useCallback(() => {
+		isMinimizingRef.current = true;
 		onMinimize?.(collectFormValues());
 	}, [onMinimize, collectFormValues]);
 
@@ -262,6 +314,11 @@ export const EventForm = memo(function EventForm({
 			skip: false,
 		});
 		setSuppressAutoCategories(false);
+		// Mirror base-event-modal.ts:1299 — wipe the stopwatch alongside the rest
+		// of the form. Without this, a running stopwatch survives Clear and the
+		// next onBreakUpdate writes into the just-cleared breakMinutes field.
+		stopwatchRef.current?.reset();
+		initialBreakMinutesRef.current = 0;
 	}, [form]);
 
 	const handleSavePreset = useCallback(() => {
@@ -269,31 +326,65 @@ export const EventForm = memo(function EventForm({
 		onSavePreset?.(values.formState, values.customProperties);
 	}, [collectFormValues, onSavePreset]);
 
+	const captureInitialBreakMinutes = useCallback(() => {
+		setMetadataValues((prev) => {
+			const parsed = PositiveFloat.parse(toSafeString(prev["breakMinutes"]) ?? "") ?? 0;
+			initialBreakMinutesRef.current = parsed;
+			return prev;
+		});
+	}, []);
+
 	const handleStopwatchStart = useCallback(
 		(startTime: Date) => {
+			captureInitialBreakMinutes();
 			form.setValue("start", formatDateTimeForInput(startTime));
 			const endMs = startTime.getTime() + 5 * 60 * 1000;
 			form.setValue("end", formatDateTimeForInput(new Date(endMs)));
+			// Stopwatch fires onStart before transitioning state to "running" (see
+			// stopwatch.tsx start() — onStart fires, then beginTracking() flips
+			// state). Defer the snapshot refresh so we capture the post-transition
+			// state, not the still-idle pre-transition one.
+			queueMicrotask(refreshSnapshotFromHandle);
 		},
-		[form]
+		[captureInitialBreakMinutes, form, refreshSnapshotFromHandle]
 	);
 
 	const handleStopwatchContinue = useCallback((): Date | null => {
+		captureInitialBreakMinutes();
 		const startValue = form.getValues("start");
 		if (!startValue) return null;
-		return new Date(startValue);
-	}, [form]);
+
+		// Mirror base-event-modal.ts:524-532 — if the existing end stamp is in the
+		// past the user is resuming work after a gap; push end forward to "now".
+		const endValue = form.getValues("end");
+		if (endValue) {
+			const endDate = parseAsLocalDate(endValue);
+			if (endDate && endDate.getTime() < Date.now()) {
+				form.setValue("end", formatDateTimeForInput(new Date()));
+			}
+		}
+
+		// Stopwatch will transition to running on the next tick; cache eagerly.
+		queueMicrotask(refreshSnapshotFromHandle);
+		return parseAsLocalDate(startValue);
+	}, [captureInitialBreakMinutes, form, refreshSnapshotFromHandle]);
 
 	const handleStopwatchStop = useCallback(
 		(endTime: Date) => {
 			form.setValue("end", formatDateTimeForInput(endTime));
+			refreshSnapshotFromHandle();
 		},
-		[form]
+		[form, refreshSnapshotFromHandle]
 	);
 
-	const handleBreakUpdate = useCallback((breakMinutes: number) => {
-		setMetadataValues((prev) => ({ ...prev, breakMinutes: breakMinutes.toString() }));
-	}, []);
+	const handleBreakUpdate = useCallback(
+		(breakMinutes: number) => {
+			const total = initialBreakMinutesRef.current + breakMinutes;
+			setMetadataValues((prev) => ({ ...prev, breakMinutes: total.toString() }));
+			refreshSnapshotFromHandle();
+		},
+		[refreshSnapshotFromHandle]
+	);
 
 	// Preset selector
 	const [presets, setPresets] = useState<EventPreset[]>(settings.eventPresets);
@@ -378,8 +469,68 @@ export const EventForm = memo(function EventForm({
 
 	const allDay = useWatch({ control: form.control, name: "allDay" });
 
+	// Keep the latest handleSubmit / collectFormValues references reachable from
+	// the long-lived keydown / unmount effects without re-binding them on every
+	// keystroke. Mirrors the imperative scope.register pattern in
+	// base-event-modal.ts:1148.
+	const handleSubmitRef = useRef(handleSubmit);
+	handleSubmitRef.current = handleSubmit;
+	const collectFormValuesRef = useRef(collectFormValues);
+	collectFormValuesRef.current = collectFormValues;
+	const onUnmountWithActiveStopwatchRef = useRef(onUnmountWithActiveStopwatch);
+	onUnmountWithActiveStopwatchRef.current = onUnmountWithActiveStopwatch;
+
+	// Focus the title input after Obsidian's Modal class has finished setting up
+	// the dialog (which steals focus). React's `autoFocus` runs before the steal
+	// — wait two animation frames and reclaim focus. Mirrors base-event-modal.ts
+	// onOpen(): `void afterRender().then(() => this.titleInput.focus())`.
+	useEffect(() => {
+		let cancelled = false;
+		void afterRender().then(() => {
+			if (cancelled) return;
+			titleInputRef.current?.focus();
+		});
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	// Auto-save state to MinimizedModalManager if the user dismisses the modal
+	// (ESC / click-outside) while a stopwatch is active. Mirrors
+	// base-event-modal.ts:229-235. Skipped when explicit Minimize / Submit ran.
+	// Reads the cached snapshot rather than the live handle because the
+	// Stopwatch child has already unmounted by the time this cleanup runs.
+	useEffect(() => {
+		return () => {
+			if (isMinimizingRef.current) return;
+			const snapshot = stopwatchSnapshotRef.current;
+			if (!snapshot || (snapshot.state !== "running" && snapshot.state !== "paused")) return;
+			const values = collectFormValuesRef.current();
+			const stateFactory = onUnmountWithActiveStopwatchRef.current;
+			if (stateFactory) {
+				const state = stateFactory(values);
+				MinimizedModalManager.saveState(state, bundle);
+			}
+		};
+	}, [bundle]);
+
+	// Enter-to-save hotkey (#7). Mirrors registerSubmitHotkey in
+	// base-event-modal.ts:1148. Scoped to the form root so inputs that
+	// `stopPropagation` on Enter (e.g. participant input) opt out.
+	const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+		if (e.key !== "Enter") return;
+		const target = e.target as HTMLElement | null;
+		// Multiline / button targets keep native Enter semantics.
+		if (target instanceof HTMLTextAreaElement) return;
+		if (target instanceof HTMLButtonElement) return;
+		// Selects native-enter to open the dropdown; don't hijack.
+		if (target instanceof HTMLSelectElement) return;
+		e.preventDefault();
+		handleSubmitRef.current();
+	}, []);
+
 	return (
-		<div className="prisma-event-modal-content">
+		<div className="prisma-event-modal-content" onKeyDown={handleKeyDown}>
 			<div className="prisma-event-modal-body">
 				{/* Header controls */}
 				<div className="prisma-event-modal-header">
@@ -408,7 +559,7 @@ export const EventForm = memo(function EventForm({
 				</div>
 
 				{/* Title */}
-				<TitleField form={form} onBlur={handleTitleBlur} bundle={bundle} />
+				<TitleField form={form} onBlur={handleTitleBlur} bundle={bundle} titleInputRef={titleInputRef} />
 
 				{/* Timing */}
 				<TimingSection
@@ -516,28 +667,31 @@ function TitleField({
 	form,
 	onBlur,
 	bundle,
+	titleInputRef,
 }: {
 	form: UseFormReturn<EventFormState>;
 	onBlur: () => void;
 	bundle: CalendarBundle;
+	titleInputRef: MutableRefObject<HTMLInputElement | null>;
 }) {
 	const { field } = useController({ control: form.control, name: "title" });
-	const inputRef = useRef<HTMLInputElement | null>(null);
+	const enableSuggest = bundle.settingsStore.currentSettings.titleAutocomplete;
 
 	useEffect(() => {
-		const inputEl = inputRef.current;
+		if (!enableSuggest) return;
+		const inputEl = titleInputRef.current;
 		if (!inputEl) return;
 		const suggest = new TitleInputSuggest(bundle.plugin.app, inputEl, bundle);
 		return () => {
 			suggest.destroy();
 		};
-	}, [bundle]);
+	}, [bundle, enableSuggest, titleInputRef]);
 
 	return (
 		<PrismaSettingItem name="Title" testId="prisma-event-field-title">
 			<div className="prisma-title-input-wrapper">
 				<input
-					ref={inputRef}
+					ref={titleInputRef}
 					type="text"
 					className="prisma-setting-item-control"
 					value={field.value}

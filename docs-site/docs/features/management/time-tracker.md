@@ -94,7 +94,7 @@ Built-in stopwatch in Create/Edit Event modal for precise time tracking with aut
 
 **Manual Minimize**: Click **−** to save modal state (pre-configure events for later)
 
-**Auto-Save**: When timer is running, closing modal (ESC, click outside, Cancel) automatically saves state. Timer continues in background.
+**Auto-Save**: When the timer is running, the minimized session is preserved by any close path — ESC, click-outside, Cancel, **or pressing Save**. The Save button writes the event AND keeps the running session alive in the background so you can keep tracking the same file.
 
 **Restore**: `Ctrl/Cmd+P` → "Restore minimized event modal"
 
