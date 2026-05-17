@@ -240,11 +240,12 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 		this.tableReady = false;
 		this.deferredBackgroundFiles.clear();
 
-		this.tableSub = this.table.events$.subscribe((event) => {
-			void this.handleTableEvent(event).catch((error) => {
-				console.error("[EventFileRepository] Error handling table event:", error);
-			});
-		});
+		// `subscribeAsync` registers the handler with the table's in-flight tracker so
+		// `ready$` holds its `true` signal until every initial-scan handler has settled.
+		// Without it, downstream consumers (e.g. RecurringEventManager.ensurePhysicalInstances)
+		// would run their post-indexing work against a partial map of file state and
+		// fabricate duplicate physical recurring instances.
+		this.tableSub = this.table.subscribeAsync((event) => this.handleTableEvent(event));
 
 		this.table.ready$.subscribe((ready) => {
 			if (ready) {

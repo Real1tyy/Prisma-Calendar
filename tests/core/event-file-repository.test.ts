@@ -303,7 +303,7 @@ describe("EventFileRepository", () => {
 			await repo.start();
 			repo.mockTable.emitReady(true);
 
-			expect(readyStates).toContain(true);
+			await vi.waitFor(() => expect(readyStates).toContain(true));
 		});
 	});
 
