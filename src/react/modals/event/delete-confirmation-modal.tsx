@@ -1,4 +1,4 @@
-import { cls, tid } from "@real1ty-obsidian-plugins";
+import { cls, tid } from "../../../constants";
 import { ConfirmationModalContent, openConfirmation, openReactModal } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 

@@ -1,4 +1,4 @@
-import { cls, tid } from "@real1ty-obsidian-plugins";
+import { cls, tid } from "../../../constants";
 import { showReactModal } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import type { KeyboardEvent, ReactNode } from "react";

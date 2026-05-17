@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { buildUtmUrl, cls, tid } from "@real1ty-obsidian-plugins";
+import { buildUtmUrl } from "@real1ty-obsidian-plugins";
+import { cls, tid } from "../../../constants";
 import { Button, openReactModal, TextInput, WelcomeModalShell } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { memo, useCallback, useEffect, useState } from "react";

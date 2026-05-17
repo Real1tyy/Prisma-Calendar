@@ -1,4 +1,4 @@
-import { cls } from "@real1ty-obsidian-plugins";
+import { cls } from "../constants";
 import { MarkdownRenderChild, Notice } from "obsidian";
 
 import type { CalendarBundle } from "../core/calendar-bundle";

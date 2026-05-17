@@ -1,10 +1,5 @@
-import {
-	cls,
-	formatLocaleLongDate,
-	formatLocaleLongDateTime,
-	formatLocaleTimeHm,
-	tid,
-} from "@real1ty-obsidian-plugins";
+import { formatLocaleLongDate, formatLocaleLongDateTime, formatLocaleTimeHm } from "@real1ty-obsidian-plugins";
+import { cls, tid } from "../../../constants";
 import { AppContext, PropertyItem, SharedReactThemeProvider, showReactModal } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { useState } from "react";

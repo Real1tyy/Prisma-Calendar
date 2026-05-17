@@ -1,4 +1,5 @@
-import { cls, formatMsToHHMMSS, tid } from "@real1ty-obsidian-plugins";
+import { formatMsToHHMMSS } from "@real1ty-obsidian-plugins";
+import { cls, tid } from "../../constants";
 import { CollapsibleSection } from "@real1ty-obsidian-plugins-react";
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useReducer, useRef, useState } from "react";
 import { z } from "zod";

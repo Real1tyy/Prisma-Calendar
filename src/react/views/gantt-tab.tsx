@@ -1,4 +1,5 @@
-import { cls, ColorEvaluator, parseIntoList } from "@real1ty-obsidian-plugins";
+import { ColorEvaluator, parseIntoList } from "@real1ty-obsidian-plugins";
+import { cls } from "../../constants";
 import {
 	createCustomizableContextMenu,
 	type CustomizableContextMenuHandle,

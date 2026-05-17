@@ -1,4 +1,4 @@
-import { cls, tid } from "@real1ty-obsidian-plugins";
+import { cls, tid } from "../../../constants";
 import { memo } from "react";
 export interface SimpleEventGroupItem {
 	key: string;

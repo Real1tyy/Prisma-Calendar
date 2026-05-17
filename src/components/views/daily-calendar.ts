@@ -2,7 +2,8 @@ import { Calendar } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import { cls, ColorEvaluator, toLocalISOString } from "@real1ty-obsidian-plugins";
+import { ColorEvaluator, toLocalISOString } from "@real1ty-obsidian-plugins";
+import { cls } from "../../constants";
 import type { App } from "obsidian";
 import { merge, type Subscription } from "rxjs";
 

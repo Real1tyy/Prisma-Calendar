@@ -1,4 +1,5 @@
-import { calculateDuration, cls, intoDate, tid } from "@real1ty-obsidian-plugins";
+import { calculateDuration, intoDate } from "@real1ty-obsidian-plugins";
+import { cls, tid } from "../../../constants";
 import { AppContext, PropertyItem, SharedReactThemeProvider, showReactModal } from "@real1ty-obsidian-plugins-react";
 import { type App, TFile } from "obsidian";
 import { flushSync } from "react-dom";

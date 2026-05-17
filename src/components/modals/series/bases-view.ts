@@ -3,11 +3,11 @@ import {
 	type BaseFilterNode,
 	BaseRenderer,
 	type BaseViewType,
-	cls,
 	ColumnRef,
 	Filter,
 	showModal,
 } from "@real1ty-obsidian-plugins";
+import { cls } from "../../../constants";
 import { type App, Component, MarkdownRenderer } from "obsidian";
 
 import type { SingleCalendarConfig } from "../../../types/settings";

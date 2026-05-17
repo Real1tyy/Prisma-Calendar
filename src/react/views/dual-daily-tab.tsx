@@ -1,4 +1,4 @@
-import { cls, tid } from "@real1ty-obsidian-plugins";
+import { cls, tid } from "../../constants";
 import { Cell, GridLayout, ImperativeCellHost, useApp, usePersistedGridState } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { type RefObject, memo, type Ref, useImperativeHandle, useMemo, useRef, useCallback } from "react";

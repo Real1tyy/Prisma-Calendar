@@ -1,4 +1,5 @@
-import { cls, hexToRgb, type PieChartData, tid } from "@real1ty-obsidian-plugins";
+import { hexToRgb, type PieChartData } from "@real1ty-obsidian-plugins";
+import { cls, tid } from "../../constants";
 import {
 	ColorInput,
 	ObsidianIcon,

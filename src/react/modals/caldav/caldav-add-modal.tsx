@@ -1,4 +1,4 @@
-import { cls, tid } from "@real1ty-obsidian-plugins";
+import { cls, tid } from "../../../constants";
 import { ModalForm, openReactModal, SchemaForm, SettingItem, useZodForm } from "@real1ty-obsidian-plugins-react";
 import { nanoid } from "nanoid";
 import type { App } from "obsidian";

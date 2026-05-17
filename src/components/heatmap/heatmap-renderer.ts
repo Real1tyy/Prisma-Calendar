@@ -1,4 +1,4 @@
-import { cls, tid } from "@real1ty-obsidian-plugins";
+import { cls, tid } from "../../constants";
 import { SVG, type Svg } from "@svgdotjs/svg.js";
 import { DateTime } from "luxon";
 

@@ -121,66 +121,6 @@ export function createCssUtils(prefix: string): CssUtils {
 }
 
 // ============================================================================
-// Default "prisma-" prefixed utilities for backwards compatibility
-// ============================================================================
-
-const DEFAULT_PREFIX = "prisma-";
-const defaultUtils = createCssUtils(DEFAULT_PREFIX);
-
-/**
- * Prefixes class names with the standard "prisma-" prefix.
- * Handles multiple class names and automatically adds the prefix.
- *
- * @example
- * cls("calendar-view") => "prisma-calendar-view"
- * cls("button", "active") => "prisma-button prisma-active"
- * cls("modal calendar") => "prisma-modal prisma-calendar"
- */
-export const cls = defaultUtils.cls;
-
-/**
- * Adds "prisma-" prefixed class names to an element.
- *
- * @example
- * addCls(element, "active", "selected")
- */
-export const addCls = defaultUtils.addCls;
-
-/**
- * Removes "prisma-" prefixed class names from an element.
- *
- * @example
- * removeCls(element, "active", "selected")
- */
-export const removeCls = defaultUtils.removeCls;
-
-/**
- * Toggles "prisma-" prefixed class names on an element.
- *
- * @example
- * toggleCls(element, "active")
- */
-export const toggleCls = defaultUtils.toggleCls;
-
-/**
- * Checks if element has a "prisma-" prefixed class.
- *
- * @example
- * hasCls(element, "active")
- */
-export const hasCls = defaultUtils.hasCls;
-
-/**
- * Builds a "prisma-" prefixed testId. Mirrors `cls` for symmetry with the
- * React `useTestId()` hook.
- *
- * @example
- * tid("row") => "prisma-row"
- * tid("settings", "field") => "prisma-settings-field"
- */
-export const tid = defaultUtils.tid;
-
-// ============================================================================
 // DOM / style helpers
 // ============================================================================
 
@@ -191,8 +131,9 @@ export const tid = defaultUtils.tid;
  * `el.addClass("foo bar")` produces an invalid single class with a space.
  *
  * Use this at every mount/config boundary that exposes a `cls?: string` prop
- * (modals, views, button configs). Distinct from `addCls` (which prefixes with
- * "prisma-") — this one consumes already-prefixed strings from caller config.
+ * (modals, views, button configs). Distinct from a plugin's own `addCls`
+ * (returned by `createCssUtils`, which adds a per-plugin prefix) — this one
+ * consumes already-prefixed strings from caller config.
  *
  * @example
  * applyClsTokens(modalEl, "prisma-generic-event-list-modal prisma-global-search-modal");

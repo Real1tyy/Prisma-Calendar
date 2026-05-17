@@ -1,4 +1,4 @@
-import { cls, tid } from "@real1ty-obsidian-plugins";
+import { cls, tid } from "../../constants";
 import { type SnapshotSubscribable, useExternalSnapshot, useSchemaField } from "@real1ty-obsidian-plugins-react";
 import { Menu } from "obsidian";
 import React, { memo, useCallback, useEffect, useRef } from "react";

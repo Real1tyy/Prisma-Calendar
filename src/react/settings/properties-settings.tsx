@@ -1,4 +1,4 @@
-import { cls } from "@real1ty-obsidian-plugins";
+import { cls } from "../../constants";
 import { useSettingsStore } from "@real1ty-obsidian-plugins-react";
 import { memo } from "react";
 

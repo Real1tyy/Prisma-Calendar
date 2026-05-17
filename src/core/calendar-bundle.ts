@@ -5,8 +5,8 @@ import {
 	intoDate,
 	sanitizeForFilename,
 	TemplaterService,
-	tid,
 } from "@real1ty-obsidian-plugins";
+import { tid } from "../constants";
 import { type App, Notice, TFile } from "obsidian";
 import { distinctUntilChanged, filter, firstValueFrom, type Subscription } from "rxjs";
 

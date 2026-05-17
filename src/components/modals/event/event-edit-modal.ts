@@ -2,10 +2,9 @@ import {
 	calculateDurationMinutes,
 	parseIntoList,
 	parsePositiveInt,
-	removeCls,
 	serializeFrontmatterValue,
 } from "@real1ty-obsidian-plugins";
-
+import { removeCls } from "../../../constants";
 import { MinimizedModalManager } from "../../../core/minimized-modal-manager";
 import type { EventSaveData, UpdateEventData } from "../../../types/event-boundaries";
 import type { Weekday } from "../../../types/recurring";

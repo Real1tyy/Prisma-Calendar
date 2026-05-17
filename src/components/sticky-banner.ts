@@ -1,4 +1,4 @@
-import { addCls } from "@real1ty-obsidian-plugins";
+import { addCls } from "../constants";
 import { renderReactInline } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { createElement } from "react";

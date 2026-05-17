@@ -1,4 +1,4 @@
-import { tid } from "@real1ty-obsidian-plugins";
+import { tid } from "../../../constants";
 import { ModalSchemaForm, openReactModal, SchemaForm, useZodForm } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { useMemo } from "react";

@@ -2,7 +2,6 @@ import type { EventContentArg } from "@fullcalendar/core";
 import {
 	buildColorGradient,
 	calculateDuration,
-	cls,
 	extractContentAfterFrontmatter,
 	getNotePreviewLines,
 	hasVeryCloseShadeFromRgb,
@@ -10,6 +9,7 @@ import {
 	parseColorToRgb,
 	type RgbColor,
 } from "@real1ty-obsidian-plugins";
+import { cls } from "../constants";
 import { type App, TFile } from "obsidian";
 
 import type { CalendarEventData } from "../types/calendar";

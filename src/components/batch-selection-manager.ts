@@ -1,16 +1,13 @@
 import type { Calendar, EventApi } from "@fullcalendar/core";
 import type { Command } from "@real1ty-obsidian-plugins";
 import {
-	addCls,
-	cls,
 	describeError,
 	getWeekDirection,
 	pluralize,
-	removeCls,
 	runBatchOperation,
-	tid,
 	toLocalISOString,
 } from "@real1ty-obsidian-plugins";
+import { addCls, cls, removeCls, tid } from "../constants";
 import { type App, Modal, Notice } from "obsidian";
 
 import type { CalendarBundle } from "../core/calendar-bundle";

@@ -1,4 +1,5 @@
-import { calculateEventStatistics, cls, tid } from "@real1ty-obsidian-plugins";
+import { calculateEventStatistics } from "@real1ty-obsidian-plugins";
+import { cls, tid } from "../../../constants";
 import { useSettingsFields } from "@real1ty-obsidian-plugins-react";
 import { DateTime } from "luxon";
 import { useDeferredValue, useMemo, useRef } from "react";

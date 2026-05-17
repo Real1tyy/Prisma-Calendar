@@ -1,4 +1,4 @@
-import { cls, tid } from "@real1ty-obsidian-plugins";
+import { cls, tid } from "../../../constants";
 import type { CSSProperties, MouseEvent, ReactNode } from "react";
 import { memo, useCallback } from "react";
 

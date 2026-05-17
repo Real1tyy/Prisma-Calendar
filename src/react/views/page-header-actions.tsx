@@ -1,4 +1,5 @@
-import { cls, executeCommand, tid } from "@real1ty-obsidian-plugins";
+import { executeCommand } from "@real1ty-obsidian-plugins";
+import { cls, tid } from "../../constants";
 import { type HeaderActionDefinition, ObsidianIcon, useApp } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { type CSSProperties, memo, useCallback } from "react";

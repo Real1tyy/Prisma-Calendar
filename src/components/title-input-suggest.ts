@@ -1,4 +1,4 @@
-import { cls, tid } from "@real1ty-obsidian-plugins";
+import { cls, tid } from "../constants";
 import { AbstractInputSuggest, type App } from "obsidian";
 
 import type { CalendarBundle } from "../core/calendar-bundle";

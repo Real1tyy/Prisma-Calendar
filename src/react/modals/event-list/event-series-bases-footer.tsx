@@ -1,5 +1,4 @@
-import { cls, tid } from "@real1ty-obsidian-plugins";
-
+import { cls, tid } from "../../../constants";
 import type { EventSeriesBasesFooterActions } from "./event-series-bases-actions";
 export function EventSeriesBasesFooter({ actions }: { actions: EventSeriesBasesFooterActions }) {
 	const viewTypes = ["table", "list", "cards", "timeline", "heatmap"] as const;

@@ -1,4 +1,4 @@
-import { cls, tid } from "@real1ty-obsidian-plugins";
+import { cls, tid } from "../../../constants";
 import { ModalForm, openReactModal, SettingItem } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import React, { useCallback, useRef, useState } from "react";

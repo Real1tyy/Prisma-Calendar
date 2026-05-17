@@ -1,4 +1,4 @@
-import { cls, hasCls, tid } from "@real1ty-obsidian-plugins";
+import { cls, hasCls, tid } from "../constants";
 import { SVG, type Svg } from "@svgdotjs/svg.js";
 import type { Subscription } from "rxjs";
 import { distinctUntilChanged, map } from "rxjs";

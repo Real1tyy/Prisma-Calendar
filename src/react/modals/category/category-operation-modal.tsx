@@ -2,11 +2,10 @@ import {
 	bulkDeleteCategoryFromFiles,
 	bulkRenameCategoryInFiles,
 	type CategoryOperationResult,
-	cls,
 	describeError,
 	showProgressModal,
-	tid,
 } from "@real1ty-obsidian-plugins";
+import { cls, tid } from "../../../constants";
 import { openConfirmation, openRenameModal } from "@real1ty-obsidian-plugins-react";
 import { type App, TFile } from "obsidian";
 import { memo } from "react";

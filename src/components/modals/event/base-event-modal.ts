@@ -1,23 +1,19 @@
 import {
-	addCls,
 	afterRender,
 	calculateDurationMinutes,
 	ChipList,
-	cls,
 	ensureISOSuffix,
 	isObsidianLink,
 	parseAsLocalDate,
 	parseFrontmatterRecord,
 	registerSubmitHotkey,
-	removeCls,
 	renderSchemaForm,
 	type SchemaFormHandle,
 	serializeFrontmatterValue,
-	tid,
-	toggleCls,
 	toLocalISOString,
 	toSafeString,
 } from "@real1ty-obsidian-plugins";
+import { addCls, cls, removeCls, tid, toggleCls } from "../../../constants";
 import { renderReactInline } from "@real1ty-obsidian-plugins-react";
 import { type App, Modal, Notice } from "obsidian";
 import { createElement } from "react";

@@ -1,5 +1,6 @@
 import { Draggable } from "@fullcalendar/interaction";
-import { addCls, cls, type ColorEvaluator, removeCls, tid } from "@real1ty-obsidian-plugins";
+import type { ColorEvaluator } from "@real1ty-obsidian-plugins";
+import { addCls, cls, removeCls, tid } from "../../constants";
 import {
 	PropertyValue,
 	useApp,

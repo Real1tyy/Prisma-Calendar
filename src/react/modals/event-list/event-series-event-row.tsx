@@ -1,4 +1,4 @@
-import { cls } from "@real1ty-obsidian-plugins";
+import { cls } from "../../../constants";
 import type { CSSProperties } from "react";
 import { memo, useEffect, useRef } from "react";
 

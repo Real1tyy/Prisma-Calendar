@@ -1,4 +1,5 @@
-import { buildUtmUrl, cls, tid } from "@real1ty-obsidian-plugins";
+import { buildUtmUrl } from "@real1ty-obsidian-plugins";
+import { cls, tid } from "../../constants";
 import {
 	Dropdown,
 	LicenseSection,

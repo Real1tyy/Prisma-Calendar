@@ -1,4 +1,5 @@
-import { buildUtmUrl, cls, executeCommand, tid } from "@real1ty-obsidian-plugins";
+import { buildUtmUrl, executeCommand } from "@real1ty-obsidian-plugins";
+import { cls, tid } from "../../constants";
 import {
 	Dropdown,
 	SettingHeading,

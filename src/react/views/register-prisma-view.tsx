@@ -1,4 +1,5 @@
-import { cls, registerComponentView, type ViewActivator, type ViewComponentConfig } from "@real1ty-obsidian-plugins";
+import { registerComponentView, type ViewActivator, type ViewComponentConfig } from "@real1ty-obsidian-plugins";
+import { cls } from "../../constants";
 import { renderReactInline } from "@real1ty-obsidian-plugins-react";
 import type { WorkspaceLeaf } from "obsidian";
 import { createElement } from "react";

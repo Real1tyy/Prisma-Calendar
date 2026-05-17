@@ -1,4 +1,5 @@
-import { cls, describeError, MountableView, MS_PER_DAY, renderCollapsibleSection } from "@real1ty-obsidian-plugins";
+import { describeError, MountableView, MS_PER_DAY, renderCollapsibleSection } from "@real1ty-obsidian-plugins";
+import { cls } from "../constants";
 import { Component, ItemView, MarkdownRenderer, Notice, type WorkspaceLeaf } from "obsidian";
 import { distinctUntilChanged, skip } from "rxjs";
 

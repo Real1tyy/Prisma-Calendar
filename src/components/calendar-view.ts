@@ -8,7 +8,6 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import {
 	afterRender,
 	calculateEndTime,
-	cls,
 	ColorEvaluator,
 	formatDuration,
 	formatLocaleMonthDay,
@@ -16,9 +15,9 @@ import {
 	MountableComponent,
 	type RgbColor,
 	roundToNearestHour,
-	toggleCls,
 	toLocalISOString,
 } from "@real1ty-obsidian-plugins";
+import { cls, toggleCls } from "../constants";
 import { renderReactInline } from "@real1ty-obsidian-plugins-react";
 import { type App, Component, TFile, type WorkspaceLeaf } from "obsidian";
 import { createElement } from "react";
