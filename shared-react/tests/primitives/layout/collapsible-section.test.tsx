@@ -175,4 +175,58 @@ describe("CollapsibleSection (composition)", () => {
 
 		expect(screen.getByRole("button", { name: "Reset" })).toBeInTheDocument();
 	});
+
+	// Regression: clicking a control inside the `actions` slot must NOT toggle
+	// the header. Without bubbling protection the "Add property" button in the
+	// EventForm collapses the section it's supposed to expand.
+	it("does NOT toggle collapse when a button inside the actions slot is clicked", async () => {
+		const onClick = vi.fn();
+		const { user } = renderInTheme(
+			<CollapsibleSection
+				label="Filters"
+				actions={
+					<button type="button" onClick={onClick}>
+						Add
+					</button>
+				}
+			>
+				<span>body</span>
+			</CollapsibleSection>
+		);
+
+		// Find the toggle header (aria-expanded="true" by default).
+		const header = screen.getByRole("button", { expanded: true });
+		expect(header).toHaveAttribute("aria-expanded", "true");
+
+		await user.click(screen.getByRole("button", { name: "Add" }));
+
+		expect(onClick).toHaveBeenCalledTimes(1);
+		// Header must still be expanded — the click did NOT bubble.
+		expect(header).toHaveAttribute("aria-expanded", "true");
+	});
+
+	it("does NOT trigger keyboard activation when Enter is pressed on a button inside the actions slot", async () => {
+		const onClick = vi.fn();
+		const { user } = renderInTheme(
+			<CollapsibleSection
+				label="Filters"
+				actions={
+					<button type="button" onClick={onClick}>
+						Add
+					</button>
+				}
+			>
+				<span>body</span>
+			</CollapsibleSection>
+		);
+
+		const header = screen.getByRole("button", { expanded: true });
+		const addBtn = screen.getByRole("button", { name: "Add" });
+		addBtn.focus();
+		await user.keyboard("{Enter}");
+
+		expect(onClick).toHaveBeenCalledTimes(1);
+		// Header must NOT have toggled from the bubbled Enter keypress.
+		expect(header).toHaveAttribute("aria-expanded", "true");
+	});
 });

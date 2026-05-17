@@ -39,7 +39,11 @@ export const SectionHeader = memo(function SectionHeader({
 				{collapsed ? "▶" : "▼"}
 			</span>
 			<span className={cls("label")}>{label}</span>
-			{actions}
+			{actions ? (
+				<span className={cls("actions")} onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+					{actions}
+				</span>
+			) : null}
 		</div>
 	);
 });
