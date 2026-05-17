@@ -15,6 +15,7 @@ export {
 	createBatchUpdateFrontmatter,
 } from "./batch-commands";
 export { deleteCategoryCommand, renameCategoryCommand } from "./category-commands";
+export { UpdateColorRulesCommand } from "./color-rules-command";
 export {
 	addPrerequisite,
 	assignCategories,

@@ -6,7 +6,11 @@ import { memo } from "react";
 import { cls, CSS_PREFIX, tid } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { CategoryTracker } from "../../../core/category-tracker";
-import { createBatchDeleteCategory, createBatchRenameCategory } from "./../../../core/commands";
+import {
+	createBatchDeleteCategory,
+	createBatchRenameCategory,
+	UpdateColorRulesCommand,
+} from "./../../../core/commands";
 
 export function getCategoryExpression(category: string, categoryProp: string): string {
 	const escapedCategory = category.replace(/'/g, "\\'");
@@ -84,7 +88,7 @@ async function executeCategoryMacro({
 	statusVerb,
 	categoryName,
 	successMessage,
-}: RunOptions): Promise<boolean> {
+}: RunOptions): Promise<void> {
 	const total = macro.getCommandCount();
 	const progress = showProgressModal({
 		app,
@@ -110,11 +114,9 @@ async function executeCategoryMacro({
 			progress.showComplete([`Successfully ${statusVerb} category in ${summary.successCount} event(s)`]);
 			showUndoNotice(successMessage, bundle);
 		}
-		return true;
 	} catch (error) {
 		console.error(`[CategoryOperation] Error in ${statusVerb} operation:`, error);
 		progress.showError(`Error ${statusVerb} category: ${describeError(error)}`);
-		return false;
 	}
 }
 
@@ -146,10 +148,20 @@ export function runCategoryRenameFlow(
 		const { value: newName, extras } = result;
 
 		const filePaths = resolveTargetPaths(categoryTracker, categoryName, extras.includeUntracked);
+		const categoryProp = settingsStore.currentSettings.categoryProp;
+		const oldExpr = getCategoryExpression(categoryName, categoryProp);
+		const newExpr = getCategoryExpression(newName, categoryProp);
 
 		const macro = createBatchRenameCategory(bundle, filePaths, categoryName, newName);
+		macro.addCommand(
+			new UpdateColorRulesCommand(
+				settingsStore,
+				(rules) => rules.map((rule) => (rule.expression === oldExpr ? { ...rule, expression: newExpr } : rule)),
+				"rename-category-color-rule"
+			)
+		);
 
-		const completed = await executeCategoryMacro({
+		await executeCategoryMacro({
 			app,
 			bundle,
 			macro,
@@ -158,16 +170,6 @@ export function runCategoryRenameFlow(
 			categoryName,
 			successMessage: `Renamed "${categoryName}" → "${newName}".`,
 		});
-
-		if (completed) {
-			const categoryProp = settingsStore.currentSettings.categoryProp;
-			const oldExpr = getCategoryExpression(categoryName, categoryProp);
-			const newExpr = getCategoryExpression(newName, categoryProp);
-			await settingsStore.updateSettings((s) => ({
-				...s,
-				colorRules: s.colorRules.map((rule) => (rule.expression === oldExpr ? { ...rule, expression: newExpr } : rule)),
-			}));
-		}
 		onSuccess();
 	});
 }
@@ -205,10 +207,19 @@ export function runCategoryDeleteFlow(
 		if (!result) return;
 
 		const filePaths = resolveTargetPaths(categoryTracker, categoryName, result.extras.includeUntracked);
+		const categoryProp = settingsStore.currentSettings.categoryProp;
+		const expr = getCategoryExpression(categoryName, categoryProp);
 
 		const macro = createBatchDeleteCategory(bundle, filePaths, categoryName);
+		macro.addCommand(
+			new UpdateColorRulesCommand(
+				settingsStore,
+				(rules) => rules.filter((rule) => rule.expression !== expr),
+				"delete-category-color-rule"
+			)
+		);
 
-		const completed = await executeCategoryMacro({
+		await executeCategoryMacro({
 			app,
 			bundle,
 			macro,
@@ -217,15 +228,6 @@ export function runCategoryDeleteFlow(
 			categoryName,
 			successMessage: `Deleted "${categoryName}".`,
 		});
-
-		if (completed) {
-			const categoryProp = settingsStore.currentSettings.categoryProp;
-			const expr = getCategoryExpression(categoryName, categoryProp);
-			await settingsStore.updateSettings((s) => ({
-				...s,
-				colorRules: s.colorRules.filter((rule) => rule.expression !== expr),
-			}));
-		}
 		onSuccess();
 	});
 }

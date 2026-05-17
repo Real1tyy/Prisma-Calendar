@@ -5,18 +5,26 @@ import { categoryRow } from "../../fixtures/dsl";
 import { test } from "../../fixtures/electron";
 import { closeSettings, openPrismaSettings, switchSettingsTab } from "../../fixtures/helpers";
 import { redoViaPalette, undoViaPalette } from "../../fixtures/history-helpers";
+import { updateCalendarSettings } from "../../fixtures/seed-events";
 
-// Category rename / delete used to call the imperative `bulkRenameCategoryInFiles` /
-// `bulkDeleteCategoryFromFiles` helpers directly, bypassing the bundle's
-// `CommandManager`. That meant undo / redo silently no-op'd for these flows.
-// They now route through `BatchCommandFactory.createRenameCategory` /
-// `createDeleteCategory`, wrapped in a `MacroCommand` executed via
-// `commandManager.executeCommand`. Color rule cascade still runs as a
-// non-undoable side effect — only the file frontmatter participates in undo / redo.
+// Category rename / delete route through `createBatchRenameCategory` /
+// `createBatchDeleteCategory` plus an `UpdateColorRulesCommand`, all appended
+// into a single `MacroCommand` and registered with the bundle's
+// `CommandManager`. Undo / redo therefore walks the file rewrites AND the
+// matching color rule in one step — this spec proves the round-trip works
+// for both at once.
+
+const RULE_COLOR = "#ff00aa";
 
 test.describe("settings: Categories undo/redo", () => {
-	test("rename → undo restores frontmatter; redo reapplies it", async ({ calendar, obsidian }) => {
+	test("rename → undo restores frontmatter and color rule; redo reapplies both", async ({ calendar, obsidian }) => {
 		const { page } = calendar;
+
+		await updateCalendarSettings(page, {
+			colorRules: [
+				{ id: "rule-undoable", expression: "Category.includes('Undoable')", color: RULE_COLOR, enabled: true },
+			],
+		});
 
 		const evt = await calendar.createEvent({
 			title: "Undoable Rename Target",
@@ -25,6 +33,7 @@ test.describe("settings: Categories undo/redo", () => {
 			categories: ["Undoable"],
 		});
 		await evt.expectVisible();
+		await evt.expectColor(RULE_COLOR);
 
 		await openPrismaSettings(obsidian.page);
 		await switchSettingsTab(obsidian.page, "categories");
@@ -39,10 +48,13 @@ test.describe("settings: Categories undo/redo", () => {
 		await undoViaPalette(page);
 
 		await expect.poll(() => evt.readCategory()).toEqual(["Undoable"]);
+		// Color rule must come back with the original expression so the tile keeps the rule color.
+		await evt.expectColor(RULE_COLOR);
 
 		await redoViaPalette(page);
 
 		await expect.poll(() => evt.readCategory()).toEqual(["Renamed"]);
+		await evt.expectColor(RULE_COLOR);
 	});
 
 	test("delete → undo restores the category; redo removes it again", async ({ calendar, obsidian }) => {
