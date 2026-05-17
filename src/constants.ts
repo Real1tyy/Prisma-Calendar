@@ -199,8 +199,6 @@ export const TOOLBAR_BUTTON_LABELS = Object.fromEntries(
 
 export const DEFAULT_TOOLBAR_BUTTONS = [...TOOLBAR_BUTTON_IDS];
 
-export { CONTEXT_MENU_BUTTON_LABELS, CONTEXT_MENU_ITEM_IDS, DEFAULT_CONTEXT_MENU_ITEMS } from "./context-menu-items";
-
 /**
  * Maximum time after an event starts before notifications are suppressed.
  * Prevents notification spam when opening Obsidian after being away.

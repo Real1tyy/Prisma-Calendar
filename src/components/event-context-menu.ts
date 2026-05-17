@@ -14,13 +14,8 @@ import type {
 import { createCustomizableContextMenu } from "@real1ty-obsidian-plugins-react";
 import { type App, Notice } from "obsidian";
 
-import {
-	CONTEXT_MENU_BUTTON_LABELS,
-	CSS_PREFIX,
-	EVENT_HIGHLIGHT_DURATION_MS,
-	GO_TO_SOURCE_HIGHLIGHT_DELAY_MS,
-	MS_PER_DAY,
-} from "../constants";
+import { CSS_PREFIX, EVENT_HIGHLIGHT_DURATION_MS, GO_TO_SOURCE_HIGHLIGHT_DELAY_MS, MS_PER_DAY } from "../constants";
+import { CONTEXT_MENU_BUTTON_LABELS } from "../context-menu-items";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import {
 	assignCategories,

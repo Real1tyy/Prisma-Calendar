@@ -12,9 +12,9 @@ import {
 	BATCH_BUTTON_IDS,
 	DEFAULT_BATCH_ACTION_BUTTONS,
 	DEFAULT_CATEGORY_PROP,
-	DEFAULT_CONTEXT_MENU_ITEMS,
 	DEFAULT_TOOLBAR_BUTTONS,
 } from "../constants";
+import { DEFAULT_CONTEXT_MENU_ITEMS } from "../context-menu-items";
 import {
 	computeDedicatedUIPropKeys,
 	computeNotificationDedicatedUIPropKeys,
