@@ -1,6 +1,7 @@
 import type { App, TFile } from "obsidian";
 import { BehaviorSubject, filter, firstValueFrom, type Observable, Subject, type Subscription, take } from "rxjs";
 
+import { AsyncBarrier } from "../../utils/async/async-barrier";
 import { deepEqualJsonLike } from "../../utils/deep-equal";
 import { CommandManager } from "../commands/command-manager";
 import type { Repository } from "../data-access/repository";
@@ -97,6 +98,14 @@ export class VaultTable<
 
 	private readonly eventsSubject = new Subject<VaultTableEvent<TData>>();
 	private readonly readySubject = new BehaviorSubject<boolean>(false);
+	/**
+	 * Tracks pending async work — both VaultTable's own row-build promises
+	 * (one per indexer event) and any external async handlers registered via
+	 * {@link subscribeAsync}. `ready$` holds its `true` signal until the barrier
+	 * drains, so the index is only declared "ready" once every initial-scan
+	 * row has been built AND propagated through every subscribed async handler.
+	 */
+	private readonly asyncWork = new AsyncBarrier();
 
 	public readonly events$: Observable<VaultTableEvent<TData>>;
 	public readonly ready$: Observable<boolean>;
@@ -203,10 +212,48 @@ export class VaultTable<
 		// is a brand-new file) and signal ready.
 		this.readySub = this.indexer.indexingComplete$.pipe(filter(Boolean), take(1)).subscribe(() => {
 			this.hydratedByPath = null;
-			this.readySubject.next(true);
+			void this.signalReadyWhenAsyncWorkSettles();
 		});
 
 		await this.indexer.start();
+	}
+
+	/**
+	 * Waits for every tracked async work item to drain, then flips `ready$`
+	 * to `true`.
+	 *
+	 * The Indexer fires its scan events synchronously, then signals
+	 * `indexingComplete` in the same tick. At that point both VaultTable's
+	 * own row-build promises AND any {@link subscribeAsync} handlers are
+	 * still suspended on their first await. If `ready$` flipped immediately,
+	 * downstream consumers would act on a partial view of the index.
+	 *
+	 * The {@link AsyncBarrier} re-checks after each wait to absorb work that
+	 * arrives during the drain — handlers can themselves trigger background
+	 * writes that round-trip through the indexer and produce more work.
+	 */
+	private async signalReadyWhenAsyncWorkSettles(): Promise<void> {
+		await this.asyncWork.waitUntilSettled();
+		this.readySubject.next(true);
+	}
+
+	/**
+	 * Subscribe to {@link events$} with an async handler whose completion is
+	 * tracked. Use this in preference to `events$.subscribe(async fn)` when
+	 * the handler awaits — the latter is fire-and-forget and lets `ready$`
+	 * fire while handlers are still suspended at their first await.
+	 *
+	 * The returned subscription unhooks the underlying RxJS subscription;
+	 * any handler still in flight at unsubscribe time continues to settle
+	 * normally, just without affecting future ready-gating.
+	 */
+	subscribeAsync(handler: (event: VaultTableEvent<TData>) => Promise<void>): Subscription {
+		return this.events$.subscribe((event) => {
+			const settled = handler(event).catch((error) => {
+				console.error("[VaultTable] async event handler error:", error);
+			});
+			this.asyncWork.track(settled);
+		});
 	}
 
 	async waitUntilReady(): Promise<void> {
@@ -235,7 +282,7 @@ export class VaultTable<
 
 		this.readySub?.unsubscribe();
 		this.readySub = this.indexer.indexingComplete$.pipe(filter(Boolean), take(1)).subscribe(() => {
-			this.readySubject.next(true);
+			void this.signalReadyWhenAsyncWorkSettles();
 		});
 
 		this.indexer.resync();
@@ -674,7 +721,9 @@ export class VaultTable<
 			return;
 		}
 
-		void this.buildAndUpsertRow(id, filePath, parsed, event);
+		// Tracked rather than `void`-discarded so the initial-scan ready signal
+		// waits for the build (and the row-created event it emits) before flipping.
+		this.asyncWork.track(this.buildAndUpsertRow(id, filePath, parsed, event));
 	}
 
 	private async buildAndUpsertRow(id: string, filePath: string, data: TData, event: IndexerEvent): Promise<void> {

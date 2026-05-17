@@ -1,8 +1,9 @@
-import { BehaviorSubject, type Observable, Subject } from "rxjs";
+import { BehaviorSubject, type Observable, Subject, type Subscription } from "rxjs";
 
 import { extractFileName } from "../../core/file/file";
 import type { FrontmatterDiff } from "../../core/frontmatter/frontmatter-diff";
 import type { InsertVaultRow, VaultRow, VaultTableEvent } from "../../core/vault-table/types";
+import { AsyncBarrier } from "../../utils/async/async-barrier";
 import { TFile } from "./obsidian";
 
 // ─── Operation Log ───────────────────────────────────────────
@@ -29,6 +30,7 @@ export class MockVaultTable<TData extends Record<string, unknown> = Record<strin
 
 	private readonly eventsSubject = new Subject<VaultTableEvent<TData>>();
 	private readonly readySubject = new BehaviorSubject<boolean>(false);
+	private readonly asyncWork = new AsyncBarrier();
 
 	readonly events$: Observable<VaultTableEvent<TData>> = this.eventsSubject.asObservable();
 	readonly ready$: Observable<boolean> = this.readySubject.asObservable();
@@ -40,7 +42,25 @@ export class MockVaultTable<TData extends Record<string, unknown> = Record<strin
 	// ─── Lifecycle ───────────────────────────────────────────────
 
 	async start(): Promise<void> {
+		await this.signalReadyWhenAsyncWorkSettles();
+	}
+
+	private async signalReadyWhenAsyncWorkSettles(): Promise<void> {
+		await this.asyncWork.waitUntilSettled();
 		this.readySubject.next(true);
+	}
+
+	/**
+	 * Mirrors {@link VaultTable.subscribeAsync}: tracks in-flight handlers so
+	 * `ready$` (after `emitReady`) holds until they settle.
+	 */
+	subscribeAsync(handler: (event: VaultTableEvent<TData>) => Promise<void>): Subscription {
+		return this.events$.subscribe((event) => {
+			const settled = handler(event).catch((error) => {
+				console.error("[MockVaultTable] async event handler error:", error);
+			});
+			this.asyncWork.track(settled);
+		});
 	}
 
 	async waitUntilReady(): Promise<void> {
@@ -204,9 +224,17 @@ export class MockVaultTable<TData extends Record<string, unknown> = Record<strin
 		return entries.map((e) => this.seed(e.key, e.data, e.content));
 	}
 
-	/** Manually emit a ready signal (useful for testing indexing-complete flows) */
+	/**
+	 * Manually emit a ready signal (useful for testing indexing-complete flows).
+	 * `true` mirrors {@link VaultTable.start} and gates on in-flight async handlers
+	 * registered via {@link subscribeAsync}; `false` flips immediately.
+	 */
 	emitReady(ready = true): void {
-		this.readySubject.next(ready);
+		if (ready) {
+			void this.signalReadyWhenAsyncWorkSettles();
+		} else {
+			this.readySubject.next(false);
+		}
 	}
 
 	/**

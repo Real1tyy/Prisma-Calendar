@@ -212,7 +212,57 @@ describe("VaultTable", () => {
 			await table.start();
 			emitIndexingComplete();
 
-			expect(readyValues).toContain(true);
+			await vi.waitFor(() => expect(readyValues).toContain(true));
+
+			table.stop();
+		});
+
+		// Regression: the indexer fires every initial-scan event synchronously and
+		// then signals `indexingComplete` in the same tick. Subscribers registered
+		// via `subscribeAsync` need their handlers to finish processing those
+		// events BEFORE `ready$` flips to `true`; otherwise downstream consumers
+		// (e.g. plugin repositories that re-parse rows on a microtask boundary)
+		// observe `ready` against a partial view of the index.
+		it("should hold ready$ until subscribeAsync handlers settle", async () => {
+			const { config } = createTestConfig();
+			const table = new VaultTable(config);
+
+			let releaseHandler!: () => void;
+			const handlerGate = new Promise<void>((resolve) => {
+				releaseHandler = resolve;
+			});
+
+			let handlerCompleted = false;
+			table.subscribeAsync(async () => {
+				await handlerGate;
+				handlerCompleted = true;
+			});
+
+			const readyTimeline: { ready: boolean; handlerDone: boolean }[] = [];
+			table.ready$.subscribe((ready) => {
+				readyTimeline.push({ ready, handlerDone: handlerCompleted });
+			});
+
+			await table.start();
+
+			// Inject an event the async handler will hold open, then immediately
+			// signal indexing-complete in the same tick — the in-flight handler
+			// is still suspended at its first await.
+			emitIndexerEvent(createFileChangedEvent("a.md", { title: "A", priority: 0, tags: [], category: "x" }));
+			emitIndexingComplete();
+
+			// Let microtasks settle: ready$ must NOT have fired `true` yet because
+			// the handler is still suspended.
+			await Promise.resolve();
+			await Promise.resolve();
+			expect(readyTimeline.some((e) => e.ready)).toBe(false);
+
+			// Release the handler — only now should ready$ flip to `true`, and the
+			// snapshot captured at flip-time must show the handler had completed.
+			releaseHandler();
+			await vi.waitFor(() => expect(readyTimeline.some((e) => e.ready)).toBe(true));
+			const readyEntry = readyTimeline.find((e) => e.ready);
+			expect(readyEntry?.handlerDone).toBe(true);
 
 			table.stop();
 		});
@@ -2159,14 +2209,14 @@ describe("VaultTable", () => {
 			table.ready$.subscribe((v) => readyValues.push(v));
 
 			emitIndexingComplete();
-			expect(readyValues).toContain(true);
+			await vi.waitFor(() => expect(readyValues).toContain(true));
 
 			mockIndexerCompleteSubject.next(false);
 			table.resync();
-			expect(readyValues.at(-1)).toBe(false);
+			await vi.waitFor(() => expect(readyValues.at(-1)).toBe(false));
 
 			mockIndexerCompleteSubject.next(true);
-			expect(readyValues.at(-1)).toBe(true);
+			await vi.waitFor(() => expect(readyValues.at(-1)).toBe(true));
 
 			table.destroy();
 		});
