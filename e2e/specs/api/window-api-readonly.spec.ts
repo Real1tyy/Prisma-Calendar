@@ -3,8 +3,8 @@ import type {
 	PrismaCalendarGetCategoriesOutput,
 	PrismaCalendarGetEventsOutput,
 } from "@real1ty-obsidian-plugins/external-apis/prisma-calendar";
-import { type Invoker, pageEvaluateInvoker } from "@real1ty-obsidian-plugins/testing/api-contract";
 
+import { createPrismaApi, waitForApiIndex } from "../../fixtures/api-helpers";
 import { todayISO, todayStamp } from "../../fixtures/dates";
 import { expect, test } from "../../fixtures/electron";
 
@@ -19,49 +19,26 @@ type EventOutput = PrismaCalendarGetEventsOutput[number];
 type CategoryOutput = PrismaCalendarGetCategoriesOutput[number];
 type CalendarInfo = NonNullable<PrismaCalendarGetCalendarInfoOutput>;
 
-function assertEventArray(value: unknown): asserts value is EventOutput[] {
-	expect(Array.isArray(value), "expected an array of events").toBe(true);
-	for (const event of value as unknown[]) {
-		const e = event as Record<string, unknown>;
-		expect(typeof e["filePath"]).toBe("string");
-		expect(typeof e["title"]).toBe("string");
-		expect(["timed", "allDay", "untracked"]).toContain(e["type"]);
-		expect(typeof e["allDay"]).toBe("boolean");
-		expect(typeof e["skipped"]).toBe("boolean");
-	}
+function assertEventShape(event: EventOutput): void {
+	expect(typeof event.filePath).toBe("string");
+	expect(typeof event.title).toBe("string");
+	expect(["timed", "allDay", "untracked"]).toContain(event.type);
+	expect(typeof event.allDay).toBe("boolean");
+	expect(typeof event.skipped).toBe("boolean");
 }
 
-function assertEventOrNull(value: unknown): asserts value is EventOutput | null {
-	if (value === null) return;
-	const e = value as Record<string, unknown>;
-	expect(typeof e["filePath"]).toBe("string");
-	expect(typeof e["title"]).toBe("string");
-	expect(["timed", "allDay", "untracked"]).toContain(e["type"]);
+function assertCategoryShape(category: CategoryOutput): void {
+	expect(typeof category.name).toBe("string");
+	expect(typeof category.color).toBe("string");
 }
 
-function assertCategoryArray(value: unknown): asserts value is CategoryOutput[] {
-	expect(Array.isArray(value), "expected an array of categories").toBe(true);
-	for (const cat of value as unknown[]) {
-		const c = cat as Record<string, unknown>;
-		expect(typeof c["name"]).toBe("string");
-		expect(typeof c["color"]).toBe("string");
-	}
-}
-
-function assertCalendarInfo(value: unknown): asserts value is CalendarInfo {
-	expect(value, "expected calendar info").not.toBeNull();
-	const c = value as Record<string, unknown>;
-	expect(typeof c["calendarId"]).toBe("string");
-	expect(typeof c["name"]).toBe("string");
-	expect(typeof c["directory"]).toBe("string");
-	expect(typeof c["enabled"]).toBe("boolean");
-	expect(typeof c["eventCount"]).toBe("number");
-	expect(typeof c["untrackedEventCount"]).toBe("number");
-}
-
-function assertCalendarInfoArray(value: unknown): asserts value is CalendarInfo[] {
-	expect(Array.isArray(value)).toBe(true);
-	for (const info of value as unknown[]) assertCalendarInfo(info);
+function assertCalendarInfoShape(info: CalendarInfo): void {
+	expect(typeof info.calendarId).toBe("string");
+	expect(typeof info.name).toBe("string");
+	expect(typeof info.directory).toBe("string");
+	expect(typeof info.enabled).toBe("boolean");
+	expect(typeof info.eventCount).toBe("number");
+	expect(typeof info.untrackedEventCount).toBe("number");
 }
 
 // Tier 1 contract spec for the read surface of `window.PrismaCalendar.*`.
@@ -82,99 +59,92 @@ function assertCalendarInfoArray(value: unknown): asserts value is CalendarInfo[
 // We use `todayStamp` / `todayISO` because none of these actions open a
 // FullCalendar viewport.
 
-async function waitForApiIndex(invoke: Invoker, filePath: string): Promise<void> {
-	await expect.poll(async () => (await invoke("getEventByPath", { filePath })) !== null).toBe(true);
-}
-
 test.describe("plugin api contract — read surface via window.PrismaCalendar", () => {
 	test("read surface schema-conformance + value cross-checks on a known seed", async ({ calendar, obsidian }) => {
 		await calendar.unlockPro();
-		const invoke = pageEvaluateInvoker(obsidian.page, "PrismaCalendar");
+		const api = createPrismaApi(obsidian.page);
 
 		// Two tracked events with distinct categories. The test asserts that
 		// both surface through every applicable read action — getEvents,
 		// getAllEvents, getEventByPath, getCategories. Variety in categories
 		// proves the category-aggregation path inside getCategories.
-		const tracked1 = (await invoke("createEvent", {
+		const tracked1 = (await api.createEvent({
 			title: "Team Meeting",
 			start: todayStamp(9),
 			end: todayStamp(10),
 			allDay: false,
 			categories: ["Work"],
-		})) as string;
-		const tracked2 = (await invoke("createEvent", {
+		}))!;
+		const tracked2 = (await api.createEvent({
 			title: "Workout",
 			start: todayStamp(18),
 			end: todayStamp(19),
 			allDay: false,
 			categories: ["Fitness"],
-		})) as string;
-		await waitForApiIndex(invoke, tracked1);
-		await waitForApiIndex(invoke, tracked2);
+		}))!;
+		await waitForApiIndex(api, tracked1);
+		await waitForApiIndex(api, tracked2);
 
 		// Untracked event lacks a Start Date — `createUntrackedEvent` is the
 		// canonical entry point. Surfaces through getUntrackedEvents.
-		const untracked = (await invoke("createUntrackedEvent", {
-			title: "Project Planning",
-		})) as string;
+		const untracked = (await api.createUntrackedEvent({ title: "Project Planning" }))!;
 		// Untracked events still show up via getEventByPath once indexed.
-		await waitForApiIndex(invoke, untracked);
+		await waitForApiIndex(api, untracked);
 
 		const allFiles = [tracked1, tracked2, untracked];
 
 		try {
 			// ── getEvents (range query) ────────────────────────────────
 			const today = todayISO();
-			const rangedRaw = await invoke("getEvents", { start: `${today}T00:00`, end: `${today}T23:59` });
-			assertEventArray(rangedRaw);
-			expect(rangedRaw.some((e) => e.filePath === tracked1)).toBe(true);
-			expect(rangedRaw.some((e) => e.filePath === tracked2)).toBe(true);
+			const ranged = await api.getEvents({ start: `${today}T00:00`, end: `${today}T23:59` });
+			ranged.forEach(assertEventShape);
+			expect(ranged.some((e) => e.filePath === tracked1)).toBe(true);
+			expect(ranged.some((e) => e.filePath === tracked2)).toBe(true);
 			// Untracked events have no Start Date → excluded from range queries.
-			expect(rangedRaw.some((e) => e.filePath === untracked)).toBe(false);
+			expect(ranged.some((e) => e.filePath === untracked)).toBe(false);
 
 			// ── getEventByPath (point lookup) ──────────────────────────
-			const oneRaw = await invoke("getEventByPath", { filePath: tracked1 });
-			assertEventOrNull(oneRaw);
-			expect(oneRaw).not.toBeNull();
-			expect(oneRaw!.title).toBe("Team Meeting");
-			expect(oneRaw!.categories).toEqual(["Work"]);
-			expect(oneRaw!.type).toBe("timed");
+			const one = await api.getEventByPath({ filePath: tracked1 });
+			expect(one).not.toBeNull();
+			assertEventShape(one!);
+			expect(one!.title).toBe("Team Meeting");
+			expect(one!.categories).toEqual(["Work"]);
+			expect(one!.type).toBe("timed");
 
-			const missingRaw = await invoke("getEventByPath", { filePath: "Events/Does Not Exist.md" });
-			expect(missingRaw).toBeNull();
+			expect(await api.getEventByPath({ filePath: "Events/Does Not Exist.md" })).toBeNull();
 
 			// ── getAllEvents ───────────────────────────────────────────
-			const allRaw = await invoke("getAllEvents", undefined);
-			assertEventArray(allRaw);
-			const allPaths = new Set(allRaw.map((e) => e.filePath));
+			const all = await api.getAllEvents({});
+			all.forEach(assertEventShape);
+			const allPaths = new Set(all.map((e) => e.filePath));
 			expect(allPaths.has(tracked1)).toBe(true);
 			expect(allPaths.has(tracked2)).toBe(true);
 			expect(allPaths.has(untracked)).toBe(true);
 
 			// ── getCategories ──────────────────────────────────────────
-			const catsRaw = await invoke("getCategories", undefined);
-			assertCategoryArray(catsRaw);
-			const catNames = new Set(catsRaw.map((c) => c.name));
+			const cats = await api.getCategories({});
+			cats.forEach(assertCategoryShape);
+			const catNames = new Set(cats.map((c) => c.name));
 			expect(catNames.has("Work")).toBe(true);
 			expect(catNames.has("Fitness")).toBe(true);
 			// Every entry has a non-empty color string — proves the category
 			// trackers feed the colour map correctly.
-			for (const c of catsRaw) {
+			for (const c of cats) {
 				expect(c.color.length).toBeGreaterThan(0);
 			}
 
 			// ── getUntrackedEvents ─────────────────────────────────────
-			const untrackedRaw = await invoke("getUntrackedEvents", undefined);
-			assertEventArray(untrackedRaw);
-			expect(untrackedRaw.some((e) => e.filePath === untracked)).toBe(true);
+			const untrackedAll = await api.getUntrackedEvents({});
+			untrackedAll.forEach(assertEventShape);
+			expect(untrackedAll.some((e) => e.filePath === untracked)).toBe(true);
 			// Tracked events must NOT appear in the untracked list — proves the
 			// filter at the read-operations layer.
-			expect(untrackedRaw.some((e) => e.filePath === tracked1)).toBe(false);
-			expect(untrackedRaw.some((e) => e.filePath === tracked2)).toBe(false);
+			expect(untrackedAll.some((e) => e.filePath === tracked1)).toBe(false);
+			expect(untrackedAll.some((e) => e.filePath === tracked2)).toBe(false);
 		} finally {
 			// Clean up via batchDelete to keep this spec contained — the deletes
 			// in any cross-cutting suite would otherwise pollute later state.
-			await invoke("batchDelete", { filePaths: allFiles });
+			await api.batchDelete({ filePaths: allFiles });
 		}
 	});
 
@@ -183,26 +153,25 @@ test.describe("plugin api contract — read surface via window.PrismaCalendar", 
 		obsidian,
 	}) => {
 		await calendar.unlockPro();
-		const invoke = pageEvaluateInvoker(obsidian.page, "PrismaCalendar");
+		const api = createPrismaApi(obsidian.page);
 
 		// ── listCalendars ──────────────────────────────────────────────
-		const listRaw = await invoke("listCalendars", undefined);
-		assertCalendarInfoArray(listRaw);
-		expect(listRaw.length).toBeGreaterThanOrEqual(1);
+		const list = await api.listCalendars();
+		list.forEach(assertCalendarInfoShape);
+		expect(list.length).toBeGreaterThanOrEqual(1);
 		// Default seed in `electron.ts` sets the calendar id to "default".
-		const def = listRaw.find((c) => c.calendarId === "default");
+		const def = list.find((c) => c.calendarId === "default");
 		expect(def).toBeDefined();
 		expect(def!.directory).toBe("Events");
 
 		// ── getCalendarInfo (no calendarId → resolves to the active bundle) ─
-		const infoRaw = await invoke("getCalendarInfo", undefined);
-		expect(infoRaw).not.toBeNull();
-		assertCalendarInfo(infoRaw);
-		expect(infoRaw.calendarId).toBe("default");
-		expect(infoRaw.directory).toBe("Events");
+		const info = await api.getCalendarInfo({});
+		expect(info).not.toBeNull();
+		assertCalendarInfoShape(info!);
+		expect(info!.calendarId).toBe("default");
+		expect(info!.directory).toBe("Events");
 
 		// ── getCalendarInfo (unknown id → null) ────────────────────────
-		const missingRaw = await invoke("getCalendarInfo", { calendarId: "does-not-exist" });
-		expect(missingRaw).toBeNull();
+		expect(await api.getCalendarInfo({ calendarId: "does-not-exist" })).toBeNull();
 	});
 });

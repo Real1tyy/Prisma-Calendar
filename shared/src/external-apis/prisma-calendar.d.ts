@@ -1120,6 +1120,7 @@ export interface PrismaCalendarOpenCreateEventModalInput {
 export interface PrismaCalendarOpenEditActiveNoteModalInput {
 	calendarId?: string;
 }
+export type PrismaCalendarOpenEditActiveNoteModalOutput = boolean;
 export interface PrismaCalendarRefreshCalendarInput {
 	calendarId?: string;
 }
@@ -1934,7 +1935,9 @@ export interface PrismaCalendarApi {
 	moveEventToCalendar(input: PrismaCalendarMoveEventToCalendarInput): Promise<PrismaCalendarMoveEventToCalendarOutput>;
 	navigateToDate(input: PrismaCalendarNavigateToDateInput): Promise<PrismaCalendarNavigateToDateOutput>;
 	openCreateEventModal(input: PrismaCalendarOpenCreateEventModalInput): Promise<void>;
-	openEditActiveNoteModal(input: PrismaCalendarOpenEditActiveNoteModalInput): Promise<void>;
+	openEditActiveNoteModal(
+		input: PrismaCalendarOpenEditActiveNoteModalInput
+	): Promise<PrismaCalendarOpenEditActiveNoteModalOutput>;
 	refreshCalendar(input: PrismaCalendarRefreshCalendarInput): Promise<void>;
 	toggleSkip(input: PrismaCalendarToggleSkipInput): Promise<PrismaCalendarToggleSkipOutput>;
 	updateSettings(input: PrismaCalendarUpdateSettingsInput): Promise<PrismaCalendarUpdateSettingsOutput>;

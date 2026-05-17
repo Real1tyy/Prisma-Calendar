@@ -95,11 +95,11 @@ export function buildActions(plugin: CustomCalendarPlugin): ActionDefMap {
 			},
 		}),
 		openEditActiveNoteModal: defineAction({
-			description: "Open the edit modal for the currently active note's event.",
+			description:
+				"Open the edit modal for the currently active note's event. Returns true if a matching event was resolved and the modal opened, false otherwise.",
 			input: PrismaCalendarIdInputSchema,
-			handler: async (input) => {
-				await openEditActiveNoteModal(plugin, input.calendarId);
-			},
+			output: BooleanResult,
+			handler: async (input) => await openEditActiveNoteModal(plugin, input.calendarId),
 		}),
 
 		// ── CRUD ────────────────────────────────────────────────────

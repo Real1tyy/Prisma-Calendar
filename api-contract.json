@@ -3154,7 +3154,7 @@
 			}
 		},
 		"openEditActiveNoteModal": {
-			"description": "Open the edit modal for the currently active note's event.",
+			"description": "Open the edit modal for the currently active note's event. Returns true if a matching event was resolved and the modal opened, false otherwise.",
 			"urlAccessible": true,
 			"input": {
 				"$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -3166,7 +3166,10 @@
 				},
 				"type": "object"
 			},
-			"output": null,
+			"output": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "boolean"
+			},
 			"http": {
 				"method": "POST",
 				"path": "/open-edit-active-note-modal"

@@ -1,9 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
-import type { PrismaCalendarMoveEventToCalendarOutput } from "@real1ty-obsidian-plugins/external-apis/prisma-calendar";
-import { type Invoker, pageEvaluateInvoker } from "@real1ty-obsidian-plugins/testing/api-contract";
-
+import { createPrismaApi, waitForApiIndex } from "../../fixtures/api-helpers";
 import { todayStamp } from "../../fixtures/dates";
 import {
 	MULTI_CALENDAR_PRIMARY_DIR,
@@ -16,19 +14,6 @@ import { openCalendarView, waitForWorkspaceReady } from "../events/events-helper
 
 const expect = test.expect;
 
-// The .d.ts is generated from `api-contract.json` and is type-only — no
-// runtime/obsidian footprint. The drift test owns JSON-Schema conformance;
-// this spec asserts the load-bearing envelope fields directly.
-type MoveResult = PrismaCalendarMoveEventToCalendarOutput;
-
-function assertMoveResultShape(value: unknown): asserts value is MoveResult {
-	expect(value, "expected move result envelope").not.toBeNull();
-	const r = value as Record<string, unknown>;
-	expect(typeof r["success"]).toBe("boolean");
-	if (r["movedFilePath"] !== undefined) expect(typeof r["movedFilePath"]).toBe("string");
-	if (r["error"] !== undefined) expect(typeof r["error"]).toBe("string");
-}
-
 // Tier 1 cross-calendar contract spec. Exercises `moveEventToCalendar` —
 // the highest-risk action because it crosses bundle boundaries and the
 // concurrent-stores rewrite at `cross-calendar-undo.spec.ts` proved this
@@ -36,7 +21,7 @@ function assertMoveResultShape(value: unknown): asserts value is MoveResult {
 //
 // What this spec proves:
 //   1. `moveEventToCalendar` returns a `PrismaMoveEventToCalendarResult`-shaped
-//      envelope (schema-validated).
+//      envelope (schema-validated via the generated `PrismaCalendarApi` type).
 //   2. After a successful move, the file is physically gone from the source
 //      bundle's directory and present in the target bundle's directory.
 //   3. The post-move file is reachable via `getEventByPath` under its new
@@ -44,10 +29,6 @@ function assertMoveResultShape(value: unknown): asserts value is MoveResult {
 //
 // We use `todayStamp` because no FullCalendar viewport is asserted on —
 // the proof is filesystem + API readback, not DOM.
-
-async function waitForApiIndex(invoke: Invoker, filePath: string): Promise<void> {
-	await expect.poll(async () => (await invoke("getEventByPath", { filePath })) !== null).toBe(true);
-}
 
 test.describe("plugin api contract — cross-calendar via window.PrismaCalendar", () => {
 	test.beforeEach(async ({ calendar }) => {
@@ -64,35 +45,32 @@ test.describe("plugin api contract — cross-calendar via window.PrismaCalendar"
 		// independent of "last-used bundle" resolution.
 		await openCalendarView(calendar.page, MULTI_CALENDAR_PRIMARY_ID);
 
-		const invoke = pageEvaluateInvoker(obsidian.page, "PrismaCalendar");
+		const api = createPrismaApi(obsidian.page);
 
 		// Seed a tracked event in the primary bundle.
-		const originalPath = (await invoke("createEvent", {
+		const originalPath = (await api.createEvent({
 			title: "Cross Calendar Subject",
 			start: todayStamp(10),
 			end: todayStamp(11),
 			allDay: false,
 			calendarId: MULTI_CALENDAR_PRIMARY_ID,
-		})) as string;
-		expect(typeof originalPath).toBe("string");
+		}))!;
 		// Sanity: lives under the primary calendar's directory.
 		expect(originalPath.startsWith(MULTI_CALENDAR_PRIMARY_DIR)).toBe(true);
-		await waitForApiIndex(invoke, originalPath);
+		await waitForApiIndex(api, originalPath);
 
 		// ── moveEventToCalendar ────────────────────────────────────────
-		const moveResultRaw = await invoke("moveEventToCalendar", {
+		const moveResult = await api.moveEventToCalendar({
 			filePath: originalPath,
 			targetCalendarId: MULTI_CALENDAR_SECONDARY_ID,
 			calendarId: MULTI_CALENDAR_PRIMARY_ID,
 		});
 
-		// Wire-shape proof: the response envelope has the contract fields.
-		assertMoveResultShape(moveResultRaw);
-
-		expect(moveResultRaw.success).toBe(true);
-		expect(moveResultRaw.error).toBeUndefined();
-		expect(moveResultRaw.movedFilePath).toBeDefined();
-		const newPath = moveResultRaw.movedFilePath!;
+		// Envelope shape is type-checked by the generated PrismaCalendarApi.
+		expect(moveResult.success).toBe(true);
+		expect(moveResult.error).toBeUndefined();
+		expect(moveResult.movedFilePath).toBeDefined();
+		const newPath = moveResult.movedFilePath!;
 
 		// New path must live under the secondary calendar's directory.
 		expect(newPath.startsWith(MULTI_CALENDAR_SECONDARY_DIR)).toBe(true);
@@ -107,23 +85,21 @@ test.describe("plugin api contract — cross-calendar via window.PrismaCalendar"
 		// ── Indexer cross-check ────────────────────────────────────────
 		// `getEventByPath(newPath)` must resolve through the secondary bundle's
 		// indexer. Polling proves the post-move re-index actually fired.
-		await waitForApiIndex(invoke, newPath);
+		await waitForApiIndex(api, newPath);
 
 		try {
-			const event = (await invoke("getEventByPath", { filePath: newPath })) as {
-				title: string;
-				type: string;
-			} | null;
+			const event = await api.getEventByPath({ filePath: newPath });
 			expect(event).not.toBeNull();
 			expect(event!.title).toBe("Cross Calendar Subject");
 			expect(event!.type).toBe("timed");
 		} finally {
 			// Clean up the moved file — secondary bundle owns it now.
-			const deleted = (await invoke("deleteEvent", {
-				filePath: newPath,
-				calendarId: MULTI_CALENDAR_SECONDARY_ID,
-			})) as boolean;
-			expect(deleted).toBe(true);
+			expect(
+				await api.deleteEvent({
+					filePath: newPath,
+					calendarId: MULTI_CALENDAR_SECONDARY_ID,
+				})
+			).toBe(true);
 		}
 	});
 
@@ -133,19 +109,19 @@ test.describe("plugin api contract — cross-calendar via window.PrismaCalendar"
 	}) => {
 		await calendar.unlockPro();
 		await openCalendarView(calendar.page, MULTI_CALENDAR_PRIMARY_ID);
-		const invoke = pageEvaluateInvoker(obsidian.page, "PrismaCalendar");
+		const api = createPrismaApi(obsidian.page);
 
-		const originalPath = (await invoke("createEvent", {
+		const originalPath = (await api.createEvent({
 			title: "Unmoved Event",
 			start: todayStamp(13),
 			end: todayStamp(14),
 			allDay: false,
 			calendarId: MULTI_CALENDAR_PRIMARY_ID,
-		})) as string;
-		await waitForApiIndex(invoke, originalPath);
+		}))!;
+		await waitForApiIndex(api, originalPath);
 
 		try {
-			const resultRaw = await invoke("moveEventToCalendar", {
+			const result = await api.moveEventToCalendar({
 				filePath: originalPath,
 				targetCalendarId: "does-not-exist",
 				calendarId: MULTI_CALENDAR_PRIMARY_ID,
@@ -153,14 +129,13 @@ test.describe("plugin api contract — cross-calendar via window.PrismaCalendar"
 
 			// Even the failure path must serialise as a valid envelope —
 			// callers depend on `{ success, error }` rather than catching.
-			assertMoveResultShape(resultRaw);
-			expect(resultRaw.success).toBe(false);
-			expect(resultRaw.error).toBeTruthy();
+			expect(result.success).toBe(false);
+			expect(result.error).toBeTruthy();
 			// File should still be at its original path — failure is "no-op",
 			// not "partial move."
 			expect(existsSync(join(obsidian.vaultDir, originalPath))).toBe(true);
 		} finally {
-			await invoke("deleteEvent", { filePath: originalPath, calendarId: MULTI_CALENDAR_PRIMARY_ID });
+			await api.deleteEvent({ filePath: originalPath, calendarId: MULTI_CALENDAR_PRIMARY_ID });
 		}
 	});
 });

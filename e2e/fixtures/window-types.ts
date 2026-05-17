@@ -113,7 +113,10 @@ export interface CalendarBundle {
 		updateSettings: (updater: (current: Record<string, unknown>) => Record<string, unknown>) => Promise<void>;
 	};
 	prerequisiteTracker: { isConnected: (filePath: string) => boolean };
-	virtualEventStore: { add: (e: VirtualEventInput) => Promise<{ id: string }> };
+	virtualEventStore: {
+		add: (e: VirtualEventInput) => Promise<{ id: string }>;
+		getAll: () => Array<{ id: string; title: string; start: string; end: string | null }>;
+	};
 	viewRef?: {
 		calendarComponent?: {
 			calendar?: {

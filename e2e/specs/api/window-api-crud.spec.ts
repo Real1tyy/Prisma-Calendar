@@ -1,14 +1,10 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
-import {
-	defineCrudContractSuite,
-	type Invoker,
-	pageEvaluateInvoker,
-	runContractSuite,
-} from "@real1ty-obsidian-plugins/testing/api-contract";
+import { defineCrudContractSuite, runContractSuite } from "@real1ty-obsidian-plugins/testing/api-contract";
 import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
+import { createPrismaApi, pageEvaluateInvoker, waitForApiIndex } from "../../fixtures/api-helpers";
 import { todayISO, todayStamp } from "../../fixtures/dates";
 import { expect, test } from "../../fixtures/electron";
 
@@ -28,37 +24,20 @@ import { expect, test } from "../../fixtures/electron";
 // We use plain today-relative timestamps for deterministic frontmatter
 // assertions.
 
-/**
- * After `createEvent` returns the on-disk path, the metadata cache + event
- * repository's row table need a tick to ingest the new file. Until that
- * happens, mutation actions (`editEvent`, `deleteEvent`, `markAsDone`, …) fail
- * with "Event file not found" — the file exists on disk but the gateway
- * commands resolve through the indexed row table.
- *
- * Poll the API itself for readiness: when `getEventByPath` returns a non-null
- * payload, the index is consistent and downstream actions are safe.
- */
-async function waitForApiIndex(invoke: Invoker, filePath: string): Promise<void> {
-	await expect
-		.poll(async () => (await invoke("getEventByPath", { filePath })) !== null, {
-			message: `event ${filePath} never appeared in the indexed event repository`,
-		})
-		.toBe(true);
-}
-
 test.describe("plugin api contract — CRUD via window.PrismaCalendar", () => {
 	test("create → read → edit → markAsDone → toggleSkip → delete", async ({ calendar, obsidian }) => {
 		await calendar.unlockPro();
+		const api = createPrismaApi(obsidian.page);
 
 		// Sanity: the API surface is actually exposed under the canonical key.
 		await expect(
 			obsidian.page.evaluate(() => {
-				const api = (window as unknown as Record<string, unknown>)["PrismaCalendar"];
-				return typeof api === "object" && api !== null ? Object.keys(api as Record<string, unknown>).sort() : [];
+				const surface = (window as unknown as Record<string, unknown>)["PrismaCalendar"];
+				return surface !== null && typeof surface === "object"
+					? Object.keys(surface as Record<string, unknown>).sort()
+					: [];
 			})
 		).resolves.toContain("createEvent");
-
-		const invoke = pageEvaluateInvoker(obsidian.page, "PrismaCalendar");
 
 		const start = todayStamp(9);
 		const end = todayStamp(10);
@@ -67,20 +46,23 @@ test.describe("plugin api contract — CRUD via window.PrismaCalendar", () => {
 		// Pre-create the event so subsequent steps can rely on the indexed path.
 		// The created path is captured into the suite as the "create" step result
 		// the same way runContractSuite would have done.
-		const createdPath = (await invoke("createEvent", {
+		const createdPath = await api.createEvent({
 			title: "Project Planning",
 			start,
 			end,
 			allDay: false,
 			categories: ["Work"],
-		})) as string;
+		});
 		expect(typeof createdPath).toBe("string");
 		expect(createdPath).toMatch(/^Events\/Project Planning.*\.md$/);
 
-		await waitForApiIndex(invoke, createdPath);
+		await waitForApiIndex(api, createdPath!);
 
-		// Pre-seed the create result so contract suite steps can reference it via
-		// the standard `prev["create"]` resolver pattern.
+		// Drive the contract suite via the untyped Invoker — `runContractSuite`
+		// works at the wire level so it can replay against any transport
+		// (in-process vitest, page.evaluate). The typed `api` proxy above is
+		// the everyday DSL; this suite is the rare callsite where the loose
+		// surface is the right tool.
 		const suite = defineCrudContractSuite({
 			name: "window-api-crud",
 			steps: [
@@ -153,54 +135,50 @@ test.describe("plugin api contract — CRUD via window.PrismaCalendar", () => {
 			],
 		});
 
-		await runContractSuite(suite, { invoke });
+		await runContractSuite(suite, { invoke: pageEvaluateInvoker(obsidian.page, "PrismaCalendar") });
 
 		// Frontmatter cross-check: the event file is gone after delete.
-		expect(existsSync(join(obsidian.vaultDir, createdPath))).toBe(false);
+		expect(existsSync(join(obsidian.vaultDir, createdPath!))).toBe(false);
 	});
 
 	test("list operations: getAllEvents, getEvents range query, getCategories", async ({ calendar, obsidian }) => {
 		await calendar.unlockPro();
-		const invoke = pageEvaluateInvoker(obsidian.page, "PrismaCalendar");
+		const api = createPrismaApi(obsidian.page);
 
 		const today = todayISO();
 		const rangeStart = `${today}T00:00`;
 		const rangeEnd = `${today}T23:59`;
 
-		const created = (await invoke("createEvent", {
+		const created = await api.createEvent({
 			title: "Workout",
 			start: todayStamp(14),
 			end: todayStamp(15),
 			allDay: false,
 			categories: ["Personal"],
-		})) as string;
+		});
 		expect(typeof created).toBe("string");
 
-		await waitForApiIndex(invoke, created);
+		await waitForApiIndex(api, created!);
 
 		try {
-			const all = (await invoke("getAllEvents", undefined)) as Array<{ filePath: string; title: string }>;
+			const all = await api.getAllEvents({});
 			expect(all.some((e) => e.filePath === created)).toBe(true);
 
-			const ranged = (await invoke("getEvents", { start: rangeStart, end: rangeEnd })) as Array<{
-				filePath: string;
-				title: string;
-			}>;
+			const ranged = await api.getEvents({ start: rangeStart, end: rangeEnd });
 			expect(ranged.some((e) => e.filePath === created)).toBe(true);
 
-			const categories = (await invoke("getCategories", undefined)) as Array<{ name: string; color: string }>;
+			const categories = await api.getCategories({});
 			expect(categories.some((c) => c.name === "Personal")).toBe(true);
 
 			// Cross-check the created file actually exists on disk with the
 			// expected category frontmatter. Single-element lists collapse to a
 			// bare string under Prisma's `assignListToFrontmatter` contract; only
 			// multi-element lists serialise as YAML arrays.
-			expect(existsSync(join(obsidian.vaultDir, created))).toBe(true);
-			const fm = readEventFrontmatter(obsidian.vaultDir, created);
+			expect(existsSync(join(obsidian.vaultDir, created!))).toBe(true);
+			const fm = readEventFrontmatter(obsidian.vaultDir, created!);
 			expect(fm).toMatchObject({ Category: "Personal" });
 		} finally {
-			const deleted = (await invoke("deleteEvent", { filePath: created })) as boolean;
-			expect(deleted).toBe(true);
+			expect(await api.deleteEvent({ filePath: created! })).toBe(true);
 		}
 	});
 });
