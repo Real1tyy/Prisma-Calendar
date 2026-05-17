@@ -1364,6 +1364,8 @@ export abstract class BaseEventModal extends Modal {
 
 				generatePastEvents: this.generatePastEventsCheckbox?.checked ?? false,
 			},
+			customPropertiesDisplay: [],
+			customPropertiesOther: [],
 		};
 	}
 

@@ -21,6 +21,12 @@ export const RecurringFormStateSchema = z.object({
 });
 export type RecurringFormState = z.infer<typeof RecurringFormStateSchema>;
 
+export const CustomPropertyEntrySchema = z.object({
+	key: z.string().default(""),
+	value: z.string().default(""),
+});
+export type CustomPropertyEntry = z.infer<typeof CustomPropertyEntrySchema>;
+
 export const EventFormStateSchema = z
 	.object({
 		title: z.string().default(""),
@@ -43,6 +49,8 @@ export const EventFormStateSchema = z
 			futureInstancesCount: "",
 			generatePastEvents: false,
 		}),
+		customPropertiesDisplay: z.array(CustomPropertyEntrySchema).default([]),
+		customPropertiesOther: z.array(CustomPropertyEntrySchema).default([]),
 	})
 	.extend(EventEditableFormFieldsSchema.omit({ notifyBefore: true }).shape);
 

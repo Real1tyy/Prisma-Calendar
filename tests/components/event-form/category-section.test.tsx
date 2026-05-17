@@ -16,7 +16,7 @@ describe("CategorySection", () => {
 		]);
 		render(
 			<CategorySection
-				categories={["Work", "Personal"]}
+				value={["Work", "Personal"]}
 				onChange={vi.fn()}
 				categoryColors={colors}
 				defaultColor="#777"
@@ -31,7 +31,7 @@ describe("CategorySection", () => {
 		const onAssign = vi.fn();
 		render(
 			<CategorySection
-				categories={[]}
+				value={[]}
 				onChange={vi.fn()}
 				categoryColors={new Map()}
 				defaultColor="#777"
@@ -47,7 +47,7 @@ describe("CategorySection", () => {
 		const onCategoryClick = vi.fn();
 		render(
 			<CategorySection
-				categories={["Work"]}
+				value={["Work"]}
 				onChange={vi.fn()}
 				categoryColors={new Map([["Work", "#abc"]])}
 				defaultColor="#777"
@@ -63,7 +63,7 @@ describe("CategorySection", () => {
 	it("renders the empty placeholder when categories is empty", () => {
 		render(
 			<CategorySection
-				categories={[]}
+				value={[]}
 				onChange={vi.fn()}
 				categoryColors={new Map()}
 				defaultColor="#777"
@@ -79,7 +79,7 @@ describe("PrerequisiteSection", () => {
 		const onAssign = vi.fn();
 		render(
 			<PrerequisiteSection
-				prerequisites={["[[Plan.md]]"]}
+				value={["[[Plan.md]]"]}
 				onChange={vi.fn()}
 				getDisplayName={(s) => s.replace(/^\[\[|\.md\]\]$/g, "")}
 				onAssign={onAssign}
@@ -93,7 +93,7 @@ describe("PrerequisiteSection", () => {
 	it("renders chips through the supplied getDisplayName", () => {
 		render(
 			<PrerequisiteSection
-				prerequisites={["[[Plan.md]]"]}
+				value={["[[Plan.md]]"]}
 				onChange={vi.fn()}
 				getDisplayName={(s) => s.replace(/^\[\[|\.md\]\]$/g, "")}
 				onAssign={vi.fn()}
@@ -107,7 +107,7 @@ describe("ParticipantSection", () => {
 	it("adds a typed value via Enter on the participant input", async () => {
 		const user = userEvent.setup();
 		const onChange = vi.fn();
-		render(<ParticipantSection participants={[]} onChange={onChange} getDisplayName={(s) => s} />);
+		render(<ParticipantSection value={[]} onChange={onChange} getDisplayName={(s) => s} />);
 
 		const input = screen.getByTestId("prisma-event-control-participants") as HTMLInputElement;
 		await user.type(input, "Alice{enter}");
@@ -118,7 +118,7 @@ describe("ParticipantSection", () => {
 	it("adds a typed value when the Add button is clicked", async () => {
 		const user = userEvent.setup();
 		const onChange = vi.fn();
-		render(<ParticipantSection participants={["Bob"]} onChange={onChange} getDisplayName={(s) => s} />);
+		render(<ParticipantSection value={["Bob"]} onChange={onChange} getDisplayName={(s) => s} />);
 
 		const input = screen.getByTestId("prisma-event-control-participants") as HTMLInputElement;
 		await user.type(input, "Charlie");
@@ -130,7 +130,7 @@ describe("ParticipantSection", () => {
 	it("ignores blank values on add", async () => {
 		const user = userEvent.setup();
 		const onChange = vi.fn();
-		render(<ParticipantSection participants={[]} onChange={onChange} getDisplayName={(s) => s} />);
+		render(<ParticipantSection value={[]} onChange={onChange} getDisplayName={(s) => s} />);
 
 		const input = screen.getByTestId("prisma-event-control-participants") as HTMLInputElement;
 		await user.type(input, "   {enter}");
@@ -140,7 +140,7 @@ describe("ParticipantSection", () => {
 
 	it("clears the input after add", async () => {
 		const user = userEvent.setup();
-		render(<ParticipantSection participants={[]} onChange={vi.fn()} getDisplayName={(s) => s} />);
+		render(<ParticipantSection value={[]} onChange={vi.fn()} getDisplayName={(s) => s} />);
 
 		const input = screen.getByTestId("prisma-event-control-participants") as HTMLInputElement;
 		await user.type(input, "Alice{enter}");
@@ -150,7 +150,7 @@ describe("ParticipantSection", () => {
 	it("renders existing participants via the supplied getDisplayName", () => {
 		render(
 			<ParticipantSection
-				participants={["[[Alice]]", "Bob"]}
+				value={["[[Alice]]", "Bob"]}
 				onChange={vi.fn()}
 				getDisplayName={(s) => s.replace(/^\[\[|\]\]$/g, "")}
 			/>

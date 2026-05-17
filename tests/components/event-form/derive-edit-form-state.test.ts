@@ -247,6 +247,8 @@ describe("deriveEditFormState", () => {
 						futureInstancesCount: "",
 						generatePastEvents: false,
 					},
+					customPropertiesDisplay: [],
+					customPropertiesOther: [],
 					location: "",
 					icon: "",
 					breakMinutes: "",

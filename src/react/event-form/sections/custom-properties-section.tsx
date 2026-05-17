@@ -1,67 +1,30 @@
 import { CollapsibleSection } from "@real1ty-obsidian-plugins-react";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback } from "react";
+import type { UseFormReturn } from "react-hook-form";
+import { useFieldArray } from "react-hook-form";
 
-interface CustomProperty {
-	key: string;
-	value: string;
-	id: number;
-}
+import type { EventFormState } from "../../../components/modals/event/event-form-state";
+
+type CustomPropertyFieldName = "customPropertiesDisplay" | "customPropertiesOther";
 
 interface CustomPropertiesSectionProps {
 	section: "display" | "other";
 	title: string;
-	initialProperties?: Array<{ key: string; value: string }>;
-	onPropertiesChange: (properties: Record<string, string>) => void;
+	form: UseFormReturn<EventFormState>;
+	name: CustomPropertyFieldName;
 }
-
-let nextPropertyId = 0;
 
 export const CustomPropertiesSection = memo(function CustomPropertiesSection({
 	section,
 	title,
-	initialProperties = [],
-	onPropertiesChange,
+	form,
+	name,
 }: CustomPropertiesSectionProps) {
-	const [properties, setProperties] = useState<CustomProperty[]>(() =>
-		initialProperties.map((p) => ({ ...p, id: nextPropertyId++ }))
-	);
+	const { fields, append, remove } = useFieldArray({ control: form.control, name });
 
 	const handleAdd = useCallback(() => {
-		setProperties((prev) => {
-			const next = [...prev, { key: "", value: "", id: nextPropertyId++ }];
-			return next;
-		});
-	}, []);
-
-	const handleRemove = useCallback(
-		(id: number) => {
-			setProperties((prev) => {
-				const next = prev.filter((p) => p.id !== id);
-				const result: Record<string, string> = {};
-				for (const p of next) {
-					if (p.key) result[p.key] = p.value;
-				}
-				onPropertiesChange(result);
-				return next;
-			});
-		},
-		[onPropertiesChange]
-	);
-
-	const handleFieldChange = useCallback(
-		(id: number, field: "key" | "value", newValue: string) => {
-			setProperties((prev) => {
-				const next = prev.map((p) => (p.id === id ? { ...p, [field]: newValue } : p));
-				const result: Record<string, string> = {};
-				for (const p of next) {
-					if (p.key) result[p.key] = p.value;
-				}
-				onPropertiesChange(result);
-				return next;
-			});
-		},
-		[onPropertiesChange]
-	);
+		append({ key: "", value: "" });
+	}, [append]);
 
 	return (
 		<div data-testid={`prisma-event-custom-props-${section}`}>
@@ -80,31 +43,29 @@ export const CustomPropertiesSection = memo(function CustomPropertiesSection({
 				}
 			>
 				<div data-testid={`prisma-event-custom-props-${section}-container`}>
-					{properties.map((prop) => (
+					{fields.map((field, index) => (
 						<div
-							key={prop.id}
+							key={field.id}
 							className="prisma-custom-property-row"
 							data-testid={`prisma-event-custom-prop-row-${section}`}
 						>
 							<input
 								type="text"
 								placeholder="Property name"
-								value={prop.key}
 								className="prisma-setting-item-control"
-								onChange={(e) => handleFieldChange(prop.id, "key", e.target.value)}
 								data-testid={`prisma-event-custom-prop-key-${section}`}
+								{...form.register(`${name}.${index}.key`)}
 							/>
 							<input
 								type="text"
 								placeholder="Value"
-								value={prop.value}
 								className="prisma-setting-item-control"
-								onChange={(e) => handleFieldChange(prop.id, "value", e.target.value)}
 								data-testid={`prisma-event-custom-prop-value-${section}`}
+								{...form.register(`${name}.${index}.value`)}
 							/>
 							<button
 								type="button"
-								onClick={() => handleRemove(prop.id)}
+								onClick={() => remove(index)}
 								data-testid={`prisma-event-btn-remove-custom-prop-${section}`}
 							>
 								Remove
@@ -116,3 +77,7 @@ export const CustomPropertiesSection = memo(function CustomPropertiesSection({
 		</div>
 	);
 });
+
+export function customPropertiesToRecord(entries: { key: string; value: string }[]): Record<string, string> {
+	return Object.fromEntries(entries.filter((entry) => entry.key).map((entry) => [entry.key, entry.value]));
+}

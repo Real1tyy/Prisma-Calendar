@@ -6,16 +6,25 @@ import { useScopedStyles } from "../../hooks/styles/use-styles";
 import { Chip } from "./chip";
 import { EmptyHint } from "./empty-hint";
 
-export interface ChipListProps {
+export interface ChipCollection {
 	value: string[];
 	onChange: (next: string[]) => void;
-	emptyText?: string;
-	getDisplayName?: (item: string) => string;
-	getTooltip?: (item: string) => string;
+}
+
+export interface ChipDisplay {
+	getDisplayName?: ((item: string) => string) | undefined;
+	getTooltip?: ((item: string) => string) | undefined;
 	/** Optional slot rendered before each chip label (e.g. a color dot). */
-	renderPrefix?: (item: string) => ReactNode;
+	renderPrefix?: ((item: string) => ReactNode) | undefined;
+}
+
+export interface ChipInteraction {
 	/** Click handler for the label. Omit to make labels non-interactive. */
-	onItemClick?: (item: string) => void;
+	onItemClick?: ((item: string) => void) | undefined;
+}
+
+export interface ChipListProps extends ChipCollection, ChipDisplay, ChipInteraction {
+	emptyText?: string | undefined;
 }
 
 const DEFAULT_EMPTY_TEXT = "No items";

@@ -3,105 +3,114 @@ import type { UseFormReturn } from "react-hook-form";
 import { useController, useWatch } from "react-hook-form";
 
 import type { EventFormState } from "../../../components/modals/event/event-form-state";
-import type { Weekday } from "../../../types/recurring";
+import type { RecurrenceFreq, Weekday } from "../../../types/recurring";
 import { RECURRENCE_TYPE_OPTIONS, WEEKDAY_OPTIONS, WEEKDAY_PRESET_DAYS } from "../../../types/recurring";
 import {
 	buildCustomIntervalDSL,
+	FREQ_OPTIONS,
 	isPresetType,
 	isWeekdaySupported,
 	parseRecurrenceType,
 } from "../../../utils/dates/recurring";
-import { PrismaSettingItem } from "../../event-form/prisma-setting-item";
 import { PrismaCheckbox } from "../prisma-checkbox";
+import { PrismaSettingItem } from "../prisma-setting-item";
 
-const FREQ_OPTIONS: Array<{ value: string; label: string }> = [
-	{ value: "DAILY", label: "Days" },
-	{ value: "WEEKLY", label: "Weeks" },
-	{ value: "MONTHLY", label: "Months" },
-	{ value: "YEARLY", label: "Years" },
-];
+const DEFAULT_INTERVAL = "1";
+const DEFAULT_FREQ: RecurrenceFreq = "DAILY";
+const EMPTY_WEEKDAYS: readonly Weekday[] = [];
+
+const SET_VALUE_OPTIONS = {
+	shouldDirty: true,
+	shouldTouch: true,
+	shouldValidate: true,
+} as const;
+
+type RecurringCheckboxName = "recurring.enabled" | "recurring.generatePastEvents";
+
+interface RecurringCheckboxProps {
+	form: UseFormReturn<EventFormState>;
+	name: RecurringCheckboxName;
+	testId: string;
+}
+
+const RecurringCheckbox = memo(function RecurringCheckbox({ form, name, testId }: RecurringCheckboxProps) {
+	const { field } = useController({ control: form.control, name });
+	return <PrismaCheckbox style="plain" value={!!field.value} onChange={field.onChange} testId={testId} />;
+});
 
 interface RecurrenceSectionProps {
 	form: UseFormReturn<EventFormState>;
 }
 
 export const RecurrenceSection = memo(function RecurrenceSection({ form }: RecurrenceSectionProps) {
-	const { field: enabledField } = useController({ control: form.control, name: "recurring.enabled" });
-	const { field: rruleTypeField } = useController({ control: form.control, name: "recurring.rruleType" });
-	const { field: weekdaysField } = useController({ control: form.control, name: "recurring.weekdays" });
-	const { field: customFreqField } = useController({ control: form.control, name: "recurring.customFreq" });
-	const { field: customIntervalField } = useController({ control: form.control, name: "recurring.customInterval" });
-	const { field: untilDateField } = useController({ control: form.control, name: "recurring.untilDate" });
-	const { field: futureInstancesField } = useController({
-		control: form.control,
-		name: "recurring.futureInstancesCount",
-	});
-	const { field: generatePastField } = useController({ control: form.control, name: "recurring.generatePastEvents" });
+	const recurring = useWatch({ control: form.control, name: "recurring" });
 
-	const isEnabled = useWatch({ control: form.control, name: "recurring.enabled" });
+	const enabled = recurring?.enabled ?? false;
+	const rruleType = recurring?.rruleType ?? "";
+	const weekdays = (recurring?.weekdays as Weekday[] | undefined) ?? EMPTY_WEEKDAYS;
+	const customFreq = (recurring?.customFreq as RecurrenceFreq | undefined) ?? DEFAULT_FREQ;
+	const customInterval = recurring?.customInterval ?? DEFAULT_INTERVAL;
 
-	const rruleType = rruleTypeField.value;
 	const isCustom = rruleType === "custom" || (!isPresetType(rruleType) && rruleType !== "");
 	const showWeekdays = !isCustom && isWeekdaySupported(rruleType);
 	const fixedDays = WEEKDAY_PRESET_DAYS[rruleType];
 	const selectValue = isCustom ? "custom" : rruleType;
 
+	const parsed = isCustom && rruleType ? parseRecurrenceType(rruleType) : null;
+	const displayFreq = (parsed?.freq as RecurrenceFreq | undefined) ?? customFreq;
+	const displayInterval = parsed?.interval?.toString() ?? customInterval;
+
 	const buildCustomDSL = useCallback(
-		(freq?: string, interval?: string) =>
-			buildCustomIntervalDSL(
-				freq ?? customFreqField.value,
-				Number.parseInt(interval ?? customIntervalField.value, 10) || 1
-			),
-		[customFreqField.value, customIntervalField.value]
+		(freq: RecurrenceFreq = displayFreq, interval: string = displayInterval) =>
+			buildCustomIntervalDSL(freq, Number.parseInt(interval, 10) || 1),
+		[displayFreq, displayInterval]
+	);
+
+	const setRecurringValue = useCallback(
+		<K extends keyof EventFormState["recurring"]>(key: K, value: EventFormState["recurring"][K]) => {
+			form.setValue(`recurring.${key}` as const, value as never, SET_VALUE_OPTIONS);
+		},
+		[form]
 	);
 
 	const handleRruleTypeChange = useCallback(
 		(value: string) => {
-			rruleTypeField.onChange(value === "custom" ? buildCustomDSL() : value);
+			setRecurringValue("rruleType", value === "custom" ? buildCustomDSL() : value);
 		},
-		[rruleTypeField, buildCustomDSL]
+		[setRecurringValue, buildCustomDSL]
 	);
 
 	const handleCustomFreqChange = useCallback(
-		(freq: string) => {
-			customFreqField.onChange(freq);
-			rruleTypeField.onChange(buildCustomDSL(freq));
+		(freq: RecurrenceFreq) => {
+			setRecurringValue("customFreq", freq);
+			setRecurringValue("rruleType", buildCustomDSL(freq));
 		},
-		[customFreqField, rruleTypeField, buildCustomDSL]
+		[setRecurringValue, buildCustomDSL]
 	);
 
 	const handleCustomIntervalChange = useCallback(
 		(interval: string) => {
-			customIntervalField.onChange(interval);
-			rruleTypeField.onChange(buildCustomDSL(undefined, interval));
+			setRecurringValue("customInterval", interval);
+			setRecurringValue("rruleType", buildCustomDSL(displayFreq, interval));
 		},
-		[customIntervalField, rruleTypeField, buildCustomDSL]
+		[setRecurringValue, buildCustomDSL, displayFreq]
 	);
 
 	const handleWeekdayToggle = useCallback(
-		(day: string, checked: boolean) => {
-			const current = weekdaysField.value as string[];
-			weekdaysField.onChange(checked ? [...current, day] : current.filter((d) => d !== day));
+		(day: Weekday, checked: boolean) => {
+			const next = checked ? Array.from(new Set([...weekdays, day])) : weekdays.filter((d) => d !== day);
+			setRecurringValue("weekdays", next as string[]);
 		},
-		[weekdaysField]
+		[weekdays, setRecurringValue]
 	);
-
-	const parsed = isCustom && rruleType ? parseRecurrenceType(rruleType) : null;
-	const displayFreq = parsed?.freq ?? customFreqField.value;
-	const displayInterval = parsed?.interval.toString() ?? customIntervalField.value;
 
 	return (
 		<>
 			<PrismaSettingItem name="Recurring event" testId="prisma-event-field-rrule">
-				<PrismaCheckbox
-					style="plain"
-					value={!!isEnabled}
-					onChange={enabledField.onChange}
-					testId="prisma-event-control-rrule"
-				/>
+				<RecurringCheckbox form={form} name="recurring.enabled" testId="prisma-event-control-rrule" />
 			</PrismaSettingItem>
 
-			{isEnabled && (
+			{enabled && (
 				<div className="prisma-recurring-event-fields">
 					<PrismaSettingItem name="Recurrence pattern">
 						<select
@@ -135,7 +144,7 @@ export const RecurrenceSection = memo(function RecurrenceSection({ form }: Recur
 								<select
 									className="prisma-custom-freq-select"
 									value={displayFreq}
-									onChange={(e) => handleCustomFreqChange(e.target.value)}
+									onChange={(e) => handleCustomFreqChange(e.target.value as RecurrenceFreq)}
 									data-testid="prisma-event-control-custom-freq"
 								>
 									{FREQ_OPTIONS.map(({ value, label }) => (
@@ -152,8 +161,9 @@ export const RecurrenceSection = memo(function RecurrenceSection({ form }: Recur
 						<PrismaSettingItem name="Days of week">
 							<div className="prisma-weekday-grid">
 								{Object.entries(WEEKDAY_OPTIONS).map(([value, label]) => {
-									const isFixed = fixedDays?.includes(value as Weekday);
-									const isChecked = isFixed || (weekdaysField.value as string[]).includes(value);
+									const weekday = value as Weekday;
+									const isFixed = fixedDays?.includes(weekday);
+									const isChecked = isFixed || weekdays.includes(weekday);
 									return (
 										<div key={value} className="prisma-weekday-item">
 											<input
@@ -161,7 +171,7 @@ export const RecurrenceSection = memo(function RecurrenceSection({ form }: Recur
 												id={`weekday-${value}`}
 												checked={isChecked}
 												disabled={!!isFixed}
-												onChange={(e) => handleWeekdayToggle(value, e.target.checked)}
+												onChange={(e) => handleWeekdayToggle(weekday, e.target.checked)}
 												data-testid={`prisma-event-control-weekday-${value}`}
 											/>
 											<label htmlFor={`weekday-${value}`}>{label}</label>
@@ -179,9 +189,8 @@ export const RecurrenceSection = memo(function RecurrenceSection({ form }: Recur
 						<input
 							type="date"
 							className="prisma-setting-item-control"
-							value={untilDateField.value}
-							onChange={(e) => untilDateField.onChange(e.target.value)}
 							data-testid="prisma-event-control-rrule-until"
+							{...form.register("recurring.untilDate")}
 						/>
 					</PrismaSettingItem>
 
@@ -195,9 +204,8 @@ export const RecurrenceSection = memo(function RecurrenceSection({ form }: Recur
 							min={1}
 							step={1}
 							placeholder="Default"
-							value={futureInstancesField.value}
-							onChange={(e) => futureInstancesField.onChange(e.target.value)}
 							data-testid="prisma-event-control-future-instances-count"
+							{...form.register("recurring.futureInstancesCount")}
 						/>
 					</PrismaSettingItem>
 
@@ -205,10 +213,9 @@ export const RecurrenceSection = memo(function RecurrenceSection({ form }: Recur
 						name="Generate past events"
 						description="Generate instances from the source event start date instead of from today."
 					>
-						<PrismaCheckbox
-							style="plain"
-							value={generatePastField.value}
-							onChange={generatePastField.onChange}
+						<RecurringCheckbox
+							form={form}
+							name="recurring.generatePastEvents"
 							testId="prisma-event-control-generate-past-events"
 						/>
 					</PrismaSettingItem>

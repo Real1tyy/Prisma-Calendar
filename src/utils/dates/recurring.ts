@@ -1,4 +1,4 @@
-import { parsePositiveInt } from "@real1ty-obsidian-plugins";
+import { capitalize, parsePositiveInt } from "@real1ty-obsidian-plugins";
 import type { DateTime } from "luxon";
 
 import type { Frontmatter } from "../../types/index";
@@ -28,12 +28,16 @@ const PRESET_TO_PARSED: Record<RecurrencePreset, ParsedRecurrence> = {
 	yearly: { freq: "YEARLY", interval: 1 },
 };
 
-const FREQ_LABELS: Record<RecurrenceFreq, { singular: string; plural: string }> = {
+export const FREQ_LABELS: Record<RecurrenceFreq, { singular: string; plural: string }> = {
 	DAILY: { singular: "day", plural: "days" },
 	WEEKLY: { singular: "week", plural: "weeks" },
 	MONTHLY: { singular: "month", plural: "months" },
 	YEARLY: { singular: "year", plural: "years" },
 };
+
+export const FREQ_OPTIONS: ReadonlyArray<{ value: RecurrenceFreq; label: string }> = (
+	Object.entries(FREQ_LABELS) as [RecurrenceFreq, { singular: string; plural: string }][]
+).map(([value, { plural }]) => ({ value, label: capitalize(plural) }));
 
 export function isPresetType(value: string): value is RecurrencePreset {
 	return value in RECURRENCE_TYPE_OPTIONS;

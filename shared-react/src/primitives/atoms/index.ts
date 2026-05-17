@@ -2,7 +2,7 @@ export type { ButtonProps, ButtonVariant } from "./button";
 export { Button } from "./button";
 export type { ChipProps } from "./chip";
 export { Chip } from "./chip";
-export type { ChipListProps } from "./chip-list";
+export type { ChipCollection, ChipDisplay, ChipInteraction, ChipListProps } from "./chip-list";
 export { ChipList } from "./chip-list";
 export type { CopyableProps } from "./copyable";
 export { Copyable } from "./copyable";

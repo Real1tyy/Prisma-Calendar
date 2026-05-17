@@ -1,22 +1,16 @@
-import { ChipList, type ChipListProps } from "@real1ty-obsidian-plugins-react";
+import { type ChipCollection, type ChipDisplay, type ChipInteraction, ChipList } from "@real1ty-obsidian-plugins-react";
 import type { ReactNode } from "react";
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 
-import { PrismaSettingItem } from "../../event-form/prisma-setting-item";
+import { PrismaSettingItem } from "../prisma-setting-item";
 
 const CONTENT_CLASS = "prisma-category-display-content";
 const ACTION_BUTTON_CLASS = "prisma-assign-categories-button";
 
-interface ChipFieldSectionProps {
+interface ChipFieldSectionProps extends ChipCollection, ChipDisplay, ChipInteraction {
 	name: string;
 	fieldTestId: string;
-	value: string[];
-	onChange: (next: string[]) => void;
 	emptyText: string;
-	renderPrefix?: ChipListProps["renderPrefix"];
-	getDisplayName?: ChipListProps["getDisplayName"];
-	getTooltip?: ChipListProps["getTooltip"];
-	onItemClick?: ChipListProps["onItemClick"];
 	trailing: ReactNode;
 }
 
@@ -39,10 +33,10 @@ const ChipFieldSection = memo(function ChipFieldSection({
 					value={value}
 					onChange={onChange}
 					emptyText={emptyText}
-					{...(renderPrefix ? { renderPrefix } : {})}
-					{...(getDisplayName ? { getDisplayName } : {})}
-					{...(getTooltip ? { getTooltip } : {})}
-					{...(onItemClick ? { onItemClick } : {})}
+					renderPrefix={renderPrefix}
+					getDisplayName={getDisplayName}
+					getTooltip={getTooltip}
+					onItemClick={onItemClick}
 				/>
 				{trailing}
 			</div>
@@ -58,9 +52,7 @@ function AssignButton({ label, testId, onClick }: { label: string; testId: strin
 	);
 }
 
-interface CategorySectionProps {
-	categories: string[];
-	onChange: (categories: string[]) => void;
+interface CategorySectionProps extends ChipCollection {
 	categoryColors: Map<string, string>;
 	defaultColor: string;
 	onAssign: () => void;
@@ -68,7 +60,7 @@ interface CategorySectionProps {
 }
 
 export const CategorySection = memo(function CategorySection({
-	categories,
+	value,
 	onChange,
 	categoryColors,
 	defaultColor,
@@ -89,11 +81,11 @@ export const CategorySection = memo(function CategorySection({
 		<ChipFieldSection
 			name="Categories"
 			fieldTestId="prisma-event-field-categories"
-			value={categories}
+			value={value}
 			onChange={onChange}
 			emptyText="No categories"
 			renderPrefix={renderPrefix}
-			{...(onCategoryClick ? { onItemClick: onCategoryClick } : {})}
+			onItemClick={onCategoryClick}
 			trailing={
 				<AssignButton label="Assign categories" testId="prisma-event-btn-assign-categories" onClick={onAssign} />
 			}
@@ -101,17 +93,14 @@ export const CategorySection = memo(function CategorySection({
 	);
 });
 
-interface PrerequisiteSectionProps {
-	prerequisites: string[];
-	onChange: (prerequisites: string[]) => void;
-	getDisplayName: (link: string) => string;
+interface PrerequisiteSectionProps extends ChipCollection, Required<Pick<ChipDisplay, "getDisplayName">> {
 	onAssign: () => void;
 }
 
 const identityTooltip = (link: string) => link;
 
 export const PrerequisiteSection = memo(function PrerequisiteSection({
-	prerequisites,
+	value,
 	onChange,
 	getDisplayName,
 	onAssign,
@@ -120,7 +109,7 @@ export const PrerequisiteSection = memo(function PrerequisiteSection({
 		<ChipFieldSection
 			name="Prerequisites"
 			fieldTestId="prisma-event-field-prerequisites"
-			value={prerequisites}
+			value={value}
 			onChange={onChange}
 			emptyText="No prerequisites"
 			getDisplayName={getDisplayName}
@@ -132,14 +121,10 @@ export const PrerequisiteSection = memo(function PrerequisiteSection({
 	);
 });
 
-interface ParticipantSectionProps {
-	participants: string[];
-	onChange: (participants: string[]) => void;
-	getDisplayName: (item: string) => string;
-}
+interface ParticipantSectionProps extends ChipCollection, Required<Pick<ChipDisplay, "getDisplayName">> {}
 
 export const ParticipantSection = memo(function ParticipantSection({
-	participants,
+	value,
 	onChange,
 	getDisplayName,
 }: ParticipantSectionProps) {
@@ -149,18 +134,17 @@ export const ParticipantSection = memo(function ParticipantSection({
 	}, []);
 
 	const handleAdd = useCallback(
-		(value: string) => {
-			const trimmed = value.trim();
-			if (trimmed) onChange([...participants, trimmed]);
+		(participant: string) => {
+			onChange([...value, participant]);
 		},
-		[participants, onChange]
+		[value, onChange]
 	);
 
 	return (
 		<ChipFieldSection
 			name="Participants"
 			fieldTestId="prisma-event-field-participants"
-			value={participants}
+			value={value}
 			onChange={onChange}
 			emptyText="No participants"
 			getDisplayName={getDisplayName}
@@ -171,24 +155,23 @@ export const ParticipantSection = memo(function ParticipantSection({
 });
 
 function ParticipantInput({ onAdd }: { onAdd: (value: string) => void }) {
+	const [draft, setDraft] = useState("");
+
+	const submit = useCallback(() => {
+		const trimmed = draft.trim();
+		if (trimmed) onAdd(trimmed);
+		setDraft("");
+	}, [draft, onAdd]);
+
 	const handleKeyDown = useCallback(
 		(e: React.KeyboardEvent<HTMLInputElement>) => {
 			if (e.key !== "Enter") return;
 			e.preventDefault();
 			e.stopPropagation();
-			const input = e.currentTarget;
-			onAdd(input.value);
-			input.value = "";
+			submit();
 		},
-		[onAdd]
+		[submit]
 	);
-
-	const handleClick = useCallback(() => {
-		const input = document.querySelector<HTMLInputElement>("[data-testid='prisma-event-control-participants']");
-		if (!input) return;
-		onAdd(input.value);
-		input.value = "";
-	}, [onAdd]);
 
 	return (
 		<div className="prisma-participant-input-row">
@@ -196,13 +179,15 @@ function ParticipantInput({ onAdd }: { onAdd: (value: string) => void }) {
 				type="text"
 				className="prisma-participant-input"
 				placeholder="Name or [[Link]]"
+				value={draft}
+				onChange={(e) => setDraft(e.target.value)}
 				onKeyDown={handleKeyDown}
 				data-testid="prisma-event-control-participants"
 			/>
 			<button
 				type="button"
 				className={ACTION_BUTTON_CLASS}
-				onClick={handleClick}
+				onClick={submit}
 				data-testid="prisma-event-btn-add-participant"
 			>
 				Add

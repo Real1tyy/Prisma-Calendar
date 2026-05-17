@@ -13,6 +13,7 @@ import { useController, useWatch } from "react-hook-form";
 import {
 	applyPresetToState,
 	createDefaultState,
+	type CustomPropertyEntry,
 	type EventFormState,
 	EventFormStateSchema,
 } from "../../components/modals/event/event-form-state";
@@ -40,6 +41,7 @@ import {
 	RecurrenceSection,
 	TimingSection,
 } from "./sections";
+import { customPropertiesToRecord } from "./sections/custom-properties-section";
 
 export interface EventFormValues {
 	formState: EventFormState;
@@ -78,9 +80,30 @@ export const EventForm = memo(function EventForm({
 	onSavePreset,
 }: EventFormConfig) {
 	const settings = bundle.settingsStore.currentSettings;
+
+	const displayKeySet = useMemo(
+		() =>
+			new Set([
+				...(settings.frontmatterDisplayProperties || []),
+				...(settings.frontmatterDisplayPropertiesAllDay || []),
+			]),
+		[settings.frontmatterDisplayProperties, settings.frontmatterDisplayPropertiesAllDay]
+	);
+
+	const initialFormState = useMemo<EventFormState>(() => {
+		const base = initialState ?? createDefaultState();
+		const split = splitByDisplayKeys(initialCustomProperties, displayKeySet);
+		return {
+			...base,
+			customPropertiesDisplay: recordToEntries(split.display),
+			customPropertiesOther: recordToEntries(split.other),
+		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
 	const form = useZodForm({
 		schema: EventFormStateSchema,
-		defaultValues: initialState ?? createDefaultState(),
+		defaultValues: initialFormState,
 	});
 
 	const [suppressAutoCategories, setSuppressAutoCategories] = useState(
@@ -109,18 +132,6 @@ export const EventForm = memo(function EventForm({
 		if (!handle) return;
 		stopwatchSnapshotRef.current = handle.exportState();
 	}, []);
-
-	const displayKeySet = useMemo(
-		() => new Set([...settings.frontmatterDisplayProperties, ...settings.frontmatterDisplayPropertiesAllDay]),
-		[settings.frontmatterDisplayProperties, settings.frontmatterDisplayPropertiesAllDay]
-	);
-
-	const [displayProperties, setDisplayProperties] = useState<Record<string, string>>(
-		() => splitByDisplayKeys(initialCustomProperties, displayKeySet).display
-	);
-	const [otherProperties, setOtherProperties] = useState<Record<string, string>>(
-		() => splitByDisplayKeys(initialCustomProperties, displayKeySet).other
-	);
 
 	const [metadataValues, setMetadataValues] = useState<Record<string, unknown>>(() => ({
 		location: initialState?.location ?? "",
@@ -214,14 +225,16 @@ export const EventForm = memo(function EventForm({
 	const collectFormValues = useCallback((): EventFormValues => {
 		captureStopwatchSnapshot();
 		const state = applyMetadataToState(form.getValues(), metadataValues);
-		const customProps = parseFrontmatterRecord({ ...displayProperties, ...otherProperties });
+		const displayRecord = customPropertiesToRecord(state.customPropertiesDisplay);
+		const otherRecord = customPropertiesToRecord(state.customPropertiesOther);
+		const customProps = parseFrontmatterRecord({ ...displayRecord, ...otherRecord });
 		return {
 			formState: state,
 			customProperties: customProps,
 			stopwatchSnapshot: stopwatchSnapshotRef.current,
 			initialMarkAsDoneState: initialMarkAsDoneRef.current,
 		};
-	}, [captureStopwatchSnapshot, form, metadataValues, displayProperties, otherProperties]);
+	}, [captureStopwatchSnapshot, form, metadataValues]);
 
 	const handleSubmit = useCallback(() => {
 		applyAutoCategories();
@@ -248,8 +261,6 @@ export const EventForm = memo(function EventForm({
 			markAsDone: false,
 			skip: false,
 		});
-		setDisplayProperties({});
-		setOtherProperties({});
 		setSuppressAutoCategories(false);
 	}, [form]);
 
@@ -302,7 +313,24 @@ export const EventForm = memo(function EventForm({
 
 			const current = applyMetadataToState(form.getValues(), metadataValues);
 			const updated = applyPresetToState(current, preset);
-			form.reset(updated);
+
+			let nextDisplay = updated.customPropertiesDisplay;
+			let nextOther = updated.customPropertiesOther;
+			if (preset.customProperties) {
+				const serialized: Record<string, string> = {};
+				for (const [k, v] of Object.entries(preset.customProperties)) {
+					serialized[k] = serializeFrontmatterValue(v);
+				}
+				const split = splitByDisplayKeys(serialized, displayKeySet);
+				nextDisplay = recordToEntries(split.display);
+				nextOther = recordToEntries(split.other);
+			}
+
+			form.reset({
+				...updated,
+				customPropertiesDisplay: nextDisplay,
+				customPropertiesOther: nextOther,
+			});
 			setMetadataValues({
 				location: updated.location,
 				icon: updated.icon,
@@ -313,16 +341,6 @@ export const EventForm = memo(function EventForm({
 
 			if (preset.categories !== undefined) {
 				setSuppressAutoCategories(true);
-			}
-
-			if (preset.customProperties) {
-				const serialized: Record<string, string> = {};
-				for (const [k, v] of Object.entries(preset.customProperties)) {
-					serialized[k] = serializeFrontmatterValue(v);
-				}
-				const { display, other } = splitByDisplayKeys(serialized, displayKeySet);
-				setDisplayProperties(display);
-				setOtherProperties(other);
 			}
 		},
 		[form, presets, metadataValues, displayKeySet]
@@ -419,7 +437,7 @@ export const EventForm = memo(function EventForm({
 				{/* Categories */}
 				{settings.categoryProp && (
 					<CategorySection
-						categories={categories}
+						value={categories}
 						onChange={handleCategoriesChange}
 						categoryColors={categoryColors}
 						defaultColor={defaultColor}
@@ -431,7 +449,7 @@ export const EventForm = memo(function EventForm({
 				{/* Prerequisites */}
 				{settings.prerequisiteProp && (
 					<PrerequisiteSection
-						prerequisites={prerequisites}
+						value={prerequisites}
 						onChange={handlePrerequisitesChange}
 						getDisplayName={getPrerequisiteDisplayName}
 						onAssign={handleAssignPrerequisites}
@@ -441,7 +459,7 @@ export const EventForm = memo(function EventForm({
 				{/* Participants */}
 				{settings.participantsProp && (
 					<ParticipantSection
-						participants={participants}
+						value={participants}
 						onChange={handleParticipantsChange}
 						getDisplayName={getDisplayName}
 					/>
@@ -457,16 +475,11 @@ export const EventForm = memo(function EventForm({
 				<CustomPropertiesSection
 					section="display"
 					title="Display Properties"
-					initialProperties={Object.entries(displayProperties).map(([key, value]) => ({ key, value }))}
-					onPropertiesChange={setDisplayProperties}
+					form={form}
+					name="customPropertiesDisplay"
 				/>
 				<div className="prisma-other-section-spacing">
-					<CustomPropertiesSection
-						section="other"
-						title="Other Properties"
-						initialProperties={Object.entries(otherProperties).map(([key, value]) => ({ key, value }))}
-						onPropertiesChange={setOtherProperties}
-					/>
+					<CustomPropertiesSection section="other" title="Other Properties" form={form} name="customPropertiesOther" />
 				</div>
 			</div>
 
@@ -602,4 +615,8 @@ function splitByDisplayKeys(
 		(displayKeys.has(k) ? display : other)[k] = v;
 	}
 	return { display, other };
+}
+
+function recordToEntries(record: Record<string, string>): CustomPropertyEntry[] {
+	return Object.entries(record).map(([key, value]) => ({ key, value }));
 }
