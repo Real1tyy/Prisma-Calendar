@@ -239,7 +239,32 @@ export const CONTEXT_MENU_ITEM_IDS = Object.keys(
 	CONTEXT_MENU_BUTTON_LABELS
 ) as (keyof typeof CONTEXT_MENU_BUTTON_LABELS)[];
 
-export const DEFAULT_CONTEXT_MENU_ITEMS = CONTEXT_MENU_ITEM_IDS.filter((id) => id !== "duplicateRemainingWeekDays");
+// Trimmed first-run defaults — these power-user / niche items stay registered
+// and re-enableable in "Manage menu items…", but ship hidden so new users see
+// a leaner right-click menu. Triage rationale for each:
+//   - duplicateRemainingWeekDays: narrow weekday-batch workflow
+//   - assignPrerequisites: requires the dependency-graph feature to be in use
+//   - viewNameSeries / viewCategorySeries / viewRecurringSeries: redundant
+//     direct-to-tab shortcuts; viewEventGroups already opens the same modal
+//   - fillStartTimeNow / fillEndTimeNow: niche stopwatch-adjacent flow;
+//     fillStartTimePrevious / fillEndTimeNext cover the common adjacency case
+//   - openFileNewWindow: openFile covers the common open-in-place case
+//   - cloneToPreviousWeek: moveToPreviousWeek covers the common case
+const DEFAULT_HIDDEN_CONTEXT_MENU_ITEMS = [
+	"duplicateRemainingWeekDays",
+	"assignPrerequisites",
+	"viewNameSeries",
+	"viewCategorySeries",
+	"viewRecurringSeries",
+	"fillStartTimeNow",
+	"fillEndTimeNow",
+	"openFileNewWindow",
+	"cloneToPreviousWeek",
+] as const satisfies readonly (keyof typeof CONTEXT_MENU_BUTTON_LABELS)[];
+
+export const DEFAULT_CONTEXT_MENU_ITEMS = CONTEXT_MENU_ITEM_IDS.filter(
+	(id) => !(DEFAULT_HIDDEN_CONTEXT_MENU_ITEMS as readonly string[]).includes(id)
+);
 
 /**
  * Maximum time after an event starts before notifications are suppressed.

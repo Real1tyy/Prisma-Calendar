@@ -285,6 +285,7 @@ export type EventCreate = Pick<
 	| "location"
 	| "icon"
 	| "skip"
+	| "markAsDone"
 	| "breakMinutes"
 	| "minutesBefore"
 	| "daysBefore"

@@ -67,32 +67,33 @@ If you previously configured context menu visibility via the settings tab (prior
 - **Edit source event**: Open edit modal with source recurring event data (only appears on physical/virtual recurring instances)
 - **Duplicate recurring instance**: Create a duplicate of a physical recurring instance
 - **View event groups**: Open modal showing all event groups (recurring, by category, by name)
-- **Show name series**: Open the event series modal directly on the By Name tab
-- **Show category series**: Open the event series modal directly on the By Category tab (only visible when the event has categories)
-- **Show recurring series**: Open the event series modal directly on the Recurring tab (only visible for recurring events)
+- **Show name series**: Open the event series modal directly on the By Name tab (hidden by default)
+- **Show category series**: Open the event series modal directly on the By Category tab (only visible when the event has categories; hidden by default)
+- **Show recurring series**: Open the event series modal directly on the Recurring tab (only visible for recurring events; hidden by default)
 - **Edit event**: Open event edit modal
 - **Assign categories**: Open category assignment modal
-- **Assign prerequisites**: Open prerequisite assignment modal for linking dependent events
+- **Assign prerequisites**: Open prerequisite assignment modal for linking dependent events (hidden by default)
 - **Duplicate event**: Create a duplicate of the event
 - **Move by...**: Move event by a custom time offset
 - **Mark as done/undone**: Toggle event completion status
 - **Move to next week**: Move event forward one week
 - **Clone to next week**: Duplicate event to next week
 - **Move to previous week**: Move event back one week
-- **Clone to previous week**: Duplicate event to previous week
-- **Fill start time from current time**: Set event start to now
-- **Fill end time from current time**: Set event end to now
+- **Clone to previous week**: Duplicate event to previous week (hidden by default)
+- **Fill start time from current time**: Set event start to now (hidden by default)
+- **Fill end time from current time**: Set event end to now (hidden by default)
 - **Fill start time from previous event**: Set start to previous event's end time
 - **Fill end time from next event**: Set end to next event's start time
 - **Delete event**: Delete the event note
 - **Skip event**: Hide event from calendar
 - **Open file**: Open event note in editor
-- **Open file in new window**: Open event note in a new window
+- **Open file in new window**: Open event note in a new window (hidden by default)
 - **Enable/Disable recurring event**: Toggle recurring event visibility
 - **Trigger stopwatch**: Start or stop the time tracker for the event
 - **Duplicate remaining week days**: Duplicate event to all remaining days of the current week (hidden by default)
+- **Make virtual / Make real / Make untracked**: Convert between regular, virtual, and untracked event states
 
-All items are visible by default unless noted otherwise. Items that don't apply to a specific event type (e.g., recurring-specific actions on non-recurring events) are automatically hidden regardless of configuration.
+Items marked **hidden by default** stay registered and are re-enableable from **Manage menu items...** — the trimmed first-run set just keeps the right-click menu focused for new users. Items that don't apply to a specific event type (e.g., recurring-specific actions on non-recurring events) are automatically hidden regardless of configuration.
 
 ## Performance
 
