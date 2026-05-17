@@ -1,3 +1,4 @@
+import { useEnterToSubmit } from "@real1ty-obsidian-plugins-react";
 import type React from "react";
 import { type RefObject, useCallback, useEffect, useRef } from "react";
 
@@ -40,8 +41,6 @@ export function useEventFormLifecycle({
 }: UseEventFormLifecycleOptions): UseEventFormLifecycleResult {
 	const isMinimizingRef = useRef(false);
 
-	const submitRef = useRef(submit);
-	submitRef.current = submit;
 	const collectFormValuesRef = useRef(collectFormValues);
 	collectFormValuesRef.current = collectFormValues;
 	const onUnmountWithActiveStopwatchRef = useRef(onUnmountWithActiveStopwatch);
@@ -60,6 +59,7 @@ export function useEventFormLifecycle({
 	useEffect(() => {
 		return () => {
 			if (isMinimizingRef.current) return;
+			// oxlint-disable-next-line react-hooks/exhaustive-deps -- reading the latest snapshot at unmount is the whole point; copying at effect-mount captures the initial null
 			const snapshot = stopwatchSnapshotRef.current;
 			if (!snapshot || (snapshot.state !== "running" && snapshot.state !== "paused")) return;
 			const values = collectFormValuesRef.current();
@@ -73,15 +73,7 @@ export function useEventFormLifecycle({
 	// Enter-to-save hotkey. Mirrors registerSubmitHotkey in
 	// base-event-modal.ts:1148. Scoped to the form root so inputs that
 	// `stopPropagation` on Enter (e.g. participant input) opt out.
-	const handleKeyDown = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
-		if (event.key !== "Enter") return;
-		const target = event.target as HTMLElement | null;
-		if (target instanceof HTMLTextAreaElement) return;
-		if (target instanceof HTMLButtonElement) return;
-		if (target instanceof HTMLSelectElement) return;
-		event.preventDefault();
-		submitRef.current();
-	}, []);
+	const handleKeyDown = useEnterToSubmit<HTMLDivElement>(submit);
 
 	return { handleKeyDown, handleMinimize };
 }
