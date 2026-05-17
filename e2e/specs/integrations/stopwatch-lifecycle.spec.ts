@@ -1,22 +1,21 @@
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { createEventHandle } from "../../fixtures/dsl";
+import type { Locator } from "@playwright/test";
+
+import { collapsibleSection, createEventHandle } from "../../fixtures/dsl";
 import { expect, test } from "../../fixtures/electron";
-import { sel, STOPWATCH_TIME_TID, TID } from "../../fixtures/testids";
+import { sel, TID } from "../../fixtures/testids";
 import { EVENT_MODAL_SELECTOR, formatLocalDate } from "../events/events-helpers";
 
 // Stopwatch is rendered inside the event modal as a collapsible section
-// (src/react/views/stopwatch.tsx). The display span is stamped with
-// data-testid="prisma-stopwatch-time" and the minimize button with
-// data-testid="prisma-event-btn-minimize" (event-form-header.tsx).
-// Stopwatch start/continue buttons have no testids; specs target them via the
-// stable `.prisma-stopwatch-{start,continue,pause}-btn` classes.
+// (src/react/views/stopwatch.tsx). All interactable elements are stamped:
+//   - TID.stopwatch.time            → "prisma-stopwatch-time"
+//   - TID.stopwatch.btn(<variant>)  → "prisma-stopwatch-btn-{start,continue,pause,stop,resume}"
+//   - TID.stopwatch.collapsibleSlug → "time-tracker" (passed to collapsibleSection())
+// The minimize button lives on the event-form header: TID.event.btn("minimize").
 
 const MODAL = ".modal";
-const STOPWATCH_TIME = sel(STOPWATCH_TIME_TID);
-const MINIMIZE_BUTTON = sel(TID.event.btn("minimize"));
-const CONTINUE_BUTTON = ".prisma-stopwatch-continue-btn";
 
 const HHMMSS_REGEX = /^(\d{2}):(\d{2}):(\d{2})$/;
 
@@ -27,13 +26,17 @@ function parseStopwatchToMs(value: string): number {
 	return ((Number(hh) * 60 + Number(mm)) * 60 + Number(ss)) * 1000;
 }
 
+async function readStopwatchMs(display: Locator): Promise<number> {
+	return parseStopwatchToMs((await display.textContent()) ?? "");
+}
+
 test.describe("stopwatch lifecycle", () => {
 	test("create-event-with-stopwatch opens the modal with an active stopwatch", async ({ calendar }) => {
 		await calendar.runCommand("Prisma Calendar: Create new event with stopwatch");
 
 		await expect(calendar.page.locator(MODAL).first()).toBeVisible();
 
-		const display = calendar.page.locator(STOPWATCH_TIME).first();
+		const display = calendar.page.locator(sel(TID.stopwatch.time)).first();
 		await display.waitFor({ state: "visible" });
 
 		const first = await display.textContent();
@@ -47,72 +50,85 @@ test.describe("stopwatch lifecycle", () => {
 
 		const modal = calendar.page.locator(MODAL).first();
 		await modal.waitFor({ state: "visible" });
-		await calendar.page.locator(STOPWATCH_TIME).first().waitFor({ state: "visible" });
+		const display = calendar.page.locator(sel(TID.stopwatch.time)).first();
+		await display.waitFor({ state: "visible" });
 
 		await calendar.page.waitForTimeout(1_500);
 
-		await calendar.page.locator(MINIMIZE_BUTTON).first().click();
+		await calendar.page
+			.locator(sel(TID.event.btn("minimize")))
+			.first()
+			.click();
 		await expect(modal).toBeHidden();
 
 		await calendar.runCommand("Prisma Calendar: Restore minimized event modal");
 		await expect(calendar.page.locator(MODAL).first()).toBeVisible();
-		await expect(calendar.page.locator(STOPWATCH_TIME).first()).toBeVisible();
+		await expect(calendar.page.locator(sel(TID.stopwatch.time)).first()).toBeVisible();
 	});
 
 	test("create-with-stopwatch: minimize + wait + restore advances time and preserves pending form fields", async ({
 		calendar,
 	}) => {
+		const page = calendar.page;
 		await calendar.runCommand("Prisma Calendar: Create new event with stopwatch");
 
-		const modal = calendar.page.locator(MODAL).first();
+		const modal = page.locator(MODAL).first();
 		await modal.waitFor({ state: "visible" });
-		await calendar.page.locator(STOPWATCH_TIME).first().waitFor({ state: "visible" });
+		const display = page.locator(sel(TID.stopwatch.time)).first();
+		await display.waitFor({ state: "visible" });
 
 		// Pending edits the spec must see preserved through minimize/restore.
-		const titleInput = calendar.page.locator(sel(TID.event.control("title"))).first();
-		await titleInput.fill("Tracked Session");
-		const locationInput = calendar.page.locator(sel(TID.event.control("location"))).first();
-		await locationInput.fill("Room C");
+		await page
+			.locator(sel(TID.event.control("title")))
+			.first()
+			.fill("Tracked Session");
+		await page
+			.locator(sel(TID.event.control("location")))
+			.first()
+			.fill("Room C");
 
 		// Wait long enough that the display has rolled at least one tick before
 		// minimize. The stopwatch ticks at 1Hz (setInterval 1000ms in stopwatch.tsx).
-		await calendar.page.waitForTimeout(1_500);
-		const beforeMs = parseStopwatchToMs((await calendar.page.locator(STOPWATCH_TIME).first().textContent()) ?? "");
+		await page.waitForTimeout(1_500);
+		const beforeMs = await readStopwatchMs(display);
 
-		await calendar.page.locator(MINIMIZE_BUTTON).first().click();
+		await page
+			.locator(sel(TID.event.btn("minimize")))
+			.first()
+			.click();
 		await expect(modal).toBeHidden();
 
 		// Background time accrual — proves the stopwatch keeps counting while
 		// minimized (the snapshot tracks start time, not modal-mount time).
-		await calendar.page.waitForTimeout(2_000);
+		await page.waitForTimeout(2_000);
 
 		await calendar.runCommand("Prisma Calendar: Restore minimized event modal");
-		await calendar.page.locator(EVENT_MODAL_SELECTOR).waitFor({ state: "visible" });
-		await calendar.page.locator(STOPWATCH_TIME).first().waitFor({ state: "visible" });
+		await page.locator(EVENT_MODAL_SELECTOR).waitFor({ state: "visible" });
+		const restoredDisplay = page.locator(sel(TID.stopwatch.time)).first();
+		await restoredDisplay.waitFor({ state: "visible" });
 
 		// Form data round-trip.
-		await expect(calendar.page.locator(sel(TID.event.control("title"))).first()).toHaveValue("Tracked Session");
-		await expect(calendar.page.locator(sel(TID.event.control("location"))).first()).toHaveValue("Room C");
+		await expect(page.locator(sel(TID.event.control("title"))).first()).toHaveValue("Tracked Session");
+		await expect(page.locator(sel(TID.event.control("location"))).first()).toHaveValue("Room C");
 
-		const afterMs = parseStopwatchToMs((await calendar.page.locator(STOPWATCH_TIME).first().textContent()) ?? "");
-		// 2_000ms hidden + 1_500ms pre-minimize = ~3_500ms of accrued time. Use
-		// 1_000ms as the lower bound — generous enough to absorb command-palette
-		// + restore-modal latency, tight enough to catch a frozen stopwatch.
+		const afterMs = await readStopwatchMs(restoredDisplay);
+		// 1_500ms pre-minimize + 2_000ms hidden ≈ 3_500ms accrued. 1_000ms lower
+		// bound absorbs command-palette + restore-modal latency while still
+		// catching a frozen stopwatch.
 		expect(afterMs - beforeMs).toBeGreaterThanOrEqual(1_000);
 
-		// Ticking proof: poll the display until it advances again (without
-		// asserting an exact delta — under heavy CI load the tick interval can
-		// stretch past the default expect timeout).
+		// Ticking proof: poll the display until it advances past the restored
+		// reading — guards against a stopwatch that resumes display but stops
+		// the setInterval tick.
 		await expect
-			.poll(async () => parseStopwatchToMs((await calendar.page.locator(STOPWATCH_TIME).first().textContent()) ?? ""), {
-				message: "stopwatch should continue ticking after restore",
-			})
+			.poll(() => readStopwatchMs(restoredDisplay), { message: "stopwatch should continue ticking after restore" })
 			.toBeGreaterThan(afterMs);
 	});
 
 	test("edit-existing: continue stopwatch + minimize + restore advances time and preserves event identity", async ({
 		calendar,
 	}) => {
+		const page = calendar.page;
 		const today = formatLocalDate(new Date());
 		// Seed with a start in the past so `continueFromExisting` resolves to a
 		// non-negative elapsed value — see continueFromExisting() in stopwatch.tsx
@@ -135,43 +151,46 @@ Already Notified: true
 		const evt = createEventHandle(calendar, seedPath, "Resumable");
 		await evt.expectVisible();
 		await evt.rightClick("editEvent");
-		await calendar.page.locator(EVENT_MODAL_SELECTOR).waitFor({ state: "visible" });
+		await page.locator(EVENT_MODAL_SELECTOR).waitFor({ state: "visible" });
 
-		// The time-tracker section starts collapsed; clicking the header expands
-		// it so the ▶ continue button becomes interactive. The CollapsibleSection
-		// is stamped with testIdSlug="time-tracker" → prisma-collapsible-header-time-tracker.
-		const header = calendar.page.locator('[data-testid="prisma-collapsible-header-time-tracker"]').first();
-		await header.waitFor({ state: "visible" });
-		await header.click();
+		// Stopwatch section starts collapsed — drive it through the shared DSL so
+		// a future header/testid refactor only touches the collapsibleSection helper.
+		const section = collapsibleSection(page, TID.stopwatch.collapsibleSlug);
+		await section.expand();
 
-		const continueBtn = calendar.page.locator(CONTINUE_BUTTON).first();
+		const continueBtn = page.locator(sel(TID.stopwatch.btn("continue"))).first();
 		await continueBtn.waitFor({ state: "visible" });
 		await continueBtn.click();
 
-		// Once running, the display reflects elapsed = now - Start Date (08:00),
+		// Once running, the display reflects elapsed = now − Start Date (08:00),
 		// so the value is a multi-hour timestamp — we still only care about deltas.
-		await calendar.page.locator(STOPWATCH_TIME).first().waitFor({ state: "visible" });
-		await calendar.page.waitForTimeout(1_500);
-		const beforeMs = parseStopwatchToMs((await calendar.page.locator(STOPWATCH_TIME).first().textContent()) ?? "");
+		const display = page.locator(sel(TID.stopwatch.time)).first();
+		await display.waitFor({ state: "visible" });
+		await page.waitForTimeout(1_500);
+		const beforeMs = await readStopwatchMs(display);
 
-		await calendar.page.locator(MINIMIZE_BUTTON).first().click();
-		await calendar.page.locator(EVENT_MODAL_SELECTOR).waitFor({ state: "detached" });
+		await page
+			.locator(sel(TID.event.btn("minimize")))
+			.first()
+			.click();
+		await page.locator(EVENT_MODAL_SELECTOR).waitFor({ state: "detached" });
 
-		await calendar.page.waitForTimeout(2_000);
+		await page.waitForTimeout(2_000);
 
 		await calendar.runCommand("Prisma Calendar: Restore minimized event modal");
-		await calendar.page.locator(EVENT_MODAL_SELECTOR).waitFor({ state: "visible" });
-		await calendar.page.locator(STOPWATCH_TIME).first().waitFor({ state: "visible" });
+		await page.locator(EVENT_MODAL_SELECTOR).waitFor({ state: "visible" });
+		const restoredDisplay = page.locator(sel(TID.stopwatch.time)).first();
+		await restoredDisplay.waitFor({ state: "visible" });
 
 		// Identity preserved across minimize/restore.
-		await expect(calendar.page.locator(sel(TID.event.control("title"))).first()).toHaveValue("Resumable");
-		await expect(calendar.page.locator(sel(TID.event.control("location"))).first()).toHaveValue("Resume Room");
+		await expect(page.locator(sel(TID.event.control("title"))).first()).toHaveValue("Resumable");
+		await expect(page.locator(sel(TID.event.control("location"))).first()).toHaveValue("Resume Room");
 
-		const afterMs = parseStopwatchToMs((await calendar.page.locator(STOPWATCH_TIME).first().textContent()) ?? "");
+		const afterMs = await readStopwatchMs(restoredDisplay);
 		expect(afterMs - beforeMs).toBeGreaterThanOrEqual(1_000);
 
 		await expect
-			.poll(async () => parseStopwatchToMs((await calendar.page.locator(STOPWATCH_TIME).first().textContent()) ?? ""), {
+			.poll(() => readStopwatchMs(restoredDisplay), {
 				message: "edit-side stopwatch should continue ticking after restore",
 			})
 			.toBeGreaterThan(afterMs);

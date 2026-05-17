@@ -109,7 +109,7 @@ Already Notified: true
 		await evt.expectColor(PERSONAL_COLOR);
 	});
 
-	test("edit modal assigns prerequisites and toggles mark-as-done into Status", async ({ calendar }) => {
+	test("edit modal assigns prerequisites + toggles mark-as-done into Status", async ({ calendar }) => {
 		const today = formatLocalDate(new Date());
 		const targetPath = "Events/Target Event-20250101000000.md";
 		const prereqPath = "Events/Source Event-20250101000001.md";
@@ -145,8 +145,6 @@ Already Notified: true
 		await target.rightClick("editEvent");
 		await calendar.page.locator(EVENT_MODAL_SELECTOR).waitFor({ state: "visible" });
 
-		// Assign-prerequisites modal resolves by existing event basename — the
-		// driveAssignModal helper uses { allowCreateNew: false } for prereqs.
 		await fillEventModal(calendar.page, {
 			prerequisites: ["Source Event"],
 			markAsDone: true,
@@ -157,11 +155,10 @@ Already Notified: true
 		await target.expectFrontmatter("Status", (v) => v === "Done");
 
 		const fm = readEventFrontmatter(calendar.vaultDir, targetPath);
-		const prereqPathWithoutExt = prereqPath.replace(/\.md$/, "");
-		const prereqDisplayName = prereqPathWithoutExt.replace(/^.*\//, "");
-		const expectedLink = `[[${prereqPathWithoutExt}|${prereqDisplayName}]]`;
+		const pathNoExt = prereqPath.replace(/\.md$/, "");
+		const displayName = pathNoExt.replace(/^.*\//, "");
+		const expectedLink = `[[${pathNoExt}|${displayName}]]`;
 		const prereqValue = fm["Prerequisite"];
-		const prereqList = Array.isArray(prereqValue) ? prereqValue : [prereqValue];
-		expect(prereqList).toEqual([expectedLink]);
+		expect(Array.isArray(prereqValue) ? prereqValue : [prereqValue]).toEqual([expectedLink]);
 	});
 });

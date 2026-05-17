@@ -42,13 +42,10 @@ test.describe("create event — all fields", () => {
 		await evt.expectVisible();
 	});
 
-	test("prerequisites assignment and mark-as-done land in frontmatter alongside every other field", async ({
-		calendar,
-	}) => {
+	test("prerequisites + mark-as-done land in frontmatter alongside every other field", async ({ calendar }) => {
 		const date = anchorISO();
-		// Seed a prereq target on disk so the assign modal can resolve it —
-		// driveAssignModal uses { allowCreateNew: false } for prerequisites, which
-		// matches production: prereqs are wiki-links to *existing* events only.
+		// Prereq picker uses { allowCreateNew: false } — seed a real event first so
+		// the assign modal can resolve "Prerequisite Source" by displayName.
 		const prereqHandle = await calendar.seedOnDisk("Prerequisite Source", {
 			"Start Date": `${date}T08:00`,
 			"End Date": `${date}T08:30`,
@@ -78,21 +75,18 @@ test.describe("create event — all fields", () => {
 			Icon: "check",
 			Break: 5,
 			Priority: "high",
-			// statusProperty/doneValue default to "Status"/"Done" per
-			// CustomCalendarSettingsSchema in src/types/settings.ts.
+			// statusProperty/doneValue default to "Status"/"Done" (settings.ts).
 			Status: "Done",
 		});
 
-		// Prerequisite is written by `toDisplayLink(filePath)` → full
-		// `[[path/without-ext|displayName]]` wiki-link (shared/src/core/file/file.ts).
-		// YAML serializer may emit it as scalar or 1-element list — normalise.
+		// Prereq is written by `toDisplayLink(filePath)` → `[[path|displayName]]`
+		// (shared/src/core/file/file.ts). Normalise scalar vs 1-element list shape.
 		const fm = readEventFrontmatter(calendar.vaultDir, evt.path);
+		const pathNoExt = prereqHandle.path.replace(/\.md$/, "");
+		const displayName = pathNoExt.replace(/^.*\//, "");
+		const expectedLink = `[[${pathNoExt}|${displayName}]]`;
 		const prereqValue = fm["Prerequisite"];
-		const prereqPathWithoutExt = prereqHandle.path.replace(/\.md$/, "");
-		const prereqDisplayName = prereqPathWithoutExt.replace(/^.*\//, "");
-		const expectedLink = `[[${prereqPathWithoutExt}|${prereqDisplayName}]]`;
-		const prereqList = Array.isArray(prereqValue) ? prereqValue : [prereqValue];
-		expect(prereqList).toEqual([expectedLink]);
+		expect(Array.isArray(prereqValue) ? prereqValue : [prereqValue]).toEqual([expectedLink]);
 
 		await calendar.goToAnchor();
 		await evt.expectVisible();

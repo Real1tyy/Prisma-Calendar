@@ -293,23 +293,44 @@ export const Stopwatch = forwardRef<StopwatchHandle, StopwatchCallbacks>(functio
 				</div>
 
 				<div className={cls("stopwatch-controls")}>
-					<button type="button" className={btnClass("start", startBtnHidden)} onClick={start}>
+					<button
+						type="button"
+						className={btnClass("start", startBtnHidden)}
+						onClick={start}
+						data-testid={tid("stopwatch-btn-start")}
+					>
 						{startBtnLabel}
 					</button>
-					<button type="button" className={btnClass("continue", continueBtnHidden)} onClick={handleContinueClick}>
+					<button
+						type="button"
+						className={btnClass("continue", continueBtnHidden)}
+						onClick={handleContinueClick}
+						data-testid={tid("stopwatch-btn-continue")}
+					>
 						▶ continue
 					</button>
 					<button
 						type="button"
 						className={btnClass(isPaused ? "resume" : "pause", pauseBtnHidden)}
 						onClick={togglePause}
+						data-testid={tid("stopwatch-btn-pause")}
 					>
 						{pauseBtnLabel}
 					</button>
-					<button type="button" className={btnClass("stop", stopBtnHidden)} onClick={stop}>
+					<button
+						type="button"
+						className={btnClass("stop", stopBtnHidden)}
+						onClick={stop}
+						data-testid={tid("stopwatch-btn-stop")}
+					>
 						⏹ stop
 					</button>
-					<button type="button" className={btnClass("resume", resumeBtnHidden)} onClick={resume}>
+					<button
+						type="button"
+						className={btnClass("resume", resumeBtnHidden)}
+						onClick={resume}
+						data-testid={tid("stopwatch-btn-resume")}
+					>
 						▶ continue
 					</button>
 				</div>

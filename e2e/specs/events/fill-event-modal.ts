@@ -77,9 +77,8 @@ async function setTestIdCheckbox(page: Page, testId: string, on: boolean): Promi
 	if (checked !== on) await cb.click();
 }
 
-// Mark-as-done renders as a `Toggle` (div role="switch" + aria-checked) — not a
-// native checkbox, so `setTestIdCheckbox` does not work. Read `aria-checked` to
-// decide whether to click.
+// Mark-as-done renders as a Toggle (`<div role="switch" aria-checked>`) — not a
+// native checkbox, so isChecked() can't read it. Drive via aria-checked.
 async function setMarkAsDoneToggle(page: Page, on: boolean): Promise<void> {
 	const toggle = page.locator(sel(TID.event.control("markAsDone"))).first();
 	await toggle.waitFor({ state: "visible", timeout: 10_000 });
@@ -121,20 +120,19 @@ async function driveAssignModal(
 
 	for (const value of values) {
 		await search.fill(value);
-		const exactMatch = page.locator(
+		const exactByName = page.locator(
 			`${ASSIGN_MODAL_SELECTOR} ${sel(sharedTID.assignItem())}[data-assign-name="${value}"]`
 		);
-		// `data-assign-name` is the source-of-truth for categories (raw category
-		// name) but for prerequisites it's the full wiki-link (`[[path|name]]`)
-		// while the user types the displayName. Fall back to a label-text match
-		// against the filtered list — search has already narrowed it.
-		const visibleByLabel = page
+		// `data-assign-name` is verbatim for categories (raw name) but holds the
+		// full wiki-link for prerequisites — the user types the displayName. Fall
+		// back to a label-text match against the search-filtered list.
+		const byVisibleLabel = page
 			.locator(`${ASSIGN_MODAL_SELECTOR} ${sel(sharedTID.assignItem())}`, { hasText: value })
 			.first();
-		if ((await exactMatch.count()) > 0) {
-			await exactMatch.first().click();
-		} else if ((await visibleByLabel.count()) > 0) {
-			await visibleByLabel.click();
+		if ((await exactByName.count()) > 0) {
+			await exactByName.first().click();
+		} else if ((await byVisibleLabel.count()) > 0) {
+			await byVisibleLabel.click();
 		} else if (allowCreateNew) {
 			const create = page.locator(`${ASSIGN_MODAL_SELECTOR} ${sel(sharedTID.assignCreateNew())}`);
 			await create.waitFor({ state: "visible", timeout: 5_000 });

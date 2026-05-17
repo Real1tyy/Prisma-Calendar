@@ -245,6 +245,13 @@ export const FILTER_PRESET_TID = "prisma-filter-preset";
 
 export const STOPWATCH_TIME_TID = "prisma-stopwatch-time";
 
+/** Stopwatch action buttons (start/continue/pause/stop/resume). */
+export type StopwatchBtnKey = "start" | "continue" | "pause" | "stop" | "resume";
+export const stopwatchBtn = (key: StopwatchBtnKey): string => `prisma-stopwatch-btn-${key}`;
+
+/** Slug used by the stopwatch's CollapsibleSection — passed to `collapsibleSection(page, ...)`. */
+export const STOPWATCH_COLLAPSIBLE_SLUG = "time-tracker";
+
 export const ICS_EXPORT_SUBMIT_TID = "prisma-ics-export-submit";
 export const ICS_IMPORT_FILE_TID = "prisma-ics-import-file";
 export const ICS_IMPORT_SUBMIT_TID = "prisma-ics-import-submit";
@@ -343,6 +350,11 @@ export const TID = {
 		control: (key: EventControlKey): string => `prisma-event-control-${key}`,
 		field: (key: EventFieldKey): string => `prisma-event-field-${key}`,
 		btn: (key: EventBtnKey): string => `prisma-event-btn-${key}`,
+	},
+	stopwatch: {
+		time: STOPWATCH_TIME_TID,
+		btn: stopwatchBtn,
+		collapsibleSlug: STOPWATCH_COLLAPSIBLE_SLUG,
 	},
 	toolbar: (key: ToolbarKey): string => `prisma-cal-toolbar-${key}`,
 	/** Page-header toolbar action (create-event, daily-stats, refresh, …). */
