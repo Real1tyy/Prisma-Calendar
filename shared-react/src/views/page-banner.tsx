@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { memo, useCallback, useMemo } from "react";
 
-import { ObsidianIcon } from "../components/obsidian-icon";
+import { ObsidianIcon } from "../primitives/atoms/obsidian-icon";
 import { useScoped } from "../contexts/theme-context";
 import { useScopedStyles } from "../hooks/styles/use-styles";
 import { buildPageBannerStyles } from "./page-banner.styles";

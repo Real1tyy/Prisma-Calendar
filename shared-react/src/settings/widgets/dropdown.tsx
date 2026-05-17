@@ -1,4 +1,4 @@
-import { Dropdown, TextInput } from "../../components/setting-controls";
+import { Dropdown, TextInput } from "../../primitives/controls";
 import { testIdProp } from "../../utils/test-id";
 import { stringValue, type WidgetProps } from "./common";
 

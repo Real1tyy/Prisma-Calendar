@@ -1,4 +1,4 @@
-import { SecretField } from "../../components/secret-field";
+import { SecretField } from "../../primitives/atoms/secret-field";
 import { testIdProp } from "../../utils/test-id";
 import { stringValue, type WidgetProps } from "./common";
 

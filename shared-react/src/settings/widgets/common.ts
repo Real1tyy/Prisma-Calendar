@@ -6,7 +6,7 @@ import type { SchemaFieldOverride } from "../override";
 /**
  * Contract every widget-adapter receives. Adapters translate
  * (descriptor + override + binding) into concrete control props and render a
- * primitive from `react/components/setting-controls`.
+ * primitive from `react/primitives/controls`.
  */
 export interface WidgetProps {
 	descriptor: SchemaFieldDescriptor;

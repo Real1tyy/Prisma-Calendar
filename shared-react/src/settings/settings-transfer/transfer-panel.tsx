@@ -2,8 +2,8 @@ import { Notice } from "obsidian";
 import type { ChangeEvent } from "react";
 import { useCallback, useRef, useState } from "react";
 
-import { Button } from "../../components/button";
-import { Textarea } from "../../components/textarea";
+import { Button } from "../../primitives/atoms/button";
+import { Textarea } from "../../primitives/atoms/textarea";
 import { downloadTransferFile } from "./download-file";
 
 export type TransferMode = "export" | "import";

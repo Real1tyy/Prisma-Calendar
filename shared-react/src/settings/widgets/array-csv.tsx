@@ -1,4 +1,4 @@
-import { CsvInput } from "../../components/csv-input";
+import { CsvInput } from "../../primitives/filters/csv-input";
 import { testIdProp } from "../../utils/test-id";
 import { resolvePlaceholder, type WidgetProps } from "./common";
 

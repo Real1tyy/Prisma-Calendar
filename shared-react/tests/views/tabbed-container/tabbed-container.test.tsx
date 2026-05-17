@@ -4,7 +4,7 @@ import type { RefObject } from "react";
 import { createElement } from "react";
 import { describe, expect, it, vi } from "vitest";
 
-import { MountImperative } from "../../../src/components/mount-imperative";
+import { MountImperative } from "../../../src/widgets/mount-imperative/mount-imperative";
 import type { TabbedContainerHandle, TabEntry } from "../../../src/views/tabbed-container/index";
 import { TabbedContainer } from "../../../src/views/tabbed-container/index";
 import { renderReact } from "../../helpers/render-react";

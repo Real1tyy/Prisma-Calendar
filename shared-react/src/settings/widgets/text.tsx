@@ -1,4 +1,4 @@
-import { TextareaInput, TextInput } from "../../components/setting-controls";
+import { TextareaInput, TextInput } from "../../primitives/controls";
 import { testIdProp } from "../../utils/test-id";
 import { commitString, resolvePlaceholder, stringValue, type WidgetProps } from "./common";
 

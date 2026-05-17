@@ -1,4 +1,4 @@
-import { ColorInput } from "../../components/setting-controls";
+import { ColorInput } from "../../primitives/controls";
 import { testIdProp } from "../../utils/test-id";
 import { stringValue, type WidgetProps } from "./common";
 

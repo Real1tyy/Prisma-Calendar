@@ -2,7 +2,7 @@ import type { App } from "obsidian";
 import type { CSSProperties } from "react";
 import { memo, useCallback, useMemo, useReducer } from "react";
 
-import { ObsidianIcon } from "../components/obsidian-icon";
+import { ObsidianIcon } from "../primitives/atoms/obsidian-icon";
 import { useApp } from "../contexts/app-context";
 import { useScopedStyles } from "../hooks/styles/use-styles";
 import { showShelledModal } from "../show-react-modal";

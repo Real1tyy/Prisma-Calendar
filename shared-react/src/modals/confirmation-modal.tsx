@@ -2,8 +2,8 @@ import type { App } from "obsidian";
 import type { ReactNode } from "react";
 import { memo, useCallback, useRef, useState } from "react";
 
-import { Button } from "../components/button";
-import { ModalDescription } from "../components/modal-description";
+import { Button } from "../primitives/atoms/button";
+import { ModalDescription } from "../primitives/atoms/modal-description";
 import { useScopedTid } from "../contexts/theme-context";
 import { openReactModal } from "../show-react-modal";
 

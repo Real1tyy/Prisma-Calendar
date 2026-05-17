@@ -1,4 +1,4 @@
-import { buildManagerRowStyles } from "../../components/manager-row.styles";
+import { buildManagerRowStyles } from "../../widgets/manager-list/manager-row.styles";
 
 export function buildTabbedContainerStyles(p: string): string {
 	return `

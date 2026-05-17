@@ -2,10 +2,10 @@ import type { App } from "obsidian";
 import type { ReactNode } from "react";
 import { memo, useCallback, useMemo, useState, useSyncExternalStore } from "react";
 
-import { FilterInput } from "../../components/filter-input";
-import { type ManagerEditController, ManagerEditForm } from "../../components/manager-edit-form";
-import { ManagerRow } from "../../components/manager-row";
-import { SettingItem } from "../../components/setting-item";
+import { FilterInput } from "../../primitives/filters/filter-input";
+import { type ManagerEditController, ManagerEditForm } from "../../widgets/manager-list/manager-edit-form";
+import { ManagerRow } from "../../widgets/manager-list/manager-row";
+import { SettingItem } from "../../primitives/layout/setting-item";
 import { useScoped } from "../../contexts/theme-context";
 import { useScopedStyles } from "../../hooks/styles/use-styles";
 import { showReactIconPicker } from "../../modals/icon-picker-modal";

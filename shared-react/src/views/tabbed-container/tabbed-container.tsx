@@ -2,7 +2,7 @@ import type { MouseEvent as ReactMouseEvent, ReactNode, Ref, RefObject } from "r
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { ObsidianIcon } from "../../components/obsidian-icon";
+import { ObsidianIcon } from "../../primitives/atoms/obsidian-icon";
 import { AppContext } from "../../contexts/app-context";
 import { useDomEvent } from "../../hooks/dom/use-dom-event";
 import { useInjectedStyles } from "../../hooks/styles/use-styles";

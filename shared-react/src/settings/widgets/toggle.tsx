@@ -1,4 +1,4 @@
-import { Toggle } from "../../components/setting-controls";
+import { Toggle } from "../../primitives/controls";
 import { testIdProp } from "../../utils/test-id";
 import type { WidgetProps } from "./common";
 

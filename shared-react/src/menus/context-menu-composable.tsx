@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { ObsidianIcon } from "../components/obsidian-icon";
+import { ObsidianIcon } from "../primitives/atoms/obsidian-icon";
 import { useOutsideClick } from "../hooks/dom/use-outside-click";
 
 interface ContextMenuRootState {

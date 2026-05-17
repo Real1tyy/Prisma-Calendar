@@ -1,7 +1,7 @@
 import { memo, useRef } from "react";
 import { createPortal } from "react-dom";
 
-import { ObsidianIcon } from "../../components/obsidian-icon";
+import { ObsidianIcon } from "../../primitives/atoms/obsidian-icon";
 import { useOutsideClick } from "../../hooks/dom/use-outside-click";
 import { useEscapeKey } from "../../hooks/keyboard/use-trigger-keys";
 import type { TabDefinition } from "./types";

@@ -2,12 +2,12 @@ import type { Dispatch, ReactNode, SetStateAction } from "react";
 import { createContext, memo, useCallback, useContext, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 
-import type { ManagerEditController } from "../../components/manager-edit-form";
-import { ManagerEditForm } from "../../components/manager-edit-form";
-import { ManagerRow } from "../../components/manager-row";
-import { ObsidianIcon } from "../../components/obsidian-icon";
-import { Toggle } from "../../components/setting-controls";
-import { SettingItem } from "../../components/setting-item";
+import type { ManagerEditController } from "../../widgets/manager-list/manager-edit-form";
+import { ManagerEditForm } from "../../widgets/manager-list/manager-edit-form";
+import { ManagerRow } from "../../widgets/manager-list/manager-row";
+import { ObsidianIcon } from "../../primitives/atoms/obsidian-icon";
+import { Toggle } from "../../primitives/controls";
+import { SettingItem } from "../../primitives/layout/setting-item";
 import { useApp } from "../../contexts/app-context";
 import { SharedReactThemeProvider } from "../../contexts/theme-context";
 import { showReactIconPicker } from "../../modals/icon-picker-modal";

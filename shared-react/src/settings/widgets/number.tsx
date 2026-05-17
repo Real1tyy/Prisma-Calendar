@@ -1,5 +1,5 @@
-import { NumberInput, Slider } from "../../components/setting-controls";
-import { TextInput } from "../../components/setting-controls";
+import { NumberInput, Slider } from "../../primitives/controls";
+import { TextInput } from "../../primitives/controls";
 import { testIdProp } from "../../utils/test-id";
 import { numericMax, numericMin, resolvePlaceholder, type WidgetProps } from "./common";
 

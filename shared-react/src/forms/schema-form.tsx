@@ -6,7 +6,7 @@ import type { FieldValues, UseFormReturn } from "react-hook-form";
 import { useFormState } from "react-hook-form";
 import type { ZodObject, ZodRawShape } from "zod";
 
-import { SettingHeading, SettingItem } from "../components/setting-item";
+import { SettingHeading, SettingItem } from "../primitives/layout/setting-item";
 import { FormDropdown, FormNumberInput, FormSecretField, FormTextInput, FormToggle } from "./controls";
 import { SchemaArrayField } from "./schema-array-field";
 

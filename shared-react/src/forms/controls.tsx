@@ -1,11 +1,11 @@
 import type { FieldPath, FieldValues, UseFormReturn } from "react-hook-form";
 import { useController } from "react-hook-form";
 
-import { SecretField } from "../components/secret-field";
-import { Dropdown } from "../components/setting-controls";
-import { NumberInput } from "../components/setting-controls";
-import { TextInput } from "../components/setting-controls";
-import { Toggle } from "../components/setting-controls";
+import { SecretField } from "../primitives/atoms/secret-field";
+import { Dropdown } from "../primitives/controls";
+import { NumberInput } from "../primitives/controls";
+import { TextInput } from "../primitives/controls";
+import { Toggle } from "../primitives/controls";
 import { testIdProp } from "../utils/test-id";
 
 interface FormFieldBase<TValues extends FieldValues, TName extends FieldPath<TValues>> {

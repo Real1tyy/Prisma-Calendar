@@ -1,4 +1,4 @@
-import { DateInput, DatetimeLocalInput } from "../../components/setting-controls";
+import { DateInput, DatetimeLocalInput } from "../../primitives/controls";
 import { testIdProp } from "../../utils/test-id";
 import { stringValue, type WidgetProps } from "./common";
 

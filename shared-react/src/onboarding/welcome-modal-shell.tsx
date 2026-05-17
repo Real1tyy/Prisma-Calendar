@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { Button } from "../components/button";
+import { Button } from "../primitives/atoms/button";
 import { useScopedStyles } from "../hooks/styles/use-styles";
 import { buildWelcomeShellStyles } from "./welcome-modal-shell.styles";
 

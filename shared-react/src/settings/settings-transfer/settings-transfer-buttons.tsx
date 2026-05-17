@@ -9,8 +9,8 @@ import { Notice } from "obsidian";
 import type { ReactNode } from "react";
 import { memo, useCallback, useMemo } from "react";
 
-import { Button } from "../../components/button";
-import { SettingItem } from "../../components/setting-item";
+import { Button } from "../../primitives/atoms/button";
+import { SettingItem } from "../../primitives/layout/setting-item";
 import { useApp } from "../../contexts/app-context";
 import type { SettingsStorelike } from "../../hooks/settings/use-settings-store";
 import { openTransferModal } from "./transfer-modal";
