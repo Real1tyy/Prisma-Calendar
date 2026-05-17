@@ -1,7 +1,7 @@
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { expectFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
+import { expectFrontmatter, readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { createEventHandle } from "../../fixtures/dsl";
 import { expect, testWithNotifications as test } from "../../fixtures/electron";
@@ -107,5 +107,61 @@ Already Notified: true
 		// no longer matches, Personal does, so the tile flips to the
 		// Personal rule's colour.
 		await evt.expectColor(PERSONAL_COLOR);
+	});
+
+	test("edit modal assigns prerequisites and toggles mark-as-done into Status", async ({ calendar }) => {
+		const today = formatLocalDate(new Date());
+		const targetPath = "Events/Target Event-20250101000000.md";
+		const prereqPath = "Events/Source Event-20250101000001.md";
+
+		writeFileSync(
+			join(calendar.vaultDir, targetPath),
+			`---
+Start Date: ${today}T09:00
+End Date: ${today}T10:00
+Already Notified: true
+---
+
+# Target Event
+`,
+			"utf8"
+		);
+		writeFileSync(
+			join(calendar.vaultDir, prereqPath),
+			`---
+Start Date: ${today}T08:00
+End Date: ${today}T08:30
+Already Notified: true
+---
+
+# Source Event
+`,
+			"utf8"
+		);
+		await refreshCalendar(calendar.page);
+
+		const target = createEventHandle(calendar, targetPath, "Target Event");
+		await target.expectVisible();
+		await target.rightClick("editEvent");
+		await calendar.page.locator(EVENT_MODAL_SELECTOR).waitFor({ state: "visible" });
+
+		// Assign-prerequisites modal resolves by existing event basename — the
+		// driveAssignModal helper uses { allowCreateNew: false } for prereqs.
+		await fillEventModal(calendar.page, {
+			prerequisites: ["Source Event"],
+			markAsDone: true,
+		});
+
+		await saveEventModal(calendar.page);
+
+		await target.expectFrontmatter("Status", (v) => v === "Done");
+
+		const fm = readEventFrontmatter(calendar.vaultDir, targetPath);
+		const prereqPathWithoutExt = prereqPath.replace(/\.md$/, "");
+		const prereqDisplayName = prereqPathWithoutExt.replace(/^.*\//, "");
+		const expectedLink = `[[${prereqPathWithoutExt}|${prereqDisplayName}]]`;
+		const prereqValue = fm["Prerequisite"];
+		const prereqList = Array.isArray(prereqValue) ? prereqValue : [prereqValue];
+		expect(prereqList).toEqual([expectedLink]);
 	});
 });

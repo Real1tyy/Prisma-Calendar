@@ -12,6 +12,7 @@ import {
 	writeStandardAppJson,
 } from "@real1ty-obsidian-plugins/testing/e2e";
 
+import { CONTEXT_MENU_ITEM_IDS } from "../../src/context-menu-items";
 import { openCalendarReady } from "../specs/events/events-helpers";
 import { PLUGIN_ID } from "./constants";
 import { type CalendarHandle, createCalendarHandle } from "./dsl/calendar";
@@ -44,6 +45,9 @@ const ALL_BATCH_BUTTONS = [
 	"batchDelete",
 ];
 
+// Every context menu item seeded as visible so specs can exercise items the
+// production default hides (see DEFAULT_CONTEXT_MENU_ITEMS in
+// src/context-menu-items.ts).
 const DEFAULT_CALENDAR = {
 	id: "default",
 	name: "Main Calendar",
@@ -53,6 +57,7 @@ const DEFAULT_CALENDAR = {
 	autoAssignCategoryByName: false,
 	autoAssignCategoryByIncludes: false,
 	batchActionButtons: ALL_BATCH_BUTTONS,
+	contextMenuItems: [...CONTEXT_MENU_ITEM_IDS],
 };
 
 const DEFAULT_PAGE_HEADER_STATE = {

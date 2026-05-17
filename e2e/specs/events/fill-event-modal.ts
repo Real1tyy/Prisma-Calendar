@@ -28,6 +28,7 @@ export interface EventModalInput {
 	location?: string;
 	icon?: string;
 	skip?: boolean;
+	markAsDone?: boolean;
 	breakMinutes?: number;
 	minutesBefore?: number;
 	daysBefore?: number;
@@ -76,6 +77,17 @@ async function setTestIdCheckbox(page: Page, testId: string, on: boolean): Promi
 	if (checked !== on) await cb.click();
 }
 
+// Mark-as-done renders as a `Toggle` (div role="switch" + aria-checked) — not a
+// native checkbox, so `setTestIdCheckbox` does not work. Read `aria-checked` to
+// decide whether to click.
+async function setMarkAsDoneToggle(page: Page, on: boolean): Promise<void> {
+	const toggle = page.locator(sel(TID.event.control("markAsDone"))).first();
+	await toggle.waitFor({ state: "visible", timeout: 10_000 });
+	await toggle.scrollIntoViewIfNeeded().catch(() => {});
+	const current = (await toggle.getAttribute("aria-checked")) === "true";
+	if (current !== on) await toggle.click();
+}
+
 async function selectTestIdOption(page: Page, testId: string, value: string): Promise<void> {
 	const select = page.locator(`[data-testid="${testId}"]`);
 	await select.waitFor({ state: "visible", timeout: 10_000 });
@@ -109,12 +121,20 @@ async function driveAssignModal(
 
 	for (const value of values) {
 		await search.fill(value);
-		const existing = page.locator(
+		const exactMatch = page.locator(
 			`${ASSIGN_MODAL_SELECTOR} ${sel(sharedTID.assignItem())}[data-assign-name="${value}"]`
 		);
-		const existingCount = await existing.count();
-		if (existingCount > 0) {
-			await existing.first().click();
+		// `data-assign-name` is the source-of-truth for categories (raw category
+		// name) but for prerequisites it's the full wiki-link (`[[path|name]]`)
+		// while the user types the displayName. Fall back to a label-text match
+		// against the filtered list — search has already narrowed it.
+		const visibleByLabel = page
+			.locator(`${ASSIGN_MODAL_SELECTOR} ${sel(sharedTID.assignItem())}`, { hasText: value })
+			.first();
+		if ((await exactMatch.count()) > 0) {
+			await exactMatch.first().click();
+		} else if ((await visibleByLabel.count()) > 0) {
+			await visibleByLabel.click();
 		} else if (allowCreateNew) {
 			const create = page.locator(`${ASSIGN_MODAL_SELECTOR} ${sel(sharedTID.assignCreateNew())}`);
 			await create.waitFor({ state: "visible", timeout: 5_000 });
@@ -218,6 +238,7 @@ export async function fillEventModal(page: Page, data: EventModalInput): Promise
 	if (data.location !== undefined) await fillTestIdInput(page, "prisma-event-control-location", data.location);
 	if (data.icon !== undefined) await fillTestIdInput(page, "prisma-event-control-icon", data.icon);
 	if (data.skip !== undefined) await setTestIdCheckbox(page, "prisma-event-control-skip", data.skip);
+	if (data.markAsDone !== undefined) await setMarkAsDoneToggle(page, data.markAsDone);
 	if (data.breakMinutes !== undefined) {
 		await fillTestIdInput(page, "prisma-event-control-breakMinutes", String(data.breakMinutes));
 	}
