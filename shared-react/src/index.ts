@@ -230,8 +230,13 @@ export type { RenderReactInlineOptions } from "./react-inline";
 export { renderReactInline } from "./react-inline";
 export type { ReactViewConfig, ReactViewHandle } from "./react-view";
 export { registerReactView } from "./react-view";
-export type { OpenReactModalConfig, ReactModalBaseConfig, ShowReactModalConfig } from "./show-react-modal";
-export { openReactModal, showReactModal } from "./show-react-modal";
+export type {
+	OpenReactModalConfig,
+	ReactModalBaseConfig,
+	ShelledModalConfig,
+	ShowReactModalConfig,
+} from "./show-react-modal";
+export { openReactModal, showReactModal, showShelledModal } from "./show-react-modal";
 
 // ─── Settings ───
 export * from "./settings";

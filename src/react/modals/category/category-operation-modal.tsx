@@ -120,7 +120,7 @@ async function runCategoryBulkOperation({
 	}
 }
 
-export function openCategoryRenameModal(
+export function runCategoryRenameFlow(
 	app: App,
 	categoryTracker: CategoryTracker,
 	settingsStore: CalendarSettingsStore,
@@ -166,7 +166,7 @@ export function openCategoryRenameModal(
 	});
 }
 
-export function openCategoryDeleteModal(
+export function runCategoryDeleteFlow(
 	app: App,
 	categoryTracker: CategoryTracker,
 	settingsStore: CalendarSettingsStore,

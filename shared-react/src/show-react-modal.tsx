@@ -37,6 +37,20 @@ export interface OpenReactModalConfig<T> extends ReactModalBaseConfig {
 	render: (submit: (value: T) => void, cancel: () => void) => ReactNode;
 }
 
+/**
+ * Convenience config for the common shell pattern `{ app, cssPrefix,
+ * testIdPrefix: cssPrefix, cls: `${cssPrefix}${name}-modal`, title, render }`.
+ * Pass the bare `name` (e.g. `"item-manager"`) — `showShelledModal` derives
+ * `cls` and mirrors `cssPrefix` to `testIdPrefix` so individual wrappers can't
+ * forget either.
+ */
+export interface ShelledModalConfig {
+	cssPrefix: string;
+	name: string;
+	title?: string | undefined;
+	render: (close: () => void) => ReactNode;
+}
+
 class ReactModal extends Modal {
 	private root: Root | null = null;
 
@@ -89,6 +103,17 @@ function mountReactModal(
 
 export function showReactModal(config: ShowReactModalConfig): void {
 	mountReactModal(config.app, config, config.render).open();
+}
+
+export function showShelledModal(app: App, config: ShelledModalConfig): void {
+	showReactModal({
+		app,
+		cssPrefix: config.cssPrefix,
+		testIdPrefix: config.cssPrefix,
+		cls: `${config.cssPrefix}${config.name}-modal`,
+		...(config.title !== undefined ? { title: config.title } : {}),
+		render: config.render,
+	});
 }
 
 export function openReactModal<T>(config: OpenReactModalConfig<T>): Promise<T | null> {

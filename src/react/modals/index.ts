@@ -17,7 +17,7 @@ export { openBatchFrontmatterModal } from "./batch/batch-frontmatter-modal";
 // Category modals
 export type { AssignmentItem, AssignmentModalConfig } from "./category/assignment-modal";
 export { openAssignmentModal, openCategoryAssignModal, openPrerequisiteAssignModal } from "./category/assignment-modal";
-export { openCategoryDeleteModal, openCategoryRenameModal } from "./category/category-operation-modal";
+export { runCategoryDeleteFlow, runCategoryRenameFlow } from "./category/category-operation-modal";
 export { openCategorySelectModal } from "./category/category-select-modal";
 
 // CalDAV modals

@@ -2,7 +2,7 @@ import type { App } from "obsidian";
 import { memo, useMemo } from "react";
 
 import { useScopedStyles } from "../hooks/styles/use-styles";
-import { showReactModal } from "../show-react-modal";
+import { showShelledModal } from "../show-react-modal";
 import { buildGridStyles } from "./styles";
 import type { CellOption } from "./types";
 
@@ -73,25 +73,20 @@ export const CellPickerContent = memo(function CellPickerContent({
 	);
 });
 
-export interface OpenCellPickerOptions {
+export type OpenCellPickerOptions = Omit<CellPickerContentProps, "currentId"> & {
 	cssPrefix: string;
 	row: number;
 	col: number;
-	cellPalette: CellOption[];
 	currentId?: string | undefined;
-	usedIds: Set<string>;
 	title?: string;
-	onSelect: (optionId: string) => void;
-}
+};
 
 export function openCellPicker(app: App, options: OpenCellPickerOptions): void {
 	const { cssPrefix, row, col, cellPalette, currentId, usedIds, title, onSelect } = options;
-	showReactModal({
-		app,
-		cls: `${cssPrefix}grid-picker-modal`,
-		title: title ?? `Swap cell (${row + 1}, ${col + 1})`,
+	showShelledModal(app, {
 		cssPrefix,
-		testIdPrefix: cssPrefix,
+		name: "grid-picker",
+		title: title ?? `Swap cell (${row + 1}, ${col + 1})`,
 		render: (close) => (
 			<CellPickerContent
 				cellPalette={cellPalette}

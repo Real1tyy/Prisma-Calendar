@@ -5,7 +5,7 @@ import { memo, useCallback, useMemo, useReducer } from "react";
 import { ObsidianIcon } from "../components/obsidian-icon";
 import { useApp } from "../contexts/app-context";
 import { useScopedStyles } from "../hooks/styles/use-styles";
-import { showReactModal } from "../show-react-modal";
+import { showShelledModal } from "../show-react-modal";
 import { openCellPicker } from "./cell-picker-modal";
 import { adjustSizes } from "./engine-state";
 import { buildGridStyles } from "./styles";
@@ -258,21 +258,14 @@ export const LayoutEditorContent = memo(function LayoutEditorContent({
 
 // ── Public modal opener ───────────────────────────────────────────────────────
 
-export interface OpenLayoutEditorOptions {
-	initialState: GridLayoutState;
-	cellPalette: CellOption[];
-	cssPrefix: string;
-	onApply: (newState: GridLayoutState) => void;
-}
+export type OpenLayoutEditorOptions = Omit<LayoutEditorContentProps, "onCancel"> & { cssPrefix: string };
 
 export function openLayoutEditor(app: App, options: OpenLayoutEditorOptions): void {
 	const { initialState, cellPalette, cssPrefix, onApply } = options;
-	showReactModal({
-		app,
-		cls: `${cssPrefix}grid-editor-modal`,
-		title: "Layout Editor",
+	showShelledModal(app, {
 		cssPrefix,
-		testIdPrefix: cssPrefix,
+		name: "grid-editor",
+		title: "Layout Editor",
 		render: (close) => (
 			<LayoutEditorContent
 				initialState={initialState}

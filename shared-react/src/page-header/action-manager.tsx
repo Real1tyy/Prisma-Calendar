@@ -8,7 +8,7 @@ import { SettingItem } from "../components/setting-item";
 import { useExternalSnapshot } from "../hooks/reactive/use-external-snapshot";
 import { useInjectedStyles } from "../hooks/styles/use-styles";
 import { showReactIconPicker } from "../modals/icon-picker-modal";
-import { showReactModal } from "../show-react-modal";
+import { showShelledModal } from "../show-react-modal";
 import { DEFAULT_COLOR_SENTINEL } from "./constants";
 import type { PageHeaderSnapshot, PageHeaderStore } from "./store";
 import { buildPageHeaderStyles } from "./styles";
@@ -199,12 +199,10 @@ const ActionManagerContent = memo(function ActionManagerContent({ app, store, cs
 });
 
 export function openPageHeaderActionManager(app: App, store: PageHeaderStore, cssPrefix: string): void {
-	showReactModal({
-		app,
-		title: "Manage Header Actions",
+	showShelledModal(app, {
 		cssPrefix,
-		testIdPrefix: cssPrefix,
-		cls: `${cssPrefix}action-manager-modal`,
+		name: "action-manager",
+		title: "Manage Header Actions",
 		render: () => <ActionManagerContent app={app} store={store} cssPrefix={cssPrefix} />,
 	});
 }

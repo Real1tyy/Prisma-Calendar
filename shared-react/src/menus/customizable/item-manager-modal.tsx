@@ -9,7 +9,7 @@ import { SettingItem } from "../../components/setting-item";
 import { useScoped } from "../../contexts/theme-context";
 import { useScopedStyles } from "../../hooks/styles/use-styles";
 import { showReactIconPicker } from "../../modals/icon-picker-modal";
-import { showReactModal } from "../../show-react-modal";
+import { showShelledModal } from "../../show-react-modal";
 import type { CustomizableMenuStore } from "./store";
 import { buildCustomizableMenuStyles } from "./styles";
 import type { CustomizableContextMenuItem } from "./types";
@@ -380,11 +380,9 @@ export interface OpenItemManagerOptions {
 }
 
 export function openItemManagerModal({ app, store, cssPrefix }: OpenItemManagerOptions): void {
-	showReactModal({
-		app,
+	showShelledModal(app, {
 		cssPrefix,
-		testIdPrefix: cssPrefix,
-		cls: `${cssPrefix}item-manager-modal`,
+		name: "item-manager",
 		title: "Manage Context Menu Items",
 		render: () => <ItemManagerContent app={app} store={store} />,
 	});

@@ -21,8 +21,8 @@ vi.mock("../../../src/react/modals", () => ({
 	openICSAddModal: vi.fn().mockResolvedValue(null),
 	openICSEditModal: vi.fn().mockResolvedValue(undefined),
 	openCalendarIntegrationDeleteEventsModal: vi.fn().mockResolvedValue(null),
-	openCategoryDeleteModal: vi.fn().mockResolvedValue(undefined),
-	openCategoryRenameModal: vi.fn().mockResolvedValue(undefined),
+	runCategoryDeleteFlow: vi.fn().mockResolvedValue(undefined),
+	runCategoryRenameFlow: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock("../../../src/components/modals", () => ({
 	showCategoryEventsModal: vi.fn(),

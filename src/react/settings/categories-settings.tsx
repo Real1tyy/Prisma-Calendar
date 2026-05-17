@@ -25,7 +25,7 @@ import {
 	type SingleCalendarConfig,
 	SingleCalendarConfigSchema,
 } from "../../types/settings";
-import { openCategoryDeleteModal, openCategoryRenameModal } from "../modals";
+import { runCategoryDeleteFlow, runCategoryRenameFlow } from "../modals";
 import { PrismaSection } from "./_section";
 import { ProUpgradeBanner } from "./pro-upgrade-banner";
 
@@ -188,14 +188,14 @@ const CategoriesListSection = memo(function CategoriesListSection({
 
 	const handleRename = useCallback(
 		(categoryName: string) => {
-			openCategoryRenameModal(app, categoryTracker, settingsStore, categoryName, () => {});
+			runCategoryRenameFlow(app, categoryTracker, settingsStore, categoryName, () => {});
 		},
 		[app, categoryTracker, settingsStore]
 	);
 
 	const handleDelete = useCallback(
 		(categoryName: string) => {
-			openCategoryDeleteModal(app, categoryTracker, settingsStore, categoryName, () => {});
+			runCategoryDeleteFlow(app, categoryTracker, settingsStore, categoryName, () => {});
 		},
 		[app, categoryTracker, settingsStore]
 	);
