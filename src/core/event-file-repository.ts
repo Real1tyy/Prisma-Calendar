@@ -1,4 +1,4 @@
-import type { FrontmatterDiff, SyncStore, VaultRow, VaultTableEvent } from "@real1ty-obsidian-plugins";
+import type { FrontmatterDiff, FrontmatterRepo, SyncStore, VaultRow, VaultTableEvent } from "@real1ty-obsidian-plugins";
 import { isFolderNote, removeMarkdownExtension, toSafeString, VaultTable } from "@real1ty-obsidian-plugins";
 import { type App, TFile } from "obsidian";
 import { BehaviorSubject, type Observable, Subject, type Subscription } from "rxjs";
@@ -34,7 +34,7 @@ export type FrontmatterSnapshot = {
 
 type EventTable = VaultTable<Frontmatter>;
 
-export class EventFileRepository implements CalendarEventSource {
+export class EventFileRepository implements CalendarEventSource, FrontmatterRepo<Frontmatter, FrontmatterSnapshot> {
 	private table: EventTable;
 	private settingsSub: Subscription | null = null;
 	private tableSub: Subscription | null = null;

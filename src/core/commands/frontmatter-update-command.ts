@@ -1,41 +1,27 @@
-import type { Command } from "@real1ty-obsidian-plugins";
-import { ensureISOSuffix, parseFrontmatterRecord, parseIntoList, toDisplayLink } from "@real1ty-obsidian-plugins";
+import {
+	ensureISOSuffix,
+	FrontmatterUpdateCommand as SharedFrontmatterUpdateCommand,
+	parseFrontmatterRecord,
+	parseIntoList,
+	toDisplayLink,
+} from "@real1ty-obsidian-plugins";
 import type { DurationLike } from "luxon";
 
 import type { Frontmatter } from "../../types";
 import { applyStartEndOffsets } from "../../utils/frontmatter/basics";
 import { assignListToFrontmatter, parseCustomDoneProperty } from "../../utils/frontmatter/props";
 import type { CalendarBundle } from "../calendar-bundle";
-import type { EventFileRepository, FrontmatterSnapshot } from "../event-file-repository";
+import type { FrontmatterSnapshot } from "../event-file-repository";
 
-export class FrontmatterUpdateCommand implements Command {
-	private snapshot: FrontmatterSnapshot | null = null;
-
-	constructor(
-		private repo: EventFileRepository,
-		private filePath: string,
-		private updater: (fm: Frontmatter) => void,
-		private type: string
-	) {}
-
-	async execute(): Promise<void> {
-		if (!this.snapshot) this.snapshot = await this.repo.snapshotByPath(this.filePath);
-		await this.repo.updateFrontmatterByPath(this.filePath, this.updater);
-	}
-
-	async undo(): Promise<void> {
-		if (!this.snapshot) return;
-		await this.repo.restoreSnapshot(this.snapshot);
-	}
-
-	getType(): string {
-		return this.type;
-	}
-
-	canUndo(): boolean {
-		return this.snapshot !== null;
-	}
-}
+/**
+ * Prisma-pinned alias of the shared {@link SharedFrontmatterUpdateCommand}.
+ * Locks the generics to the plugin's `Frontmatter` data shape and
+ * `FrontmatterSnapshot` repo shape so call sites and return-type annotations
+ * stay terse — `new FrontmatterUpdateCommand(repo, …)` infers correctly and
+ * `: FrontmatterUpdateCommand` annotations mean the right concrete type.
+ */
+export type FrontmatterUpdateCommand = SharedFrontmatterUpdateCommand<Frontmatter, FrontmatterSnapshot>;
+export const FrontmatterUpdateCommand = SharedFrontmatterUpdateCommand;
 
 export function markAsDone(bundle: CalendarBundle, filePath: string): FrontmatterUpdateCommand {
 	const settings = bundle.settingsStore.currentSettings;

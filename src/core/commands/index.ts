@@ -2,6 +2,7 @@ export {
 	createBatchAssignCategories,
 	createBatchClone,
 	createBatchDelete,
+	createBatchDeleteCategory,
 	createBatchDuplicate,
 	createBatchMakeReal,
 	createBatchMakeVirtual,
@@ -9,9 +10,11 @@ export {
 	createBatchMarkAsNotDone,
 	createBatchMove,
 	createBatchMoveBy,
+	createBatchRenameCategory,
 	createBatchSkip,
 	createBatchUpdateFrontmatter,
 } from "./batch-commands";
+export { deleteCategoryCommand, renameCategoryCommand } from "./category-commands";
 export {
 	addPrerequisite,
 	assignCategories,
