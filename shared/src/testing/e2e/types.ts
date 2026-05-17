@@ -32,7 +32,14 @@ export type ObsidianApp = {
 		open: () => void;
 		openTabById: (id: string) => void;
 	};
-	vault?: { adapter?: { basePath?: string } };
+	vault?: {
+		adapter?: { basePath?: string };
+		create?: (path: string, content: string) => Promise<unknown>;
+		getAbstractFileByPath?: (path: string) => unknown;
+	};
+	metadataCache?: {
+		getFileCache?: (file: unknown) => unknown;
+	};
 };
 
 export type ObsidianWindow = {

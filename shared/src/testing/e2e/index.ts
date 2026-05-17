@@ -33,6 +33,7 @@ export {
 	readPluginData,
 } from "./frontmatter";
 export { type GlobalSetupOptions, pruneStaleE2eResources } from "./global-setup";
+export { seedMarkdownNote } from "./seed";
 export {
 	countPluginCommands,
 	executeCommand,

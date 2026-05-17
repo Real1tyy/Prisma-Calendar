@@ -16,9 +16,22 @@ export interface NotesManipulatorExecutePresetInput {
 	presetName: string;
 }
 /**
- * True if the preset ran to completion. False on Pro-gate, unknown name, or executor failure.
+ * Structured result envelope. Mirrors the `moveEventToCalendar` shape from Prisma-Calendar so cross-plugin consumers see a uniform success/reason/error contract.
  */
-export type NotesManipulatorExecutePresetOutput = boolean;
+export interface NotesManipulatorExecutePresetOutput {
+	/**
+	 * Human-readable failure detail. Always present when `success === false`.
+	 */
+	error?: string;
+	/**
+	 * Present when `success === false`. Distinguishes the three failure paths so callers can branch on the cause.
+	 */
+	reason?: "no-pro" | "unknown-preset" | "executor-failed";
+	/**
+	 * True only when the preset ran end-to-end and at least one operation succeeded.
+	 */
+	success: boolean;
+}
 /**
  * Flattened list of every configured preset across all mode buckets.
  */
