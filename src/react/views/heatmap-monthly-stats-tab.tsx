@@ -1,18 +1,11 @@
-import {
-	Cell,
-	GridLayout,
-	ImperativeCellHost,
-	useApp,
-	usePersistedGridState,
-	useSubscription,
-} from "@real1ty-obsidian-plugins-react";
-import { memo, type Ref, useCallback, useImperativeHandle, useMemo, useRef } from "react";
-import { debounceTime, merge } from "rxjs";
+import { Cell, GridLayout, ImperativeCellHost, useApp, usePersistedGridState } from "@real1ty-obsidian-plugins-react";
+import { memo, type Ref, useCallback, useImperativeHandle, useRef } from "react";
 
 import { type HeatmapHandle, renderHeatmapInto } from "../../components/modals";
 import { cls, tid } from "../../constants";
 import { PRO_FEATURES } from "../../core/license";
 import { useBundle } from "../contexts/bundle-context";
+import { useBundleChangeEffect } from "../hooks/use-bundle-changes";
 import { ProGatedContent } from "./pro-gated-content";
 import { type IntervalStatsCellHandle, mountIntervalStatsCell } from "./stats/interval-stats-cell";
 import { MONTHLY_STATS_CONFIG } from "./stats/stats-configs";
@@ -63,14 +56,13 @@ const HeatmapMonthlyStatsBody = memo(function HeatmapMonthlyStatsBody({ handleRe
 		statsHandleRef.current = null;
 	}, []);
 
-	const changes$ = useMemo(
-		() =>
-			merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$).pipe(debounceTime(REFRESH_DEBOUNCE_MS)),
-		[bundle]
+	useBundleChangeEffect(
+		bundle,
+		() => {
+			heatmapRef.current?.refresh(bundle.eventStore.getAllEvents());
+		},
+		{ debounceMs: REFRESH_DEBOUNCE_MS }
 	);
-	useSubscription(changes$, () => {
-		heatmapRef.current?.refresh(bundle.eventStore.getAllEvents());
-	});
 
 	useImperativeHandle(
 		handleRef,

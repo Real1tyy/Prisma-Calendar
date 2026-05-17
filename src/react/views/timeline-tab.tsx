@@ -1,11 +1,12 @@
-import { renderReactInline, useApp, useSubscription } from "@real1ty-obsidian-plugins-react";
+import { renderReactInline, useApp } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
-import { debounceTime, distinctUntilChanged, map, merge, skip } from "rxjs";
+import { distinctUntilChanged, map, skip } from "rxjs";
 
 import { renderTimelineInto, type TimelineHandle } from "../../components/modals";
 import { CSS_PREFIX } from "../../constants";
 import { getTimelineRenderingKey } from "../../utils/calendar/settings";
 import { BundleContext, useBundle } from "../contexts/bundle-context";
+import { useBundleChangeEffect } from "../hooks/use-bundle-changes";
 import { FilterBar, type FilterBarHandle } from "./filter-bar";
 
 const REFRESH_DEBOUNCE_MS = 100;
@@ -54,19 +55,17 @@ export const TimelineTab = memo(function TimelineTab() {
 		};
 	}, [app, bundle, handleFilterChange, handleFilterReady]);
 
-	const changes$ = useMemo(() => {
-		const renderingSettings$ = bundle.settingsStore.settings$.pipe(
-			skip(1),
-			map(getTimelineRenderingKey),
-			distinctUntilChanged()
-		);
-		return merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$, renderingSettings$).pipe(
-			debounceTime(REFRESH_DEBOUNCE_MS)
-		);
-	}, [bundle]);
-	useSubscription(changes$, () => {
-		handleRef.current?.invalidateAndRefetch();
-	});
+	const extra = useMemo(
+		() => [bundle.settingsStore.settings$.pipe(skip(1), map(getTimelineRenderingKey), distinctUntilChanged())],
+		[bundle]
+	);
+	useBundleChangeEffect(
+		bundle,
+		() => {
+			handleRef.current?.invalidateAndRefetch();
+		},
+		{ debounceMs: REFRESH_DEBOUNCE_MS, extra }
+	);
 
 	return (
 		<div ref={containerRef} style={{ flex: "1 1 auto", minHeight: 0 }} data-testid={`${CSS_PREFIX}timeline-tab`} />

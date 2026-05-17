@@ -1,12 +1,13 @@
-import { renderReactInline, useApp, useSubscription } from "@real1ty-obsidian-plugins-react";
+import { renderReactInline, useApp } from "@real1ty-obsidian-plugins-react";
 import { memo, type Ref, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from "react";
-import { debounceTime, distinctUntilChanged, map, merge, skip } from "rxjs";
+import { distinctUntilChanged, map, skip } from "rxjs";
 
 import { type HeatmapHandle, renderHeatmapInto } from "../../components/modals";
 import { CSS_PREFIX } from "../../constants";
 import { PRO_FEATURES } from "../../core/license";
 import { getHeatmapRenderingKey } from "../../utils/calendar/settings";
 import { BundleContext, useBundle } from "../contexts/bundle-context";
+import { useBundleChangeEffect } from "../hooks/use-bundle-changes";
 import { FilterBar, type FilterBarHandle } from "./filter-bar";
 import { ProGatedContent } from "./pro-gated-content";
 
@@ -67,19 +68,17 @@ const HeatmapBody = memo(function HeatmapBody({ handleRef }: HeatmapTabProps) {
 		};
 	}, [app, bundle, getFilteredEvents, handleFilterChange, handleFilterReady]);
 
-	const changes$ = useMemo(() => {
-		const renderingSettings$ = bundle.settingsStore.settings$.pipe(
-			skip(1),
-			map(getHeatmapRenderingKey),
-			distinctUntilChanged()
-		);
-		return merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$, renderingSettings$).pipe(
-			debounceTime(REFRESH_DEBOUNCE_MS)
-		);
-	}, [bundle]);
-	useSubscription(changes$, () => {
-		heatmapRef.current?.refresh(getFilteredEvents());
-	});
+	const extra = useMemo(
+		() => [bundle.settingsStore.settings$.pipe(skip(1), map(getHeatmapRenderingKey), distinctUntilChanged())],
+		[bundle]
+	);
+	useBundleChangeEffect(
+		bundle,
+		() => {
+			heatmapRef.current?.refresh(getFilteredEvents());
+		},
+		{ debounceMs: REFRESH_DEBOUNCE_MS, extra }
+	);
 
 	useImperativeHandle(
 		handleRef,

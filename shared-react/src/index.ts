@@ -111,6 +111,7 @@ export { useKeyDown } from "./hooks/keyboard";
 export { useEnterKey, type UseEnterKeyOptions, useEscapeKey } from "./hooks/keyboard";
 export { type SnapshotSubscribable, useExternalSnapshot } from "./hooks/reactive";
 export { useObservable, useSubscription } from "./hooks/reactive";
+export { useThrottledObservable } from "./hooks/reactive";
 export { useColorEvaluator, useReleaseCheck } from "./hooks/services";
 export type { Paths, PathValue } from "./hooks/settings";
 export { type SchemaFieldBinding, type SettingsStorelike, useSchemaField } from "./hooks/settings";

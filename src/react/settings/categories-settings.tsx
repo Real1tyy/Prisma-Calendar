@@ -5,9 +5,9 @@ import {
 	PieChart,
 	SettingHeading,
 	useApp,
-	useObservable,
 	useSchemaField,
 	useSettingsFields,
+	useThrottledObservable,
 } from "@real1ty-obsidian-plugins-react";
 import Chart from "chart.js/auto";
 import { nanoid } from "nanoid";
@@ -31,6 +31,12 @@ import { ProUpgradeBanner } from "./pro-upgrade-banner";
 
 const S = SingleCalendarConfigSchema.shape;
 const EMPTY_CATEGORIES: ReadonlyArray<{ name: string; color: string }> = [];
+
+// Smooths the per-file emission burst from `categoryTracker.categories$` during
+// bulk category rename/delete macros (one emission per modified file). The
+// throttle keeps the pie chart and category list from redrawing N times per
+// macro while still rendering the final settled state.
+const CATEGORIES_REFRESH_MS = 150;
 
 const CATEGORY_FIELDS = ["categoryProp", "colorRules", "defaultNodeColor", "categoryAssignmentPresets"] as const;
 
@@ -150,7 +156,7 @@ const CategoriesListSection = memo(function CategoriesListSection({
 	settings,
 	app,
 }: CategoriesListSectionProps) {
-	const categories = useObservable(categoryTracker.categories$, EMPTY_CATEGORIES);
+	const categories = useThrottledObservable(categoryTracker.categories$, CATEGORIES_REFRESH_MS, EMPTY_CATEGORIES);
 	const [, setColorRules] = useSchemaField(settingsStore, "colorRules");
 
 	const categoriesInfo = useMemo(() => {
@@ -291,7 +297,7 @@ const CategoryChartSection = memo(function CategoryChartSection({
 	categoryProp,
 	settings,
 }: CategoryChartSectionProps) {
-	const categories = useObservable(categoryTracker.categories$, EMPTY_CATEGORIES);
+	const categories = useThrottledObservable(categoryTracker.categories$, CATEGORIES_REFRESH_MS, EMPTY_CATEGORIES);
 
 	const chartData = useMemo<PieChartData>(() => {
 		const items = categories.map(({ name }) => {
