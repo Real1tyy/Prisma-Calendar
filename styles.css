@@ -1155,7 +1155,9 @@ button[class*=prisma-]:focus-visible {
     height: 4px;
   }
 }
-.prisma-calendar-loading { /* intentional stub — class is a DOM hook only; the spinner element renders its own visuals */ }
+.prisma-calendar-loading {
+  /* intentional stub — class is a DOM hook only; the spinner element renders its own visuals */
+}
 
 @keyframes prisma-calendar-spin {
   0% {
@@ -8102,7 +8104,9 @@ div.vis-tooltip {
   white-space: nowrap;
   vertical-align: middle;
 }
-.prisma-capacity-chart { /* intentional stub — chart canvas styles itself via Chart.js */ }
+.prisma-capacity-chart {
+  /* intentional stub — chart canvas styles itself via Chart.js */
+}
 .prisma-capacity-label {
   display: flex;
   align-items: center;
@@ -8500,7 +8504,9 @@ div.vis-tooltip {
   flex: 1 1 auto;
 }
 
-.prisma-gantt-wrapper { /* intentional stub — TS-created flex column with no plugin-owned styling */ }
+.prisma-gantt-wrapper {
+  /* intentional stub — TS-created flex column with no plugin-owned styling */
+}
 
 .prisma-welcome-tagline-headline {
   display: block;
