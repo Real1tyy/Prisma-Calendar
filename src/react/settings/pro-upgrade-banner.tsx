@@ -15,7 +15,7 @@ const FREE_VS_PRO_URL = "https://real1tyy.github.io/Prisma-Calendar/features/fre
 interface ProUpgradeBannerProps {
 	featureName: string;
 	description: string;
-	previewKey?: ProFeatureKey;
+	previewKey?: ProFeatureKey | undefined;
 }
 
 export const ProUpgradeBanner = memo(function ProUpgradeBanner({

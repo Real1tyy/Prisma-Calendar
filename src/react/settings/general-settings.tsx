@@ -11,9 +11,8 @@ import {
 	useSchemaField,
 	useSettingsFields,
 } from "@real1ty-obsidian-plugins-react";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useState } from "react";
 
-import { renderProUpgradeBanner } from "../../components/settings/pro-upgrade-banner";
 import { cls, tid } from "../../constants";
 import { ACCOUNT_URL, FREE_MAX_EVENT_PRESETS } from "../../core/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
@@ -21,6 +20,7 @@ import { buildWhatsNewConfig } from "../../core/whats-new-config";
 import type CustomCalendarPlugin from "../../main";
 import type { CustomCalendarSettings } from "../../types/settings";
 import { CustomCalendarSettingsSchema, SingleCalendarConfigSchema } from "../../types/settings";
+import { ProUpgradeBanner } from "./pro-upgrade-banner";
 import { PrismaSection } from "./_section";
 
 const SHAPE = SingleCalendarConfigSchema.shape;
@@ -146,20 +146,6 @@ const EventPresetsSection = memo(function EventPresetsSection({ settingsStore, p
 	]);
 	const showBanner = !plugin.isProEnabled && presets.length >= FREE_MAX_EVENT_PRESETS;
 
-	const bannerRef = useRef<HTMLDivElement>(null);
-	useEffect(() => {
-		const el = bannerRef.current;
-		if (!el) return;
-		el.empty();
-		if (showBanner) {
-			renderProUpgradeBanner(
-				el,
-				"Unlimited Event Presets",
-				`Free plan supports up to ${FREE_MAX_EVENT_PRESETS} event presets. Start your 30-day free trial for unlimited presets.`
-			);
-		}
-	}, [showBanner]);
-
 	const handleDelete = useCallback(
 		(presetId: string) => {
 			void updatePresetFields((prev) => ({
@@ -217,7 +203,12 @@ const EventPresetsSection = memo(function EventPresetsSection({ settingsStore, p
 					testId={tid("settings-control-defaultPresetId")}
 				/>
 			</SettingItem>
-			<div ref={bannerRef} />
+			{showBanner && (
+				<ProUpgradeBanner
+					featureName="Unlimited Event Presets"
+					description={`Free plan supports up to ${FREE_MAX_EVENT_PRESETS} event presets. Start your 30-day free trial for unlimited presets.`}
+				/>
+			)}
 			{presets.length === 0 ? (
 				<div className={cls("event-preset-empty")}>No event presets defined. Create presets from the event modal.</div>
 			) : (

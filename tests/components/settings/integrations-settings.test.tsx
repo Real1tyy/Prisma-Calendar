@@ -4,7 +4,9 @@ import { userEvent } from "@testing-library/user-event";
 import { BehaviorSubject } from "rxjs";
 import { describe, expect, it, vi } from "vitest";
 
+import { openCalDAVAddModal, openICSAddModal } from "../../../src/react/modals";
 import { IntegrationsSettingsReact } from "../../../src/react/settings/integrations-settings";
+import type { CalDAVAccount, ICSSubscription } from "../../../src/types/integrations";
 import { type CustomCalendarSettings, CustomCalendarSettingsSchema } from "../../../src/types/settings";
 import { createMockCalendarSettingsStore } from "../../fixtures/settings-fixtures";
 import { createMockApp } from "../../setup";
@@ -116,5 +118,75 @@ describe("IntegrationsSettingsReact", () => {
 		}
 		const countryField = container.querySelector("[data-testid='prisma-settings-field-holidaysCountry']");
 		expect(countryField).toBeTruthy();
+	});
+
+	it("CalDAV account list re-renders after modal updates the store", async () => {
+		const { container, findByText, mainStore, user } = setup({ isProEnabled: true });
+		expect(container.textContent).toContain("No accounts configured.");
+
+		const newAccount: CalDAVAccount = {
+			id: "test-account-1",
+			name: "Test Nextcloud",
+			serverUrl: "https://example.com/dav",
+			authMethod: "Basic",
+			credentials: { username: "alice", passwordSecretName: "pw-secret" },
+			enabled: true,
+			calendarId: "test-calendar",
+			selectedCalendars: [],
+			syncIntervalMinutes: 15,
+			timezone: "UTC",
+			createdAt: Date.now(),
+		};
+		vi.mocked(openCalDAVAddModal).mockImplementationOnce(async (_app, store: any) => {
+			await store.updateSettings((s: CustomCalendarSettings) => ({
+				...s,
+				caldav: { ...s.caldav, accounts: [...s.caldav.accounts, newAccount] },
+			}));
+			return newAccount;
+		});
+
+		const addBtn = container.querySelector<HTMLElement>(".prisma-caldav-add-account-button");
+		expect(addBtn).toBeTruthy();
+		await user.click(addBtn!);
+
+		await findByText("Test Nextcloud");
+		expect(container.textContent).not.toContain("No accounts configured.");
+		expect(mainStore.currentSettings.caldav.accounts).toHaveLength(1);
+	});
+
+	it("ICS subscription list re-renders after modal updates the store", async () => {
+		const { container, findByText, mainStore, user } = setup({ isProEnabled: true });
+		expect(container.textContent).toContain("No subscriptions configured.");
+
+		const newSubscription: ICSSubscription = {
+			id: "test-sub-1",
+			name: "Test Calendar Feed",
+			urlSecretName: "ics-url-secret",
+			enabled: true,
+			calendarId: "test-calendar",
+			syncIntervalMinutes: 60,
+			timezone: "UTC",
+			createdAt: Date.now(),
+		};
+		vi.mocked(openICSAddModal).mockImplementationOnce(async (_app, store: any) => {
+			await store.updateSettings((s: CustomCalendarSettings) => ({
+				...s,
+				icsSubscriptions: {
+					...s.icsSubscriptions,
+					subscriptions: [...s.icsSubscriptions.subscriptions, newSubscription],
+				},
+			}));
+			return newSubscription;
+		});
+
+		const addBtn = Array.from(container.querySelectorAll<HTMLElement>(".prisma-caldav-add-account-button")).find(
+			(el) => el.textContent === "Add subscription"
+		);
+		expect(addBtn).toBeTruthy();
+		await user.click(addBtn!);
+
+		await findByText("Test Calendar Feed");
+		expect(container.textContent).not.toContain("No subscriptions configured.");
+		expect(mainStore.currentSettings.icsSubscriptions.subscriptions).toHaveLength(1);
 	});
 });

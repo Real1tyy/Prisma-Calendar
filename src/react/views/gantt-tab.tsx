@@ -180,21 +180,25 @@ function buildBarMenuItems(
 	];
 }
 
-interface GanttToolbarProps {
+interface GanttToolbarState {
 	prereqState$: BehaviorSubject<PrereqState | null>;
+}
+
+interface GanttToolbarActions {
 	onCreate: () => void;
 	onCancelPrereq: () => void;
 	onFilterChange: () => void;
 	onFilterReady: (handle: FilterBarHandle) => void;
 }
 
-const GanttToolbar = memo(function GanttToolbar({
-	prereqState$,
-	onCreate,
-	onCancelPrereq,
-	onFilterChange,
-	onFilterReady,
-}: GanttToolbarProps) {
+interface GanttToolbarProps {
+	state: GanttToolbarState;
+	actions: GanttToolbarActions;
+}
+
+const GanttToolbar = memo(function GanttToolbar({ state, actions }: GanttToolbarProps) {
+	const { prereqState$ } = state;
+	const { onCreate, onCancelPrereq, onFilterChange, onFilterReady } = actions;
 	const prereq = useObservable(prereqState$, prereqState$.getValue());
 
 	return (
@@ -387,11 +391,13 @@ const GanttBody = memo(function GanttBody() {
 			renderer.toolbarLeft,
 			<BundleContext value={bundle}>
 				<GanttToolbar
-					prereqState$={prereqState$}
-					onCreate={handleCreate}
-					onCancelPrereq={handleCancelPrereq}
-					onFilterChange={handleFilterChange}
-					onFilterReady={handleFilterReady}
+					state={{ prereqState$ }}
+					actions={{
+						onCreate: handleCreate,
+						onCancelPrereq: handleCancelPrereq,
+						onFilterChange: handleFilterChange,
+						onFilterReady: handleFilterReady,
+					}}
 				/>
 			</BundleContext>,
 			app,

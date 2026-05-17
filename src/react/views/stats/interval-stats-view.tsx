@@ -87,15 +87,19 @@ export const IntervalStatsView = memo(function IntervalStatsView({ bundle, confi
 	return (
 		<div className="prisma-interval-stats-view">
 			<StatsHeaderBar
-				dateLabel={dateLabel}
-				totalDuration={stats.totalDuration}
-				eventCount={eventCount}
-				showDecimalHours={showDecimalHours}
-				aggregationMode={aggregationMode}
-				includeSkipped={includeSkipped}
-				onToggleDecimalHours={toggleDecimalHours}
-				onToggleAggregation={toggleAggregation}
-				onToggleSkipped={setIncludeSkipped}
+				model={{
+					dateLabel,
+					totalDuration: stats.totalDuration,
+					eventCount,
+					showDecimalHours,
+					aggregationMode,
+					includeSkipped,
+				}}
+				controller={{
+					onToggleDecimalHours: toggleDecimalHours,
+					onToggleAggregation: toggleAggregation,
+					onToggleSkipped: setIncludeSkipped,
+				}}
 			/>
 
 			<div className="prisma-stats-content">
@@ -130,29 +134,29 @@ export const IntervalStatsView = memo(function IntervalStatsView({ bundle, confi
 	);
 });
 
-interface StatsHeaderBarProps {
+interface StatsHeaderBarModel {
 	dateLabel: string;
 	totalDuration: number;
 	eventCount: number;
 	showDecimalHours: boolean;
 	aggregationMode: AggregationMode;
 	includeSkipped: boolean;
+}
+
+interface StatsHeaderBarController {
 	onToggleDecimalHours: () => void;
 	onToggleAggregation: () => void;
 	onToggleSkipped: (value: boolean) => void;
 }
 
-const StatsHeaderBar = memo(function StatsHeaderBar({
-	dateLabel,
-	totalDuration,
-	eventCount,
-	showDecimalHours,
-	aggregationMode,
-	includeSkipped,
-	onToggleDecimalHours,
-	onToggleAggregation,
-	onToggleSkipped,
-}: StatsHeaderBarProps) {
+interface StatsHeaderBarProps {
+	model: StatsHeaderBarModel;
+	controller: StatsHeaderBarController;
+}
+
+const StatsHeaderBar = memo(function StatsHeaderBar({ model, controller }: StatsHeaderBarProps) {
+	const { dateLabel, totalDuration, eventCount, showDecimalHours, aggregationMode, includeSkipped } = model;
+	const { onToggleDecimalHours, onToggleAggregation, onToggleSkipped } = controller;
 	const formatDur = pickDurationFormatter({ showDecimalHours });
 
 	return (

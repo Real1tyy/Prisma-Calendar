@@ -131,10 +131,9 @@ interface CalDAVSectionProps {
 
 const CalDAVSection = memo(function CalDAVSection({ mainSettingsStore, plugin, calendarId, app }: CalDAVSectionProps) {
 	const [caldavSettings, setCaldav] = useSchemaField(mainSettingsStore, "caldav");
-	const [, forceUpdate] = useState(0);
 
 	const handleAddAccount = useCallback(() => {
-		void openCalDAVAddModal(app, mainSettingsStore, calendarId).then(() => forceUpdate((n) => n + 1));
+		void openCalDAVAddModal(app, mainSettingsStore, calendarId);
 	}, [app, mainSettingsStore, calendarId]);
 
 	const handleSync = useCallback(
@@ -146,9 +145,7 @@ const CalDAVSection = memo(function CalDAVSection({ mainSettingsStore, plugin, c
 
 	const handleEdit = useCallback(
 		(account: CalDAVAccount) => {
-			void openCalDAVEditModal(app, mainSettingsStore, plugin, calendarId, account).then(() =>
-				forceUpdate((n) => n + 1)
-			);
+			void openCalDAVEditModal(app, mainSettingsStore, plugin, calendarId, account);
 		},
 		[app, mainSettingsStore, plugin, calendarId]
 	);
@@ -320,10 +317,9 @@ interface ICSSectionProps {
 
 const ICSSection = memo(function ICSSection({ mainSettingsStore, plugin, calendarId, app }: ICSSectionProps) {
 	const [icsSettings, setIcs] = useSchemaField(mainSettingsStore, "icsSubscriptions");
-	const [, forceUpdate] = useState(0);
 
 	const handleAddSubscription = useCallback(() => {
-		void openICSAddModal(app, mainSettingsStore, calendarId).then(() => forceUpdate((n) => n + 1));
+		void openICSAddModal(app, mainSettingsStore, calendarId);
 	}, [app, mainSettingsStore, calendarId]);
 
 	const handleSync = useCallback(
@@ -335,7 +331,7 @@ const ICSSection = memo(function ICSSection({ mainSettingsStore, plugin, calenda
 
 	const handleEdit = useCallback(
 		(subscription: ICSSubscription) => {
-			void openICSEditModal(app, mainSettingsStore, subscription).then(() => forceUpdate((n) => n + 1));
+			void openICSEditModal(app, mainSettingsStore, subscription);
 		},
 		[app, mainSettingsStore]
 	);
