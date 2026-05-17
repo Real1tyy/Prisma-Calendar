@@ -12,7 +12,7 @@
 
 	// Sticky all-day events section (when enabled)
 	// FullCalendar's built-in stickyHeaderDates handles day/date headers.
-	// This CSS handles making the all-day event section sticky as well. 
+	// This CSS handles making the all-day event section sticky as well.
 	&.prisma-sticky-day-headers .fc-scrollgrid-section-header.fc-scrollgrid-section-sticky > * {
 		top: calc(var(--prisma-sticky-toolbar-offset) + 1px);
 		z-index: 14;
@@ -26,7 +26,7 @@
 	}
 
 	// Position all-day section below sticky day headers when both are enabled
-	// FullCalendar's sticky headers are at a higher z-index, so we position below them 
+	// FullCalendar's sticky headers are at a higher z-index, so we position below them
 	&.prisma-sticky-day-headers.prisma-sticky-all-day-events .fc-scrollgrid-section-body:first-of-type {
 		top: calc(var(--prisma-sticky-toolbar-offset) + var(--prisma-sticky-day-header-height) + 1px);
 	}
@@ -37,7 +37,7 @@
 	}
 
 	// Remove FullCalendar's extra divider row border between all-day and timed grid.
-	// The sticky stack already provides the intended single separator line. 
+	// The sticky stack already provides the intended single separator line.
 	.fc-timegrid-divider.fc-cell-shaded {
 		background: transparent;
 		border-width: 0;
@@ -58,7 +58,7 @@
 
 	// All-day events as columns in daily view — events sit side by side when there
 	// is enough horizontal space. Wraps to new rows when events don't fit.
-	// Uses auto basis so width is proportional to content, not forced equal. 
+	// Uses auto basis so width is proportional to content, not forced equal.
 	.fc-timeGridDay-view {
 		.fc-daygrid-day-events {
 			display: flex;

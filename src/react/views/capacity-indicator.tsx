@@ -1,14 +1,14 @@
 import { toLocalISOString } from "@real1ty-obsidian-plugins";
-import { cls, tid } from "../../constants";
 import { useObservable } from "@real1ty-obsidian-plugins-react";
 import { memo, type Ref, useImperativeHandle, useMemo, useState } from "react";
 import { combineLatest, from, of } from "rxjs";
 import { debounceTime, map, startWith, switchMap } from "rxjs/operators";
 
+import { cls, tid } from "../../constants";
 import type { CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
-import { calculateCapacityFromEvents, formatBoundaryRange, formatCapacityLabel } from "../../utils/stats/capacity";
 import { getDayBounds, pickDurationFormatter } from "../../utils/stats";
+import { calculateCapacityFromEvents, formatBoundaryRange, formatCapacityLabel } from "../../utils/stats/capacity";
 import { useBundle } from "../contexts/bundle-context";
 
 const CHANGES_DEBOUNCE_MS = 150;

@@ -1,5 +1,4 @@
 import { buildUtmUrl, executeCommand } from "@real1ty-obsidian-plugins";
-import { cls, tid } from "../../constants";
 import {
 	Dropdown,
 	SettingHeading,
@@ -13,6 +12,7 @@ import { memo, useCallback, useState } from "react";
 
 import { showConfirmDeleteModal } from "../../components/settings/generic";
 import { deleteTrackedIntegrationEvents } from "../../components/settings/integration-shared";
+import { cls, tid } from "../../constants";
 import { COMMAND_IDS, PRISMA_CALENDAR_PLUGIN_ID } from "../../constants";
 import { PRO_FEATURES } from "../../core/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";

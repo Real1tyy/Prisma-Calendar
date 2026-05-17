@@ -1,4 +1,3 @@
-import { cls, tid } from "../../../constants";
 import { ModalForm, openReactModal, SchemaForm, useZodForm } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { Notice } from "obsidian";
@@ -9,6 +8,7 @@ import {
 	ICSSubscriptionEditFormShape,
 	type ICSSubscriptionEditFormValues,
 } from "../../../components/settings/integration-shared";
+import { cls, tid } from "../../../constants";
 import type { PrismaCalendarSettingsStore } from "../../../types";
 import type { ICSSubscription } from "../../../types/integrations";
 

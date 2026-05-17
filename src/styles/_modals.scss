@@ -257,7 +257,7 @@
 // Event Modal - Content and internal layout
 .prisma-event-modal {
 	// Content container: flex column with scrollable body and sticky footer
-	// Note: Obsidian's actual scroll container is usually `.modal-content`, so we style both. 
+	// Note: Obsidian's actual scroll container is usually `.modal-content`, so we style both.
 	.modal-content,
 	.prisma-event-modal-content {
 		display: flex;
@@ -340,7 +340,7 @@
 
 		// Obsidian sliding-pill toggle (from shared-react <Toggle>) used for
 		// markAsDone / skip — right-align it the same way native checkboxes
-		// are right-aligned via `&[type="checkbox"] { margin-left: auto; }`. 
+		// are right-aligned via `&[type="checkbox"] { margin-left: auto; }`.
 		> .checkbox-container {
 			margin-left: auto;
 			flex-shrink: 0;
@@ -514,7 +514,7 @@
 
 // Sliding switch for PrismaCheckbox style="switch" (markAsDone, skip).
 // Mirrors Obsidian's native .checkbox-container look so MetadataSection
-// doesn't visually diverge from the imperative schema-form output. 
+// doesn't visually diverge from the imperative schema-form output.
 .prisma-switch {
 	position: relative;
 	display: inline-flex;
@@ -1123,7 +1123,7 @@
 
 // ===================================
 // Stopwatch / Time Tracker
-// =================================== 
+// ===================================
 .prisma-stopwatch {
 	&-field {
 		margin-bottom: 8px;

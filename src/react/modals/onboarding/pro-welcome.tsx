@@ -1,9 +1,9 @@
 import { buildUtmUrl } from "@real1ty-obsidian-plugins";
-import { cls, tid } from "../../../constants";
 import { showReactModal, WelcomeModalShell } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { memo } from "react";
 
+import { cls, tid } from "../../../constants";
 import { CSS_PREFIX } from "../../../constants";
 import { ACCOUNT_URL } from "../../../core/license";
 

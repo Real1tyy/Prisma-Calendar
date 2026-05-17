@@ -1,8 +1,8 @@
 import { describeError, MountableView, MS_PER_DAY, renderCollapsibleSection } from "@real1ty-obsidian-plugins";
-import { cls } from "../constants";
 import { Component, ItemView, MarkdownRenderer, Notice, type WorkspaceLeaf } from "obsidian";
 import { distinctUntilChanged, skip } from "rxjs";
 
+import { cls } from "../constants";
 import { CSS_PREFIX } from "../constants";
 import { AIChatManager, type ChatMessage, ChatStore } from "../core/ai";
 import { type CategoryContext, type ManipulationContext, type PlanningContext } from "../core/ai/ai-context-builder";

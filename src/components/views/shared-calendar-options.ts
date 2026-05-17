@@ -1,9 +1,9 @@
 import type { Calendar, CalendarOptions, EventContentArg } from "@fullcalendar/core";
 import allLocales from "@fullcalendar/core/locales-all";
 import { calculateDuration, type ColorEvaluator, formatDuration, toLocalISOString } from "@real1ty-obsidian-plugins";
-import { cls, tid, toggleCls } from "../../constants";
 import type { App } from "obsidian";
 
+import { cls, tid, toggleCls } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { UpdateEventCommand } from "../../core/commands";
 import { openEventCreateModal } from "../../react/modals/event/event-create-modal";
@@ -16,14 +16,14 @@ import type {
 } from "../../types/calendar";
 import { isAnyVirtual, isTimedEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
+import { stripZ } from "../../utils/dates/iso";
 import { isBatchSelectable, isHolidayEvent } from "../../utils/events/classification";
 import { resolveAllEventColors, resolveEventColor } from "../../utils/events/color";
 import { hashFrontmatter } from "../../utils/events/diff";
 import { cleanupTitle } from "../../utils/events/naming";
-import { parseFCExtendedProps } from "../../utils/frontmatter/extended-props";
-import { stripZ } from "../../utils/dates/iso";
-import { emitHover } from "../../utils/obsidian";
 import { getDisplayProperties, renderPropertyValue } from "../../utils/frontmatter/display";
+import { parseFCExtendedProps } from "../../utils/frontmatter/extended-props";
+import { emitHover } from "../../utils/obsidian";
 import type { BatchSelectionManager } from "../batch-selection-manager";
 import { applyEventMountStyling, attachLazyNotePreview, type TextColorCache } from "../calendar-event-renderer";
 import type { CalendarHost } from "../calendar-host";

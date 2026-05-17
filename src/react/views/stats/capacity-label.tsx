@@ -1,8 +1,8 @@
 import { memo, useMemo } from "react";
 
 import type { CalendarEvent } from "../../../types/calendar";
-import { calculateCapacityFromEvents, formatBoundaryRange, formatCapacityLabel } from "../../../utils/stats/capacity";
 import { pickDurationFormatter } from "../../../utils/stats";
+import { calculateCapacityFromEvents, formatBoundaryRange, formatCapacityLabel } from "../../../utils/stats/capacity";
 
 interface CapacityLabelProps {
 	events: CalendarEvent[];

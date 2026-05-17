@@ -1,8 +1,8 @@
-import { cls, tid } from "../../../constants";
 import { useFocusOnMount, VirtualList, type VirtualListHandle } from "@real1ty-obsidian-plugins-react";
 import type { ReactNode } from "react";
 import React, { memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 
+import { cls, tid } from "../../../constants";
 import { removeZettelId } from "../../../utils/events/zettel-id";
 import { type EventListAction, EventListItem, type EventListItemData } from "./event-list-item";
 

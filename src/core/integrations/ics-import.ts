@@ -10,8 +10,8 @@ import type { App, TFile } from "obsidian";
 
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
 import type { RecurrenceType } from "../../types/recurring";
-import { assignListToFrontmatter, setEventBasics } from "../../utils/events/frontmatter";
 import { generateUniqueEventPath } from "../../utils/events/file-naming";
+import { assignListToFrontmatter, setEventBasics } from "../../utils/events/frontmatter";
 import { extractZettelId, removeZettelId } from "../../utils/events/zettel-id";
 import type { CalendarBundle } from "../calendar-bundle";
 

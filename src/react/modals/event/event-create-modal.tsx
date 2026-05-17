@@ -56,7 +56,7 @@ export function openEventCreateModal(
 	};
 
 	if (!options.restoreState && settings.defaultPresetId) {
-		const presets = settings.eventPresets || [];
+		const presets = settings.eventPresets;
 		const defaultPreset = presets.find((p) => p.id === settings.defaultPresetId);
 		if (defaultPreset) {
 			initialState = applyPresetToState(initialState, defaultPreset);

@@ -1,7 +1,7 @@
-import { cls, tid } from "../../constants";
 import { useSchemaField } from "@real1ty-obsidian-plugins-react";
 import { memo, useMemo } from "react";
 
+import { cls, tid } from "../../constants";
 import type { PrismaCalendarSettingsStore } from "../../types";
 import { describeConflict, findConflictForCalendar } from "../../utils/calendar/conflicts";
 

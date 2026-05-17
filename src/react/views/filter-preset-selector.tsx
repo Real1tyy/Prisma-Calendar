@@ -1,7 +1,7 @@
-import { cls, tid } from "../../constants";
 import { useSchemaField } from "@real1ty-obsidian-plugins-react";
 import { type ChangeEvent, memo, useCallback, useRef } from "react";
 
+import { cls, tid } from "../../constants";
 import { useBundle } from "../contexts/bundle-context";
 
 const PLACEHOLDER_VALUE = "";

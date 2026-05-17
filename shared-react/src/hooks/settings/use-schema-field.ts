@@ -1,8 +1,8 @@
 import { getNestedValue, setNestedValue } from "@real1ty-obsidian-plugins";
 import { useCallback, useMemo } from "react";
 
-import type { Paths, PathValue } from "./path-types";
 import { type SnapshotSubscribable, useExternalSnapshot } from "../reactive/use-external-snapshot";
+import type { Paths, PathValue } from "./path-types";
 import type { SettingsStorelike as BaseSettingsStorelike } from "./use-settings-store";
 
 /**

@@ -1,9 +1,9 @@
 import {
 	Children,
+	type CSSProperties,
 	Fragment,
 	isValidElement,
 	memo,
-	type CSSProperties,
 	type ReactElement,
 	type ReactNode,
 	useEffect,

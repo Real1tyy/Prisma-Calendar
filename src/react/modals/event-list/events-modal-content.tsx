@@ -1,10 +1,10 @@
-import { cls, tid } from "../../../constants";
 import { showReactModal } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import type { KeyboardEvent, ReactNode } from "react";
 import { useCallback, useDeferredValue, useMemo, useState } from "react";
 
 import type { CalendarComponent } from "../../../components/calendar-view";
+import { cls, tid } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { openEventSeriesModal } from "./event-series-modal-content";
 import {

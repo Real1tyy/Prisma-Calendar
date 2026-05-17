@@ -1,8 +1,8 @@
 import type { ColorRule } from "@real1ty-obsidian-plugins";
-import { cls, tid } from "../../constants";
 import { ColorInput, SettingHeading, SettingItem, useSchemaField } from "@real1ty-obsidian-plugins-react";
 import React, { memo, useCallback, useState } from "react";
 
+import { cls, tid } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import { type FilterPreset, SingleCalendarConfigSchema } from "../../types/settings";
 import { PrismaSection } from "./_section";

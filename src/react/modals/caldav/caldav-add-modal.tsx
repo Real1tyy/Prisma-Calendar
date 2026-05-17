@@ -1,4 +1,3 @@
-import { cls, tid } from "../../../constants";
 import { ModalForm, openReactModal, SchemaForm, SettingItem, useZodForm } from "@real1ty-obsidian-plugins-react";
 import { nanoid } from "nanoid";
 import type { App } from "obsidian";
@@ -7,6 +6,7 @@ import { useCallback, useMemo, useState } from "react";
 import { z } from "zod";
 
 import { CalDAVAddFormShape, type CalDAVAddFormValues } from "../../../components/settings/integration-shared";
+import { cls, tid } from "../../../constants";
 import { CalDAVClientService } from "../../../core/integrations/caldav";
 import { useConnectionTest } from "../../../react/hooks/use-connection-test";
 import type { PrismaCalendarSettingsStore } from "../../../types";

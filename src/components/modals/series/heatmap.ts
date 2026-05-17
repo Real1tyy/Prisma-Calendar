@@ -1,15 +1,15 @@
 import { buildColorGradient, ColorEvaluator, hexToRgb, showModal } from "@real1ty-obsidian-plugins";
-import { addCls, cls, tid } from "../../../constants";
 import { DateTime } from "luxon";
 import type { App } from "obsidian";
 
+import { addCls, cls, tid } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { CalendarEvent } from "../../../types/calendar";
 import type { SingleCalendarConfig } from "../../../types/settings";
 import { resolveAllEventColors } from "../../../utils/events/color";
 import { cleanupTitle } from "../../../utils/events/naming";
-import { emitHover } from "../../../utils/obsidian";
 import { getDisplayProperties, renderPropertyValue } from "../../../utils/frontmatter/display";
+import { emitHover } from "../../../utils/obsidian";
 import { injectOverflowDots } from "../../calendar-event-renderer";
 import { buildHeatmapDataset, type HeatmapDataset } from "../../heatmap/heatmap-data";
 import {

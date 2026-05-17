@@ -1,7 +1,8 @@
-import { cls, tid } from "../../../constants";
 import { ModalSchemaForm, openReactModal, SchemaForm, useZodForm } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { z } from "zod";
+
+import { cls, tid } from "../../../constants";
 
 const UntrackedEventSchema = z.object({
 	name: z.string().min(1).default("").describe("Event name"),

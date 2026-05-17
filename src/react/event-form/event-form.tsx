@@ -23,8 +23,8 @@ import type { Frontmatter } from "../../types";
 import { isTimedEvent } from "../../types/calendar";
 import type { EventPreset } from "../../types/settings";
 import { autoAssignCategories, findAdjacentEvent } from "../../utils/events/matching";
-import { validateEventTitle } from "../../utils/events/title-validation";
 import { extractCleanDisplayName } from "../../utils/events/naming";
+import { validateEventTitle } from "../../utils/events/title-validation";
 import { formatDateTimeForInput } from "../../utils/format";
 import { openCategoryAssignModal, openPrerequisiteAssignModal } from "../modals";
 import { Stopwatch, type StopwatchHandle, type StopwatchSnapshot } from "../views/stopwatch";
@@ -84,7 +84,7 @@ export const EventForm = memo(function EventForm({
 	});
 
 	const [suppressAutoCategories, setSuppressAutoCategories] = useState(
-		() => (initialState?.categories?.length ?? 0) > 0
+		() => (initialState?.categories.length ?? 0) > 0
 	);
 	const initialMarkAsDoneRef = useRef(initialState?.markAsDone ?? false);
 	const stopwatchSnapshotRef = useRef<StopwatchSnapshot | null>(initialStopwatchSnapshot ?? null);
@@ -111,11 +111,7 @@ export const EventForm = memo(function EventForm({
 	}, []);
 
 	const displayKeySet = useMemo(
-		() =>
-			new Set([
-				...(settings.frontmatterDisplayProperties || []),
-				...(settings.frontmatterDisplayPropertiesAllDay || []),
-			]),
+		() => new Set([...settings.frontmatterDisplayProperties, ...settings.frontmatterDisplayPropertiesAllDay]),
 		[settings.frontmatterDisplayProperties, settings.frontmatterDisplayPropertiesAllDay]
 	);
 
@@ -202,12 +198,10 @@ export const EventForm = memo(function EventForm({
 
 	const applyAutoCategories = useCallback(() => {
 		if (suppressAutoCategories) return;
-		const title = form.getValues("title")?.trim();
+		const title = form.getValues("title").trim();
 		if (!title) return;
 
-		const hasAutoAssign =
-			settings.autoAssignCategoryByName ||
-			(settings.categoryAssignmentPresets && settings.categoryAssignmentPresets.length > 0);
+		const hasAutoAssign = settings.autoAssignCategoryByName || settings.categoryAssignmentPresets.length > 0;
 		if (!hasAutoAssign) return;
 
 		const availableCategories = bundle.categoryTracker.getCategories();
@@ -291,11 +285,11 @@ export const EventForm = memo(function EventForm({
 	}, []);
 
 	// Preset selector
-	const [presets, setPresets] = useState<EventPreset[]>(settings.eventPresets || []);
+	const [presets, setPresets] = useState<EventPreset[]>(settings.eventPresets);
 
 	useEffect(() => {
 		const sub = bundle.settingsStore.settings$.subscribe((s) => {
-			setPresets(s.eventPresets || []);
+			setPresets(s.eventPresets);
 		});
 		return () => sub.unsubscribe();
 	}, [bundle]);

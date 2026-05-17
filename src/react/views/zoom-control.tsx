@@ -1,8 +1,8 @@
-import { cls, tid } from "../../constants";
 import { type SnapshotSubscribable, useExternalSnapshot, useSchemaField } from "@real1ty-obsidian-plugins-react";
 import { Menu } from "obsidian";
 import React, { memo, useCallback, useEffect, useRef } from "react";
 
+import { cls, tid } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 
 interface ZoomControlProps {

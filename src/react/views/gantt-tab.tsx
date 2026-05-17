@@ -1,5 +1,4 @@
 import { ColorEvaluator, parseIntoList } from "@real1ty-obsidian-plugins";
-import { cls } from "../../constants";
 import {
 	createCustomizableContextMenu,
 	type CustomizableContextMenuHandle,
@@ -30,6 +29,7 @@ import {
 	packRows,
 } from "../../components/gantt";
 import { showEventPreviewModal } from "../../components/modals";
+import { cls } from "../../constants";
 import { CSS_PREFIX } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import {

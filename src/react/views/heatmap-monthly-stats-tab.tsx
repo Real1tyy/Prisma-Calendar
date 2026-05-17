@@ -1,4 +1,3 @@
-import { cls, tid } from "../../constants";
 import {
 	Cell,
 	GridLayout,
@@ -11,6 +10,7 @@ import { memo, type Ref, useCallback, useImperativeHandle, useMemo, useRef } fro
 import { debounceTime, merge } from "rxjs";
 
 import { type HeatmapHandle, renderHeatmapInto } from "../../components/modals";
+import { cls, tid } from "../../constants";
 import { PRO_FEATURES } from "../../core/license";
 import { useBundle } from "../contexts/bundle-context";
 import { ProGatedContent } from "./pro-gated-content";

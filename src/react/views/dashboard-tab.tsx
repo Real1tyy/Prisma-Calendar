@@ -1,16 +1,16 @@
 import type { ChartDataItem } from "@real1ty-obsidian-plugins";
-import { cls, tid } from "../../constants";
 import { Cell, GridLayout, useApp, usePersistedGridStateById } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { memo, type ReactElement, useMemo } from "react";
 
+import { cls, tid } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { PRO_FEATURES } from "../../core/license";
 import { useBundleChanges } from "../../react/hooks/use-bundle-changes";
 import { openEventSeriesModal } from "../../react/modals/event-list";
+import { formatRecurrenceLabel, isPresetType } from "../../utils/dates/recurring";
 import { removeZettelId } from "../../utils/events/zettel-id";
 import { getCategoriesFromFilePath } from "../../utils/obsidian";
-import { formatRecurrenceLabel, isPresetType } from "../../utils/dates/recurring";
 import { useBundle } from "../contexts/bundle-context";
 import { DashboardChart } from "./dashboard/dashboard-chart";
 import { DashboardRanking } from "./dashboard/dashboard-ranking";

@@ -1,8 +1,8 @@
-import { cls, tid } from "../../constants";
 import { Cell, GridLayout, ImperativeCellHost, useApp, usePersistedGridState } from "@real1ty-obsidian-plugins-react";
 import { memo, type Ref, useCallback, useImperativeHandle, useRef } from "react";
 
 import { createDailyCalendar, type DailyCalendarHandle } from "../../components/views/daily-calendar";
+import { cls, tid } from "../../constants";
 import { useBundle } from "../contexts/bundle-context";
 import { type IntervalStatsCellHandle, mountIntervalStatsCell } from "./stats/interval-stats-cell";
 import { DAILY_STATS_CONFIG } from "./stats/stats-configs";

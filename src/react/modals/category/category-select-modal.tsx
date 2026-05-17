@@ -1,8 +1,8 @@
-import { cls, tid } from "../../../constants";
 import { ModalForm, openReactModal } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import React, { memo, useCallback, useMemo, useState } from "react";
 
+import { cls, tid } from "../../../constants";
 import type { CategoryInfo, CategoryTracker } from "../../../core/category-tracker";
 
 interface CategorySelectFormProps {

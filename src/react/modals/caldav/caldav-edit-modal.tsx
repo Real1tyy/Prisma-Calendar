@@ -1,5 +1,4 @@
 import { describeError } from "@real1ty-obsidian-plugins";
-import { cls, tid } from "../../../constants";
 import { ModalForm, openReactModal, SchemaForm, useZodForm } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { Notice } from "obsidian";
@@ -11,6 +10,7 @@ import {
 	type CalDAVEditFormValues,
 	deleteTrackedIntegrationEvents,
 } from "../../../components/settings/integration-shared";
+import { cls, tid } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { CalDAVClientService } from "../../../core/integrations/caldav";
 import type CustomCalendarPlugin from "../../../main";

@@ -12,13 +12,13 @@ import { showReactIconPicker, showWhatsNewReactModal } from "@real1ty-obsidian-p
 import { Notice, Plugin, TFile, type View, type WorkspaceLeaf } from "obsidian";
 
 import CHANGELOG_CONTENT from "../../docs-site/docs/changelog.md";
+import { registerPrismaCalendarCommands } from "./commands";
 import { CustomCalendarSettingsTab } from "./components";
 import { AI_CHAT_VIEW_TYPE, AIChatView } from "./components/ai-chat-view";
 import type { CalendarComponent } from "./components/calendar-view";
 import { showICSImportProgressModal } from "./components/modals";
 import { registerPrismaBasesView } from "./components/views/bases-calendar-view";
 import { VirtualEventsBlockRenderer } from "./components/virtual-events-block";
-import { registerPrismaCalendarCommands } from "./commands";
 import { VIRTUAL_EVENTS_CODE_FENCE } from "./constants";
 import { CalendarBundle, IndexerRegistry, MinimizedModalManager, PrismaCalendarApiManager } from "./core";
 import { scanVaultForDirectorySuggestions } from "./core/directory-suggestions";
@@ -30,8 +30,8 @@ import { buildWhatsNewConfig } from "./core/whats-new-config";
 import { openCalendarSelectModal, openFirstLaunchModal, openICSImportModal } from "./react/modals";
 import { CustomCalendarSettingsSchema, type PrismaCalendarSettingsStore, PrismaSyncDataSchema } from "./types";
 import { type CalDAVAccount, type ICSSubscription } from "./types/integrations";
-import { createDefaultCalendarConfig } from "./utils/calendar/settings";
 import { migrateSharedExcludedProps } from "./utils/calendar/migrations";
+import { createDefaultCalendarConfig } from "./utils/calendar/settings";
 
 export default class CustomCalendarPlugin extends Plugin {
 	readonly changelogContent: string = CHANGELOG_CONTENT;

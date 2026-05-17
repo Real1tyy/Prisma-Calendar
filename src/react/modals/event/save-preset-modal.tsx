@@ -1,9 +1,9 @@
-import { cls, tid } from "../../../constants";
 import { ModalSchemaForm, openReactModal, SchemaForm, useZodForm } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { useMemo } from "react";
 import { z } from "zod";
 
+import { cls, tid } from "../../../constants";
 import type { EventPreset } from "../../../types/settings";
 
 const SavePresetSchema = z.object({

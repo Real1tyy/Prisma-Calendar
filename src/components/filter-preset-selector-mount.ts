@@ -1,8 +1,8 @@
-import { cls } from "../constants";
 import { renderReactInline } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { createElement } from "react";
 
+import { cls } from "../constants";
 import { CSS_PREFIX } from "../constants";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { BundleContext } from "../react/contexts/bundle-context";

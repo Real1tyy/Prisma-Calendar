@@ -1,8 +1,8 @@
-import { cls } from "../../../constants";
 import type { CSSProperties } from "react";
 import { memo, useEffect, useRef } from "react";
 
 import { applyMultiColorIndicators } from "../../../components/calendar-event-renderer";
+import { cls } from "../../../constants";
 import type { SingleCalendarConfig } from "../../../types/settings";
 import type { EventRowItem } from "./event-series-types";
 

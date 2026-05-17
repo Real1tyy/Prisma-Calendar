@@ -7,9 +7,9 @@ import {
 	runBatchOperation,
 	toLocalISOString,
 } from "@real1ty-obsidian-plugins";
-import { addCls, cls, removeCls, tid } from "../constants";
 import { type App, Modal, Notice } from "obsidian";
 
+import { addCls, cls, removeCls, tid } from "../constants";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import {
 	createBatchAssignCategories,

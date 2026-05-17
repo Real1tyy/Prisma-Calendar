@@ -1,7 +1,7 @@
-import { cls } from "../../constants";
 import { useSettingsStore } from "@real1ty-obsidian-plugins-react";
 import { memo } from "react";
 
+import { cls } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import { type SingleCalendarConfig, SingleCalendarConfigSchema } from "../../types/settings";
 import { PrismaSection } from "./_section";

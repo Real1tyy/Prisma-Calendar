@@ -3,7 +3,7 @@ import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 import { fromAnchor } from "../../fixtures/dates";
 import { expect, test } from "../../fixtures/electron";
 import { sel } from "../../fixtures/testids";
-import { openCreateModal, waitForModalClosed, waitForNewEventFiles, snapshotEventFiles } from "./events-helpers";
+import { openCreateModal, snapshotEventFiles, waitForModalClosed, waitForNewEventFiles } from "./events-helpers";
 import { fillEventModal, saveEventModal } from "./fill-event-modal";
 
 // Parity guard for the advanced recurring controls (custom interval + UNTIL +

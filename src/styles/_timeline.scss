@@ -1,7 +1,7 @@
 // Timeline (used in both modal and tab contexts)
 // Common: inner element holding the header + timeline container.
 // Always a flex column that fills its parent — no fixed width/height
-// so it adapts to whatever ancestor (modal-content or tab body) it lives in. 
+// so it adapts to whatever ancestor (modal-content or tab body) it lives in.
 .prisma-timeline-modal {
 	display: flex;
 	flex-direction: column;

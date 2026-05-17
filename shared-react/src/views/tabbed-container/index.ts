@@ -3,10 +3,10 @@ export { TabbedContainer } from "./tabbed-container";
 export {
 	type GroupTabDefinition,
 	isGroupTab,
+	tabbedContainerField,
 	type TabbedContainerHandle,
 	type TabbedContainerProps,
 	type TabbedContainerState,
-	tabbedContainerField,
 	TabbedContainerStateSchema,
 	type TabDefinition,
 	type TabEntry,

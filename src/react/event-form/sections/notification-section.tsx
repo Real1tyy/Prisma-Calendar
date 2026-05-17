@@ -1,9 +1,9 @@
-import { PrismaSettingItem } from "../../event-form/prisma-setting-item";
 import { memo } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { useController, useWatch } from "react-hook-form";
 
 import type { EventFormState } from "../../../components/modals/event/event-form-state";
+import { PrismaSettingItem } from "../../event-form/prisma-setting-item";
 
 interface NotificationSectionProps {
 	form: UseFormReturn<EventFormState>;

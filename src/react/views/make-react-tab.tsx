@@ -1,8 +1,8 @@
-import { cls } from "../../constants";
 import { type TabDefinition } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import type { ReactElement } from "react";
 
+import { cls } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type CustomCalendarPlugin from "../../main";
 import { BundleContext } from "../contexts/bundle-context";

@@ -1,4 +1,3 @@
-import { cls, tid } from "../../../constants";
 import { ModalForm, openReactModal, SchemaForm, useZodForm } from "@real1ty-obsidian-plugins-react";
 import { nanoid } from "nanoid";
 import type { App } from "obsidian";
@@ -10,6 +9,7 @@ import {
 	ICSSubscriptionAddFormShape,
 	type ICSSubscriptionAddFormValues,
 } from "../../../components/settings/integration-shared";
+import { cls, tid } from "../../../constants";
 import { parseICSContent } from "../../../core/integrations/ics-import";
 import { useConnectionTest } from "../../../react/hooks/use-connection-test";
 import type { PrismaCalendarSettingsStore } from "../../../types";

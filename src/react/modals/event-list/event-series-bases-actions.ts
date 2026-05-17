@@ -1,5 +1,5 @@
 import { showModal } from "@real1ty-obsidian-plugins";
-import { cls } from "../../../constants";
+
 import {
 	type EventSeriesBasesViewConfig,
 	showEventSeriesBasesViewModal,
@@ -7,6 +7,7 @@ import {
 	showTimelineModal,
 } from "../../../components/modals";
 import { renderProUpgradeBanner } from "../../../components/settings/pro-upgrade-banner";
+import { cls } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { PRO_FEATURES } from "../../../core/license";
 import type { CalendarEvent } from "../../../types/calendar";

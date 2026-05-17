@@ -1,9 +1,9 @@
 import { calculateEventStatistics } from "@real1ty-obsidian-plugins";
-import { cls, tid } from "../../../constants";
 import { useSettingsFields } from "@real1ty-obsidian-plugins-react";
 import { DateTime } from "luxon";
 import { useDeferredValue, useMemo, useRef } from "react";
 
+import { cls, tid } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { EventSeriesEventRow } from "./event-series-event-row";
 import type { EventListOptions, EventRowItem } from "./event-series-types";

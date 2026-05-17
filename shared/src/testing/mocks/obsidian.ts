@@ -68,6 +68,20 @@ export class PluginSettingTab {
 	display = vi.fn();
 }
 
+// Component mock — Obsidian's base class for objects with a lifecycle.
+export class Component {
+	load = vi.fn();
+	unload = vi.fn();
+	onload = vi.fn();
+	onunload = vi.fn();
+	addChild = vi.fn();
+	removeChild = vi.fn();
+	register = vi.fn();
+	registerEvent = vi.fn();
+	registerDomEvent = vi.fn();
+	registerInterval = vi.fn();
+}
+
 // ItemView mock
 export class ItemView {
 	app: unknown;

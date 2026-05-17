@@ -1,8 +1,8 @@
 import { buildUtmUrl } from "@real1ty-obsidian-plugins";
-import { cls } from "../../constants";
 import { type SettingsFooterLink, SettingsNav } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useDeferredValue, useState } from "react";
 
+import { cls } from "../../constants";
 import { PRO_FEATURES } from "../../core/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";

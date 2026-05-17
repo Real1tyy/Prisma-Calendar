@@ -1,6 +1,6 @@
-import { cls, tid } from "../constants";
 import { AbstractInputSuggest, type App } from "obsidian";
 
+import { cls, tid } from "../constants";
 import type { CalendarBundle } from "../core/calendar-bundle";
 
 export type SuggestionSource = "category" | "preset" | "name-series";

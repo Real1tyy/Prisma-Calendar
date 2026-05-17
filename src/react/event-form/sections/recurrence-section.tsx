@@ -1,4 +1,3 @@
-import { PrismaSettingItem } from "../../event-form/prisma-setting-item";
 import { memo, useCallback } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { useController, useWatch } from "react-hook-form";
@@ -12,6 +11,7 @@ import {
 	isWeekdaySupported,
 	parseRecurrenceType,
 } from "../../../utils/dates/recurring";
+import { PrismaSettingItem } from "../../event-form/prisma-setting-item";
 import { PrismaCheckbox } from "../prisma-checkbox";
 
 const FREQ_OPTIONS: Array<{ value: string; label: string }> = [
@@ -20,9 +20,6 @@ const FREQ_OPTIONS: Array<{ value: string; label: string }> = [
 	{ value: "MONTHLY", label: "Months" },
 	{ value: "YEARLY", label: "Years" },
 ];
-
-const DEFAULT_INTERVAL = "1";
-const DEFAULT_FREQ = "DAILY";
 
 interface RecurrenceSectionProps {
 	form: UseFormReturn<EventFormState>;
@@ -52,8 +49,8 @@ export const RecurrenceSection = memo(function RecurrenceSection({ form }: Recur
 	const buildCustomDSL = useCallback(
 		(freq?: string, interval?: string) =>
 			buildCustomIntervalDSL(
-				freq ?? customFreqField.value ?? DEFAULT_FREQ,
-				Number.parseInt(interval ?? customIntervalField.value ?? DEFAULT_INTERVAL, 10) || 1
+				freq ?? customFreqField.value,
+				Number.parseInt(interval ?? customIntervalField.value, 10) || 1
 			),
 		[customFreqField.value, customIntervalField.value]
 	);
@@ -90,8 +87,8 @@ export const RecurrenceSection = memo(function RecurrenceSection({ form }: Recur
 	);
 
 	const parsed = isCustom && rruleType ? parseRecurrenceType(rruleType) : null;
-	const displayFreq = parsed?.freq ?? customFreqField.value ?? DEFAULT_FREQ;
-	const displayInterval = parsed?.interval?.toString() ?? customIntervalField.value ?? DEFAULT_INTERVAL;
+	const displayFreq = parsed?.freq ?? customFreqField.value;
+	const displayInterval = parsed?.interval.toString() ?? customIntervalField.value;
 
 	return (
 		<>

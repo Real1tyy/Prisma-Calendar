@@ -1,7 +1,8 @@
 import { ChipList, type ChipListProps } from "@real1ty-obsidian-plugins-react";
-import { PrismaSettingItem } from "../../event-form/prisma-setting-item";
 import type { ReactNode } from "react";
 import { memo, useCallback, useMemo } from "react";
+
+import { PrismaSettingItem } from "../../event-form/prisma-setting-item";
 
 const CONTENT_CLASS = "prisma-category-display-content";
 const ACTION_BUTTON_CLASS = "prisma-assign-categories-button";

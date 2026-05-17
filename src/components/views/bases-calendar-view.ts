@@ -3,11 +3,11 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { ColorEvaluator, MS_PER_DAY } from "@real1ty-obsidian-plugins";
-import { cls } from "../../constants";
 import type { BasesQueryResult } from "obsidian";
 import { BasesView, Notice, type QueryController } from "obsidian";
 import { distinctUntilChanged, skip, type Subscription } from "rxjs";
 
+import { cls } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { PRO_FEATURES } from "../../core/license";
 import type CustomCalendarPlugin from "../../main";

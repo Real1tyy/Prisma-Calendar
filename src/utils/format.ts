@@ -14,10 +14,10 @@ import { DateTime } from "luxon";
 import type { Frontmatter } from "../types";
 import { type CalendarEvent, type CalendarEventData, isAllDayEvent, isTimedEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/settings";
-import { cleanupTitle } from "./events/naming";
-import { getInternalProperties } from "./frontmatter/props";
 import { stripZ } from "./dates/iso";
+import { cleanupTitle } from "./events/naming";
 import { extractPropertyText, getDisplayProperties } from "./frontmatter/display";
+import { getInternalProperties } from "./frontmatter/props";
 
 export function formatEventTimeInfo(event: CalendarEvent): string {
 	const startTime = DateTime.fromISO(event.start);

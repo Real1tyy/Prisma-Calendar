@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 
+import { aggregateStats, getEventsInRange } from "../../../src/utils/stats";
 import {
 	calculateCapacity,
 	calculateCapacityFromEvents,
 	formatCapacityLabel,
 	inferBoundaries,
 } from "../../../src/utils/stats/capacity";
-import { aggregateStats, getEventsInRange } from "../../../src/utils/stats";
 import { createMockAllDayEvent, createMockTimedEvent } from "../../fixtures/event-fixtures";
 
 const MS_PER_HOUR = 3_600_000;

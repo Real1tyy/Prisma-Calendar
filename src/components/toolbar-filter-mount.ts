@@ -1,4 +1,3 @@
-import { cls } from "../constants";
 import {
 	CommittedFilterInput,
 	type CommittedFilterInputHandle,
@@ -7,6 +6,7 @@ import {
 import type { App } from "obsidian";
 import { createElement, createRef } from "react";
 
+import { cls } from "../constants";
 import { CSS_PREFIX } from "../constants";
 import type { Frontmatter } from "../types";
 import { createExpressionMatcher, matchesSearch } from "../utils/filters/logic";

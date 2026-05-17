@@ -1,6 +1,6 @@
 // ===================================
 // Weekly Statistics Modal
-// =================================== 
+// ===================================
 
 // `showStatsModal` passes `cls: "prisma-weekly-stats-modal"` to
 // `showReactModal`, which applies the class directly to Obsidian's `.modal`
@@ -379,7 +379,7 @@ body .modal.prisma-weekly-stats-modal {
 // Stats body — used inside the modal AND inside grid-cell tabs (daily-stats,
 // monthly-calendar-stats, heatmap-monthly-stats). Make the table-container
 // shrink to remaining vertical space and scroll when entries overflow, so
-// long tables don't push the chart/header out of view. 
+// long tables don't push the chart/header out of view.
 .prisma-interval-stats-view {
 	display: flex;
 	flex-direction: column;
@@ -416,7 +416,7 @@ body .modal.prisma-weekly-stats-modal {
 	}
 
 	// Cap the chart so the table always has room below it inside the modal.
-	// Without this, a tall canvas can push the table-container to ~0 height. 
+	// Without this, a tall canvas can push the table-container to ~0 height.
 	.prisma-stats-chart-container {
 		max-height: 360px;
 	}
@@ -459,7 +459,7 @@ body .modal.prisma-weekly-stats-modal {
 
 // ========================================
 // STATISTICS MODAL - MOBILE RESPONSIVE
-// ======================================== 
+// ========================================
 @media (width <= 768px) {
 	// Override modal width for mobile (see explanation above the desktop rule).
 	.app-container .modal.prisma-weekly-stats-modal,
@@ -654,7 +654,7 @@ body .modal.prisma-weekly-stats-modal {
 
 // ===================================
 // Recurring Events Modal - Type Filter & Badges
-// =================================== 
+// ===================================
 
 // Filters container - horizontal layout with items
 .prisma-recurring-events-modal-filters {

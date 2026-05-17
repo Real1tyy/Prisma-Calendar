@@ -185,11 +185,11 @@ describe("GridLayout — runtime DOM safety", () => {
 			const [, setTick] = useState(0);
 			useEffect(() => {
 				let count = 0;
-				const id = setInterval(() => {
+				const id = window.setInterval(() => {
 					setTick(++count);
-					if (count >= 3) clearInterval(id);
+					if (count >= 3) window.clearInterval(id);
 				}, 0);
-				return () => clearInterval(id);
+				return () => window.clearInterval(id);
 			}, []);
 
 			const cells = [

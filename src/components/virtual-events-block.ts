@@ -1,6 +1,6 @@
-import { cls } from "../constants";
 import { MarkdownRenderChild, Notice } from "obsidian";
 
+import { cls } from "../constants";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import type CustomCalendarPlugin from "../main";
 import { type VirtualEventData, VirtualEventsFileSchema } from "../types/calendar";

@@ -29,7 +29,10 @@ import type { EventMetadata } from "../types/event-metadata";
 import type { CalendarEventSource, IndexerEvent } from "../types/event-source";
 import type { NodeRecurringEvent, RecurringEventSeries } from "../types/recurring";
 import type { SingleCalendarConfig } from "../types/settings";
+import { stripZ, toInternalISO } from "../utils/dates/iso";
 import { getNextOccurrence } from "../utils/dates/recurrence";
+import { calculateTargetInstanceCount, findFirstValidStartDate, getStartDateTime } from "../utils/dates/recurring";
+import { isOccurrenceWithinUntil } from "../utils/dates/recurring";
 import {
 	applyFrontmatterChangesToInstance,
 	filterExcludedPropsFromDiff,
@@ -38,7 +41,6 @@ import {
 	type TimePropagationDiff,
 } from "../utils/events/frontmatter";
 import { hashRRuleIdToZettelFormat, removeZettelId } from "../utils/events/zettel-id";
-import { stripZ, toInternalISO } from "../utils/dates/iso";
 import {
 	batchedPromiseAll,
 	deleteFilesByPaths,
@@ -46,8 +48,6 @@ import {
 	getFileByPathOrThrow,
 	trashDuplicateFile,
 } from "../utils/obsidian";
-import { calculateTargetInstanceCount, findFirstValidStartDate, getStartDateTime } from "../utils/dates/recurring";
-import { isOccurrenceWithinUntil } from "../utils/dates/recurring";
 import type { CategoryTracker } from "./category-tracker";
 import type { EventStore } from "./event-store";
 

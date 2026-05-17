@@ -63,7 +63,7 @@ describe("UpdateAvailableBadge", () => {
 		const badge = await screen.findByTestId("prisma-update-badge");
 		await user.click(badge);
 		expect(openSpy).toHaveBeenCalledWith(
-			"https://github.com/Real1tyy/Prisma-Calendar/releases/tag/v2.0.0",
+			"https://github.com/Real1tyy/Prisma-Calendar/releases/tag/2.0.0",
 			"_blank",
 			"noopener,noreferrer"
 		);

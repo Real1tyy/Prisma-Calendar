@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import type { EventFileRepository, FrontmatterSnapshot } from "../../src/core/event-file-repository";
 import { deleteCategoryCommand, renameCategoryCommand } from "../../src/core/commands/category-commands";
+import type { EventFileRepository, FrontmatterSnapshot } from "../../src/core/event-file-repository";
 import type { Frontmatter } from "../../src/types";
 
 // Minimal in-memory stub of `EventFileRepository` that exposes only the trio

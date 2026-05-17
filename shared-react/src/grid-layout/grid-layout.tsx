@@ -2,9 +2,9 @@ import { createCssUtils } from "@real1ty-obsidian-plugins";
 import type { App, Plugin } from "obsidian";
 import {
 	type HTMLAttributes,
+	memo,
 	type ReactNode,
 	type Ref,
-	memo,
 	useCallback,
 	useEffect,
 	useImperativeHandle,
@@ -19,29 +19,29 @@ import { openCellPicker } from "./cell-picker-modal";
 import { registerGridCommands } from "./commands";
 import {
 	type Action,
-	type Placement,
 	buildInitialState,
 	buildPublicState,
 	findPlacementAt,
+	type Placement,
 	reducer,
 } from "./engine-reducer";
 import { defaultSizes } from "./engine-state";
 import {
+	bucketPlacementsByAxis,
+	buildGridStyleVars,
 	EditButton,
 	GhostCell,
 	type GridCellController,
 	type GridCellStyle,
 	GridCellView,
-	PerCellContainer,
 	PER_CELL_AXIS_CONFIG,
 	type PerCellAxis,
-	bucketPlacementsByAxis,
-	buildGridStyleVars,
+	PerCellContainer,
 } from "./grid-cell-view";
 import { GridResizeHandles } from "./grid-resize-handles";
-import { injectGridStyles } from "./styles";
 import { openLayoutEditor } from "./layout-editor-modal";
-import { type PaletteSnapshot, buildPaletteFromChildren, paletteToCellOptions } from "./palette-snapshot";
+import { buildPaletteFromChildren, type PaletteSnapshot, paletteToCellOptions } from "./palette-snapshot";
+import { injectGridStyles } from "./styles";
 import type { CellOption, GridLayoutConfig, GridLayoutHandle, GridLayoutState, ResizeMode } from "./types";
 
 /**

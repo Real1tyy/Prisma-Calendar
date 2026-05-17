@@ -3,8 +3,8 @@ import type { ColorEvaluator } from "@real1ty-obsidian-plugins";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
-import { resolveEventColor } from "./color";
 import { formatEventTimeInfo } from "../format";
+import { resolveEventColor } from "./color";
 import { removeZettelId } from "./zettel-id";
 
 export interface EventListItemData {

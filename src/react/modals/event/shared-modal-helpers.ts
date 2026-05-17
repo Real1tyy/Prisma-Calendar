@@ -49,7 +49,7 @@ export function openSavePresetFlow(
 	customProps: Record<string, unknown>
 ): void {
 	const settings = bundle.settingsStore.currentSettings;
-	const existingPresets = settings.eventPresets || [];
+	const existingPresets = settings.eventPresets;
 	const atFreeLimit = !bundle.plugin.isProEnabled && existingPresets.length >= FREE_MAX_EVENT_PRESETS;
 
 	void openSavePresetModal(app, existingPresets, atFreeLimit).then((result) => {

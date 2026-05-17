@@ -88,16 +88,16 @@ export * from "./forms";
 // ─── Hooks ───
 export { useDomEvent } from "./hooks/dom";
 export { type Emitterlike, useObsidianEvent } from "./hooks/dom";
-export { type UseOutsideClickOptions, useOutsideClick } from "./hooks/dom";
+export { useOutsideClick, type UseOutsideClickOptions } from "./hooks/dom";
 export { useScrollRestore } from "./hooks/dom";
-export { type UseFocusOnMountOptions, useFocusOnMount } from "./hooks/focus";
+export { useFocusOnMount, type UseFocusOnMountOptions } from "./hooks/focus";
 export { type ActivatableProps, useActivatable } from "./hooks/interaction";
-export { type UseCopyToClipboardOptions, useCopyToClipboard } from "./hooks/interaction";
+export { useCopyToClipboard, type UseCopyToClipboardOptions } from "./hooks/interaction";
 export {
 	DEBOUNCED_COMMIT_DEFAULT_MS,
 	type DebouncedCommitHandle,
-	type UseDebouncedCommitOptions,
 	useDebouncedCommit,
+	type UseDebouncedCommitOptions,
 } from "./hooks/interaction";
 export {
 	useArrowDown,
@@ -217,8 +217,8 @@ export type {
 export {
 	createPageHeader,
 	openPageHeaderActionManager,
-	pageHeaderField,
 	PageHeaderActionBar,
+	pageHeaderField,
 	PageHeaderStateSchema,
 	PageHeaderStore,
 	registerPageHeaderCommands,

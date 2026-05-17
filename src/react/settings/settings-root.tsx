@@ -1,4 +1,3 @@
-import { cls, tid } from "../../constants";
 import {
 	Copyable,
 	Dropdown,
@@ -12,6 +11,7 @@ import {
 } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useMemo, useState } from "react";
 
+import { cls, tid } from "../../constants";
 import { CSS_PREFIX } from "../../constants";
 import { FREE_MAX_CALENDARS } from "../../core/license";
 import { CalendarSettingsStore } from "../../core/settings-store";

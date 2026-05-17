@@ -13,7 +13,6 @@ import {
 	toLocalISOString,
 	toSafeString,
 } from "@real1ty-obsidian-plugins";
-import { addCls, cls, removeCls, tid, toggleCls } from "../../../constants";
 import { renderReactInline } from "@real1ty-obsidian-plugins-react";
 import { type App, Modal, Notice } from "obsidian";
 import { createElement } from "react";
@@ -21,6 +20,7 @@ import { flushSync } from "react-dom";
 import type { Subscription } from "rxjs";
 import type { z } from "zod";
 
+import { addCls, cls, removeCls, tid, toggleCls } from "../../../constants";
 import { CSS_PREFIX } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { FREE_MAX_EVENT_PRESETS } from "../../../core/license";
@@ -41,19 +41,19 @@ import {
 } from "../../../types/event-boundaries";
 import { RECURRENCE_TYPE_OPTIONS, type Weekday, WEEKDAY_OPTIONS, WEEKDAY_PRESET_DAYS } from "../../../types/recurring";
 import type { EventPreset } from "../../../types/settings";
-import { autoAssignCategories, findAdjacentEvent } from "../../../utils/events/matching";
-import { validateEventTitle } from "../../../utils/events/title-validation";
-import { extractCleanDisplayName } from "../../../utils/events/naming";
-import { getVirtualKind } from "../../../utils/frontmatter/extended-props";
-import { formatDateOnly, formatDateTimeForInput } from "../../../utils/format";
-import { writeMetadataToFrontmatter } from "../../../utils/frontmatter/writer";
-import { getCategoriesFromFilePath, getFileAndFrontmatter } from "../../../utils/obsidian";
 import {
 	buildCustomIntervalDSL,
 	isPresetType,
 	isWeekdaySupported,
 	parseRecurrenceType,
 } from "../../../utils/dates/recurring";
+import { autoAssignCategories, findAdjacentEvent } from "../../../utils/events/matching";
+import { extractCleanDisplayName } from "../../../utils/events/naming";
+import { validateEventTitle } from "../../../utils/events/title-validation";
+import { formatDateOnly, formatDateTimeForInput } from "../../../utils/format";
+import { getVirtualKind } from "../../../utils/frontmatter/extended-props";
+import { writeMetadataToFrontmatter } from "../../../utils/frontmatter/writer";
+import { getCategoriesFromFilePath, getFileAndFrontmatter } from "../../../utils/obsidian";
 import { TitleInputSuggest } from "../../title-input-suggest";
 import { showCategoryEventsModal } from "../series/bases-view";
 import {

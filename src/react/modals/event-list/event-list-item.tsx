@@ -1,7 +1,7 @@
-import { cls, tid } from "../../../constants";
 import type { CSSProperties, MouseEvent, ReactNode } from "react";
 import { memo, useCallback } from "react";
 
+import { cls, tid } from "../../../constants";
 import type { EventListItemData } from "../../../utils/events/list-mapping";
 
 export type { EventListItemData };

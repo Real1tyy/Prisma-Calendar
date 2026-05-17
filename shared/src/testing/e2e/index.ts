@@ -34,16 +34,6 @@ export {
 } from "./frontmatter";
 export { type GlobalSetupOptions, pruneStaleE2eResources } from "./global-setup";
 export {
-	applyStandardRendererBoilerplate,
-	type ConsoleErrorGuard,
-	type ConsoleErrorGuardOptions,
-	createConsoleErrorGuard,
-	createPluginE2eHarness,
-	type PluginE2eHarness,
-	type PluginE2eHarnessOptions,
-	writeStandardAppJson,
-} from "./plugin-bootstrap";
-export {
 	countPluginCommands,
 	executeCommand,
 	isPluginLoaded,
@@ -53,5 +43,15 @@ export {
 	waitForPluginLoaded,
 	waitForPlugins,
 } from "./helpers";
+export {
+	applyStandardRendererBoilerplate,
+	type ConsoleErrorGuard,
+	type ConsoleErrorGuardOptions,
+	createConsoleErrorGuard,
+	createPluginE2eHarness,
+	type PluginE2eHarness,
+	type PluginE2eHarnessOptions,
+	writeStandardAppJson,
+} from "./plugin-bootstrap";
 export type { ObsidianApp, ObsidianPluginsRegistry, ObsidianWindow } from "./types";
 export { buildVaultPrefix, slug as slugifyVaultSegment, type VaultPrefixOptions } from "./vault-prefix";

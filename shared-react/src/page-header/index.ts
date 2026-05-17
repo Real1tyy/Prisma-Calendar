@@ -6,8 +6,8 @@ export type { PageHeaderSnapshot } from "./store";
 export { PageHeaderStore } from "./store";
 export {
 	type HeaderActionDefinition,
-	pageHeaderField,
 	type PageHeaderConfig,
+	pageHeaderField,
 	type PageHeaderHandle,
 	type PageHeaderMode,
 	type PageHeaderState,

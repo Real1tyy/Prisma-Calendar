@@ -1,5 +1,4 @@
 import { hexToRgb, type PieChartData } from "@real1ty-obsidian-plugins";
-import { cls, tid } from "../../constants";
 import {
 	ColorInput,
 	ObsidianIcon,
@@ -15,6 +14,7 @@ import { nanoid } from "nanoid";
 import React, { memo, useCallback, useMemo, useState } from "react";
 
 import { showCategoryEventsModal } from "../../components/modals";
+import { cls, tid } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CategoryTracker } from "../../core/category-tracker";
 import type { CalendarSettingsStore } from "../../core/settings-store";

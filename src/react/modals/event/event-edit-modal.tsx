@@ -10,11 +10,11 @@ import type { MinimizedModalState } from "../../../core/minimized-modal-manager"
 import type { Frontmatter } from "../../../types";
 import type { UpdateEventData } from "../../../types/event-boundaries";
 import type { SingleCalendarConfig } from "../../../types/settings";
-import { extractInstanceDate, extractZettelId, removeZettelId } from "../../../utils/events/zettel-id";
-import { getVirtualKind } from "../../../utils/frontmatter/extended-props";
-import { categorizeProperties, formatDateOnly, formatDateTimeForInput } from "../../../utils/format";
-import { getCategoriesFromFilePath, getFileAndFrontmatter } from "../../../utils/obsidian";
 import { isWeekdaySupported, parseRecurrenceType } from "../../../utils/dates/recurring";
+import { extractInstanceDate, extractZettelId, removeZettelId } from "../../../utils/events/zettel-id";
+import { categorizeProperties, formatDateOnly, formatDateTimeForInput } from "../../../utils/format";
+import { getVirtualKind } from "../../../utils/frontmatter/extended-props";
+import { getCategoriesFromFilePath, getFileAndFrontmatter } from "../../../utils/obsidian";
 import { buildEventSaveData } from "../../event-form/build-event-save-data";
 import { EventForm, type EventFormValues } from "../../event-form/event-form";
 import type { EventModalData } from "./event-create-modal";
@@ -326,7 +326,7 @@ function loadRecurringState(fm: Frontmatter, settings: SingleCalendarConfig) {
 		rruleType,
 		weekdays,
 		customFreq: parsed?.freq ?? "DAILY",
-		customInterval: parsed?.interval?.toString() ?? "1",
+		customInterval: parsed?.interval.toString() ?? "1",
 		untilDate: typeof untilDate === "string" ? formatDateOnly(untilDate) : "",
 		futureInstancesCount: typeof futureCount === "number" && futureCount > 0 ? String(futureCount) : "",
 		generatePastEvents: generatePast === true,

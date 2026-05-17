@@ -1,8 +1,8 @@
-import { addCls } from "../constants";
 import { renderReactInline } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { createElement } from "react";
 
+import { addCls } from "../constants";
 import { CSS_PREFIX } from "../constants";
 import { StickyBanner } from "../react/views/sticky-banner";
 

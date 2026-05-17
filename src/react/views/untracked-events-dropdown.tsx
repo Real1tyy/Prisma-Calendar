@@ -1,6 +1,5 @@
 import { Draggable } from "@fullcalendar/interaction";
 import type { ColorEvaluator } from "@real1ty-obsidian-plugins";
-import { addCls, cls, removeCls, tid } from "../../constants";
 import {
 	PropertyValue,
 	useApp,
@@ -26,6 +25,7 @@ import {
 } from "react";
 import { debounceTime } from "rxjs";
 
+import { addCls, cls, removeCls, tid } from "../../constants";
 import { openCreateUntrackedEventModal } from "../../core/api/modal-actions";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { MinimizedModalManager } from "../../core/minimized-modal-manager";

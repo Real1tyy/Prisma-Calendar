@@ -1,9 +1,9 @@
 import { registerComponentView, type ViewActivator, type ViewComponentConfig } from "@real1ty-obsidian-plugins";
-import { cls } from "../../constants";
 import { renderReactInline } from "@real1ty-obsidian-plugins-react";
 import type { WorkspaceLeaf } from "obsidian";
 import { createElement } from "react";
 
+import { cls } from "../../constants";
 import { CSS_PREFIX } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type CustomCalendarPlugin from "../../main";

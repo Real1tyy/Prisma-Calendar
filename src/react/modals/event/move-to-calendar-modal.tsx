@@ -1,9 +1,9 @@
-import { tid } from "../../../constants";
 import { ModalSchemaForm, openReactModal, SchemaForm, useZodForm } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { useMemo } from "react";
 import { z } from "zod";
 
+import { tid } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 
 const MoveToCalendarSchema = z.object({

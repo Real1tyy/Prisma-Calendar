@@ -198,14 +198,14 @@
 
 // Heatmap monthly-stats family — `cls("heatmap-monthly-stats-")` is a dynamic
 // * prefix concatenated at runtime with the stat-row id. We anchor the prefix
-// * with one literal selector so the static scanner can resolve it. 
+// * with one literal selector so the static scanner can resolve it.
 .prisma-heatmap-monthly-stats-row {
 	/* intentional stub — dynamic prefix anchor */
 }
 
 // Integration delete confirmation — class includes integrationId at runtime
 // * (e.g. prisma-integration-delete-caldav-personal). One literal anchors the
-// * prefix for the scanner. 
+// * prefix for the scanner.
 .prisma-integration-delete-confirmation {
 	/* intentional stub — dynamic prefix anchor */
 }

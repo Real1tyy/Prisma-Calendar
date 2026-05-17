@@ -13,7 +13,7 @@ button[class*="prisma-"]:focus-visible {
 
 // Tabbed view root: prevent Obsidian's .view-content from creating a competing
 // scroll context — .prisma-tab-content is the sole scroll container so that
-// position: sticky on the toolbar / day-headers / all-day section works. 
+// position: sticky on the toolbar / day-headers / all-day section works.
 .view-content.prisma-calendar-view-root {
 	display: flex;
 	flex-direction: column;
@@ -25,7 +25,7 @@ button[class*="prisma-"]:focus-visible {
 	// wrapper. Without this rule the wrapper has no defined height, so the
 	// `height: 100%` inside `.prisma-tabbed-container` collapses, the
 	// `.prisma-tab-content` `flex: 1` loses its bound, and zoom-induced
-	// overflow stops producing a scrollbar. 
+	// overflow stops producing a scrollbar.
 	.prisma-tabbed-host {
 		flex: 1;
 		min-height: 0;
@@ -37,7 +37,7 @@ button[class*="prisma-"]:focus-visible {
 	// blocks. Prisma needs the active panel to be a real flex child of the
 	// scroll container and a flex column itself — otherwise every non-
 	// calendar tab's `flex: 1 1 auto` content collapses and the calendar
-	// tab's sticky-grow trick has no anchor. 
+	// tab's sticky-grow trick has no anchor.
 	.prisma-tab-content {
 		display: flex;
 		flex-direction: column;
@@ -78,7 +78,7 @@ button[class*="prisma-"]:focus-visible {
 
 	// `.prisma-tab-body` is the Prisma wrapper inside every non-calendar
 	// tab panel. It must be a flex column AND fill the (bounded) panel so
-	// the inner `flex: 1 1 auto` divs actually flex. 
+	// the inner `flex: 1 1 auto` divs actually flex.
 	.prisma-tab-body {
 		display: flex;
 		flex-direction: column;

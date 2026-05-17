@@ -17,12 +17,12 @@ import {
 	roundToNearestHour,
 	toLocalISOString,
 } from "@real1ty-obsidian-plugins";
-import { cls, toggleCls } from "../constants";
 import { renderReactInline } from "@real1ty-obsidian-plugins-react";
 import { type App, Component, TFile, type WorkspaceLeaf } from "obsidian";
 import { createElement } from "react";
 import { BehaviorSubject } from "rxjs";
 
+import { cls, toggleCls } from "../constants";
 import {
 	CATEGORY_HIGHLIGHT_DURATION_MS,
 	CLICK_THRESHOLD_MS,
@@ -59,6 +59,7 @@ import type {
 import { isAnyVirtual, isTimedEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/index";
 import { getCalendarRenderingKey } from "../utils/calendar/settings";
+import { stripZ } from "../utils/dates/iso";
 import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
 import { isBatchSelectable, isFileBackedEvent } from "../utils/events/classification";
 import { resolveAllEventColors, resolveEventColor } from "../utils/events/color";
@@ -67,7 +68,6 @@ import { getCommonCategories } from "../utils/events/frontmatter";
 import { findAdjacentEvent, getSourceEventInfoFromVirtual } from "../utils/events/matching";
 import { invalidatePropertyExtractionCache } from "../utils/filters/expressions";
 import { getFilePath, getVirtualKind } from "../utils/frontmatter/extended-props";
-import { stripZ } from "../utils/dates/iso";
 import { emitHover, getFileByPathOrThrow } from "../utils/obsidian";
 import { BatchSelectionManager } from "./batch-selection-manager";
 import {

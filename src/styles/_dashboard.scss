@@ -15,7 +15,9 @@
 		vertical-align: middle;
 	}
 
-	&-chart { /* intentional stub — chart canvas styles itself via Chart.js */ }
+	&-chart {
+		/* intentional stub — chart canvas styles itself via Chart.js */
+	}
 
 	&-label {
 		display: flex;

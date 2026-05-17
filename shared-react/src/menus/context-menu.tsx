@@ -2,9 +2,9 @@ import type { KeyboardEvent } from "react";
 import { memo, useCallback, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { useEscapeKey } from "../hooks/keyboard/use-trigger-keys";
-import { useFocusOnMount } from "../hooks/focus/use-focus";
 import { useOutsideClick } from "../hooks/dom/use-outside-click";
+import { useFocusOnMount } from "../hooks/focus/use-focus";
+import { useEscapeKey } from "../hooks/keyboard/use-trigger-keys";
 import { MenuEntry } from "./menu-items";
 import type { ContextMenuEntryDef, ContextMenuSeparatorDef } from "./types";
 

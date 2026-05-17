@@ -1,8 +1,8 @@
-import { cls, tid } from "../../../constants";
 import { ModalDescription, openReactModal, VirtualList } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import React, { memo, useCallback, useDeferredValue, useMemo, useRef, useState } from "react";
 
+import { cls, tid } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { mapEventsToDisplayItems } from "../../../utils/format";
 

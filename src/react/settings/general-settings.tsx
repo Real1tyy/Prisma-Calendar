@@ -1,5 +1,4 @@
 import { buildUtmUrl } from "@real1ty-obsidian-plugins";
-import { cls, tid } from "../../constants";
 import {
 	Dropdown,
 	LicenseSection,
@@ -15,6 +14,7 @@ import {
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 import { renderProUpgradeBanner } from "../../components/settings/pro-upgrade-banner";
+import { cls, tid } from "../../constants";
 import { ACCOUNT_URL, FREE_MAX_EVENT_PRESETS } from "../../core/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import { buildWhatsNewConfig } from "../../core/whats-new-config";

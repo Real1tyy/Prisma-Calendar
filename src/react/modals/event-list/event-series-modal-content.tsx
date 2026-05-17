@@ -7,9 +7,9 @@ import { useCallback, useMemo, useState } from "react";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { CalendarEvent } from "../../../types/calendar";
 import type { SingleCalendarConfig } from "../../../types/settings";
+import { formatRecurrenceLabel, isWeekdaySupported } from "../../../utils/dates/recurring";
 import { resolveAllEventColors } from "../../../utils/events/color";
 import { removeZettelId } from "../../../utils/events/zettel-id";
-import { formatRecurrenceLabel, isWeekdaySupported } from "../../../utils/dates/recurring";
 import {
 	createCategorySeriesBasesActions,
 	createNameSeriesBasesActions,

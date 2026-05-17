@@ -3,10 +3,10 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { ColorEvaluator, toLocalISOString } from "@real1ty-obsidian-plugins";
-import { cls } from "../../constants";
 import type { App } from "obsidian";
 import { merge, type Subscription } from "rxjs";
 
+import { cls } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { FCPrismaEventInput } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";

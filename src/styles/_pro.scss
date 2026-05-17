@@ -226,7 +226,7 @@
 // * cells to unreadable sizes. We let the cell scroll vertically and give the
 // * inner FullCalendar a generous minimum height so rows stay usable even when
 // * the grid has 6 visible weeks. Horizontal overflow is clipped — widths
-// * shrink to fit the cell. 
+// * shrink to fit the cell.
 .prisma-monthly-calendar-stats-grid {
 	flex: 1;
 	min-height: 0;

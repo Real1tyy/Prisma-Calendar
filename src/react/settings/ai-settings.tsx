@@ -1,7 +1,7 @@
-import { cls, tid } from "../../constants";
 import { SettingHeading, useSchemaField } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useState } from "react";
 
+import { cls, tid } from "../../constants";
 import type { PrismaCalendarSettingsStore } from "../../types";
 import { AI_DEFAULTS } from "../../types/ai";
 import { CustomCalendarSettingsSchema, type CustomPrompt } from "../../types/settings";

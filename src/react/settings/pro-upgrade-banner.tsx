@@ -1,7 +1,7 @@
 import { buildUtmUrl } from "@real1ty-obsidian-plugins";
-import { cls, tid } from "../../constants";
 import { memo, useCallback } from "react";
 
+import { cls, tid } from "../../constants";
 import { PRO_PURCHASE_URL } from "../../core/license";
 import {
 	getFeatureDocUrl,

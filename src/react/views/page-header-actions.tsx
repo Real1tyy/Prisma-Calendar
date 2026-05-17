@@ -1,9 +1,9 @@
 import { executeCommand } from "@real1ty-obsidian-plugins";
-import { cls, tid } from "../../constants";
 import { type HeaderActionDefinition, ObsidianIcon, useApp } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { type CSSProperties, memo, useCallback } from "react";
 
+import { cls, tid } from "../../constants";
 import { CSS_PREFIX, FULL_COMMAND_IDS } from "../../constants";
 
 interface ActionSpec {

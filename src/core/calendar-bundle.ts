@@ -6,10 +6,10 @@ import {
 	sanitizeForFilename,
 	TemplaterService,
 } from "@real1ty-obsidian-plugins";
-import { tid } from "../constants";
 import { type App, Notice, TFile } from "obsidian";
 import { distinctUntilChanged, filter, firstValueFrom, type Subscription } from "rxjs";
 
+import { tid } from "../constants";
 import { getCalendarViewType } from "../constants";
 import type CustomCalendarPlugin from "../main";
 import { type PrismaViewRef, registerPrismaReactView } from "../react/views/register-prisma-view";

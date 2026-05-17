@@ -9,8 +9,8 @@ import type { Frontmatter } from "../../types";
 import type { EventSaveData } from "../../types/event-boundaries";
 import { FormToFieldsSchema } from "../../types/event-boundaries";
 import type { SingleCalendarConfig } from "../../types/settings";
-import { writeMetadataToFrontmatter } from "../../utils/frontmatter/writer";
 import { isWeekdaySupported } from "../../utils/dates/recurring";
+import { writeMetadataToFrontmatter } from "../../utils/frontmatter/writer";
 import type { EventFormValues } from "./event-form";
 
 export function buildEventSaveData(

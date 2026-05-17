@@ -1,7 +1,7 @@
-import { cls, tid } from "../../constants";
 import { SVG, type Svg } from "@svgdotjs/svg.js";
 import { DateTime } from "luxon";
 
+import { cls, tid } from "../../constants";
 import type { CalendarEvent } from "../../types/calendar";
 import type { HeatmapDataset } from "./heatmap-data";
 

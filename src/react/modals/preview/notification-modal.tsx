@@ -1,11 +1,11 @@
 import { formatLocaleLongDate, formatLocaleLongDateTime, formatLocaleTimeHm } from "@real1ty-obsidian-plugins";
-import { cls, tid } from "../../../constants";
 import { AppContext, PropertyItem, SharedReactThemeProvider, showReactModal } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { useState } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 
+import { cls, tid } from "../../../constants";
 import { CSS_PREFIX } from "../../../constants";
 import type { Frontmatter } from "../../../types";
 import type { SingleCalendarConfig } from "../../../types/settings";

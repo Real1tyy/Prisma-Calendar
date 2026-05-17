@@ -1,10 +1,10 @@
 import { createCssUtils, showModal } from "@real1ty-obsidian-plugins";
-import { setIcon } from "obsidian";
 import type { App } from "obsidian";
+import { setIcon } from "obsidian";
 import { type CSSProperties, memo, useCallback, useEffect, useMemo, useRef } from "react";
 
-import { defaultSizes, sizesToTemplate } from "./engine-state";
 import type { Placement } from "./engine-reducer";
+import { defaultSizes, sizesToTemplate } from "./engine-state";
 import { GridResizeHandles } from "./grid-resize-handles";
 import type { PaletteSnapshot } from "./palette-snapshot";
 import type { ResizeMode } from "./types";

@@ -2,7 +2,6 @@ import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import type { Page } from "@playwright/test";
-
 import { expectFrontmatter, readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { createEventHandle } from "../../fixtures/dsl";

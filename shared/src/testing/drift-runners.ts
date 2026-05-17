@@ -3,10 +3,10 @@ import { relative, resolve } from "node:path";
 
 import { describe, it } from "vitest";
 
-import { emitExternalApiDts, serializeExternalApiDts } from "../integrations/api-gateway/external-apis";
-import type { ActionDefMap } from "../integrations/api-gateway/types";
 import { assertNoContractDrift, emitContract, serializeContract } from "../integrations/api-gateway/contract";
 import type { PluginApiContract } from "../integrations/api-gateway/contract/types";
+import { emitExternalApiDts, serializeExternalApiDts } from "../integrations/api-gateway/external-apis";
+import type { ActionDefMap } from "../integrations/api-gateway/types";
 
 /**
  * `runContractDriftTest` collapses the boilerplate every producer plugin

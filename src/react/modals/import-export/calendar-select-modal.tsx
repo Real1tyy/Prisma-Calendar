@@ -1,4 +1,3 @@
-import { tid } from "../../../constants";
 import { ModalSchemaForm, openReactModal, SchemaForm, useZodForm } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { useMemo } from "react";
@@ -6,6 +5,7 @@ import { useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { TIMEZONE_LABELS } from "../../../components/settings/integration-shared";
+import { tid } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { ExportOptions } from "../../../core/integrations/ics-export";
 
