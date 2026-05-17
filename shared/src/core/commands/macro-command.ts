@@ -6,6 +6,13 @@ export function batchCommand(filePaths: string[], createOne: (filePath: string) 
 
 export interface MacroCommandOptions {
 	rollbackOnError?: boolean;
+	/**
+	 * Treat the supplied `commands` as already-executed — populate
+	 * `executedCommands` immediately so the macro can be undone without first
+	 * calling `execute()`. Use for wrapping commands that ran outside the
+	 * macro (e.g. concurrent batch runners that report their own successes).
+	 */
+	markExecuted?: boolean;
 }
 
 export class MacroCommand implements Command {
@@ -17,12 +24,9 @@ export class MacroCommand implements Command {
 	constructor(commands: Command[] = [], options?: MacroCommandOptions) {
 		this.commands = [...commands];
 		this.rollbackOnError = options?.rollbackOnError ?? false;
-	}
-
-	static fromExecuted(executedCommands: Command[]): MacroCommand {
-		const macro = new MacroCommand(executedCommands);
-		macro.executedCommands = [...executedCommands];
-		return macro;
+		if (options?.markExecuted) {
+			this.executedCommands = [...this.commands];
+		}
 	}
 
 	addCommand(command: Command): void {

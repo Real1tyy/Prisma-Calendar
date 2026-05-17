@@ -1,5 +1,6 @@
 import { Notice } from "obsidian";
 
+import { HistoryStack } from "../history-stack";
 import type { Command } from "./command";
 
 export interface CommandManagerOptions {
@@ -7,22 +8,17 @@ export interface CommandManagerOptions {
 	showNotices?: boolean;
 }
 
+const DEFAULT_MAX_HISTORY_SIZE = 50;
+
 export class CommandManager {
-	protected undoStack: Command[] = [];
-	protected redoStack: Command[] = [];
-	protected maxHistorySize: number;
+	protected history: HistoryStack<Command>;
 	private showNotices: boolean;
 
-	constructor(options?: CommandManagerOptions);
-	constructor(maxHistorySize?: number);
-	constructor(optionsOrSize?: CommandManagerOptions | number) {
-		if (typeof optionsOrSize === "object") {
-			this.maxHistorySize = optionsOrSize.maxHistorySize ?? 50;
-			this.showNotices = optionsOrSize.showNotices ?? false;
-		} else {
-			this.maxHistorySize = optionsOrSize ?? 50;
-			this.showNotices = false;
-		}
+	constructor(options: CommandManagerOptions = {}) {
+		this.history = new HistoryStack<Command>({
+			maxSize: options.maxHistorySize ?? DEFAULT_MAX_HISTORY_SIZE,
+		});
+		this.showNotices = options.showNotices ?? false;
 	}
 
 	private notify(message: string): void {
@@ -31,24 +27,10 @@ export class CommandManager {
 		}
 	}
 
-	setMaxHistorySize(size: number): void {
-		this.maxHistorySize = size;
-
-		while (this.undoStack.length > this.maxHistorySize) {
-			this.undoStack.shift();
-		}
-	}
-
 	async executeCommand(command: Command): Promise<void> {
 		try {
 			await command.execute();
-
-			this.undoStack.push(command);
-			this.redoStack = [];
-
-			if (this.undoStack.length > this.maxHistorySize) {
-				this.undoStack.shift();
-			}
+			this.history.push(command);
 		} catch (error) {
 			console.error(`Failed to execute command: ${command.getType()}`, error);
 			throw error;
@@ -56,16 +38,11 @@ export class CommandManager {
 	}
 
 	registerExecutedCommand(command: Command): void {
-		this.undoStack.push(command);
-		this.redoStack = [];
-
-		if (this.undoStack.length > this.maxHistorySize) {
-			this.undoStack.shift();
-		}
+		this.history.push(command);
 	}
 
 	async undo(): Promise<boolean> {
-		const command = this.undoStack.pop();
+		const command = this.history.current();
 		if (!command) {
 			this.notify("Nothing to undo");
 			return false;
@@ -75,22 +52,24 @@ export class CommandManager {
 			if (command.canUndo && !(await command.canUndo())) {
 				console.warn(`Cannot undo command: ${command.getType()} - referenced resources no longer exist`);
 				this.notify("Cannot undo: state has changed");
+				this.history.dropCurrent();
 				return false;
 			}
 
 			await command.undo();
-			this.redoStack.push(command);
+			this.history.retreat();
 			this.notify(`Undid: ${command.getType()}`);
 			return true;
 		} catch (error) {
 			console.error(`Failed to undo command: ${command.getType()}`, error);
 			this.notify(`Failed to undo: ${command.getType()}`);
+			this.history.dropCurrent();
 			return false;
 		}
 	}
 
 	async redo(): Promise<boolean> {
-		const command = this.redoStack.pop();
+		const command = this.history.forward();
 		if (!command) {
 			this.notify("Nothing to redo");
 			return false;
@@ -98,85 +77,41 @@ export class CommandManager {
 
 		try {
 			await command.execute();
-			this.undoStack.push(command);
 			this.notify(`Redid: ${command.getType()}`);
 			return true;
 		} catch (error) {
 			console.error(`Failed to redo command: ${command.getType()}`, error);
 			this.notify(`Failed to redo: ${command.getType()}`);
+			this.history.dropCurrent();
 			return false;
 		}
 	}
 
 	canUndo(): boolean {
-		return this.undoStack.length > 0;
+		return this.history.hasCurrent();
 	}
 
 	canRedo(): boolean {
-		return this.redoStack.length > 0;
+		return this.history.canGoForward();
 	}
 
 	clearHistory(): void {
-		this.undoStack = [];
-		this.redoStack = [];
+		this.history.clear();
 	}
 
 	getUndoStackSize(): number {
-		return this.undoStack.length;
+		return this.history.appliedCount;
 	}
 
 	getRedoStackSize(): number {
-		return this.redoStack.length;
+		return this.history.forwardCount;
 	}
 
 	peekUndo(): string | null {
-		if (this.undoStack.length === 0) {
-			return null;
-		}
-		return this.undoStack[this.undoStack.length - 1].getType();
+		return this.history.current()?.getType() ?? null;
 	}
 
 	peekRedo(): string | null {
-		if (this.redoStack.length === 0) {
-			return null;
-		}
-		return this.redoStack[this.redoStack.length - 1].getType();
-	}
-
-	popUndoCommand(): Command | undefined {
-		return this.undoStack.pop();
-	}
-
-	popRedoCommand(): Command | undefined {
-		return this.redoStack.pop();
-	}
-
-	pushToUndoStack(command: Command): void {
-		this.undoStack.push(command);
-		if (this.undoStack.length > this.maxHistorySize) {
-			this.undoStack.shift();
-		}
-	}
-
-	pushToRedoStack(command: Command): void {
-		this.redoStack.push(command);
-	}
-
-	removeFromUndoStack(command: Command): boolean {
-		const index = this.undoStack.indexOf(command);
-		if (index !== -1) {
-			this.undoStack.splice(index, 1);
-			return true;
-		}
-		return false;
-	}
-
-	removeFromRedoStack(command: Command): boolean {
-		const index = this.redoStack.indexOf(command);
-		if (index !== -1) {
-			this.redoStack.splice(index, 1);
-			return true;
-		}
-		return false;
+		return this.history.peekForward()?.getType() ?? null;
 	}
 }

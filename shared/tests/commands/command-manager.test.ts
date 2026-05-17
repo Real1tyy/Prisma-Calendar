@@ -43,17 +43,7 @@ describe("CommandManager", () => {
 			expect(manager.getRedoStackSize()).toBe(0);
 		});
 
-		it("accepts a numeric maxHistorySize", () => {
-			const manager = new CommandManager(5);
-
-			for (let i = 0; i < 7; i++) {
-				manager.registerExecutedCommand(createMockCommand());
-			}
-
-			expect(manager.getUndoStackSize()).toBe(5);
-		});
-
-		it("accepts an options object", () => {
+		it("accepts an options object with maxHistorySize", () => {
 			const manager = new CommandManager({ maxHistorySize: 3, showNotices: true });
 
 			for (let i = 0; i < 5; i++) {
@@ -89,7 +79,7 @@ describe("CommandManager", () => {
 		});
 
 		it("trims undo stack when exceeding maxHistorySize", async () => {
-			const manager = new CommandManager(2);
+			const manager = new CommandManager({ maxHistorySize: 2 });
 
 			await manager.executeCommand(createMockCommand("A"));
 			await manager.executeCommand(createMockCommand("B"));
@@ -130,7 +120,7 @@ describe("CommandManager", () => {
 		});
 
 		it("trims undo stack when exceeding maxHistorySize", () => {
-			const manager = new CommandManager(2);
+			const manager = new CommandManager({ maxHistorySize: 2 });
 
 			manager.registerExecutedCommand(createMockCommand("A"));
 			manager.registerExecutedCommand(createMockCommand("B"));
@@ -303,69 +293,6 @@ describe("CommandManager", () => {
 		});
 	});
 
-	describe("setMaxHistorySize", () => {
-		it("trims the undo stack to the new size", async () => {
-			const manager = new CommandManager(10);
-
-			for (let i = 0; i < 8; i++) {
-				await manager.executeCommand(createMockCommand(`Cmd${i}`));
-			}
-
-			manager.setMaxHistorySize(3);
-			expect(manager.getUndoStackSize()).toBe(3);
-		});
-	});
-
-	describe("popUndoCommand / popRedoCommand", () => {
-		it("pops from the undo stack", async () => {
-			const manager = new CommandManager();
-			const cmd = createMockCommand("PopMe");
-
-			await manager.executeCommand(cmd);
-			const popped = manager.popUndoCommand();
-
-			expect(popped?.getType()).toBe("PopMe");
-			expect(manager.getUndoStackSize()).toBe(0);
-		});
-
-		it("pops from the redo stack", async () => {
-			const manager = new CommandManager();
-			const cmd = createMockCommand("RedoPop");
-
-			await manager.executeCommand(cmd);
-			await manager.undo();
-			const popped = manager.popRedoCommand();
-
-			expect(popped?.getType()).toBe("RedoPop");
-			expect(manager.getRedoStackSize()).toBe(0);
-		});
-
-		it("returns undefined from empty stacks", () => {
-			const manager = new CommandManager();
-			expect(manager.popUndoCommand()).toBeUndefined();
-			expect(manager.popRedoCommand()).toBeUndefined();
-		});
-	});
-
-	describe("pushToUndoStack / pushToRedoStack", () => {
-		it("pushes directly to undo stack with size trimming", () => {
-			const manager = new CommandManager(2);
-
-			manager.pushToUndoStack(createMockCommand("A"));
-			manager.pushToUndoStack(createMockCommand("B"));
-			manager.pushToUndoStack(createMockCommand("C"));
-
-			expect(manager.getUndoStackSize()).toBe(2);
-			expect(manager.peekUndo()).toBe("C");
-		});
-
-		it("pushes directly to redo stack", () => {
-			const manager = new CommandManager();
-			manager.pushToRedoStack(createMockCommand("A"));
-			expect(manager.getRedoStackSize()).toBe(1);
-		});
-	});
-
 	describe("stateful undo/redo sequences", () => {
 		it("should maintain correct state through A→B→C, undo×2, redo, undo×3, redo×3", async () => {
 			const manager = new CommandManager();
@@ -502,45 +429,6 @@ describe("CommandManager", () => {
 			await manager.undo();
 			expect(state.value).toBe(0);
 			expect(manager.canUndo()).toBe(false);
-		});
-	});
-
-	describe("removeFromUndoStack / removeFromRedoStack", () => {
-		it("removes a specific command from the undo stack", async () => {
-			const manager = new CommandManager();
-			const cmd = createMockCommand("Target");
-
-			await manager.executeCommand(cmd);
-			const removed = manager.removeFromUndoStack(cmd);
-
-			expect(removed).toBe(true);
-			expect(manager.getUndoStackSize()).toBe(0);
-		});
-
-		it("returns false if command is not in the undo stack", () => {
-			const manager = new CommandManager();
-			const cmd = createMockCommand();
-
-			expect(manager.removeFromUndoStack(cmd)).toBe(false);
-		});
-
-		it("removes a specific command from the redo stack", async () => {
-			const manager = new CommandManager();
-			const cmd = createMockCommand("Target");
-
-			await manager.executeCommand(cmd);
-			await manager.undo();
-			const removed = manager.removeFromRedoStack(cmd);
-
-			expect(removed).toBe(true);
-			expect(manager.getRedoStackSize()).toBe(0);
-		});
-
-		it("returns false if command is not in the redo stack", () => {
-			const manager = new CommandManager();
-			const cmd = createMockCommand();
-
-			expect(manager.removeFromRedoStack(cmd)).toBe(false);
 		});
 	});
 });

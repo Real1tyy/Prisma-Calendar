@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { HistoryStack } from "../../src/utils/history-stack";
+import { HistoryStack } from "../../src/core/history-stack";
 
 describe("HistoryStack", () => {
 	it("returns null from back/forward on empty stack", () => {
@@ -135,5 +135,77 @@ describe("HistoryStack", () => {
 		stack.back();
 		expect(stack.canGoBack()).toBe(false);
 		expect(stack.canGoForward()).toBe(true);
+	});
+
+	describe("stack-style cursor (retreat / dropCurrent)", () => {
+		it("retreat moves cursor below 0 and returns the entry being left behind", () => {
+			const stack = new HistoryStack<string>();
+			stack.push("a");
+
+			expect(stack.hasCurrent()).toBe(true);
+			expect(stack.retreat()).toBe("a");
+			expect(stack.hasCurrent()).toBe(false);
+			expect(stack.current()).toBeNull();
+			expect(stack.canGoForward()).toBe(true);
+			expect(stack.forward()).toBe("a");
+		});
+
+		it("retreat returns null when nothing is applied", () => {
+			const stack = new HistoryStack<string>();
+			expect(stack.retreat()).toBeNull();
+		});
+
+		it("dropCurrent splices out the cursor entry but keeps the forward branch", () => {
+			const stack = new HistoryStack<string>();
+			stack.push("a");
+			stack.push("b");
+			stack.push("c");
+			stack.retreat();
+			stack.retreat();
+			stack.retreat();
+			expect(stack.hasCurrent()).toBe(false);
+
+			expect(stack.forward()).toBe("a");
+			const dropped = stack.dropCurrent();
+			expect(dropped).toBe("a");
+			expect(stack.size).toBe(2);
+			expect(stack.hasCurrent()).toBe(false);
+			expect(stack.forward()).toBe("b");
+			expect(stack.forward()).toBe("c");
+		});
+
+		it("dropCurrent returns null when nothing is applied", () => {
+			const stack = new HistoryStack<string>();
+			expect(stack.dropCurrent()).toBeNull();
+		});
+
+		it("appliedCount and forwardCount track cursor position", () => {
+			const stack = new HistoryStack<string>();
+			stack.push("a");
+			stack.push("b");
+			stack.push("c");
+
+			expect(stack.appliedCount).toBe(3);
+			expect(stack.forwardCount).toBe(0);
+
+			stack.retreat();
+			expect(stack.appliedCount).toBe(2);
+			expect(stack.forwardCount).toBe(1);
+
+			stack.retreat();
+			stack.retreat();
+			expect(stack.appliedCount).toBe(0);
+			expect(stack.forwardCount).toBe(3);
+		});
+
+		it("peekForward returns the next entry without moving the cursor", () => {
+			const stack = new HistoryStack<string>();
+			stack.push("a");
+			stack.push("b");
+			stack.retreat();
+
+			expect(stack.peekForward()).toBe("b");
+			expect(stack.current()).toBe("a");
+		});
 	});
 });

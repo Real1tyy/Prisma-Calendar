@@ -77,13 +77,40 @@ describe("MacroCommand", () => {
 		});
 	});
 
-	describe("fromExecuted", () => {
+	describe("markExecuted option", () => {
 		it("creates a macro with pre-executed commands that can be undone", async () => {
 			const cmds = [createMockCommand("A"), createMockCommand("B")];
-			const macro = MacroCommand.fromExecuted(cmds);
+			const macro = new MacroCommand(cmds, { markExecuted: true });
 
 			expect(macro.getCommandCount()).toBe(2);
 			expect(await macro.canUndo()).toBe(true);
+		});
+
+		it("undoes all pre-executed commands in reverse order without first calling execute", async () => {
+			const order: string[] = [];
+			const cmdA: Command = {
+				async execute() {
+					throw new Error("should not be called");
+				},
+				async undo() {
+					order.push("A");
+				},
+				getType: () => "A",
+			};
+			const cmdB: Command = {
+				async execute() {
+					throw new Error("should not be called");
+				},
+				async undo() {
+					order.push("B");
+				},
+				getType: () => "B",
+			};
+			const macro = new MacroCommand([cmdA, cmdB], { markExecuted: true });
+
+			await macro.undo();
+
+			expect(order).toEqual(["B", "A"]);
 		});
 	});
 

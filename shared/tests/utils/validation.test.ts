@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isNotEmpty, parsePositiveInt } from "../../src/core/validation";
+import { isNotEmpty, parsePositiveInt } from "../../src/utils/validation";
 
 describe("isNotEmpty", () => {
 	describe("returns false for empty values", () => {
