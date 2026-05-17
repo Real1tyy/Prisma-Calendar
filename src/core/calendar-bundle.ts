@@ -476,6 +476,16 @@ export class CalendarBundle {
 		}
 	}
 
+	/**
+	 * Boolean variant of `runCommand` for callers that only care about
+	 * success/failure, not the command instance. Folds the `!== null` check
+	 * so virtual-event CRUD wrappers below can `return runCommandOk(...)`
+	 * directly.
+	 */
+	private async runCommandOk(command: Command, successMessage: string, errorMessage: string): Promise<boolean> {
+		return (await this.runCommand(command, successMessage, errorMessage)) !== null;
+	}
+
 	// ─── Event CRUD ───────────────────────────────────────────────
 
 	async createEvent(eventData: CreateEventData): Promise<string | null> {
@@ -514,8 +524,8 @@ export class CalendarBundle {
 
 	// ─── Virtual Event CRUD ──────────────────────────────────────
 
-	async createVirtualEvent(eventData: CreateEventData): Promise<void> {
-		await this.runCommand(
+	async createVirtualEvent(eventData: CreateEventData): Promise<boolean> {
+		return this.runCommandOk(
 			new CreateVirtualEventCommand(this, {
 				title: eventData.title,
 				start: eventData.start,
@@ -528,24 +538,24 @@ export class CalendarBundle {
 		);
 	}
 
-	async deleteVirtualEvent(virtualEventId: string): Promise<void> {
-		await this.runCommand(
+	async deleteVirtualEvent(virtualEventId: string): Promise<boolean> {
+		return this.runCommandOk(
 			new DeleteVirtualEventCommand(this, virtualEventId),
 			"Virtual event deleted",
 			"Failed to delete virtual event"
 		);
 	}
 
-	async convertToVirtual(filePath: string): Promise<void> {
-		await this.runCommand(
+	async convertToVirtual(filePath: string): Promise<boolean> {
+		return this.runCommandOk(
 			new ConvertToVirtualCommand(this.app, this, filePath),
 			"Event converted to virtual",
 			"Failed to convert to virtual"
 		);
 	}
 
-	async convertToReal(virtualEventId: string): Promise<void> {
-		await this.runCommand(
+	async convertToReal(virtualEventId: string): Promise<boolean> {
+		return this.runCommandOk(
 			new ConvertToRealCommand(this.app, this, virtualEventId),
 			"Virtual event converted to real",
 			"Failed to convert to real"

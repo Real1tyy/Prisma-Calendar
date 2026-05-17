@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
-import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
+import { readEventFrontmatter, seedMarkdownNote } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { createPrismaApi, waitForApiIndex } from "../../fixtures/api-helpers";
 import { PLUGIN_ID } from "../../fixtures/constants";
@@ -104,15 +104,8 @@ test.describe("plugin api contract — event lifecycle via window.PrismaCalendar
 		await calendar.unlockPro();
 		const api = createPrismaApi(obsidian.page);
 
-		// Seed a plain markdown file through Obsidian's vault API so the metadata
-		// cache picks it up (writeFileSync would bypass the cache). The convert
-		// handler resolves the path via `vault.getAbstractFileByPath`, so the
-		// file must be known to Obsidian, not just present on disk.
 		const seedPath = "Events/Plain Note.md";
-		await obsidian.page.evaluate(async (path) => {
-			const w = window as unknown as PrismaWindow;
-			await w.app.vault.create(path, "# Plain Note\n\nNo frontmatter yet.\n");
-		}, seedPath);
+		await seedMarkdownNote(obsidian.page, seedPath, "# Plain Note\n\nNo frontmatter yet.\n");
 
 		// `convertFileToEvent` internally calls `ensureFileHasZettelId` which
 		// renames a note without a zettel id to `<title>-<YYYYMMDDhhmmss>.md`.

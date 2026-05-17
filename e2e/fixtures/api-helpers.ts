@@ -1,17 +1,18 @@
 import type { PrismaCalendarApi } from "@real1ty-obsidian-plugins/external-apis/prisma-calendar";
-import { type Invoker, pageEvaluateInvoker } from "@real1ty-obsidian-plugins/testing/api-contract";
+import { createTypedApi, type Invoker, pageEvaluateInvoker } from "@real1ty-obsidian-plugins/testing/api-contract";
 import { expect, type Page } from "@playwright/test";
 
 /**
  * Shared helpers for the `window.PrismaCalendar.*` contract specs. Two layers:
  *
- *   1. `createPrismaApi(page)` — typed DSL over `pageEvaluateInvoker`. Returns
- *      a `PrismaCalendarApi`-shaped proxy so specs call `api.createEvent({...})`
- *      with full type inference instead of `(await invoke(...)) as string`.
- *      The generated `PrismaCalendarApi` interface from
- *      `@real1ty-obsidian-plugins/external-apis/prisma-calendar` is the
- *      authoritative shape — drift between contract and runtime surfaces as a
- *      compile error in the spec, not a runtime cast surprise.
+ *   1. `createPrismaApi(page)` — thin Prisma-typed wrapper over the shared
+ *      `createTypedApi<TApi>` factory in `shared/src/testing/api-contract/`.
+ *      Returns a `PrismaCalendarApi`-shaped proxy so specs call
+ *      `api.createEvent({...})` with full type inference instead of
+ *      `(await invoke(...)) as string`. The generated `PrismaCalendarApi`
+ *      interface from `@real1ty-obsidian-plugins/external-apis/prisma-calendar`
+ *      is the authoritative shape — drift between contract and runtime
+ *      surfaces as a compile error in the spec, not a runtime cast surprise.
  *
  *   2. Poll helpers — wait for indexer / window-api / active-file readiness
  *      before the next action. The metadata cache + event repository need a
@@ -19,18 +20,9 @@ import { expect, type Page } from "@playwright/test";
  *      attach to the window after `licenseManager` fires `expose()`.
  */
 
-/**
- * Build a typed `PrismaCalendarApi` proxy backed by `pageEvaluateInvoker`.
- * Every method awaits a Promise of the contract-generated output type — no
- * casts, no `as unknown` ladders. Use this from every Tier 1 spec.
- */
+/** Build a typed `PrismaCalendarApi` proxy backed by `pageEvaluateInvoker`. */
 export function createPrismaApi(page: Page): PrismaCalendarApi {
-	const invoke = pageEvaluateInvoker(page, "PrismaCalendar");
-	return new Proxy({} as PrismaCalendarApi, {
-		get(_target, action: string) {
-			return (input?: unknown) => invoke(action, input);
-		},
-	});
+	return createTypedApi<PrismaCalendarApi>(page, "PrismaCalendar");
 }
 
 /** Wait until a single file is indexed by the event repository. */

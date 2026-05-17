@@ -66,8 +66,8 @@ function createTestContext() {
 		virtualEventStore: store,
 		settingsStore: { currentSettings: settingsStore.value },
 		commandManager,
-		convertToVirtual: vi.fn().mockResolvedValue(undefined),
-		convertToReal: vi.fn().mockResolvedValue(undefined),
+		convertToVirtual: vi.fn().mockResolvedValue(true),
+		convertToReal: vi.fn().mockResolvedValue(true),
 		createEventFile: vi.fn().mockResolvedValue("calendar/New Event.md"),
 	} as any;
 
@@ -117,7 +117,11 @@ describe("makeEventVirtual", () => {
 	});
 
 	it("should resolve the correct calendar by calendarId", async () => {
-		const otherBundle = { ...ctx.bundle, calendarId: "other-calendar", convertToVirtual: vi.fn() };
+		const otherBundle = {
+			...ctx.bundle,
+			calendarId: "other-calendar",
+			convertToVirtual: vi.fn().mockResolvedValue(true),
+		};
 		ctx.plugin.calendarBundles = [ctx.bundle, otherBundle];
 
 		const fakeFile = createMockFile("calendar/meeting.md");
@@ -187,7 +191,7 @@ describe("makeEventReal", () => {
 			...ctx.bundle,
 			calendarId: "other-calendar",
 			virtualEventStore: otherStore,
-			convertToReal: vi.fn(),
+			convertToReal: vi.fn().mockResolvedValue(true),
 		};
 		ctx.plugin.calendarBundles = [ctx.bundle, otherBundle];
 

@@ -101,8 +101,7 @@ export async function convertFileToEvent(
 
 export async function makeEventVirtual(plugin: CustomCalendarPlugin, input: PrismaMakeVirtualInput): Promise<boolean> {
 	return withBundle(plugin, input.calendarId, false, async (bundle) => {
-		await bundle.convertToVirtual(input.filePath);
-		return true;
+		return await bundle.convertToVirtual(input.filePath);
 	});
 }
 
@@ -153,8 +152,6 @@ export async function makeEventReal(plugin: CustomCalendarPlugin, input: PrismaM
 			new Notice("Virtual event not found");
 			return false;
 		}
-
-		await bundle.convertToReal(input.virtualEventId);
-		return true;
+		return await bundle.convertToReal(input.virtualEventId);
 	});
 }
