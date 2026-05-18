@@ -2,7 +2,7 @@
 
 import useBaseUrl from "@docusaurus/useBaseUrl";
 
-How to install Prisma Calendar using BRAT.
+How to install Prisma Calendar — from the official Obsidian Community Plugin Store (recommended), or manually from a GitHub release.
 
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
@@ -27,39 +27,42 @@ Learn how to install, setup, and begin using Prisma Calendar in minutes.
   />
 </div>
 
-Prisma Calendar is currently **awaiting approval** for the Obsidian Community Plugin store. While it's pending approval, you can install it using one of the methods below.
+## ✨ Recommended: Obsidian Community Plugin Store
 
-## 🎯 Recommended: BRAT (Beta Reviewers Auto-update Tool)
+Prisma Calendar is published in the official **[Obsidian Community Plugin Store](https://community.obsidian.md/plugins/prisma-calendar)** — Obsidian's plugin marketplace. This is the recommended way to install the plugin.
 
-The easiest and most convenient way to install Prisma Calendar with automatic updates:
+### Why install from the store
 
-### Steps
+- ✅ **One-click install and enable** — no folders, no file copying, no manual updates
+- ✅ **Automatic updates** — Obsidian shows you when a new version is available and updates in one click
+- ✅ **Verified by the Obsidian team** — every release is reviewed for compliance and security before it ships
+- ✅ **Listed alongside your other plugins** — manage Prisma the same way you manage every other Community plugin
 
-1. **Install BRAT plugin** (if you don't have it already)
-   - Open Settings → Community Plugins → Browse
-   - Search for "BRAT"
-   - Install and enable [BRAT](https://github.com/TfTHacker/obsidian42-brat)
+### Option A — Install via the Obsidian Community page
 
-2. **Add Prisma Calendar via BRAT**
-   - Open Settings → BRAT
-   - Click **Add Beta Plugin**
-   - Enter the repository URL: `https://github.com/Real1tyy/Prisma-Calendar`
-   - Click **Add Plugin**
+Open Prisma Calendar's official Community Plugin page and click **Add to Obsidian** — it opens it straight inside Obsidian:
 
-3. **Enable the plugin**
-   - Go to Settings → Community Plugins
-   - Find "Prisma Calendar" in the list
-   - Toggle it on
+[![Install in Obsidian](https://img.shields.io/badge/Install_in_Obsidian-7c3aed?style=for-the-badge&logo=obsidian&logoColor=white)](https://community.obsidian.md/plugins/prisma-calendar)
 
-### Benefits of BRAT
+Direct URL: <https://community.obsidian.md/plugins/prisma-calendar>
 
-- ✅ **Automatic updates** - Get new features and fixes automatically
-- ✅ **Easy installation** - Just paste the repo URL
-- ✅ **One-click setup** - No manual file management
+### Option B — Install manually from inside Obsidian
 
-## 📥 Manual Installation from GitHub Releases
+If the above doesn't work, you can install Prisma manually, regardless of browser or platform compatibility:
 
-If you prefer manual installation or can't use BRAT:
+1. Open Obsidian
+2. Go to **Settings → Community Plugins**
+3. If Restricted Mode is on, click **Turn on community plugins**
+4. Click **Browse**
+5. Search for **"Prisma Calendar"**
+6. Click **Install**
+7. Click **Enable**
+
+That's it — Prisma is now active in your vault. Open the [Quick Start](./quickstart.md) to set up your first calendar.
+
+## 📥 Alternative: Manual Installation from GitHub Releases
+
+If you prefer manual installation:
 
 ### Steps
 
@@ -90,21 +93,10 @@ If you prefer manual installation or can't use BRAT:
 
 ### Note on Manual Updates
 
-With manual installation, you'll need to repeat these steps whenever you want to update to a new version. Consider using BRAT for automatic updates.
-
-## ✨ Coming Soon: Community Plugin Store
-
-Once Prisma Calendar is approved for the Obsidian Community Plugin store, you'll be able to install it directly:
-
-1. Open Settings → Community Plugins → Browse
-2. Search for "Prisma Calendar"
-3. Click Install
-4. Enable the plugin
-
-I'll update this page as soon as the plugin is available in the store!
+With manual installation, you'll need to repeat these steps whenever you want to update to a new version. Consider using Obsidian's Community Plugin Store for automatic updates.
 
 ## Requirements
-- Obsidian 1.10+
+- **Obsidian 1.11.4 or newer** — earlier versions don't expose the APIs Prisma uses for Bases integration and encrypted secret storage. Update Obsidian first if you're on an older build.
 - For templating features, install the [Templater](https://github.com/SilentVoid13/Templater) plugin
 
 ## Next Steps

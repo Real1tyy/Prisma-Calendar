@@ -4,6 +4,15 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 2.17.0 - 5/18/2026
+
+> **TLDR:** Prisma Calendar is now in the official Obsidian Community Plugin Store — install with one click from inside Obsidian.
+
+### Added
+- **Available in the Obsidian Community Plugin Store**: Prisma Calendar is now listed in Obsidian's built-in plugin browser. [Add to Obsidian](obsidian://show-plugin?id=prisma-calendar) or search "Prisma Calendar" under **Settings → Community plugins → Browse**.
+
+---
+
 ## 2.16.0 - 5/11/2026
 
 > **TLDR:** Right-click any event to **Move to planning system…** — the note relocates and its frontmatter is translated to the destination's schema. **Categories now count untracked events** with full statistics, and **category rename / delete are undoable**. Icons get a **visual picker** with live previews, plus per-tab icon and color editing. Settings now show an **Update available** badge when a newer release ships, and remember your active tab and scroll position between opens.
@@ -391,7 +400,7 @@ Prisma is under active, full-time development. If you have ideas for improving t
 
 ### Added
 
-- **Detailed documentation with videos**: Added comprehensive video walkthroughs for every major feature, embedded directly into the documentation pages. Browse the full [documentation site](https://real1tyy.github.io/Prisma-Calendar/) or visit the [Gallery](https://real1tyy.github.io/Prisma-Calendar/gallery) for a visual overview of all features.
+- **Detailed documentation with videos**: Added comprehensive video walkthroughs for every major feature, embedded directly into the documentation pages. Browse the full [documentation site](https://real1tyy.github.io/Prisma-Calendar/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=changelog&utm_content=docs_home) or visit the [Gallery](https://real1tyy.github.io/Prisma-Calendar/gallery?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=changelog&utm_content=gallery) for a visual overview of all features.
 - **Templater support for recurring event instances**: Recurring event instances now use your configured Templater template when one is set. The template renders first, and any body content from the source recurring event is appended after the template body. Falls back gracefully if Templater is unavailable. See [Templater Integration — Recurring Event Instances](./features/advanced/templater.md#recurring-event-instances).
 
 ### Fixed
@@ -1222,7 +1231,7 @@ Prisma is under active, full-time development. If you have ideas for improving t
 
 - ⚠️ **NEVER use your main account password**
 - ✅ **ALWAYS use app-specific passwords** (iCloud, Google, Fastmail all support them)
-- 🔒 See [Security Considerations](https://real1tyy.github.io/Prisma-Calendar/features/advanced/integrations#security-considerations) for detailed information
+- 🔒 See [Security Considerations](https://real1tyy.github.io/Prisma-Calendar/features/advanced/integrations?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=changelog&utm_content=integrations_security#security-considerations) for detailed information
 
 Anyone with access to your vault can read your credentials. Use with caution.
 :::

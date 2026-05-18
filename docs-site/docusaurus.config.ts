@@ -115,6 +115,11 @@ const config: Config = {
 					position: "left",
 				},
 				{
+					href: "https://community.obsidian.md/plugins/prisma-calendar",
+					label: "Install in Obsidian",
+					position: "right",
+				},
+				{
 					href: "https://www.youtube.com/playlist?list=PLMVJknbUasLCULubO4MdCDvg9MyXu3kG4&utm_campaign=prisma_calendar&utm_source=docs&utm_medium=navbar&utm_content=youtube_playlist",
 					label: "YouTube Playlist",
 					position: "right",
@@ -142,6 +147,10 @@ const config: Config = {
 				{
 					title: "Get Started",
 					items: [
+						{
+							label: "Install in Obsidian",
+							href: "https://community.obsidian.md/plugins/prisma-calendar",
+						},
 						{
 							label: "Installation",
 							to: "/installation",
