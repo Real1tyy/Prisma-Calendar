@@ -109,7 +109,6 @@
 		"chart.js": "^4.5.1",
 		"colord": "^2.9.3",
 		"date-holidays": "^3.26.8",
-		"frappe-gantt": "^1.2.2",
 		"ical.js": "^2.2.1",
 		"jose": "^6.2.1",
 		"jsep": "^1.4.0",
@@ -128,5 +127,12 @@
 		"vis-timeline": "^8.5.0",
 		"yaml": "^2.8.2",
 		"zod": "^4.3.5"
+	},
+	"pnpm": {
+		"overrides": {
+			"obsidian": "1.11.4",
+			"@codemirror/state": "^6.5.2",
+			"@codemirror/view": "^6.36.8"
+		}
 	}
 }

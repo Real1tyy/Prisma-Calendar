@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  obsidian: 1.11.4
+  '@codemirror/state': ^6.5.2
+  '@codemirror/view': ^6.36.8
+
 importers:
 
   .:
@@ -50,9 +55,6 @@ importers:
       date-holidays:
         specifier: ^3.26.8
         version: 3.27.0
-      frappe-gantt:
-        specifier: ^1.2.2
-        version: 1.2.2
       ical.js:
         specifier: ^2.2.1
         version: 2.2.1
@@ -69,8 +71,8 @@ importers:
         specifier: ^5.1.6
         version: 5.1.9
       obsidian:
-        specifier: ^1.11.4
-        version: 1.12.3(@codemirror/state@6.6.0)(@codemirror/view@6.41.0)
+        specifier: 1.11.4
+        version: 1.11.4(@codemirror/state@6.6.0)(@codemirror/view@6.41.0)
       react:
         specifier: ^19.2.5
         version: 19.2.5
@@ -232,8 +234,8 @@ importers:
         specifier: ^3.7.2
         version: 3.7.2
       obsidian:
-        specifier: ^1.11.4
-        version: 1.12.3(@codemirror/state@6.6.0)(@codemirror/view@6.41.0)
+        specifier: 1.11.4
+        version: 1.11.4(@codemirror/state@6.6.0)(@codemirror/view@6.41.0)
       rxjs:
         specifier: ^7.8.2
         version: 7.8.2
@@ -335,8 +337,8 @@ importers:
         specifier: ^3.10.9
         version: 3.13.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       obsidian:
-        specifier: ^1.11.4
-        version: 1.12.3(@codemirror/state@6.6.0)(@codemirror/view@6.41.0)
+        specifier: 1.11.4
+        version: 1.11.4(@codemirror/state@6.6.0)(@codemirror/view@6.41.0)
       react:
         specifier: ^19.2.5
         version: 19.2.5
@@ -2031,9 +2033,6 @@ packages:
     engines: {node: '>=18.3.0'}
     hasBin: true
 
-  frappe-gantt@1.2.2:
-    resolution: {integrity: sha512-1+uPNRa92LBIeKiZCVhJMiGIifJk5ONaoerXI8eBREXWRZGGoTJR5ATpMpsnAQcyBA6Gnq5wIht4eL+e4eHMBA==}
-
   fsevents@2.3.2:
     resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
@@ -2615,11 +2614,11 @@ packages:
     engines: {node: '>=18.20.0'}
     hasBin: true
 
-  obsidian@1.12.3:
-    resolution: {integrity: sha512-HxWqe763dOqzXjnNiHmAJTRERN8KILBSqxDSEqbeSr7W8R8Jxezzbca+nz1LiiqXnMpM8lV2jzAezw3CZ4xNUw==}
+  obsidian@1.11.4:
+    resolution: {integrity: sha512-n0KD3S+VndgaByrEtEe8NELy0ya6/s+KZ7OcxA6xOm5NN4thxKpQjo6eqEudHEvfGCeT/TYToAKJzitQ1I3XTg==}
     peerDependencies:
-      '@codemirror/state': 6.5.0
-      '@codemirror/view': 6.38.6
+      '@codemirror/state': ^6.5.2
+      '@codemirror/view': ^6.36.8
 
   once@1.4.0:
     resolution: {integrity: sha512-lNaJgI+2Q5URQBkccEKHTQOPaXdUxnZZElQTZY0MFUAuaEqe1E+Nyvgdz/aIyNi6Z9MzO5dv1H8n58/GELp3+w==}
@@ -4973,8 +4972,6 @@ snapshots:
     dependencies:
       fd-package-json: 2.0.0
 
-  frappe-gantt@1.2.2: {}
-
   fsevents@2.3.2:
     optional: true
 
@@ -5556,7 +5553,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  obsidian@1.12.3(@codemirror/state@6.6.0)(@codemirror/view@6.41.0):
+  obsidian@1.11.4(@codemirror/state@6.6.0)(@codemirror/view@6.41.0):
     dependencies:
       '@codemirror/state': 6.6.0
       '@codemirror/view': 6.41.0

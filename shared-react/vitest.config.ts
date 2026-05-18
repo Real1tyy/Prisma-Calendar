@@ -21,6 +21,7 @@ const JSDOM_PATTERNS: string[] = ["tests/page-header/action-bar.test.tsx"];
 const SHARED_EXCLUDE = ["**/node_modules/**", "**/dist/**"];
 
 export default defineConfig({
+	server: { fs: { allow: [".."] } },
 	plugins: [tsconfigPaths({ ignoreConfigErrors: true })],
 	test: {
 		globals: true,

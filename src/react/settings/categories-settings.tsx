@@ -9,7 +9,7 @@ import {
 	useSettingsFields,
 	useThrottledObservable,
 } from "@real1ty-obsidian-plugins-react";
-import Chart from "chart.js/auto";
+import { ArcElement, Chart, Legend, PieController, Tooltip } from "chart.js";
 import { nanoid } from "nanoid";
 import React, { memo, useCallback, useMemo, useState } from "react";
 
@@ -28,6 +28,10 @@ import {
 import { runCategoryDeleteFlow, runCategoryRenameFlow } from "../modals";
 import { PrismaSection } from "./_section";
 import { ProUpgradeBanner } from "./pro-upgrade-banner";
+
+// Tree-shaken registration mirrors shared/src/components/charts/pie-chart.ts —
+// `chart.js/auto` would pull every controller/scale/plugin (>200 KB).
+Chart.register(ArcElement, PieController, Tooltip, Legend);
 
 const S = SingleCalendarConfigSchema.shape;
 const EMPTY_CATEGORIES: ReadonlyArray<{ name: string; color: string }> = [];

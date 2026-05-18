@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 
-import { obsidianPluginConfig } from "../shared/configs/vite-plugin-config";
+import { obsidianPluginConfig } from "./shared/configs/vite-plugin-config";
 
 export default defineConfig(
 	obsidianPluginConfig({
