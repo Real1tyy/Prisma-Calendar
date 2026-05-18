@@ -22,10 +22,18 @@ function resolveSharedPackageSrc(pluginDir: string, name: string): string {
 	return path.resolve(pluginDir, "..", name, "src");
 }
 
+// Cap at 12 on a 32-core box. Median over 3 runs (Prisma-Calendar full suite):
+//   8  → 43.8s
+//   12 → 37.3s  (-15%)
+//   16 → ~30s on DOM-only sweeps but no improvement on full mixed run
+//       (extra transform-phase contention burns the headroom on the workers
+//       that finish first while the slow files are still parsing).
+// 12 wins on both shapes without regressing the smaller packages. Bumping
+// further only helps when one pool dominates the run.
 export const VITEST_POOL_OPTIONS = {
 	poolOptions: {
-		threads: { maxThreads: 8 },
-		forks: { maxForks: 8 },
+		threads: { maxThreads: 12 },
+		forks: { maxForks: 12 },
 	},
 };
 
