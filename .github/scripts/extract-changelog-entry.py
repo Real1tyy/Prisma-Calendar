@@ -19,6 +19,7 @@ falls back to `--generate-notes`.
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import sys
@@ -58,20 +59,39 @@ def extract_version_notes(changelog_path: Path, version: str) -> Optional[str]:
     return "\n".join(section) if section else None
 
 
+def _read_plugin_id(repo_root: Path) -> Optional[str]:
+    """Read the plugin's `id` field from manifest.json at the repo root —
+    the same source the old monorepo-side `build_release_notes` used to
+    compute the UTM campaign slug. Returns None if manifest is unreadable.
+    """
+    manifest_path = repo_root / "manifest.json"
+    if not manifest_path.exists():
+        return None
+    try:
+        data = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+    plugin_id = data.get("id")
+    return plugin_id if isinstance(plugin_id, str) and plugin_id else None
+
+
 def build_full_changelog_link(changelog_path: Path) -> Optional[str]:
     """Build the UTM-tracked docs-site link for the trailing "Full changelog"
     reference. Mirrors the previous monorepo-side `build_release_notes`
     (scripts/utils/changelog_parser.py) so GitHub release bodies stay
     consistent across the workflow handover.
 
-    Resolves the repo name from `GITHUB_REPOSITORY` (always set in Actions)
-    and falls back to walking up from `changelog_path` for local runs.
-    Returns None if neither source yields a repo name.
+    Resolves the repo owner/name from `GITHUB_REPOSITORY` (always set in
+    Actions) with a local-walk fallback. The UTM campaign slug is sourced
+    from manifest.json's `id` field (matching the old `plugin_id` arg) so
+    plugins whose repo name differs from their manifest id — currently
+    NotesManipulator (`notes-manipulator`) and PeopleManager
+    (`people-manager`) — keep emitting the same campaign value that
+    pre-2.16 releases used.
     """
     repo_full = os.environ.get("GITHUB_REPOSITORY", "")
     if "/" in repo_full:
-        repo_name = repo_full.split("/", 1)[1]
-        repo_owner = repo_full.split("/", 1)[0]
+        repo_owner, repo_name = repo_full.split("/", 1)
     else:
         # Local fallback: docs-site/docs/changelog.md → walk up to the plugin dir.
         repo_name = changelog_path.resolve().parents[2].name
@@ -80,7 +100,9 @@ def build_full_changelog_link(changelog_path: Path) -> Optional[str]:
     if not repo_name:
         return None
 
-    campaign = repo_name.lower().replace("-", "_")
+    repo_root = changelog_path.resolve().parents[2]
+    plugin_id = _read_plugin_id(repo_root) or repo_name.lower()
+    campaign = plugin_id.replace("-", "_")
     url = (
         f"https://{repo_owner}.github.io/{repo_name}/changelog"
         f"?utm_source=github&utm_medium=release&utm_campaign={campaign}"
