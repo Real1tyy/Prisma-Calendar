@@ -1,4 +1,10 @@
-import Chart from "chart.js/auto";
+import { ArcElement, Chart, Legend, PieController, Tooltip } from "chart.js";
+
+// `chart.js/auto` would register every controller/scale/plugin (>200 KB
+// minified). PieChartBuilder only renders pies with the default legend +
+// tooltip, so we register the minimum set once at module load. Idempotent
+// across multiple imports.
+Chart.register(ArcElement, PieController, Tooltip, Legend);
 
 export interface ChartDataItem {
 	label: string;
