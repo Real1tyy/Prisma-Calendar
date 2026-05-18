@@ -251,6 +251,7 @@ export class VaultTable<
 			const settled = handler(event).catch((error) => {
 				console.error("[VaultTable] async event handler error:", error);
 			});
+			// eslint-disable-next-line @typescript-eslint/no-floating-promises -- barrier owns the promise
 			this.asyncWork.track(settled);
 		});
 	}
@@ -722,6 +723,7 @@ export class VaultTable<
 
 		// Tracked rather than `void`-discarded so the initial-scan ready signal
 		// waits for the build (and the row-created event it emits) before flipping.
+		// eslint-disable-next-line @typescript-eslint/no-floating-promises -- barrier owns the promise
 		this.asyncWork.track(this.buildAndUpsertRow(id, filePath, parsed, event));
 	}
 

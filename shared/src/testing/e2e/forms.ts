@@ -145,5 +145,5 @@ export async function settleSettings(page: Page, options: SettleOptions = {}): P
 		return;
 	}
 	const ms = options.ms ?? 500;
-	await new Promise((resolve) => setTimeout(resolve, ms));
+	await new Promise((resolve) => window.setTimeout(resolve, ms));
 }

@@ -33,7 +33,6 @@ export {
 	readPluginData,
 } from "./frontmatter";
 export { type GlobalSetupOptions, pruneStaleE2eResources } from "./global-setup";
-export { seedMarkdownNote } from "./seed";
 export {
 	countPluginCommands,
 	executeCommand,
@@ -54,5 +53,6 @@ export {
 	type PluginE2eHarnessOptions,
 	writeStandardAppJson,
 } from "./plugin-bootstrap";
+export { seedMarkdownNote } from "./seed";
 export type { ObsidianApp, ObsidianPluginsRegistry, ObsidianWindow } from "./types";
 export { buildVaultPrefix, slug as slugifyVaultSegment, type VaultPrefixOptions } from "./vault-prefix";

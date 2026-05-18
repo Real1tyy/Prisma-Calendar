@@ -3,12 +3,12 @@ import { screen } from "@testing-library/react";
 import type { App } from "obsidian";
 import { describe, expect, it, vi } from "vitest";
 
+import { AppContext } from "../../../src/contexts/app-context";
 import { IconPickerButton, useIconPicker } from "../../../src/widgets/icon-picker/icon-picker-button";
 import { renderReact } from "../../helpers/render-react";
-import { AppContext } from "../../src/contexts/app-context";
 
 const showReactIconPickerMock = vi.fn();
-vi.mock("../../src/modals/icon-picker-modal", () => ({
+vi.mock("../../../src/modals/icon-picker-modal", () => ({
 	showReactIconPicker: (app: App, onDone: (icon: string | null) => void) => showReactIconPickerMock(app, onDone),
 }));
 

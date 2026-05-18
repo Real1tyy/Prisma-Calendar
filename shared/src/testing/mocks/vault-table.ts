@@ -59,6 +59,7 @@ export class MockVaultTable<TData extends Record<string, unknown> = Record<strin
 			const settled = handler(event).catch((error) => {
 				console.error("[MockVaultTable] async event handler error:", error);
 			});
+			// eslint-disable-next-line @typescript-eslint/no-floating-promises -- barrier owns the promise
 			this.asyncWork.track(settled);
 		});
 	}

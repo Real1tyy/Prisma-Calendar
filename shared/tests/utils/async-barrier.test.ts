@@ -28,7 +28,7 @@ describe("AsyncBarrier", () => {
 			const barrier = new AsyncBarrier();
 			const { promise, release } = gated();
 
-			barrier.track(promise);
+			void barrier.track(promise);
 
 			expect(barrier.inFlight).toBe(1);
 			release();
@@ -38,7 +38,7 @@ describe("AsyncBarrier", () => {
 			const barrier = new AsyncBarrier();
 			const { promise, release } = gated();
 
-			barrier.track(promise);
+			void barrier.track(promise);
 			expect(barrier.inFlight).toBe(1);
 
 			release();
@@ -53,7 +53,7 @@ describe("AsyncBarrier", () => {
 			const barrier = new AsyncBarrier();
 			const { promise, reject } = gated();
 
-			barrier.track(promise.catch(() => undefined));
+			void barrier.track(promise.catch(() => undefined));
 			expect(barrier.inFlight).toBe(1);
 
 			reject(new Error("boom"));
@@ -69,9 +69,9 @@ describe("AsyncBarrier", () => {
 			const b = gated();
 			const c = gated();
 
-			barrier.track(a.promise);
-			barrier.track(b.promise);
-			barrier.track(c.promise);
+			void barrier.track(a.promise);
+			void barrier.track(b.promise);
+			void barrier.track(c.promise);
 
 			expect(barrier.inFlight).toBe(3);
 
@@ -106,7 +106,7 @@ describe("AsyncBarrier", () => {
 		it("waits until the tracked promise settles", async () => {
 			const barrier = new AsyncBarrier();
 			const { promise, release } = gated();
-			barrier.track(promise);
+			void barrier.track(promise);
 
 			let resolved = false;
 			const waiting = barrier.waitUntilSettled().then(() => {
@@ -131,9 +131,9 @@ describe("AsyncBarrier", () => {
 			const b = gated();
 			const c = gated();
 
-			barrier.track(a.promise);
-			barrier.track(b.promise);
-			barrier.track(c.promise);
+			void barrier.track(a.promise);
+			void barrier.track(b.promise);
+			void barrier.track(c.promise);
 
 			let resolved = false;
 			const waiting = barrier.waitUntilSettled().then(() => {
@@ -172,9 +172,9 @@ describe("AsyncBarrier", () => {
 			// `return undefined` semantics: we do NOT propagate `second` up through
 			// the chain — first resolves independently.
 			const firstChain = first.promise.then(() => {
-				barrier.track(second.promise);
+				void barrier.track(second.promise);
 			});
-			barrier.track(firstChain);
+			void barrier.track(firstChain);
 
 			let resolved = false;
 			const waiting = barrier.waitUntilSettled().then(() => {
@@ -199,7 +199,7 @@ describe("AsyncBarrier", () => {
 		it("supports multiple concurrent waiters — all resolve at the same drain", async () => {
 			const barrier = new AsyncBarrier();
 			const { promise, release } = gated();
-			barrier.track(promise);
+			void barrier.track(promise);
 
 			const resolved = [false, false, false];
 			const waits = [
@@ -222,14 +222,14 @@ describe("AsyncBarrier", () => {
 
 			// Cycle 1
 			const a = gated();
-			barrier.track(a.promise);
+			void barrier.track(a.promise);
 			a.release();
 			await barrier.waitUntilSettled();
 			expect(barrier.inFlight).toBe(0);
 
 			// Cycle 2 — new work, new wait
 			const b = gated();
-			barrier.track(b.promise);
+			void barrier.track(b.promise);
 			expect(barrier.inFlight).toBe(1);
 			b.release();
 			await barrier.waitUntilSettled();
@@ -244,7 +244,7 @@ describe("AsyncBarrier", () => {
 			const sub = barrier.inFlight$.subscribe((c) => seen.push(c));
 
 			const { promise, release } = gated();
-			barrier.track(promise);
+			void barrier.track(promise);
 			release();
 			await promise;
 			await Promise.resolve();

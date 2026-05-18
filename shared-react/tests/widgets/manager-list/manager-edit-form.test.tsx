@@ -2,9 +2,9 @@ import { screen } from "@testing-library/react";
 import type { ReactElement } from "react";
 import { describe, expect, it, vi } from "vitest";
 
+import { SharedReactThemeProvider } from "../../../src/contexts/theme-context";
 import { ManagerEditForm, type ManagerEditController } from "../../../src/widgets/manager-list/manager-edit-form";
 import { renderReact, type RenderReactResult } from "../../helpers/render-react";
-import { SharedReactThemeProvider } from "../../src/contexts/theme-context";
 
 const ITEM = { id: "edit", label: "Edit", icon: "pencil", color: "#ff0000" };
 const PREFIX = "test-";

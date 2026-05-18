@@ -3,6 +3,10 @@
 // provides `window`, but vitest's `node` test environment doesn't — alias
 // `window` to `globalThis` so timer calls resolve in tests too. Importing this
 // file for its side effect installs the shim once per test process.
-if (typeof globalThis.window === "undefined") {
+// Test-only shim: `globalThis` is the only reference that works in BOTH the
+// node environment (window is undefined) and jsdom (window already wired).
+/* eslint-disable obsidianmd/no-global-this -- bootstrapping the `window` global itself; no other reference is safe in node env */
+if (typeof (globalThis as { window?: unknown }).window === "undefined") {
 	(globalThis as { window: typeof globalThis }).window = globalThis;
 }
+/* eslint-enable obsidianmd/no-global-this */

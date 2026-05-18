@@ -332,7 +332,7 @@ export async function bootstrapObsidian(options: BootstrapOptions): Promise<Boot
 	const waitForExit = (proc: ChildProcess, timeoutMs: number): Promise<boolean> => {
 		if (hasExited(proc)) return Promise.resolve(true);
 		return new Promise((resolve) => {
-			const timer = setTimeout(() => {
+			const timer = window.setTimeout(() => {
 				cleanup();
 				resolve(false);
 			}, timeoutMs);
@@ -341,7 +341,7 @@ export async function bootstrapObsidian(options: BootstrapOptions): Promise<Boot
 				resolve(true);
 			};
 			const cleanup = (): void => {
-				clearTimeout(timer);
+				window.clearTimeout(timer);
 				proc.off("exit", onExit);
 			};
 			proc.once("exit", onExit);
@@ -402,7 +402,7 @@ export async function bootstrapObsidian(options: BootstrapOptions): Promise<Boot
 		// is the one signal we can rely on cross-version without touching
 		// Playwright's _electron machinery.
 		const wsEndpoint = await new Promise<string>((resolve, reject) => {
-			const timer = setTimeout(
+			const timer = window.setTimeout(
 				() => reject(new Error("timeout waiting for DevTools WebSocket URL from Obsidian stderr")),
 				60_000
 			);
@@ -413,12 +413,12 @@ export async function bootstrapObsidian(options: BootstrapOptions): Promise<Boot
 				buffer += text;
 				const match = buffer.match(/DevTools listening on (ws:\/\/[^\s]+)/);
 				if (match) {
-					clearTimeout(timer);
+					window.clearTimeout(timer);
 					resolve(match[1]);
 				}
 			});
 			proc!.on("exit", () => {
-				clearTimeout(timer);
+				window.clearTimeout(timer);
 				reject(new Error("Obsidian process exited before DevTools WebSocket came up"));
 			});
 		});
@@ -447,7 +447,7 @@ export async function bootstrapObsidian(options: BootstrapOptions): Promise<Boot
 				log.debug(`found ${pages.length} page(s); using last: url=${page.url()}`);
 				break;
 			}
-			await new Promise((r) => setTimeout(r, 500));
+			await new Promise((r) => window.setTimeout(r, 500));
 		}
 		if (!page) throw new Error("no Obsidian renderer page appeared within 120s");
 

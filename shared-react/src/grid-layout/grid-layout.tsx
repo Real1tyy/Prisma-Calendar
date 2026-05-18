@@ -45,13 +45,15 @@ import { injectGridStyles } from "./styles";
 import type { CellOption, GridLayoutConfig, GridLayoutHandle, GridLayoutState, ResizeMode } from "./types";
 
 /**
- * Capture the latest value of `value` in a ref each render. Standard React idiom
- * for letting a stable callback (a durable `useMemo`/`useCallback` closure) read
- * the freshest value of an unstable input.
+ * Capture the latest value of `value` in a ref each render. Updates the ref in
+ * an effect so React's strict refs rule stays happy — consumers must only read
+ * the ref from event handlers / effect bodies (not during render).
  */
 function useLatestRef<T>(value: T): { current: T } {
 	const ref = useRef(value);
-	ref.current = value;
+	useEffect(() => {
+		ref.current = value;
+	});
 	return ref;
 }
 
@@ -224,14 +226,11 @@ export const GridLayout = memo(function GridLayout(props: GridLayoutProps) {
 			});
 	}, [app, cssPrefix, onOpenCellPicker]);
 
-	const resolvedOpenLayoutEditorRefInternal = useRef(resolvedOpenLayoutEditor);
-	const resolvedOpenCellPickerRefInternal = useRef(resolvedOpenCellPicker);
-	resolvedOpenLayoutEditorRefInternal.current = resolvedOpenLayoutEditor;
-	resolvedOpenCellPickerRefInternal.current = resolvedOpenCellPicker;
+	const resolvedOpenLayoutEditorRefInternal = useLatestRef(resolvedOpenLayoutEditor);
+	const resolvedOpenCellPickerRefInternal = useLatestRef(resolvedOpenCellPicker);
 
 	const cellOptionPalette = useMemo<CellOption[]>(() => paletteToCellOptions(palette), [palette]);
-	const cellOptionPaletteRef = useRef(cellOptionPalette);
-	cellOptionPaletteRef.current = cellOptionPalette;
+	const cellOptionPaletteRef = useLatestRef(cellOptionPalette);
 
 	// Stable element map for handle.getCellElement.
 	const elementMap = useRef(new Map<number, HTMLElement>());
@@ -295,7 +294,13 @@ export const GridLayout = memo(function GridLayout(props: GridLayoutProps) {
 				dispatch({ type: "destroy" });
 			},
 		}),
-		[dispatch, resizableRef]
+		[
+			dispatch,
+			resizableRef,
+			cellOptionPaletteRef,
+			resolvedOpenCellPickerRefInternal,
+			resolvedOpenLayoutEditorRefInternal,
+		]
 	);
 
 	useImperativeHandle(handleRef, () => handle, [handle]);

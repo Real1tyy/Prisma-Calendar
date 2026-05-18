@@ -1,4 +1,4 @@
-import { useCallback, useRef, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useRef, type KeyboardEvent } from "react";
 
 /**
  * Returns a React `onKeyDown` handler that fires `submit` when the user
@@ -12,13 +12,16 @@ import { useCallback, useRef, type KeyboardEvent } from "react";
  *
  * The returned handler has stable identity across renders — `submit` is read
  * through a ref so memoized children that receive the handler never re-render
- * just because the parent's submit closure changed.
+ * just because the parent's submit closure changed. The ref is updated in an
+ * effect (not during render) to keep React's strict refs rule happy.
  */
 export function useEnterToSubmit<T extends HTMLElement = HTMLDivElement>(
 	submit: () => void
 ): (event: KeyboardEvent<T>) => void {
 	const submitRef = useRef(submit);
-	submitRef.current = submit;
+	useEffect(() => {
+		submitRef.current = submit;
+	});
 
 	return useCallback((event: KeyboardEvent<T>) => {
 		if (event.key !== "Enter") return;
