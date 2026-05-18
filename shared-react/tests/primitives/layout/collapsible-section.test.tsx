@@ -1,6 +1,5 @@
 import { screen } from "@testing-library/react";
-import type { ReactElement } from "react";
-import { useState } from "react";
+import { useState, type ReactElement } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { CollapsibleSection, SectionBody, SectionHeader } from "../../../src/primitives/layout/collapsible-section";

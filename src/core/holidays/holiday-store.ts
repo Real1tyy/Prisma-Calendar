@@ -1,8 +1,7 @@
 import { DateTime } from "luxon";
 import type { App } from "obsidian";
 
-import type { CalendarEvent } from "../../types/calendar";
-import { eventDefaults } from "../../types/calendar";
+import { eventDefaults, type CalendarEvent } from "../../types/calendar";
 import { DateHolidaysProvider } from "./date-holidays-provider";
 import type { HolidayConfig, HolidayEvent, HolidayProvider } from "./types";
 

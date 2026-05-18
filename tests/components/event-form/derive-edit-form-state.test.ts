@@ -1,7 +1,11 @@
 import type { App } from "obsidian";
 import { describe, expect, it, vi } from "vitest";
 
+import type { CalendarBundle } from "../../../src/core/calendar-bundle";
+import { deriveEditFormState, type EditFormDerivedState } from "../../../src/react/modals/event/event-edit-modal";
+import type { SingleCalendarConfig } from "../../../src/types/settings";
 import type * as ObsidianUtils from "../../../src/utils/obsidian";
+import { createMockSingleCalendarSettings } from "../../fixtures/settings-fixtures";
 
 // Shared mock-registry: tests seed frontmatter by filePath; the mocked
 // `getFileAndFrontmatter` reads from it. `vi.hoisted` lets the `vi.mock`
@@ -34,11 +38,6 @@ vi.mock("../../../src/utils/obsidian", async () => {
 		}),
 	};
 });
-
-import type { CalendarBundle } from "../../../src/core/calendar-bundle";
-import { deriveEditFormState, type EditFormDerivedState } from "../../../src/react/modals/event/event-edit-modal";
-import type { SingleCalendarConfig } from "../../../src/types/settings";
-import { createMockSingleCalendarSettings } from "../../fixtures/settings-fixtures";
 
 function makeBundle(settingsOverrides: Partial<SingleCalendarConfig> = {}): CalendarBundle {
 	const settings = {

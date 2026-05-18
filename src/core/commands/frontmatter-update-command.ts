@@ -1,8 +1,8 @@
 import {
 	ensureISOSuffix,
-	FrontmatterUpdateCommand as SharedFrontmatterUpdateCommand,
 	parseFrontmatterRecord,
 	parseIntoList,
+	FrontmatterUpdateCommand as SharedFrontmatterUpdateCommand,
 	toDisplayLink,
 } from "@real1ty-obsidian-plugins";
 import type { DurationLike } from "luxon";

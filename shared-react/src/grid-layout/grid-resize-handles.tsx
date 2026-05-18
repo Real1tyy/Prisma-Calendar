@@ -1,13 +1,13 @@
 import { createCssUtils } from "@real1ty-obsidian-plugins";
-import { type CSSProperties, memo, useEffect, useLayoutEffect, useRef } from "react";
+import { memo, useEffect, useLayoutEffect, useRef, type CSSProperties } from "react";
 
 import {
-	type AxisLayout,
 	COL_LAYOUT,
 	computeTrackPxs,
 	parseTracks,
 	redistributeTracks,
 	ROW_LAYOUT,
+	type AxisLayout,
 } from "./grid-resize-math";
 
 export interface GridResizeHandlesProps {

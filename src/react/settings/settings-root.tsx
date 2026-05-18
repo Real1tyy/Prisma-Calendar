@@ -11,8 +11,7 @@ import {
 } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useMemo, useState } from "react";
 
-import { cls, tid } from "../../constants";
-import { CSS_PREFIX } from "../../constants";
+import { cls, CSS_PREFIX, tid } from "../../constants";
 import { FREE_MAX_CALENDARS } from "../../core/license";
 import { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";

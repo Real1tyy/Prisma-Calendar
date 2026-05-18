@@ -2,10 +2,9 @@ import { expect, type Locator, type Page } from "@playwright/test";
 import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { collectInstanceFiles, listEventFiles } from "../../specs/events/events-helpers";
-import type { EventModalInput } from "../../specs/events/fill-event-modal";
-import { fillEventModal, saveEventModal } from "../../specs/events/fill-event-modal";
+import { fillEventModal, saveEventModal, type EventModalInput } from "../../specs/events/fill-event-modal";
 import { ACTIVE_CALENDAR_LEAF } from "../constants";
-import { type ContextMenuItemKey, EVENT_BLOCK_TID, sel, TID } from "../testids";
+import { EVENT_BLOCK_TID, sel, TID, type ContextMenuItemKey } from "../testids";
 import type { PrismaWindow } from "../window-types";
 
 const MOVE_TO_CALENDAR_MODAL_TID = "prisma-modal-move-to-calendar";

@@ -1,6 +1,5 @@
-import { type ChipCollection, type ChipDisplay, type ChipInteraction, ChipList } from "@real1ty-obsidian-plugins-react";
-import type { ReactNode } from "react";
-import { memo, useCallback, useMemo, useState } from "react";
+import { ChipList, type ChipCollection, type ChipDisplay, type ChipInteraction } from "@real1ty-obsidian-plugins-react";
+import { memo, useCallback, useMemo, useState, type ReactNode } from "react";
 
 import { PrismaSettingItem } from "../prisma-setting-item";
 

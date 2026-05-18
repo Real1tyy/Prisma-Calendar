@@ -6,6 +6,11 @@
 import { BehaviorSubject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { CalendarBundle } from "../../src/core/calendar-bundle";
+import { IndexerRegistry } from "../../src/core/indexer-registry";
+import { CustomCalendarSettingsSchema, type CustomCalendarSettings } from "../../src/types";
+import { createMockApp, createMockFile } from "../setup";
+
 // Stub the view module — its transitive imports build a CalendarComponent on top
 // of MountableComponent(Component) which fails in the test environment because
 // obsidian's Component class isn't fully mocked. The bundle only invokes
@@ -13,12 +18,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("../../src/react/views/register-prisma-view", () => ({
 	registerPrismaReactView: vi.fn(),
 }));
-
-import { CalendarBundle } from "../../src/core/calendar-bundle";
-import { IndexerRegistry } from "../../src/core/indexer-registry";
-import type { CustomCalendarSettings } from "../../src/types";
-import { CustomCalendarSettingsSchema } from "../../src/types";
-import { createMockApp, createMockFile } from "../setup";
 
 type MockApp = ReturnType<typeof createMockApp>;
 

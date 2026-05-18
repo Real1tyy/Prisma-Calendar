@@ -1,5 +1,4 @@
-import type { App } from "obsidian";
-import { TFile } from "obsidian";
+import { TFile, type App } from "obsidian";
 
 /**
  * Waits for a file to be accessible and readable by Obsidian's cache.

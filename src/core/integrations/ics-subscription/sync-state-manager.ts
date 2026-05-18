@@ -4,7 +4,7 @@ import type { BehaviorSubject } from "rxjs";
 import type { CalendarEventSource } from "../../../types/event-source";
 import type { SingleCalendarConfig } from "../../../types/settings";
 import { BaseSyncStateManager, type TrackedSyncEvent } from "../base-sync-state-manager";
-import { type ICSSubscriptionSyncMetadata, ICSSubscriptionSyncMetadataSchema } from "./types";
+import { ICSSubscriptionSyncMetadataSchema, type ICSSubscriptionSyncMetadata } from "./types";
 
 type TrackedICSSubscriptionEvent = TrackedSyncEvent<ICSSubscriptionSyncMetadata>;
 

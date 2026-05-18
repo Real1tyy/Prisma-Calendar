@@ -2,9 +2,9 @@ import { BehaviorSubject, type Subscription } from "rxjs";
 
 import { TOOLBAR_BUTTON_IDS } from "../constants";
 import {
+	SingleCalendarConfigSchema,
 	type PrismaCalendarSettingsStore,
 	type SingleCalendarConfig,
-	SingleCalendarConfigSchema,
 } from "../types/index";
 import { getCalendarById } from "../utils/calendar/settings";
 

@@ -1,6 +1,6 @@
 import { Cell, GridLayout, ImperativeCellHost, useApp, usePersistedGridState } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
-import { memo, type Ref, type RefObject, useCallback, useImperativeHandle, useMemo, useRef } from "react";
+import { memo, useCallback, useImperativeHandle, useMemo, useRef, type Ref, type RefObject } from "react";
 
 import {
 	createDailyCalendar,

@@ -2,11 +2,11 @@ import { existsSync, mkdirSync } from "node:fs";
 import { basename, join } from "node:path";
 
 import { expect } from "@playwright/test";
-import { type BootstrappedObsidian, readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
+import { readEventFrontmatter, type BootstrappedObsidian } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { DEFAULT_CALENDAR_ID } from "../../fixtures/constants";
 import { fromAnchor } from "../../fixtures/dates";
-import { type CalendarHandle, createEventHandle, type EventHandle } from "../../fixtures/dsl";
+import { createEventHandle, type CalendarHandle, type EventHandle } from "../../fixtures/dsl";
 import { testResilience as test } from "../../fixtures/electron";
 import { activateCalendar, addCalendar } from "../../fixtures/resilience-helpers";
 

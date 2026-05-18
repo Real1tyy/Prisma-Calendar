@@ -1,25 +1,17 @@
 import { ColorEvaluator, parseIntoList } from "@real1ty-obsidian-plugins";
 import {
 	createCustomizableContextMenu,
-	type CustomizableContextMenuHandle,
-	type CustomizableContextMenuItem,
 	renderReactInline,
 	useApp,
 	useObservable,
+	type CustomizableContextMenuHandle,
+	type CustomizableContextMenuItem,
 } from "@real1ty-obsidian-plugins-react";
-import { type App, Menu, Notice } from "obsidian";
+import { Menu, Notice, type App } from "obsidian";
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { BehaviorSubject, debounceTime, distinctUntilChanged, map, merge, skip } from "rxjs";
 
 import { injectOverflowDots } from "../../components/calendar-event-renderer";
-import type {
-	BarLayout,
-	GanttInteractionHooks,
-	GanttRenderData,
-	GanttRendererHandle,
-	PackedTask,
-	Viewport,
-} from "../../components/gantt";
 import {
 	createGanttRenderer,
 	GANTT_DEFAULTS,
@@ -27,10 +19,15 @@ import {
 	layoutBars,
 	normalizeEvents,
 	packRows,
+	type BarLayout,
+	type GanttInteractionHooks,
+	type GanttRenderData,
+	type GanttRendererHandle,
+	type PackedTask,
+	type Viewport,
 } from "../../components/gantt";
 import { showEventPreviewModal } from "../../components/modals";
-import { cls } from "../../constants";
-import { CSS_PREFIX } from "../../constants";
+import { cls, CSS_PREFIX } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import {
 	addPrerequisite,

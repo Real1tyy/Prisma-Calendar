@@ -1,5 +1,5 @@
 import type { Calendar } from "@fullcalendar/core";
-import { type App, Notice } from "obsidian";
+import { Notice, type App } from "obsidian";
 
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { addPrerequisite } from "../core/commands";

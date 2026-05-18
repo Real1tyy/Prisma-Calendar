@@ -1,18 +1,18 @@
-import type { Frontmatter } from "@real1ty-obsidian-plugins";
 import {
 	getObsidianLinkPath,
 	intoDate,
 	MacroCommand,
 	parseIntoList,
 	toLocalISOString,
+	type Frontmatter,
 } from "@real1ty-obsidian-plugins";
-import type {
-	ContextMenuState,
-	CustomizableContextMenuHandle,
-	CustomizableContextMenuItem,
+import {
+	createCustomizableContextMenu,
+	type ContextMenuState,
+	type CustomizableContextMenuHandle,
+	type CustomizableContextMenuItem,
 } from "@real1ty-obsidian-plugins-react";
-import { createCustomizableContextMenu } from "@real1ty-obsidian-plugins-react";
-import { type App, Notice } from "obsidian";
+import { Notice, type App } from "obsidian";
 
 import { CSS_PREFIX, EVENT_HIGHLIGHT_DURATION_MS, GO_TO_SOURCE_HIGHLIGHT_DELAY_MS, MS_PER_DAY } from "../constants";
 import { CONTEXT_MENU_BUTTON_LABELS } from "../context-menu-items";
@@ -36,11 +36,10 @@ import {
 	openMoveByModal,
 	openMoveToCalendarModal,
 } from "../react/modals";
-import { openEventEditModal } from "../react/modals/event/event-edit-modal";
 import { openEventSeriesModal } from "../react/modals/event-list";
+import { openEventEditModal } from "../react/modals/event/event-edit-modal";
 import { isTimedEvent } from "../types";
-import type { CalendarEvent, EventKind } from "../types/calendar";
-import { isTimeUnitAllowedForAllDay } from "../types/calendar";
+import { isTimeUnitAllowedForAllDay, type CalendarEvent, type EventKind } from "../types/calendar";
 import { getEventKind, isRecurringEventKind } from "../utils/events/classification";
 import { isEventDone, parseCustomDoneProperty } from "../utils/events/frontmatter";
 import { findAdjacentEvent } from "../utils/events/matching";
@@ -54,8 +53,7 @@ import {
 	openFileInNewWindow,
 } from "../utils/obsidian";
 import type { CalendarHost } from "./calendar-host";
-import type { PreviewEventData } from "./modals";
-import { showEventPreviewModal } from "./modals";
+import { showEventPreviewModal, type PreviewEventData } from "./modals";
 
 interface CalendarEventInfo {
 	title: string;

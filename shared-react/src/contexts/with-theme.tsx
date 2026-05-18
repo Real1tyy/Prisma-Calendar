@@ -1,5 +1,4 @@
-import type { ComponentType } from "react";
-import { useMemo } from "react";
+import { useMemo, type ComponentType } from "react";
 
 import { useResolvedCssPrefix, useResolvedTestIdPrefix } from "./theme-context";
 

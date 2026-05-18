@@ -1,4 +1,4 @@
-import { type RefCallback, useCallback, useRef } from "react";
+import { useCallback, useRef, type RefCallback } from "react";
 
 /**
  * Persists and restores the scroll position of a parent container across

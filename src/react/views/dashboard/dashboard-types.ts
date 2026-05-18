@@ -1,4 +1,4 @@
-import { type ChartDataItem, generateColors } from "@real1ty-obsidian-plugins";
+import { generateColors, type ChartDataItem } from "@real1ty-obsidian-plugins";
 
 export interface ColumnDef {
 	key: string;

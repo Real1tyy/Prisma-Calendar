@@ -3,7 +3,7 @@ import type { App } from "obsidian";
 import { memo, useEffect, useState } from "react";
 
 import type { CalendarBundle } from "../../../core/calendar-bundle";
-import { type IntervalStatsConfig, IntervalStatsView } from "./interval-stats-view";
+import { IntervalStatsView, type IntervalStatsConfig } from "./interval-stats-view";
 
 export interface IntervalStatsCellHandle {
 	unmount: () => void;

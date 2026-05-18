@@ -1,5 +1,4 @@
-import type { KeyboardEvent, Ref } from "react";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type Ref } from "react";
 
 const DEFAULT_DEBOUNCE_MS = 150;
 

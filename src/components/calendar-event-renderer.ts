@@ -9,7 +9,7 @@ import {
 	parseColorToRgb,
 	type RgbColor,
 } from "@real1ty-obsidian-plugins";
-import { type App, TFile } from "obsidian";
+import { TFile, type App } from "obsidian";
 
 import { cls } from "../constants";
 import type { CalendarEventData } from "../types/calendar";

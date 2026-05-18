@@ -1,5 +1,4 @@
-import type { Viewport } from "./gantt-types";
-import { MS_PER_DAY } from "./gantt-types";
+import { MS_PER_DAY, type Viewport } from "./gantt-types";
 
 export function todayStartMs(): number {
 	const today = new Date();

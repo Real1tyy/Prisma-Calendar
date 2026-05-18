@@ -1,6 +1,5 @@
 import { ensureISOSuffix } from "@real1ty-obsidian-plugins";
-import type { DurationLike } from "luxon";
-import { DateTime } from "luxon";
+import { DateTime, type DurationLike } from "luxon";
 
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
 import { stripZ } from "../dates/iso";

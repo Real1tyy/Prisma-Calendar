@@ -4,7 +4,7 @@ import { PLUGIN_ID } from "../../fixtures/constants";
 import { fromAnchor } from "../../fixtures/dates";
 import { expect, testWithSeededFiles as test } from "../../fixtures/electron";
 import { closeSettings, openPrismaSettings, switchSettingsTab } from "../../fixtures/helpers";
-import { type SeedEventInput, seedEvents } from "../../fixtures/seed-events";
+import { seedEvents, type SeedEventInput } from "../../fixtures/seed-events";
 import { expectEventVisible, navigateToAnchor, openCalendarReady } from "../events/events-helpers";
 
 // ─── Dataset: three folders with distinct property schemas ───────────────────

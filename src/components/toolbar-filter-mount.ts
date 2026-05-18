@@ -1,13 +1,12 @@
 import {
 	CommittedFilterInput,
-	type CommittedFilterInputHandle,
 	renderReactInline,
+	type CommittedFilterInputHandle,
 } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { createElement, createRef } from "react";
 
-import { cls } from "../constants";
-import { CSS_PREFIX } from "../constants";
+import { cls, CSS_PREFIX } from "../constants";
 import type { Frontmatter } from "../types";
 import { createExpressionMatcher, matchesSearch } from "../utils/filters/logic";
 

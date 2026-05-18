@@ -1,20 +1,21 @@
 import type { Calendar, CalendarOptions, EventContentArg } from "@fullcalendar/core";
 import allLocales from "@fullcalendar/core/locales-all";
-import { calculateDuration, type ColorEvaluator, formatDuration, toLocalISOString } from "@real1ty-obsidian-plugins";
+import { calculateDuration, formatDuration, toLocalISOString, type ColorEvaluator } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 
 import { cls, tid, toggleCls } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { UpdateEventCommand } from "../../core/commands";
 import { openEventCreateModal } from "../../react/modals/event/event-create-modal";
-import type {
-	CalendarEvent,
-	CalendarEventData,
-	EventDateTime,
-	EventUpdateInfo,
-	FCPrismaEventInput,
+import {
+	isAnyVirtual,
+	isTimedEvent,
+	type CalendarEvent,
+	type CalendarEventData,
+	type EventDateTime,
+	type EventUpdateInfo,
+	type FCPrismaEventInput,
 } from "../../types/calendar";
-import { isAnyVirtual, isTimedEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { stripZ } from "../../utils/dates/iso";
 import { isBatchSelectable, isHolidayEvent } from "../../utils/events/classification";

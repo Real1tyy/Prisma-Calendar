@@ -4,10 +4,9 @@ import {
 	serializeFrontmatterValue,
 } from "@real1ty-obsidian-plugins";
 import ICAL from "ical.js";
-import { type App, Notice, TFile } from "obsidian";
+import { Notice, TFile, type App } from "obsidian";
 
-import type { CalendarEvent } from "../../types/calendar";
-import { isAllDayEvent, isTimedEvent } from "../../types/calendar";
+import { isAllDayEvent, isTimedEvent, type CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { appendZ } from "../../utils/dates/iso";
 import { extractZettelId, PHYSICAL_INSTANCE_PATTERN, removeZettelId } from "../../utils/events/zettel-id";

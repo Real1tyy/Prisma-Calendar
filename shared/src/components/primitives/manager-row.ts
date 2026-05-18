@@ -1,8 +1,7 @@
-import type { App } from "obsidian";
-import { setIcon } from "obsidian";
+import { setIcon, type App } from "obsidian";
 
 import type { CssUtils } from "../../utils/css-utils";
-import { type EditableItem, renderManagerEditForm } from "./manager-edit-form";
+import { renderManagerEditForm, type EditableItem } from "./manager-edit-form";
 
 const DEFAULT_COLOR_SENTINEL = "#000000";
 const FALLBACK_EDIT_COLOR = "#ffffff";

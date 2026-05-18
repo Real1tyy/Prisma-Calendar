@@ -1,8 +1,7 @@
 import { BehaviorSubject } from "rxjs";
 import { describe, expect, it } from "vitest";
 
-import type { ColorRule } from "../../../src/core/evaluator/color";
-import { ColorEvaluator } from "../../../src/core/evaluator/color";
+import { ColorEvaluator, type ColorRule } from "../../../src/core/evaluator/color";
 
 interface TestSettings {
 	defaultNodeColor: string;

@@ -11,8 +11,7 @@ import {
 	createNotificationSettings,
 	createRawEventSource,
 } from "../fixtures";
-import type { MockApp } from "../mocks/obsidian";
-import { TFile } from "../mocks/obsidian";
+import { TFile, type MockApp } from "../mocks/obsidian";
 
 describe("NotificationManager", () => {
 	let mockApp: MockApp;

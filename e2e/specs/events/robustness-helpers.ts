@@ -6,10 +6,10 @@ import {
 	listEventFiles,
 	monthsFromTodayTo,
 	navigateCalendar,
-	type ObsidianHandle,
 	openCalendarReady,
 	switchToMonthView,
 	virtualInstanceLocator,
+	type ObsidianHandle,
 } from "./events-helpers";
 
 // Small helpers used only by the Round 2/3/4 robustness specs. Every helper

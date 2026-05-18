@@ -1,5 +1,4 @@
-import type { GanttConfig, GanttTask, PackedTask } from "./gantt-types";
-import { MS_PER_DAY } from "./gantt-types";
+import { MS_PER_DAY, type GanttConfig, type GanttTask, type PackedTask } from "./gantt-types";
 
 const ROW_GAP_MS = MS_PER_DAY;
 

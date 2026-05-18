@@ -1,9 +1,9 @@
 import {
 	debounceMsForEnv,
 	FrontmatterPropagator,
-	type ReactiveGroupBy,
 	showFrontmatterPropagationModal,
 	VaultTableView,
+	type ReactiveGroupBy,
 } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";

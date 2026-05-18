@@ -1,4 +1,4 @@
-import { type SnapshotSubscribable, useExternalSnapshot, useSchemaField } from "@real1ty-obsidian-plugins-react";
+import { useExternalSnapshot, useSchemaField, type SnapshotSubscribable } from "@real1ty-obsidian-plugins-react";
 import { Menu } from "obsidian";
 import React, { memo, useCallback, useEffect, useRef } from "react";
 

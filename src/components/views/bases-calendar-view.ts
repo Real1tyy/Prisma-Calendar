@@ -3,8 +3,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { ColorEvaluator, MS_PER_DAY } from "@real1ty-obsidian-plugins";
-import type { BasesQueryResult } from "obsidian";
-import { BasesView, Notice, type QueryController } from "obsidian";
+import { BasesView, Notice, type BasesQueryResult, type QueryController } from "obsidian";
 import { distinctUntilChanged, skip, type Subscription } from "rxjs";
 
 import { cls } from "../../constants";
@@ -36,8 +35,8 @@ import {
 	handleSharedEventUpdate,
 	mapEventToPrismaInput,
 	SELECTION_GUARD_DELAY_MS,
-	type SharedCalendarDeps,
 	syncCalendarSettings,
+	type SharedCalendarDeps,
 } from "./shared-calendar-options";
 
 export const BASES_CALENDAR_VIEW_ID = "prisma-calendar";

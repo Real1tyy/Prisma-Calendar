@@ -1,11 +1,11 @@
 import { nanoid } from "nanoid";
-import { type App, normalizePath, type Plugin } from "obsidian";
+import { normalizePath, type App, type Plugin } from "obsidian";
 
 import {
-	type StoredChatMessage,
-	type ThreadData,
 	ThreadDataSchema,
 	ThreadIndexSchema,
+	type StoredChatMessage,
+	type ThreadData,
 	type ThreadMeta,
 } from "./ai-service";
 

@@ -1,8 +1,7 @@
 import { BehaviorSubject } from "rxjs";
 import { describe, expect, it } from "vitest";
 
-import type { PathIncludedProperties } from "../../../src/core/evaluator/included";
-import { IncludedPropertiesEvaluator } from "../../../src/core/evaluator/included";
+import { IncludedPropertiesEvaluator, type PathIncludedProperties } from "../../../src/core/evaluator/included";
 
 interface TestSettings {
 	defaultBasesIncludedProperties: string[];

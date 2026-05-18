@@ -1,4 +1,3 @@
-import type { Command } from "@real1ty-obsidian-plugins";
 import {
 	backupFrontmatter,
 	createFileAtPath,
@@ -8,10 +7,10 @@ import {
 	getUniqueFilePathFromFull,
 	restoreFrontmatter,
 	sanitizeForFilename,
+	type Command,
 } from "@real1ty-obsidian-plugins";
 import type { DurationLike } from "luxon";
-import type { App } from "obsidian";
-import { getFrontMatterInfo, parseYaml, TFile } from "obsidian";
+import { getFrontMatterInfo, parseYaml, TFile, type App } from "obsidian";
 
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
 import { computeMovePath, ensureFileHasZettelId, generateUniqueEventPath } from "../../utils/events/file-naming";

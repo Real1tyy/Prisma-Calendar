@@ -8,20 +8,19 @@ import {
 	parseFrontmatterRecord,
 	registerSubmitHotkey,
 	renderSchemaForm,
-	type SchemaFormHandle,
 	serializeFrontmatterValue,
 	toLocalISOString,
 	toSafeString,
+	type SchemaFormHandle,
 } from "@real1ty-obsidian-plugins";
 import { renderReactInline } from "@real1ty-obsidian-plugins-react";
-import { type App, Modal, Notice } from "obsidian";
+import { Modal, Notice, type App } from "obsidian";
 import { createElement } from "react";
 import { flushSync } from "react-dom";
 import type { Subscription } from "rxjs";
 import type { z } from "zod";
 
-import { addCls, cls, removeCls, tid, toggleCls } from "../../../constants";
-import { CSS_PREFIX } from "../../../constants";
+import { addCls, cls, CSS_PREFIX, removeCls, tid, toggleCls } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { FREE_MAX_EVENT_PRESETS } from "../../../core/license";
 import {
@@ -35,11 +34,11 @@ import type { Frontmatter } from "../../../types";
 import { isTimedEvent } from "../../../types/calendar";
 import {
 	EventEditableFormFieldsSchema,
-	type EventSaveData,
 	FormToFieldsSchema,
 	PositiveFloat,
+	type EventSaveData,
 } from "../../../types/event-boundaries";
-import { RECURRENCE_TYPE_OPTIONS, type Weekday, WEEKDAY_OPTIONS, WEEKDAY_PRESET_DAYS } from "../../../types/recurring";
+import { RECURRENCE_TYPE_OPTIONS, WEEKDAY_OPTIONS, WEEKDAY_PRESET_DAYS, type Weekday } from "../../../types/recurring";
 import type { EventPreset } from "../../../types/settings";
 import {
 	buildCustomIntervalDSL,
@@ -59,8 +58,8 @@ import { showCategoryEventsModal } from "../series/bases-view";
 import {
 	applyPresetToState,
 	createDefaultState,
-	type EventFormState,
 	extractPresetFromState,
+	type EventFormState,
 } from "./event-form-state";
 import {
 	applyDateFieldsToFrontmatter,

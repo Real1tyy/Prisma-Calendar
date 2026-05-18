@@ -1,11 +1,11 @@
-import { type CodeBlockBinding, CodeBlockRepository, debounceMsForEnv } from "@real1ty-obsidian-plugins";
+import { CodeBlockRepository, debounceMsForEnv, type CodeBlockBinding } from "@real1ty-obsidian-plugins";
 import type { DateTime } from "luxon";
 import type { App } from "obsidian";
 import { BehaviorSubject, debounceTime, type Subscription } from "rxjs";
 import { v4 as uuidv4 } from "uuid";
 
 import { VIRTUAL_EVENTS_CODE_FENCE } from "../constants";
-import { type VirtualEventData, VirtualEventDataSchema } from "../types/calendar";
+import { VirtualEventDataSchema, type VirtualEventData } from "../types/calendar";
 import type { EventSaveData } from "../types/event-boundaries";
 import type { SingleCalendarConfig } from "../types/settings";
 

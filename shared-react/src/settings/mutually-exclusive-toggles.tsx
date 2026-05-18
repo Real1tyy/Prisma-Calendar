@@ -1,8 +1,8 @@
 import { memo, useCallback } from "react";
 
+import { useSchemaField, type SettingsStorelike } from "../hooks/settings/use-schema-field";
 import { Toggle } from "../primitives/controls";
 import { SettingItem } from "../primitives/layout/setting-item";
-import { type SettingsStorelike, useSchemaField } from "../hooks/settings/use-schema-field";
 
 interface ToggleConfig {
 	path: string;

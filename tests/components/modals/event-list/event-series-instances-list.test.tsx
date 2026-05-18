@@ -3,14 +3,14 @@ import { userEvent } from "@testing-library/user-event";
 import { DateTime } from "luxon";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("../../../../src/components/calendar-event-renderer", () => ({
-	applyMultiColorIndicators: vi.fn(),
-}));
-
 import type { CalendarBundle } from "../../../../src/core/calendar-bundle";
 import { EventSeriesInstancesList } from "../../../../src/react/modals/event-list/event-series-instances-list";
 import type { EventListOptions, EventRowItem } from "../../../../src/react/modals/event-list/event-series-types";
 import { createMockCalendarSettingsStore } from "../../../fixtures/settings-fixtures";
+
+vi.mock("../../../../src/components/calendar-event-renderer", () => ({
+	applyMultiColorIndicators: vi.fn(),
+}));
 
 interface BundleStub {
 	openLinkText: ReturnType<typeof vi.fn>;

@@ -1,6 +1,5 @@
 import { setIcon } from "obsidian";
-import type { CSSProperties } from "react";
-import { memo, useCallback, useEffect, useRef } from "react";
+import { memo, useCallback, useEffect, useRef, type CSSProperties } from "react";
 
 import { useExternalSnapshot } from "../hooks/reactive/use-external-snapshot";
 import { useInjectedStyles } from "../hooks/styles/use-styles";

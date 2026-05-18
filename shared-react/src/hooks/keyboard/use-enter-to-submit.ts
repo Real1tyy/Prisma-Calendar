@@ -1,5 +1,4 @@
-import type { KeyboardEvent } from "react";
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, type KeyboardEvent } from "react";
 
 /**
  * Returns a React `onKeyDown` handler that fires `submit` when the user

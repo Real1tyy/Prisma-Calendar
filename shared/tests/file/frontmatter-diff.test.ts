@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import type { Frontmatter } from "../../src/core/frontmatter/frontmatter-diff";
 import {
 	compareFrontmatter,
 	formatChangeForDisplay,
 	mergeFrontmatterDiffs,
+	type Frontmatter,
 } from "../../src/core/frontmatter/frontmatter-diff";
 
 describe("compareFrontmatter", () => {

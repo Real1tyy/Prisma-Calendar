@@ -1,5 +1,5 @@
 import { parseAsLocalDate, toSafeString } from "@real1ty-obsidian-plugins";
-import { type Dispatch, type RefObject, type SetStateAction, useCallback, useRef } from "react";
+import { useCallback, useRef, type Dispatch, type RefObject, type SetStateAction } from "react";
 import type { UseFormReturn } from "react-hook-form";
 
 import type { EventFormState } from "../../../components/modals/event/event-form-state";

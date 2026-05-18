@@ -1,8 +1,8 @@
 import { renderReactInline, useApp } from "@real1ty-obsidian-plugins-react";
-import { memo, type Ref, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from "react";
+import { memo, useCallback, useEffect, useImperativeHandle, useMemo, useRef, type Ref } from "react";
 import { distinctUntilChanged, map, skip } from "rxjs";
 
-import { type HeatmapHandle, renderHeatmapInto } from "../../components/modals";
+import { renderHeatmapInto, type HeatmapHandle } from "../../components/modals";
 import { CSS_PREFIX } from "../../constants";
 import { PRO_FEATURES } from "../../core/license";
 import { getHeatmapRenderingKey } from "../../utils/calendar/settings";

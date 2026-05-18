@@ -1,7 +1,7 @@
 import { expect, type Page } from "@playwright/test";
 import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
-import { refreshCalendar, seedEvent, type SeedEventInput, waitForEventCount } from "./seed-events";
+import { refreshCalendar, seedEvent, waitForEventCount, type SeedEventInput } from "./seed-events";
 
 // Template-pattern helper for the edge-case + integrations suites: every spec
 // that verifies a single-event frontmatter round-trip does the same four

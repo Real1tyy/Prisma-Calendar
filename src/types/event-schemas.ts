@@ -4,10 +4,8 @@ import { v5 as uuidv5 } from "uuid";
 import { PRISMA_CALENDAR_NAMESPACE } from "../constants";
 import { toInternalISO } from "../utils/dates/iso";
 import { cleanupTitle } from "../utils/events/naming";
-import type { AllDayEvent, ParsedEvent, TimedEvent, UntrackedEvent } from "./calendar";
-import { eventDefaults } from "./calendar";
-import type { ParsedEventFrontmatter } from "./event-frontmatter-schema";
-import { createEventFrontmatterSchema } from "./event-frontmatter-schema";
+import { eventDefaults, type AllDayEvent, type ParsedEvent, type TimedEvent, type UntrackedEvent } from "./calendar";
+import { createEventFrontmatterSchema, type ParsedEventFrontmatter } from "./event-frontmatter-schema";
 import type { EventMetadata } from "./event-metadata";
 import type { Frontmatter, SingleCalendarConfig } from "./index";
 

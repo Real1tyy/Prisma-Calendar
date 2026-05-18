@@ -1,7 +1,6 @@
 import { isObsidianLink } from "@real1ty-obsidian-plugins";
 import { useCallback, useMemo } from "react";
-import type { UseFormReturn } from "react-hook-form";
-import { useWatch } from "react-hook-form";
+import { useWatch, type UseFormReturn } from "react-hook-form";
 
 import type { EventFormState } from "../../../components/modals/event/event-form-state";
 import { showCategoryEventsModal } from "../../../components/modals/series/bases-view";

@@ -1,21 +1,21 @@
 import { writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-import { type Page, test as base } from "@playwright/test";
+import { test as base, type Page } from "@playwright/test";
 import {
 	applyStandardRendererBoilerplate,
-	bootstrapObsidian as sharedBootstrap,
-	type BootstrappedObsidian,
 	createConsoleErrorGuard,
 	createPluginE2eHarness,
-	type ObsidianWindow,
+	bootstrapObsidian as sharedBootstrap,
 	writeStandardAppJson,
+	type BootstrappedObsidian,
+	type ObsidianWindow,
 } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { CONTEXT_MENU_ITEM_IDS } from "../../src/context-menu-items";
 import { openCalendarReady } from "../specs/events/events-helpers";
 import { PLUGIN_ID } from "./constants";
-import { type CalendarHandle, createCalendarHandle } from "./dsl/calendar";
+import { createCalendarHandle, type CalendarHandle } from "./dsl/calendar";
 
 const E2E_ROOT = resolve(__dirname, "..");
 const PLUGIN_ROOT = resolve(E2E_ROOT, "..");

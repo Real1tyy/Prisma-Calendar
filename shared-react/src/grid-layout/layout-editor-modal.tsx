@@ -1,10 +1,9 @@
 import type { App } from "obsidian";
-import type { CSSProperties } from "react";
-import { memo, useCallback, useMemo, useReducer } from "react";
+import { memo, useCallback, useMemo, useReducer, type CSSProperties } from "react";
 
-import { ObsidianIcon } from "../primitives/atoms/obsidian-icon";
 import { useApp } from "../contexts/app-context";
 import { useScopedStyles } from "../hooks/styles/use-styles";
+import { ObsidianIcon } from "../primitives/atoms/obsidian-icon";
 import { showShelledModal } from "../show-react-modal";
 import { openCellPicker } from "./cell-picker-modal";
 import { adjustSizes } from "./engine-state";

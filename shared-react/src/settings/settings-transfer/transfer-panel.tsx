@@ -1,6 +1,5 @@
 import { Notice } from "obsidian";
-import type { ChangeEvent } from "react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState, type ChangeEvent } from "react";
 
 import { Button } from "../../primitives/atoms/button";
 import { Textarea } from "../../primitives/atoms/textarea";

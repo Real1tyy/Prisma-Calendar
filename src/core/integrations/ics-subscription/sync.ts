@@ -3,8 +3,8 @@ import { requestUrl, TFile } from "obsidian";
 
 import type { ICSSubscription } from "../../../types/integrations";
 import type { CustomCalendarSettings } from "../../../types/settings";
-import { BaseSyncService, type BaseSyncServiceOptions, yieldToMainThread } from "../base-sync-service";
-import { type ImportedEvent, parseICSContent } from "../ics-import";
+import { BaseSyncService, yieldToMainThread, type BaseSyncServiceOptions } from "../base-sync-service";
+import { parseICSContent, type ImportedEvent } from "../ics-import";
 import { computeIcsSubscriptionSyncPlan } from "./sync-planner";
 import type { ICSSubscriptionSyncStateManager } from "./sync-state-manager";
 import type { ICSSubscriptionSyncMetadata, ICSSubscriptionSyncResult } from "./types";

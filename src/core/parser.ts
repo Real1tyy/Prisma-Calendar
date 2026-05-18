@@ -3,8 +3,7 @@ import type { App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 
 import type { CalendarEvent } from "../types/calendar";
-import type { CalendarEventParser } from "../types/event-schemas";
-import { buildEventSchemaInput, createEventSchema } from "../types/event-schemas";
+import { buildEventSchemaInput, createEventSchema, type CalendarEventParser } from "../types/event-schemas";
 import type { RawEventSource } from "../types/event-source";
 import type { PrismaCalendarSettingsStore, SingleCalendarConfig } from "../types/index";
 import { findConflictForCalendar } from "../utils/calendar/conflicts";

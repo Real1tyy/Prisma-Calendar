@@ -1,8 +1,7 @@
 import type { Svg } from "@svgdotjs/svg.js";
 
 import type { ClsFn } from "../../../utils/css-utils";
-import type { GanttConfig, Viewport } from "../gantt-types";
-import { MS_PER_DAY } from "../gantt-types";
+import { MS_PER_DAY, type GanttConfig, type Viewport } from "../gantt-types";
 
 export function renderGrid(
 	svg: Svg,

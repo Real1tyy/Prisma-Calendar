@@ -1,6 +1,5 @@
 import { TextInput } from "@real1ty-obsidian-plugins-react";
-import type { ReactNode } from "react";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useState, type ReactNode } from "react";
 
 import { cls } from "../../../constants";
 import type { DirectorySuggestion } from "../../../core/directory-suggestions";

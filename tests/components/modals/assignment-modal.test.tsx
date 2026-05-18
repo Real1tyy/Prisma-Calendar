@@ -3,6 +3,12 @@ import { userEvent } from "@testing-library/user-event";
 import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 
+import {
+	AssignmentForm,
+	type AssignmentItem,
+	type AssignmentModalConfig,
+} from "../../../src/react/modals/category/assignment-modal";
+
 vi.mock("@real1ty-obsidian-plugins-react", async (importOriginal) => {
 	const actual = await importOriginal<Record<string, unknown>>();
 	return {
@@ -26,12 +32,6 @@ vi.mock("@real1ty-obsidian-plugins-react", async (importOriginal) => {
 		},
 	};
 });
-
-import {
-	AssignmentForm,
-	type AssignmentItem,
-	type AssignmentModalConfig,
-} from "../../../src/react/modals/category/assignment-modal";
 
 const DEFAULT_ITEMS: AssignmentItem[] = [
 	{ name: "Work", color: "#ff0000" },

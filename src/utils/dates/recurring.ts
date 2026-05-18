@@ -2,12 +2,15 @@ import { capitalize, parsePositiveInt } from "@real1ty-obsidian-plugins";
 import type { DateTime } from "luxon";
 
 import type { Frontmatter } from "../../types/index";
-import type { ParsedRecurrence, RecurrenceFreq, RecurrencePreset, RRuleFrontmatter } from "../../types/recurring";
 import {
 	CUSTOM_RRULE_PATTERN,
 	RECURRENCE_TYPE_OPTIONS,
 	RRuleFrontmatterSchema,
 	WEEKDAY_SUPPORTED_TYPES,
+	type ParsedRecurrence,
+	type RecurrenceFreq,
+	type RecurrencePreset,
+	type RRuleFrontmatter,
 } from "../../types/recurring";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { iterateOccurrencesInRange } from "./recurrence";

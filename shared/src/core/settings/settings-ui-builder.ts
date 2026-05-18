@@ -1,4 +1,4 @@
-import { type App, Notice, SecretComponent, Setting } from "obsidian";
+import { Notice, SecretComponent, Setting, type App } from "obsidian";
 import type { z, ZodObject, ZodRawShape } from "zod";
 
 import { camelCaseToLabel, introspectField } from "../../components/schema-modal/introspect";

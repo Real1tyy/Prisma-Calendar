@@ -11,9 +11,9 @@ import {
 	sel,
 } from "../testids";
 import {
-	type ConfirmationModalHandle,
 	expectConfirmationModal,
 	expectRenameModal,
+	type ConfirmationModalHandle,
 	type RenameModalHandle,
 } from "./shared";
 

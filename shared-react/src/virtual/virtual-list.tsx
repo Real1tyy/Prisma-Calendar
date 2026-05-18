@@ -1,6 +1,5 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
-import type { CSSProperties, ReactNode } from "react";
-import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
+import { forwardRef, useCallback, useImperativeHandle, useRef, type CSSProperties, type ReactNode } from "react";
 
 export interface VirtualListProps<T> {
 	items: readonly T[];

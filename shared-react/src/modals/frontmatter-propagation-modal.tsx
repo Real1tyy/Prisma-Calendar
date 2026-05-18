@@ -1,11 +1,10 @@
-import type { FrontmatterChange, FrontmatterDiff } from "@real1ty-obsidian-plugins";
-import { formatChangeForDisplay } from "@real1ty-obsidian-plugins";
+import { formatChangeForDisplay, type FrontmatterChange, type FrontmatterDiff } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { memo } from "react";
 
-import { Button } from "../primitives/atoms/button";
 import { useScoped, useScopedTid } from "../contexts/theme-context";
 import { useInjectedStyles } from "../hooks/styles/use-styles";
+import { Button } from "../primitives/atoms/button";
 import { openReactModal } from "../show-react-modal";
 import { buildFrontmatterPropagationStyles } from "./frontmatter-propagation-modal.styles";
 

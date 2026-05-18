@@ -3,8 +3,7 @@ import type { App } from "obsidian";
 import { memo, useCallback, useEffect, useState } from "react";
 
 import { cls, tid } from "../../../constants";
-import type { DirectorySuggestion } from "../../../core/directory-suggestions";
-import { scanVaultForDirectorySuggestions } from "../../../core/directory-suggestions";
+import { scanVaultForDirectorySuggestions, type DirectorySuggestion } from "../../../core/directory-suggestions";
 import { computePrefill, Field, PropertyFields, SuggestionList } from "./property-config";
 
 // ─── Types ───────────────────────────────────────────────────────────────────

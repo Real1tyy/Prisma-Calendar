@@ -1,18 +1,17 @@
-import type { SettingsTransferOptions } from "@real1ty-obsidian-plugins";
 import {
 	applyTransferredSettings,
 	confirmAction,
 	createTransferableSettingsSnapshot,
 	SETTINGS_TRANSFER_DEFAULT_FILENAME,
+	type SettingsTransferOptions,
 } from "@real1ty-obsidian-plugins";
 import { Notice } from "obsidian";
-import type { ReactNode } from "react";
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo, type ReactNode } from "react";
 
-import { Button } from "../../primitives/atoms/button";
-import { SettingItem } from "../../primitives/layout/setting-item";
 import { useApp } from "../../contexts/app-context";
 import type { SettingsStorelike } from "../../hooks/settings/use-settings-store";
+import { Button } from "../../primitives/atoms/button";
+import { SettingItem } from "../../primitives/layout/setting-item";
 import { openTransferModal } from "./transfer-modal";
 import type { SettingsTransferStrings } from "./transfer-panel";
 

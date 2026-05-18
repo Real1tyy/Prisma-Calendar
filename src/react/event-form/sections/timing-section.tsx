@@ -1,7 +1,6 @@
 import { calculateDurationMinutes } from "@real1ty-obsidian-plugins";
 import { memo, useCallback } from "react";
-import type { UseFormReturn } from "react-hook-form";
-import { useController, useWatch } from "react-hook-form";
+import { useController, useWatch, type UseFormReturn } from "react-hook-form";
 
 import type { EventFormState } from "../../../components/modals/event/event-form-state";
 import { formatDateOnly, formatDateTimeForInput } from "../../../utils/format";

@@ -1,5 +1,4 @@
-import type { SchemaFieldDescriptor } from "@real1ty-obsidian-plugins";
-import { introspectField, introspectShape } from "@real1ty-obsidian-plugins";
+import { introspectField, introspectShape, type SchemaFieldDescriptor } from "@real1ty-obsidian-plugins";
 import { z } from "zod";
 
 /**

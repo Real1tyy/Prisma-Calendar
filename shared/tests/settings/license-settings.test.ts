@@ -10,6 +10,9 @@
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { LicenseManager, LicenseStatus } from "../../src/core/license";
+import { renderLicenseSettings, type LicenseSettingsConfig } from "../../src/core/settings/license-settings";
+
 vi.mock("obsidian", () => {
 	class Setting {
 		settingEl = document.createElement("div");
@@ -38,9 +41,6 @@ vi.mock("obsidian", () => {
 	}
 	return { Setting, SecretComponent };
 });
-
-import type { LicenseManager, LicenseStatus } from "../../src/core/license";
-import { type LicenseSettingsConfig, renderLicenseSettings } from "../../src/core/settings/license-settings";
 
 function createMockLicenseManager(statusOverride?: Partial<LicenseStatus>): LicenseManager {
 	const defaultStatus: LicenseStatus = {

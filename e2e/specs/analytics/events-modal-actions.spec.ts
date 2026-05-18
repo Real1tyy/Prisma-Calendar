@@ -3,7 +3,7 @@ import type { Page } from "@playwright/test";
 import { todayISO, todayStamp } from "../../fixtures/dates";
 import { expectAssignmentModal, expectSeriesModalOpen } from "../../fixtures/dsl";
 import { expect, test } from "../../fixtures/electron";
-import { type SeedEventInput, updateCalendarSettings } from "../../fixtures/seed-events";
+import { updateCalendarSettings, type SeedEventInput } from "../../fixtures/seed-events";
 import type { PrismaWindow } from "../../fixtures/window-types";
 
 // Phase-3 coverage from docs/specs/e2e-events-modal-coverage.md.

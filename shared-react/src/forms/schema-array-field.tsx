@@ -1,5 +1,4 @@
-import type { FieldValues, UseFormReturn } from "react-hook-form";
-import { useFieldArray } from "react-hook-form";
+import { useFieldArray, type FieldValues, type UseFormReturn } from "react-hook-form";
 
 interface SchemaArrayFieldProps<TValues extends FieldValues> {
 	form: UseFormReturn<TValues>;

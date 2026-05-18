@@ -1,7 +1,7 @@
-import { type Command, MacroCommand, toLocalISOString } from "@real1ty-obsidian-plugins";
+import { MacroCommand, toLocalISOString, type Command } from "@real1ty-obsidian-plugins";
 
 import type CustomCalendarPlugin from "../../main";
-import { type AIOperation, AIOperationsSchema } from "../../types/ai";
+import { AIOperationsSchema, type AIOperation } from "../../types/ai";
 import { buildCreateEventCommand, buildDeleteEventCommand, buildEditEventCommand } from "../api/command-builders";
 import type { PrismaCreateEventInput, PrismaEditEventInput, PrismaEventInput } from "../api/types";
 import type { CalendarBundle } from "../calendar-bundle";
@@ -9,9 +9,9 @@ import {
 	buildCalendarContext,
 	buildManipulationContext,
 	buildPlanningContext,
+	getViewLabel,
 	type CalendarContext,
 	type CategoryContext,
-	getViewLabel,
 	type ManipulationContext,
 	type PlanningContext,
 } from "./ai-context-builder";

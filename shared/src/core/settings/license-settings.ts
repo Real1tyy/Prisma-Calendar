@@ -1,4 +1,4 @@
-import { type App, SecretComponent, Setting } from "obsidian";
+import { SecretComponent, Setting, type App } from "obsidian";
 
 import { getLicenseStatusText, type LicenseManager } from "../license";
 

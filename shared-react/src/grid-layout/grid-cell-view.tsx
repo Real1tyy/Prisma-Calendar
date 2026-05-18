@@ -1,7 +1,6 @@
 import { createCssUtils, showModal } from "@real1ty-obsidian-plugins";
-import type { App } from "obsidian";
-import { setIcon } from "obsidian";
-import { type CSSProperties, memo, useCallback, useEffect, useMemo, useRef } from "react";
+import { setIcon, type App } from "obsidian";
+import { memo, useCallback, useEffect, useMemo, useRef, type CSSProperties } from "react";
 
 import type { Placement } from "./engine-reducer";
 import { defaultSizes, sizesToTemplate } from "./engine-state";

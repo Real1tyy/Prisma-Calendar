@@ -1,8 +1,16 @@
 import { SVG } from "@svgdotjs/svg.js";
 
 import { createCssUtils } from "../../../utils/css-utils";
-import type { ArrowLayout, BarLayout, GanttConfig, GanttInteractionHooks, PackedTask, Viewport } from "../gantt-types";
-import { GANTT_DEFAULTS, MS_PER_DAY } from "../gantt-types";
+import {
+	GANTT_DEFAULTS,
+	MS_PER_DAY,
+	type ArrowLayout,
+	type BarLayout,
+	type GanttConfig,
+	type GanttInteractionHooks,
+	type PackedTask,
+	type Viewport,
+} from "../gantt-types";
 import { createPanHandler } from "../pan-handler";
 import { injectGanttStyles } from "../styles";
 import { buildViewport, todayStartMs } from "../time-scale";

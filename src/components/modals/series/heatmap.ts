@@ -14,10 +14,10 @@ import { injectOverflowDots } from "../../calendar-event-renderer";
 import { buildHeatmapDataset, type HeatmapDataset } from "../../heatmap/heatmap-data";
 import {
 	findAdjacentCell,
-	type HeatmapGrid,
-	type HeatmapGridCell,
 	renderHeatmapLegend,
 	renderHeatmapSVG,
+	type HeatmapGrid,
+	type HeatmapGridCell,
 } from "../../heatmap/heatmap-renderer";
 
 export type HeatmapMode = "yearly" | "monthly";

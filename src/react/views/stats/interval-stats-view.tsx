@@ -3,8 +3,13 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { CalendarEvent } from "../../../types/calendar";
-import type { AggregationMode, Stats, StatsInterval } from "../../../utils/stats";
-import { buildStatsSnapshot, pickDurationFormatter } from "../../../utils/stats";
+import {
+	buildStatsSnapshot,
+	pickDurationFormatter,
+	type AggregationMode,
+	type Stats,
+	type StatsInterval,
+} from "../../../utils/stats";
 import { useBundleChanges } from "../../hooks/use-bundle-changes";
 import { CapacityLabel } from "./capacity-label";
 import { StatsChart } from "./stats-chart";

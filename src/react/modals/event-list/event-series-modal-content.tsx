@@ -1,8 +1,7 @@
 import { showReactModal, useColorEvaluator } from "@real1ty-obsidian-plugins-react";
 import { DateTime } from "luxon";
 import type { App } from "obsidian";
-import type { CSSProperties, ReactNode } from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { CalendarEvent } from "../../../types/calendar";

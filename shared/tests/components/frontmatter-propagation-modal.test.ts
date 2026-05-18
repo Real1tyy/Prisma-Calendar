@@ -1,17 +1,16 @@
 import type { App } from "obsidian";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { showConfirmationModal } from "../../src/components/component-renderer/confirmation";
 import {
-	type FrontmatterPropagationModalOptions,
 	showFrontmatterPropagationModal,
+	type FrontmatterPropagationModalOptions,
 } from "../../src/components/primitives/frontmatter-propagation-modal";
 import type { FrontmatterDiff } from "../../src/core/frontmatter/frontmatter-diff";
 
 vi.mock("../../src/components/component-renderer/confirmation", () => ({
 	showConfirmationModal: vi.fn(),
 }));
-
-import { showConfirmationModal } from "../../src/components/component-renderer/confirmation";
 
 const mockShowConfirmation = vi.mocked(showConfirmationModal);
 

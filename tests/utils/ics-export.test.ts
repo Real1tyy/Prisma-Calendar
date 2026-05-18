@@ -4,9 +4,9 @@ import { COMMON_TIMEZONES, createICSFromEvents, generateICSFilename } from "../.
 import type { CalendarEvent } from "../../src/types/calendar";
 import {
 	createDefaultMetadata,
-	createICSExportOptions as createOptions,
 	createMockAllDayEvent,
 	createMockTimedEvent,
+	createICSExportOptions as createOptions,
 } from "../fixtures";
 
 describe("ICS Export", () => {

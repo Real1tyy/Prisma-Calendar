@@ -1,6 +1,5 @@
 import { applyClsTokens } from "@real1ty-obsidian-plugins";
-import type { App } from "obsidian";
-import { Modal } from "obsidian";
+import { Modal, type App } from "obsidian";
 import { useEffect, useState } from "react";
 
 export interface UseModalPortalOptions {

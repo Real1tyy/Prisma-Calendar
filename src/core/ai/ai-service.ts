@@ -1,5 +1,4 @@
-import type { RequestUrlResponse } from "obsidian";
-import { requestUrl } from "obsidian";
+import { requestUrl, type RequestUrlResponse } from "obsidian";
 import { z } from "zod";
 
 import { AI_DEFAULTS, type AIProvider } from "../../types/ai";

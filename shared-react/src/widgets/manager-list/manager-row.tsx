@@ -1,10 +1,9 @@
-import type { DragEvent, ReactNode } from "react";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useState, type DragEvent, type ReactNode } from "react";
 
 import { useScoped } from "../../contexts/theme-context";
 import { useInjectedStyles } from "../../hooks/styles/use-styles";
-import { cx } from "../../utils/cx";
 import { ObsidianIcon } from "../../primitives/atoms/obsidian-icon";
+import { cx } from "../../utils/cx";
 import { buildManagerRowStyles } from "./manager-row.styles";
 
 export interface EditableItem {

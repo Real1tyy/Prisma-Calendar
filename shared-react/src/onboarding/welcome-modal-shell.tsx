@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
-import { Button } from "../primitives/atoms/button";
 import { useScopedStyles } from "../hooks/styles/use-styles";
+import { Button } from "../primitives/atoms/button";
 import { buildWelcomeShellStyles } from "./welcome-modal-shell.styles";
 
 export interface WelcomeModalFooterLink {

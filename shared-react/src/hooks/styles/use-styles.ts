@@ -1,8 +1,7 @@
 import { injectStyleSheet } from "@real1ty-obsidian-plugins";
 import { useEffect } from "react";
 
-import type { ScopedTheme } from "../../contexts/theme-context";
-import { useScoped } from "../../contexts/theme-context";
+import { useScoped, type ScopedTheme } from "../../contexts/theme-context";
 
 /**
  * Inject a stylesheet into `document.head` once per id on mount. Idempotent —

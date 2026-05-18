@@ -6,17 +6,15 @@ import {
 } from "@real1ty-obsidian-plugins";
 import { useSettingsFields, useZodForm } from "@real1ty-obsidian-plugins-react";
 import { Notice } from "obsidian";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { MutableRefObject } from "react";
-import type { UseFormReturn } from "react-hook-form";
-import { useController, useWatch } from "react-hook-form";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
+import { useController, useWatch, type UseFormReturn } from "react-hook-form";
 
 import {
 	applyPresetToState,
 	createDefaultState,
+	EventFormStateSchema,
 	type CustomPropertyEntry,
 	type EventFormState,
-	EventFormStateSchema,
 } from "../../components/modals/event/event-form-state";
 import { TitleInputSuggest } from "../../components/title-input-suggest";
 import type { CalendarBundle } from "../../core/calendar-bundle";

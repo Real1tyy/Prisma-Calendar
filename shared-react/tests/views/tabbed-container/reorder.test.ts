@@ -3,12 +3,12 @@ import { describe, expect, it } from "vitest";
 import {
 	buildState,
 	getActiveChild,
-	type GroupChildState,
 	initialGroupChildState,
 	moveItem,
 	recalcActiveChildIndex,
 	reorderList,
 	resolveVisibleTabs,
+	type GroupChildState,
 } from "../../../src/views/tabbed-container/reorder";
 import type { GroupTabDefinition, TabDefinition, TabEntry } from "../../../src/views/tabbed-container/types";
 

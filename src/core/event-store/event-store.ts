@@ -4,8 +4,15 @@ import type { BehaviorSubject, Subscription } from "rxjs";
 import BTree from "sorted-btree";
 
 import { MARK_DONE_SCAN_INTERVAL_MS } from "../../constants";
-import type { AllDayEvent, CalendarEvent, TimedEvent, VirtualEventData } from "../../types/calendar";
-import { eventDefaults, isAnyVirtual, isTimedEvent } from "../../types/calendar";
+import {
+	eventDefaults,
+	isAnyVirtual,
+	isTimedEvent,
+	type AllDayEvent,
+	type CalendarEvent,
+	type TimedEvent,
+	type VirtualEventData,
+} from "../../types/calendar";
 import type { CalendarEventSource, IndexerEvent, RawEventSource } from "../../types/event-source";
 import type { ISO } from "../../types/index";
 import type { SingleCalendarConfig } from "../../types/settings";

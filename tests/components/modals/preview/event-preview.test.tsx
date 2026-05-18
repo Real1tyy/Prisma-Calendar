@@ -6,8 +6,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { CalendarBundle } from "../../../../src/core/calendar-bundle";
 import {
-	type PreviewEventData,
 	renderEventPreviewInto,
+	type PreviewEventData,
 } from "../../../../src/react/modals/preview/event-preview-modal";
 import { createMockSingleCalendarSettings } from "../../../fixtures/settings-fixtures";
 import { TFile } from "../../../mocks/obsidian";

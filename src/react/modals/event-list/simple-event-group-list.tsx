@@ -1,6 +1,7 @@
 import { memo } from "react";
 
 import { cls, tid } from "../../../constants";
+
 export interface SimpleEventGroupItem {
 	key: string;
 	title: string;

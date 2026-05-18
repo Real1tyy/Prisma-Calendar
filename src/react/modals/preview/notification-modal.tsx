@@ -5,8 +5,7 @@ import { useState } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 
-import { cls, tid } from "../../../constants";
-import { CSS_PREFIX } from "../../../constants";
+import { cls, CSS_PREFIX, tid } from "../../../constants";
 import type { Frontmatter } from "../../../types";
 import type { SingleCalendarConfig } from "../../../types/settings";
 import { removeZettelId } from "../../../utils/events/zettel-id";

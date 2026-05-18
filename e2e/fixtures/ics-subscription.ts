@@ -2,12 +2,12 @@ import { existsSync, readdirSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 
 import type { Page } from "@playwright/test";
-import { type BootstrappedObsidian, readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
+import { readEventFrontmatter, type BootstrappedObsidian } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { runCommand } from "./commands";
 import { expect } from "./electron";
 import { unlockPro } from "./helpers";
-import { buildIcs, type IcsServer, startIcsServer, type VEventInput } from "./ics-server";
+import { buildIcs, startIcsServer, type IcsServer, type VEventInput } from "./ics-server";
 import type { PrismaPlugin, PrismaWindow } from "./window-types";
 
 // High-level DSL for ICS subscription specs. Owns the mock HTTP server,

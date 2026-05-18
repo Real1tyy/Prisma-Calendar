@@ -1,8 +1,12 @@
 import type { App } from "obsidian";
 
 import { showReactModal } from "../../show-react-modal";
-import type { SettingsTransferStrings, TransferMode } from "./transfer-panel";
-import { DEFAULT_TRANSFER_STRINGS, TransferPanel } from "./transfer-panel";
+import {
+	DEFAULT_TRANSFER_STRINGS,
+	TransferPanel,
+	type SettingsTransferStrings,
+	type TransferMode,
+} from "./transfer-panel";
 
 export interface SettingsTransferModalConfig {
 	app: App;

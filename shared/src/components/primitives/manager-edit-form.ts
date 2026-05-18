@@ -1,5 +1,4 @@
-import type { App } from "obsidian";
-import { Setting } from "obsidian";
+import { Setting, type App } from "obsidian";
 
 import type { CssUtils } from "../../utils/css-utils";
 import { showIconPicker } from "./icon-picker";

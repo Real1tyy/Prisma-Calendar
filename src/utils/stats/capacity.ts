@@ -1,5 +1,4 @@
-import type { CalendarEvent } from "../../types/calendar";
-import { isTimedEvent } from "../../types/calendar";
+import { isTimedEvent, type CalendarEvent } from "../../types/calendar";
 import { getEventDuration, pickDurationFormatter } from "./duration";
 
 export interface CapacityResult {

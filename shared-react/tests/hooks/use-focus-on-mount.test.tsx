@@ -1,5 +1,5 @@
 import { renderHook } from "@testing-library/react";
-import { type RefObject, useRef } from "react";
+import { useRef, type RefObject } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useFocusOnMount, type UseFocusOnMountOptions } from "../../src/hooks/focus/use-focus";

@@ -1,10 +1,9 @@
 import type { App } from "obsidian";
-import type { ReactNode } from "react";
-import { memo, useCallback, useRef, useState } from "react";
+import { memo, useCallback, useRef, useState, type ReactNode } from "react";
 
+import { useScopedTid } from "../contexts/theme-context";
 import { Button } from "../primitives/atoms/button";
 import { ModalDescription } from "../primitives/atoms/modal-description";
-import { useScopedTid } from "../contexts/theme-context";
 import { openReactModal } from "../show-react-modal";
 
 export interface ConfirmationModalProps {

@@ -1,9 +1,14 @@
 import { errors, importSPKI, jwtVerify } from "jose";
-import { apiVersion, type App, Notice, Platform, requestUrl } from "obsidian";
+import { apiVersion, Notice, Platform, requestUrl, type App } from "obsidian";
 import { BehaviorSubject, type Observable } from "rxjs";
 
-import type { CachedLicenseData, LicenseManagerConfig, LicenseStatus, LicenseVerifyResponse } from "./types";
-import { LicenseStatusSchema } from "./types";
+import {
+	LicenseStatusSchema,
+	type CachedLicenseData,
+	type LicenseManagerConfig,
+	type LicenseStatus,
+	type LicenseVerifyResponse,
+} from "./types";
 
 const LICENSE_API_URL = "https://api.matejvavroproductivity.com/api/license/verify";
 

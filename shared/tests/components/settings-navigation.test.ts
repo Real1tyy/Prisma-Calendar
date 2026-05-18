@@ -1,17 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import {
+	SettingsNavigation,
+	type SettingsNavigationConfig,
+	type SettingsSection,
+} from "../../src/components/primitives/settings-navigation";
 import type * as ObsidianMock from "../../src/testing/mocks/obsidian";
 
 vi.mock("obsidian", async () => {
 	const actual = await vi.importActual<typeof ObsidianMock>("../../src/testing/mocks/obsidian");
 	return { ...actual };
 });
-
-import {
-	SettingsNavigation,
-	type SettingsNavigationConfig,
-	type SettingsSection,
-} from "../../src/components/primitives/settings-navigation";
 
 function createSection(overrides?: Partial<SettingsSection>): SettingsSection {
 	return {

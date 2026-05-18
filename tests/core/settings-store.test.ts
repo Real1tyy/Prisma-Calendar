@@ -3,8 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { TOOLBAR_BUTTON_IDS } from "../../src/constants";
 import { CalendarSettingsStore } from "../../src/core/settings-store";
-import type { CustomCalendarSettings } from "../../src/types";
-import { CustomCalendarSettingsSchema } from "../../src/types";
+import { CustomCalendarSettingsSchema, type CustomCalendarSettings } from "../../src/types";
 
 /**
  * Minimal fake for PrismaCalendarSettingsStore. The real one (shared lib's

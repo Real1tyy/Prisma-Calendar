@@ -7,7 +7,7 @@ import { describe, expect, it, vi } from "vitest";
 import { openCalDAVAddModal, openICSAddModal } from "../../../src/react/modals";
 import { IntegrationsSettingsReact } from "../../../src/react/settings/integrations-settings";
 import type { CalDAVAccount, ICSSubscription } from "../../../src/types/integrations";
-import { type CustomCalendarSettings, CustomCalendarSettingsSchema } from "../../../src/types/settings";
+import { CustomCalendarSettingsSchema, type CustomCalendarSettings } from "../../../src/types/settings";
 import { createMockCalendarSettingsStore } from "../../fixtures/settings-fixtures";
 import { createMockApp } from "../../setup";
 

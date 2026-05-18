@@ -1,4 +1,4 @@
-import { type App, MarkdownView, TFile, type Vault } from "obsidian";
+import { MarkdownView, TFile, type App, type Vault } from "obsidian";
 import type { z } from "zod";
 
 import { isFolderNote } from "../file/file";

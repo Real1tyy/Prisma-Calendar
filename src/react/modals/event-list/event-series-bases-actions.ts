@@ -1,10 +1,10 @@
 import { showModal } from "@real1ty-obsidian-plugins";
 
 import {
-	type EventSeriesBasesViewConfig,
 	showEventSeriesBasesViewModal,
 	showHeatmapModal,
 	showTimelineModal,
+	type EventSeriesBasesViewConfig,
 } from "../../../components/modals";
 import { renderProUpgradeBanner } from "../../../components/settings/pro-upgrade-banner";
 import { cls } from "../../../constants";

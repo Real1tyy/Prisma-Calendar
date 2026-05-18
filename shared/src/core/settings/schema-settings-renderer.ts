@@ -1,5 +1,4 @@
-import type { App } from "obsidian";
-import { Setting } from "obsidian";
+import { Setting, type App } from "obsidian";
 import type { z, ZodObject, ZodRawShape } from "zod";
 
 import { SettingsNavigation } from "../../components/primitives/settings-navigation";

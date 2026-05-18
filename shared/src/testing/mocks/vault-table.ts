@@ -1,4 +1,4 @@
-import { BehaviorSubject, type Observable, Subject, type Subscription } from "rxjs";
+import { BehaviorSubject, Subject, type Observable, type Subscription } from "rxjs";
 
 import { extractFileName } from "../../core/file/file";
 import type { FrontmatterDiff } from "../../core/frontmatter/frontmatter-diff";

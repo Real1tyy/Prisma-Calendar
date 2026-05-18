@@ -1,10 +1,8 @@
-import type { SchemaFieldDescriptor } from "@real1ty-obsidian-plugins";
-import { introspectField } from "@real1ty-obsidian-plugins";
+import { introspectField, type SchemaFieldDescriptor } from "@real1ty-obsidian-plugins";
 import { memo, useMemo } from "react";
 
+import { useSchemaField, type SettingsStorelike } from "../hooks/settings/use-schema-field";
 import { SettingItem } from "../primitives/layout/setting-item";
-import type { SettingsStorelike } from "../hooks/settings/use-schema-field";
-import { useSchemaField } from "../hooks/settings/use-schema-field";
 import { testIdProp } from "../utils/test-id";
 import type { SchemaFieldOverride } from "./override";
 import { resolveWidget } from "./resolve-widget";

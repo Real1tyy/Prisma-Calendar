@@ -1,5 +1,4 @@
-import type { ReactNode } from "react";
-import { memo } from "react";
+import { memo, type ReactNode } from "react";
 
 import { testIdAttr } from "../../utils/test-id";
 

@@ -1,5 +1,4 @@
-import type { ReactNode } from "react";
-import { memo, useCallback } from "react";
+import { memo, useCallback, type ReactNode } from "react";
 
 import { useScoped } from "../../contexts/theme-context";
 import { useActivatable } from "../../hooks/interaction/use-activatable";

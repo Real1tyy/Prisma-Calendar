@@ -2,14 +2,15 @@ import { describe, expect, it } from "vitest";
 
 import { layoutArrows } from "../../src/components/gantt-view/arrow-layout";
 import { layoutBars } from "../../src/components/gantt-view/bar-layout";
-import type {
-	BarLayout,
-	GanttConfig,
-	GanttTask,
-	PackedTask,
-	Viewport,
+import {
+	GANTT_DEFAULTS,
+	MS_PER_DAY,
+	type BarLayout,
+	type GanttConfig,
+	type GanttTask,
+	type PackedTask,
+	type Viewport,
 } from "../../src/components/gantt-view/gantt-types";
-import { GANTT_DEFAULTS, MS_PER_DAY } from "../../src/components/gantt-view/gantt-types";
 import { packRows, visualEndTime } from "../../src/components/gantt-view/row-packing";
 import { buildViewport, centerViewportOnTasks } from "../../src/components/gantt-view/time-scale";
 

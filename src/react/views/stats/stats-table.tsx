@@ -1,7 +1,11 @@
 import { memo, useCallback, useMemo, useState } from "react";
 
-import type { AggregationMode, WeeklyStatEntry } from "../../../utils/stats";
-import { formatPercentage, pickDurationFormatter } from "../../../utils/stats";
+import {
+	formatPercentage,
+	pickDurationFormatter,
+	type AggregationMode,
+	type WeeklyStatEntry,
+} from "../../../utils/stats";
 
 const ENTRIES_PER_PAGE = 20;
 

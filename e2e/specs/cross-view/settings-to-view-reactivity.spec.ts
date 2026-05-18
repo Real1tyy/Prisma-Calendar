@@ -2,7 +2,7 @@ import type { Page } from "@playwright/test";
 
 import { expectBackgroundColor } from "../../fixtures/color-assertions";
 import { todayStamp } from "../../fixtures/dates";
-import { type EventHandle, expectAllColors } from "../../fixtures/dsl";
+import { expectAllColors, type EventHandle } from "../../fixtures/dsl";
 import { test } from "../../fixtures/electron";
 import { updateCalendarSettings } from "../../fixtures/seed-events";
 

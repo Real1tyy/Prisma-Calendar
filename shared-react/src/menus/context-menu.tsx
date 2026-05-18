@@ -1,5 +1,4 @@
-import type { KeyboardEvent } from "react";
-import { memo, useCallback, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { createPortal } from "react-dom";
 
 import { useOutsideClick } from "../hooks/dom/use-outside-click";

@@ -1,10 +1,7 @@
-import { type ActionDefMap, defineAction } from "@real1ty-obsidian-plugins";
+import { defineAction, type ActionDefMap } from "@real1ty-obsidian-plugins";
 import { z } from "zod";
 
 import type CustomCalendarPlugin from "../../main";
-
-export const GLOBAL_KEY = "PrismaCalendar";
-
 import { SingleCalendarConfigSchema } from "../../types/settings";
 import { aiQuery } from "./ai-operations";
 import { batchDelete, batchMarkAsDone, batchMarkAsUndone, batchToggleSkip } from "./batch-operations";
@@ -57,6 +54,8 @@ import {
 	PrismaStatisticsOutputSchema,
 	PrismaUpdateSettingsInputSchema,
 } from "./types";
+
+export const GLOBAL_KEY = "PrismaCalendar";
 
 // Re-used schemas — declared once so every action that returns the same shape
 // keeps a single source of truth for drift detection.

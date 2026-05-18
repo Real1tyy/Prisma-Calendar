@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { expect, type Page } from "@playwright/test";
 
 import { ACTIVE_CALENDAR_LEAF, PLUGIN_ID } from "./constants";
-import { seedEvent, type SeedEventInput, updateCalendarSettings } from "./seed-events";
+import { seedEvent, updateCalendarSettings, type SeedEventInput } from "./seed-events";
 import type { PrismaPlugin, PrismaWindow } from "./window-types";
 
 // Helpers for high-volume / reactivity stress specs. The premise: the calendar

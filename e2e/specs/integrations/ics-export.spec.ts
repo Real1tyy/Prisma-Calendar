@@ -2,7 +2,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { expect, test } from "../../fixtures/electron";
-import { refreshCalendar, type SeedEventInput, seedEvents } from "../../fixtures/seed-events";
+import { refreshCalendar, seedEvents, type SeedEventInput } from "../../fixtures/seed-events";
 import { ICS_EXPORT_SUBMIT_TID, sel } from "../../fixtures/testids";
 
 // Exports go through the `showCalendarSelectModal` → ics-export writer. The

@@ -13,19 +13,19 @@ import {
 	formatLocaleMonthDay,
 	formatLocaleYearMonth,
 	MountableComponent,
-	type RgbColor,
 	roundToNearestHour,
 	toLocalISOString,
+	type RgbColor,
 } from "@real1ty-obsidian-plugins";
 import { renderReactInline } from "@real1ty-obsidian-plugins-react";
-import { type App, Component, TFile, type WorkspaceLeaf } from "obsidian";
+import { Component, TFile, type App, type WorkspaceLeaf } from "obsidian";
 import { createElement } from "react";
 import { BehaviorSubject } from "rxjs";
 
-import { cls, toggleCls } from "../constants";
 import {
 	CATEGORY_HIGHLIGHT_DURATION_MS,
 	CLICK_THRESHOLD_MS,
+	cls,
 	CSS_PREFIX,
 	DOUBLE_TAP_DELAY_MS,
 	DRAG_EDGE_THRESHOLD_PX,
@@ -33,6 +33,7 @@ import {
 	INITIAL_SIZE_UPDATE_DELAY_MS,
 	POINTER_UP_IGNORE_CLICKS_DELAY_MS,
 	RESTORATION_DELAY_MS,
+	toggleCls,
 	UPCOMING_EVENT_CHECK_INTERVAL_MS,
 } from "../constants";
 import type { CalendarBundle } from "../core/calendar-bundle";
@@ -42,21 +43,22 @@ import { PRO_FEATURES } from "../core/license";
 import { MinimizedModalManager } from "../core/minimized-modal-manager";
 import { getProGateUrls } from "../core/pro-feature-previews";
 import { openBatchFrontmatterModal, openCategoryAssignModal, openCategorySelectModal } from "../react/modals";
-import { openEventCreateModal } from "../react/modals/event/event-create-modal";
 import { openFilteredEventsModal, openSelectedEventsModal, openSkippedEventsModal } from "../react/modals/event-list";
 import { openEventsModal } from "../react/modals/event-list/events-modal-content";
+import { openEventCreateModal } from "../react/modals/event/event-create-modal";
 import { showStatsModal } from "../react/modals/stats/stats-modal";
 import { ZoomControl } from "../react/views/zoom-control";
-import type {
-	CalendarEvent,
-	CalendarEventData,
-	EventDateTime,
-	EventMountInfo,
-	EventUpdateInfo,
-	ExtendedButtonInput,
-	FCPrismaEventInput,
+import {
+	isAnyVirtual,
+	isTimedEvent,
+	type CalendarEvent,
+	type CalendarEventData,
+	type EventDateTime,
+	type EventMountInfo,
+	type EventUpdateInfo,
+	type ExtendedButtonInput,
+	type FCPrismaEventInput,
 } from "../types/calendar";
-import { isAnyVirtual, isTimedEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/index";
 import { getCalendarRenderingKey } from "../utils/calendar/settings";
 import { stripZ } from "../utils/dates/iso";
@@ -74,15 +76,14 @@ import {
 	applyEventMountStyling,
 	attachLazyNotePreview,
 	buildColorDotsContainer,
-	type EventRenderContext,
 	renderEventContent,
+	type EventRenderContext,
 } from "./calendar-event-renderer";
 import type { CalendarHost } from "./calendar-host";
 import { ConnectionRenderer } from "./connection-renderer";
 import { EventContextMenu } from "./event-context-menu";
-import { type FilterPresetSelectorMount, mountFilterPresetSelector } from "./filter-preset-selector-mount";
-import type { PreviewEventData } from "./modals";
-import { showEventPreviewModal, showIntervalEventsModal } from "./modals";
+import { mountFilterPresetSelector, type FilterPresetSelectorMount } from "./filter-preset-selector-mount";
+import { showEventPreviewModal, showIntervalEventsModal, type PreviewEventData } from "./modals";
 import { PrerequisiteSelectionManager } from "./prerequisite-selection-manager";
 import { createStickyBanner, type StickyBannerHandle } from "./sticky-banner";
 import { mountExpressionFilter, mountSearchFilter, type ToolbarFilterHandle } from "./toolbar-filter-mount";

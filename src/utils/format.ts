@@ -12,7 +12,7 @@ import {
 import { DateTime } from "luxon";
 
 import type { Frontmatter } from "../types";
-import { type CalendarEvent, type CalendarEventData, isAllDayEvent, isTimedEvent } from "../types/calendar";
+import { isAllDayEvent, isTimedEvent, type CalendarEvent, type CalendarEventData } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/settings";
 import { stripZ } from "./dates/iso";
 import { cleanupTitle } from "./events/naming";

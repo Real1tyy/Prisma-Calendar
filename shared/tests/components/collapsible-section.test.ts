@@ -3,8 +3,10 @@
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { CollapsibleSectionConfig } from "../../src/components/primitives/collapsible-section";
-import { renderCollapsibleSection } from "../../src/components/primitives/collapsible-section";
+import {
+	renderCollapsibleSection,
+	type CollapsibleSectionConfig,
+} from "../../src/components/primitives/collapsible-section";
 
 function createMockContainer(): HTMLElement {
 	const el = document.createElement("div");

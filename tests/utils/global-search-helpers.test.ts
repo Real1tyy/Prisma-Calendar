@@ -4,8 +4,8 @@ import {
 	applyTriStateFilter,
 	cycleFilterState,
 	filterButtonText,
-	type FilterState,
 	formatEventSubtitle,
+	type FilterState,
 } from "../../src/react/modals/event-list/open-global-search-modal";
 import { createMockAllDayEvent, createMockTimedEvent } from "../fixtures/event-fixtures";
 

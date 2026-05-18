@@ -1,4 +1,4 @@
-import { type App, normalizePath, Notice, TFile } from "obsidian";
+import { normalizePath, Notice, TFile, type App } from "obsidian";
 import { parse as parseYAML } from "yaml";
 
 import { createFileContentWithFrontmatter } from "../frontmatter/frontmatter-serialization";

@@ -1,8 +1,7 @@
-import { type ChartDataItem, generateColors, PieChartBuilder } from "@real1ty-obsidian-plugins";
+import { generateColors, PieChartBuilder, type ChartDataItem } from "@real1ty-obsidian-plugins";
 import { memo, useEffect, useRef } from "react";
 
-import type { WeeklyStatEntry } from "../../../utils/stats";
-import { formatDuration } from "../../../utils/stats";
+import { formatDuration, type WeeklyStatEntry } from "../../../utils/stats";
 
 const MAX_LABELS = 25;
 

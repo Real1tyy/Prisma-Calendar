@@ -1,7 +1,5 @@
-import { type App, type CachedMetadata, type MetadataCache, type TAbstractFile, TFile, type Vault } from "obsidian";
+import { TFile, type App, type CachedMetadata, type MetadataCache, type TAbstractFile, type Vault } from "obsidian";
 import {
-	type BehaviorSubject,
-	BehaviorSubject as RxBehaviorSubject,
 	EMPTY,
 	from,
 	fromEventPattern,
@@ -9,7 +7,9 @@ import {
 	merge,
 	Observable,
 	of,
+	BehaviorSubject as RxBehaviorSubject,
 	Subject,
+	type BehaviorSubject,
 	type Subscription,
 } from "rxjs";
 import { catchError, filter, map, mergeMap, toArray } from "rxjs/operators";

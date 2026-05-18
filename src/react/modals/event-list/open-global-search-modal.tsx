@@ -1,7 +1,6 @@
 import { formatLocaleShortDate, formatLocaleTimeHm, toLocalISOString } from "@real1ty-obsidian-plugins";
 import { showReactModal, useColorEvaluator } from "@real1ty-obsidian-plugins-react";
-import type { App } from "obsidian";
-import { Notice } from "obsidian";
+import { Notice, type App } from "obsidian";
 import { startTransition, useCallback, useDeferredValue, useMemo, useState } from "react";
 
 import type { CalendarComponent } from "../../../components/calendar-view";

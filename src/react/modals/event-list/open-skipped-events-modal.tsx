@@ -1,6 +1,5 @@
 import { showReactModal, useColorEvaluator } from "@real1ty-obsidian-plugins-react";
-import type { App } from "obsidian";
-import { Notice } from "obsidian";
+import { Notice, type App } from "obsidian";
 import { useCallback, useMemo, useState } from "react";
 
 import type { CalendarBundle } from "../../../core/calendar-bundle";

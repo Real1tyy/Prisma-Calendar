@@ -1,7 +1,6 @@
 import { CollapsibleSection } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useState } from "react";
-import type { UseFormReturn } from "react-hook-form";
-import { useFieldArray } from "react-hook-form";
+import { useFieldArray, type UseFormReturn } from "react-hook-form";
 
 import type { EventFormState } from "../../../components/modals/event/event-form-state";
 

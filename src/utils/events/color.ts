@@ -1,7 +1,7 @@
 import {
-	type ColorEvaluator,
 	hasVeryCloseShadeFromRgb,
 	parseColorToRgb,
+	type ColorEvaluator,
 	type RgbColor,
 } from "@real1ty-obsidian-plugins";
 

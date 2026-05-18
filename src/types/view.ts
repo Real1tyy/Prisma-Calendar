@@ -1,10 +1,8 @@
 import { z } from "zod";
 
 import { TOOLBAR_BUTTON_IDS } from "../constants";
-import type { CONTEXT_MENU_BUTTON_LABELS } from "../context-menu-items";
-import { CONTEXT_MENU_ITEM_IDS } from "../context-menu-items";
-import type { Weekday } from "./recurring";
-import { WEEKDAY_OPTIONS, WEEKDAY_TO_NUMBER } from "./recurring";
+import { CONTEXT_MENU_ITEM_IDS, type CONTEXT_MENU_BUTTON_LABELS } from "../context-menu-items";
+import { WEEKDAY_OPTIONS, WEEKDAY_TO_NUMBER, type Weekday } from "./recurring";
 
 export const CALENDAR_VIEW_OPTIONS = {
 	multiMonthYear: "Year",

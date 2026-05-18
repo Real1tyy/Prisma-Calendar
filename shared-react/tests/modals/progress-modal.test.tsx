@@ -1,6 +1,5 @@
 import { act, screen } from "@testing-library/react";
-import type { RefObject } from "react";
-import type { ReactElement } from "react";
+import type { ReactElement, RefObject } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { ProgressContent } from "../../src/modals/progress-modal";

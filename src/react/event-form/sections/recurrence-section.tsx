@@ -1,10 +1,14 @@
 import { memo, useCallback } from "react";
-import type { UseFormReturn } from "react-hook-form";
-import { useController, useWatch } from "react-hook-form";
+import { useController, useWatch, type UseFormReturn } from "react-hook-form";
 
 import type { EventFormState } from "../../../components/modals/event/event-form-state";
-import type { RecurrenceFreq, Weekday } from "../../../types/recurring";
-import { RECURRENCE_TYPE_OPTIONS, WEEKDAY_OPTIONS, WEEKDAY_PRESET_DAYS } from "../../../types/recurring";
+import {
+	RECURRENCE_TYPE_OPTIONS,
+	WEEKDAY_OPTIONS,
+	WEEKDAY_PRESET_DAYS,
+	type RecurrenceFreq,
+	type Weekday,
+} from "../../../types/recurring";
 import {
 	buildCustomIntervalDSL,
 	FREQ_OPTIONS,

@@ -1,9 +1,14 @@
 import { SVG, type Svg } from "@svgdotjs/svg.js";
-import type { Subscription } from "rxjs";
-import { distinctUntilChanged, map } from "rxjs";
+import { distinctUntilChanged, map, type Subscription } from "rxjs";
 
-import { cls, hasCls, tid } from "../constants";
-import { DEFAULT_CONNECTION_ARROW_SIZE, DEFAULT_CONNECTION_COLOR, DEFAULT_CONNECTION_STROKE_WIDTH } from "../constants";
+import {
+	cls,
+	DEFAULT_CONNECTION_ARROW_SIZE,
+	DEFAULT_CONNECTION_COLOR,
+	DEFAULT_CONNECTION_STROKE_WIDTH,
+	hasCls,
+	tid,
+} from "../constants";
 import type { DependencyGraph, EventIdMap } from "../core/dependency-graph";
 import type { CalendarSettingsStore } from "../core/settings-store";
 import type { CalendarEvent } from "../types/calendar";

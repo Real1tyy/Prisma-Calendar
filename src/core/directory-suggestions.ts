@@ -1,4 +1,4 @@
-import { classifyDateLikeString, type DateLikeKind, getTopLevelDirectory } from "@real1ty-obsidian-plugins";
+import { classifyDateLikeString, getTopLevelDirectory, type DateLikeKind } from "@real1ty-obsidian-plugins";
 import type { App, TFile } from "obsidian";
 
 export interface DirectorySuggestion {

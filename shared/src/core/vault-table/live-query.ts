@@ -2,8 +2,7 @@ import { BehaviorSubject, type Observable, type Subscription } from "rxjs";
 
 import type { ReadableTable } from "./readable-table";
 import type { DataRow, VaultRow } from "./types";
-import type { ParsedFilter, ParsedSort, SortField } from "./zod-filter-sort";
-import { matchesAllFilters, sortByFields } from "./zod-filter-sort";
+import { matchesAllFilters, sortByFields, type ParsedFilter, type ParsedSort, type SortField } from "./zod-filter-sort";
 
 export interface LiveQueryConfig<TData, TRow extends DataRow<TData> = VaultRow<TData>> {
 	filters: ParsedFilter[];

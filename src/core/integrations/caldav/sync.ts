@@ -1,14 +1,14 @@
-import { describeError, type KVBackend, LocalKV } from "@real1ty-obsidian-plugins";
+import { describeError, LocalKV, type KVBackend } from "@real1ty-obsidian-plugins";
 import { TFile } from "obsidian";
 
 import {
+	CalDAVCalendarSyncStateSchema,
 	type CalDAVAccount,
 	type CalDAVCalendarInfo,
 	type CalDAVCalendarSyncState,
-	CalDAVCalendarSyncStateSchema,
 } from "../../../types/integrations";
 import type { CustomCalendarSettings } from "../../../types/settings";
-import { BaseSyncService, type BaseSyncServiceOptions, yieldToMainThread } from "../base-sync-service";
+import { BaseSyncService, yieldToMainThread, type BaseSyncServiceOptions } from "../base-sync-service";
 import { parseICSContent } from "../ics-import";
 import { CalDAVClientService, type CalDAVFetchedEvent } from "./client";
 import { computeCaldavSyncPlan } from "./sync-planner";

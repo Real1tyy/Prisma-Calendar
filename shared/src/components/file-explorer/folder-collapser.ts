@@ -1,4 +1,4 @@
-import { type App, Keymap, type Plugin, TFile, TFolder } from "obsidian";
+import { Keymap, TFile, TFolder, type App, type Plugin } from "obsidian";
 
 /**
  * Configuration for the FolderCollapser.

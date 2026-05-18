@@ -1,14 +1,14 @@
 import type { App } from "obsidian";
 import { memo, useCallback, useMemo, useState } from "react";
 
-import { type ManagerEditController, ManagerEditForm } from "../widgets/manager-list/manager-edit-form";
-import { ManagerRow } from "../widgets/manager-list/manager-row";
-import { Toggle } from "../primitives/controls";
-import { SettingItem } from "../primitives/layout/setting-item";
 import { useExternalSnapshot } from "../hooks/reactive/use-external-snapshot";
 import { useInjectedStyles } from "../hooks/styles/use-styles";
 import { showReactIconPicker } from "../modals/icon-picker-modal";
+import { Toggle } from "../primitives/controls";
+import { SettingItem } from "../primitives/layout/setting-item";
 import { showShelledModal } from "../show-react-modal";
+import { ManagerEditForm, type ManagerEditController } from "../widgets/manager-list/manager-edit-form";
+import { ManagerRow } from "../widgets/manager-list/manager-row";
 import { DEFAULT_COLOR_SENTINEL } from "./constants";
 import type { PageHeaderSnapshot, PageHeaderStore } from "./store";
 import { buildPageHeaderStyles } from "./styles";

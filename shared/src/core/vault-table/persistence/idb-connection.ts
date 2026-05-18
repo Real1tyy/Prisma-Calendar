@@ -1,10 +1,10 @@
 import {
 	DEFAULT_IDB_FACTORY,
 	IDB_VERSION,
-	type IdbFactory,
 	META_SCHEMA_VERSION_KEY,
 	META_STORE,
 	STORE_NAME,
+	type IdbFactory,
 } from "./types";
 
 export interface StoredRecord {

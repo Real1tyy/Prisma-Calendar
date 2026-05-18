@@ -1,5 +1,4 @@
-import type { MouseEventHandler, ReactNode } from "react";
-import { memo } from "react";
+import { memo, type MouseEventHandler, type ReactNode } from "react";
 
 import { cx } from "../../utils/cx";
 import { testIdAttr } from "../../utils/test-id";

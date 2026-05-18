@@ -1,14 +1,13 @@
 import { describeError } from "@real1ty-obsidian-plugins";
 import { ModalForm, openReactModal, SchemaForm, useZodForm } from "@real1ty-obsidian-plugins-react";
-import type { App } from "obsidian";
-import { Notice } from "obsidian";
+import { Notice, type App } from "obsidian";
 import { useCallback, useState } from "react";
 import { z } from "zod";
 
 import {
 	CalDAVEditFormShape,
-	type CalDAVEditFormValues,
 	deleteTrackedIntegrationEvents,
+	type CalDAVEditFormValues,
 } from "../../../components/settings/integration-shared";
 import { cls, tid } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
@@ -16,8 +15,7 @@ import { CalDAVClientService } from "../../../core/integrations/caldav";
 import type CustomCalendarPlugin from "../../../main";
 import type { PrismaCalendarSettingsStore } from "../../../types";
 import type { CalDAVAccount, CalDAVCalendarInfo } from "../../../types/integrations";
-import { getCalendarById } from "../../../utils/calendar/settings";
-import { friendlyCalendarName } from "../../../utils/calendar/settings";
+import { friendlyCalendarName, getCalendarById } from "../../../utils/calendar/settings";
 import { openCalendarIntegrationDeleteEventsModal } from "../event/delete-confirmation-modal";
 import { CalendarCheckboxes } from "./calendar-checkboxes";
 

@@ -1,5 +1,4 @@
-import type { CSSProperties } from "react";
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useRef, type CSSProperties } from "react";
 
 export interface MountImperativeProps {
 	/**

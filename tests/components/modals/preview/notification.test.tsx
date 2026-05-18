@@ -5,8 +5,8 @@ import { userEvent } from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
-	type NotificationEventData,
 	renderNotificationContentInto,
+	type NotificationEventData,
 } from "../../../../src/react/modals/preview/notification-modal";
 import type { SingleCalendarConfig } from "../../../../src/types/settings";
 import { createMockSingleCalendarSettings } from "../../../fixtures/settings-fixtures";

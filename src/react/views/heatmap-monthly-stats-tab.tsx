@@ -1,13 +1,13 @@
 import { Cell, GridLayout, ImperativeCellHost, useApp, usePersistedGridState } from "@real1ty-obsidian-plugins-react";
-import { memo, type Ref, useCallback, useImperativeHandle, useRef } from "react";
+import { memo, useCallback, useImperativeHandle, useRef, type Ref } from "react";
 
-import { type HeatmapHandle, renderHeatmapInto } from "../../components/modals";
+import { renderHeatmapInto, type HeatmapHandle } from "../../components/modals";
 import { cls, tid } from "../../constants";
 import { PRO_FEATURES } from "../../core/license";
 import { useBundle } from "../contexts/bundle-context";
 import { useBundleChangeEffect } from "../hooks/use-bundle-changes";
 import { ProGatedContent } from "./pro-gated-content";
-import { type IntervalStatsCellHandle, mountIntervalStatsCell } from "./stats/interval-stats-cell";
+import { mountIntervalStatsCell, type IntervalStatsCellHandle } from "./stats/interval-stats-cell";
 import { MONTHLY_STATS_CONFIG } from "./stats/stats-configs";
 
 const REFRESH_DEBOUNCE_MS = 100;

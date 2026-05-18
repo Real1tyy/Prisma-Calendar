@@ -1,6 +1,6 @@
 import { expect, testIntegrations as test } from "../../fixtures/electron";
 import { type VEventInput } from "../../fixtures/ics-server";
-import { type IcsSubscriptionHandle, setupIcsSubscription } from "../../fixtures/ics-subscription";
+import { setupIcsSubscription, type IcsSubscriptionHandle } from "../../fixtures/ics-subscription";
 
 // ICS URL subscriptions are a Pro feature. The full sync pipeline is:
 //   palette → Sync ICS subscriptions → plugin.syncSingleICSSubscription →

@@ -1,23 +1,22 @@
 import {
 	ensureISOSuffix,
-	type FrontmatterDiff,
 	parseAsLocalDate,
 	parseIntoList,
 	serializeFrontmatterValue,
 	toSafeString,
 	withFrontmatter,
+	type FrontmatterDiff,
 } from "@real1ty-obsidian-plugins";
-import type { DurationLike } from "luxon";
-import { DateTime } from "luxon";
-import { type App, TFile } from "obsidian";
+import { DateTime, type DurationLike } from "luxon";
+import { TFile, type App } from "obsidian";
 
 import { INTERNAL_FRONTMATTER_PROPERTIES } from "../../constants";
 import type { CalendarEvent, Frontmatter, SingleCalendarConfig } from "../../types";
 import {
 	AllDayEventFrontmatterSchema,
-	type CalendarEventFrontmatter,
 	createEventFrontmatterSchema,
 	TimedEventFrontmatterSchema,
+	type CalendarEventFrontmatter,
 } from "../../types/event-frontmatter-schema";
 import type { EventMetadata } from "../../types/event-metadata";
 import { buildMetadata } from "../../types/event-schemas";

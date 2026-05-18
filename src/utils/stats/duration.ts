@@ -1,5 +1,4 @@
-import type { CalendarEvent } from "../../types/calendar";
-import { isAllDayEvent, isTimedEvent } from "../../types/calendar";
+import { isAllDayEvent, isTimedEvent, type CalendarEvent } from "../../types/calendar";
 
 /**
  * Calculates the duration of an event in milliseconds.

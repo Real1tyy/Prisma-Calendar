@@ -1,5 +1,5 @@
 import type { App, TFile } from "obsidian";
-import { BehaviorSubject, filter, firstValueFrom, type Observable, Subject, type Subscription, take } from "rxjs";
+import { BehaviorSubject, filter, firstValueFrom, Subject, take, type Observable, type Subscription } from "rxjs";
 
 import { AsyncBarrier } from "../../utils/async/async-barrier";
 import { deepEqualJsonLike } from "../../utils/deep-equal";
@@ -19,8 +19,7 @@ import { correctFrontmatter, deleteInvalidFile } from "../frontmatter/frontmatte
 import { createFileContentWithFrontmatter } from "../frontmatter/frontmatter-serialization";
 import { Indexer, type IndexerConfig, type IndexerEvent } from "../indexer";
 import type { SerializableSchema } from "./create-mapped-schema";
-import type { IdbFactory, PersistenceConfig, PersistentEntry } from "./persistence";
-import { PersistentTableCache } from "./persistence";
+import { PersistentTableCache, type IdbFactory, type PersistenceConfig, type PersistentEntry } from "./persistence";
 import { ReadableTableMixin } from "./readable-table";
 import {
 	HISTORY_MAX_SIZE,
@@ -36,12 +35,12 @@ import {
 	type VaultTableHistoryConfig,
 } from "./types";
 import {
-	type CommandWithResult,
 	CreateRowCommand,
 	DeleteRowCommand,
 	ReplaceRowCommand,
 	UpdateContentRowCommand,
 	UpdateRowCommand,
+	type CommandWithResult,
 	type VaultTableOps,
 } from "./vault-table-commands";
 import { VaultTableQuery } from "./vault-table-query";

@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 
-import { type SettingsStorelike, useSchemaField } from "../hooks/settings/use-schema-field";
-import { type GridLayoutState, gridStateField, type GridStateFieldDefaults } from "./types";
+import { useSchemaField, type SettingsStorelike } from "../hooks/settings/use-schema-field";
+import { gridStateField, type GridLayoutState, type GridStateFieldDefaults } from "./types";
 
 export interface PersistedGridState {
 	/** Snapshot captured once on mount — safe to pass to `<GridLayout initialState>`. */

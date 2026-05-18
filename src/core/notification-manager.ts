@@ -1,5 +1,4 @@
-import type { SyncStore } from "@real1ty-obsidian-plugins";
-import { formatLocaleTimeHm, parseAsLocalDate, toSafeString } from "@real1ty-obsidian-plugins";
+import { formatLocaleTimeHm, parseAsLocalDate, toSafeString, type SyncStore } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 

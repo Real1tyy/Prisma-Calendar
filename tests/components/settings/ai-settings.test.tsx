@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { AISettingsReact } from "../../../src/react/settings/ai-settings";
 import { AI_DEFAULTS } from "../../../src/types/ai";
-import { type CustomCalendarSettings, CustomCalendarSettingsSchema } from "../../../src/types/settings";
+import { CustomCalendarSettingsSchema, type CustomCalendarSettings } from "../../../src/types/settings";
 import { createMockApp } from "../../setup";
 
 vi.mock("../../../src/core/pro-feature-previews", () => ({

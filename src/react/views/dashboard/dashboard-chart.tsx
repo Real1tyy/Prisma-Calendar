@@ -1,4 +1,4 @@
-import { type ChartDataItem, PieChartBuilder } from "@real1ty-obsidian-plugins";
+import { PieChartBuilder, type ChartDataItem } from "@real1ty-obsidian-plugins";
 import { memo, useEffect, useRef } from "react";
 
 const MAX_CHART_LABELS = 25;

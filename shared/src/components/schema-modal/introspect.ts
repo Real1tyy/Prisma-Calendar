@@ -1,13 +1,12 @@
-import type { ZodRawShape } from "zod";
-import { z } from "zod";
+import { z, type ZodRawShape } from "zod";
 
 import {
 	extractEnumValues,
 	extractNumberBounds,
 	isOptionalField,
-	type JSONSchemaProperty,
 	resolveArrayItemType,
 	schemaToJSONSchema,
+	type JSONSchemaProperty,
 } from "../../utils/zod/introspection";
 import type { SchemaFieldDescriptor } from "./types";
 

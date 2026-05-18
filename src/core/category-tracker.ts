@@ -2,10 +2,10 @@ import {
 	debounceMsForEnv,
 	FrontmatterPropagator,
 	parseIntoList,
-	type ReactiveMultiGroupBy,
 	showFrontmatterPropagationModal,
 	toSafeString,
 	VaultTableView,
+	type ReactiveMultiGroupBy,
 } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { BehaviorSubject, type Observable, type Subscription } from "rxjs";

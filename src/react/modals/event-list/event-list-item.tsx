@@ -1,5 +1,4 @@
-import type { CSSProperties, MouseEvent, ReactNode } from "react";
-import { memo, useCallback } from "react";
+import { memo, useCallback, type CSSProperties, type MouseEvent, type ReactNode } from "react";
 
 import { cls, tid } from "../../../constants";
 import type { EventListItemData } from "../../../utils/events/list-mapping";

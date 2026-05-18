@@ -2,8 +2,11 @@ import { BehaviorSubject } from "rxjs";
 import { vi } from "vitest";
 
 import type { CalendarSettingsStore, ToolbarButtonsKey } from "../../src/core/settings-store";
-import type { CustomCalendarSettings, PrismaCalendarSettingsStore } from "../../src/types";
-import { CustomCalendarSettingsSchema } from "../../src/types";
+import {
+	CustomCalendarSettingsSchema,
+	type CustomCalendarSettings,
+	type PrismaCalendarSettingsStore,
+} from "../../src/types";
 import type { SingleCalendarConfig } from "../../src/types/settings";
 
 let cachedDefaults: CustomCalendarSettings | undefined;

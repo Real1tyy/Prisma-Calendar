@@ -5,7 +5,7 @@ import { BehaviorSubject } from "rxjs";
 import { describe, expect, it, vi } from "vitest";
 
 import { SingleCalendarSettingsReact } from "../../../src/react/settings/single-calendar-settings-react";
-import { type CustomCalendarSettings, CustomCalendarSettingsSchema } from "../../../src/types/settings";
+import { CustomCalendarSettingsSchema, type CustomCalendarSettings } from "../../../src/types/settings";
 import { createMockCalendarSettingsStore } from "../../fixtures/settings-fixtures";
 import { createMockApp } from "../../setup";
 

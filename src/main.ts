@@ -24,11 +24,10 @@ import { CalendarBundle, IndexerRegistry, MinimizedModalManager, PrismaCalendarA
 import { scanVaultForDirectorySuggestions } from "./core/directory-suggestions";
 import { exportCalendarAsICS } from "./core/integrations/ics-export";
 import { importEventsToCalendar } from "./core/integrations/ics-import";
-import type { LicenseManager } from "./core/license";
-import { createLicenseManager } from "./core/license";
+import { createLicenseManager, type LicenseManager } from "./core/license";
 import { buildWhatsNewConfig } from "./core/whats-new-config";
 import { openCalendarSelectModal, openFirstLaunchModal, openICSImportModal } from "./react/modals";
-import { CustomCalendarSettingsSchema, type PrismaCalendarSettingsStore, PrismaSyncDataSchema } from "./types";
+import { CustomCalendarSettingsSchema, PrismaSyncDataSchema, type PrismaCalendarSettingsStore } from "./types";
 import { type CalDAVAccount, type ICSSubscription } from "./types/integrations";
 import { migrateSharedExcludedProps } from "./utils/calendar/migrations";
 import { createDefaultCalendarConfig } from "./utils/calendar/settings";

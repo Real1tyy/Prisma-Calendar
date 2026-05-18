@@ -1,4 +1,4 @@
-import { type BehaviorSubject, Subject, takeUntil } from "rxjs";
+import { Subject, takeUntil, type BehaviorSubject } from "rxjs";
 
 import { buildPropertyMapping, extractExpressionIdentifiers, sanitizeExpression } from "../../utils/expression-utils";
 

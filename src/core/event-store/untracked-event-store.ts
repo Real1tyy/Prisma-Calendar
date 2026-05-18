@@ -1,7 +1,6 @@
 import type { BehaviorSubject, Subscription } from "rxjs";
 
-import type { UntrackedEvent } from "../../types/calendar";
-import { eventDefaults } from "../../types/calendar";
+import { eventDefaults, type UntrackedEvent } from "../../types/calendar";
 import type { CalendarEventSource, IndexerEvent, RawEventSource } from "../../types/event-source";
 import type { Frontmatter, SingleCalendarConfig } from "../../types/index";
 import { UntrackedFilterEvaluator } from "../../utils/filters/untracked-evaluator";

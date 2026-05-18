@@ -4,8 +4,8 @@ import type { App } from "obsidian";
 import { describe, expect, it, vi } from "vitest";
 
 import { IconPickerButton, useIconPicker } from "../../../src/widgets/icon-picker/icon-picker-button";
-import { AppContext } from "../../src/contexts/app-context";
 import { renderReact } from "../../helpers/render-react";
+import { AppContext } from "../../src/contexts/app-context";
 
 const showReactIconPickerMock = vi.fn();
 vi.mock("../../src/modals/icon-picker-modal", () => ({

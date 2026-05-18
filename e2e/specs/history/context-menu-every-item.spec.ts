@@ -1,6 +1,6 @@
 import { fromAnchor } from "../../fixtures/dates";
 import { expect, test } from "../../fixtures/electron";
-import { type ContextMenuItemKey, sel, TID } from "../../fixtures/testids";
+import { sel, TID, type ContextMenuItemKey } from "../../fixtures/testids";
 
 // Defensive "nothing got silently unwired" check: right-clicking a normal,
 // file-backed event must surface every item a user expects. If a refactor

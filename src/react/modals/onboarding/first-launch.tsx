@@ -6,8 +6,7 @@ import { memo, useCallback, useEffect, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
-import { cls, tid } from "../../../constants";
-import { CSS_PREFIX } from "../../../constants";
+import { cls, CSS_PREFIX, tid } from "../../../constants";
 import type { DirectorySuggestion } from "../../../core/directory-suggestions";
 import { computePrefill, Field, PropertyFields, SuggestionList } from "../calendar/property-config";
 

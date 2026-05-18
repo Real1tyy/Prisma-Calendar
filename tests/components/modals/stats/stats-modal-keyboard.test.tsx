@@ -88,16 +88,16 @@ describe("StatsModalContent — button navigation", () => {
 	});
 
 	it("Today button changes the label away from a navigated-to state", async () => {
-		const label = await renderWeekly(new Date(2026, 4, 14, 12, 0, 0));
+		// Anchor far in the past so `initial`, `initial + 1 week`, and today's week
+		// are all distinct — keeps the assertion stable regardless of when the
+		// suite runs (today's date drifts; the fixture must not).
+		const label = await renderWeekly(new Date(2020, 0, 1, 12, 0, 0));
 		const initial = label.textContent;
 
 		fireEvent.click(screen.getByTestId("prisma-stats-modal-next"));
 		const afterNext = await screen.findByText((_text, node) => node === label && node.textContent !== initial);
 		const afterNextText = afterNext.textContent;
 
-		// "Today" navigates to `new Date()` — different from `afterNext` because
-		// `afterNext` is `initial + 1 week`. Asserting the label moves *off*
-		// `afterNext` proves the Today click fired and re-rendered.
 		fireEvent.click(screen.getByTestId("prisma-stats-modal-today"));
 		await screen.findByText((_text, node) => node === label && node.textContent !== afterNextText);
 	});

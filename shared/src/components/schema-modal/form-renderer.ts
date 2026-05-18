@@ -1,4 +1,4 @@
-import { type App, SecretComponent, Setting } from "obsidian";
+import { SecretComponent, Setting, type App } from "obsidian";
 import { z } from "zod";
 
 import { introspectShape } from "./introspect";

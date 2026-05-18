@@ -1,5 +1,5 @@
 import { getLicenseStatusText, type LicenseManager, type LicenseStatus } from "@real1ty-obsidian-plugins";
-import { memo, type ReactNode, useCallback, useState } from "react";
+import { memo, useCallback, useState, type ReactNode } from "react";
 
 import { useCssPrefix, useScopedCls } from "../../contexts/theme-context";
 import { useExternalSnapshot } from "../../hooks/reactive/use-external-snapshot";

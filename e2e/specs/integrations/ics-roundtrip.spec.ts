@@ -9,9 +9,9 @@ import { expect, test } from "../../fixtures/electron";
 import {
 	getEventCount,
 	refreshCalendar,
-	type SeedEventInput,
 	seedEvents,
 	waitForEventCount,
+	type SeedEventInput,
 } from "../../fixtures/seed-events";
 import { ICS_EXPORT_SUBMIT_TID, ICS_IMPORT_FILE_TID, ICS_IMPORT_SUBMIT_TID, sel } from "../../fixtures/testids";
 

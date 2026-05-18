@@ -1,13 +1,13 @@
 import {
 	BaseBuilder,
-	type BaseFilterNode,
 	BaseRenderer,
-	type BaseViewType,
 	ColumnRef,
 	Filter,
 	showModal,
+	type BaseFilterNode,
+	type BaseViewType,
 } from "@real1ty-obsidian-plugins";
-import { type App, Component, MarkdownRenderer } from "obsidian";
+import { Component, MarkdownRenderer, type App } from "obsidian";
 
 import { cls } from "../../../constants";
 import type { SingleCalendarConfig } from "../../../types/settings";

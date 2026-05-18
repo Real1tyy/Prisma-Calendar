@@ -1,8 +1,7 @@
 import { serializeFrontmatterValue } from "@real1ty-obsidian-plugins";
-import type { App } from "obsidian";
-import { Notice } from "obsidian";
+import { Notice, type App } from "obsidian";
 
-import { type EventFormState, extractPresetFromState } from "../../../components/modals/event/event-form-state";
+import { extractPresetFromState, type EventFormState } from "../../../components/modals/event/event-form-state";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { FREE_MAX_EVENT_PRESETS } from "../../../core/license";
 import { MinimizedModalManager, type MinimizedModalState } from "../../../core/minimized-modal-manager";

@@ -12,7 +12,6 @@ import {
 	VirtualList,
 } from "@real1ty-obsidian-plugins-react";
 import {
-	type CSSProperties,
 	forwardRef,
 	memo,
 	useCallback,
@@ -22,6 +21,7 @@ import {
 	useMemo,
 	useRef,
 	useState,
+	type CSSProperties,
 } from "react";
 import { debounceTime } from "rxjs";
 

@@ -12,14 +12,17 @@ import { memo, useCallback, useState } from "react";
 
 import { showConfirmDeleteModal } from "../../components/settings/generic";
 import { deleteTrackedIntegrationEvents } from "../../components/settings/integration-shared";
-import { cls, tid } from "../../constants";
-import { COMMAND_IDS, PRISMA_CALENDAR_PLUGIN_ID } from "../../constants";
+import { cls, COMMAND_IDS, PRISMA_CALENDAR_PLUGIN_ID, tid } from "../../constants";
 import { PRO_FEATURES } from "../../core/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
 import type { PrismaCalendarSettingsStore } from "../../types";
-import type { CalDAVAccount, ICSSubscription } from "../../types/integrations";
-import { CalDAVSettingsSchema, ICSSubscriptionSettingsSchema } from "../../types/integrations";
+import {
+	CalDAVSettingsSchema,
+	ICSSubscriptionSettingsSchema,
+	type CalDAVAccount,
+	type ICSSubscription,
+} from "../../types/integrations";
 import { SingleCalendarConfigSchema } from "../../types/settings";
 import { getCalendarById } from "../../utils/calendar/settings";
 import {

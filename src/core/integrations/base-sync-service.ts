@@ -1,5 +1,5 @@
 import { sanitizeForFilename } from "@real1ty-obsidian-plugins";
-import { type App, normalizePath, Notice, TFile } from "obsidian";
+import { normalizePath, Notice, TFile, type App } from "obsidian";
 import type { Subscription } from "rxjs";
 
 import type { Frontmatter, PrismaCalendarSettingsStore } from "../../types";

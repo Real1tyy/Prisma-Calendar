@@ -1,7 +1,7 @@
 import type { App } from "obsidian";
 
-import { IconPickerGrid } from "../widgets/icon-picker/icon-picker-grid";
 import { showReactModal } from "../show-react-modal";
+import { IconPickerGrid } from "../widgets/icon-picker/icon-picker-grid";
 
 export interface ShowReactIconPickerOptions {
 	allowNoIcon?: boolean;

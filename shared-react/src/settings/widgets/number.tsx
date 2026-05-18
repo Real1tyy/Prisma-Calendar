@@ -1,5 +1,4 @@
-import { NumberInput, Slider } from "../../primitives/controls";
-import { TextInput } from "../../primitives/controls";
+import { NumberInput, Slider, TextInput } from "../../primitives/controls";
 import { testIdProp } from "../../utils/test-id";
 import { numericMax, numericMin, resolvePlaceholder, type WidgetProps } from "./common";
 

@@ -1,7 +1,6 @@
 import type { DateTime } from "luxon";
 
-import type { RecurrenceType, Weekday } from "../../types/recurring";
-import { WEEKDAY_TO_NUMBER } from "../../types/recurring";
+import { WEEKDAY_TO_NUMBER, type RecurrenceType, type Weekday } from "../../types/recurring";
 import { parseRecurrenceType } from "./recurring";
 
 export type { RecurrenceType, Weekday } from "../../types/recurring";

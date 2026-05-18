@@ -30,8 +30,8 @@ import {
 	handleSharedEventUpdate,
 	mapEventToPrismaInput,
 	SELECTION_GUARD_DELAY_MS,
-	type SharedCalendarDeps,
 	syncCalendarSettings,
+	type SharedCalendarDeps,
 } from "./shared-calendar-options";
 
 export interface DailyDragCapture {

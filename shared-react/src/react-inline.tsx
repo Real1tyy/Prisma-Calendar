@@ -1,8 +1,6 @@
 import type { App } from "obsidian";
-import type { ReactNode } from "react";
-import { StrictMode } from "react";
-import type { Root } from "react-dom/client";
-import { createRoot } from "react-dom/client";
+import { StrictMode, type ReactNode } from "react";
+import { createRoot, type Root } from "react-dom/client";
 
 import { AppContext } from "./contexts/app-context";
 import { SharedReactThemeProvider } from "./contexts/theme-context";

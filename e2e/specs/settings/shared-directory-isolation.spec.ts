@@ -6,7 +6,7 @@ import { fromAnchor } from "../../fixtures/dates";
 import { expect, testWithSeededFiles as test } from "../../fixtures/electron";
 import { closeSettings, openPrismaSettings, setSchemaTextInput, switchSettingsTab } from "../../fixtures/helpers";
 import { getCalendars } from "../../fixtures/plugin-data";
-import { type SeedEventInput, seedEvents, waitForCalendarCount } from "../../fixtures/seed-events";
+import { seedEvents, waitForCalendarCount, type SeedEventInput } from "../../fixtures/seed-events";
 import type { PrismaPlugin, PrismaWindow } from "../../fixtures/window-types";
 import { expectGridEventVisible, navigateToAnchor, openCalendarView } from "../events/events-helpers";
 

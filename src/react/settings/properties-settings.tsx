@@ -3,7 +3,7 @@ import { memo } from "react";
 
 import { cls } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
-import { type SingleCalendarConfig, SingleCalendarConfigSchema } from "../../types/settings";
+import { SingleCalendarConfigSchema, type SingleCalendarConfig } from "../../types/settings";
 import { PrismaSection } from "./_section";
 
 interface PropertiesSettingsProps {

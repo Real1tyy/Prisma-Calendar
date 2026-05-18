@@ -21,9 +21,9 @@ import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
 import { isAllDayEvent, isTimedEvent } from "../../types/calendar";
 import {
+	SingleCalendarConfigSchema,
 	type CategoryAssignmentPreset,
 	type SingleCalendarConfig,
-	SingleCalendarConfigSchema,
 } from "../../types/settings";
 import { runCategoryDeleteFlow, runCategoryRenameFlow } from "../modals";
 import { PrismaSection } from "./_section";

@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { FakeAppResult } from "../../src/testing/fakes/fake-vault";
-import { createFakeApp } from "../../src/testing/fakes/fake-vault";
+import { createFakeApp, type FakeAppResult } from "../../src/testing/fakes/fake-vault";
 import { TFile } from "../../src/testing/mocks/obsidian";
 
 describe("FakeVault", () => {

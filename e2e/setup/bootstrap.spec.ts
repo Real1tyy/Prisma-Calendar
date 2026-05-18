@@ -1,5 +1,4 @@
-import { bootstrapObsidian } from "../fixtures/electron";
-import { expect, test } from "../fixtures/electron";
+import { bootstrapObsidian, expect, test } from "../fixtures/electron";
 import type { PrismaPlugin, PrismaWindow } from "../fixtures/window-types";
 
 test.describe("bootstrap", () => {

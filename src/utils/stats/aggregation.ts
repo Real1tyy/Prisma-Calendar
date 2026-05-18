@@ -1,8 +1,7 @@
 import { parseCategories } from "@real1ty-obsidian-plugins";
 
 import { DEFAULT_CATEGORY_PROP } from "../../constants";
-import type { CalendarEvent } from "../../types/calendar";
-import { isAllDayEvent } from "../../types/calendar";
+import { isAllDayEvent, type CalendarEvent } from "../../types/calendar";
 import { extractNotesCoreName } from "../events/naming";
 import { getEventDuration } from "./duration";
 import { getDayBounds, getEventsInRange, getMonthBounds, getWeekBounds } from "./periods";

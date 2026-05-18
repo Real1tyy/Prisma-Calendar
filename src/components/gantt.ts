@@ -1,5 +1,4 @@
-import type { ColorEvaluator, GanttTask } from "@real1ty-obsidian-plugins";
-import { MS_PER_DAY } from "@real1ty-obsidian-plugins";
+import { MS_PER_DAY, type ColorEvaluator, type GanttTask } from "@real1ty-obsidian-plugins";
 
 import type { CalendarBundle } from "../core/calendar-bundle";
 import type { DependencyGraph } from "../core/dependency-graph";

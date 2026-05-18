@@ -1,4 +1,4 @@
-import { type FrontmatterDiff, toSafeString } from "@real1ty-obsidian-plugins";
+import { toSafeString, type FrontmatterDiff } from "@real1ty-obsidian-plugins";
 
 import { INTERNAL_FRONTMATTER_PROPERTIES } from "../../constants";
 import type { Frontmatter, SingleCalendarConfig } from "../../types";

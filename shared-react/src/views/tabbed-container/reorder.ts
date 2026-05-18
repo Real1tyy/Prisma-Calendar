@@ -1,7 +1,13 @@
 import { moveItem, reorderList } from "../../utils/list-reorder";
 import { loadStringRecord, nonEmptyRecord } from "../../utils/string-record";
-import type { GroupStatePersisted, GroupTabDefinition, TabbedContainerState, TabDefinition, TabEntry } from "./types";
-import { isGroupTab } from "./types";
+import {
+	isGroupTab,
+	type GroupStatePersisted,
+	type GroupTabDefinition,
+	type TabbedContainerState,
+	type TabDefinition,
+	type TabEntry,
+} from "./types";
 
 export { moveItem, reorderList };
 

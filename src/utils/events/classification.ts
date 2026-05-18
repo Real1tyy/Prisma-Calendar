@@ -1,5 +1,4 @@
-import type { EventKind, VirtualKind } from "../../types/calendar";
-import { isAnyVirtual } from "../../types/calendar";
+import { isAnyVirtual, type EventKind, type VirtualKind } from "../../types/calendar";
 import type { Frontmatter } from "../../types/index";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { getDisplayData, getVirtualKind } from "../frontmatter/extended-props";

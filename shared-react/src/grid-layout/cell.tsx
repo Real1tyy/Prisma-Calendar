@@ -1,13 +1,13 @@
 import {
 	Children,
-	type CSSProperties,
 	Fragment,
 	isValidElement,
 	memo,
-	type ReactElement,
-	type ReactNode,
 	useEffect,
 	useRef,
+	type CSSProperties,
+	type ReactElement,
+	type ReactNode,
 } from "react";
 
 import { toKebabCase } from "../utils/kebab-case";

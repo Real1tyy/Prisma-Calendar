@@ -1,7 +1,6 @@
 import { describeError } from "@real1ty-obsidian-plugins";
 import { ModalForm, openReactModal, SchemaForm, useZodForm } from "@real1ty-obsidian-plugins-react";
-import type { App } from "obsidian";
-import { Notice } from "obsidian";
+import { Notice, type App } from "obsidian";
 import React, { memo, useCallback, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
@@ -9,9 +8,9 @@ import { TIMEZONE_LABELS } from "../../../components/settings/integration-shared
 import { cls, tid } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import {
+	parseICSContent,
 	type ICSImportResult,
 	type ImportedEvent,
-	parseICSContent,
 	type SkippedEvent,
 } from "../../../core/integrations/ics-import";
 

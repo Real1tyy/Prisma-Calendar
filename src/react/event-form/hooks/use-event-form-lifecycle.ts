@@ -1,6 +1,6 @@
 import { useEnterToSubmit } from "@real1ty-obsidian-plugins-react";
 import type React from "react";
-import { type RefObject, useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, type RefObject } from "react";
 
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { MinimizedModalManager, type MinimizedModalState } from "../../../core/minimized-modal-manager";

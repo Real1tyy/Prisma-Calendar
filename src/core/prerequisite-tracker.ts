@@ -1,5 +1,11 @@
-import type { Frontmatter, VaultTableEvent } from "@real1ty-obsidian-plugins";
-import { areSetsEqual, parseLinkedList, toSafeString, VaultTableView } from "@real1ty-obsidian-plugins";
+import {
+	areSetsEqual,
+	parseLinkedList,
+	toSafeString,
+	VaultTableView,
+	type Frontmatter,
+	type VaultTableEvent,
+} from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { BehaviorSubject, type Observable, type Subscription } from "rxjs";
 

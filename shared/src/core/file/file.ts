@@ -1,5 +1,4 @@
-import type { App, CachedMetadata } from "obsidian";
-import { normalizePath, TFile } from "obsidian";
+import { normalizePath, TFile, type App, type CachedMetadata } from "obsidian";
 
 // ============================================================================
 // File Path Operations

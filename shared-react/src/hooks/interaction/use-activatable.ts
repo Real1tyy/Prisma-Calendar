@@ -1,5 +1,4 @@
-import type { KeyboardEventHandler, MouseEventHandler } from "react";
-import { useCallback } from "react";
+import { useCallback, type KeyboardEventHandler, type MouseEventHandler } from "react";
 
 /**
  * Props produced by `useActivatable` that callers spread onto a focusable

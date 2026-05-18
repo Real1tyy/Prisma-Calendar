@@ -2,9 +2,8 @@ import { describeError, MountableView, MS_PER_DAY, renderCollapsibleSection } fr
 import { Component, ItemView, MarkdownRenderer, Notice, type WorkspaceLeaf } from "obsidian";
 import { distinctUntilChanged, skip } from "rxjs";
 
-import { cls } from "../constants";
-import { CSS_PREFIX } from "../constants";
-import { AIChatManager, type ChatMessage, ChatStore } from "../core/ai";
+import { cls, CSS_PREFIX } from "../constants";
+import { AIChatManager, ChatStore, type ChatMessage } from "../core/ai";
 import { type CategoryContext, type ManipulationContext, type PlanningContext } from "../core/ai/ai-context-builder";
 import {
 	executeOperations,
@@ -16,7 +15,7 @@ import {
 	parseOperations,
 	resolveActiveViewContext,
 } from "../core/ai/ai-engine";
-import { type SemanticValidationContext, validateOperationsSemantically } from "../core/ai/ai-validation";
+import { validateOperationsSemantically, type SemanticValidationContext } from "../core/ai/ai-validation";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { PRO_FEATURES } from "../core/license";
 import type CustomCalendarPlugin from "../main";

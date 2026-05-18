@@ -3,8 +3,7 @@ import { showReactModal, WelcomeModalShell } from "@real1ty-obsidian-plugins-rea
 import type { App } from "obsidian";
 import { memo } from "react";
 
-import { cls, tid } from "../../../constants";
-import { CSS_PREFIX } from "../../../constants";
+import { cls, CSS_PREFIX, tid } from "../../../constants";
 import { ACCOUNT_URL } from "../../../core/license";
 
 const proUtm = (url: string, content: string) =>

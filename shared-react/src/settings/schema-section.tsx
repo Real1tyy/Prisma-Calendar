@@ -1,10 +1,9 @@
-import type { SchemaFieldDescriptor } from "@real1ty-obsidian-plugins";
-import { introspectShape } from "@real1ty-obsidian-plugins";
+import { introspectShape, type SchemaFieldDescriptor } from "@real1ty-obsidian-plugins";
 import { memo, useMemo } from "react";
 import type { ZodRawShape } from "zod";
 
-import { SettingHeading } from "../primitives/layout/setting-item";
 import type { SettingsStorelike } from "../hooks/settings/use-schema-field";
+import { SettingHeading } from "../primitives/layout/setting-item";
 import type { SchemaFieldOverride } from "./override";
 import { SchemaField } from "./schema-field";
 

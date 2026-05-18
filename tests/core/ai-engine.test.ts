@@ -1,4 +1,4 @@
-import { describe, expect, it, type Mock, vi } from "vitest";
+import { describe, expect, it, vi, type Mock } from "vitest";
 
 import {
 	buildCommandForOperation,

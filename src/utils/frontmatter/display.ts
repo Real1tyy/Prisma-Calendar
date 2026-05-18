@@ -1,8 +1,8 @@
 import {
 	createDefaultSeparator,
 	isNotEmpty,
-	type PropertyRendererConfig,
 	renderPropertyValue as renderPropertyValueUtil,
+	type PropertyRendererConfig,
 } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 

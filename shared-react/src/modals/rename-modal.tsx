@@ -1,10 +1,9 @@
 import type { App } from "obsidian";
-import type { KeyboardEvent, ReactNode } from "react";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 
+import { useScopedStyles } from "../hooks/styles/use-styles";
 import { Button } from "../primitives/atoms/button";
 import { ModalDescription } from "../primitives/atoms/modal-description";
-import { useScopedStyles } from "../hooks/styles/use-styles";
 import { openReactModal } from "../show-react-modal";
 import { buildRenameStyles } from "./rename-modal.styles";
 

@@ -1,5 +1,4 @@
-import type { Plugin, TFile } from "obsidian";
-import { MarkdownView } from "obsidian";
+import { MarkdownView, type Plugin, type TFile } from "obsidian";
 
 import { getFolderPath, isFolderNote } from "../file/file";
 import type { SerializableSchema } from "./create-mapped-schema";

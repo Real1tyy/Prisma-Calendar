@@ -7,8 +7,8 @@ import {
 	getEventCount,
 	refreshCalendar,
 	seedEvent,
-	type SeedEventInput,
 	waitForEventCount,
+	type SeedEventInput,
 } from "../../fixtures/seed-events";
 import { listEventFiles, openCalendarReady, rightClickEventMenu } from "./events-helpers";
 

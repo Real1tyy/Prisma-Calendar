@@ -1,5 +1,4 @@
-import type { ChangeEvent, KeyboardEvent } from "react";
-import { memo, useCallback } from "react";
+import { memo, useCallback, type ChangeEvent, type KeyboardEvent } from "react";
 
 export type PrismaCheckboxStyle = "plain" | "labeled-toggle";
 

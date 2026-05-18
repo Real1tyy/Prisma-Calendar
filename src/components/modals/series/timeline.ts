@@ -1,11 +1,11 @@
 import { buildColorGradient, ColorEvaluator, MS_PER_DAY, showModal, toLocalISOString } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { DataSet } from "vis-data";
-import { type DataItem, Timeline, type TimelineOptions } from "vis-timeline";
+import { Timeline, type DataItem, type TimelineOptions } from "vis-timeline";
 
 import { cls, tid } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
-import { type PreviewEventData, showEventPreviewModal } from "../../../react/modals/preview/event-preview-modal";
+import { showEventPreviewModal, type PreviewEventData } from "../../../react/modals/preview/event-preview-modal";
 import type { CalendarEvent } from "../../../types/calendar";
 import type { SingleCalendarConfig } from "../../../types/settings";
 import { createTextColorResolver, resolveAllEventColors } from "../../../utils/events/color";

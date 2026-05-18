@@ -11,7 +11,7 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
-import { type KVBackend, LocalKV } from "../../src/core/storage/local-kv";
+import { LocalKV, type KVBackend } from "../../src/core/storage/local-kv";
 
 function createInMemoryBackend(): KVBackend & { snapshot: () => Map<string, string> } {
 	const store = new Map<string, string>();

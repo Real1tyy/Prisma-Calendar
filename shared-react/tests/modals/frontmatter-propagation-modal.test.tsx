@@ -2,8 +2,10 @@ import { screen } from "@testing-library/react";
 import type { ReactElement } from "react";
 import { describe, expect, it, vi } from "vitest";
 
-import type { FrontmatterPropagationModalProps } from "../../src/modals/frontmatter-propagation-modal";
-import { FrontmatterPropagationModalContent } from "../../src/modals/frontmatter-propagation-modal";
+import {
+	FrontmatterPropagationModalContent,
+	type FrontmatterPropagationModalProps,
+} from "../../src/modals/frontmatter-propagation-modal";
 import { renderReact, type RenderReactResult } from "../helpers/render-react";
 
 const PREFIX = "test-";

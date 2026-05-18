@@ -1,4 +1,4 @@
-import { type RefObject, useEffect, useRef } from "react";
+import { useEffect, useRef, type RefObject } from "react";
 
 export interface UseOutsideClickOptions {
 	/** Pointer event phase to listen on. Defaults to `mousedown` so dismissal beats the click target. */

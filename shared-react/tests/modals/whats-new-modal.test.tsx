@@ -3,8 +3,7 @@ import { screen } from "@testing-library/react";
 import type { Plugin } from "obsidian";
 import { describe, expect, it, vi } from "vitest";
 
-import type { WhatsNewModalConfig } from "../../src/modals/whats-new-modal";
-import { WhatsNewContent } from "../../src/modals/whats-new-modal";
+import { WhatsNewContent, type WhatsNewModalConfig } from "../../src/modals/whats-new-modal";
 import { renderWithProviders } from "../harness/render-with-providers";
 
 vi.mock("@real1ty-obsidian-plugins", async (importOriginal) => {

@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import {
 	buildDayMap,
-	type TimedCreateOp,
 	validateDayCoverage,
 	validateEndAfterStart,
 	validateNoGaps,
 	validateNoOverlaps,
 	validateWithinBounds,
+	type TimedCreateOp,
 } from "../../src/core/ai/ai-validation";
 
 // ─── Tests ──────────────────────────────────────────────────────────

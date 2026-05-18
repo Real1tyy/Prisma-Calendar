@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 
-import { type SnapshotSubscribable, useExternalSnapshot } from "../reactive/use-external-snapshot";
+import { useExternalSnapshot, type SnapshotSubscribable } from "../reactive/use-external-snapshot";
 import type { SettingsStorelike } from "./use-settings-store";
 
 /**

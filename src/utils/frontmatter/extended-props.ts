@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import type { Frontmatter } from "../../types";
-import { type VirtualKind, VirtualKindSchema } from "../../types/calendar";
+import { VirtualKindSchema, type VirtualKind } from "../../types/calendar";
 
 // ─── Boundary Schema ─────────────────────────────────────────────────
 // Validates and transforms FullCalendar's untyped extendedProps bag into

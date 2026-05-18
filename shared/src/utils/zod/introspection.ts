@@ -1,5 +1,4 @@
-import type { $ZodType } from "zod/v4/core";
-import { toJSONSchema } from "zod/v4/core";
+import { toJSONSchema, type $ZodType } from "zod/v4/core";
 
 // ─── JSON Schema Types ─────────────────────────────────────────
 

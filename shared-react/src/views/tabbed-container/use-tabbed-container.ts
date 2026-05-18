@@ -3,17 +3,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { setOrDelete } from "../../utils/string-record";
 import {
 	buildState,
-	type BuildStateInput,
 	getActiveChild,
-	type GroupChildState,
 	initialGroupChildState,
 	moveItem,
 	recalcActiveChildIndex,
 	reorderList,
 	resolveVisibleTabs,
+	type BuildStateInput,
+	type GroupChildState,
 } from "./reorder";
-import type { TabbedContainerState, TabDefinition, TabEntry } from "./types";
-import { isGroupTab } from "./types";
+import { isGroupTab, type TabbedContainerState, type TabDefinition, type TabEntry } from "./types";
 
 export interface UseTabbedContainerOptions {
 	tabs: TabEntry[];

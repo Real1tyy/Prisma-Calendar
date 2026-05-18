@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { asyncScheduler, type Observable, throttleTime } from "rxjs";
+import { asyncScheduler, throttleTime, type Observable } from "rxjs";
 
 import { useObservable } from "./use-observable";
 

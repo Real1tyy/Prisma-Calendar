@@ -1,19 +1,17 @@
 import { Notice } from "obsidian";
-import type { CSSProperties } from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, type CSSProperties } from "react";
 
+import { openCategoryAssignModal } from "../";
 import type { CalendarComponent } from "../../../components/calendar-view";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { assignCategories, toggleSkip } from "../../../core/commands/frontmatter-update-command";
-import type { NodeRecurringEvent } from "../../../types/recurring";
-import { RECURRENCE_TYPE_OPTIONS } from "../../../types/recurring";
+import { RECURRENCE_TYPE_OPTIONS, type NodeRecurringEvent } from "../../../types/recurring";
 import { formatRecurrenceLabel, getStartDateTime, isPresetType } from "../../../utils/dates/recurring";
 import { getEventName } from "../../../utils/events/naming";
 import { removeZettelId } from "../../../utils/events/zettel-id";
 import { getCategoriesFromFilePath, openFileInNewTab } from "../../../utils/obsidian";
-import { openCategoryAssignModal } from "../";
 import { openEventSeriesModal } from "./event-series-modal-content";
-import { type EventsModalSortMode, filterEventsModalItemsByQuery, sortEventsModalItems } from "./events-modal-shared";
+import { filterEventsModalItemsByQuery, sortEventsModalItems, type EventsModalSortMode } from "./events-modal-shared";
 
 export const RECURRENCE_TYPE_FILTER_OPTIONS = {
 	all: "All Types",

@@ -1,6 +1,6 @@
 import { expect, testIntegrations as test } from "../../fixtures/electron";
 import { type VEventInput } from "../../fixtures/ics-server";
-import { type IcsSubscriptionHandle, setupIcsSubscription } from "../../fixtures/ics-subscription";
+import { setupIcsSubscription, type IcsSubscriptionHandle } from "../../fixtures/ics-subscription";
 
 // Re-sync behaviour: when the remote feed changes between syncs the local
 // vault must converge. Add/remove/modify cases plus a rapid-fire dedup check.

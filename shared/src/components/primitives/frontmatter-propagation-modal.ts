@@ -1,7 +1,6 @@
 import type { App } from "obsidian";
 
-import type { FrontmatterDiff } from "../../core/frontmatter/frontmatter-diff";
-import { formatChangeForDisplay } from "../../core/frontmatter/frontmatter-diff";
+import { formatChangeForDisplay, type FrontmatterDiff } from "../../core/frontmatter/frontmatter-diff";
 import { showConfirmationModal } from "../component-renderer/confirmation";
 
 export interface FrontmatterPropagationModalOptions {

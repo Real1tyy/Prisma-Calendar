@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test";
 
 import { ACTIVE_CALENDAR_LEAF } from "../constants";
-import { type BatchBtnKey, sel, TID } from "../testids";
+import { sel, TID, type BatchBtnKey } from "../testids";
 import type { EventHandle } from "./event";
 
 // BatchHandle — a short-lived wrapper around a batch-selection session.

@@ -1,8 +1,7 @@
 import { screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import type { ContextMenuEntryDef } from "../../src/menus";
-import { ContextMenu } from "../../src/menus";
+import { ContextMenu, type ContextMenuEntryDef } from "../../src/menus";
 import { renderReact } from "../helpers/render-react";
 
 const ITEMS: ContextMenuEntryDef[] = [

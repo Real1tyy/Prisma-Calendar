@@ -1,6 +1,5 @@
 import { screen, within } from "@testing-library/react";
-import type { ReactElement } from "react";
-import { useState } from "react";
+import { useState, type ReactElement } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { ChipList } from "../../../src/primitives/atoms/chip-list";

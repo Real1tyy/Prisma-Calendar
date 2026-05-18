@@ -2,7 +2,7 @@ import { screen } from "@testing-library/react";
 import type { ReactElement } from "react";
 import { describe, expect, it, vi } from "vitest";
 
-import { type ChartJSCtor, ChartTitle, PieCanvas, PieChart } from "../../../src/widgets/pie-chart/pie-chart";
+import { ChartTitle, PieCanvas, PieChart, type ChartJSCtor } from "../../../src/widgets/pie-chart/pie-chart";
 import { renderReact, type RenderReactResult } from "../../helpers/render-react";
 
 const PREFIX = "prisma-";

@@ -18,10 +18,13 @@ import { ACCOUNT_URL, FREE_MAX_EVENT_PRESETS } from "../../core/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import { buildWhatsNewConfig } from "../../core/whats-new-config";
 import type CustomCalendarPlugin from "../../main";
-import type { CustomCalendarSettings } from "../../types/settings";
-import { CustomCalendarSettingsSchema, SingleCalendarConfigSchema } from "../../types/settings";
-import { ProUpgradeBanner } from "./pro-upgrade-banner";
+import {
+	CustomCalendarSettingsSchema,
+	SingleCalendarConfigSchema,
+	type CustomCalendarSettings,
+} from "../../types/settings";
 import { PrismaSection } from "./_section";
+import { ProUpgradeBanner } from "./pro-upgrade-banner";
 
 const SHAPE = SingleCalendarConfigSchema.shape;
 const MAIN_SHAPE = CustomCalendarSettingsSchema.shape;

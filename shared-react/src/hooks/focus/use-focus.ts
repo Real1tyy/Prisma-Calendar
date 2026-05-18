@@ -1,4 +1,4 @@
-import { type RefObject, useEffect } from "react";
+import { useEffect, type RefObject } from "react";
 
 export interface UseFocusOnMountOptions {
 	/** Delay before calling `.focus()`, in ms. 0 = same frame. Defaults to 0. */

@@ -1,4 +1,3 @@
-import type { SyncStore } from "@real1ty-obsidian-plugins";
 import {
 	applySourceTimeToInstanceDate,
 	createFileAtPathAtomic,
@@ -6,7 +5,6 @@ import {
 	DebouncedNotifier,
 	debounceMsForEnv,
 	extractContentAfterFrontmatter,
-	type FrontmatterDiff,
 	FrontmatterPropagationDebouncer,
 	getISOTimePart,
 	getObsidianLinkPath,
@@ -17,22 +15,27 @@ import {
 	showFrontmatterPropagationModal,
 	withFrontmatter,
 	withLock,
+	type FrontmatterDiff,
+	type SyncStore,
 } from "@real1ty-obsidian-plugins";
 import { DateTime } from "luxon";
-import type { App } from "obsidian";
-import { TFile } from "obsidian";
+import { TFile, type App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 
 import { PROPAGATION_DEBOUNCE_MS } from "../constants";
-import { type CalendarEvent, eventDefaults, type Frontmatter, type PrismaSyncDataSchema } from "../types";
+import { eventDefaults, type CalendarEvent, type Frontmatter, type PrismaSyncDataSchema } from "../types";
 import type { EventMetadata } from "../types/event-metadata";
 import type { CalendarEventSource, IndexerEvent } from "../types/event-source";
 import type { NodeRecurringEvent, RecurringEventSeries } from "../types/recurring";
 import type { SingleCalendarConfig } from "../types/settings";
 import { stripZ, toInternalISO } from "../utils/dates/iso";
 import { getNextOccurrence } from "../utils/dates/recurrence";
-import { calculateTargetInstanceCount, findFirstValidStartDate, getStartDateTime } from "../utils/dates/recurring";
-import { isOccurrenceWithinUntil } from "../utils/dates/recurring";
+import {
+	calculateTargetInstanceCount,
+	findFirstValidStartDate,
+	getStartDateTime,
+	isOccurrenceWithinUntil,
+} from "../utils/dates/recurring";
 import {
 	applyFrontmatterChangesToInstance,
 	filterExcludedPropsFromDiff,

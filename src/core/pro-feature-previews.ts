@@ -7,9 +7,9 @@ import aiChatPreview from "../../docs-site/static/img/pro-previews/ai-chat.png";
 import basesViewPreview from "../../docs-site/static/img/pro-previews/bases-view.png";
 import dashboardPreview from "../../docs-site/static/img/pro-previews/dashboard.png";
 import ganttPreview from "../../docs-site/static/img/pro-previews/gantt.png";
-import heatmapPreview from "../../docs-site/static/img/pro-previews/heatmap.png";
 import heatmapMonthlyPreview from "../../docs-site/static/img/pro-previews/heatmap_monthly.png";
-import { type PRO_FEATURES, PRO_PURCHASE_URL } from "./license";
+import heatmapPreview from "../../docs-site/static/img/pro-previews/heatmap.png";
+import { PRO_PURCHASE_URL, type PRO_FEATURES } from "./license";
 
 export type ProFeatureKey = keyof typeof PRO_FEATURES;
 

@@ -1,5 +1,4 @@
-import type { CalendarEvent } from "../../types/calendar";
-import { isTimedEvent } from "../../types/calendar";
+import { isTimedEvent, type CalendarEvent } from "../../types/calendar";
 
 /**
  * Filters events that fall within a given date range. All-day events have no

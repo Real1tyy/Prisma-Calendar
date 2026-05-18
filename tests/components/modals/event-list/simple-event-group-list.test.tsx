@@ -3,8 +3,8 @@ import { userEvent } from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 import {
-	type SimpleEventGroupItem,
 	SimpleEventGroupList,
+	type SimpleEventGroupItem,
 } from "../../../../src/react/modals/event-list/simple-event-group-list";
 
 function makeItems(specs: Array<Pick<SimpleEventGroupItem, "title" | "count">>): SimpleEventGroupItem[] {

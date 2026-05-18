@@ -1,16 +1,16 @@
 import { createCssUtils } from "@real1ty-obsidian-plugins";
 import type { App, Plugin } from "obsidian";
 import {
-	type HTMLAttributes,
 	memo,
-	type ReactNode,
-	type Ref,
 	useCallback,
 	useEffect,
 	useImperativeHandle,
 	useMemo,
 	useReducer,
 	useRef,
+	type HTMLAttributes,
+	type ReactNode,
+	type Ref,
 } from "react";
 import { flushSync } from "react-dom";
 
@@ -18,12 +18,12 @@ import { walkCellChildren } from "./cell";
 import { openCellPicker } from "./cell-picker-modal";
 import { registerGridCommands } from "./commands";
 import {
-	type Action,
 	buildInitialState,
 	buildPublicState,
 	findPlacementAt,
-	type Placement,
 	reducer,
+	type Action,
+	type Placement,
 } from "./engine-reducer";
 import { defaultSizes } from "./engine-state";
 import {
@@ -31,16 +31,16 @@ import {
 	buildGridStyleVars,
 	EditButton,
 	GhostCell,
-	type GridCellController,
-	type GridCellStyle,
 	GridCellView,
 	PER_CELL_AXIS_CONFIG,
-	type PerCellAxis,
 	PerCellContainer,
+	type GridCellController,
+	type GridCellStyle,
+	type PerCellAxis,
 } from "./grid-cell-view";
 import { GridResizeHandles } from "./grid-resize-handles";
 import { openLayoutEditor } from "./layout-editor-modal";
-import { buildPaletteFromChildren, type PaletteSnapshot, paletteToCellOptions } from "./palette-snapshot";
+import { buildPaletteFromChildren, paletteToCellOptions, type PaletteSnapshot } from "./palette-snapshot";
 import { injectGridStyles } from "./styles";
 import type { CellOption, GridLayoutConfig, GridLayoutHandle, GridLayoutState, ResizeMode } from "./types";
 

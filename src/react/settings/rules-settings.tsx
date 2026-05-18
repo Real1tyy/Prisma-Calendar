@@ -4,7 +4,7 @@ import React, { memo, useCallback, useState } from "react";
 
 import { cls, tid } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
-import { type FilterPreset, SingleCalendarConfigSchema } from "../../types/settings";
+import { SingleCalendarConfigSchema, type FilterPreset } from "../../types/settings";
 import { PrismaSection } from "./_section";
 
 const S = SingleCalendarConfigSchema.shape;

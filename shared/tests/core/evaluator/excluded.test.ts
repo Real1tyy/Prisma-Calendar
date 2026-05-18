@@ -1,8 +1,7 @@
 import { BehaviorSubject } from "rxjs";
 import { describe, expect, it } from "vitest";
 
-import type { PathExcludedProperties } from "../../../src/core/evaluator/excluded";
-import { ExcludedPropertiesEvaluator } from "../../../src/core/evaluator/excluded";
+import { ExcludedPropertiesEvaluator, type PathExcludedProperties } from "../../../src/core/evaluator/excluded";
 
 interface TestSettings {
 	defaultExcludedProperties: string[];

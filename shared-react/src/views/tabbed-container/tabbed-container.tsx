@@ -1,18 +1,34 @@
-import type { MouseEvent as ReactMouseEvent, ReactNode, Ref, RefObject } from "react";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	memo,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+	type MouseEvent as ReactMouseEvent,
+	type ReactNode,
+	type Ref,
+	type RefObject,
+} from "react";
 import { createPortal } from "react-dom";
 
-import { ObsidianIcon } from "../../primitives/atoms/obsidian-icon";
 import { AppContext } from "../../contexts/app-context";
 import { useDomEvent } from "../../hooks/dom/use-dom-event";
 import { useInjectedStyles } from "../../hooks/styles/use-styles";
+import { ObsidianIcon } from "../../primitives/atoms/obsidian-icon";
 import { cx } from "../../utils/cx";
 import { GroupDropdown } from "./group-dropdown";
 import { getActiveChild, type GroupChildState } from "./reorder";
 import { buildTabbedContainerStyles } from "./styles";
 import { TabManagerModal } from "./tab-manager-modal";
-import type { GroupTabDefinition, TabbedContainerHandle, TabbedContainerProps, TabDefinition, TabEntry } from "./types";
-import { isGroupTab } from "./types";
+import {
+	isGroupTab,
+	type GroupTabDefinition,
+	type TabbedContainerHandle,
+	type TabbedContainerProps,
+	type TabDefinition,
+	type TabEntry,
+} from "./types";
 import { useTabbedContainer } from "./use-tabbed-container";
 
 export const TabbedContainer = memo(function TabbedContainer({

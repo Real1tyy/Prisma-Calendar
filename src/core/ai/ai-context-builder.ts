@@ -1,7 +1,6 @@
 import { minsToTimeStr, parseTimeToMins, toLocalISOString } from "@real1ty-obsidian-plugins";
 
-import type { CalendarEvent } from "../../types/calendar";
-import { isTimedEvent } from "../../types/calendar";
+import { isTimedEvent, type CalendarEvent } from "../../types/calendar";
 import type { CategoryAssignmentPreset } from "../../types/settings";
 import { aggregateStats, formatDuration, formatPercentage, type Stats } from "../../utils/stats";
 

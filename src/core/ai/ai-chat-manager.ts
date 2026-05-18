@@ -4,10 +4,10 @@ import {
 	buildManipulationSystemPrompt,
 	buildPlanningSystemPrompt,
 	buildSystemPromptWithContext,
+	NO_CONTEXT_PROMPT_SUFFIX,
 	type CalendarContext,
 	type CategoryContext,
 	type ManipulationContext,
-	NO_CONTEXT_PROMPT_SUFFIX,
 	type PlanningContext,
 	type PlanningPromptFlags,
 } from "./ai-context-builder";

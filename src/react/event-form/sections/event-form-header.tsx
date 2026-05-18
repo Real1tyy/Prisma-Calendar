@@ -1,6 +1,5 @@
 import { memo } from "react";
-import type { UseFormReturn } from "react-hook-form";
-import { useController } from "react-hook-form";
+import { useController, type UseFormReturn } from "react-hook-form";
 
 import type { EventFormState } from "../../../components/modals/event/event-form-state";
 import type { EventPreset } from "../../../types/settings";

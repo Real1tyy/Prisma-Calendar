@@ -1,7 +1,6 @@
 import { showReactModal } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
-import type { KeyboardEvent, ReactNode } from "react";
-import { useCallback, useDeferredValue, useMemo, useState } from "react";
+import { useCallback, useDeferredValue, useMemo, useState, type KeyboardEvent, type ReactNode } from "react";
 
 import type { CalendarComponent } from "../../../components/calendar-view";
 import { cls, tid } from "../../../constants";
@@ -9,14 +8,13 @@ import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { openEventSeriesModal } from "./event-series-modal-content";
 import {
 	EVENTS_MODAL_SORT_OPTIONS,
-	type EventsModalSortMode,
-	type EventsModalTabId,
 	filterEventsModalItemsByQuery,
 	sortEventsModalItems,
+	type EventsModalSortMode,
+	type EventsModalTabId,
 } from "./events-modal-shared";
 import { RecurringEventsModalPanel } from "./recurring-events-modal-panel";
-import type { SimpleEventGroupItem } from "./simple-event-group-list";
-import { SimpleEventGroupList } from "./simple-event-group-list";
+import { SimpleEventGroupList, type SimpleEventGroupItem } from "./simple-event-group-list";
 
 function EventsModalContent({
 	bundle,

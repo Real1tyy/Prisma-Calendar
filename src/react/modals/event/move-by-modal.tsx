@@ -3,7 +3,7 @@ import type { App } from "obsidian";
 import React, { useCallback, useRef, useState } from "react";
 
 import { cls, tid } from "../../../constants";
-import { type MoveByResult, TIME_UNITS, type TimeUnit } from "../../../types/calendar";
+import { TIME_UNITS, type MoveByResult, type TimeUnit } from "../../../types/calendar";
 
 const UNIT_LABELS: Record<TimeUnit, string> = Object.fromEntries(
 	TIME_UNITS.map((u) => [u, u.charAt(0).toUpperCase() + u.slice(1)])

@@ -3,13 +3,13 @@ import { userEvent } from "@testing-library/user-event";
 import { DateTime } from "luxon";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { EventSeriesEventRow } from "../../../../src/react/modals/event-list/event-series-event-row";
+import type { EventRowItem } from "../../../../src/react/modals/event-list/event-series-types";
+
 const applyMultiColorIndicators = vi.hoisted(() => vi.fn());
 vi.mock("../../../../src/components/calendar-event-renderer", () => ({
 	applyMultiColorIndicators,
 }));
-
-import { EventSeriesEventRow } from "../../../../src/react/modals/event-list/event-series-event-row";
-import type { EventRowItem } from "../../../../src/react/modals/event-list/event-series-types";
 
 const SETTINGS = { colorMode: "off", showEventColorDots: false } as const;
 

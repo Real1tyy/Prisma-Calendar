@@ -8,11 +8,11 @@ import {
 	snapshotEventFiles,
 	waitForNewEventFiles,
 } from "../../specs/events/events-helpers";
-import { type EventModalInput, fillEventModal, saveEventModal } from "../../specs/events/fill-event-modal";
+import { fillEventModal, saveEventModal, type EventModalInput } from "../../specs/events/fill-event-modal";
 import { runCommand } from "../commands";
 import { ACTIVE_CALENDAR_LEAF, PLUGIN_ID } from "../constants";
 import { anchorDate, anchorISO, isoLocal } from "../dates";
-import { getEventCount, refreshCalendar, type SeedEventInput, waitForEventCount } from "../seed-events";
+import { getEventCount, refreshCalendar, waitForEventCount, type SeedEventInput } from "../seed-events";
 import {
 	DASHBOARD_RANKING_TID,
 	dashboardItemByTitle,
@@ -28,7 +28,7 @@ import {
 	type ViewTabKey,
 } from "../testids";
 import type { PrismaPlugin, PrismaWindow } from "../window-types";
-import { type BatchHandle, openBatch } from "./batch";
+import { openBatch, type BatchHandle } from "./batch";
 import { createEventHandle, type EventHandle } from "./event";
 import { createEventsModalHandle, type EventsModalHandle } from "./events-modal";
 import { expectConfirmationModal } from "./shared";

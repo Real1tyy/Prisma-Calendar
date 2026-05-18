@@ -1,5 +1,4 @@
-import type { App } from "obsidian";
-import { FuzzySuggestModal, getIconIds } from "obsidian";
+import { FuzzySuggestModal, getIconIds, type App } from "obsidian";
 
 export interface IconPickerOptions {
 	allowNoIcon?: boolean;

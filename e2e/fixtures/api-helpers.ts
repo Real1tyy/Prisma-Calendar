@@ -1,6 +1,6 @@
-import type { PrismaCalendarApi } from "@real1ty-obsidian-plugins/external-apis/prisma-calendar";
-import { createTypedApi, type Invoker, pageEvaluateInvoker } from "@real1ty-obsidian-plugins/testing/api-contract";
 import { expect, type Page } from "@playwright/test";
+import type { PrismaCalendarApi } from "@real1ty-obsidian-plugins/external-apis/prisma-calendar";
+import { createTypedApi, pageEvaluateInvoker, type Invoker } from "@real1ty-obsidian-plugins/testing/api-contract";
 
 /**
  * Shared helpers for the `window.PrismaCalendar.*` contract specs. Two layers:

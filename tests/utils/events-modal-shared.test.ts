@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
-	type EventsModalSortMode,
 	filterEventsModalItemsByQuery,
 	sortEventsModalItems,
+	type EventsModalSortMode,
 } from "../../src/react/modals/event-list/events-modal-shared";
 
 interface Row {

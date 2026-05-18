@@ -1,8 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { LicenseManager } from "../../src/core/license/license-manager";
-import type { LicenseManagerConfig, LicenseVerifyResponse } from "../../src/core/license/types";
-import { LicenseStatusSchema } from "../../src/core/license/types";
+import {
+	LicenseStatusSchema,
+	type LicenseManagerConfig,
+	type LicenseVerifyResponse,
+} from "../../src/core/license/types";
 import { silenceConsole } from "../../src/testing/silence-console";
 
 const { mockRequestUrl } = vi.hoisted(() => ({

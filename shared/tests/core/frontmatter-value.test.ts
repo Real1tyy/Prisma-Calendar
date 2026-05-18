@@ -2,7 +2,6 @@ import * as fc from "fast-check";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
-	type DisplaySettings,
 	filterPropertiesForDisplay,
 	filterSpecificProperties,
 	formatArrayCompact,
@@ -17,6 +16,7 @@ import {
 	removeWikiLinks,
 	serializeValue,
 	truncateString,
+	type DisplaySettings,
 } from "../../src/core/frontmatter/frontmatter-value";
 
 // ============================================================================

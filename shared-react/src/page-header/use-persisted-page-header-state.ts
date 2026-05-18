@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 
-import { type SettingsStorelike, useSchemaField } from "../hooks/settings/use-schema-field";
+import { useSchemaField, type SettingsStorelike } from "../hooks/settings/use-schema-field";
 import type { PageHeaderState } from "./types";
 
 export interface PersistedPageHeaderState {

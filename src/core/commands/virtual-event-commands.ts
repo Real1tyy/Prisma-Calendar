@@ -1,7 +1,5 @@
-import type { Command } from "@real1ty-obsidian-plugins";
-import { getTFileOrThrow } from "@real1ty-obsidian-plugins";
-import type { App } from "obsidian";
-import { TFile } from "obsidian";
+import { getTFileOrThrow, type Command } from "@real1ty-obsidian-plugins";
+import { TFile, type App } from "obsidian";
 
 import type { VirtualEventData } from "../../types/calendar";
 import { stripZ } from "../../utils/dates/iso";

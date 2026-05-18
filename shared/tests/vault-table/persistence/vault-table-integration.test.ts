@@ -1,5 +1,4 @@
-import type { App } from "obsidian";
-import { TFile } from "obsidian";
+import { TFile, type App } from "obsidian";
 import { BehaviorSubject, Subject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";

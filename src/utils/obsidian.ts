@@ -1,6 +1,5 @@
 import { parseIntoList } from "@real1ty-obsidian-plugins";
-import type { App, WorkspaceLeaf } from "obsidian";
-import { Notice, TFile } from "obsidian";
+import { Notice, TFile, type App, type WorkspaceLeaf } from "obsidian";
 
 import { getCalendarViewType } from "../constants";
 import type { Frontmatter } from "../types";

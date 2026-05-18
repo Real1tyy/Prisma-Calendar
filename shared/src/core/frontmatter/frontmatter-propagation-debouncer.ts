@@ -1,5 +1,4 @@
-import type { FrontmatterDiff } from "./frontmatter-diff";
-import { mergeFrontmatterDiffs } from "./frontmatter-diff";
+import { mergeFrontmatterDiffs, type FrontmatterDiff } from "./frontmatter-diff";
 
 export interface FrontmatterPropagationDebouncerOptions {
 	debounceMs: number;

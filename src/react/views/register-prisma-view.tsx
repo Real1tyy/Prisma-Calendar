@@ -3,8 +3,7 @@ import { renderReactInline } from "@real1ty-obsidian-plugins-react";
 import type { WorkspaceLeaf } from "obsidian";
 import { createElement } from "react";
 
-import { cls } from "../../constants";
-import { CSS_PREFIX } from "../../constants";
+import { cls, CSS_PREFIX } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type CustomCalendarPlugin from "../../main";
 import { PrismaViewApp, type PrismaViewRef } from "./prisma-view-app";

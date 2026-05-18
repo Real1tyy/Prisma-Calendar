@@ -1,5 +1,4 @@
-import type { App } from "obsidian";
-import { TFile } from "obsidian";
+import { TFile, type App } from "obsidian";
 
 import type { Frontmatter, FrontmatterDiff } from "./frontmatter-diff";
 

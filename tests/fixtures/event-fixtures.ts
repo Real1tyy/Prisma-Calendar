@@ -1,5 +1,4 @@
-import type { CalendarEvent } from "../../src/types/calendar";
-import { eventDefaults } from "../../src/types/calendar";
+import { eventDefaults, type CalendarEvent } from "../../src/types/calendar";
 import type { EventMetadata } from "../../src/types/event-metadata";
 
 function defaultMetadata(partial: Partial<EventMetadata> = {}): EventMetadata {

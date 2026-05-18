@@ -1,6 +1,6 @@
 import {
-	type BaseDefinition,
 	BaseDefinitionSchema,
+	type BaseDefinition,
 	type BaseFilterGroup,
 	type BaseFilterLeaf,
 	type BaseFilterNode,

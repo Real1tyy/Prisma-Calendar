@@ -1,6 +1,5 @@
 import { ensureISOSuffix, formatMsToHHMMSS, formatMsToMMSS, toLocalISOString } from "@real1ty-obsidian-plugins";
-import type { App } from "obsidian";
-import { Notice, TFile } from "obsidian";
+import { Notice, TFile, type App } from "obsidian";
 import type { Subscription } from "rxjs";
 
 import type { EventModalData } from "../components/modals";

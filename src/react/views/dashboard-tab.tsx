@@ -1,7 +1,7 @@
 import type { ChartDataItem } from "@real1ty-obsidian-plugins";
 import { Cell, GridLayout, useApp, usePersistedGridStateById } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
-import { memo, type ReactElement, useMemo } from "react";
+import { memo, useMemo, type ReactElement } from "react";
 
 import { cls, tid } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";

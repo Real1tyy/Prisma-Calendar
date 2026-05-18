@@ -1,6 +1,5 @@
 import type { App, TFile } from "obsidian";
-import type { Observable } from "rxjs";
-import { Subject } from "rxjs";
+import { Subject, type Observable } from "rxjs";
 import type { z } from "zod";
 
 import { deepEqualJsonLike } from "../../utils/deep-equal";

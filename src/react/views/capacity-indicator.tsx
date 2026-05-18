@@ -1,6 +1,6 @@
 import { toLocalISOString } from "@real1ty-obsidian-plugins";
 import { useObservable } from "@real1ty-obsidian-plugins-react";
-import { memo, type Ref, useImperativeHandle, useMemo, useState } from "react";
+import { memo, useImperativeHandle, useMemo, useState, type Ref } from "react";
 import { combineLatest, from, of } from "rxjs";
 import { debounceTime, map, startWith, switchMap } from "rxjs/operators";
 

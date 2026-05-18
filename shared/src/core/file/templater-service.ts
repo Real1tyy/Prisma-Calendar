@@ -1,7 +1,5 @@
-import type { App } from "obsidian";
-import type { TFile } from "obsidian";
+import type { App, TFile } from "obsidian";
 
-import type { FileCreationOptions } from "./templater";
 import {
 	createFileAtPathAtomic,
 	createFileManually,
@@ -9,6 +7,7 @@ import {
 	isTemplaterAvailable,
 	renderTemplateContent,
 	shouldUseTemplate,
+	type FileCreationOptions,
 } from "./templater";
 
 export type { FileCreationOptions };

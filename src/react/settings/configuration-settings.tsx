@@ -1,8 +1,14 @@
 import { SettingHeading, Toggle, useSchemaField } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useMemo } from "react";
 
-import { cls, tid } from "../../constants";
-import { BATCH_BUTTON_IDS, BATCH_BUTTON_LABELS, TOOLBAR_BUTTON_IDS, TOOLBAR_BUTTON_LABELS } from "../../constants";
+import {
+	BATCH_BUTTON_IDS,
+	BATCH_BUTTON_LABELS,
+	cls,
+	tid,
+	TOOLBAR_BUTTON_IDS,
+	TOOLBAR_BUTTON_LABELS,
+} from "../../constants";
 import type { CalendarSettingsStore, ToolbarButtonsKey } from "../../core/settings-store";
 
 interface ConfigurationSettingsProps {

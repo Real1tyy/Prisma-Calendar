@@ -1,19 +1,19 @@
 import {
 	createPageHeader,
 	MountImperative,
-	type PageHeaderHandle,
 	registerPageHeaderCommands,
 	registerTabCommands,
 	renderReactInline,
 	TabbedContainer,
+	useApp,
+	type PageHeaderHandle,
 	type TabbedContainerHandle,
 	type TabbedContainerState,
 	type TabDefinition,
 	type TabEntry,
-	useApp,
 } from "@real1ty-obsidian-plugins-react";
 import type { App, WorkspaceLeaf } from "obsidian";
-import { createElement, memo, type RefObject, useEffect, useRef } from "react";
+import { createElement, memo, useEffect, useRef, type RefObject } from "react";
 
 import { CalendarComponent } from "../../components/calendar-view";
 import { CSS_PREFIX } from "../../constants";

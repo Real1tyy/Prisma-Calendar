@@ -3,8 +3,11 @@ import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
 import type { VaultRow } from "../../src/core/vault-table/types";
-import type { VaultTableChildRestConfig, VaultTableRestConfig } from "../../src/core/vault-table/vault-table-rest-api";
-import { VaultTableRestApi } from "../../src/core/vault-table/vault-table-rest-api";
+import {
+	VaultTableRestApi,
+	type VaultTableChildRestConfig,
+	type VaultTableRestConfig,
+} from "../../src/core/vault-table/vault-table-rest-api";
 
 // ─── Domain: a "Projects" table with child "Tasks" ─────────────
 

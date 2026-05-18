@@ -1,5 +1,4 @@
-import type { Plugin } from "obsidian";
-import { TFile } from "obsidian";
+import { TFile, type Plugin } from "obsidian";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { SerializableSchema } from "../../src/core/vault-table/create-mapped-schema";

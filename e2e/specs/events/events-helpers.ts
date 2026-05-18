@@ -8,7 +8,7 @@ import { ACTIVE_CALENDAR_LEAF, PLUGIN_ID } from "../../fixtures/constants";
 import { anchorISO } from "../../fixtures/dates";
 import { sel, TID, UNTRACKED_BUTTON_TID, UNTRACKED_DROPDOWN_TID, UNTRACKED_ITEM_TID } from "../../fixtures/testids";
 import type { PrismaPlugin, PrismaWindow } from "../../fixtures/window-types";
-import { type EventModalInput, fillEventModal, saveEventModal } from "./fill-event-modal";
+import { fillEventModal, saveEventModal, type EventModalInput } from "./fill-event-modal";
 
 export { PLUGIN_ID };
 

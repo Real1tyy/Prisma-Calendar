@@ -11,7 +11,7 @@ import {
 	parseOperations,
 	resolveActiveViewContext,
 } from "../ai/ai-engine";
-import { type SemanticValidationContext, validateOperationsSemantically } from "../ai/ai-validation";
+import { validateOperationsSemantically, type SemanticValidationContext } from "../ai/ai-validation";
 import { resolveBundle } from "./bundle-resolver";
 import type { PrismaAIQueryInput, PrismaAIQueryResult } from "./types";
 

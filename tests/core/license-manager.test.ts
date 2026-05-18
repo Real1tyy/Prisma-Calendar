@@ -3,8 +3,12 @@ import { silenceConsole } from "@real1ty-obsidian-plugins/testing";
 import { Notice, requestUrl } from "obsidian";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { LicenseManagerConfig } from "../../src/core/license";
-import { DEVICE_ID_STORAGE_KEY, LICENSE_CACHE_STORAGE_KEY, LicenseManager } from "../../src/core/license";
+import {
+	DEVICE_ID_STORAGE_KEY,
+	LICENSE_CACHE_STORAGE_KEY,
+	LicenseManager,
+	type LicenseManagerConfig,
+} from "../../src/core/license";
 import { createMockLicenseSettingsStore } from "../fixtures/settings-fixtures";
 
 const TEST_CONFIG: LicenseManagerConfig = {

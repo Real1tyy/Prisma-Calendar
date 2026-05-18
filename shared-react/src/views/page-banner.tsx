@@ -1,9 +1,8 @@
-import type { ReactNode } from "react";
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo, type ReactNode } from "react";
 
-import { ObsidianIcon } from "../primitives/atoms/obsidian-icon";
 import { useScoped } from "../contexts/theme-context";
 import { useScopedStyles } from "../hooks/styles/use-styles";
+import { ObsidianIcon } from "../primitives/atoms/obsidian-icon";
 import { buildPageBannerStyles } from "./page-banner.styles";
 
 export interface PageBannerAction {

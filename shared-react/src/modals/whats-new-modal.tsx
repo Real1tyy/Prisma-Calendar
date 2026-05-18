@@ -4,8 +4,7 @@ import {
 	resolveRelativeDocLinks,
 	type VersionSection,
 } from "@real1ty-obsidian-plugins";
-import type { App, Plugin } from "obsidian";
-import { Component, MarkdownRenderer } from "obsidian";
+import { Component, MarkdownRenderer, type App, type Plugin } from "obsidian";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useApp } from "../contexts/app-context";

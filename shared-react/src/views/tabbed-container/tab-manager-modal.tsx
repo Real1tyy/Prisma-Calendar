@@ -1,18 +1,25 @@
-import type { Dispatch, ReactNode, SetStateAction } from "react";
-import { createContext, memo, useCallback, useContext, useMemo, useState } from "react";
+import {
+	createContext,
+	memo,
+	useCallback,
+	useContext,
+	useMemo,
+	useState,
+	type Dispatch,
+	type ReactNode,
+	type SetStateAction,
+} from "react";
 import { createPortal } from "react-dom";
 
-import type { ManagerEditController } from "../../widgets/manager-list/manager-edit-form";
-import { ManagerEditForm } from "../../widgets/manager-list/manager-edit-form";
-import { ManagerRow } from "../../widgets/manager-list/manager-row";
-import { ObsidianIcon } from "../../primitives/atoms/obsidian-icon";
-import { Toggle } from "../../primitives/controls";
-import { SettingItem } from "../../primitives/layout/setting-item";
 import { useApp } from "../../contexts/app-context";
 import { SharedReactThemeProvider } from "../../contexts/theme-context";
 import { showReactIconPicker } from "../../modals/icon-picker-modal";
-import type { GroupTabDefinition, TabDefinition, TabEntry } from "./types";
-import { isGroupTab } from "./types";
+import { ObsidianIcon } from "../../primitives/atoms/obsidian-icon";
+import { Toggle } from "../../primitives/controls";
+import { SettingItem } from "../../primitives/layout/setting-item";
+import { ManagerEditForm, type ManagerEditController } from "../../widgets/manager-list/manager-edit-form";
+import { ManagerRow } from "../../widgets/manager-list/manager-row";
+import { isGroupTab, type GroupTabDefinition, type TabDefinition, type TabEntry } from "./types";
 import { useModalPortal } from "./use-modal-portal";
 import type { TabbedContainerActions, TabbedContainerStateAccess } from "./use-tabbed-container";
 

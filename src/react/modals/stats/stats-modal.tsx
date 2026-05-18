@@ -4,8 +4,15 @@ import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { CalendarEvent } from "../../../types/calendar";
-import type { AggregationMode, Stats, StatsInterval } from "../../../utils/stats";
-import { aggregateStats, boundsByInterval, buildStatsSnapshot, pickDurationFormatter } from "../../../utils/stats";
+import {
+	aggregateStats,
+	boundsByInterval,
+	buildStatsSnapshot,
+	pickDurationFormatter,
+	type AggregationMode,
+	type Stats,
+	type StatsInterval,
+} from "../../../utils/stats";
 import { useBundleChanges } from "../../hooks/use-bundle-changes";
 import { CapacityLabel } from "../../views/stats/capacity-label";
 import { StatsChart } from "../../views/stats/stats-chart";

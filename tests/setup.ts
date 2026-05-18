@@ -2,6 +2,20 @@ import "@real1ty-obsidian-plugins/testing/setup-window";
 
 import { beforeEach, vi } from "vitest";
 
+// Import local mocks
+import {
+	createMockApp as createMockAppImpl,
+	createMockFile as createMockFileImpl,
+	debounce,
+	ItemView,
+	Modal,
+	Notice,
+	Plugin,
+	PluginSettingTab,
+	SuggestModal,
+	TFile,
+} from "./mocks/obsidian";
+
 // Mock problematic utils modules that depend on obsidian
 vi.mock("@real1ty-obsidian-plugins/utils/templater-utils", () => ({
 	createFromTemplate: vi.fn().mockResolvedValue("created content"),
@@ -31,20 +45,6 @@ vi.mock("@real1ty-obsidian-plugins/common-plugin", () => ({
 vi.mock("@real1ty-obsidian-plugins/utils/async-utils", () => ({
 	onceAsync: vi.fn().mockImplementation((fn) => fn),
 }));
-
-// Import local mocks
-import {
-	createMockApp as createMockAppImpl,
-	createMockFile as createMockFileImpl,
-	debounce,
-	ItemView,
-	Modal,
-	Notice,
-	Plugin,
-	PluginSettingTab,
-	SuggestModal,
-	TFile,
-} from "./mocks/obsidian";
 
 export class Menu {
 	addItem(callback: (item: any) => void) {

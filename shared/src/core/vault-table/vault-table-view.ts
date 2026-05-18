@@ -1,4 +1,4 @@
-import { type Observable, Subject, type Subscription } from "rxjs";
+import { Subject, type Observable, type Subscription } from "rxjs";
 
 import type { SerializableSchema } from "./create-mapped-schema";
 import { ReactiveGroupBy, ReactiveMultiGroupBy } from "./reactive-group-by";

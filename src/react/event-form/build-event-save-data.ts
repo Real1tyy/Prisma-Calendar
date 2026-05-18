@@ -6,8 +6,7 @@ import {
 	applyRecurringFieldsToFrontmatter,
 } from "../../components/modals/event/event-frontmatter-mapper";
 import type { Frontmatter } from "../../types";
-import type { EventSaveData } from "../../types/event-boundaries";
-import { FormToFieldsSchema } from "../../types/event-boundaries";
+import { FormToFieldsSchema, type EventSaveData } from "../../types/event-boundaries";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { isWeekdaySupported } from "../../utils/dates/recurring";
 import { writeMetadataToFrontmatter } from "../../utils/frontmatter/writer";

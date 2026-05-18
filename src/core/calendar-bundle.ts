@@ -1,18 +1,17 @@
 import {
 	activateView,
-	type Command,
-	type HistoryStack,
 	intoDate,
 	sanitizeForFilename,
 	TemplaterService,
+	type Command,
+	type HistoryStack,
 } from "@real1ty-obsidian-plugins";
-import { type App, Notice, TFile } from "obsidian";
+import { Notice, TFile, type App } from "obsidian";
 import { distinctUntilChanged, filter, firstValueFrom, type Subscription } from "rxjs";
 
-import { tid } from "../constants";
-import { getCalendarViewType } from "../constants";
+import { getCalendarViewType, tid } from "../constants";
 import type CustomCalendarPlugin from "../main";
-import { type PrismaViewRef, registerPrismaReactView } from "../react/views/register-prisma-view";
+import { registerPrismaReactView, type PrismaViewRef } from "../react/views/register-prisma-view";
 import type { PrismaCalendarSettingsStore } from "../types";
 import type { CreateEventData, UpdateEventData } from "../types/event-boundaries";
 import { generateUniqueEventPath } from "../utils/events/file-naming";
@@ -31,7 +30,7 @@ import {
 } from "./commands";
 import type { EventFileRepository } from "./event-file-repository";
 import type { EventStore, UntrackedEventStore } from "./event-store";
-import { type HolidayConfig, HolidayStore } from "./holidays";
+import { HolidayStore, type HolidayConfig } from "./holidays";
 import { IndexerRegistry } from "./indexer-registry";
 import { CalDAVSyncService } from "./integrations/caldav/sync";
 import { CalDAVSyncStateManager } from "./integrations/caldav/sync-state-manager";

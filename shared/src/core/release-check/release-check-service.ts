@@ -5,10 +5,10 @@ import { z } from "zod";
 import { LocalKV } from "../storage";
 import { compareVersions } from "./compare-versions";
 import {
+	ReleaseUpdateNoticeSchema,
 	type GitHubRelease,
 	type ReleaseCheckServiceConfig,
 	type ReleaseUpdateNotice,
-	ReleaseUpdateNoticeSchema,
 } from "./types";
 
 export const RELEASE_CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;

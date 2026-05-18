@@ -1,6 +1,5 @@
 import type { Plugin } from "obsidian";
-import type { Observable } from "rxjs";
-import { BehaviorSubject, distinctUntilChanged, map, skip } from "rxjs";
+import { BehaviorSubject, distinctUntilChanged, map, skip, type Observable } from "rxjs";
 import type { z } from "zod";
 
 import { deepEqualJsonLike } from "../../utils/deep-equal";

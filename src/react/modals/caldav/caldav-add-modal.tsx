@@ -1,7 +1,6 @@
 import { ModalForm, openReactModal, SchemaForm, SettingItem, useZodForm } from "@real1ty-obsidian-plugins-react";
 import { nanoid } from "nanoid";
-import type { App } from "obsidian";
-import { Notice } from "obsidian";
+import { Notice, type App } from "obsidian";
 import { useCallback, useMemo, useState } from "react";
 import { z } from "zod";
 

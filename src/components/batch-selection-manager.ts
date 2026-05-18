@@ -1,13 +1,13 @@
 import type { Calendar, EventApi } from "@fullcalendar/core";
-import type { Command } from "@real1ty-obsidian-plugins";
 import {
 	describeError,
 	getWeekDirection,
 	pluralize,
 	runBatchOperation,
 	toLocalISOString,
+	type Command,
 } from "@real1ty-obsidian-plugins";
-import { type App, Modal, Notice } from "obsidian";
+import { Modal, Notice, type App } from "obsidian";
 
 import { addCls, cls, removeCls, tid } from "../constants";
 import type { CalendarBundle } from "../core/calendar-bundle";
@@ -26,8 +26,7 @@ import {
 	createBatchUpdateFrontmatter,
 } from "../core/commands/batch-commands";
 import { openMoveByModal } from "../react/modals";
-import type { CalendarEvent } from "../types/calendar";
-import { isTimeUnitAllowedForAllDay } from "../types/calendar";
+import { isTimeUnitAllowedForAllDay, type CalendarEvent } from "../types/calendar";
 import { isBatchSelectable, isVirtualEvent } from "../utils/events/classification";
 import { parseFCExtendedProps } from "../utils/frontmatter/extended-props";
 

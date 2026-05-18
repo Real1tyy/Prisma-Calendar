@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 
-import { type SettingsStorelike, useSchemaField } from "../../hooks/settings/use-schema-field";
+import { useSchemaField, type SettingsStorelike } from "../../hooks/settings/use-schema-field";
 import type { TabbedContainerState } from "./types";
 
 export interface PersistedTabbedContainerState {

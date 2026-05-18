@@ -1,7 +1,7 @@
 import { BehaviorSubject, Subject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { type EventQuery, EventStore } from "../../src/core/event-store";
+import { EventStore, type EventQuery } from "../../src/core/event-store";
 import type { CalendarEvent } from "../../src/types/calendar";
 import type { IndexerEvent, RawEventSource } from "../../src/types/event-source";
 import { createMockAllDayEvent, createMockTimedEvent, createRawEventSource } from "../fixtures";

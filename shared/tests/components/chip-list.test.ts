@@ -3,6 +3,8 @@
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { ChipList } from "../../src/components/primitives/chip-list";
+
 function polyfillObsidianDOM(): void {
 	const proto = HTMLElement.prototype as any;
 	if (proto._polyfilled) return;
@@ -48,8 +50,6 @@ function polyfillObsidianDOM(): void {
 }
 
 polyfillObsidianDOM();
-
-import { ChipList } from "../../src/components/primitives/chip-list";
 
 const PREFIX = "test-";
 

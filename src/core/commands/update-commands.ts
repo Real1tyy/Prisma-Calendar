@@ -1,4 +1,3 @@
-import type { Command } from "@real1ty-obsidian-plugins";
 import {
 	backupFrontmatter,
 	compareFrontmatter,
@@ -6,6 +5,7 @@ import {
 	restoreFrontmatter,
 	toLocalISOString,
 	withFrontmatter,
+	type Command,
 } from "@real1ty-obsidian-plugins";
 import type { App, TFile } from "obsidian";
 

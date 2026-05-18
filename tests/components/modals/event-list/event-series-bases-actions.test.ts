@@ -1,6 +1,15 @@
 import type * as RealityPlugins from "@real1ty-obsidian-plugins";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { CalendarBundle } from "../../../../src/core/calendar-bundle";
+import {
+	createCategorySeriesBasesActions,
+	createNameSeriesBasesActions,
+	createRecurringSeriesBasesActions,
+} from "../../../../src/react/modals/event-list/event-series-bases-actions";
+import { createMockTimedEvent } from "../../../fixtures/event-fixtures";
+import { createMockCalendarSettingsStore } from "../../../fixtures/settings-fixtures";
+
 const showModal = vi.hoisted(() => vi.fn());
 const showEventSeriesBasesViewModal = vi.hoisted(() => vi.fn());
 const showHeatmapModal = vi.hoisted(() => vi.fn());
@@ -19,15 +28,6 @@ vi.mock("../../../../src/components/modals", () => ({
 vi.mock("../../../../src/components/settings/pro-upgrade-banner", () => ({
 	renderProUpgradeBanner,
 }));
-
-import type { CalendarBundle } from "../../../../src/core/calendar-bundle";
-import {
-	createCategorySeriesBasesActions,
-	createNameSeriesBasesActions,
-	createRecurringSeriesBasesActions,
-} from "../../../../src/react/modals/event-list/event-series-bases-actions";
-import { createMockTimedEvent } from "../../../fixtures/event-fixtures";
-import { createMockCalendarSettingsStore } from "../../../fixtures/settings-fixtures";
 
 interface BundleStub {
 	isPro?: boolean;
