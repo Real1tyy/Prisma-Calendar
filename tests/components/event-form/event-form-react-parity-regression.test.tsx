@@ -345,7 +345,7 @@ describe("event-form regression #3 — close with active stopwatch auto-saves st
 			startBtn.click();
 		});
 		// Wait for the snapshot ref update that we schedule via queueMicrotask.
-		await new Promise((r) => setTimeout(r, 0));
+		await new Promise((r) => window.setTimeout(r, 0));
 
 		await act(async () => {
 			unmount();
@@ -444,7 +444,7 @@ describe("event-form regression #3 — close with active stopwatch auto-saves st
 		await act(async () => {
 			startBtn.click();
 		});
-		await new Promise((r) => setTimeout(r, 0));
+		await new Promise((r) => window.setTimeout(r, 0));
 
 		await act(async () => {
 			unmount();
@@ -482,7 +482,7 @@ describe("event-form regression #3 — close with active stopwatch auto-saves st
 		await act(async () => {
 			startBtn.click();
 		});
-		await new Promise((r) => setTimeout(r, 0));
+		await new Promise((r) => window.setTimeout(r, 0));
 
 		const title = screen.getByTestId("prisma-event-control-title") as HTMLInputElement;
 		await user.type(title, "Done");

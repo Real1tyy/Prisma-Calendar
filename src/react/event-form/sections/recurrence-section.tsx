@@ -19,10 +19,6 @@ import {
 import { PrismaCheckbox } from "../prisma-checkbox";
 import { PrismaSettingItem } from "../prisma-setting-item";
 
-const DEFAULT_INTERVAL = "1";
-const DEFAULT_FREQ: RecurrenceFreq = "DAILY";
-const EMPTY_WEEKDAYS: readonly Weekday[] = [];
-
 const SET_VALUE_OPTIONS = {
 	shouldDirty: true,
 	shouldTouch: true,
@@ -49,11 +45,11 @@ interface RecurrenceSectionProps {
 export const RecurrenceSection = memo(function RecurrenceSection({ form }: RecurrenceSectionProps) {
 	const recurring = useWatch({ control: form.control, name: "recurring" });
 
-	const enabled = recurring?.enabled ?? false;
-	const rruleType = recurring?.rruleType ?? "";
-	const weekdays = (recurring?.weekdays as Weekday[] | undefined) ?? EMPTY_WEEKDAYS;
-	const customFreq = (recurring?.customFreq as RecurrenceFreq | undefined) ?? DEFAULT_FREQ;
-	const customInterval = recurring?.customInterval ?? DEFAULT_INTERVAL;
+	const enabled = recurring.enabled;
+	const rruleType = recurring.rruleType;
+	const weekdays = recurring.weekdays as readonly Weekday[];
+	const customFreq = recurring.customFreq as RecurrenceFreq;
+	const customInterval = recurring.customInterval;
 
 	const isCustom = rruleType === "custom" || (!isPresetType(rruleType) && rruleType !== "");
 	const showWeekdays = !isCustom && isWeekdaySupported(rruleType);
@@ -62,7 +58,7 @@ export const RecurrenceSection = memo(function RecurrenceSection({ form }: Recur
 
 	const parsed = isCustom && rruleType ? parseRecurrenceType(rruleType) : null;
 	const displayFreq = (parsed?.freq as RecurrenceFreq | undefined) ?? customFreq;
-	const displayInterval = parsed?.interval?.toString() ?? customInterval;
+	const displayInterval = parsed?.interval.toString() ?? customInterval;
 
 	const buildCustomDSL = useCallback(
 		(freq: RecurrenceFreq = displayFreq, interval: string = displayInterval) =>

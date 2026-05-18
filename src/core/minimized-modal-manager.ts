@@ -350,7 +350,7 @@ class MinimizedModalManagerClass {
 
 		// Snapshot the inputs we need before we clear our state.
 		const settings = bundle.settingsStore.currentSettings;
-		const originalFrontmatter = state.originalFrontmatter ?? {};
+		const originalFrontmatter = state.originalFrontmatter;
 		const customProperties = state.customProperties ?? {};
 		const filePath = state.filePath;
 		const modalType = state.modalType;
@@ -381,11 +381,10 @@ class MinimizedModalManagerClass {
 			customProperties,
 			stopwatchSnapshot: stoppedSnapshot,
 			// initialMarkAsDone: best-effort from the saved formState; we don't
-			// track the original explicitly in MinimizedModalState. False is a
-			// safe default — markAsDone toggles produce no side-effects when the
-			// "before" matches the "after" (writeMetadataToFrontmatter handles
-			// the comparison).
-			initialMarkAsDoneState: formState.markAsDone ?? false,
+			// track the original explicitly in MinimizedModalState.
+			// writeMetadataToFrontmatter compares before/after, so when the saved
+			// formState already has markAsDone=true, replaying it is a no-op.
+			initialMarkAsDoneState: formState.markAsDone,
 		};
 
 		const saveData = buildEventSaveData(

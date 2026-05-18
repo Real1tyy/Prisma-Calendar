@@ -6,7 +6,7 @@ import {
 } from "@real1ty-obsidian-plugins";
 import { useSettingsFields, useZodForm } from "@real1ty-obsidian-plugins-react";
 import { Notice } from "obsidian";
-import { memo, useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { useController, useWatch, type UseFormReturn } from "react-hook-form";
 
 import {
@@ -88,11 +88,7 @@ export const EventForm = memo(function EventForm({
 	const settings = bundle.settingsStore.currentSettings;
 
 	const displayKeySet = useMemo(
-		() =>
-			new Set([
-				...(settings.frontmatterDisplayProperties || []),
-				...(settings.frontmatterDisplayPropertiesAllDay || []),
-			]),
+		() => new Set([...settings.frontmatterDisplayProperties, ...settings.frontmatterDisplayPropertiesAllDay]),
 		[settings.frontmatterDisplayProperties, settings.frontmatterDisplayPropertiesAllDay]
 	);
 
@@ -126,7 +122,16 @@ export const EventForm = memo(function EventForm({
 		skip: initialState?.skip ?? false,
 	}));
 
-	const stopwatch = useStopwatch({
+	const {
+		snapshotRef: stopwatchSnapshotRef,
+		setHandle: setStopwatchHandle,
+		refreshSnapshot: refreshStopwatchSnapshot,
+		reset: resetStopwatch,
+		onStart: onStopwatchStart,
+		onContinueRequested: onStopwatchContinueRequested,
+		onStop: onStopwatchStop,
+		onBreakUpdate: onStopwatchBreakUpdate,
+	} = useStopwatch({
 		form,
 		initialSnapshot: initialStopwatchSnapshot ?? null,
 		autoStart: autoStartStopwatch,
@@ -142,7 +147,7 @@ export const EventForm = memo(function EventForm({
 	});
 
 	const collectFormValues = useCallback((): EventFormValues => {
-		stopwatch.refreshSnapshot();
+		refreshStopwatchSnapshot();
 		const state = applyMetadataToState(form.getValues(), metadataValues);
 		const displayRecord = customPropertiesToRecord(state.customPropertiesDisplay);
 		const otherRecord = customPropertiesToRecord(state.customPropertiesOther);
@@ -150,10 +155,10 @@ export const EventForm = memo(function EventForm({
 		return {
 			formState: state,
 			customProperties: customProps,
-			stopwatchSnapshot: stopwatch.snapshotRef.current,
+			stopwatchSnapshot: stopwatchSnapshotRef.current,
 			initialMarkAsDoneState: initialMarkAsDone,
 		};
-	}, [stopwatch, form, metadataValues, initialMarkAsDone]);
+	}, [refreshStopwatchSnapshot, stopwatchSnapshotRef, form, metadataValues, initialMarkAsDone]);
 
 	const handleSubmit = useCallback(() => {
 		const titleCheck = validateEventTitle(form.getValues("title"));
@@ -184,7 +189,7 @@ export const EventForm = memo(function EventForm({
 
 	const { handleKeyDown, handleMinimize } = useEventFormLifecycle({
 		bundle,
-		stopwatchSnapshotRef: stopwatch.snapshotRef,
+		stopwatchSnapshotRef,
 		collectFormValues,
 		submit: handleSubmit,
 		onMinimize,
@@ -205,8 +210,8 @@ export const EventForm = memo(function EventForm({
 		// Mirror base-event-modal.ts:1299 — wipe the stopwatch alongside the rest
 		// of the form. Without this, a running stopwatch survives Clear and the
 		// next onBreakUpdate writes into the just-cleared breakMinutes field.
-		stopwatch.reset();
-	}, [form, stopwatch]);
+		resetStopwatch();
+	}, [form, resetStopwatch]);
 
 	const handleSavePreset = useCallback(() => {
 		const values = collectFormValues();
@@ -320,11 +325,11 @@ export const EventForm = memo(function EventForm({
 				{settings.showStopwatch && !allDay && (
 					<div className="prisma-stopwatch-field">
 						<Stopwatch
-							ref={stopwatch.setHandle}
-							onStart={stopwatch.onStart}
-							onContinueRequested={stopwatch.onContinueRequested}
-							onStop={stopwatch.onStop}
-							onBreakUpdate={stopwatch.onBreakUpdate}
+							ref={setStopwatchHandle}
+							onStart={onStopwatchStart}
+							onContinueRequested={onStopwatchContinueRequested}
+							onStop={onStopwatchStop}
+							onBreakUpdate={onStopwatchBreakUpdate}
 						/>
 					</div>
 				)}
@@ -409,7 +414,7 @@ function TitleField({
 	form: UseFormReturn<EventFormState>;
 	onBlur: () => void;
 	bundle: CalendarBundle;
-	titleInputRef: MutableRefObject<HTMLInputElement | null>;
+	titleInputRef: RefObject<HTMLInputElement | null>;
 }) {
 	const { field } = useController({ control: form.control, name: "title" });
 	const enableSuggest = bundle.settingsStore.currentSettings.titleAutocomplete;

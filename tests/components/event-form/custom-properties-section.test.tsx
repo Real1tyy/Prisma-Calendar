@@ -2,7 +2,7 @@ import "@testing-library/jest-dom/vitest";
 
 import { render, screen, within } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { describe, expect, it } from "vitest";
 
 import { createDefaultState, type EventFormState } from "../../../src/components/modals/event/event-form-state";
@@ -25,7 +25,7 @@ function Harness({
 	const form = useForm<EventFormState>({
 		defaultValues: { ...createDefaultState(), [name]: initial },
 	});
-	const entries = form.watch(name);
+	const entries = useWatch({ control: form.control, name });
 	if (onChange) onChange(customPropertiesToRecord(entries));
 	return <CustomPropertiesSection section={section} title="Custom" form={form} name={name} />;
 }
