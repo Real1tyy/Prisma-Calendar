@@ -96,6 +96,8 @@ Built-in stopwatch in Create/Edit Event modal for precise time tracking with aut
 
 **Auto-Save**: When the timer is running, the minimized session is preserved by any close path — ESC, click-outside, Cancel, **or pressing Save**. The Save button writes the event AND keeps the running session alive in the background so you can keep tracking the same file.
 
+**Create → Restore stays linked to the new file**: If you press Save in a *create* modal while the stopwatch is running, the auto-saved session is rebound to the just-created file as soon as it lands on disk. The next **Restore minimized event modal** opens an edit modal targeting that file, so further changes propagate to it.
+
 **Restore**: `Ctrl/Cmd+P` → "Restore minimized event modal"
 
 **Quick Category Assignment**: `Ctrl/Cmd+P` → "Assign categories to minimized event" - Update categories without restoring the full modal

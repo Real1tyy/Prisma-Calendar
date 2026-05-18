@@ -222,10 +222,13 @@ export class PopoverSuggest<T> {
 	selectSuggestion(_value: T, _evt: MouseEvent | KeyboardEvent): void {}
 }
 
-// AbstractInputSuggest mock
+// AbstractInputSuggest mock — stores onSelect callbacks so `selectSuggestion`
+// can invoke them, mirroring Obsidian's runtime where user selection (click /
+// Enter) fans out to every registered onSelect handler.
 export class AbstractInputSuggest<T> extends PopoverSuggest<T> {
 	limit = 100;
 	protected textInputEl: HTMLInputElement | HTMLDivElement;
+	private onSelectCallbacks: Array<(value: T, evt: MouseEvent | KeyboardEvent) => unknown> = [];
 
 	constructor(app: any, textInputEl: HTMLInputElement | HTMLDivElement) {
 		super(app);
@@ -251,8 +254,15 @@ export class AbstractInputSuggest<T> extends PopoverSuggest<T> {
 		return [];
 	}
 
-	onSelect(_callback: (value: T, evt: MouseEvent | KeyboardEvent) => unknown): this {
+	onSelect(callback: (value: T, evt: MouseEvent | KeyboardEvent) => unknown): this {
+		this.onSelectCallbacks.push(callback);
 		return this;
+	}
+
+	override selectSuggestion(value: T, evt: MouseEvent | KeyboardEvent): void {
+		for (const cb of this.onSelectCallbacks) {
+			cb(value, evt);
+		}
 	}
 }
 

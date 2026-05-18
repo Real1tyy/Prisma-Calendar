@@ -8,7 +8,7 @@ import {
 } from "../../../components/modals/event/event-form-state";
 import { CSS_PREFIX } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
-import type { MinimizedModalState } from "../../../core/minimized-modal-manager";
+import { MinimizedModalManager, type MinimizedModalState } from "../../../core/minimized-modal-manager";
 import { formatDateOnly, formatDateTimeForInput } from "../../../utils/format";
 import { openFileInNewTab } from "../../../utils/obsidian";
 import { buildEventSaveData } from "../../event-form/build-event-save-data";
@@ -126,6 +126,12 @@ function handleCreateSubmit(
 		.then(async (filePath) => {
 			if (!filePath) return;
 			setExtendedPropSafe(eventData, "filePath", filePath);
+			// If submit ran with a live stopwatch, EventForm's unmount-cleanup
+			// already auto-saved a {create, filePath: null} state. Without this
+			// upgrade, restoring opens a fresh create modal and a second Save
+			// duplicates the just-created file. Rebind to {edit, <new path>}
+			// so further edits propagate. No-op when no such pending state.
+			MinimizedModalManager.upgradeCreateToEdit(filePath, saveData.preservedFrontmatter);
 			if (options.openCreatedInNewTab) {
 				await openFileInNewTab(app, filePath);
 			}

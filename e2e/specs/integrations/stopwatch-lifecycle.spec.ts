@@ -1,10 +1,11 @@
-import { writeFileSync } from "node:fs";
+import { existsSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import type { Locator } from "@playwright/test";
 
 import { collapsibleSection, createEventHandle } from "../../fixtures/dsl";
 import { expect, test } from "../../fixtures/electron";
+import { saveEventModal } from "../../fixtures/helpers";
 import { sel, TID } from "../../fixtures/testids";
 import { EVENT_MODAL_SELECTOR, formatLocalDate } from "../events/events-helpers";
 
@@ -123,6 +124,75 @@ test.describe("stopwatch lifecycle", () => {
 		await expect
 			.poll(() => readStopwatchMs(restoredDisplay), { message: "stopwatch should continue ticking after restore" })
 			.toBeGreaterThan(afterMs);
+	});
+
+	// Bug regression: saving a create modal with the stopwatch running used to
+	// leave the minimized state pointing at `{modalType: "create", filePath:
+	// null}`, so restoring opened a fresh create modal and a subsequent Save
+	// persisted a duplicate file instead of editing the original. The fix
+	// rebinds the saved state to `{edit, <new path>}` as soon as createEvent
+	// resolves. Asserted at the only place that doesn't lie: the events
+	// directory on disk.
+	test("create-with-stopwatch + Save + restore + edit propagates to the SAME file (not a duplicate)", async ({
+		calendar,
+	}) => {
+		const page = calendar.page;
+		await calendar.runCommand("Prisma Calendar: Create new event with stopwatch");
+
+		const modal = page.locator(MODAL).first();
+		await modal.waitFor({ state: "visible" });
+		await page.locator(sel(TID.stopwatch.time)).first().waitFor({ state: "visible" });
+
+		// Give the event a recognizable name so we can find the file later.
+		await page
+			.locator(sel(TID.event.control("title")))
+			.first()
+			.fill("Tracked Original");
+
+		// Save while the stopwatch is still running. This is the path that
+		// triggered the bug — EventForm's unmount cleanup auto-saved a
+		// "create"/null state before bundle.createEvent resolved.
+		await saveEventModal(page);
+
+		const eventsDir = join(calendar.vaultDir, "Events");
+		await expect
+			.poll(
+				() => (existsSync(eventsDir) ? readdirSync(eventsDir).filter((f) => f.startsWith("Tracked Original-")) : []),
+				{
+					message: "create-with-stopwatch + Save should persist exactly one file",
+				}
+			)
+			.toHaveLength(1);
+
+		const filesAfterCreate = readdirSync(eventsDir).filter((f) => f.startsWith("Tracked Original-"));
+		const originalFile = filesAfterCreate[0]!;
+
+		// Restore the still-running minimized session and rename the title.
+		await calendar.runCommand("Prisma Calendar: Restore minimized event modal");
+		await page.locator(EVENT_MODAL_SELECTOR).waitFor({ state: "visible" });
+
+		const titleInput = page.locator(sel(TID.event.control("title"))).first();
+		await expect(titleInput).toHaveValue("Tracked Original");
+		await titleInput.fill("Tracked Renamed");
+		await saveEventModal(page);
+
+		// Critical assertion: exactly ONE file with the new title — the
+		// original was renamed, not a duplicate created. Before the fix,
+		// the restore re-opened a create modal so this Save persisted a
+		// second file alongside the original.
+		await expect
+			.poll(() => readdirSync(eventsDir).filter((f) => f.startsWith("Tracked Renamed-") && f.endsWith(".md")), {
+				message: "edit propagated to a renamed file",
+			})
+			.toHaveLength(1);
+
+		const filesAfterRename = readdirSync(eventsDir).filter((f) => f.endsWith(".md") && !f.startsWith("Virtual Events"));
+		// The original "Tracked Original-*" file is gone (renamed in place).
+		expect(filesAfterRename.filter((f) => f.startsWith("Tracked Original-"))).toEqual([]);
+		// And the zettel ID survived the rename — same file, new title.
+		const originalZettel = originalFile.match(/-(\d{14})\.md$/)?.[1];
+		const renamedFile = filesAfterRename.find((f) => f.startsWith("Tracked Renamed-"))!;
+		expect(renamedFile).toContain(`-${originalZettel}.md`);
 	});
 
 	test("edit-existing: continue stopwatch + minimize + restore advances time and preserves event identity", async ({

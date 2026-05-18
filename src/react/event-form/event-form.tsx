@@ -418,11 +418,19 @@ function TitleField({
 	const { field } = useController({ control: form.control, name: "title" });
 	const enableSuggest = bundle.settingsStore.currentSettings.titleAutocomplete;
 
+	// Latest field.onChange behind a ref so the effect's identity doesn't
+	// depend on field — without this, the suggester would tear down and
+	// rebuild on every keystroke (and lose its `hasUserTyped` flag mid-edit).
+	const acceptTitleRef = useRef(field.onChange);
+	acceptTitleRef.current = field.onChange;
+
 	useEffect(() => {
 		if (!enableSuggest) return;
 		const inputEl = titleInputRef.current;
 		if (!inputEl) return;
-		const suggest = new TitleInputSuggest(bundle.plugin.app, inputEl, bundle);
+		const suggest = new TitleInputSuggest(bundle.plugin.app, inputEl, bundle, {
+			onAcceptTitle: (title) => acceptTitleRef.current(title),
+		});
 		return () => {
 			suggest.destroy();
 		};

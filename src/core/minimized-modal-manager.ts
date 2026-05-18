@@ -120,6 +120,27 @@ class MinimizedModalManagerClass {
 		return this.savedState;
 	}
 
+	/**
+	 * Rebind a pending "create" state to "edit" once the underlying file has
+	 * been persisted. Called after `bundle.createEvent` resolves with a path,
+	 * so that a subsequent `restoreModal` opens the edit modal targeting the
+	 * just-created file instead of opening a fresh create modal and duplicating
+	 * the event.
+	 *
+	 * No-op when no state is saved, when the state is already an edit, or when
+	 * a `create` state already has a `filePath` (defensive — shouldn't happen,
+	 * but means "someone else already linked it").
+	 */
+	upgradeCreateToEdit(filePath: string, originalFrontmatter?: Frontmatter): void {
+		if (!this.savedState) return;
+		if (this.savedState.modalType !== "create" || this.savedState.filePath !== null) return;
+		this.savedState.modalType = "edit";
+		this.savedState.filePath = filePath;
+		if (originalFrontmatter) {
+			this.savedState.originalFrontmatter = { ...originalFrontmatter };
+		}
+	}
+
 	// ─── Internal Time Tracking ───────────────────────────────────
 
 	/**

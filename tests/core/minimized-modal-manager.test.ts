@@ -654,4 +654,89 @@ describe("MinimizedModalManager", () => {
 			});
 		});
 	});
+
+	// Regression: creating an event while the stopwatch was running auto-saved
+	// the form to MinimizedModalManager with `modalType: "create"` /
+	// `filePath: null`, then the user restored — opening a FRESH create modal
+	// that, when saved again, persisted a DUPLICATE file instead of editing
+	// the original. After bundle.createEvent resolves with the new path,
+	// upgradeCreateToEdit must rebind the saved state so a subsequent restore
+	// edits the just-created file.
+	describe("upgradeCreateToEdit — Bug 2 regression", () => {
+		const runningStopwatch = (): StopwatchSnapshot => ({
+			state: "running",
+			startTime: Date.now(),
+			sessionStartTime: Date.now(),
+			breakStartTime: null,
+			totalBreakMs: 0,
+		});
+
+		it("upgrades a pending create state to edit with the new filePath", () => {
+			const state = createMockState({
+				title: "Tracked Event",
+				stopwatch: runningStopwatch(),
+				modalType: "create",
+				filePath: null,
+			});
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
+
+			MinimizedModalManager.upgradeCreateToEdit("Tasks/Tracked-Event-20260518193815.md");
+
+			const upgraded = MinimizedModalManager.getState();
+			expect(upgraded?.modalType).toBe("edit");
+			expect(upgraded?.filePath).toBe("Tasks/Tracked-Event-20260518193815.md");
+		});
+
+		it("captures the just-created frontmatter when provided so subsequent saves preserve fields", () => {
+			const state = createMockState({
+				title: "Tracked Event",
+				stopwatch: runningStopwatch(),
+				modalType: "create",
+				filePath: null,
+				originalFrontmatter: {},
+			});
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
+
+			const persistedFm = { Title: "Tracked Event", Category: "Work" };
+			MinimizedModalManager.upgradeCreateToEdit("Tasks/Tracked-Event-20260518193815.md", persistedFm);
+
+			expect(MinimizedModalManager.getState()?.originalFrontmatter).toEqual(persistedFm);
+		});
+
+		it("no-ops when no minimized state is saved", () => {
+			// Should not throw and should not invent a new state.
+			MinimizedModalManager.upgradeCreateToEdit("Tasks/Some-File.md");
+			expect(MinimizedModalManager.getState()).toBeNull();
+		});
+
+		it("no-ops when the saved state is already an edit", () => {
+			const state = createMockState({
+				title: "Already Linked Event",
+				modalType: "edit",
+				filePath: "Tasks/Existing.md",
+				stopwatch: runningStopwatch(),
+			});
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
+
+			MinimizedModalManager.upgradeCreateToEdit("Tasks/Different.md");
+
+			const after = MinimizedModalManager.getState();
+			expect(after?.modalType).toBe("edit");
+			expect(after?.filePath).toBe("Tasks/Existing.md");
+		});
+
+		it("no-ops when a create state already has a filePath (defensive)", () => {
+			const state = createMockState({
+				title: "Already Linked Create",
+				modalType: "create",
+				filePath: "Tasks/Existing.md",
+				stopwatch: runningStopwatch(),
+			});
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
+
+			MinimizedModalManager.upgradeCreateToEdit("Tasks/Different.md");
+
+			expect(MinimizedModalManager.getState()?.filePath).toBe("Tasks/Existing.md");
+		});
+	});
 });

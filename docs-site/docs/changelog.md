@@ -6,10 +6,14 @@ All notable changes to this project will be documented here.
 
 ## 2.17.0 - 5/18/2026
 
-> **TLDR:** Prisma Calendar is now in the official Obsidian Community Plugin Store — install with one click from inside Obsidian.
+> **TLDR:** Prisma Calendar is now in the official Obsidian Community Plugin Store — install with one click from inside Obsidian. Also fixes a 2.16 regression where the title autocomplete could save the typed prefix instead of the chosen suggestion, and where creating an event with a running stopwatch then restoring it produced a duplicate file.
 
 ### Added
 - **Available in the Obsidian Community Plugin Store**: Prisma Calendar is now listed in Obsidian's built-in plugin browser. [Add to Obsidian](obsidian://show-plugin?id=prisma-calendar) or search "Prisma Calendar" under **Settings → Community plugins → Browse**.
+
+### Fixed
+- **Title autocomplete saved the typed prefix instead of the accepted suggestion**: Typing "Planni" with the ghost completing to "Planning" and pressing Enter to accept it then Save still wrote a file named `Planni-…md`. See [Title Autocomplete](./features/events/title-autocomplete.md).
+- **Restoring a stopwatch-tracked new event duplicated the file**: Creating an event with a running stopwatch then restoring the minimized modal opened a fresh create modal — a second Save persisted a duplicate instead of editing the original. See [Time Tracker → Minimize & Auto-Save](./features/management/time-tracker.md#minimize--auto-save).
 
 ---
 
