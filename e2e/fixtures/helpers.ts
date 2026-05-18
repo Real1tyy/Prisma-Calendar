@@ -211,11 +211,19 @@ export async function rightClickEvent(page: Page, options: { title?: string } = 
  * Click an item in the currently-open context menu by its Prisma item id
  * (e.g. `editEvent`, `duplicateEvent`, `makeUntracked`). Relies on the testids
  * stamped by the shared `createContextMenu` wrapper.
+ *
+ * Dispatches a synthetic click rather than a real mouse click: Obsidian's
+ * native `Menu` shifts the `.selected` class onto whichever item the cursor
+ * passes through, and that hover state intermittently expands the item's
+ * hit-box enough to intercept pointer events at the target item's center,
+ * surfacing as a flaky "intercepts pointer events" timeout. The handler is
+ * wired via Obsidian's `onClick` (a plain `click` listener), so a synthetic
+ * click triggers it without going through the pointer stack.
  */
 export async function clickContextMenuItem(page: Page, itemId: string): Promise<void> {
 	const item = page.locator(`[data-testid="prisma-context-menu-item-${itemId}"]`).first();
 	await item.waitFor({ state: "visible", timeout: 5_000 });
-	await item.click();
+	await item.dispatchEvent("click");
 }
 
 interface EventModalMinimalValues {

@@ -350,7 +350,7 @@ export async function rightClickEventMenu(page: Page, eventTitle: string, menuIt
 	// `calendar.eventByTitle(...).rightClick(key)` in the DSL.
 	const menuItem = page.locator(`[data-testid="prisma-context-menu-item-${menuItemId}"]`);
 	await menuItem.waitFor({ state: "visible" });
-	await menuItem.click();
+	await dispatchMenuItemClick(menuItem);
 }
 
 /**
@@ -365,7 +365,19 @@ export async function rightClickBlockMenu(block: Locator, page: Page, menuItemId
 	await block.click({ button: "right" });
 	const menuItem = page.locator(`[data-testid="prisma-context-menu-item-${menuItemId}"]`);
 	await menuItem.waitFor({ state: "visible" });
-	await menuItem.click();
+	await dispatchMenuItemClick(menuItem);
+}
+
+// Obsidian's native `Menu` adds a `.selected` class to the item under the
+// cursor and on adjacent items as Playwright moves the mouse to perform a
+// click. Under certain layouts that `.selected` state alters the hit-box
+// enough to intercept pointer events at the target item's center, producing
+// a flaky "intercepts pointer events" timeout. The menu items wire their
+// behaviour via Obsidian's `onClick` (a plain `click` listener) so a
+// synthetic click bypasses the hover/pointer stack while still triggering
+// the handler.
+async function dispatchMenuItemClick(menuItem: Locator): Promise<void> {
+	await menuItem.dispatchEvent("click");
 }
 
 /** Wait for the event modal to close. */

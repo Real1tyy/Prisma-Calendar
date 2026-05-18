@@ -123,7 +123,15 @@ export function createEventHandle(deps: EventHandleDeps, path: string, title: st
 			await el.click({ button: "right" });
 			const menuItem = page.locator(sel(TID.ctxMenu(item))).first();
 			await menuItem.waitFor({ state: "visible" });
-			await menuItem.click();
+			// Dispatch a synthetic click: Obsidian's `Menu` shifts the
+			// `.selected` class onto whichever item the cursor passes through,
+			// and that hover state intermittently expands the item's hit-box
+			// enough to intercept pointer events at the target item's center
+			// — surfacing as a flaky "intercepts pointer events" timeout.
+			// The handler is wired via Obsidian's `onClick` (a plain click
+			// listener) so a synthetic click triggers it without the pointer
+			// stack.
+			await menuItem.dispatchEvent("click");
 		},
 
 		async moveToCalendar(targetCalendarId) {
