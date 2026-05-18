@@ -234,3 +234,9 @@
 	width: 70vw;
 	max-width: 1100px;
 }
+
+// Undo link inside the category-operation Notice toast
+.prisma-undo-link {
+	cursor: pointer;
+	text-decoration: underline;
+}

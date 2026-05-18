@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useState, type KeyboardEvent } from "react";
 
 import {
 	formatPercentage,
@@ -96,7 +96,7 @@ const Pagination = memo(function Pagination({
 	const [inputValue, setInputValue] = useState(String(currentPage + 1));
 
 	const handleKeyDown = useCallback(
-		(e: React.KeyboardEvent<HTMLInputElement>) => {
+		(e: KeyboardEvent<HTMLInputElement>) => {
 			if (e.key === "Enter") onPageInput(inputValue);
 		},
 		[onPageInput, inputValue]

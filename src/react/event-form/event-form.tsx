@@ -92,7 +92,7 @@ export const EventForm = memo(function EventForm({
 		[settings.frontmatterDisplayProperties, settings.frontmatterDisplayPropertiesAllDay]
 	);
 
-	const initialFormState = useMemo<EventFormState>(() => {
+	const [initialFormState] = useState<EventFormState>(() => {
 		const base = initialState ?? createDefaultState();
 		const split = splitByDisplayKeys(initialCustomProperties, displayKeySet);
 		return {
@@ -100,8 +100,7 @@ export const EventForm = memo(function EventForm({
 			customPropertiesDisplay: recordToEntries(split.display),
 			customPropertiesOther: recordToEntries(split.other),
 		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	});
 
 	const form = useZodForm({
 		schema: EventFormStateSchema,
@@ -450,9 +449,9 @@ function TitleField({
 function applyMetadataToState(state: EventFormState, metadata: Record<string, unknown>): EventFormState {
 	return {
 		...state,
-		location: String(metadata["location"] ?? ""),
-		icon: String(metadata["icon"] ?? ""),
-		breakMinutes: String(metadata["breakMinutes"] ?? ""),
+		location: serializeFrontmatterValue(metadata["location"]),
+		icon: serializeFrontmatterValue(metadata["icon"]),
+		breakMinutes: serializeFrontmatterValue(metadata["breakMinutes"]),
 		markAsDone: metadata["markAsDone"] === true,
 		skip: metadata["skip"] === true,
 	};

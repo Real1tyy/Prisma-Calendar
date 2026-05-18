@@ -55,13 +55,13 @@ function resolveTargetPaths(
 }
 
 function showUndoNotice(message: string, bundle: CalendarBundle): void {
-	const notice = new Notice("", 7000);
-	const frag = document.createDocumentFragment();
+	const notice = new Notice("", 10000);
+	const doc = activeDocument;
+	const frag = doc.createDocumentFragment();
 	frag.appendText(`${message} `);
-	const link = document.createElement("a");
+	const link = doc.createElement("a");
 	link.textContent = "Undo";
-	link.style.cursor = "pointer";
-	link.style.textDecoration = "underline";
+	link.className = cls("undo-link");
 	link.addEventListener("click", () => {
 		void bundle.undo();
 		notice.hide();

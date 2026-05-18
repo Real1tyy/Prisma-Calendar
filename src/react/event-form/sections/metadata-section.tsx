@@ -1,3 +1,4 @@
+import { serializeFrontmatterValue } from "@real1ty-obsidian-plugins";
 import { Toggle } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback } from "react";
 
@@ -45,7 +46,7 @@ const MetadataToggleField = memo(function MetadataToggleField({ field, value, on
 
 const MetadataInputField = memo(function MetadataInputField({ field, value, onChange }: FieldRenderProps) {
 	const isNumber = field.kind === "number";
-	const stringValue = String(value ?? "");
+	const stringValue = serializeFrontmatterValue(value);
 	return (
 		<PrismaSettingItem
 			name={field.label}

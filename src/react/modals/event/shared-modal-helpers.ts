@@ -39,7 +39,7 @@ export function buildMinimizedState(
 	return {
 		formState: values.formState,
 		...(Object.keys(values.customProperties).length > 0 && {
-			customProperties: values.customProperties as Record<string, unknown>,
+			customProperties: values.customProperties,
 		}),
 		stopwatch: values.stopwatchSnapshot ?? IDLE_STOPWATCH,
 		modalType,

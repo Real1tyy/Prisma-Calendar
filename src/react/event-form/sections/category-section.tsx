@@ -1,5 +1,5 @@
 import { ChipList, type ChipCollection, type ChipDisplay, type ChipInteraction } from "@real1ty-obsidian-plugins-react";
-import { memo, useCallback, useMemo, useState, type ReactNode } from "react";
+import { memo, useCallback, useMemo, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 
 import { PrismaSettingItem } from "../prisma-setting-item";
 
@@ -69,9 +69,7 @@ export const CategorySection = memo(function CategorySection({
 	const renderPrefix = useCallback(
 		(item: string) => {
 			const color = categoryColors.get(item) || defaultColor;
-			return (
-				<span className="prisma-category-color-dot" style={{ "--category-color": color } as React.CSSProperties} />
-			);
+			return <span className="prisma-category-color-dot" style={{ "--category-color": color } as CSSProperties} />;
 		},
 		[categoryColors, defaultColor]
 	);
@@ -163,7 +161,7 @@ function ParticipantInput({ onAdd }: { onAdd: (value: string) => void }) {
 	}, [draft, onAdd]);
 
 	const handleKeyDown = useCallback(
-		(e: React.KeyboardEvent<HTMLInputElement>) => {
+		(e: KeyboardEvent<HTMLInputElement>) => {
 			if (e.key !== "Enter") return;
 			e.preventDefault();
 			e.stopPropagation();

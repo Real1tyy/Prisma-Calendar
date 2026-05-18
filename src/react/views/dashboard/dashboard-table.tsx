@@ -1,5 +1,5 @@
 import { hexToRgb } from "@real1ty-obsidian-plugins";
-import { memo, useCallback, useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useState, type CSSProperties } from "react";
 
 import type { ColumnDef, DashboardItem } from "./dashboard-types";
 
@@ -157,7 +157,7 @@ const DashboardTableRow = memo(function DashboardTableRow({ item, columns, onIte
 		if (!item.color) return undefined;
 		const rgb = hexToRgb(item.color);
 		if (!rgb) return undefined;
-		return { "--row-color-rgb": `${rgb.r}, ${rgb.g}, ${rgb.b}` } as React.CSSProperties;
+		return { "--row-color-rgb": `${rgb.r}, ${rgb.g}, ${rgb.b}` } as CSSProperties;
 	}, [item.color]);
 
 	const className = [

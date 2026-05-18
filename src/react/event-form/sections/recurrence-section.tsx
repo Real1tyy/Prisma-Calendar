@@ -57,7 +57,7 @@ export const RecurrenceSection = memo(function RecurrenceSection({ form }: Recur
 	const selectValue = isCustom ? "custom" : rruleType;
 
 	const parsed = isCustom && rruleType ? parseRecurrenceType(rruleType) : null;
-	const displayFreq = (parsed?.freq as RecurrenceFreq | undefined) ?? customFreq;
+	const displayFreq = parsed?.freq ?? customFreq;
 	const displayInterval = parsed?.interval.toString() ?? customInterval;
 
 	const buildCustomDSL = useCallback(
