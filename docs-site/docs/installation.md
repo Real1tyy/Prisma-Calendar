@@ -31,6 +31,8 @@ Learn how to install, setup, and begin using Prisma Calendar in minutes.
 
 Prisma Calendar is published in the official **[Obsidian Community Plugin Store](https://community.obsidian.md/plugins/prisma-calendar)** — Obsidian's plugin marketplace. This is the recommended way to install the plugin.
 
+The fastest path: open the [community page](https://community.obsidian.md/plugins/prisma-calendar) and click **Add to Obsidian** at the top — Obsidian opens the Community Plugins store on Prisma's listing, then you click **Install** and **Enable**.
+
 ### Why install from the store
 
 - ✅ **One-click install and enable** — no folders, no file copying, no manual updates
@@ -40,11 +42,11 @@ Prisma Calendar is published in the official **[Obsidian Community Plugin Store]
 
 ### Option A — Install via the Obsidian Community page
 
-Open Prisma Calendar's official Community Plugin page and click **Add to Obsidian** — it opens it straight inside Obsidian:
+Open Prisma Calendar's official Community Plugin page and click **Add to Obsidian** — Obsidian opens to Prisma's listing in the Community Plugins store. From there, click **Install**, then **Enable**:
 
 [![Install in Obsidian](https://img.shields.io/badge/Install_in_Obsidian-7c3aed?style=for-the-badge&logo=obsidian&logoColor=white)](https://community.obsidian.md/plugins/prisma-calendar)
 
-Direct URL: <https://community.obsidian.md/plugins/prisma-calendar>
+Direct URL: [https://community.obsidian.md/plugins/prisma-calendar](https://community.obsidian.md/plugins/prisma-calendar)
 
 ### Option B — Install manually from inside Obsidian
 

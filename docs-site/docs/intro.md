@@ -389,9 +389,9 @@ No. Events are plain Markdown notes with standard YAML frontmatter. If you ever 
 
 ## 📦 Installation
 
-Install via **BRAT**, the **Obsidian Community Plugin store**, or manually from [GitHub Releases](https://github.com/Real1tyy/Prisma-Calendar/releases?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=intro&utm_content=releases).
+The fastest way is to open the [Prisma Calendar Community Plugin page](https://community.obsidian.md/plugins/prisma-calendar) and click **Add to Obsidian** — Obsidian opens to Prisma's listing in the Community Plugins store, where you click **Install** and then **Enable**. Alternatively, inside Obsidian go to **Settings → Community plugins → Browse**, search **"Prisma Calendar"**, then click **Install** and **Enable**. See the [Installation Guide](/installation) for more details.
 
-[![Installation Guide](https://img.shields.io/badge/Installation_Guide-1f6feb?style=for-the-badge)](/installation)
+[![Install in Obsidian](https://img.shields.io/badge/Install_in_Obsidian-7c3aed?style=for-the-badge&logo=obsidian&logoColor=white)](https://community.obsidian.md/plugins/prisma-calendar) [![Installation Guide](https://img.shields.io/badge/Installation_Guide-1f6feb?style=for-the-badge)](/installation)
 
 ---
 

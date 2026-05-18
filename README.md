@@ -395,9 +395,9 @@ No. Events are plain Markdown notes with standard YAML frontmatter. If you ever 
 
 ## 📦 Installation
 
-Install via **BRAT**, the **Obsidian Community Plugin store**, or manually from [GitHub Releases](https://github.com/Real1tyy/Prisma-Calendar/releases?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_releases).
+The fastest way is to open the [Prisma Calendar Community Plugin page](https://community.obsidian.md/plugins/prisma-calendar) and click **Add to Obsidian** — Obsidian opens to Prisma's listing in the Community Plugins store, where you click **Install** and then **Enable**. Alternatively, inside Obsidian go to **Settings → Community plugins → Browse**, search **"Prisma Calendar"**, then click **Install** and **Enable**. See the [Installation Guide](https://real1tyy.github.io/Prisma-Calendar/installation?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_installation_guide_inline) for more details.
 
-[![Installation Guide](https://img.shields.io/badge/Installation_Guide-1f6feb?style=for-the-badge)](https://real1tyy.github.io/Prisma-Calendar/installation?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_installation_guide)
+[![Install in Obsidian](https://img.shields.io/badge/Install_in_Obsidian-7c3aed?style=for-the-badge&logo=obsidian&logoColor=white)](https://community.obsidian.md/plugins/prisma-calendar) [![Installation Guide](https://img.shields.io/badge/Installation_Guide-1f6feb?style=for-the-badge)](https://real1tyy.github.io/Prisma-Calendar/installation?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_installation_guide)
 
 ---
 
