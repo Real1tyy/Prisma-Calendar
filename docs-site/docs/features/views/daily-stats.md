@@ -39,4 +39,4 @@ Totals, charts, tables, and capacity refresh automatically when vault events aff
 ## Navigation
 
 - **Keyboard**: Use **Left/Right arrow keys** to navigate between days. Works immediately when the tab is active — no click needed.
-- **Resizable**: Drag the divider between columns to adjust the split.
+- **Resizable split**: Drag the vertical divider between columns to adjust how much width each side gets. Your preference persists per calendar.
