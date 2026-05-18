@@ -1,43 +1,41 @@
-// esbuild inlines these as data:image/<format>;base64,... strings at build time.
-// Images live in docs-site/static/img/pro-previews/ so they're shared with the docs site.
-// Replace each placeholder .png with a real screenshot and rebuild.
+// Preview screenshots are served from the docs site rather than inlined as
+// base64 data URLs to keep main.js under Obsidian Sync Standard's 5 MB cap —
+// inlining all PNGs added ~1 MB to the bundle. The source images still live in
+// `docs-site/static/img/pro-previews/` and are deployed by Docusaurus to
+// `<DOCS_BASE_URL>/img/pro-previews/<file>.png`.
 import { buildUtmUrl } from "@real1ty-obsidian-plugins";
 
-import aiChatPreview from "../../docs-site/static/img/pro-previews/ai-chat.png";
-import basesViewPreview from "../../docs-site/static/img/pro-previews/bases-view.png";
-import dashboardPreview from "../../docs-site/static/img/pro-previews/dashboard.png";
-import ganttPreview from "../../docs-site/static/img/pro-previews/gantt.png";
-import heatmapMonthlyPreview from "../../docs-site/static/img/pro-previews/heatmap_monthly.png";
-import heatmapPreview from "../../docs-site/static/img/pro-previews/heatmap.png";
 import { PRO_PURCHASE_URL, type PRO_FEATURES } from "./license";
 
 export type ProFeatureKey = keyof typeof PRO_FEATURES;
 
 interface ProFeatureConfig {
 	docPath: string;
-	preview?: string;
+	previewFile?: string;
 }
 
 const DOCS_BASE_URL = "https://real1tyy.github.io/Prisma-Calendar";
+const PREVIEW_BASE_URL = `${DOCS_BASE_URL}/img/pro-previews`;
 
 const PRO_FEATURE_CONFIG: Record<ProFeatureKey, ProFeatureConfig> = {
-	AI_CHAT: { docPath: "features/advanced/ai-chat", preview: aiChatPreview },
+	AI_CHAT: { docPath: "features/advanced/ai-chat", previewFile: "ai-chat.png" },
 	CALDAV_SYNC: { docPath: "features/advanced/integrations" },
 	ICS_SYNC: { docPath: "features/advanced/integrations" },
 	PROGRAMMATIC_API: { docPath: "features/advanced/programmatic-api/overview" },
 	CATEGORY_ASSIGNMENT_PRESETS: { docPath: "features/organization/categories" },
 	UNLIMITED_CALENDARS: { docPath: "features/calendar/multiple-calendars" },
 	UNLIMITED_EVENT_PRESETS: { docPath: "features/events/event-presets" },
-	HEATMAP: { docPath: "features/views/heatmap", preview: heatmapPreview },
-	HEATMAP_MONTHLY: { docPath: "features/views/heatmap-monthly-stats", preview: heatmapMonthlyPreview },
-	BASES_VIEW: { docPath: "features/views/bases-calendar-view", preview: basesViewPreview },
+	HEATMAP: { docPath: "features/views/heatmap", previewFile: "heatmap.png" },
+	HEATMAP_MONTHLY: { docPath: "features/views/heatmap-monthly-stats", previewFile: "heatmap_monthly.png" },
+	BASES_VIEW: { docPath: "features/views/bases-calendar-view", previewFile: "bases-view.png" },
 	PREREQUISITE_CONNECTIONS: { docPath: "features/advanced/prerequisite-connections" },
-	GANTT: { docPath: "features/views/gantt", preview: ganttPreview },
-	DASHBOARD: { docPath: "features/views/dashboard", preview: dashboardPreview },
+	GANTT: { docPath: "features/views/gantt", previewFile: "gantt.png" },
+	DASHBOARD: { docPath: "features/views/dashboard", previewFile: "dashboard.png" },
 };
 
 export function getFeaturePreviewSrc(featureKey: ProFeatureKey): string | null {
-	return PRO_FEATURE_CONFIG[featureKey].preview ?? null;
+	const file = PRO_FEATURE_CONFIG[featureKey].previewFile;
+	return file ? `${PREVIEW_BASE_URL}/${file}` : null;
 }
 
 function featureContent(featureKey: ProFeatureKey): string {
