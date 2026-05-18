@@ -8,9 +8,11 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 
 # Prisma Calendar
 
-![Downloads](https://img.shields.io/github/downloads/Real1tyy/Prisma-Calendar/total?label=Downloads&style=for-the-badge&color=238636) ![Release](https://img.shields.io/github/v/release/Real1tyy/Prisma-Calendar?label=Latest%20Release&style=for-the-badge&color=1f6feb) ![Stars](https://img.shields.io/github/stars/Real1tyy/Prisma-Calendar?style=for-the-badge&color=f0c830) [![Product Page](https://img.shields.io/badge/Product_Page-8957e5?style=for-the-badge)](https://matejvavroproductivity.com/tools/prisma-calendar/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=intro&utm_content=product_page) [![Documentation](https://img.shields.io/badge/Documentation-238636?style=for-the-badge)](https://real1tyy.github.io/Prisma-Calendar/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=intro&utm_content=documentation)
+![Downloads](https://img.shields.io/github/downloads/Real1tyy/Prisma-Calendar/total?label=Downloads&style=for-the-badge&color=238636) ![Release](https://img.shields.io/github/v/release/Real1tyy/Prisma-Calendar?label=Latest%20Release&style=for-the-badge&color=1f6feb) ![Stars](https://img.shields.io/github/stars/Real1tyy/Prisma-Calendar?style=for-the-badge&color=f0c830) [![Product Page](https://img.shields.io/badge/Product_Page-8957e5?style=for-the-badge)](https://matejvavroproductivity.com/tools/prisma-calendar/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=intro&utm_content=product_page)
 
-**Turn any note with a date into a flexible planning system inside Obsidian.**
+[![Documentation](https://img.shields.io/badge/Documentation-238636?style=for-the-badge)](https://real1tyy.github.io/Prisma-Calendar/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=intro&utm_content=documentation)  [![Install in Obsidian](https://img.shields.io/badge/Install_in_Obsidian-7c3aed?style=for-the-badge&logo=obsidian&logoColor=white)](https://community.obsidian.md/plugins/prisma-calendar) [![Changelog](https://img.shields.io/badge/Changelog-0969da?style=for-the-badge)](/changelog)
+
+## **Turn any note with a date into a flexible planning system inside Obsidian.**
 
 There are no rigid schemas or predefined structures — just your data, your rules, fully under your control. Prisma lets you see your entire vault through time.
 
@@ -22,14 +24,14 @@ There are no rigid schemas or predefined structures — just your data, your rul
 
 <table>
 <tr>
-<td align="center" width="33%">📅 <strong>Plan Projects & Deadlines</strong><br/>Turn project notes into timelines, milestones, and dependencies with full visibility.</td>
-<td align="center" width="33%">🔁 <strong>Recurring Work & Habits</strong><br/>Automatically generate real notes for routines, reviews, and repeating workflows.</td>
-<td align="center" width="33%">⏱️ <strong>Track Where Your Time Goes</strong><br/>Measure actual time spent and analyze it with categories and statistics.</td>
+<td align="center" width="33%">📅 <strong>Calendar for Your Notes</strong><br/>Turn dated Markdown notes into draggable events in month, week, day, list, and timeline views.</td>
+<td align="center" width="33%">📐 <strong>Plan Projects & Deadlines</strong><br/>Map project notes into timelines, milestones, dependencies, and Gantt-style plans.</td>
+<td align="center" width="33%">🔁 <strong>Recurring Notes & Habits</strong><br/>Daily, weekly, monthly, or custom recurring notes — track patterns with a heatmap and stats on streaks, skips, and intervals.</td>
 </tr>
 <tr>
-<td align="center" width="33%">🧠 <strong>Build a Planning System from Notes</strong><br/>Use your existing notes as events — no migration, no new system to learn.</td>
-<td align="center" width="33%">🗓️ <strong>Meetings with Context</strong><br/>Turn meetings into notes with agendas, links, and prep — all in one place.</td>
-<td align="center" width="33%">📊 <strong>Understand & Optimize Your Time</strong><br/>Visualize patterns, workload, and capacity to improve how you plan.</td>
+<td align="center" width="33%">🗓️ <strong>Meetings with Context</strong><br/>Schedule meetings as notes with agendas, links, prep, decisions, and follow-ups.</td>
+<td align="center" width="33%">⏱️ <strong>Time Tracking & Capacity</strong><br/>Track planned vs actual time and see workload, remaining capacity, and category breakdowns.</td>
+<td align="center" width="33%">🔒 <strong>Local-First Planning</strong><br/>Keep everything as plain Markdown in your vault — no migration, cloud lock-in, or new app.</td>
 </tr>
 </table>
 
@@ -50,7 +52,7 @@ There are no rigid schemas or predefined structures — just your data, your rul
 
 <div align="center">
 
-👉 **Install the plugin →** follow the Quick Start → create your first event in under 2 minutes.
+👉 **[Install Prisma Calendar in Obsidian](https://community.obsidian.md/plugins/prisma-calendar)** → follow the Quick Start → create your first event in under 2 minutes.
 
 </div>
 

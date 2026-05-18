@@ -2,9 +2,11 @@
 
 # Prisma Calendar
 
-![Downloads](https://img.shields.io/github/downloads/Real1tyy/Prisma-Calendar/total?label=Downloads&style=for-the-badge&color=238636) ![Release](https://img.shields.io/github/v/release/Real1tyy/Prisma-Calendar?label=Latest%20Release&style=for-the-badge&color=1f6feb) ![Stars](https://img.shields.io/github/stars/Real1tyy/Prisma-Calendar?style=for-the-badge&color=f0c830) [![Product Page](https://img.shields.io/badge/Product_Page-8957e5?style=for-the-badge)](https://matejvavroproductivity.com/tools/prisma-calendar/?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_product_page) [![Documentation](https://img.shields.io/badge/Documentation-238636?style=for-the-badge)](https://real1tyy.github.io/Prisma-Calendar/?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_documentation)
+![Downloads](https://img.shields.io/github/downloads/Real1tyy/Prisma-Calendar/total?label=Downloads&style=for-the-badge&color=238636) ![Release](https://img.shields.io/github/v/release/Real1tyy/Prisma-Calendar?label=Latest%20Release&style=for-the-badge&color=1f6feb) ![Stars](https://img.shields.io/github/stars/Real1tyy/Prisma-Calendar?style=for-the-badge&color=f0c830) [![Product Page](https://img.shields.io/badge/Product_Page-8957e5?style=for-the-badge)](https://matejvavroproductivity.com/tools/prisma-calendar/?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_product_page)
 
-**Turn any note with a date into a flexible planning system inside Obsidian.**
+[![Documentation](https://img.shields.io/badge/Documentation-238636?style=for-the-badge)](https://real1tyy.github.io/Prisma-Calendar/?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_documentation) [![Install in Obsidian](https://img.shields.io/badge/Install_in_Obsidian-7c3aed?style=for-the-badge&logo=obsidian&logoColor=white)](https://community.obsidian.md/plugins/prisma-calendar) [![Changelog](https://img.shields.io/badge/Changelog-0969da?style=for-the-badge)](https://real1tyy.github.io/Prisma-Calendar/changelog/?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_changelog)
+
+## **Turn any note with a date into a flexible planning system inside Obsidian.**
 
 There are no rigid schemas or predefined structures — just your data, your rules, fully under your control. Prisma lets you see your entire vault through time.
 
@@ -17,16 +19,40 @@ There are no rigid schemas or predefined structures — just your data, your rul
 
 <table>
 <tr>
-<td align="center" width="33%">📅 <strong>Plan Projects & Deadlines</strong><br>Turn project notes into timelines, milestones, and dependencies with full visibility.</td>
-<td align="center" width="33%">🔁 <strong>Recurring Work & Habits</strong><br>Automatically generate real notes for routines, reviews, and repeating workflows.</td>
-<td align="center" width="33%">⏱️ <strong>Track Where Your Time Goes</strong><br>Measure actual time spent and analyze it with categories and statistics.</td>
+<td align="center" width="33%">📅 <strong>Calendar for Your Notes</strong><br>Turn Markdown notes with a date into draggable events in month, week, day, list, and timeline views.</td>
+<td align="center" width="33%">📐 <strong>Plan Projects & Deadlines</strong><br>Map project notes into timelines, milestones, dependencies, and Gantt-style plans.</td>
+<td align="center" width="33%">🔁 <strong>Recurring Notes & Habits</strong><br>Daily, weekly, monthly, or custom recurring notes — track patterns with a heatmap and stats on streaks, skips, and intervals.</td>
 </tr>
 <tr>
-<td align="center" width="33%">🧠 <strong>Build a Planning System from Notes</strong><br>Use your existing notes as events — no migration, no new system to learn.</td>
-<td align="center" width="33%">🗓️ <strong>Meetings with Context</strong><br>Turn meetings into notes with agendas, links, and prep — all in one place.</td>
-<td align="center" width="33%">📊 <strong>Understand & Optimize Your Time</strong><br>Visualize patterns, workload, and capacity to improve how you plan.</td>
+<td align="center" width="33%">🗓️ <strong>Meetings with Context</strong><br>Schedule meetings as notes with agendas, links, prep, decisions, and follow-ups.</td>
+<td align="center" width="33%">⏱️ <strong>Time Tracking & Capacity</strong><br>Track planned vs actual time and see workload, remaining capacity, and category breakdowns.</td>
+<td align="center" width="33%">🔒 <strong>Local-First Planning</strong><br>Keep everything as plain Markdown in your vault — no migration, cloud lock-in, or new app.</td>
 </tr>
 </table>
+
+---
+
+<details>
+<summary><strong>📑 Table of Contents</strong></summary>
+
+- [Quick Start — See Prisma in Action](#️-quick-start--see-prisma-in-action)
+- [How Does It Work?](#how-does-it-work)
+- [Why Prisma?](#why-prisma)
+- [Four Views Through Time](#four-views-four-ways-to-see-your-vault-through-time)
+- [What Makes Prisma Different](#what-makes-prisma-different)
+- [Gallery & Documentation](#-gallery--documentation)
+- [The Complete Encyclopedia](#-go-deeper--the-complete-encyclopedia)
+- [Free vs Pro](#free-vs-pro)
+- [Why Pro?](#why-pro)
+- [Frequently Asked Questions](#frequently-asked-questions)
+- [Installation](#-installation)
+- [Support & Sponsorship](#support--sponsorship)
+- [Third-Party Independence](#third-party-independence)
+- [Privacy & Telemetry](#privacy--telemetry)
+- [License](#license)
+- [Credits & Acknowledgments](#credits--acknowledgments)
+
+</details>
 
 ---
 
@@ -38,7 +64,7 @@ There are no rigid schemas or predefined structures — just your data, your rul
   <img src="https://img.youtube.com/vi/dziQK9UQhvE/maxresdefault.jpg" alt="Prisma Calendar — Quick Start" width="100%">
 </a>
 
-👉 **Install the plugin →** follow the Quick Start → create your first event in under 2 minutes.
+👉 **[Install Prisma Calendar in Obsidian](https://community.obsidian.md/plugins/prisma-calendar)** → follow the Quick Start → create your first event in under 2 minutes.
 
 </div>
 
@@ -232,7 +258,7 @@ Browse, search, and manage all events across all planning systems from a single 
 
 Every feature broken down from A to Z — views, events, recurrence, time tracking, categories, color rules, batch operations, filtering, integrations, AI, the API, and every setting. A full walkthrough and a long-term reference you can come back to anytime.
 
-**[YouTube Playlist →](https://www.youtube.com/playlist?list=PLMVJknbUasLCULubO4MdCDvg9MyXu3kG4&utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_playlist)** — All Prisma Calendar videos.
+**[YouTube Playlist →](https://www.youtube.com/playlist?list=PLMVJknbUasLCULubO4MdCDvg9MyXu3kG4&utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_playlist)** All Prisma Calendar videos.
 
 </div>
 
