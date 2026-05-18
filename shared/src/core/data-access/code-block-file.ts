@@ -41,7 +41,7 @@ export class CodeBlockFile<T> {
 		if (lastSlash > 0) {
 			await ensureDirectory(app, filePath.substring(0, lastSlash));
 		}
-		const content = `\`\`\`${this.codeFence}\n[]\n\`\`\`\n`;
+		const content = `\n\`\`\`${this.codeFence}\n[]\n\`\`\`\n`;
 		try {
 			return await app.vault.create(filePath, content);
 		} catch {

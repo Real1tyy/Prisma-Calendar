@@ -162,7 +162,7 @@ describe("CodeBlockFile", () => {
 			});
 			const result = await file.createBackingFile(app as never, "deep/nested/data.md");
 			expect(app.vault.createFolder).toHaveBeenCalledWith("deep/nested");
-			expect(app.vault.create).toHaveBeenCalledWith("deep/nested/data.md", `\`\`\`${CODE_FENCE}\n[]\n\`\`\`\n`);
+			expect(app.vault.create).toHaveBeenCalledWith("deep/nested/data.md", `\n\`\`\`${CODE_FENCE}\n[]\n\`\`\`\n`);
 			expect(result).toBe(created);
 		});
 
