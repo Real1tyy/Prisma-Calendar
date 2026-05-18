@@ -1,0 +1,8 @@
+{
+	"id": "shared-eslint-stub",
+	"name": "shared (ESLint stub)",
+	"version": "0.0.0",
+	"minAppVersion": "0.0.0",
+	"author": "internal",
+	"description": "Stub manifest so eslint-plugin-obsidianmd can initialize when ESLint runs from this package directory (per-package Turbo lint task). NOT a real plugin — release tooling skips this directory. See docs/decisions/2026-05-17-turbo-lint-task.md."
+}

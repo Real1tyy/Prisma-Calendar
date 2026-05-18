@@ -1,0 +1,31 @@
+{
+	"extends": "../tsconfig.json",
+	"compilerOptions": {
+		"target": "ES2022",
+		"lib": ["DOM", "ES2022"],
+		"outDir": "./dist",
+		"rootDir": "./src",
+		"noEmit": false,
+		"declaration": true,
+		"declarationMap": true,
+		"sourceMap": true,
+		"inlineSources": true,
+		"skipLibCheck": true,
+
+		"strict": true,
+		"noImplicitReturns": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitOverride": true,
+		"noPropertyAccessFromIndexSignature": true,
+		"exactOptionalPropertyTypes": true,
+
+		"incremental": true,
+		"tsBuildInfoFile": ".tsbuildinfo",
+
+		"jsx": "react-jsx"
+	},
+	"include": ["src/**/*.ts", "src/**/*.tsx"],
+	"exclude": ["tests", "dist", "node_modules"]
+}
