@@ -46,7 +46,7 @@ export async function createUntrackedEvent(
 		});
 
 		if (filePath) {
-			void plugin.rememberLastUsedCalendar(bundle.calendarId);
+			plugin.rememberLastUsedCalendar(bundle.calendarId);
 		}
 		return filePath;
 	});
@@ -66,7 +66,7 @@ export async function createEvent(plugin: CustomCalendarPlugin, input: PrismaCre
 			preservedFrontmatter: frontmatter,
 		});
 		if (filePath) {
-			void plugin.rememberLastUsedCalendar(bundle.calendarId);
+			plugin.rememberLastUsedCalendar(bundle.calendarId);
 		}
 		return filePath;
 	});
@@ -94,7 +94,7 @@ export async function convertFileToEvent(
 		const frontmatter = buildFrontmatterFromInput(bundle, input);
 		const command = new ConvertFileToEventCommand(plugin.app, bundle, file.path, frontmatter);
 		await bundle.commandManager.executeCommand(command);
-		void plugin.rememberLastUsedCalendar(bundle.calendarId);
+		plugin.rememberLastUsedCalendar(bundle.calendarId);
 		return true;
 	});
 }
@@ -138,7 +138,7 @@ export async function moveEventToCalendar(
 			);
 			await sourceBundle.commandManager.executeCommand(command);
 
-			void plugin.rememberLastUsedCalendar(target.calendarId);
+			plugin.rememberLastUsedCalendar(target.calendarId);
 			const movedPath = command.getMovedFilePath();
 			return movedPath ? { success: true, movedFilePath: movedPath } : { success: true };
 		}

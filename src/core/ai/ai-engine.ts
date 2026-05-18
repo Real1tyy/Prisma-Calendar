@@ -37,7 +37,7 @@ export function resolveActiveViewContext(
 export function getActiveCalendarInfo(
 	plugin: CustomCalendarPlugin
 ): { calendarName: string; viewLabel: string } | null {
-	const lastUsedCalendarId = plugin.syncStore.data.lastUsedCalendarId;
+	const lastUsedCalendarId = plugin.lastUsedCalendarId;
 	if (!lastUsedCalendarId) return null;
 
 	const bundle = plugin.calendarBundles.find((b) => b.calendarId === lastUsedCalendarId);

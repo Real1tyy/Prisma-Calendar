@@ -12,7 +12,7 @@ export function resolveBundle(plugin: CustomCalendarPlugin, calendarId?: string)
 		return plugin.calendarBundles.find((bundle) => bundle.calendarId === calendarId) ?? null;
 	}
 
-	const lastUsedCalendarId = plugin.syncStore.data.lastUsedCalendarId;
+	const lastUsedCalendarId = plugin.lastUsedCalendarId;
 	if (lastUsedCalendarId) {
 		const lastUsedBundle = plugin.calendarBundles.find((bundle) => bundle.calendarId === lastUsedCalendarId);
 		if (lastUsedBundle) {

@@ -74,7 +74,7 @@ function createTestContext() {
 	const plugin = {
 		app,
 		calendarBundles: [bundle],
-		syncStore: { data: { lastUsedCalendarId: "test-calendar" } },
+		lastUsedCalendarId: "test-calendar",
 		rememberLastUsedCalendar: vi.fn(),
 	} as any;
 

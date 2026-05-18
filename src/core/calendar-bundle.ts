@@ -355,7 +355,7 @@ export class CalendarBundle {
 			placement: "tab",
 			onReveal: async (leaf) => {
 				await this.plugin.ensureCalendarViewFocus(leaf);
-				void this.plugin.rememberLastUsedCalendar(this.calendarId);
+				this.plugin.rememberLastUsedCalendar(this.calendarId);
 			},
 		});
 	}

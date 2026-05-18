@@ -24,17 +24,17 @@ function countRealEvents(vaultDir: string, subdir: string): number {
 	return listEventFiles(vaultDir, subdir).filter((p) => !p.endsWith(VIRTUAL_EVENTS_SUFFIX)).length;
 }
 
-// `activateCalendarView` fires `void rememberLastUsedCalendar(id)` — its
-// in-memory update is synchronous, but async `saveData()` schedules a
-// disk write. `resolveBundle` (used by the palette Undo command) reads
-// `syncStore.data.lastUsedCalendarId`, so we poll the in-memory value to
-// make sure the activation actually took effect before exercising undo.
+// `activateCalendarView` fires `rememberLastUsedCalendar(id)` — a synchronous
+// write through `LocalKV` to `window.localStorage`. `resolveBundle` (used by
+// the palette Undo command) reads `plugin.lastUsedCalendarId`, so we poll
+// the value to make sure the activation actually took effect before
+// exercising undo.
 async function ensureLastUsedCalendar(page: Page, calendarId: string): Promise<void> {
 	await page.waitForFunction(
 		({ id, pid }) => {
 			const w = window as unknown as PrismaWindow;
 			const plugin = w.app.plugins.plugins[pid] as PrismaPlugin | undefined;
-			return plugin?.syncStore?.data?.lastUsedCalendarId === id;
+			return plugin?.lastUsedCalendarId === id;
 		},
 		{ id: calendarId, pid: PLUGIN_ID }
 	);

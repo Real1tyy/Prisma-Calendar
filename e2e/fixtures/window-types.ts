@@ -148,5 +148,5 @@ export interface PrismaPlugin {
 	addCalendarBundle?: (calendarId: string) => Promise<void>;
 	settingsStore?: PluginSettingsStore;
 	licenseManager?: LicenseManager;
-	syncStore?: { data?: { lastUsedCalendarId?: string } };
+	lastUsedCalendarId?: string | null;
 }

@@ -41,7 +41,7 @@ async function withBundle(
 	const bundle = resolveBundleOrNotice(plugin, calendarId);
 	if (!bundle) return false;
 	const result = await action(bundle);
-	void plugin.rememberLastUsedCalendar(bundle.calendarId);
+	plugin.rememberLastUsedCalendar(bundle.calendarId);
 	return result;
 }
 
@@ -53,7 +53,7 @@ async function withActiveFileBundle(
 	const resolved = resolveActiveFileWithBundle(plugin, calendarId);
 	if (!resolved) return false;
 	const result = await action(resolved.bundle, resolved.activeFile);
-	void plugin.rememberLastUsedCalendar(resolved.bundle.calendarId);
+	plugin.rememberLastUsedCalendar(resolved.bundle.calendarId);
 	return result;
 }
 

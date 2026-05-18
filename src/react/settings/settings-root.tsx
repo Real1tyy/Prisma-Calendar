@@ -34,7 +34,7 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 	const [calendars, setCalendars] = useSchemaField(plugin.settingsStore, "calendars");
 	const [checkForReleaseUpdates] = useSchemaField(plugin.settingsStore, "checkForReleaseUpdates");
 	const [selectedCalendarId, setSelectedCalendarId] = useState(() => {
-		const lastUsed = plugin.syncStore.data.lastUsedCalendarId;
+		const lastUsed = plugin.lastUsedCalendarId;
 		if (lastUsed && calendars.some((c) => c.id === lastUsed)) return lastUsed;
 		return calendars[0]?.id ?? "default";
 	});

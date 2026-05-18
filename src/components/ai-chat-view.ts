@@ -397,7 +397,7 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 	}
 
 	private resolveBundle(): CalendarBundle | null {
-		const lastUsedCalendarId = this.plugin.syncStore.data.lastUsedCalendarId;
+		const lastUsedCalendarId = this.plugin.lastUsedCalendarId;
 		if (!lastUsedCalendarId) return null;
 		return this.plugin.calendarBundles.find((b) => b.calendarId === lastUsedCalendarId) ?? null;
 	}

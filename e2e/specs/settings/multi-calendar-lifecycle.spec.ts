@@ -380,7 +380,7 @@ test.describe("multi-calendar lifecycle: create, configure, delete without full 
 					({ pid, id }) => {
 						const w = window as unknown as PrismaWindow;
 						const plugin = w.app.plugins.plugins[pid] as PrismaPlugin | undefined;
-						return plugin?.syncStore?.data?.lastUsedCalendarId === id;
+						return plugin?.lastUsedCalendarId === id;
 					},
 					{ pid: PLUGIN_ID, id: secondId }
 				)

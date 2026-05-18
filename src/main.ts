@@ -20,7 +20,13 @@ import { showICSImportProgressModal } from "./components/modals";
 import { registerPrismaBasesView } from "./components/views/bases-calendar-view";
 import { VirtualEventsBlockRenderer } from "./components/virtual-events-block";
 import { VIRTUAL_EVENTS_CODE_FENCE } from "./constants";
-import { CalendarBundle, IndexerRegistry, MinimizedModalManager, PrismaCalendarApiManager } from "./core";
+import {
+	CalendarBundle,
+	IndexerRegistry,
+	LastUsedCalendarStore,
+	MinimizedModalManager,
+	PrismaCalendarApiManager,
+} from "./core";
 import { scanVaultForDirectorySuggestions } from "./core/directory-suggestions";
 import { exportCalendarAsICS } from "./core/integrations/ics-export";
 import { importEventsToCalendar } from "./core/integrations/ics-import";
@@ -41,6 +47,7 @@ export default class CustomCalendarPlugin extends Plugin {
 	licenseManager!: LicenseManager;
 	releaseCheckService!: ReleaseCheckService;
 	settingsSessionState = { tab: "general", scrollTop: { current: 0 } };
+	private lastUsedCalendarStore = new LastUsedCalendarStore();
 	private registeredViewTypes: Set<string> = new Set();
 
 	get isProEnabled(): boolean {
@@ -131,14 +138,12 @@ export default class CustomCalendarPlugin extends Plugin {
 		window.setTimeout(() => leaf.view.containerEl.focus(), 10);
 	}
 
-	async rememberLastUsedCalendar(calendarId: string): Promise<void> {
-		if (this.syncStore.data.lastUsedCalendarId === calendarId) {
-			return;
-		}
+	get lastUsedCalendarId(): string | null {
+		return this.lastUsedCalendarStore.get();
+	}
 
-		await this.syncStore.updateData({
-			lastUsedCalendarId: calendarId,
-		});
+	rememberLastUsedCalendar(calendarId: string): void {
+		this.lastUsedCalendarStore.set(calendarId);
 	}
 
 	private registerVirtualEventsCodeFence(): void {
@@ -272,7 +277,7 @@ export default class CustomCalendarPlugin extends Plugin {
 		for (const bundle of this.calendarBundles) {
 			const opened = await bundle.openFileInCalendar(activeFile);
 			if (opened) {
-				void this.rememberLastUsedCalendar(bundle.calendarId);
+				this.rememberLastUsedCalendar(bundle.calendarId);
 				return;
 			}
 		}

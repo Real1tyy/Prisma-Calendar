@@ -971,6 +971,5 @@ export type PrismaCalendarSettingsStore = SettingsStore<typeof CustomCalendarSet
 export const PrismaSyncDataSchema = z
 	.object({
 		readOnly: z.boolean().catch(false),
-		lastUsedCalendarId: z.string().optional(),
 	})
 	.strip();
