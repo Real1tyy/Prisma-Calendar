@@ -6503,6 +6503,11 @@ body .modal.prisma-weekly-stats-modal {
   max-width: 1100px;
 }
 
+.prisma-undo-link {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
 .prisma-untracked-dropdown-wrapper {
   position: relative;
   display: inline-flex;
