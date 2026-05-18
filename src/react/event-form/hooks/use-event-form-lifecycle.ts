@@ -24,13 +24,14 @@ export interface UseEventFormLifecycleResult {
 /**
  * Owns the event form's lifecycle wiring: the Enter-to-save hotkey, the
  * explicit Minimize handler, and the unmount auto-save that persists a running
- * stopwatch when the user dismisses the modal (ESC / click-outside).
+ * stopwatch when the modal is dismissed (ESC, click-outside, AND Submit — see
+ * the `persistOnUnmount` comment for the close-route truth table).
  *
  * `persistOnUnmount` is a `useEffectEvent` so the long-lived unmount cleanup
  * stays bound to a stable closure but still reads the latest prop values when
  * it actually fires (mirrors the imperative `scope.register` pattern in
- * base-event-modal.ts:1148). `isMinimizingRef` stays internal — only the
- * cleanup needs to read it.
+ * base-event-modal.ts:1148). `isMinimizingRef` stays internal — it's the only
+ * close route that opts out of the auto-save.
  */
 export function useEventFormLifecycle({
 	bundle,
@@ -47,11 +48,15 @@ export function useEventFormLifecycle({
 		onMinimize?.(collectFormValues());
 	}, [onMinimize, collectFormValues]);
 
-	// Auto-save state to MinimizedModalManager if the user dismisses the modal
-	// (ESC / click-outside) while a stopwatch is active. Mirrors
-	// base-event-modal.ts:229-235. Skipped when explicit Minimize / Submit ran.
-	// Reads the cached snapshot rather than the live handle because the
-	// Stopwatch child has already unmounted by the time this cleanup runs.
+	// Auto-save state to MinimizedModalManager when the modal unmounts with an
+	// active stopwatch. Mirrors base-event-modal.ts:229-235: the "running
+	// stopwatch survives Save" parity test (event-form-react-parity-regression
+	// "Save with a running stopwatch keeps the minimized state alive") pins
+	// that Submit MUST still trigger this auto-save — only Minimize opts out,
+	// because handleMinimize already called saveState and a second write would
+	// double-save. Reads the cached snapshot rather than the live handle
+	// because the Stopwatch child has already unmounted by the time this
+	// cleanup runs.
 	const persistOnUnmount = useEffectEvent(() => {
 		if (isMinimizingRef.current) return;
 		const snapshot = stopwatchSnapshotRef.current;
