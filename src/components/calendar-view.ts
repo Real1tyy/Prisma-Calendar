@@ -660,7 +660,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private mountZoomControl(): void {
-		const button = this.container.querySelector<HTMLElement>(".fc-zoomLevel-button");
+		const button = this.container.querySelector<HTMLButtonElement>("button.fc-zoomLevel-button");
 		if (!button) {
 			this.unmountZoomControl();
 			return;
@@ -673,7 +673,6 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 		this.unmountZoomControl();
 
-		button.classList.add(cls("zoom-host"));
 		button.replaceChildren();
 
 		this.zoomMountEl = button;
@@ -684,6 +683,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 				viewType$: this.viewType$,
 				container: this.container,
 				viewContainerEl: this.hostEl,
+				hostButton: button,
 				onZoomChange: () => {
 					this.saveCurrentState();
 					if (this.showConnections) this.renderConnections();

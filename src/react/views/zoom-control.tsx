@@ -1,8 +1,7 @@
 import { useExternalSnapshot, useSchemaField, type SnapshotSubscribable } from "@real1ty-obsidian-plugins-react";
 import { Menu } from "obsidian";
-import React, { memo, useCallback, useEffect, useRef } from "react";
+import { memo, useCallback, useEffect, useRef } from "react";
 
-import { cls, tid } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 
 interface ZoomControlProps {
@@ -10,6 +9,7 @@ interface ZoomControlProps {
 	viewType$: SnapshotSubscribable<string>;
 	container: HTMLElement;
 	viewContainerEl: HTMLElement;
+	hostButton: HTMLButtonElement;
 	onZoomChange?: () => void;
 }
 
@@ -18,6 +18,7 @@ export const ZoomControl = memo(function ZoomControl({
 	viewType$,
 	container,
 	viewContainerEl,
+	hostButton,
 	onZoomChange,
 }: ZoomControlProps) {
 	const [slotDurationMinutes] = useSchemaField(settingsStore, "slotDurationMinutes");
@@ -69,7 +70,7 @@ export const ZoomControl = memo(function ZoomControl({
 	}, [container, settingsStore, viewType$]);
 
 	const openMenu = useCallback(
-		(e: React.MouseEvent<HTMLButtonElement>) => {
+		(e: MouseEvent) => {
 			const current = settingsStore.currentSettings;
 			const menu = new Menu();
 			current.zoomLevels.forEach((level) => {
@@ -86,19 +87,21 @@ export const ZoomControl = memo(function ZoomControl({
 		[settingsStore, setZoom]
 	);
 
+	// Wire the FullCalendar host button as the real interactive element. Using
+	// the host directly avoids a button-in-button DOM (invalid HTML) and lets us
+	// inherit `.fc-button.fc-button-primary` chrome without CSS resets.
+	useEffect(() => {
+		hostButton.addEventListener("click", openMenu);
+		hostButton.setAttribute("aria-label", "Zoom level");
+		return () => {
+			hostButton.removeEventListener("click", openMenu);
+			hostButton.removeAttribute("aria-label");
+		};
+	}, [hostButton, openMenu]);
+
 	if (!isTimeGridView) return null;
 
-	return (
-		<button
-			type="button"
-			className={`${cls("fc-zoom-button")} fc-button fc-button-primary`}
-			onClick={openMenu}
-			data-testid={tid("zoom-button")}
-			aria-label="Zoom level"
-		>
-			<span>{`Zoom: ${slotDurationMinutes}min`}</span>
-		</button>
-	);
+	return <span>{`Zoom: ${slotDurationMinutes}min`}</span>;
 });
 
 function captureScrollCenter(viewContainerEl: HTMLElement): { scrollable: HTMLElement; centerRatio: number } | null {

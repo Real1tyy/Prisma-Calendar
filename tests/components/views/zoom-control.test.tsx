@@ -20,6 +20,7 @@ interface ZoomHarness {
 	viewType$: BehaviorSubject<string>;
 	container: HTMLElement;
 	viewContainerEl: HTMLElement;
+	hostButton: HTMLButtonElement;
 	teardown: () => void;
 }
 
@@ -41,7 +42,10 @@ function buildHarness({
 
 	const container = document.createElement("div");
 	const viewContainerEl = document.createElement("div");
-	document.body.append(container, viewContainerEl);
+	const hostButton = document.createElement("button");
+	hostButton.type = "button";
+	hostButton.className = "fc-zoomLevel-button fc-button fc-button-primary";
+	document.body.append(container, viewContainerEl, hostButton);
 
 	if (VARIANT === "react") {
 		const { unmount } = render(
@@ -50,8 +54,10 @@ function buildHarness({
 				viewType$={viewType$}
 				container={container}
 				viewContainerEl={viewContainerEl}
+				hostButton={hostButton}
 				{...(onZoomChange ? { onZoomChange } : {})}
-			/>
+			/>,
+			{ container: hostButton }
 		);
 
 		return {
@@ -59,10 +65,12 @@ function buildHarness({
 			viewType$,
 			container,
 			viewContainerEl,
+			hostButton,
 			teardown: () => {
 				unmount();
 				container.remove();
 				viewContainerEl.remove();
+				hostButton.remove();
 			},
 		};
 	}
@@ -211,6 +219,15 @@ describe("ZoomControl — swap-ready behavioural contract", () => {
 			fireWheel(container, -100, true);
 			expect(settingsStore.currentSettings.slotDurationMinutes).toBe(30);
 			fresh.teardown();
+		});
+
+		it("attaches aria-label to the host button on mount and removes it on teardown", () => {
+			active = buildHarness();
+			expect(active.hostButton.getAttribute("aria-label")).toBe("Zoom level");
+			const host = active.hostButton;
+			active.teardown();
+			active = null;
+			expect(host.hasAttribute("aria-label")).toBe(false);
 		});
 	});
 });
