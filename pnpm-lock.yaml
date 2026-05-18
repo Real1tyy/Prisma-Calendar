@@ -1,3 +1,10 @@
+# AUTO-GENERATED from the monorepo's root pnpm-lock.yaml by
+# scripts/sync/regenerate_per_plugin_lockfiles.py.
+# DO NOT EDIT BY HAND — it will be overwritten on the next root install.
+# This file is the lockfile shipped to the standalone mirror repo and
+# describes the mirror's workspace layout (plugin at `.`, shared packages
+# as sibling subdirs). It is NOT used by pnpm in the monorepo itself —
+# the monorepo workspace lockfile lives at the repo root.
 lockfileVersion: '9.0'
 settings:
   autoInstallPeers: true
