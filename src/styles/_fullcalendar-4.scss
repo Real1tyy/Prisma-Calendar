@@ -3,14 +3,28 @@
 // rendered by ZoomControl as a real <button> inheriting
 // `.fc-button.fc-button-primary` for visual parity with the old imperative
 // button. Click opens an Obsidian Menu (menu-scroll) — same UX as before.
-// `display: contents` is the only way to make the host a no-op in layout
-// (without it the host would add inline-flex padding around the React
-// button). Baseline since Chrome 65 / Safari 11.1, and the manifest pins
-// `minAppVersion: 1.11.4` so every supported Obsidian build ships a Chromium
-// where the feature is fully supported.
+// We neutralize the host <button>'s FullCalendar chrome (padding/border/
+// background/box-shadow) so the inner React button is the only thing the
+// user sees. Pointer events are forwarded to the child so the host is
+// effectively invisible to interaction too. We used to use `display: contents`
+// here, but Obsidian's release scanner flags `css-display-contents` as only
+// partially supported; the chrome-reset approach is universally safe.
 .prisma-calendar-container {
 	.fc-zoomLevel-button.prisma-zoom-host {
-		display: contents;
+		padding: 0;
+		margin: 0;
+		border: 0;
+		background: transparent;
+		box-shadow: none;
+		outline: none;
+		font: inherit;
+		color: inherit;
+		line-height: 0;
+		pointer-events: none;
+
+		> * {
+			pointer-events: auto;
+		}
 	}
 
 	.prisma-fc-zoom-button {

@@ -235,9 +235,13 @@
 	&-link {
 		color: var(--event-text-color, white);
 
-		// Use the `text-decoration` shorthand so we don't trigger the partial-support
-		// warning on the longhand `text-decoration-style` / `-thickness` properties.
-		text-decoration: underline dotted 1.5px;
+		// Plain `text-decoration: underline` is universally supported. Obsidian's
+		// release scanner flags the shorthand-with-style/thickness variant
+		// (`underline dotted 1.5px`) and the longhand `text-decoration-style` /
+		// `-thickness` properties as only partially supported on older Chromium.
+		// The dotted style + custom thickness are decorative; a solid underline
+		// + faux-dotted border-bottom keeps the visual hint without the warning.
+		text-decoration: underline;
 		text-underline-offset: 2px;
 		cursor: pointer;
 		transition: all 0.2s ease;
@@ -249,7 +253,7 @@
 
 		&:hover {
 			color: var(--event-text-color, white);
-			text-decoration: underline solid 2px;
+			text-decoration: underline;
 			background: rgb(255 255 255 / 20%);
 			text-shadow: 0 0 12px rgb(255 255 255 / 60%);
 			transform: translateY(-1px);
