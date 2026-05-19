@@ -25,7 +25,7 @@ import {
 } from "react";
 import { debounceTime } from "rxjs";
 
-import { addCls, cls, removeCls, tid } from "../../constants";
+import { cls, tid } from "../../constants";
 import { openCreateUntrackedEventModal } from "../../core/api/modal-actions";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { MinimizedModalManager } from "../../core/minimized-modal-manager";
@@ -34,12 +34,9 @@ import type { SingleCalendarConfig } from "../../types/settings";
 import { removeZettelId } from "../../utils/events/zettel-id";
 import { normalizeFrontmatterForColorEvaluation } from "../../utils/filters/expressions";
 import { getDisplayProperties } from "../../utils/frontmatter/display";
+import { useDropdownDragInteraction } from "./hooks/use-dropdown-drag-interaction";
 
 const SEARCH_FOCUS_DELAY_MS = 50;
-const DROP_CLICK_IGNORE_MS = 500;
-const DRAG_START_CLICK_IGNORE_MS = 1500;
-const DRAG_HOVER_HIDE_DELAY_MS = 1000;
-const DROP_END_CLICK_IGNORE_MS = 250;
 const REFRESH_DEBOUNCE_MS = 300;
 const ITEM_ESTIMATE_PX = 60;
 
@@ -73,17 +70,7 @@ export const UntrackedEventsDropdown = memo(
 		const buttonRef = useRef<HTMLButtonElement>(null);
 		const searchInputRef = useRef<HTMLInputElement>(null);
 
-		const ignoreOutsideClicksUntilRef = useRef(0);
-		const isDraggingRef = useRef(false);
-		const tempHiddenRef = useRef(false);
-		const dragHoverTimeoutRef = useRef<number | null>(null);
-
-		const clearDragHoverTimeout = useCallback(() => {
-			if (dragHoverTimeoutRef.current !== null) {
-				window.clearTimeout(dragHoverTimeoutRef.current);
-				dragHoverTimeoutRef.current = null;
-			}
-		}, []);
+		const interaction = useDropdownDragInteraction({ dropdownRef, isOpen });
 
 		const colorEvaluator = useColorEvaluator<SingleCalendarConfig>(bundle.settingsStore.settings$);
 
@@ -92,7 +79,7 @@ export const UntrackedEventsDropdown = memo(
 			[bundle]
 		);
 		useSubscription(untrackedChanges$, () => {
-			ignoreOutsideClicksUntilRef.current = Date.now() + DROP_CLICK_IGNORE_MS;
+			interaction.bumpAfterRefresh();
 			setAllEvents(bundle.untrackedEventStore.getUntrackedEvents());
 		});
 
@@ -102,41 +89,34 @@ export const UntrackedEventsDropdown = memo(
 			return allEvents.filter((e) => removeZettelId(e.title).toLowerCase().includes(lower));
 		}, [allEvents, deferredQuery]);
 
-		const resetTempHide = useCallback(() => {
-			clearDragHoverTimeout();
-			tempHiddenRef.current = false;
-			if (dropdownRef.current) removeCls(dropdownRef.current, "hidden");
-		}, [clearDragHoverTimeout]);
-
 		const close = useCallback(() => {
-			resetTempHide();
+			interaction.resetTempHide();
 			setIsOpen(false);
 			setSearchQuery("");
-		}, [resetTempHide]);
+		}, [interaction]);
 
 		const toggle = useCallback(() => {
-			resetTempHide();
+			interaction.resetTempHide();
 			setIsOpen((prev) => {
 				if (prev) setSearchQuery("");
 				return !prev;
 			});
-		}, [resetTempHide]);
+		}, [interaction]);
 
-		const ignoreOutsideClicksFor = useCallback((ms: number) => {
-			const until = Date.now() + Math.max(0, ms);
-			ignoreOutsideClicksUntilRef.current = Math.max(ignoreOutsideClicksUntilRef.current, until);
-		}, []);
-
-		useImperativeHandle(ref, () => ({ toggle, restoreIfTemporarilyHidden: resetTempHide, ignoreOutsideClicksFor }), [
-			toggle,
-			resetTempHide,
-			ignoreOutsideClicksFor,
-		]);
+		useImperativeHandle(
+			ref,
+			() => ({
+				toggle,
+				restoreIfTemporarilyHidden: interaction.resetTempHide,
+				ignoreOutsideClicksFor: interaction.ignoreOutsideClicksFor,
+			}),
+			[toggle, interaction]
+		);
 
 		useOutsideClick([dropdownRef, buttonRef], close, {
 			event: "click",
 			enabled: isOpen,
-			shouldIgnore: () => isDraggingRef.current || Date.now() < ignoreOutsideClicksUntilRef.current,
+			shouldIgnore: interaction.shouldIgnoreOutsideClick,
 		});
 
 		useEscapeKey(
@@ -185,66 +165,6 @@ export const UntrackedEventsDropdown = memo(
 			});
 			return () => draggable.destroy();
 		}, [isOpen]);
-
-		useEffect(() => {
-			if (!isOpen) return;
-			const dropEl = dropdownRef.current;
-			if (!dropEl) return;
-
-			const onItemPointerDown = (e: PointerEvent) => {
-				const target = e.target as HTMLElement | null;
-				if (!target?.closest(".prisma-untracked-dropdown-item")) return;
-				isDraggingRef.current = true;
-				tempHiddenRef.current = false;
-				ignoreOutsideClicksUntilRef.current = Date.now() + DRAG_START_CLICK_IGNORE_MS;
-			};
-
-			const onPointerMove = (e: PointerEvent) => {
-				if (!isDraggingRef.current) return;
-				if (tempHiddenRef.current) return;
-				const rect = dropEl.getBoundingClientRect();
-				const isOver =
-					e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
-				if (!isOver) {
-					clearDragHoverTimeout();
-					return;
-				}
-				if (dragHoverTimeoutRef.current !== null) return;
-				dragHoverTimeoutRef.current = window.setTimeout(() => {
-					dragHoverTimeoutRef.current = null;
-					if (!isDraggingRef.current) return;
-					tempHiddenRef.current = true;
-					addCls(dropEl, "hidden");
-				}, DRAG_HOVER_HIDE_DELAY_MS);
-			};
-
-			const onPointerEnd = () => {
-				if (!isDraggingRef.current) return;
-				isDraggingRef.current = false;
-				ignoreOutsideClicksUntilRef.current = Date.now() + DROP_END_CLICK_IGNORE_MS;
-				clearDragHoverTimeout();
-				if (tempHiddenRef.current) {
-					tempHiddenRef.current = false;
-					removeCls(dropEl, "hidden");
-				}
-			};
-
-			dropEl.addEventListener("pointerdown", onItemPointerDown);
-			activeDocument.addEventListener("pointermove", onPointerMove, true);
-			activeDocument.addEventListener("pointerup", onPointerEnd, true);
-			activeDocument.addEventListener("pointercancel", onPointerEnd, true);
-
-			return () => {
-				dropEl.removeEventListener("pointerdown", onItemPointerDown);
-				activeDocument.removeEventListener("pointermove", onPointerMove, true);
-				activeDocument.removeEventListener("pointerup", onPointerEnd, true);
-				activeDocument.removeEventListener("pointercancel", onPointerEnd, true);
-				clearDragHoverTimeout();
-				isDraggingRef.current = false;
-				tempHiddenRef.current = false;
-				removeCls(dropEl, "hidden");
-			};
-		}, [isOpen, clearDragHoverTimeout]);
 
 		const handleCreate = useCallback(() => {
 			close();
