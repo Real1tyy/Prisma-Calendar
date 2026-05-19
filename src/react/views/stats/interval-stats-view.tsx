@@ -14,6 +14,7 @@ import { useBundleChanges } from "../../hooks/use-bundle-changes";
 import { CapacityLabel } from "./capacity-label";
 import { StatsChart } from "./stats-chart";
 import { StatsTable } from "./stats-table";
+import { useStatsVisibilityFilter } from "./use-stats-visibility-filter";
 
 export interface IntervalStatsConfig {
 	interval: StatsInterval;
@@ -43,7 +44,15 @@ export const IntervalStatsView = memo(function IntervalStatsView({ bundle, confi
 	const [showDecimalHours, setShowDecimalHours] = useState(settings.showDecimalHours);
 	const [includeSkipped, setIncludeSkipped] = useState(false);
 	const [statsData, setStatsData] = useState<StatsData | null>(null);
-	const [hiddenLabels, setHiddenLabels] = useState<ReadonlySet<string>>(() => new Set());
+	const {
+		hiddenLabels,
+		visibleEntries,
+		visibleTotalDuration,
+		visibleEventCount,
+		hasHidden,
+		onVisibilityChange,
+		clearHidden,
+	} = useStatsVisibilityFilter(statsData?.stats.entries);
 	const renderTokenRef = useRef(0);
 
 	const changeToken = useBundleChanges(bundle, { debounceMs: REFRESH_DEBOUNCE_MS });
@@ -68,11 +77,11 @@ export const IntervalStatsView = memo(function IntervalStatsView({ bundle, confi
 				start: snapshot.bounds.start,
 				end: snapshot.bounds.end,
 			});
-			setHiddenLabels(new Set());
+			clearHidden();
 		}
 
 		void load();
-	}, [bundle, config.interval, date, aggregationMode, includeSkipped, settings.categoryProp, changeToken]);
+	}, [bundle, clearHidden, config.interval, date, aggregationMode, includeSkipped, settings.categoryProp, changeToken]);
 
 	const toggleAggregation = useCallback(() => {
 		setAggregationMode((m) => (m === "name" ? "category" : "name"));
@@ -82,34 +91,17 @@ export const IntervalStatsView = memo(function IntervalStatsView({ bundle, confi
 		setShowDecimalHours((v) => !v);
 	}, []);
 
-	const handleVisibilityChange = useCallback((label: string, visible: boolean) => {
-		setHiddenLabels((prev) => {
-			const next = new Set(prev);
-			if (visible) next.delete(label);
-			else next.add(label);
-			return next;
-		});
-	}, []);
-
-	const clearHidden = useCallback(() => {
-		setHiddenLabels(new Set());
-	}, []);
-
 	const dateLabel = useMemo(() => config.formatDate(date, settings.locale), [config, date, settings.locale]);
 
-	const visibleEntries = useMemo(
-		() => statsData?.stats.entries.filter((e) => !hiddenLabels.has(e.name)) ?? [],
-		[statsData, hiddenLabels]
+	const categoryTracker = bundle.categoryTracker;
+	const colorResolver = useMemo(
+		() => (aggregationMode === "category" ? (label: string) => categoryTracker.getCategoryColor(label) : undefined),
+		[aggregationMode, categoryTracker]
 	);
-	const visibleTotalDuration = useMemo(() => visibleEntries.reduce((sum, e) => sum + e.duration, 0), [visibleEntries]);
-	const visibleEventCount = useMemo(() => visibleEntries.reduce((sum, e) => sum + e.count, 0), [visibleEntries]);
 
 	if (!statsData) return null;
 
 	const { stats, filteredEvents, start, end } = statsData;
-	const colorResolver =
-		aggregationMode === "category" ? (label: string) => bundle.categoryTracker.getCategoryColor(label) : undefined;
-	const hasHidden = hiddenLabels.size > 0;
 
 	return (
 		<div className="prisma-interval-stats-view">
@@ -152,7 +144,8 @@ export const IntervalStatsView = memo(function IntervalStatsView({ bundle, confi
 						<StatsChart
 							entries={stats.entries}
 							colorResolver={colorResolver}
-							onVisibilityChange={handleVisibilityChange}
+							onVisibilityChange={onVisibilityChange}
+							hiddenLabels={hiddenLabels}
 						/>
 						<StatsTable
 							entries={visibleEntries}

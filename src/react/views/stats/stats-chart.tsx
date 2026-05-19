@@ -9,9 +9,15 @@ interface StatsChartProps {
 	entries: WeeklyStatEntry[];
 	colorResolver?: ((label: string) => string) | undefined;
 	onVisibilityChange?: ((label: string, visible: boolean) => void) | undefined;
+	hiddenLabels?: ReadonlySet<string> | undefined;
 }
 
-export const StatsChart = memo(function StatsChart({ entries, colorResolver, onVisibilityChange }: StatsChartProps) {
+export const StatsChart = memo(function StatsChart({
+	entries,
+	colorResolver,
+	onVisibilityChange,
+	hiddenLabels,
+}: StatsChartProps) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const chartRef = useRef<PieChartBuilder | null>(null);
 	const visibilityHandlerRef = useRef(onVisibilityChange);
@@ -41,6 +47,27 @@ export const StatsChart = memo(function StatsChart({ entries, colorResolver, onV
 			chartRef.current = null;
 		};
 	}, [entries, colorResolver]);
+
+	// Sync Chart.js internal hidden-state with parent-owned `hiddenLabels` so
+	// imperative resets (e.g. "Show all" button) flip Chart.js back to visible
+	// — otherwise the legend strikethrough sticks and the next click toggles
+	// the wrong way.
+	useEffect(() => {
+		const chart = chartRef.current?.getChart();
+		if (!chart) return;
+		const labels = chart.data.labels ?? [];
+		let changed = false;
+		labels.forEach((rawLabel, i) => {
+			const label = String(rawLabel);
+			const shouldBeHidden = hiddenLabels?.has(label) ?? false;
+			const isVisible = chart.getDataVisibility(i);
+			if (shouldBeHidden === isVisible) {
+				chart.toggleDataVisibility(i);
+				changed = true;
+			}
+		});
+		if (changed) chart.update();
+	}, [hiddenLabels]);
 
 	if (entries.length === 0) return null;
 

@@ -1,6 +1,6 @@
 import { showReactModal, useArrowLeft, useArrowRight, useSettingsStore } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { CalendarEvent } from "../../../types/calendar";
@@ -17,6 +17,7 @@ import { useBundleChanges } from "../../hooks/use-bundle-changes";
 import { CapacityLabel } from "../../views/stats/capacity-label";
 import { StatsChart } from "../../views/stats/stats-chart";
 import { StatsTable } from "../../views/stats/stats-table";
+import { useStatsVisibilityFilter } from "../../views/stats/use-stats-visibility-filter";
 
 type StatsRange = "daily" | "weekly" | "monthly" | "alltime";
 
@@ -97,6 +98,15 @@ export const StatsModalContent = memo(function StatsModalContent({
 	const [includeSkipped, setIncludeSkipped] = useState(false);
 	const [currentDate, setCurrentDate] = useState(() => initialDate ?? new Date());
 	const [statsData, setStatsData] = useState<StatsData | null>(null);
+	const {
+		hiddenLabels,
+		visibleEntries,
+		visibleTotalDuration,
+		visibleEventCount,
+		hasHidden,
+		onVisibilityChange,
+		clearHidden,
+	} = useStatsVisibilityFilter(statsData?.stats.entries);
 	const renderTokenRef = useRef(0);
 
 	const config = range !== "alltime" ? INTERVAL_CONFIGS[range] : null;
@@ -145,10 +155,11 @@ export const StatsModalContent = memo(function StatsModalContent({
 			}
 
 			setStatsData({ stats, filteredEvents: events, start, end });
+			clearHidden();
 		}
 
 		void load();
-	}, [bundle, config, currentDate, aggregationMode, includeSkipped, settings.categoryProp, changeToken]);
+	}, [bundle, clearHidden, config, currentDate, aggregationMode, includeSkipped, settings.categoryProp, changeToken]);
 
 	const toggleAggregation = useCallback(() => {
 		setAggregationMode((m) => (m === "name" ? "category" : "name"));
@@ -158,12 +169,15 @@ export const StatsModalContent = memo(function StatsModalContent({
 		setShowDecimalHours((v) => !v);
 	}, []);
 
+	const categoryTracker = bundle.categoryTracker;
+	const colorResolver = useMemo(
+		() => (aggregationMode === "category" ? (label: string) => categoryTracker.getCategoryColor(label) : undefined),
+		[aggregationMode, categoryTracker]
+	);
+
 	if (!statsData) return null;
 
 	const { stats, filteredEvents, start, end } = statsData;
-	const eventCount = stats.entries.reduce((sum, e) => sum + e.count, 0);
-	const colorResolver =
-		aggregationMode === "category" ? (label: string) => bundle.categoryTracker.getCategoryColor(label) : undefined;
 
 	return (
 		<div className="prisma-stats-content">
@@ -172,26 +186,30 @@ export const StatsModalContent = memo(function StatsModalContent({
 					config={config}
 					currentDate={currentDate}
 					locale={settings.locale}
-					totalDuration={stats.totalDuration}
-					eventCount={eventCount}
+					totalDuration={visibleTotalDuration}
+					eventCount={visibleEventCount}
 					showDecimalHours={showDecimalHours}
 					aggregationMode={aggregationMode}
 					includeSkipped={includeSkipped}
+					hasHidden={hasHidden}
 					onNavigate={setCurrentDate}
 					onToggleDecimalHours={toggleDecimalHours}
 					onToggleAggregation={toggleAggregation}
 					onToggleSkipped={setIncludeSkipped}
+					onClearHidden={clearHidden}
 				/>
 			) : (
 				<AllTimeHeader
-					totalDuration={stats.totalDuration}
-					eventCount={eventCount}
+					totalDuration={visibleTotalDuration}
+					eventCount={visibleEventCount}
 					showDecimalHours={showDecimalHours}
 					aggregationMode={aggregationMode}
 					includeSkipped={includeSkipped}
+					hasHidden={hasHidden}
 					onToggleDecimalHours={toggleDecimalHours}
 					onToggleAggregation={toggleAggregation}
 					onToggleSkipped={setIncludeSkipped}
+					onClearHidden={clearHidden}
 				/>
 			)}
 
@@ -212,10 +230,15 @@ export const StatsModalContent = memo(function StatsModalContent({
 				</div>
 			) : (
 				<>
-					<StatsChart entries={stats.entries} colorResolver={colorResolver} />
-					<StatsTable
+					<StatsChart
 						entries={stats.entries}
-						totalDuration={stats.totalDuration}
+						colorResolver={colorResolver}
+						onVisibilityChange={onVisibilityChange}
+						hiddenLabels={hiddenLabels}
+					/>
+					<StatsTable
+						entries={visibleEntries}
+						totalDuration={visibleTotalDuration}
 						showDecimalHours={showDecimalHours}
 						aggregationMode={aggregationMode}
 					/>
@@ -234,10 +257,12 @@ interface NavigableHeaderProps {
 	showDecimalHours: boolean;
 	aggregationMode: AggregationMode;
 	includeSkipped: boolean;
+	hasHidden: boolean;
 	onNavigate: (date: Date) => void;
 	onToggleDecimalHours: () => void;
 	onToggleAggregation: () => void;
 	onToggleSkipped: (value: boolean) => void;
+	onClearHidden: () => void;
 }
 
 const NavigableHeader = memo(function NavigableHeader({
@@ -249,10 +274,12 @@ const NavigableHeader = memo(function NavigableHeader({
 	showDecimalHours,
 	aggregationMode,
 	includeSkipped,
+	hasHidden,
 	onNavigate,
 	onToggleDecimalHours,
 	onToggleAggregation,
 	onToggleSkipped,
+	onClearHidden,
 }: NavigableHeaderProps) {
 	const { start, end } = boundsByInterval(currentDate, config.interval);
 	const formatDur = pickDurationFormatter({ showDecimalHours });
@@ -305,6 +332,16 @@ const NavigableHeader = memo(function NavigableHeader({
 
 			<div className="prisma-stats-header-stat">📅 {eventCount} events</div>
 
+			{hasHidden && (
+				<button
+					className="prisma-stats-header-stat prisma-stats-clear-filter"
+					data-testid="prisma-stats-clear-filter"
+					onClick={onClearHidden}
+				>
+					Show all
+				</button>
+			)}
+
 			<div className="prisma-stats-nav-group">
 				<button
 					className="prisma-stats-nav-button"
@@ -333,9 +370,11 @@ interface AllTimeHeaderProps {
 	showDecimalHours: boolean;
 	aggregationMode: AggregationMode;
 	includeSkipped: boolean;
+	hasHidden: boolean;
 	onToggleDecimalHours: () => void;
 	onToggleAggregation: () => void;
 	onToggleSkipped: (value: boolean) => void;
+	onClearHidden: () => void;
 }
 
 const AllTimeHeader = memo(function AllTimeHeader({
@@ -344,9 +383,11 @@ const AllTimeHeader = memo(function AllTimeHeader({
 	showDecimalHours,
 	aggregationMode,
 	includeSkipped,
+	hasHidden,
 	onToggleDecimalHours,
 	onToggleAggregation,
 	onToggleSkipped,
+	onClearHidden,
 }: AllTimeHeaderProps) {
 	const formatDur = pickDurationFormatter({ showDecimalHours });
 
@@ -363,6 +404,15 @@ const AllTimeHeader = memo(function AllTimeHeader({
 				</div>
 			</div>
 			<div className="prisma-stats-header-stat">📅 {eventCount} events</div>
+			{hasHidden && (
+				<button
+					className="prisma-stats-header-stat prisma-stats-clear-filter"
+					data-testid="prisma-stats-clear-filter"
+					onClick={onClearHidden}
+				>
+					Show all
+				</button>
+			)}
 		</div>
 	);
 });
