@@ -43,6 +43,7 @@ export const IntervalStatsView = memo(function IntervalStatsView({ bundle, confi
 	const [showDecimalHours, setShowDecimalHours] = useState(settings.showDecimalHours);
 	const [includeSkipped, setIncludeSkipped] = useState(false);
 	const [statsData, setStatsData] = useState<StatsData | null>(null);
+	const [hiddenLabels, setHiddenLabels] = useState<ReadonlySet<string>>(() => new Set());
 	const renderTokenRef = useRef(0);
 
 	const changeToken = useBundleChanges(bundle, { debounceMs: REFRESH_DEBOUNCE_MS });
@@ -67,6 +68,7 @@ export const IntervalStatsView = memo(function IntervalStatsView({ bundle, confi
 				start: snapshot.bounds.start,
 				end: snapshot.bounds.end,
 			});
+			setHiddenLabels(new Set());
 		}
 
 		void load();
@@ -80,30 +82,52 @@ export const IntervalStatsView = memo(function IntervalStatsView({ bundle, confi
 		setShowDecimalHours((v) => !v);
 	}, []);
 
+	const handleVisibilityChange = useCallback((label: string, visible: boolean) => {
+		setHiddenLabels((prev) => {
+			const next = new Set(prev);
+			if (visible) next.delete(label);
+			else next.add(label);
+			return next;
+		});
+	}, []);
+
+	const clearHidden = useCallback(() => {
+		setHiddenLabels(new Set());
+	}, []);
+
 	const dateLabel = useMemo(() => config.formatDate(date, settings.locale), [config, date, settings.locale]);
+
+	const visibleEntries = useMemo(
+		() => statsData?.stats.entries.filter((e) => !hiddenLabels.has(e.name)) ?? [],
+		[statsData, hiddenLabels]
+	);
+	const visibleTotalDuration = useMemo(() => visibleEntries.reduce((sum, e) => sum + e.duration, 0), [visibleEntries]);
+	const visibleEventCount = useMemo(() => visibleEntries.reduce((sum, e) => sum + e.count, 0), [visibleEntries]);
 
 	if (!statsData) return null;
 
 	const { stats, filteredEvents, start, end } = statsData;
-	const eventCount = stats.entries.reduce((sum, e) => sum + e.count, 0);
 	const colorResolver =
 		aggregationMode === "category" ? (label: string) => bundle.categoryTracker.getCategoryColor(label) : undefined;
+	const hasHidden = hiddenLabels.size > 0;
 
 	return (
 		<div className="prisma-interval-stats-view">
 			<StatsHeaderBar
 				model={{
 					dateLabel,
-					totalDuration: stats.totalDuration,
-					eventCount,
+					totalDuration: visibleTotalDuration,
+					eventCount: visibleEventCount,
 					showDecimalHours,
 					aggregationMode,
 					includeSkipped,
+					hasHidden,
 				}}
 				controller={{
 					onToggleDecimalHours: toggleDecimalHours,
 					onToggleAggregation: toggleAggregation,
 					onToggleSkipped: setIncludeSkipped,
+					onClearHidden: clearHidden,
 				}}
 			/>
 
@@ -125,10 +149,14 @@ export const IntervalStatsView = memo(function IntervalStatsView({ bundle, confi
 					</div>
 				) : (
 					<>
-						<StatsChart entries={stats.entries} colorResolver={colorResolver} />
-						<StatsTable
+						<StatsChart
 							entries={stats.entries}
-							totalDuration={stats.totalDuration}
+							colorResolver={colorResolver}
+							onVisibilityChange={handleVisibilityChange}
+						/>
+						<StatsTable
+							entries={visibleEntries}
+							totalDuration={visibleTotalDuration}
 							showDecimalHours={showDecimalHours}
 							aggregationMode={aggregationMode}
 						/>
@@ -146,12 +174,14 @@ interface StatsHeaderBarModel {
 	showDecimalHours: boolean;
 	aggregationMode: AggregationMode;
 	includeSkipped: boolean;
+	hasHidden: boolean;
 }
 
 interface StatsHeaderBarController {
 	onToggleDecimalHours: () => void;
 	onToggleAggregation: () => void;
 	onToggleSkipped: (value: boolean) => void;
+	onClearHidden: () => void;
 }
 
 interface StatsHeaderBarProps {
@@ -160,8 +190,8 @@ interface StatsHeaderBarProps {
 }
 
 const StatsHeaderBar = memo(function StatsHeaderBar({ model, controller }: StatsHeaderBarProps) {
-	const { dateLabel, totalDuration, eventCount, showDecimalHours, aggregationMode, includeSkipped } = model;
-	const { onToggleDecimalHours, onToggleAggregation, onToggleSkipped } = controller;
+	const { dateLabel, totalDuration, eventCount, showDecimalHours, aggregationMode, includeSkipped, hasHidden } = model;
+	const { onToggleDecimalHours, onToggleAggregation, onToggleSkipped, onClearHidden } = controller;
 	const formatDur = pickDurationFormatter({ showDecimalHours });
 
 	return (
@@ -177,6 +207,15 @@ const StatsHeaderBar = memo(function StatsHeaderBar({ model, controller }: Stats
 				<div className="prisma-stats-header-stat" data-testid="prisma-stats-total-count">
 					📅 {eventCount} events
 				</div>
+				{hasHidden && (
+					<button
+						className="prisma-stats-header-stat prisma-stats-clear-filter"
+						data-testid="prisma-stats-clear-filter"
+						onClick={onClearHidden}
+					>
+						Show all
+					</button>
+				)}
 			</div>
 
 			<div className="prisma-stats-tab-date-label" data-testid="prisma-stats-date-label">

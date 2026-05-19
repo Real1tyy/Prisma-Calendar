@@ -6,10 +6,11 @@ All notable changes to this project will be documented here.
 
 ## 2.17.0 - 5/19/2026
 
-> **TLDR:** Prisma Calendar is now in the official Obsidian Community Plugin Store — install with one click from inside Obsidian. The event modal also gets keyboard shortcuts for **Assign categories** (Ctrl/Cmd+Shift+C) and **Assign prerequisites** (Ctrl/Cmd+Shift+P), and a sturdier title autocomplete flow.
+> **TLDR:** Prisma Calendar is now in the official Obsidian Community Plugin Store — install with one click from inside Obsidian. Click any pie-chart legend entry on the stats views to filter that category out and rescale the chart, table, and totals to 100% over what remains. The event modal also gets keyboard shortcuts for **Assign categories** (Ctrl/Cmd+Shift+C) and **Assign prerequisites** (Ctrl/Cmd+Shift+P), plus a sturdier title autocomplete flow.
 
 ### Added
 - **Available in the Obsidian Community Plugin Store**: Prisma Calendar is now listed in Obsidian's built-in plugin browser. [Add to Obsidian](obsidian://show-plugin?id=prisma-calendar) or search "Prisma Calendar" under **Settings → Community plugins → Browse**.
+- **Filter the stats view by clicking pie-chart legend entries**: Click any label in the pie-chart legend on **Daily + Stats**, **Monthly + Stats**, or **Heatmap Monthly + Stats** to hide that entry. The chart, table percentages, total duration, and event count all rescale over what remains. A **Show all** button appears next to the totals while any entry is hidden. See [Daily + Stats → Filtering by legend](./features/views/daily-stats.md#filtering-by-legend).
 - **Event-modal shortcuts for Assign categories and Assign prerequisites**: **Ctrl+Shift+C / ⌘⇧C** opens the Assign Categories picker, **Ctrl+Shift+P / ⌘⇧P** opens Assign Prerequisites — both work from anywhere inside the event modal. See [Categories → Assigning Categories](./features/organization/categories.md#assigning-categories).
 
 ### Fixed

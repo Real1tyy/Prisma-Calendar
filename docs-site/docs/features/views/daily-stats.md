@@ -32,6 +32,12 @@ Daily statistics for the date shown in the adjacent calendar. Updates when you n
 - **Table**: Paginated breakdown of each entry with name, duration, percentage, and event count. Navigate pages with First/Prev/Next/Last buttons or type a page number directly.
 - **Capacity label** (when enabled): Shows used vs total hours and remaining time for the day. Boundaries are inferred from your earliest and latest events. See [Capacity Tracking](./capacity-tracking.md).
 
+## Filtering by legend
+
+Click any label in the pie-chart legend to hide that entry from the totals. The slice disappears from the chart, the corresponding row disappears from the table, and every remaining percentage (chart, tooltip, and table) rescales to 100% over what is left. The duration and event-count stats above the chart recompute over the visible entries only.
+
+Click the legend label a second time to bring the entry back. While at least one entry is hidden, a **Show all** button appears next to the totals — click it to reset the filter in one step. Changing the day, the **Group by** mode, or the **Include skipped** toggle also clears the filter.
+
 ## Live updates
 
 Totals, charts, tables, and capacity refresh automatically when vault events affecting the visible day change — for example after drag-and-drop in the daily calendar, editing frontmatter in another pane, deleting a note, or when recurring previews update. You do not need to leave and return to the tab to see fresh numbers.

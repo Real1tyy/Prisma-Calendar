@@ -8,11 +8,14 @@ const MAX_LABELS = 25;
 interface StatsChartProps {
 	entries: WeeklyStatEntry[];
 	colorResolver?: ((label: string) => string) | undefined;
+	onVisibilityChange?: ((label: string, visible: boolean) => void) | undefined;
 }
 
-export const StatsChart = memo(function StatsChart({ entries, colorResolver }: StatsChartProps) {
+export const StatsChart = memo(function StatsChart({ entries, colorResolver, onVisibilityChange }: StatsChartProps) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const chartRef = useRef<PieChartBuilder | null>(null);
+	const visibilityHandlerRef = useRef(onVisibilityChange);
+	visibilityHandlerRef.current = onVisibilityChange;
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
@@ -29,6 +32,7 @@ export const StatsChart = memo(function StatsChart({ entries, colorResolver }: S
 
 		chartRef.current = new PieChartBuilder(canvas, chartData, {
 			tooltipFormatter: (label, value, percentage) => `${label}: ${formatDuration(value)} (${percentage}%)`,
+			onVisibilityChange: (label, visible) => visibilityHandlerRef.current?.(label, visible),
 		});
 		chartRef.current.render();
 
@@ -46,7 +50,7 @@ export const StatsChart = memo(function StatsChart({ entries, colorResolver }: S
 				<h3>Distribution</h3>
 			</div>
 			<div className="prisma-stats-chart-container">
-				<canvas ref={canvasRef} />
+				<canvas ref={canvasRef} data-testid="prisma-stats-chart-canvas" />
 			</div>
 		</div>
 	);

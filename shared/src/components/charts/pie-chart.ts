@@ -20,6 +20,7 @@ export interface PieChartOptions {
 	labelMaxLength?: number;
 	labelTruncateLength?: number;
 	tooltipFormatter?: (label: string, value: number, percentage: string) => string;
+	onVisibilityChange?: (label: string, visible: boolean) => void;
 }
 
 export class PieChartBuilder {
@@ -40,13 +41,16 @@ export class PieChartBuilder {
 			labelMaxLength = isMobile ? 20 : 35,
 			labelTruncateLength = isMobile ? 17 : 32,
 			tooltipFormatter,
+			onVisibilityChange,
 		} = this.options;
 
 		const limitedData = maxLabels ? this.data.slice(0, maxLabels) : this.data;
 		const labels = limitedData.map((item) => item.label);
 		const values = limitedData.map((item) => item.value);
 		const colors = limitedData.map((item) => item.color);
-		const totalValue = values.reduce((sum, val) => sum + val, 0);
+
+		const visibleTotal = (chart: Chart): number =>
+			values.reduce((sum, val, i) => (chart.getDataVisibility(i) ? sum + val : sum), 0);
 
 		// Chart.js tracks chart instances per canvas. If this builder is recreated
 		// (common in reactive UIs), we must destroy any existing chart bound to this
@@ -90,10 +94,12 @@ export class PieChartBuilder {
 							boxWidth: isMobile ? 10 : 12,
 							boxHeight: isMobile ? 10 : 12,
 							generateLabels: (chart) => {
+								const total = visibleTotal(chart);
 								return (
 									chart.data.labels?.map((label, i) => {
+										const visible = chart.getDataVisibility(i);
 										const value = chart.data.datasets[0].data[i] as number;
-										const percentage = totalValue > 0 ? ((value / totalValue) * 100).toFixed(1) : "0.0";
+										const percentage = visible && total > 0 ? ((value / total) * 100).toFixed(1) : "0.0";
 										const labelText = `${String(label)} (${percentage}%)`;
 										return {
 											text:
@@ -102,19 +108,31 @@ export class PieChartBuilder {
 													: labelText,
 											fillStyle: (chart.data.datasets[0].backgroundColor as string[])[i],
 											fontColor: "#ffffff",
-											hidden: false,
+											hidden: !visible,
 											index: i,
 										};
 									}) || []
 								);
 							},
 						},
+						onClick: (_event, legendItem, legend) => {
+							const index = legendItem.index;
+							if (index === undefined) return;
+							const chart = legend.chart;
+							chart.toggleDataVisibility(index);
+							chart.update();
+							if (onVisibilityChange) {
+								const label = chart.data.labels?.[index];
+								onVisibilityChange(String(label), chart.getDataVisibility(index));
+							}
+						},
 					},
 					tooltip: {
 						callbacks: {
 							label: (context) => {
 								const value = context.parsed;
-								const percentage = totalValue > 0 ? ((value / totalValue) * 100).toFixed(1) : "0.0";
+								const total = visibleTotal(context.chart);
+								const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : "0.0";
 								if (tooltipFormatter) {
 									return tooltipFormatter(String(context.label), value, percentage);
 								}

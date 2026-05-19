@@ -81,6 +81,18 @@
 			font-size: var(--font-ui-smaller);
 			padding: 4px 10px;
 		}
+
+		.prisma-stats-clear-filter {
+			cursor: pointer;
+			color: var(--text-accent);
+			background: transparent;
+			border: 1px solid var(--background-modifier-border);
+			border-radius: var(--radius-s);
+
+			&:hover {
+				background: var(--background-modifier-hover);
+			}
+		}
 	}
 
 	&-right {
