@@ -1,10 +1,12 @@
 import { ChipList, type ChipCollection, type ChipDisplay, type ChipInteraction } from "@real1ty-obsidian-plugins-react";
+import { Platform } from "obsidian";
 import { memo, useCallback, useMemo, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 
 import { PrismaSettingItem } from "../prisma-setting-item";
 
 const CONTENT_CLASS = "prisma-category-display-content";
 const ACTION_BUTTON_CLASS = "prisma-assign-categories-button";
+const ASSIGN_CATEGORIES_SHORTCUT = Platform.isMacOS ? "⇧⌘C" : "Ctrl+Shift+C";
 
 interface ChipFieldSectionProps extends ChipCollection, ChipDisplay, ChipInteraction {
 	name: string;
@@ -43,9 +45,19 @@ const ChipFieldSection = memo(function ChipFieldSection({
 	);
 });
 
-function AssignButton({ label, testId, onClick }: { label: string; testId: string; onClick: () => void }) {
+function AssignButton({
+	label,
+	testId,
+	onClick,
+	tooltip,
+}: {
+	label: string;
+	testId: string;
+	onClick: () => void;
+	tooltip?: string;
+}) {
 	return (
-		<button type="button" className={ACTION_BUTTON_CLASS} onClick={onClick} data-testid={testId}>
+		<button type="button" className={ACTION_BUTTON_CLASS} onClick={onClick} data-testid={testId} title={tooltip}>
 			{label}
 		</button>
 	);
@@ -84,7 +96,12 @@ export const CategorySection = memo(function CategorySection({
 			renderPrefix={renderPrefix}
 			onItemClick={onCategoryClick}
 			trailing={
-				<AssignButton label="Assign categories" testId="prisma-event-btn-assign-categories" onClick={onAssign} />
+				<AssignButton
+					label="Assign categories"
+					testId="prisma-event-btn-assign-categories"
+					onClick={onAssign}
+					tooltip={`Assign categories (${ASSIGN_CATEGORIES_SHORTCUT})`}
+				/>
 			}
 		/>
 	);

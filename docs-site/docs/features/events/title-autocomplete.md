@@ -29,6 +29,12 @@ If a name exists in multiple sources (e.g., "Work" is both a category and a freq
 - **Tab** — accept the ghost text (the faint completion shown inline)
 - **Escape** — dismiss the dropdown
 
+After you accept a suggestion the dropdown closes and the cursor stays on the title input, so a second Enter saves the event (no need to click into the title first or type in another field to dismiss the popup).
+
+## Cursor placement on open
+
+Opening the modal puts the cursor in the title input immediately — type to start filling it, no click required.
+
 ## Ghost text
 
 The top suggestion's completion appears as faint text after your cursor, similar to IDE autocomplete. For example, typing "Wor" with a "Work" category shows "k" as ghost text. Press Tab to accept it.

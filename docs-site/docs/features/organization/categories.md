@@ -56,6 +56,10 @@ Both formats are supported throughout the plugin. When you assign categories usi
 
 You can assign categories to events in multiple ways:
 
+### Keyboard shortcut
+
+Press **Ctrl+Shift+C** (Win/Linux) or **⌘⇧C** (Mac) from anywhere inside an event modal to open the Assign Categories picker — no need to scroll to the categories row or click the button.
+
 ### 1. Auto-Assignment (Event Creation and Editing)
 
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>

@@ -145,24 +145,15 @@ describe("collectSuggestions", () => {
 	});
 });
 
-// Regression: typing "Planni" with the ghost suggesting "Planning", pressing
-// Enter to accept the suggestion, then Save persisted a file named
-// "Planni-<zettel>.md" — the suggester wrote "Planning" into the DOM via
-// AbstractInputSuggest.setValue, but the React form controller never heard
-// about it (setValue is a direct `inputEl.value = x` that React's tracker
-// shim swallows), so the next submit read the typed prefix from React state.
-//
-// Fix: the suggester no longer touches the DOM on accept. It hands the
-// chosen string to the owner via `onAcceptTitle`, and the owner (React
-// Hook Form's `field.onChange`) updates the canonical form state — React
-// re-renders and the controlled input picks up the new value through its
-// normal `value={field.value}` binding. No native-setter trickery needed.
+// The suggester hands the accepted value to the owner via `onAcceptTitle`
+// rather than writing it onto the DOM directly — React stayed at the typed
+// prefix when setValue used AbstractInputSuggest's tracker-skipping path.
 describe("TitleInputSuggest — onAcceptTitle hand-off", () => {
-	function makeBundle(): any {
+	function makeBundle(options: { categories?: string[] } = {}): any {
 		return {
 			plugin: { app: {} },
 			settingsStore: { currentSettings: { eventPresets: [] } },
-			categoryTracker: { getCategories: () => [] },
+			categoryTracker: { getCategories: () => options.categories ?? [] },
 			nameSeriesTracker: { getNameSeriesMap: () => new Map() },
 			eventStore: { getEventByPath: () => null },
 		};
@@ -194,9 +185,6 @@ describe("TitleInputSuggest — onAcceptTitle hand-off", () => {
 
 		simulateSelect(suggest, { text: "Planning", source: "name-series" });
 
-		// The owner sees the full suggestion text. Without this hand-off the
-		// React form state would stay at "Planni" and the next submit would
-		// persist `Planni-<zettel>.md` (the original regression).
 		expect(onAcceptTitle).toHaveBeenCalledTimes(1);
 		expect(onAcceptTitle).toHaveBeenCalledWith("Planning");
 	});
@@ -208,8 +196,6 @@ describe("TitleInputSuggest — onAcceptTitle hand-off", () => {
 		const onAcceptTitle = vi.fn();
 		const suggest = new TitleInputSuggest({} as never, input, makeBundle(), { onAcceptTitle });
 
-		// Inject the ghost completion Tab would commit. updateGhostText normally
-		// sets this; do it directly to stay independent of the rendering pipeline.
 		(suggest as unknown as { currentCompletion: string }).currentCompletion = "ng";
 
 		input.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true }));
@@ -219,10 +205,6 @@ describe("TitleInputSuggest — onAcceptTitle hand-off", () => {
 	});
 
 	it("does NOT mutate the DOM input directly — the React owner is responsible for the re-render", () => {
-		// Documents the contract change: previously the suggester wrote to
-		// inputEl.value via AbstractInputSuggest.setValue. That coupled the
-		// class to the DOM and went around React's controlled-input tracker.
-		// Now the suggester only signals; the owner handles state + DOM.
 		const input = inWrapper(document.createElement("input"));
 		input.value = "Planni";
 
@@ -230,36 +212,24 @@ describe("TitleInputSuggest — onAcceptTitle hand-off", () => {
 
 		simulateSelect(suggest, { text: "Planning", source: "name-series" });
 
-		expect(input.value).toBe("Planni"); // Untouched — owner owns the value.
+		expect(input.value).toBe("Planni"); // Owner owns the value.
 	});
 
 	it("keeps focus on the input after accepting a suggestion (enables double-Enter to submit)", async () => {
-		// Regression guard: the suggester previously called `inputEl.blur()`
-		// after onSelect. That shifted focus to <body>, so the user's natural
-		// "Enter to accept, Enter again to submit" flow stopped working — the
-		// second Enter never reached the form's keydown handler. The suggester
-		// must leave focus on the input; the React owner runs any
-		// blur-side-effects (e.g. auto-category assignment) explicitly inside
-		// the onAcceptTitle callback rather than via an actual focus shift.
 		const input = inWrapper(document.createElement("input"));
-		// Focus AFTER construction — setupGhostText moves the input into a
-		// wrapper, which can defocus it. Real flow: user types into a wrapped
-		// input that's been focused via React's autoFocus / titleInputRef.focus().
 		const suggest = new TitleInputSuggest({} as never, input, makeBundle(), { onAcceptTitle: vi.fn() });
 		input.focus();
 		expect(document.activeElement).toBe(input);
 
 		simulateSelect(suggest, { text: "Planning", source: "name-series" });
 
-		// Yield so the queueMicrotask refocus runs before we assert.
 		await Promise.resolve();
 		expect(document.activeElement).toBe(input);
 	});
 
 	it("reclaims focus even if some intermediate code blurred the input (defensive refocus)", async () => {
-		// Pins the "Obsidian's internal close path moved focus" scenario:
-		// the suggester must restore focus after onSelect runs, otherwise
-		// the user's second Enter never reaches the form's submit hotkey.
+		// Pins the "Obsidian's close path moved focus" scenario — without the
+		// microtask refocus, Enter#2 (submit) never reaches the form.
 		const input = inWrapper(document.createElement("input"));
 		const suggest = new TitleInputSuggest({} as never, input, makeBundle(), {
 			onAcceptTitle: () => {
@@ -298,5 +268,69 @@ describe("TitleInputSuggest — onAcceptTitle hand-off", () => {
 
 		// Should not throw even though the owner registered no callback.
 		expect(() => simulateSelect(suggest, { text: "Planning", source: "name-series" })).not.toThrow();
+	});
+
+	it("preserves focus across setupGhostText reparenting (autoFocus survives construction)", () => {
+		// Regression: appendChild defocuses the moved element, so React's
+		// autoFocus was wiped on every modal open.
+		const input = inWrapper(document.createElement("input"));
+		input.focus();
+		expect(document.activeElement).toBe(input);
+
+		new TitleInputSuggest({} as never, input, makeBundle(), { onAcceptTitle: vi.fn() });
+
+		expect(document.activeElement).toBe(input);
+	});
+
+	it("does NOT focus the input during construction if it wasn't focused before (no focus-stealing)", () => {
+		const input = inWrapper(document.createElement("input"));
+		const sentinel = document.createElement("input");
+		document.body.appendChild(sentinel);
+		sentinel.focus();
+		expect(document.activeElement).toBe(sentinel);
+
+		new TitleInputSuggest({} as never, input, makeBundle(), { onAcceptTitle: vi.fn() });
+
+		expect(document.activeElement).toBe(sentinel);
+	});
+
+	it("closes the popup after accepting a suggestion (popup can't re-suggest the just-accepted value)", () => {
+		// Regression: React re-renders the input with the accepted value, the
+		// popup matches it back, and the next Enter re-selects the same row
+		// instead of submitting.
+		const input = inWrapper(document.createElement("input"));
+		const suggest = new TitleInputSuggest({} as never, input, makeBundle(), { onAcceptTitle: vi.fn() });
+		const closeSpy = vi.spyOn(suggest, "close");
+
+		simulateSelect(suggest, { text: "Planning", source: "name-series" });
+
+		expect(closeSpy).toHaveBeenCalled();
+	});
+
+	it("resets hasUserTyped after accept so getSuggestions returns [] until the user types again", () => {
+		const input = inWrapper(document.createElement("input"));
+		const suggest = new TitleInputSuggest({} as never, input, makeBundle({ categories: ["Planning"] }), {
+			onAcceptTitle: vi.fn(),
+		});
+
+		// Prime hasUserTyped so getSuggestions would normally return matches.
+		input.dispatchEvent(new Event("input", { bubbles: true }));
+		expect(
+			(suggest as unknown as { getSuggestions: (q: string) => TitleSuggestion[] }).getSuggestions("Plan")
+		).toHaveLength(1);
+
+		simulateSelect(suggest, { text: "Planning", source: "category" });
+
+		// After accept, suggestions are gated off until the user types again.
+		expect(
+			(suggest as unknown as { getSuggestions: (q: string) => TitleSuggestion[] }).getSuggestions("Planning")
+		).toHaveLength(0);
+
+		// Simulating user typing re-arms the suggester (next character would
+		// fire `input`); suggestions return.
+		input.dispatchEvent(new Event("input", { bubbles: true }));
+		expect(
+			(suggest as unknown as { getSuggestions: (q: string) => TitleSuggestion[] }).getSuggestions("Plan")
+		).toHaveLength(1);
 	});
 });

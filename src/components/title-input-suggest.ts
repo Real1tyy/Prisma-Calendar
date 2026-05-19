@@ -6,14 +6,9 @@ import type { CalendarBundle } from "../core/calendar-bundle";
 type Dispose = () => void;
 
 export interface TitleInputSuggestOptions {
-	/**
-	 * Required hand-off back to the owner when the user accepts a suggestion
-	 * (Enter / click / Tab on the ghost). The owner is responsible for the
-	 * actual state mutation — for React-controlled inputs that means
-	 * `field.onChange(title)`. Without a callback the suggester only updates
-	 * the popup; the input itself is untouched, so this is effectively
-	 * required for every real use.
-	 */
+	// Fired when the user accepts a suggestion (Enter / click / Tab). Owner
+	// is responsible for writing the value back into the input — for React,
+	// that means `field.onChange(title)`.
 	onAcceptTitle?: (title: string) => void;
 }
 
@@ -71,12 +66,8 @@ export function collectSuggestions(query: string, bundle: CalendarBundle): Title
 	return results.slice(0, SUGGESTION_LIMIT);
 }
 
-/**
- * Adds the listener and returns its removal as a single function. Used by
- * TitleInputSuggest so every listener it attaches survives in a `disposers`
- * array — destroy() can then tear them all down without name-tracking each
- * handler reference.
- */
+// Adds a listener and returns its removal — lets `destroy()` tear every
+// listener down via a single `disposers` array.
 function listen<K extends keyof HTMLElementEventMap>(
 	el: HTMLElement,
 	type: K,
@@ -119,10 +110,8 @@ export class TitleInputSuggest extends AbstractInputSuggest<TitleSuggestion> {
 		this.disposers.push(
 			listen(inputEl, "keydown", (event) => {
 				if (event.key !== "Tab" || !this.currentCompletion) return;
-				// preventDefault stops Tab's default "focus the next field"
-				// behaviour so the user stays on the title input. Without it,
-				// Tab would both commit the ghost AND jump focus, breaking
-				// the "Tab to accept, Enter to submit" flow.
+				// preventDefault keeps focus on the input — otherwise Tab
+				// would commit the ghost AND jump to the next field.
 				event.preventDefault();
 				this.acceptTitle(inputEl.value + this.currentCompletion);
 			})
@@ -130,14 +119,8 @@ export class TitleInputSuggest extends AbstractInputSuggest<TitleSuggestion> {
 
 		this.onSelect((suggestion) => {
 			this.acceptTitle(suggestion.text);
-			// Defensive: AbstractInputSuggest's internal selection path closes
-			// the popup and can leave focus on the popup container instead of
-			// the input — the symptom is that Enter#2 (submit) doesn't reach
-			// the form's onKeyDown because focus is no longer inside the form.
-			// Reclaiming focus here keeps the user's double-Enter flow alive
-			// (Enter accepts the suggestion, Enter again submits the modal).
-			// queueMicrotask waits for Obsidian's own focus shuffling to finish
-			// so we set the final state, not the intermediate one.
+			// Reclaim focus after Obsidian's internal close path settles —
+			// keeps the double-Enter (accept → submit) flow alive.
 			queueMicrotask(() => inputEl.focus());
 		});
 	}
@@ -161,22 +144,24 @@ export class TitleInputSuggest extends AbstractInputSuggest<TitleSuggestion> {
 		badge.textContent = getSuggestionBadge(suggestion);
 	}
 
-	/**
-	 * Single hand-off path for every "user picked a title" event (Enter on a
-	 * popup row, click on a row, Tab on the ghost). Hands the chosen value
-	 * to the owner via `onAcceptTitle` and clears the ghost. The owner is
-	 * responsible for syncing the input's actual value — for React-controlled
-	 * inputs that's `field.onChange(title)`, which triggers a re-render that
-	 * pushes the new value into the DOM through the normal React tracker.
-	 */
+	// Hand off the chosen value AND close the popup. Without close+reset,
+	// React re-renders the input with the accepted value, getSuggestions
+	// matches it back, the popup stays open, and the next Enter re-selects
+	// the same row instead of submitting the form.
 	private acceptTitle(title: string): void {
 		this.clearGhost();
+		this.hasUserTyped = false;
 		this.options.onAcceptTitle?.(title);
+		this.close();
 	}
 
 	private setupGhostText(inputEl: HTMLInputElement): void {
 		const parent = inputEl.parentElement;
 		if (!parent) return;
+
+		// appendChild defocuses the element it moves — preserve focus so
+		// React's autoFocus survives the reparent.
+		const wasFocused = inputEl.ownerDocument.activeElement === inputEl;
 
 		this.wrapperEl = parent.createDiv(cls("title-input-wrapper"));
 		inputEl.before(this.wrapperEl);
@@ -185,6 +170,8 @@ export class TitleInputSuggest extends AbstractInputSuggest<TitleSuggestion> {
 		this.ghostEl = this.wrapperEl.createSpan(cls("title-ghost-text"));
 		this.ghostEl.createSpan(cls("title-ghost-prefix"));
 		this.ghostSuffixEl = this.ghostEl.createSpan(cls("title-ghost-suffix"));
+
+		if (wasFocused) inputEl.focus();
 	}
 
 	private updateGhostText(query: string, suggestions: TitleSuggestion[]): void {
@@ -209,9 +196,7 @@ export class TitleInputSuggest extends AbstractInputSuggest<TitleSuggestion> {
 		}
 	}
 
-	// One canvas context lives for the lifetime of the suggester — measuring
-	// text on every keystroke against a freshly-created canvas was wasteful
-	// and let the GC reclaim a context per ghost render.
+	// One canvas context per suggester — avoids re-creating it per keystroke.
 	private getMeasureCtx(): CanvasRenderingContext2D | null {
 		if (this.measureCtx) return this.measureCtx;
 		const canvas = this.titleInputEl.ownerDocument.createElement("canvas");
