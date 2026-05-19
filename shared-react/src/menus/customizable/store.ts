@@ -13,7 +13,9 @@ export interface CustomizableMenuSnapshot {
 
 export interface CustomizableMenuStoreOptions {
 	allItems: CustomizableContextMenuItem[];
-	initialState?: ContextMenuState | undefined;
+	/** Persisted user customizations (from settings). When omitted, the store starts from `defaults`. */
+	currentState?: ContextMenuState | undefined;
+	/** Factory defaults applied by the item manager's Reset button and used as the initial state when `currentState` is omitted. */
 	defaults?: ContextMenuState | undefined;
 	onStateChange?: ((state: ContextMenuState) => void) | undefined;
 }
@@ -38,7 +40,7 @@ export class CustomizableMenuStore {
 		this.defaultOrder = options.allItems.map((i) => i.id);
 		this.defaults = options.defaults;
 		if (options.onStateChange) this.onStateChange = options.onStateChange;
-		this.snapshot = this.buildInitialSnapshot(options.initialState);
+		this.snapshot = this.buildInitialSnapshot(options.currentState ?? options.defaults);
 	}
 
 	getSnapshot = (): CustomizableMenuSnapshot => this.snapshot;

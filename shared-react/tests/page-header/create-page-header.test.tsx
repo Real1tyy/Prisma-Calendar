@@ -237,10 +237,10 @@ describe("createPageHeader (React bridge)", () => {
 		handle.destroy();
 	});
 
-	it("restores from initialState", () => {
+	it("restores from currentState", () => {
 		const handle = createPageHeader(
 			makeConfig({
-				initialState: {
+				currentState: {
 					visibleActionIds: ["action-2", "action-0"],
 					renames: { "action-0": "Renamed" },
 				},

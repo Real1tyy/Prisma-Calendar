@@ -135,7 +135,7 @@ describe("PageHeaderStore", () => {
 		expect(listener).toHaveBeenCalledOnce();
 	});
 
-	it("restores state from initialState", () => {
+	it("restores state from currentState", () => {
 		const store = new PageHeaderStore(makeActions(), {
 			visibleActionIds: ["action-2", "action-0"],
 			renames: { "action-0": "Renamed" },
@@ -151,7 +151,7 @@ describe("PageHeaderStore", () => {
 		expect(state.colorOverrides).toEqual({ "action-0": "#ff0000" });
 	});
 
-	it("drops invalid IDs from initialState.visibleActionIds", () => {
+	it("drops invalid IDs from currentState.visibleActionIds", () => {
 		const store = new PageHeaderStore(makeActions(), {
 			visibleActionIds: ["action-0", "nonexistent", "action-2"],
 		});
@@ -160,7 +160,7 @@ describe("PageHeaderStore", () => {
 		expect(store.serialize().visibleActionIds).toEqual(["action-0", "action-2"]);
 	});
 
-	it("falls back to all actions when initialState has empty visibleActionIds", () => {
+	it("falls back to all actions when currentState has empty visibleActionIds", () => {
 		const store = new PageHeaderStore(makeActions(), { visibleActionIds: [] });
 
 		expect(store.visibleCount).toBe(3);

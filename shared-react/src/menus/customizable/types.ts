@@ -27,9 +27,9 @@ export interface CustomizableContextMenuItem {
 export interface CustomizableContextMenuConfig {
 	items: CustomizableContextMenuItem[];
 	cssPrefix: string;
-	/** Persisted state to restore. When provided, overrides visibility, order, labels, and icons. */
-	initialState?: ContextMenuState;
-	/** Factory defaults applied by the item manager's Reset button. Omit for "all items in declaration order, no overrides". */
+	/** Persisted user customizations (from settings). When omitted, the menu starts from `defaults`. */
+	currentState?: ContextMenuState;
+	/** Factory defaults applied by the item manager's Reset button and used as the initial state when `currentState` is omitted. */
 	defaults?: ContextMenuState;
 	/** Fires on any state mutation (reorder, rename, hide, icon change). */
 	onStateChange?: (state: ContextMenuState) => void;

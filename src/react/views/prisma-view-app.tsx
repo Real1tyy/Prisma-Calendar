@@ -259,7 +259,7 @@ function setupTabbedContainer({
 			...(titleContainer ? { tabBarInsertBefore: titleContainer } : {}),
 			editable: true,
 			app,
-			initialState: savedState ?? defaultState,
+			...(savedState ? { currentState: savedState } : {}),
 			defaults: defaultState,
 			onStateChange: (state) => {
 				void bundle.settingsStore.updateSettings((s) => ({ ...s, activeTab: state }));
@@ -319,7 +319,7 @@ function setupPageHeader(mountCtx: MountCtx, viewRef: PrismaViewRef): () => void
 		cssPrefix: CSS_PREFIX,
 		app,
 		editable: true,
-		initialState: savedState ?? factoryDefault,
+		...(savedState ? { currentState: savedState } : {}),
 		defaults: factoryDefault,
 		onStateChange: (state) => {
 			void bundle.settingsStore.updateSettings((s) => ({ ...s, pageHeaderState: state }));

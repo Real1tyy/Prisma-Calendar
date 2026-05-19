@@ -15,7 +15,7 @@ import {
 import { Notice, type App } from "obsidian";
 
 import { CSS_PREFIX, EVENT_HIGHLIGHT_DURATION_MS, GO_TO_SOURCE_HIGHLIGHT_DELAY_MS, MS_PER_DAY } from "../constants";
-import { CONTEXT_MENU_BUTTON_LABELS } from "../context-menu-items";
+import { CONTEXT_MENU_BUTTON_LABELS, DEFAULT_CONTEXT_MENU_ITEMS } from "../context-menu-items";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import {
 	assignCategories,
@@ -90,12 +90,14 @@ export class EventContextMenu {
 		this.calendarComponent = calendarComponent;
 
 		const settings = this.bundle.settingsStore.currentSettings;
-		const initialState = this.resolveInitialState(settings);
+		const currentState = this.resolveCurrentState(settings);
+		const factoryDefault: ContextMenuState = { visibleItemIds: [...DEFAULT_CONTEXT_MENU_ITEMS] };
 
 		this.handle = createCustomizableContextMenu({
 			items: this.buildItemDefinitions(),
 			cssPrefix: CSS_PREFIX,
-			...(initialState ? { initialState } : {}),
+			...(currentState ? { currentState } : {}),
+			defaults: factoryDefault,
 			editable: true,
 			app,
 			onStateChange: (state) => {
@@ -107,10 +109,10 @@ export class EventContextMenu {
 		});
 
 		// Eagerly persist migrated state so the legacy field is only read once
-		if (!settings.contextMenuState && initialState) {
+		if (!settings.contextMenuState && currentState) {
 			void this.bundle.settingsStore.updateSettings((s) => ({
 				...s,
-				contextMenuState: initialState,
+				contextMenuState: currentState,
 			}));
 		}
 	}
@@ -210,7 +212,7 @@ export class EventContextMenu {
 
 	// ─── State Resolution ─────────────────────────────────────────
 
-	private resolveInitialState(settings: {
+	private resolveCurrentState(settings: {
 		contextMenuState?: ContextMenuState | undefined;
 		contextMenuItems?: string[] | undefined;
 	}): ContextMenuState | undefined {

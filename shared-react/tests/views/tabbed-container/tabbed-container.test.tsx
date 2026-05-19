@@ -195,18 +195,18 @@ describe("TabbedContainer", () => {
 		expect(render2).toHaveBeenCalledTimes(1);
 	});
 
-	it("renames tabs from initialState", () => {
-		renderReact(<TabbedContainer tabs={makeTabs()} cssPrefix="t-" initialState={{ renames: { "tab-1": "Custom" } }} />);
+	it("renames tabs from currentState", () => {
+		renderReact(<TabbedContainer tabs={makeTabs()} cssPrefix="t-" currentState={{ renames: { "tab-1": "Custom" } }} />);
 		expect(screen.getByTestId("t-view-tab-tab-1")).toHaveTextContent("Custom");
 	});
 
-	it("respects visibleTabIds in initialState", () => {
+	it("respects visibleTabIds in currentState", () => {
 		const handleRef = makeRef();
 		renderReact(
 			<TabbedContainer
 				tabs={makeTabs()}
 				cssPrefix="t-"
-				initialState={{ visibleTabIds: ["tab-2", "tab-0"] }}
+				currentState={{ visibleTabIds: ["tab-2", "tab-0"] }}
 				handleRef={handleRef}
 			/>
 		);
@@ -227,7 +227,7 @@ describe("TabbedContainer", () => {
 	it("applies colorOverrides to the icon span", () => {
 		const tabs: TabEntry[] = [{ id: "x", label: "X", icon: "star", content: null }];
 		const { container } = renderReact(
-			<TabbedContainer tabs={tabs} cssPrefix="t-" initialState={{ colorOverrides: { x: "rgb(255, 0, 0)" } }} />
+			<TabbedContainer tabs={tabs} cssPrefix="t-" currentState={{ colorOverrides: { x: "rgb(255, 0, 0)" } }} />
 		);
 		const iconEl = container.querySelector<HTMLElement>(".t-tab-icon");
 		expect(iconEl?.style.color).toBe("rgb(255, 0, 0)");
@@ -305,7 +305,7 @@ describe("TabbedContainer imperative handle", () => {
 			<TabbedContainer
 				tabs={makeTabs()}
 				cssPrefix="t-"
-				initialState={{ renames: { "tab-1": "Custom" } }}
+				currentState={{ renames: { "tab-1": "Custom" } }}
 				handleRef={handleRef}
 			/>
 		);
@@ -326,7 +326,7 @@ describe("TabbedContainer manage button", () => {
 				cssPrefix="t-"
 				editable
 				app={stubApp}
-				initialState={{ showSettingsButton: false }}
+				currentState={{ showSettingsButton: false }}
 			/>
 		);
 		expect(screen.queryByTestId("t-tabbed-container-manage")).not.toBeInTheDocument();
@@ -362,14 +362,14 @@ describe("TabbedContainer groups", () => {
 	it("renders the group's first child by default", () => {
 		const handleRef = makeRef();
 		renderReact(
-			<TabbedContainer tabs={groupTabs} cssPrefix="t-" initialState={{ visibleTabIds: ["g"] }} handleRef={handleRef} />
+			<TabbedContainer tabs={groupTabs} cssPrefix="t-" currentState={{ visibleTabIds: ["g"] }} handleRef={handleRef} />
 		);
 		expect(screen.getByTestId("child-a-body")).toBeInTheDocument();
 	});
 
 	it("opens the dropdown on group tab click and switches to selected child", async () => {
 		const { user } = renderReact(
-			<TabbedContainer tabs={groupTabs} cssPrefix="t-" initialState={{ visibleTabIds: ["g"] }} />
+			<TabbedContainer tabs={groupTabs} cssPrefix="t-" currentState={{ visibleTabIds: ["g"] }} />
 		);
 
 		await user.click(screen.getByTestId("t-view-tab-g"));
@@ -381,7 +381,7 @@ describe("TabbedContainer groups", () => {
 
 	it("closes the dropdown on a second click of the group tab", async () => {
 		const { user } = renderReact(
-			<TabbedContainer tabs={groupTabs} cssPrefix="t-" initialState={{ visibleTabIds: ["g"] }} />
+			<TabbedContainer tabs={groupTabs} cssPrefix="t-" currentState={{ visibleTabIds: ["g"] }} />
 		);
 
 		const groupBtn = screen.getByTestId("t-view-tab-g");
@@ -412,7 +412,7 @@ describe("TabbedContainer groups", () => {
 		expect(childB.querySelector(".t-tab-icon")).toBeInTheDocument();
 	});
 
-	it("applies child icon overrides from initialState inside the group dropdown", async () => {
+	it("applies child icon overrides from currentState inside the group dropdown", async () => {
 		const tabsWithChildIcons: TabEntry[] = [
 			{
 				id: "g",
@@ -424,7 +424,7 @@ describe("TabbedContainer groups", () => {
 			<TabbedContainer
 				tabs={tabsWithChildIcons}
 				cssPrefix="t-"
-				initialState={{
+				currentState={{
 					groupState: {
 						g: {
 							childIconOverrides: { "child-a": "star" },
@@ -676,10 +676,10 @@ describe("TabbedContainer DOM updates", () => {
 });
 
 describe("TabbedContainer icon overrides", () => {
-	it("renders iconOverrides from initialState", () => {
+	it("renders iconOverrides from currentState", () => {
 		const tabs: TabEntry[] = [{ id: "x", label: "X", icon: "calendar", content: null }];
 		const { container } = renderReact(
-			<TabbedContainer tabs={tabs} cssPrefix="t-" initialState={{ iconOverrides: { x: "star" } }} />
+			<TabbedContainer tabs={tabs} cssPrefix="t-" currentState={{ iconOverrides: { x: "star" } }} />
 		);
 		expect(container.querySelector('[data-tab-id="x"] .t-tab-icon')).toBeInTheDocument();
 	});
@@ -687,7 +687,7 @@ describe("TabbedContainer icon overrides", () => {
 	it("adds an icon span when iconOverrides set on a tab that had no default icon", () => {
 		const tabs: TabEntry[] = [{ id: "x", label: "X", content: null }];
 		const { container } = renderReact(
-			<TabbedContainer tabs={tabs} cssPrefix="t-" initialState={{ iconOverrides: { x: "star" } }} />
+			<TabbedContainer tabs={tabs} cssPrefix="t-" currentState={{ iconOverrides: { x: "star" } }} />
 		);
 		expect(container.querySelector('[data-tab-id="x"] .t-tab-icon')).toBeInTheDocument();
 	});
@@ -695,7 +695,7 @@ describe("TabbedContainer icon overrides", () => {
 	it("does not render an icon span when only a color override is set on an iconless tab", () => {
 		const tabs: TabEntry[] = [{ id: "x", label: "X", content: null }];
 		const { container } = renderReact(
-			<TabbedContainer tabs={tabs} cssPrefix="t-" initialState={{ colorOverrides: { x: "rgb(0, 255, 0)" } }} />
+			<TabbedContainer tabs={tabs} cssPrefix="t-" currentState={{ colorOverrides: { x: "rgb(0, 255, 0)" } }} />
 		);
 		expect(container.querySelector('[data-tab-id="x"] .t-tab-icon')).toBeNull();
 	});

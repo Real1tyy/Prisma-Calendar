@@ -16,13 +16,13 @@ function makeItems(count = 5, sectionPattern?: string[]): CustomizableContextMen
 function makeStore(
 	opts: {
 		items?: CustomizableContextMenuItem[];
-		initialState?: ContextMenuState;
+		currentState?: ContextMenuState;
 		onStateChange?: (s: ContextMenuState) => void;
 	} = {}
 ): CustomizableMenuStore {
 	return new CustomizableMenuStore({
 		allItems: opts.items ?? makeItems(),
-		initialState: opts.initialState,
+		currentState: opts.currentState,
 		onStateChange: opts.onStateChange,
 	});
 }
@@ -46,10 +46,10 @@ describe("CustomizableMenuStore", () => {
 		});
 
 		it("only includes showSettingsButton when explicitly false", () => {
-			const onTrue = makeStore({ initialState: { showSettingsButton: true } }).getState();
+			const onTrue = makeStore({ currentState: { showSettingsButton: true } }).getState();
 			expect(onTrue.showSettingsButton).toBeUndefined();
 
-			const onFalse = makeStore({ initialState: { showSettingsButton: false } }).getState();
+			const onFalse = makeStore({ currentState: { showSettingsButton: false } }).getState();
 			expect(onFalse.showSettingsButton).toBe(false);
 		});
 	});
@@ -203,7 +203,7 @@ describe("CustomizableMenuStore", () => {
 		it("moveItemToSection back to default section clears the override", () => {
 			const store = makeStore({
 				items,
-				initialState: { sectionOverrides: { "nav-0": "danger" } },
+				currentState: { sectionOverrides: { "nav-0": "danger" } },
 			});
 			store.moveItemToSection("nav-0", "navigation");
 			expect(store.getState().sectionOverrides).toBeUndefined();
@@ -256,15 +256,15 @@ describe("CustomizableMenuStore", () => {
 		});
 	});
 
-	describe("initialState restoration", () => {
+	describe("currentState restoration", () => {
 		it("restores visibleItemIds and falls back when empty", () => {
-			expect(makeStore({ initialState: { visibleItemIds: ["item-2", "item-0"] } }).visibleCount).toBe(2);
-			expect(makeStore({ initialState: { visibleItemIds: [] } }).visibleCount).toBe(5);
-			expect(makeStore({ initialState: { visibleItemIds: ["bogus"] } }).visibleCount).toBe(5);
+			expect(makeStore({ currentState: { visibleItemIds: ["item-2", "item-0"] } }).visibleCount).toBe(2);
+			expect(makeStore({ currentState: { visibleItemIds: [] } }).visibleCount).toBe(5);
+			expect(makeStore({ currentState: { visibleItemIds: ["bogus"] } }).visibleCount).toBe(5);
 		});
 
 		it("drops invalid ids from visibleItemIds", () => {
-			const store = makeStore({ initialState: { visibleItemIds: ["item-0", "bogus", "item-2"] } });
+			const store = makeStore({ currentState: { visibleItemIds: ["item-0", "bogus", "item-2"] } });
 			expect(store.getState().visibleItemIds).toEqual(["item-0", "item-2"]);
 		});
 
@@ -276,7 +276,7 @@ describe("CustomizableMenuStore", () => {
 				colorOverrides: { "item-0": "#ff0000" },
 				showSettingsButton: false,
 			};
-			const out = makeStore({ initialState: initial }).getState();
+			const out = makeStore({ currentState: initial }).getState();
 			expect(out.visibleItemIds).toEqual(initial.visibleItemIds);
 			expect(out.renames).toEqual(initial.renames);
 			expect(out.iconOverrides).toEqual(initial.iconOverrides);
@@ -333,7 +333,7 @@ describe("CustomizableMenuStore", () => {
 		});
 
 		it("clears sectionOverrides too", () => {
-			const store = makeStore({ initialState: { sectionOverrides: { "item-0": "danger" } } });
+			const store = makeStore({ currentState: { sectionOverrides: { "item-0": "danger" } } });
 			expect(store.getState().sectionOverrides).toEqual({ "item-0": "danger" });
 
 			store.resetToDefaults();
@@ -345,7 +345,7 @@ describe("CustomizableMenuStore", () => {
 			const onStateChange = vi.fn();
 			const store = new CustomizableMenuStore({
 				allItems: makeItems(5),
-				initialState: { visibleItemIds: ["item-0", "item-1"], renames: { "item-0": "Custom" } },
+				currentState: { visibleItemIds: ["item-0", "item-1"], renames: { "item-0": "Custom" } },
 				defaults: { visibleItemIds: ["item-2", "item-3"] },
 				onStateChange,
 			});
@@ -374,7 +374,7 @@ describe("CustomizableMenuStore", () => {
 			a.moveItem("item-0", 1);
 			const persisted = a.getState();
 
-			const b = makeStore({ initialState: persisted });
+			const b = makeStore({ currentState: persisted });
 			expect(b.visibleCount).toBe(4);
 			expect(b.getState().visibleItemIds).toEqual(persisted.visibleItemIds);
 		});

@@ -18,16 +18,16 @@ interface ResolvedInitial {
 	showSettingsButton: boolean;
 }
 
-function resolveInitial(allActions: HeaderActionDefinition[], initialState?: PageHeaderState): ResolvedInitial {
-	const renames = loadStringRecord(initialState?.renames);
-	const iconOverrides = loadStringRecord(initialState?.iconOverrides);
-	const colorOverrides = loadStringRecord(initialState?.colorOverrides);
-	const showSettingsButton = initialState?.showSettingsButton !== false;
+function resolveState(allActions: HeaderActionDefinition[], state?: PageHeaderState): ResolvedInitial {
+	const renames = loadStringRecord(state?.renames);
+	const iconOverrides = loadStringRecord(state?.iconOverrides);
+	const colorOverrides = loadStringRecord(state?.colorOverrides);
+	const showSettingsButton = state?.showSettingsButton !== false;
 
 	let visibleActions = allActions;
-	if (initialState?.visibleActionIds) {
+	if (state?.visibleActionIds) {
 		const actionMap = new Map(allActions.map((a) => [a.id, a]));
-		const visible = initialState.visibleActionIds
+		const visible = state.visibleActionIds
 			.map((id) => actionMap.get(id))
 			.filter((a): a is HeaderActionDefinition => a !== undefined);
 		if (visible.length > 0) visibleActions = visible;
@@ -49,10 +49,10 @@ export class PageHeaderStore {
 
 	constructor(
 		private readonly allActions: HeaderActionDefinition[],
-		initialState?: PageHeaderState,
+		currentState?: PageHeaderState,
 		defaults?: PageHeaderState
 	) {
-		const resolved = resolveInitial(allActions, initialState);
+		const resolved = resolveState(allActions, currentState ?? defaults);
 		this.visibleActions = resolved.visibleActions;
 		this.renames = resolved.renames;
 		this.iconOverrides = resolved.iconOverrides;
@@ -174,7 +174,7 @@ export class PageHeaderStore {
 	}
 
 	resetToDefaults(): void {
-		const resolved = resolveInitial(this.allActions, this.defaults);
+		const resolved = resolveState(this.allActions, this.defaults);
 		this.visibleActions = resolved.visibleActions;
 		this.renames = resolved.renames;
 		this.iconOverrides = resolved.iconOverrides;

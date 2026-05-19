@@ -4,8 +4,8 @@ import { useSchemaField, type SettingsStorelike } from "../../hooks/settings/use
 import type { TabbedContainerState } from "./types";
 
 export interface PersistedTabbedContainerState {
-	/** Snapshot captured once on mount — safe to pass to `<TabbedContainer initialState>`. */
-	initialState: TabbedContainerState;
+	/** Snapshot captured once on mount — safe to pass to `<TabbedContainer currentState>`. */
+	currentState: TabbedContainerState;
 	/** Persist a structural mutation back to the settings store. Wire to `<TabbedContainer onStateChange>`. */
 	onStateChange: (next: TabbedContainerState) => void;
 }
@@ -22,7 +22,7 @@ export function usePersistedTabbedContainerState(
 	path: string
 ): PersistedTabbedContainerState {
 	const [saved, setSaved] = useSchemaField<TabbedContainerState>(store, path);
-	const [initialState] = useState<TabbedContainerState>(() => saved);
+	const [currentState] = useState<TabbedContainerState>(() => saved);
 	const onStateChange = useCallback((next: TabbedContainerState) => setSaved(next), [setSaved]);
-	return useMemo(() => ({ initialState, onStateChange }), [initialState, onStateChange]);
+	return useMemo(() => ({ currentState, onStateChange }), [currentState, onStateChange]);
 }

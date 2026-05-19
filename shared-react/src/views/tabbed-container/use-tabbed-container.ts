@@ -16,8 +16,9 @@ import { isGroupTab, type TabbedContainerState, type TabDefinition, type TabEntr
 
 export interface UseTabbedContainerOptions {
 	tabs: TabEntry[];
-	initialState?: TabbedContainerState;
-	/** Factory defaults restored by the tab manager's Reset button. Omit for "all tabs in declaration order, no overrides". */
+	/** Persisted user customizations (from settings). When omitted, the hook starts from `defaults`. */
+	currentState?: TabbedContainerState;
+	/** Factory defaults restored by the tab manager's Reset button and used as the initial state when `currentState` is omitted. */
 	defaults?: TabbedContainerState;
 	onStateChange?: (state: TabbedContainerState) => void;
 	onTabChange?: (tabId: string, index: number) => void;
@@ -81,12 +82,12 @@ function preserveActiveChild(gs: GroupChildState, visibleChildren: TabDefinition
 
 export function useTabbedContainer({
 	tabs,
-	initialState,
+	currentState,
 	defaults,
 	onStateChange,
 	onTabChange,
 }: UseTabbedContainerOptions): UseTabbedContainerResult {
-	const initial = useMemo(() => resolveVisibleTabs(tabs, initialState), [tabs, initialState]);
+	const initial = useMemo(() => resolveVisibleTabs(tabs, currentState ?? defaults), [tabs, currentState, defaults]);
 	const defaultsResolved = useMemo(() => resolveVisibleTabs(tabs, defaults), [tabs, defaults]);
 
 	const [visibleTabs, setVisibleTabs] = useState<TabEntry[]>(initial.visibleTabs);
@@ -98,7 +99,7 @@ export function useTabbedContainer({
 
 	const [groupStates, setGroupStates] = useState<Map<string, GroupChildState>>(() => {
 		const map = new Map<string, GroupChildState>();
-		const saved = initialState?.groupState;
+		const saved = (currentState ?? defaults)?.groupState;
 		for (const entry of tabs) {
 			if (!isGroupTab(entry)) continue;
 			map.set(entry.id, initialGroupChildState(entry, saved?.[entry.id]));

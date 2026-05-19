@@ -356,8 +356,9 @@ const GanttBody = memo(function GanttBody() {
 			items: buildBarMenuItems(app, bundle, getActiveEvent, runCmd, enterPrereqSelection),
 			cssPrefix: CSS_PREFIX,
 			...(bundle.settingsStore.currentSettings.ganttContextMenuState
-				? { initialState: bundle.settingsStore.currentSettings.ganttContextMenuState }
+				? { currentState: bundle.settingsStore.currentSettings.ganttContextMenuState }
 				: {}),
+			defaults: {},
 			onStateChange: (state) => {
 				void bundle.settingsStore.updateSettings((s) => ({
 					...s,

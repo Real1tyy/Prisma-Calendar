@@ -4,17 +4,20 @@ export function buildManagerToolbarStyles(p: string, rp: string): string {
 	display: flex;
 	align-items: center;
 	gap: 12px;
+	padding: 8px 0;
 	margin-bottom: 8px;
 }
-.${p}${rp}-toolbar > .setting-item {
+.${p}${rp}-toolbar-label {
 	flex: 1 1 auto;
 	min-width: 0;
-	border: none;
-	padding-top: 8px;
-	padding-bottom: 8px;
+	font-size: var(--font-ui-small);
+	font-weight: 500;
+	color: var(--text-normal);
 }
-.${p}${rp}-toolbar > .${p}reset-to-defaults-btn {
-	flex: 0 0 auto;
+.${p}${rp}-toolbar-toggle {
+	display: inline-flex;
+	align-items: center;
+	flex-shrink: 0;
 }
 `;
 }
