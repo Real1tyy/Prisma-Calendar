@@ -160,11 +160,16 @@ export const BATCH_CONFIRM_TID = "prisma-batch-confirm-submit";
 /** Page header manage-actions modal — sub-parts keyed off the host `prisma-page-header-*` root. */
 export const PAGE_HEADER_MANAGE_BTN = "prisma-page-header-manage";
 export const ACTION_MANAGER_MODAL = "prisma-action-manager-modal";
+export const ACTION_MANAGER_RESET_BTN = "prisma-action-manager-reset";
 /** Tabbed-container tab-manager modal parts. */
 export const TABBED_CONTAINER_MANAGE_BTN = "prisma-tabbed-container-manage";
 export const TAB_MANAGER_MODAL = "prisma-tab-manager-modal";
+export const TAB_MANAGER_RESET_BTN = "prisma-tab-manager-reset";
 /** Context-menu item-manager modal (shown via the menu's "Manage items…" entry). */
 export const ITEM_MANAGER_MODAL = "prisma-item-manager-modal";
+export const ITEM_MANAGER_RESET_BTN = "prisma-item-manager-reset";
+/** Shared reset-to-defaults confirmation modal testIdPrefix (matches `ResetToDefaultsButton`). */
+export const RESET_CONFIRMATION_TID_PREFIX = "prisma-reset-to-defaults-";
 /** Generic assignment picker (used by Assign Categories / Assign Prerequisites). */
 export const ASSIGN_MODAL_ROOT = ".prisma-assignment-modal";
 /** Shared visual icon picker modal — opened when editing an icon in any manager. */

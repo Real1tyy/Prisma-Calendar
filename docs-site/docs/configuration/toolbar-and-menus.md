@@ -51,6 +51,7 @@ Click **"Manage menu items..."** at the bottom of the context menu to open the i
 - **Change color**: Click the pencil icon, then use the Color picker to tint the item's icon.
 - **Show/Hide**: Click the eye icon to hide an item. Hidden items appear dimmed at the bottom of their section. Click the eye-off icon to restore them. At least one item must remain visible.
 - **Toggle settings button**: The toggle at the top of the manager controls whether the "Manage menu items..." entry appears in the context menu.
+- **Reset to defaults**: Click the **Reset to defaults** button at the top of the manager, sitting right next to the "Show settings button" toggle. After confirming in the dialog, your custom order, sections, renames, icon overrides, and color overrides are all cleared back to the shipped defaults.
 - **Search**: Use the search bar at the top to filter items by name (flat list, ignoring sections).
 
 All changes persist automatically per calendar.

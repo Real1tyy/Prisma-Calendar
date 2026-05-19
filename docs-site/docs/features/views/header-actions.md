@@ -64,6 +64,10 @@ Use the color picker in the edit form to assign a custom color to any button. Us
 
 The "Show settings button" toggle at the top controls whether the gear icon itself is visible. If hidden, you can still access the manager via the command palette: **Prisma Calendar: Toggle page header settings**.
 
+### Reset to Defaults
+
+Next to the "Show settings button" toggle there's a **Reset to defaults** button. Click it and confirm in the dialog to restore the default header actions — order, visibility, renames, icon overrides, and color overrides are all cleared in one shot. The confirmation prompt protects you from accidentally wiping out your customizations.
+
 ## Persistence
 
-All customizations — visible actions, order, renames, icon and color overrides — save automatically to your calendar's settings. Deleting the `pageHeaderState` field from your config resets the header to the 19 defaults.
+All customizations — visible actions, order, renames, icon and color overrides — save automatically to your calendar's settings. Use the **Reset to defaults** button at the top of the manager to roll everything back to the shipped defaults.

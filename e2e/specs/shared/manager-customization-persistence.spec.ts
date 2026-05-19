@@ -3,11 +3,18 @@ import { settleSettings } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { PLUGIN_ID } from "../../fixtures/constants";
 import { isoLocal } from "../../fixtures/dates";
-import { expectItemManagerOpen, openActionManager, openTabManager } from "../../fixtures/dsl";
+import { expectConfirmationModal, expectItemManagerOpen, openActionManager, openTabManager } from "../../fixtures/dsl";
 import { expect, test } from "../../fixtures/electron";
 import { clickContextMenuItem, rightClickEvent } from "../../fixtures/helpers";
 import { readDefaultCalendar } from "../../fixtures/plugin-data";
-import { ICON_PICKER_GRID_TID, ICON_PICKER_NO_ICON_TID, sel, SHARED_ROW_PREFIX, TID } from "../../fixtures/testids";
+import {
+	ICON_PICKER_GRID_TID,
+	ICON_PICKER_NO_ICON_TID,
+	RESET_CONFIRMATION_TID_PREFIX,
+	sel,
+	SHARED_ROW_PREFIX,
+	TID,
+} from "../../fixtures/testids";
 
 type Overrides = {
 	renames?: Record<string, string>;
@@ -142,7 +149,7 @@ test.describe("manager customization + persistence", () => {
 		});
 	});
 
-	test("tab manager: rename → reorder → hide lifecycle persists all mutations", async ({ calendar }) => {
+	test("tab manager: rename → reorder → hide → reset lifecycle persists all mutations", async ({ calendar }) => {
 		const page = calendar.page;
 		const initialOrder = await readTabOrder(page);
 		expect(initialOrder.length).toBeGreaterThan(2);
@@ -190,5 +197,24 @@ test.describe("manager customization + persistence", () => {
 			cal?.activeTab?.visibleTabIds?.indexOf(reorderPredecessor) ?? -1
 		);
 		expect(cal?.activeTab?.visibleTabIds ?? []).not.toContain(hideTarget);
+
+		// 4. Reset to defaults — confirm in the dialog, then assert DOM + disk roll back
+		const manager2 = await openTabManager(page);
+		await manager2.clickReset();
+		const dialog = await expectConfirmationModal(page, { testIdPrefix: RESET_CONFIRMATION_TID_PREFIX });
+		await dialog.confirm();
+		await manager2.close();
+
+		// DOM: rename is gone, hidden tab is back, order matches the original
+		await expect(page.locator(sel(TID.viewTab(renameTarget))).first()).not.toContainText(newLabel);
+		const restoredOrder = await readTabOrder(page);
+		expect(restoredOrder).toContain(hideTarget);
+		expect(restoredOrder.indexOf(reorderTarget)).toBe(initialOrder.indexOf(reorderTarget));
+
+		// Disk: no rename override, hidden tab restored, order back to defaults
+		await settleSettings(page, { pluginId: PLUGIN_ID });
+		const afterReset = readDefaultCalendar<ActiveTabState>(calendar.vaultDir);
+		expect(afterReset?.activeTab?.renames?.[renameTarget]).toBeUndefined();
+		expect(afterReset?.activeTab?.visibleTabIds ?? []).toContain(hideTarget);
 	});
 });

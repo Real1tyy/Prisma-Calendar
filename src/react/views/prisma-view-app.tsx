@@ -7,6 +7,7 @@ import {
 	TabbedContainer,
 	useApp,
 	type PageHeaderHandle,
+	type PageHeaderState,
 	type TabbedContainerHandle,
 	type TabbedContainerState,
 	type TabDefinition,
@@ -259,6 +260,7 @@ function setupTabbedContainer({
 			editable: true,
 			app,
 			initialState: savedState ?? defaultState,
+			defaults: defaultState,
 			onStateChange: (state) => {
 				void bundle.settingsStore.updateSettings((s) => ({ ...s, activeTab: state }));
 				const handle = tabbedHandleRef.current;
@@ -311,12 +313,14 @@ function setupCapacityIndicator(titleContainer: HTMLElement, mountCtx: MountCtx,
 function setupPageHeader(mountCtx: MountCtx, viewRef: PrismaViewRef): () => void {
 	const { app, plugin, bundle, leaf } = mountCtx;
 	const savedState = bundle.settingsStore.currentSettings.pageHeaderState;
+	const factoryDefault: PageHeaderState = { visibleActionIds: DEFAULT_ORDERED_ACTION_IDS };
 	const handle = createPageHeader({
 		actions: buildPageHeaderActions(app),
 		cssPrefix: CSS_PREFIX,
 		app,
 		editable: true,
-		initialState: savedState ?? { visibleActionIds: DEFAULT_ORDERED_ACTION_IDS },
+		initialState: savedState ?? factoryDefault,
+		defaults: factoryDefault,
 		onStateChange: (state) => {
 			void bundle.settingsStore.updateSettings((s) => ({ ...s, pageHeaderState: state }));
 		},

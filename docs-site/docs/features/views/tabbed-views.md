@@ -62,6 +62,7 @@ A Gantt chart showing events as horizontal bars with dependency arrows between p
 - **Reorder tabs** by right-clicking a tab and selecting Move left/right, or use the settings gear to open the tab manager.
 - **Hide/show tabs** via the tab manager (gear icon) or right-click context menu.
 - **Edit tabs** via the tab manager — click the pencil icon on any row to expand an inline edit form where you can change the tab's **name**, **icon**, and **color**. This is the same edit form used by header actions and context menu items.
+- **Reset to defaults** via the **Reset to defaults** button at the top of the tab manager, sitting next to the "Show settings button" toggle. The button shows a confirmation dialog before clearing your custom tab order, visibility, names, icons, and colors.
 
 Tab state — active tab, visibility, order, custom names, icon overrides, and color overrides — persists across sessions.
 

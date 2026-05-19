@@ -2,11 +2,13 @@ import { expect, type Locator, type Page } from "@playwright/test";
 
 import {
 	ACTION_MANAGER_MODAL,
+	ACTION_MANAGER_RESET_BTN,
 	ASSIGN_MODAL_ROOT,
 	CONFIRMATION_MODAL_CANCEL_TID,
 	CONFIRMATION_MODAL_CONFIRM_TID,
 	CONFIRMATION_MODAL_TID,
 	ITEM_MANAGER_MODAL,
+	ITEM_MANAGER_RESET_BTN,
 	PAGE_HEADER_MANAGE_BTN,
 	PROGRESS_DETAILS_TID,
 	PROGRESS_MODAL_TID,
@@ -15,10 +17,12 @@ import {
 	RENAME_INPUT_TID,
 	RENAME_MODAL_TID,
 	RENAME_SUBMIT_TID,
+	RESET_CONFIRMATION_TID_PREFIX,
 	sel,
 	SHARED_ROW_PREFIX,
 	sharedTID,
 	TAB_MANAGER_MODAL,
+	TAB_MANAGER_RESET_BTN,
 	TABBED_CONTAINER_MANAGE_BTN,
 } from "../testids";
 
@@ -35,12 +39,16 @@ import {
 
 export interface ActionManagerHandle {
 	readonly modal: Locator;
+	/** Reset-to-defaults button at the top of the modal. */
+	readonly resetBtn: Locator;
 	/** Row for an action id (e.g. `create-event`). */
 	row(id: string): Locator;
 	/** Click the chevron-up for `id` to move it one position up. */
 	moveUp(id: string): Promise<void>;
 	/** Click the visibility toggle for `id`. */
 	toggle(id: string): Promise<void>;
+	/** Click the Reset-to-defaults button (does NOT confirm — caller drives confirmation modal). */
+	clickReset(): Promise<void>;
 	/** Dismiss via Escape and wait for the modal to unmount. */
 	close(): Promise<void>;
 }
@@ -52,9 +60,11 @@ export async function openActionManager(page: Page): Promise<ActionManagerHandle
 	await manageBtn.click();
 	const modal = page.locator(sel(ACTION_MANAGER_MODAL));
 	await modal.waitFor({ state: "visible" });
+	const resetBtn = modal.locator(sel(ACTION_MANAGER_RESET_BTN)).first();
 
 	return {
 		modal,
+		resetBtn,
 		row: (id) => modal.locator(sel(sharedTID.actionRow(id))).first(),
 		async moveUp(id) {
 			const btn = page.locator(sel(sharedTID.actionUp(id))).first();
@@ -65,6 +75,10 @@ export async function openActionManager(page: Page): Promise<ActionManagerHandle
 			const btn = page.locator(sel(sharedTID.actionToggle(id))).first();
 			await btn.waitFor({ state: "visible" });
 			await btn.click();
+		},
+		async clickReset() {
+			await resetBtn.waitFor({ state: "visible" });
+			await resetBtn.click();
 		},
 		async close() {
 			await page.keyboard.press("Escape");
@@ -77,9 +91,11 @@ export async function openActionManager(page: Page): Promise<ActionManagerHandle
 
 export interface TabManagerHandle {
 	readonly modal: Locator;
+	readonly resetBtn: Locator;
 	moveUp(id: string): Promise<void>;
 	toggle(id: string): Promise<void>;
 	rename(id: string): Promise<void>;
+	clickReset(): Promise<void>;
 	close(): Promise<void>;
 }
 
@@ -89,9 +105,11 @@ export async function openTabManager(page: Page): Promise<TabManagerHandle> {
 	await manageBtn.click();
 	const modal = page.locator(sel(TAB_MANAGER_MODAL));
 	await modal.waitFor({ state: "visible" });
+	const resetBtn = modal.locator(sel(TAB_MANAGER_RESET_BTN)).first();
 
 	return {
 		modal,
+		resetBtn,
 		async moveUp(id) {
 			const srcRow = modal.locator(sel(sharedTID.tabManagerRow(id))).first();
 			await srcRow.waitFor({ state: "visible" });
@@ -119,6 +137,10 @@ export async function openTabManager(page: Page): Promise<TabManagerHandle> {
 			await editBtn.waitFor({ state: "visible" });
 			await editBtn.click();
 		},
+		async clickReset() {
+			await resetBtn.waitFor({ state: "visible" });
+			await resetBtn.click();
+		},
 		async close() {
 			await page.keyboard.press("Escape");
 			await modal.waitFor({ state: "hidden" });
@@ -130,7 +152,9 @@ export async function openTabManager(page: Page): Promise<TabManagerHandle> {
 
 export interface ItemManagerHandle {
 	readonly modal: Locator;
+	readonly resetBtn: Locator;
 	toggle(id: string): Promise<void>;
+	clickReset(): Promise<void>;
 	close(): Promise<void>;
 }
 
@@ -142,12 +166,18 @@ export interface ItemManagerHandle {
 export async function expectItemManagerOpen(page: Page): Promise<ItemManagerHandle> {
 	const modal = page.locator(sel(ITEM_MANAGER_MODAL));
 	await modal.waitFor({ state: "visible" });
+	const resetBtn = modal.locator(sel(ITEM_MANAGER_RESET_BTN)).first();
 	return {
 		modal,
+		resetBtn,
 		async toggle(id) {
 			const btn = modal.locator(sel(sharedTID.itemManagerToggle(id))).first();
 			await btn.waitFor({ state: "visible" });
 			await btn.click();
+		},
+		async clickReset() {
+			await resetBtn.waitFor({ state: "visible" });
+			await resetBtn.click();
 		},
 		async close() {
 			await page.keyboard.press("Escape");

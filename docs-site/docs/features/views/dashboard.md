@@ -42,6 +42,8 @@ Each subtab renders a resizable 2x2 grid:
 
 Drag the grid dividers to resize columns and rows.
 
+Hover the grid and click the gear icon to open the **Layout Editor**, where you can change the number of columns and rows and reassign cells. The editor includes a **Reset layout** button next to the Columns/Rows controls — click it and confirm in the dialog to restore the default grid layout. Click **Apply** to commit your changes, or **Cancel** to discard them.
+
 ## Customizing Subtabs
 
 Subtabs can be reordered, renamed, and hidden via the tab manager (gear icon in the tab bar). Expand the Dashboard group to see and manage individual subtabs.
