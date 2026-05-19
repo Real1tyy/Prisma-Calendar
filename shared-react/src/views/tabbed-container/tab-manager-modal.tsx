@@ -13,12 +13,14 @@ import { createPortal } from "react-dom";
 
 import { useApp } from "../../contexts/app-context";
 import { SharedReactThemeProvider } from "../../contexts/theme-context";
+import { useInjectedStyles } from "../../hooks/styles/use-styles";
 import { showReactIconPicker } from "../../modals/icon-picker-modal";
 import { ObsidianIcon } from "../../primitives/atoms/obsidian-icon";
 import { Toggle } from "../../primitives/controls";
-import { SettingItem } from "../../primitives/layout/setting-item";
 import { ManagerEditForm, type ManagerEditController } from "../../widgets/manager-list/manager-edit-form";
 import { ManagerRow } from "../../widgets/manager-list/manager-row";
+import { ManagerToolbar } from "../../widgets/manager-list/manager-toolbar";
+import { buildTabbedContainerStyles } from "./styles";
 import { isGroupTab, type GroupTabDefinition, type TabDefinition, type TabEntry } from "./types";
 import { useModalPortal } from "./use-modal-portal";
 import type { TabbedContainerActions, TabbedContainerStateAccess } from "./use-tabbed-container";
@@ -97,6 +99,8 @@ export const TabManagerContent = memo(function TabManagerContent({
 	state,
 	actions,
 }: TabManagerContentProps) {
+	const app = useApp();
+	useInjectedStyles(`${cssPrefix}tabbed-container-styles`, buildTabbedContainerStyles(cssPrefix));
 	const [expandedId, setExpandedId] = useState<string | null>(null);
 	const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => new Set());
 	const [drag, setDrag] = useState<DragState>({ id: null, scope: "tab" });
@@ -152,9 +156,14 @@ export const TabManagerContent = memo(function TabManagerContent({
 	return (
 		<TabManagerContext value={contextValue}>
 			<div data-testid={`${cssPrefix}tab-manager-content`}>
-				<SettingItem name="Show settings button">
-					<Toggle value={state.showSettingsButton} onChange={actions.setShowSettingsButton} />
-				</SettingItem>
+				<ManagerToolbar
+					app={app}
+					cssPrefix={cssPrefix}
+					rowPrefix={ROW_PREFIX}
+					toggleControl={<Toggle value={state.showSettingsButton} onChange={actions.setShowSettingsButton} />}
+					onReset={actions.resetToDefaults}
+					confirmMessage="This restores the default tabs, order, labels, icons, and colors. Custom changes will be lost."
+				/>
 
 				<div className={`${cssPrefix}${ROW_PREFIX}-list`}>
 					{orderedTabs.map((tab, index) => (

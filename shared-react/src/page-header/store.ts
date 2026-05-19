@@ -40,6 +40,7 @@ export class PageHeaderStore {
 	private snapshot: PageHeaderSnapshot;
 	private readonly listeners = new Set<() => void>();
 	private readonly defaultOrder: string[];
+	private readonly defaults: PageHeaderState | undefined;
 	private renames: Record<string, string>;
 	private iconOverrides: Record<string, string>;
 	private colorOverrides: Record<string, string>;
@@ -48,7 +49,8 @@ export class PageHeaderStore {
 
 	constructor(
 		private readonly allActions: HeaderActionDefinition[],
-		initialState?: PageHeaderState
+		initialState?: PageHeaderState,
+		defaults?: PageHeaderState
 	) {
 		const resolved = resolveInitial(allActions, initialState);
 		this.visibleActions = resolved.visibleActions;
@@ -57,6 +59,7 @@ export class PageHeaderStore {
 		this.colorOverrides = resolved.colorOverrides;
 		this.showSettingsButton = resolved.showSettingsButton;
 		this.defaultOrder = allActions.map((a) => a.id);
+		this.defaults = defaults;
 		this.snapshot = this.buildSnapshot();
 	}
 
@@ -167,6 +170,16 @@ export class PageHeaderStore {
 	setShowSettingsButton(visible: boolean): void {
 		if (this.showSettingsButton === visible) return;
 		this.showSettingsButton = visible;
+		this.notify();
+	}
+
+	resetToDefaults(): void {
+		const resolved = resolveInitial(this.allActions, this.defaults);
+		this.visibleActions = resolved.visibleActions;
+		this.renames = resolved.renames;
+		this.iconOverrides = resolved.iconOverrides;
+		this.colorOverrides = resolved.colorOverrides;
+		this.showSettingsButton = resolved.showSettingsButton;
 		this.notify();
 	}
 

@@ -36,7 +36,7 @@ export function createPageHeader(config: PageHeaderConfig): PageHeaderHandle {
 	injectStyleSheet(`${config.cssPrefix}page-header-styles`, buildPageHeaderStyles(config.cssPrefix));
 
 	const { app, onStateChange, editable = false, mode = "override", cssPrefix } = config;
-	const store = new PageHeaderStore(config.actions, config.initialState);
+	const store = new PageHeaderStore(config.actions, config.initialState, config.defaults);
 	const appliedLeaves = new Map<WorkspaceLeaf, AppliedLeafState>();
 	let destroyed = false;
 

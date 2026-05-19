@@ -1,3 +1,5 @@
+import { buildManagerToolbarStyles } from "../../widgets/manager-list/manager-toolbar.styles";
+
 /**
  * Section-only styles for the customizable context-menu item manager modal.
  * Row, grip, arrow, label, button, and edit-form styles are injected by the
@@ -62,5 +64,7 @@ export function buildCustomizableMenuStyles(prefix: string): string {
 	padding: 12px;
 	text-align: center;
 }
+
+${buildManagerToolbarStyles(p, "item-manager")}
 `;
 }

@@ -144,6 +144,23 @@ export const GridLayout = memo(function GridLayout(props: GridLayoutProps) {
 	const childSpecs = useMemo(() => walkCellChildren(children), [children]);
 	const palette = useMemo(() => buildPaletteFromChildren(childSpecs, columns, rows), [childSpecs, columns, rows]);
 
+	// Default state used by the layout editor's Reset button — represents the
+	// pristine layout dictated by `<Cell>` declarations + the prop-level columns/
+	// rows, ignoring any persisted state.
+	const defaultState = useMemo<GridLayoutState>(
+		() => ({
+			columns,
+			rows,
+			cells: palette.defaultPlacements.map((p) => ({ optionId: p.id, row: p.row, col: p.col })),
+			columnSizes: undefined,
+			rowSizes: undefined,
+			cellColumnSizes: undefined,
+			cellRowSizes: undefined,
+		}),
+		[columns, rows, palette.defaultPlacements]
+	);
+	const defaultStateRef = useLatestRef(defaultState);
+
 	// One-shot reducer initialization: the third arg to useReducer is `init(initialArg)`,
 	// called once on first render. `columns`, `rows`, `resizable`, `initialState`, and the
 	// initial palette only seed state — later changes do NOT re-init. Force a full rebuild
@@ -199,12 +216,13 @@ export const GridLayout = memo(function GridLayout(props: GridLayoutProps) {
 	const resolvedOpenLayoutEditor = useMemo<GridLayoutConfig["onOpenLayoutEditor"] | undefined>(() => {
 		if (onOpenLayoutEditor) return onOpenLayoutEditor;
 		if (!app) return undefined;
-		return (currentState, paletteOpts, applyState) =>
+		return (currentState, paletteOpts, applyState, defaultState) =>
 			openLayoutEditor(app, {
 				cssPrefix,
 				initialState: currentState,
 				cellPalette: paletteOpts,
 				onApply: applyState,
+				defaultState,
 			});
 	}, [app, cssPrefix, onOpenLayoutEditor]);
 
@@ -279,13 +297,18 @@ export const GridLayout = memo(function GridLayout(props: GridLayoutProps) {
 				const openEditor = resolvedOpenLayoutEditorRefInternal.current;
 				const paletteOpts = cellOptionPaletteRef.current;
 				if (!openEditor || paletteOpts.length === 0) return;
-				openEditor(buildPublicState(syncStateRef.current, resizableRef.current), paletteOpts, (next) => {
-					// flushSync so DOM reflects the new layout before applyState returns —
-					// safe here because applyState fires from a modal action handler.
-					flushSync(() => {
-						dispatch({ type: "applyState", state: next });
-					});
-				});
+				openEditor(
+					buildPublicState(syncStateRef.current, resizableRef.current),
+					paletteOpts,
+					(next) => {
+						// flushSync so DOM reflects the new layout before applyState returns —
+						// safe here because applyState fires from a modal action handler.
+						flushSync(() => {
+							dispatch({ type: "applyState", state: next });
+						});
+					},
+					defaultStateRef.current
+				);
 			},
 			getState() {
 				return buildPublicState(syncStateRef.current, resizableRef.current);

@@ -43,6 +43,8 @@ export interface PageHeaderConfig {
 	cssPrefix: string;
 	/** Persisted state to restore. When provided, overrides visibility, order, labels, and icons. */
 	initialState?: PageHeaderState;
+	/** Factory defaults applied by the action manager's Reset button. Omit for "all actions in declaration order, no overrides". */
+	defaults?: PageHeaderState;
 	/** Fires on any state mutation (reorder, rename, hide, icon change). */
 	onStateChange?: (state: PageHeaderState) => void;
 	/** When true, enables the action manager modal. */

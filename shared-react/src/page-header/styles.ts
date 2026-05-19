@@ -1,4 +1,5 @@
 import { buildManagerRowStyles } from "../widgets/manager-list/manager-row.styles";
+import { buildManagerToolbarStyles } from "../widgets/manager-list/manager-toolbar.styles";
 
 export function buildPageHeaderStyles(p: string): string {
 	return `
@@ -66,6 +67,8 @@ export function buildPageHeaderStyles(p: string): string {
 	color: var(--text-faint);
 	font-size: var(--font-ui-medium);
 }
+
+${buildManagerToolbarStyles(p, "action-manager")}
 
 /* ─── Shared row scaffolding (list/row/drag/grip/arrows/label/controls) ─── */
 ${buildManagerRowStyles(p, "action-manager")}

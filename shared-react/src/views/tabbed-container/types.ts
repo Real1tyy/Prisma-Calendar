@@ -81,6 +81,12 @@ export interface TabbedContainerProps {
 	lazy?: boolean;
 	/** Persisted state to restore. Overrides tab order, visibility, and labels. */
 	initialState?: TabbedContainerState;
+	/**
+	 * Factory defaults applied by the tab manager's Reset button. When provided,
+	 * Reset restores this configuration; otherwise Reset returns the container
+	 * to "all tabs in declaration order, no overrides".
+	 */
+	defaults?: TabbedContainerState;
 	onTabChange?: (tabId: string, index: number) => void;
 	/** Fires on any state mutation (tab switch, hide, reorder, rename). */
 	onStateChange?: (state: TabbedContainerState) => void;

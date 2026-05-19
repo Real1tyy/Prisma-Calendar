@@ -17,6 +17,8 @@ import { isGroupTab, type TabbedContainerState, type TabDefinition, type TabEntr
 export interface UseTabbedContainerOptions {
 	tabs: TabEntry[];
 	initialState?: TabbedContainerState;
+	/** Factory defaults restored by the tab manager's Reset button. Omit for "all tabs in declaration order, no overrides". */
+	defaults?: TabbedContainerState;
 	onStateChange?: (state: TabbedContainerState) => void;
 	onTabChange?: (tabId: string, index: number) => void;
 }
@@ -61,6 +63,7 @@ export interface TabbedContainerActions {
 	setChildColor: (groupId: string, childId: string, value: string | undefined) => void;
 	reorderTabs: (fromId: string, toId: string) => void;
 	setShowSettingsButton: (value: boolean) => void;
+	resetToDefaults: () => void;
 }
 
 export interface UseTabbedContainerResult {
@@ -79,10 +82,12 @@ function preserveActiveChild(gs: GroupChildState, visibleChildren: TabDefinition
 export function useTabbedContainer({
 	tabs,
 	initialState,
+	defaults,
 	onStateChange,
 	onTabChange,
 }: UseTabbedContainerOptions): UseTabbedContainerResult {
 	const initial = useMemo(() => resolveVisibleTabs(tabs, initialState), [tabs, initialState]);
+	const defaultsResolved = useMemo(() => resolveVisibleTabs(tabs, defaults), [tabs, defaults]);
 
 	const [visibleTabs, setVisibleTabs] = useState<TabEntry[]>(initial.visibleTabs);
 	const [currentIndex, setCurrentIndex] = useState(0);
@@ -402,6 +407,30 @@ export function useTabbedContainer({
 		[emit]
 	);
 
+	const resetToDefaults = useCallback((): void => {
+		const freshGroupStates = new Map<string, GroupChildState>();
+		for (const entry of tabs) {
+			if (isGroupTab(entry)) {
+				freshGroupStates.set(entry.id, initialGroupChildState(entry, defaults?.groupState?.[entry.id]));
+			}
+		}
+		setVisibleTabs(defaultsResolved.visibleTabs);
+		setCurrentIndex(0);
+		setRenames(defaultsResolved.renames);
+		setIconOverrides(defaultsResolved.iconOverrides);
+		setColorOverrides(defaultsResolved.colorOverrides);
+		setShowSettingsButton(defaultsResolved.showSettingsButton);
+		setGroupStates(freshGroupStates);
+		emit({
+			visibleTabs: defaultsResolved.visibleTabs,
+			renames: defaultsResolved.renames,
+			iconOverrides: defaultsResolved.iconOverrides,
+			colorOverrides: defaultsResolved.colorOverrides,
+			showSettingsButton: defaultsResolved.showSettingsButton,
+			groupStates: freshGroupStates,
+		});
+	}, [tabs, defaults, defaultsResolved, emit]);
+
 	const getState = useCallback(
 		() =>
 			buildState({
@@ -458,6 +487,7 @@ export function useTabbedContainer({
 		setChildColor,
 		reorderTabs,
 		setShowSettingsButton: setShowSettingsButtonAction,
+		resetToDefaults,
 	};
 
 	return { state, actions, getState, getVisibleLabels };

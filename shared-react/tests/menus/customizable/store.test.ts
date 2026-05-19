@@ -301,6 +301,64 @@ describe("CustomizableMenuStore", () => {
 		});
 	});
 
+	describe("resetToDefaults", () => {
+		it("restores order, overrides, sections, and showSettingsButton in one shot", () => {
+			const onStateChange = vi.fn();
+			const store = makeStore({ onStateChange });
+
+			store.hideItem("item-0");
+			store.moveItem("item-1", 1);
+			store.setRename("item-2", "Custom");
+			store.setIcon("item-3", "star");
+			store.setColor("item-4", "#ff0000");
+			store.setShowSettingsButton(false);
+			onStateChange.mockClear();
+
+			store.resetToDefaults();
+
+			expect(store.visibleCount).toBe(5);
+			expect(store.getState()).toEqual({});
+			expect(onStateChange).toHaveBeenCalledOnce();
+			expect(onStateChange).toHaveBeenCalledWith({});
+		});
+
+		it("emits a serialized state matching the factory defaults", () => {
+			const onStateChange = vi.fn();
+			const store = makeStore({ onStateChange });
+
+			store.resetToDefaults();
+
+			expect(store.getState()).toEqual({});
+			expect(onStateChange).toHaveBeenCalledOnce();
+		});
+
+		it("clears sectionOverrides too", () => {
+			const store = makeStore({ initialState: { sectionOverrides: { "item-0": "danger" } } });
+			expect(store.getState().sectionOverrides).toEqual({ "item-0": "danger" });
+
+			store.resetToDefaults();
+
+			expect(store.getState().sectionOverrides).toBeUndefined();
+		});
+
+		it("restores consumer-supplied factory defaults when provided", () => {
+			const onStateChange = vi.fn();
+			const store = new CustomizableMenuStore({
+				allItems: makeItems(5),
+				initialState: { visibleItemIds: ["item-0", "item-1"], renames: { "item-0": "Custom" } },
+				defaults: { visibleItemIds: ["item-2", "item-3"] },
+				onStateChange,
+			});
+			onStateChange.mockClear();
+
+			store.resetToDefaults();
+
+			expect(store.getState().visibleItemIds).toEqual(["item-2", "item-3"]);
+			expect(store.getState().renames).toBeUndefined();
+			expect(onStateChange).toHaveBeenCalledOnce();
+		});
+	});
+
 	describe("compound operations", () => {
 		it("hide + move changes both visibility and order", () => {
 			const store = makeStore();

@@ -29,6 +29,8 @@ export interface CustomizableContextMenuConfig {
 	cssPrefix: string;
 	/** Persisted state to restore. When provided, overrides visibility, order, labels, and icons. */
 	initialState?: ContextMenuState;
+	/** Factory defaults applied by the item manager's Reset button. Omit for "all items in declaration order, no overrides". */
+	defaults?: ContextMenuState;
 	/** Fires on any state mutation (reorder, rename, hide, icon change). */
 	onStateChange?: (state: ContextMenuState) => void;
 	/** When true, enables the item manager modal and settings menu entry. */

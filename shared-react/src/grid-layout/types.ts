@@ -139,13 +139,15 @@ export interface GridLayoutConfig {
 	onStateChange?: (state: GridLayoutState) => void;
 	/**
 	 * Invoked when the user triggers "edit layout" (via gear button or command).
-	 * Receives the current state and palette; caller is responsible for opening
-	 * a UI and calling `applyState` with the new state when the user submits.
+	 * Receives the current state, palette, an `applyState` callback for submission,
+	 * and the consumer's `defaultState` (derived from the original `<Cell>` palette)
+	 * that the in-editor Reset button restores to.
 	 */
 	onOpenLayoutEditor?: (
 		currentState: GridLayoutState,
 		cellPalette: CellOption[],
-		applyState: (state: GridLayoutState) => void
+		applyState: (state: GridLayoutState) => void,
+		defaultState: GridLayoutState
 	) => void;
 	/**
 	 * Invoked when the user requests the cell palette picker for a specific cell

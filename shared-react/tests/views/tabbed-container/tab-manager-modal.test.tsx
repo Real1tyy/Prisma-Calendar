@@ -1,7 +1,7 @@
-import { act, screen } from "@testing-library/react";
+import { act, renderHook, screen } from "@testing-library/react";
 import type { App } from "obsidian";
 import type { ReactElement } from "react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { AppContext } from "../../../src/contexts/app-context";
 import { TabManagerContent } from "../../../src/views/tabbed-container/tab-manager-modal";
@@ -166,5 +166,74 @@ describe("TabManagerContent groups", () => {
 	it("does not crash with group tabs containing zero children visible", () => {
 		const tabs: TabEntry[] = [{ id: "g", label: "Group", children: [{ id: "only", label: "Only", content: null }] }];
 		expect(() => act(() => renderInTheme(<Harness tabs={tabs} />))).not.toThrow();
+	});
+});
+
+describe("useTabbedContainer resetToDefaults", () => {
+	it("restores tab visibility, order, and overrides while emitting onStateChange", () => {
+		const onStateChange = vi.fn();
+		const { result } = renderHook(() => useTabbedContainer({ tabs: makeTabs(), onStateChange }));
+
+		act(() => {
+			result.current.actions.hideTab("b");
+			result.current.actions.moveTab("a", 1);
+			result.current.actions.rename("c", "Renamed");
+			result.current.actions.setIcon("a", "star");
+			result.current.actions.setColor("c", "#ff0000");
+			result.current.actions.setShowSettingsButton(false);
+		});
+
+		onStateChange.mockClear();
+
+		act(() => {
+			result.current.actions.resetToDefaults();
+		});
+
+		expect(result.current.state.visibleTabs.map((t) => t.id)).toEqual(["a", "b", "c"]);
+		expect(result.current.getState()).toEqual({});
+		expect(onStateChange).toHaveBeenCalledOnce();
+		expect(onStateChange).toHaveBeenCalledWith({});
+	});
+
+	it("restores group children to their original order", () => {
+		const { result } = renderHook(() => useTabbedContainer({ tabs: makeGroupTabs() }));
+
+		act(() => {
+			result.current.actions.hideGroupChild("g", "child-a");
+			result.current.actions.moveGroupChild("g", "child-b", -1);
+		});
+
+		act(() => {
+			result.current.actions.resetToDefaults();
+		});
+
+		const group = result.current.state.groupStates.get("g");
+		expect(group?.visibleChildren.map((c) => c.id)).toEqual(["child-a", "child-b"]);
+		expect(result.current.getState().groupState).toBeUndefined();
+	});
+
+	it("restores consumer-supplied factory defaults when provided", () => {
+		const onStateChange = vi.fn();
+		const { result } = renderHook(() =>
+			useTabbedContainer({
+				tabs: makeTabs(),
+				defaults: { visibleTabIds: ["c", "a"], renames: { c: "Pinned" } },
+				onStateChange,
+			})
+		);
+
+		act(() => {
+			result.current.actions.hideTab("b");
+		});
+
+		onStateChange.mockClear();
+
+		act(() => {
+			result.current.actions.resetToDefaults();
+		});
+
+		expect(result.current.state.visibleTabs.map((t) => t.id)).toEqual(["c", "a"]);
+		expect(result.current.state.renames).toEqual({ c: "Pinned" });
+		expect(onStateChange).toHaveBeenCalledWith({ visibleTabIds: ["c", "a"], renames: { c: "Pinned" } });
 	});
 });

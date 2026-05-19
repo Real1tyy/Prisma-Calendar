@@ -1,5 +1,5 @@
 export { PageHeaderActionBar } from "./action-bar";
-export { openPageHeaderActionManager } from "./action-manager";
+export { ActionManagerContent, openPageHeaderActionManager, type ActionManagerProps } from "./action-manager";
 export { registerPageHeaderCommands } from "./commands";
 export { createPageHeader } from "./create-page-header";
 export type { PageHeaderSnapshot } from "./store";

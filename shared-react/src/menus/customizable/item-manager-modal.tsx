@@ -5,10 +5,10 @@ import { useScoped } from "../../contexts/theme-context";
 import { useScopedStyles } from "../../hooks/styles/use-styles";
 import { showReactIconPicker } from "../../modals/icon-picker-modal";
 import { FilterInput } from "../../primitives/filters/filter-input";
-import { SettingItem } from "../../primitives/layout/setting-item";
 import { showShelledModal } from "../../show-react-modal";
 import { ManagerEditForm, type ManagerEditController } from "../../widgets/manager-list/manager-edit-form";
 import { ManagerRow } from "../../widgets/manager-list/manager-row";
+import { ManagerToolbar } from "../../widgets/manager-list/manager-toolbar";
 import type { CustomizableMenuStore } from "./store";
 import { buildCustomizableMenuStyles } from "./styles";
 import type { CustomizableContextMenuItem } from "./types";
@@ -144,14 +144,21 @@ export const ItemManagerContent = memo(function ItemManagerContent({ app, store 
 			</div>
 
 			{!isSearching && (
-				<SettingItem name="Show settings button">
-					<input
-						type="checkbox"
-						checked={snapshot.showSettingsButton}
-						onChange={(e) => store.setShowSettingsButton(e.target.checked)}
-						aria-label="Show settings button"
-					/>
-				</SettingItem>
+				<ManagerToolbar
+					app={app}
+					cssPrefix={cssPrefix}
+					rowPrefix={ROW_PREFIX}
+					toggleControl={
+						<input
+							type="checkbox"
+							checked={snapshot.showSettingsButton}
+							onChange={(e) => store.setShowSettingsButton(e.target.checked)}
+							aria-label="Show settings button"
+						/>
+					}
+					onReset={() => store.resetToDefaults()}
+					confirmMessage="This restores the default menu items, order, sections, labels, icons, and colors. Custom changes will be lost."
+				/>
 			)}
 
 			<div className={cls("list")}>

@@ -199,7 +199,9 @@ export function buildGridStyles(p: string): string {
 .${p}grid-editor-controls {
 	display: flex;
 	gap: 16px;
+	align-items: center;
 	justify-content: center;
+	flex-wrap: wrap;
 	margin-bottom: 16px;
 }
 .${p}grid-editor-dim-row {

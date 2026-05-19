@@ -5,10 +5,10 @@ import { useExternalSnapshot } from "../hooks/reactive/use-external-snapshot";
 import { useInjectedStyles } from "../hooks/styles/use-styles";
 import { showReactIconPicker } from "../modals/icon-picker-modal";
 import { Toggle } from "../primitives/controls";
-import { SettingItem } from "../primitives/layout/setting-item";
 import { showShelledModal } from "../show-react-modal";
 import { ManagerEditForm, type ManagerEditController } from "../widgets/manager-list/manager-edit-form";
 import { ManagerRow } from "../widgets/manager-list/manager-row";
+import { ManagerToolbar } from "../widgets/manager-list/manager-toolbar";
 import { DEFAULT_COLOR_SENTINEL } from "./constants";
 import type { PageHeaderSnapshot, PageHeaderStore } from "./store";
 import { buildPageHeaderStyles } from "./styles";
@@ -16,7 +16,7 @@ import type { HeaderActionDefinition } from "./types";
 
 const ROW_PREFIX = "action-manager";
 
-interface ActionManagerProps {
+export interface ActionManagerProps {
 	app: App;
 	store: PageHeaderStore;
 	cssPrefix: string;
@@ -73,7 +73,7 @@ function matchesQuery(action: HeaderActionDefinition, snapshot: PageHeaderSnapsh
 	);
 }
 
-const ActionManagerContent = memo(function ActionManagerContent({ app, store, cssPrefix }: ActionManagerProps) {
+export const ActionManagerContent = memo(function ActionManagerContent({ app, store, cssPrefix }: ActionManagerProps) {
 	useInjectedStyles(`${cssPrefix}page-header-styles`, buildPageHeaderStyles(cssPrefix));
 	const snapshot = useExternalSnapshot(store);
 	const [query, setQuery] = useState("");
@@ -118,9 +118,16 @@ const ActionManagerContent = memo(function ActionManagerContent({ app, store, cs
 			</div>
 
 			{!isSearching && (
-				<SettingItem name="Show settings button">
-					<Toggle value={snapshot.showSettingsButton} onChange={(value) => store.setShowSettingsButton(value)} />
-				</SettingItem>
+				<ManagerToolbar
+					app={app}
+					cssPrefix={cssPrefix}
+					rowPrefix={ROW_PREFIX}
+					toggleControl={
+						<Toggle value={snapshot.showSettingsButton} onChange={(value) => store.setShowSettingsButton(value)} />
+					}
+					onReset={() => store.resetToDefaults()}
+					confirmMessage="This restores the default header actions, order, labels, icons, and colors. Custom changes will be lost."
+				/>
 			)}
 
 			{isSearching && filtered.length === 0 ? (

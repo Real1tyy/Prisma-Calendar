@@ -159,6 +159,7 @@ export type {
 	PersistedPageHeaderState,
 } from "./page-header";
 export {
+	ActionManagerContent,
 	createPageHeader,
 	openPageHeaderActionManager,
 	PageHeaderActionBar,
@@ -207,8 +208,12 @@ export {
 	type TabbedContainerProps,
 	type TabbedContainerState,
 	TabbedContainerStateSchema,
+	TabManagerContent,
+	type TabManagerContentProps,
 	type TabDefinition,
 	type TabEntry,
+	useTabbedContainer,
+	type UseTabbedContainerOptions,
 	usePersistedTabbedContainerState,
 } from "./views/tabbed-container";
 

@@ -5,6 +5,7 @@ import { useApp } from "../contexts/app-context";
 import { useScopedStyles } from "../hooks/styles/use-styles";
 import { ObsidianIcon } from "../primitives/atoms/obsidian-icon";
 import { showShelledModal } from "../show-react-modal";
+import { ResetToDefaultsButton } from "../widgets/manager-list/reset-to-defaults-button";
 import { openCellPicker } from "./cell-picker-modal";
 import { adjustSizes } from "./engine-state";
 import { buildGridStyles } from "./styles";
@@ -18,6 +19,13 @@ export interface LayoutEditorContentProps {
 	cellPalette: CellOption[];
 	onApply: (newState: GridLayoutState) => void;
 	onCancel: () => void;
+	/**
+	 * Consumer-provided default state used by the Reset button inside the editor.
+	 * When omitted, the Reset button is not rendered.
+	 */
+	defaultState?: GridLayoutState;
+	/** CSS prefix used to scope the embedded reset confirmation modal. */
+	cssPrefix?: string;
 }
 
 // ── Pure helpers ──────────────────────────────────────────────────────────────
@@ -105,7 +113,8 @@ type LayoutEditorAction =
 	| { type: "setColumns"; columns: number }
 	| { type: "setRows"; rows: number }
 	| { type: "removeCell"; row: number; col: number }
-	| { type: "assignCell"; row: number; col: number; optionId: string };
+	| { type: "assignCell"; row: number; col: number; optionId: string }
+	| { type: "reset"; state: GridLayoutState };
 
 function layoutEditorReducer(state: GridLayoutState, action: LayoutEditorAction): GridLayoutState {
 	switch (action.type) {
@@ -117,6 +126,8 @@ function layoutEditorReducer(state: GridLayoutState, action: LayoutEditorAction)
 			return removeCell(state, action.row, action.col);
 		case "assignCell":
 			return assignCell(state, action.row, action.col, action.optionId);
+		case "reset":
+			return cloneGridState(action.state);
 	}
 }
 
@@ -174,11 +185,15 @@ export const LayoutEditorContent = memo(function LayoutEditorContent({
 	cellPalette,
 	onApply,
 	onCancel,
+	defaultState,
 }: LayoutEditorContentProps) {
 	const app = useApp();
 	const { cls, cssPrefix } = useScopedStyles("grid-editor", buildGridStyles);
 
 	const [staged, dispatch] = useReducer(layoutEditorReducer, initialState, cloneGridState);
+	const handleReset = useCallback(() => {
+		if (defaultState) dispatch({ type: "reset", state: defaultState });
+	}, [defaultState]);
 
 	const paletteMap = useMemo(() => new Map(cellPalette.map((o) => [o.id, o])), [cellPalette]);
 	const usedIds = useMemo(() => new Set(staged.cells.map((c) => c.optionId)), [staged.cells]);
@@ -238,6 +253,17 @@ export const LayoutEditorContent = memo(function LayoutEditorContent({
 			<div className={cls("controls")}>
 				<DimRow label="Columns" value={staged.columns} onChange={handleColumnsChange} cls={cls} />
 				<DimRow label="Rows" value={staged.rows} onChange={handleRowsChange} cls={cls} />
+				{defaultState && (
+					<ResetToDefaultsButton
+						app={app}
+						cssPrefix={cssPrefix}
+						onReset={handleReset}
+						testId={`${cssPrefix}grid-editor-reset`}
+						label="Reset layout"
+						confirmTitle="Reset layout to defaults?"
+						confirmMessage="This restores the default grid columns, rows, and cell placements. Custom changes will be lost when you apply."
+					/>
+				)}
 			</div>
 			<div className={cls("preview")} style={previewStyle}>
 				{occupiedSlots}
@@ -260,7 +286,7 @@ export const LayoutEditorContent = memo(function LayoutEditorContent({
 export type OpenLayoutEditorOptions = Omit<LayoutEditorContentProps, "onCancel"> & { cssPrefix: string };
 
 export function openLayoutEditor(app: App, options: OpenLayoutEditorOptions): void {
-	const { initialState, cellPalette, cssPrefix, onApply } = options;
+	const { initialState, cellPalette, cssPrefix, onApply, defaultState } = options;
 	showShelledModal(app, {
 		cssPrefix,
 		name: "grid-editor",
@@ -274,6 +300,7 @@ export function openLayoutEditor(app: App, options: OpenLayoutEditorOptions): vo
 					close();
 				}}
 				onCancel={close}
+				{...(defaultState ? { defaultState } : {})}
 			/>
 		),
 	});

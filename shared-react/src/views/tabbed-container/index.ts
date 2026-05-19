@@ -1,5 +1,7 @@
 export { registerTabCommands, type TabCommandUpdater } from "./commands";
 export { TabbedContainer } from "./tabbed-container";
+export { TabManagerContent, type TabManagerContentProps } from "./tab-manager-modal";
+export { useTabbedContainer, type UseTabbedContainerOptions } from "./use-tabbed-container";
 export {
 	type GroupTabDefinition,
 	isGroupTab,

@@ -1,4 +1,5 @@
 import { buildManagerRowStyles } from "../../widgets/manager-list/manager-row.styles";
+import { buildManagerToolbarStyles } from "../../widgets/manager-list/manager-toolbar.styles";
 
 export function buildTabbedContainerStyles(p: string): string {
 	return `
@@ -155,6 +156,7 @@ ${buildManagerRowStyles(p, "tab-manager")}
 	font-size: var(--font-ui-small);
 	color: var(--text-muted);
 }
+${buildManagerToolbarStyles(p, "tab-manager")}
 .${p}tab-manager-group-toggle {
 	display: flex;
 	align-items: center;
