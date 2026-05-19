@@ -285,11 +285,11 @@ export const EventForm = memo(function EventForm({
 
 	const allDay = useWatch({ control: form.control, name: "allDay" });
 
-	// Double-focus survives Obsidian's two-step "activate leaf, then handle
-	// modal" path when Create is triggered from outside the calendar (command
-	// palette, ribbon, hotkey). First focus lands on the leaf; the RAF-deferred
-	// second focus lands on the input.
-	useFocusOnMount(titleInputRef, { doubleFocus: true });
+	// Retry focus for ~500ms — Obsidian's leaf-then-modal activation can
+	// outlast a single focus call when Create is triggered from outside the
+	// calendar (command palette, ribbon, hotkey). Stops on first user
+	// interaction so we never steal focus from a deliberate click.
+	useFocusOnMount(titleInputRef, { retryMs: 500 });
 
 	return (
 		<div className="prisma-event-modal-content" onKeyDown={handleKeyDown}>
