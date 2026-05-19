@@ -35,13 +35,20 @@ function defaultUnmountState(values: EventFormValues): MinimizedModalState {
 	};
 }
 
+interface CapturedSuggestOptions {
+	onAcceptTitle?: (title: string) => void;
+}
+
+const lastSuggestOptions: { current: CapturedSuggestOptions | null } = { current: null };
+
 vi.mock("../../../src/components/title-input-suggest", () => {
 	const ctor = vi.fn();
 	class TitleInputSuggest {
 		destroy = vi.fn();
 		close = vi.fn();
-		constructor(...args: unknown[]) {
-			ctor(...args);
+		constructor(_app: unknown, _input: unknown, _bundle: unknown, options?: CapturedSuggestOptions) {
+			ctor(_app, _input, _bundle, options);
+			lastSuggestOptions.current = options ?? null;
 		}
 	}
 	return { TitleInputSuggest, __ctorSpy: ctor };
@@ -111,6 +118,7 @@ function createMockBundle(overrides: Partial<SingleCalendarConfig> = {}): Calend
 
 beforeEach(() => {
 	titleSuggestCtor.mockClear();
+	lastSuggestOptions.current = null;
 	(Notice as unknown as ReturnType<typeof vi.fn>).mockClear?.();
 	MinimizedModalManager.clear();
 });
@@ -132,6 +140,64 @@ describe("event-form regression #4 — titleAutocomplete gate", () => {
 		const bundle = createMockBundle({ titleAutocomplete: false });
 		render(<EventForm mode="create" bundle={bundle} onSubmit={vi.fn()} onCancel={vi.fn()} />);
 		expect(titleSuggestCtor).not.toHaveBeenCalled();
+	});
+
+	// Regression: accepting a ghost suggestion via Enter used to call
+	// `inputEl.blur()`, which moved focus to <body> and silently disabled
+	// the user's "Enter to accept, Enter to submit" double-tap flow. The
+	// TitleField's onAcceptTitle wrapper now writes the chosen value into
+	// the form (so the suggestion text is persisted) AND keeps focus on
+	// the title input (so the next Enter still reaches the form's submit
+	// hotkey). This test drives the accept path through the captured
+	// callback rather than the real Obsidian popup (which can't run in jsdom).
+	it("accepting a suggestion writes the title into the form and keeps focus on the input (double-Enter survives)", async () => {
+		const bundle = createMockBundle();
+		const onSubmit = vi.fn();
+		const user = userEvent.setup();
+		render(
+			<EventForm
+				mode="create"
+				bundle={bundle}
+				initialState={{ ...createDefaultState(), start: "2026-05-17T09:00" }}
+				onSubmit={onSubmit}
+				onCancel={vi.fn()}
+			/>
+		);
+
+		const titleInput = screen.getByTestId("prisma-event-control-title") as HTMLInputElement;
+		await user.click(titleInput);
+		await user.type(titleInput, "Planni");
+
+		// Sanity: the wired callback exists.
+		const acceptTitle = lastSuggestOptions.current?.onAcceptTitle;
+		expect(acceptTitle).toBeDefined();
+
+		// Simulate Obsidian's popup firing onSelect → onAcceptTitle("Planning").
+		// The wrapper writes the title into the form and runs onBlur (auto-
+		// category assignment). Wrap in act so React processes the state
+		// update synchronously.
+		await act(async () => {
+			acceptTitle!("Planning");
+		});
+
+		// The form (and DOM) reflect the chosen suggestion, not the typed prefix.
+		expect(titleInput.value).toBe("Planning");
+		// Focus stays on the title input — this is what enables the second Enter.
+		// (The suggester also schedules a queueMicrotask refocus in production
+		// to defensively reclaim focus if Obsidian shifted it; here we only
+		// drive the React owner's callback, so focus is preserved naturally.)
+		expect(document.activeElement).toBe(titleInput);
+
+		// Press Enter on the focused title input → form-level useEnterToSubmit
+		// fires (because focus is inside the form root). A regression that
+		// blurs the input here would route Enter to <body> and onSubmit would
+		// never fire.
+		await user.keyboard("{Enter}");
+
+		await waitFor(() => {
+			expect(onSubmit).toHaveBeenCalledTimes(1);
+		});
+		expect(onSubmit.mock.calls[0][0].formState.title).toBe("Planning");
 	});
 });
 

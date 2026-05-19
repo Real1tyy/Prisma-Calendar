@@ -418,11 +418,18 @@ function TitleField({
 	const { field } = useController({ control: form.control, name: "title" });
 	const enableSuggest = bundle.settingsStore.currentSettings.titleAutocomplete;
 
-	// Latest field.onChange behind a ref so the effect's identity doesn't
-	// depend on field — without this, the suggester would tear down and
-	// rebuild on every keystroke (and lose its `hasUserTyped` flag mid-edit).
-	const acceptTitleRef = useRef(field.onChange);
-	acceptTitleRef.current = field.onChange;
+	// Latest field.onChange + onBlur behind a ref so the effect's identity
+	// doesn't depend on either — without this, the suggester would tear down
+	// and rebuild on every keystroke (and lose its `hasUserTyped` flag mid-edit).
+	// Accepting a suggestion writes the chosen title AND runs the same blur
+	// hook the input's onBlur fires (auto-category assignment) — the suggester
+	// itself no longer blurs the input, so without this call the user would
+	// lose auto-categories whenever they accepted via Enter / Tab / click.
+	const acceptTitleRef = useRef<(title: string) => void>(() => {});
+	acceptTitleRef.current = (title) => {
+		field.onChange(title);
+		onBlur();
+	};
 
 	useEffect(() => {
 		if (!enableSuggest) return;

@@ -119,6 +119,10 @@ export class TitleInputSuggest extends AbstractInputSuggest<TitleSuggestion> {
 		this.disposers.push(
 			listen(inputEl, "keydown", (event) => {
 				if (event.key !== "Tab" || !this.currentCompletion) return;
+				// preventDefault stops Tab's default "focus the next field"
+				// behaviour so the user stays on the title input. Without it,
+				// Tab would both commit the ghost AND jump focus, breaking
+				// the "Tab to accept, Enter to submit" flow.
 				event.preventDefault();
 				this.acceptTitle(inputEl.value + this.currentCompletion);
 			})
@@ -126,7 +130,15 @@ export class TitleInputSuggest extends AbstractInputSuggest<TitleSuggestion> {
 
 		this.onSelect((suggestion) => {
 			this.acceptTitle(suggestion.text);
-			inputEl.blur();
+			// Defensive: AbstractInputSuggest's internal selection path closes
+			// the popup and can leave focus on the popup container instead of
+			// the input — the symptom is that Enter#2 (submit) doesn't reach
+			// the form's onKeyDown because focus is no longer inside the form.
+			// Reclaiming focus here keeps the user's double-Enter flow alive
+			// (Enter accepts the suggestion, Enter again submits the modal).
+			// queueMicrotask waits for Obsidian's own focus shuffling to finish
+			// so we set the final state, not the intermediate one.
+			queueMicrotask(() => inputEl.focus());
 		});
 	}
 

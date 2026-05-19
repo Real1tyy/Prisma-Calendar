@@ -233,19 +233,45 @@ describe("TitleInputSuggest — onAcceptTitle hand-off", () => {
 		expect(input.value).toBe("Planni"); // Untouched — owner owns the value.
 	});
 
-	it("blurs the input after the user accepts a suggestion (no synthetic dispatchEvent)", () => {
+	it("keeps focus on the input after accepting a suggestion (enables double-Enter to submit)", async () => {
+		// Regression guard: the suggester previously called `inputEl.blur()`
+		// after onSelect. That shifted focus to <body>, so the user's natural
+		// "Enter to accept, Enter again to submit" flow stopped working — the
+		// second Enter never reached the form's keydown handler. The suggester
+		// must leave focus on the input; the React owner runs any
+		// blur-side-effects (e.g. auto-category assignment) explicitly inside
+		// the onAcceptTitle callback rather than via an actual focus shift.
 		const input = inWrapper(document.createElement("input"));
+		// Focus AFTER construction — setupGhostText moves the input into a
+		// wrapper, which can defocus it. Real flow: user types into a wrapped
+		// input that's been focused via React's autoFocus / titleInputRef.focus().
+		const suggest = new TitleInputSuggest({} as never, input, makeBundle(), { onAcceptTitle: vi.fn() });
 		input.focus();
 		expect(document.activeElement).toBe(input);
 
-		const suggest = new TitleInputSuggest({} as never, input, makeBundle(), { onAcceptTitle: vi.fn() });
+		simulateSelect(suggest, { text: "Planning", source: "name-series" });
+
+		// Yield so the queueMicrotask refocus runs before we assert.
+		await Promise.resolve();
+		expect(document.activeElement).toBe(input);
+	});
+
+	it("reclaims focus even if some intermediate code blurred the input (defensive refocus)", async () => {
+		// Pins the "Obsidian's internal close path moved focus" scenario:
+		// the suggester must restore focus after onSelect runs, otherwise
+		// the user's second Enter never reaches the form's submit hotkey.
+		const input = inWrapper(document.createElement("input"));
+		const suggest = new TitleInputSuggest({} as never, input, makeBundle(), {
+			onAcceptTitle: () => {
+				input.blur(); // simulate something blurring the input mid-flow
+			},
+		});
+		input.focus();
 
 		simulateSelect(suggest, { text: "Planning", source: "name-series" });
 
-		// Real .blur(), not a fabricated `new Event("blur")` — keeps focus
-		// semantics consistent and avoids subtle differences between a
-		// dispatched event and an actual focus shift.
-		expect(document.activeElement).not.toBe(input);
+		await Promise.resolve();
+		expect(document.activeElement).toBe(input);
 	});
 
 	it("destroy() removes every event listener it registered (no leaked handlers)", () => {
