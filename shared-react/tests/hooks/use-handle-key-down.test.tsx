@@ -1,114 +1,125 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { useHandleKeyDown, type KeyChord } from "../../src/hooks/keyboard/use-handle-key-down";
 
-function Harness({ chord, handler }: { chord: KeyChord; handler: () => void }) {
-	const onKeyDown = useHandleKeyDown<HTMLDivElement>(chord, handler);
-	return <div onKeyDown={onKeyDown} data-testid="root" />;
+function press(init: KeyboardEventInit & { key: string }): KeyboardEvent {
+	const event = new KeyboardEvent("keydown", { bubbles: true, cancelable: true, ...init });
+	document.dispatchEvent(event);
+	return event;
 }
 
 describe("useHandleKeyDown", () => {
 	it("fires when the exact chord matches", () => {
 		const handler = vi.fn();
-		render(<Harness chord={{ key: "c", shift: true, mod: true }} handler={handler} />);
+		renderHook(() => useHandleKeyDown({ key: "c", shift: true, mod: true }, handler));
 
-		fireEvent.keyDown(screen.getByTestId("root"), { key: "c", shiftKey: true, ctrlKey: true });
+		press({ key: "c", shiftKey: true, ctrlKey: true });
 
 		expect(handler).toHaveBeenCalledTimes(1);
 	});
 
-	it("treats key matching case-insensitively (Shift+C arrives as `C`)", () => {
+	it("matches the key case-insensitively (Shift+C arrives as `C`)", () => {
 		const handler = vi.fn();
-		render(<Harness chord={{ key: "c", shift: true, mod: true }} handler={handler} />);
+		renderHook(() => useHandleKeyDown({ key: "c", shift: true, mod: true }, handler));
 
-		fireEvent.keyDown(screen.getByTestId("root"), { key: "C", shiftKey: true, ctrlKey: true });
+		press({ key: "C", shiftKey: true, ctrlKey: true });
 
 		expect(handler).toHaveBeenCalledTimes(1);
 	});
 
 	it("accepts metaKey as `mod` (Mac Cmd)", () => {
 		const handler = vi.fn();
-		render(<Harness chord={{ key: "c", shift: true, mod: true }} handler={handler} />);
+		renderHook(() => useHandleKeyDown({ key: "c", shift: true, mod: true }, handler));
 
-		fireEvent.keyDown(screen.getByTestId("root"), { key: "c", shiftKey: true, metaKey: true });
+		press({ key: "c", shiftKey: true, metaKey: true });
 
 		expect(handler).toHaveBeenCalledTimes(1);
 	});
 
 	it("does NOT fire when a required modifier is missing", () => {
 		const handler = vi.fn();
-		render(<Harness chord={{ key: "c", shift: true, mod: true }} handler={handler} />);
+		renderHook(() => useHandleKeyDown({ key: "c", shift: true, mod: true }, handler));
 
-		fireEvent.keyDown(screen.getByTestId("root"), { key: "c", ctrlKey: true });
-		fireEvent.keyDown(screen.getByTestId("root"), { key: "c", shiftKey: true });
-		fireEvent.keyDown(screen.getByTestId("root"), { key: "c" });
+		press({ key: "c", ctrlKey: true });
+		press({ key: "c", shiftKey: true });
+		press({ key: "c" });
 
 		expect(handler).not.toHaveBeenCalled();
 	});
 
 	it("does NOT fire when an extra modifier is held (chord must match exactly)", () => {
 		const handler = vi.fn();
-		render(<Harness chord={{ key: "c" }} handler={handler} />);
+		renderHook(() => useHandleKeyDown({ key: "c" }, handler));
 
-		fireEvent.keyDown(screen.getByTestId("root"), { key: "c", ctrlKey: true });
-		fireEvent.keyDown(screen.getByTestId("root"), { key: "c", shiftKey: true });
+		press({ key: "c", ctrlKey: true });
+		press({ key: "c", shiftKey: true });
 
 		expect(handler).not.toHaveBeenCalled();
-	});
-
-	it("fires for bare `c` when no modifiers are configured", () => {
-		const handler = vi.fn();
-		render(<Harness chord={{ key: "c" }} handler={handler} />);
-
-		fireEvent.keyDown(screen.getByTestId("root"), { key: "c" });
-
-		expect(handler).toHaveBeenCalledTimes(1);
 	});
 
 	it("calls preventDefault + stopPropagation on match", () => {
 		const handler = vi.fn();
-		render(<Harness chord={{ key: "c", shift: true, mod: true }} handler={handler} />);
+		renderHook(() => useHandleKeyDown({ key: "c", shift: true, mod: true }, handler));
 
-		const event = new KeyboardEvent("keydown", {
-			key: "c",
-			shiftKey: true,
-			ctrlKey: true,
-			bubbles: true,
-			cancelable: true,
-		});
-		const dispatched = fireEvent(screen.getByTestId("root"), event);
+		const event = press({ key: "c", shiftKey: true, ctrlKey: true });
 
-		expect(dispatched).toBe(false);
-		expect(handler).toHaveBeenCalledTimes(1);
+		expect(event.defaultPrevented).toBe(true);
 	});
 
 	it("does NOT touch the event on miss (downstream handlers can still see it)", () => {
 		const handler = vi.fn();
-		render(<Harness chord={{ key: "c", shift: true, mod: true }} handler={handler} />);
+		renderHook(() => useHandleKeyDown({ key: "c", shift: true, mod: true }, handler));
 
-		const event = new KeyboardEvent("keydown", { key: "x", bubbles: true, cancelable: true });
-		const dispatched = fireEvent(screen.getByTestId("root"), event);
+		const event = press({ key: "x" });
 
-		expect(dispatched).toBe(true);
+		expect(event.defaultPrevented).toBe(false);
 		expect(handler).not.toHaveBeenCalled();
 	});
 
-	it("invokes the latest handler closure even when the returned function identity is stable", () => {
+	it("removes its document listener on unmount", () => {
+		const handler = vi.fn();
+		const { unmount } = renderHook(() => useHandleKeyDown({ key: "c", shift: true, mod: true }, handler));
+
+		unmount();
+		press({ key: "c", shiftKey: true, ctrlKey: true });
+
+		expect(handler).not.toHaveBeenCalled();
+	});
+
+	it("invokes the latest handler closure across re-renders without re-binding the listener", () => {
 		const first = vi.fn();
 		const second = vi.fn();
+		const addSpy = vi.spyOn(document, "addEventListener");
 
-		function StableHarness({ handler }: { handler: () => void }) {
-			const onKeyDown = useHandleKeyDown<HTMLDivElement>({ key: "c" }, handler);
-			return <div onKeyDown={onKeyDown} data-testid="root" />;
-		}
+		const { rerender } = renderHook((props: { handler: () => void }) =>
+			useHandleKeyDown({ key: "c" }, props.handler), { initialProps: { handler: first } }
+		);
+		const initialAddCount = addSpy.mock.calls.filter(([type]) => type === "keydown").length;
+		rerender({ handler: second });
 
-		const { rerender } = render(<StableHarness handler={first} />);
-		rerender(<StableHarness handler={second} />);
-
-		fireEvent.keyDown(screen.getByTestId("root"), { key: "c" });
+		press({ key: "c" });
 
 		expect(first).not.toHaveBeenCalled();
 		expect(second).toHaveBeenCalledTimes(1);
+		const afterAddCount = addSpy.mock.calls.filter(([type]) => type === "keydown").length;
+		expect(afterAddCount).toBe(initialAddCount); // no extra registration
+
+		addSpy.mockRestore();
+	});
+
+	it("supports multiple independent chords on the same component", () => {
+		const onCategories = vi.fn();
+		const onPrerequisites = vi.fn();
+		renderHook(() => {
+			useHandleKeyDown({ key: "c", shift: true, mod: true }, onCategories);
+			useHandleKeyDown({ key: "p", shift: true, mod: true }, onPrerequisites);
+		});
+
+		press({ key: "c", shiftKey: true, ctrlKey: true });
+		press({ key: "p", shiftKey: true, ctrlKey: true });
+
+		expect(onCategories).toHaveBeenCalledTimes(1);
+		expect(onPrerequisites).toHaveBeenCalledTimes(1);
 	});
 });

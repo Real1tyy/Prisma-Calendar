@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, type KeyboardEvent } from "react";
+import { useEffect, useRef } from "react";
 
 export interface KeyChord {
 	/** Bare key name. Matched case-insensitively (`"c"` matches Shift+C). */
@@ -12,28 +12,27 @@ export interface KeyChord {
 }
 
 /**
- * React `onKeyDown` handler that fires `handler` only when the chord matches
- * exactly — modifier flags are checked both ways (Shift+C does not match
- * `{ key: "c" }` unless `shift: true` is set). On match, `preventDefault` and
- * `stopPropagation` are applied so callers can layer multiple chord handlers
- * with `defaultPrevented` as the short-circuit.
+ * Register a keyboard shortcut for the lifetime of the calling component.
+ * Self-attaching — declaring the hook IS the registration; no onKeyDown
+ * wrapper, no manual composition with other handlers. The listener lives on
+ * `document` in capture phase so multiple shortcuts coexist cleanly.
  *
- * Handler identity is stable across renders — the latest `handler` is read
- * through a ref so memoised children that receive the returned function never
- * re-render just because the parent's closure changed.
+ * On match: `preventDefault` + `stopPropagation` fire and `handler` runs.
+ * Modifier flags are checked both ways — `{ key: "c", shift: true, mod: true }`
+ * matches **only** Mod+Shift+C, not bare C and not Mod+Alt+Shift+C.
+ *
+ * The latest `handler` closure is read through a ref so re-renders don't
+ * re-bind the document listener every paint.
  */
-export function useHandleKeyDown<T extends HTMLElement = HTMLDivElement>(
-	chord: KeyChord,
-	handler: () => void
-): (event: KeyboardEvent<T>) => void {
+export function useHandleKeyDown(chord: KeyChord, handler: () => void): void {
 	const { key, shift = false, mod = false, alt = false } = chord;
 	const handlerRef = useRef(handler);
 	useEffect(() => {
 		handlerRef.current = handler;
 	});
 
-	return useCallback(
-		(event: KeyboardEvent<T>) => {
+	useEffect(() => {
+		const onKeyDown = (event: KeyboardEvent) => {
 			if (event.key.toLowerCase() !== key.toLowerCase()) return;
 			if (shift !== event.shiftKey) return;
 			const modPressed = event.metaKey || event.ctrlKey;
@@ -42,7 +41,8 @@ export function useHandleKeyDown<T extends HTMLElement = HTMLDivElement>(
 			event.preventDefault();
 			event.stopPropagation();
 			handlerRef.current();
-		},
-		[key, shift, mod, alt]
-	);
+		};
+		document.addEventListener("keydown", onKeyDown, true);
+		return () => document.removeEventListener("keydown", onKeyDown, true);
+	}, [key, shift, mod, alt]);
 }
