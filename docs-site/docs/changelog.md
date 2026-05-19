@@ -6,16 +6,14 @@ All notable changes to this project will be documented here.
 
 ## 2.17.0 - 5/19/2026
 
-> **TLDR:** Prisma Calendar is now in the official Obsidian Community Plugin Store — install with one click from inside Obsidian. The event modal also gets sharper edges — title autocomplete saves the chosen suggestion, the cursor reliably lands in the title on open, and **Ctrl/Cmd+Shift+C** opens **Assign categories** from anywhere in the form.
+> **TLDR:** Prisma Calendar is now in the official Obsidian Community Plugin Store — install with one click from inside Obsidian. The event modal also gets keyboard shortcuts for **Assign categories** (Ctrl/Cmd+Shift+C) and **Assign prerequisites** (Ctrl/Cmd+Shift+P), and a sturdier title autocomplete flow.
 
 ### Added
 - **Available in the Obsidian Community Plugin Store**: Prisma Calendar is now listed in Obsidian's built-in plugin browser. [Add to Obsidian](obsidian://show-plugin?id=prisma-calendar) or search "Prisma Calendar" under **Settings → Community plugins → Browse**.
-- **Keyboard shortcut for Assign categories**: **Ctrl+Shift+C** (Win/Linux) / **⌘⇧C** (Mac) opens the Assign Categories modal from anywhere inside the event modal. See [Categories → Assigning Categories](./features/organization/categories.md#assigning-categories).
+- **Event-modal shortcuts for Assign categories and Assign prerequisites**: **Ctrl+Shift+C / ⌘⇧C** opens the Assign Categories picker, **Ctrl+Shift+P / ⌘⇧P** opens Assign Prerequisites — both work from anywhere inside the event modal. See [Categories → Assigning Categories](./features/organization/categories.md#assigning-categories).
 
 ### Fixed
-- **Title autocomplete saved the typed prefix instead of the accepted suggestion**: Accepting "Planning" still wrote `Planni-…md`. See [Title Autocomplete](./features/events/title-autocomplete.md).
-- **Enter after accepting a title suggestion didn't submit**: The popup stayed open and re-accepted the same suggestion. See [Title Autocomplete](./features/events/title-autocomplete.md).
-- **Title input was unreliably focused on open**: Triggering Create from outside the calendar (command palette, ribbon, hotkey) sometimes left the cursor outside the title. See [Title Autocomplete](./features/events/title-autocomplete.md).
+- **Title autocomplete flow**: accepting a suggestion now writes the chosen value (`Planning`, not `Planni`), the popup closes so a second Enter submits the modal, and the cursor reliably lands in the title input when opening Create from outside the calendar (command palette, ribbon, hotkey). See [Title Autocomplete](./features/events/title-autocomplete.md).
 - **Restoring a stopwatch-tracked new event duplicated the file**: A second Save persisted a duplicate instead of editing the original. See [Time Tracker → Minimize & Auto-Save](./features/management/time-tracker.md#minimize--auto-save).
 
 ---

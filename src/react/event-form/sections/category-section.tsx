@@ -7,6 +7,7 @@ import { PrismaSettingItem } from "../prisma-setting-item";
 const CONTENT_CLASS = "prisma-category-display-content";
 const ACTION_BUTTON_CLASS = "prisma-assign-categories-button";
 const ASSIGN_CATEGORIES_SHORTCUT = Platform.isMacOS ? "⇧⌘C" : "Ctrl+Shift+C";
+const ASSIGN_PREREQUISITES_SHORTCUT = Platform.isMacOS ? "⇧⌘P" : "Ctrl+Shift+P";
 
 interface ChipFieldSectionProps extends ChipCollection, ChipDisplay, ChipInteraction {
 	name: string;
@@ -129,7 +130,12 @@ export const PrerequisiteSection = memo(function PrerequisiteSection({
 			getDisplayName={getDisplayName}
 			getTooltip={identityTooltip}
 			trailing={
-				<AssignButton label="Assign prerequisites" testId="prisma-event-btn-assign-prerequisites" onClick={onAssign} />
+				<AssignButton
+					label="Assign prerequisites"
+					testId="prisma-event-btn-assign-prerequisites"
+					onClick={onAssign}
+					tooltip={`Assign prerequisites (${ASSIGN_PREREQUISITES_SHORTCUT})`}
+				/>
 			}
 		/>
 	);

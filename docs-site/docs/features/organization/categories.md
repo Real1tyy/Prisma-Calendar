@@ -56,9 +56,12 @@ Both formats are supported throughout the plugin. When you assign categories usi
 
 You can assign categories to events in multiple ways:
 
-### Keyboard shortcut
+### Keyboard shortcuts
 
-Press **Ctrl+Shift+C** (Win/Linux) or **⌘⇧C** (Mac) from anywhere inside an event modal to open the Assign Categories picker — no need to scroll to the categories row or click the button.
+From anywhere inside an event modal:
+
+- **Ctrl+Shift+C** (Win/Linux) / **⌘⇧C** (Mac) — open the **Assign categories** picker.
+- **Ctrl+Shift+P** (Win/Linux) / **⌘⇧P** (Mac) — open the **Assign prerequisites** picker.
 
 ### 1. Auto-Assignment (Event Creation and Editing)
 

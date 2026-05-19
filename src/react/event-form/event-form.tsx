@@ -1,7 +1,7 @@
 import { parseFrontmatterRecord, serializeFrontmatterValue, toLocalISOString } from "@real1ty-obsidian-plugins";
-import { useHandleKeyDown, useSettingsFields, useZodForm } from "@real1ty-obsidian-plugins-react";
+import { useFocusOnMount, useHandleKeyDown, useSettingsFields, useZodForm } from "@real1ty-obsidian-plugins-react";
 import { Notice } from "obsidian";
-import { memo, useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type RefObject } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { useController, useWatch, type UseFormReturn } from "react-hook-form";
 
 import {
@@ -190,19 +190,8 @@ export const EventForm = memo(function EventForm({
 		onUnmountWithActiveStopwatch,
 	});
 
-	// Mod+Shift+C — open the Assign Categories modal from anywhere in the form.
-	const handleAssignCategoriesShortcut = useHandleKeyDown<HTMLDivElement>(
-		{ key: "c", shift: true, mod: true },
-		categoriesApi.onAssignCategories
-	);
-	const handleFormKeyDown = useCallback(
-		(event: KeyboardEvent<HTMLDivElement>) => {
-			handleAssignCategoriesShortcut(event);
-			if (event.defaultPrevented) return;
-			handleKeyDown(event);
-		},
-		[handleAssignCategoriesShortcut, handleKeyDown]
-	);
+	useHandleKeyDown({ key: "c", shift: true, mod: true }, categoriesApi.onAssignCategories);
+	useHandleKeyDown({ key: "p", shift: true, mod: true }, categoriesApi.onAssignPrerequisites);
 
 	const handleClear = useCallback(() => {
 		const defaults = createDefaultState();
@@ -296,35 +285,14 @@ export const EventForm = memo(function EventForm({
 
 	const allDay = useWatch({ control: form.control, name: "allDay" });
 
-	// Retry focus for ~500ms. When Create is triggered while focus is outside
-	// the calendar leaf (command palette, ribbon, hotkey), Obsidian first
-	// activates the leaf and only then handles the modal — the focus shuffle
-	// outlives a single afterRender(). First pointer/keydown stops the retry
-	// so we never steal focus from a deliberate user interaction.
-	useEffect(() => {
-		let cancelled = false;
-		let attempts = 0;
-		const stop = () => {
-			cancelled = true;
-		};
-		document.addEventListener("pointerdown", stop, true);
-		document.addEventListener("keydown", stop, true);
-		const tryFocus = () => {
-			if (cancelled) return;
-			const el = titleInputRef.current;
-			if (el && el.ownerDocument.activeElement !== el) el.focus();
-			if (++attempts < 30) window.requestAnimationFrame(tryFocus);
-		};
-		window.requestAnimationFrame(tryFocus);
-		return () => {
-			cancelled = true;
-			document.removeEventListener("pointerdown", stop, true);
-			document.removeEventListener("keydown", stop, true);
-		};
-	}, []);
+	// Double-focus survives Obsidian's two-step "activate leaf, then handle
+	// modal" path when Create is triggered from outside the calendar (command
+	// palette, ribbon, hotkey). First focus lands on the leaf; the RAF-deferred
+	// second focus lands on the input.
+	useFocusOnMount(titleInputRef, { doubleFocus: true });
 
 	return (
-		<div className="prisma-event-modal-content" onKeyDown={handleFormKeyDown}>
+		<div className="prisma-event-modal-content" onKeyDown={handleKeyDown}>
 			<div className="prisma-event-modal-body">
 				<EventFormHeader
 					mode={mode}

@@ -41,12 +41,13 @@ interface CapturedSuggestOptions {
 
 const lastSuggestOptions: { current: CapturedSuggestOptions | null } = { current: null };
 
-const { openCategoryAssignModalSpy } = vi.hoisted(() => ({
+const { openCategoryAssignModalSpy, openPrerequisiteAssignModalSpy } = vi.hoisted(() => ({
 	openCategoryAssignModalSpy: vi.fn((..._args: unknown[]) => Promise.resolve(undefined)),
+	openPrerequisiteAssignModalSpy: vi.fn((..._args: unknown[]) => Promise.resolve(undefined)),
 }));
 vi.mock("../../../src/react/modals", () => ({
 	openCategoryAssignModal: openCategoryAssignModalSpy,
-	openPrerequisiteAssignModal: vi.fn(() => Promise.resolve(undefined)),
+	openPrerequisiteAssignModal: openPrerequisiteAssignModalSpy,
 	openSavePresetModal: vi.fn(() => Promise.resolve(undefined)),
 }));
 
@@ -129,6 +130,7 @@ beforeEach(() => {
 	titleSuggestCtor.mockClear();
 	lastSuggestOptions.current = null;
 	openCategoryAssignModalSpy.mockClear();
+	openPrerequisiteAssignModalSpy.mockClear();
 	(Notice as unknown as ReturnType<typeof vi.fn>).mockClear?.();
 	MinimizedModalManager.clear();
 });
@@ -377,50 +379,10 @@ describe("event-form regression #7 — submit hotkey", () => {
 	});
 });
 
-// ─── Assign Categories shortcut (Mod+Shift+C) ─────────────────────────────
+// ─── Assign shortcuts (Mod+Shift+C, Mod+Shift+P) ──────────────────────────
 
-describe("event-form — Assign Categories keyboard shortcut", () => {
-	it("opens the Assign Categories modal when Ctrl+Shift+C is pressed inside the form", async () => {
-		const user = userEvent.setup();
-		render(
-			<EventForm
-				mode="create"
-				bundle={createMockBundle()}
-				initialState={{ ...createDefaultState(), title: "Workout", start: "2026-05-17T09:00" }}
-				onSubmit={vi.fn()}
-				onCancel={vi.fn()}
-			/>
-		);
-
-		const title = screen.getByTestId("prisma-event-control-title") as HTMLInputElement;
-		await user.click(title);
-		await user.keyboard("{Control>}{Shift>}c{/Shift}{/Control}");
-
-		expect(openCategoryAssignModalSpy).toHaveBeenCalledTimes(1);
-	});
-
-	it("opens the Assign Categories modal when Meta+Shift+C is pressed (Mac)", async () => {
-		const user = userEvent.setup();
-		render(
-			<EventForm
-				mode="create"
-				bundle={createMockBundle()}
-				initialState={{ ...createDefaultState(), title: "Workout", start: "2026-05-17T09:00" }}
-				onSubmit={vi.fn()}
-				onCancel={vi.fn()}
-			/>
-		);
-
-		const title = screen.getByTestId("prisma-event-control-title") as HTMLInputElement;
-		await user.click(title);
-		await user.keyboard("{Meta>}{Shift>}c{/Shift}{/Meta}");
-
-		expect(openCategoryAssignModalSpy).toHaveBeenCalledTimes(1);
-	});
-
-	it("does NOT submit the form when the shortcut fires (Enter-to-submit is short-circuited)", async () => {
-		const onSubmit = vi.fn();
-		const user = userEvent.setup();
+describe("event-form — Assign keyboard shortcuts", () => {
+	function renderForm(onSubmit = vi.fn()) {
 		render(
 			<EventForm
 				mode="create"
@@ -430,17 +392,47 @@ describe("event-form — Assign Categories keyboard shortcut", () => {
 				onCancel={vi.fn()}
 			/>
 		);
+		return { onSubmit };
+	}
 
-		const title = screen.getByTestId("prisma-event-control-title") as HTMLInputElement;
-		await user.click(title);
+	it("opens Assign Categories on Ctrl+Shift+C", async () => {
+		const user = userEvent.setup();
+		renderForm();
 		await user.keyboard("{Control>}{Shift>}c{/Shift}{/Control}");
+		expect(openCategoryAssignModalSpy).toHaveBeenCalledTimes(1);
+	});
 
+	it("opens Assign Categories on Meta+Shift+C (Mac)", async () => {
+		const user = userEvent.setup();
+		renderForm();
+		await user.keyboard("{Meta>}{Shift>}c{/Shift}{/Meta}");
+		expect(openCategoryAssignModalSpy).toHaveBeenCalledTimes(1);
+	});
+
+	it("opens Assign Prerequisites on Ctrl+Shift+P", async () => {
+		const user = userEvent.setup();
+		renderForm();
+		await user.keyboard("{Control>}{Shift>}p{/Shift}{/Control}");
+		expect(openPrerequisiteAssignModalSpy).toHaveBeenCalledTimes(1);
+	});
+
+	it("does NOT submit the form when a shortcut fires", async () => {
+		const user = userEvent.setup();
+		const { onSubmit } = renderForm();
+		await user.keyboard("{Control>}{Shift>}c{/Shift}{/Control}");
 		expect(onSubmit).not.toHaveBeenCalled();
 	});
 
-	it("does NOT fire when only Ctrl+C is pressed (no Shift modifier — plain copy)", async () => {
+	it("does NOT fire on plain Ctrl+C (Shift is required, prevents clobbering copy)", async () => {
 		const user = userEvent.setup();
-		render(
+		renderForm();
+		await user.keyboard("{Control>}c{/Control}");
+		expect(openCategoryAssignModalSpy).not.toHaveBeenCalled();
+	});
+
+	it("unregisters the shortcut when the form unmounts (no stray document listeners)", async () => {
+		const user = userEvent.setup();
+		const { unmount } = render(
 			<EventForm
 				mode="create"
 				bundle={createMockBundle()}
@@ -449,11 +441,8 @@ describe("event-form — Assign Categories keyboard shortcut", () => {
 				onCancel={vi.fn()}
 			/>
 		);
-
-		const title = screen.getByTestId("prisma-event-control-title") as HTMLInputElement;
-		await user.click(title);
-		await user.keyboard("{Control>}c{/Control}");
-
+		unmount();
+		await user.keyboard("{Control>}{Shift>}c{/Shift}{/Control}");
 		expect(openCategoryAssignModalSpy).not.toHaveBeenCalled();
 	});
 });
