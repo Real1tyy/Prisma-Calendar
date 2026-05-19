@@ -1,6 +1,6 @@
 import { parseAsLocalDate, toSafeString } from "@real1ty-obsidian-plugins";
 import { useCallback, useRef, type Dispatch, type RefObject, type SetStateAction } from "react";
-import type { UseFormReturn } from "react-hook-form";
+import { useWatch, type UseFormReturn } from "react-hook-form";
 
 import type { EventFormState } from "../../../components/modals/event/event-form-state";
 import { PositiveFloat } from "../../../types/event-boundaries";
@@ -21,6 +21,7 @@ export interface UseStopwatchResult {
 	reset: () => void;
 	onStart: (startTime: Date) => void;
 	onContinueRequested: () => Date | null;
+	onResumeRequested: () => Date | null;
 	onStop: (endTime: Date) => void;
 	onBreakUpdate: (breakMinutes: number) => void;
 }
@@ -44,6 +45,23 @@ export function useStopwatch({
 	const snapshotRef = useRef<StopwatchSnapshot | null>(initialSnapshot);
 	const handleRef = useRef<StopwatchHandle | null>(null);
 	const initialBreakMinutesRef = useRef(0);
+
+	// Subscribe to start/end via useWatch so this hook re-renders every time
+	// the user edits the Start Date / End Date inputs, then mirror the values
+	// into refs that the callbacks below can read synchronously without
+	// closures going stale. `form.getValues(...)` would normally serve here,
+	// but `useController` (in TimingSection) wraps each field in its own
+	// internal state — the form-level store can briefly lag the input that
+	// the user just edited. The ref-after-useWatch pattern guarantees that
+	// onContinueRequested sees what the user typed, not the value the modal
+	// opened with. See the regression test in
+	// tests/components/event-form/hooks/use-stopwatch.test.tsx.
+	const watchedStart = useWatch({ control: form.control, name: "start" });
+	const watchedEnd = useWatch({ control: form.control, name: "end" });
+	const startRef = useRef<string>(watchedStart ?? "");
+	const endRef = useRef<string>(watchedEnd ?? "");
+	startRef.current = watchedStart ?? "";
+	endRef.current = watchedEnd ?? "";
 
 	const setHandle = useCallback(
 		(handle: StopwatchHandle | null) => {
@@ -96,12 +114,12 @@ export function useStopwatch({
 
 	const onContinueRequested = useCallback((): Date | null => {
 		captureInitialBreakMinutes();
-		const startValue = form.getValues("start");
+		const startValue = startRef.current;
 		if (!startValue) return null;
 
 		// Mirror base-event-modal.ts:524-532 — if the existing end stamp is in
 		// the past the user is resuming after a gap; push end forward to "now".
-		const endValue = form.getValues("end");
+		const endValue = endRef.current;
 		if (endValue) {
 			const endDate = parseAsLocalDate(endValue);
 			if (endDate && endDate.getTime() < Date.now()) {
@@ -112,6 +130,27 @@ export function useStopwatch({
 		queueMicrotask(refreshSnapshot);
 		return parseAsLocalDate(startValue);
 	}, [captureInitialBreakMinutes, form, refreshSnapshot]);
+
+	// Mirrors onContinueRequested but skips captureInitialBreakMinutes: resume
+	// re-uses the existing break baseline, since totalBreakMs from the prior
+	// running/stopped phase carries forward. Re-capturing here would double-
+	// count any breaks taken before Stop. The Start Date read is identical so
+	// edits made between Stop and the re-press land in the elapsed display.
+	const onResumeRequested = useCallback((): Date | null => {
+		const startValue = startRef.current;
+		if (!startValue) return null;
+
+		const endValue = endRef.current;
+		if (endValue) {
+			const endDate = parseAsLocalDate(endValue);
+			if (endDate && endDate.getTime() < Date.now()) {
+				form.setValue("end", formatDateTimeForInput(new Date()));
+			}
+		}
+
+		queueMicrotask(refreshSnapshot);
+		return parseAsLocalDate(startValue);
+	}, [form, refreshSnapshot]);
 
 	const onStop = useCallback(
 		(endTime: Date) => {
@@ -137,6 +176,7 @@ export function useStopwatch({
 		reset,
 		onStart,
 		onContinueRequested,
+		onResumeRequested,
 		onStop,
 		onBreakUpdate,
 	};

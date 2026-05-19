@@ -123,6 +123,7 @@ export const EventForm = memo(function EventForm({
 		reset: resetStopwatch,
 		onStart: onStopwatchStart,
 		onContinueRequested: onStopwatchContinueRequested,
+		onResumeRequested: onStopwatchResumeRequested,
 		onStop: onStopwatchStop,
 		onBreakUpdate: onStopwatchBreakUpdate,
 	} = useStopwatch({
@@ -316,6 +317,7 @@ export const EventForm = memo(function EventForm({
 							ref={setStopwatchHandle}
 							onStart={onStopwatchStart}
 							onContinueRequested={onStopwatchContinueRequested}
+							onResumeRequested={onStopwatchResumeRequested}
 							onStop={onStopwatchStop}
 							onBreakUpdate={onStopwatchBreakUpdate}
 						/>

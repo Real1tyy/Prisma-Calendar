@@ -20,6 +20,15 @@ export interface StopwatchSnapshot {
 export interface StopwatchCallbacks {
 	onStart: (startTime: Date) => void;
 	onContinueRequested: () => Date | null;
+	/**
+	 * Fired when the user clicks the "▶ continue" button visible in the
+	 * **stopped** state (the standalone resume button). Returns the latest
+	 * Start Date from the form so resume can adopt any edits the user made
+	 * between stop and re-press. Differs from `onContinueRequested` in that
+	 * it MUST NOT re-capture the break-minute baseline — resume preserves
+	 * the accumulated break tally, continue starts a fresh one.
+	 */
+	onResumeRequested: () => Date | null;
 	onStop: (endTime: Date) => void;
 	onBreakUpdate: (breakMinutes: number) => void;
 }
@@ -28,7 +37,7 @@ export interface StopwatchHandle {
 	start: () => void;
 	continueFromExisting: (existingStartTime?: Date) => void;
 	stop: () => void;
-	resume: () => void;
+	resume: (newStartTime?: Date) => void;
 	reset: () => void;
 	togglePause: () => void;
 	expand: () => void;
@@ -69,15 +78,15 @@ function btnClass(variant: string, hidden: boolean): string {
 }
 
 export const Stopwatch = forwardRef<StopwatchHandle, StopwatchCallbacks>(function Stopwatch(
-	{ onStart, onContinueRequested, onStop, onBreakUpdate },
+	{ onStart, onContinueRequested, onResumeRequested, onStop, onBreakUpdate },
 	ref
 ) {
 	const stateRef = useRef<InternalState>(INITIAL_STATE);
 	const [, forceTick] = useReducer((n: number) => n + 1, 0);
 	const [collapsed, setCollapsed] = useState(true);
 
-	const callbacksRef = useRef({ onStart, onContinueRequested, onStop, onBreakUpdate });
-	callbacksRef.current = { onStart, onContinueRequested, onStop, onBreakUpdate };
+	const callbacksRef = useRef({ onStart, onContinueRequested, onResumeRequested, onStop, onBreakUpdate });
+	callbacksRef.current = { onStart, onContinueRequested, onResumeRequested, onStop, onBreakUpdate };
 
 	const setInternalState = useCallback((updater: (prev: InternalState) => InternalState) => {
 		stateRef.current = updater(stateRef.current);
@@ -154,14 +163,24 @@ export const Stopwatch = forwardRef<StopwatchHandle, StopwatchCallbacks>(functio
 		callbacksRef.current.onBreakUpdate(msToBreakMinutes(appliedBreakMs));
 	}, [setInternalState]);
 
-	const resume = useCallback(() => {
-		if (stateRef.current.state !== "stopped") return;
-		setInternalState((prev) => ({
-			...prev,
-			state: "running",
-			sessionStartTime: new Date(),
-		}));
-	}, [setInternalState]);
+	const resume = useCallback(
+		(newStartTime?: Date) => {
+			if (stateRef.current.state !== "stopped") return;
+			// Adopt a freshly-edited Start Date when one is supplied and lies in
+			// the past — same future-start guard `continueFromExisting` uses.
+			// `totalBreakMs` and the existing startTime are preserved when no
+			// valid new value is provided, so cumulative break tracking from
+			// the prior session stays intact.
+			const adoptNewStart = newStartTime != null && newStartTime.getTime() <= Date.now();
+			setInternalState((prev) => ({
+				...prev,
+				state: "running",
+				sessionStartTime: new Date(),
+				...(adoptNewStart ? { startTime: newStartTime } : {}),
+			}));
+		},
+		[setInternalState]
+	);
 
 	const reset = useCallback(() => {
 		setInternalState(() => ({ ...INITIAL_STATE }));
@@ -268,6 +287,14 @@ export const Stopwatch = forwardRef<StopwatchHandle, StopwatchCallbacks>(functio
 		}
 	};
 
+	const handleResumeClick = () => {
+		// Re-read the form's Start Date so a value edited between Stop and
+		// re-press lands in the elapsed display. Resume itself ignores future
+		// or missing values and falls back to the existing internal startTime.
+		const existing = callbacksRef.current.onResumeRequested();
+		resume(existing ?? undefined);
+	};
+
 	const startBtnLabel = current.state === "stopped" ? "▶ start new" : "▶ start";
 	const pauseBtnLabel = isPaused ? "▶ continue" : "⏸ break";
 
@@ -328,7 +355,7 @@ export const Stopwatch = forwardRef<StopwatchHandle, StopwatchCallbacks>(functio
 					<button
 						type="button"
 						className={btnClass("resume", resumeBtnHidden)}
-						onClick={resume}
+						onClick={handleResumeClick}
 						data-testid={tid("stopwatch-btn-resume")}
 					>
 						▶ continue

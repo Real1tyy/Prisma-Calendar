@@ -24,6 +24,7 @@ describe("Stopwatch", () => {
 	let mockCallbacks: {
 		onStart: ReturnType<typeof vi.fn>;
 		onContinueRequested: ReturnType<typeof vi.fn>;
+		onResumeRequested: ReturnType<typeof vi.fn>;
 		onStop: ReturnType<typeof vi.fn>;
 		onBreakUpdate: ReturnType<typeof vi.fn>;
 	};
@@ -39,6 +40,7 @@ describe("Stopwatch", () => {
 				ref={ref}
 				onStart={mockCallbacks.onStart}
 				onContinueRequested={mockCallbacks.onContinueRequested}
+				onResumeRequested={mockCallbacks.onResumeRequested}
 				onStop={mockCallbacks.onStop}
 				onBreakUpdate={mockCallbacks.onBreakUpdate}
 			/>
@@ -56,6 +58,7 @@ describe("Stopwatch", () => {
 		mockCallbacks = {
 			onStart: vi.fn(),
 			onContinueRequested: vi.fn(() => new Date()),
+			onResumeRequested: vi.fn(() => null),
 			onStop: vi.fn(),
 			onBreakUpdate: vi.fn(),
 		};
@@ -167,6 +170,70 @@ describe("Stopwatch", () => {
 
 			drive(() => stopwatch.resume());
 			expect(stopwatch.getState()).toBe("paused");
+		});
+
+		// Bug regression: editing Start Date between Stop and clicking
+		// "▶ continue" (the standalone resume button) used to leave the
+		// elapsed display unchanged because resume preserved the existing
+		// internal startTime. resume(newStart) now adopts past-only values.
+		it("adopts a newly-supplied past start time on resume", () => {
+			const { stopwatch } = mountStopwatch();
+			drive(() => stopwatch.start());
+			drive(() => stopwatch.stop());
+
+			const fourHoursAgo = new Date(Date.now() - 4 * 60 * 60 * 1000);
+			drive(() => stopwatch.resume(fourHoursAgo));
+
+			const state = stopwatch.exportState();
+			expect(state.state).toBe("running");
+			expect(state.startTime).toBe(fourHoursAgo.getTime());
+		});
+
+		it("ignores a future start time on resume (keeps the existing one)", () => {
+			const { stopwatch } = mountStopwatch();
+			drive(() => stopwatch.start());
+			const startedAt = stopwatch.exportState().startTime;
+			drive(() => stopwatch.stop());
+
+			const future = new Date(Date.now() + 60 * 60 * 1000);
+			drive(() => stopwatch.resume(future));
+
+			expect(stopwatch.exportState().startTime).toBe(startedAt);
+		});
+
+		it("falls back to the existing start time when no new value is supplied", () => {
+			const { stopwatch } = mountStopwatch();
+			drive(() => stopwatch.start());
+			const startedAt = stopwatch.exportState().startTime;
+			drive(() => stopwatch.stop());
+
+			drive(() => stopwatch.resume());
+
+			expect(stopwatch.exportState().startTime).toBe(startedAt);
+		});
+
+		it("Continue button after stop pulls latest start via onResumeRequested", () => {
+			const fourHoursAgo = new Date(Date.now() - 4 * 60 * 60 * 1000);
+			mockCallbacks.onResumeRequested.mockReturnValue(fourHoursAgo);
+
+			const { stopwatch, container } = mountStopwatch();
+			drive(() => stopwatch.start());
+			drive(() => stopwatch.stop());
+
+			// Find the standalone resume button (the one visible in stopped
+			// state) and click it. There are two `.prisma-stopwatch-resume-btn`
+			// nodes in the DOM — the pause/resume toggle (hidden when stopped)
+			// and the standalone resume (visible when stopped).
+			const resumeBtns = container.querySelectorAll(".prisma-stopwatch-resume-btn");
+			const visibleResume = Array.from(resumeBtns).find((el) => !el.classList.contains("prisma-hidden")) as
+				| HTMLButtonElement
+				| undefined;
+			if (!visibleResume) throw new Error("standalone resume button not visible after stop");
+			drive(() => visibleResume.click());
+
+			expect(mockCallbacks.onResumeRequested).toHaveBeenCalledTimes(1);
+			expect(stopwatch.exportState().startTime).toBe(fourHoursAgo.getTime());
+			expect(stopwatch.getState()).toBe("running");
 		});
 	});
 

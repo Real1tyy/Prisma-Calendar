@@ -17,6 +17,7 @@ All notable changes to this project will be documented here.
 ### Fixed
 - **Title autocomplete flow**: accepting a suggestion now writes the chosen value (`Planning`, not `Planni`), the popup closes so a second Enter submits the modal, and the cursor reliably lands in the title input when opening Create from outside the calendar (command palette, ribbon, hotkey). See [Title Autocomplete](./features/events/title-autocomplete.md).
 - **Restoring a stopwatch-tracked new event duplicated the file**: A second Save persisted a duplicate instead of editing the original. See [Time Tracker → Minimize & Auto-Save](./features/management/time-tracker.md#minimize--auto-save).
+- **Stopwatch ▶ continue ignored Start Date edits**: Editing Start Date and clicking **▶ continue** — either from idle or after Stop — kept the old start, so Total was stuck on the original elapsed instead of recalculating from your edit. Both paths now read the live Start Date value. See [Time Tracker → Continue From Existing Start](./features/management/time-tracker.md#continue-from-existing-start).
 
 ---
 

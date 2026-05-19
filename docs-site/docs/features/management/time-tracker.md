@@ -64,6 +64,12 @@ Built-in stopwatch in Create/Edit Event modal for precise time tracking with aut
 - Click **▶ start**: Start time changes to 10:30 AM, End time set to 10:35 AM (10:30 + 5 min), timer starts from 00:00:00
 - Click **▶ continue**: Start time stays 10:00 AM, End time unchanged, timer shows 00:30:00 and continues
 
+### Continue From Existing Start
+
+**▶ continue** always uses the **current** value of the Start Date field — including any edits you make before clicking. If you open the modal at `Start: 10:00 AM` and change it to `09:00 AM` before clicking **▶ continue**, the timer resumes from `09:00 AM`, not the value the modal opened with.
+
+The same applies to the **▶ continue** button that appears after **⏹ stop**: if you adjusted the Start Date while the stopwatch was running (or after stopping it), pressing **▶ continue** again recalculates Total from the latest Start Date value. The accumulated break tally is preserved.
+
 ## Resume After Stopping
 
 **How it works**:

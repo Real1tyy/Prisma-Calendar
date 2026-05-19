@@ -546,6 +546,12 @@ export abstract class BaseEventModal extends Modal {
 					ref: setStopwatchHandle,
 					onStart,
 					onContinueRequested,
+					// Legacy imperative path — `▶ continue` after Stop falls back
+					// to the existing internal startTime (matches pre-React parity).
+					// React modal path supplies a hook-backed implementation that
+					// reads the latest Start Date input. See
+					// src/react/event-form/hooks/use-stopwatch.ts.
+					onResumeRequested: onContinueRequested,
 					onStop,
 					onBreakUpdate,
 				}),
