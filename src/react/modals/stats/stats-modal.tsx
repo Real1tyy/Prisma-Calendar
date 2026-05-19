@@ -175,6 +175,27 @@ export const StatsModalContent = memo(function StatsModalContent({
 		[aggregationMode, categoryTracker]
 	);
 
+	const headerModel = useMemo<StatsHeaderModel>(
+		() => ({
+			totalDuration: visibleTotalDuration,
+			eventCount: visibleEventCount,
+			showDecimalHours,
+			aggregationMode,
+			includeSkipped,
+			hasHidden,
+		}),
+		[visibleTotalDuration, visibleEventCount, showDecimalHours, aggregationMode, includeSkipped, hasHidden]
+	);
+	const headerController = useMemo<StatsHeaderController>(
+		() => ({
+			onToggleDecimalHours: toggleDecimalHours,
+			onToggleAggregation: toggleAggregation,
+			onToggleSkipped: setIncludeSkipped,
+			onClearHidden: clearHidden,
+		}),
+		[toggleDecimalHours, toggleAggregation, clearHidden]
+	);
+
 	if (!statsData) return null;
 
 	const { stats, filteredEvents, start, end } = statsData;
@@ -183,34 +204,15 @@ export const StatsModalContent = memo(function StatsModalContent({
 		<div className="prisma-stats-content">
 			{config ? (
 				<NavigableHeader
+					model={headerModel}
+					controller={headerController}
 					config={config}
 					currentDate={currentDate}
 					locale={settings.locale}
-					totalDuration={visibleTotalDuration}
-					eventCount={visibleEventCount}
-					showDecimalHours={showDecimalHours}
-					aggregationMode={aggregationMode}
-					includeSkipped={includeSkipped}
-					hasHidden={hasHidden}
 					onNavigate={setCurrentDate}
-					onToggleDecimalHours={toggleDecimalHours}
-					onToggleAggregation={toggleAggregation}
-					onToggleSkipped={setIncludeSkipped}
-					onClearHidden={clearHidden}
 				/>
 			) : (
-				<AllTimeHeader
-					totalDuration={visibleTotalDuration}
-					eventCount={visibleEventCount}
-					showDecimalHours={showDecimalHours}
-					aggregationMode={aggregationMode}
-					includeSkipped={includeSkipped}
-					hasHidden={hasHidden}
-					onToggleDecimalHours={toggleDecimalHours}
-					onToggleAggregation={toggleAggregation}
-					onToggleSkipped={setIncludeSkipped}
-					onClearHidden={clearHidden}
-				/>
+				<AllTimeHeader model={headerModel} controller={headerController} />
 			)}
 
 			{settings.capacityTrackingEnabled && config && (
@@ -248,39 +250,41 @@ export const StatsModalContent = memo(function StatsModalContent({
 	);
 });
 
-interface NavigableHeaderProps {
-	config: IntervalConfig;
-	currentDate: Date;
-	locale: string | undefined;
+interface StatsHeaderModel {
 	totalDuration: number;
 	eventCount: number;
 	showDecimalHours: boolean;
 	aggregationMode: AggregationMode;
 	includeSkipped: boolean;
 	hasHidden: boolean;
-	onNavigate: (date: Date) => void;
+}
+
+interface StatsHeaderController {
 	onToggleDecimalHours: () => void;
 	onToggleAggregation: () => void;
 	onToggleSkipped: (value: boolean) => void;
 	onClearHidden: () => void;
 }
 
+interface NavigableHeaderProps {
+	model: StatsHeaderModel;
+	controller: StatsHeaderController;
+	config: IntervalConfig;
+	currentDate: Date;
+	locale: string | undefined;
+	onNavigate: (date: Date) => void;
+}
+
 const NavigableHeader = memo(function NavigableHeader({
+	model,
+	controller,
 	config,
 	currentDate,
 	locale,
-	totalDuration,
-	eventCount,
-	showDecimalHours,
-	aggregationMode,
-	includeSkipped,
-	hasHidden,
 	onNavigate,
-	onToggleDecimalHours,
-	onToggleAggregation,
-	onToggleSkipped,
-	onClearHidden,
 }: NavigableHeaderProps) {
+	const { totalDuration, eventCount, showDecimalHours, aggregationMode, includeSkipped, hasHidden } = model;
+	const { onToggleDecimalHours, onToggleAggregation, onToggleSkipped, onClearHidden } = controller;
 	const { start, end } = boundsByInterval(currentDate, config.interval);
 	const formatDur = pickDurationFormatter({ showDecimalHours });
 
@@ -365,30 +369,13 @@ const NavigableHeader = memo(function NavigableHeader({
 });
 
 interface AllTimeHeaderProps {
-	totalDuration: number;
-	eventCount: number;
-	showDecimalHours: boolean;
-	aggregationMode: AggregationMode;
-	includeSkipped: boolean;
-	hasHidden: boolean;
-	onToggleDecimalHours: () => void;
-	onToggleAggregation: () => void;
-	onToggleSkipped: (value: boolean) => void;
-	onClearHidden: () => void;
+	model: StatsHeaderModel;
+	controller: StatsHeaderController;
 }
 
-const AllTimeHeader = memo(function AllTimeHeader({
-	totalDuration,
-	eventCount,
-	showDecimalHours,
-	aggregationMode,
-	includeSkipped,
-	hasHidden,
-	onToggleDecimalHours,
-	onToggleAggregation,
-	onToggleSkipped,
-	onClearHidden,
-}: AllTimeHeaderProps) {
+const AllTimeHeader = memo(function AllTimeHeader({ model, controller }: AllTimeHeaderProps) {
+	const { totalDuration, eventCount, showDecimalHours, aggregationMode, includeSkipped, hasHidden } = model;
+	const { onToggleDecimalHours, onToggleAggregation, onToggleSkipped, onClearHidden } = controller;
 	const formatDur = pickDurationFormatter({ showDecimalHours });
 
 	return (
