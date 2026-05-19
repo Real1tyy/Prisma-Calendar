@@ -49,6 +49,7 @@ export {
 	useArrowUp,
 } from "./hooks/keyboard";
 export { useEnterToSubmit } from "./hooks/keyboard";
+export { type KeyChord, useHandleKeyDown } from "./hooks/keyboard";
 export { useKeyDown } from "./hooks/keyboard";
 export { useEnterKey, type UseEnterKeyOptions, useEscapeKey } from "./hooks/keyboard";
 export { type SnapshotSubscribable, useExternalSnapshot } from "./hooks/reactive";
