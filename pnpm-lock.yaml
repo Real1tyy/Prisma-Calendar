@@ -193,6 +193,9 @@ importers:
       '@codemirror/view':
         specifier: ^6.43.0
         version: 6.43.0
+      '@ianvs/prettier-plugin-sort-imports':
+        specifier: ^4.7.1
+        version: 4.7.1(prettier@3.8.1)
       '@playwright/test':
         specifier: ^1.59.1
         version: 1.59.1
@@ -331,6 +334,9 @@ importers:
       '@codemirror/view':
         specifier: ^6.43.0
         version: 6.43.0
+      '@ianvs/prettier-plugin-sort-imports':
+        specifier: ^4.7.1
+        version: 4.7.1(prettier@3.8.1)
       '@playwright/test':
         specifier: ^1.59.1
         version: 1.59.1
@@ -1055,6 +1061,24 @@ packages:
       integrity: sha512-A/IxlMLShx3KjV/HeTcTfaMxdwy690+L/ZADoeaTltLx+CVuzkeVIPuybK3jrRfw7YZnmdKsVVHAlEPIAEUNlA==
     peerDependencies:
       react-hook-form: ^7.55.0
+  '@ianvs/prettier-plugin-sort-imports@4.7.1':
+    resolution:
+      integrity: sha512-jmTNYGlg95tlsoG3JLCcuC4BrFELJtLirLAkQW/71lXSyOhVt/Xj7xWbbGcuVbNq1gwWgSyMrPjJc9Z30hynVw==
+    peerDependencies:
+      '@prettier/plugin-oxc': ^0.0.4 || ^0.1.0
+      '@vue/compiler-sfc': 2.7.x || 3.x
+      content-tag: ^4.0.0
+      prettier: 2 || 3 || ^4.0.0-0
+      prettier-plugin-ember-template-tag: ^2.1.0
+    peerDependenciesMeta:
+      '@prettier/plugin-oxc':
+        optional: true
+      '@vue/compiler-sfc':
+        optional: true
+      content-tag:
+        optional: true
+      prettier-plugin-ember-template-tag:
+        optional: true
   '@isaacs/cliui@8.0.2':
     resolution:
       integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==
@@ -3148,6 +3172,12 @@ packages:
     resolution:
       integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==
     hasBin: true
+  semver@7.7.4:
+    resolution:
+      integrity: sha512-vFKC2IEtQnVhpT78h1Yp8wzwrf8CM+MzKMHGJZfBtzhZNycRFnXsHk6E5TxIkkMsgNS7mdX3AGB7x2QM2di4lA==
+    engines:
+      node: '>=10'
+    hasBin: true
   semver@7.8.0:
     resolution:
       integrity: sha512-AcM7dV/5ul4EekoQ29Agm5vri8JNqRyj39o0qpX6vDF2GZrtutZl5RwgD1XnZjiTAfncsJhMI48QQH3sN87YNA==
@@ -4065,6 +4095,16 @@ snapshots:
     dependencies:
       '@standard-schema/utils': 0.3.0
       react-hook-form: 7.73.1(react@19.2.5)
+  '@ianvs/prettier-plugin-sort-imports@4.7.1(prettier@3.8.1)':
+    dependencies:
+      '@babel/generator': 7.29.1
+      '@babel/parser': 7.29.0
+      '@babel/traverse': 7.29.0
+      '@babel/types': 7.29.0
+      prettier: 3.8.1
+      semver: 7.7.4
+    transitivePeerDependencies:
+    - supports-color
   '@isaacs/cliui@8.0.2':
     dependencies:
       string-width: 5.1.2
@@ -5221,6 +5261,7 @@ snapshots:
       xmlchars: 2.2.0
   scheduler@0.27.0: {}
   semver@6.3.1: {}
+  semver@7.7.4: {}
   semver@7.8.0: {}
   shebang-command@2.0.0:
     dependencies:

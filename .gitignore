@@ -175,3 +175,6 @@ debug.log
 
 # Sourcemaps
 *.map
+
+# Claude Code
+.claude/

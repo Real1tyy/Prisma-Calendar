@@ -92,9 +92,9 @@ describe("useHandleKeyDown", () => {
 		const second = vi.fn();
 		const addSpy = vi.spyOn(document, "addEventListener");
 
-		const { rerender } = renderHook((props: { handler: () => void }) =>
-			useHandleKeyDown({ key: "c" }, props.handler), { initialProps: { handler: first } }
-		);
+		const { rerender } = renderHook((props: { handler: () => void }) => useHandleKeyDown({ key: "c" }, props.handler), {
+			initialProps: { handler: first },
+		});
 		const initialAddCount = addSpy.mock.calls.filter(([type]) => type === "keydown").length;
 		rerender({ handler: second });
 
