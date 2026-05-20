@@ -213,7 +213,7 @@ test.describe("event series modal — click-to-open + category-color affordances
 		await calendar.seedAndStabilize(events);
 
 		const eventsModal = await calendar.openEventsModal();
-		await eventsModal.switchTab("byCategory");
+		await eventsModal.switchTab("by-category");
 		const series = await eventsModal.drillInto("Work");
 
 		await series.expectCategoryColorVar(CATEGORY_COLOR);

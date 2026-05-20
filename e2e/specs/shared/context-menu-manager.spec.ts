@@ -31,7 +31,7 @@ test.describe("shared: context menu item manager", () => {
 		// Right-click the event to surface the shared context menu, then click
 		// "Manage menu items..." — both are testid-stamped by shared.
 		await rightClickEvent(calendar.page, { title: "Team Meeting" });
-		await clickContextMenuItem(calendar.page, "__manage");
+		await clickContextMenuItem(calendar.page, "manage");
 
 		const manager = await expectItemManagerOpen(calendar.page);
 

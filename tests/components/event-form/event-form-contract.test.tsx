@@ -119,7 +119,7 @@ describe("EventForm — imperative DOM contract", () => {
 		render(<EventForm mode="create" bundle={bundle} onSubmit={vi.fn()} onCancel={vi.fn()} />);
 
 		for (const testId of [
-			"prisma-event-control-allDay",
+			"prisma-event-control-all-day",
 			"prisma-event-control-rrule",
 			"prisma-event-control-virtual",
 		]) {

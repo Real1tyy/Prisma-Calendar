@@ -32,7 +32,7 @@ export type ContextMenuItemKey =
 
 export type EventControlKey =
 	| "title"
-	| "allDay"
+	| "all-day"
 	| "start"
 	| "end"
 	| "date"

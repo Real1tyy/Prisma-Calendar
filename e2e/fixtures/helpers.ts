@@ -347,7 +347,7 @@ export async function createEventViaUI(page: Page, input: CreateEventInput): Pro
 	await fillEventModalMinimal(page, { title: input.title });
 
 	if (input.allDay) {
-		const allDayToggle = page.locator('.modal [data-testid="prisma-event-control-allDay"]').first();
+		const allDayToggle = page.locator('.modal [data-testid="prisma-event-control-all-day"]').first();
 		await allDayToggle.check({ force: true });
 		if (input.start) {
 			const dateOnly = input.start.includes("T") ? input.start.slice(0, 10) : input.start;

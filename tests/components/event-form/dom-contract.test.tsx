@@ -44,7 +44,7 @@ describe("Imperative DOM contract — TimingSection layout", () => {
 		// The shared-react `<SettingItem>` emits unprefixed Obsidian classes, which fall back
 		// to Obsidian's default layout and break the modal's spacing/alignment.
 		render(<TimingWrapper />);
-		const allDayCb = screen.getByTestId("prisma-event-control-allDay");
+		const allDayCb = screen.getByTestId("prisma-event-control-all-day");
 		const row = allDayCb.closest(".prisma-setting-item");
 		expect(row).not.toBeNull();
 		const label = row!.querySelector(".prisma-setting-item-name");
@@ -66,7 +66,7 @@ describe("Imperative DOM contract — TimingSection", () => {
 		// Mirrors base-event-modal.ts:408-412 — All-day was a plain HTML checkbox
 		// styled via .prisma-setting-item-control, NOT an Obsidian sliding-pill Toggle.
 		render(<TimingWrapper />);
-		const cb = screen.getByTestId("prisma-event-control-allDay") as HTMLInputElement;
+		const cb = screen.getByTestId("prisma-event-control-all-day") as HTMLInputElement;
 		expect(cb.tagName).toBe("INPUT");
 		expect(cb.type).toBe("checkbox");
 		expect(cb.className).toBe("prisma-setting-item-control");

@@ -68,7 +68,7 @@ describe("EventForm", () => {
 
 		expect(screen.getByText("Create Event")).toBeTruthy();
 		expect(screen.getByTestId("prisma-event-control-title")).toBeTruthy();
-		expect(screen.getByTestId("prisma-event-control-allDay")).toBeTruthy();
+		expect(screen.getByTestId("prisma-event-control-all-day")).toBeTruthy();
 		expect(screen.getByTestId("prisma-event-btn-save")).toBeTruthy();
 		expect(screen.getByTestId("prisma-event-btn-cancel")).toBeTruthy();
 		expect(screen.getByTestId("prisma-event-btn-minimize")).toBeTruthy();

@@ -120,7 +120,7 @@ test.describe("events modal — Recurring-tab controls", () => {
 		]);
 
 		const events = await calendar.openEventsModal();
-		await events.expectTabActive("byCategory");
+		await events.expectTabActive("by-category");
 		await events.expectGroupCountText("2 category groups");
 	});
 
@@ -134,7 +134,7 @@ test.describe("events modal — Recurring-tab controls", () => {
 		]);
 
 		const events = await calendar.openEventsModal();
-		await events.switchTab("byCategory");
+		await events.switchTab("by-category");
 		await events.expectGroupCountText("2 category groups");
 		await expect(events.groupItems()).toHaveCount(2);
 

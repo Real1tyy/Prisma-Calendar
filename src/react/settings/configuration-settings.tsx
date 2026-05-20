@@ -133,7 +133,7 @@ const BatchSelectionSection = memo(function BatchSelectionSection({ settingsStor
 					<div
 						key={buttonId}
 						className="setting-item prisma-batch-button-setting"
-						data-testid={tid("settings-field-batchActionButtons", buttonId)}
+						data-testid={tid("settings-field-batch-action-buttons", buttonId)}
 					>
 						<div className="setting-item-info">
 							<div className="setting-item-name">{BATCH_BUTTON_LABELS[buttonId] || buttonId}</div>
@@ -142,7 +142,7 @@ const BatchSelectionSection = memo(function BatchSelectionSection({ settingsStor
 							<Toggle
 								value={enabled.has(buttonId)}
 								onChange={(v) => handleToggle(buttonId, v)}
-								testId={tid("settings-control-batchActionButtons", buttonId)}
+								testId={tid("settings-control-batch-action-buttons", buttonId)}
 							/>
 						</div>
 					</div>

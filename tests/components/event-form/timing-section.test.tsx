@@ -32,7 +32,7 @@ describe("TimingSection", () => {
 
 		expect(screen.getByTestId("prisma-event-control-start")).toBeTruthy();
 
-		await user.click(screen.getByTestId("prisma-event-control-allDay"));
+		await user.click(screen.getByTestId("prisma-event-control-all-day"));
 
 		expect(screen.queryByTestId("prisma-event-control-start")).toBeNull();
 		expect(screen.getByTestId("prisma-event-control-date")).toBeTruthy();
@@ -112,7 +112,7 @@ describe("TimingSection", () => {
 			/>
 		);
 
-		await user.click(screen.getByTestId("prisma-event-control-allDay"));
+		await user.click(screen.getByTestId("prisma-event-control-all-day"));
 
 		const dateInput = screen.getByTestId("prisma-event-control-date") as HTMLInputElement;
 		expect(dateInput.value).toBe("2026-04-25");
@@ -122,7 +122,7 @@ describe("TimingSection", () => {
 		const user = userEvent.setup();
 		render(<Wrapper initial={{ allDay: true, date: "2026-04-25" }} />);
 
-		await user.click(screen.getByTestId("prisma-event-control-allDay"));
+		await user.click(screen.getByTestId("prisma-event-control-all-day"));
 
 		const start = screen.getByTestId("prisma-event-control-start") as HTMLInputElement;
 		const end = screen.getByTestId("prisma-event-control-end") as HTMLInputElement;

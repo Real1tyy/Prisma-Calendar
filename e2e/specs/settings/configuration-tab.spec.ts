@@ -40,7 +40,7 @@ test.describe("settings: Configuration tab", () => {
 		await switchSettingsTab(obsidian.page, "configuration");
 
 		// batchMoveBy is excluded from the default list — toggling on adds it.
-		await setToggle(obsidian.page, "prisma-settings-control-batchActionButtons-batchMoveBy", true);
+		await setToggle(obsidian.page, "prisma-settings-control-batch-action-buttons-batchMoveBy", true);
 		await settleSettings(obsidian.page, { pluginId: PLUGIN_ID });
 
 		const data = readPluginData(obsidian.vaultDir, PLUGIN_ID) as CalendarData;

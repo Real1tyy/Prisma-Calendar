@@ -543,12 +543,12 @@ const HolidaySection = memo(function HolidaySection({ settingsStore }: HolidaySe
 			<SettingItem
 				name="Enable holidays"
 				description="Display public holidays on the calendar as virtual read-only events"
-				testId={tid("settings-field-holidaysEnabled")}
+				testId={tid("settings-field-holidays-enabled")}
 			>
 				<Toggle
 					value={holidays.enabled}
 					onChange={handleEnabledChange}
-					testId={tid("settings-control-holidaysEnabled")}
+					testId={tid("settings-control-holidays-enabled")}
 				/>
 			</SettingItem>
 
@@ -557,61 +557,61 @@ const HolidaySection = memo(function HolidaySection({ settingsStore }: HolidaySe
 					<SettingItem
 						name="Country"
 						description="ISO country code (e.g., US, GB, DE, CA)"
-						testId={tid("settings-field-holidaysCountry")}
+						testId={tid("settings-field-holidays-country")}
 					>
 						<TextInput
 							value={holidays.country}
 							placeholder="US"
 							onChange={(v) => handleFieldChange("country", v)}
-							testId={tid("settings-control-holidaysCountry")}
+							testId={tid("settings-control-holidays-country")}
 						/>
 					</SettingItem>
 					<SettingItem
 						name="State/Province"
 						description="Optional: State or province code (e.g., ca for California, ny for New York)"
-						testId={tid("settings-field-holidaysState")}
+						testId={tid("settings-field-holidays-state")}
 					>
 						<TextInput
 							value={holidays.state ?? ""}
 							placeholder="Optional"
 							onChange={(v) => handleFieldChange("state", v)}
-							testId={tid("settings-control-holidaysState")}
+							testId={tid("settings-control-holidays-state")}
 						/>
 					</SettingItem>
 					<SettingItem
 						name="Region"
 						description="Optional: Region code for more specific holidays"
-						testId={tid("settings-field-holidaysRegion")}
+						testId={tid("settings-field-holidays-region")}
 					>
 						<TextInput
 							value={holidays.region ?? ""}
 							placeholder="Optional"
 							onChange={(v) => handleFieldChange("region", v)}
-							testId={tid("settings-control-holidaysRegion")}
+							testId={tid("settings-control-holidays-region")}
 						/>
 					</SettingItem>
 					<SettingItem
 						name="Holiday types"
 						description="Select which types of holidays to display"
-						testId={tid("settings-field-holidaysTypes")}
+						testId={tid("settings-field-holidays-types")}
 					>
 						<Dropdown
 							value={holidays.types.join(",")}
 							options={HOLIDAY_TYPE_OPTIONS}
 							onChange={handleTypesChange}
-							testId={tid("settings-control-holidaysTypes")}
+							testId={tid("settings-control-holidays-types")}
 						/>
 					</SettingItem>
 					<SettingItem
 						name="Timezone"
 						description="Optional: Timezone for holiday calculations (e.g., America/New_York). Leave empty to use system timezone."
-						testId={tid("settings-field-holidaysTimezone")}
+						testId={tid("settings-field-holidays-timezone")}
 					>
 						<TextInput
 							value={holidays.timezone ?? ""}
 							placeholder="Optional"
 							onChange={(v) => handleFieldChange("timezone", v)}
-							testId={tid("settings-control-holidaysTimezone")}
+							testId={tid("settings-control-holidays-timezone")}
 						/>
 					</SettingItem>
 					<div className="setting-item-description" style={{ marginTop: 10 }}>

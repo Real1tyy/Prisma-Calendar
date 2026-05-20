@@ -107,9 +107,9 @@ const ReadOnlyField = memo(function ReadOnlyField({ plugin }: { plugin: CustomCa
 		<SettingItem
 			name="Read-only mode"
 			description="Prevent automatic file modifications. When enabled, the plugin will not automatically write to files (notifications, recurring event generation). Manual actions like propagation will still work. Stored in sync.json to prevent syncing across devices."
-			testId={tid("settings-field-readOnly")}
+			testId={tid("settings-field-read-only")}
 		>
-			<Toggle value={readOnly} onChange={handleChange} testId={tid("settings-control-readOnly")} />
+			<Toggle value={readOnly} onChange={handleChange} testId={tid("settings-control-read-only")} />
 		</SettingItem>
 	);
 });
@@ -197,13 +197,13 @@ const EventPresetsSection = memo(function EventPresetsSection({ settingsStore, p
 			<SettingItem
 				name="Default preset"
 				description="Preset to auto-fill when opening the create event modal"
-				testId={tid("settings-field-defaultPresetId")}
+				testId={tid("settings-field-default-preset-id")}
 			>
 				<Dropdown
 					value={defaultPresetId ?? ""}
 					options={presetOptions}
 					onChange={handleDefaultChange}
-					testId={tid("settings-control-defaultPresetId")}
+					testId={tid("settings-control-default-preset-id")}
 				/>
 			</SettingItem>
 			{showBanner && (

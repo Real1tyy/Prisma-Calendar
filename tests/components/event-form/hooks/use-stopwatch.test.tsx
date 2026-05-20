@@ -17,6 +17,14 @@ import { Stopwatch, type StopwatchHandle } from "../../../../src/react/views/sto
 import type { SingleCalendarConfig } from "../../../../src/types/settings";
 import { createMockSingleCalendarSettings } from "../../../fixtures/settings-fixtures";
 
+function actReturn<T>(fn: () => T): T {
+	let value!: T;
+	act(() => {
+		value = fn();
+	});
+	return value;
+}
+
 interface HookHarness {
 	form: UseFormReturn<EventFormState>;
 	stopwatch: ReturnType<typeof useStopwatch>;
@@ -129,10 +137,7 @@ describe("useStopwatch.onContinueRequested", () => {
 
 		// `start` is in the past, so onContinueRequested pushes `end` forward via
 		// form.setValue — wrap in act so the resulting re-render is flushed.
-		let date: Date | null = null;
-		act(() => {
-			date = stopwatchRef.current?.onContinueRequested() ?? null;
-		});
+		const date = actReturn(() => stopwatchRef.current?.onContinueRequested() ?? null);
 		expect(date).not.toBeNull();
 		expect(date?.getHours()).toBe(11);
 		expect(date?.getMinutes()).toBe(0);
@@ -334,10 +339,7 @@ describe("useStopwatch.onResumeRequested", () => {
 
 		// The stored end is in the past, so onResumeRequested pushes it forward
 		// via form.setValue — wrap in act so the resulting re-render is flushed.
-		let date: Date | null = null;
-		act(() => {
-			date = result.current.stopwatch.onResumeRequested();
-		});
+		const date = actReturn(() => result.current.stopwatch.onResumeRequested());
 		expect(date).not.toBeNull();
 		expect(date?.getHours()).toBe(11);
 		expect(date?.getMinutes()).toBe(30);

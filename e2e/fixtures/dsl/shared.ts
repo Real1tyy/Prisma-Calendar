@@ -160,7 +160,7 @@ export interface ItemManagerHandle {
 
 /**
  * Assumes the context menu is already open and the caller will click the
- * `__manage` entry to reach the manager. Returns a handle for interacting with
+ * `manage` entry to reach the manager. Returns a handle for interacting with
  * the modal rows.
  */
 export async function expectItemManagerOpen(page: Page): Promise<ItemManagerHandle> {

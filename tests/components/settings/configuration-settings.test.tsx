@@ -35,7 +35,7 @@ describe("ConfigurationSettingsReact — section structure", () => {
 	it("renders one row per BATCH_BUTTON_IDS entry under Batch selection", () => {
 		setup();
 		for (const id of BATCH_BUTTON_IDS) {
-			expect(screen.getByTestId(`prisma-settings-field-batchActionButtons-${id}`)).toBeTruthy();
+			expect(screen.getByTestId(`prisma-settings-field-batch-action-buttons-${id}`)).toBeTruthy();
 		}
 	});
 });
@@ -80,7 +80,7 @@ describe("ConfigurationSettingsReact — batch toggle behaviour", () => {
 	it("toggling on appends to batchActionButtons preserving canonical BATCH_BUTTON_IDS order", async () => {
 		const { store, user } = setup({ batchActionButtons: ["batchSelectAll"] });
 
-		const row = screen.getByTestId("prisma-settings-field-batchActionButtons-batchClear");
+		const row = screen.getByTestId("prisma-settings-field-batch-action-buttons-batchClear");
 		const toggle = row.querySelector<HTMLElement>(".checkbox-container")!;
 		await user.click(toggle);
 
@@ -93,7 +93,7 @@ describe("ConfigurationSettingsReact — batch toggle behaviour", () => {
 	it("toggling off removes the button id from batchActionButtons", async () => {
 		const { store, user } = setup({ batchActionButtons: ["batchSelectAll", "batchClear"] });
 
-		const row = screen.getByTestId("prisma-settings-field-batchActionButtons-batchClear");
+		const row = screen.getByTestId("prisma-settings-field-batch-action-buttons-batchClear");
 		const toggle = row.querySelector<HTMLElement>(".checkbox-container")!;
 		await user.click(toggle);
 

@@ -33,7 +33,7 @@ test.describe("event creation paths", () => {
 		await calendar.page.locator(EVENT_MODAL_SELECTOR).waitFor({ state: "visible" });
 
 		// All Day should be on, Date should be the anchor, Start/End should be hidden.
-		await expect(calendar.page.locator(sel(TID.event.control("allDay"))).first()).toBeChecked();
+		await expect(calendar.page.locator(sel(TID.event.control("all-day"))).first()).toBeChecked();
 		await expect(calendar.page.locator(sel(TID.event.control("date"))).first()).toHaveValue(anchor);
 	});
 

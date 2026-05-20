@@ -47,7 +47,7 @@ function resolveButton(
 }
 
 function renderConfirmation(el: HTMLElement, config: ConfirmationModalConfig, close: () => void): void {
-	el.setAttribute("data-testid", "confirmation-modal");
+	el.setAttribute("data-testid", "confirmation-modal-container");
 	el.createEl("h2", { text: config.title });
 
 	if (typeof config.message === "string") {

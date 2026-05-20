@@ -59,7 +59,7 @@ test.describe("event presets", () => {
 		const modal = calendar.page.locator(".modal").first();
 		await modal.locator(sel(TID.event.control("preset"))).selectOption({ value: "preset-allday" });
 
-		await expect(modal.locator(sel(TID.event.control("allDay")))).toBeChecked();
+		await expect(modal.locator(sel(TID.event.control("all-day")))).toBeChecked();
 		// Date input is the all-day-mode replacement for start/end; must be
 		// visible after the toggle flips on.
 		await expect(modal.locator(sel(TID.event.control("date")))).toBeVisible();

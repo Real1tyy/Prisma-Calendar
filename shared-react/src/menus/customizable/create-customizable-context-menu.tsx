@@ -89,7 +89,7 @@ export function createCustomizableContextMenu(config: CustomizableContextMenuCon
 					.setTitle("Manage menu items...")
 					.setIcon("settings-2")
 					.onClick(() => showItemManager());
-				getMenuItemDom(menuItem)?.setAttribute("data-testid", `${testIdPrefix}__manage`);
+				getMenuItemDom(menuItem)?.setAttribute("data-testid", `${testIdPrefix}manage`);
 			});
 		}
 

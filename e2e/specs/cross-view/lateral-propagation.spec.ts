@@ -102,7 +102,7 @@ test.describe("cross-view: lateral propagation paths", () => {
 		// Open the events modal from the page header. Toolbar sits above the
 		// tab container, so the trigger must work regardless of the active tab.
 		const events = await calendar.openEventsModal();
-		await events.switchTab("byCategory");
+		await events.switchTab("by-category");
 
 		// Both categories surface with the correct counts.
 		await expect(events.groupItem("AlphaCat")).toBeVisible();

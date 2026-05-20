@@ -111,12 +111,12 @@ describe("IntegrationsSettingsReact", () => {
 	it("shows holiday details when holidays enabled", async () => {
 		const { container, user } = setup();
 		const toggle = container.querySelector<HTMLElement>(
-			"[data-testid='prisma-settings-field-holidaysEnabled'] .checkbox-container"
+			"[data-testid='prisma-settings-field-holidays-enabled'] .checkbox-container"
 		);
 		if (toggle) {
 			await user.click(toggle);
 		}
-		const countryField = container.querySelector("[data-testid='prisma-settings-field-holidaysCountry']");
+		const countryField = container.querySelector("[data-testid='prisma-settings-field-holidays-country']");
 		expect(countryField).toBeTruthy();
 	});
 

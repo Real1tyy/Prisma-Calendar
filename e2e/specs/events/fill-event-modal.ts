@@ -213,7 +213,7 @@ export async function fillEventModal(page: Page, data: EventModalInput): Promise
 	validateEventModalInput(data);
 
 	if (data.title !== undefined) await fillTestIdInput(page, "prisma-event-control-title", data.title);
-	if (data.allDay !== undefined) await setTestIdCheckbox(page, "prisma-event-control-allDay", data.allDay);
+	if (data.allDay !== undefined) await setTestIdCheckbox(page, "prisma-event-control-all-day", data.allDay);
 	if (data.start !== undefined) await fillTestIdInput(page, "prisma-event-control-start", data.start);
 	if (data.end !== undefined) await fillTestIdInput(page, "prisma-event-control-end", data.end);
 	if (data.date !== undefined) await fillTestIdInput(page, "prisma-event-control-date", data.date);

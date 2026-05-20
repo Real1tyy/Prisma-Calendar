@@ -130,7 +130,7 @@ test.describe("manager customization + persistence", () => {
 			end: isoLocal(0, 10, 0),
 		});
 		await rightClickEvent(calendar.page, { title: "Team Meeting" });
-		await clickContextMenuItem(calendar.page, "__manage");
+		await clickContextMenuItem(calendar.page, "manage");
 		const manager = await expectItemManagerOpen(calendar.page);
 
 		await customizeAndAssert(calendar.page, calendar.vaultDir, {

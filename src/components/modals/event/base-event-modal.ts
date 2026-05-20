@@ -393,7 +393,7 @@ export abstract class BaseEventModal extends Modal {
 		});
 
 		const allDayContainer = contentEl.createDiv(cls("setting-item"));
-		allDayContainer.setAttribute("data-testid", tid("event-field-allDay"));
+		allDayContainer.setAttribute("data-testid", tid("event-field-all-day"));
 		allDayContainer.createEl("div", {
 			text: "All day",
 			cls: cls("setting-item-name"),
@@ -401,7 +401,7 @@ export abstract class BaseEventModal extends Modal {
 		this.allDayCheckbox = allDayContainer.createEl("input", {
 			type: "checkbox",
 			cls: cls("setting-item-control"),
-			attr: { "data-testid": tid("event-control-allDay") },
+			attr: { "data-testid": tid("event-control-all-day") },
 		});
 		this.allDayCheckbox.checked = this.event.allDay || false;
 

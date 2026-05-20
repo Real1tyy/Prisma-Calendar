@@ -59,15 +59,15 @@ test.describe("analytics: events-list modal + series visualisations", () => {
 
 		// Modal is present, and all three tab buttons are stamped.
 		await expect(calendar.page.locator(sel("prisma-events-modal-tab-recurring")).first()).toBeVisible();
-		await expect(calendar.page.locator(sel("prisma-events-modal-tab-byCategory")).first()).toBeVisible();
-		await expect(calendar.page.locator(sel("prisma-events-modal-tab-byName")).first()).toBeVisible();
+		await expect(calendar.page.locator(sel("prisma-events-modal-tab-by-category")).first()).toBeVisible();
+		await expect(calendar.page.locator(sel("prisma-events-modal-tab-by-name")).first()).toBeVisible();
 	});
 
 	test("By Category tab counts events per category; drilling renders only that category's events", async ({
 		calendar,
 	}) => {
 		const events = await calendar.openEventsModal();
-		await events.switchTab("byCategory");
+		await events.switchTab("by-category");
 
 		// Per-group counts: Work has 2 Team Meetings, Fitness has 2 Workouts.
 		await expect(events.groupItem("Work").locator(GROUP_SUBTITLE_SEL)).toHaveText("2 events");
@@ -97,7 +97,7 @@ test.describe("analytics: events-list modal + series visualisations", () => {
 
 	test("By Name tab counts name groups; drilling renders only that name's events", async ({ calendar }) => {
 		const events = await calendar.openEventsModal();
-		await events.switchTab("byName");
+		await events.switchTab("by-name");
 
 		// nameKey is lowercased by `NameSeriesTracker.getNameKey` and only the
 		// first char is re-uppercased for display, so the byName item titles
@@ -127,7 +127,7 @@ test.describe("analytics: events-list modal + series visualisations", () => {
 
 	test("Bases visualisations receive the right payload (timeline rows, heatmap pro gate)", async ({ calendar }) => {
 		const events = await calendar.openEventsModal();
-		await events.switchTab("byCategory");
+		await events.switchTab("by-category");
 		const series = await events.drillInto("Work");
 
 		// Baseline modal count — the Events modal + Series modal are open on top of each other.

@@ -346,7 +346,7 @@ export async function rightClickEventMenu(page: Page, eventTitle: string, menuIt
 	await eventBlock.click({ button: "right" });
 	// `menuItemId` is typed as plain string here because this helper is a
 	// legacy entry point for specs that pass both registry-valid ids and
-	// out-of-registry ones (e.g. `__manage`). The full typed path is
+	// out-of-registry ones (e.g. `manage`). The full typed path is
 	// `calendar.eventByTitle(...).rightClick(key)` in the DSL.
 	const menuItem = page.locator(`[data-testid="prisma-context-menu-item-${menuItemId}"]`);
 	await menuItem.waitFor({ state: "visible" });

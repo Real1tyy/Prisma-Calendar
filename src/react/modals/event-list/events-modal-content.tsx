@@ -129,7 +129,7 @@ function EventsModalContent({
 				</button>
 				<button
 					className={cls("event-series-tab-btn", activeTab === "byCategory" ? "is-active" : "")}
-					data-testid={tid("events-modal-tab-byCategory")}
+					data-testid={tid("events-modal-tab-by-category")}
 					onClick={() => setActiveTab("byCategory")}
 				>
 					By Category ({categoryCount})
@@ -137,7 +137,7 @@ function EventsModalContent({
 				{nameSeriesEnabled && (
 					<button
 						className={cls("event-series-tab-btn", activeTab === "byName" ? "is-active" : "")}
-						data-testid={tid("events-modal-tab-byName")}
+						data-testid={tid("events-modal-tab-by-name")}
 						onClick={() => setActiveTab("byName")}
 					>
 						By Name ({nameCount})

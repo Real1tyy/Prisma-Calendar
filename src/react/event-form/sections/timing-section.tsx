@@ -92,12 +92,12 @@ export const TimingSection = memo(function TimingSection({ form, showDurationFie
 
 	return (
 		<>
-			<PrismaSettingItem name="All day" testId="prisma-event-field-allDay">
+			<PrismaSettingItem name="All day" testId="prisma-event-field-all-day">
 				<PrismaCheckbox
 					style="plain"
 					value={isAllDay}
 					onChange={handleAllDayChange}
-					testId="prisma-event-control-allDay"
+					testId="prisma-event-control-all-day"
 				/>
 			</PrismaSettingItem>
 

@@ -62,7 +62,7 @@ test.describe("event series modal — controls (hide past, hide skipped, search,
 
 	test("stats line reports Total / Past / Skipped accurately", async ({ calendar }) => {
 		const events = await calendar.openEventsModal();
-		await events.switchTab("byCategory");
+		await events.switchTab("by-category");
 		const series = await events.drillInto("Work");
 
 		await series.expectRowCount(4);
@@ -71,7 +71,7 @@ test.describe("event series modal — controls (hide past, hide skipped, search,
 
 	test("past instances render with the past class; skipped instances with the skipped class", async ({ calendar }) => {
 		const events = await calendar.openEventsModal();
-		await events.switchTab("byCategory");
+		await events.switchTab("by-category");
 		const series = await events.drillInto("Work");
 
 		// Default sort is desc — newest first. Use rowByDate for stable lookups.
@@ -90,7 +90,7 @@ test.describe("event series modal — controls (hide past, hide skipped, search,
 
 	test("hide-past toggle drops past rows and keeps stats accurate", async ({ calendar }) => {
 		const events = await calendar.openEventsModal();
-		await events.switchTab("byCategory");
+		await events.switchTab("by-category");
 		const series = await events.drillInto("Work");
 
 		await series.expectRowCount(4);
@@ -109,7 +109,7 @@ test.describe("event series modal — controls (hide past, hide skipped, search,
 
 	test("hide-skipped toggle drops skipped rows", async ({ calendar }) => {
 		const events = await calendar.openEventsModal();
-		await events.switchTab("byCategory");
+		await events.switchTab("by-category");
 		const series = await events.drillInto("Work");
 
 		await series.toggleHideSkipped();
@@ -122,7 +122,7 @@ test.describe("event series modal — controls (hide past, hide skipped, search,
 
 	test("hide-past + hide-skipped together leave only future, non-skipped rows", async ({ calendar }) => {
 		const events = await calendar.openEventsModal();
-		await events.switchTab("byCategory");
+		await events.switchTab("by-category");
 		const series = await events.drillInto("Work");
 
 		await series.toggleHidePast();
@@ -138,7 +138,7 @@ test.describe("event series modal — controls (hide past, hide skipped, search,
 
 	test("search filters series rows by title", async ({ calendar }) => {
 		const events = await calendar.openEventsModal();
-		await events.switchTab("byCategory");
+		await events.switchTab("by-category");
 		const series = await events.drillInto("Work");
 
 		await series.expectRowCount(4);

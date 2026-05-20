@@ -9,7 +9,7 @@ import { sel } from "../testids";
 // which the handles collapse so analytics specs can read like a flow:
 //
 //     const events = await calendar.openEventsModal();
-//     await events.switchTab("byCategory");
+//     await events.switchTab("by-category");
 //     const series = await events.drillInto("Work");
 //     await series.expectRowCount(2);
 //
@@ -36,7 +36,7 @@ async function clickWhenVisible(loc: Locator): Promise<void> {
 	await loc.click();
 }
 
-export type EventsModalTab = "recurring" | "byCategory" | "byName";
+export type EventsModalTab = "recurring" | "by-category" | "by-name";
 export type EventsModalSortMode = "count-desc" | "count-asc" | "name-asc" | "name-desc";
 export type SeriesModalTab = "recurring" | "category" | "name";
 export type RecurringTypeFilter =
