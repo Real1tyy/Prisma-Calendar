@@ -8,6 +8,14 @@ export type EnsurePluginBuiltOptions = {
 	/** Files that must exist at pluginRoot to consider it "already built". */
 	artifacts?: readonly string[];
 	/**
+	 * Subset of `artifacts` that the build command actually regenerates every
+	 * run (the real bundle outputs). Freshness compares against the OLDEST of
+	 * these — so a fresh `styles.css` can't mask a stale `main.js`. Excludes
+	 * source-controlled artifacts like `manifest.json` whose mtime tracks the
+	 * git checkout, not the build. Defaults to `main.js` + `styles.css`.
+	 */
+	buildOutputs?: readonly string[];
+	/**
 	 * Directories (relative to `pluginRoot`) whose mtimes invalidate the
 	 * cached build. Defaults cover the plugin's own source plus the workspace
 	 * `shared/` / `shared-react/` packages — the common case in this monorepo.
@@ -21,6 +29,7 @@ export type EnsurePluginBuiltOptions = {
 };
 
 const DEFAULT_ARTIFACTS = ["main.js", "manifest.json", "styles.css"] as const;
+const DEFAULT_BUILD_OUTPUTS = ["main.js", "styles.css"] as const;
 const DEFAULT_SOURCE_DIRS = ["src", "../shared/src", "../shared-react/src"] as const;
 
 /** Shared primitive: newest mtime among the given paths. Missing paths skipped. */
@@ -36,6 +45,21 @@ function newestMtime(paths: Iterable<string>): number {
 		if (st.isFile() && st.mtimeMs > newest) newest = st.mtimeMs;
 	}
 	return newest;
+}
+
+/** Shared primitive: oldest mtime among the given paths. Missing paths skipped; 0 if none exist. */
+function oldestMtime(paths: Iterable<string>): number {
+	let oldest = Infinity;
+	for (const path of paths) {
+		let st;
+		try {
+			st = statSync(path);
+		} catch {
+			continue;
+		}
+		if (st.isFile() && st.mtimeMs < oldest) oldest = st.mtimeMs;
+	}
+	return oldest === Infinity ? 0 : oldest;
 }
 
 /** Yield every non-hidden source file under `root`, skipping `node_modules` / `dist`. */
@@ -67,14 +91,18 @@ function* walkSourceFiles(root: string): Generator<string> {
 }
 
 /**
- * Build's completion time = most-recent artifact mtime. Can't use min: some
- * artifacts (e.g. `manifest.json`) are source-controlled and never touched by
- * the build command, so their mtime is the file's git-checkout time and has
- * no relationship to "when the bundle was built". Max of a rebuild-on-every-
- * build artifact (`main.js`, `styles.css`) answers the real question.
+ * Build's effective completion time = OLDEST build-output mtime. A build is
+ * fresh only if *every* regenerated output postdates every source — so the
+ * oldest output is the one that decides. Using the newest (max) would let a
+ * separately-touched output mask a stale one: e.g. an `apply`/`merge` that
+ * rewrites `styles.css` after `main.js` was last built leaves a fresh
+ * `styles.css` mtime hiding a stale `main.js`, and the check would wrongly
+ * skip the rebuild. `manifest.json` is excluded from `buildOutputs` because
+ * it's source-controlled — its mtime is the git-checkout time, unrelated to
+ * the build.
  */
-function lastBuildMtime(pluginRoot: string, artifacts: readonly string[]): number {
-	return newestMtime(artifacts.map((file) => resolve(pluginRoot, file)));
+function oldestBuildOutputMtime(pluginRoot: string, buildOutputs: readonly string[]): number {
+	return oldestMtime(buildOutputs.map((file) => resolve(pluginRoot, file)));
 }
 
 /** Newest source-file mtime across `sourceDirs`. Returns 0 if no sources tracked. */
@@ -98,11 +126,12 @@ function newestSourceMtime(pluginRoot: string, sourceDirs: readonly string[]): n
  */
 export function ensurePluginBuilt(options: EnsurePluginBuiltOptions): void {
 	const artifacts = options.artifacts ?? DEFAULT_ARTIFACTS;
+	const buildOutputs = options.buildOutputs ?? DEFAULT_BUILD_OUTPUTS;
 	const sourceDirs = options.sourceDirs ?? DEFAULT_SOURCE_DIRS;
 	const skipIfBuilt = options.skipIfBuilt ?? true;
 
 	const missing = artifacts.filter((file) => !existsSync(resolve(options.pluginRoot, file)));
-	const artifactMtime = missing.length === 0 ? lastBuildMtime(options.pluginRoot, artifacts) : 0;
+	const artifactMtime = missing.length === 0 ? oldestBuildOutputMtime(options.pluginRoot, buildOutputs) : 0;
 	const sourceMtime = newestSourceMtime(options.pluginRoot, sourceDirs);
 	const isStale = artifactMtime > 0 && sourceMtime > artifactMtime;
 
