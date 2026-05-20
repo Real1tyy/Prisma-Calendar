@@ -1,3 +1,4 @@
+import { waitForCommandManagerIdle } from "../../fixtures/commands";
 import { test } from "../../fixtures/electron";
 import { openCalendar, switchCalendarViewMode } from "../../fixtures/helpers";
 import {
@@ -94,14 +95,22 @@ test.describe("stress: rapid-fire mutations against coalesced refresh", () => {
 		await expectUniqueVisibleEventCount(page, 0);
 
 		// Three undos peel back: move-next → move-prev → move-next, landing
-		// the events on their original start dates. Gate each undo on indexer
-		// convergence — each reversal writes 28 frontmatter files and the next
-		// undo must not fire until the previous batch settles on disk.
+		// the events on their original start dates. `waitForIndexerToReach`
+		// alone is not a gate here — the count stays at EVENT_COUNT across
+		// every move, so the poll trivially passes the instant after Enter is
+		// pressed while the undo is still iterating its MacroCommand. The
+		// command-manager idle gate waits for the macro to actually drain
+		// (each reversal writes 28 frontmatter files) before the next undo
+		// dispatches. Without this gate two concurrent undos enter
+		// `MacroCommand.undoExecuted` against the same array and crash.
 		await undoViaPalette(page, 1);
+		await waitForCommandManagerIdle(page);
 		await waitForIndexerToReach(page, EVENT_COUNT);
 		await undoViaPalette(page, 1);
+		await waitForCommandManagerIdle(page);
 		await waitForIndexerToReach(page, EVENT_COUNT);
 		await undoViaPalette(page, 1);
+		await waitForCommandManagerIdle(page);
 		await expectCalendarConsistent(page, { indexer: EVENT_COUNT, visible: EVENT_COUNT });
 	});
 
@@ -130,6 +139,7 @@ test.describe("stress: rapid-fire mutations against coalesced refresh", () => {
 			await expectCalendarConsistent(page, { indexer: 0, visible: 0 });
 
 			await undoViaPalette(page, 1);
+			await waitForCommandManagerIdle(page);
 			await expectCalendarConsistent(page, { indexer: EVENT_COUNT, visible: EVENT_COUNT });
 		}
 	});

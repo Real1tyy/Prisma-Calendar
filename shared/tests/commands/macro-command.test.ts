@@ -318,6 +318,93 @@ describe("MacroCommand", () => {
 		});
 	});
 
+	describe("undo re-entrancy / concurrent calls", () => {
+		// Reproduces the original flake-#3 crash mode: two concurrent
+		// MacroCommand.undo() calls iterate the same `executedCommands` array;
+		// the first call's terminal reset (`this.executedCommands = []`) makes
+		// the second's next `this.executedCommands[i]` read `undefined`, then
+		// the catch tries `command.getType()` on undefined and throws
+		// "Cannot read properties of undefined (reading 'getType')".
+		// Defense-in-depth: even with CommandManager serializing callers, the
+		// MacroCommand itself must not crash on concurrent undo.
+		it("two concurrent undo() calls do not throw", async () => {
+			const undone: string[] = [];
+			const cmdA: Command = {
+				async execute() {},
+				async undo() {
+					undone.push("A");
+				},
+				getType: () => "A",
+			};
+			const cmdB: Command = {
+				async execute() {},
+				async undo() {
+					undone.push("B");
+				},
+				getType: () => "B",
+			};
+			const cmdC: Command = {
+				async execute() {},
+				async undo() {
+					undone.push("C");
+				},
+				getType: () => "C",
+			};
+
+			const macro = new MacroCommand([cmdA, cmdB, cmdC]);
+			await macro.execute();
+
+			await expect(Promise.all([macro.undo(), macro.undo()])).resolves.toBeDefined();
+			// Each child is undone at most once across both calls — the second
+			// undoExecuted sees an empty snapshot and is effectively a no-op.
+			expect(undone.sort()).toEqual(["A", "B", "C"]);
+		});
+
+		it("re-executing while undoExecuted is mid-iteration does not crash", async () => {
+			// `slow.undo` parks on a deferred so the outer loop is suspended
+			// at i=1 (loop runs end-to-start, so `slow` at index 1 is first).
+			// While the loop is parked we call execute() — pre-fix that reset
+			// `this.executedCommands = []` and the loop's next read of
+			// `this.executedCommands[0]` was `undefined`, surfacing as
+			// `command.getType()` on undefined. Post-fix the loop iterates a
+			// local snapshot and completes cleanly.
+			const slowGate = (() => {
+				let resolve!: () => void;
+				const promise = new Promise<void>((r) => {
+					resolve = r;
+				});
+				return { promise, resolve };
+			})();
+
+			const fast: Command = {
+				async execute() {},
+				async undo() {},
+				getType: () => "Fast",
+			};
+			const slow: Command = {
+				async execute() {},
+				async undo() {
+					await slowGate.promise;
+				},
+				getType: () => "Slow",
+			};
+
+			const macro = new MacroCommand([fast, slow]);
+			await macro.execute();
+
+			const undoP = macro.undo();
+			// Let the loop reach i=1 (slow.undo) and suspend on the gate.
+			await new Promise<void>((r) => window.setTimeout(r, 5));
+
+			const execP = macro.execute();
+			slowGate.resolve();
+
+			await Promise.all([undoP, execP]);
+
+			expect(macro.getCommandCount()).toBe(2);
+		});
+	});
+
 	describe("getExecutionSummary", () => {
 		it("returns zero counts before execution", () => {
 			const macro = new MacroCommand([createMockCommand("A")]);

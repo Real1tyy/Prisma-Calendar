@@ -293,7 +293,7 @@ export class CalendarBundle {
 		this.holidayStore.clear();
 		this.virtualEventStore.destroy();
 
-		this.commandManager.clearHistory();
+		void this.commandManager.clearHistory();
 		// Release shared infrastructure through registry (will only destroy if no other calendars are using it)
 		this.indexerRegistry.releaseIndexer(this.calendarId, this.directory);
 		// Don't destroy fileRepository/parser/eventStore/recurringEventManager directly - the registry handles that
@@ -607,7 +607,7 @@ export class CalendarBundle {
 				await editCommand.execute();
 				const titleRenameOldPath = pathBeforeTitleRename;
 				const titleRenameNewPath = finalFilePath;
-				this.commandManager.registerExecutedCommand({
+				await this.commandManager.registerExecutedCommand({
 					execute: async () => {
 						if (zettelIdCommand) await zettelIdCommand.execute();
 						if (titleRenameOldPath) {

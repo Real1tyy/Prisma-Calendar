@@ -9,7 +9,7 @@ import {
 	waitForNewEventFiles,
 } from "../../specs/events/events-helpers";
 import { fillEventModal, saveEventModal, type EventModalInput } from "../../specs/events/fill-event-modal";
-import { runCommand } from "../commands";
+import { runCommand, waitForCommandManagerIdle } from "../commands";
 import { ACTIVE_CALENDAR_LEAF, PLUGIN_ID } from "../constants";
 import { anchorDate, anchorISO, isoLocal } from "../dates";
 import { getEventCount, refreshCalendar, waitForEventCount, type SeedEventInput } from "../seed-events";
@@ -496,11 +496,25 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 		},
 
 		async undo(times = 1) {
-			for (let i = 0; i < times; i++) await runCommand(page, "Prisma Calendar: Undo");
+			// Palette callbacks for undo/redo register as `void undo(plugin)` —
+			// Obsidian ignores the return value, so `runCommand` resolves the
+			// moment the palette closes, NOT when the underlying CommandManager
+			// has finished. The gate goes once at the end: CommandManager.undo
+			// is serialized through PromiseQueue, so back-to-back dispatches
+			// can't race each other in flight, and a single whenIdle() drain
+			// at the loop's tail is enough for follow-up assertions to see a
+			// fully settled state.
+			for (let i = 0; i < times; i++) {
+				await runCommand(page, "Prisma Calendar: Undo");
+			}
+			await waitForCommandManagerIdle(page);
 		},
 
 		async redo(times = 1) {
-			for (let i = 0; i < times; i++) await runCommand(page, "Prisma Calendar: Redo");
+			for (let i = 0; i < times; i++) {
+				await runCommand(page, "Prisma Calendar: Redo");
+			}
+			await waitForCommandManagerIdle(page);
 		},
 
 		async expectEventCount(n) {

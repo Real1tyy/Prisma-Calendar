@@ -277,7 +277,7 @@ export class VaultTable<
 		this.rowByFileName.clear();
 		this.rows = [];
 		this.rowsDirty = false;
-		this.commandManager?.clearHistory();
+		void this.commandManager?.clearHistory();
 		this.readySubject.next(false);
 
 		this.readySub?.unsubscribe();
@@ -308,7 +308,7 @@ export class VaultTable<
 
 	private finalizeDestroy(): void {
 		this.hydratedByPath = null;
-		this.commandManager?.clearHistory();
+		void this.commandManager?.clearHistory();
 		for (const cache of this.childCacheByPath.values()) {
 			for (const table of cache.values()) {
 				table.destroy();
@@ -393,8 +393,8 @@ export class VaultTable<
 		return this.commandManager?.canRedo() ?? false;
 	}
 
-	clearHistory(): void {
-		this.commandManager?.clearHistory();
+	clearHistory(): Promise<void> {
+		return this.commandManager?.clearHistory() ?? Promise.resolve();
 	}
 
 	peekUndo(): string | null {

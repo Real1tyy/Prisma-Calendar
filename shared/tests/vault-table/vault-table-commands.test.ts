@@ -362,7 +362,7 @@ describe("VaultTable history", () => {
 
 		it("should not throw when clearing history on disabled table", async () => {
 			const { table } = await createTableWithoutHistory();
-			expect(() => table.clearHistory()).not.toThrow();
+			await expect(table.clearHistory()).resolves.toBeUndefined();
 			table.destroy();
 		});
 	});
@@ -378,7 +378,7 @@ describe("VaultTable history", () => {
 			expect(table.canUndo()).toBe(true);
 			expect(table.canRedo()).toBe(true);
 
-			table.clearHistory();
+			await table.clearHistory();
 
 			expect(table.canUndo()).toBe(false);
 			expect(table.canRedo()).toBe(false);
@@ -388,6 +388,11 @@ describe("VaultTable history", () => {
 	});
 
 	describe("destroy clears history", () => {
+		// CommandManager.clearHistory is queued (so it can't race in-flight undo /
+		// redo / register), and the destroy() lifecycle is sync — it kicks off a
+		// fire-and-forget `void clearHistory()` and returns before the queue has
+		// drained. The history is cleared on the next microtask; vi.waitFor lets
+		// the assertion observe that without coupling to a fixed yield count.
 		it("should clear history on destroy", async () => {
 			const { table } = await createTableWithHistory();
 
@@ -396,7 +401,7 @@ describe("VaultTable history", () => {
 
 			table.destroy();
 
-			expect(table.canUndo()).toBe(false);
+			await vi.waitFor(() => expect(table.canUndo()).toBe(false));
 		});
 	});
 

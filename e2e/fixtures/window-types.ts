@@ -117,6 +117,9 @@ export interface CalendarBundle {
 		add: (e: VirtualEventInput) => Promise<{ id: string }>;
 		getAll: () => Array<{ id: string; title: string; start: string; end: string | null }>;
 	};
+	commandManager: {
+		whenIdle: () => Promise<void>;
+	};
 	viewRef?: {
 		calendarComponent?: {
 			calendar?: {

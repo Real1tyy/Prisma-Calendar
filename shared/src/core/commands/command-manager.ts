@@ -1,5 +1,6 @@
 import { Notice } from "obsidian";
 
+import { PromiseQueue } from "../../utils/async/promise-queue";
 import { HistoryStack } from "../history-stack";
 import type { Command } from "./command";
 
@@ -13,6 +14,19 @@ const DEFAULT_MAX_HISTORY_SIZE = 50;
 export class CommandManager {
 	protected history: HistoryStack<Command>;
 	private showNotices: boolean;
+	// Every history-mutating method routes through this queue so a second
+	// invocation arriving while the first is still in flight (palette callbacks
+	// are registered with `void cmd().then(...)` — Obsidian ignores the return
+	// value, so two quick Ctrl+Z presses both call into here before the first
+	// settles) waits its turn instead of racing the shared history cursor and
+	// the underlying command state. Without this, concurrent undos on a
+	// MacroCommand can read the same `current()` and re-enter `undoExecuted`
+	// against the same `executedCommands` array — the first call's reset wipes
+	// the slot the second is iterating, surfacing as `command.getType()` on
+	// undefined. registerExecutedCommand and clearHistory are queued for the
+	// same reason: a record/clear racing an in-flight undo would mutate the
+	// stack mid-iteration.
+	private readonly queue = new PromiseQueue();
 
 	constructor(options: CommandManagerOptions = {}) {
 		this.history = new HistoryStack<Command>({
@@ -27,7 +41,21 @@ export class CommandManager {
 		}
 	}
 
-	async executeCommand(command: Command): Promise<void> {
+	/**
+	 * Resolves once every queued executeCommand / undo / redo / register /
+	 * clear has settled. Use from tests to bridge the gap between palette
+	 * fire-and-forget callbacks and the underlying async work — production
+	 * code shouldn't need it.
+	 */
+	whenIdle(): Promise<void> {
+		return this.queue.whenIdle();
+	}
+
+	executeCommand(command: Command): Promise<void> {
+		return this.queue.enqueue(() => this.doExecuteCommand(command));
+	}
+
+	private async doExecuteCommand(command: Command): Promise<void> {
 		try {
 			await command.execute();
 			this.history.push(command);
@@ -37,11 +65,17 @@ export class CommandManager {
 		}
 	}
 
-	registerExecutedCommand(command: Command): void {
-		this.history.push(command);
+	registerExecutedCommand(command: Command): Promise<void> {
+		return this.queue.enqueue(async () => {
+			this.history.push(command);
+		});
 	}
 
-	async undo(): Promise<boolean> {
+	undo(): Promise<boolean> {
+		return this.queue.enqueue(() => this.doUndo());
+	}
+
+	private async doUndo(): Promise<boolean> {
 		const command = this.history.current();
 		if (!command) {
 			this.notify("Nothing to undo");
@@ -68,7 +102,11 @@ export class CommandManager {
 		}
 	}
 
-	async redo(): Promise<boolean> {
+	redo(): Promise<boolean> {
+		return this.queue.enqueue(() => this.doRedo());
+	}
+
+	private async doRedo(): Promise<boolean> {
 		const command = this.history.forward();
 		if (!command) {
 			this.notify("Nothing to redo");
@@ -95,8 +133,10 @@ export class CommandManager {
 		return this.history.canGoForward();
 	}
 
-	clearHistory(): void {
-		this.history.clear();
+	clearHistory(): Promise<void> {
+		return this.queue.enqueue(async () => {
+			this.history.clear();
+		});
 	}
 
 	getUndoStackSize(): number {

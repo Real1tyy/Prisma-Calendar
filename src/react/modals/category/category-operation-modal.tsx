@@ -101,7 +101,7 @@ async function executeCategoryMacro({
 
 	try {
 		await macro.executeWithProgress((completed) => progress.updateProgress(completed));
-		bundle.commandManager.registerExecutedCommand(macro);
+		await bundle.commandManager.registerExecutedCommand(macro);
 
 		const summary = macro.getExecutionSummary();
 		if (summary.failCount > 0) {

@@ -43,11 +43,11 @@ describe("CommandManager", () => {
 			expect(manager.getRedoStackSize()).toBe(0);
 		});
 
-		it("accepts an options object with maxHistorySize", () => {
+		it("accepts an options object with maxHistorySize", async () => {
 			const manager = new CommandManager({ maxHistorySize: 3, showNotices: true });
 
 			for (let i = 0; i < 5; i++) {
-				manager.registerExecutedCommand(createMockCommand());
+				await manager.registerExecutedCommand(createMockCommand());
 			}
 
 			expect(manager.getUndoStackSize()).toBe(3);
@@ -99,11 +99,11 @@ describe("CommandManager", () => {
 	});
 
 	describe("registerExecutedCommand", () => {
-		it("adds to undo stack without calling execute", () => {
+		it("adds to undo stack without calling execute", async () => {
 			const manager = new CommandManager();
 			const cmd = createMockCommand();
 
-			manager.registerExecutedCommand(cmd);
+			await manager.registerExecutedCommand(cmd);
 
 			expect(cmd.executeCalls).toBe(0);
 			expect(manager.getUndoStackSize()).toBe(1);
@@ -115,16 +115,16 @@ describe("CommandManager", () => {
 			await manager.undo();
 			expect(manager.canRedo()).toBe(true);
 
-			manager.registerExecutedCommand(createMockCommand());
+			await manager.registerExecutedCommand(createMockCommand());
 			expect(manager.canRedo()).toBe(false);
 		});
 
-		it("trims undo stack when exceeding maxHistorySize", () => {
+		it("trims undo stack when exceeding maxHistorySize", async () => {
 			const manager = new CommandManager({ maxHistorySize: 2 });
 
-			manager.registerExecutedCommand(createMockCommand("A"));
-			manager.registerExecutedCommand(createMockCommand("B"));
-			manager.registerExecutedCommand(createMockCommand("C"));
+			await manager.registerExecutedCommand(createMockCommand("A"));
+			await manager.registerExecutedCommand(createMockCommand("B"));
+			await manager.registerExecutedCommand(createMockCommand("C"));
 
 			expect(manager.getUndoStackSize()).toBe(2);
 		});
@@ -268,7 +268,7 @@ describe("CommandManager", () => {
 			await manager.executeCommand(createMockCommand());
 			await manager.undo();
 
-			manager.clearHistory();
+			await manager.clearHistory();
 
 			expect(manager.getUndoStackSize()).toBe(0);
 			expect(manager.getRedoStackSize()).toBe(0);
@@ -290,6 +290,189 @@ describe("CommandManager", () => {
 
 			await manager.undo();
 			expect(manager.peekRedo()).toBe("CreateTask");
+		});
+	});
+
+	describe("serialization (concurrent undo/redo/execute)", () => {
+		// Palette callbacks in Prisma-Calendar register as `void undo(plugin)`
+		// — Obsidian ignores the return value, so two quick Ctrl+Z presses
+		// both call CommandManager.undo() before the first settles. Pre-
+		// serialization those two calls read the same `current()` and re-
+		// entered MacroCommand.undoExecuted against the same `executedCommands`
+		// array; the first call's reset wiped the slot the second was
+		// iterating, surfacing as `command.getType()` on undefined. These
+		// tests pin the serialized behaviour.
+
+		// Allow queued microtasks to run between coordination steps.
+		const tick = () => new Promise<void>((resolve) => window.setTimeout(resolve, 0));
+
+		function deferred<T>(): { promise: Promise<T>; resolve: (v: T) => void } {
+			let resolve!: (v: T) => void;
+			const promise = new Promise<T>((r) => {
+				resolve = r;
+			});
+			return { promise, resolve };
+		}
+
+		it("serializes concurrent undo() calls into sequential execution", async () => {
+			const manager = new CommandManager();
+			const order: string[] = [];
+			const gateA = deferred<void>();
+			const gateB = deferred<void>();
+			let startedA = false;
+			let startedB = false;
+
+			const mkCmd = (label: string, gate: Promise<void>, onStart: () => void): Command => ({
+				async execute() {
+					order.push(`exec-${label}`);
+				},
+				async undo() {
+					order.push(`undo-start-${label}`);
+					onStart();
+					await gate;
+					order.push(`undo-end-${label}`);
+				},
+				getType: () => label,
+			});
+
+			await manager.executeCommand(
+				mkCmd("A", gateA.promise, () => {
+					startedA = true;
+				})
+			);
+			await manager.executeCommand(
+				mkCmd("B", gateB.promise, () => {
+					startedB = true;
+				})
+			);
+
+			// Fire both undos before awaiting either — the second must not
+			// observe history or executedCommands state from inside the first.
+			const undoB = manager.undo();
+			const undoA = manager.undo();
+
+			await tick();
+			expect(startedB).toBe(true);
+			expect(startedA).toBe(false);
+
+			gateB.resolve();
+			await undoB;
+			await tick();
+			expect(startedA).toBe(true);
+			expect(order).toEqual(["exec-A", "exec-B", "undo-start-B", "undo-end-B", "undo-start-A"]);
+
+			gateA.resolve();
+			await undoA;
+
+			expect(order).toEqual(["exec-A", "exec-B", "undo-start-B", "undo-end-B", "undo-start-A", "undo-end-A"]);
+			expect(manager.getUndoStackSize()).toBe(0);
+			expect(manager.getRedoStackSize()).toBe(2);
+		});
+
+		it("whenIdle() resolves only after every queued op has settled", async () => {
+			const manager = new CommandManager();
+			const gate1 = deferred<void>();
+			const gate2 = deferred<void>();
+			const mkSlowCmd = (gate: Promise<void>): Command => ({
+				async execute() {
+					await gate;
+				},
+				async undo() {},
+				getType: () => "Slow",
+			});
+
+			const exec1 = manager.executeCommand(mkSlowCmd(gate1.promise));
+			const exec2 = manager.executeCommand(mkSlowCmd(gate2.promise));
+
+			let idleResolved = false;
+			const idle = manager.whenIdle().then(() => {
+				idleResolved = true;
+			});
+
+			await tick();
+			expect(idleResolved).toBe(false);
+
+			gate1.resolve();
+			await exec1;
+			await tick();
+			expect(idleResolved).toBe(false);
+
+			gate2.resolve();
+			await exec2;
+			await idle;
+			expect(idleResolved).toBe(true);
+		});
+
+		it("whenIdle() also drains work scheduled while it is awaiting", async () => {
+			const manager = new CommandManager();
+			const gate1 = deferred<void>();
+			const gate2 = deferred<void>();
+
+			const mkCmd = (gate: Promise<void>): Command => ({
+				async execute() {
+					await gate;
+				},
+				async undo() {},
+				getType: () => "Mk",
+			});
+
+			const exec1 = manager.executeCommand(mkCmd(gate1.promise));
+			let idleResolved = false;
+			const idle = manager.whenIdle().then(() => {
+				idleResolved = true;
+			});
+
+			// Schedule another op AFTER whenIdle() is mid-await — it must still
+			// be observed before idle resolves.
+			const exec2 = manager.executeCommand(mkCmd(gate2.promise));
+
+			gate1.resolve();
+			await exec1;
+			await tick();
+			expect(idleResolved).toBe(false);
+
+			gate2.resolve();
+			await exec2;
+			await idle;
+			expect(idleResolved).toBe(true);
+		});
+
+		it("a failing op does not stall subsequent operations", async () => {
+			const manager = new CommandManager();
+			const failing: Command = {
+				async execute() {
+					throw new Error("boom");
+				},
+				async undo() {},
+				getType: () => "Failing",
+			};
+			const ok = createMockCommand("OK");
+
+			const failing1 = manager.executeCommand(failing).catch((e) => e);
+			const ok1 = manager.executeCommand(ok);
+
+			const err = await failing1;
+			expect((err as Error).message).toBe("boom");
+
+			await ok1;
+			expect(ok.executeCalls).toBe(1);
+			expect(manager.getUndoStackSize()).toBe(1);
+		});
+
+		it("concurrent undo + redo arriving back-to-back execute serially in queue order", async () => {
+			const manager = new CommandManager();
+			const cmd = createMockCommand("Roundtrip");
+
+			await manager.executeCommand(cmd);
+
+			const undoP = manager.undo();
+			const redoP = manager.redo();
+
+			await Promise.all([undoP, redoP]);
+
+			expect(cmd.undoCalls).toBe(1);
+			expect(cmd.executeCalls).toBe(2);
+			expect(manager.getUndoStackSize()).toBe(1);
 		});
 	});
 

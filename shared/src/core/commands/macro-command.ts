@@ -99,9 +99,17 @@ export class MacroCommand implements Command {
 	}
 
 	private async undoExecuted(onProgress?: (completed: number, total: number) => void): Promise<void> {
-		const total = this.executedCommands.length;
+		// Snapshot the array before iterating: if anything mutates
+		// `this.executedCommands` mid-await (concurrent execute() resetting it,
+		// or a child's undo dispatching back through the command pipeline),
+		// the local copy keeps `command` defined for every index. The wipe at
+		// the end runs only against the original slots we owned.
+		const toUndo = this.executedCommands;
+		this.executedCommands = [];
+		const total = toUndo.length;
 		for (let i = total - 1; i >= 0; i--) {
-			const command = this.executedCommands[i];
+			const command = toUndo[i];
+			if (!command) continue;
 			try {
 				await command.undo();
 			} catch (error) {
@@ -109,7 +117,6 @@ export class MacroCommand implements Command {
 			}
 			onProgress?.(total - i, total);
 		}
-		this.executedCommands = [];
 	}
 
 	getType(): string {

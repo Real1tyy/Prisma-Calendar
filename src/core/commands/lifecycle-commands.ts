@@ -133,7 +133,14 @@ export class DeleteEventCommand implements Command {
 	) {}
 
 	async execute(): Promise<void> {
-		this.snapshot = await this.repo.snapshotByPath(this.filePath);
+		// `??=` so redo reuses the snapshot captured on first execute. Re-
+		// snapshotting after an undo restored the file is racy: the file is on
+		// disk (vault.create resolved) but the indexer hasn't ingested it yet
+		// (VaultTable debounceMs window), so `snapshotByPath` throws "Event
+		// file not found", redo silently drops the command, and the file is
+		// not re-deleted. The original snapshot is what we want to be able to
+		// restore back to anyway.
+		this.snapshot ??= await this.repo.snapshotByPath(this.filePath);
 		await this.repo.deleteByPath(this.filePath);
 	}
 
