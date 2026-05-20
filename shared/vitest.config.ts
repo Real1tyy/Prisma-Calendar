@@ -1,7 +1,6 @@
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import tsconfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
 import { VITEST_POOL_OPTIONS } from "./src/testing/vitest-aliases.ts";
@@ -34,7 +33,6 @@ const JSDOM_PATTERNS = [
 
 export default defineConfig({
 	server: { fs: { allow: [".."] } },
-	plugins: [tsconfigPaths({ ignoreConfigErrors: true })],
 	test: {
 		globals: true,
 		testTimeout: 10000,
