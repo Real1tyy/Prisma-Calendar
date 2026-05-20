@@ -72,6 +72,9 @@ overrides:
   minimatch@>=8.0.0 <9.0.0: '>=10.2.3'
   '@codemirror/state': ^6.6.0
   '@codemirror/view': ^6.43.0
+  typescript: ^5.9.3
+  react: ^19.2.5
+  react-dom: ^19.2.5
 importers:
   .:
     dependencies:
@@ -269,7 +272,7 @@ importers:
         specifier: ^4.21.0
         version: 4.21.0
       typescript:
-        specifier: 5.9.3
+        specifier: ^5.9.3
         version: 5.9.3
       vite:
         specifier: ^8.0.13
@@ -1768,8 +1771,8 @@ packages:
     resolution:
       integrity: sha512-aIJvz5OSkhNIhZIpYivrxrPTKYsjW9Uzy+sP/mx0S3sev2HyvPb7xmjbYvokzEpfgYHy/HjzJ2zFAETuUfgCpg==
     peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+      react: ^19.2.5
+      react-dom: ^19.2.5
   '@tanstack/virtual-core@3.14.0':
     resolution:
       integrity: sha512-JLANqGy/D6k4Ujmh8Tr25lGimuOXNiaVyXaCAZS0W+1390sADdGnyUdSWNIfd49gebtIxGMij4IktRVzrdr12Q==
@@ -1794,8 +1797,8 @@ packages:
       '@testing-library/dom': ^10.0.0
       '@types/react': ^18.0.0 || ^19.0.0
       '@types/react-dom': ^18.0.0 || ^19.0.0
-      react: ^18.0.0 || ^19.0.0
-      react-dom: ^18.0.0 || ^19.0.0
+      react: ^19.2.5
+      react-dom: ^19.2.5
     peerDependenciesMeta:
       '@types/react':
         optional: true
@@ -2119,7 +2122,7 @@ packages:
     engines:
       node: '>=14'
     peerDependencies:
-      typescript: '>=4.9.5'
+      typescript: ^5.9.3
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -3091,7 +3094,7 @@ packages:
     engines:
       node: '>=18.0.0'
     peerDependencies:
-      react: ^16.8.0 || ^17 || ^18 || ^19
+      react: ^19.2.5
   react-is@17.0.2:
     resolution:
       integrity: sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==
@@ -3415,7 +3418,7 @@ packages:
       node: ^18 || >=20
     hasBin: true
     peerDependencies:
-      typescript: ^5.0.0
+      typescript: ^5.9.3
     peerDependenciesMeta:
       typescript:
         optional: true
