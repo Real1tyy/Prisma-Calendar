@@ -6,16 +6,12 @@ import { memo } from "react";
 import { cls, CSS_PREFIX, tid } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { CategoryTracker } from "../../../core/category-tracker";
+import { getCategoryExpression } from "../../../utils/filters/expressions";
 import {
 	createBatchDeleteCategory,
 	createBatchRenameCategory,
 	UpdateColorRulesCommand,
 } from "./../../../core/commands";
-
-export function getCategoryExpression(category: string, categoryProp: string): string {
-	const escapedCategory = category.replace(/'/g, "\\'");
-	return `${categoryProp}.includes('${escapedCategory}')`;
-}
 
 interface UntrackedToggleProps {
 	value: boolean;

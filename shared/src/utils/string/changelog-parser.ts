@@ -88,9 +88,9 @@ const ADMONITION_TYPE_MAP: Record<string, string> = {
 	warning: "warning",
 };
 
-function convertDocusaurusAdmonitions(content: string): string {
+export function convertDocusaurusAdmonitions(content: string): string {
 	return content.replace(
-		/^:::(note|tip|info|caution|danger|warning)\s*(.*)\n([\s\S]*?)^:::$/gm,
+		/^:::(note|tip|info|caution|danger|warning)(.*)\n([\s\S]*?)^:::$/gm,
 		(_match, type: string, title: string, body: string) => {
 			const calloutType = ADMONITION_TYPE_MAP[type] ?? "info";
 			const heading = title.trim() || type.charAt(0).toUpperCase() + type.slice(1);

@@ -261,6 +261,11 @@ describe("rebuildPhysicalInstanceFilename", () => {
 		expect(result).toBe("New Title 2025-01-15-ABC123");
 	});
 
+	it("should strip a zettel ID separated by multiple spaces", () => {
+		const result = rebuildPhysicalInstanceFilename("Old Title 2025-01-15-ABC123", "New Title   20250203140530");
+		expect(result).toBe("New Title 2025-01-15-ABC123");
+	});
+
 	it("should correctly rename when new title is a source event basename with zettel ID", () => {
 		// Real scenario: source file "Team Meeting-20250203140530" renamed to "Project Planning-20250203140530"
 		// recurringEvent.title = file.basename = "Project Planning-20250203140530"

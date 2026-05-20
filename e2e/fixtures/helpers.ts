@@ -428,7 +428,7 @@ export async function unlockPro(page: Page): Promise<void> {
 export function ganttBarLocator(page: Page, title: string): Locator {
 	return page
 		.locator(
-			`${ACTIVE_CALENDAR_LEAF} .prisma-gantt-bar:has(.prisma-gantt-bar-label:text-is("${title.replace(/"/g, '\\"')}"))`
+			`${ACTIVE_CALENDAR_LEAF} .prisma-gantt-bar:has(.prisma-gantt-bar-label:text-is("${title.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"))`
 		)
 		.first();
 }

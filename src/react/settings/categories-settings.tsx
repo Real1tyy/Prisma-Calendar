@@ -25,6 +25,7 @@ import {
 	type CategoryAssignmentPreset,
 	type SingleCalendarConfig,
 } from "../../types/settings";
+import { getCategoryExpression } from "../../utils/filters/expressions";
 import { runCategoryDeleteFlow, runCategoryRenameFlow } from "../modals";
 import { PrismaSection } from "./_section";
 import { ProUpgradeBanner } from "./pro-upgrade-banner";
@@ -590,11 +591,6 @@ const CategoryAssignmentPresetRow = memo(function CategoryAssignmentPresetRow({
 });
 
 // ─── Helpers ────────────────────────────────────────────────────────────
-
-function getCategoryExpression(category: string, categoryProp: string): string {
-	const escapedCategory = category.replace(/'/g, "\\'");
-	return `${categoryProp}.includes('${escapedCategory}')`;
-}
 
 function getCategoryColor(
 	category: string,

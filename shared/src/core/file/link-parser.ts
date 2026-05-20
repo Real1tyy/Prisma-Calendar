@@ -6,13 +6,20 @@
  * Normalizes paths and handles malformed links gracefully.
  */
 export const extractFilePathFromLink = (link: string): string | null => {
-	const match = link.match(/\[\[([^|\]]+?)(?:\|.*?)?\]\]/);
-	if (!match) return null;
+	// Linear index scan rather than a regex: a backtracking `\[\[...\]\]` pattern
+	// over uncontrolled input is a polynomial-ReDoS risk (CodeQL js/polynomial-redos).
+	const start = link.indexOf("[[");
+	if (start === -1) return null;
 
-	const filePath = match[1].trim();
+	const end = link.indexOf("]]", start + 2);
+	if (end === -1) return null;
+
+	const inner = link.slice(start + 2, end);
+	if (inner.includes("[[") || inner.includes("]]")) return null;
+
+	const pipeIndex = inner.indexOf("|");
+	const filePath = (pipeIndex === -1 ? inner : inner.slice(0, pipeIndex)).trim();
 	if (!filePath) return null;
-
-	if (filePath.includes("[[") || filePath.includes("]]")) return null;
 
 	return filePath.endsWith(".md") ? filePath : `${filePath}.md`;
 };

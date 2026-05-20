@@ -35,7 +35,9 @@ function frontmatterValue(value: unknown): string {
 		return `\n${value.map((v) => `  - ${String(v)}`).join("\n")}`;
 	}
 	if (typeof value === "string") {
-		return value.includes(":") || value.includes("#") ? `"${value.replace(/"/g, '\\"')}"` : value;
+		return value.includes(":") || value.includes("#")
+			? `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`
+			: value;
 	}
 	return String(value);
 }

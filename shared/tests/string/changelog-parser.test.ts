@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+	convertDocusaurusAdmonitions,
 	formatChangelogSections,
 	getChangelogSince,
 	parseChangelog,
@@ -472,6 +473,34 @@ describe("resolveRelativeDocLinks", () => {
 			const result = resolveRelativeDocLinks("[Sec](./page.md#section)", DOCS_BASE_CLEAN);
 
 			expect(result).toBe(`[Sec](${BASE}/page?utm_content=page#section)`);
+		});
+	});
+
+	describe("convertDocusaurusAdmonitions", () => {
+		it("converts a titled admonition into an Obsidian callout", () => {
+			const input = [":::note Heads up", "Body line 1", "Body line 2", ":::"].join("\n");
+
+			expect(convertDocusaurusAdmonitions(input)).toBe(
+				["> [!info] Heads up", "> Body line 1", "> Body line 2"].join("\n")
+			);
+		});
+
+		it("falls back to the capitalized type when no title is given", () => {
+			const input = [":::tip", "Use this trick", ":::"].join("\n");
+
+			expect(convertDocusaurusAdmonitions(input)).toBe(["> [!tip] Tip", "> Use this trick"].join("\n"));
+		});
+
+		it("leaves content without a closing fence unchanged", () => {
+			const input = [":::note Title", "no closing fence here"].join("\n");
+
+			expect(convertDocusaurusAdmonitions(input)).toBe(input);
+		});
+
+		it("completes in linear time on an unterminated admonition (ReDoS regression)", () => {
+			const adversarial = `:::note\n${"\t\n".repeat(100_000)}`;
+
+			expect(convertDocusaurusAdmonitions(adversarial)).toBe(adversarial);
 		});
 	});
 });

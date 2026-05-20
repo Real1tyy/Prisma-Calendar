@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
 	buildPropertyMapping,
+	getCategoryExpression,
 	normalizeFrontmatterForColorEvaluation,
 	sanitizeExpression,
 	sanitizePropertyName,
@@ -44,6 +45,29 @@ describe("sanitizePropertyName", () => {
 		expect(sanitizePropertyName("Property123")).toBe("Property123");
 		expect(sanitizePropertyName("test_value_123")).toBe("test_value_123");
 		expect(sanitizePropertyName("_123")).toBe("_123");
+	});
+});
+
+describe("getCategoryExpression", () => {
+	it("builds the includes() expression for a plain category", () => {
+		expect(getCategoryExpression("Work", "Category")).toBe("Category.includes('Work')");
+	});
+
+	it("escapes single quotes so the value stays a valid string literal", () => {
+		expect(getCategoryExpression("Mom's", "Category")).toBe("Category.includes('Mom\\'s')");
+	});
+
+	it("escapes every single quote in the category name", () => {
+		expect(getCategoryExpression("it's a 'test'", "cat")).toBe("cat.includes('it\\'s a \\'test\\'')");
+	});
+
+	it("escapes backslashes before quotes (incomplete-sanitization regression)", () => {
+		expect(getCategoryExpression("a\\b", "Category")).toBe("Category.includes('a\\\\b')");
+		expect(getCategoryExpression("a\\'b", "Category")).toBe("Category.includes('a\\\\\\'b')");
+	});
+
+	it("uses the configured category property name", () => {
+		expect(getCategoryExpression("Personal", "Tags")).toBe("Tags.includes('Personal')");
 	});
 });
 

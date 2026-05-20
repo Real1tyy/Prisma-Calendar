@@ -478,7 +478,7 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 						if (Array.isArray(v))
 							return v.length === 0 ? `${k}: []` : `${k}:\n${v.map((item) => `  - ${String(item)}`).join("\n")}`;
 						if (typeof v === "string" && (v.includes(":") || v.includes("#")))
-							return `${k}: "${v.replace(/"/g, '\\"')}"`;
+							return `${k}: "${v.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
 						return `${k}: ${String(v)}`;
 					})
 					.join("\n");

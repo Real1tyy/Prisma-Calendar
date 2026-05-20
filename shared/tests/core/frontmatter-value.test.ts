@@ -958,6 +958,11 @@ describe("removeWikiLinks", () => {
 	it("should handle empty strings", () => {
 		expect(removeWikiLinks("")).toBe("");
 	});
+
+	it("completes in linear time on adversarial input (ReDoS regression)", () => {
+		const adversarial = "[[\\".repeat(200_000);
+		expect(removeWikiLinks(adversarial)).toBe(adversarial);
+	});
 });
 
 describe("formatArrayCompact", () => {
@@ -1182,6 +1187,11 @@ describe("parseInlineWikiLinks", () => {
 	it("should handle empty string", () => {
 		const result = parseInlineWikiLinks("");
 		expect(result).toEqual([{ type: "text", content: "" }]);
+	});
+
+	it("completes in linear time on adversarial input (ReDoS regression)", () => {
+		const adversarial = "[[\\".repeat(200_000);
+		expect(parseInlineWikiLinks(adversarial)).toEqual([{ type: "text", content: adversarial }]);
 	});
 });
 

@@ -111,8 +111,8 @@ function assertNoReactScriptInjection(): Plugin {
 				// HTML-literal injection trick (innerHTML / outerHTML / similar
 				// sinks). The `[ >/]` guard prevents false positives on names
 				// like `<scripts` while still matching the `<script` opening
-				// tag in all real cases.
-				if (/<script[ >/]/.test(code)) {
+				// tag in all real cases. The `i` flag also catches `<SCRIPT`.
+				if (/<script[ >/]/i.test(code)) {
 					findings.push("<script HTML literal — innerHTML/outerHTML/script-tag injection");
 				}
 				if (findings.length > 0) {

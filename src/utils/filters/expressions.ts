@@ -7,6 +7,21 @@ export function sanitizePropertyName(name: string): string {
 }
 
 /**
+ * Builds the color-rule expression that matches events whose category property
+ * contains `category`, e.g. `Category.includes('Work')`.
+ *
+ * Backslashes and single quotes are escaped (backslash first, then quote) so the
+ * value is a safe single-quoted string literal. This is the single source of
+ * truth for the expression format — both the writer (color-rule creation/edit)
+ * and the reader (category color resolution) call it so the equality-based rule
+ * matching stays consistent.
+ */
+export function getCategoryExpression(category: string, categoryProp: string): string {
+	const escapedCategory = category.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+	return `${categoryProp}.includes('${escapedCategory}')`;
+}
+
+/**
  * Builds a mapping of original property names to sanitized versions
  * suitable for use as JavaScript function parameters.
  */

@@ -140,6 +140,10 @@ describe("extractFilePathFromLink", () => {
 			expect(extractFilePathFromLink("[[File[[Name]]]]")).toBe(null);
 		});
 
+		it("completes in linear time on adversarial unterminated input (ReDoS regression)", () => {
+			expect(extractFilePathFromLink(`${"[[\\".repeat(200_000)}`)).toBe(null);
+		});
+
 		it("should return null for text with brackets but not at start/end", () => {
 			expect(extractFilePathFromLink("Some text [[FileName]] more text")).toBe("FileName.md");
 		});

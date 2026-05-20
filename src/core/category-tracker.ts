@@ -15,6 +15,7 @@ import type { Frontmatter } from "../types";
 import type { CalendarEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/index";
 import { applyFrontmatterChangesToInstance } from "../utils/events/frontmatter";
+import { getCategoryExpression } from "../utils/filters/expressions";
 import { getExcludedProps } from "../utils/frontmatter/props";
 import type { EventFileRepository } from "./event-file-repository";
 import type { EventStore } from "./event-store";
@@ -233,8 +234,7 @@ export class CategoryTracker extends VaultTableView<Frontmatter> {
 		const categoryProp = this.settings.categoryProp;
 		if (!categoryProp) return this.settings.defaultNodeColor;
 
-		const escapedCategory = category.replace(/'/g, "\\'");
-		const expectedExpression = `${categoryProp}.includes('${escapedCategory}')`;
+		const expectedExpression = getCategoryExpression(category, categoryProp);
 
 		for (const rule of this.settings.colorRules) {
 			if (rule.enabled && rule.expression === expectedExpression) {

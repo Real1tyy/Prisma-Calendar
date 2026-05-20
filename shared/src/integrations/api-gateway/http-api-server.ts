@@ -1,5 +1,6 @@
 import http from "node:http";
 
+import { stripTrailingChars } from "../../utils/string/string";
 import type { HttpMethod, HttpResponse, HttpRoute, HttpServerConfig, ParsedHttpRequest } from "./http-types";
 
 interface CompiledRoute {
@@ -20,7 +21,7 @@ export const DEFAULT_CORS = true;
 
 function normalizeBasePath(basePath: string): string {
 	if (!basePath) return "";
-	const trimmed = basePath.replace(/\/+$/, "");
+	const trimmed = stripTrailingChars(basePath, "/");
 	return trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
 }
 

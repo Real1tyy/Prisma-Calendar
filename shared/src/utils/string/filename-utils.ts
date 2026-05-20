@@ -1,4 +1,4 @@
-import { sanitizeFilenamePreserveSpaces } from "../../core/file/file";
+import { normalizeDirectory, sanitizeFilenamePreserveSpaces } from "../../core/file/file";
 
 /**
  * Normalizes a directory path for consistent comparison.
@@ -16,9 +16,7 @@ import { sanitizeFilenamePreserveSpaces } from "../../core/file/file";
  * - "   " → ""
  * - "tasks/homework" → "tasks/homework"
  */
-export const normalizeDirectoryPath = (directory: string): string => {
-	return directory.trim().replace(/^\/+|\/+$/g, "");
-};
+export const normalizeDirectoryPath = (directory: string): string => normalizeDirectory(directory);
 
 /**
  * Extracts the date and suffix (everything after the date) from a physical instance filename.
@@ -63,10 +61,12 @@ export const rebuildPhysicalInstanceFilename = (currentBasename: string, newTitl
 
 	const { dateStr, suffix } = dateAndSuffix;
 
-	// Remove any zettel ID from the new title (14-digit numeric format used by Prisma)
+	// Remove any zettel ID from the new title (14-digit numeric format used by Prisma).
+	// A single whitespace separator is enough — the trailing .trim() collapses any
+	// remaining spaces, and avoiding the unbounded `\s+` keeps the match linear-time.
 	const newTitleClean = newTitle
 		.replace(/-\d{14}$/, "")
-		.replace(/\s+\d{14}$/, "")
+		.replace(/\s\d{14}$/, "")
 		.trim();
 	const newTitleSanitized = sanitizeFilenamePreserveSpaces(newTitleClean);
 

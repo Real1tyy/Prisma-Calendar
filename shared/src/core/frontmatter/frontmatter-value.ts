@@ -280,7 +280,7 @@ export function truncateString(text: string, maxLength: number): string {
  * Converts [[Link|Alias]] to just "Link" or [[Link]] to "Link".
  */
 export function removeWikiLinks(text: string): string {
-	return text.replace(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g, "$1");
+	return text.replace(/\[\[([^[\]|]+)(?:\|[^[\]]+)?\]\]/g, "$1");
 }
 
 // ============================================================================
@@ -410,7 +410,7 @@ export interface WikiLinkSegment {
  */
 export function parseInlineWikiLinks(text: string): WikiLinkSegment[] {
 	const segments: WikiLinkSegment[] = [];
-	const wikiLinkRegex = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
+	const wikiLinkRegex = /\[\[([^[\]|]+)(?:\|([^[\]]+))?\]\]/g;
 	let lastIndex = 0;
 
 	const matches = text.matchAll(wikiLinkRegex);

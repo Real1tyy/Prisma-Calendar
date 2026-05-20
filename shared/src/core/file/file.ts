@@ -1,5 +1,7 @@
 import { normalizePath, TFile, type App, type CachedMetadata } from "obsidian";
 
+import { stripTrailingChars, trimChars } from "../../utils/string/string";
+
 // ============================================================================
 // File Path Operations
 // ============================================================================
@@ -706,15 +708,10 @@ export const sanitizeFilenameKebabCase = (input: string): string => {
  * sanitizeFilenamePreserveSpaces("File<Invalid>Chars") // "FileInvalidChars"
  */
 export const sanitizeFilenamePreserveSpaces = (input: string): string => {
-	return (
-		input
-			// Remove invalid filename characters (cross-platform compatibility)
-			.replace(/[<>:"/\\|?*]/g, "")
-			// Remove trailing dots (invalid on Windows)
-			.replace(/\.+$/g, "")
-			// Remove leading/trailing whitespace
-			.trim()
-	);
+	// Remove invalid filename characters (cross-platform compatibility), then
+	// trailing dots (invalid on Windows), then leading/trailing whitespace.
+	const withoutInvalidChars = input.replace(/[<>:"/\\|?*]/g, "");
+	return stripTrailingChars(withoutInvalidChars, ".").trim();
 };
 
 /**
@@ -770,4 +767,4 @@ export function isDirectChildOrFolderNote(
 	return segments.length === 1;
 }
 
-export const normalizeDirectory = (directory: string): string => directory.trim().replace(/^\/+|\/+$/g, "");
+export const normalizeDirectory = (directory: string): string => trimChars(directory.trim(), "/");
