@@ -1,5 +1,11 @@
 {
 	"$schema": "../../scripts/utils/css-allowlist.schema.json",
 	"externalClasses": [],
-	"undefinedClasses": []
+	"undefinedClasses": [
+		{
+			"pattern": "mod-cancel",
+			"reason": "Obsidian-style modal-button modifier — relies on the default button styling, not a class Obsidian itself defines. Used as the cancel-button convention across shared-react's modal-form and plugin modals.",
+			"source": "src/react/modals/event/event-series-modal.tsx:24"
+		}
+	]
 }

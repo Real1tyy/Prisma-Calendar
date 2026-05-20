@@ -250,3 +250,19 @@
 .prisma-ai-chat-thinking {
 	/* intentional stub */
 }
+
+// Recurring-event scope picker modal — structural DOM hooks. The modal,
+// content wrapper, and button row render via Obsidian's modal defaults plus
+// the existing .prisma-modal-button-container; these classes only exist as
+// hooks (cls / wrapper / button row), not as paint targets.
+.prisma-series-scope-modal {
+	/* intentional stub */
+}
+
+.prisma-series-scope-content {
+	/* intentional stub */
+}
+
+.prisma-series-scope-buttons {
+	/* intentional stub */
+}

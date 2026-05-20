@@ -127,7 +127,12 @@ describe("useStopwatch.onContinueRequested", () => {
 
 		expect(startInput.value).toBe(typed);
 
-		const date = stopwatchRef.current?.onContinueRequested();
+		// `start` is in the past, so onContinueRequested pushes `end` forward via
+		// form.setValue — wrap in act so the resulting re-render is flushed.
+		let date: Date | null = null;
+		act(() => {
+			date = stopwatchRef.current?.onContinueRequested() ?? null;
+		});
 		expect(date).not.toBeNull();
 		expect(date?.getHours()).toBe(11);
 		expect(date?.getMinutes()).toBe(0);
@@ -327,7 +332,12 @@ describe("useStopwatch.onResumeRequested", () => {
 			result.current.form.setValue("start", "2026-05-19T11:30");
 		});
 
-		const date = result.current.stopwatch.onResumeRequested();
+		// The stored end is in the past, so onResumeRequested pushes it forward
+		// via form.setValue — wrap in act so the resulting re-render is flushed.
+		let date: Date | null = null;
+		act(() => {
+			date = result.current.stopwatch.onResumeRequested();
+		});
 		expect(date).not.toBeNull();
 		expect(date?.getHours()).toBe(11);
 		expect(date?.getMinutes()).toBe(30);
