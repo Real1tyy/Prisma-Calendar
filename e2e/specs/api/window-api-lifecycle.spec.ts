@@ -86,12 +86,20 @@ test.describe("plugin api contract — event lifecycle via window.PrismaCalendar
 			const offsetMs = 30 * 60 * 1000; // +30m
 			expect(await api.moveEvent({ filePath: originalPath, offsetMs })).toBe(true);
 
-			const afterFm = readEventFrontmatter(obsidian.vaultDir, originalPath);
-			const afterStartMs = new Date(String(afterFm["Start Date"])).getTime();
-			const afterEndMs = new Date(String(afterFm["End Date"])).getTime();
-
-			expect(afterStartMs - beforeStartMs).toBe(offsetMs);
-			expect(afterEndMs - beforeEndMs).toBe(offsetMs);
+			// Poll the on-disk frontmatter rather than reading once: the move
+			// resolves as soon as the command's write returns, but a follow-up
+			// writeback can still be rewriting the file, and Obsidian's
+			// truncate-then-write adapter is non-atomic — a single immediate read
+			// can catch a partial file and parse NaN. Re-read until both
+			// timestamps settle on the +30m shift.
+			await expect
+				.poll(() => {
+					const afterFm = readEventFrontmatter(obsidian.vaultDir, originalPath);
+					const afterStartMs = new Date(String(afterFm["Start Date"])).getTime();
+					const afterEndMs = new Date(String(afterFm["End Date"])).getTime();
+					return { start: afterStartMs - beforeStartMs, end: afterEndMs - beforeEndMs };
+				})
+				.toEqual({ start: offsetMs, end: offsetMs });
 		} finally {
 			await api.batchDelete({ filePaths: [originalPath] });
 		}

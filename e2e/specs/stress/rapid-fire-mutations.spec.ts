@@ -15,7 +15,6 @@ import {
 	expectCalendarConsistent,
 	expectUniqueVisibleEventCount,
 	seedBulkEvents,
-	waitForIndexerToReach,
 } from "../../fixtures/stress-helpers";
 import { sel, TID } from "../../fixtures/testids";
 
@@ -93,22 +92,20 @@ test.describe("stress: rapid-fire mutations against coalesced refresh", () => {
 		await exitBatchMode(page);
 		await expectUniqueVisibleEventCount(page, 0);
 
-		// Three undos peel back: move-next → move-prev → move-next, landing
-		// the events on their original start dates. `waitForIndexerToReach`
-		// alone is not a gate here — the count stays at EVENT_COUNT across
-		// every move, so the poll trivially passes the instant after Enter is
-		// pressed while the undo is still iterating its MacroCommand. The
-		// command-manager idle gate waits for the macro to actually drain
-		// (each reversal writes 28 frontmatter files) before the next undo
-		// dispatches. Without this gate two concurrent undos enter
-		// `MacroCommand.undoExecuted` against the same array and crash.
-		await undoViaPalette(page, 1);
+		// Three undos peel back move-next → move-prev → move-next. `waitForCommandManagerIdle`
+		// gates each undo on its MacroCommand fully draining (each reversal writes
+		// 28 frontmatter files) before the next dispatches — without it two
+		// fire-and-forget undos re-enter `undoExecuted` against the same array and
+		// crash. The indexer count never moves on a reschedule (28 → 28), so the
+		// rendered count is what proves where the events landed: 28 = source week,
+		// 0 = pushed to the next week (the view stays on the source week throughout).
+		await undoViaPalette(page, 1); // undo move-next: events return to the source week
 		await waitForCommandManagerIdle(page);
-		await waitForIndexerToReach(page, EVENT_COUNT);
-		await undoViaPalette(page, 1);
+		await expectUniqueVisibleEventCount(page, EVENT_COUNT);
+		await undoViaPalette(page, 1); // undo move-prev: events shift back to the next week
 		await waitForCommandManagerIdle(page);
-		await waitForIndexerToReach(page, EVENT_COUNT);
-		await undoViaPalette(page, 1);
+		await expectUniqueVisibleEventCount(page, 0);
+		await undoViaPalette(page, 1); // undo move-next: events land on their original source week
 		await waitForCommandManagerIdle(page);
 		await expectCalendarConsistent(page, { indexer: EVENT_COUNT, visible: EVENT_COUNT });
 	});

@@ -75,10 +75,19 @@ Already Notified: true
 		await evt.rightClick("editEvent");
 		await calendar.page.locator(EVENT_MODAL_SELECTOR).waitFor({ state: "visible" });
 
-		await calendar.page
-			.locator(sel(TID.event.control("location")))
-			.first()
-			.fill("Pending Edit Room");
+		// Gate on the modal populating the field from frontmatter first, then
+		// retype. `fill` on this controlled input races React's value tracker:
+		// the change event is intermittently swallowed, so the edit never reaches
+		// state and the minimized snapshot keeps "Original Room". Select-all +
+		// per-character typing dispatches discrete key events React processes
+		// reliably (the title field reads live from react-hook-form, so it never
+		// hit this).
+		const locationInput = calendar.page.locator(sel(TID.event.control("location"))).first();
+		await expect(locationInput).toHaveValue("Original Room");
+		await locationInput.click();
+		await locationInput.press("ControlOrMeta+a");
+		await locationInput.pressSequentially("Pending Edit Room");
+		await expect(locationInput).toHaveValue("Pending Edit Room");
 		await calendar.page
 			.locator(sel(TID.event.btn("minimize")))
 			.first()
