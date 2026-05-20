@@ -2,7 +2,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { expect, test } from "../../fixtures/electron";
-import { refreshCalendar, seedEvents, type SeedEventInput } from "../../fixtures/seed-events";
+import { seedEvents, waitForEventCount, type SeedEventInput } from "../../fixtures/seed-events";
 import { ICS_EXPORT_SUBMIT_TID, sel } from "../../fixtures/testids";
 
 // Exports go through the `showCalendarSelectModal` → ics-export writer. The
@@ -50,7 +50,7 @@ const SEED: readonly SeedEventInput[] = [
 test.describe("ICS export", () => {
 	test.beforeEach(async ({ calendar }) => {
 		seedEvents(calendar.vaultDir, SEED);
-		await refreshCalendar(calendar.page);
+		await waitForEventCount(calendar.page, SEED.length);
 	});
 
 	test("writer produces five VEVENTs with correct SUMMARY / DTSTART / CATEGORIES / LOCATION", async ({ calendar }) => {

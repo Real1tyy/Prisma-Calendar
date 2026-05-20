@@ -1,14 +1,13 @@
 import { gotoToday, monthCellForDate, todayISO, todayTimedEvent } from "../../fixtures/calendar-helpers";
 import { anchorDayISO, fromAnchor } from "../../fixtures/dates";
 import { expect, test } from "../../fixtures/electron";
-import { refreshCalendar, seedEvent, updateCalendarSettings } from "../../fixtures/seed-events";
+import { seedEvent, updateCalendarSettings } from "../../fixtures/seed-events";
 
 test.describe("year view", () => {
 	test("seeded event renders in the matching day cell across all twelve months", async ({ calendar }) => {
 		const { page, vaultDir } = calendar;
 		seedEvent(vaultDir, { title: "Year Event", startDate: fromAnchor(0, 10, 0), endDate: fromAnchor(0, 11, 0) });
 
-		await refreshCalendar(page);
 		await calendar.goToAnchor();
 		await calendar.switchMode("year");
 
@@ -40,7 +39,6 @@ test.describe("year view", () => {
 		});
 		seedEvent(vaultDir, { ...todayTimedEvent("Dots Event", 9, 10), category: "Work" });
 
-		await refreshCalendar(page);
 		await gotoToday(page);
 		await calendar.switchMode("year");
 
@@ -56,7 +54,6 @@ test.describe("year view", () => {
 			seedEvent(vaultDir, todayTimedEvent(`Popover Event ${i}`, 8 + i, 9 + i));
 		}
 
-		await refreshCalendar(page);
 		await gotoToday(page);
 		await calendar.switchMode("year");
 

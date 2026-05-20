@@ -6,7 +6,6 @@ import { expectFrontmatter, readEventFrontmatter } from "@real1ty-obsidian-plugi
 
 import { createEventHandle } from "../../fixtures/dsl";
 import { expect, test } from "../../fixtures/electron";
-import { refreshCalendar } from "../../fixtures/seed-events";
 import { EVENT_MODAL_SELECTOR, formatLocalDate } from "./events-helpers";
 import { saveEventModal } from "./fill-event-modal";
 
@@ -65,7 +64,6 @@ Already Notified: true
 `,
 			"utf8"
 		);
-		await refreshCalendar(calendar.page);
 
 		const evt = createEventHandle(calendar, seedPath, "Project Planning");
 		await evt.expectVisible();
@@ -110,7 +108,6 @@ Already Notified: true
 `,
 			"utf8"
 		);
-		await refreshCalendar(calendar.page);
 
 		const evt = createEventHandle(calendar, seedPath, "Atomic Diff");
 		await evt.expectVisible();

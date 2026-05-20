@@ -7,9 +7,10 @@ import { expect, test } from "../../fixtures/electron";
 // `docs/specs/e2e-date-anchor-robustness.md`.
 //
 // Uses the UI modal flow (`calendar.createEvent` / `calendar.seedOnDisk`)
-// because direct disk writes + `refreshCalendar` don't reliably drive FC to
-// paint the new tile inside the test budget; the modal flow is slower but
-// deterministic — FC always renders what the plugin just saved.
+// because raw `writeFileSync` writes — even after the indexer ingests them —
+// don't reliably drive FC to paint the new tile inside the test budget;
+// the modal flow is slower but deterministic — FC always renders what the
+// plugin just saved.
 
 test.describe("week view", () => {
 	test("seeded timed event renders in the anchor day's column", async ({ calendar }) => {

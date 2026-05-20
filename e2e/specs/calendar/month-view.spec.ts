@@ -1,13 +1,12 @@
 import { gotoToday, monthCellForDate, todayISO, todayTimedEvent, waitForEvent } from "../../fixtures/calendar-helpers";
 import { expect, test } from "../../fixtures/electron";
-import { refreshCalendar, seedEvent } from "../../fixtures/seed-events";
+import { seedEvent } from "../../fixtures/seed-events";
 
 test.describe("month view", () => {
 	test("seeded event renders in the matching day cell", async ({ calendar }) => {
 		const { page, vaultDir } = calendar;
 		seedEvent(vaultDir, todayTimedEvent("Month Event", 10, 11));
 
-		await refreshCalendar(page);
 		await gotoToday(page);
 		await calendar.switchMode("month");
 		await waitForEvent(page, "Month Event");

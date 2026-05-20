@@ -5,7 +5,7 @@ import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { gotoToday, seedEventViaVault, todayISO, todayTimedEvent, waitForEvent } from "../../fixtures/calendar-helpers";
 import { expect, test } from "../../fixtures/electron";
-import { refreshCalendar, seedEvent } from "../../fixtures/seed-events";
+import { seedEvent } from "../../fixtures/seed-events";
 import { sel, TID } from "../../fixtures/testids";
 
 test.describe("event context menu", () => {
@@ -13,7 +13,6 @@ test.describe("event context menu", () => {
 		const { page, vaultDir } = calendar;
 		seedEvent(vaultDir, todayTimedEvent("Ctx Menu A", 9, 10));
 
-		await refreshCalendar(page);
 		await gotoToday(page);
 		await waitForEvent(page, "Ctx Menu A");
 
@@ -37,7 +36,6 @@ test.describe("event context menu", () => {
 		const { page, vaultDir } = calendar;
 		const file = seedEvent(vaultDir, todayTimedEvent("Ctx Skip", 9, 10));
 
-		await refreshCalendar(page);
 		await gotoToday(page);
 		await waitForEvent(page, "Ctx Skip");
 
@@ -51,7 +49,6 @@ test.describe("event context menu", () => {
 		const { page, vaultDir } = calendar;
 		const date = todayISO();
 		await seedEventViaVault(page, { title: "Ctx Dup", date, startTime: "09:00", endTime: "10:00" });
-		await refreshCalendar(page);
 		await gotoToday(page);
 		await waitForEvent(page, "Ctx Dup");
 
@@ -77,7 +74,6 @@ test.describe("event context menu", () => {
 		const { page, vaultDir } = calendar;
 		const file = seedEvent(vaultDir, todayTimedEvent("Ctx Assign Cat", 15, 16));
 
-		await refreshCalendar(page);
 		await gotoToday(page);
 		await waitForEvent(page, "Ctx Assign Cat");
 
@@ -112,7 +108,6 @@ test.describe("event context menu", () => {
 		const { page, vaultDir } = calendar;
 		const file = seedEvent(vaultDir, todayTimedEvent("Ctx Menu C", 13, 14));
 
-		await refreshCalendar(page);
 		await gotoToday(page);
 		await waitForEvent(page, "Ctx Menu C");
 
@@ -123,10 +118,10 @@ test.describe("event context menu", () => {
 			.poll(() => String(readEventFrontmatter(vaultDir, file)["Status"] ?? "").toLowerCase())
 			.toMatch(/done|true/);
 
-		await refreshCalendar(page);
 		// With Status: Done already on disk, the markDone row rewrites its
 		// label to "Mark as undone". Re-open the menu and assert the live
-		// override before deleting.
+		// override before deleting — `toContainText` auto-polls until the
+		// rewrite lands, no manual refresh needed.
 		const block = page.locator(`${sel(TID.block)}[data-event-title="Ctx Menu C"]`).first();
 		await block.click({ button: "right" });
 		await expect(page.locator(sel(TID.ctxMenu("markDone"))).first()).toContainText("undone");

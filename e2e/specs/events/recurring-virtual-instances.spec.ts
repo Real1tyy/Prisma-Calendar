@@ -4,7 +4,7 @@ import { join } from "node:path";
 import type { Page } from "@playwright/test";
 
 import { expect, test } from "../../fixtures/electron";
-import { refreshCalendar, seedEvent, setFrontmatterField, waitForEventCount } from "../../fixtures/seed-events";
+import { seedEvent, setFrontmatterField, waitForEventCount } from "../../fixtures/seed-events";
 import { sel, TID } from "../../fixtures/testids";
 import {
 	createEventViaModal,
@@ -115,7 +115,10 @@ test.describe("recurring events — physical vs virtual instances", () => {
 		// satisfies target=2, so no new physicals get created.
 		await setFrontmatterField(obsidian.page, sourcePath, "RRule", "daily");
 		await setFrontmatterField(obsidian.page, sourcePath, "RRuleSpec", "1");
-		await refreshCalendar(obsidian.page);
+		// `setFrontmatterField` writes via `processFrontMatter` which fires
+		// `metadataCache.changed` synchronously — the indexer + recurring
+		// manager react automatically. The 2s wait below is the stability gate
+		// for proving the negative ("no daily fill-in"), not a refresh proxy.
 		await obsidian.page.waitForTimeout(2_000);
 
 		// Still exactly the two weekly dates — no daily fill-in of source+1..6.
@@ -153,7 +156,6 @@ test.describe("recurring events — physical vs virtual instances", () => {
 			.toEqual(beforeDates);
 
 		await setFrontmatterField(obsidian.page, sourcePath, "Future Instances Count", 3);
-		await refreshCalendar(obsidian.page);
 
 		await expect
 			.poll(() => collectInstanceDates(obsidian.vaultDir, "Capacity Bump"), { timeout: INSTANCE_TIMEOUT_MS })
@@ -198,9 +200,9 @@ test.describe("recurring events — physical vs virtual instances", () => {
 			.poll(() => collectInstanceDates(obsidian.vaultDir, "Past Daily"), { timeout: INSTANCE_TIMEOUT_MS })
 			.toEqual(futureDates);
 
-		// Enable past-event generation and re-trigger the manager.
+		// Enable past-event generation — the manager re-runs reactively off the
+		// `metadataCache.changed` event that `setFrontmatterField` fires.
 		await setFrontmatterField(obsidian.page, sourcePath, "Generate Past Events", true);
-		await refreshCalendar(obsidian.page);
 
 		await expect
 			.poll(() => collectInstanceDates(obsidian.vaultDir, "Past Daily"), { timeout: INSTANCE_TIMEOUT_MS })
@@ -227,7 +229,6 @@ test.describe("recurring events — physical vs virtual instances", () => {
 			extra: { RRuleUntil: toYMD(until) },
 		});
 
-		await refreshCalendar(obsidian.page);
 		await waitForEventCount(obsidian.page, 2);
 
 		await expect

@@ -5,7 +5,7 @@ import { expectFrontmatter, readEventFrontmatter } from "@real1ty-obsidian-plugi
 
 import { createEventHandle } from "../../fixtures/dsl";
 import { expect, testWithNotifications as test } from "../../fixtures/electron";
-import { refreshCalendar, updateCalendarSettings } from "../../fixtures/seed-events";
+import { updateCalendarSettings } from "../../fixtures/seed-events";
 import { chipsForField, EVENT_MODAL_SELECTOR, formatLocalDate, removeChip } from "./events-helpers";
 import { fillEventModal, saveEventModal } from "./fill-event-modal";
 
@@ -50,7 +50,6 @@ Already Notified: true
 				{ id: "rule-personal", expression: "Category.includes('Personal')", color: PERSONAL_COLOR, enabled: true },
 			],
 		});
-		await refreshCalendar(calendar.page);
 
 		const evt = createEventHandle(calendar, seedPath, "Editable Event");
 		await evt.expectVisible();
@@ -138,7 +137,6 @@ Already Notified: true
 `,
 			"utf8"
 		);
-		await refreshCalendar(calendar.page);
 
 		const target = createEventHandle(calendar, targetPath, "Target Event");
 		await target.expectVisible();

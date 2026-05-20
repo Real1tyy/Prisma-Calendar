@@ -3,13 +3,7 @@ import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { todayStamp } from "../../fixtures/dates";
 import { expect, test } from "../../fixtures/electron";
-import {
-	getEventCount,
-	refreshCalendar,
-	seedEvent,
-	waitForEventCount,
-	type SeedEventInput,
-} from "../../fixtures/seed-events";
+import { getEventCount, seedEvent, waitForEventCount, type SeedEventInput } from "../../fixtures/seed-events";
 import { listEventFiles, openCalendarReady, rightClickEventMenu } from "./events-helpers";
 
 // Round 3 — Every move / clone / fillTime context-menu item. Each test seeds
@@ -71,12 +65,7 @@ async function seedAndOpen(obsidian: Obsidian, seed: SeedEventInput): Promise<Se
 	const baseline = await getEventCount(obsidian.page);
 	seedEvent(obsidian.vaultDir, seed);
 	await openCalendarReady(obsidian.page);
-	await refreshCalendar(obsidian.page);
 	await waitForEventCount(obsidian.page, baseline + 1);
-	// Second refresh forces FullCalendar to re-render with the newly indexed event —
-	// the first refresh seeds the indexer, but FC may have already painted its
-	// initial frame before the indexer finished processing the new file.
-	await refreshCalendar(obsidian.page);
 	await obsidian.page.locator(".fc-event", { hasText: seed.title }).first().waitFor({ state: "visible" });
 	await waitForSeed(obsidian.vaultDir, seed.title);
 	const originalStart = seed.startDate ?? seed.date ?? "";

@@ -14,7 +14,7 @@ import {
 } from "../../fixtures/calendar-helpers";
 import { expect, test } from "../../fixtures/electron";
 import { clickBatchButton, confirmBatchAction, enterBatchMode } from "../../fixtures/history-helpers";
-import { refreshCalendar, seedEvent } from "../../fixtures/seed-events";
+import { seedEvent } from "../../fixtures/seed-events";
 import { sel, TID } from "../../fixtures/testids";
 
 const TITLES = ["Batch One", "Batch Two", "Batch Three"] as const;
@@ -50,7 +50,6 @@ test.describe("batch selection operations", () => {
 	test.beforeEach(async ({ calendar }) => {
 		const { page, vaultDir } = calendar;
 		seedTitles(vaultDir);
-		await refreshCalendar(page);
 		await gotoToday(page);
 		for (const title of TITLES) await waitForEvent(page, title);
 	});
@@ -85,7 +84,6 @@ test.describe("batch selection operations", () => {
 		// is clickable with a selection and doesn't crash the renderer.
 		const { page } = calendar;
 		await seedTitlesViaVault(page);
-		await refreshCalendar(page);
 		await enterBatchMode(page);
 		await selectAllInBatch(page);
 
@@ -110,7 +108,6 @@ test.describe("batch selection operations", () => {
 	test("clicking Batch → Clone Next is wired up", async ({ calendar }) => {
 		const { page } = calendar;
 		await seedTitlesViaVault(page);
-		await refreshCalendar(page);
 		await enterBatchMode(page);
 		await selectAllInBatch(page);
 
@@ -155,7 +152,6 @@ test.describe("batch selection operations", () => {
 		// races in the e2e launcher build make count-based assertions flaky.
 		const { page } = calendar;
 		await seedTitlesViaVault(page);
-		await refreshCalendar(page);
 		await enterBatchMode(page);
 		await selectAllInBatch(page);
 

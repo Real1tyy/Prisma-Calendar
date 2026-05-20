@@ -11,7 +11,7 @@ import {
 	setSchemaDropdown,
 	switchSettingsTab,
 } from "../../fixtures/helpers";
-import { refreshCalendar, seedEvent, waitForEventCount } from "../../fixtures/seed-events";
+import { seedEvent, waitForEventCount } from "../../fixtures/seed-events";
 
 // Production has a 3s debounce on directory-bind / propagation (see
 // changelog 2.16). Under tests `window.E2E === true` flips those to 0 via
@@ -143,7 +143,6 @@ test.describe("sort normalization conflict between calendars", () => {
 			endDate: "2026-01-15 11:00",
 			subdir: SHARED_DIR,
 		});
-		await refreshCalendar(page);
 		await waitForEventCount(page, 1);
 
 		// Sanity: the lone writer normalizes Sort Date from Start Date.
@@ -163,8 +162,12 @@ test.describe("sort normalization conflict between calendars", () => {
 		await selectCalendarInSettings(page, secondId);
 		await setDirectory(page, SHARED_DIR);
 		await closeSettings(page);
-		await refreshCalendar(page);
-		await refreshCalendar(page);
+		// Negative-assertion settle window: prove the guard prevented any
+		// thrash on the existing Sort Date. The bundle's directory binding
+		// flows through `settings$` reactively; this wait lets the second
+		// calendar's indexer scan SHARED_DIR and reach the guard, so any
+		// would-be write happens before the snapshot below.
+		await page.waitForTimeout(1_000);
 
 		expect(readEventFrontmatter(obsidian.vaultDir, eventPath)["Sort Date"]).toBe(writtenSortDate);
 
@@ -176,7 +179,10 @@ test.describe("sort normalization conflict between calendars", () => {
 		await setSortingStrategy(page, "allStartDate");
 		await expect(page.locator(CONFLICT_BANNER)).toHaveCount(0);
 		await closeSettings(page);
-		await refreshCalendar(page);
+		// Same negative-assertion settle as above — give post-alignment writes
+		// a chance to land (they shouldn't, because the existing Sort Date is
+		// already correct) before snapshotting.
+		await page.waitForTimeout(500);
 		expect(readEventFrontmatter(obsidian.vaultDir, eventPath)["Sort Date"]).toBe(writtenSortDate);
 
 		const secondExpectedSortDate = "2026-02-10T14:30:00";
@@ -186,7 +192,6 @@ test.describe("sort normalization conflict between calendars", () => {
 			endDate: "2026-02-10 15:30",
 			subdir: SHARED_DIR,
 		});
-		await refreshCalendar(page);
 		await waitForEventCount(page, 2);
 		await expect
 			.poll(() => readEventFrontmatter(obsidian.vaultDir, secondEventPath)["Sort Date"], {

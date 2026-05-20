@@ -1,6 +1,6 @@
 import { test } from "../../fixtures/electron";
 import { openCalendar, switchCalendarViewMode } from "../../fixtures/helpers";
-import { refreshCalendar, waitForEventCount } from "../../fixtures/seed-events";
+import { waitForEventCount } from "../../fixtures/seed-events";
 import {
 	currentWeekStartOffset,
 	expectCalendarConsistent,
@@ -42,7 +42,6 @@ test.describe("stress: large vault initial render", () => {
 		});
 
 		await openCalendar(page);
-		await refreshCalendar(page);
 		// Gate on the indexer catching up — bulk ingest of 140+ events runs
 		// longer than the default 500ms refresh settle.
 		await waitForEventCount(page, TOTAL_COUNT);

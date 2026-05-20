@@ -1,6 +1,6 @@
 import { eventByTitle, gotoToday, todayISO, todayTimedEvent, waitForEvent } from "../../fixtures/calendar-helpers";
 import { expect, test } from "../../fixtures/electron";
-import { refreshCalendar, seedEvent } from "../../fixtures/seed-events";
+import { seedEvent } from "../../fixtures/seed-events";
 import { sel } from "../../fixtures/testids";
 
 test.describe("search and filter", () => {
@@ -9,7 +9,6 @@ test.describe("search and filter", () => {
 		seedEvent(vaultDir, todayTimedEvent("Alpha Standup", 9, 10));
 		seedEvent(vaultDir, todayTimedEvent("Beta Sync", 11, 12));
 
-		await refreshCalendar(page);
 		await gotoToday(page);
 		await waitForEvent(page, "Alpha Standup");
 		await waitForEvent(page, "Beta Sync");
@@ -40,7 +39,6 @@ test.describe("search and filter", () => {
 			category: "Personal",
 		});
 
-		await refreshCalendar(page);
 		await gotoToday(page);
 		await waitForEvent(page, "Keep Event");
 		await waitForEvent(page, "Hide Event");

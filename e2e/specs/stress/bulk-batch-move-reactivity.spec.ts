@@ -1,7 +1,7 @@
 import { expect, test } from "../../fixtures/electron";
 import { openCalendar, switchCalendarViewMode } from "../../fixtures/helpers";
 import { clickBatchButton, enterBatchMode, exitBatchMode, expectSelectedCount } from "../../fixtures/history-helpers";
-import { refreshCalendar, waitForEventCount } from "../../fixtures/seed-events";
+import { waitForEventCount } from "../../fixtures/seed-events";
 import {
 	currentWeekStartOffset,
 	expectCalendarConsistent,
@@ -46,7 +46,6 @@ test.describe("stress: batch move reactivity", () => {
 			startDayOffset: currentWeekStartOffset(),
 		});
 		await openCalendar(page);
-		await refreshCalendar(page);
 		await waitForEventCount(page, EVENT_COUNT);
 		await switchCalendarViewMode(page, "week");
 
@@ -89,7 +88,6 @@ test.describe("stress: batch move reactivity", () => {
 			startDayOffset: currentWeekStartOffset(),
 		});
 		await openCalendar(page);
-		await refreshCalendar(page);
 		await waitForEventCount(page, EVENT_COUNT);
 		await switchCalendarViewMode(page, "week");
 		await expectUniqueVisibleEventCount(page, EVENT_COUNT);
@@ -127,7 +125,6 @@ test.describe("stress: batch move reactivity", () => {
 			startDayOffset: currentWeekStartOffset(),
 		});
 		await openCalendar(page);
-		await refreshCalendar(page);
 		await waitForEventCount(page, EVENT_COUNT);
 		await switchCalendarViewMode(page, "week");
 		await expectUniqueVisibleEventCount(page, EVENT_COUNT);

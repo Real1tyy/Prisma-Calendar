@@ -1,5 +1,5 @@
 import { expect, test } from "../../fixtures/electron";
-import { refreshCalendar, seedEvents } from "../../fixtures/seed-events";
+import { seedEvents, waitForEventCount } from "../../fixtures/seed-events";
 
 // Highlight commands are registered in main.ts:
 //   "Highlight events without categories"
@@ -18,7 +18,7 @@ const MODAL = ".modal";
 test.describe("highlight commands", () => {
 	test.beforeEach(async ({ calendar }) => {
 		seedEvents(calendar.vaultDir, [...SEED]);
-		await refreshCalendar(calendar.page);
+		await waitForEventCount(calendar.page, SEED.length);
 		await calendar.page.locator(CALENDAR_ROOT).first().waitFor({ state: "visible" });
 	});
 

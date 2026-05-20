@@ -9,7 +9,8 @@ import { expect, test } from "../../fixtures/electron";
 //
 // Each test seeds its own recurring sources from scratch via
 // `calendar.createEvent({recurring})` so the recurringEventManager is
-// populated through the real path; no `refreshCalendar` cheat-paths.
+// populated through the real path — no shortcuts that bypass the
+// production indexer + generator pipeline.
 
 const DEFAULT_FUTURE_INSTANCES = 2;
 

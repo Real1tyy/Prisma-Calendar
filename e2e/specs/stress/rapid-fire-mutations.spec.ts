@@ -9,7 +9,7 @@ import {
 	expectSelectedCount,
 	undoViaPalette,
 } from "../../fixtures/history-helpers";
-import { refreshCalendar, waitForEventCount } from "../../fixtures/seed-events";
+import { waitForEventCount } from "../../fixtures/seed-events";
 import {
 	currentWeekStartOffset,
 	expectCalendarConsistent,
@@ -44,7 +44,6 @@ test.describe("stress: rapid-fire mutations against coalesced refresh", () => {
 			startDayOffset: currentWeekStartOffset(),
 		});
 		await openCalendar(page);
-		await refreshCalendar(page);
 		await waitForEventCount(page, EVENT_COUNT);
 		await switchCalendarViewMode(page, "week");
 		await expectUniqueVisibleEventCount(page, EVENT_COUNT);
@@ -124,7 +123,6 @@ test.describe("stress: rapid-fire mutations against coalesced refresh", () => {
 			startDayOffset: currentWeekStartOffset(),
 		});
 		await openCalendar(page);
-		await refreshCalendar(page);
 		await waitForEventCount(page, EVENT_COUNT);
 		await switchCalendarViewMode(page, "week");
 		await expectUniqueVisibleEventCount(page, EVENT_COUNT);

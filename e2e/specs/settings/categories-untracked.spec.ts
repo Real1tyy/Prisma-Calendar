@@ -6,7 +6,6 @@ import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 import { categoryRow } from "../../fixtures/dsl";
 import { expect, test } from "../../fixtures/electron";
 import { closeSettings, openPrismaSettings, switchSettingsTab } from "../../fixtures/helpers";
-import { refreshCalendar } from "../../fixtures/seed-events";
 
 // "Untracked events" are notes that carry a category in frontmatter but have
 // no Start Date / End Date / Date — they live in `UntrackedEventStore`, not
@@ -28,7 +27,6 @@ test.describe("settings: Categories operations on untracked events", () => {
 	test("untracked-only category appears in the list with proper counts", async ({ calendar, obsidian }) => {
 		const { vaultDir, page } = calendar;
 		seedUntrackedFile(vaultDir, "OnlyUntracked");
-		await refreshCalendar(page);
 
 		await openPrismaSettings(obsidian.page);
 		await switchSettingsTab(obsidian.page, "categories");
@@ -47,7 +45,6 @@ test.describe("settings: Categories operations on untracked events", () => {
 	test("renaming includes untracked events when the checkbox is left checked", async ({ calendar, obsidian }) => {
 		const { vaultDir, page } = calendar;
 		const relativePath = seedUntrackedFile(vaultDir, "RenameMe");
-		await refreshCalendar(page);
 
 		await openPrismaSettings(obsidian.page);
 		await switchSettingsTab(obsidian.page, "categories");
@@ -72,7 +69,6 @@ test.describe("settings: Categories operations on untracked events", () => {
 	test("deleting includes untracked events when the checkbox is left checked", async ({ calendar, obsidian }) => {
 		const { vaultDir, page } = calendar;
 		const relativePath = seedUntrackedFile(vaultDir, "DeleteMe");
-		await refreshCalendar(page);
 
 		await openPrismaSettings(obsidian.page);
 		await switchSettingsTab(obsidian.page, "categories");
@@ -93,7 +89,6 @@ test.describe("settings: Categories operations on untracked events", () => {
 	test("unchecking the toggle leaves untracked frontmatter intact", async ({ calendar, obsidian }) => {
 		const { vaultDir, page } = calendar;
 		const relativePath = seedUntrackedFile(vaultDir, "KeepUntracked");
-		await refreshCalendar(page);
 
 		await openPrismaSettings(obsidian.page);
 		await switchSettingsTab(obsidian.page, "categories");

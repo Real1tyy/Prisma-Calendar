@@ -1,7 +1,7 @@
 import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { expect, test } from "../../fixtures/electron";
-import { refreshCalendar, setFrontmatterField, updateCalendarSettings } from "../../fixtures/seed-events";
+import { setFrontmatterField, updateCalendarSettings } from "../../fixtures/seed-events";
 import { createEventViaModal, formatLocalDate, openCalendarReady } from "./events-helpers";
 import { collectInstanceFiles } from "./robustness-helpers";
 
@@ -48,7 +48,6 @@ test.describe("recurring event propagation", () => {
 		}
 
 		await setFrontmatterField(obsidian.page, sourcePath, "Location", "Room B");
-		await refreshCalendar(obsidian.page);
 
 		// The source file itself reflects the direct edit.
 		await expect

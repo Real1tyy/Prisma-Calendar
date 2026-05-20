@@ -1,5 +1,5 @@
 import { expect, test } from "../../fixtures/electron";
-import { refreshCalendar, seedEvents, waitForEventCount } from "../../fixtures/seed-events";
+import { seedEvents, waitForEventCount } from "../../fixtures/seed-events";
 
 // 500-event smoke. Seed deterministically (not via the modal), activate the
 // calendar view, assert initial render within budget and survives 10
@@ -25,7 +25,6 @@ test.describe("large dataset smoke @slow", () => {
 		});
 
 		seedEvents(calendar.vaultDir, events);
-		await refreshCalendar(calendar.page);
 
 		const t0 = Date.now();
 		await calendar.page.locator(CALENDAR_ROOT).first().waitFor({ state: "visible", timeout: 30_000 });

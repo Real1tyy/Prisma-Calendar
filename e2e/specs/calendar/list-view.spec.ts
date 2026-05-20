@@ -1,6 +1,6 @@
 import { gotoToday, listEventRow, todayTimedEvent } from "../../fixtures/calendar-helpers";
 import { expect, test } from "../../fixtures/electron";
-import { refreshCalendar, seedEvent } from "../../fixtures/seed-events";
+import { seedEvent } from "../../fixtures/seed-events";
 import { sel, TID } from "../../fixtures/testids";
 
 test.describe("list view", () => {
@@ -15,7 +15,6 @@ test.describe("list view", () => {
 		const { page, vaultDir } = calendar;
 		seedEvent(vaultDir, todayTimedEvent("List Event", 10, 11));
 
-		await refreshCalendar(page);
 		await gotoToday(page);
 		await calendar.switchMode("list");
 

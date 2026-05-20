@@ -6,13 +6,7 @@ import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { runCommand } from "../../fixtures/commands";
 import { expect, test } from "../../fixtures/electron";
-import {
-	getEventCount,
-	refreshCalendar,
-	seedEvents,
-	waitForEventCount,
-	type SeedEventInput,
-} from "../../fixtures/seed-events";
+import { getEventCount, seedEvents, waitForEventCount, type SeedEventInput } from "../../fixtures/seed-events";
 import { ICS_EXPORT_SUBMIT_TID, ICS_IMPORT_FILE_TID, ICS_IMPORT_SUBMIT_TID, sel } from "../../fixtures/testids";
 
 // Full ICS roundtrip. The contract we verify:
@@ -81,7 +75,6 @@ async function runRoundTrip(
 	seed: readonly SeedEventInput[]
 ): Promise<RoundTripHandles> {
 	seedEvents(vaultDir, seed);
-	await refreshCalendar(page);
 	await waitForEventCount(page, seed.length);
 
 	await runCommand(page, "Prisma Calendar: Export calendar as .ics");
@@ -99,7 +92,6 @@ async function runRoundTrip(
 	for (const md of listEventMarkdown(vaultDir)) {
 		unlinkSync(join(vaultDir, EVENTS_DIR, md));
 	}
-	await refreshCalendar(page);
 	expect(listEventMarkdown(vaultDir)).toHaveLength(0);
 
 	await runCommand(page, "Prisma Calendar: Import .ics file");
@@ -114,7 +106,6 @@ async function runRoundTrip(
 	await expect.poll(() => page.locator(".modal").count()).toBe(0);
 
 	await expect.poll(() => listEventMarkdown(vaultDir).length).toBe(seed.length);
-	await refreshCalendar(page);
 	await expect.poll(() => getEventCount(page)).toBe(seed.length);
 
 	return { icsPath, exportedIcs };
@@ -330,10 +321,10 @@ test.describe("ICS roundtrip", () => {
 		await importSubmit.click();
 		await expect.poll(() => page.locator(".modal").count()).toBe(0);
 
-		await refreshCalendar(page);
-
 		// Manual re-import is not UID-aware and creates duplicates (see comment
-		// above). Originals must survive alongside the new copies.
+		// above). Originals must survive alongside the new copies — poll the
+		// file list to converge instead of asserting synchronously.
+		await expect.poll(() => listEventMarkdown(vaultDir).length).toBe(2 * seed.length);
 		const afterSecondImport = listEventMarkdown(vaultDir);
 		expect(afterSecondImport.length).toBe(2 * seed.length);
 		for (const original of afterFirstImport) {

@@ -106,15 +106,6 @@ export async function setFrontmatterField(
 	);
 }
 
-/** Force Prisma's indexer to pick up on-disk changes via the refresh command. */
-export async function refreshCalendar(page: Page): Promise<void> {
-	await page.evaluate(async () => {
-		const w = window as unknown as PrismaWindow;
-		w.app.commands.executeCommandById("prisma-calendar:refresh-calendar");
-		await new Promise((r) => window.setTimeout(r, 500));
-	});
-}
-
 /** Read the default-calendar bundle's live settings snapshot. */
 export async function readCalendarSettings(page: Page): Promise<Record<string, unknown>> {
 	return page.evaluate((pid) => {

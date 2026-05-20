@@ -3,14 +3,13 @@ import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 import { eventByTitle, gotoToday, todayTimedEvent, waitForEvent } from "../../fixtures/calendar-helpers";
 import { boundingBoxOrThrow, drag } from "../../fixtures/dsl";
 import { expect, test } from "../../fixtures/electron";
-import { refreshCalendar, seedEvent } from "../../fixtures/seed-events";
+import { seedEvent } from "../../fixtures/seed-events";
 
 test.describe("resize to change duration", () => {
 	test("dragging the bottom edge of an event extends End Date", async ({ calendar }) => {
 		const { page, vaultDir } = calendar;
 		const file = seedEvent(vaultDir, todayTimedEvent("Resize Me", 9, 10));
 
-		await refreshCalendar(page);
 		await gotoToday(page);
 		await waitForEvent(page, "Resize Me");
 

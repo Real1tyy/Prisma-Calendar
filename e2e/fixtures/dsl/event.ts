@@ -84,8 +84,8 @@ export interface EventHandle {
 	 * Polled assertion that exactly `count` physical instance files exist on
 	 * disk for this event's title. Use after creating a recurring source to
 	 * wait for the generator to materialise its instances — replaces inline
-	 * `collectInstanceFiles(...).length` polling and removes the need for
-	 * `refreshCalendar` cheat-paths in specs.
+	 * `collectInstanceFiles(...).length` polling and any need to force a
+	 * full indexer rescan to observe convergence.
 	 */
 	expectInstanceCount(count: number, message?: string): Promise<void>;
 }

@@ -1,6 +1,6 @@
 import { gotoToday, todayTimedEvent } from "../../fixtures/calendar-helpers";
 import { expect, test } from "../../fixtures/electron";
-import { refreshCalendar, seedEvent } from "../../fixtures/seed-events";
+import { seedEvent } from "../../fixtures/seed-events";
 import { sel, TID } from "../../fixtures/testids";
 
 test.describe("dual daily tab", () => {
@@ -11,7 +11,6 @@ test.describe("dual daily tab", () => {
 		const errors: string[] = [];
 		page.on("pageerror", (err) => errors.push(err.message));
 
-		await refreshCalendar(page);
 		await gotoToday(page);
 
 		const tab = page.locator(sel(TID.viewTab("dual-daily"))).first();

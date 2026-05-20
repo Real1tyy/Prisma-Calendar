@@ -67,7 +67,7 @@ test.describe("notifications: reminder modal fires from indexer events", () => {
 		await calendar.seedOnDisk("Already Done", notifiableFrontmatter({ "Already Notified": true }));
 
 		// Negative case — the absence of the modal needs a small grace window
-		// after `refreshCalendar` to be solid (the notification manager runs
+		// after the indexer ingests the seed (the notification manager runs
 		// asynchronously off the indexer pass).
 		await calendar.page.waitForTimeout(NEGATIVE_CASE_GRACE_MS);
 

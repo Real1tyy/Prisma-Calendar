@@ -12,7 +12,7 @@ import { fillEventModal, saveEventModal, type EventModalInput } from "../../spec
 import { runCommand, waitForCommandManagerIdle } from "../commands";
 import { ACTIVE_CALENDAR_LEAF, PLUGIN_ID } from "../constants";
 import { anchorDate, anchorISO, isoLocal } from "../dates";
-import { getEventCount, refreshCalendar, waitForEventCount, type SeedEventInput } from "../seed-events";
+import { getEventCount, waitForEventCount, type SeedEventInput } from "../seed-events";
 import {
 	DASHBOARD_RANKING_TID,
 	dashboardItemByTitle,
@@ -81,10 +81,11 @@ export interface CalendarHandle {
 	seedMany(inputs: readonly EventCreate[]): Promise<EventHandle[]>;
 
 	/**
-	 * Write an event directly to disk (bypassing the create modal) and refresh
-	 * the indexer so the plugin picks it up. Prefer this over hand-rolled
-	 * `writeFileSync` + `openCalendarReady` sequences — the refresh step is
-	 * required for the file to appear in the calendar view.
+	 * Write an event directly to disk (bypassing the create modal) and wait
+	 * for the indexer to ingest it via `vault.on("modify")`. Prefer this over
+	 * hand-rolled `writeFileSync` + `openCalendarReady` sequences — the
+	 * event-count gate guarantees the plugin's reactive store has picked the
+	 * file up before the caller proceeds.
 	 *
 	 * Pass `awaitRender: true` to wait for the seeded block to paint in the
 	 * active calendar leaf before returning — only safe when the seeded date
@@ -99,14 +100,14 @@ export interface CalendarHandle {
 	/**
 	 * Bulk version of `seedOnDisk` for the common "seed N events, assert on
 	 * downstream rendering" shape (analytics tabs, stats modals, search, etc.).
-	 * Writes every markdown file, then refreshes the indexer **once** at the
-	 * end — the singular `seedOnDisk` refreshes per call (~500ms each), so
-	 * looping it over N events is wasteful. Input mirrors `seedMany`'s
-	 * `{title, start, end, allDay, date, category}` shape so specs don't have
-	 * to spell out `"Start Date"` / `"End Date"` frontmatter keys. Richer
-	 * fields (prerequisites, participants, recurring, custom properties) still
-	 * require the full modal flow — use `seedMany` for those. Duplicate titles
-	 * within a single batch are safe — each gets a unique zettel-ID suffix.
+	 * Writes every markdown file, then gates on the indexer reaching
+	 * `baseline + N` so the caller proceeds only once every file has been
+	 * ingested. Input mirrors `seedMany`'s `{title, start, end, allDay, date,
+	 * category}` shape so specs don't have to spell out `"Start Date"` /
+	 * `"End Date"` frontmatter keys. Richer fields (prerequisites,
+	 * participants, recurring, custom properties) still require the full
+	 * modal flow — use `seedMany` for those. Duplicate titles within a
+	 * single batch are safe — each gets a unique zettel-ID suffix.
 	 *
 	 * Like `seedOnDisk`, pass `awaitRender: true` to wait for every seeded
 	 * tile to paint in the active calendar leaf — only safe when every
@@ -417,8 +418,9 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 		},
 
 		async seedOnDisk(title, frontmatter, options = {}) {
+			const baseline = await getEventCount(page);
 			const relPath = seedEventFile(vaultDir, title, frontmatter);
-			await refreshCalendar(page);
+			await waitForEventCount(page, baseline + 1);
 			const handle = createEventHandle({ page, vaultDir }, relPath, title);
 			if (options.awaitRender === true) await handle.expectVisible();
 			return handle;
@@ -442,7 +444,6 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 				const relPath = seedEventFile(vaultDir, input.title, fm, suffix);
 				out.push(createEventHandle({ page, vaultDir }, relPath, input.title));
 			}
-			await refreshCalendar(page);
 			await waitForEventCount(page, baseline + events.length);
 			if (options.awaitRender === true) {
 				for (const handle of out) await handle.expectVisible();
@@ -487,7 +488,6 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 				const w = window as unknown as PrismaWindow;
 				for (const f of fileList) await w.app.vault.create(f.path, f.content);
 			}, files);
-			await refreshCalendar(page);
 			await waitForEventCount(page, baseline + events.length);
 		},
 

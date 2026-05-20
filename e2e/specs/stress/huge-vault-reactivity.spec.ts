@@ -11,7 +11,7 @@ import {
 	redoViaPalette,
 	undoViaPalette,
 } from "../../fixtures/history-helpers";
-import { refreshCalendar, updateCalendarSettings, waitForEventCount } from "../../fixtures/seed-events";
+import { updateCalendarSettings, waitForEventCount } from "../../fixtures/seed-events";
 import {
 	currentWeekStartOffset,
 	expectCalendarConsistent,
@@ -101,7 +101,6 @@ test.describe("stress: huge 5000-event vault with focused mutations", () => {
 		// `calendarTitleProp` to "" short-circuits that drain so the test
 		// exercises pure refresh reactivity, not a queue-contention regression.
 		await updateCalendarSettings(page, { calendarTitleProp: "" });
-		await refreshCalendar(page);
 
 		// Indexer gate: all 5050 files must land. Bulk ingest of this size
 		// takes measurably longer than the default 30s poll window on
@@ -196,7 +195,6 @@ test.describe("stress: huge 5000-event vault with focused mutations", () => {
 		// `calendarTitleProp` to "" short-circuits that drain so the test
 		// exercises pure refresh reactivity, not a queue-contention regression.
 		await updateCalendarSettings(page, { calendarTitleProp: "" });
-		await refreshCalendar(page);
 		await waitForEventCount(page, TOTAL_COUNT, 180_000);
 		await switchCalendarViewMode(page, "week");
 		await expectCalendarConsistent(page, { indexer: TOTAL_COUNT, visible: ACTIVE_COUNT });

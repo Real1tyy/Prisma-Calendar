@@ -9,7 +9,7 @@ import {
 	redoViaPalette,
 	undoViaPalette,
 } from "../../fixtures/history-helpers";
-import { refreshCalendar, waitForEventCount } from "../../fixtures/seed-events";
+import { waitForEventCount } from "../../fixtures/seed-events";
 import {
 	currentWeekStartOffset,
 	expectCalendarConsistent,
@@ -43,7 +43,6 @@ test.describe("stress: batch delete undo/redo", () => {
 			startDayOffset: currentWeekStartOffset(),
 		});
 		await openCalendar(page);
-		await refreshCalendar(page);
 		await waitForEventCount(page, EVENT_COUNT);
 		await switchCalendarViewMode(page, "week");
 		await expectCalendarConsistent(page, { indexer: EVENT_COUNT, visible: EVENT_COUNT });
@@ -83,7 +82,6 @@ test.describe("stress: batch delete undo/redo", () => {
 			startDayOffset: currentWeekStartOffset(),
 		});
 		await openCalendar(page);
-		await refreshCalendar(page);
 		await waitForEventCount(page, EVENT_COUNT);
 		await switchCalendarViewMode(page, "week");
 		await expectUniqueVisibleEventCount(page, EVENT_COUNT);
