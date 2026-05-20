@@ -68,16 +68,21 @@ export const restoreFrontmatter = async (app: App, file: TFile, original: Record
  * Returns the entire content if no frontmatter is found.
  */
 export const extractContentAfterFrontmatter = (fullContent: string): string => {
-	const frontmatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n/;
+	// `[^\S\n]*` (horizontal whitespace only) instead of `\s*` so the optional
+	// trailing whitespace on a fence line can't also consume the following
+	// newline — that overlap is a polynomial-ReDoS pump (CodeQL js/polynomial-redos).
+	const frontmatterRegex = /^---[^\S\n]*\n([\s\S]*?)\n---[^\S\n]*\n/;
 	const match = fullContent.match(frontmatterRegex);
 
-	if (match) {
-		// Return content after frontmatter
-		return fullContent.substring(match.index! + match[0].length);
+	if (!match) {
+		// If no frontmatter found, return the entire content
+		return fullContent;
 	}
 
-	// If no frontmatter found, return the entire content
-	return fullContent;
+	// Drop any blank lines between the closing fence and the body (the old `\s*`
+	// did this greedily); each iteration consumes a mandatory newline, so it
+	// stays linear.
+	return fullContent.substring(match.index! + match[0].length).replace(/^(?:[^\S\n]*\n)*/, "");
 };
 
 export async function ensureDirectory(app: App, directory: string): Promise<void> {

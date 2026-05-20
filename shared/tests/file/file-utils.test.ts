@@ -98,6 +98,19 @@ Content with blank line above`;
 		const result = extractContentAfterFrontmatter(content);
 		expect(result).toBe("Content with blank line above");
 	});
+
+	it("should tolerate trailing whitespace on the fence lines", () => {
+		const content = "---  \ntitle: Test\n---\t\nBody content";
+
+		const result = extractContentAfterFrontmatter(content);
+		expect(result).toBe("Body content");
+	});
+
+	it("completes in linear time on adversarial unterminated frontmatter (ReDoS regression)", () => {
+		const adversarial = `---\n${"\n\t".repeat(100_000)}`;
+
+		expect(extractContentAfterFrontmatter(adversarial)).toBe(adversarial);
+	});
 });
 
 describe("getTFileOrThrow", () => {

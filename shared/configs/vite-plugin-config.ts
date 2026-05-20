@@ -109,10 +109,11 @@ function assertNoReactScriptInjection(): Plugin {
 				}
 				// Any `<script` substring catches every quote variant of the
 				// HTML-literal injection trick (innerHTML / outerHTML / similar
-				// sinks). The `[ >/]` guard prevents false positives on names
-				// like `<scripts` while still matching the `<script` opening
-				// tag in all real cases. The `i` flag also catches `<SCRIPT`.
-				if (/<script[ >/]/i.test(code)) {
+				// sinks). The `[\s/>]` guard prevents false positives on names
+				// like `<scripts` while still matching the `<script` opening tag
+				// across every valid separator (space, tab, newline, `/`, `>`).
+				// The `i` flag also catches `<SCRIPT`.
+				if (/<script[\s/>]/i.test(code)) {
 					findings.push("<script HTML literal — innerHTML/outerHTML/script-tag injection");
 				}
 				if (findings.length > 0) {
