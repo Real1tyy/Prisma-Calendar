@@ -34,11 +34,11 @@ If these two calls produce different paths, virtual instances cannot detect thei
 
 Physical instance creation has three dedup layers. The deterministic zettel hash is critical for layer 3:
 
-| Layer | Location                              | Mechanism                                                            | Depends on deterministic path? |
-| ----- | ------------------------------------- | -------------------------------------------------------------------- | ------------------------------ |
-| 1     | `createInstanceIfMissing` (line ~669) | Checks `physicalInstances` map by `rRuleId` + date key               | No                             |
-| 2     | `createPhysicalInstance` (line ~711)  | Re-checks in-memory map by `rRuleId` + date key (inside lock)        | No                             |
-| 3     | `createPhysicalInstance` (line ~706)  | Checks `vault.getAbstractFileByPath(filePath)` for on-disk existence | **Yes**                        |
+| Layer | Location | Mechanism | Depends on deterministic path? |
+|-------|----------|-----------|-------------------------------|
+| 1 | `createInstanceIfMissing` (line ~669) | Checks `physicalInstances` map by `rRuleId` + date key | No |
+| 2 | `createPhysicalInstance` (line ~711) | Re-checks in-memory map by `rRuleId` + date key (inside lock) | No |
+| 3 | `createPhysicalInstance` (line ~706) | Checks `vault.getAbstractFileByPath(filePath)` for on-disk existence | **Yes** |
 
 Layers 1 and 2 use `rRuleId` + `instanceDate` from the in-memory `recurringEventsMap`. They handle the common case.
 
@@ -47,13 +47,11 @@ Layer 3 is a safety net for edge cases where a file exists on disk but hasn't be
 ## Tradeoffs
 
 **Benefits of the current approach:**
-
 - Any code path can independently compute the expected filename for a `(rRuleId, date)` pair without coordination or shared state.
 - Layer 3 dedup works without requiring the in-memory index to be fully populated.
 - Virtual instances can pre-compute their physical file path for existence checks.
 
 **Costs:**
-
 - The zettel suffix on recurring instances is not a real timestamp — it looks like `00000465452562` instead of `20260324131325`. This is cosmetic only; it has no functional impact since the `rRuleId` and `instanceDate` are stored in frontmatter properties.
 - The djb2 hash has theoretical collision risk, but the 14-digit space (10^14) makes this negligible in practice.
 
@@ -62,7 +60,6 @@ Layer 3 is a safety net for edge cases where a file exists on disk but hasn't be
 Generate a real `generateZettelId()` once during physical file creation, store it in frontmatter, and rely solely on layers 1-2 for dedup.
 
 **Rejected because:**
-
 - Virtual instance generation would need a different mechanism to match against existing physical files (query the indexer by `rRuleId` + date instead of path lookup).
 - Layer 3 safety net would be lost entirely.
 - The refactor scope is larger with no user-facing benefit.

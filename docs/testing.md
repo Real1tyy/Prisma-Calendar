@@ -5,7 +5,7 @@ Unit tests prove the correctness of the application. They **must** evolve in tan
 ## When to Write Tests
 
 - **New features**: Every new function, utility, or behavioral path needs tests proving it works.
-- **Bug fixes**: Add a test that reproduces the bug _before_ fixing it, then verify it passes after.
+- **Bug fixes**: Add a test that reproduces the bug *before* fixing it, then verify it passes after.
 - **Refactors**: If you change how something works internally, run existing tests to confirm behavior is preserved. Add tests if the refactor exposes new edge cases.
 - **New utilities**: Any exported function in `src/utils/` or `src/core/` must have a test file.
 
@@ -42,15 +42,15 @@ Every piece of test data is created through a **factory function** that returns 
 
 ### Core Factories
 
-| Factory                                      | Returns                  | Location                       |
-| -------------------------------------------- | ------------------------ | ------------------------------ |
-| `createMockTimedEvent(overrides?)`           | `CalendarEvent` (timed)  | `event-fixtures.ts`            |
-| `createMockAllDayEvent(overrides?)`          | `CalendarEvent` (allDay) | `event-fixtures.ts`            |
-| `createDefaultMetadata(overrides?)`          | `EventMetadata`          | `event-fixtures.ts`            |
-| `createPrismaEventInput(overrides & { id })` | `PrismaEventInput`       | `prisma-event-fixtures.ts`     |
-| `createRawEventSource(overrides?)`           | `RawEventSource`         | `raw-event-source-fixtures.ts` |
-| `createParserSettings(overrides?)`           | `SingleCalendarConfig`   | `settings-fixtures.ts`         |
-| `createMockVault(overrides?)`                | Mock Vault               | `obsidian-fixtures.ts`         |
+| Factory | Returns | Location |
+|---------|---------|----------|
+| `createMockTimedEvent(overrides?)` | `CalendarEvent` (timed) | `event-fixtures.ts` |
+| `createMockAllDayEvent(overrides?)` | `CalendarEvent` (allDay) | `event-fixtures.ts` |
+| `createDefaultMetadata(overrides?)` | `EventMetadata` | `event-fixtures.ts` |
+| `createPrismaEventInput(overrides & { id })` | `PrismaEventInput` | `prisma-event-fixtures.ts` |
+| `createRawEventSource(overrides?)` | `RawEventSource` | `raw-event-source-fixtures.ts` |
+| `createParserSettings(overrides?)` | `SingleCalendarConfig` | `settings-fixtures.ts` |
+| `createMockVault(overrides?)` | Mock Vault | `obsidian-fixtures.ts` |
 
 ### Usage
 
@@ -69,7 +69,6 @@ const event = { id: "1", ref: { filePath: "x.md" }, title: "Event", ... };
 ### Adding New Fixtures
 
 When adding a new type that multiple tests need:
-
 1. Create a factory in `tests/fixtures/` following the `Partial<T>` override pattern.
 2. Use `eventDefaults()` or similar base factories for composition — never duplicate defaults.
 3. Export from the barrel `tests/fixtures/index.ts`.
@@ -80,13 +79,13 @@ When adding a new type that multiple tests need:
 The `SCENARIO` namespace in `tests/fixtures/scenarios.ts` provides **domain-meaningful** event constructors built on top of the core factories:
 
 ```ts
-SCENARIO.completedEvent(); // timed event with status: "done"
-SCENARIO.skippedEvent(); // timed event with skip: true
-SCENARIO.fullyDecoratedEvent(); // event with all metadata fields populated
-SCENARIO.eventWithReminder(30); // event with 30-minute reminder
-SCENARIO.recurringSourceEvent(); // source event with rrule config
-SCENARIO.virtualRecurringInstance(); // virtual recurring instance
-SCENARIO.allDayHoliday(); // all-day event for a holiday
+SCENARIO.completedEvent()          // timed event with status: "done"
+SCENARIO.skippedEvent()            // timed event with skip: true
+SCENARIO.fullyDecoratedEvent()     // event with all metadata fields populated
+SCENARIO.eventWithReminder(30)     // event with 30-minute reminder
+SCENARIO.recurringSourceEvent()    // source event with rrule config
+SCENARIO.virtualRecurringInstance() // virtual recurring instance
+SCENARIO.allDayHoliday()           // all-day event for a holiday
 ```
 
 Add new scenarios when a domain concept appears in 3+ tests with the same setup.
@@ -118,8 +117,8 @@ For reactive dependencies, use `Subject` or `BehaviorSubject`:
 let eventsSubject: Subject<IndexerEvent>;
 
 beforeEach(() => {
-	eventsSubject = new Subject();
-	mockIndexer = { events$: eventsSubject.asObservable() };
+  eventsSubject = new Subject();
+  mockIndexer = { events$: eventsSubject.asObservable() };
 });
 
 // In test: emit events
@@ -165,15 +164,15 @@ Keep each section visually distinct. For simple tests this is implicit; for comp
 
 ```ts
 it("should merge metadata overrides with defaults", () => {
-	const source = createRawEventSource({
-		frontmatter: { "Start Date": "2025-03-15T09:00:00" },
-		metadata: createDefaultMetadata({ breakMinutes: 30 }),
-	});
+  const source = createRawEventSource({
+    frontmatter: { "Start Date": "2025-03-15T09:00:00" },
+    metadata: createDefaultMetadata({ breakMinutes: 30 }),
+  });
 
-	const event = parser.parseEventSource(source);
+  const event = parser.parseEventSource(source);
 
-	expect(event).toBeDefined();
-	expect(event!.metadata.breakMinutes).toBe(30);
+  expect(event).toBeDefined();
+  expect(event!.metadata.breakMinutes).toBe(30);
 });
 ```
 
@@ -193,9 +192,9 @@ Extract repeated setup into `beforeEach`. If the same 5 lines appear in every te
 
 ```ts
 beforeEach(() => {
-	settings = createParserSettings({ directory: "events" });
-	settingsStore = new BehaviorSubject(settings);
-	parser = new Parser(mockApp, settingsStore);
+  settings = createParserSettings({ directory: "events" });
+  settingsStore = new BehaviorSubject(settings);
+  parser = new Parser(mockApp, settingsStore);
 });
 ```
 

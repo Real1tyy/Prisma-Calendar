@@ -4,13 +4,14 @@
 
 ![Downloads](https://img.shields.io/github/downloads/Real1tyy/Prisma-Calendar/total?label=Downloads&style=for-the-badge&color=238636) ![Release](https://img.shields.io/github/v/release/Real1tyy/Prisma-Calendar?label=Latest%20Release&style=for-the-badge&color=1f6feb) ![Stars](https://img.shields.io/github/stars/Real1tyy/Prisma-Calendar?style=for-the-badge&color=f0c830) [![Product Page](https://img.shields.io/badge/Product_Page-8957e5?style=for-the-badge)](https://matejvavroproductivity.com/tools/prisma-calendar/?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_product_page)
 
-[![Documentation](https://img.shields.io/badge/Documentation-238636?style=for-the-badge)](https://real1tyy.github.io/Prisma-Calendar/?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_documentation) [![Install in Obsidian](https://img.shields.io/badge/Install_in_Obsidian-7c3aed?style=for-the-badge&logo=obsidian&logoColor=white)](https://community.obsidian.md/plugins/prisma-calendar) [![Changelog](https://img.shields.io/badge/Changelog-0969da?style=for-the-badge)](https://real1tyy.github.io/Prisma-Calendar/changelog/?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_changelog)
+[![Documentation](https://img.shields.io/badge/Documentation-238636?style=for-the-badge)](https://real1tyy.github.io/Prisma-Calendar/?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_documentation)  [![Install in Obsidian](https://img.shields.io/badge/Install_in_Obsidian-7c3aed?style=for-the-badge&logo=obsidian&logoColor=white)](https://community.obsidian.md/plugins/prisma-calendar) [![Changelog](https://img.shields.io/badge/Changelog-0969da?style=for-the-badge)](https://real1tyy.github.io/Prisma-Calendar/changelog/?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_changelog)
 
 ## **Turn any note with a date into a flexible planning system inside Obsidian.**
 
 There are no rigid schemas or predefined structures — just your data, your rules, fully under your control. Prisma lets you see your entire vault through time.
 
 </div>
+
 
 <img src="docs-site/static/video/PrismaShowcase.gif" alt="Prisma Calendar Preview" width="100%">
 
@@ -87,6 +88,7 @@ AllDay: false
 Status: In Progress
 Project: Q1 Planning
 ---
+
 Meeting agenda, notes, links — any content you want.
 ```
 

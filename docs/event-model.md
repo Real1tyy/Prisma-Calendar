@@ -6,10 +6,10 @@ Developer-facing reference for Prisma Calendar's event classification and recurr
 
 Every note in the calendar directory is classified as one of:
 
-| Classification | Condition                                                   |
-| -------------- | ----------------------------------------------------------- |
-| **Untracked**  | No start date property in frontmatter                       |
-| **Timed**      | Has start date with a time component                        |
+| Classification | Condition                              |
+| -------------- | -------------------------------------- |
+| **Untracked**  | No start date property in frontmatter  |
+| **Timed**      | Has start date with a time component   |
 | **All-day**    | Has start date without a time component (or `allDay: true`) |
 
 Timed and all-day notes are "tracked" — they appear on the calendar and participate in indexing, stats, and recurrence.

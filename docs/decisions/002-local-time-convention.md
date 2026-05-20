@@ -16,14 +16,12 @@ The previous approach (001-utc-everywhere) used `{ zone: "utc" }` on every `Date
 ### Entry (frontmatter to internal)
 
 When reading from frontmatter, strip the Z suffix before storing in `CalendarEvent`:
-
 - `"2026-03-19T08:50:00.000Z"` from frontmatter becomes `"2026-03-19T08:50:00"` internally
 - Use `stripZ()` from `utils/iso.ts`
 
 ### Internal representation
 
 All internal ISO strings have no Z, no offset:
-
 - `event.start` = `"2026-03-19T08:50:00"`
 - `DateTime.fromISO(event.start)` produces local-zone DateTime (correct behavior)
 - `new Date(event.start)` produces local-time Date (correct behavior)
@@ -32,7 +30,6 @@ All internal ISO strings have no Z, no offset:
 ### Exit (internal to frontmatter)
 
 When writing to frontmatter, append Z:
-
 - `"2026-03-19T08:50:00"` internal becomes `"2026-03-19T08:50:00Z"` in frontmatter
 - Use `appendZ()` from `utils/iso.ts`
 - All-day dates remain date-only: `"2026-03-19"` (no Z)
@@ -52,11 +49,11 @@ When writing to frontmatter, append Z:
 
 ## Supported frontmatter formats
 
-| Type    | Frontmatter                | Internal              |
-| ------- | -------------------------- | --------------------- |
-| Timed   | `2026-03-19T08:50:00.000Z` | `2026-03-19T08:50:00` |
-| Timed   | `2026-03-19T08:50:00Z`     | `2026-03-19T08:50:00` |
-| All-day | `2026-03-19`               | `2026-03-19T00:00:00` |
+| Type | Frontmatter | Internal |
+|------|------------|----------|
+| Timed | `2026-03-19T08:50:00.000Z` | `2026-03-19T08:50:00` |
+| Timed | `2026-03-19T08:50:00Z` | `2026-03-19T08:50:00` |
+| All-day | `2026-03-19` | `2026-03-19T00:00:00` |
 
 ## Consequences
 

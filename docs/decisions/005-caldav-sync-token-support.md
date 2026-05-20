@@ -18,7 +18,7 @@ Adopt RFC 6578 (`sync-collection` / `sync-token`) as the primary CalDAV sync mec
 
 1. **Wire protocol** — already handled by `tsdav.smartCollectionSync`, wrapped by `CalDAVClientService.syncCalendar`. Returns `{ created, updated, deleted, newSyncToken }`. No XML parsing added.
 
-2. **Token persistence — device-local, not in `data.json`.** The sync-token is a _per-device_ cursor. Storing it in `data.json` (which replicates via vault-sync) causes device B to present device A's cursor, the server accepts it as "nothing new," and B silently misses every delta in between. The invalidation fallback can't rescue this — the server never rejects the token, it just returns an empty diff. The cursor lives in `localStorage`, keyed by `prisma-calendar:caldav:sync-state:<accountId>:<calendarUrl>`.
+2. **Token persistence — device-local, not in `data.json`.** The sync-token is a *per-device* cursor. Storing it in `data.json` (which replicates via vault-sync) causes device B to present device A's cursor, the server accepts it as "nothing new," and B silently misses every delta in between. The invalidation fallback can't rescue this — the server never rejects the token, it just returns an empty diff. The cursor lives in `localStorage`, keyed by `prisma-calendar:caldav:sync-state:<accountId>:<calendarUrl>`.
 
 3. **Planner extension** — two new action variants:
    - `delete { uid, filePath, objectHref }` — emitted only when the caller supplies `tombstonedObjectHrefs`.
@@ -43,7 +43,6 @@ Adopt RFC 6578 (`sync-collection` / `sync-token`) as the primary CalDAV sync mec
 ## Consequences
 
 **Positive**
-
 - CalDAV deletions propagate end-to-end; parity with ICS URL subscriptions.
 - Bandwidth and sync latency drop after the first sync — the server returns only the delta.
 - Two machines sharing a vault stay independently consistent — each holds its own localStorage cursor.
@@ -51,19 +50,17 @@ Adopt RFC 6578 (`sync-collection` / `sync-token`) as the primary CalDAV sync mec
 - Cross-sync race closed by state priming, covered by `caldav-sync-state-manager.test.ts` + `ics-subscription-sync-state-manager.test.ts`.
 
 **Negative**
-
 - `localStorage` doesn't roam with the vault (intentional). Losing it — incognito, manual clears — triggers one free full refetch, never data loss.
 - Full refetch on invalidation cannot propagate deletions. Accepting transient drift during recovery is safer than synthesizing deletes from absence.
 - Invalidation detection string-matches server errors. Brittle to new CalDAV server variants, but fail-safe: an unrecognized error surfaces as a normal sync failure.
 
 **Alternatives considered**
-
 - **Token in `data.json`.** Rejected — correctness (see decision 2).
 - **Token in IndexedDB / `PersistentTableCache`.** Rejected — the cache is shaped for structured table data with async init and schema migrations; overkill for an opaque cursor string.
 - **Token in a userdata file outside the vault.** Rejected — cross-platform fs access is fragile and leaks state Obsidian can't clean up.
 - **Hand-rolled sync-collection XML parsing.** Rejected — tsdav already implements the wire protocol correctly and is battle-tested across major servers.
 - **Token-less polling with per-event LIST + diff.** Rejected — equivalent bandwidth to the full-refetch path, still no deletion signal.
-- **Derive from ctag.** Rejected — ctag signals "something changed" but not _what_, so no incremental deletion sync.
+- **Derive from ctag.** Rejected — ctag signals "something changed" but not *what*, so no incremental deletion sync.
 - **Three parallel maps on the state manager.** Rejected — see decision 4.
 
 ## References
