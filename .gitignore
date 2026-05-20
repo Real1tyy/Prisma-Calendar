@@ -178,3 +178,10 @@ debug.log
 
 # Claude Code
 .claude/
+
+# Machine-local artifacts (managed by mirror sync — never publish)
+.playwright-mcp/
+.tmp/
+.worktrees/
+data/
+*settings.local.json
