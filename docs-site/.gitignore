@@ -18,3 +18,8 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Lockfile cruft — this site builds with pnpm; npm/yarn lockfiles are
+# unused and only create duplicate Dependabot scans of stale dependencies.
+package-lock.json
+yarn.lock
