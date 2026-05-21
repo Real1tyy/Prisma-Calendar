@@ -308,7 +308,7 @@ function handleEditSubmit(
 		});
 }
 
-function composeTitleWithZettel(
+export function composeTitleWithZettel(
 	userTitle: string,
 	originalZettelId: string | null,
 	instanceDateStr: string | null,

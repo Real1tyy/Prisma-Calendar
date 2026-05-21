@@ -1,8 +1,3 @@
-// Event modals (imperative — used by MinimizedModalManager; prefer React wrappers below)
-export type { EventModalData } from "./event/base-event-modal";
-export { EventCreateModal } from "./event/event-create-modal";
-export { EventEditModal } from "./event/event-edit-modal";
-
 // Series modals
 export type { EventSeriesBasesViewConfig } from "./series/bases-view";
 export { showCategoryEventsModal, showEventSeriesBasesViewModal, showIntervalEventsModal } from "./series/bases-view";

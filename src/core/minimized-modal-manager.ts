@@ -2,12 +2,11 @@ import { ensureISOSuffix, formatMsToHHMMSS, formatMsToMMSS, toLocalISOString } f
 import { Notice, TFile, type App } from "obsidian";
 import type { Subscription } from "rxjs";
 
-import type { EventModalData } from "../components/modals";
 import type { EventFormState } from "../components/modals/event/event-form-state";
 import { buildEventSaveData } from "../react/event-form/build-event-save-data";
 import type { EventFormValues } from "../react/event-form/event-form";
 import { openCategoryAssignModal } from "../react/modals";
-import { openEventCreateModal } from "../react/modals/event/event-create-modal";
+import { openEventCreateModal, type EventModalData } from "../react/modals/event/event-create-modal";
 import { deriveEditFormState, openEventEditModal } from "../react/modals/event/event-edit-modal";
 import type { StopwatchSnapshot } from "../react/views/stopwatch";
 import type { Frontmatter } from "../types";
