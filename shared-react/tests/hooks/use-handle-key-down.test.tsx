@@ -1,7 +1,7 @@
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { useHandleKeyDown, type KeyChord } from "../../src/hooks/keyboard/use-handle-key-down";
+import { useHandleKeyDown } from "../../src/hooks/keyboard/use-handle-key-down";
 
 function press(init: KeyboardEventInit & { key: string }): KeyboardEvent {
 	const event = new KeyboardEvent("keydown", { bubbles: true, cancelable: true, ...init });
