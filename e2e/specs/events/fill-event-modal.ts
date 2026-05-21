@@ -65,6 +65,13 @@ async function fillTestIdInput(page: Page, testId: string, value: string): Promi
 	const locator = page.locator(`[data-testid="${testId}"]`);
 	await locator.waitFor({ state: "visible", timeout: 10_000 });
 	await locator.scrollIntoViewIfNeeded().catch(() => {});
+	// Click to focus before filling. The title field runs `useFocusOnMount` with a
+	// 500ms requestAnimationFrame retry that keeps yanking focus back to the title
+	// and only stops on a real pointerdown/keydown. `fill()` dispatches neither, so
+	// without this click the retry can steal focus mid-fill and the inserted text
+	// lands in the title instead of the targeted field (e.g. location → title).
+	// The pointerdown from a real click halts that retry deterministically.
+	await locator.click();
 	await locator.fill(value);
 	await locator.blur();
 }
