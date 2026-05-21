@@ -49,7 +49,15 @@ export default defineConfig({
 	// `line` keeps output to one line per test (not per attempt) so the summary
 	// is readable even when several specs run. Full detail still lands in the
 	// HTML report + `.cache/last-run.log`.
-	reporter: [["line"], ["html", { open: "never", outputFolder: "./playwright-report" }]],
+	// `infra-error-reporter` collapses a "node_modules rebuilt mid-run" pile of
+	// per-spec resolution failures into one ENVIRONMENT IN FLUX verdict instead
+	// of dozens of look-alike test failures (see the shared module + the at-launch
+	// preflight in shared/scripts/e2e/check-e2e-deps.mjs).
+	reporter: [
+		["line"],
+		["html", { open: "never", outputFolder: "./playwright-report" }],
+		["../../shared/src/testing/e2e/infra-error-reporter.ts"],
+	],
 	use: {
 		trace: "retain-on-failure",
 		screenshot: "only-on-failure",
