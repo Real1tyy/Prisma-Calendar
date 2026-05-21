@@ -1155,10 +1155,6 @@ button[class*=prisma-]:focus-visible {
     height: 4px;
   }
 }
-.prisma-calendar-loading {
-  /* intentional stub — class is a DOM hook only; the spinner element renders its own visuals */
-}
-
 @keyframes prisma-calendar-spin {
   0% {
     transform: rotate(0deg);
@@ -3062,53 +3058,6 @@ button[class*=prisma-]:focus-visible {
   transform: scale(1.4);
 }
 
-.prisma-switch {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  cursor: pointer;
-  user-select: none;
-  margin-left: auto;
-}
-.prisma-switch.is-disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-.prisma-switch-input {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  cursor: inherit;
-  margin: 0;
-  width: 100%;
-  height: 100%;
-}
-.prisma-switch-track {
-  position: relative;
-  width: 36px;
-  height: 20px;
-  background-color: var(--background-modifier-border);
-  border-radius: 999px;
-  transition: background-color 0.15s ease;
-}
-.prisma-switch-thumb {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 16px;
-  height: 16px;
-  background-color: var(--background-primary);
-  border-radius: 50%;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
-  transition: transform 0.15s ease;
-}
-.prisma-switch.is-on .prisma-switch-track {
-  background-color: var(--interactive-accent);
-}
-.prisma-switch.is-on .prisma-switch-thumb {
-  transform: translateX(16px);
-}
-
 .prisma-event-preset-selector-wrapper {
   display: flex;
   align-items: center;
@@ -3330,27 +3279,6 @@ button[class*=prisma-]:focus-visible {
   cursor: pointer;
   user-select: none;
   flex: 1;
-}
-
-.prisma-property-container {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.prisma-property-container.prisma-hidden {
-  display: none;
-}
-.prisma-property-toggle-icon {
-  margin-right: 4px;
-  font-size: 0.75em;
-  user-select: none;
-}
-.prisma-property-section-header .prisma-setting-item-name {
-  cursor: pointer;
-  white-space: nowrap;
-  min-width: fit-content;
 }
 
 .prisma-other-section-spacing {
@@ -5538,22 +5466,6 @@ body .modal.prisma-weekly-stats-modal {
 .prisma-stats-chart-container.prisma-hidden {
   display: none;
 }
-.prisma-stats-toggle-chart-btn {
-  background-color: var(--interactive-normal);
-  border: 1px solid var(--background-modifier-border);
-  color: var(--text-normal);
-  padding: 0.35rem 0.75rem;
-  margin-right: 0.5rem;
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
-  border-radius: var(--radius-s);
-  cursor: pointer;
-  font-size: var(--font-ui-smaller);
-  transition: background-color 0.2s;
-}
-.prisma-stats-toggle-chart-btn:hover {
-  background-color: var(--interactive-hover);
-}
 .prisma-stats-table-container {
   margin-top: 1.5rem;
   text-align: center;
@@ -5827,10 +5739,6 @@ body .modal.prisma-weekly-stats-modal {
     min-height: 485px;
     max-height: 600px;
     padding-bottom: 1rem;
-  }
-  .prisma-stats-toggle-chart-btn {
-    font-size: 10px;
-    padding: 3px 6px;
   }
   .prisma-weekly-stats-modal .prisma-stats-chart-container canvas {
     max-height: 575px;
@@ -8101,9 +8009,6 @@ div.vis-tooltip {
   white-space: nowrap;
   vertical-align: middle;
 }
-.prisma-capacity-chart {
-  /* intentional stub — chart canvas styles itself via Chart.js */
-}
 .prisma-capacity-label {
   display: flex;
   align-items: center;
@@ -8983,14 +8888,6 @@ div.vis-tooltip {
   /* intentional stub */
 }
 
-.prisma-simple-fields-container {
-  /* intentional stub */
-}
-
-.prisma-custom-interval {
-  /* intentional stub */
-}
-
 .prisma-event-preview-time-section {
   /* intentional stub */
 }
@@ -9104,10 +9001,6 @@ div.vis-tooltip {
 }
 
 .prisma-gantt-bar-color-dots {
-  /* intentional stub */
-}
-
-.prisma--btn {
   /* intentional stub */
 }
 
