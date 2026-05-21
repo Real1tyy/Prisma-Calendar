@@ -29,7 +29,7 @@ import type { CalendarEventSource, IndexerEvent } from "../types/event-source";
 import type { NodeRecurringEvent, RecurringEventSeries } from "../types/recurring";
 import type { SingleCalendarConfig } from "../types/settings";
 import { stripZ, toInternalISO } from "../utils/dates/iso";
-import { getNextOccurrence } from "../utils/dates/recurrence";
+import { advanceOccurrenceToRangeStart, getNextOccurrence } from "../utils/dates/recurrence";
 import {
 	calculateTargetInstanceCount,
 	findFirstValidStartDate,
@@ -864,14 +864,12 @@ export class RecurringEventManager extends DebouncedNotifier {
 			virtualStartDate = getNextOccurrence(sourceDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
 		}
 
-		// Ensure we start at or after the range start
-		while (virtualStartDate < rangeStart) {
-			virtualStartDate = getNextOccurrence(
-				virtualStartDate,
-				recurringEvent.rrules.type,
-				recurringEvent.rrules.weekdays
-			);
-		}
+		virtualStartDate = advanceOccurrenceToRangeStart(
+			virtualStartDate,
+			rangeStart,
+			recurringEvent.rrules.type,
+			recurringEvent.rrules.weekdays
+		);
 
 		// Generate virtual instances from virtualStartDate to rangeEnd
 		const virtualInstances: NodeRecurringEventInstance[] = [];

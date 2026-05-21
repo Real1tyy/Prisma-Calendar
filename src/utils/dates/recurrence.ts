@@ -82,6 +82,53 @@ export function getNextOccurrence(
 }
 
 /**
+ * Fast-forwards an occurrence date to the first occurrence at or after `rangeStart`.
+ *
+ * For DAILY and plain WEEKLY (no weekday set) the step is a fixed calendar
+ * interval, so the first in-range occurrence can be computed arithmetically in
+ * O(1) instead of stepping occurrence-by-occurrence. That stepping is the
+ * dominant cost when a long-running daily/weekly series starts years before the
+ * visible window — every navigation re-walked thousands of intervals.
+ *
+ * All other frequencies (monthly, yearly, weekly-with-weekdays) keep stepping:
+ * their per-year step count is tiny, and an arithmetic jump from the source
+ * would change month-end / leap-day drift behaviour (e.g. Jan 31 → Feb 28 →
+ * Mar 28 under cumulative stepping, vs Mar 31 under a direct jump). The result
+ * is identical to the previous step loop for every frequency.
+ */
+export function advanceOccurrenceToRangeStart(
+	occurrence: DateTime,
+	rangeStart: DateTime,
+	recurrenceType: RecurrenceType,
+	weekdays?: Weekday[]
+): DateTime {
+	if (occurrence >= rangeStart) return occurrence;
+
+	const parsed = parseRecurrenceType(recurrenceType);
+	const isPlainWeekly = parsed?.freq === "WEEKLY" && (!weekdays || weekdays.length === 0);
+
+	if (parsed && (parsed.freq === "DAILY" || isPlainWeekly)) {
+		const unit = parsed.freq === "DAILY" ? "days" : "weeks";
+		const elapsed = rangeStart.diff(occurrence, unit)[unit];
+		const steps = Math.ceil(elapsed / parsed.interval);
+		if (steps > 0) {
+			const jumped = occurrence.plus({ [unit]: steps * parsed.interval });
+			// Guard against fractional-diff rounding (e.g. DST shifts): never land before rangeStart.
+			return jumped >= rangeStart ? jumped : jumped.plus({ [unit]: parsed.interval });
+		}
+		return occurrence;
+	}
+
+	let current = occurrence;
+	while (current < rangeStart) {
+		const next = getNextOccurrence(current, recurrenceType, weekdays);
+		if (next <= current) break;
+		current = next;
+	}
+	return current;
+}
+
+/**
  * Iterates through occurrences in a given date range based on recurrence rules
  */
 export function* iterateOccurrencesInRange(

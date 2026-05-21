@@ -2,6 +2,7 @@ import { DateTime } from "luxon";
 import { describe, expect, it } from "vitest";
 
 import {
+	advanceOccurrenceToRangeStart,
 	calculateInstanceDateTime,
 	getNextBiWeeklyOccurrence,
 	getNextNWeeklyOccurrence,
@@ -891,6 +892,85 @@ describe("date-recurrence", () => {
 			const result = getNextNWeeklyOccurrence(monday, ["wednesday", "friday"] as Weekday[], 2);
 			expect(result.weekday).toBe(3);
 			expect(toDate(result)).toBe("2026-03-18");
+		});
+	});
+
+	describe("advanceOccurrenceToRangeStart", () => {
+		// Reference implementation: the step-by-step fast-forward the helper replaced.
+		// The arithmetic jump (daily / plain-weekly) must be identical to stepping.
+		function stepToRangeStart(
+			occurrence: DateTime,
+			rangeStart: DateTime,
+			recurrenceType: RecurrenceType,
+			weekdays?: Weekday[]
+		): DateTime {
+			let current = occurrence;
+			while (current < rangeStart) {
+				current = getNextOccurrence(current, recurrenceType, weekdays);
+			}
+			return current;
+		}
+
+		const SERIES: Array<{ type: RecurrenceType; weekdays?: Weekday[] }> = [
+			{ type: "daily" },
+			{ type: "weekly" },
+			{ type: "bi-weekly" },
+			{ type: "weekly", weekdays: ["monday", "thursday"] },
+			{ type: "bi-weekly", weekdays: ["tuesday", "friday"] },
+			{ type: "monthly" },
+			{ type: "bi-monthly" },
+			{ type: "quarterly" },
+			{ type: "yearly" },
+		];
+
+		const SOURCE = date("2020-01-31T09:15:00Z"); // month-end + time, to surface drift
+		const RANGE_STARTS = [
+			date("2020-01-31T09:15:00Z"), // exactly the source
+			date("2021-06-15"),
+			date("2024-02-29"), // leap day
+			date("2025-12-01"),
+			date("2030-03-10"), // far future → longest fast-forward
+		];
+
+		for (const series of SERIES) {
+			const label = series.weekdays ? `${series.type} [${series.weekdays.join(",")}]` : series.type;
+			for (const rangeStart of RANGE_STARTS) {
+				it(`matches step-by-step fast-forward: ${label} → ${toDate(rangeStart)}`, () => {
+					const expected = stepToRangeStart(SOURCE, rangeStart, series.type, series.weekdays);
+					const actual = advanceOccurrenceToRangeStart(SOURCE, rangeStart, series.type, series.weekdays);
+					expect(actual.toISO()).toBe(expected.toISO());
+				});
+			}
+		}
+
+		it("returns the occurrence unchanged when already at or after rangeStart", () => {
+			const occurrence = date("2025-07-01T08:00:00Z");
+			const rangeStart = date("2025-06-01");
+			expect(advanceOccurrenceToRangeStart(occurrence, rangeStart, "daily").toISO()).toBe(occurrence.toISO());
+		});
+
+		it("lands on the first occurrence at or after rangeStart for daily series", () => {
+			const occurrence = date("2025-01-01");
+			const result = advanceOccurrenceToRangeStart(occurrence, date("2025-01-10"), "daily");
+			expect(toDate(result)).toBe("2025-01-10");
+		});
+
+		it("respects the interval for custom daily series (every 3 days)", () => {
+			const occurrence = date("2025-01-01"); // occurrences: 01, 04, 07, 10, ...
+			const result = advanceOccurrenceToRangeStart(
+				occurrence,
+				date("2025-01-08"),
+				"DAILY;INTERVAL=3" as RecurrenceType
+			);
+			expect(toDate(result)).toBe("2025-01-10");
+		});
+
+		it("preserves time-of-day across an arithmetic jump", () => {
+			const occurrence = date("2020-01-01T08:30:00Z");
+			const result = advanceOccurrenceToRangeStart(occurrence, date("2025-06-15T00:00:00Z"), "daily");
+			expect(result.hour).toBe(8);
+			expect(result.minute).toBe(30);
+			expect(result >= date("2025-06-15T00:00:00Z")).toBe(true);
 		});
 	});
 });
