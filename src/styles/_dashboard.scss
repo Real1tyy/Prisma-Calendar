@@ -216,6 +216,19 @@
 			overflow-x: auto;
 		}
 
+		&-wrapper {
+			display: flex;
+			flex-direction: column;
+			height: 100%;
+			min-height: 0;
+		}
+
+		&-scroll {
+			flex: 1 1 auto;
+			min-height: 0;
+			overflow-y: auto;
+		}
+
 		width: 100%;
 		border-collapse: collapse;
 		font-size: var(--font-ui-small);

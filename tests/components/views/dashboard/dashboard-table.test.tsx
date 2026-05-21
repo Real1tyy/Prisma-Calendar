@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-import { DashboardTable } from "../../../../src/react/views/dashboard/dashboard-table";
+import { DashboardTable, ENTRIES_PER_PAGE } from "../../../../src/react/views/dashboard/dashboard-table";
 import type { ColumnDef, DashboardItem } from "../../../../src/react/views/dashboard/dashboard-types";
 
 const COLUMNS: ColumnDef[] = [
@@ -71,6 +71,22 @@ describe("DashboardTable", () => {
 
 		const rows = container.querySelectorAll("tbody tr");
 		expect(rows[0].getAttribute("data-item-title")).toBe("Item 3");
+	});
+
+	it("wraps the table in a scroll region while keeping filter and pagination outside it", () => {
+		const items = createItems(ENTRIES_PER_PAGE + 5);
+
+		const { container } = render(<DashboardTable items={items} columns={COLUMNS} emptyMessage="No items" />);
+
+		const scroll = container.querySelector(".prisma-dashboard-table-scroll");
+		expect(scroll).not.toBeNull();
+		expect(scroll!.querySelector("table.prisma-dashboard-table")).not.toBeNull();
+
+		// Filter input and pagination must sit OUTSIDE the scroll region so they
+		// stay visible while the rows scroll — that is the whole point of the fix.
+		expect(scroll!.querySelector(".prisma-dashboard-search-input")).toBeNull();
+		expect(scroll!.querySelector(".prisma-dashboard-pagination")).toBeNull();
+		expect(container.querySelector(".prisma-dashboard-table-wrapper > .prisma-dashboard-pagination")).not.toBeNull();
 	});
 
 	it("adds colored row class when item has color", () => {

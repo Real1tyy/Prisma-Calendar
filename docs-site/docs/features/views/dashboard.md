@@ -38,7 +38,7 @@ Each subtab renders a resizable 2x2 grid:
 
 - **Top-left**: Pie chart showing the distribution at a glance.
 - **Top-right**: Summary stat cards followed by a Top 10 ranked list with proportional bars.
-- **Bottom** (full width): Sortable, filterable, paginated table with colored rows.
+- **Bottom** (full width): Sortable, filterable, paginated table with colored rows. When the rows are taller than the cell, the table area scrolls on its own so the lower rows and the pagination controls stay reachable.
 
 Drag the grid dividers to resize columns and rows.
 

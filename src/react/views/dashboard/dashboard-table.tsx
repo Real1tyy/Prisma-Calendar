@@ -5,7 +5,7 @@ import type { ColumnDef, DashboardItem } from "./dashboard-types";
 
 type SortDirection = "asc" | "desc";
 
-const ENTRIES_PER_PAGE = 20;
+export const ENTRIES_PER_PAGE = 20;
 
 interface DashboardTableProps {
 	items: DashboardItem[];
@@ -78,7 +78,7 @@ export const DashboardTable = memo(function DashboardTable({
 	}
 
 	return (
-		<div>
+		<div className="prisma-dashboard-table-wrapper">
 			<div className="prisma-dashboard-controls">
 				<input
 					type="text"
@@ -92,34 +92,36 @@ export const DashboardTable = memo(function DashboardTable({
 				/>
 			</div>
 
-			<table className="prisma-dashboard-table">
-				<thead>
-					<tr>
-						{columns.map((col) => (
-							<th
-								key={col.key}
-								style={col.align ? { textAlign: col.align } : undefined}
-								className={col.sortable !== false ? "prisma-dashboard-table-sortable" : undefined}
-								onClick={col.sortable !== false ? () => handleSort(col.key) : undefined}
-							>
-								{col.label}
-								{sortKey === col.key ? (sortDirection === "asc" ? " ↑" : " ↓") : ""}
-							</th>
-						))}
-					</tr>
-				</thead>
-				<tbody>
-					{pageItems.length === 0 ? (
-						<tr className="prisma-dashboard-table-empty-row">
-							<td colSpan={columns.length}>No matching items</td>
+			<div className="prisma-dashboard-table-scroll">
+				<table className="prisma-dashboard-table">
+					<thead>
+						<tr>
+							{columns.map((col) => (
+								<th
+									key={col.key}
+									style={col.align ? { textAlign: col.align } : undefined}
+									className={col.sortable !== false ? "prisma-dashboard-table-sortable" : undefined}
+									onClick={col.sortable !== false ? () => handleSort(col.key) : undefined}
+								>
+									{col.label}
+									{sortKey === col.key ? (sortDirection === "asc" ? " ↑" : " ↓") : ""}
+								</th>
+							))}
 						</tr>
-					) : (
-						pageItems.map((item) => (
-							<DashboardTableRow key={item.key} item={item} columns={columns} onItemClick={onItemClick} />
-						))
-					)}
-				</tbody>
-			</table>
+					</thead>
+					<tbody>
+						{pageItems.length === 0 ? (
+							<tr className="prisma-dashboard-table-empty-row">
+								<td colSpan={columns.length}>No matching items</td>
+							</tr>
+						) : (
+							pageItems.map((item) => (
+								<DashboardTableRow key={item.key} item={item} columns={columns} onItemClick={onItemClick} />
+							))
+						)}
+					</tbody>
+				</table>
+			</div>
 
 			{totalPages > 1 && (
 				<div className="prisma-dashboard-pagination">

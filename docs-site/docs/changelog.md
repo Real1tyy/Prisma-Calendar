@@ -19,6 +19,7 @@ All notable changes to this project will be documented here.
 - **Restoring a stopwatch-tracked new event duplicated the file**: A second Save persisted a duplicate instead of editing the original. See [Time Tracker → Minimize & Auto-Save](./features/management/time-tracker.md#minimize--auto-save).
 - **Stopwatch ▶ continue ignored Start Date edits**: Editing Start Date and clicking **▶ continue** — either from idle or after Stop — kept the old start, so Total was stuck on the original elapsed instead of recalculating from your edit. Both paths now read the live Start Date value. See [Time Tracker → Continue From Existing Start](./features/management/time-tracker.md#continue-from-existing-start).
 - **Category colors broke for names with quotes or backslashes**: A color assigned to a category whose name contains `'` or `\` now matches and applies correctly. See [Color Rules → Category Color Management](./features/organization/color-rules.md#category-color-management).
+- **Dashboard table couldn't scroll past the visible rows**: The bottom table on each dashboard subtab now scrolls within its cell when rows overflow, so the lower rows and the pagination controls stay reachable. See [Dashboard → Layout](./features/views/dashboard.md#layout).
 
 ---
 
