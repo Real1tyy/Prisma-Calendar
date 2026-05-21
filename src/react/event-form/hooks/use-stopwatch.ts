@@ -1,5 +1,5 @@
 import { parseAsLocalDate, toSafeString } from "@real1ty-obsidian-plugins";
-import { useCallback, useRef, type Dispatch, type RefObject, type SetStateAction } from "react";
+import { useCallback, useEffect, useRef, type Dispatch, type RefObject, type SetStateAction } from "react";
 import { useWatch, type UseFormReturn } from "react-hook-form";
 
 import type { EventFormState } from "../../../components/modals/event/event-form-state";
@@ -58,10 +58,12 @@ export function useStopwatch({
 	// tests/components/event-form/hooks/use-stopwatch.test.tsx.
 	const watchedStart = useWatch({ control: form.control, name: "start" });
 	const watchedEnd = useWatch({ control: form.control, name: "end" });
-	const startRef = useRef<string>(watchedStart ?? "");
-	const endRef = useRef<string>(watchedEnd ?? "");
-	startRef.current = watchedStart ?? "";
-	endRef.current = watchedEnd ?? "";
+	const startRef = useRef<string>(watchedStart);
+	const endRef = useRef<string>(watchedEnd);
+	useEffect(() => {
+		startRef.current = watchedStart;
+		endRef.current = watchedEnd;
+	}, [watchedStart, watchedEnd]);
 
 	const setHandle = useCallback(
 		(handle: StopwatchHandle | null) => {

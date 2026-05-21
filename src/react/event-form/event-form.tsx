@@ -417,10 +417,12 @@ function TitleField({
 	// itself no longer blurs the input, so without this call the user would
 	// lose auto-categories whenever they accepted via Enter / Tab / click.
 	const acceptTitleRef = useRef<(title: string) => void>(() => {});
-	acceptTitleRef.current = (title) => {
-		field.onChange(title);
-		onBlur();
-	};
+	useEffect(() => {
+		acceptTitleRef.current = (title) => {
+			field.onChange(title);
+			onBlur();
+		};
+	});
 
 	useEffect(() => {
 		if (!enableSuggest) return;

@@ -25,7 +25,7 @@ function seedUntrackedFile(vaultDir: string, category: string, title = "Untracke
 
 test.describe("settings: Categories operations on untracked events", () => {
 	test("untracked-only category appears in the list with proper counts", async ({ calendar, obsidian }) => {
-		const { vaultDir, page } = calendar;
+		const { vaultDir } = calendar;
 		seedUntrackedFile(vaultDir, "OnlyUntracked");
 
 		await openPrismaSettings(obsidian.page);
@@ -43,7 +43,7 @@ test.describe("settings: Categories operations on untracked events", () => {
 	});
 
 	test("renaming includes untracked events when the checkbox is left checked", async ({ calendar, obsidian }) => {
-		const { vaultDir, page } = calendar;
+		const { vaultDir } = calendar;
 		const relativePath = seedUntrackedFile(vaultDir, "RenameMe");
 
 		await openPrismaSettings(obsidian.page);
@@ -67,7 +67,7 @@ test.describe("settings: Categories operations on untracked events", () => {
 	});
 
 	test("deleting includes untracked events when the checkbox is left checked", async ({ calendar, obsidian }) => {
-		const { vaultDir, page } = calendar;
+		const { vaultDir } = calendar;
 		const relativePath = seedUntrackedFile(vaultDir, "DeleteMe");
 
 		await openPrismaSettings(obsidian.page);
@@ -87,7 +87,7 @@ test.describe("settings: Categories operations on untracked events", () => {
 	});
 
 	test("unchecking the toggle leaves untracked frontmatter intact", async ({ calendar, obsidian }) => {
-		const { vaultDir, page } = calendar;
+		const { vaultDir } = calendar;
 		const relativePath = seedUntrackedFile(vaultDir, "KeepUntracked");
 
 		await openPrismaSettings(obsidian.page);

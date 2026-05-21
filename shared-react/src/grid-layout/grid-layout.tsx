@@ -323,6 +323,7 @@ export const GridLayout = memo(function GridLayout(props: GridLayoutProps) {
 			cellOptionPaletteRef,
 			resolvedOpenCellPickerRefInternal,
 			resolvedOpenLayoutEditorRefInternal,
+			defaultStateRef,
 		]
 	);
 

@@ -56,17 +56,15 @@ export const StatsChart = memo(function StatsChart({
 		const chart = chartRef.current?.getChart();
 		if (!chart) return;
 		const labels = chart.data.labels ?? [];
-		let changed = false;
-		labels.forEach((rawLabel, i) => {
-			const label = String(rawLabel);
-			const shouldBeHidden = hiddenLabels?.has(label) ?? false;
-			const isVisible = chart.getDataVisibility(i);
-			if (shouldBeHidden === isVisible) {
-				chart.toggleDataVisibility(i);
-				changed = true;
-			}
-		});
-		if (changed) chart.update();
+		const indicesToToggle = labels
+			.map((rawLabel, i) => ({ rawLabel, i }))
+			.filter(({ rawLabel, i }) => {
+				const shouldBeHidden = hiddenLabels?.has(String(rawLabel)) ?? false;
+				return shouldBeHidden === chart.getDataVisibility(i);
+			})
+			.map(({ i }) => i);
+		indicesToToggle.forEach((i) => chart.toggleDataVisibility(i));
+		if (indicesToToggle.length > 0) chart.update();
 	}, [hiddenLabels]);
 
 	if (entries.length === 0) return null;

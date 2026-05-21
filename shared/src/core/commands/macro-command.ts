@@ -109,7 +109,6 @@ export class MacroCommand implements Command {
 		const total = toUndo.length;
 		for (let i = total - 1; i >= 0; i--) {
 			const command = toUndo[i];
-			if (!command) continue;
 			try {
 				await command.undo();
 			} catch (error) {
