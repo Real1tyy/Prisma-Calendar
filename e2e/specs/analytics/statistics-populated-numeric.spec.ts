@@ -38,6 +38,20 @@ test.describe("analytics: stats (populated, numeric)", () => {
 		await expect(calendar.page.locator(sel("prisma-stats-entry-count-Personal")).first()).toHaveText("2");
 	});
 
+	test("daily-stats total and per-category durations match the seeded totals exactly", async ({ calendar }) => {
+		// Seed math: Work = 3 × 30m = 1h 30m, Personal = 2 × 45m = 1h 30m,
+		// total = 3h. Locks the aggregation pipeline against accidental
+		// double-counting or off-by-30s rounding regressions.
+		await calendar.switchView("daily-stats");
+
+		await expect(calendar.page.locator(sel("prisma-stats-total-duration")).first()).toHaveText("⏱ 3h");
+
+		await switchAggregationToCategory(calendar.page);
+
+		await expect(calendar.page.locator(sel("prisma-stats-entry-duration-Work")).first()).toHaveText("1h 30m");
+		await expect(calendar.page.locator(sel("prisma-stats-entry-duration-Personal")).first()).toHaveText("1h 30m");
+	});
+
 	test("weekly-stats modal shows the seeded categories", async ({ calendar }) => {
 		await calendar.clickToolbar("weekly-stats");
 		await expect(calendar.page.locator(".modal").first()).toBeVisible();

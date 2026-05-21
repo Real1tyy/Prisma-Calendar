@@ -345,6 +345,7 @@ const UntrackedEventItem = memo(function UntrackedEventItem({
 					className={cls("untracked-dropdown-item-stopwatch")}
 					title="Start tracking"
 					aria-label="Start tracking"
+					data-testid={tid("untracked-dropdown-item-start")}
 					onPointerDown={(e) => e.stopPropagation()}
 					onMouseDown={(e) => e.stopPropagation()}
 					onTouchStart={(e) => e.stopPropagation()}

@@ -277,6 +277,11 @@ export const CATEGORY_INCLUDE_UNTRACKED_TOGGLE_TID = "prisma-category-include-un
 export const UNTRACKED_BUTTON_TID = "prisma-untracked-dropdown-button";
 export const UNTRACKED_DROPDOWN_TID = "prisma-untracked-dropdown";
 export const UNTRACKED_ITEM_TID = "prisma-untracked-dropdown-item";
+export const UNTRACKED_ITEM_START_TID = "prisma-untracked-dropdown-item-start";
+export const UNTRACKED_CREATE_BTN_TID = "prisma-untracked-create";
+export const UNTRACKED_SEARCH_TID = "prisma-untracked-search";
+export const UNTRACKED_CREATE_MODAL_TID = "prisma-modal-untracked-event-create";
+export const UNTRACKED_CREATE_NAME_TID = "prisma-untracked-event-control-name";
 
 // ── Cross-view + analytics surfaces ────────────────────────────────────────
 // CSS-class anchors and `data-testid`s that show up across more than one
@@ -345,6 +350,11 @@ export const BATCH_FM_DELETION_MARKED_CLASS = "prisma-batch-frontmatter-marked-d
 
 /** Generic SchemaForm submit button used by every modal-form (move-by, batch-frontmatter, …). */
 export const FORM_SUBMIT_TID = "prisma-form-submit";
+
+/** Shared event-list modal — used by Show skipped / filtered / global-search / recurring. */
+export const LIST_MODAL_TID = "prisma-list-modal";
+export const LIST_EMPTY_TID = "prisma-list-empty";
+export const LIST_SEARCH_TID = "prisma-list-search";
 
 /** Selector helpers — keep `data-event-title="…"` and friends out of spec bodies. */
 export const eventTileByTitle = (title: string): string => `${sel(EVENT_BLOCK_TID)}[data-event-title="${title}"]`;
