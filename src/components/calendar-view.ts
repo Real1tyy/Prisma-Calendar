@@ -1,4 +1,4 @@
-import { Calendar, type CustomButtonInput, type EventMountArg } from "@fullcalendar/core";
+import { Calendar, type EventMountArg } from "@fullcalendar/core";
 import allLocales from "@fullcalendar/core/locales-all";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin, { type DropArg } from "@fullcalendar/interaction";
@@ -822,8 +822,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const { headerToolbar, customButtons } = this.buildToolbarConfig(inSelectionMode);
 
 		this.calendar.setOption("headerToolbar", headerToolbar);
-		// Cast to CustomButtonInput - className is accepted at runtime but not in FullCalendar's types
-		this.calendar.setOption("customButtons", customButtons as Record<string, CustomButtonInput>);
+		this.calendar.setOption("customButtons", customButtons);
 		this.applyMobileControlsCollapsedState();
 		this.scheduleStickyOffsetsUpdate();
 

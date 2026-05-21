@@ -82,7 +82,7 @@ export function openSavePresetFlow(
 			id: overridePresetId || `preset-${now}`,
 			name: presetName,
 			createdAt: now,
-		} as EventPreset;
+		};
 
 		if (overridePresetId) {
 			const existing = existingPresets.find((p) => p.id === overridePresetId);

@@ -89,7 +89,7 @@ async function obsidianFetch(input: RequestInfo | URL, init?: RequestInit): Prom
 	const protocol = parsed?.protocol ?? "";
 	if (protocol && protocol !== "http:" && protocol !== "https:") {
 		const fallbackFetch = originalFetch ?? initialFetch ?? window.fetch;
-		return fallbackFetch(input as never, init as never);
+		return fallbackFetch(input, init);
 	}
 
 	// Convert Headers to plain object if needed
@@ -145,7 +145,7 @@ export function patchGlobalFetch(): () => void {
 		originalFetch = prev;
 	}
 
-	window.fetch = obsidianFetch as typeof fetch;
+	window.fetch = obsidianFetch;
 
 	return () => {
 		window.fetch = prev;

@@ -95,8 +95,8 @@ type _RegistryFullyValid = Assert<RegistryMetadataKeys, MetadataKey>;
 // diverge the parameter type becomes `never` and no value satisfies it.
 export function checkSchemaKeys(_k: _SchemaFullyCovered): void {}
 export function checkRegistryKeys(_k: _RegistryFullyValid): void {}
-checkSchemaKeys("skip" as MetadataKey);
-checkRegistryKeys("skip" as RegistryMetadataKeys);
+checkSchemaKeys("skip");
+checkRegistryKeys("skip");
 
 // ─── Settings Prop Classification ────────────────────────────────────
 // Tags each settings prop key for how it's treated during recurring event

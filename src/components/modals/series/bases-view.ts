@@ -24,7 +24,7 @@ interface BasesViewConfig {
 function buildBasesMarkdown(config: BasesViewConfig): string {
 	const { directory, sortDateProp, statusProperty, basesViewProperties, calendarTitleProp } = config.settings;
 	const nameColumn = calendarTitleProp;
-	const viewType = config.viewType ?? (config.settings.basesViewType as BaseViewType);
+	const viewType = config.viewType ?? config.settings.basesViewType;
 
 	const def = BaseBuilder.create()
 		.addView({

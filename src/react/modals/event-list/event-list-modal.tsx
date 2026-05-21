@@ -168,7 +168,7 @@ export const EventListModal = memo(function EventListModal({
 						<div className={cls("generic-event-list")} data-testid={tid("event-list-container")}>
 							<VirtualList
 								ref={listRef}
-								items={filtered as EventListItemData[]}
+								items={filtered}
 								estimateSize={ROW_ESTIMATE_SIZE}
 								renderItem={renderItem}
 								getKey={getKey}

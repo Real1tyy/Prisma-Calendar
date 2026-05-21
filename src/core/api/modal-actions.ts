@@ -5,7 +5,6 @@ import type CustomCalendarPlugin from "../../main";
 import { openUntrackedEventCreateModal } from "../../react/modals";
 import { openEventCreateModal } from "../../react/modals/event/event-create-modal";
 import { openEventEditModal } from "../../react/modals/event/event-edit-modal";
-import type { Frontmatter } from "../../types";
 import { isAllDayFrontmatterValue } from "../../utils/frontmatter/predicates";
 import { openFileInNewTab } from "../../utils/obsidian";
 import type { CalendarBundle } from "../calendar-bundle";
@@ -100,7 +99,7 @@ function buildActiveNoteEventData(
 } {
 	const settings = bundle.settingsStore.currentSettings;
 	const metadata = plugin.app.metadataCache.getFileCache(activeFile);
-	const frontmatter = (metadata?.frontmatter ?? {}) as Frontmatter;
+	const frontmatter = metadata?.frontmatter ?? {};
 	const allDay = isAllDayFrontmatterValue(frontmatter[settings.allDayProp]);
 
 	const now = new Date();

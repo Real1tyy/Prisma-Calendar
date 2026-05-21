@@ -11,5 +11,5 @@ import type { Frontmatter } from "../types";
 const FrontmatterPassthroughSchema = z.record(z.string(), z.unknown());
 
 export function createEventSchema(): SerializableSchema<Frontmatter> {
-	return withSerialize(FrontmatterPassthroughSchema) as SerializableSchema<Frontmatter>;
+	return withSerialize(FrontmatterPassthroughSchema);
 }

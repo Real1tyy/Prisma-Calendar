@@ -406,7 +406,7 @@ class PrismaBasesView extends BasesView {
 				center: "title",
 				right: rightButtons.join(" "),
 			});
-			this.calendar.setOption("customButtons", this.buildBatchButtons(bundle) as Record<string, CustomButtonInput>);
+			this.calendar.setOption("customButtons", this.buildBatchButtons(bundle));
 		} else {
 			this.calendar.setOption("headerToolbar", {
 				left: "prev,next today",
@@ -418,7 +418,7 @@ class PrismaBasesView extends BasesView {
 					text: "Batch Select",
 					click: () => this.toggleBatchSelection(bundle),
 				},
-			} as Record<string, CustomButtonInput>);
+			});
 		}
 	}
 
