@@ -64,7 +64,7 @@ test.describe("drag event ↔ untracked dropdown", () => {
 
 	test("dragging an untracked item onto a time slot promotes it to a timed event", async ({ calendar }) => {
 		const anchor = anchorISO();
-		const evt = await calendar.seedOnDisk("Unscheduled Task", {
+		const evt = await calendar.seedOnDiskUntracked("Unscheduled Task", {
 			Location: "Home Office",
 		});
 
@@ -108,7 +108,7 @@ test.describe("drag event ↔ untracked dropdown", () => {
 
 	test("dragging an untracked item onto the all-day row promotes it to an all-day event", async ({ calendar }) => {
 		const anchor = anchorISO();
-		const evt = await calendar.seedOnDisk("Unscheduled AllDay", {
+		const evt = await calendar.seedOnDiskUntracked("Unscheduled AllDay", {
 			Location: "Nowhere",
 		});
 

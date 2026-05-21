@@ -32,16 +32,17 @@ test.describe("cross-view: multi-calendar isolation under reactive mutations", (
 
 		// Activate the primary leaf and seed events only into its directory.
 		await openCalendarView(page, MULTI_CALENDAR_PRIMARY_ID);
-		const [keep, drop] = await Promise.all([
-			calendar.createEvent(
-				{ title: "Primary Reactive Keep", start: todayStamp(9, 0), end: todayStamp(10, 0) },
-				{ subdir: MULTI_CALENDAR_PRIMARY_DIR }
-			),
-			calendar.createEvent(
-				{ title: "Primary Reactive Drop", start: todayStamp(11, 0), end: todayStamp(12, 0) },
-				{ subdir: MULTI_CALENDAR_PRIMARY_DIR }
-			),
-		]);
+		// Serialize the two creates: each drives the single Obsidian modal DOM,
+		// so running them concurrently interleaves the fill/save flows and
+		// clobbers the shared title field. Order is irrelevant to the assertion.
+		const keep = await calendar.createEvent(
+			{ title: "Primary Reactive Keep", start: todayStamp(9, 0), end: todayStamp(10, 0) },
+			{ subdir: MULTI_CALENDAR_PRIMARY_DIR }
+		);
+		const drop = await calendar.createEvent(
+			{ title: "Primary Reactive Drop", start: todayStamp(11, 0), end: todayStamp(12, 0) },
+			{ subdir: MULTI_CALENDAR_PRIMARY_DIR }
+		);
 		expect(keep.path.startsWith(MULTI_CALENDAR_PRIMARY_DIR)).toBe(true);
 		expect(drop.path.startsWith(MULTI_CALENDAR_PRIMARY_DIR)).toBe(true);
 

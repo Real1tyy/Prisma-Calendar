@@ -108,6 +108,7 @@ export interface CalendarBundle {
 	initialize: () => Promise<void>;
 	activateCalendarView?: () => Promise<void>;
 	eventStore: { getAllEvents: () => EventRef[] };
+	untrackedEventStore: { getUntrackedEvents: () => EventRef[] };
 	settingsStore: {
 		currentSettings: Record<string, unknown>;
 		updateSettings: (updater: (current: Record<string, unknown>) => Record<string, unknown>) => Promise<void>;

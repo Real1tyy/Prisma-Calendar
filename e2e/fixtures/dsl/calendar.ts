@@ -12,7 +12,13 @@ import { fillEventModal, saveEventModal, type EventModalInput } from "../../spec
 import { runCommand, waitForCommandManagerIdle } from "../commands";
 import { ACTIVE_CALENDAR_LEAF, PLUGIN_ID } from "../constants";
 import { anchorDate, anchorISO, isoLocal } from "../dates";
-import { getEventCount, waitForEventCount, type SeedEventInput } from "../seed-events";
+import {
+	getEventCount,
+	getUntrackedEventCount,
+	waitForEventCount,
+	waitForUntrackedEventCount,
+	type SeedEventInput,
+} from "../seed-events";
 import {
 	DASHBOARD_RANKING_TID,
 	dashboardItemByTitle,
@@ -96,6 +102,16 @@ export interface CalendarHandle {
 		frontmatter: Record<string, string | boolean>,
 		options?: { awaitRender?: boolean }
 	): Promise<EventHandle>;
+
+	/**
+	 * Write a dateless ("untracked") event directly to disk and wait for the
+	 * untracked store to ingest it. Dateless events (no Start/End/Date) never
+	 * enter the tracked `eventStore` — the indexer routes them to
+	 * `untrackedEventStore` — so `seedOnDisk`'s event-count gate would never
+	 * resolve for them. There is no `awaitRender` option: an event with no date
+	 * never paints on the calendar grid.
+	 */
+	seedOnDiskUntracked(title: string, frontmatter: Record<string, string | boolean>): Promise<EventHandle>;
 
 	/**
 	 * Bulk version of `seedOnDisk` for the common "seed N events, assert on
@@ -424,6 +440,13 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 			const handle = createEventHandle({ page, vaultDir }, relPath, title);
 			if (options.awaitRender === true) await handle.expectVisible();
 			return handle;
+		},
+
+		async seedOnDiskUntracked(title, frontmatter) {
+			const baseline = await getUntrackedEventCount(page);
+			const relPath = seedEventFile(vaultDir, title, frontmatter);
+			await waitForUntrackedEventCount(page, baseline + 1);
+			return createEventHandle({ page, vaultDir }, relPath, title);
 		},
 
 		async seedOnDiskMany(events, options = {}) {

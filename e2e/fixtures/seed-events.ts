@@ -150,6 +150,29 @@ export async function getEventCount(page: Page): Promise<number> {
 	}, PLUGIN_ID);
 }
 
+export async function waitForUntrackedEventCount(page: Page, count: number, timeout = 30_000): Promise<void> {
+	await expect
+		.poll(() => getUntrackedEventCount(page), {
+			timeout,
+			message: `untracked store never reached ${count} events`,
+		})
+		.toBe(count);
+}
+
+/**
+ * Count dateless events the plugin tracks in the untracked store. Dateless
+ * events (no Start/End/Date) never land in `eventStore` — the indexer routes
+ * them here — so this is the readiness signal when seeding an untracked event.
+ */
+export async function getUntrackedEventCount(page: Page): Promise<number> {
+	return page.evaluate((pid) => {
+		const w = window as unknown as PrismaWindow;
+		const bundle = (w.app.plugins.plugins[pid] as PrismaPlugin | undefined)?.calendarBundles?.[0];
+		if (!bundle) throw new Error("No calendar bundle");
+		return bundle.untrackedEventStore.getUntrackedEvents().length;
+	}, PLUGIN_ID);
+}
+
 export async function waitForCalendarCount(page: Page, count: number): Promise<void> {
 	await expect
 		.poll(
