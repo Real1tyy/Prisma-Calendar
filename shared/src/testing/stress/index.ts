@@ -9,8 +9,10 @@ export {
 	readCdpPerformanceMetrics,
 } from "./collectors/cdp-metrics";
 export { collectCpuProfile, type CpuProfilerOptions, writeCpuProfile } from "./collectors/cpu-profiler";
+export { collectGarbage, takeHeapSnapshot } from "./collectors/heap-profiler";
 export { readPerfBridge, resetPerfBridge } from "./collectors/perf-bridge";
 export { captureEnvironment, captureGitInfo } from "./environment";
+export { digestHeapSnapshot, type HeapDigestOptions, type HeapSnapshot, type HeapSnapshotMeta } from "./heap-digest";
 export { flattenMetrics, flattenTimings, mergeTimings, summarizeSampleGroups } from "./metrics";
 export {
 	type CpuProfile,
@@ -29,6 +31,8 @@ export {
 	BudgetFailureSchema,
 	EnvironmentInfoSchema,
 	GitInfoSchema,
+	HeapDigestEntrySchema,
+	HeapDigestSchema,
 	MetricKindSchema,
 	MetricRecordSchema,
 	MetricSummarySchema,
@@ -50,6 +54,8 @@ export type {
 	BudgetFailure,
 	EnvironmentInfo,
 	GitInfo,
+	HeapDigest,
+	HeapDigestEntry,
 	MetricKind,
 	MetricRecord,
 	MetricSummary,

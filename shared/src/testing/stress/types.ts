@@ -174,6 +174,31 @@ export const ProfileDigestSchema = z.object({
 });
 export type ProfileDigest = z.infer<typeof ProfileDigestSchema>;
 
+/**
+ * One object type's footprint in a heap snapshot — live-node count + summed self
+ * size. The leak-harness analogue of a `ProfileDigestEntry`.
+ */
+export const HeapDigestEntrySchema = z.object({
+	type: z.string(),
+	count: z.number(),
+	selfSizeBytes: z.number(),
+});
+export type HeapDigestEntry = z.infer<typeof HeapDigestEntrySchema>;
+
+/**
+ * Structured summary of a `.heapsnapshot` — node/edge totals, retained self size,
+ * the detached-DOM count (the classic retained-view leak signal), and the
+ * heaviest object types — so an agent reads the leak shape without opening DevTools.
+ */
+export const HeapDigestSchema = z.object({
+	nodeCount: z.number(),
+	edgeCount: z.number(),
+	totalSizeBytes: z.number(),
+	detachedNodeCount: z.number(),
+	topTypes: z.array(HeapDigestEntrySchema),
+});
+export type HeapDigest = z.infer<typeof HeapDigestSchema>;
+
 /** A heavy artifact a run produced, so an agent can find the profile/trace/heap. */
 export const StressArtifactSchema = z.object({
 	kind: z.enum(["json", "markdown", "cpu-profile", "trace", "heap-snapshot", "playwright-trace", "log", "screenshot"]),
@@ -201,5 +226,7 @@ export const StressRunReportSchema = z.object({
 	artifacts: z.array(StressArtifactSchema),
 	/** Self-time digest from the profiled "explain" pass; absent on clean-only runs. */
 	profileDigest: ProfileDigestSchema.optional(),
+	/** Heap-snapshot digest from a memory scenario; absent on non-memory runs. */
+	heapDigest: HeapDigestSchema.optional(),
 });
 export type StressRunReport = z.infer<typeof StressRunReportSchema>;

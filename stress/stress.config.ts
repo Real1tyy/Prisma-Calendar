@@ -20,6 +20,16 @@ export const STRESS_CONFIG = {
 	baselineDir: path.resolve(STRESS_DIR, "baselines"),
 } as const;
 
+/** Memory-leak scenario knobs — open/close cycles, separate from nav repeats. */
+export const MEMORY_CONFIG = {
+	/** Discarded cycles to reach steady state before the measured loop. */
+	warmupCycles: 2,
+	/** Measured open/close cycles between the before/after heap snapshots. */
+	cycles: 20,
+	/** Catastrophic-only ceiling on post-GC heap growth (bytes). Generous so machine noise never trips it. */
+	growthBudgetBytes: 50_000_000,
+} as const;
+
 export { PROFILES };
 
 /**
@@ -33,5 +43,12 @@ export const BUDGETS: Record<string, StressBudget> = {
 	"calendar-navigation": {
 		"calendar.buildEvents.p95Ms": { comparison: "max", value: 250, unit: "ms" },
 		"eventStore.getEvents.p95Ms": { comparison: "max", value: 200, unit: "ms" },
+	},
+	// Leak gates: every leaf must be gone after teardown (exact), and post-GC heap
+	// growth must stay under the catastrophic ceiling. Detached-node count is
+	// reported for diagnosis but not gated — it's too noisy to fail on.
+	"memory-leak": {
+		"resources.activeViews": { comparison: "exact", value: 0, unit: "count" },
+		"heap.growthBytes": { comparison: "max", value: MEMORY_CONFIG.growthBudgetBytes, unit: "bytes" },
 	},
 };
