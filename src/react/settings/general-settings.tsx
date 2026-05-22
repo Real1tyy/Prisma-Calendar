@@ -259,6 +259,9 @@ export const HelpSection = memo(function HelpSection({ plugin }: { plugin: Custo
 	}, [plugin]);
 
 	const handleStartTutorial = useCallback(() => {
+		// Dismiss the settings modal first — otherwise the tour's spotlight opens
+		// behind it and the user sees nothing.
+		plugin.app.setting.close();
 		startPrismaTour(plugin);
 	}, [plugin]);
 

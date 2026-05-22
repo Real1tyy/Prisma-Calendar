@@ -8,12 +8,17 @@ import { TourTooltip } from "./tour-tooltip";
 import type { TourHandle, TourOptions, TourStep } from "./tour-types";
 import { buildTourJoyrideOptions } from "./tour.styles";
 
-function toJoyrideStep(step: TourStep): Step {
+export function toJoyrideStep(step: TourStep): Step {
+	const interaction = step.interaction ?? "none";
 	return {
 		target: step.target ?? "body",
 		content: step.content,
 		placement: step.placement ?? (step.target ? "auto" : "center"),
-		blockTargetInteraction: step.allowInteraction === false,
+		// "none" blocks the target through the spotlight; "target"/"page" let it
+		// through. "page" additionally drops the overlay so a drag can land
+		// anywhere on the grid (the drop point is outside the spotlight cutout).
+		blockTargetInteraction: interaction === "none",
+		hideOverlay: interaction === "page",
 		skipScroll: step.disableScroll === true,
 		...(step.title !== undefined ? { title: step.title } : {}),
 		...(step.before ? { before: async (): Promise<void> => void (await step.before?.()) } : {}),

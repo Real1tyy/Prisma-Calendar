@@ -11,15 +11,16 @@ vi.mock("../../../src/react/onboarding/prisma-tour", () => ({ startPrismaTour: v
 
 function setup() {
 	const settingsStore = createMockMainSettingsStore();
+	const closeSettings = vi.fn();
 	const plugin = {
 		settingsStore,
 		changelogContent: "",
 		manifest: { version: "1.0.0" },
-		app: {},
+		app: { setting: { close: closeSettings } },
 	} as unknown as CustomCalendarPlugin;
 	const user = userEvent.setup();
 	render(<HelpSection plugin={plugin} />);
-	return { plugin, settingsStore, user };
+	return { plugin, settingsStore, user, closeSettings };
 }
 
 describe("HelpSection — interactive tutorial control", () => {
@@ -28,10 +29,12 @@ describe("HelpSection — interactive tutorial control", () => {
 		expect(screen.getByTestId("prisma-settings-tutorial-btn").textContent).toBe("Take the tutorial");
 	});
 
-	it("launches the tour when clicked", async () => {
-		const { plugin, user } = setup();
+	it("dismisses the settings modal and launches the tour when clicked", async () => {
+		const { plugin, user, closeSettings } = setup();
 		await user.click(screen.getByTestId("prisma-settings-tutorial-btn"));
 
+		// Settings must close first, otherwise the spotlight opens behind the modal.
+		expect(closeSettings).toHaveBeenCalledTimes(1);
 		expect(startPrismaTour).toHaveBeenCalledTimes(1);
 		expect(startPrismaTour).toHaveBeenCalledWith(plugin);
 	});

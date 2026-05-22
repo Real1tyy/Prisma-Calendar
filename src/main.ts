@@ -107,15 +107,18 @@ export default class CustomCalendarPlugin extends Plugin {
 		this.register(() => licenseSubscription.unsubscribe());
 
 		this.app.workspace.onLayoutReady(() => {
-			void waitForCacheReady(this.app).then(() => {
+			void waitForCacheReady(this.app).then(async () => {
 				if (isFirstLaunch) {
-					void this.showFirstLaunchOnboarding();
-					return;
-				}
-				void this.ensureCalendarBundlesReady().then(() => {
+					await this.showFirstLaunchOnboarding();
+				} else {
+					await this.ensureCalendarBundlesReady();
 					void this.checkForUpdates();
 					void this.releaseCheckService.checkForUpdates();
-				});
+				}
+				// Auto-start the onboarding tour whenever it hasn't been completed —
+				// not only on the very first launch. A user who quit before finishing
+				// (tutorialCompleted still false) gets it again next time they open.
+				this.maybeStartOnboardingTour();
 			});
 			void this.licenseManager.initialize();
 		});
@@ -406,9 +409,10 @@ export default class CustomCalendarPlugin extends Plugin {
 		if (bundle) {
 			await bundle.activateCalendarView();
 		}
+	}
 
-		if (!this.settingsStore.currentSettings.tutorialCompleted) {
-			startPrismaTour(this);
-		}
+	private maybeStartOnboardingTour(): void {
+		if (this.settingsStore.currentSettings.tutorialCompleted) return;
+		startPrismaTour(this);
 	}
 }

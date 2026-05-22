@@ -95,6 +95,7 @@ export function buildPrismaTourSteps(plugin: CustomCalendarPlugin): TourStep[] {
 			target: SAMPLE_EVENT_SELECTOR,
 			placement: "auto",
 			disableScroll: true,
+			interaction: "page",
 			title: "Move it around",
 			content: (
 				<p>
@@ -108,6 +109,7 @@ export function buildPrismaTourSteps(plugin: CustomCalendarPlugin): TourStep[] {
 			target: SAMPLE_EVENT_SELECTOR,
 			placement: "auto",
 			disableScroll: true,
+			interaction: "page",
 			title: "Open the editor",
 			content: (
 				<p>
@@ -120,6 +122,7 @@ export function buildPrismaTourSteps(plugin: CustomCalendarPlugin): TourStep[] {
 			id: "create-event",
 			target: CREATE_BUTTON_SELECTOR,
 			placement: "bottom",
+			interaction: "page",
 			title: "Create new events",
 			content: <p>Use this Create button — or just click any empty slot on the grid — to add a new event.</p>,
 			before: () => ensureCalendarReady(plugin),

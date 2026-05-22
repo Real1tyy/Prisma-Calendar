@@ -53,6 +53,18 @@ describe("buildPrismaTourSteps", () => {
 		expect(withBefore).toEqual(["welcome", "first-event", "create-event", "switch-views"]);
 	});
 
+	it("makes the hands-on steps fully interactive so the overlay never blocks drag/open/create", () => {
+		const steps = buildPrismaTourSteps(stubPlugin);
+		const interactionById = Object.fromEntries(steps.map((s) => [s.id, s.interaction]));
+
+		expect(interactionById["drag-and-drop"]).toBe("page");
+		expect(interactionById["open-event"]).toBe("page");
+		expect(interactionById["create-event"]).toBe("page");
+		// Explanatory steps stay read-only (undefined → "none" in the host engine).
+		expect(interactionById["first-event"]).toBeUndefined();
+		expect(interactionById["switch-views"]).toBeUndefined();
+	});
+
 	it("gives every step renderable content", () => {
 		const steps = buildPrismaTourSteps(stubPlugin);
 		for (const step of steps) {

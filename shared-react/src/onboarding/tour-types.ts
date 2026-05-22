@@ -30,11 +30,16 @@ export interface TourStep {
 	 */
 	before?: (() => void | Promise<unknown>) | undefined;
 	/**
-	 * Let the user interact with the highlighted element through the spotlight
-	 * (drag an event, click a button). Defaults to `true` — set `false` to make
-	 * the step read-only.
+	 * How much of the page the user can touch while this step is shown:
+	 * - `"none"` (default) — read-only. The overlay blocks every click, so the
+	 *   tooltip buttons are the only way forward. Use for explanatory steps.
+	 * - `"target"` — the highlighted element stays clickable through the spotlight
+	 *   cutout (e.g. double-click an event to open it); the rest stays blocked.
+	 * - `"page"` — the overlay is removed entirely so the user can interact
+	 *   anywhere. Required for drag-and-drop, where the drop lands *outside* the
+	 *   spotlight and an overlay would otherwise swallow the mouseup.
 	 */
-	allowInteraction?: boolean | undefined;
+	interaction?: "none" | "target" | "page" | undefined;
 	/**
 	 * Skip auto-scrolling the target into view. Use for targets that live inside
 	 * a nested scroll container (e.g. FullCalendar's grid) that the page-level
