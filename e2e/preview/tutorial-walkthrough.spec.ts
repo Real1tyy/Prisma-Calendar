@@ -7,9 +7,11 @@ import { dragSampleEventToNewTime, TOUR_STEP_COUNT, TOUR_STEP_IDS } from "../fix
 
 // On-demand walkthrough for humans + agents — NOT part of the real suite. It only
 // runs under `PRISMA_PREVIEW=1` (see playwright.config.ts, which adds the "preview"
-// project and flips video/screenshot on) via `pnpm run preview:tutorial`. It drives
-// the tour exactly as a user would and writes a numbered screenshot per step plus a
-// video, so you can review the whole flow without launching Obsidian by hand.
+// project) via `pnpm run preview:tutorial`. It drives the tour exactly as a user
+// would and writes one numbered screenshot per step; the run's collect-artifacts.mjs
+// step then stitches those frames into a video + gif so you can review the whole
+// flow without launching Obsidian by hand. (Playwright can't record real video here
+// — the Obsidian harness connects over CDP rather than launching a browser context.)
 const PREVIEW_DIR = "e2e/.preview/tutorial";
 const DRAG_STEP = TOUR_STEP_IDS.indexOf("drag-and-drop") + 1;
 
@@ -31,7 +33,8 @@ testOnboarding.describe("preview: onboarding tutorial walkthrough", () => {
 
 			if (step === DRAG_STEP) {
 				const { expectedStart } = await dragSampleEventToNewTime(page, vaultDir);
-				await shot(`${String(step).padStart(2, "0")}-${id}-after-drag`);
+				// "Nb-" sorts right after "0N-" so the before/after drag frames stay in order.
+				await shot(`${String(step).padStart(2, "0")}b-${id}-after`);
 				testInfo.annotations.push({ type: "preview", description: `dragged sample event → ${expectedStart}` });
 			}
 
@@ -42,9 +45,6 @@ testOnboarding.describe("preview: onboarding tutorial walkthrough", () => {
 		await next.click();
 		await expect(page.locator(sel(TOUR_TOOLTIP_TID))).toHaveCount(0);
 
-		testInfo.annotations.push({
-			type: "preview",
-			description: `screenshots in ${PREVIEW_DIR}/ — video in the HTML report`,
-		});
+		testInfo.annotations.push({ type: "preview", description: `frames written to ${PREVIEW_DIR}/` });
 	});
 });
