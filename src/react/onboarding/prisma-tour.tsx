@@ -6,8 +6,7 @@ import type { CalendarComponent } from "../../components/calendar-view";
 import { CSS_PREFIX } from "../../constants";
 import { createEvent } from "../../core/api/event-crud";
 import type CustomCalendarPlugin from "../../main";
-
-const SAMPLE_EVENT_TITLE = "Your first event";
+import { PRISMA_TOUR_STEP_IDS, type PrismaTourStepId, SAMPLE_EVENT_TITLE } from "./tour-constants";
 
 // Production runtime selectors — kept in sync with the data-testids stamped by
 // calendar-view.ts (`prisma-cal-event` + `data-event-title`) and the FullCalendar
@@ -61,11 +60,20 @@ async function ensureSampleEvent(plugin: CustomCalendarPlugin): Promise<void> {
 	await waitForElement(SAMPLE_EVENT_SELECTOR, { timeout: 5000 });
 }
 
-/** The Prisma Calendar onboarding journey — welcome → first event → create → views → done. */
+/** A step's definition minus its id — the id is the key it lives under below. */
+type PrismaTourStepDef = Omit<TourStep, "id">;
+
+/**
+ * The Prisma Calendar onboarding journey — welcome → first event → create → views → done.
+ *
+ * Steps are declared in a record keyed by {@link PrismaTourStepId} and emitted in
+ * {@link PRISMA_TOUR_STEP_IDS} order, so the definition can never drift from the
+ * shared id list: the `Record` demands exactly those ids (a missing, extra, or
+ * mistyped id is a compile error), and the order comes straight from the constant.
+ */
 export function buildPrismaTourSteps(plugin: CustomCalendarPlugin): TourStep[] {
-	return [
-		{
-			id: "welcome",
+	const defs: Record<PrismaTourStepId, PrismaTourStepDef> = {
+		welcome: {
 			placement: "center",
 			title: "Welcome to Prisma Calendar 👋",
 			content: (
@@ -76,8 +84,7 @@ export function buildPrismaTourSteps(plugin: CustomCalendarPlugin): TourStep[] {
 			),
 			before: () => ensureCalendarReady(plugin),
 		},
-		{
-			id: "first-event",
+		"first-event": {
 			target: SAMPLE_EVENT_SELECTOR,
 			placement: "auto",
 			disableScroll: true,
@@ -90,8 +97,7 @@ export function buildPrismaTourSteps(plugin: CustomCalendarPlugin): TourStep[] {
 			),
 			before: () => ensureSampleEvent(plugin),
 		},
-		{
-			id: "drag-and-drop",
+		"drag-and-drop": {
 			target: SAMPLE_EVENT_SELECTOR,
 			placement: "auto",
 			disableScroll: true,
@@ -104,8 +110,7 @@ export function buildPrismaTourSteps(plugin: CustomCalendarPlugin): TourStep[] {
 				</p>
 			),
 		},
-		{
-			id: "open-event",
+		"open-event": {
 			target: SAMPLE_EVENT_SELECTOR,
 			placement: "auto",
 			disableScroll: true,
@@ -118,8 +123,7 @@ export function buildPrismaTourSteps(plugin: CustomCalendarPlugin): TourStep[] {
 				</p>
 			),
 		},
-		{
-			id: "create-event",
+		"create-event": {
 			target: CREATE_BUTTON_SELECTOR,
 			placement: "bottom",
 			interaction: "page",
@@ -127,8 +131,7 @@ export function buildPrismaTourSteps(plugin: CustomCalendarPlugin): TourStep[] {
 			content: <p>Use this Create button — or just click any empty slot on the grid — to add a new event.</p>,
 			before: () => ensureCalendarReady(plugin),
 		},
-		{
-			id: "switch-views",
+		"switch-views": {
 			target: MONTH_VIEW_SELECTOR,
 			placement: "bottom",
 			title: "Switch how you see things",
@@ -140,8 +143,7 @@ export function buildPrismaTourSteps(plugin: CustomCalendarPlugin): TourStep[] {
 			),
 			before: () => ensureCalendarReady(plugin),
 		},
-		{
-			id: "finish",
+		finish: {
 			placement: "center",
 			title: "You're all set 🎉",
 			content: (
@@ -155,7 +157,9 @@ export function buildPrismaTourSteps(plugin: CustomCalendarPlugin): TourStep[] {
 				</p>
 			),
 		},
-	];
+	};
+
+	return PRISMA_TOUR_STEP_IDS.map((id) => ({ id, ...defs[id] }));
 }
 
 /** Launch the Prisma onboarding tour and remember that the user has seen it. */

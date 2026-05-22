@@ -28,7 +28,7 @@
 		"test:e2e:ui": "pnpm run test:e2e:prepare && E2E_HEADED=1 bash ../shared/scripts/e2e/run-playwright.sh --ui",
 		"test:e2e:debug": "pnpm run test:e2e:prepare && E2E_HEADED=1 PWDEBUG=1 bash ../shared/scripts/e2e/run-playwright.sh",
 		"test:e2e:demo": "pnpm run test:e2e:prepare && PW_DEMO=1 bash ../shared/scripts/e2e/run-playwright.sh",
-		"preview:tutorial": "pnpm run test:e2e:prepare && PRISMA_PREVIEW=1 bash ../shared/scripts/e2e/run-playwright.sh -- e2e/preview/tutorial-walkthrough.spec.ts",
+		"preview:tutorial": "pnpm run test:e2e:prepare && PRISMA_PREVIEW=1 bash ../shared/scripts/e2e/run-playwright.sh -- e2e/preview/tutorial-walkthrough.spec.ts && node e2e/preview/collect-artifacts.mjs",
 		"test:e2e:clean": "rm -rf e2e/.cache e2e/test-results e2e/playwright-report e2e/.preview",
 		"stress:prepare": "tsx ../shared/scripts/e2e/build-plugin.ts --skip-if-built",
 		"stress:generate": "tsx stress/vaults/generate-vault.ts",

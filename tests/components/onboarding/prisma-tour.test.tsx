@@ -3,25 +3,16 @@ import { describe, expect, it } from "vitest";
 
 import type CustomCalendarPlugin from "../../../src/main";
 import { buildPrismaTourSteps } from "../../../src/react/onboarding/prisma-tour";
+import { PRISMA_TOUR_STEP_IDS } from "../../../src/react/onboarding/tour-constants";
 
 // The before-hooks are never invoked here, so a bare stub is enough to build the
 // step list and assert its shape — the runtime behaviour is covered by the E2E spec.
 const stubPlugin = {} as unknown as CustomCalendarPlugin;
 
-const EXPECTED_IDS = [
-	"welcome",
-	"first-event",
-	"drag-and-drop",
-	"open-event",
-	"create-event",
-	"switch-views",
-	"finish",
-];
-
 describe("buildPrismaTourSteps", () => {
 	it("defines the full onboarding journey in order", () => {
 		const steps = buildPrismaTourSteps(stubPlugin);
-		expect(steps.map((s) => s.id)).toEqual(EXPECTED_IDS);
+		expect(steps.map((s) => s.id)).toEqual([...PRISMA_TOUR_STEP_IDS]);
 	});
 
 	it("opens and closes with centered, target-less steps", () => {

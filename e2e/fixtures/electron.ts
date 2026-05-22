@@ -202,6 +202,10 @@ export async function bootstrapObsidian(
 						version: manifest["version"] as string,
 						calendars,
 						pageHeaderState: DEFAULT_PAGE_HEADER_STATE,
+						// Mark onboarding done by default so the tour (which now auto-starts
+						// whenever tutorialCompleted is false) doesn't cover every spec's UI.
+						// The tutorial specs opt back in with `settings: { tutorialCompleted: false }`.
+						tutorialCompleted: true,
 						...extraSettings,
 					},
 					null,
@@ -442,6 +446,26 @@ export const testWithNotifications = base.extend<{
 	// eslint-disable-next-line no-empty-pattern
 	obsidian: async ({}, use) => {
 		await runWithObsidianHandle({ prefix: "notif-spec", overrides: NOTIFICATIONS_ON_OVERRIDES }, use);
+	},
+	calendar: calendarFixture,
+});
+
+const ONBOARDING_INCOMPLETE_OVERRIDES: BootstrapOverrides = {
+	settings: { tutorialCompleted: false },
+};
+
+/**
+ * Variant of `test` that seeds `tutorialCompleted: false` so the onboarding tour
+ * auto-starts on launch. The default `test` seeds it `true` to keep the tour out
+ * of every other spec, so this is the only fixture that exercises the auto-trigger.
+ */
+export const testOnboarding = base.extend<{
+	obsidian: BootstrappedObsidian;
+	calendar: CalendarHandle;
+}>({
+	// eslint-disable-next-line no-empty-pattern
+	obsidian: async ({}, use) => {
+		await runWithObsidianHandle({ prefix: "onboarding-spec", overrides: ONBOARDING_INCOMPLETE_OVERRIDES }, use);
 	},
 	calendar: calendarFixture,
 });

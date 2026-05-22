@@ -22,6 +22,13 @@ const DEMO_ON = !!process.env.PW_DEMO && process.env.PW_DEMO !== "0" && process.
 // PWDEBUG is the official env var Playwright sets for the Inspector; argv
 // catches `--ui` and `--debug` passed directly to `playwright test`.
 const DEBUG_ON = !!process.env.PWDEBUG || process.argv.includes("--ui") || process.argv.includes("--debug");
+// PRISMA_PREVIEW=1 turns on the onboarding-walkthrough preview project: it records
+// video + per-step screenshots of the full tour into e2e/.preview/ so humans and
+// agents can review it. Off by default, the preview project is omitted entirely —
+// it never runs in CI, the full suite, or test:e2e:changed (which only scans
+// e2e/specs/, not e2e/preview/).
+const PREVIEW_ON =
+	!!process.env.PRISMA_PREVIEW && process.env.PRISMA_PREVIEW !== "0" && process.env.PRISMA_PREVIEW !== "false";
 
 const TEST_TIMEOUT = DEBUG_ON ? 0 : DEMO_ON ? 1_800_000 : 45_000;
 // 5s assertion budget. If a UI element is genuinely going to appear, it does
@@ -60,8 +67,8 @@ export default defineConfig({
 	],
 	use: {
 		trace: "retain-on-failure",
-		screenshot: "only-on-failure",
-		video: "retain-on-failure",
+		screenshot: PREVIEW_ON ? "on" : "only-on-failure",
+		video: PREVIEW_ON ? "on" : "retain-on-failure",
 		actionTimeout: ACTION_TIMEOUT,
 	},
 	projects: [
@@ -76,5 +83,17 @@ export default defineConfig({
 			testMatch: /.*\.spec\.ts$/,
 			dependencies: ["bootstrap"],
 		},
+		// Only present under PRISMA_PREVIEW=1 — keeps the walkthrough out of the
+		// real suite while still sharing the bootstrap gate when explicitly run.
+		...(PREVIEW_ON
+			? [
+					{
+						name: "preview",
+						testDir: "./preview",
+						testMatch: /.*\.spec\.ts$/,
+						dependencies: ["bootstrap"],
+					},
+				]
+			: []),
 	],
 });

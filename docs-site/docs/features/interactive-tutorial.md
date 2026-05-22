@@ -20,7 +20,7 @@ Use **Next** / **Back** to move through the steps, **Skip** to leave at any time
 
 ## When it runs
 
-The tour starts automatically the first time you open Prisma Calendar, right after you finish the welcome setup. Once you've finished or skipped it, it won't pop up again on its own.
+The tour starts automatically the first time you open Prisma Calendar, right after you finish the welcome setup. If you close Obsidian partway through without finishing or skipping it, it picks back up the next time you open the calendar — so you won't miss it just because you stepped away. Once you've finished or skipped it, it won't pop up again on its own.
 
 ## Replaying the tour
 

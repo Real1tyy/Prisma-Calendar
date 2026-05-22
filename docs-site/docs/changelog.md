@@ -6,10 +6,10 @@ All notable changes to this project will be documented here.
 
 ## 2.18.0 - 5/22/2026
 
-> **TLDR:** A new **interactive onboarding tutorial** runs on first launch — it creates a sample event and walks you through moving, creating, and opening events, and you can replay it anytime from settings or a command.
+> **TLDR:** A new **interactive onboarding tutorial** starts automatically the first time you open the calendar — it creates a sample event and walks you through moving, opening, and creating events hands-on, right on the grid. Replay it anytime from settings or a command.
 
 ### Added
-- **Interactive onboarding tutorial**: A guided, replayable tour now runs on first launch — it creates a sample "Your first event" on today, then points out how to drag, resize, open, and create events and switch views. Replay it anytime from **Settings → General → Interactive tutorial** or the **Prisma Calendar: Start onboarding tutorial** command. See [Interactive Tutorial](./features/interactive-tutorial.md).
+- **Interactive onboarding tutorial**: A guided tour starts automatically the first time you open the calendar (and again if you quit before finishing). It creates a sample "Your first event" on today, then walks you through the calendar — and the hands-on steps are fully interactive: drag the event to reschedule it, double-click to open its editor, and add new events without the tour getting in the way. Replay it anytime from **Settings → General → Interactive tutorial** or the **Prisma Calendar: Start onboarding tutorial** command. See [Interactive Tutorial](./features/interactive-tutorial.md).
 
 ---
 
