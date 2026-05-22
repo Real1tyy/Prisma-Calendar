@@ -18,6 +18,17 @@ export function buildTabbedContainerStyles(p: string): string {
 	border-radius: 8px;
 	background: var(--background-modifier-hover);
 	flex-shrink: 0;
+	/* When the tabs don't fit — phone widths, narrow side-dock panes — scroll the
+	   strip horizontally instead of spilling past the pane. A no-op on desktop
+	   where they fit, so it needs no media query or platform check. */
+	overflow-x: auto;
+	scrollbar-width: none;
+}
+.${p}tab-bar::-webkit-scrollbar {
+	display: none;
+}
+.${p}tab-bar > * {
+	flex-shrink: 0;
 }
 .${p}tab {
 	padding: 4px 12px;
