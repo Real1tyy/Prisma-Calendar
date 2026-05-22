@@ -155,7 +155,7 @@ importers:
         version: 2.1.0
       tsdav:
         specifier: ^2.1.6
-        version: 2.1.6(encoding@0.1.13)
+        version: 2.1.6
       tslib:
         specifier: ^2.8.1
         version: 2.8.1
@@ -1233,6 +1233,8 @@ packages:
     - arm64
     os:
     - linux
+    libc:
+    - glibc
   '@oxc-parser/binding-linux-arm64-musl@0.130.0':
     resolution:
       integrity: sha512-EiJ/gC0ljbcwVpycC8YWw6ggMbtsPX8XMOt0mPx0aqWeMsNR+L9m05Flbvd5T+GlivG+GkSWQL7tM9SRFpM/dw==
@@ -1242,6 +1244,8 @@ packages:
     - arm64
     os:
     - linux
+    libc:
+    - musl
   '@oxc-parser/binding-linux-ppc64-gnu@0.130.0':
     resolution:
       integrity: sha512-b+h/lsLLurp756dMGizNs5uPaJfyEdWrTcV5t8M609jWm1DEHB1StpRXCkyvwtkJx3m+qL5BNQ0dEKan/4yGFA==
@@ -1251,6 +1255,8 @@ packages:
     - ppc64
     os:
     - linux
+    libc:
+    - glibc
   '@oxc-parser/binding-linux-riscv64-gnu@0.130.0':
     resolution:
       integrity: sha512-O19Cil83XAyjEFfo8WhkMwY58ALqZ7ckjGL+25mjMIuF84urWBeANH0FC8B8BsSSygWU3/1aY3ADdDbp+wlBnw==
@@ -1260,6 +1266,8 @@ packages:
     - riscv64
     os:
     - linux
+    libc:
+    - glibc
   '@oxc-parser/binding-linux-riscv64-musl@0.130.0':
     resolution:
       integrity: sha512-BgXRVC0+83n3YzCscLQjj6nbyeBIVeZYPTI4fFMAE4WNm2+4RXhWp03IVizL7esIz36kgmT48aebk1iM+cs8sw==
@@ -1269,6 +1277,8 @@ packages:
     - riscv64
     os:
     - linux
+    libc:
+    - musl
   '@oxc-parser/binding-linux-s390x-gnu@0.130.0':
     resolution:
       integrity: sha512-6tJz0xvnGhsokE7N1WlUSBXibpYmT9xSJFS1Ce41Km/+8gQvdlW8MLhRv8PD0L7ix8vRG0FDDepp3jdOFzdVdw==
@@ -1278,6 +1288,8 @@ packages:
     - s390x
     os:
     - linux
+    libc:
+    - glibc
   '@oxc-parser/binding-linux-x64-gnu@0.130.0':
     resolution:
       integrity: sha512-9aCWj83dp3heTQGmGnZGdIWgxjZrr/7VQ0TGFHH5PKByxJKF2Hcr4qvaSUHhhGEa3MSsDjTL1YDP8RAgdL5/Cg==
@@ -1287,6 +1299,8 @@ packages:
     - x64
     os:
     - linux
+    libc:
+    - glibc
   '@oxc-parser/binding-linux-x64-musl@0.130.0':
     resolution:
       integrity: sha512-afXt87aZBqrUVli8TB/I8H1G50RDWcwirjWtXGXYqJ2ZqWEiErH7V72j3LUSDZaivmtu2OLX0KQ/mbhP81mr7A==
@@ -1296,6 +1310,8 @@ packages:
     - x64
     os:
     - linux
+    libc:
+    - musl
   '@oxc-parser/binding-openharmony-arm64@0.130.0':
     resolution:
       integrity: sha512-I0NCrZV/YZuCGWgqwNN/GO/iXlLF2z+Wgc7u+Aa9N4P51oYeIa0XT+zVBUne4csO9GqxskXgI4g8JzzWGRpfOw==
@@ -1398,6 +1414,8 @@ packages:
     - arm64
     os:
     - linux
+    libc:
+    - glibc
   '@oxc-resolver/binding-linux-arm64-musl@11.19.1':
     resolution:
       integrity: sha512-jvo2Pjs1c9KPxMuMPIeQsgu0mOJF9rEb3y3TdpsrqwxRM+AN6/nDDwv45n5ZrUnQMsdBy5gIabioMKnQfWo9ew==
@@ -1405,6 +1423,8 @@ packages:
     - arm64
     os:
     - linux
+    libc:
+    - musl
   '@oxc-resolver/binding-linux-ppc64-gnu@11.19.1':
     resolution:
       integrity: sha512-vLmdNxWCdN7Uo5suays6A/+ywBby2PWBBPXctWPg5V0+eVuzsJxgAn6MMB4mPlshskYbppjpN2Zg83ArHze9gQ==
@@ -1412,6 +1432,8 @@ packages:
     - ppc64
     os:
     - linux
+    libc:
+    - glibc
   '@oxc-resolver/binding-linux-riscv64-gnu@11.19.1':
     resolution:
       integrity: sha512-/b+WgR+VTSBxzgOhDO7TlMXC1ufPIMR6Vj1zN+/x+MnyXGW7prTLzU9eW85Aj7Th7CCEG9ArCbTeqxCzFWdg2w==
@@ -1419,6 +1441,8 @@ packages:
     - riscv64
     os:
     - linux
+    libc:
+    - glibc
   '@oxc-resolver/binding-linux-riscv64-musl@11.19.1':
     resolution:
       integrity: sha512-YlRdeWb9j42p29ROh+h4eg/OQ3dTJlpHSa+84pUM9+p6i3djtPz1q55yLJhgW9XfDch7FN1pQ/Vd6YP+xfRIuw==
@@ -1426,6 +1450,8 @@ packages:
     - riscv64
     os:
     - linux
+    libc:
+    - musl
   '@oxc-resolver/binding-linux-s390x-gnu@11.19.1':
     resolution:
       integrity: sha512-EDpafVOQWF8/MJynsjOGFThcqhRHy417sRyLfQmeiamJ8qVhSKAn2Dn2VVKUGCjVB9C46VGjhNo7nOPUi1x6uA==
@@ -1433,6 +1459,8 @@ packages:
     - s390x
     os:
     - linux
+    libc:
+    - glibc
   '@oxc-resolver/binding-linux-x64-gnu@11.19.1':
     resolution:
       integrity: sha512-NxjZe+rqWhr+RT8/Ik+5ptA3oz7tUw361Wa5RWQXKnfqwSSHdHyrw6IdcTfYuml9dM856AlKWZIUXDmA9kkiBQ==
@@ -1440,6 +1468,8 @@ packages:
     - x64
     os:
     - linux
+    libc:
+    - glibc
   '@oxc-resolver/binding-linux-x64-musl@11.19.1':
     resolution:
       integrity: sha512-cM/hQwsO3ReJg5kR+SpI69DMfvNCp+A/eVR4b4YClE5bVZwz8rh2Nh05InhwI5HR/9cArbEkzMjcKgTHS6UaNw==
@@ -1447,6 +1477,8 @@ packages:
     - x64
     os:
     - linux
+    libc:
+    - musl
   '@oxc-resolver/binding-openharmony-arm64@11.19.1':
     resolution:
       integrity: sha512-QF080IowFB0+9Rh6RcD19bdgh49BpQHUW5TajG1qvWHvmrQznTZZjYlgE2ltLXyKY+qs4F/v5xuX1XS7Is+3qA==
@@ -1527,6 +1559,8 @@ packages:
     - arm
     os:
     - linux
+    libc:
+    - glibc
   '@parcel/watcher-linux-arm-musl@2.5.6':
     resolution:
       integrity: sha512-Ve3gUCG57nuUUSyjBq/MAM0CzArtuIOxsBdQ+ftz6ho8n7s1i9E1Nmk/xmP323r2YL0SONs1EuwqBp2u1k5fxg==
@@ -1536,6 +1570,8 @@ packages:
     - arm
     os:
     - linux
+    libc:
+    - musl
   '@parcel/watcher-linux-arm64-glibc@2.5.6':
     resolution:
       integrity: sha512-f2g/DT3NhGPdBmMWYoxixqYr3v/UXcmLOYy16Bx0TM20Tchduwr4EaCbmxh1321TABqPGDpS8D/ggOTaljijOA==
@@ -1545,6 +1581,8 @@ packages:
     - arm64
     os:
     - linux
+    libc:
+    - glibc
   '@parcel/watcher-linux-arm64-musl@2.5.6':
     resolution:
       integrity: sha512-qb6naMDGlbCwdhLj6hgoVKJl2odL34z2sqkC7Z6kzir8b5W65WYDpLB6R06KabvZdgoHI/zxke4b3zR0wAbDTA==
@@ -1554,6 +1592,8 @@ packages:
     - arm64
     os:
     - linux
+    libc:
+    - musl
   '@parcel/watcher-linux-x64-glibc@2.5.6':
     resolution:
       integrity: sha512-kbT5wvNQlx7NaGjzPFu8nVIW1rWqV780O7ZtkjuWaPUgpv2NMFpjYERVi0UYj1msZNyCzGlaCWEtzc+exjMGbQ==
@@ -1563,6 +1603,8 @@ packages:
     - x64
     os:
     - linux
+    libc:
+    - glibc
   '@parcel/watcher-linux-x64-musl@2.5.6':
     resolution:
       integrity: sha512-1JRFeC+h7RdXwldHzTsmdtYR/Ku8SylLgTU/reMuqdVD7CtLwf0VR1FqeprZ0eHQkO0vqsbvFLXUmYm/uNKJBg==
@@ -1572,6 +1614,8 @@ packages:
     - x64
     os:
     - linux
+    libc:
+    - musl
   '@parcel/watcher-win32-arm64@2.5.6':
     resolution:
       integrity: sha512-3ukyebjc6eGlw9yRt678DxVF7rjXatWiHvTXqphZLvo7aC5NdEgFufVwjFfY51ijYEWpXbqF5jtrK275z52D4Q==
@@ -1669,6 +1713,8 @@ packages:
     - arm64
     os:
     - linux
+    libc:
+    - glibc
   '@rolldown/binding-linux-arm64-musl@1.0.1':
     resolution:
       integrity: sha512-uwNwFpwKeNiZawfAWBgg0VIztPTV3ihhh1vV334h9ivnNLorxnQMU6Fz8wG1Zb4Qh9LC1/MkcyT3YlDXG3Rsgg==
@@ -1678,6 +1724,8 @@ packages:
     - arm64
     os:
     - linux
+    libc:
+    - musl
   '@rolldown/binding-linux-ppc64-gnu@1.0.1':
     resolution:
       integrity: sha512-zY1bul7OWr7DFBiJ++wofXvnr8B45ce3QsQUhKrIhXsygAh7bTkwyeM1bi1a2g5C/yC/N8TZyGDEoMfm/l9mpg==
@@ -1687,6 +1735,8 @@ packages:
     - ppc64
     os:
     - linux
+    libc:
+    - glibc
   '@rolldown/binding-linux-s390x-gnu@1.0.1':
     resolution:
       integrity: sha512-0frlsT/f4Ft6I7SMESTKnF3cZsdicQn1dCMkF/jT9wDLE+gGoiQfv1nmT9e+s7s/fekvvy6tZM2jHvI2tkbJDQ==
@@ -1696,6 +1746,8 @@ packages:
     - s390x
     os:
     - linux
+    libc:
+    - glibc
   '@rolldown/binding-linux-x64-gnu@1.0.1':
     resolution:
       integrity: sha512-XABVmGp9Tg0WspTVvwduTc4fpqy6JnAUrSQe6OuyqD/03nI7r0O9OWUkMIwFrjKAIqolvqoA4ZrJppgwE0Gxmw==
@@ -1705,6 +1757,8 @@ packages:
     - x64
     os:
     - linux
+    libc:
+    - glibc
   '@rolldown/binding-linux-x64-musl@1.0.1':
     resolution:
       integrity: sha512-bV4fzswuzVcKD90o/VM6QqKxnxlDq0g2BISDLNVmxrnhpv1DDbyPhCIjYfvzYLV+MvkKKnQt2Q6AO86SEBULUQ==
@@ -1714,6 +1768,8 @@ packages:
     - x64
     os:
     - linux
+    libc:
+    - musl
   '@rolldown/binding-openharmony-arm64@1.0.1':
     resolution:
       integrity: sha512-/Mh0Zhq3OP7fVs0kcQHZP6lZEthMGTaSf8UBQYSFEZDWGXXlEC+nJ6EqenaK2t4LBXMe3A+K/G2BVXXdtOr4PQ==
@@ -2249,9 +2305,6 @@ packages:
   emoji-regex@9.2.2:
     resolution:
       integrity: sha512-L18DaJsXSUk2+42pv8mLs5jJT2hqFkFE4j21wOmgbUqsZ2hL72NsUU785g9RXgo3s0ZNgVl42TiHp3ZtOv/Vyg==
-  encoding@0.1.13:
-    resolution:
-      integrity: sha512-ETBauow1T35Y/WZMkio9jiM0Z5xjHHmJ4XmjZOq1l/dXz3lr2sRn87nJy20RupqSh1F2m3HHPSp8ShIPQJrJ3A==
   end-of-stream@1.4.5:
     resolution:
       integrity: sha512-ooEGc6HP26xXq/N+GCGOT0JKCLDGrq2bQUZrQ7gyrJiZANJ/8YDTxTpQBXGMn+WbIQXNVpyWymm7KYVICQnyOg==
@@ -2487,11 +2540,6 @@ packages:
   ical.js@2.2.1:
     resolution:
       integrity: sha512-yK/UlPbEs316igb/tjRgbFA8ZV75rCsBJp/hWOatpyaPNlgw0dGDmU+FoicOcwX4xXkeXOkYiOmCqNPFpNPkQg==
-  iconv-lite@0.6.3:
-    resolution:
-      integrity: sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==
-    engines:
-      node: '>=0.10.0'
   ieee754@1.2.1:
     resolution:
       integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==
@@ -2732,6 +2780,8 @@ packages:
     - arm64
     os:
     - linux
+    libc:
+    - glibc
   lightningcss-linux-arm64-musl@1.32.0:
     resolution:
       integrity: sha512-UpQkoenr4UJEzgVIYpI80lDFvRmPVg6oqboNHfoH4CQIfNA+HOrZ7Mo7KZP02dC6LjghPQJeBsvXhJod/wnIBg==
@@ -2741,6 +2791,8 @@ packages:
     - arm64
     os:
     - linux
+    libc:
+    - musl
   lightningcss-linux-x64-gnu@1.32.0:
     resolution:
       integrity: sha512-V7Qr52IhZmdKPVr+Vtw8o+WLsQJYCTd8loIfpDaMRWGUZfBOYEJeyJIkqGIDMZPwPx24pUMfwSxxI8phr/MbOA==
@@ -2750,6 +2802,8 @@ packages:
     - x64
     os:
     - linux
+    libc:
+    - glibc
   lightningcss-linux-x64-musl@1.32.0:
     resolution:
       integrity: sha512-bYcLp+Vb0awsiXg/80uCRezCYHNg1/l3mt0gzHnWV9XP1W5sKa5/TCdGWaR/zBM2PeF/HbsQv/j2URNOiVuxWg==
@@ -2759,6 +2813,8 @@ packages:
     - x64
     os:
     - linux
+    libc:
+    - musl
   lightningcss-win32-arm64-msvc@1.32.0:
     resolution:
       integrity: sha512-8SbC8BR40pS6baCM8sbtYDSwEVQd4JlFTOlaD3gWGHfThTcABnNDBda6eTZeqbofalIJhFx0qKzgHJmcPTnGdw==
@@ -3149,9 +3205,6 @@ packages:
   rxjs@7.8.2:
     resolution:
       integrity: sha512-dhKf903U/PQZY6boNNtAGdWbG85WAbjT/1xYoZIC7FAY0yWapOBQVsVrDl58W86//e1VpMNBtRV4MaXfdMySFA==
-  safer-buffer@2.1.2:
-    resolution:
-      integrity: sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==
   sass@1.99.0:
     resolution:
       integrity: sha512-kgW13M54DUB7IsIRM5LvJkNlpH+WhMpooUcaWGFARkF1Tc82v9mIWkCbCYf+MBvpIUBSeSOTilpZjEPr2VYE6Q==
@@ -4604,9 +4657,9 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.3
   crelt@1.0.6: {}
-  cross-fetch@4.1.0(encoding@0.1.13):
+  cross-fetch@4.1.0:
     dependencies:
-      node-fetch: 2.7.0(encoding@0.1.13)
+      node-fetch: 2.7.0
     transitivePeerDependencies:
     - encoding
   cross-spawn@7.0.6:
@@ -4665,10 +4718,6 @@ snapshots:
   electron-to-chromium@1.5.353: {}
   emoji-regex@8.0.0: {}
   emoji-regex@9.2.2: {}
-  encoding@0.1.13:
-    dependencies:
-      iconv-lite: 0.6.3
-    optional: true
   end-of-stream@1.4.5:
     dependencies:
       once: 1.4.0
@@ -4838,10 +4887,6 @@ snapshots:
   html-escaper@2.0.2: {}
   html-tags@5.1.0: {}
   ical.js@2.2.1: {}
-  iconv-lite@0.6.3:
-    dependencies:
-      safer-buffer: 2.1.2
-    optional: true
   ieee754@1.2.1: {}
   ignore@7.0.5: {}
   immutable@5.1.5: {}
@@ -5051,11 +5096,9 @@ snapshots:
   napi-macros@2.2.2: {}
   node-addon-api@7.1.1:
     optional: true
-  node-fetch@2.7.0(encoding@0.1.13):
+  node-fetch@2.7.0:
     dependencies:
       whatwg-url: 5.0.0
-    optionalDependencies:
-      encoding: 0.1.13
   node-gyp-build@4.8.4: {}
   node-releases@2.0.38: {}
   normalize-path@3.0.0: {}
@@ -5249,8 +5292,6 @@ snapshots:
   rxjs@7.8.2:
     dependencies:
       tslib: 2.8.1
-  safer-buffer@2.1.2:
-    optional: true
   sass@1.99.0:
     dependencies:
       chokidar: 4.0.3
@@ -5440,10 +5481,10 @@ snapshots:
   tsconfck@3.1.6(typescript@5.9.3):
     optionalDependencies:
       typescript: 5.9.3
-  tsdav@2.1.6(encoding@0.1.13):
+  tsdav@2.1.6:
     dependencies:
       base-64: 1.0.0
-      cross-fetch: 4.1.0(encoding@0.1.13)
+      cross-fetch: 4.1.0
       debug: 4.4.3
       xml-js: 1.6.11
     transitivePeerDependencies:
