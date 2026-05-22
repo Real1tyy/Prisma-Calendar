@@ -18,7 +18,7 @@ import {
 	type RgbColor,
 } from "@real1ty-obsidian-plugins";
 import { renderReactInline } from "@real1ty-obsidian-plugins-react";
-import { Component, TFile, type App, type WorkspaceLeaf } from "obsidian";
+import { Component, Platform, TFile, type App, type WorkspaceLeaf } from "obsidian";
 import { createElement } from "react";
 import { BehaviorSubject } from "rxjs";
 
@@ -71,6 +71,7 @@ import { findAdjacentEvent, getSourceEventInfoFromVirtual } from "../utils/event
 import { invalidatePropertyExtractionCache } from "../utils/filters/expressions";
 import { getFilePath, getVirtualKind } from "../utils/frontmatter/extended-props";
 import { emitHover, getFileByPathOrThrow } from "../utils/obsidian";
+import { shouldUseMobileLayout } from "../utils/responsive";
 import { BatchSelectionManager } from "./batch-selection-manager";
 import {
 	applyEventMountStyling,
@@ -2708,6 +2709,9 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private isMobileView(): boolean {
-		return window.innerWidth <= 768;
+		return shouldUseMobileLayout({
+			isPlatformMobile: Platform.isMobile,
+			width: window.innerWidth,
+		});
 	}
 }
