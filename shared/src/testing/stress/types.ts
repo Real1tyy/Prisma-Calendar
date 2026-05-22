@@ -186,9 +186,21 @@ export const HeapDigestEntrySchema = z.object({
 export type HeapDigestEntry = z.infer<typeof HeapDigestEntrySchema>;
 
 /**
+ * What pins detached nodes alive: the holder's type + the edge (field) the
+ * reference travels through, with how many detached nodes it retains — the
+ * structured "what's leaking this?" answer (e.g. `object._listeners` × 12000).
+ */
+export const RetainerEntrySchema = z.object({
+	retainer: z.string(),
+	count: z.number(),
+});
+export type RetainerEntry = z.infer<typeof RetainerEntrySchema>;
+
+/**
  * Structured summary of a `.heapsnapshot` — node/edge totals, retained self size,
- * the detached-DOM count (the classic retained-view leak signal), and the
- * heaviest object types — so an agent reads the leak shape without opening DevTools.
+ * the detached-DOM count (the classic retained-view leak signal), the heaviest
+ * object types, and the dominant retainers of the detached set — so an agent reads
+ * the leak shape (and its cause) without opening DevTools.
  */
 export const HeapDigestSchema = z.object({
 	nodeCount: z.number(),
@@ -196,6 +208,7 @@ export const HeapDigestSchema = z.object({
 	totalSizeBytes: z.number(),
 	detachedNodeCount: z.number(),
 	topTypes: z.array(HeapDigestEntrySchema),
+	topRetainers: z.array(RetainerEntrySchema),
 });
 export type HeapDigest = z.infer<typeof HeapDigestSchema>;
 

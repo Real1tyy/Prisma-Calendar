@@ -58,7 +58,11 @@ test.describe("stress: memory leak", () => {
 
 		await collectGarbage(cdp);
 		const before = await readCdpPerformanceMetrics(cdp);
-		await takeHeapSnapshot(cdp, path.join(artifactDir, "heap-before.heapsnapshot"));
+		const beforeSnapshotPath = path.join(artifactDir, "heap-before.heapsnapshot");
+		await takeHeapSnapshot(cdp, beforeSnapshotPath);
+		// Digest the before-snapshot now so its parsed JSON can be GC'd before the
+		// (larger) after-snapshot is parsed — keeps only one big snapshot in memory.
+		const beforeDigest = digestHeapSnapshot(JSON.parse(readFileSync(beforeSnapshotPath, "utf8")));
 
 		const startedAt = new Date().toISOString();
 		await openCloseViewLoop(page, MEMORY_CONFIG.cycles);
@@ -70,7 +74,10 @@ test.describe("stress: memory leak", () => {
 		const after = await readCdpPerformanceMetrics(cdp);
 		const afterSnapshotPath = path.join(artifactDir, "heap-after.heapsnapshot");
 		await takeHeapSnapshot(cdp, afterSnapshotPath);
-		const heapDigest: HeapDigest = digestHeapSnapshot(JSON.parse(readFileSync(afterSnapshotPath, "utf8")));
+		// Trace retainers on the after-snapshot — what's pinning any leaked nodes.
+		const heapDigest: HeapDigest = digestHeapSnapshot(JSON.parse(readFileSync(afterSnapshotPath, "utf8")), {
+			retainers: true,
+		});
 
 		const snapshot = await readPerfBridge(page);
 		const jsHeapBefore = before[HEAP_USED_METRIC] ?? 0;
@@ -80,7 +87,13 @@ test.describe("stress: memory leak", () => {
 			"heap.jsHeapUsedBefore": jsHeapBefore,
 			"heap.jsHeapUsedAfter": jsHeapAfter,
 			"heap.growthBytes": jsHeapAfter - jsHeapBefore,
-			"heap.detachedNodes": heapDigest.detachedNodeCount,
+			"heap.nodesBefore": beforeDigest.nodeCount,
+			"heap.nodesAfter": heapDigest.nodeCount,
+			"heap.nodeGrowth": heapDigest.nodeCount - beforeDigest.nodeCount,
+			"heap.detachedBefore": beforeDigest.detachedNodeCount,
+			"heap.detachedAfter": heapDigest.detachedNodeCount,
+			"heap.detachedGrowth": heapDigest.detachedNodeCount - beforeDigest.detachedNodeCount,
+			"heap.retainedGrowthBytes": heapDigest.totalSizeBytes - beforeDigest.totalSizeBytes,
 		};
 
 		const artifacts: StressArtifact[] = [

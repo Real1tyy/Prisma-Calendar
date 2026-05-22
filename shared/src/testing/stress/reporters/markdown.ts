@@ -88,14 +88,21 @@ function heapDigestSection(digest: StressRunReport["heapDigest"]): string {
 	if (!digest) return "_No heap snapshot captured._";
 	const mb = (bytes: number): string => `${round(bytes / 1_000_000)} MB`;
 	const caption = `Nodes ${digest.nodeCount} · Edges ${digest.edgeCount} · Retained ${mb(digest.totalSizeBytes)} · Detached nodes ${digest.detachedNodeCount}`;
-	if (digest.topTypes.length === 0) return caption;
-	const rows = digest.topTypes.map((entry, index) => [
-		String(index + 1),
-		entry.type,
-		String(entry.count),
-		mb(entry.selfSizeBytes),
-	]);
-	return [caption, "", table(["#", "Type", "Count", "Self size"], rows)].join("\n");
+	const parts = [caption];
+	if (digest.topTypes.length > 0) {
+		const rows = digest.topTypes.map((entry, index) => [
+			String(index + 1),
+			entry.type,
+			String(entry.count),
+			mb(entry.selfSizeBytes),
+		]);
+		parts.push("", "**Top types**", "", table(["#", "Type", "Count", "Self size"], rows));
+	}
+	if (digest.topRetainers.length > 0) {
+		const rows = digest.topRetainers.map((entry, index) => [String(index + 1), entry.retainer, String(entry.count)]);
+		parts.push("", "**Top retainers of detached nodes**", "", table(["#", "Holder.edge", "Detached held"], rows));
+	}
+	return parts.join("\n");
 }
 
 function countsSection(counts: StressRunReport["counts"]): string {
