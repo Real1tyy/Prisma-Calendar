@@ -31,19 +31,5 @@ export default defineConfig({
 				deviceScaleFactor: 1,
 			},
 		},
-		// Phone-width regression. Baselines suffix with `-mobile-linux`, so the
-		// desktop `chromium` baselines are untouched. The spec widens #root to the
-		// device width and adds Obsidian's `.is-mobile`/`.is-phone` body classes
-		// before screenshotting — see fixtures.visual.spec.ts and
-		// docs/decisions/2026-05-21-mobile-responsiveness-strategy.md.
-		{
-			name: "mobile",
-			use: {
-				...devices["Desktop Chrome"],
-				viewport: { width: 390, height: 844 },
-				deviceScaleFactor: 1,
-				hasTouch: true,
-			},
-		},
 	],
 });
