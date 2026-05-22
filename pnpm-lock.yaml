@@ -147,6 +147,9 @@ importers:
       react-hook-form:
         specifier: ^7.73.1
         version: 7.73.1(react@19.2.5)
+      react-joyride:
+        specifier: ^3.1.0
+        version: 3.1.0(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       rxjs:
         specifier: ^7.8.2
         version: 7.8.2
@@ -417,6 +420,9 @@ importers:
       react-hook-form:
         specifier: ^7.54.2
         version: 7.73.1(react@19.2.5)
+      react-joyride:
+        specifier: ^3.1.0
+        version: 3.1.0(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       rxjs:
         specifier: ^7.8.2
         version: 7.8.2
@@ -1031,6 +1037,24 @@ packages:
     peerDependenciesMeta:
       '@noble/hashes':
         optional: true
+  '@fastify/deepmerge@3.2.1':
+    resolution:
+      integrity: sha512-N5Oqvltoa2r9z1tbx4xjky0oRR60v+T47Ic4J1ukoVQcptLOrIdRnCSdTGmOmajZuHVKlTnfcmrjyqsGEW1ztA==
+  '@floating-ui/core@1.7.5':
+    resolution:
+      integrity: sha512-1Ih4WTWyw0+lKyFMcBHGbb5U5FtuHJuujoyyr5zTaWS5EYMeT6Jb2AuDeftsCsEuchO+mM2ij5+q9crhydzLhQ==
+  '@floating-ui/dom@1.7.6':
+    resolution:
+      integrity: sha512-9gZSAI5XM36880PPMm//9dfiEngYoC6Am2izES1FF406YFsjvyBMmeJ2g4SAju3xWwtuynNRFL2s9hgxpLI5SQ==
+  '@floating-ui/react-dom@2.1.8':
+    resolution:
+      integrity: sha512-cC52bHwM/n/CxS87FH0yWdngEZrjdtLW/qVruo68qg+prK7ZQ4YGdut2GyDVpoGeAYe/h899rVeOVm6Oi40k2A==
+    peerDependencies:
+      react: ^19.2.5
+      react-dom: ^19.2.5
+  '@floating-ui/utils@0.2.11':
+    resolution:
+      integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==
   '@fullcalendar/core@6.1.20':
     resolution:
       integrity: sha512-1cukXLlePFiJ8YKXn/4tMKsy0etxYLCkXk8nUCFi11nRONF2Ba2CD5b21/ovtOO2tL6afTJfwmc1ed3HG7eB1g==
@@ -1059,6 +1083,17 @@ packages:
       integrity: sha512-4H+/MWbz3ntA50lrPif+7TsvMeX3R1GSYjiLULz0+zEJ7/Yfd9pupZmAwUs/PBpA6aAcFmeRr0laWfcz1a9V1A==
     peerDependencies:
       '@fullcalendar/core': ~6.1.20
+  '@gilbarbara/deep-equal@0.4.1':
+    resolution:
+      integrity: sha512-QF2BGeQjsa59T59XvFdR3is5jrl28Eg0J6giXAC5919bcqvR8XP4B+07tpbs6Y6/IQd4FBncaL2WVXIBgSxt4w==
+  '@gilbarbara/hooks@0.11.0':
+    resolution:
+      integrity: sha512-CIVazdxqFRplUfm9wZL3/0X1TURJekhPMWGFdWzEmyJrGPiotX2yxA1KiB8N7VnhawIaMtb2Apnda4Y6DRwi2Q==
+    peerDependencies:
+      react: ^19.2.5
+  '@gilbarbara/types@0.2.2':
+    resolution:
+      integrity: sha512-QuQDBRRcm1Q8AbSac2W1YElurOhprj3Iko/o+P1fJxUWS4rOGKMVli98OXS7uo4z+cKAif6a+L9bcZFSyauQpQ==
   '@hookform/resolvers@5.2.2':
     resolution:
       integrity: sha512-A/IxlMLShx3KjV/HeTcTfaMxdwy690+L/ZADoeaTltLx+CVuzkeVIPuybK3jrRfw7YZnmdKsVVHAlEPIAEUNlA==
@@ -2590,6 +2625,9 @@ packages:
       integrity: sha512-xelSayHH36ZgE7ZWhli7pW34hNbNl8Ojv5KVmkJD4hBdD3th8Tfk9vYasLM+mXWOZhFkgZfxhLSnrwRr4elSSg==
     engines:
       node: '>=0.10.0'
+  is-lite@2.0.0:
+    resolution:
+      integrity: sha512-70f2BMIQlbSUXVKaZUd9a9fJH3IH1PDckV0m4BIIO4LjnNYvOh4Ng7vXIXEwpA0KDZknRq+7fHwGTu0jIdx28g==
   is-number@7.0.0:
     resolution:
       integrity: sha512-41Cifkg6e8TylSpdtTpeLVMqvSBEVzTttHvERD741+pnZ8ANv0004MRL43QKPDlK9cGvNp6NZWZUBlbGXYxxng==
@@ -3151,9 +3189,21 @@ packages:
       node: '>=18.0.0'
     peerDependencies:
       react: ^19.2.5
+  react-innertext@1.1.5:
+    resolution:
+      integrity: sha512-PWAqdqhxhHIv80dT9znP2KvS+hfkbRovFp4zFYHFFlOoQLRiawIic81gKb3U1wEyJZgMwgs3JoLtwryASRWP3Q==
+    peerDependencies:
+      '@types/react': '>=0.0.0 <=99'
+      react: ^19.2.5
   react-is@17.0.2:
     resolution:
       integrity: sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==
+  react-joyride@3.1.0:
+    resolution:
+      integrity: sha512-+UEDpNsYSHhhSW/OQcNl6+oODYx20EP6TykSD45if0MqAAZMYD+3DU64w9wP3fBjQswvq5BgK99w3rw6ing69g==
+    peerDependencies:
+      react: ^19.2.5
+      react-dom: ^19.2.5
   react@19.2.5:
     resolution:
       integrity: sha512-llUJLzz1zTUBrskt2pwZgLq59AemifIftw4aB7JxOqf1HY2FDaGDxgwpAPVzHU1kdWabH7FauP4i1oEeer2WCA==
@@ -3224,6 +3274,12 @@ packages:
   scheduler@0.27.0:
     resolution:
       integrity: sha512-eNv+WrVbKu1f3vbYJT/xtiF5syA5HPIMtf9IgY/nKg0sWqzAUEvqY/xm7OcZc/qafLx/iO9FgOmeSAp4v5ti/Q==
+  scroll@3.0.1:
+    resolution:
+      integrity: sha512-pz7y517OVls1maEzlirKO5nPYle9AXsFzTMNJrRGmT951mzpIBy7sNHOg5o/0MQd/NqliCiWnAi0kZneMPFLcg==
+  scrollparent@2.1.0:
+    resolution:
+      integrity: sha512-bnnvJL28/Rtz/kz2+4wpBjHzWoEzXhVg/TE8BeVGJHUqE8THNIRnDxDWMktwM+qahvlRdvlLdsQfYe+cuqfZeA==
   semver@6.3.1:
     resolution:
       integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==
@@ -3489,6 +3545,11 @@ packages:
     engines:
       node: '>=18.0.0'
     hasBin: true
+  type-fest@4.41.0:
+    resolution:
+      integrity: sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==
+    engines:
+      node: '>=16'
   typescript@5.9.3:
     resolution:
       integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==
@@ -3519,6 +3580,11 @@ packages:
     hasBin: true
     peerDependencies:
       browserslist: '>= 4.21.0'
+  use-sync-external-store@1.6.0:
+    resolution:
+      integrity: sha512-Pp6GSwGP/NrPIrxVFAIkOQeyw8lFenOHijQWkUTrDvrF4ALqylP2C/KCkeS9dpUM3KvYRQhna5vt7IL95+ZQ9w==
+    peerDependencies:
+      react: ^19.2.5
   util-deprecate@1.0.2:
     resolution:
       integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==
@@ -4127,6 +4193,20 @@ snapshots:
   '@esbuild/win32-x64@0.27.2':
     optional: true
   '@exodus/bytes@1.15.0': {}
+  '@fastify/deepmerge@3.2.1': {}
+  '@floating-ui/core@1.7.5':
+    dependencies:
+      '@floating-ui/utils': 0.2.11
+  '@floating-ui/dom@1.7.6':
+    dependencies:
+      '@floating-ui/core': 1.7.5
+      '@floating-ui/utils': 0.2.11
+  '@floating-ui/react-dom@2.1.8(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
+    dependencies:
+      '@floating-ui/dom': 1.7.6
+      react: 19.2.5
+      react-dom: 19.2.5(react@19.2.5)
+  '@floating-ui/utils@0.2.11': {}
   '@fullcalendar/core@6.1.20':
     dependencies:
       preact: 10.12.1
@@ -4147,6 +4227,14 @@ snapshots:
     dependencies:
       '@fullcalendar/core': 6.1.20
       '@fullcalendar/daygrid': 6.1.20(@fullcalendar/core@6.1.20)
+  '@gilbarbara/deep-equal@0.4.1': {}
+  '@gilbarbara/hooks@0.11.0(react@19.2.5)':
+    dependencies:
+      '@gilbarbara/deep-equal': 0.4.1
+      react: 19.2.5
+  '@gilbarbara/types@0.2.2':
+    dependencies:
+      type-fest: 4.41.0
   '@hookform/resolvers@5.2.2(react-hook-form@7.73.1(react@19.2.5))':
     dependencies:
       '@standard-schema/utils': 0.3.0
@@ -4904,6 +4992,7 @@ snapshots:
   is-glob@4.0.3:
     dependencies:
       is-extglob: 2.1.1
+  is-lite@2.0.0: {}
   is-number@7.0.0: {}
   is-path-inside@4.0.0: {}
   is-plain-object@5.0.0: {}
@@ -5254,7 +5343,27 @@ snapshots:
   react-hook-form@7.73.1(react@19.2.5):
     dependencies:
       react: 19.2.5
+  react-innertext@1.1.5(@types/react@19.2.14)(react@19.2.5):
+    dependencies:
+      '@types/react': 19.2.14
+      react: 19.2.5
   react-is@17.0.2: {}
+  react-joyride@3.1.0(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5):
+    dependencies:
+      '@fastify/deepmerge': 3.2.1
+      '@floating-ui/react-dom': 2.1.8(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@gilbarbara/deep-equal': 0.4.1
+      '@gilbarbara/hooks': 0.11.0(react@19.2.5)
+      '@gilbarbara/types': 0.2.2
+      is-lite: 2.0.0
+      react: 19.2.5
+      react-dom: 19.2.5(react@19.2.5)
+      react-innertext: 1.1.5(@types/react@19.2.14)(react@19.2.5)
+      scroll: 3.0.1
+      scrollparent: 2.1.0
+      use-sync-external-store: 1.6.0(react@19.2.5)
+    transitivePeerDependencies:
+    - '@types/react'
   react@19.2.5: {}
   readdirp@4.1.2: {}
   readline-sync@1.4.10: {}
@@ -5304,6 +5413,8 @@ snapshots:
     dependencies:
       xmlchars: 2.2.0
   scheduler@0.27.0: {}
+  scroll@3.0.1: {}
+  scrollparent@2.1.0: {}
   semver@6.3.1: {}
   semver@7.7.4: {}
   semver@7.8.0: {}
@@ -5497,6 +5608,7 @@ snapshots:
       get-tsconfig: 4.13.6
     optionalDependencies:
       fsevents: 2.3.3
+  type-fest@4.41.0: {}
   typescript@5.9.3: {}
   unbash@3.0.0: {}
   undici-types@7.24.6: {}
@@ -5507,6 +5619,9 @@ snapshots:
       browserslist: 4.28.2
       escalade: 3.2.0
       picocolors: 1.1.1
+  use-sync-external-store@1.6.0(react@19.2.5):
+    dependencies:
+      react: 19.2.5
   util-deprecate@1.0.2: {}
   uuid@14.0.0: {}
   vis-data@8.0.4(uuid@14.0.0)(vis-util@6.0.0(@egjs/hammerjs@2.0.17)(component-emitter@1.3.1)):
