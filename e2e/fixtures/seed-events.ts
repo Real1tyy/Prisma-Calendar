@@ -48,6 +48,18 @@ export function seedEvent(vaultDir: string, event: SeedEventInput): string {
 	const relative = join(subdir, filename);
 	const absolute = join(vaultDir, relative);
 
+	mkdirSync(dirname(absolute), { recursive: true });
+	writeFileSync(absolute, buildEventMarkdown(event), "utf8");
+	return relative;
+}
+
+/**
+ * Serialize a `SeedEventInput` into the on-disk markdown an event file needs —
+ * frontmatter (`Start Date`, `End Date`, …) plus body. Extracted from
+ * `seedEvent` so the deterministic stress vault generator produces byte-for-byte
+ * the same shape without duplicating the frontmatter contract.
+ */
+export function buildEventMarkdown(event: SeedEventInput): string {
 	const fm: Record<string, unknown> = {};
 	if (event.startDate) fm["Start Date"] = event.startDate;
 	if (event.endDate) fm["End Date"] = event.endDate;
@@ -66,11 +78,7 @@ export function seedEvent(vaultDir: string, event: SeedEventInput): string {
 		.map(([k, v]) => `${k}: ${frontmatterValue(v)}`)
 		.join("\n");
 	const body = event.body ?? `# ${event.title}\n`;
-	const content = `---\n${fmLines}\n---\n\n${body}`;
-
-	mkdirSync(dirname(absolute), { recursive: true });
-	writeFileSync(absolute, content, "utf8");
-	return relative;
+	return `---\n${fmLines}\n---\n\n${body}`;
 }
 
 export function seedEvents(vaultDir: string, events: readonly SeedEventInput[]): string[] {

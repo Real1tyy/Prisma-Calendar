@@ -9,6 +9,7 @@ import {
 	getISOTimePart,
 	getObsidianLinkPath,
 	getUniqueFilePathFromFull,
+	perf,
 	rebuildPhysicalInstanceFilename,
 	replaceISOTime,
 	sanitizeForFilename,
@@ -822,13 +823,16 @@ export class RecurringEventManager extends DebouncedNotifier {
 	// ─── Virtual Instance Generation ──────────────────────────────
 
 	generateAllVirtualInstances(rangeStart: DateTime, rangeEnd: DateTime): CalendarEvent[] {
-		const virtualEvents = Array.from(this.recurringEventsMap.values()).flatMap(
-			({ recurringEvent, physicalInstances }) =>
-				this.calculateVirtualOccurrencesInRange(recurringEvent, rangeStart, rangeEnd, physicalInstances).map(
-					(occurrence) => this.createVirtualEvent(occurrence)
-				)
-		);
-		return virtualEvents;
+		return perf.measure("recurrence.expandVisibleRange", () => {
+			const virtualEvents = Array.from(this.recurringEventsMap.values()).flatMap(
+				({ recurringEvent, physicalInstances }) =>
+					this.calculateVirtualOccurrencesInRange(recurringEvent, rangeStart, rangeEnd, physicalInstances).map(
+						(occurrence) => this.createVirtualEvent(occurrence)
+					)
+			);
+			perf.increment("recurrence.occurrencesGenerated", virtualEvents.length);
+			return virtualEvents;
+		});
 	}
 
 	private calculateVirtualOccurrencesInRange(

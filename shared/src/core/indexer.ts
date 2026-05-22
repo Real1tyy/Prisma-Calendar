@@ -14,6 +14,7 @@ import {
 } from "rxjs";
 import { catchError, filter, map, mergeMap, toArray } from "rxjs/operators";
 
+import { perf } from "../perf";
 import { waitForCacheReady } from "../utils/async/wait-for-cache-ready";
 import { compareFrontmatter, type FrontmatterDiff } from "./frontmatter/frontmatter-diff";
 
@@ -218,6 +219,7 @@ export class Indexer {
 	 * Scan all markdown files in the configured directory.
 	 */
 	private async scanAllFiles(): Promise<void> {
+		const scanStart = performance.now();
 		try {
 			const allFiles = this.config.preloadedFiles ?? this.vault.getMarkdownFiles();
 			const files: TFile[] = [];
@@ -257,6 +259,7 @@ export class Indexer {
 			console.error("❌ Error during file scanning:", error);
 		}
 
+		perf.record("index.scanVault", performance.now() - scanStart);
 		this.indexingCompleteSubject.next(true);
 	}
 

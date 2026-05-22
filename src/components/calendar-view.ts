@@ -13,6 +13,7 @@ import {
 	formatLocaleMonthDay,
 	formatLocaleYearMonth,
 	MountableComponent,
+	perf,
 	roundToNearestHour,
 	toLocalISOString,
 	type RgbColor,
@@ -1405,6 +1406,10 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private async buildCalendarEvents(view: { activeStart: Date; activeEnd: Date }): Promise<FCPrismaEventInput[]> {
+		return perf.measureAsync("calendar.buildEvents", () => this.buildCalendarEventsInner(view));
+	}
+
+	private async buildCalendarEventsInner(view: { activeStart: Date; activeEnd: Date }): Promise<FCPrismaEventInput[]> {
 		const start = toLocalISOString(view.activeStart);
 		const end = toLocalISOString(view.activeEnd);
 

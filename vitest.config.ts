@@ -26,7 +26,7 @@ const DOM_PATTERNS = [
 //     differs in `preventDefault`/`ctrlKey` propagation through React handlers
 const JSDOM_PATTERNS = ["tests/components/heatmap-renderer.test.ts", "tests/components/views/zoom-control.test.tsx"];
 
-const SHARED_EXCLUDE = ["**/node_modules/**", "**/dist/**", "**/*.visual.spec.ts", "e2e/**"];
+const SHARED_EXCLUDE = ["**/node_modules/**", "**/dist/**", "**/*.visual.spec.ts", "e2e/**", "stress/**"];
 
 export default defineConfig({
 	test: {

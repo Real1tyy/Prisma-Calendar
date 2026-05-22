@@ -1,4 +1,4 @@
-import { mergeSorted } from "@real1ty-obsidian-plugins";
+import { mergeSorted, perf } from "@real1ty-obsidian-plugins";
 import { DateTime } from "luxon";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import BTree from "sorted-btree";
@@ -152,29 +152,31 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	 * Returns non-skipped events in the given range: physical + virtual + holidays + manual virtual.
 	 */
 	async getEvents(query: EventQuery): Promise<CalendarEvent[]> {
-		const physical = this.queryNonSkippedPhysical(query);
-		const queryStart = DateTime.fromISO(stripZ(query.start));
-		const queryEnd = DateTime.fromISO(stripZ(query.end));
-		const virtualEvents = this.recurringEventManager.generateAllVirtualInstances(queryStart, queryEnd);
+		return perf.measureAsync("eventStore.getEvents", async () => {
+			const physical = this.queryNonSkippedPhysical(query);
+			const queryStart = DateTime.fromISO(stripZ(query.start));
+			const queryEnd = DateTime.fromISO(stripZ(query.end));
+			const virtualEvents = this.recurringEventManager.generateAllVirtualInstances(queryStart, queryEnd);
 
-		let holidays: CalendarEvent[] = [];
-		if (this.holidayStore) {
-			holidays = await this.holidayStore.getHolidaysForRange(queryStart, queryEnd);
-		}
+			let holidays: CalendarEvent[] = [];
+			if (this.holidayStore) {
+				holidays = await this.holidayStore.getHolidaysForRange(queryStart, queryEnd);
+			}
 
-		const manualVirtual = this.virtualEventStore
-			? this.virtualEventStore
-					.getInRange(queryStart, queryEnd)
-					.map((v) => toCalendarEvent(v, this.virtualEventStore!.getFilePath()))
-			: [];
+			const manualVirtual = this.virtualEventStore
+				? this.virtualEventStore
+						.getInRange(queryStart, queryEnd)
+						.map((v) => toCalendarEvent(v, this.virtualEventStore!.getFilePath()))
+				: [];
 
-		// Physical events are pre-sorted. Sort only the supplementary arrays
-		// (typically small) and merge, avoiding a full O(N log N) re-sort.
-		const supplementary = [...virtualEvents, ...holidays, ...manualVirtual];
-		if (supplementary.length === 0) return physical;
+			// Physical events are pre-sorted. Sort only the supplementary arrays
+			// (typically small) and merge, avoiding a full O(N log N) re-sort.
+			const supplementary = [...virtualEvents, ...holidays, ...manualVirtual];
+			if (supplementary.length === 0) return physical;
 
-		supplementary.sort(EventStore.compareByStart);
-		return mergeSorted(physical, supplementary, EventStore.compareByStart);
+			supplementary.sort(EventStore.compareByStart);
+			return mergeSorted(physical, supplementary, EventStore.compareByStart);
+		});
 	}
 
 	/**

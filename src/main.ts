@@ -31,6 +31,7 @@ import { scanVaultForDirectorySuggestions } from "./core/directory-suggestions";
 import { exportCalendarAsICS } from "./core/integrations/ics-export";
 import { importEventsToCalendar } from "./core/integrations/ics-import";
 import { createLicenseManager, type LicenseManager } from "./core/license";
+import { installPrismaPerfBridge } from "./core/perf-bridge";
 import { buildWhatsNewConfig } from "./core/whats-new-config";
 import { openCalendarSelectModal, openFirstLaunchModal, openICSImportModal } from "./react/modals";
 import { CustomCalendarSettingsSchema, PrismaSyncDataSchema, type PrismaCalendarSettingsStore } from "./types";
@@ -83,6 +84,13 @@ export default class CustomCalendarPlugin extends Plugin {
 		this.registerVirtualEventsCodeFence();
 		this.apiManager = new PrismaCalendarApiManager(this);
 		this.apiManager.exposeFree();
+
+		// Stress/E2E perf instrumentation — gated on the harness-set `window.E2E`
+		// flag so production runs install nothing and pay no measurement overhead.
+		if ((globalThis as unknown as { E2E?: boolean }).E2E) {
+			installPrismaPerfBridge(this);
+		}
+
 		this.addSettingTab(new CustomCalendarSettingsTab(this.app, this));
 
 		this.registerAIChatView();
