@@ -23,6 +23,7 @@ import {
 	SingleCalendarConfigSchema,
 	type CustomCalendarSettings,
 } from "../../types/settings";
+import { startPrismaTour } from "../onboarding/prisma-tour";
 import { PrismaSection } from "./_section";
 import { ProUpgradeBanner } from "./pro-upgrade-banner";
 
@@ -250,9 +251,15 @@ const EventPresetsSection = memo(function EventPresetsSection({ settingsStore, p
 });
 
 export const HelpSection = memo(function HelpSection({ plugin }: { plugin: CustomCalendarPlugin }) {
+	const [tutorialCompleted] = useSchemaField(plugin.settingsStore, "tutorialCompleted");
+
 	const handleViewChangelog = useCallback(() => {
 		const config = buildWhatsNewConfig(plugin.changelogContent, "settings");
 		showWhatsNewReactModal(plugin.app, plugin, config, "0.0.0", plugin.manifest.version);
+	}, [plugin]);
+
+	const handleStartTutorial = useCallback(() => {
+		startPrismaTour(plugin);
 	}, [plugin]);
 
 	return (
@@ -322,6 +329,15 @@ export const HelpSection = memo(function HelpSection({ plugin }: { plugin: Custo
 					— cancel anytime.
 				</p>
 			</SettingCard>
+			<SettingItem
+				name="Interactive tutorial"
+				description="Take a guided walkthrough that creates a sample event and shows you how to move, resize, create, and open events."
+				testId={tid("settings-field-tutorial")}
+			>
+				<button type="button" onClick={handleStartTutorial} data-testid={tid("settings-tutorial-btn")}>
+					{tutorialCompleted ? "Replay tutorial" : "Take the tutorial"}
+				</button>
+			</SettingItem>
 			<SettingItem
 				name="Changelog"
 				description="Browse the full changelog with every update since the first release"

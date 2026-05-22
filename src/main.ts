@@ -34,6 +34,7 @@ import { createLicenseManager, type LicenseManager } from "./core/license";
 import { installPrismaPerfBridge } from "./core/perf-bridge";
 import { buildWhatsNewConfig } from "./core/whats-new-config";
 import { openCalendarSelectModal, openFirstLaunchModal, openICSImportModal } from "./react/modals";
+import { startPrismaTour } from "./react/onboarding/prisma-tour";
 import { CustomCalendarSettingsSchema, PrismaSyncDataSchema, type PrismaCalendarSettingsStore } from "./types";
 import { type CalDAVAccount, type ICSSubscription } from "./types/integrations";
 import { migrateSharedExcludedProps } from "./utils/calendar/migrations";
@@ -404,6 +405,10 @@ export default class CustomCalendarPlugin extends Plugin {
 		const bundle = this.calendarBundles.at(0);
 		if (bundle) {
 			await bundle.activateCalendarView();
+		}
+
+		if (!this.settingsStore.currentSettings.tutorialCompleted) {
+			startPrismaTour(this);
 		}
 	}
 }

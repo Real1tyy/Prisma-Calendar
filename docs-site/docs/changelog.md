@@ -4,6 +4,15 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 2.18.0 - 5/22/2026
+
+> **TLDR:** A new **interactive onboarding tutorial** runs on first launch — it creates a sample event and walks you through moving, creating, and opening events, and you can replay it anytime from settings or a command.
+
+### Added
+- **Interactive onboarding tutorial**: A guided, replayable tour now runs on first launch — it creates a sample "Your first event" on today, then points out how to drag, resize, open, and create events and switch views. Replay it anytime from **Settings → General → Interactive tutorial** or the **Prisma Calendar: Start onboarding tutorial** command. See [Interactive Tutorial](./features/interactive-tutorial.md).
+
+---
+
 ## 2.17.0 - 5/19/2026
 
 > **TLDR:** Prisma Calendar is now in the official Obsidian Community Plugin Store — install with one click from inside Obsidian. Click any pie-chart legend entry on the stats views to filter that category out and rescale the chart, table, and totals to 100% over what remains. Every Manage X modal (header actions, tab manager, context menu, dashboard layout) now has a **Reset to defaults** button with a confirmation prompt, and the event modal gets keyboard shortcuts for **Assign categories** (⌘⇧C) and **Assign prerequisites** (⌘⇧P) — plus a sturdier title autocomplete flow.

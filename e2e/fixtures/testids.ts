@@ -185,6 +185,15 @@ export const RENAME_MODAL_TID = "rename-modal-container";
 export const RENAME_INPUT_TID = "rename-input";
 export const RENAME_SUBMIT_TID = "rename-submit";
 export const RENAME_CANCEL_TID = "rename-cancel";
+/** Onboarding tour (shared-react react-joyride engine). The popover renders into
+ * a body-level portal, so these are addressed off `page`, not the calendar root. */
+export const TOUR_TOOLTIP_TID = "prisma-tour-tooltip";
+export const TOUR_NEXT_TID = "prisma-tour-next";
+export const TOUR_BACK_TID = "prisma-tour-back";
+export const TOUR_SKIP_TID = "prisma-tour-skip";
+export const TOUR_CLOSE_TID = "prisma-tour-close";
+export const TOUR_PROGRESS_TID = "prisma-tour-progress";
+
 /** Shared progress modal used by ICS import and other batched flows. */
 export const PROGRESS_MODAL_TID = "prisma-progress-modal";
 export const PROGRESS_STATUS_TID = "prisma-progress-status";

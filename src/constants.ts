@@ -77,6 +77,7 @@ export const COMMAND_KEYS = [
 	"TOGGLE_PREREQUISITE_CONNECTIONS",
 	"TRIGGER_CURRENT_EVENT_STOPWATCH",
 	"OPEN_VIRTUAL_EVENTS_FILE",
+	"START_TUTORIAL",
 ] as const;
 
 export type CommandKey = (typeof COMMAND_KEYS)[number];

@@ -19,6 +19,7 @@ import { getProGateUrls } from "./core/pro-feature-previews";
 import type CustomCalendarPlugin from "./main";
 import { openFilteredEventsModal, openGlobalSearchModal } from "./react/modals/event-list";
 import { openEventsModal } from "./react/modals/event-list/events-modal-content";
+import { startPrismaTour } from "./react/onboarding/prisma-tour";
 
 type CalendarComponentAction = (component: CalendarComponent) => void;
 
@@ -113,6 +114,10 @@ export function registerPrismaCalendarCommands(plugin: CustomCalendarPlugin): vo
 		void redo(plugin).then((success) => {
 			if (!success) new Notice("Nothing to redo");
 		});
+	});
+
+	addApiCommand(COMMAND_IDS.START_TUTORIAL, "Start onboarding tutorial", () => {
+		startPrismaTour(plugin);
 	});
 
 	addApiCommand(COMMAND_IDS.CREATE_EVENT, "Create new event", () => {

@@ -925,6 +925,7 @@ export const CustomCalendarSettingsSchema = z
 	.object({
 		licenseKeySecretName: z.string().catch(""),
 		version: z.string().catch("1.1.0"),
+		tutorialCompleted: z.boolean().catch(false),
 		checkForReleaseUpdates: z
 			.boolean()
 			.catch(true)
