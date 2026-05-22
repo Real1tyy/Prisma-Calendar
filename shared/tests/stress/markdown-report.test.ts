@@ -51,4 +51,35 @@ describe("renderMarkdownReport", () => {
 		expect(md).toContain("events.indexed");
 		expect(md).toContain("5000");
 	});
+
+	it("renders the top self-time digest with a function row and location", () => {
+		const md = renderMarkdownReport(
+			makeRunReport({
+				profileDigest: {
+					sampleCount: 120,
+					durationMs: 350,
+					totalSelfTimeMs: 350,
+					topSelfTime: [
+						{
+							functionName: "getNextOccurrence",
+							url: "file:///x/recurring-event-manager.ts",
+							line: 611,
+							location: "recurring-event-manager.ts:611",
+							selfTimeMs: 712,
+							selfPct: 38.2,
+							hitCount: 712,
+						},
+					],
+				},
+			})
+		);
+		expect(md).toContain("Top self-time (CPU profile)");
+		expect(md).toContain("getNextOccurrence");
+		expect(md).toContain("recurring-event-manager.ts:611");
+		expect(md).toContain("38.2%");
+	});
+
+	it("shows the no-profile message when no digest is attached", () => {
+		expect(renderMarkdownReport(makeRunReport())).toContain("No CPU profile captured");
+	});
 });

@@ -144,6 +144,36 @@ export const StressRunConfigSchema = z.object({
 });
 export type StressRunConfig = z.infer<typeof StressRunConfigSchema>;
 
+/**
+ * One function's self-time, parsed from a CDP CPU profile (`.cpuprofile`). Many
+ * call-tree nodes share a call frame; the digest collapses them into one row.
+ */
+export const ProfileDigestEntrySchema = z.object({
+	functionName: z.string(),
+	url: z.string(),
+	/** 1-based source line (0 when the frame has no location, e.g. native code). */
+	line: z.number(),
+	/** `file.ts:NN` or the bare function name for native/synthetic frames. */
+	location: z.string(),
+	selfTimeMs: z.number(),
+	/** Share of total profiled time (0–100). */
+	selfPct: z.number(),
+	hitCount: z.number(),
+});
+export type ProfileDigestEntry = z.infer<typeof ProfileDigestEntrySchema>;
+
+/**
+ * Top self-time functions from a CPU profile — the agent-readable bottleneck map
+ * that turns "stage X is slow" into "function:line is N% of it" without a GUI.
+ */
+export const ProfileDigestSchema = z.object({
+	sampleCount: z.number(),
+	durationMs: z.number(),
+	totalSelfTimeMs: z.number(),
+	topSelfTime: z.array(ProfileDigestEntrySchema),
+});
+export type ProfileDigest = z.infer<typeof ProfileDigestSchema>;
+
 /** A heavy artifact a run produced, so an agent can find the profile/trace/heap. */
 export const StressArtifactSchema = z.object({
 	kind: z.enum(["json", "markdown", "cpu-profile", "trace", "heap-snapshot", "playwright-trace", "log", "screenshot"]),
@@ -169,5 +199,7 @@ export const StressRunReportSchema = z.object({
 	budgetFailures: z.array(BudgetFailureSchema),
 	regressions: z.array(RegressionFindingSchema),
 	artifacts: z.array(StressArtifactSchema),
+	/** Self-time digest from the profiled "explain" pass; absent on clean-only runs. */
+	profileDigest: ProfileDigestSchema.optional(),
 });
 export type StressRunReport = z.infer<typeof StressRunReportSchema>;

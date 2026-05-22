@@ -6,8 +6,10 @@ import {
 	buildRunStem,
 	captureEnvironment,
 	captureGitInfo,
+	collectCpuProfile,
 	compareToBaseline,
 	diffCdpMetrics,
+	digestCpuProfile,
 	evaluateBudgets,
 	flattenMetrics,
 	generateVault,
@@ -22,7 +24,9 @@ import {
 	runRepeats,
 	summarizeSampleGroups,
 	writeBaseline,
+	writeCpuProfile,
 	writeRunReports,
+	type ProfileDigest,
 	type StressArtifact,
 	type StressRunReport,
 } from "@real1ty-obsidian-plugins/testing/stress";
@@ -90,6 +94,17 @@ test.describe("stress: calendar navigation", () => {
 			{ kind: "markdown", path: path.join(artifactDir, "report.md") },
 		];
 
+		// Pass B (explain): one more navigation under a CDP CPU profile, kept
+		// separate from the gated repeats above so the sampler's overhead never
+		// skews the budgeted timings. Feeds the self-time digest only.
+		const cpuProfilePath = path.join(artifactDir, "cpu.cpuprofile");
+		const { profile: cpuProfile } = await collectCpuProfile(cdp, () =>
+			navigateMonths(page, STRESS_CONFIG.navSteps, NOOP)
+		);
+		await writeCpuProfile(cpuProfilePath, cpuProfile);
+		const profileDigest: ProfileDigest = digestCpuProfile(cpuProfile);
+		artifacts.push({ kind: "cpu-profile", path: cpuProfilePath, description: "V8 CPU profile (explain pass)" });
+
 		const pluginVersion = snapshot.metadata?.["pluginVersion"];
 		const environment = {
 			...captureEnvironment(),
@@ -116,6 +131,7 @@ test.describe("stress: calendar navigation", () => {
 			budgetFailures: evaluateBudgets(flattenMetrics(timings, counts), BUDGETS[SCENARIO] ?? {}),
 			regressions: [],
 			artifacts,
+			profileDigest,
 		};
 
 		const baselinePath = path.join(STRESS_CONFIG.baselineDir, baselineFileName(SCENARIO, PROFILE.name));

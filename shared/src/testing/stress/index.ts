@@ -8,9 +8,17 @@ export {
 	namespaceCdpMetrics,
 	readCdpPerformanceMetrics,
 } from "./collectors/cdp-metrics";
+export { collectCpuProfile, type CpuProfilerOptions, writeCpuProfile } from "./collectors/cpu-profiler";
 export { readPerfBridge, resetPerfBridge } from "./collectors/perf-bridge";
 export { captureEnvironment, captureGitInfo } from "./environment";
 export { flattenMetrics, flattenTimings, mergeTimings, summarizeSampleGroups } from "./metrics";
+export {
+	type CpuProfile,
+	type CpuProfileCallFrame,
+	type CpuProfileNode,
+	digestCpuProfile,
+	type DigestOptions,
+} from "./profile-digest";
 export { compareToBaseline, DEFAULT_REGRESSION_RULE, hasRegression } from "./regression";
 export { readBaseline, reportToBaseline, type WrittenReport, writeBaseline, writeRunReports } from "./reporters/json";
 export { renderMarkdownReport } from "./reporters/markdown";
@@ -25,6 +33,8 @@ export {
 	MetricRecordSchema,
 	MetricSummarySchema,
 	MetricUnitSchema,
+	ProfileDigestEntrySchema,
+	ProfileDigestSchema,
 	RegressionFindingSchema,
 	RegressionRuleSchema,
 	StressArtifactSchema,
@@ -44,6 +54,8 @@ export type {
 	MetricRecord,
 	MetricSummary,
 	MetricUnit,
+	ProfileDigest,
+	ProfileDigestEntry,
 	RegressionFinding,
 	RegressionRule,
 	StressArtifact,

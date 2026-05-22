@@ -67,6 +67,23 @@ function timingsSection(timings: StressRunReport["timings"]): string {
 	return table(["Stage", "Count", "Avg ms", "P50 ms", "P95 ms", "Max ms"], rows);
 }
 
+function profileDigestSection(digest: StressRunReport["profileDigest"]): string {
+	if (!digest) return "_No CPU profile captured._";
+	if (digest.topSelfTime.length === 0) {
+		return "_CPU profile captured, but no non-idle frames were sampled — the action is too fast to profile (try a larger profile)._";
+	}
+	const caption = `Profiled ${round(digest.durationMs)}ms · ${digest.sampleCount} samples`;
+	const rows = digest.topSelfTime.map((entry, index) => [
+		String(index + 1),
+		entry.functionName,
+		entry.location,
+		`${round(entry.selfPct)}%`,
+		String(round(entry.selfTimeMs)),
+		String(entry.hitCount),
+	]);
+	return [caption, "", table(["#", "Function", "Location", "Self %", "Self ms", "Hits"], rows)].join("\n");
+}
+
 function countsSection(counts: StressRunReport["counts"]): string {
 	const entries = Object.entries(counts).sort((a, b) => a[0].localeCompare(b[0]));
 	if (entries.length === 0) return "_No counts recorded._";
@@ -103,6 +120,10 @@ export function renderMarkdownReport(report: StressRunReport): string {
 		"## Timings",
 		"",
 		timingsSection(report.timings),
+		"",
+		"## Top self-time (CPU profile)",
+		"",
+		profileDigestSection(report.profileDigest),
 		"",
 		"## Counts",
 		"",
