@@ -29,23 +29,37 @@ export interface GenerateVaultOptions<P extends VaultProfile> {
 	profile: P;
 	seed: number;
 	buildEvent: (rng: SeededRandom, index: number, profile: P) => GeneratedEvent;
+	/**
+	 * Optional builder for recurring source events; called `profile.recurring`
+	 * times after the plain events (sharing the same RNG, so output stays
+	 * deterministic). Omit it and `profile.recurring` files are simply not written.
+	 */
+	buildRecurringEvent?: (rng: SeededRandom, index: number, profile: P) => GeneratedEvent;
 	generatorVersion?: number;
 	/** Optional path to write the manifest JSON. */
 	manifestPath?: string;
 }
 
 export function generateVault<P extends VaultProfile>(options: GenerateVaultOptions<P>): VaultManifest {
-	const { dir, profile, seed, buildEvent, manifestPath } = options;
+	const { dir, profile, seed, buildEvent, buildRecurringEvent, manifestPath } = options;
 	const generatorVersion = options.generatorVersion ?? 1;
 
 	mkdirSync(dir, { recursive: true });
 	const rng = createSeededRandom(seed);
 
-	for (let index = 0; index < profile.events; index++) {
-		const { relativePath, content } = buildEvent(rng, index, profile);
-		const full = path.join(dir, relativePath);
+	const write = (event: GeneratedEvent): void => {
+		const full = path.join(dir, event.relativePath);
 		mkdirSync(path.dirname(full), { recursive: true });
-		writeFileSync(full, content, "utf8");
+		writeFileSync(full, event.content, "utf8");
+	};
+
+	for (let index = 0; index < profile.events; index++) {
+		write(buildEvent(rng, index, profile));
+	}
+	if (buildRecurringEvent) {
+		for (let index = 0; index < profile.recurring; index++) {
+			write(buildRecurringEvent(rng, index, profile));
+		}
 	}
 
 	const manifest: VaultManifest = {

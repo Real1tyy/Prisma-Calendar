@@ -15,6 +15,11 @@ const buildEvent = (rng: SeededRandom, index: number): GeneratedEvent => ({
 	content: `---\nstart: 2026-01-${String((index % 28) + 1).padStart(2, "0")}\nweight: ${rng.int(0, 100)}\n---\n# Event ${index}\n`,
 });
 
+const buildRecurringEvent = (rng: SeededRandom, index: number): GeneratedEvent => ({
+	relativePath: `Recurring-${String(index).padStart(3, "0")}.md`,
+	content: `---\nRRule: daily\nweight: ${rng.int(0, 100)}\n---\n# Recurring ${index}\n`,
+});
+
 const tmpDirs: string[] = [];
 function freshDir(): string {
 	const dir = mkdtempSync(path.join(os.tmpdir(), "stress-vault-"));
@@ -33,6 +38,14 @@ describe("generateVault", () => {
 		const dir = freshDir();
 		generateVault({ dir, profile: PROFILE, seed: 42, buildEvent });
 		expect(readdirSync(dir)).toHaveLength(5);
+	});
+
+	it("also writes profile.recurring files when a recurring builder is given", () => {
+		const dir = freshDir();
+		generateVault({ dir, profile: PROFILE, seed: 42, buildEvent, buildRecurringEvent });
+		const names = readdirSync(dir);
+		expect(names).toHaveLength(6); // 5 events + 1 recurring
+		expect(names.filter((n) => n.startsWith("Recurring-"))).toHaveLength(1);
 	});
 
 	it("is byte-identical for the same seed", () => {
