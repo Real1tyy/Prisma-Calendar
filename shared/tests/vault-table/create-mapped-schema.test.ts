@@ -254,4 +254,52 @@ describe("createMappedSchema", () => {
 		const result = schema.parse(raw);
 		expect(result.title).toBe("Event");
 	});
+
+	it("should apply fieldOverrides for non-conventional settings prop names", () => {
+		const overrideShape = { categories: z.array(z.string()).default([]), title: z.string() };
+		const overrideSettings = { categoryProp: "fm_cats", titleProp: "fm_title" };
+		// `categories` maps to `categoryProp` (override), not the `categoriesProp` convention.
+		const schema = createMappedSchema(overrideShape, overrideSettings, { categories: "categoryProp" });
+
+		const parsed = schema.parse({ fm_cats: ["work"], fm_title: "Event" });
+		expect(parsed.categories).toEqual(["work"]);
+		expect(parsed.title).toBe("Event");
+		expect(schema.serialize(parsed)).toEqual({ fm_cats: ["work"], fm_title: "Event" });
+	});
+});
+
+describe("createMappedSchema memoization", () => {
+	const shape = { title: z.string(), status: z.string().default("active") };
+
+	it("returns the same schema instance for the same shape + prop mapping", () => {
+		const settings = { titleProp: "t", statusProp: "s" };
+		expect(createMappedSchema(shape, settings)).toBe(createMappedSchema(shape, settings));
+	});
+
+	it("hits the cache across different settings objects with the same mapping", () => {
+		// The hot ingest path passes a fresh `{ ...settings }` per row — the cache must
+		// key on the resolved names, not object identity, or it would never hit.
+		const a = createMappedSchema(shape, { titleProp: "t", statusProp: "s" });
+		const b = createMappedSchema(shape, { titleProp: "t", statusProp: "s" });
+		expect(a).toBe(b);
+	});
+
+	it("builds a distinct schema when a prop name differs", () => {
+		const a = createMappedSchema(shape, { titleProp: "a_title", statusProp: "s" });
+		const b = createMappedSchema(shape, { titleProp: "b_title", statusProp: "s" });
+		expect(a).not.toBe(b);
+	});
+
+	it("keys per shape, so structurally-identical but distinct shapes never collide", () => {
+		const otherShape = { title: z.string(), status: z.string().default("active") };
+		const settings = { titleProp: "t", statusProp: "s" };
+		expect(createMappedSchema(shape, settings)).not.toBe(createMappedSchema(otherShape, settings));
+	});
+
+	it("a reused (cached) schema still remaps the correct external keys", () => {
+		const first = createMappedSchema(shape, { titleProp: "t", statusProp: "s" });
+		const reused = createMappedSchema(shape, { titleProp: "t", statusProp: "s" });
+		expect(reused).toBe(first);
+		expect(reused.parse({ t: "Team Meeting", s: "done" })).toEqual({ title: "Team Meeting", status: "done" });
+	});
 });
