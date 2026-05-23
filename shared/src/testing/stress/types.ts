@@ -214,7 +214,17 @@ export type HeapDigest = z.infer<typeof HeapDigestSchema>;
 
 /** A heavy artifact a run produced, so an agent can find the profile/trace/heap. */
 export const StressArtifactSchema = z.object({
-	kind: z.enum(["json", "markdown", "cpu-profile", "trace", "heap-snapshot", "playwright-trace", "log", "screenshot"]),
+	kind: z.enum([
+		"json",
+		"markdown",
+		"html",
+		"cpu-profile",
+		"trace",
+		"heap-snapshot",
+		"playwright-trace",
+		"log",
+		"screenshot",
+	]),
 	path: z.string(),
 	description: z.string().optional(),
 });

@@ -1,22 +1,40 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
+import type { ProfileTreeNode } from "../profile-tree";
 import { StressBaselineSchema, type StressBaseline, type StressRunReport } from "../types";
+import { renderHtmlReport } from "./html";
 import { renderMarkdownReport } from "./markdown";
 
 export interface WrittenReport {
 	jsonPath: string;
 	markdownPath: string;
+	htmlPath: string;
 }
 
-/** Write `run.json` + `report.md` into the run's artifact directory. */
-export function writeRunReports(dir: string, report: StressRunReport): WrittenReport {
+export interface WriteRunReportsOptions {
+	/** CPU-profile call tree for the HTML report's interactive flame chart. */
+	profileTree?: ProfileTreeNode;
+}
+
+/** Write `run.json` + `report.md` + `report.html` into the run's artifact directory. */
+export function writeRunReports(
+	dir: string,
+	report: StressRunReport,
+	options: WriteRunReportsOptions = {}
+): WrittenReport {
 	mkdirSync(dir, { recursive: true });
 	const jsonPath = path.join(dir, "run.json");
 	const markdownPath = path.join(dir, "report.md");
+	const htmlPath = path.join(dir, "report.html");
 	writeFileSync(jsonPath, `${JSON.stringify(report, null, 2)}\n`, "utf8");
 	writeFileSync(markdownPath, renderMarkdownReport(report), "utf8");
-	return { jsonPath, markdownPath };
+	writeFileSync(
+		htmlPath,
+		renderHtmlReport(report, options.profileTree ? { profileTree: options.profileTree } : {}),
+		"utf8"
+	);
+	return { jsonPath, markdownPath, htmlPath };
 }
 
 export function readBaseline(filePath: string): StressBaseline | null {

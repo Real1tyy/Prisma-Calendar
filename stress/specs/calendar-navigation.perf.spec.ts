@@ -3,6 +3,7 @@ import path from "node:path";
 import {
 	baselineFileName,
 	buildArtifactDir,
+	buildProfileTree,
 	buildRunStem,
 	captureEnvironment,
 	captureGitInfo,
@@ -17,6 +18,7 @@ import {
 	loadBundleSourceMap,
 	mergeTimings,
 	namespaceCdpMetrics,
+	pruneProfileTree,
 	readBaseline,
 	readCdpPerformanceMetrics,
 	readPerfBridge,
@@ -28,6 +30,7 @@ import {
 	writeCpuProfile,
 	writeRunReports,
 	type ProfileDigest,
+	type ProfileTreeNode,
 	type StressArtifact,
 	type StressRunReport,
 } from "@real1ty-obsidian-plugins/testing/stress";
@@ -100,6 +103,7 @@ test.describe("stress: calendar navigation", () => {
 		const artifacts: StressArtifact[] = [
 			{ kind: "json", path: path.join(artifactDir, "run.json") },
 			{ kind: "markdown", path: path.join(artifactDir, "report.md") },
+			{ kind: "html", path: path.join(artifactDir, "report.html"), description: "Interactive report + flame chart" },
 		];
 
 		// Pass B (explain): one more navigation under a CDP CPU profile, kept
@@ -119,7 +123,10 @@ test.describe("stress: calendar navigation", () => {
 				mapPath: path.join(process.cwd(), "main.js.map"),
 				matchesBundle: (url) => url.includes("prisma-calendar") || url.endsWith("main.js"),
 			}) ?? undefined;
-		const profileDigest: ProfileDigest = digestCpuProfile(cpuProfile, resolveFrame ? { resolveFrame } : {});
+		const digestOptions = resolveFrame ? { resolveFrame } : {};
+		const profileDigest: ProfileDigest = digestCpuProfile(cpuProfile, digestOptions);
+		// Prune sub-0.5%-of-root subtrees so the flame chart's inlined JSON stays small.
+		const profileTree: ProfileTreeNode = pruneProfileTree(buildProfileTree(cpuProfile, digestOptions));
 		artifacts.push({ kind: "cpu-profile", path: cpuProfilePath, description: "V8 CPU profile (explain pass)" });
 
 		const pluginVersion = snapshot.metadata?.["pluginVersion"];
@@ -158,8 +165,9 @@ test.describe("stress: calendar navigation", () => {
 		}
 		report.status = report.budgetFailures.length > 0 || hasRegression(report.regressions) ? "fail" : "pass";
 
-		const { markdownPath } = writeRunReports(artifactDir, report);
+		const { markdownPath, htmlPath } = writeRunReports(artifactDir, report, { profileTree });
 		console.log(`[stress] report: ${markdownPath}`);
+		console.log(`[stress] html:   ${htmlPath}`);
 
 		if (process.env["PERF_BLESS"] === "1") {
 			writeBaseline(baselinePath, reportToBaseline(report));

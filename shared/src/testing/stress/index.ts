@@ -22,10 +22,26 @@ export {
 	type DigestOptions,
 	type FrameResolver,
 	type RawFrame,
+	resolveCallFrame,
 	type ResolvedFrame,
 } from "./profile-digest";
+export {
+	buildProfileTree,
+	heaviestStack,
+	type ProfileTreeNode,
+	type ProfileTreeOptions,
+	pruneProfileTree,
+} from "./profile-tree";
 export { compareToBaseline, DEFAULT_REGRESSION_RULE, hasRegression } from "./regression";
-export { readBaseline, reportToBaseline, type WrittenReport, writeBaseline, writeRunReports } from "./reporters/json";
+export {
+	readBaseline,
+	reportToBaseline,
+	type WriteRunReportsOptions,
+	type WrittenReport,
+	writeBaseline,
+	writeRunReports,
+} from "./reporters/json";
+export { type HtmlReportOptions, renderHtmlReport } from "./reporters/html";
 export { renderMarkdownReport } from "./reporters/markdown";
 export { type RepeatOptions, type RepeatPhase, runRepeats } from "./runner/repeat";
 export { createSeededRandom, type SeededRandom } from "./seeded-random";

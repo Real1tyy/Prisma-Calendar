@@ -104,6 +104,26 @@ function formatLocation(functionName: string, url: string, line: number): string
 }
 
 /**
+ * Resolve a call frame to its display identity — apply the optional sourcemap
+ * resolver, else fall back to the minified name/url/line. Shared by the self-time
+ * digest and the call-tree builder so both label frames identically.
+ */
+export function resolveCallFrame(
+	callFrame: CpuProfileCallFrame,
+	resolveFrame?: FrameResolver
+): { name: string; url: string; line: number; location: string } {
+	const resolved = resolveFrame?.({
+		url: callFrame.url,
+		lineNumber: callFrame.lineNumber,
+		...(callFrame.columnNumber !== undefined ? { columnNumber: callFrame.columnNumber } : {}),
+	});
+	const name = resolved?.functionName ?? (callFrame.functionName || ANONYMOUS);
+	const url = resolved ? resolved.source : callFrame.url;
+	const line = resolved ? resolved.line : callFrame.lineNumber >= 0 ? callFrame.lineNumber + 1 : 0;
+	return { name, url, line, location: formatLocation(name, url, line) };
+}
+
+/**
  * Rank a CPU profile's functions by self time. Self time per node = the sum of
  * `timeDeltas[i]` for every sample where that node was on top of the stack;
  * nodes that share a call frame (same function reached via different paths) are
@@ -132,16 +152,8 @@ export function digestCpuProfile(profile: CpuProfile, options: DigestOptions = {
 	for (const [nodeId, selfUs] of selfUsByNode) {
 		const node = nodeById.get(nodeId);
 		if (!node) continue;
-		const originalName = node.callFrame.functionName || ANONYMOUS;
-		if (!includeSynthetic && SYNTHETIC_FRAME_NAMES.has(originalName)) continue;
-		const resolved = resolveFrame?.({
-			url: node.callFrame.url,
-			lineNumber: node.callFrame.lineNumber,
-			...(node.callFrame.columnNumber !== undefined ? { columnNumber: node.callFrame.columnNumber } : {}),
-		});
-		const name = resolved?.functionName ?? originalName;
-		const url = resolved ? resolved.source : node.callFrame.url;
-		const line = resolved ? resolved.line : node.callFrame.lineNumber >= 0 ? node.callFrame.lineNumber + 1 : 0;
+		const { name, url, line } = resolveCallFrame(node.callFrame, resolveFrame);
+		if (!includeSynthetic && SYNTHETIC_FRAME_NAMES.has(name)) continue;
 		const key = `${name} ${url} ${line}`;
 		const existing = byFrame.get(key);
 		if (existing) {
