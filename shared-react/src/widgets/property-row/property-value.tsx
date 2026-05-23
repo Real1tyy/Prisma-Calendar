@@ -58,6 +58,7 @@ export const PropertyValue = memo(function PropertyValue({ value, linkClassName,
 				{value.map((item, i) => {
 					const raw = String(item).trim();
 					return (
+						// oxlint-disable-next-line react/no-array-index-key -- stateless inline list; position drives the comma separator below
 						<Fragment key={i}>
 							{i > 0 && ", "}
 							{isObsidianLink(raw) ? (
@@ -76,5 +77,5 @@ export const PropertyValue = memo(function PropertyValue({ value, linkClassName,
 	if (isObsidianLink(raw)) {
 		return <PropertyLink raw={raw} app={app} linkClassName={linkClassName} onLinkClick={onLinkClick} />;
 	}
-	return <>{raw}</>;
+	return raw;
 });

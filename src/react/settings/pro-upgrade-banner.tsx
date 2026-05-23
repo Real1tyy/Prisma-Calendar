@@ -50,17 +50,17 @@ export const ProUpgradeBanner = memo(function ProUpgradeBanner({
 			<p className={cls("pro-upgrade-description")}>{description}</p>
 			<p className={cls("pro-upgrade-trial")}>
 				Try every Pro feature with a 30-day free trial &mdash; cancel anytime.{" "}
-				<a className={cls("pro-upgrade-learn-more")} href={learnMoreUrl} target="_blank" rel="noopener">
+				<a className={cls("pro-upgrade-learn-more")} href={learnMoreUrl} target="_blank" rel="noopener noreferrer">
 					Learn more about Pro
 				</a>
 			</p>
 			<div className={cls("pro-upgrade-actions")}>
 				{docUrl && (
-					<a className={cls("pro-upgrade-doc-link")} href={docUrl} target="_blank" rel="noopener">
+					<a className={cls("pro-upgrade-doc-link")} href={docUrl} target="_blank" rel="noopener noreferrer">
 						View full feature documentation &rarr;
 					</a>
 				)}
-				<a className={cls("pro-upgrade-link")} href={purchaseUrl} target="_blank" rel="noopener">
+				<a className={cls("pro-upgrade-link")} href={purchaseUrl} target="_blank" rel="noopener noreferrer">
 					Start your free trial
 				</a>
 			</div>

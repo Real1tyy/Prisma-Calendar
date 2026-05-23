@@ -410,6 +410,7 @@ export const GridLayout = memo(function GridLayout(props: GridLayoutProps) {
 					const containerRefs = perCellMode === "row" ? rowContainerRefs : colContainerRefs;
 					return (
 						<PerCellContainer
+							// oxlint-disable-next-line react/no-array-index-key -- grid rows/columns are positional; idx IS the stable identity
 							key={`${PER_CELL_AXIS_CONFIG[perCellMode].keyPrefix}${idx}`}
 							model={{
 								axis: perCellMode,

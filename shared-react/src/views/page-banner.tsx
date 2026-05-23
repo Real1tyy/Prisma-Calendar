@@ -102,7 +102,7 @@ export const PageBanner = memo(function PageBanner({
 			{breadcrumbs && breadcrumbs.length > 0 && (
 				<nav className={cls("breadcrumbs")} aria-label="Breadcrumbs">
 					{breadcrumbs.map((crumb, i) => (
-						<span key={i} className={cls("breadcrumb")}>
+						<span key={crumb.label} className={cls("breadcrumb")}>
 							{crumb.onClick ? (
 								<button type="button" className={cls("breadcrumb-link")} onClick={crumb.onClick}>
 									{crumb.label}

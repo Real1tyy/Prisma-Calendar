@@ -11,7 +11,7 @@ export interface GroupDropdownProps {
 	cssPrefix: string;
 	testIdPrefix: string;
 	position: { x: number; y: number };
-	children: TabDefinition[];
+	items: TabDefinition[];
 	getChildLabel: (child: TabDefinition) => string;
 	getChildIcon?: (child: TabDefinition) => string | undefined;
 	getChildColor?: (child: TabDefinition) => string | undefined;
@@ -27,7 +27,7 @@ export const GroupDropdown = memo(function GroupDropdown({
 	cssPrefix,
 	testIdPrefix,
 	position,
-	children,
+	items,
 	getChildLabel,
 	getChildIcon,
 	getChildColor,
@@ -53,7 +53,7 @@ export const GroupDropdown = memo(function GroupDropdown({
 			onMouseEnter={hoverDropdown ? onMouseEnter : undefined}
 			onMouseLeave={hoverDropdown ? onMouseLeave : undefined}
 		>
-			{children.map((child) => {
+			{items.map((child) => {
 				const icon = getChildIcon?.(child);
 				const color = getChildColor?.(child);
 				return (

@@ -22,7 +22,7 @@ export const ProGatedContent = memo(function ProGatedContent({
 	const bundle = useBundle();
 	const isPro = useObservable(bundle.plugin.licenseManager.isPro$, bundle.plugin.licenseManager.isPro);
 
-	if (isPro) return <>{children}</>;
+	if (isPro) return children;
 
 	return (
 		<div data-testid={tid("pro-gated")}>

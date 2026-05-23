@@ -68,8 +68,8 @@ const EventPreviewList = memo(function EventPreviewList({ events }: { events: Im
 		<div className={cls("ics-import-preview")} data-testid={tid("ics-import-preview")}>
 			<h4>Found {events.length} events:</h4>
 			<ul className={cls("ics-import-event-list")}>
-				{visible.map((event, i) => (
-					<li key={i}>
+				{visible.map((event) => (
+					<li key={event.uid}>
 						<strong>{event.title}</strong>
 						<span>
 							{" - "}

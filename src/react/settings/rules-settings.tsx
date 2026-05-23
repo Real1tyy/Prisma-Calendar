@@ -379,7 +379,13 @@ const FilterPresetsList = memo(function FilterPresetsList({ filterPresets, setFi
 	return (
 		<div>
 			{filterPresets.map((preset, index) => (
-				<FilterPresetItem key={index} preset={preset} index={index} onUpdate={updatePreset} onDelete={deletePreset} />
+				<FilterPresetItem
+					key={preset.name}
+					preset={preset}
+					index={index}
+					onUpdate={updatePreset}
+					onDelete={deletePreset}
+				/>
 			))}
 		</div>
 	);

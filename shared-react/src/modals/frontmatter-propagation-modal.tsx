@@ -14,8 +14,8 @@ function DiffSection({ title, changes, cls }: { title: string; changes: Frontmat
 		<div>
 			<h4>{title}</h4>
 			<ul>
-				{changes.map((change, i) => (
-					<li key={i} className={cls}>
+				{changes.map((change) => (
+					<li key={change.key} className={cls}>
 						{formatChangeForDisplay(change)}
 					</li>
 				))}
