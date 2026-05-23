@@ -30,9 +30,7 @@ export const FilterBar = memo(function FilterBar({ onFilterChange, onHandleReady
 		onFilterChange();
 	}, [matcher, onFilterChange]);
 
-	const onPresetSelected = useCallback((expression: string) => {
-		expressionHandle.current?.setValue(expression);
-	}, []);
+	const onPresetSelected = useCallback((expression: string) => expressionHandle.current?.setValue(expression), []);
 
 	useEffect(() => {
 		onHandleReady({

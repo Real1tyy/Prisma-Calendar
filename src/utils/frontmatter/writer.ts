@@ -12,7 +12,7 @@ export function setStringProp(fm: Frontmatter, prop: string, value: string | und
 	if (trimmed) {
 		fm[prop] = trimmed;
 	} else {
-		delete fm[prop];
+		Reflect.deleteProperty(fm, prop);
 	}
 }
 
@@ -20,7 +20,7 @@ export function setBooleanProp(fm: Frontmatter, prop: string, value: boolean): v
 	if (value) {
 		fm[prop] = true;
 	} else {
-		delete fm[prop];
+		Reflect.deleteProperty(fm, prop);
 	}
 }
 
@@ -28,7 +28,7 @@ export function setNumericProp(fm: Frontmatter, prop: string, value: number): vo
 	if (value > 0) {
 		fm[prop] = value;
 	} else {
-		delete fm[prop];
+		Reflect.deleteProperty(fm, prop);
 	}
 }
 
@@ -56,7 +56,7 @@ function writeMarkAsDone(
 			if (customUndoneProp) {
 				fm[customUndoneProp.key] = customUndoneProp.value;
 			} else {
-				delete fm[customDoneProp.key];
+				Reflect.deleteProperty(fm, customDoneProp.key);
 			}
 		}
 	} else {

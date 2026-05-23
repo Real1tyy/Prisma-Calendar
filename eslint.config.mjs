@@ -1,146 +1,191 @@
-// eslint.config.mjs
+// Prisma-Calendar lint config. Production `src/**` runs typescript-eslint
+// `strictTypeChecked` at ERROR; tests and the rest stay on the baseline below.
 import js from "@eslint/js";
+import eslintConfigPrettier from "eslint-config-prettier";
 import obsidianmd from "eslint-plugin-obsidianmd";
 import reactHooks from "eslint-plugin-react-hooks";
 import { defineConfig } from "eslint/config";
+import globals from "globals";
 import tseslint from "typescript-eslint";
 
+const STRICT_SRC = ["src/**/*.ts", "src/**/*.tsx"];
+const STRICT_SRC_IGNORES = [
+	"src/**/*.test.ts",
+	"src/**/*.test.tsx",
+	"src/**/*.spec.ts",
+	"src/**/*.spec.tsx",
+	"src/testing/**",
+];
+
 export default defineConfig([
+	// Base recommended configs
+	js.configs.recommended,
+	...tseslint.configs.recommended,
+	reactHooks.configs.flat.recommended,
+	eslintConfigPrettier,
+
+	// Config files, `.mjs`, and `stress/**` are excluded so `strictTypeChecked`'s
+	// `projectService` doesn't fail on files that have no tsconfig project.
 	{
 		ignores: [
-			"node_modules/**",
 			"**/node_modules/**",
-			"docs-site/**",
 			"**/dist/**",
+			"**/main.js",
+			"**/styles.css",
+			"**/*.d.ts",
+			"**/docs-site/**",
+			"**/.obsidian/**",
 			"**/build/**",
-			"main.js",
-			"*.config.js",
-			"*.config.mjs",
-			"esbuild.config.mjs",
-			"vite.config.ts",
-			"version-bump.mjs",
-			".dependency-cruiser.mjs",
-			"package.json",
-			"manifest.json",
-			"versions.json",
-			"e2e/**",
-			"scripts/**",
-			"playwright.config.ts",
-			"vitest.config.ts",
+			"**/coverage/**",
+			"**/.cache/**",
+			".eslintcache",
+			"**/htmlcov/**",
+			"**/playwright-report/**",
+			"**/test-results/**",
+			"**/*.config.{js,mjs,cjs,ts}",
+			"**/*.mjs",
+			"stress/**",
 		],
 	},
 
-	js.configs.recommended,
-	...tseslint.configs.recommended,
-	...tseslint.configs.recommendedTypeChecked,
-	...obsidianmd.configs.recommended,
-	reactHooks.configs.flat.recommended,
-
+	// TypeScript/JavaScript files configuration with type checking
 	{
 		files: ["**/*.ts", "**/*.tsx"],
+		ignores: ["**/*.config.ts", "**/vitest.config.ts"],
+		plugins: {
+			obsidianmd,
+		},
 		languageOptions: {
-			parser: tseslint.parser,
+			ecmaVersion: 2022,
+			sourceType: "module",
+			globals: {
+				...globals.browser,
+				...globals.node,
+			},
 			parserOptions: {
 				projectService: true,
-			},
-			globals: {
-				console: "readonly",
-				document: "readonly",
-				window: "readonly",
-				setTimeout: "readonly",
-				clearTimeout: "readonly",
-				setInterval: "readonly",
-				clearInterval: "readonly",
-				requestAnimationFrame: "readonly",
-				cancelAnimationFrame: "readonly",
-				NodeJS: "readonly",
-				getComputedStyle: "readonly",
-				HTMLElement: "readonly",
-				HTMLInputElement: "readonly",
-				HTMLTextAreaElement: "readonly",
-				HTMLSelectElement: "readonly",
-				HTMLDivElement: "readonly",
-				Event: "readonly",
-				KeyboardEvent: "readonly",
-				MouseEvent: "readonly",
-				MutationObserver: "readonly",
-				ResizeObserver: "readonly",
-				IntersectionObserver: "readonly",
-				DOMParser: "readonly",
-				fetch: "readonly",
-				AbortController: "readonly",
-				URL: "readonly",
-				Blob: "readonly",
-				File: "readonly",
-				FormData: "readonly",
-				Response: "readonly",
-				Headers: "readonly",
-				CustomEvent: "readonly",
-				React: "readonly",
-				navigator: "readonly",
-				activeDocument: "readonly",
-				queueMicrotask: "readonly",
+				tsconfigRootDir: import.meta.dirname,
 			},
 		},
 		rules: {
-			"import/no-extraneous-dependencies": "off",
-			"no-console": "off",
-			"prefer-const": "error",
+			"@typescript-eslint/no-unused-vars": [
+				"warn",
+				{
+					argsIgnorePattern: "^_",
+					varsIgnorePattern: "^_",
+				},
+			],
+			"@typescript-eslint/no-explicit-any": "warn",
+			"@typescript-eslint/explicit-function-return-type": "off",
+			"@typescript-eslint/explicit-module-boundary-types": "off",
+			"@typescript-eslint/no-non-null-assertion": "off",
 			"@typescript-eslint/no-floating-promises": "error",
-			"@typescript-eslint/await-thenable": "error",
-			"@typescript-eslint/only-throw-error": "error",
 			"@typescript-eslint/no-misused-promises": [
 				"error",
 				{ checksVoidReturn: { arguments: false, attributes: false } },
 			],
-			"@typescript-eslint/no-unused-vars": [
-				"error",
-				{
-					argsIgnorePattern: "^_",
-					varsIgnorePattern: "^_",
-					caughtErrorsIgnorePattern: "^_",
-				},
-			],
-			"@typescript-eslint/no-explicit-any": "warn",
-			"@typescript-eslint/no-non-null-assertion": "off",
-			"@typescript-eslint/no-unsafe-assignment": "off",
-			"@typescript-eslint/no-unsafe-member-access": "off",
-			"@typescript-eslint/no-unsafe-call": "off",
-			"@typescript-eslint/no-unsafe-return": "off",
-			"@typescript-eslint/no-unsafe-argument": "off",
-			"@typescript-eslint/require-await": "off",
-			"@typescript-eslint/restrict-template-expressions": "off",
-			"@typescript-eslint/unbound-method": "off",
-			"@typescript-eslint/no-implied-eval": "off",
-			"obsidianmd/ui/sentence-case": "off",
-			"obsidianmd/no-static-styles-assignment": "off",
-			"obsidianmd/no-tfile-tfolder-cast": "warn",
-			"@typescript-eslint/no-redundant-type-constituents": "off",
-			"@typescript-eslint/no-base-to-string": "off",
-			"@typescript-eslint/no-deprecated": "warn",
+			"@typescript-eslint/consistent-type-imports": "error",
+			"no-console": "off",
+			"prefer-const": "error",
 			"@typescript-eslint/no-unnecessary-condition": "warn",
-			"@microsoft/sdl/no-inner-html": "off",
+			"obsidianmd/no-forbidden-elements": "error",
+			"obsidianmd/no-plugin-as-component": "error",
+			"obsidianmd/no-tfile-tfolder-cast": "warn",
+			"obsidianmd/hardcoded-config-path": "error",
+			// Tier 1 platform / API correctness — cheap (non-typed), high signal
+			"obsidianmd/no-global-this": "error",
+			"obsidianmd/platform": "error",
+			"obsidianmd/prefer-window-timers": "error",
+			"obsidianmd/regex-lookbehind": "error",
+			"obsidianmd/object-assign": "error",
+			"obsidianmd/detach-leaves": "error",
+			"obsidianmd/editor-drop-paste": "error",
+			"obsidianmd/vault/iterate": "error",
+			"obsidianmd/no-static-styles-assignment": "off",
+			"obsidianmd/ui/sentence-case": "off",
+			"obsidianmd/commands/no-plugin-id-in-command-id": "off",
+			"obsidianmd/commands/no-plugin-name-in-command-name": "off",
+			"obsidianmd/commands/no-command-in-command-id": "off",
+			"obsidianmd/commands/no-command-in-command-name": "off",
+			"obsidianmd/commands/no-default-hotkeys": "off",
+			"obsidianmd/validate-manifest": "off",
+			"obsidianmd/sample-names": "off",
 		},
 	},
 
-	{
-		files: ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "tests/**/*.ts", "tests/**/*.tsx"],
-		languageOptions: {
-			globals: {
-				global: "readonly",
-				structuredClone: "readonly",
-				__dirname: "readonly",
-			},
-		},
+	// strictTypeChecked at ERROR for production source only.
+	...tseslint.config({
+		files: STRICT_SRC,
+		ignores: STRICT_SRC_IGNORES,
+		extends: [tseslint.configs.strictTypeChecked],
 		rules: {
-			"@typescript-eslint/no-non-null-assertion": "off",
-			"@typescript-eslint/no-floating-promises": "off",
-			"@microsoft/sdl/no-inner-html": "off",
-			"@typescript-eslint/no-deprecated": "off",
-			"@typescript-eslint/await-thenable": "off",
+			// The `no-unsafe-*` family is deferred: thousands of hits from Obsidian's
+			// untyped `any` API surface — clearing them needs a typed API wrapper layer.
+			"@typescript-eslint/no-unsafe-argument": "off",
+			"@typescript-eslint/no-unsafe-assignment": "off",
+			"@typescript-eslint/no-unsafe-call": "off",
+			"@typescript-eslint/no-unsafe-member-access": "off",
+			"@typescript-eslint/no-unsafe-return": "off",
+			// Numbers in template literals are idiomatic and safe — keep the real
+			// protection (objects/any/nullish) without churning every `${count}`.
+			"@typescript-eslint/restrict-template-expressions": ["error", { allowNumber: true }],
+			// Inline arrow shorthand (`onClick={() => doThing()}`) is fine — don't force
+			// a braced body just because the call returns void.
+			"@typescript-eslint/no-confusing-void-expression": "off",
+			// `this: void` marks a method safe to pass unbound (satisfies `unbound-method`);
+			// `void` as a generic type arg (`openReactModal<void>()`) is fine too. Options
+			// replace defaults, so both must be stated.
+			"@typescript-eslint/no-invalid-void-type": [
+				"error",
+				{ allowAsThisParameter: true, allowInGenericTypeArguments: true },
+			],
+		},
+	}),
+
+	// Test files and testing utilities — relax strict rules for mocks/test doubles.
+	{
+		files: [
+			"**/*.test.ts",
+			"**/*.test.tsx",
+			"**/*.spec.ts",
+			"**/*.spec.tsx",
+			"**/tests/**/*.ts",
+			"**/tests/**/*.tsx",
+			"**/src/testing/**/*.ts",
+		],
+		rules: {
 			"@typescript-eslint/no-explicit-any": "off",
-			"@typescript-eslint/no-unnecessary-type-assertion": "off",
-			"import/no-nodejs-modules": "off",
+			"@typescript-eslint/no-unnecessary-condition": "off",
+			"obsidianmd/hardcoded-config-path": "off",
+			"obsidianmd/no-tfile-tfolder-cast": "off",
+		},
+	},
+
+	// Test environment polyfills install bare globals on `globalThis`.
+	{
+		files: [
+			"**/src/testing/setup-window.ts",
+			"**/src/testing/obsidian-dom-setup.ts",
+			"**/tests/mocks/obsidian.ts",
+			"**/tests/setup.ts",
+		],
+		rules: {
+			"obsidianmd/no-global-this": "off",
+		},
+	},
+
+	// Playwright fixture / e2e spec files.
+	{
+		files: ["**/e2e/fixtures/**/*.ts", "**/e2e/specs/**/*.ts"],
+		rules: {
+			"react-hooks/rules-of-hooks": "off",
+			"obsidianmd/hardcoded-config-path": "off",
+		},
+	},
+	{
+		files: ["**/src/testing/e2e/**/*.ts", "**/e2e/specs/**/*.ts", "**/e2e/fixtures/**/*.ts"],
+		rules: {
+			"obsidianmd/prefer-window-timers": "off",
 		},
 	},
 ]);

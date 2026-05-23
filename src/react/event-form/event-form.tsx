@@ -431,9 +431,7 @@ function TitleField({
 		const suggest = new TitleInputSuggest(bundle.plugin.app, inputEl, bundle, {
 			onAcceptTitle: (title) => acceptTitleRef.current(title),
 		});
-		return () => {
-			suggest.destroy();
-		};
+		return () => suggest.destroy();
 	}, [bundle, enableSuggest, titleInputRef]);
 
 	return (

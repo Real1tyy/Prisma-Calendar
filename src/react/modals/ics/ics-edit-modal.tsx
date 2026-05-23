@@ -70,7 +70,7 @@ export function openICSEditModal(
 	settingsStore: PrismaCalendarSettingsStore,
 	subscription: ICSSubscription
 ): Promise<void> {
-	return openReactModal<void>({
+	return openReactModal<undefined>({
 		app,
 		title: `Edit: ${subscription.name}`,
 		cls: cls("caldav-modal"),

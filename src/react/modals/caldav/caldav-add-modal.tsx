@@ -78,8 +78,8 @@ function CalDAVAddForm({ app, settingsStore, calendarId, onSubmit, onCancel }: C
 		(value: string) => {
 			if (value && value in CALDAV_PRESETS) {
 				const preset = CALDAV_PRESETS[value as CalDAVPresetKey];
-				form.setValue("name" as never, preset.name as never);
-				form.setValue("serverUrl" as never, preset.serverUrl as never);
+				form.setValue("name", preset.name);
+				form.setValue("serverUrl", preset.serverUrl);
 				setAuthMethod(preset.authMethod);
 			}
 		},

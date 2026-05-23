@@ -111,7 +111,7 @@ export function buildEventSaveData(
 	}
 	for (const originalKey of originalCustomPropertyKeys) {
 		if (!currentCustomKeys.has(originalKey)) {
-			delete fm[originalKey];
+			Reflect.deleteProperty(fm, originalKey);
 		}
 	}
 

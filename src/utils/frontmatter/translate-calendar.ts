@@ -32,7 +32,7 @@ export function translateFrontmatterToCalendar(
 		if (!(fromName in result)) continue;
 
 		result[toName] = result[fromName];
-		delete result[fromName];
+		Reflect.deleteProperty(result, fromName);
 	}
 
 	return result;

@@ -146,11 +146,7 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 		this.renderMessages();
 		this.refreshContextBadge();
 
-		this.registerEvent(
-			this.app.workspace.on("active-leaf-change", () => {
-				this.refreshContextBadge();
-			})
-		);
+		this.registerEvent(this.app.workspace.on("active-leaf-change", () => this.refreshContextBadge()));
 	}
 
 	override async unmount(): Promise<void> {
@@ -209,9 +205,7 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 			cls: cls("ai-chat-send-btn"),
 			text: "Send",
 		});
-		this.sendBtnEl.addEventListener("click", () => {
-			void this.handleSend();
-		});
+		this.sendBtnEl.addEventListener("click", () => void this.handleSend());
 	}
 
 	private buildThreadList(container: HTMLElement): void {
@@ -285,9 +279,7 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 				text: this.formatRelativeTime(thread.updatedAt),
 			});
 
-			infoEl.addEventListener("click", () => {
-				void this.onThreadSelect(thread.id);
-			});
+			infoEl.addEventListener("click", () => void this.onThreadSelect(thread.id));
 
 			const deleteBtn = itemEl.createEl("button", {
 				cls: cls("ai-chat-thread-delete-btn"),
@@ -559,9 +551,7 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 			cls: cls("ai-chat-execute-btn"),
 			text: `Execute All (${operations.length})`,
 		});
-		executeBtn.addEventListener("click", () => {
-			void this.handleExecuteOperations(operations, executeBtn);
-		});
+		executeBtn.addEventListener("click", () => void this.handleExecuteOperations(operations, executeBtn));
 	}
 
 	private async handleExecuteOperations(operations: AIOperation[], executeBtn?: HTMLButtonElement): Promise<void> {

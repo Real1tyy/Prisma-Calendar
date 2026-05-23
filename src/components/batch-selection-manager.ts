@@ -142,9 +142,7 @@ export class BatchSelectionManager {
 		const eventIds = Array.from(this.selectedEvents.keys());
 		this.selectedEvents.clear();
 
-		eventIds.forEach((eventId) => {
-			this.updateEventSelectionUI(eventId, false);
-		});
+		eventIds.forEach((eventId) => this.updateEventSelectionUI(eventId, false));
 
 		this.triggerSelectionChange();
 	}
@@ -224,9 +222,11 @@ export class BatchSelectionManager {
 
 		try {
 			const selectedEventsArray = Array.from(this.selectedEvents.values());
-			await runBatchOperation(selectedEventsArray, "Open files", async (event) => {
-				await this.app.workspace.openLinkText(event.ref.filePath, "", true);
-			});
+			await runBatchOperation(
+				selectedEventsArray,
+				"Open files",
+				async (event) => await this.app.workspace.openLinkText(event.ref.filePath, "", true)
+			);
 			this.clearSelection();
 		} catch (error) {
 			console.error("[BatchSelection] Failed to open files:", error);
@@ -332,8 +332,8 @@ export class BatchSelectionManager {
 
 	// ─── Command Execution ────────────────────────────────────────
 
-	private async executeWithSelection<T extends Command>(
-		commandFactory: (filePaths: string[]) => T,
+	private async executeWithSelection(
+		commandFactory: (filePaths: string[]) => Command,
 		successMessage: (count: number) => string,
 		errorMessage: string,
 		postHook?: () => void
@@ -369,10 +369,10 @@ export class BatchSelectionManager {
 		}
 	}
 
-	private executeWithConfirmation<T extends Command>(
+	private executeWithConfirmation(
 		confirmationTitle: string,
 		confirmationMessage: (count: number) => string,
-		commandFactory: (filePaths: string[]) => T,
+		commandFactory: (filePaths: string[]) => Command,
 		successMessage: (count: number) => string,
 		errorMessage: string
 	): void {

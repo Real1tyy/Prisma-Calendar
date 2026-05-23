@@ -48,19 +48,9 @@ export const TimingSection = memo(function TimingSection({ form, showDurationFie
 		[startField, endField]
 	);
 
-	const handleStartChange = useCallback(
-		(value: string) => {
-			startField.onChange(value);
-		},
-		[startField]
-	);
+	const handleStartChange = useCallback((value: string) => startField.onChange(value), [startField]);
 
-	const handleEndChange = useCallback(
-		(value: string) => {
-			endField.onChange(value);
-		},
-		[endField]
-	);
+	const handleEndChange = useCallback((value: string) => endField.onChange(value), [endField]);
 
 	const handleDurationChange = useCallback(
 		(durationStr: string) => {

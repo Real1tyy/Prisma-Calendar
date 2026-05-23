@@ -83,13 +83,9 @@ export const IntervalStatsView = memo(function IntervalStatsView({ bundle, confi
 		void load();
 	}, [bundle, clearHidden, config.interval, date, aggregationMode, includeSkipped, settings.categoryProp, changeToken]);
 
-	const toggleAggregation = useCallback(() => {
-		setAggregationMode((m) => (m === "name" ? "category" : "name"));
-	}, []);
+	const toggleAggregation = useCallback(() => setAggregationMode((m) => (m === "name" ? "category" : "name")), []);
 
-	const toggleDecimalHours = useCallback(() => {
-		setShowDecimalHours((v) => !v);
-	}, []);
+	const toggleDecimalHours = useCallback(() => setShowDecimalHours((v) => !v), []);
 
 	const dateLabel = useMemo(() => config.formatDate(date, settings.locale), [config, date, settings.locale]);
 

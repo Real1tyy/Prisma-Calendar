@@ -136,7 +136,9 @@ export function runCategoryRenameFlow(
 			<UntrackedToggle
 				value={state.includeUntracked}
 				untrackedCount={stats.untracked}
-				onChange={(includeUntracked) => setState({ includeUntracked })}
+				onChange={(includeUntracked) => {
+					setState({ includeUntracked });
+				}}
 			/>
 		),
 	}).then(async (result) => {
@@ -196,7 +198,9 @@ export function runCategoryDeleteFlow(
 			<UntrackedToggle
 				value={state.includeUntracked}
 				untrackedCount={stats.untracked}
-				onChange={(includeUntracked) => setState({ includeUntracked })}
+				onChange={(includeUntracked) => {
+					setState({ includeUntracked });
+				}}
 			/>
 		),
 	}).then(async (result) => {

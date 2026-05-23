@@ -89,7 +89,9 @@ const PropertyRow = memo(function PropertyRow({
 				placeholder="Property name"
 				value={property.key}
 				className="prisma-setting-item-control prisma-batch-frontmatter-key"
-				onChange={(e) => onUpdate(property.id, { key: e.target.value })}
+				onChange={(e) => {
+					onUpdate(property.id, { key: e.target.value });
+				}}
 				disabled={property.markedForDeletion}
 				data-testid="prisma-batch-property-key"
 			/>
@@ -98,7 +100,9 @@ const PropertyRow = memo(function PropertyRow({
 				placeholder="Value"
 				value={property.value}
 				className="prisma-setting-item-control prisma-batch-frontmatter-value"
-				onChange={(e) => onUpdate(property.id, { value: e.target.value })}
+				onChange={(e) => {
+					onUpdate(property.id, { value: e.target.value });
+				}}
 				disabled={property.markedForDeletion}
 				data-testid="prisma-batch-property-value"
 			/>
@@ -139,9 +143,10 @@ export function BatchFrontmatterForm({ app, settings, selectedEvents, onSubmit, 
 		return initial;
 	});
 
-	const addProperty = useCallback(() => {
-		setProperties((prev) => [...prev, createProperty(nextId, "", "", false)]);
-	}, [nextId]);
+	const addProperty = useCallback(
+		() => setProperties((prev) => [...prev, createProperty(nextId, "", "", false)]),
+		[nextId]
+	);
 
 	const updateProperty = useCallback((id: number, updates: Partial<FrontmatterProperty>) => {
 		setProperties((prev) => prev.map((p) => (p.id === id ? { ...p, ...updates } : p)));
@@ -159,9 +164,7 @@ export function BatchFrontmatterForm({ app, settings, selectedEvents, onSubmit, 
 		});
 	}, []);
 
-	const handleSubmit = useCallback(() => {
-		onSubmit(buildPropertyMap(properties));
-	}, [properties, onSubmit]);
+	const handleSubmit = useCallback(() => onSubmit(buildPropertyMap(properties)), [properties, onSubmit]);
 
 	return (
 		<ModalForm onSubmit={handleSubmit} onCancel={onCancel} submitLabel="Apply changes">

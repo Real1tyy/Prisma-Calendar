@@ -94,20 +94,16 @@ async function obsidianFetch(input: RequestInfo | URL, init?: RequestInit): Prom
 
 	// Convert Headers to plain object if needed
 	let headers: Record<string, string> | undefined;
-	if (init?.headers) {
-		if (init.headers instanceof Headers) {
-			headers = {};
-			init.headers.forEach((value, key) => {
-				headers![key] = value;
-			});
-		} else if (Array.isArray(init.headers)) {
-			headers = {};
-			for (const [key, value] of init.headers) {
-				headers[key] = value;
-			}
-		} else {
-			headers = init.headers;
-		}
+	if (init?.headers instanceof Headers) {
+		const obj: Record<string, string> = {};
+		init.headers.forEach((value, key) => {
+			obj[key] = value;
+		});
+		headers = obj;
+	} else if (Array.isArray(init?.headers)) {
+		headers = Object.fromEntries(init.headers);
+	} else if (init?.headers) {
+		headers = init.headers;
 	}
 
 	// Convert body to string if needed

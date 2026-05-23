@@ -71,7 +71,7 @@ export function useEventFormLifecycle({
 	// Enter-to-save hotkey. Mirrors registerSubmitHotkey in
 	// base-event-modal.ts:1148. Scoped to the form root so inputs that
 	// `stopPropagation` on Enter (e.g. participant input) opt out.
-	const handleKeyDown = useEnterToSubmit<HTMLDivElement>(submit);
+	const handleKeyDown = useEnterToSubmit(submit);
 
 	return { handleKeyDown, handleMinimize };
 }

@@ -98,9 +98,7 @@ function mountFilter(opts: InternalMountOptions): ToolbarFilterHandle {
 	return {
 		focus: () => handleRef.current?.focus(),
 		isFocused: () => handleRef.current?.isFocused() ?? false,
-		setFilterValue: (value: string) => {
-			handleRef.current?.setValue(value);
-		},
+		setFilterValue: (value: string) => handleRef.current?.setValue(value),
 		getCurrentFilterValue: () => currentValue,
 		shouldInclude: (data) => opts.predicate(currentValue, data),
 		destroy: () => {

@@ -228,6 +228,16 @@ export class EventContextMenu {
 
 	// ─── Item Definitions ─────────────────────────────────────────
 
+	// The action closures below run only while a context menu is open, where
+	// `currentEvent` is guaranteed set — assert that invariant in one place
+	// instead of a non-null assertion at every call site.
+	private requireCurrentEvent(): CalendarEventInfo {
+		if (!this.currentEvent) {
+			throw new Error("Context menu action invoked without a current event");
+		}
+		return this.currentEvent;
+	}
+
 	private buildItemDefinitions(): CustomizableContextMenuItem[] {
 		return [
 			{
@@ -235,7 +245,7 @@ export class EventContextMenu {
 				label: CONTEXT_MENU_BUTTON_LABELS.enlarge,
 				icon: "maximize-2",
 				section: "navigation",
-				onAction: () => this.openEventPreview(this.currentEvent!),
+				onAction: () => this.openEventPreview(this.requireCurrentEvent()),
 			},
 			{
 				id: "preview",
@@ -243,7 +253,7 @@ export class EventContextMenu {
 				icon: "eye",
 				section: "navigation",
 				onAction: () => {
-					const filePath = this.currentEvent!.extendedProps?.filePath;
+					const filePath = this.requireCurrentEvent().extendedProps?.filePath;
 					if (filePath && this.currentTargetEl && this.currentContainerEl) {
 						this.showHoverPreview(this.currentTargetEl, this.currentContainerEl, filePath);
 					}
@@ -254,110 +264,98 @@ export class EventContextMenu {
 				label: CONTEXT_MENU_BUTTON_LABELS.goToSource,
 				icon: "corner-up-left",
 				section: "navigation",
-				onAction: () => this.goToSourceEvent(this.currentEvent!),
+				onAction: () => this.goToSourceEvent(this.requireCurrentEvent()),
 			},
 			{
 				id: "editSourceEvent",
 				label: CONTEXT_MENU_BUTTON_LABELS.editSourceEvent,
 				icon: "pencil",
 				section: "navigation",
-				onAction: () => this.editSourceEvent(this.currentEvent!),
+				onAction: () => this.editSourceEvent(this.requireCurrentEvent()),
 			},
 			{
 				id: "viewEventGroups",
 				label: CONTEXT_MENU_BUTTON_LABELS.viewEventGroups,
 				icon: "list",
 				section: "navigation",
-				onAction: () => this.showEventSeries(this.currentEvent!),
+				onAction: () => this.showEventSeries(this.requireCurrentEvent()),
 			},
 			{
 				id: "viewNameSeries",
 				label: CONTEXT_MENU_BUTTON_LABELS.viewNameSeries,
 				icon: "text",
 				section: "navigation",
-				onAction: () => this.showEventSeries(this.currentEvent!, "name"),
+				onAction: () => this.showEventSeries(this.requireCurrentEvent(), "name"),
 			},
 			{
 				id: "viewCategorySeries",
 				label: CONTEXT_MENU_BUTTON_LABELS.viewCategorySeries,
 				icon: "tag",
 				section: "navigation",
-				onAction: () => this.showEventSeries(this.currentEvent!, "category"),
+				onAction: () => this.showEventSeries(this.requireCurrentEvent(), "category"),
 			},
 			{
 				id: "viewRecurringSeries",
 				label: CONTEXT_MENU_BUTTON_LABELS.viewRecurringSeries,
 				icon: "repeat",
 				section: "navigation",
-				onAction: () => this.showEventSeries(this.currentEvent!, "recurring"),
+				onAction: () => this.showEventSeries(this.requireCurrentEvent(), "recurring"),
 			},
 			{
 				id: "editEvent",
 				label: CONTEXT_MENU_BUTTON_LABELS.editEvent,
 				icon: "edit",
 				section: "edit",
-				onAction: () => this.openEditModal(this.currentEvent!),
+				onAction: () => this.openEditModal(this.requireCurrentEvent()),
 			},
 			{
 				id: "triggerStopwatch",
 				label: CONTEXT_MENU_BUTTON_LABELS.triggerStopwatch,
 				icon: "timer",
 				section: "edit",
-				onAction: () => {
-					void this.triggerStopwatch(this.currentEvent!);
-				},
+				onAction: () => void this.triggerStopwatch(this.requireCurrentEvent()),
 			},
 			{
 				id: "assignCategories",
 				label: CONTEXT_MENU_BUTTON_LABELS.assignCategories,
 				icon: "tag",
 				section: "edit",
-				onAction: () => {
-					void this.openAssignCategoriesModal(this.currentEvent!);
-				},
+				onAction: () => void this.openAssignCategoriesModal(this.requireCurrentEvent()),
 			},
 			{
 				id: "assignPrerequisites",
 				label: CONTEXT_MENU_BUTTON_LABELS.assignPrerequisites,
 				icon: "workflow",
 				section: "edit",
-				onAction: () => {
-					void this.startPrerequisiteSelection(this.currentEvent!);
-				},
+				onAction: () => void this.startPrerequisiteSelection(this.requireCurrentEvent()),
 			},
 			{
 				id: "duplicateEvent",
 				label: CONTEXT_MENU_BUTTON_LABELS.duplicateEvent,
 				icon: "copy",
 				section: "edit",
-				onAction: () => {
-					void this.duplicateEvent(this.currentEvent!);
-				},
+				onAction: () => void this.duplicateEvent(this.requireCurrentEvent()),
 			},
 			{
 				id: "duplicateRemainingWeekDays",
 				label: CONTEXT_MENU_BUTTON_LABELS.duplicateRemainingWeekDays,
 				icon: "calendar-plus",
 				section: "edit",
-				onAction: () => {
-					void this.duplicateRemainingWeekDays(this.currentEvent!);
-				},
+				onAction: () => void this.duplicateRemainingWeekDays(this.requireCurrentEvent()),
 			},
 			{
 				id: "moveBy",
 				label: CONTEXT_MENU_BUTTON_LABELS.moveBy,
 				icon: "move",
 				section: "move",
-				onAction: () => this.moveEventBy(this.currentEvent!),
+				onAction: () => this.moveEventBy(this.requireCurrentEvent()),
 			},
 			{
 				id: "moveToCalendar",
 				label: CONTEXT_MENU_BUTTON_LABELS.moveToCalendar,
 				icon: "folder-tree",
 				section: "move",
-				onAction: () => {
-					void this.moveEventToCalendar(this.currentEvent!);
-				},
+				onAction: () => void this.moveEventToCalendar(this.requireCurrentEvent()),
 			},
 			{
 				id: "markDone",
@@ -365,11 +363,11 @@ export class EventContextMenu {
 				icon: "check",
 				section: "move",
 				onAction: () => {
-					const isDone = this.isEventDone(this.currentEvent!);
+					const isDone = this.isEventDone(this.requireCurrentEvent());
 					if (isDone) {
-						void this.markEventAsUndone(this.currentEvent!);
+						void this.markEventAsUndone(this.requireCurrentEvent());
 					} else {
-						void this.markEventAsDone(this.currentEvent!);
+						void this.markEventAsDone(this.requireCurrentEvent());
 					}
 				},
 			},
@@ -378,90 +376,70 @@ export class EventContextMenu {
 				label: CONTEXT_MENU_BUTTON_LABELS.moveToNextWeek,
 				icon: "arrow-right",
 				section: "move",
-				onAction: () => {
-					void this.moveEventByWeeks(this.currentEvent!, 1);
-				},
+				onAction: () => void this.moveEventByWeeks(this.requireCurrentEvent(), 1),
 			},
 			{
 				id: "cloneToNextWeek",
 				label: CONTEXT_MENU_BUTTON_LABELS.cloneToNextWeek,
 				icon: "copy-plus",
 				section: "move",
-				onAction: () => {
-					void this.cloneEventByWeeks(this.currentEvent!, 1);
-				},
+				onAction: () => void this.cloneEventByWeeks(this.requireCurrentEvent(), 1),
 			},
 			{
 				id: "moveToPreviousWeek",
 				label: CONTEXT_MENU_BUTTON_LABELS.moveToPreviousWeek,
 				icon: "arrow-left",
 				section: "move",
-				onAction: () => {
-					void this.moveEventByWeeks(this.currentEvent!, -1);
-				},
+				onAction: () => void this.moveEventByWeeks(this.requireCurrentEvent(), -1),
 			},
 			{
 				id: "cloneToPreviousWeek",
 				label: CONTEXT_MENU_BUTTON_LABELS.cloneToPreviousWeek,
 				icon: "copy-minus",
 				section: "move",
-				onAction: () => {
-					void this.cloneEventByWeeks(this.currentEvent!, -1);
-				},
+				onAction: () => void this.cloneEventByWeeks(this.requireCurrentEvent(), -1),
 			},
 			{
 				id: "fillStartTimeNow",
 				label: CONTEXT_MENU_BUTTON_LABELS.fillStartTimeNow,
 				icon: "clock",
 				section: "move",
-				onAction: () => {
-					void this.fillStartTimeFromNow(this.currentEvent!);
-				},
+				onAction: () => void this.fillStartTimeFromNow(this.requireCurrentEvent()),
 			},
 			{
 				id: "fillEndTimeNow",
 				label: CONTEXT_MENU_BUTTON_LABELS.fillEndTimeNow,
 				icon: "clock",
 				section: "move",
-				onAction: () => {
-					void this.fillEndTimeFromNow(this.currentEvent!);
-				},
+				onAction: () => void this.fillEndTimeFromNow(this.requireCurrentEvent()),
 			},
 			{
 				id: "fillStartTimePrevious",
 				label: CONTEXT_MENU_BUTTON_LABELS.fillStartTimePrevious,
 				icon: "arrow-left",
 				section: "move",
-				onAction: () => {
-					void this.fillStartTimeFromPrevious(this.currentEvent!);
-				},
+				onAction: () => void this.fillStartTimeFromPrevious(this.requireCurrentEvent()),
 			},
 			{
 				id: "fillEndTimeNext",
 				label: CONTEXT_MENU_BUTTON_LABELS.fillEndTimeNext,
 				icon: "arrow-right",
 				section: "move",
-				onAction: () => {
-					void this.fillEndTimeFromNext(this.currentEvent!);
-				},
+				onAction: () => void this.fillEndTimeFromNext(this.requireCurrentEvent()),
 			},
 			{
 				id: "deleteEvent",
 				label: CONTEXT_MENU_BUTTON_LABELS.deleteEvent,
 				icon: "trash",
 				section: "danger",
-				onAction: () => {
-					void this.deleteEvent(this.currentEvent!);
-				},
+				onAction: () => void this.deleteEvent(this.requireCurrentEvent()),
 			},
 			{
 				id: "skipEvent",
 				label: CONTEXT_MENU_BUTTON_LABELS.skipEvent,
 				icon: "eye-off",
 				section: "danger",
-				onAction: () => {
-					void this.toggleSkipEvent(this.currentEvent!);
-				},
+				onAction: () => void this.toggleSkipEvent(this.requireCurrentEvent()),
 			},
 			{
 				id: "openFile",
@@ -469,7 +447,7 @@ export class EventContextMenu {
 				icon: "file-text",
 				section: "danger",
 				onAction: () => {
-					const filePath = this.currentEvent!.extendedProps?.filePath;
+					const filePath = this.requireCurrentEvent().extendedProps?.filePath;
 					if (filePath) void this.app.workspace.openLinkText(filePath, "", false);
 				},
 			},
@@ -479,7 +457,7 @@ export class EventContextMenu {
 				icon: "external-link",
 				section: "danger",
 				onAction: () => {
-					const filePath = this.currentEvent!.extendedProps?.filePath;
+					const filePath = this.requireCurrentEvent().extendedProps?.filePath;
 					if (filePath) void openFileInNewWindow(this.app, filePath);
 				},
 			},
@@ -488,36 +466,28 @@ export class EventContextMenu {
 				label: CONTEXT_MENU_BUTTON_LABELS.toggleRecurring,
 				icon: "eye-off",
 				section: "recurring",
-				onAction: () => {
-					void this.toggleRecurringEvent(this.currentEvent!);
-				},
+				onAction: () => void this.toggleRecurringEvent(this.requireCurrentEvent()),
 			},
 			{
 				id: "makeVirtual",
 				label: CONTEXT_MENU_BUTTON_LABELS.makeVirtual,
 				icon: "cloud",
 				section: "edit",
-				onAction: () => {
-					void this.makeEventVirtual(this.currentEvent!);
-				},
+				onAction: () => void this.makeEventVirtual(this.requireCurrentEvent()),
 			},
 			{
 				id: "makeReal",
 				label: CONTEXT_MENU_BUTTON_LABELS.makeReal,
 				icon: "file-plus",
 				section: "edit",
-				onAction: () => {
-					void this.makeEventReal(this.currentEvent!);
-				},
+				onAction: () => void this.makeEventReal(this.requireCurrentEvent()),
 			},
 			{
 				id: "makeUntracked",
 				label: CONTEXT_MENU_BUTTON_LABELS.makeUntracked,
 				icon: "calendar-off",
 				section: "edit",
-				onAction: () => {
-					void this.makeEventUntracked(this.currentEvent!);
-				},
+				onAction: () => void this.makeEventUntracked(this.requireCurrentEvent()),
 			},
 		];
 	}
@@ -638,9 +608,10 @@ export class EventContextMenu {
 			const eventDate = new Date(sourceEvent.start);
 			this.calendarComponent.navigateToDate(eventDate, "timeGridWeek");
 
-			window.setTimeout(() => {
-				this.calendarComponent.highlightEventByPath(sourceFilePath, EVENT_HIGHLIGHT_DURATION_MS);
-			}, GO_TO_SOURCE_HIGHLIGHT_DELAY_MS);
+			window.setTimeout(
+				() => this.calendarComponent.highlightEventByPath(sourceFilePath, EVENT_HIGHLIGHT_DURATION_MS),
+				GO_TO_SOURCE_HIGHLIGHT_DELAY_MS
+			);
 
 			new Notice("Navigated to source event");
 		});
@@ -918,9 +889,9 @@ export class EventContextMenu {
 			new Notice("Enable time tracker in settings to use this action");
 			return;
 		}
-		await this.withFilePath(event, "trigger stopwatch", async () => {
-			MinimizedModalManager.startStopwatchSession(this.app, this.bundle, event);
-		});
+		await this.withFilePath(event, "trigger stopwatch", () =>
+			MinimizedModalManager.startStopwatchSession(this.app, this.bundle, event)
+		);
 	}
 
 	private async openAssignCategoriesModal(event: CalendarEventInfo): Promise<void> {
@@ -947,7 +918,7 @@ export class EventContextMenu {
 	}
 
 	private async startPrerequisiteSelection(event: CalendarEventInfo): Promise<void> {
-		await this.withFilePath(event, "assign prerequisites", async (filePath) => {
+		await this.withFilePath(event, "assign prerequisites", (filePath) => {
 			getFileByPathOrThrow(this.app, filePath);
 			this.calendarComponent.enterPrerequisiteSelectionMode(filePath);
 		});

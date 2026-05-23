@@ -148,9 +148,7 @@ class MinimizedModalManagerClass {
 	 */
 	private startInternalTracking(): void {
 		this.stopInternalTracking();
-		this.intervalId = window.setInterval(() => {
-			void this.persistEndTime();
-		}, END_TIME_SYNC_INTERVAL_MS);
+		this.intervalId = window.setInterval(() => void this.persistEndTime(), END_TIME_SYNC_INTERVAL_MS);
 	}
 
 	/**
@@ -418,16 +416,16 @@ class MinimizedModalManagerClass {
 		this.clear();
 
 		if (modalType === "edit" && filePath) {
-			saveData.filePath = filePath;
-			bundle.updateEvent(saveData as UpdateEventData, { ensureZettelId: true }).catch((error: unknown) => {
-				console.error("[MinimizedModal] silent stop & save (edit) failed:", error);
-			});
+			const updateData: UpdateEventData = { ...saveData, filePath };
+			bundle
+				.updateEvent(updateData, { ensureZettelId: true })
+				.catch((error: unknown) => console.error("[MinimizedModal] silent stop & save (edit) failed:", error));
 			return;
 		}
 
-		bundle.createEvent(saveData).catch((error: unknown) => {
-			console.error("[MinimizedModal] silent stop & save (create) failed:", error);
-		});
+		bundle
+			.createEvent(saveData)
+			.catch((error: unknown) => console.error("[MinimizedModal] silent stop & save (create) failed:", error));
 	}
 
 	private openRestoredModal(app: App, bundle: CalendarBundle, state: MinimizedModalState): void {
@@ -468,7 +466,8 @@ class MinimizedModalManagerClass {
 		void openCategoryAssignModal(app, categories, defaultColor, currentCategories).then(async (selectedCategories) => {
 			if (!selectedCategories) return;
 			try {
-				const command = assignCategories(bundle, state.filePath!, selectedCategories);
+				if (!state.filePath) return;
+				const command = assignCategories(bundle, state.filePath, selectedCategories);
 				await bundle.commandManager.executeCommand(command);
 				new Notice("Categories updated for minimized event");
 			} catch (error) {

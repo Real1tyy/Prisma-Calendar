@@ -186,9 +186,7 @@ export const Stopwatch = forwardRef<StopwatchHandle, StopwatchCallbacks>(functio
 		setInternalState(() => ({ ...INITIAL_STATE }));
 	}, [setInternalState]);
 
-	const expand = useCallback(() => {
-		setCollapsed(false);
-	}, []);
+	const expand = useCallback(() => setCollapsed(false), []);
 
 	const exportState = useCallback((): StopwatchSnapshot => {
 		const s = stateRef.current;

@@ -46,9 +46,7 @@ const CustomPromptsSection = memo(function CustomPromptsSection({ mainSettingsSt
 	const [prompts, setPrompts] = useSchemaField(mainSettingsStore, "ai.customPrompts");
 
 	const handleDelete = useCallback(
-		(id: string) => {
-			setPrompts((current) => current.filter((p) => p.id !== id));
-		},
+		(id: string) => setPrompts((current) => current.filter((p) => p.id !== id)),
 		[setPrompts]
 	);
 

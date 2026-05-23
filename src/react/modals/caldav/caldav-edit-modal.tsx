@@ -163,7 +163,7 @@ export function openCalDAVEditModal(
 	calendarId: string,
 	account: CalDAVAccount
 ): Promise<void> {
-	return openReactModal<void>({
+	return openReactModal<undefined>({
 		app,
 		title: `Edit: ${account.name}`,
 		cls: cls("caldav-modal"),

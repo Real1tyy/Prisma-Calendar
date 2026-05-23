@@ -52,7 +52,7 @@ export function markAsUndone(bundle: CalendarBundle, filePath: string): Frontmat
 				if (undoneProp) {
 					fm[undoneProp.key] = undoneProp.value;
 				} else {
-					delete fm[doneProp.key];
+					Reflect.deleteProperty(fm, doneProp.key);
 				}
 			} else {
 				fm[settings.statusProperty] = settings.notDoneValue;
@@ -69,7 +69,7 @@ export function toggleSkip(bundle: CalendarBundle, filePath: string): Frontmatte
 		filePath,
 		(fm) => {
 			if (fm[settings.skipProp] === true) {
-				delete fm[settings.skipProp];
+				Reflect.deleteProperty(fm, settings.skipProp);
 			} else {
 				fm[settings.skipProp] = true;
 			}
@@ -87,9 +87,7 @@ export function assignCategories(
 	return new FrontmatterUpdateCommand(
 		bundle.fileRepository,
 		filePath,
-		(fm) => {
-			assignListToFrontmatter(fm, settings.categoryProp, categories);
-		},
+		(fm) => assignListToFrontmatter(fm, settings.categoryProp, categories),
 		"assign-categories"
 	);
 }
@@ -103,9 +101,7 @@ export function assignPrerequisites(
 	return new FrontmatterUpdateCommand(
 		bundle.fileRepository,
 		filePath,
-		(fm) => {
-			assignListToFrontmatter(fm, settings.prerequisiteProp, prerequisites);
-		},
+		(fm) => assignListToFrontmatter(fm, settings.prerequisiteProp, prerequisites),
 		"assign-prerequisites"
 	);
 }
@@ -135,9 +131,7 @@ export function moveEvent(
 	return new FrontmatterUpdateCommand(
 		bundle.fileRepository,
 		filePath,
-		(fm) => {
-			applyStartEndOffsets(fm, settings, startOffset, endOffset);
-		},
+		(fm) => applyStartEndOffsets(fm, settings, startOffset, endOffset),
 		"move-event"
 	);
 }
@@ -151,9 +145,7 @@ export function fillTime(
 	return new FrontmatterUpdateCommand(
 		bundle.fileRepository,
 		filePath,
-		(fm) => {
-			fm[propertyName] = ensureISOSuffix(newTimeValue);
-		},
+		(fm) => (fm[propertyName] = ensureISOSuffix(newTimeValue)),
 		"fill-time"
 	);
 }
@@ -169,7 +161,7 @@ export function updateFrontmatter(
 		(fm) => {
 			for (const [key, value] of propertyUpdates.entries()) {
 				if (value === null) {
-					delete fm[key];
+					Reflect.deleteProperty(fm, key);
 				} else {
 					const parsed = parseFrontmatterRecord({ [key]: value });
 					fm[key] = parsed[key];

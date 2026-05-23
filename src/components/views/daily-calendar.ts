@@ -191,13 +191,9 @@ export function createDailyCalendar(
 
 		eventClassNames: (arg) => eventClassNamesCallback(arg),
 
-		eventDidMount: (info) => {
-			eventDidMountCallback(info);
-		},
+		eventDidMount: (info) => eventDidMountCallback(info),
 
-		eventClick: (info) => {
-			handleSharedEventClick(app, bundle, info.event);
-		},
+		eventClick: (info) => handleSharedEventClick(app, bundle, info.event),
 
 		eventMouseEnter: () => {},
 
@@ -261,15 +257,11 @@ export function createDailyCalendar(
 		onFilterChange: () => scheduleRefresh(),
 	});
 
-	calendarContainer.addEventListener("mousedown", () => {
-		mouseDownTime = Date.now();
-	});
+	calendarContainer.addEventListener("mousedown", () => (mouseDownTime = Date.now()));
 
 	applyContainerStyles(calendarContainer, settings);
 
-	const resizeObserver = new ResizeObserver(() => {
-		calendar.updateSize();
-	});
+	const resizeObserver = new ResizeObserver(() => calendar.updateSize());
 	resizeObserver.observe(container);
 
 	// ─── Event Refresh ───────────────────────────────────────────
@@ -345,9 +337,9 @@ export function createDailyCalendar(
 	});
 	subscriptions.push(settingsSub);
 
-	const mainSettingsSub = bundle.settingsStore.mainSettingsStore.settings$.subscribe(() => {
-		calendarIconCache = buildCalendarIconCache(bundle);
-	});
+	const mainSettingsSub = bundle.settingsStore.mainSettingsStore.settings$.subscribe(
+		() => (calendarIconCache = buildCalendarIconCache(bundle))
+	);
 	subscriptions.push(mainSettingsSub);
 
 	return {

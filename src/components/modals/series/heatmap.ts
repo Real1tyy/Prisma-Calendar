@@ -272,8 +272,8 @@ export function renderHeatmapInto(
 			firstDayOfWeek,
 			...(config.categoryColor ? { categoryColor: config.categoryColor } : {}),
 			onDayClick: (date) => {
-				const clicked = grid!.cells.find((c) => c.dateKey === date)!;
-				selectCell(clicked);
+				const clicked = grid?.cells.find((c) => c.dateKey === date);
+				if (clicked) selectCell(clicked);
 			},
 		});
 	}

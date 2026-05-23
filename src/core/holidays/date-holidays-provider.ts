@@ -22,13 +22,15 @@ export class DateHolidaysProvider implements HolidayProvider {
 		}
 	}
 
-	async list(year: number): Promise<HolidayEvent[]> {
+	list(year: number): Promise<HolidayEvent[]> {
 		const holidays = this.hd.getHolidays(year);
-		return holidays.map((h) => ({
-			date: String(h.date).slice(0, 10),
-			name: h.name,
-			type: h.type,
-			id: `date-holidays:${String(h.date).slice(0, 10)}:${h.name}`,
-		}));
+		return Promise.resolve(
+			holidays.map((h) => ({
+				date: h.date.slice(0, 10),
+				name: h.name,
+				type: h.type,
+				id: `date-holidays:${h.date.slice(0, 10)}:${h.name}`,
+			}))
+		);
 	}
 }

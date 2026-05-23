@@ -453,7 +453,7 @@ const CategoryAssignmentPresetSchema = z
 	})
 	.strip();
 
-const BatchActionButtonSchema = z.enum(BATCH_BUTTON_IDS as [string, ...string[]]);
+const BatchActionButtonSchema = z.enum(BATCH_BUTTON_IDS);
 
 const CalendarSettingsSchema = z
 	.object({

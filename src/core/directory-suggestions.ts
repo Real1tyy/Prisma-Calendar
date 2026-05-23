@@ -83,13 +83,13 @@ export function buildDirectorySuggestions(files: FileFrontmatterLike[]): Directo
 		.slice(0, MAX_SUGGESTIONS);
 }
 
-export async function scanVaultForDirectorySuggestions(app: App): Promise<DirectorySuggestion[]> {
+export function scanVaultForDirectorySuggestions(app: App): Promise<DirectorySuggestion[]> {
 	const files = app.vault.getMarkdownFiles();
 	const materialized = files.map((file: TFile) => ({
 		path: file.path,
 		frontmatter: app.metadataCache.getFileCache(file)?.frontmatter ?? null,
 	}));
-	return buildDirectorySuggestions(materialized);
+	return Promise.resolve(buildDirectorySuggestions(materialized));
 }
 
 export function formatDirectorySuggestionMeta(suggestion: DirectorySuggestion): string {

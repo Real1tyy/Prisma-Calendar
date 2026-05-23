@@ -88,7 +88,7 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		// Stress/E2E perf instrumentation — gated on the harness-set `window.E2E`
 		// flag so production runs install nothing and pay no measurement overhead.
-		if ((globalThis as unknown as { E2E?: boolean }).E2E) {
+		if ((window as unknown as { E2E?: boolean }).E2E) {
 			installPrismaPerfBridge(this);
 		}
 
@@ -220,9 +220,9 @@ export default class CustomCalendarPlugin extends Plugin {
 		await bundle.initialize();
 	}
 
-	async removeCalendarBundle(calendarId: string): Promise<void> {
+	removeCalendarBundle(calendarId: string): Promise<void> {
 		const idx = this.calendarBundles.findIndex((b) => b.calendarId === calendarId);
-		if (idx === -1) return;
+		if (idx === -1) return Promise.resolve();
 		const bundle = this.calendarBundles[idx];
 
 		this.app.workspace.detachLeavesOfType(bundle.viewType);
@@ -230,6 +230,7 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		bundle.destroy();
 		this.calendarBundles.splice(idx, 1);
+		return Promise.resolve();
 	}
 
 	prepareForBundleRefresh(): void {
@@ -322,9 +323,9 @@ export default class CustomCalendarPlugin extends Plugin {
 		const progressHandle = showICSImportProgressModal(this.app, events.length);
 
 		try {
-			const result = await importEventsToCalendar(this.app, bundle, events, timezone, (current, _total, title) => {
-				progressHandle.updateProgress(current, title);
-			});
+			const result = await importEventsToCalendar(this.app, bundle, events, timezone, (current, _total, title) =>
+				progressHandle.updateProgress(current, title)
+			);
 
 			progressHandle.showComplete(result.successCount, result.errorCount, result.skippedCount);
 		} catch (error) {

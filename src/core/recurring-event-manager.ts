@@ -938,7 +938,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 	): { instanceStart: DateTime; instanceEnd: DateTime | null } {
 		const { rrules } = recurringEvent;
 		const sourceStart = getStartDateTime(rrules);
-		const sourceEnd = rrules.allDay ? null : rrules.endTime || null;
+		const sourceEnd = rrules.allDay ? null : rrules.endTime;
 
 		const normalizedInstanceDate = rrules.allDay
 			? DateTime.fromObject({

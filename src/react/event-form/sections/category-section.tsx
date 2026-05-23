@@ -153,12 +153,7 @@ export const ParticipantSection = memo(function ParticipantSection({
 		return (item: string) => (isLink(item) ? item : "");
 	}, []);
 
-	const handleAdd = useCallback(
-		(participant: string) => {
-			onChange([...value, participant]);
-		},
-		[value, onChange]
-	);
+	const handleAdd = useCallback((participant: string) => onChange([...value, participant]), [value, onChange]);
 
 	return (
 		<ChipFieldSection

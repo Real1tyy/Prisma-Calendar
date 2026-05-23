@@ -182,9 +182,7 @@ export function openEventEditModal(
 					saveMinimizedModalState(values, "edit", filePath ?? null, originalFrontmatter, bundle);
 					close();
 				}}
-				onSavePreset={(state, customProps) => {
-					openSavePresetFlow(app, bundle, state, customProps);
-				}}
+				onSavePreset={(state, customProps) => openSavePresetFlow(app, bundle, state, customProps)}
 				onUnmountWithActiveStopwatch={(values) =>
 					buildMinimizedState(values, {
 						modalType: "edit",
@@ -287,8 +285,10 @@ function handleEditSubmit(
 		return;
 	}
 
+	const updateData: UpdateEventData = { ...saveData, filePath: saveData.filePath };
+
 	bundle
-		.updateEvent(saveData as UpdateEventData, { ensureZettelId: ensureZettelIdOnSave })
+		.updateEvent(updateData, { ensureZettelId: ensureZettelIdOnSave })
 		.then((newFilePath) => {
 			if (newFilePath && newFilePath !== saveData.filePath) {
 				setExtendedPropSafe(eventData, "filePath", newFilePath);
@@ -303,9 +303,7 @@ function handleEditSubmit(
 				}
 			}
 		})
-		.catch((error) => {
-			console.error("[EventEdit] Error updating event:", error);
-		});
+		.catch((error: unknown) => console.error("[EventEdit] Error updating event:", error));
 }
 
 export function composeTitleWithZettel(

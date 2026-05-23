@@ -158,9 +158,9 @@ export const applyDateNormalizationToFile = async (
 		if (!settings.sortDateProp || !(settings.sortDateProp in frontmatter)) return;
 		try {
 			const file = getFileByPathOrThrow(app, filePath);
-			await app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
-				delete fm[settings.sortDateProp];
-			});
+			await app.fileManager.processFrontMatter(file, (fm: Frontmatter) =>
+				Reflect.deleteProperty(fm, settings.sortDateProp)
+			);
 		} catch (error) {
 			console.error(`[CalendarEvents] Error clearing sort date on file ${filePath}:`, error);
 		}
@@ -386,7 +386,7 @@ export const applyFrontmatterChangesToInstance = async (
 
 			for (const change of diff.deleted) {
 				if (!excludedProps.has(change.key)) {
-					delete fm[change.key];
+					Reflect.deleteProperty(fm, change.key);
 				}
 			}
 		});
@@ -520,10 +520,10 @@ export const assignListToFrontmatter = (fm: Frontmatter, prop: string, items: st
  * to the original event and should not carry over to clones.
  */
 export const removeNonCloneableProperties = (frontmatter: Frontmatter, settings: SingleCalendarConfig): void => {
-	delete frontmatter[settings.rruleIdProp];
-	delete frontmatter[settings.instanceDateProp];
-	delete frontmatter[settings.sourceProp];
-	delete frontmatter[settings.alreadyNotifiedProp];
+	Reflect.deleteProperty(frontmatter, settings.rruleIdProp);
+	Reflect.deleteProperty(frontmatter, settings.instanceDateProp);
+	Reflect.deleteProperty(frontmatter, settings.sourceProp);
+	Reflect.deleteProperty(frontmatter, settings.alreadyNotifiedProp);
 };
 
 export interface TimePropagationDiff {

@@ -83,7 +83,9 @@ function ModeCard({
 			tabIndex={0}
 			className={cls(`first-launch-mode-card${selected ? " is-selected" : ""}`)}
 			onClick={onSelect}
-			onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onSelect()}
+			onKeyDown={(e) => {
+				if (e.key === "Enter" || e.key === " ") onSelect();
+			}}
 			data-testid={testId}
 		>
 			<span className={cls("first-launch-mode-title")}>{title}</span>
@@ -206,9 +208,7 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 			videoCaption="Start here — learn how to install, set up, and begin using Prisma Calendar in minutes."
 			footerLinks={FOOTER_LINKS}
 			submitDisabled={!currentDirectory.trim()}
-			onSubmit={() => {
-				void submit();
-			}}
+			onSubmit={() => void submit()}
 		>
 			<section className={cls("first-launch-mode-grid")}>
 				<ModeCard

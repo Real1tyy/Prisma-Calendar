@@ -49,7 +49,9 @@ export const CapacityIndicator = memo(function CapacityIndicator({
 	useImperativeHandle(
 		ref,
 		() => ({
-			setRange: (start, end) => setImperativeRange({ start, end }),
+			setRange: (start, end) => {
+				setImperativeRange({ start, end });
+			},
 		}),
 		[]
 	);

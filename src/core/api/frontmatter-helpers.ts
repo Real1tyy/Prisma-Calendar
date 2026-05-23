@@ -27,7 +27,7 @@ function applyMetadataFields(
 		if (input.location.trim()) {
 			frontmatter[settings.locationProp] = input.location.trim();
 		} else {
-			delete frontmatter[settings.locationProp];
+			Reflect.deleteProperty(frontmatter, settings.locationProp);
 		}
 	}
 
@@ -39,7 +39,7 @@ function applyMetadataFields(
 		if (input.skip) {
 			frontmatter[settings.skipProp] = true;
 		} else {
-			delete frontmatter[settings.skipProp];
+			Reflect.deleteProperty(frontmatter, settings.skipProp);
 		}
 	}
 
@@ -52,7 +52,7 @@ function applyMetadataFields(
 			} else if (customUndoneProp) {
 				frontmatter[customUndoneProp.key] = customUndoneProp.value;
 			} else {
-				delete frontmatter[customDoneProp.key];
+				Reflect.deleteProperty(frontmatter, customDoneProp.key);
 			}
 		} else {
 			frontmatter[settings.statusProperty] = input.markAsDone ? settings.doneValue : settings.notDoneValue;
@@ -66,11 +66,9 @@ export function buildFrontmatterFromInput(bundle: CalendarBundle, input: PrismaE
 		...(input.frontmatter ?? {}),
 	};
 
-	const hasTrackedDateData = Boolean(input.start);
-
-	if (hasTrackedDateData) {
+	if (input.start) {
 		const allDay = input.allDay === true;
-		const normalizedStart = ensureISOSuffix(input.start!);
+		const normalizedStart = ensureISOSuffix(input.start);
 		const end = allDay ? undefined : input.end ? ensureISOSuffix(input.end) : undefined;
 		setEventBasics(frontmatter, settings, {
 			title: input.title,
@@ -97,10 +95,10 @@ export function patchEditFrontmatter(
 		const allDay = input.allDay ?? frontmatter[settings.allDayProp] === true;
 		if (allDay) {
 			frontmatter[settings.dateProp] = input.start.split("T")[0];
-			delete frontmatter[settings.startProp];
+			Reflect.deleteProperty(frontmatter, settings.startProp);
 		} else {
 			frontmatter[settings.startProp] = ensureISOSuffix(input.start);
-			delete frontmatter[settings.dateProp];
+			Reflect.deleteProperty(frontmatter, settings.dateProp);
 		}
 	}
 	if (input.end !== undefined) {

@@ -74,7 +74,7 @@ function EventSeriesModalContent({
 					date: DateTime.fromISO(event.start),
 					title: removeZettelId(event.title),
 					filePath: event.ref.filePath,
-					skipped: !!event.skipped,
+					skipped: event.skipped,
 					color: allColors[0],
 					allColors: allColors.length >= 2 ? allColors : undefined,
 				};

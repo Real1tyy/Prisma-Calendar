@@ -116,7 +116,7 @@ export function createMockCalendarSettingsStore(initial: Partial<SingleCalendarC
 			subject.next(state.current);
 		},
 		async toggleToolbarButton(key: ToolbarButtonsKey, buttonId: string, enabled: boolean): Promise<void> {
-			const current = state.current[key];
+			const current = state.current[key] as string[];
 			const next = enabled
 				? current.includes(buttonId)
 					? current

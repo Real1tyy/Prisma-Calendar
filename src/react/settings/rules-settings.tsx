@@ -98,9 +98,7 @@ const ColorRulesList = memo(function ColorRulesList({ colorRules, setColorRules 
 	);
 
 	const deleteRule = useCallback(
-		(id: string) => {
-			setColorRules((prev) => prev.filter((r) => r.id !== id));
-		},
+		(id: string) => setColorRules((prev) => prev.filter((r) => r.id !== id)),
 		[setColorRules]
 	);
 
@@ -181,7 +179,9 @@ const ColorRuleItem = memo(function ColorRuleItem({
 					<input
 						type="checkbox"
 						checked={rule.enabled}
-						onChange={(e) => onUpdate(rule.id, { enabled: e.target.checked })}
+						onChange={(e) => {
+							onUpdate(rule.id, { enabled: e.target.checked });
+						}}
 					/>
 					<input
 						type="text"
@@ -197,7 +197,9 @@ const ColorRuleItem = memo(function ColorRuleItem({
 				<div className={cls("color-rule-right")}>
 					<ColorInput
 						value={rule.color}
-						onChange={(next) => onUpdate(rule.id, { color: next })}
+						onChange={(next) => {
+							onUpdate(rule.id, { color: next });
+						}}
 						testId={tid("rules-color-picker", index)}
 					/>
 					<div className={cls("color-rule-controls")}>
@@ -366,9 +368,7 @@ const FilterPresetsList = memo(function FilterPresetsList({ filterPresets, setFi
 	);
 
 	const deletePreset = useCallback(
-		(index: number) => {
-			setFilterPresets((prev) => prev.filter((_, i) => i !== index));
-		},
+		(index: number) => setFilterPresets((prev) => prev.filter((_, i) => i !== index)),
 		[setFilterPresets]
 	);
 

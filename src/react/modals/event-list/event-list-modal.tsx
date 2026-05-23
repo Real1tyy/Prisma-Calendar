@@ -76,9 +76,7 @@ export const EventListModal = memo(function EventListModal({
 
 	useFocusOnMount(searchRef, { delayMs: 50 });
 
-	useEffect(() => {
-		setActiveIndex(-1);
-	}, [filtered]);
+	useEffect(() => setActiveIndex(-1), [filtered]);
 
 	const handleKeyDown = useCallback(
 		(e: React.KeyboardEvent) => {

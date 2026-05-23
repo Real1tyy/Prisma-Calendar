@@ -110,8 +110,9 @@ export class AIChatManager {
 		}
 	}
 
-	async startNewThread(mode: string): Promise<void> {
+	startNewThread(mode: string): Promise<void> {
 		this.currentThread = this.chatStore.createThread(mode);
+		return Promise.resolve();
 	}
 
 	async loadThread(id: string): Promise<void> {
@@ -167,8 +168,11 @@ export class AIChatManager {
 				{ role: "user", content: userMessage },
 			]);
 
-			// Re-check after await — another action could have cleared the thread in the meantime.
-			const thread = this.currentThread as ThreadData | null;
+			// Re-check after await — another action could have cleared the thread in the
+			// meantime. Launder through `unknown` so the post-await read isn't narrowed
+			// by the earlier guard (TS keeps that narrowing across the await).
+			const current: unknown = this.currentThread;
+			const thread = current as ThreadData | null;
 			if (thread) {
 				thread.title = title
 					.trim()

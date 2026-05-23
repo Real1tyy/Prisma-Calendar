@@ -89,9 +89,11 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 				this.table.destroy();
 				this.table = this.createTable(newSettings);
 				this.wireTableEvents();
-				this.table.start().catch((error) => {
-					console.error("[EventFileRepository] table.start() failed after settings change:", error);
-				});
+				this.table
+					.start()
+					.catch((error: unknown) =>
+						console.error("[EventFileRepository] table.start() failed after settings change:", error)
+					);
 			}
 		});
 	}
@@ -428,10 +430,10 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 	private runBackgroundUpdates(file: TFile, frontmatter: Frontmatter, isUntracked: boolean): void {
 		// Auto-assign ZettelID: fire-and-forget. The rename triggers a new
 		// event cycle with the updated path, so we don't need to await or update state here.
-		void this.autoAssignZettelId(file, isUntracked).catch((error) => {
+		void this.autoAssignZettelId(file, isUntracked).catch((error: unknown) => {
 			console.error(`[EventFileRepository] Error auto-assigning ZettelID for ${file.path}:`, error);
 		});
-		void this.applyBackgroundFrontmatterUpdates(file, frontmatter, isUntracked).catch((error) => {
+		void this.applyBackgroundFrontmatterUpdates(file, frontmatter, isUntracked).catch((error: unknown) => {
 			console.error(`[EventFileRepository] Error applying background updates for ${file.path}:`, error);
 		});
 	}
@@ -469,7 +471,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 
 		await this.enqueueFrontmatterWrite(file, (fm: Frontmatter) => {
 			if (needsTitleUpdate) fm[calendarTitleProp] = titleLink;
-			if (needsSortDateCleanup) delete fm[sortDateProp];
+			if (needsSortDateCleanup) Reflect.deleteProperty(fm, sortDateProp);
 			if (needsMarkAsDone) fm[statusProperty] = doneValue;
 		});
 	}

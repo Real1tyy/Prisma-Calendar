@@ -185,9 +185,7 @@ export const UntrackedEventsDropdown = memo(
 		);
 
 		const handleDoubleClick = useCallback(
-			(filePath: string) => {
-				void app.workspace.openLinkText(filePath, "", false);
-			},
+			(filePath: string) => void app.workspace.openLinkText(filePath, "", false),
 			[app]
 		);
 

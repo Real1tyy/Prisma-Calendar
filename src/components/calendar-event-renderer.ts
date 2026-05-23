@@ -174,9 +174,10 @@ export function applyEventMountStyling(
 		cachedTextColor.source = settings.eventTextColor;
 	}
 
-	const textColor = hasVeryCloseShadeFromRgb(cachedTextColor.rgb!, eventColor)
-		? settings.eventTextColorAlt
-		: settings.eventTextColor;
+	const textColor =
+		cachedTextColor.rgb && hasVeryCloseShadeFromRgb(cachedTextColor.rgb, eventColor)
+			? settings.eventTextColorAlt
+			: settings.eventTextColor;
 	element.style.setProperty("--event-text-color", textColor);
 	element.classList.add(cls("calendar-event"));
 

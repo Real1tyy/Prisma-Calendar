@@ -93,6 +93,10 @@ const RecurrenceTypeSchema = z.string().refine(isValidRecurrenceTypeString, {
 	message: "Must be a valid recurrence preset or custom interval (e.g. DAILY;INTERVAL=5)",
 });
 
+// The cross-field rule (all-day events carry `date`; timed events carry
+// `startTime`+`endTime`) is encoded in the OUTPUT type as a discriminated union on
+// `allDay` — so consumers get `date`/`startTime` typed non-nullable after narrowing
+// on `allDay`, with no runtime guards needed downstream.
 export const RRuleFrontmatterSchema = z
 	.object({
 		type: RecurrenceTypeSchema,
@@ -103,18 +107,23 @@ export const RRuleFrontmatterSchema = z
 		endTime: optionalTimeTransform,
 		allDay: booleanTransform,
 	})
-	.refine(
-		(data) => {
-			if (data.allDay) {
-				return data.date !== undefined;
+	.transform((data, ctx) => {
+		if (data.allDay) {
+			if (!data.date) {
+				ctx.addIssue({ code: "custom", message: "When allDay is true, date is required." });
+				return z.NEVER;
 			}
-			return data.startTime !== undefined && data.endTime !== undefined;
-		},
-		{
-			message:
-				"When allDay is true, date is required. When allDay is false or undefined, both startTime and endTime are required.",
+			return { ...data, allDay: true as const, date: data.date };
 		}
-	);
+		if (!data.startTime || !data.endTime) {
+			ctx.addIssue({
+				code: "custom",
+				message: "When allDay is false, both startTime and endTime are required.",
+			});
+			return z.NEVER;
+		}
+		return { ...data, allDay: false as const, startTime: data.startTime, endTime: data.endTime };
+	});
 
 export type RRuleFrontmatter = z.infer<typeof RRuleFrontmatterSchema>;
 

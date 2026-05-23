@@ -14,9 +14,7 @@ export const CALENDAR_VIEW_OPTIONS = {
 
 export type CalendarViewType = keyof typeof CALENDAR_VIEW_OPTIONS;
 
-export const CalendarViewTypeSchema = z.enum(
-	Object.keys(CALENDAR_VIEW_OPTIONS) as [CalendarViewType, ...CalendarViewType[]]
-);
+export const CalendarViewTypeSchema = z.enum(Object.keys(CALENDAR_VIEW_OPTIONS));
 
 export const DENSITY_OPTIONS: Record<string, string> = {
 	comfortable: "Comfortable",
@@ -38,13 +36,12 @@ export const COLOR_MODE_OPTIONS: Record<string, string> = {
 	"5": "Color events with five colors",
 };
 
-export const FIRST_DAY_OPTIONS: Record<number, string> = Object.entries(WEEKDAY_TO_NUMBER).reduce(
-	(acc, [weekday, number]) => {
-		acc[number] = WEEKDAY_OPTIONS[weekday as Weekday];
-		return acc;
-	},
-	{} as Record<number, string>
-);
+export const FIRST_DAY_OPTIONS: Record<number, string> = Object.entries(WEEKDAY_TO_NUMBER).reduce<
+	Record<number, string>
+>((acc, [weekday, number]) => {
+	acc[number] = WEEKDAY_OPTIONS[weekday as Weekday];
+	return acc;
+}, {});
 
 export const LOCALE_OPTIONS = {
 	en: "English",
@@ -72,6 +69,6 @@ export const LOCALE_KEYS = Object.keys(LOCALE_OPTIONS) as [string, ...string[]];
 
 export type ContextMenuItem = keyof typeof CONTEXT_MENU_BUTTON_LABELS;
 
-export const ContextMenuItemSchema = z.enum(CONTEXT_MENU_ITEM_IDS as [ContextMenuItem, ...ContextMenuItem[]]);
+export const ContextMenuItemSchema = z.enum(CONTEXT_MENU_ITEM_IDS);
 
-export const ToolbarButtonSchema = z.enum(TOOLBAR_BUTTON_IDS as [string, ...string[]]);
+export const ToolbarButtonSchema = z.enum(TOOLBAR_BUTTON_IDS);

@@ -6,7 +6,7 @@ import type { CalendarComponent } from "../../components/calendar-view";
 import { CSS_PREFIX } from "../../constants";
 import { createEvent } from "../../core/api/event-crud";
 import type CustomCalendarPlugin from "../../main";
-import { PRISMA_TOUR_STEP_IDS, type PrismaTourStepId, SAMPLE_EVENT_TITLE } from "./tour-constants";
+import { PRISMA_TOUR_STEP_IDS, SAMPLE_EVENT_TITLE, type PrismaTourStepId } from "./tour-constants";
 
 // Production runtime selectors — kept in sync with the data-testids stamped by
 // calendar-view.ts (`prisma-cal-event` + `data-event-title`) and the FullCalendar
@@ -27,7 +27,7 @@ const docsUrl = (path: string, content: string): string =>
 async function ensureCalendarReady(plugin: CustomCalendarPlugin): Promise<CalendarComponent | null> {
 	let component = plugin.getActiveCalendarComponent();
 	if (!component) {
-		const bundle = plugin.calendarBundles[0];
+		const bundle = plugin.calendarBundles.at(0);
 		await bundle?.activateCalendarView();
 		component = plugin.getActiveCalendarComponent();
 	}
@@ -50,8 +50,8 @@ async function ensureSampleEvent(plugin: CustomCalendarPlugin): Promise<void> {
 	const end = start.plus({ hours: 1 });
 	await createEvent(plugin, {
 		title: SAMPLE_EVENT_TITLE,
-		start: start.toISO() ?? "",
-		end: end.toISO() ?? "",
+		start: start.toISO(),
+		end: end.toISO(),
 		allDay: false,
 	});
 

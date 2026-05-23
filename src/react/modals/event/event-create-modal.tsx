@@ -90,9 +90,7 @@ export function openEventCreateModal(
 					saveMinimizedModalState(values, "create", null, {}, bundle);
 					close();
 				}}
-				onSavePreset={(state, customProps) => {
-					openSavePresetFlow(app, bundle, state, customProps);
-				}}
+				onSavePreset={(state, customProps) => openSavePresetFlow(app, bundle, state, customProps)}
 				onUnmountWithActiveStopwatch={(values) =>
 					buildMinimizedState(values, {
 						modalType: "create",
@@ -136,9 +134,7 @@ function handleCreateSubmit(
 				await openFileInNewTab(app, filePath);
 			}
 		})
-		.catch((error) => {
-			console.error("[EventCreate] Error creating event:", error);
-		});
+		.catch((error: unknown) => console.error("[EventCreate] Error creating event:", error));
 }
 
 function toInputFormat(value: string | Date | null | undefined): string {

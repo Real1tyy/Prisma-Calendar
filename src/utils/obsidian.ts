@@ -20,7 +20,7 @@ export const emitHover = (
 	linktext: string,
 	calendarId: string,
 	sourcePath?: string
-) =>
+) => {
 	app.workspace.trigger("hover-link", {
 		event: jsEvent,
 		source: getCalendarViewType(calendarId),
@@ -29,6 +29,7 @@ export const emitHover = (
 		linktext,
 		sourcePath: sourcePath ?? app.workspace.getActiveFile()?.path ?? "",
 	});
+};
 
 /**
  * Trashes a file by path if it exists. Fire-and-forget — logs a warning and does not throw.

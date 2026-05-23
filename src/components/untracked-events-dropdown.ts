@@ -22,7 +22,7 @@ export class UntrackedEventsDropdown {
 		private readonly bundle: CalendarBundle
 	) {}
 
-	initialize(_calendar: Calendar, container: HTMLElement, placement: "left" | "right" = "right"): void {
+	initialize(_calendar: Calendar | null, container: HTMLElement, placement: "left" | "right" = "right"): void {
 		this.injectTimeout = window.setTimeout(() => {
 			this.injectTimeout = null;
 			const selector = placement === "left" ? ".fc-toolbar-chunk:first-child" : ".fc-toolbar-chunk:last-child";

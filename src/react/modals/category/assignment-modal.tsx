@@ -160,9 +160,7 @@ export function AssignmentForm({ items, config, preSelected, onSubmit, onCancel 
 		setSearch("");
 	}, [search, newItems, config.defaultColor]);
 
-	const handleSubmit = useCallback(() => {
-		onSubmit(Array.from(selected));
-	}, [selected, onSubmit]);
+	const handleSubmit = useCallback(() => onSubmit(Array.from(selected)), [selected, onSubmit]);
 
 	const handleKeyDown = useCallback(
 		(e: React.KeyboardEvent) => {

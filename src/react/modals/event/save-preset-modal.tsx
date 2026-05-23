@@ -79,7 +79,9 @@ export function openSavePresetModal(
 			<SavePresetForm
 				existingPresets={existingPresets}
 				blockCreateNew={blockCreateNew}
-				onSubmit={(values) => submit({ name: values.presetName, overridePresetId: values.saveTo || null })}
+				onSubmit={(values) => {
+					submit({ name: values.presetName, overridePresetId: values.saveTo || null });
+				}}
 				onCancel={cancel}
 			/>
 		),

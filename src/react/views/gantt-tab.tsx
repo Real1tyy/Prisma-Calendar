@@ -226,9 +226,7 @@ const GanttBody = memo(function GanttBody() {
 		filterRef.current = handle;
 	}, []);
 
-	const handleFilterChange = useCallback(() => {
-		rebuildRef.current(false);
-	}, []);
+	const handleFilterChange = useCallback(() => rebuildRef.current(false), []);
 
 	const handleCreate = useCallback(() => {
 		openEventCreateModal(app, bundle, { title: "", start: null });

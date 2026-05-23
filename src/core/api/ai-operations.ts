@@ -35,9 +35,8 @@ export async function aiQuery(plugin: CustomCalendarPlugin, input: PrismaAIQuery
 	const categoryContext = gatherCategoryContext(bundle);
 	const aiSettings = plugin.settingsStore.currentSettings.ai;
 
-	const customPrompts = input.customPromptIds
-		? aiSettings.customPrompts.filter((p) => input.customPromptIds!.includes(p.id))
-		: undefined;
+	const promptIds = input.customPromptIds;
+	const customPrompts = promptIds ? aiSettings.customPrompts.filter((p) => promptIds.includes(p.id)) : undefined;
 
 	if (mode === "query") {
 		const calendarContext = await gatherCalendarContext(bundle, viewContext);

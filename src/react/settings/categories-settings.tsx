@@ -215,9 +215,7 @@ const CategoriesListSection = memo(function CategoriesListSection({
 	);
 
 	const handleClickCategory = useCallback(
-		(categoryName: string) => {
-			showCategoryEventsModal(app, categoryName, settingsStore.currentSettings);
-		},
+		(categoryName: string) => showCategoryEventsModal(app, categoryName, settingsStore.currentSettings),
 		[app, settingsStore]
 	);
 
@@ -418,16 +416,13 @@ const CategoryAssignmentPresetsList = memo(function CategoryAssignmentPresetsLis
 	);
 
 	const updatePreset = useCallback(
-		(id: string, updated: CategoryAssignmentPreset) => {
-			setPresets((prev) => (prev ?? []).map((p) => (p.id === id ? updated : p)));
-		},
+		(id: string, updated: CategoryAssignmentPreset) =>
+			setPresets((prev) => (prev ?? []).map((p) => (p.id === id ? updated : p))),
 		[setPresets]
 	);
 
 	const deletePreset = useCallback(
-		(id: string) => {
-			setPresets((prev) => (prev ?? []).filter((p) => p.id !== id));
-		},
+		(id: string) => setPresets((prev) => (prev ?? []).filter((p) => p.id !== id)),
 		[setPresets]
 	);
 

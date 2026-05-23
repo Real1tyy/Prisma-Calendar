@@ -372,7 +372,7 @@ export function renderHeatmapLegend(
 	for (let bucket = 0; bucket <= 4; bucket++) {
 		const swatch = legend.createDiv(cls("heatmap-legend-swatch"));
 		swatch.style.backgroundColor = getCellColor(bucket, categoryColor);
-		swatch.title = bucketLabels[bucket]!;
+		swatch.title = bucketLabels[bucket];
 		swatch.setAttribute("aria-label", bucketLabels[bucket]);
 	}
 

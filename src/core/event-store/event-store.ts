@@ -163,10 +163,9 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 				holidays = await this.holidayStore.getHolidaysForRange(queryStart, queryEnd);
 			}
 
-			const manualVirtual = this.virtualEventStore
-				? this.virtualEventStore
-						.getInRange(queryStart, queryEnd)
-						.map((v) => toCalendarEvent(v, this.virtualEventStore!.getFilePath()))
+			const store = this.virtualEventStore;
+			const manualVirtual = store
+				? store.getInRange(queryStart, queryEnd).map((v) => toCalendarEvent(v, store.getFilePath()))
 				: [];
 
 			// Physical events are pre-sorted. Sort only the supplementary arrays
@@ -236,9 +235,7 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	setVirtualEventStore(store: VirtualEventStore): void {
 		this.virtualEventSubscription?.unsubscribe();
 		this.virtualEventStore = store;
-		this.virtualEventSubscription = store.changes$.subscribe(() => {
-			this.notifyChange();
-		});
+		this.virtualEventSubscription = store.changes$.subscribe(() => this.notifyChange());
 	}
 
 	// ─── Query Helpers ────────────────────────────────────────────
@@ -301,7 +298,7 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 		// [queryStart, queryEnd) — filter them out with the strict end > queryStart
 		// check to match `getEventsInRange` and `aggregateStats`.
 		const timedLowKey = `${queryStartNorm}${EventStore.SEP}`;
-		timedTree.forRange(timedLowKey, `${EventStore.MAX}`, true, (_key, event) => {
+		timedTree.forRange(timedLowKey, EventStore.MAX, true, (_key, event) => {
 			if (this.normIso(event.start) < queryEndNorm && this.normIso(event.end) > queryStartNorm) {
 				visitor(event);
 			}
@@ -309,9 +306,7 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 
 		const allDayLowKey = `${queryStartNorm}${EventStore.SEP}`;
 		const allDayHighKey = `${queryEndNorm}${EventStore.SEP}`;
-		allDayTree.forRange(allDayLowKey, allDayHighKey, false, (_key, event) => {
-			visitor(event);
-		});
+		allDayTree.forRange(allDayLowKey, allDayHighKey, false, (_key, event) => visitor(event));
 	}
 
 	// ─── Navigation ───────────────────────────────────────────────
@@ -412,9 +407,7 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 
 	private startMarkDonePeriodicScan(): void {
 		this.stopMarkDonePeriodicScan();
-		this.markDoneScanInterval = window.setInterval(() => {
-			this.scanPastEventsForMarkDone();
-		}, MARK_DONE_SCAN_INTERVAL_MS);
+		this.markDoneScanInterval = window.setInterval(() => this.scanPastEventsForMarkDone(), MARK_DONE_SCAN_INTERVAL_MS);
 	}
 
 	private stopMarkDonePeriodicScan(): void {

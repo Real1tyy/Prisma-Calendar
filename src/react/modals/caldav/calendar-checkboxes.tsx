@@ -20,9 +20,7 @@ export const CalendarCheckboxes = memo(function CalendarCheckboxes({
 	onChange,
 }: CalendarCheckboxesProps) {
 	const handleToggle = useCallback(
-		(url: string, checked: boolean) => {
-			onChange(checked ? [...selected, url] : selected.filter((u) => u !== url));
-		},
+		(url: string, checked: boolean) => onChange(checked ? [...selected, url] : selected.filter((u) => u !== url)),
 		[selected, onChange]
 	);
 

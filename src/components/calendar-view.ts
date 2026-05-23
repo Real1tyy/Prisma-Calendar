@@ -198,9 +198,9 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		// Detect calendar-event drag release point reliably (FullCalendar's jsEvent in eventDragStop can be stale
 		// when releasing outside the calendar grid, e.g. over toolbar/dropdowns).
 		activeDocument.addEventListener("pointerup", this.handleGlobalPointerUpForUntrackedDrop, true);
-		this.register(() => {
-			activeDocument.removeEventListener("pointerup", this.handleGlobalPointerUpForUntrackedDrop, true);
-		});
+		this.register(() =>
+			activeDocument.removeEventListener("pointerup", this.handleGlobalPointerUpForUntrackedDrop, true)
+		);
 
 		window.requestAnimationFrame(() => this.hostEl.focus());
 
@@ -221,9 +221,9 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		});
 
 		// Settings subscription
-		const settingsSubscription = this.bundle.settingsStore.settings$.subscribe((settings: SingleCalendarConfig) => {
-			this.updateCalendarSettings(settings);
-		});
+		const settingsSubscription = this.bundle.settingsStore.settings$.subscribe((settings: SingleCalendarConfig) =>
+			this.updateCalendarSettings(settings)
+		);
 		this.register(() => settingsSubscription.unsubscribe());
 
 		const caldavSettingsSubscription = this.bundle.settingsStore.mainSettingsStore.settings$.subscribe(
@@ -262,7 +262,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.register(() => recurringEventManagerSubscription.unsubscribe());
 	}
 
-	override async unmount(): Promise<void> {
+	override unmount(): Promise<void> {
 		this.saveCurrentState();
 		this.stopUpcomingEventCheck();
 		this.cleanupDragEdgeScrolling();
@@ -292,6 +292,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.removeConnectionBanner();
 		this.connectionRenderer?.destroy();
 		this.connectionRenderer = null;
+		return Promise.resolve();
 	}
 
 	// ─── Calendar Setup ──────────────────────────────────────────
@@ -438,13 +439,9 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 				void this.handleEventDrop(info);
 			},
 
-			eventResize: (info) => {
-				void this.handleEventResize(info);
-			},
+			eventResize: (info) => void this.handleEventResize(info),
 
-			drop: (info) => {
-				void this.handleExternalDrop(info);
-			},
+			drop: (info) => void this.handleExternalDrop(info),
 
 			dateClick: (info) => {
 				// Only handle if not already handling a selection
@@ -983,9 +980,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			zoomLevel: { text: " ", click: () => {} },
 			mobileControls: {
 				text: "Filters",
-				click: () => {
-					this.setMobileControlsCollapsed(!this.mobileControlsCollapsed);
-				},
+				click: () => this.setMobileControlsCollapsed(!this.mobileControlsCollapsed),
 				className: cls("mobile-controls-toggle"),
 			},
 			batchSelect: {
@@ -1010,7 +1005,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private buildBatchButtons(): Record<string, ExtendedButtonInput> {
-		const bsm = this.batchSelectionManager!;
+		const bsm = this.batchSelectionManager;
+		if (!bsm) return {};
 		const clsBase = cls("batch-action-btn");
 
 		return {
@@ -1031,9 +1027,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			},
 			batchDuplicate: {
 				text: "Duplicate",
-				click: () => {
-					void bsm.executeDuplicate();
-				},
+				click: () => void bsm.executeDuplicate(),
 				className: `${clsBase} ${cls("duplicate-btn")}`,
 			},
 			batchMoveBy: {
@@ -1043,93 +1037,67 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			},
 			batchCloneNext: {
 				text: "Clone Next",
-				click: () => {
-					void bsm.executeClone(1);
-				},
+				click: () => void bsm.executeClone(1),
 				className: `${clsBase} ${cls("clone-next-btn")}`,
 			},
 			batchClonePrev: {
 				text: "Clone Prev",
-				click: () => {
-					void bsm.executeClone(-1);
-				},
+				click: () => void bsm.executeClone(-1),
 				className: `${clsBase} ${cls("clone-prev-btn")}`,
 			},
 			batchMoveNext: {
 				text: "Move Next",
-				click: () => {
-					void bsm.executeMove(1);
-				},
+				click: () => void bsm.executeMove(1),
 				className: `${clsBase} ${cls("move-next-btn")}`,
 			},
 			batchMovePrev: {
 				text: "Move Prev",
-				click: () => {
-					void bsm.executeMove(-1);
-				},
+				click: () => void bsm.executeMove(-1),
 				className: `${clsBase} ${cls("move-prev-btn")}`,
 			},
 			batchOpenAll: {
 				text: "Open",
-				click: () => {
-					void bsm.executeOpenAll();
-				},
+				click: () => void bsm.executeOpenAll(),
 				className: `${clsBase} ${cls("open-all-btn")}`,
 			},
 			batchSkip: {
 				text: "Skip",
-				click: () => {
-					void bsm.executeSkip();
-				},
+				click: () => void bsm.executeSkip(),
 				className: `${clsBase} ${cls("skip-btn")}`,
 			},
 			batchMarkAsDone: {
 				text: "Done",
-				click: () => {
-					void bsm.executeMarkAsDone();
-				},
+				click: () => void bsm.executeMarkAsDone(),
 				className: `${clsBase} ${cls("mark-done-btn")}`,
 			},
 			batchMarkAsNotDone: {
 				text: "Not Done",
-				click: () => {
-					void bsm.executeMarkAsNotDone();
-				},
+				click: () => void bsm.executeMarkAsNotDone(),
 				className: `${clsBase} ${cls("mark-not-done-btn")}`,
 			},
 			batchCategories: {
 				text: "Categories",
-				click: () => {
-					void this.openCategoryAssignModal();
-				},
+				click: () => void this.openCategoryAssignModal(),
 				className: `${clsBase} ${cls("categories-btn")}`,
 			},
 			batchFrontmatter: {
 				text: "Frontmatter",
-				click: () => {
-					void this.openBatchFrontmatterModal();
-				},
+				click: () => void this.openBatchFrontmatterModal(),
 				className: `${clsBase} ${cls("frontmatter-btn")}`,
 			},
 			batchMakeVirtual: {
 				text: "Make Virtual",
-				click: () => {
-					void bsm.executeMakeVirtual();
-				},
+				click: () => void bsm.executeMakeVirtual(),
 				className: `${clsBase} ${cls("make-virtual-btn")}`,
 			},
 			batchMakeReal: {
 				text: "Make Real",
-				click: () => {
-					void bsm.executeMakeReal();
-				},
+				click: () => void bsm.executeMakeReal(),
 				className: `${clsBase} ${cls("make-real-btn")}`,
 			},
 			batchDelete: {
 				text: "Delete",
-				click: () => {
-					void bsm.executeDelete();
-				},
+				click: () => bsm.executeDelete(),
 				className: `${clsBase} ${cls("delete-btn")}`,
 			},
 			batchExit: {
@@ -1172,9 +1140,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 						app: this.app,
 						bundle: this.bundle,
 						container: this.container,
-						onPresetSelected: (expression: string) => {
-							this.expressionFilter?.setFilterValue(expression);
-						},
+						onPresetSelected: (expression: string) => this.expressionFilter?.setFilterValue(expression),
 					});
 				},
 			},
@@ -1182,7 +1148,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 				id: "untrackedEvents",
 				init: () => {
 					this.untrackedEventsDropdown = new UntrackedEventsDropdown(this.app, this.bundle);
-					this.untrackedEventsDropdown.initialize(this.calendar!, this.container);
+					this.untrackedEventsDropdown.initialize(this.calendar, this.container);
 				},
 			},
 		];
@@ -1488,12 +1454,21 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		});
 	}
 
-	private performInitialLoad(calendarEvents: FCPrismaEventInput[]): void {
-		this.calendar!.removeAllEvents();
+	// Internal render/navigation helpers below run only after the calendar is
+	// initialized; assert that invariant once instead of asserting at each call.
+	private requireCalendar(): Calendar {
+		if (!this.calendar) {
+			throw new Error("Calendar operation invoked before initialization");
+		}
+		return this.calendar;
+	}
 
-		this.calendar!.batchRendering(() => {
+	private performInitialLoad(calendarEvents: FCPrismaEventInput[]): void {
+		this.requireCalendar().removeAllEvents();
+
+		this.requireCalendar().batchRendering(() => {
 			for (const ev of calendarEvents) {
-				this.calendar!.addEvent(ev);
+				this.requireCalendar().addEvent(ev);
 			}
 		});
 		this.populateRenderedEventsCache(calendarEvents);
@@ -1530,13 +1505,13 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		}
 
 		// Add events inside batchRendering to consolidate into one render pass
-		this.calendar!.batchRendering(() => {
+		this.requireCalendar().batchRendering(() => {
 			for (const ev of diff.changed) {
-				this.calendar!.addEvent(ev);
+				this.requireCalendar().addEvent(ev);
 			}
 
 			for (const ev of diff.added) {
-				this.calendar!.addEvent(ev);
+				this.requireCalendar().addEvent(ev);
 			}
 		});
 
@@ -1557,10 +1532,10 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	 * so we loop until none remain.
 	 */
 	private removeAllFCEventsById(id: string): void {
-		let fcEvent = this.calendar!.getEventById(id);
+		let fcEvent = this.requireCalendar().getEventById(id);
 		while (fcEvent) {
 			fcEvent.remove();
-			fcEvent = this.calendar!.getEventById(id);
+			fcEvent = this.requireCalendar().getEventById(id);
 		}
 	}
 
@@ -2116,9 +2091,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private setupMouseTracking(container: HTMLElement): void {
-		container.addEventListener("mousedown", () => {
-			this.mouseDownTime = Date.now();
-		});
+		container.addEventListener("mousedown", () => (this.mouseDownTime = Date.now()));
 	}
 
 	// ─── Navigation ──────────────────────────────────────────────
@@ -2140,12 +2113,12 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 	navigateBack(): boolean {
 		if (!this.calendar) return false;
-		return this.navigationHistory.navigate("back", (e) => this.calendar!.changeView(e.viewType, e.date));
+		return this.navigationHistory.navigate("back", (e) => this.requireCalendar().changeView(e.viewType, e.date));
 	}
 
 	navigateForward(): boolean {
 		if (!this.calendar) return false;
-		return this.navigationHistory.navigate("forward", (e) => this.calendar!.changeView(e.viewType, e.date));
+		return this.navigationHistory.navigate("forward", (e) => this.requireCalendar().changeView(e.viewType, e.date));
 	}
 
 	scrollToNow(): void {
@@ -2240,7 +2213,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	deleteSelection(): void {
-		void this.batchSelectionManager?.executeDelete();
+		this.batchSelectionManager?.executeDelete();
 	}
 
 	openSelection(): void {
@@ -2296,31 +2269,31 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	showSelectedEventsModal(): void {
 		if (!this.batchSelectionManager) return;
 		const selected = this.batchSelectionManager.getSelectedEvents();
-		openSelectedEventsModal(this.app, this.bundle, selected, (eventId: string) => {
-			this.batchSelectionManager?.unselectEvent(eventId);
-		});
+		openSelectedEventsModal(this.app, this.bundle, selected, (eventId: string) =>
+			this.batchSelectionManager?.unselectEvent(eventId)
+		);
 	}
 
-	async showDailyStatsModal(date?: Date): Promise<void> {
+	showDailyStatsModal(date?: Date): void {
 		const currentDate = date || this.calendar?.getDate() || new Date();
 		showStatsModal(this.app, this.bundle, "daily", currentDate);
 	}
 
-	async showWeeklyStatsModal(date?: Date): Promise<void> {
+	showWeeklyStatsModal(date?: Date): void {
 		const currentDate = date || this.calendar?.getDate() || new Date();
 		showStatsModal(this.app, this.bundle, "weekly", currentDate);
 	}
 
-	async showMonthlyStatsModal(date?: Date): Promise<void> {
+	showMonthlyStatsModal(date?: Date): void {
 		const currentDate = date || this.calendar?.getDate() || new Date();
 		showStatsModal(this.app, this.bundle, "monthly", currentDate);
 	}
 
-	async showAllTimeStatsModal(): Promise<void> {
+	showAllTimeStatsModal(): void {
 		showStatsModal(this.app, this.bundle, "alltime");
 	}
 
-	async showIntervalEventsModal(): Promise<void> {
+	showIntervalEventsModal(): void {
 		if (!this.calendar?.view) return;
 
 		const view = this.calendar.view;
@@ -2361,9 +2334,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		for (let i = 0; i < elements.length; i++) {
 			const element = elements[i];
 			element.classList.add(cls("event-highlighted"));
-			window.setTimeout(() => {
-				element.classList.remove(cls("event-highlighted"));
-			}, durationMs);
+			window.setTimeout(() => element.classList.remove(cls("event-highlighted")), durationMs);
 		}
 	}
 
@@ -2456,9 +2427,10 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.highlightedCategoryEvents = eventIds;
 		this.currentCategoryHighlightClass = highlightClass;
 
-		this.categoryHighlightTimeout = window.setTimeout(() => {
-			this.clearCategoryHighlight();
-		}, CATEGORY_HIGHLIGHT_DURATION_MS);
+		this.categoryHighlightTimeout = window.setTimeout(
+			() => this.clearCategoryHighlight(),
+			CATEGORY_HIGHLIGHT_DURATION_MS
+		);
 	}
 
 	private clearCategoryHighlight(): void {
@@ -2502,9 +2474,10 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.updateUpcomingEventHighlight();
 
 		// Set up interval to check once per minute (60000ms)
-		this.upcomingEventCheckInterval = window.setInterval(() => {
-			this.updateUpcomingEventHighlight();
-		}, UPCOMING_EVENT_CHECK_INTERVAL_MS);
+		this.upcomingEventCheckInterval = window.setInterval(
+			() => this.updateUpcomingEventHighlight(),
+			UPCOMING_EVENT_CHECK_INTERVAL_MS
+		);
 	}
 
 	private stopUpcomingEventCheck(): void {
@@ -2633,9 +2606,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		});
 
 		// Register cleanup
-		this.register(() => {
-			this.hostEl.removeEventListener("keydown", keydownHandler);
-		});
+		this.register(() => this.hostEl.removeEventListener("keydown", keydownHandler));
 	}
 
 	openFilterPresetSelector(): void {

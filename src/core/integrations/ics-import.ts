@@ -148,7 +148,7 @@ export function parseICSRRule(vevent: ICAL.Component): { type: RecurrenceType } 
 	const rruleProp = vevent.getFirstPropertyValue("rrule");
 	if (!rruleProp) return undefined;
 
-	const recur = rruleProp instanceof ICAL.Recur ? rruleProp : new ICAL.Recur(rruleProp as unknown as Frontmatter);
+	const recur = rruleProp instanceof ICAL.Recur ? rruleProp : ICAL.Recur.fromString(String(rruleProp));
 	const freq: string = recur.freq;
 	const interval: number = recur.interval || 1;
 

@@ -102,9 +102,7 @@ const Pagination = memo(function Pagination({
 		[onPageInput, inputValue]
 	);
 
-	const handleBlur = useCallback(() => {
-		onPageInput(inputValue);
-	}, [onPageInput, inputValue]);
+	const handleBlur = useCallback(() => onPageInput(inputValue), [onPageInput, inputValue]);
 
 	return (
 		<div className="prisma-stats-pagination">

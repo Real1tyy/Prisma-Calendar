@@ -59,8 +59,9 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 	const [licenseKeySecretName, setLicenseKeySecretName] = useSchemaField(plugin.settingsStore, "licenseKeySecretName");
 
 	const onSecretChange = useCallback(
-		async (value: string) => {
+		(value: string) => {
 			setLicenseKeySecretName(value);
+			return Promise.resolve();
 		},
 		[setLicenseKeySecretName]
 	);

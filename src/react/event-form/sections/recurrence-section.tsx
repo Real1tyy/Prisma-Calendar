@@ -35,7 +35,7 @@ interface RecurringCheckboxProps {
 
 const RecurringCheckbox = memo(function RecurringCheckbox({ form, name, testId }: RecurringCheckboxProps) {
 	const { field } = useController({ control: form.control, name });
-	return <PrismaCheckbox style="plain" value={!!field.value} onChange={field.onChange} testId={testId} />;
+	return <PrismaCheckbox style="plain" value={field.value} onChange={field.onChange} testId={testId} />;
 });
 
 interface RecurrenceSectionProps {
@@ -74,9 +74,7 @@ export const RecurrenceSection = memo(function RecurrenceSection({ form }: Recur
 	);
 
 	const handleRruleTypeChange = useCallback(
-		(value: string) => {
-			setRecurringValue("rruleType", value === "custom" ? buildCustomDSL() : value);
-		},
+		(value: string) => setRecurringValue("rruleType", value === "custom" ? buildCustomDSL() : value),
 		[setRecurringValue, buildCustomDSL]
 	);
 

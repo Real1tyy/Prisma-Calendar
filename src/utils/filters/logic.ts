@@ -60,7 +60,7 @@ function evaluateNode(node: jsep.Expression, scope: Map<string, unknown>): unkno
 				case "-":
 					return -(arg as number);
 				case "+":
-					return +(arg as number);
+					return Number(arg);
 				default:
 					throw new InvalidExpressionError(`Unsupported unary operator '${u.operator}'`);
 			}

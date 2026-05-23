@@ -126,13 +126,11 @@ export function EventSeriesInstancesList({
 				) : (
 					filtered.map((item) => (
 						<EventSeriesEventRow
-							key={item.filePath + item.date.toISO()}
+							key={item.filePath + (item.date.toISO() ?? "")}
 							item={item}
 							isPast={item.date < todayStart}
 							settings={multiColorSettings}
-							onClick={() => {
-								void bundle.plugin.app.workspace.openLinkText(item.filePath, "", false);
-							}}
+							onClick={() => void bundle.plugin.app.workspace.openLinkText(item.filePath, "", false)}
 						/>
 					))
 				)}

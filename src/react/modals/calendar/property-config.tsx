@@ -36,7 +36,9 @@ function CopyableProp({ name, testId }: { name: string; testId: string }) {
 			tabIndex={0}
 			className={cls(`first-launch-copyable-prop${copied ? " is-copied" : ""}`)}
 			onClick={copy}
-			onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && copy()}
+			onKeyDown={(e) => {
+				if (e.key === "Enter" || e.key === " ") copy();
+			}}
 			data-testid={testId}
 		>
 			{copied ? "Copied!" : name}
@@ -162,7 +164,9 @@ export const SuggestionList = memo(function SuggestionList({
 						`first-launch-suggestion${selectedDirectory.trim() === suggestion.directory ? " is-selected" : ""}`
 					)}
 					onClick={() => onSelect(suggestion)}
-					onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onSelect(suggestion)}
+					onKeyDown={(e) => {
+						if (e.key === "Enter" || e.key === " ") onSelect(suggestion);
+					}}
 					data-testid={tid(`suggestion-${suggestion.directory.replace(/[^\w-]+/g, "-").toLowerCase()}`)}
 				>
 					<span className={cls("first-launch-mode-title")}>{suggestion.directory}</span>

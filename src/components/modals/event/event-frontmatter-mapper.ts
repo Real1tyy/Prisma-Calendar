@@ -63,31 +63,31 @@ export function applyRecurringFieldsToFrontmatter(
 		if (input.weekdays.length > 0) {
 			fm[settings.rruleSpecProp] = input.weekdays.join(", ");
 		} else {
-			delete fm[settings.rruleSpecProp];
+			Reflect.deleteProperty(fm, settings.rruleSpecProp);
 		}
 
 		const untilDate = input.untilDate.trim();
 		if (untilDate) {
 			fm[settings.rruleUntilProp] = untilDate;
 		} else {
-			delete fm[settings.rruleUntilProp];
+			Reflect.deleteProperty(fm, settings.rruleUntilProp);
 		}
 
 		const futureCount = PositiveInt.parse(input.futureInstancesCount);
 		if (futureCount !== undefined) {
 			fm[settings.futureInstancesCountProp] = futureCount;
 		} else {
-			delete fm[settings.futureInstancesCountProp];
+			Reflect.deleteProperty(fm, settings.futureInstancesCountProp);
 		}
 
 		setBooleanProp(fm, settings.generatePastEventsProp, input.generatePastEvents);
 	} else if (original[settings.rruleProp]) {
-		delete fm[settings.rruleProp];
-		delete fm[settings.rruleSpecProp];
-		delete fm[settings.rruleUntilProp];
-		delete fm[settings.rruleIdProp];
-		delete fm[settings.futureInstancesCountProp];
-		delete fm[settings.generatePastEventsProp];
+		Reflect.deleteProperty(fm, settings.rruleProp);
+		Reflect.deleteProperty(fm, settings.rruleSpecProp);
+		Reflect.deleteProperty(fm, settings.rruleUntilProp);
+		Reflect.deleteProperty(fm, settings.rruleIdProp);
+		Reflect.deleteProperty(fm, settings.futureInstancesCountProp);
+		Reflect.deleteProperty(fm, settings.generatePastEventsProp);
 	}
 }
 
@@ -105,14 +105,14 @@ export function applyNotificationToFrontmatter(
 	if (parsed !== undefined) {
 		if (isAllDay) {
 			fm[settings.daysBeforeProp] = parsed;
-			delete fm[settings.minutesBeforeProp];
+			Reflect.deleteProperty(fm, settings.minutesBeforeProp);
 		} else {
 			fm[settings.minutesBeforeProp] = parsed;
-			delete fm[settings.daysBeforeProp];
+			Reflect.deleteProperty(fm, settings.daysBeforeProp);
 		}
 	} else {
-		delete fm[settings.minutesBeforeProp];
-		delete fm[settings.daysBeforeProp];
+		Reflect.deleteProperty(fm, settings.minutesBeforeProp);
+		Reflect.deleteProperty(fm, settings.daysBeforeProp);
 	}
 
 	if (settings.enableNotifications && skipNewlyCreated && start) {

@@ -27,9 +27,7 @@ export function MoveByForm({ onSubmit, onCancel }: MoveByFormProps) {
 		});
 	}, []);
 
-	const toggleSign = useCallback(() => {
-		setValue((prev) => (prev === 0 ? 1 : -prev));
-	}, []);
+	const toggleSign = useCallback(() => setValue((prev) => (prev === 0 ? 1 : -prev)), []);
 
 	const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
 		const parsed = Number.parseInt(e.target.value, 10);

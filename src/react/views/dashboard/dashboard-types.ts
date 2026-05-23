@@ -28,7 +28,7 @@ export function buildChartDataFromItems(items: DashboardItem[]): ChartDataItem[]
 		return sorted.map((item) => ({
 			label: item.title,
 			value: item.count,
-			color: item.color!,
+			color: item.color ?? "",
 		}));
 	}
 

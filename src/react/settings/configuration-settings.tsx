@@ -56,9 +56,7 @@ const ToolbarSection = memo(function ToolbarSection({
 	const enabled = useMemo(() => new Set(buttons), [buttons]);
 
 	const handleToggle = useCallback(
-		(buttonId: string, value: boolean) => {
-			void settingsStore.toggleToolbarButton(configKey, buttonId, value);
-		},
+		(buttonId: string, value: boolean) => void settingsStore.toggleToolbarButton(configKey, buttonId, value),
 		[settingsStore, configKey]
 	);
 

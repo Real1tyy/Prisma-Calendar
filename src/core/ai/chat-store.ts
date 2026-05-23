@@ -18,7 +18,10 @@ export class ChatStore {
 		private app: App,
 		plugin: Plugin
 	) {
-		const pluginDir = plugin.manifest.dir!;
+		if (!plugin.manifest.dir) {
+			throw new Error("[ChatStore] plugin manifest dir is unavailable");
+		}
+		const pluginDir = plugin.manifest.dir;
 		this.conversationsDir = normalizePath(`${pluginDir}/conversations`);
 		this.indexPath = normalizePath(`${this.conversationsDir}/index.json`);
 	}

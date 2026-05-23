@@ -33,7 +33,7 @@ export class EditEventCommand implements Command {
 
 		await this.repo.updateFrontmatterByPath(this.filePath, (fm: Frontmatter) => {
 			for (const change of diff.deleted) {
-				delete fm[change.key];
+				Reflect.deleteProperty(fm, change.key);
 			}
 			for (const change of diff.modified) {
 				fm[change.key] = change.newValue;
@@ -181,9 +181,7 @@ export class ConvertFileToEventCommand implements Command {
 			this.renamedFilePath = file.path;
 		}
 
-		await withFrontmatter(this.app, file, (fm: Frontmatter) => {
-			Object.assign(fm, this.newFrontmatter);
-		});
+		await withFrontmatter(this.app, file, (fm: Frontmatter) => Object.assign(fm, this.newFrontmatter));
 	}
 
 	async undo(): Promise<void> {

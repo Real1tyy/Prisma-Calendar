@@ -72,9 +72,7 @@ export class VirtualEventStore {
 							}
 							this.binding = b;
 						})
-						.catch((error) => {
-							console.error("[VirtualEventStore] rebind failed:", error);
-						});
+						.catch((error: unknown) => console.error("[VirtualEventStore] rebind failed:", error));
 				} else {
 					void this.initialize();
 				}

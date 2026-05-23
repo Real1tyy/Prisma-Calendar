@@ -135,42 +135,33 @@ interface CalDAVSectionProps {
 const CalDAVSection = memo(function CalDAVSection({ mainSettingsStore, plugin, calendarId, app }: CalDAVSectionProps) {
 	const [caldavSettings, setCaldav] = useSchemaField(mainSettingsStore, "caldav");
 
-	const handleAddAccount = useCallback(() => {
-		void openCalDAVAddModal(app, mainSettingsStore, calendarId);
-	}, [app, mainSettingsStore, calendarId]);
-
-	const handleSync = useCallback(
-		async (account: CalDAVAccount) => {
-			await plugin.syncSingleAccount(account);
-		},
-		[plugin]
+	const handleAddAccount = useCallback(
+		() => void openCalDAVAddModal(app, mainSettingsStore, calendarId),
+		[app, mainSettingsStore, calendarId]
 	);
 
+	const handleSync = useCallback(async (account: CalDAVAccount) => await plugin.syncSingleAccount(account), [plugin]);
+
 	const handleEdit = useCallback(
-		(account: CalDAVAccount) => {
-			void openCalDAVEditModal(app, mainSettingsStore, plugin, calendarId, account);
-		},
+		(account: CalDAVAccount) => void openCalDAVEditModal(app, mainSettingsStore, plugin, calendarId, account),
 		[app, mainSettingsStore, plugin, calendarId]
 	);
 
 	const handleDelete = useCallback(
 		(account: CalDAVAccount) => {
-			const removeAccount = () =>
+			const removeAccount = () => {
 				setCaldav((prev) => ({ ...prev, accounts: prev.accounts.filter((a) => a.id !== account.id) }));
+			};
 
 			const bundle = plugin.calendarBundles.find((b) => b.calendarId === account.calendarId);
 			if (!bundle) {
-				showConfirmDeleteModal(app, account.name, "account", () => {
-					removeAccount();
-				});
+				showConfirmDeleteModal(app, account.name, "account", () => removeAccount());
 				return;
 			}
 
 			const events = bundle.caldavSyncStateManager.getAllForAccount(account.id);
 			if (events.length === 0) {
-				showConfirmDeleteModal(app, account.name, "account", () => {
-					removeAccount();
-				});
+				showConfirmDeleteModal(app, account.name, "account", () => removeAccount());
 				return;
 			}
 
@@ -321,38 +312,34 @@ interface ICSSectionProps {
 const ICSSection = memo(function ICSSection({ mainSettingsStore, plugin, calendarId, app }: ICSSectionProps) {
 	const [icsSettings, setIcs] = useSchemaField(mainSettingsStore, "icsSubscriptions");
 
-	const handleAddSubscription = useCallback(() => {
-		void openICSAddModal(app, mainSettingsStore, calendarId);
-	}, [app, mainSettingsStore, calendarId]);
+	const handleAddSubscription = useCallback(
+		() => void openICSAddModal(app, mainSettingsStore, calendarId),
+		[app, mainSettingsStore, calendarId]
+	);
 
 	const handleSync = useCallback(
-		async (subscription: ICSSubscription) => {
-			await plugin.syncSingleICSSubscription(subscription);
-		},
+		async (subscription: ICSSubscription) => await plugin.syncSingleICSSubscription(subscription),
 		[plugin]
 	);
 
 	const handleEdit = useCallback(
-		(subscription: ICSSubscription) => {
-			void openICSEditModal(app, mainSettingsStore, subscription);
-		},
+		(subscription: ICSSubscription) => void openICSEditModal(app, mainSettingsStore, subscription),
 		[app, mainSettingsStore]
 	);
 
 	const handleDelete = useCallback(
 		(subscription: ICSSubscription) => {
-			const removeSubscription = () =>
+			const removeSubscription = () => {
 				setIcs((prev) => ({
 					...prev,
 					subscriptions: prev.subscriptions.filter((sub) => sub.id !== subscription.id),
 				}));
+			};
 
 			const bundle = plugin.calendarBundles.find((b) => b.calendarId === subscription.calendarId);
 			const events = bundle?.icsSubscriptionSyncStateManager.getAllForSubscription(subscription.id) ?? [];
 			if (!bundle || events.length === 0) {
-				showConfirmDeleteModal(app, subscription.name, "subscription", () => {
-					removeSubscription();
-				});
+				showConfirmDeleteModal(app, subscription.name, "subscription", () => removeSubscription());
 				return;
 			}
 

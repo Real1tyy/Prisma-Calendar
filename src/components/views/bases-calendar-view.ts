@@ -95,11 +95,11 @@ class PrismaBasesView extends BasesView {
 
 			// Obsidian's types claim this.data is always set, but in practice it may be
 			// undefined on view-switch before the first animation frame. Narrow defensively.
-			if (!(this.data as BasesQueryResult | undefined) && cachedQueryData) {
+			if (!this.queryData && cachedQueryData) {
 				this.data = cachedQueryData;
 			}
 
-			if (this.data as BasesQueryResult | undefined) {
+			if (this.queryData) {
 				this.onDataUpdated();
 			}
 		};
@@ -135,10 +135,18 @@ class PrismaBasesView extends BasesView {
 		this.hasNavigatedInitially = false;
 	}
 
+	// Obsidian types `data` as always-present, but in practice it can be undefined
+	// mid view-switch before the first animation frame — expose the honest type so
+	// the defensive guards below are real, not flagged as unnecessary.
+	private get queryData(): BasesQueryResult | undefined {
+		const data: unknown = this.data;
+		return data as BasesQueryResult | undefined;
+	}
+
 	onDataUpdated(): void {
 		// Obsidian's types claim this.data is always set, but in practice it may be
 		// undefined before the first animation frame. Narrow defensively.
-		if (this.data as BasesQueryResult | undefined) {
+		if (this.queryData) {
 			cachedQueryData = this.data;
 		}
 
@@ -328,22 +336,20 @@ class PrismaBasesView extends BasesView {
 					"BasesCalendarView"
 				),
 			dateClick: (info: { date: Date; allDay: boolean }) => {
-				if (!this.isHandlingSelection) handleSharedDateClick(this.app, bundle, this.calendar!, info);
+				if (!this.isHandlingSelection && this.calendar) handleSharedDateClick(this.app, bundle, this.calendar, info);
 				window.setTimeout(() => {
 					this.isHandlingSelection = false;
 				}, SELECTION_GUARD_DELAY_MS);
 			},
 			select: (info: { start: Date; end: Date; allDay: boolean }) => {
 				if (Date.now() - this.mouseDownTime < CLICK_THRESHOLD_MS) {
-					this.calendar!.unselect();
+					this.calendar?.unselect();
 				} else {
 					this.isHandlingSelection = true;
-					handleSharedDateSelection(this.app, bundle, this.calendar!, info);
+					if (this.calendar) handleSharedDateSelection(this.app, bundle, this.calendar, info);
 				}
 			},
-			eventsSet: () => {
-				this.batchSelectionManager?.refreshSelectionStyling();
-			},
+			eventsSet: () => this.batchSelectionManager?.refreshSelectionStyling(),
 			datesSet: () => {
 				this.cachedNow = new Date();
 				this.cachedTodayStart = new Date(
@@ -364,9 +370,7 @@ class PrismaBasesView extends BasesView {
 		this.untrackedEventsDropdown = new UntrackedEventsDropdown(this.app, bundle);
 		this.untrackedEventsDropdown.initialize(this.calendar, this.calendarContainerEl, "left");
 
-		this.calendarContainerEl.addEventListener("mousedown", () => {
-			this.mouseDownTime = Date.now();
-		});
+		this.calendarContainerEl.addEventListener("mousedown", () => (this.mouseDownTime = Date.now()));
 
 		applyContainerStyles(this.calendarContainerEl, settings);
 
@@ -376,9 +380,9 @@ class PrismaBasesView extends BasesView {
 		});
 		this.register(() => settingsSub.unsubscribe());
 
-		const mainSettingsSub = bundle.settingsStore.mainSettingsStore.settings$.subscribe(() => {
-			this.calendarIconCache = buildCalendarIconCache(bundle);
-		});
+		const mainSettingsSub = bundle.settingsStore.mainSettingsStore.settings$.subscribe(
+			() => (this.calendarIconCache = buildCalendarIconCache(bundle))
+		);
 		this.register(() => mainSettingsSub.unsubscribe());
 	}
 
@@ -423,7 +427,8 @@ class PrismaBasesView extends BasesView {
 	}
 
 	private buildBatchButtons(bundle: CalendarBundle): Record<string, ExtendedButtonInput> {
-		const bsm = this.batchSelectionManager!;
+		const bsm = this.batchSelectionManager;
+		if (!bsm) return {};
 		const clsBase = cls("batch-action-btn");
 
 		return {
@@ -444,9 +449,7 @@ class PrismaBasesView extends BasesView {
 			},
 			batchDuplicate: {
 				text: "Duplicate",
-				click: () => {
-					void bsm.executeDuplicate();
-				},
+				click: () => void bsm.executeDuplicate(),
 				className: `${clsBase} ${cls("duplicate-btn")}`,
 			},
 			batchMoveBy: {
@@ -456,93 +459,67 @@ class PrismaBasesView extends BasesView {
 			},
 			batchCloneNext: {
 				text: "Clone Next",
-				click: () => {
-					void bsm.executeClone(1);
-				},
+				click: () => void bsm.executeClone(1),
 				className: `${clsBase} ${cls("clone-next-btn")}`,
 			},
 			batchClonePrev: {
 				text: "Clone Prev",
-				click: () => {
-					void bsm.executeClone(-1);
-				},
+				click: () => void bsm.executeClone(-1),
 				className: `${clsBase} ${cls("clone-prev-btn")}`,
 			},
 			batchMoveNext: {
 				text: "Move Next",
-				click: () => {
-					void bsm.executeMove(1);
-				},
+				click: () => void bsm.executeMove(1),
 				className: `${clsBase} ${cls("move-next-btn")}`,
 			},
 			batchMovePrev: {
 				text: "Move Prev",
-				click: () => {
-					void bsm.executeMove(-1);
-				},
+				click: () => void bsm.executeMove(-1),
 				className: `${clsBase} ${cls("move-prev-btn")}`,
 			},
 			batchOpenAll: {
 				text: "Open",
-				click: () => {
-					void bsm.executeOpenAll();
-				},
+				click: () => void bsm.executeOpenAll(),
 				className: `${clsBase} ${cls("open-all-btn")}`,
 			},
 			batchSkip: {
 				text: "Skip",
-				click: () => {
-					void bsm.executeSkip();
-				},
+				click: () => void bsm.executeSkip(),
 				className: `${clsBase} ${cls("skip-btn")}`,
 			},
 			batchMarkAsDone: {
 				text: "Done",
-				click: () => {
-					void bsm.executeMarkAsDone();
-				},
+				click: () => void bsm.executeMarkAsDone(),
 				className: `${clsBase} ${cls("mark-done-btn")}`,
 			},
 			batchMarkAsNotDone: {
 				text: "Not Done",
-				click: () => {
-					void bsm.executeMarkAsNotDone();
-				},
+				click: () => void bsm.executeMarkAsNotDone(),
 				className: `${clsBase} ${cls("mark-not-done-btn")}`,
 			},
 			batchCategories: {
 				text: "Categories",
-				click: () => {
-					void this.openCategoryAssignModal(bundle);
-				},
+				click: () => void this.openCategoryAssignModal(bundle),
 				className: `${clsBase} ${cls("categories-btn")}`,
 			},
 			batchFrontmatter: {
 				text: "Frontmatter",
-				click: () => {
-					void this.openBatchFrontmatterModal(bundle);
-				},
+				click: () => void this.openBatchFrontmatterModal(bundle),
 				className: `${clsBase} ${cls("frontmatter-btn")}`,
 			},
 			batchMakeVirtual: {
 				text: "Make Virtual",
-				click: () => {
-					void bsm.executeMakeVirtual();
-				},
+				click: () => void bsm.executeMakeVirtual(),
 				className: `${clsBase} ${cls("make-virtual-btn")}`,
 			},
 			batchMakeReal: {
 				text: "Make Real",
-				click: () => {
-					void bsm.executeMakeReal();
-				},
+				click: () => void bsm.executeMakeReal(),
 				className: `${clsBase} ${cls("make-real-btn")}`,
 			},
 			batchDelete: {
 				text: "Delete",
-				click: () => {
-					void bsm.executeDelete();
-				},
+				click: () => bsm.executeDelete(),
 				className: `${clsBase} ${cls("delete-btn")}`,
 			},
 			batchExit: {

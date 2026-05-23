@@ -161,13 +161,9 @@ export const StatsModalContent = memo(function StatsModalContent({
 		void load();
 	}, [bundle, clearHidden, config, currentDate, aggregationMode, includeSkipped, settings.categoryProp, changeToken]);
 
-	const toggleAggregation = useCallback(() => {
-		setAggregationMode((m) => (m === "name" ? "category" : "name"));
-	}, []);
+	const toggleAggregation = useCallback(() => setAggregationMode((m) => (m === "name" ? "category" : "name")), []);
 
-	const toggleDecimalHours = useCallback(() => {
-		setShowDecimalHours((v) => !v);
-	}, []);
+	const toggleDecimalHours = useCallback(() => setShowDecimalHours((v) => !v), []);
 
 	const categoryTracker = bundle.categoryTracker;
 	const colorResolver = useMemo(

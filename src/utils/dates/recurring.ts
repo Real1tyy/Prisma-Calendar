@@ -132,7 +132,7 @@ export function calculateTargetInstanceCount(
  * Returns the date for all-day events, or startTime for timed events.
  */
 export function getStartDateTime(rrules: RRuleFrontmatter): DateTime {
-	return rrules.allDay ? rrules.date! : rrules.startTime!;
+	return rrules.allDay ? rrules.date : rrules.startTime;
 }
 
 export function isOccurrenceWithinUntil(instanceDate: DateTime, until?: DateTime): boolean {

@@ -118,7 +118,7 @@ function ICSImportForm({ calendars, onSubmit, onCancel }: ICSImportFormProps) {
 				setSkippedEvents(result.skipped);
 				setParseError(null);
 			})
-			.catch((error) => {
+			.catch((error: unknown) => {
 				setParseError(describeError(error, "Failed to read file"));
 				setParsedEvents([]);
 				setSkippedEvents([]);

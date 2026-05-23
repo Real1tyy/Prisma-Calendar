@@ -138,8 +138,8 @@ export const assignListToFrontmatter = (fm: Frontmatter, prop: string, items: st
  * to the original event and should not carry over to clones.
  */
 export const removeNonCloneableProperties = (frontmatter: Frontmatter, settings: SingleCalendarConfig): void => {
-	delete frontmatter[settings.rruleIdProp];
-	delete frontmatter[settings.instanceDateProp];
-	delete frontmatter[settings.sourceProp];
-	delete frontmatter[settings.alreadyNotifiedProp];
+	Reflect.deleteProperty(frontmatter, settings.rruleIdProp);
+	Reflect.deleteProperty(frontmatter, settings.instanceDateProp);
+	Reflect.deleteProperty(frontmatter, settings.sourceProp);
+	Reflect.deleteProperty(frontmatter, settings.alreadyNotifiedProp);
 };

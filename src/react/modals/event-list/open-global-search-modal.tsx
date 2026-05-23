@@ -130,9 +130,7 @@ function GlobalSearchContent({
 	}, [bundle, deferredFilters, physicalEventsInRange, colorEvaluator]);
 
 	const openFile = useCallback(
-		(item: EventListItemData) => {
-			void bundle.plugin.app.workspace.openLinkText(item.filePath, "", false);
-		},
+		(item: EventListItemData) => void bundle.plugin.app.workspace.openLinkText(item.filePath, "", false),
 		[bundle.plugin.app]
 	);
 
@@ -152,9 +150,7 @@ function GlobalSearchContent({
 
 					const eventDate = new Date(event.start);
 					calendarComponent.navigateToDate(eventDate, "timeGridWeek");
-					window.setTimeout(() => {
-						calendarComponent.highlightEventByPath(item.filePath, 5000);
-					}, 300);
+					window.setTimeout(() => calendarComponent.highlightEventByPath(item.filePath, 5000), 300);
 					new Notice(`Navigated to: ${item.title}`);
 					onClose();
 				},
@@ -171,21 +167,27 @@ function GlobalSearchContent({
 						label="Recurring"
 						state={filters.recurring}
 						onClick={() => {
-							startTransition(() => setFilters((f) => ({ ...f, recurring: cycleFilterState(f.recurring) })));
+							startTransition(() => {
+								setFilters((f) => ({ ...f, recurring: cycleFilterState(f.recurring) }));
+							});
 						}}
 					/>
 					<FilterButton
 						label="All-day"
 						state={filters.allDay}
 						onClick={() => {
-							startTransition(() => setFilters((f) => ({ ...f, allDay: cycleFilterState(f.allDay) })));
+							startTransition(() => {
+								setFilters((f) => ({ ...f, allDay: cycleFilterState(f.allDay) }));
+							});
 						}}
 					/>
 					<FilterButton
 						label="Skipped"
 						state={filters.skipped}
 						onClick={() => {
-							startTransition(() => setFilters((f) => ({ ...f, skipped: cycleFilterState(f.skipped) })));
+							startTransition(() => {
+								setFilters((f) => ({ ...f, skipped: cycleFilterState(f.skipped) }));
+							});
 						}}
 					/>
 				</div>

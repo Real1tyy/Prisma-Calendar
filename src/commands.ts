@@ -93,12 +93,16 @@ export function registerPrismaCalendarCommands(plugin: CustomCalendarPlugin): vo
 	addBatchCommand(COMMAND_IDS.BATCH_MARK_AS_NOT_DONE, "Mark selection as not done", (view) =>
 		view.markAsNotDoneSelection()
 	);
-	addBatchCommand(COMMAND_IDS.BATCH_ASSIGN_CATEGORIES, "Assign categories to selection", (view) => {
-		void view.openCategoryAssignModal();
-	});
-	addBatchCommand(COMMAND_IDS.BATCH_UPDATE_FRONTMATTER, "Update frontmatter for selection", (view) => {
-		void view.openBatchFrontmatterModal();
-	});
+	addBatchCommand(
+		COMMAND_IDS.BATCH_ASSIGN_CATEGORIES,
+		"Assign categories to selection",
+		(view) => void view.openCategoryAssignModal()
+	);
+	addBatchCommand(
+		COMMAND_IDS.BATCH_UPDATE_FRONTMATTER,
+		"Update frontmatter for selection",
+		(view) => void view.openBatchFrontmatterModal()
+	);
 	addBatchCommand(COMMAND_IDS.BATCH_OPEN_SELECTION, "Open selection", (view) => view.openSelection());
 	addBatchCommand(COMMAND_IDS.BATCH_CLONE_NEXT_WEEK, "Clone to next week", (view) => view.cloneSelection(1));
 	addBatchCommand(COMMAND_IDS.BATCH_CLONE_PREV_WEEK, "Clone to previous week", (view) => view.cloneSelection(-1));
@@ -116,135 +120,117 @@ export function registerPrismaCalendarCommands(plugin: CustomCalendarPlugin): vo
 		});
 	});
 
-	addApiCommand(COMMAND_IDS.START_TUTORIAL, "Start onboarding tutorial", () => {
-		startPrismaTour(plugin);
-	});
+	addApiCommand(COMMAND_IDS.START_TUTORIAL, "Start onboarding tutorial", () => startPrismaTour(plugin));
 
-	addApiCommand(COMMAND_IDS.CREATE_EVENT, "Create new event", () => {
-		void openCreateEventModal(plugin, undefined, false, true);
-	});
-	addApiCommand(COMMAND_IDS.CREATE_EVENT_WITH_STOPWATCH, "Create new event with stopwatch", () => {
-		void openCreateEventModal(plugin, undefined, true, true);
-	});
-	addApiCommand(COMMAND_IDS.CREATE_UNTRACKED_EVENT, "Create new untracked event", () => {
-		openCreateUntrackedEventModal(plugin);
-	});
-	addApiCommand(COMMAND_IDS.EDIT_CURRENT_NOTE_AS_EVENT, "Edit current note as event", () => {
-		void openEditActiveNoteModal(plugin);
-	});
-	addApiCommand(COMMAND_IDS.ADD_ZETTEL_ID_TO_CURRENT_NOTE, "Add ZettelID to current note", () => {
-		void addZettelIdToActiveNote(plugin);
-	});
-	addApiCommand(COMMAND_IDS.DUPLICATE_CURRENT_EVENT, "Duplicate current event", () => {
-		void duplicateCurrentEvent(plugin);
-	});
-	addApiCommand(COMMAND_IDS.TRIGGER_CURRENT_EVENT_STOPWATCH, "Trigger current event stopwatch", () => {
-		void triggerCurrentEventStopwatch(plugin);
-	});
-	addCalendarViewCommand(COMMAND_IDS.EDIT_LAST_FOCUSED_EVENT, "Edit last focused event", (view) => {
-		view.openEditModalForFocusedEvent();
-	});
+	addApiCommand(
+		COMMAND_IDS.CREATE_EVENT,
+		"Create new event",
+		() => void openCreateEventModal(plugin, undefined, false, true)
+	);
+	addApiCommand(
+		COMMAND_IDS.CREATE_EVENT_WITH_STOPWATCH,
+		"Create new event with stopwatch",
+		() => void openCreateEventModal(plugin, undefined, true, true)
+	);
+	addApiCommand(COMMAND_IDS.CREATE_UNTRACKED_EVENT, "Create new untracked event", () =>
+		openCreateUntrackedEventModal(plugin)
+	);
+	addApiCommand(
+		COMMAND_IDS.EDIT_CURRENT_NOTE_AS_EVENT,
+		"Edit current note as event",
+		() => void openEditActiveNoteModal(plugin)
+	);
+	addApiCommand(
+		COMMAND_IDS.ADD_ZETTEL_ID_TO_CURRENT_NOTE,
+		"Add ZettelID to current note",
+		() => void addZettelIdToActiveNote(plugin)
+	);
+	addApiCommand(
+		COMMAND_IDS.DUPLICATE_CURRENT_EVENT,
+		"Duplicate current event",
+		() => void duplicateCurrentEvent(plugin)
+	);
+	addApiCommand(
+		COMMAND_IDS.TRIGGER_CURRENT_EVENT_STOPWATCH,
+		"Trigger current event stopwatch",
+		() => void triggerCurrentEventStopwatch(plugin)
+	);
+	addCalendarViewCommand(COMMAND_IDS.EDIT_LAST_FOCUSED_EVENT, "Edit last focused event", (view) =>
+		view.openEditModalForFocusedEvent()
+	);
 	addCalendarViewCommand(
 		COMMAND_IDS.SET_LAST_FOCUSED_EVENT_START_TO_NOW,
 		"Set start time to now (focused event)",
-		(view) => {
-			view.setFocusedEventStartToNow();
-		}
+		(view) => view.setFocusedEventStartToNow()
 	);
-	addCalendarViewCommand(
-		COMMAND_IDS.SET_LAST_FOCUSED_EVENT_END_TO_NOW,
-		"Set end time to now (focused event)",
-		(view) => {
-			view.setFocusedEventEndToNow();
-		}
+	addCalendarViewCommand(COMMAND_IDS.SET_LAST_FOCUSED_EVENT_END_TO_NOW, "Set end time to now (focused event)", (view) =>
+		view.setFocusedEventEndToNow()
 	);
 	addCalendarViewCommand(
 		COMMAND_IDS.FILL_LAST_FOCUSED_EVENT_START_FROM_PREVIOUS,
 		"Fill start time from previous event (focused event)",
-		(view) => {
-			view.fillFocusedEventStartFromPrevious();
-		}
+		(view) => view.fillFocusedEventStartFromPrevious()
 	);
 	addCalendarViewCommand(
 		COMMAND_IDS.FILL_LAST_FOCUSED_EVENT_END_FROM_NEXT,
 		"Fill end time from next event (focused event)",
-		(view) => {
-			view.fillFocusedEventEndFromNext();
-		}
+		(view) => view.fillFocusedEventEndFromNext()
 	);
-	addCalendarViewCommand(COMMAND_IDS.TOGGLE_BATCH_SELECTION, "Toggle batch selection", (view) => {
-		view.toggleBatchSelection();
-	});
-	addCalendarViewCommand(COMMAND_IDS.SHOW_SKIPPED_EVENTS, "Show skipped events", (view) => {
-		view.showSkippedEventsModal();
-	});
-	addCalendarViewCommand(COMMAND_IDS.SHOW_RECURRING_EVENTS, "Show recurring events", (view) => {
-		openEventsModal(view.app, view.getBundle(), view);
-	});
-	addCalendarViewCommand(COMMAND_IDS.SHOW_FILTERED_EVENTS, "Show filtered events", (view) => {
-		openFilteredEventsModal(view.app, view.getBundle(), view.filteredEvents);
-	});
-	addCalendarViewCommand(COMMAND_IDS.SHOW_UNTRACKED_EVENTS, "Toggle untracked events dropdown", (view) => {
-		view.toggleUntrackedEventsDropdown();
-	});
-	addCalendarViewCommand(COMMAND_IDS.GLOBAL_SEARCH, "Global event search", (view) => {
-		openGlobalSearchModal(view.app, view.getBundle(), view);
-	});
-	addCalendarViewCommand(COMMAND_IDS.FOCUS_SEARCH, "Focus search", (view) => {
-		void view.focusSearch();
-	});
-	addCalendarViewCommand(COMMAND_IDS.FOCUS_EXPRESSION_FILTER, "Focus expression filter", (view) => {
-		void view.focusExpressionFilter();
-	});
-	addCalendarViewCommand(COMMAND_IDS.OPEN_FILTER_PRESET_SELECTOR, "Open filter preset selector", (view) => {
-		void view.openFilterPresetSelector();
-	});
-	addCalendarViewCommand(COMMAND_IDS.SHOW_DAILY_STATS, "Show daily statistics", (view) => {
-		void view.showDailyStatsModal();
-	});
-	addCalendarViewCommand(COMMAND_IDS.SHOW_WEEKLY_STATS, "Show weekly statistics", (view) => {
-		void view.showWeeklyStatsModal();
-	});
-	addCalendarViewCommand(COMMAND_IDS.SHOW_MONTHLY_STATS, "Show monthly statistics", (view) => {
-		void view.showMonthlyStatsModal();
-	});
-	addCalendarViewCommand(COMMAND_IDS.SHOW_ALLTIME_STATS, "Show all-time statistics", (view) => {
-		void view.showAllTimeStatsModal();
-	});
-	addCalendarViewCommand(COMMAND_IDS.REFRESH_CALENDAR, "Refresh planning system", (view) => {
-		view.getBundle().refreshCalendar();
-	});
+	addCalendarViewCommand(COMMAND_IDS.TOGGLE_BATCH_SELECTION, "Toggle batch selection", (view) =>
+		view.toggleBatchSelection()
+	);
+	addCalendarViewCommand(COMMAND_IDS.SHOW_SKIPPED_EVENTS, "Show skipped events", (view) =>
+		view.showSkippedEventsModal()
+	);
+	addCalendarViewCommand(COMMAND_IDS.SHOW_RECURRING_EVENTS, "Show recurring events", (view) =>
+		openEventsModal(view.app, view.getBundle(), view)
+	);
+	addCalendarViewCommand(COMMAND_IDS.SHOW_FILTERED_EVENTS, "Show filtered events", (view) =>
+		openFilteredEventsModal(view.app, view.getBundle(), view.filteredEvents)
+	);
+	addCalendarViewCommand(COMMAND_IDS.SHOW_UNTRACKED_EVENTS, "Toggle untracked events dropdown", (view) =>
+		view.toggleUntrackedEventsDropdown()
+	);
+	addCalendarViewCommand(COMMAND_IDS.GLOBAL_SEARCH, "Global event search", (view) =>
+		openGlobalSearchModal(view.app, view.getBundle(), view)
+	);
+	addCalendarViewCommand(COMMAND_IDS.FOCUS_SEARCH, "Focus search", (view) => view.focusSearch());
+	addCalendarViewCommand(COMMAND_IDS.FOCUS_EXPRESSION_FILTER, "Focus expression filter", (view) =>
+		view.focusExpressionFilter()
+	);
+	addCalendarViewCommand(COMMAND_IDS.OPEN_FILTER_PRESET_SELECTOR, "Open filter preset selector", (view) =>
+		view.openFilterPresetSelector()
+	);
+	addCalendarViewCommand(COMMAND_IDS.SHOW_DAILY_STATS, "Show daily statistics", (view) => view.showDailyStatsModal());
+	addCalendarViewCommand(COMMAND_IDS.SHOW_WEEKLY_STATS, "Show weekly statistics", (view) =>
+		view.showWeeklyStatsModal()
+	);
+	addCalendarViewCommand(COMMAND_IDS.SHOW_MONTHLY_STATS, "Show monthly statistics", (view) =>
+		view.showMonthlyStatsModal()
+	);
+	addCalendarViewCommand(COMMAND_IDS.SHOW_ALLTIME_STATS, "Show all-time statistics", (view) =>
+		view.showAllTimeStatsModal()
+	);
+	addCalendarViewCommand(COMMAND_IDS.REFRESH_CALENDAR, "Refresh planning system", (view) =>
+		view.getBundle().refreshCalendar()
+	);
 	addCalendarViewCommand(
 		COMMAND_IDS.HIGHLIGHT_EVENTS_WITHOUT_CATEGORIES,
 		"Highlight events without categories",
-		(view) => {
-			view.highlightEventsWithoutCategories();
-		}
+		(view) => view.highlightEventsWithoutCategories()
 	);
-	addCalendarViewCommand(COMMAND_IDS.HIGHLIGHT_EVENTS_WITH_CATEGORY, "Highlight events with category", (view) => {
-		view.showCategorySelectModal();
-	});
-	addCalendarViewCommand(COMMAND_IDS.NAVIGATE_BACK, "Navigate back", (view) => {
-		view.navigateBack();
-	});
-	addCalendarViewCommand(COMMAND_IDS.NAVIGATE_FORWARD, "Navigate forward", (view) => {
-		view.navigateForward();
-	});
-	addCalendarViewCommand(COMMAND_IDS.SHOW_INTERVAL_BASES, "Show current interval in Bases", (view) => {
-		void view.showIntervalEventsModal();
-	});
-	addCalendarViewCommand(COMMAND_IDS.GO_TO_TODAY, "Go to today", (view) => {
-		view.goToToday();
-	});
-	addCalendarViewCommand(COMMAND_IDS.SCROLL_TO_NOW, "Scroll to current time", (view) => {
-		view.scrollToNow();
-	});
-	addCalendarViewCommand(
-		COMMAND_IDS.TOGGLE_PREREQUISITE_CONNECTIONS,
-		"Toggle prerequisite connection arrows",
-		(view) => {
-			view.toggleConnections();
-		}
+	addCalendarViewCommand(COMMAND_IDS.HIGHLIGHT_EVENTS_WITH_CATEGORY, "Highlight events with category", (view) =>
+		view.showCategorySelectModal()
+	);
+	addCalendarViewCommand(COMMAND_IDS.NAVIGATE_BACK, "Navigate back", (view) => view.navigateBack());
+	addCalendarViewCommand(COMMAND_IDS.NAVIGATE_FORWARD, "Navigate forward", (view) => view.navigateForward());
+	addCalendarViewCommand(COMMAND_IDS.SHOW_INTERVAL_BASES, "Show current interval in Bases", (view) =>
+		view.showIntervalEventsModal()
+	);
+	addCalendarViewCommand(COMMAND_IDS.GO_TO_TODAY, "Go to today", (view) => view.goToToday());
+	addCalendarViewCommand(COMMAND_IDS.SCROLL_TO_NOW, "Scroll to current time", (view) => view.scrollToNow());
+	addCalendarViewCommand(COMMAND_IDS.TOGGLE_PREREQUISITE_CONNECTIONS, "Toggle prerequisite connection arrows", (view) =>
+		view.toggleConnections()
 	);
 	plugin.addCommand({
 		id: COMMAND_IDS.SHOW_ALL_EVENTS_TIMELINE,
@@ -275,17 +261,13 @@ export function registerPrismaCalendarCommands(plugin: CustomCalendarPlugin): vo
 	plugin.addCommand({
 		id: COMMAND_IDS.EXPORT_CALENDAR_ICS,
 		name: "Export calendar as .ics",
-		callback: () => {
-			plugin.showCalendarExportModal();
-		},
+		callback: () => plugin.showCalendarExportModal(),
 	});
 
 	plugin.addCommand({
 		id: COMMAND_IDS.IMPORT_CALENDAR_ICS,
 		name: "Import .ics file",
-		callback: () => {
-			void plugin.showCalendarImportModal();
-		},
+		callback: () => void plugin.showCalendarImportModal(),
 	});
 
 	plugin.addCommand({
@@ -323,21 +305,15 @@ export function registerPrismaCalendarCommands(plugin: CustomCalendarPlugin): vo
 	plugin.addCommand({
 		id: COMMAND_IDS.OPEN_CURRENT_NOTE_IN_CALENDAR,
 		name: "Open current note in calendar",
-		callback: async () => {
-			await plugin.openCurrentNoteInCalendar();
-		},
+		callback: async () => await plugin.openCurrentNoteInCalendar(),
 	});
 
-	addMinimizedModalCommand(COMMAND_IDS.RESTORE_MINIMIZED_MODAL, "Restore minimized event modal", () => {
-		MinimizedModalManager.restoreModal(plugin.app, plugin.calendarBundles);
-	});
+	addMinimizedModalCommand(COMMAND_IDS.RESTORE_MINIMIZED_MODAL, "Restore minimized event modal", () =>
+		MinimizedModalManager.restoreModal(plugin.app, plugin.calendarBundles)
+	);
 
-	addMinimizedModalCommand(
-		COMMAND_IDS.ASSIGN_CATEGORIES_MINIMIZED_MODAL,
-		"Assign categories to minimized event",
-		() => {
-			MinimizedModalManager.assignCategories(plugin.app, plugin.calendarBundles);
-		}
+	addMinimizedModalCommand(COMMAND_IDS.ASSIGN_CATEGORIES_MINIMIZED_MODAL, "Assign categories to minimized event", () =>
+		MinimizedModalManager.assignCategories(plugin.app, plugin.calendarBundles)
 	);
 
 	plugin.addCommand({
