@@ -35,11 +35,13 @@ import { expect, test } from "../../e2e/fixtures/electron";
 import { indexerEventCount, waitForIndexerToReach } from "../../e2e/fixtures/stress-helpers";
 import { navigateMonths, setMonthView } from "../scenarios/navigate-months";
 import { BUDGETS, STRESS_CONFIG } from "../stress.config";
-import { buildPrismaEvent } from "../vaults/event-builder";
-import { SMALL_PROFILE } from "../vaults/profiles";
+import { buildPrismaEvent, buildPrismaRecurringEvent } from "../vaults/event-builder";
+import { PROFILES, type ProfileName } from "../vaults/profiles";
 
 const SCENARIO = "calendar-navigation";
-const PROFILE = SMALL_PROFILE;
+// Profile is env-selectable so the same spec runs at small (default, fast),
+// medium, or large. Agents stick to small/medium; large is the user's call.
+const PROFILE = PROFILES[(process.env["STRESS_PROFILE"] as ProfileName) ?? "small"] ?? PROFILES.small;
 const NOOP = (): void => {};
 
 test.describe("stress: calendar navigation", () => {
@@ -49,12 +51,17 @@ test.describe("stress: calendar navigation", () => {
 		// Seed a deterministic vault, then wait for the indexer to ingest it all.
 		// Tolerate any pre-seeded events by anchoring on the pre-generation count.
 		const baselineCount = await indexerEventCount(page);
-		const expectedCount = baselineCount + PROFILE.events;
+		// SOURCE events = plain + recurring. This gate runs PRE-render: once the
+		// calendar paints, recurrences expand to (and materialize) extra instances,
+		// so neither the runtime store nor the on-disk file count stays at the source
+		// total. `waitForIndexerToReach` settles on sources before any of that.
+		const expectedCount = baselineCount + PROFILE.events + PROFILE.recurring;
 		generateVault({
 			dir: path.join(vaultDir, PROFILE.directory),
 			profile: PROFILE,
 			seed: STRESS_CONFIG.seed,
 			buildEvent: buildPrismaEvent,
+			buildRecurringEvent: buildPrismaRecurringEvent,
 		});
 		await waitForIndexerToReach(page, expectedCount);
 
@@ -149,10 +156,10 @@ test.describe("stress: calendar navigation", () => {
 			console.log(`[stress] baseline blessed: ${baselinePath}`);
 		}
 
-		// The indexed-event count is deterministic — assert it exactly.
-		expect(snapshot.counters["index.eventsIndexed"]).toBe(expectedCount);
-		// Internal stage timings must have been recorded by the in-app tracker.
+		// Internal stage timings must have been recorded by the in-app tracker, incl.
+		// recurrence expansion — proof the recurring sources actually drove work.
 		expect(snapshot.timings["calendar.buildEvents"]).toBeDefined();
+		expect(snapshot.timings["recurrence.expandVisibleRange"]).toBeDefined();
 		// Fail on a budget breach or a regression vs the committed baseline.
 		expect(report.status, `see ${markdownPath}`).toBe("pass");
 	});
