@@ -1,44 +1,24 @@
 import path from "node:path";
 
 import {
-	baselineFileName,
-	buildArtifactDir,
-	buildProfileTree,
-	buildRunStem,
-	captureEnvironment,
-	captureGitInfo,
 	collectCpuProfile,
-	compareToBaseline,
 	diffCdpMetrics,
-	digestCpuProfile,
-	evaluateBudgets,
-	flattenMetrics,
 	generateVault,
-	hasRegression,
-	loadBundleSourceMap,
 	mergeTimings,
 	namespaceCdpMetrics,
-	pruneProfileTree,
-	readBaseline,
 	readCdpPerformanceMetrics,
 	readPerfBridge,
-	reportToBaseline,
 	resetPerfBridge,
 	runRepeats,
 	summarizeSampleGroups,
-	writeBaseline,
 	writeCpuProfile,
-	writeRunReports,
-	type ProfileDigest,
-	type ProfileTreeNode,
-	type StressArtifact,
-	type StressRunReport,
 } from "@real1ty-obsidian-plugins/testing/stress";
 
 import { expect, test } from "../../e2e/fixtures/electron";
 import { indexerEventCount, waitForIndexerToReach } from "../../e2e/fixtures/stress-helpers";
+import { createStressRun, loadPrismaSourceMap, writeStressReport } from "../report";
 import { navigateMonths, setMonthView } from "../scenarios/navigate-months";
-import { BUDGETS, STRESS_CONFIG } from "../stress.config";
+import { STRESS_CONFIG } from "../stress.config";
 import { buildPrismaEvent, buildPrismaRecurringEvent } from "../vaults/event-builder";
 import { PROFILES, type ProfileName } from "../vaults/profiles";
 
@@ -98,81 +78,34 @@ test.describe("stress: calendar navigation", () => {
 			...namespaceCdpMetrics(diffCdpMetrics(cdpBefore, cdpAfter), "cdp.delta"),
 		};
 
-		const runId = buildRunStem({ profile: PROFILE.name, scenario: SCENARIO });
-		const artifactDir = buildArtifactDir(STRESS_CONFIG.artifactRoot, runId);
-		const artifacts: StressArtifact[] = [
-			{ kind: "json", path: path.join(artifactDir, "run.json") },
-			{ kind: "markdown", path: path.join(artifactDir, "report.md") },
-			{ kind: "html", path: path.join(artifactDir, "report.html"), description: "Interactive report + flame chart" },
-		];
+		const { runId, artifactDir } = createStressRun(SCENARIO, PROFILE.name);
+		const cpuProfilePath = path.join(artifactDir, "cpu.cpuprofile");
 
 		// Pass B (explain): one more navigation under a CDP CPU profile, kept
 		// separate from the gated repeats above so the sampler's overhead never
-		// skews the budgeted timings. Feeds the self-time digest only.
-		const cpuProfilePath = path.join(artifactDir, "cpu.cpuprofile");
+		// skews the budgeted timings. Feeds the self-time digest + flame chart only.
 		const { profile: cpuProfile } = await collectCpuProfile(cdp, () =>
 			navigateMonths(page, STRESS_CONFIG.navSteps, NOOP)
 		);
 		await writeCpuProfile(cpuProfilePath, cpuProfile);
-		// Map minified plugin frames back to source via the stress build's external
-		// main.js.map (emitted because stress:prepare sets OBSIDIAN_SOURCEMAP=1). Frames
-		// from the bundle carry a `prisma-calendar`/`main.js` url; everything else
-		// (Obsidian app, electron, node) is left minified. Missing map → unmapped digest.
-		const resolveFrame =
-			loadBundleSourceMap({
-				mapPath: path.join(process.cwd(), "main.js.map"),
-				matchesBundle: (url) => url.includes("prisma-calendar") || url.endsWith("main.js"),
-			}) ?? undefined;
-		const digestOptions = resolveFrame ? { resolveFrame } : {};
-		const profileDigest: ProfileDigest = digestCpuProfile(cpuProfile, digestOptions);
-		// Prune sub-0.5%-of-root subtrees so the flame chart's inlined JSON stays small.
-		const profileTree: ProfileTreeNode = pruneProfileTree(buildProfileTree(cpuProfile, digestOptions));
-		artifacts.push({ kind: "cpu-profile", path: cpuProfilePath, description: "V8 CPU profile (explain pass)" });
 
 		const pluginVersion = snapshot.metadata?.["pluginVersion"];
-		const environment = {
-			...captureEnvironment(),
-			...(typeof pluginVersion === "string" ? { pluginVersion } : {}),
-		};
-
-		const report: StressRunReport = {
+		const { markdownPath, report } = writeStressReport({
 			runId,
+			artifactDir,
 			scenario: SCENARIO,
-			profile: PROFILE.name,
+			profileName: PROFILE.name,
 			startedAt,
 			finishedAt,
-			status: "pass",
-			git: captureGitInfo(),
-			environment,
-			config: {
-				seed: STRESS_CONFIG.seed,
-				repeats: STRESS_CONFIG.repeats,
-				warmup: STRESS_CONFIG.warmup,
-				collectors: ["prisma", "cdp"],
-			},
 			timings,
 			counts,
-			budgetFailures: evaluateBudgets(flattenMetrics(timings, counts), BUDGETS[SCENARIO] ?? {}),
-			regressions: [],
-			artifacts,
-			profileDigest,
-		};
-
-		const baselinePath = path.join(STRESS_CONFIG.baselineDir, baselineFileName(SCENARIO, PROFILE.name));
-		const baseline = readBaseline(baselinePath);
-		if (baseline) {
-			report.regressions = compareToBaseline(report, baseline);
-		}
-		report.status = report.budgetFailures.length > 0 || hasRegression(report.regressions) ? "fail" : "pass";
-
-		const { markdownPath, htmlPath } = writeRunReports(artifactDir, report, { profileTree });
+			collectors: ["prisma", "cdp"],
+			cpuProfile,
+			resolveFrame: loadPrismaSourceMap(),
+			pluginVersion: typeof pluginVersion === "string" ? pluginVersion : undefined,
+			extraArtifacts: [{ kind: "cpu-profile", path: cpuProfilePath, description: "V8 CPU profile (explain pass)" }],
+		});
 		console.log(`[stress] report: ${markdownPath}`);
-		console.log(`[stress] html:   ${htmlPath}`);
-
-		if (process.env["PERF_BLESS"] === "1") {
-			writeBaseline(baselinePath, reportToBaseline(report));
-			console.log(`[stress] baseline blessed: ${baselinePath}`);
-		}
 
 		// Internal stage timings must have been recorded by the in-app tracker, incl.
 		// recurrence expansion — proof the recurring sources actually drove work.

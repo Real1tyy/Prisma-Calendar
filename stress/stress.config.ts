@@ -20,6 +20,11 @@ export const STRESS_CONFIG = {
 	baselineDir: path.resolve(STRESS_DIR, "baselines"),
 } as const;
 
+/** Write-storm burst size per profile — files dropped at once after the base seed. */
+export const STORM_CONFIG = {
+	burstByProfile: { small: 200, medium: 1000, large: 5000 } as Record<string, number>,
+} as const;
+
 /** Memory-leak scenario knobs — open/close cycles, separate from nav repeats. */
 export const MEMORY_CONFIG = {
 	/** Discarded cycles to reach steady state before the measured loop. */
@@ -54,5 +59,14 @@ export const BUDGETS: Record<string, StressBudget> = {
 	"memory-leak": {
 		"resources.activeViews": { comparison: "exact", value: 0, unit: "count" },
 		"heap.growthBytes": { comparison: "max", value: MEMORY_CONFIG.growthBudgetBytes, unit: "bytes" },
+	},
+	// Exploratory scenarios: a single catastrophic wall-clock ceiling each (so a
+	// total hang fails the run) — all the real signal lives in the flame chart +
+	// stage timings, which are reported, not gated.
+	startup: {
+		"startup.coldIngest.p95Ms": { comparison: "max", value: 180_000, unit: "ms" },
+	},
+	"event-edit-storm": {
+		"editStorm.converge.p95Ms": { comparison: "max", value: 120_000, unit: "ms" },
 	},
 };
