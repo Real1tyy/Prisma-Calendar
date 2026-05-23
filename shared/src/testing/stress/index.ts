@@ -20,12 +20,22 @@ export {
 	type CpuProfileNode,
 	digestCpuProfile,
 	type DigestOptions,
+	type FrameResolver,
+	type RawFrame,
+	type ResolvedFrame,
 } from "./profile-digest";
 export { compareToBaseline, DEFAULT_REGRESSION_RULE, hasRegression } from "./regression";
 export { readBaseline, reportToBaseline, type WrittenReport, writeBaseline, writeRunReports } from "./reporters/json";
 export { renderMarkdownReport } from "./reporters/markdown";
 export { type RepeatOptions, type RepeatPhase, runRepeats } from "./runner/repeat";
 export { createSeededRandom, type SeededRandom } from "./seeded-random";
+export {
+	createFrameResolver,
+	type FrameResolverOptions,
+	loadBundleSourceMap,
+	type LoadBundleSourceMapOptions,
+	type SourceMapLookup,
+} from "./source-map";
 export {
 	BudgetComparisonSchema,
 	BudgetFailureSchema,

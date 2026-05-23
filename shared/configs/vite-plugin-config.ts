@@ -214,7 +214,12 @@ export function obsidianPluginConfig(input: ObsidianPluginConfigInput): (env: { 
 				target: "es2018",
 				outDir: pluginDir,
 				emptyOutDir: false,
-				sourcemap: isDev ? "inline" : false,
+				// Dev builds inline a sourcemap for debugging. Released/e2e builds ship
+				// none. Stress builds opt in with `OBSIDIAN_SOURCEMAP=1` → an external
+				// `main.js.map` ("hidden": file emitted, no `sourceMappingURL` comment
+				// appended, so the shipped bundle is unchanged) that the CPU-profile
+				// digest reads to name minified plugin frames. See the stress real-load spec.
+				sourcemap: isDev ? "inline" : process.env["OBSIDIAN_SOURCEMAP"] === "1" ? "hidden" : false,
 				minify: !isDev,
 				assetsInlineLimit: Number.POSITIVE_INFINITY,
 				lib: {

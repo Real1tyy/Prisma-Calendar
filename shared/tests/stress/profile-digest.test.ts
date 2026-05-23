@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { digestCpuProfile, type CpuProfile } from "../../src/testing/stress/profile-digest";
+import { digestCpuProfile, type CpuProfile, type FrameResolver } from "../../src/testing/stress/profile-digest";
 
 const A_URL = "file:///home/x/a.ts";
 const B_URL = "file:///home/x/b.ts";
@@ -75,6 +75,19 @@ describe("digestCpuProfile", () => {
 		expect(digest.totalSelfTimeMs).toBeCloseTo(1.775, 5);
 		expect(digest.durationMs).toBeCloseTo(1.775, 5);
 		expect(digest.sampleCount).toBe(7);
+	});
+
+	it("maps frames back to source through a resolver, keeping unmapped frames minified", () => {
+		// functionA (A_URL) maps to source; functionB does not — it stays minified.
+		const resolveFrame: FrameResolver = (frame) =>
+			frame.url === A_URL
+				? { functionName: "expandVisibleRange", source: "src/core/recurrence.ts", line: 611, column: 4 }
+				: null;
+		const digest = digestCpuProfile(makeProfile(), { resolveFrame });
+		const mapped = digest.topSelfTime.find((entry) => entry.functionName === "expandVisibleRange");
+		expect(mapped?.location).toBe("recurrence.ts:611");
+		expect(mapped?.selfTimeMs).toBe(0.5); // both functionA nodes still collapse into one row
+		expect(digest.topSelfTime.find((entry) => entry.functionName === "functionB")?.location).toBe("b.ts:20");
 	});
 
 	it("returns an empty digest for a profile with no samples", () => {

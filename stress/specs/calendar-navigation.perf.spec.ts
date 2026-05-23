@@ -14,6 +14,7 @@ import {
 	flattenMetrics,
 	generateVault,
 	hasRegression,
+	loadBundleSourceMap,
 	mergeTimings,
 	namespaceCdpMetrics,
 	readBaseline,
@@ -109,7 +110,16 @@ test.describe("stress: calendar navigation", () => {
 			navigateMonths(page, STRESS_CONFIG.navSteps, NOOP)
 		);
 		await writeCpuProfile(cpuProfilePath, cpuProfile);
-		const profileDigest: ProfileDigest = digestCpuProfile(cpuProfile);
+		// Map minified plugin frames back to source via the stress build's external
+		// main.js.map (emitted because stress:prepare sets OBSIDIAN_SOURCEMAP=1). Frames
+		// from the bundle carry a `prisma-calendar`/`main.js` url; everything else
+		// (Obsidian app, electron, node) is left minified. Missing map → unmapped digest.
+		const resolveFrame =
+			loadBundleSourceMap({
+				mapPath: path.join(process.cwd(), "main.js.map"),
+				matchesBundle: (url) => url.includes("prisma-calendar") || url.endsWith("main.js"),
+			}) ?? undefined;
+		const profileDigest: ProfileDigest = digestCpuProfile(cpuProfile, resolveFrame ? { resolveFrame } : {});
 		artifacts.push({ kind: "cpu-profile", path: cpuProfilePath, description: "V8 CPU profile (explain pass)" });
 
 		const pluginVersion = snapshot.metadata?.["pluginVersion"];
