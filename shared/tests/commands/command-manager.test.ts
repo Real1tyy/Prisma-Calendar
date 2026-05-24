@@ -1,5 +1,6 @@
 import type { Command } from "../../src/core/commands/command";
 import { CommandManager } from "../../src/core/commands/command-manager";
+import { createMonotonicSequencer } from "../../src/core/commands/sequencer";
 import { silenceConsole } from "../../src/testing/silence-console";
 
 function createMockCommand(type = "MockCommand"): Command & { executeCalls: number; undoCalls: number } {
@@ -612,6 +613,56 @@ describe("CommandManager", () => {
 			await manager.undo();
 			expect(state.value).toBe(0);
 			expect(manager.canUndo()).toBe(false);
+		});
+	});
+
+	describe("lastActivityOrder", () => {
+		it("starts at 0 for an untouched manager", () => {
+			expect(new CommandManager().lastActivityOrder).toBe(0);
+		});
+
+		it("advances on execute, undo, and redo", async () => {
+			const manager = new CommandManager();
+
+			await manager.executeCommand(createMockCommand());
+			const afterExecute = manager.lastActivityOrder;
+			expect(afterExecute).toBeGreaterThan(0);
+
+			await manager.undo();
+			const afterUndo = manager.lastActivityOrder;
+			expect(afterUndo).toBeGreaterThan(afterExecute);
+
+			await manager.redo();
+			expect(manager.lastActivityOrder).toBeGreaterThan(afterUndo);
+		});
+
+		it("keeps activity order independent across managers that don't share a sequencer", async () => {
+			const a = new CommandManager();
+			const b = new CommandManager();
+
+			await a.executeCommand(createMockCommand()); // a → 1
+			await b.executeCommand(createMockCommand()); // b → 1 (own scale, not 2)
+			await a.executeCommand(createMockCommand()); // a → 2
+
+			// Without an injected sequencer each manager counts on its own scale —
+			// b doing work must not advance a's stamp, and vice versa.
+			expect(a.lastActivityOrder).toBe(2);
+			expect(b.lastActivityOrder).toBe(1);
+		});
+
+		it("orders activity strictly across managers that share a sequencer", async () => {
+			const sequencer = createMonotonicSequencer();
+			const a = new CommandManager({ sequencer });
+			const b = new CommandManager({ sequencer });
+
+			await a.executeCommand(createMockCommand());
+			await b.executeCommand(createMockCommand());
+			// The most recently mutated manager wins — this is what lets a caller
+			// with one manager per calendar route undo to the calendar last acted in.
+			expect(b.lastActivityOrder).toBeGreaterThan(a.lastActivityOrder);
+
+			await a.executeCommand(createMockCommand());
+			expect(a.lastActivityOrder).toBeGreaterThan(b.lastActivityOrder);
 		});
 	});
 });
