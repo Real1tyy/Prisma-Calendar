@@ -16,6 +16,8 @@ All notable changes to this project will be documented here.
 ## 2.17.0 - 5/19/2026
 
 > **TLDR:** Prisma Calendar is now in the official Obsidian Community Plugin Store — install with one click from inside Obsidian. Click any pie-chart legend entry on the stats views to filter that category out and rescale the chart, table, and totals to 100% over what remains. Every Manage X modal (header actions, tab manager, context menu, dashboard layout) now has a **Reset to defaults** button with a confirmation prompt, and the event modal gets keyboard shortcuts for **Assign categories** (⌘⇧C) and **Assign prerequisites** (⌘⇧P) — plus a sturdier title autocomplete flow.
+>
+> 📺 [Watch the 2.17 & 2.16 update video](https://youtu.be/Bwz9thJGiXc) — a walkthrough of all the major changes in action.
 
 ### Added
 - **Available in the Obsidian Community Plugin Store**: Prisma Calendar is now listed in Obsidian's built-in plugin browser. [Add to Obsidian](obsidian://show-plugin?id=prisma-calendar) or search "Prisma Calendar" under **Settings → Community plugins → Browse**.
@@ -35,6 +37,8 @@ All notable changes to this project will be documented here.
 ## 2.16.0 - 5/11/2026
 
 > **TLDR:** Right-click any event to **Move to planning system…** — the note relocates and its frontmatter is translated to the destination's schema. **Categories now count untracked events** with full statistics, and **category rename / delete are undoable**. Icons get a **visual picker** with live previews, plus per-tab icon and color editing. Settings now show an **Update available** badge when a newer release ships, and remember your active tab and scroll position between opens.
+>
+> 📺 [Watch the 2.17 & 2.16 update video](https://youtu.be/Bwz9thJGiXc) — a walkthrough of all the major changes in action.
 
 ### Added
 - **Move event to another planning system**: Right-click an event and choose **Move to planning system…** to send it to another calendar. The note is moved into the destination's directory and its frontmatter is translated to the destination's property schema (e.g., `Start Date` → `Begin`, `Category` → `Topic`). Custom user keys are preserved. Also exposed via `PrismaCalendar.moveEventToCalendar` API. See [Multiple Planning Systems → Moving an event between planning systems](./features/calendar/multiple-calendars.md#moving-an-event-between-planning-systems).
