@@ -1,4 +1,5 @@
 import {
+	createMonotonicSequencer,
 	describeError,
 	ensureDirectory,
 	normalizeDirectory,
@@ -7,6 +8,7 @@ import {
 	SettingsStore,
 	SyncStore,
 	waitForCacheReady,
+	type Sequencer,
 } from "@real1ty-obsidian-plugins";
 import { showReactIconPicker, showWhatsNewReactModal } from "@real1ty-obsidian-plugins-react";
 import { Notice, Plugin, TFile, type View, type WorkspaceLeaf } from "obsidian";
@@ -49,6 +51,9 @@ export default class CustomCalendarPlugin extends Plugin {
 	licenseManager!: LicenseManager;
 	releaseCheckService!: ReleaseCheckService;
 	settingsSessionState = { tab: "general", scrollTop: { current: 0 } };
+	// Shared across every calendar's CommandManager so undo/redo can resolve the
+	// most-recently-mutated calendar (see read-operations.resolveHistoryBundle).
+	readonly commandSequencer: Sequencer = createMonotonicSequencer();
 	private lastUsedCalendarStore = new LastUsedCalendarStore();
 	private registeredViewTypes: Set<string> = new Set();
 

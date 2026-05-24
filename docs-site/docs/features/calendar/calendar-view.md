@@ -226,6 +226,10 @@ Configure in **Settings → Calendar → Event Interaction**.
 
 {/* TODO: Add screenshot showing event tooltip on hover */}
 
+### Removing stale events
+
+If an event's underlying note is deleted or moved outside the calendar, the event can briefly linger on the grid with nothing behind it. Clicking, right-clicking, or dragging such a stale event removes it from the calendar — instead of failing to open or edit a file that no longer exists.
+
 ## Event Overlap
 
 Control how events display when they share the same time:

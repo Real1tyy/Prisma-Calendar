@@ -19,7 +19,7 @@ import {
 	type RgbColor,
 } from "@real1ty-obsidian-plugins";
 import { renderReactInline } from "@real1ty-obsidian-plugins-react";
-import { Component, Platform, TFile, type App, type WorkspaceLeaf } from "obsidian";
+import { Component, Notice, Platform, TFile, type App, type WorkspaceLeaf } from "obsidian";
 import { createElement } from "react";
 import { BehaviorSubject } from "rxjs";
 
@@ -64,7 +64,12 @@ import type { SingleCalendarConfig } from "../types/index";
 import { getCalendarRenderingKey } from "../utils/calendar/settings";
 import { stripZ } from "../utils/dates/iso";
 import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
-import { isBatchSelectable, isFileBackedEvent } from "../utils/events/classification";
+import {
+	isBatchSelectable,
+	isFileBackedEvent,
+	isOrphanedFileEvent,
+	type ClassifiableEvent,
+} from "../utils/events/classification";
 import { resolveAllEventColors, resolveEventColor } from "../utils/events/color";
 import { diffEvents, eventFingerprint, hashFrontmatter } from "../utils/events/diff";
 import { getCommonCategories } from "../utils/events/frontmatter";
@@ -791,6 +796,9 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 		info.el.addEventListener("contextmenu", (e) => {
 			e.preventDefault();
+			if (this.healIfOrphanEvent(info.event)) {
+				return;
+			}
 			this.eventContextMenu.show(e, info, info.el, this.container);
 		});
 
@@ -1646,6 +1654,28 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 	// ─── Event Interaction ───────────────────────────────────────
 
+	/**
+	 * Lazily self-heal a stale "phantom" event. When the user interacts with a
+	 * file-backed event whose backing file no longer exists (a leftover from a
+	 * rename/move whose deletion was missed), purge it from the store — which
+	 * re-renders the calendar without it — and tell the user, instead of letting
+	 * the action fail against a file that isn't there. Returns true when the
+	 * event was a phantom and the caller should abort.
+	 *
+	 * The vault lookup only happens on interaction (click, context menu, drag),
+	 * never on every render.
+	 */
+	private healIfOrphanEvent(event: ClassifiableEvent): boolean {
+		if (!isOrphanedFileEvent(event, (filePath) => this.app.vault.getAbstractFileByPath(filePath) !== null)) {
+			return false;
+		}
+
+		const filePath = getFilePath(event);
+		if (filePath) this.bundle.eventStore.invalidate(filePath);
+		new Notice("This event no longer exists — removing it from the calendar.");
+		return true;
+	}
+
 	private handleEventClick(
 		info: {
 			event: Pick<CalendarEventData, "title" | "extendedProps" | "start" | "end" | "allDay">;
@@ -1653,6 +1683,10 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		eventEl: HTMLElement
 	): void {
 		const event = info.event;
+		if (this.healIfOrphanEvent(event)) {
+			return;
+		}
+
 		const filePath = event.extendedProps.filePath;
 		const virtualKind = event.extendedProps.virtualKind;
 
@@ -1905,6 +1939,11 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 	private async handleEventUpdate(info: EventUpdateInfo, errorMessage: string): Promise<void> {
 		if (isAnyVirtual(getVirtualKind(info.event))) {
+			info.revert();
+			return;
+		}
+
+		if (this.healIfOrphanEvent(info.event)) {
 			info.revert();
 			return;
 		}

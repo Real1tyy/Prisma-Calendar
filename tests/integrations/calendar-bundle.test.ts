@@ -3,6 +3,7 @@
  * IndexerRegistry singleton supplies real (mock-app-backed) trackers, parser,
  * and event store — the same wiring production uses.
  */
+import { createMonotonicSequencer } from "@real1ty-obsidian-plugins";
 import { BehaviorSubject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -53,6 +54,7 @@ function createFakePlugin(app: MockApp) {
 		addRibbonIcon: vi.fn().mockReturnValue(ribbonEl),
 		ensureCalendarViewFocus: vi.fn().mockResolvedValue(undefined),
 		rememberLastUsedCalendar: vi.fn(),
+		commandSequencer: createMonotonicSequencer(),
 		licenseManager: {
 			isPro$,
 			get isPro() {

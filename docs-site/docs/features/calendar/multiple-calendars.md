@@ -100,7 +100,7 @@ Right-click any event and pick **Move to planning system…** to send it to anot
 - **Translate the frontmatter to the destination's schema.** If the source uses `Start Date` / `End Date` / `Category` and the destination uses `Begin` / `Finish` / `Topic`, Prisma rewrites the keys so the event matches the destination's property mapping. Custom user keys that aren't part of the schema (e.g., `priority`, `project`) are left alone.
 - Re-attribute the event reactively — it disappears from the source calendar and shows up in the destination without reload.
 
-The action is undoable from the command palette (**Prisma Calendar: Undo**) — the file moves back and the original frontmatter keys are restored.
+The move is undoable and redoable from the command palette (**Prisma Calendar: Undo** / **Prisma Calendar: Redo**) — Undo moves the file back and restores the original frontmatter keys, and Redo re-applies the move.
 
 The same operation is exposed programmatically via `window.PrismaCalendar.moveEventToCalendar({ filePath, targetCalendarId })` for Pro users — useful for scripting bulk moves or wiring it into other plugins.
 

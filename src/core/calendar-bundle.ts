@@ -142,7 +142,7 @@ export class CalendarBundle {
 		);
 		this.viewStateManager = new CalendarViewStateManager();
 		this.navigationHistory = createNavigationHistory();
-		this.commandManager = new CommandManager();
+		this.commandManager = new CommandManager({ sequencer: this.plugin.commandSequencer });
 		this.holidayStore = new HolidayStore(this.app, this.settingsStore.currentSettings.holidays as HolidayConfig);
 		this.virtualEventStore = new VirtualEventStore(this.app, this.settingsStore.settings$);
 		this.eventStore.setHolidayStore(this.holidayStore);

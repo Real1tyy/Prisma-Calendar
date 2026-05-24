@@ -13,6 +13,8 @@ All notable changes to this project will be documented here.
 
 ### Fixed
 - **Running stopwatch's End time stayed stale**: While tracking, the End stayed pinned at the start+5-minute stamp instead of moving with the timer, and restoring a long-minimized session reopened with that outdated End. It now advances to the current time every 5 minutes while running — both in the open modal and on restore. See [Time Tracker → Minimize & Auto-Save](./features/management/time-tracker.md#minimize--auto-save).
+- **Stale events are cleared when you interact with them**: if an event's note is deleted or moved outside the calendar, clicking, right-clicking, or dragging the leftover event now removes it from the grid instead of erroring that it can't be opened or deleted. See [Calendar View → Removing stale events](./features/calendar/calendar-view.md#removing-stale-events).
+- **More reliable moves between planning systems**: moving an event to another planning system no longer occasionally leaves a duplicate behind, and Undo / Redo now reverses the move instead of sometimes reporting "Nothing to undo." See [Multiple Planning Systems → Moving an event between planning systems](./features/calendar/multiple-calendars.md#moving-an-event-between-planning-systems).
 
 ---
 

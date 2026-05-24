@@ -1,4 +1,5 @@
 import type CustomCalendarPlugin from "../../main";
+import type { CalendarBundle } from "../calendar-bundle";
 import { resolveBundle } from "./bundle-resolver";
 import {
 	serializeEvent,
@@ -55,14 +56,40 @@ export function getUntrackedEvents(plugin: CustomCalendarPlugin, input?: PrismaC
 	return bundle.untrackedEventStore.getUntrackedEvents().map(serializeEvent);
 }
 
+/**
+ * Picks which calendar's history to undo/redo against. Each calendar owns its
+ * own command stack, so "undo" must target the calendar the user last acted in
+ * — not whichever calendar is "last used" for creation. Moving an event between
+ * planning systems records the command on the SOURCE calendar but flips the
+ * last-used calendar to the destination; resolving by last-used alone would hit
+ * the destination's empty stack and report "Nothing to undo". We resolve by the
+ * most recently mutated stack instead, tie-breaking toward the last-used one.
+ */
+function resolveHistoryBundle(
+	plugin: CustomCalendarPlugin,
+	canApply: (bundle: CalendarBundle) => boolean
+): CalendarBundle | null {
+	const candidates = plugin.calendarBundles.filter(canApply);
+	if (candidates.length === 0) return null;
+	if (candidates.length === 1) return candidates[0];
+
+	const lastUsedId = plugin.lastUsedCalendarId;
+	return candidates.reduce((best, bundle) => {
+		const order = bundle.commandManager.lastActivityOrder;
+		const bestOrder = best.commandManager.lastActivityOrder;
+		if (order !== bestOrder) return order > bestOrder ? bundle : best;
+		return bundle.calendarId === lastUsedId ? bundle : best;
+	});
+}
+
 export async function undo(plugin: CustomCalendarPlugin): Promise<boolean> {
-	const bundle = resolveBundle(plugin);
+	const bundle = resolveHistoryBundle(plugin, (b) => b.commandManager.canUndo());
 	if (!bundle) return false;
 	return await bundle.undo();
 }
 
 export async function redo(plugin: CustomCalendarPlugin): Promise<boolean> {
-	const bundle = resolveBundle(plugin);
+	const bundle = resolveHistoryBundle(plugin, (b) => b.commandManager.canRedo());
 	if (!bundle) return false;
 	return await bundle.redo();
 }
