@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, type Dispatch, type RefObject, type Set
 import { useWatch, type UseFormReturn } from "react-hook-form";
 
 import type { EventFormState } from "../../../components/modals/event/event-form-state";
+import { END_TIME_SYNC_INTERVAL_MS } from "../../../core/minimized-modal-manager";
 import { PositiveFloat } from "../../../types/event-boundaries";
 import { formatDateTimeForInput } from "../../../utils/format";
 import type { StopwatchHandle, StopwatchSnapshot } from "../../views/stopwatch";
@@ -83,6 +84,17 @@ export function useStopwatch({
 		if (!handle) return;
 		snapshotRef.current = handle.exportState();
 	}, []);
+
+	// Advance End to "now" while running so a long session doesn't keep showing
+	// the stale start+5min stamp onStart wrote. Paused holds (break time isn't
+	// billable); same cadence as persistEndTime's disk sync.
+	useEffect(() => {
+		const id = window.setInterval(() => {
+			if (handleRef.current?.getState() !== "running") return;
+			form.setValue("end", formatDateTimeForInput(new Date()));
+		}, END_TIME_SYNC_INTERVAL_MS);
+		return () => window.clearInterval(id);
+	}, [form]);
 
 	const reset = useCallback(() => {
 		handleRef.current?.reset();

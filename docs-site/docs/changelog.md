@@ -11,6 +11,9 @@ All notable changes to this project will be documented here.
 ### Added
 - **Interactive onboarding tutorial**: A guided tour starts automatically the first time you open the calendar (and again if you quit before finishing). It creates a sample "Your first event" on today, then walks you through the calendar — and the hands-on steps are fully interactive: drag the event to reschedule it, double-click to open its editor, and add new events without the tour getting in the way. Replay it anytime from **Settings → General → Interactive tutorial** or the **Prisma Calendar: Start onboarding tutorial** command. See [Interactive Tutorial](./features/interactive-tutorial.md).
 
+### Fixed
+- **Running stopwatch's End time stayed stale**: While tracking, the End stayed pinned at the start+5-minute stamp instead of moving with the timer, and restoring a long-minimized session reopened with that outdated End. It now advances to the current time every 5 minutes while running — both in the open modal and on restore. See [Time Tracker → Minimize & Auto-Save](./features/management/time-tracker.md#minimize--auto-save).
+
 ---
 
 ## 2.17.0 - 5/19/2026

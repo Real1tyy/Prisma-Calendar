@@ -39,7 +39,7 @@ Built-in stopwatch in Create/Edit Event modal for precise time tracking with aut
 **Collapsed** (default): Click **▶ Time tracker** header to expand
 
 **Controls**:
-- **▶ start**: Begin tracking, fills Start Date with current time and End Date with start time + 5 minutes. The end time is continuously updated while tracking. Starts both the total timer and session timer.
+- **▶ start**: Begin tracking, fills Start Date with current time and End Date with start time + 5 minutes. The end time is advanced to the current time every 5 minutes while tracking, so a long session never shows a stale End. Starts both the total timer and session timer.
 - **▶ start new**: (After stopping) Start a completely new tracking session with a fresh start time and end time set to start + 5 minutes.
 - **▶ continue**: (Optional, when enabled in settings) Continue tracking from the existing start date in the event. Calculates elapsed time based on the event's start time and resumes tracking from that point. Perfect for resuming work on existing events.
 - **⏸ break**: Pause productive time and start tracking break time. The total timer continues, but the session timer pauses and the current break timer starts.
@@ -121,7 +121,7 @@ The same applies to the **▶ continue** button that appears after **⏹ stop**:
 - Converts all-day events to timed events automatically
 - Shown by default in the context menu — can be hidden via Settings → Context menu items
 
-**Periodic End Time Sync**: While a stopwatch is running in a minimized modal, the event's end time is automatically updated in the file every 5 minutes. This keeps the end time in sync with reality and protects against data loss if Obsidian crashes or is force-closed.
+**Periodic End Time Sync**: While a stopwatch is running in a minimized modal, the event's end time is automatically updated in the file every 5 minutes. This keeps the end time in sync with reality and protects against data loss if Obsidian crashes or is force-closed. Restoring the modal reflects this synced end time, so a session you minimized hours ago reopens with the current end — not the value it held when you minimized it.
 
 **Notes**: Only one modal at a time. State lost if Obsidian closed.
 

@@ -1,11 +1,19 @@
+import { ensureISOSuffix, toLocalISOString } from "@real1ty-obsidian-plugins";
 import { Subject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createDefaultState } from "../../src/components/modals/event/event-form-state";
 import type { CalendarBundle } from "../../src/core/calendar-bundle";
-import { MinimizedModalManager, type MinimizedModalState } from "../../src/core/minimized-modal-manager";
+import {
+	END_TIME_SYNC_INTERVAL_MS,
+	MinimizedModalManager,
+	type MinimizedModalState,
+} from "../../src/core/minimized-modal-manager";
 import type { StopwatchSnapshot } from "../../src/react/views/stopwatch";
+import type { Frontmatter } from "../../src/types";
 import type { IndexerEvent } from "../../src/types/event-source";
+import { formatDateTimeForInput } from "../../src/utils/format";
+import { TFile } from "../mocks/obsidian";
 
 describe("MinimizedModalManager", () => {
 	let mockBundle: Partial<CalendarBundle>;
@@ -737,6 +745,78 @@ describe("MinimizedModalManager", () => {
 			MinimizedModalManager.upgradeCreateToEdit("Tasks/Different.md");
 
 			expect(MinimizedModalManager.getState()?.filePath).toBe("Tasks/Existing.md");
+		});
+	});
+
+	// Regression: persistEndTime synced End to disk but left formState.end (what
+	// restore reads) stale, so a long-running minimized tracker restored with an
+	// outdated End. The sync now updates the snapshot too.
+	describe("persistEndTime — reflects the file sync into the saved snapshot", () => {
+		function buildSyncBundle(writtenFm: Frontmatter): CalendarBundle {
+			const file = new TFile("events/active.md");
+			return {
+				calendarId: "test-calendar",
+				plugin: {
+					app: {
+						vault: { getAbstractFileByPath: vi.fn(() => file) },
+						fileManager: {
+							processFrontMatter: vi.fn(async (_f: unknown, cb: (fm: Frontmatter) => void) => cb(writtenFm)),
+						},
+					},
+				},
+				fileRepository: { events$: mockIndexerEventsSubject.asObservable() },
+				settingsStore: { currentSettings: { endProp: "End Date" } },
+			} as unknown as CalendarBundle;
+		}
+
+		it("advances formState.end and endDate to now while running", async () => {
+			const base = new Date("2026-05-20T10:00:00");
+			vi.setSystemTime(base);
+			const writtenFm: Frontmatter = {};
+			const bundle = buildSyncBundle(writtenFm);
+
+			MinimizedModalManager.saveState(
+				createMockState({
+					modalType: "edit",
+					filePath: "events/active.md",
+					endDate: "2026-05-20T09:05:00",
+					formState: { ...createDefaultState(), end: "2026-05-20T09:05" },
+					stopwatch: createMockStopwatchSnapshot({ state: "running", startTime: base.getTime() }),
+				}),
+				bundle
+			);
+
+			await vi.advanceTimersByTimeAsync(END_TIME_SYNC_INTERVAL_MS);
+
+			const now = new Date(base.getTime() + END_TIME_SYNC_INTERVAL_MS);
+			const updated = MinimizedModalManager.getState();
+			expect(updated?.formState.end).toBe(formatDateTimeForInput(now));
+			expect(updated?.endDate).toBe(ensureISOSuffix(toLocalISOString(now)));
+			expect(writtenFm["End Date"]).toBe(ensureISOSuffix(toLocalISOString(now)));
+		});
+
+		it("leaves the snapshot untouched while paused (break time is not billable)", async () => {
+			const base = new Date("2026-05-20T10:00:00");
+			vi.setSystemTime(base);
+			const bundle = buildSyncBundle({});
+
+			MinimizedModalManager.saveState(
+				createMockState({
+					modalType: "edit",
+					filePath: "events/active.md",
+					formState: { ...createDefaultState(), end: "2026-05-20T09:05" },
+					stopwatch: createMockStopwatchSnapshot({
+						state: "paused",
+						startTime: base.getTime(),
+						breakStartTime: base.getTime(),
+					}),
+				}),
+				bundle
+			);
+
+			await vi.advanceTimersByTimeAsync(END_TIME_SYNC_INTERVAL_MS);
+
+			expect(MinimizedModalManager.getState()?.formState.end).toBe("2026-05-20T09:05");
 		});
 	});
 });

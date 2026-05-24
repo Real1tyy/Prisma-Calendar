@@ -2,7 +2,7 @@ import { act, fireEvent, render, renderHook, screen } from "@testing-library/rea
 import { useRef, useState } from "react";
 import { useForm, type UseFormReturn } from "react-hook-form";
 import { BehaviorSubject } from "rxjs";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
 	createDefaultState,
@@ -10,6 +10,7 @@ import {
 	type EventFormState,
 } from "../../../../src/components/modals/event/event-form-state";
 import type { CalendarBundle } from "../../../../src/core/calendar-bundle";
+import { END_TIME_SYNC_INTERVAL_MS } from "../../../../src/core/minimized-modal-manager";
 import { EventForm } from "../../../../src/react/event-form/event-form";
 import { useStopwatch } from "../../../../src/react/event-form/hooks/use-stopwatch";
 import { TimingSection } from "../../../../src/react/event-form/sections/timing-section";
@@ -359,6 +360,55 @@ describe("useStopwatch.onResumeRequested", () => {
 		});
 
 		expect(result.current.form.getValues("end")).not.toBe(pastEnd);
+	});
+});
+
+// Regression: a running stopwatch left End frozen at the start+5min stamp until
+// Stop. It now snaps End to "now" every interval while running, holds while
+// paused/idle.
+describe("useStopwatch — periodic End sync while running", () => {
+	beforeEach(() => vi.useFakeTimers());
+	afterEach(() => vi.useRealTimers());
+
+	function makeHandle(state: "running" | "paused" | "idle" | "stopped"): StopwatchHandle {
+		return { getState: () => state } as StopwatchHandle;
+	}
+
+	it("advances End to now every END_TIME_SYNC_INTERVAL_MS while running", () => {
+		vi.setSystemTime(new Date("2026-05-20T10:00:00"));
+		const result = mountHook({ start: "2026-05-20T10:00", end: "2026-05-20T11:00" });
+
+		act(() => result.current.stopwatch.setHandle(makeHandle("running")));
+		act(() => {
+			vi.advanceTimersByTime(END_TIME_SYNC_INTERVAL_MS * 2);
+		});
+
+		// now = base + 10min → End snaps to 10:10:00, overwriting the seeded 11:00.
+		expect(result.current.form.getValues("end")).toBe("2026-05-20T10:10:00");
+	});
+
+	it("leaves End untouched while paused (break time is not billable)", () => {
+		vi.setSystemTime(new Date("2026-05-20T10:00:00"));
+		const result = mountHook({ start: "2026-05-20T10:00", end: "2026-05-20T11:00" });
+
+		act(() => result.current.stopwatch.setHandle(makeHandle("paused")));
+		act(() => {
+			vi.advanceTimersByTime(END_TIME_SYNC_INTERVAL_MS * 2);
+		});
+
+		expect(result.current.form.getValues("end")).toBe("2026-05-20T11:00");
+	});
+
+	it("leaves End untouched when the stopwatch is idle (no active session)", () => {
+		vi.setSystemTime(new Date("2026-05-20T10:00:00"));
+		const result = mountHook({ start: "2026-05-20T10:00", end: "2026-05-20T11:00" });
+
+		// No handle wired → getState() never reports "running".
+		act(() => {
+			vi.advanceTimersByTime(END_TIME_SYNC_INTERVAL_MS * 2);
+		});
+
+		expect(result.current.form.getValues("end")).toBe("2026-05-20T11:00");
 	});
 });
 

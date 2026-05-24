@@ -120,6 +120,19 @@ class MinimizedModalManagerClass {
 	}
 
 	/**
+	 * Merge a partial update into the saved state so call sites name only what
+	 * changes instead of respreading the whole object. No-op when nothing is
+	 * saved; the updater form receives the current state for derived edits.
+	 */
+	private patchState(
+		patch: Partial<MinimizedModalState> | ((prev: MinimizedModalState) => Partial<MinimizedModalState>)
+	): void {
+		if (!this.savedState) return;
+		const next = typeof patch === "function" ? patch(this.savedState) : patch;
+		this.savedState = { ...this.savedState, ...next };
+	}
+
+	/**
 	 * Rebind a pending "create" state to "edit" once the underlying file has
 	 * been persisted. Called after `bundle.createEvent` resolves with a path,
 	 * so that a subsequent `restoreModal` opens the edit modal targeting the
@@ -133,11 +146,11 @@ class MinimizedModalManagerClass {
 	upgradeCreateToEdit(filePath: string, originalFrontmatter?: Frontmatter): void {
 		if (!this.savedState) return;
 		if (this.savedState.modalType !== "create" || this.savedState.filePath !== null) return;
-		this.savedState.modalType = "edit";
-		this.savedState.filePath = filePath;
-		if (originalFrontmatter) {
-			this.savedState.originalFrontmatter = { ...originalFrontmatter };
-		}
+		this.patchState({
+			modalType: "edit",
+			filePath,
+			...(originalFrontmatter ? { originalFrontmatter: { ...originalFrontmatter } } : {}),
+		});
 	}
 
 	// ─── Internal Time Tracking ───────────────────────────────────
@@ -162,10 +175,19 @@ class MinimizedModalManagerClass {
 		const file = this.app.vault.getAbstractFileByPath(this.savedState.filePath);
 		if (!(file instanceof TFile)) return;
 
-		const now = ensureISOSuffix(toLocalISOString(new Date()));
+		const now = new Date();
+		const nowIso = ensureISOSuffix(toLocalISOString(now));
 		await this.app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
-			fm[settings.endProp] = now;
+			fm[settings.endProp] = nowIso;
 		});
+
+		// Mirror the write into the snapshot: restore reads formState.end, not the
+		// top-level endDate the indexer refreshes, so update both. patchState
+		// no-ops if a clear() landed during the await.
+		this.patchState((prev) => ({
+			endDate: nowIso,
+			formState: { ...prev.formState, end: formatDateTimeForInput(now) },
+		}));
 	}
 
 	private stopInternalTracking(): void {
@@ -210,10 +232,8 @@ class MinimizedModalManagerClass {
 				const frontmatter = event.source.frontmatter;
 				const metadata = event.source.metadata;
 
-				// Update the saved state with new frontmatter values
-				// Keep stopwatch state intact - only update form data
-				this.savedState = {
-					...this.savedState,
+				// Refresh form data from the file; stopwatch state stays intact.
+				this.patchState({
 					filePath: event.filePath,
 					originalFrontmatter: frontmatter,
 					title: getEventName(settings.titleProp, frontmatter, event.filePath, settings.calendarTitleProp),
@@ -224,7 +244,7 @@ class MinimizedModalManagerClass {
 					startDate: frontmatter[settings.startProp] as string | undefined,
 					endDate: frontmatter[settings.endProp] as string | undefined,
 					allDay: event.source.isAllDay,
-				};
+				});
 			}
 		});
 	}
