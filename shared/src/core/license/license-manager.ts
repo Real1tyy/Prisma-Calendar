@@ -5,12 +5,16 @@ import { BehaviorSubject, type Observable } from "rxjs";
 import {
 	LicenseStatusSchema,
 	type CachedLicenseData,
+	type EntitlementStatus,
+	type LicenseDeactivateResponse,
+	type LicenseErrorResponse,
 	type LicenseManagerConfig,
 	type LicenseStatus,
 	type LicenseVerifyResponse,
 } from "./types";
 
 const LICENSE_API_URL = "https://api.matejvavroproductivity.com/api/license/verify";
+const LICENSE_DEACTIVATE_URL = "https://api.matejvavroproductivity.com/api/license/deactivate";
 
 const LICENSE_PUBLIC_KEY_PEM = `-----BEGIN PUBLIC KEY-----
 MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAExdFpvC2Gq9VcCFfulGa69NyrNw2k
@@ -21,6 +25,20 @@ const JWT_ALG = "ES256";
 const JWT_ISSUER = "matej-vavro-productivity";
 const JWT_AUDIENCE = "license";
 
+// Background re-verify ("heartbeat"). The runtime gate is the cached 7-day JWT,
+// re-checked only at plugin load / manual Verify — so an always-open client (a
+// macOS user who only ever sleeps/wakes) could ride a stale entitlement for the
+// whole session. A daily, wall-clock-gated re-verify turns the 7-day window into
+// a rolling "7 days since last online", enforces cancellation within ~a day, and
+// makes server-side telemetry a real heartbeat instead of a restart log.
+export const HEARTBEAT_INTERVAL_MS = 24 * 60 * 60 * 1000;
+// How often we *check* whether a day has elapsed. The re-verify itself is throttled
+// to HEARTBEAT_INTERVAL_MS; the coarse poll also covers always-on desktops that
+// never emit a focus/online wake event.
+export const HEARTBEAT_POLL_MS = 30 * 60 * 1000;
+// When a re-verify is due, delay it by a random 0..JITTER.
+export const HEARTBEAT_JITTER_MS = 5 * 60 * 1000;
+
 export class LicenseManager {
 	private app: App;
 	private getLicenseKeySecretName: () => string;
@@ -28,6 +46,13 @@ export class LicenseManager {
 	private config: LicenseManagerConfig;
 	private deviceId = "";
 	private cachedPublicKey: CryptoKey | null = null;
+	private heartbeatIntervalId: number | null = null;
+	private heartbeatJitterId: number | null = null;
+	private lastVerifyAttemptAt = 0;
+	private disposed = false;
+	private readonly onHeartbeatTrigger = (): void => {
+		this.maybeHeartbeat();
+	};
 	readonly status$: BehaviorSubject<LicenseStatus>;
 	private readonly subject = new BehaviorSubject<boolean>(false);
 	readonly isPro$: Observable<boolean> = this.subject.asObservable();
@@ -60,6 +85,31 @@ export class LicenseManager {
 		this.deviceId = this.getOrCreateDeviceId();
 		await this.loadCachedToken();
 		await this.refreshLicense();
+		this.startHeartbeat();
+	}
+
+	/**
+	 * Stop the background heartbeat and detach its listeners. Consumers MUST call
+	 * this on plugin unload — the manager is not an Obsidian Component, so its
+	 * interval and window/document listeners are not torn down automatically.
+	 */
+	dispose(): void {
+		this.disposed = true;
+		if (this.heartbeatIntervalId !== null) {
+			window.clearInterval(this.heartbeatIntervalId);
+			this.heartbeatIntervalId = null;
+		}
+		if (this.heartbeatJitterId !== null) {
+			window.clearTimeout(this.heartbeatJitterId);
+			this.heartbeatJitterId = null;
+		}
+		if (typeof window !== "undefined" && typeof window.removeEventListener === "function") {
+			window.removeEventListener("focus", this.onHeartbeatTrigger);
+			window.removeEventListener("online", this.onHeartbeatTrigger);
+		}
+		if (typeof document !== "undefined" && typeof document.removeEventListener === "function") {
+			document.removeEventListener("visibilitychange", this.onHeartbeatTrigger);
+		}
 	}
 
 	/**
@@ -97,6 +147,8 @@ export class LicenseManager {
 			return;
 		}
 
+		this.lastVerifyAttemptAt = Date.now();
+
 		try {
 			const response = await requestUrl({
 				url: LICENSE_API_URL,
@@ -113,42 +165,84 @@ export class LicenseManager {
 				throw: false,
 			});
 
-			if (response.status === 200) {
-				const data = response.json as LicenseVerifyResponse;
-				const tokenResult = await this.verifyToken(data.token);
-				if (tokenResult !== "valid") {
-					this.updateStatus("error", "License token verification failed.");
+			const data = response.json as (LicenseVerifyResponse & Partial<LicenseErrorResponse>) | undefined;
+			switch (data?.code) {
+				case "OK": {
+					const tokenResult = await this.verifyToken(data.token);
+					if (tokenResult !== "valid") {
+						this.updateStatus("error", "License token verification failed.");
+						return;
+					}
+					this.cacheToken(data);
+					this.activateLicense({
+						activationsCurrent: data.activations.current,
+						activationsLimit: data.activations.limit,
+						expiresAt: data.expiresAt,
+						entitlementStatus: data.entitlementStatus ?? null,
+						currentPeriodEnd: data.currentPeriodEnd ?? null,
+						cancelAt: data.cancelAt ?? null,
+						trialEndsAt: data.trialEndsAt ?? null,
+					});
 					return;
 				}
-				this.cacheToken(data);
-				this.activateLicense(data.activations.current, data.activations.limit, data.expiresAt);
-				return;
-			}
-
-			if (response.status === 401) {
-				this.clearCachedToken();
-				this.updateStatus("invalid", "Invalid license key. Please check your key in settings.");
-				return;
-			}
-
-			if (response.status === 403) {
-				this.clearCachedToken();
-				const body = response.json as { message?: string } | undefined;
-				const isDeviceLimit = body?.message?.toLowerCase().includes("limit") ?? false;
-				if (isDeviceLimit) {
+				case "KEY_INVALID_OR_REVOKED":
+					this.clearCachedToken();
+					this.updateStatus("invalid", "This license key is no longer valid. Check the key in settings.");
+					return;
+				case "ENTITLEMENT_INACTIVE":
+					this.clearCachedToken();
+					this.updateStatus(
+						"entitlement_inactive",
+						"Your subscription isn't active. Check your billing on the account page."
+					);
+					return;
+				case "SEAT_LIMIT_REACHED": {
+					this.clearCachedToken();
+					const limit = data.activations?.limit ?? this.status.activationsLimit;
 					this.updateStatus(
 						"device_limit",
-						`Device limit reached (${this.status.activationsLimit} devices). Manage devices at matejvavroproductivity.com/account`
+						`Device limit reached (${limit} devices). Deactivate a device to free a seat.`,
+						{
+							activationsCurrent: data.activations?.current ?? this.status.activationsCurrent,
+							activationsLimit: limit,
+						}
 					);
-				} else {
-					this.updateStatus("invalid", "License expired or canceled.");
+					return;
 				}
-				return;
+				default:
+					await this.handleNetworkFailure();
 			}
-
-			await this.handleNetworkFailure();
 		} catch {
 			await this.handleNetworkFailure();
+		}
+	}
+
+	/**
+	 * Free this device's activation seat server-side (plugin-facing device
+	 * self-management). On success Pro is dropped on this device until the next
+	 * successful verify re-takes a seat. Returns false on failure so the caller
+	 * can surface a retry.
+	 */
+	async deactivateDevice(): Promise<boolean> {
+		const licenseKey = await this.getLicenseKey();
+		if (!licenseKey) return false;
+		try {
+			const response = await requestUrl({
+				url: LICENSE_DEACTIVATE_URL,
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ licenseKey, deviceId: this.deviceId }),
+				throw: false,
+			});
+			const data = response.json as LicenseDeactivateResponse | undefined;
+			if (data?.code === "OK" || data?.code === "DEVICE_NOT_FOUND") {
+				this.clearCachedToken();
+				this.updateStatus("deactivated", "This device was deactivated. Click Verify to re-activate it.");
+				return true;
+			}
+			return false;
+		} catch {
+			return false;
 		}
 	}
 
@@ -166,12 +260,24 @@ export class LicenseManager {
 		}
 	}
 
-	private activateLicense(activationsCurrent: number, activationsLimit: number, expiresAt: string): void {
+	private activateLicense(data: {
+		activationsCurrent: number;
+		activationsLimit: number;
+		expiresAt: string;
+		entitlementStatus: EntitlementStatus | null;
+		currentPeriodEnd: string | null;
+		cancelAt: string | null;
+		trialEndsAt: string | null;
+	}): void {
 		this.status$.next({
 			state: "valid",
-			activationsCurrent,
-			activationsLimit,
-			expiresAt,
+			activationsCurrent: data.activationsCurrent,
+			activationsLimit: data.activationsLimit,
+			expiresAt: data.expiresAt,
+			entitlementStatus: data.entitlementStatus,
+			currentPeriodEnd: data.currentPeriodEnd,
+			cancelAt: data.cancelAt,
+			trialEndsAt: data.trialEndsAt,
 			errorMessage: null,
 		});
 		this.setLicenseActive(true);
@@ -197,11 +303,50 @@ export class LicenseManager {
 		this.updateStatus("error", "Could not reach license server. Please check your internet connection.");
 	}
 
-	private updateStatus(state: LicenseStatus["state"], errorMessage: string | null = null): void {
+	private startHeartbeat(): void {
+		if (this.heartbeatIntervalId !== null) return;
+		this.heartbeatIntervalId = window.setInterval(this.onHeartbeatTrigger, HEARTBEAT_POLL_MS);
+		if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
+			window.addEventListener("focus", this.onHeartbeatTrigger);
+			window.addEventListener("online", this.onHeartbeatTrigger);
+		}
+		if (typeof document !== "undefined" && typeof document.addEventListener === "function") {
+			document.addEventListener("visibilitychange", this.onHeartbeatTrigger);
+		}
+	}
+
+	/**
+	 * Re-verify in the background at most once per {@link HEARTBEAT_INTERVAL_MS}.
+	 * Skips when disposed, when a verify is already scheduled, when no key is
+	 * configured, or when offline. The actual `refreshLicense()` reuses the normal
+	 * verify path, so it keeps the existing definitive-vs-transient semantics:
+	 * 401/403 revokes (clears the cached token), while a network/5xx failure falls
+	 * back to the still-valid cached JWT — a paying offline user is never yanked.
+	 */
+	private maybeHeartbeat(): void {
+		if (this.disposed || this.heartbeatJitterId !== null) return;
+		if (!this.getLicenseKeySecretName()) return;
+		if (typeof navigator !== "undefined" && navigator.onLine === false) return;
+		if (Date.now() - this.lastVerifyAttemptAt < HEARTBEAT_INTERVAL_MS) return;
+
+		const jitter = Math.floor(Math.random() * HEARTBEAT_JITTER_MS);
+		this.heartbeatJitterId = window.setTimeout(() => {
+			this.heartbeatJitterId = null;
+			if (this.disposed) return;
+			void this.refreshLicense();
+		}, jitter);
+	}
+
+	private updateStatus(
+		state: LicenseStatus["state"],
+		errorMessage: string | null = null,
+		extra?: Partial<LicenseStatus>
+	): void {
 		this.status$.next({
 			...this.status$.getValue(),
 			state,
 			errorMessage,
+			...extra,
 		});
 		this.setLicenseActive(state === "valid");
 	}
@@ -234,7 +379,15 @@ export class LicenseManager {
 			this.clearCachedToken();
 			return;
 		}
-		this.activateLicense(cached.activationsCurrent, cached.activationsLimit, cached.expiresAt);
+		this.activateLicense({
+			activationsCurrent: cached.activationsCurrent,
+			activationsLimit: cached.activationsLimit,
+			expiresAt: cached.expiresAt,
+			entitlementStatus: cached.entitlementStatus ?? null,
+			currentPeriodEnd: cached.currentPeriodEnd ?? null,
+			cancelAt: cached.cancelAt ?? null,
+			trialEndsAt: cached.trialEndsAt ?? null,
+		});
 	}
 
 	private async getPublicKey(): Promise<CryptoKey> {
@@ -249,6 +402,10 @@ export class LicenseManager {
 			expiresAt: data.expiresAt,
 			activationsCurrent: data.activations.current,
 			activationsLimit: data.activations.limit,
+			entitlementStatus: data.entitlementStatus ?? null,
+			currentPeriodEnd: data.currentPeriodEnd ?? null,
+			cancelAt: data.cancelAt ?? null,
+			trialEndsAt: data.trialEndsAt ?? null,
 		};
 		this.app.saveLocalStorage(this.config.licenseCacheStorageKey, JSON.stringify(cached));
 	}

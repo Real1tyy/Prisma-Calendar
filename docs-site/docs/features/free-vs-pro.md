@@ -85,10 +85,13 @@ Pro unlocks these additional capabilities on top of everything in the free tier:
 
 Once verified, the license section in General settings shows:
 
-- **License status** — whether your license is active
+- **License status** — whether your license is active, plus your **trial, renewal, or cancellation date** when applicable (a different date from the offline-grace one below)
 - **Device activations** — how many of your allowed devices are active (e.g., 2/5)
-- **Offline expiry** — how long the license remains valid without an internet connection (7 days from last verification)
+- **Offline expiry** — how long the license remains valid without an internet connection (7 days from the last verification, which refreshes automatically in the background while you're online)
+- **Deactivate this device** — free up this device's activation seat, for example before moving to another computer (click Verify to re-activate it later)
 - **Verify now** button — manually refresh your license status at any time
+
+If something needs your attention — an inactive subscription or a reached device limit — the License section shows a clear next step (manage billing or manage devices) that links to your account page.
 
 ## FAQ
 
@@ -98,11 +101,15 @@ Nothing is deleted. If you created 5 planning systems or 4 presets while on Pro,
 
 ### Does Pro work offline?
 
-Yes. Your license is verified on startup and cached locally for 7 days. During that period, everything works offline — no internet required. The offline expiry date is shown in **Settings → General → License status**. When the cached token expires, connect to the internet and click **Verify now** to refresh. Your notes never leave your vault.
+Yes. Your license is verified on startup and then re-verified quietly in the background about once a day whenever you're online, so the 7-day offline window keeps rolling forward without you doing anything. If you go offline, everything keeps working for 7 days from the last successful check — no internet required. The offline expiry date is shown in **Settings → General → License status**. If the cached token ever expires, just reconnect to the internet (the plugin re-verifies automatically, or click **Verify now**). Your notes never leave your vault.
 
 ### Can I cancel anytime?
 
 Yes. Cancel from your account page. If you cancel during the free trial, you're never charged. After the trial, you keep Pro access until the end of your billing period.
+
+### How do I move Pro to another computer?
+
+Your license covers up to 5 devices. Each vault counts as one device. To free a seat — say you're retiring a machine — open **Settings → General → License** and click **Deactivate this device**. You can also manage every device from your account page. If you hit the device limit, the License section links you straight to device management.
 
 ### Does Prisma Calendar collect any data from my vault?
 

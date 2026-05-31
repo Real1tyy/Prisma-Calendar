@@ -79,7 +79,11 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 				licenseManager={plugin.licenseManager}
 				currentSecretName={licenseKeySecretName}
 				onSecretChange={onSecretChange}
-				accountUrl={buildUtmUrl(ACCOUNT_URL, "prisma-calendar", "plugin", "settings", "manage_subscription")}
+				accountUrls={{
+					subscription: buildUtmUrl(ACCOUNT_URL, "prisma-calendar", "plugin", "settings", "manage_subscription"),
+					billing: buildUtmUrl(ACCOUNT_URL, "prisma-calendar", "plugin", "settings", "manage_billing"),
+					devices: buildUtmUrl(ACCOUNT_URL, "prisma-calendar", "plugin", "settings", "manage_devices"),
+				}}
 			/>
 			{calendarSection("Planning system", PLANNING_FIELDS)}
 			<ReadOnlyField plugin={plugin} />

@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { LicenseManager } from "../../src/core/license/license-manager";
+import {
+	HEARTBEAT_INTERVAL_MS,
+	HEARTBEAT_JITTER_MS,
+	HEARTBEAT_POLL_MS,
+	LicenseManager,
+} from "../../src/core/license/license-manager";
 import {
 	LicenseStatusSchema,
 	type LicenseManagerConfig,
@@ -66,6 +71,7 @@ function createMockApp(overrides?: {
 
 function createVerifyResponse(overrides?: Partial<LicenseVerifyResponse>): LicenseVerifyResponse {
 	return {
+		code: "OK",
 		token: "mock-jwt-token",
 		expiresAt: "2027-01-01T00:00:00Z",
 		productId: "test-product",
@@ -87,6 +93,10 @@ describe("LicenseManager", () => {
 	});
 
 	afterEach(() => {
+		// initialize() starts a background heartbeat interval — dispose it so a
+		// real timer never leaks across the shared (isolate: false) worker.
+		manager.dispose();
+		vi.useRealTimers();
 		vi.restoreAllMocks();
 	});
 
@@ -228,59 +238,49 @@ describe("LicenseManager", () => {
 			});
 		});
 
-		describe("invalid key (401)", () => {
-			it("should set state to 'invalid'", async () => {
+		describe("result codes", () => {
+			it("maps KEY_INVALID_OR_REVOKED to 'invalid' and clears the cached token", async () => {
 				mockApp.secretStorage.getSecret.mockResolvedValue("bad-key");
-				mockRequestUrl.mockResolvedValue({ status: 401, json: {} });
+				mockRequestUrl.mockResolvedValue({ status: 401, json: { code: "KEY_INVALID_OR_REVOKED" } });
 
 				await manager.refreshLicense();
 
 				expect(manager.status.state).toBe("invalid");
 				expect(manager.isPro).toBe(false);
+				expect(mockApp.saveLocalStorage).toHaveBeenCalledWith(TEST_CONFIG.licenseCacheStorageKey, "");
 			});
 
-			it("should clear cached token", async () => {
-				mockApp.secretStorage.getSecret.mockResolvedValue("bad-key");
-				mockRequestUrl.mockResolvedValue({ status: 401, json: {} });
+			it("maps ENTITLEMENT_INACTIVE to 'entitlement_inactive'", async () => {
+				mockApp.secretStorage.getSecret.mockResolvedValue("valid-key");
+				mockRequestUrl.mockResolvedValue({ status: 403, json: { code: "ENTITLEMENT_INACTIVE" } });
 
 				await manager.refreshLicense();
 
-				expect(mockApp.saveLocalStorage).toHaveBeenCalledWith(TEST_CONFIG.licenseCacheStorageKey, "");
+				expect(manager.status.state).toBe("entitlement_inactive");
+				expect(manager.isPro).toBe(false);
 			});
-		});
 
-		describe("forbidden (403)", () => {
-			it("should set state to 'device_limit' when message contains 'limit'", async () => {
+			it("maps SEAT_LIMIT_REACHED to 'device_limit' and surfaces the activations", async () => {
 				mockApp.secretStorage.getSecret.mockResolvedValue("valid-key");
 				mockRequestUrl.mockResolvedValue({
 					status: 403,
-					json: { message: "Device limit reached" },
+					json: { code: "SEAT_LIMIT_REACHED", activations: { current: 5, limit: 5 } },
 				});
 
 				await manager.refreshLicense();
 
 				expect(manager.status.state).toBe("device_limit");
+				expect(manager.status.activationsCurrent).toBe(5);
+				expect(manager.status.activationsLimit).toBe(5);
 			});
 
-			it("should set state to 'invalid' for non-limit 403 errors", async () => {
+			it("falls back to the network-failure path on an unrecognized/absent code", async () => {
 				mockApp.secretStorage.getSecret.mockResolvedValue("valid-key");
-				mockRequestUrl.mockResolvedValue({
-					status: 403,
-					json: { message: "License canceled" },
-				});
+				mockRequestUrl.mockResolvedValue({ status: 500, json: {} });
 
 				await manager.refreshLicense();
 
-				expect(manager.status.state).toBe("invalid");
-			});
-
-			it("should set state to 'invalid' when 403 has no body message", async () => {
-				mockApp.secretStorage.getSecret.mockResolvedValue("valid-key");
-				mockRequestUrl.mockResolvedValue({ status: 403, json: {} });
-
-				await manager.refreshLicense();
-
-				expect(manager.status.state).toBe("invalid");
+				expect(manager.status.state).toBe("error");
 			});
 		});
 
@@ -435,10 +435,118 @@ describe("LicenseManager", () => {
 			await manager.refreshLicense();
 			expect(manager.isPro).toBe(true);
 
-			mockRequestUrl.mockResolvedValue({ status: 401, json: {} });
+			mockRequestUrl.mockResolvedValue({ status: 401, json: { code: "KEY_INVALID_OR_REVOKED" } });
 			await manager.refreshLicense();
 
 			expect(manager.isPro).toBe(false);
+		});
+	});
+
+	describe("background heartbeat", () => {
+		async function initializeActivated(): Promise<void> {
+			mockApp.secretStorage.getSecret.mockResolvedValue("valid-key");
+			mockRequestUrl.mockResolvedValue({ status: 200, json: createVerifyResponse() });
+			await manager.initialize();
+		}
+
+		beforeEach(() => {
+			vi.useFakeTimers();
+		});
+
+		it("re-verifies once after the heartbeat interval elapses", async () => {
+			await initializeActivated();
+			expect(mockRequestUrl).toHaveBeenCalledTimes(1);
+
+			await vi.advanceTimersByTimeAsync(HEARTBEAT_INTERVAL_MS + HEARTBEAT_JITTER_MS);
+
+			expect(mockRequestUrl).toHaveBeenCalledTimes(2);
+		});
+
+		it("does not re-verify before the interval elapses", async () => {
+			await initializeActivated();
+
+			await vi.advanceTimersByTimeAsync(HEARTBEAT_INTERVAL_MS - HEARTBEAT_POLL_MS);
+
+			expect(mockRequestUrl).toHaveBeenCalledTimes(1);
+		});
+
+		it("stops re-verifying after dispose()", async () => {
+			await initializeActivated();
+			manager.dispose();
+
+			await vi.advanceTimersByTimeAsync(HEARTBEAT_INTERVAL_MS * 2);
+
+			expect(mockRequestUrl).toHaveBeenCalledTimes(1);
+		});
+
+		it("revokes Pro when the heartbeat hits a definitive 401", async () => {
+			await initializeActivated();
+			expect(manager.isPro).toBe(true);
+
+			mockRequestUrl.mockResolvedValue({ status: 401, json: { code: "KEY_INVALID_OR_REVOKED" } });
+			await vi.advanceTimersByTimeAsync(HEARTBEAT_INTERVAL_MS + HEARTBEAT_JITTER_MS);
+
+			expect(manager.isPro).toBe(false);
+		});
+
+		it("keeps Pro when the heartbeat hits a transient 5xx (cached token still valid)", async () => {
+			await initializeActivated();
+			expect(manager.isPro).toBe(true);
+
+			mockRequestUrl.mockResolvedValue({ status: 500, json: {} });
+			await vi.advanceTimersByTimeAsync(HEARTBEAT_INTERVAL_MS + HEARTBEAT_JITTER_MS);
+
+			expect(manager.isPro).toBe(true);
+		});
+	});
+
+	describe("deactivateDevice", () => {
+		async function activate(): Promise<void> {
+			mockApp.secretStorage.getSecret.mockResolvedValue("valid-key");
+			mockRequestUrl.mockResolvedValue({ status: 200, json: createVerifyResponse() });
+			await manager.refreshLicense();
+		}
+
+		it("frees the seat, drops Pro, and clears the cache on success", async () => {
+			await activate();
+			expect(manager.isPro).toBe(true);
+
+			mockRequestUrl.mockResolvedValue({ status: 200, json: { code: "OK", deactivated: true } });
+			const result = await manager.deactivateDevice();
+
+			expect(result).toBe(true);
+			expect(manager.isPro).toBe(false);
+			expect(manager.status.state).toBe("deactivated");
+			expect(mockApp.saveLocalStorage).toHaveBeenCalledWith(TEST_CONFIG.licenseCacheStorageKey, "");
+		});
+
+		it("treats DEVICE_NOT_FOUND as success (idempotent)", async () => {
+			await activate();
+
+			mockRequestUrl.mockResolvedValue({ status: 200, json: { code: "DEVICE_NOT_FOUND", deactivated: false } });
+			const result = await manager.deactivateDevice();
+
+			expect(result).toBe(true);
+			expect(manager.isPro).toBe(false);
+		});
+
+		it("returns false and keeps Pro when deactivation is refused", async () => {
+			await activate();
+
+			mockRequestUrl.mockResolvedValue({ status: 401, json: { code: "KEY_INVALID_OR_REVOKED" } });
+			const result = await manager.deactivateDevice();
+
+			expect(result).toBe(false);
+			expect(manager.isPro).toBe(true);
+		});
+
+		it("returns false without a request when no key is configured", async () => {
+			mockApp.secretStorage.getSecret.mockResolvedValue(null);
+
+			const result = await manager.deactivateDevice();
+
+			expect(result).toBe(false);
+			expect(mockRequestUrl).not.toHaveBeenCalled();
 		});
 	});
 });

@@ -132,6 +132,8 @@ export default class CustomCalendarPlugin extends Plugin {
 	override onunload(): void {
 		MinimizedModalManager.clear();
 
+		this.licenseManager.dispose();
+
 		for (const bundle of this.calendarBundles) {
 			bundle.destroy();
 		}
