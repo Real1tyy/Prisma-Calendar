@@ -3,6 +3,7 @@ import {
 	extractDisplayName,
 	getFilenameFromPath,
 	removeMarkdownExtension,
+	toSafeString,
 	type DateLikeKind,
 } from "@real1ty-obsidian-plugins";
 import { v5 as uuidv5 } from "uuid";
@@ -216,9 +217,9 @@ export function buildEventSchemaInput(
 	const schema = createEventFrontmatterSchema(settings);
 	const parsed = schema.parse(args.frontmatter);
 	const temporalKinds: TemporalKinds = {
-		start: classifyDateLikeString(String(args.frontmatter[settings.startProp] ?? "")),
-		end: classifyDateLikeString(String(args.frontmatter[settings.endProp] ?? "")),
-		date: classifyDateLikeString(String(args.frontmatter[settings.dateProp] ?? "")),
+		start: classifyDateLikeString(toSafeString(args.frontmatter[settings.startProp]) ?? ""),
+		end: classifyDateLikeString(toSafeString(args.frontmatter[settings.endProp]) ?? ""),
+		date: classifyDateLikeString(toSafeString(args.frontmatter[settings.dateProp]) ?? ""),
 	};
 	return {
 		filePath: args.filePath,
