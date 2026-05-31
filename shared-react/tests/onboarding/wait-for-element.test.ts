@@ -7,7 +7,7 @@ afterEach(() => {
 });
 
 function appendLater(id: string, delayMs = 5): void {
-	setTimeout(() => {
+	window.setTimeout(() => {
 		const el = document.createElement("div");
 		el.id = id;
 		document.body.appendChild(el);
