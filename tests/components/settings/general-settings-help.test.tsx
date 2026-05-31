@@ -23,7 +23,9 @@ function setup() {
 	return { plugin, settingsStore, user, closeSettings };
 }
 
-describe("HelpSection — interactive tutorial control", () => {
+// Onboarding tour is disabled for now — the interactive tutorial control is
+// commented out in HelpSection, so these tests are skipped until it's re-enabled.
+describe.skip("HelpSection — interactive tutorial control", () => {
 	it("offers to take the tour before it has been completed", () => {
 		setup();
 		expect(screen.getByTestId("prisma-settings-tutorial-btn").textContent).toBe("Take the tutorial");

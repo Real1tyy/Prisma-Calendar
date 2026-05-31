@@ -25,7 +25,9 @@ function readTutorialCompleted(vaultDir: string): boolean | undefined {
 	return (readPluginData(vaultDir, PLUGIN_ID) as { tutorialCompleted?: boolean }).tutorialCompleted;
 }
 
-testOnboarding(
+// Onboarding tour is disabled for now (auto-start + command + settings button all
+// commented out in source). Skip until it's re-enabled.
+testOnboarding.skip(
 	"auto-starts on launch, the highlighted event drags to a new time on disk, and finishing records completion",
 	async ({ calendar }) => {
 		const { page, vaultDir } = calendar;

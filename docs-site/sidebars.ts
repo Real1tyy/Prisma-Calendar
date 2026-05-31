@@ -17,7 +17,6 @@ const sidebars: SidebarsConfig = {
 			items: [
 				"features/free-vs-pro",
 				"features/overview",
-				"features/interactive-tutorial",
 				{
 					type: "category",
 					label: "Events",

@@ -23,7 +23,8 @@ import {
 	SingleCalendarConfigSchema,
 	type CustomCalendarSettings,
 } from "../../types/settings";
-import { startPrismaTour } from "../onboarding/prisma-tour";
+// Onboarding tour disabled for now — kept in the codebase but not wired up.
+// import { startPrismaTour } from "../onboarding/prisma-tour";
 import { PrismaSection } from "./_section";
 import { ProUpgradeBanner } from "./pro-upgrade-banner";
 
@@ -256,19 +257,18 @@ const EventPresetsSection = memo(function EventPresetsSection({ settingsStore, p
 });
 
 export const HelpSection = memo(function HelpSection({ plugin }: { plugin: CustomCalendarPlugin }) {
-	const [tutorialCompleted] = useSchemaField(plugin.settingsStore, "tutorialCompleted");
-
 	const handleViewChangelog = useCallback(() => {
 		const config = buildWhatsNewConfig(plugin.changelogContent, "settings");
 		showWhatsNewReactModal(plugin.app, plugin, config, "0.0.0", plugin.manifest.version);
 	}, [plugin]);
 
-	const handleStartTutorial = useCallback(() => {
-		// Dismiss the settings modal first — otherwise the tour's spotlight opens
-		// behind it and the user sees nothing.
-		plugin.app.setting.close();
-		startPrismaTour(plugin);
-	}, [plugin]);
+	// Onboarding tour disabled for now — handler kept here but not wired to any control.
+	// const handleStartTutorial = useCallback(() => {
+	// 	// Dismiss the settings modal first — otherwise the tour's spotlight opens
+	// 	// behind it and the user sees nothing.
+	// 	plugin.app.setting.close();
+	// 	startPrismaTour(plugin);
+	// }, [plugin]);
 
 	return (
 		<>
@@ -337,6 +337,7 @@ export const HelpSection = memo(function HelpSection({ plugin }: { plugin: Custo
 					— cancel anytime.
 				</p>
 			</SettingCard>
+			{/* Onboarding tour disabled for now — control kept here but not rendered.
 			<SettingItem
 				name="Interactive tutorial"
 				description="Take a guided walkthrough that creates a sample event and shows you how to move, resize, create, and open events."
@@ -346,6 +347,7 @@ export const HelpSection = memo(function HelpSection({ plugin }: { plugin: Custo
 					{tutorialCompleted ? "Replay tutorial" : "Take the tutorial"}
 				</button>
 			</SettingItem>
+			*/}
 			<SettingItem
 				name="Changelog"
 				description="Browse the full changelog with every update since the first release"

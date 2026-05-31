@@ -36,7 +36,8 @@ import { createLicenseManager, type LicenseManager } from "./core/license";
 import { installPrismaPerfBridge } from "./core/perf-bridge";
 import { buildWhatsNewConfig } from "./core/whats-new-config";
 import { openCalendarSelectModal, openFirstLaunchModal, openICSImportModal } from "./react/modals";
-import { startPrismaTour } from "./react/onboarding/prisma-tour";
+// Onboarding tour disabled for now — kept in the codebase but not wired up.
+// import { startPrismaTour } from "./react/onboarding/prisma-tour";
 import { CustomCalendarSettingsSchema, PrismaSyncDataSchema, type PrismaCalendarSettingsStore } from "./types";
 import { type CalDAVAccount, type ICSSubscription } from "./types/integrations";
 import { migrateSharedExcludedProps } from "./utils/calendar/migrations";
@@ -120,10 +121,11 @@ export default class CustomCalendarPlugin extends Plugin {
 					void this.checkForUpdates();
 					void this.releaseCheckService.checkForUpdates();
 				}
-				// Auto-start the onboarding tour whenever it hasn't been completed —
-				// not only on the very first launch. A user who quit before finishing
-				// (tutorialCompleted still false) gets it again next time they open.
-				this.maybeStartOnboardingTour();
+				// Onboarding tour disabled for now — auto-start intentionally not called.
+				// // Auto-start the onboarding tour whenever it hasn't been completed —
+				// // not only on the very first launch. A user who quit before finishing
+				// // (tutorialCompleted still false) gets it again next time they open.
+				// this.maybeStartOnboardingTour();
 			});
 			void this.licenseManager.initialize();
 		});
@@ -419,8 +421,9 @@ export default class CustomCalendarPlugin extends Plugin {
 		}
 	}
 
-	private maybeStartOnboardingTour(): void {
-		if (this.settingsStore.currentSettings.tutorialCompleted) return;
-		startPrismaTour(this);
-	}
+	// Onboarding tour disabled for now — kept here but not invoked anywhere.
+	// private maybeStartOnboardingTour(): void {
+	// 	if (this.settingsStore.currentSettings.tutorialCompleted) return;
+	// 	startPrismaTour(this);
+	// }
 }

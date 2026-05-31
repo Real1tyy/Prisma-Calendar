@@ -6,10 +6,7 @@ All notable changes to this project will be documented here.
 
 ## 2.18.0 - 5/22/2026
 
-> **TLDR:** A new **interactive onboarding tutorial** starts automatically the first time you open the calendar — it creates a sample event and walks you through moving, opening, and creating events hands-on, right on the grid. Replay it anytime from settings or a command.
-
-### Added
-- **Interactive onboarding tutorial**: A guided tour starts automatically the first time you open the calendar (and again if you quit before finishing). It creates a sample "Your first event" on today, then walks you through the calendar — and the hands-on steps are fully interactive: drag the event to reschedule it, double-click to open its editor, and add new events without the tour getting in the way. Replay it anytime from **Settings → General → Interactive tutorial** or the **Prisma Calendar: Start onboarding tutorial** command. See [Interactive Tutorial](./features/interactive-tutorial.md).
+> **TLDR:** Your Pro license now re-verifies quietly in the background about once a day, with a clearer License settings panel and a **Deactivate this device** button. Notes with a single date property render as all-day events without an `All Day` flag, plus fixes for the running stopwatch's End time, stale events, and moves between planning systems.
 
 ### Improved
 - **License & Pro account management**: your Pro license now re-verifies quietly in the background about once a day while you're online, so access stays current without restarting Obsidian and the 7-day offline window keeps rolling forward (you're rarely asked to re-verify, even after long offline stretches). The License settings now show your trial, renewal, or cancellation date alongside the offline-grace date, with a clear next step when something needs attention (inactive subscription or device limit), and you can **Deactivate this device** to free a seat before switching computers. See [Free vs Pro](./features/free-vs-pro.md#how-to-upgrade).
