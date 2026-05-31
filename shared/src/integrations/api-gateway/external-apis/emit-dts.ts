@@ -225,7 +225,7 @@ async function emitAction(
 
 async function compileSchema(schema: JsonSchemaFragment, name: string): Promise<string> {
 	const schemaForCompile = { ...schema, title: name };
-	const compiled = await compile(schemaForCompile as Parameters<typeof compile>[0], name, COMPILE_OPTIONS);
+	const compiled = await compile(schemaForCompile, name, COMPILE_OPTIONS);
 	return compiled.trim();
 }
 

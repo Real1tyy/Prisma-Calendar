@@ -54,9 +54,7 @@ function renderFieldFromDescriptor(
 	if (override?.render && settingsStore) {
 		const value = getNestedValue(settingsStore.currentSettings, prefixedKey);
 		override.render(containerEl, value, (v) => {
-			void settingsStore.updateSettings((current) =>
-				setNestedValue(current as unknown as Record<string, unknown>, prefixedKey, v)
-			);
+			void settingsStore.updateSettings((current) => setNestedValue(current, prefixedKey, v));
 		});
 		return;
 	}

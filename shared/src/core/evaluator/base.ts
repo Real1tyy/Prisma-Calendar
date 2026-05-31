@@ -82,7 +82,7 @@ export abstract class BaseEvaluator<TRule extends BaseRule, TSettings> {
 			const values = Array.from(this.propertyMapping.keys()).map((key) => frontmatter[key] ?? undefined);
 			const result = compiledFunc(...values);
 
-			return result === true;
+			return result;
 		} catch (error) {
 			// Suppress ReferenceError logs - these occur when properties don't exist in frontmatter
 			// which is expected behavior (e.g., Status === 'Done' when Status is undefined)

@@ -75,7 +75,7 @@ function renderGroupChildren(children: readonly BaseFilterNode[], itemIndent: nu
 
 	for (const child of children) {
 		if (child.type === "group") {
-			const childGroup = child as BaseFilterGroup;
+			const childGroup = child;
 			lines.push(`${pad}- ${childGroup.operator}:`);
 			lines.push(...renderGroupChildren(childGroup.children, itemIndent + 4));
 		} else {

@@ -590,7 +590,7 @@ export function getChildrenByFolder(app: App, filePath: string): string[] {
 
 	const fileName = pathWithoutExt.split("/").pop() || "";
 
-	const potentialChildFolder = `${pathWithoutExt}`;
+	const potentialChildFolder = pathWithoutExt;
 
 	const potentialChildPath = `${potentialChildFolder}/${fileName}.md`;
 

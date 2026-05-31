@@ -181,7 +181,7 @@ function buildChildActions(
 			http: {
 				method: "POST",
 				path: `/${parentName}/:id/${childName}`,
-				parseBody: (body) => body as { fileName: string; data: unknown; content?: string },
+				parseBody: (body) => body,
 			} satisfies HttpActionConfig,
 		};
 
@@ -316,7 +316,7 @@ export class VaultTableRestApi<TData extends Record<string, unknown>> {
 			http: {
 				method: "POST",
 				path: `/${this.config.resourceName}`,
-				parseBody: (body) => body as { fileName: string; data: Partial<TData>; content?: string },
+				parseBody: (body) => body,
 			} satisfies HttpActionConfig,
 		};
 	}

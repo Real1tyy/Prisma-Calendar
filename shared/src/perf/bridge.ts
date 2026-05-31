@@ -48,9 +48,9 @@ export function installPerfBridge(options: InstallPerfBridgeOptions): () => void
 		},
 	};
 
-	(globalThis as Record<string, unknown>)[key] = bridge;
+	(window as unknown as Record<string, unknown>)[key] = bridge;
 	return () => {
 		tracker.disable();
-		delete (globalThis as Record<string, unknown>)[key];
+		delete (window as unknown as Record<string, unknown>)[key];
 	};
 }

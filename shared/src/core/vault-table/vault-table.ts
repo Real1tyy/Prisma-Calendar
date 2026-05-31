@@ -794,7 +794,7 @@ export class VaultTable<
 			this.handleInvalidFrontmatter(filePath, raw);
 			return null;
 		}
-		return result.data as TData;
+		return result.data;
 	}
 
 	private handleInvalidFrontmatter(filePath: string, raw: Record<string, unknown>): void {
@@ -925,7 +925,7 @@ export class VaultTable<
 			...def,
 			...(preloadedFiles && { preloadedFiles }),
 			...(this.commandManager && { history: { commandManager: this.commandManager } }),
-		} as VaultTableConfig<D, S, C>);
+		});
 
 		if (def.parentProperty) {
 			child.parentLink = { property: def.parentProperty, displayLink: toDisplayLink(parentFilePath) };

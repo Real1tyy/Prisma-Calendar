@@ -19,16 +19,16 @@ const EMPTY_SUMMARY: PerfTimingSummary = {
 export function percentile(sortedAscending: readonly number[], p: number): number {
 	const n = sortedAscending.length;
 	if (n === 0) return 0;
-	if (n === 1) return sortedAscending[0]!;
+	if (n === 1) return sortedAscending[0];
 
 	const clamped = Math.min(100, Math.max(0, p));
 	const rank = (clamped / 100) * (n - 1);
 	const low = Math.floor(rank);
 	const high = Math.ceil(rank);
-	if (low === high) return sortedAscending[low]!;
+	if (low === high) return sortedAscending[low];
 
 	const weight = rank - low;
-	return sortedAscending[low]! * (1 - weight) + sortedAscending[high]! * weight;
+	return sortedAscending[low] * (1 - weight) + sortedAscending[high] * weight;
 }
 
 /** Collapse a list of duration samples (ms) into a single timing summary. */
@@ -43,8 +43,8 @@ export function summarizeSamples(samples: readonly number[]): PerfTimingSummary 
 		count,
 		totalMs,
 		avgMs: totalMs / count,
-		minMs: sorted[0]!,
-		maxMs: sorted[count - 1]!,
+		minMs: sorted[0],
+		maxMs: sorted[count - 1],
 		p50Ms: percentile(sorted, 50),
 		p95Ms: percentile(sorted, 95),
 	};

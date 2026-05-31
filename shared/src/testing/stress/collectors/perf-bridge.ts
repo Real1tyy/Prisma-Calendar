@@ -10,7 +10,7 @@ import type { PerfSnapshot } from "../../../perf/types";
 /** Clear the plugin's recorded timings/counters before a measured pass. */
 export async function resetPerfBridge(page: Page, key: string = PERF_BRIDGE_GLOBAL_KEY): Promise<void> {
 	await page.evaluate((bridgeKey) => {
-		const bridge = (globalThis as Record<string, unknown>)[bridgeKey] as { reset?: () => void } | undefined;
+		const bridge = (window as unknown as Record<string, unknown>)[bridgeKey] as { reset?: () => void } | undefined;
 		bridge?.reset?.();
 	}, key);
 }
@@ -18,7 +18,7 @@ export async function resetPerfBridge(page: Page, key: string = PERF_BRIDGE_GLOB
 /** Drain the plugin's current perf snapshot. Throws if the bridge is absent. */
 export async function readPerfBridge(page: Page, key: string = PERF_BRIDGE_GLOBAL_KEY): Promise<PerfSnapshot> {
 	const snapshot = await page.evaluate((bridgeKey) => {
-		const bridge = (globalThis as Record<string, unknown>)[bridgeKey] as { snapshot: () => unknown } | undefined;
+		const bridge = (window as unknown as Record<string, unknown>)[bridgeKey] as { snapshot: () => unknown } | undefined;
 		if (!bridge) {
 			throw new Error(
 				`Perf bridge not installed at globalThis[${JSON.stringify(bridgeKey)}] — build the plugin with perf instrumentation and run with stress/E2E mode enabled`

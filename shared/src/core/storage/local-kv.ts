@@ -98,7 +98,7 @@ export class LocalKV<T> {
 	 */
 	merge(scope: string, patch: Partial<T>): void {
 		const current = this.get(scope) ?? ({} as T);
-		const merged: T = { ...current, ...patch } as T;
+		const merged: T = { ...current, ...patch };
 		for (const key of Object.keys(patch) as Array<keyof T>) {
 			if (patch[key] === undefined) {
 				delete (merged as Record<string, unknown>)[key as string];

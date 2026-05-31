@@ -95,7 +95,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 	}
 
 	private getNestedValue(key: string): unknown {
-		return getNestedValue(this.settings as Record<string, unknown>, key);
+		return getNestedValue(this.settings, key);
 	}
 
 	private setNestedValue(key: string, value: unknown): z.infer<TSchema> {
@@ -115,7 +115,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 			throw new Error(`Validation failed: ${errors}`);
 		}
 
-		await this.settingsStore.updateSettings(() => result.data as z.infer<TSchema>);
+		await this.settingsStore.updateSettings(() => result.data);
 	}
 
 	private inferSliderBounds(key: string): { min?: number; max?: number } {
