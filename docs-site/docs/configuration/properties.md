@@ -101,6 +101,60 @@ project: Q4 Planning
 
 **See Also**: [Untracked Events documentation](../features/events/untracked-events.md) for details on the untracked events dropdown
 
+## How Prisma decides event type
+
+Event type is resolved in two steps. The `All Day` property is checked first; if it is absent, the type is inferred from the value type of the date properties.
+
+**1. The `All Day` property, when present, decides the type:**
+
+- `All Day: true` → all-day event. The date is taken from the Date property, or, if Date is empty, the date portion of the Start property.
+
+  ```yaml
+  ---
+  Date: 2026-06-01
+  All Day: true
+  ---
+  ```
+
+- `All Day: false` → timed event. The time is taken from the Start property; with no Start value the note is untracked.
+
+  ```yaml
+  ---
+  Start: 2026-06-01T09:00
+  End: 2026-06-01T10:00
+  All Day: false
+  ---
+  ```
+
+**2. When the `All Day` property is absent, the value type decides:**
+
+- A **datetime** value (e.g. `2026-06-01T09:00`) in the Start property → **timed event**. The End property may hold another datetime, or be left empty to use the default duration.
+
+  ```yaml
+  ---
+  Start: 2026-06-01T09:00
+  End: 2026-06-01T10:00
+  ---
+  ```
+
+- Otherwise, a **date-only** value (e.g. `2026-06-01`) in the Date property → **all-day event**.
+
+  ```yaml
+  ---
+  Date: 2026-06-01
+  ---
+  ```
+
+- Otherwise → **untracked** (the note is indexed but does not appear on the calendar). This includes a date-only value placed in the Start property with no Date value:
+
+  ```yaml
+  ---
+  Start: 2026-06-01
+  ---
+  ```
+
+A date-only value must go in the **Date property** to render. A date-only value in the **Start property** with no Date value is untracked — datetimes belong in Start, dates belong in Date.
+
 ## Always Include Date and Time Properties
 
 Prisma Calendar automatically ensures that both date and time properties are always present in event frontmatter, regardless of whether the event is all-day or timed. This makes it easy to convert between all-day and timed events by manually editing the frontmatter.
@@ -142,9 +196,10 @@ All Day: false
 
 ## Sorting Normalization for External Tools
 
-**Important**: The `All Day` property is the **source of truth** for event type. Prisma uses this property to determine how to parse the event:
-- `All Day: true` → Uses `Date` property, ignores `Start`/`End`
-- `All Day: false` (or unset) → Uses `Start`/`End` properties
+**Event type** is decided by the value you write, with the `All Day` property as an optional override (see [How Prisma decides event type](#how-prisma-decides-event-type) above):
+- `All Day: true` → forced all-day, uses the `Date` property
+- `All Day: false` → forced timed, uses `Start`/`End`
+- unset → inferred from the value type (date-only `Date` → all-day; datetime `Start` → timed)
 
 **Sorting normalization strategy:**
 

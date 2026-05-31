@@ -105,9 +105,10 @@ describe("event-schemas (mapped envelope)", () => {
 			expect(event && isAllDayEvent(event)).toBe(true);
 		});
 
-		it("returns null when allDay flag is missing/false", () => {
+		it("renders a date-only value in dateProp as all-day even without the flag", () => {
 			const event = parser.parse(makeInput(settings, { frontmatter: { Date: "2024-12-25" } }));
-			expect(event).toBeNull();
+			expect(event && isAllDayEvent(event)).toBe(true);
+			expect(event?.start).toBe("2024-12-25T00:00:00");
 		});
 
 		it("returns null when date is missing", () => {
@@ -239,6 +240,100 @@ describe("event-schemas (mapped envelope)", () => {
 				})
 			);
 			expect(event?.title).toBe("Pretty Name");
+		});
+	});
+
+	// The headline behaviour change: render decisions are driven by the value type
+	// of each populated temporal role, not by the presence of an `All Day` flag.
+	// See docs/specs/2026-05-30-permissive-temporal-type-detection.md.
+	describe("permissive temporal-type detection", () => {
+		it("renders a date-only note with no All Day flag as an all-day event", () => {
+			const s = createParserSettings({ dateProp: "scheduled" });
+			const event = createEventSchema(s).parse(
+				makeInput(s, { filePath: "Calendar/sync.md", folder: "Calendar", frontmatter: { scheduled: "2026-06-01" } })
+			);
+			expect(event && isAllDayEvent(event)).toBe(true);
+			expect(event?.start).toBe("2026-06-01T00:00:00");
+		});
+
+		type MatrixCase = {
+			name: string;
+			frontmatter: Frontmatter;
+			expected: { type: "timed" | "allDay"; anchor: string } | null;
+		};
+
+		const cases: MatrixCase[] = [
+			{
+				name: "flag true + dateProp date → all-day anchored on date",
+				frontmatter: { "All Day": true, Date: "2026-06-01" },
+				expected: { type: "allDay", anchor: "2026-06-01T00:00:00" },
+			},
+			{
+				name: "flag true + datetime start, no date → all-day anchored on start's date portion",
+				frontmatter: { "All Day": true, "Start Date": "2026-06-01 09:00" },
+				expected: { type: "allDay", anchor: "2026-06-01T00:00:00" },
+			},
+			{
+				name: "flag false + datetime start → timed (override)",
+				frontmatter: { "All Day": false, "Start Date": "2026-06-01 09:00" },
+				expected: { type: "timed", anchor: "2026-06-01T09:00:00" },
+			},
+			{
+				name: "flag false + no start → untracked (nothing to anchor)",
+				frontmatter: { "All Day": false },
+				expected: null,
+			},
+			{
+				name: "no flag + datetime start + datetime end → timed",
+				frontmatter: { "Start Date": "2026-06-01 09:00", "End Date": "2026-06-01 10:00" },
+				expected: { type: "timed", anchor: "2026-06-01T09:00:00" },
+			},
+			{
+				name: "no flag + datetime start only → timed (end defaulted)",
+				frontmatter: { "Start Date": "2026-06-01 09:00" },
+				expected: { type: "timed", anchor: "2026-06-01T09:00:00" },
+			},
+			{
+				name: "no flag + date-only in dateProp → all-day",
+				frontmatter: { Date: "2026-06-01" },
+				expected: { type: "allDay", anchor: "2026-06-01T00:00:00" },
+			},
+			{
+				name: "no flag + date-only start + dateProp date → all-day anchored on date",
+				frontmatter: { "Start Date": "2026-06-01", Date: "2026-06-02" },
+				expected: { type: "allDay", anchor: "2026-06-02T00:00:00" },
+			},
+			{
+				name: "no flag + nothing → untracked",
+				frontmatter: {},
+				expected: null,
+			},
+			{
+				name: "no flag + date-only in startProp, no dateProp → untracked (belongs in dateProp)",
+				frontmatter: { "Start Date": "2026-06-01" },
+				expected: null,
+			},
+		];
+
+		it.each(cases)("$name", ({ frontmatter, expected }) => {
+			const event = parser.parse(makeInput(settings, { frontmatter }));
+			if (expected === null) {
+				expect(event).toBeNull();
+				return;
+			}
+			expect(event?.type).toBe(expected.type);
+			expect(event?.start).toBe(expected.anchor);
+		});
+
+		it("reflects the resolved kind in meta.isAllDay for an inferred all-day note", () => {
+			const event = parser.parse(makeInput(settings, { frontmatter: { Date: "2026-06-01" } }));
+			expect(event?.meta["isAllDay"]).toBe(true);
+		});
+
+		it("treats a midnight datetime in startProp as timed, honouring the written time", () => {
+			const event = parser.parse(makeInput(settings, { frontmatter: { "Start Date": "2026-06-01T00:00" } }));
+			expect(event?.type).toBe("timed");
+			expect(event?.start).toBe("2026-06-01T00:00:00");
 		});
 	});
 });

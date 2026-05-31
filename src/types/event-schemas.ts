@@ -1,4 +1,10 @@
-import { extractDisplayName, getFilenameFromPath, removeMarkdownExtension } from "@real1ty-obsidian-plugins";
+import {
+	classifyDateLikeString,
+	extractDisplayName,
+	getFilenameFromPath,
+	removeMarkdownExtension,
+	type DateLikeKind,
+} from "@real1ty-obsidian-plugins";
 import { v5 as uuidv5 } from "uuid";
 
 import { PRISMA_CALENDAR_NAMESPACE } from "../constants";
@@ -10,15 +16,29 @@ import type { EventMetadata } from "./event-metadata";
 import type { Frontmatter, SingleCalendarConfig } from "./index";
 
 /**
+ * Raw value-type classifications for the three temporal roles, captured from the
+ * *original* frontmatter strings before parsing. Luxon parsing collapses a
+ * date-only value to midnight and loses the date-vs-datetime distinction, so the
+ * resolver needs these raw classifications to decide timed-vs-all-day.
+ */
+export interface TemporalKinds {
+	start: DateLikeKind | null;
+	end: DateLikeKind | null;
+	date: DateLikeKind | null;
+}
+
+/**
  * Input envelope for the event schemas. `frontmatter` is the raw, unmapped
  * frontmatter (preserved for downstream consumers that need the original keys);
- * `parsed` is the canonical typed envelope produced by the unified mapped schema.
+ * `parsed` is the canonical typed envelope produced by the unified mapped schema;
+ * `temporalKinds` are the raw value-type classifications of the temporal roles.
  */
 export interface EventSchemaInput {
 	filePath: string;
 	frontmatter: Frontmatter;
 	folder: string;
 	parsed: ParsedEventFrontmatter;
+	temporalKinds: TemporalKinds;
 }
 
 function makeId(filePath: string): string {
@@ -32,11 +52,11 @@ function makeTitle(parsed: ParsedEventFrontmatter, filePath: string): string {
 	return basename ? cleanupTitle(basename) : "";
 }
 
-function buildMeta(input: EventSchemaInput): Frontmatter {
-	const { parsed, frontmatter, folder } = input;
+function buildMeta(input: EventSchemaInput, isAllDay: boolean): Frontmatter {
+	const { frontmatter, folder } = input;
 	return {
 		folder,
-		isAllDay: parsed.allDay === true,
+		isAllDay,
 		...frontmatter,
 	};
 }
@@ -68,12 +88,13 @@ export function buildMetadata(parsed: ParsedEventFrontmatter): EventMetadata {
 
 function buildTimedEvent(input: EventSchemaInput, settings: SingleCalendarConfig): TimedEvent | null {
 	const { parsed } = input;
-	if (!parsed.start) return null;
+	const start = parsed.start ?? parsed.date;
+	if (!start) return null;
 
-	const startIso = toInternalISO(parsed.start);
+	const startIso = toInternalISO(start);
 	const endIso = parsed.end
 		? toInternalISO(parsed.end)
-		: toInternalISO(parsed.start.plus({ minutes: settings.defaultDurationMinutes }));
+		: toInternalISO(start.plus({ minutes: settings.defaultDurationMinutes }));
 
 	const metadata = buildMetadata(parsed);
 	return {
@@ -87,13 +108,14 @@ function buildTimedEvent(input: EventSchemaInput, settings: SingleCalendarConfig
 		allDay: false,
 		skipped: metadata.skip ?? false,
 		metadata,
-		meta: buildMeta(input),
+		meta: buildMeta(input, false),
 	};
 }
 
 function buildAllDayEvent(input: EventSchemaInput): AllDayEvent | null {
 	const { parsed } = input;
-	if (parsed.allDay !== true || !parsed.date) return null;
+	const anchor = parsed.date ?? parsed.start;
+	if (!anchor) return null;
 
 	const metadata = buildMetadata(parsed);
 	return {
@@ -102,11 +124,11 @@ function buildAllDayEvent(input: EventSchemaInput): AllDayEvent | null {
 		ref: { filePath: input.filePath },
 		title: makeTitle(parsed, input.filePath),
 		type: "allDay",
-		start: toInternalISO(parsed.date.startOf("day")),
+		start: toInternalISO(anchor.startOf("day")),
 		allDay: true,
 		skipped: metadata.skip ?? false,
 		metadata,
-		meta: buildMeta(input),
+		meta: buildMeta(input, true),
 	};
 }
 
@@ -124,8 +146,35 @@ function buildUntrackedEvent(input: EventSchemaInput): UntrackedEvent | null {
 		virtualKind: "none" as const,
 		skipped: false as const,
 		metadata,
-		meta: buildMeta(input),
+		meta: buildMeta(input, false),
 	};
+}
+
+type TemporalKind = "timed" | "allDay" | "untracked";
+
+/**
+ * Resolves an event to timed, all-day, or untracked. Resolution order (first
+ * match wins):
+ *
+ *   1. `allDay === true` → all-day.
+ *   2. `allDay === false` → timed if a start value is present, else untracked.
+ *   3. start is `datetime` and end is absent-or-`datetime` → timed.
+ *   4. dateProp holds a `date` → all-day.
+ *   5. otherwise → untracked.
+ *
+ * Rules 3–5 classify by the value *type* of each temporal role (from
+ * `temporalKinds`): a datetime start drives a timed event, a date-only dateProp
+ * drives an all-day event. See docs/specs/2026-05-30-permissive-temporal-type-detection.md.
+ */
+export function resolveTemporalKind(input: EventSchemaInput): TemporalKind {
+	const { parsed, temporalKinds } = input;
+
+	if (parsed.allDay === true) return "allDay";
+	if (parsed.allDay === false) return parsed.start ? "timed" : "untracked";
+
+	if (temporalKinds.start === "datetime" && temporalKinds.end !== "date") return "timed";
+	if (temporalKinds.date === "date" && parsed.date) return "allDay";
+	return "untracked";
 }
 
 /**
@@ -141,10 +190,10 @@ export interface CalendarEventParser {
 export function createEventSchema(settings: SingleCalendarConfig): CalendarEventParser {
 	return {
 		parse(input) {
-			if (input.parsed.allDay === true) {
-				return buildAllDayEvent(input);
-			}
-			return buildTimedEvent(input, settings);
+			const kind = resolveTemporalKind(input);
+			if (kind === "allDay") return buildAllDayEvent(input);
+			if (kind === "timed") return buildTimedEvent(input, settings);
+			return null;
 		},
 		parseUntracked(input) {
 			return buildUntrackedEvent(input);
@@ -166,10 +215,16 @@ export function buildEventSchemaInput(
 ): EventSchemaInput {
 	const schema = createEventFrontmatterSchema(settings);
 	const parsed = schema.parse(args.frontmatter);
+	const temporalKinds: TemporalKinds = {
+		start: classifyDateLikeString(String(args.frontmatter[settings.startProp] ?? "")),
+		end: classifyDateLikeString(String(args.frontmatter[settings.endProp] ?? "")),
+		date: classifyDateLikeString(String(args.frontmatter[settings.dateProp] ?? "")),
+	};
 	return {
 		filePath: args.filePath,
 		frontmatter: args.frontmatter,
 		folder: args.folder,
 		parsed,
+		temporalKinds,
 	};
 }

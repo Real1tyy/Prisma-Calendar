@@ -192,14 +192,16 @@ describe("Parser", () => {
 	});
 
 	describe("date parsing", () => {
-		it("should parse multiple date formats", () => {
-			const formats = ["2024-01-15", "2024-01-15 14:30"];
+		it("should parse multiple date formats in their matching temporal role", () => {
+			// A datetime belongs in the start property (→ timed); a date-only value
+			// belongs in the date property (→ all-day). Both must yield 2024-01-15.
+			const cases = [{ frontmatter: { start: "2024-01-15 14:30" } }, { frontmatter: { Date: "2024-01-15" } }];
 
-			formats.forEach((dateStr) => {
+			cases.forEach(({ frontmatter }) => {
 				const source = createRawEventSource({
 					filePath: "Events/test.md",
 					mtime: Date.now(),
-					frontmatter: { start: dateStr },
+					frontmatter,
 					folder: "Events",
 					isAllDay: false,
 					isUntracked: false,
@@ -292,12 +294,12 @@ describe("Parser", () => {
 	});
 
 	describe("all-day event detection", () => {
-		it("should detect all-day events from date-only format", () => {
+		it("should detect all-day events from a date-only value in the date property without a flag", () => {
 			const source = createRawEventSource({
 				filePath: "Events/holiday.md",
 				mtime: Date.now(),
 				frontmatter: {
-					start: "2024-01-15",
+					Date: "2024-01-15",
 				},
 				folder: "Events",
 				isAllDay: false,
@@ -307,7 +309,23 @@ describe("Parser", () => {
 			const events = parser.parseEventSource(source);
 
 			expect(events).toBeDefined();
-			expect(events!.allDay).toBe(false);
+			expect(events!.allDay).toBe(true);
+			expect(isAllDayEvent(events!)).toBe(true);
+		});
+
+		it("should leave a date-only value in the start property untracked (belongs in the date property)", () => {
+			const source = createRawEventSource({
+				filePath: "Events/stray.md",
+				mtime: Date.now(),
+				frontmatter: {
+					start: "2024-01-15",
+				},
+				folder: "Events",
+				isAllDay: false,
+				isUntracked: false,
+			});
+
+			expect(parser.parseEventSource(source)).toBeNull();
 		});
 
 		it("should detect timed events from datetime format", () => {
