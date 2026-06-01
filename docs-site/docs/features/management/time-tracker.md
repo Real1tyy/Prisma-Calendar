@@ -109,8 +109,9 @@ The same applies to the **▶ continue** button that appears after **⏹ stop**:
 **Quick Category Assignment**: `Ctrl/Cmd+P` → "Assign categories to minimized event" - Update categories without restoring the full modal
 
 **Auto-Updates**: While tracking time with a minimized modal, the modal automatically stays in sync with the event file:
-- **File Changes**: If you edit the event from another window (e.g., rename the file, change properties), the minimized modal updates automatically with the new information
-- **File Deletion**: If the event file is deleted, the minimized modal is cleared automatically with a notification
+- **File Changes**: If you edit the event from another window (change properties, etc.), the minimized modal updates automatically with the new information
+- **Renames & Moves**: Renaming or moving the tracked note keeps the session running and follows the note to its new path
+- **File Deletion**: If the event file is genuinely deleted, the minimized modal is cleared automatically with a notification
 - **Smart Tracking**: Updates only occur when the stopwatch is actively running or paused, ensuring preset saves aren't overwritten
 
 **Auto-Stop on New Event**: When you use "Create new event with stopwatch" while a previous stopwatch event is minimized and running, the previous event is automatically stopped and saved before the new one is created. This lets you chain event tracking sessions seamlessly — just press the shortcut to start tracking a new activity.

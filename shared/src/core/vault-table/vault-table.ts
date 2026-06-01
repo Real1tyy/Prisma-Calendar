@@ -689,7 +689,7 @@ export class VaultTable<
 
 	private handleIndexerEvent(event: IndexerEvent): void {
 		if (event.type === "file-deleted") {
-			this.handleFileDeleted(event.filePath);
+			this.handleFileDeleted(event.filePath, event.isRename);
 			return;
 		}
 
@@ -756,22 +756,35 @@ export class VaultTable<
 					newRow,
 					...(event.frontmatterDiff !== undefined ? { diff: event.frontmatterDiff } : {}),
 					contentChanged,
+					...(event.oldPath !== undefined ? { oldPath: event.oldPath } : {}),
 				});
 			}
 		} else {
 			this.insertRow(newRow);
-			this.eventsSubject.next({ type: "row-created", id, filePath, row: newRow });
+			this.eventsSubject.next({
+				type: "row-created",
+				id,
+				filePath,
+				row: newRow,
+				...(event.oldPath !== undefined ? { oldPath: event.oldPath } : {}),
+			});
 		}
 	}
 
-	private handleFileDeleted(filePath: string): void {
+	private handleFileDeleted(filePath: string, isRename?: boolean): void {
 		this.persistentCache?.delete(filePath);
 
 		const existing = this.rowByFileName.get(this.toRowKey(filePath));
 		if (!existing) return;
 
 		this.removeRow(existing.id);
-		this.eventsSubject.next({ type: "row-deleted", id: existing.id, filePath, oldRow: existing });
+		this.eventsSubject.next({
+			type: "row-deleted",
+			id: existing.id,
+			filePath,
+			oldRow: existing,
+			...(isRename !== undefined ? { isRename } : {}),
+		});
 	}
 
 	/**

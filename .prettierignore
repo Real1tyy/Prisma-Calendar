@@ -17,3 +17,8 @@ docs-site
 # pixel-diff assertions. Reformatting them changes byte output and trips
 # the diff. Treated the same as snapshot files above.
 **/tests/visual/fixtures/**
+
+# Vendored Obsidian community themes, copied verbatim for the preview tool's
+# theme picker. They are third-party artifacts we don't author, and some trip
+# Prettier's CSS parser. Keep them byte-for-byte as shipped upstream.
+tools/obsidian-preview/public/themes/**

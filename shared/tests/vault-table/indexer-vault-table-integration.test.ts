@@ -250,8 +250,17 @@ describe("Indexer → VaultTable reactivity (integration)", () => {
 		const types = events.map((e) => e.type);
 		expect(types).toContain("row-deleted");
 		expect(types).toContain("row-created");
-		expect(events.find((e) => e.type === "row-deleted")!.filePath).toBe(oldPath);
-		expect(events.find((e) => e.type === "row-created")!.filePath).toBe(newPath);
+
+		// The rename's two halves carry correlation metadata so path-keyed
+		// consumers (e.g. a running stopwatch tracking the old path) can rebind
+		// to the new path instead of treating the delete as a genuine removal.
+		const deleted = events.find((e) => e.type === "row-deleted")!;
+		expect(deleted.filePath).toBe(oldPath);
+		expect(deleted.type === "row-deleted" && deleted.isRename).toBe(true);
+
+		const created = events.find((e) => e.type === "row-created")!;
+		expect(created.filePath).toBe(newPath);
+		expect(created.type === "row-created" && created.oldPath).toBe(oldPath);
 	});
 
 	it("emits no row events when a rename's old and new paths are both out of scope", async () => {

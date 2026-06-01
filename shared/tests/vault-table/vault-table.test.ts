@@ -111,7 +111,8 @@ function createFileChangedEvent(
 	filePath: string,
 	frontmatter: Record<string, unknown>,
 	mtime = Date.now(),
-	oldFrontmatter?: Record<string, unknown>
+	oldFrontmatter?: Record<string, unknown>,
+	oldPath?: string
 ): IndexerEvent {
 	return {
 		type: "file-changed",
@@ -127,13 +128,15 @@ function createFileChangedEvent(
 		frontmatterDiff: oldFrontmatter
 			? { hasChanges: true, changes: [], added: [], modified: [], deleted: [] }
 			: undefined,
+		...(oldPath !== undefined ? { oldPath } : {}),
 	};
 }
 
-function createFileDeletedEvent(filePath: string): IndexerEvent {
+function createFileDeletedEvent(filePath: string, isRename?: boolean): IndexerEvent {
 	return {
 		type: "file-deleted",
 		filePath,
+		...(isRename !== undefined ? { isRename } : {}),
 	};
 }
 
@@ -419,6 +422,175 @@ describe("VaultTable", () => {
 			expect(table.get("new-name")).toBeDefined();
 
 			table.destroy();
+		});
+
+		// The indexer represents a rename as two events: a `file-deleted` flagged
+		// `isRename` for the old path, then a `file-changed` carrying `oldPath` for
+		// the new path. VaultTable must forward both fields onto its row events so
+		// path-keyed consumers (e.g. a running stopwatch tracking a file by path,
+		// across every plugin) can rebind to the new path instead of mistaking the
+		// rename for a deletion. Dropping either field at this seam is the regression
+		// that silently broke stopwatch tracking on rename.
+		describe("rename correlation metadata", () => {
+			it("forwards isRename onto row-deleted for the old-path half of a rename", async () => {
+				const { config, fileStore } = createTestConfig();
+				const table = new VaultTable(config);
+				fileStore.set("test-table/old.md", createMockTFile("test-table/old.md", 100));
+				await table.start();
+
+				emitIndexerEvent(createFileChangedEvent("test-table/old.md", { title: "A", priority: 0, tags: [] }, 100));
+				await vi.waitFor(() => expect(table.count()).toBe(1));
+
+				const events: VaultTableEvent<TestData>[] = [];
+				table.events$.subscribe((e) => events.push(e));
+
+				emitIndexerEvent(createFileDeletedEvent("test-table/old.md", true));
+
+				expect(events).toHaveLength(1);
+				const deleted = events[0];
+				expect(deleted.type).toBe("row-deleted");
+				expect(deleted.type === "row-deleted" && deleted.isRename).toBe(true);
+
+				table.destroy();
+			});
+
+			it("leaves isRename absent on row-deleted for a genuine deletion", async () => {
+				const { config, fileStore } = createTestConfig();
+				const table = new VaultTable(config);
+				fileStore.set("test-table/old.md", createMockTFile("test-table/old.md", 100));
+				await table.start();
+
+				emitIndexerEvent(createFileChangedEvent("test-table/old.md", { title: "A", priority: 0, tags: [] }, 100));
+				await vi.waitFor(() => expect(table.count()).toBe(1));
+
+				const events: VaultTableEvent<TestData>[] = [];
+				table.events$.subscribe((e) => events.push(e));
+
+				emitIndexerEvent(createFileDeletedEvent("test-table/old.md"));
+
+				expect(events).toHaveLength(1);
+				const deleted = events[0];
+				expect(deleted.type).toBe("row-deleted");
+				expect(deleted.type === "row-deleted" && deleted.isRename).toBeUndefined();
+
+				table.destroy();
+			});
+
+			it("forwards oldPath onto row-created for the new-path half of a rename", async () => {
+				const { config, fileStore } = createTestConfig();
+				const table = new VaultTable(config);
+				fileStore.set("test-table/new.md", createMockTFile("test-table/new.md", 200));
+				await table.start();
+
+				const events: VaultTableEvent<TestData>[] = [];
+				table.events$.subscribe((e) => events.push(e));
+
+				emitIndexerEvent(
+					createFileChangedEvent(
+						"test-table/new.md",
+						{ title: "A", priority: 0, tags: [] },
+						200,
+						undefined,
+						"test-table/old.md"
+					)
+				);
+
+				await vi.waitFor(() => expect(table.get("new")).toBeDefined());
+
+				const created = events.find((e) => e.type === "row-created")!;
+				expect(created).toBeDefined();
+				expect(created.type === "row-created" && created.oldPath).toBe("test-table/old.md");
+
+				table.destroy();
+			});
+
+			it("forwards oldPath onto row-updated when the new path already has a row", async () => {
+				const { config, fileStore } = createTestConfig();
+				const table = new VaultTable(config);
+				fileStore.set("test-table/new.md", createMockTFile("test-table/new.md", 100));
+				await table.start();
+
+				emitIndexerEvent(createFileChangedEvent("test-table/new.md", { title: "A", priority: 0, tags: [] }, 100));
+				await vi.waitFor(() => expect(table.count()).toBe(1));
+
+				const events: VaultTableEvent<TestData>[] = [];
+				table.events$.subscribe((e) => events.push(e));
+
+				emitIndexerEvent(
+					createFileChangedEvent(
+						"test-table/new.md",
+						{ title: "B", priority: 0, tags: [] },
+						200,
+						{ title: "A", priority: 0, tags: [] },
+						"test-table/old.md"
+					)
+				);
+
+				await vi.waitFor(() => expect(table.get("new")!.data.title).toBe("B"));
+
+				const updated = events.find((e) => e.type === "row-updated")!;
+				expect(updated).toBeDefined();
+				expect(updated.type === "row-updated" && updated.oldPath).toBe("test-table/old.md");
+
+				table.destroy();
+			});
+
+			it("does not leak oldPath onto a normal change with no rename", async () => {
+				const { config, fileStore } = createTestConfig();
+				const table = new VaultTable(config);
+				fileStore.set("test-table/note.md", createMockTFile("test-table/note.md", 100));
+				await table.start();
+
+				const events: VaultTableEvent<TestData>[] = [];
+				table.events$.subscribe((e) => events.push(e));
+
+				emitIndexerEvent(createFileChangedEvent("test-table/note.md", { title: "A", priority: 0, tags: [] }, 100));
+
+				await vi.waitFor(() => expect(table.get("note")).toBeDefined());
+
+				const created = events.find((e) => e.type === "row-created")!;
+				expect(created).toBeDefined();
+				expect(created.type === "row-created" && created.oldPath).toBeUndefined();
+
+				table.destroy();
+			});
+
+			it("preserves both halves end to end: row-deleted{isRename} then row-created{oldPath}", async () => {
+				const { config, fileStore } = createTestConfig();
+				const table = new VaultTable(config);
+				fileStore.set("test-table/old.md", createMockTFile("test-table/old.md", 100));
+				await table.start();
+
+				emitIndexerEvent(createFileChangedEvent("test-table/old.md", { title: "A", priority: 0, tags: [] }, 100));
+				await vi.waitFor(() => expect(table.count()).toBe(1));
+
+				const events: VaultTableEvent<TestData>[] = [];
+				table.events$.subscribe((e) => events.push(e));
+
+				emitIndexerEvent(createFileDeletedEvent("test-table/old.md", true));
+				fileStore.set("test-table/new.md", createMockTFile("test-table/new.md", 200));
+				emitIndexerEvent(
+					createFileChangedEvent(
+						"test-table/new.md",
+						{ title: "A", priority: 0, tags: [] },
+						200,
+						undefined,
+						"test-table/old.md"
+					)
+				);
+
+				await vi.waitFor(() => expect(table.get("new")).toBeDefined());
+
+				const deleted = events.find((e) => e.type === "row-deleted")!;
+				expect(deleted.type === "row-deleted" && deleted.isRename).toBe(true);
+				expect(deleted.filePath).toBe("test-table/old.md");
+
+				const created = events.find((e) => e.type === "row-created")!;
+				expect(created.type === "row-created" && created.oldPath).toBe("test-table/old.md");
+				expect(created.filePath).toBe("test-table/new.md");
+
+				table.destroy();
+			});
 		});
 
 		it("should deduplicate indexer events with same mtime", async () => {

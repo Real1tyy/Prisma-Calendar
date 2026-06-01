@@ -126,7 +126,7 @@ export interface InsertVaultRow<TData> {
 }
 
 export type VaultTableEvent<TData, TRow = VaultRow<TData>> =
-	| { type: "row-created"; id: string; filePath: string; row: TRow }
+	| { type: "row-created"; id: string; filePath: string; row: TRow; oldPath?: string }
 	| {
 			type: "row-updated";
 			id: string;
@@ -135,5 +135,10 @@ export type VaultTableEvent<TData, TRow = VaultRow<TData>> =
 			newRow: TRow;
 			diff?: FrontmatterDiff;
 			contentChanged: boolean;
+			oldPath?: string;
 	  }
-	| { type: "row-deleted"; id: string; filePath: string; oldRow: TRow };
+	// `isRename` marks a deletion that is the old-path half of a rename, so
+	// consumers tracking the file by path can rebind instead of treating it as
+	// a genuine delete. The matching new-path half arrives as a create/update
+	// carrying `oldPath`.
+	| { type: "row-deleted"; id: string; filePath: string; oldRow: TRow; isRename?: boolean };

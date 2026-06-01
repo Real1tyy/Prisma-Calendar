@@ -819,4 +819,64 @@ describe("MinimizedModalManager", () => {
 			expect(MinimizedModalManager.getState()?.formState.end).toBe("2026-05-20T09:05");
 		});
 	});
+
+	describe("file rename — rebind tracking instead of dropping the session", () => {
+		const OLD_PATH = "Events/old-meeting.md";
+		const NEW_PATH = "Events/new-meeting.md";
+
+		const saveRunningEditState = (filePath: string) =>
+			MinimizedModalManager.saveState(
+				createMockState({
+					modalType: "edit",
+					filePath,
+					title: "Old Title",
+					stopwatch: createMockStopwatchSnapshot({ state: "running", startTime: Date.now() }),
+				}),
+				mockBundle as CalendarBundle
+			);
+
+		const emitRenameTo = (newPath: string, title: string) =>
+			mockIndexerEventsSubject.next({
+				type: "file-changed",
+				filePath: newPath,
+				oldPath: OLD_PATH,
+				source: {
+					filePath: newPath,
+					mtime: 1,
+					frontmatter: {
+						Title: title,
+						"Start Date": "2026-05-20T10:00:00",
+						"End Date": "2026-05-20T11:00:00",
+						"All Day": false,
+					},
+					folder: "Events",
+					isAllDay: false,
+					isUntracked: false,
+					metadata: { categories: ["Work"], location: "Room 1", participants: ["Alice"] },
+				},
+			});
+
+		it("keeps the session and rebinds to the new path across a rename's two halves", () => {
+			saveRunningEditState(OLD_PATH);
+
+			// Old-path half of the rename carries isRename — must NOT clear.
+			mockIndexerEventsSubject.next({ type: "file-deleted", filePath: OLD_PATH, isRename: true });
+			expect(MinimizedModalManager.hasMinimizedModal()).toBe(true);
+
+			// New-path half carries oldPath — matches via oldPath and rebinds.
+			emitRenameTo(NEW_PATH, "Renamed Title");
+
+			const state = MinimizedModalManager.getState();
+			expect(state?.filePath).toBe(NEW_PATH);
+			expect(state?.title).toBe("Renamed Title");
+		});
+
+		it("still clears when the tracked file is genuinely deleted (no isRename)", () => {
+			saveRunningEditState(OLD_PATH);
+
+			mockIndexerEventsSubject.next({ type: "file-deleted", filePath: OLD_PATH });
+
+			expect(MinimizedModalManager.hasMinimizedModal()).toBe(false);
+		});
+	});
 });

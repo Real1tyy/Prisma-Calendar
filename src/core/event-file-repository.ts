@@ -272,11 +272,11 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 	private async handleTableEvent(event: VaultTableEvent<Frontmatter>): Promise<void> {
 		switch (event.type) {
 			case "row-created": {
-				await this.emitFileEvents(event.row, undefined, undefined);
+				await this.emitFileEvents(event.row, undefined, undefined, event.oldPath);
 				break;
 			}
 			case "row-updated": {
-				await this.emitFileEvents(event.newRow, event.oldRow.data, event.diff);
+				await this.emitFileEvents(event.newRow, event.oldRow.data, event.diff, event.oldPath);
 				break;
 			}
 			case "row-deleted": {
@@ -284,6 +284,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 					type: "file-deleted",
 					filePath: event.filePath,
 					oldFrontmatter: event.oldRow.data,
+					...(event.isRename !== undefined ? { isRename: event.isRename } : {}),
 				});
 				break;
 			}
@@ -293,7 +294,8 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 	private async emitFileEvents(
 		row: VaultRow<Frontmatter>,
 		oldFrontmatter: Frontmatter | undefined,
-		frontmatterDiff: FrontmatterDiff | undefined
+		frontmatterDiff: FrontmatterDiff | undefined,
+		oldPath?: string
 	): Promise<void> {
 		let frontmatter = row.data;
 		const settings = this.settings;
@@ -358,6 +360,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 				source,
 				...(oldFrontmatter ? { oldFrontmatter } : {}),
 				...(frontmatterDiff ? { frontmatterDiff } : {}),
+				...(oldPath !== undefined ? { oldPath } : {}),
 			});
 		}
 	}

@@ -296,6 +296,47 @@ describe("EventFileRepository", () => {
 			expect(fileChanged!.oldFrontmatter!["Title"]).toBe("Team Meeting");
 		});
 
+		it("forwards rename correlation metadata so a tracked file's rename is not seen as a deletion", async () => {
+			// Renaming an event file surfaces as a row-deleted (old path) + row-created
+			// (new path) pair from the table. A minimized modal with a running stopwatch
+			// tracks the file by path; if the delete arrives without `isRename` and the
+			// create without `oldPath`, the modal clears itself as if the event were
+			// deleted and the in-progress time tracking is lost.
+			const events: IndexerEvent[] = [];
+			repo.events$.subscribe((e) => events.push(e));
+			await repo.start();
+
+			const oldRow = repo.mockTable.seed("old-meeting", createTimedFrontmatter());
+			const newRow = repo.mockTable.seed("new-meeting", createTimedFrontmatter());
+
+			repo.mockTable.emitEvent({
+				type: "row-deleted",
+				id: "old-meeting",
+				filePath: oldRow.filePath,
+				oldRow,
+				isRename: true,
+			});
+			repo.mockTable.emitEvent({
+				type: "row-created",
+				id: "new-meeting",
+				filePath: newRow.filePath,
+				row: newRow,
+				oldPath: oldRow.filePath,
+			});
+
+			await vi.waitFor(() => expect(events.some((e) => e.type === "file-changed")).toBe(true));
+
+			const deleted = events.find((e) => e.type === "file-deleted");
+			expect(deleted).toBeDefined();
+			expect(deleted!.filePath).toBe(oldRow.filePath);
+			expect(deleted!.isRename).toBe(true);
+
+			const changed = events.find((e) => e.type === "file-changed");
+			expect(changed).toBeDefined();
+			expect(changed!.filePath).toBe(newRow.filePath);
+			expect(changed!.oldPath).toBe(oldRow.filePath);
+		});
+
 		it("should emit indexingComplete when table is ready", async () => {
 			const readyStates: boolean[] = [];
 			repo.indexingComplete$.subscribe((r) => readyStates.push(r));
