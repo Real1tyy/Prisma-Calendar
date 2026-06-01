@@ -1,7 +1,7 @@
 import { DateTime } from "luxon";
 import { z } from "zod";
 
-import { parseDateTimeString, parseTimeString } from "../date/date";
+import { parseDateTimeString, parseTimeString, toSafeString } from "../date/date";
 import { parseIntoList } from "../list-utils";
 
 export type ISO = string;
@@ -115,7 +115,7 @@ export const optionalNonNegativeInt = z
 	.unknown()
 	.transform((v) => {
 		if (v == null) return undefined;
-		const n = Number.parseInt(String(v), 10);
+		const n = Number.parseInt(toSafeString(v) ?? "", 10);
 		return !Number.isNaN(n) && n >= 0 ? n : undefined;
 	})
 	.pipe(z.number().optional());

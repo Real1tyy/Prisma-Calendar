@@ -1,5 +1,6 @@
 import type { App, CachedMetadata, TFile } from "obsidian";
 
+import { toSafeString } from "../../utils/date/date";
 import type { Frontmatter } from "./frontmatter-diff";
 
 /**
@@ -42,7 +43,7 @@ export function serializeFrontmatterValue(value: unknown): string {
 		return JSON.stringify(value);
 	}
 
-	return String(value);
+	return toSafeString(value) ?? "";
 }
 
 /**

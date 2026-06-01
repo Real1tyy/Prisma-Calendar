@@ -322,9 +322,7 @@ export function formatMsToMMSS(ms: number): string {
 
 export function parseAsLocalDate(dateString: string): Date | null {
 	try {
-		const localDateString = String(dateString)
-			.trim()
-			.replace(/([+-]\d{2}:?\d{2}|Z)$/i, "");
+		const localDateString = dateString.trim().replace(/([+-]\d{2}:?\d{2}|Z)$/i, "");
 		const date = new Date(localDateString);
 		if (Number.isNaN(date.getTime())) return null;
 		return date;

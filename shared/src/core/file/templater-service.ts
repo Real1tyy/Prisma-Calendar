@@ -69,7 +69,7 @@ export class TemplaterService {
 		if (useTemplater && shouldUseTemplate(this.app, templatePath)) {
 			const templateFile = await createFromTemplate(
 				this.app,
-				templatePath!,
+				templatePath,
 				targetDirectory,
 				finalFilename,
 				false,

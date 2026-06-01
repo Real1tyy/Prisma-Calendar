@@ -134,7 +134,7 @@ export class PieChartBuilder {
 								const total = visibleTotal(context.chart);
 								const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : "0.0";
 								if (tooltipFormatter) {
-									return tooltipFormatter(String(context.label), value, percentage);
+									return tooltipFormatter(context.label, value, percentage);
 								}
 								return `${context.label}: ${value} (${percentage}%)`;
 							},

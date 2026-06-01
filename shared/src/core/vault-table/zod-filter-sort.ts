@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { $ZodType } from "zod/v4/core";
 
+import { toSafeString } from "../../utils/date/date";
 import {
 	resolveFieldType,
 	schemaToJSONSchema,
@@ -150,8 +151,8 @@ export function parseFilterParams(query: Record<string, string>, fields: FilterF
 			const resolved = resolveFieldAndOperator(rawKey, fieldMap);
 			if (!resolved) return null;
 
-			const fieldDef = fieldMap.get(resolved.field)!;
-			if (!fieldDef.operators.includes(resolved.operator)) return null;
+			const fieldDef = fieldMap.get(resolved.field);
+			if (!fieldDef || !fieldDef.operators.includes(resolved.operator)) return null;
 
 			return {
 				field: resolved.field,
@@ -201,20 +202,21 @@ function matchesFilter(item: Record<string, unknown>, filter: ParsedFilter): boo
 	if (val === undefined || val === null) return false;
 
 	const filterVal = filter.value;
+	const valStr = toSafeString(val) ?? "";
 
 	switch (filter.operator) {
 		case "eq":
-			return String(val) === String(filterVal);
+			return valStr === String(filterVal);
 		case "neq":
-			return String(val) !== String(filterVal);
+			return valStr !== String(filterVal);
 		case "contains":
-			return String(val).toLowerCase().includes(String(filterVal).toLowerCase());
+			return valStr.toLowerCase().includes(String(filterVal).toLowerCase());
 		case "startsWith":
-			return String(val).toLowerCase().startsWith(String(filterVal).toLowerCase());
+			return valStr.toLowerCase().startsWith(String(filterVal).toLowerCase());
 		case "endsWith":
-			return String(val).toLowerCase().endsWith(String(filterVal).toLowerCase());
+			return valStr.toLowerCase().endsWith(String(filterVal).toLowerCase());
 		case "in":
-			return String(filterVal).split(",").includes(String(val));
+			return String(filterVal).split(",").includes(valStr);
 		case "gt":
 		case "after":
 			return compareValues(val, filterVal) > 0;

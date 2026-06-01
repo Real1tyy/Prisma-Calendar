@@ -22,6 +22,9 @@ export function parsePositiveInt(value: unknown, fallback: number): number {
 	if (value === undefined || value === null) {
 		return fallback;
 	}
-	const parsed = typeof value === "number" ? Math.floor(value) : Number.parseInt(String(value), 10);
+	const parsed =
+		typeof value === "number"
+			? Math.floor(value)
+			: Number.parseInt(typeof value === "string" ? value : Array.isArray(value) ? value.join(",") : "", 10);
 	return !Number.isNaN(parsed) && parsed > 0 ? parsed : fallback;
 }

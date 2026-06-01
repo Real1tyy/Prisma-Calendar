@@ -80,14 +80,15 @@ export function createMappedSchema<TShape extends z.ZodRawShape>(
 	if (cached) return cached as unknown as SerializableSchema<TData>;
 
 	const remapFromRaw = (raw: Record<string, unknown>): Record<string, unknown> => {
-		const result: Record<string, unknown> = { ...raw };
+		let result: Record<string, unknown> = { ...raw };
 		for (const [internalKey, settingsKey] of entries) {
 			const externalKey = settings[settingsKey] as string;
 			if (externalKey in raw) {
 				result[internalKey] = raw[externalKey];
 			}
 			if (externalKey !== internalKey) {
-				delete result[externalKey];
+				const { [externalKey]: _drop, ...rest } = result;
+				result = rest;
 			}
 		}
 		return result;

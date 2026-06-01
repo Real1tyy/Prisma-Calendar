@@ -51,7 +51,7 @@ const ExclusiveToggleRow = memo(function ExclusiveToggleRow({ store, self, other
 
 	return (
 		<SettingItem name={self.name} description={self.description}>
-			<Toggle value={Boolean(selfValue)} onChange={handleChange} />
+			<Toggle value={selfValue} onChange={handleChange} />
 		</SettingItem>
 	);
 });

@@ -67,7 +67,7 @@ function renderConfirmation(el: HTMLElement, config: ConfirmationModalConfig, cl
 	cancelButton.addEventListener("click", () => {
 		const result = config.onCancel?.();
 		if (result instanceof Promise) {
-			void result.catch((error) => console.error("[ConfirmationModal] onCancel error:", error));
+			void result.catch((error: unknown) => console.error("[ConfirmationModal] onCancel error:", error));
 		}
 		close();
 	});
@@ -78,7 +78,7 @@ function renderConfirmation(el: HTMLElement, config: ConfirmationModalConfig, cl
 	confirmButton.addEventListener("click", () => {
 		void Promise.resolve(config.onConfirm())
 			.then(() => close())
-			.catch((error) => {
+			.catch((error: unknown) => {
 				console.error("[ConfirmationModal] onConfirm error:", error);
 				close();
 			});

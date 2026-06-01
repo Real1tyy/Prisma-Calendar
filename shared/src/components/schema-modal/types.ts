@@ -88,8 +88,8 @@ export interface FieldOverride {
 }
 
 export interface UpsertHandler<T> {
-	create: (name: string, values: T) => unknown | Promise<unknown>;
-	update: (name: string, values: T) => unknown | Promise<unknown>;
+	create: (name: string, values: T) => unknown;
+	update: (name: string, values: T) => unknown;
 	entityName: string;
 }
 
@@ -110,7 +110,7 @@ interface SchemaModalConfigBase<T> {
 }
 
 interface SchemaModalWithSubmit<T> extends SchemaModalConfigBase<T> {
-	onSubmit: (name: string, values: T) => void | false | Promise<void | false>;
+	onSubmit: (name: string, values: T) => unknown;
 	upsert?: never;
 }
 

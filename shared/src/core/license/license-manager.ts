@@ -198,12 +198,12 @@ export class LicenseManager {
 					return;
 				case "SEAT_LIMIT_REACHED": {
 					this.clearCachedToken();
-					const limit = data.activations?.limit ?? this.status.activationsLimit;
+					const limit = data.activations.limit;
 					this.updateStatus(
 						"device_limit",
 						`Device limit reached (${limit} devices). Deactivate a device to free a seat.`,
 						{
-							activationsCurrent: data.activations?.current ?? this.status.activationsCurrent,
+							activationsCurrent: data.activations.current,
 							activationsLimit: limit,
 						}
 					);
@@ -326,7 +326,11 @@ export class LicenseManager {
 	private maybeHeartbeat(): void {
 		if (this.disposed || this.heartbeatJitterId !== null) return;
 		if (!this.getLicenseKeySecretName()) return;
-		if (typeof navigator !== "undefined" && navigator.onLine === false) return;
+		// Only skip when the browser reports *definitively* offline. `onLine` can be
+		// absent (non-DOM/partial navigator), and an unknown state must not suppress
+		// re-verification — hence the explicit `=== false`, not `!onLine`.
+		const onLine: boolean | undefined = typeof navigator === "undefined" ? undefined : navigator.onLine;
+		if (onLine === false) return;
 		if (Date.now() - this.lastVerifyAttemptAt < HEARTBEAT_INTERVAL_MS) return;
 
 		const jitter = Math.floor(Math.random() * HEARTBEAT_JITTER_MS);
@@ -360,10 +364,10 @@ export class LicenseManager {
 		return id;
 	}
 
-	private async getLicenseKey(): Promise<string | null> {
+	private getLicenseKey(): Promise<string | null> {
 		const secretName = this.getLicenseKeySecretName();
-		if (!secretName) return null;
-		return this.app.secretStorage.getSecret(secretName);
+		if (!secretName) return Promise.resolve(null);
+		return Promise.resolve(this.app.secretStorage.getSecret(secretName));
 	}
 
 	private async loadCachedToken(): Promise<void> {

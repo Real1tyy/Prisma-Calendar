@@ -1,5 +1,6 @@
 import { Notice, Setting } from "obsidian";
 
+import { describeError } from "../../utils/errors";
 import type { ComponentContext } from "../component-renderer/types";
 import { renderSchemaForm } from "./form-renderer";
 import type { SchemaModalConfig, UpsertHandler } from "./types";
@@ -23,7 +24,7 @@ async function executeUpsert<T>(upsert: UpsertHandler<T>, isEdit: boolean, name:
 			new Notice(`${upsert.entityName} "${name}" created.`);
 		}
 	} catch (error) {
-		new Notice(`Error: ${error}`);
+		new Notice(`Error: ${describeError(error)}`);
 	}
 }
 
@@ -44,14 +45,15 @@ export function createSchemaFormRenderer<T>(config: SchemaModalConfig<T>) {
 			renderNameField(el, nameRef, config as SchemaModalConfig<unknown>);
 		}
 
+		const extraFields = config.extraFields;
 		const handle = renderSchemaForm(el, {
 			shape: config.shape,
 			prefix: "",
 			app: config.app,
 			fieldOverrides: config.fieldOverrides,
 			existing: config.existing?.data,
-			extraFields: config.extraFields
-				? (fieldEl, values, setValues) => config.extraFields!(fieldEl, values, ctx, setValues)
+			extraFields: extraFields
+				? (fieldEl, values, setValues) => extraFields(fieldEl, values, ctx, setValues)
 				: undefined,
 		});
 

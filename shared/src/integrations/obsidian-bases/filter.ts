@@ -13,104 +13,106 @@ import type {
 	ReverseContainsFilter,
 } from "./schema";
 
-export class Filter {
+function compare(property: string, operator: ComparisonOperator, value: FilterValue): NoteComparisonFilter {
+	return { type: "noteComparison", property, operator, value };
+}
+
+export const Filter = {
 	// ── Note property comparisons ───────────────────────────────────────
 
-	static compare(property: string, operator: ComparisonOperator, value: FilterValue): NoteComparisonFilter {
-		return { type: "noteComparison", property, operator, value };
-	}
+	compare,
 
-	static eq(property: string, value: FilterValue): NoteComparisonFilter {
-		return Filter.compare(property, "==", value);
-	}
+	eq(property: string, value: FilterValue): NoteComparisonFilter {
+		return compare(property, "==", value);
+	},
 
-	static neq(property: string, value: FilterValue): NoteComparisonFilter {
-		return Filter.compare(property, "!=", value);
-	}
+	neq(property: string, value: FilterValue): NoteComparisonFilter {
+		return compare(property, "!=", value);
+	},
 
-	static gt(property: string, value: FilterValue): NoteComparisonFilter {
-		return Filter.compare(property, ">", value);
-	}
+	gt(property: string, value: FilterValue): NoteComparisonFilter {
+		return compare(property, ">", value);
+	},
 
-	static gte(property: string, value: FilterValue): NoteComparisonFilter {
-		return Filter.compare(property, ">=", value);
-	}
+	gte(property: string, value: FilterValue): NoteComparisonFilter {
+		return compare(property, ">=", value);
+	},
 
-	static lt(property: string, value: FilterValue): NoteComparisonFilter {
-		return Filter.compare(property, "<", value);
-	}
+	lt(property: string, value: FilterValue): NoteComparisonFilter {
+		return compare(property, "<", value);
+	},
 
-	static lte(property: string, value: FilterValue): NoteComparisonFilter {
-		return Filter.compare(property, "<=", value);
-	}
+	lte(property: string, value: FilterValue): NoteComparisonFilter {
+		return compare(property, "<=", value);
+	},
 
 	// ── Contains filters ────────────────────────────────────────────────
 
-	static contains(property: string, value: string): NoteContainsFilter {
+	contains(property: string, value: string): NoteContainsFilter {
 		return { type: "noteContains", property, value };
-	}
+	},
 
-	static selfLink(property: string): NoteSelfLinkFilter {
+	selfLink(property: string): NoteSelfLinkFilter {
 		return { type: "noteSelfLink", property };
-	}
+	},
 
-	static reverseContains(property: string): ReverseContainsFilter {
+	reverseContains(property: string): ReverseContainsFilter {
 		return { type: "reverseContains", property };
-	}
+	},
 
 	// ── Link comparisons ───────────────────────────────────────────────
 
-	static eqLink(property: string, path: string, displayName?: string): NoteLinkComparisonFilter {
+	eqLink(property: string, path: string, displayName?: string): NoteLinkComparisonFilter {
 		return { type: "noteLinkComparison", property, operator: "==", path, ...(displayName && { displayName }) };
-	}
+	},
 
-	static neqLink(property: string, path: string, displayName?: string): NoteLinkComparisonFilter {
+	neqLink(property: string, path: string, displayName?: string): NoteLinkComparisonFilter {
 		return { type: "noteLinkComparison", property, operator: "!=", path, ...(displayName && { displayName }) };
-	}
+	},
 
 	// ── File filters ────────────────────────────────────────────────────
 
-	static inFolder(folder: string): FileFunctionFilter {
+	inFolder(folder: string): FileFunctionFilter {
 		return { type: "fileFunction", fn: "inFolder", args: [folder] };
-	}
+	},
 
-	static hasTag(...tags: string[]): FileFunctionFilter {
+	hasTag(...tags: string[]): FileFunctionFilter {
 		return { type: "fileFunction", fn: "hasTag", args: tags };
-	}
+	},
 
-	static hasLink(target: string): FileFunctionFilter {
+	hasLink(target: string): FileFunctionFilter {
 		return { type: "fileFunction", fn: "hasLink", args: [target] };
-	}
+	},
 
-	static hasProperty(property: string): FileFunctionFilter {
+	hasProperty(property: string): FileFunctionFilter {
 		return { type: "fileFunction", fn: "hasProperty", args: [property] };
-	}
+	},
 
-	static filePath(path: string): FilePathFilter {
+	filePath(path: string): FilePathFilter {
 		return { type: "filePath", operator: "==", path };
-	}
+	},
 
-	static filePathNot(path: string): FilePathFilter {
+	filePathNot(path: string): FilePathFilter {
 		return { type: "filePath", operator: "!=", path };
-	}
+	},
 
 	// ── Logical operators ───────────────────────────────────────────────
 
-	static and(...children: BaseFilterNode[]): BaseFilterGroup {
+	and(...children: BaseFilterNode[]): BaseFilterGroup {
 		return { type: "group", operator: "and", children };
-	}
+	},
 
-	static or(...children: BaseFilterNode[]): BaseFilterGroup {
+	or(...children: BaseFilterNode[]): BaseFilterGroup {
 		return { type: "group", operator: "or", children };
-	}
+	},
 
-	static not(...children: BaseFilterNode[]): BaseFilterGroup {
+	not(...children: BaseFilterNode[]): BaseFilterGroup {
 		return { type: "group", operator: "not", children };
-	}
+	},
 
 	// ── Escape hatch ────────────────────────────────────────────────────
 
-	static raw(expression: string): RawFilter {
+	raw(expression: string): RawFilter {
 		return { type: "raw", expression };
-	}
-}
+	},
+};

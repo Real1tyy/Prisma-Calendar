@@ -41,9 +41,9 @@ export class BoundedMap<K, V> {
 
 	get(key: K): V | undefined {
 		if (!this.store.has(key)) return undefined;
-		const value = this.store.get(key)!;
+		const value = this.store.get(key);
 		this.store.delete(key);
-		this.store.set(key, value);
+		this.store.set(key, value as V);
 		return value;
 	}
 

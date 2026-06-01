@@ -58,7 +58,7 @@ export const backupFrontmatter = async (app: App, file: TFile) => {
 export const restoreFrontmatter = async (app: App, file: TFile, original: Record<string, unknown>) =>
 	withFrontmatter(app, file, (fm) => {
 		for (const k of Object.keys(fm)) {
-			delete fm[k];
+			Reflect.deleteProperty(fm, k);
 		}
 		Object.assign(fm, original);
 	});
@@ -82,7 +82,7 @@ export const extractContentAfterFrontmatter = (fullContent: string): string => {
 	// Drop any blank lines between the closing fence and the body (the old `\s*`
 	// did this greedily); each iteration consumes a mandatory newline, so it
 	// stays linear.
-	return fullContent.substring(match.index! + match[0].length).replace(/^(?:[^\S\n]*\n)*/, "");
+	return fullContent.substring((match.index ?? 0) + match[0].length).replace(/^(?:[^\S\n]*\n)*/, "");
 };
 
 export async function ensureDirectory(app: App, directory: string): Promise<void> {

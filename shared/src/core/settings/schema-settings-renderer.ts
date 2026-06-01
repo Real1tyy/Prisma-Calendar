@@ -11,15 +11,11 @@ import type {
 } from "../../components/schema-modal/types";
 import { getNestedValue, setNestedValue } from "./schema-navigation";
 import type {
-	ArrayFieldOverride,
-	DropdownFieldOverride,
-	NumberFieldOverride,
 	SchemaSettingsConfig,
 	SchemaSettingsFieldOverride,
 	SchemaSettingsGroup,
 	SchemaSettingsSection,
 	SchemaSettingsSectionOverride,
-	TextFieldOverride,
 } from "./schema-settings-types";
 import type { SettingsStore } from "./settings-store";
 import { SettingsUIBuilder } from "./settings-ui-builder";
@@ -36,10 +32,10 @@ function resolveFieldDesc(descriptor: SchemaFieldDescriptor, override?: SchemaSe
 	return override?.desc ?? descriptor.description ?? "";
 }
 
-function isOverrideType<T extends SchemaSettingsFieldOverride>(
+function isOverrideType<T extends string>(
 	override: SchemaSettingsFieldOverride | undefined,
-	type: string
-): override is T {
+	type: T
+): override is Extract<SchemaSettingsFieldOverride, { type: T }> {
 	return override !== undefined && "type" in override && override.type === type;
 }
 
@@ -68,7 +64,7 @@ function renderFieldFromDescriptor(
 		...(override?.onChanged !== undefined ? { onChanged: override.onChanged } : {}),
 	};
 
-	if (isOverrideType<DropdownFieldOverride>(override, "dropdown")) {
+	if (isOverrideType(override, "dropdown")) {
 		uiBuilder.addDropdown(containerEl, { ...baseConfig, options: override.options });
 		return;
 	}
@@ -92,7 +88,7 @@ function renderFieldFromDescriptor(
 			break;
 		case "date":
 		case "datetime": {
-			const textOverride = isOverrideType<TextFieldOverride>(override, "text") ? override : undefined;
+			const textOverride = isOverrideType(override, "text") ? override : undefined;
 			uiBuilder.addText(containerEl, {
 				...baseConfig,
 				placeholder: textOverride?.placeholder ?? (descriptor.type === "date" ? "YYYY-MM-DD" : "YYYY-MM-DDTHH:mm"),
@@ -108,7 +104,7 @@ function renderStringSetting(
 	override: SchemaSettingsFieldOverride | undefined,
 	uiBuilder: SettingsUIBuilder<ZodObject<ZodRawShape>>
 ): void {
-	const textOverride = isOverrideType<TextFieldOverride>(override, "text") ? override : undefined;
+	const textOverride = isOverrideType(override, "text") ? override : undefined;
 	uiBuilder.addText(containerEl, {
 		...baseConfig,
 		...(textOverride?.placeholder !== undefined ? { placeholder: textOverride.placeholder } : {}),
@@ -123,7 +119,7 @@ function renderNumberSetting(
 	override: SchemaSettingsFieldOverride | undefined,
 	uiBuilder: SettingsUIBuilder<ZodObject<ZodRawShape>>
 ): void {
-	const numberOverride = isOverrideType<NumberFieldOverride>(override, "number") ? override : undefined;
+	const numberOverride = isOverrideType(override, "number") ? override : undefined;
 	const min = numberOverride?.min ?? descriptor.min;
 	const max = numberOverride?.max ?? descriptor.max;
 	const step = numberOverride?.step;
@@ -153,7 +149,7 @@ function renderEnumSetting(
 	override: SchemaSettingsFieldOverride | undefined,
 	uiBuilder: SettingsUIBuilder<ZodObject<ZodRawShape>>
 ): void {
-	const dropdownOverride = isOverrideType<DropdownFieldOverride>(override, "dropdown") ? override : undefined;
+	const dropdownOverride = isOverrideType(override, "dropdown") ? override : undefined;
 	const options =
 		dropdownOverride?.options ??
 		descriptor.enumLabels ??
@@ -168,7 +164,7 @@ function renderArraySetting(
 	override: SchemaSettingsFieldOverride | undefined,
 	uiBuilder: SettingsUIBuilder<ZodObject<ZodRawShape>>
 ): void {
-	const arrayOverride = isOverrideType<ArrayFieldOverride>(override, "array") ? override : undefined;
+	const arrayOverride = isOverrideType(override, "array") ? override : undefined;
 	uiBuilder.addTextArray(containerEl, {
 		...baseConfig,
 		...(arrayOverride?.placeholder !== undefined ? { placeholder: arrayOverride.placeholder } : {}),
@@ -273,7 +269,7 @@ function renderFlatFields(
 
 export function renderSchemaSection<TSchema extends ZodObject<ZodRawShape>>(
 	containerEl: HTMLElement,
-	sectionSchema: ZodObject<ZodRawShape> | z.ZodTypeAny,
+	sectionSchema: ZodObject<ZodRawShape> | z.ZodType,
 	settingsStore: SettingsStore<TSchema>,
 	keyPrefix: string,
 	sectionConfig: SchemaSettingsSection,
@@ -308,7 +304,7 @@ function deriveAutoSections(
 	const excludeSet = new Set(exclude);
 
 	return Object.entries(rootShape)
-		.filter(([key, schema]) => !excludeSet.has(key) && unwrapToObject(schema as z.ZodTypeAny) !== undefined)
+		.filter(([key, schema]) => !excludeSet.has(key) && unwrapToObject(schema as z.ZodType) !== undefined)
 		.map(([key]) => {
 			const override = sectionOverrides[key];
 			return {
@@ -331,7 +327,7 @@ export function renderSchemaSettings<TSchema extends ZodObject<ZodRawShape>>(
 		config.sections ?? deriveAutoSections(rootShape, config.exclude ?? [], config.sectionOverrides ?? {});
 
 	const navSections = sections.map((sectionConfig) => {
-		const sectionSchema = rootShape[sectionConfig.schema] as z.ZodTypeAny | undefined;
+		const sectionSchema = rootShape[sectionConfig.schema] as z.ZodType | undefined;
 
 		return {
 			id: sectionConfig.id,
@@ -353,14 +349,14 @@ export function renderSchemaSettings<TSchema extends ZodObject<ZodRawShape>>(
 	return navigation;
 }
 
-function unwrapToObject(schema: z.ZodTypeAny): ZodObject<ZodRawShape> | undefined {
+function unwrapToObject(schema: z.ZodType): ZodObject<ZodRawShape> | undefined {
 	if ("shape" in schema) {
 		return schema as ZodObject<ZodRawShape>;
 	}
 
-	const def = schema._def as unknown as Record<string, unknown>;
+	const def = schema.def as unknown as Record<string, unknown>;
 	if ("innerType" in def && def["innerType"]) {
-		return unwrapToObject(def["innerType"] as z.ZodTypeAny);
+		return unwrapToObject(def["innerType"] as z.ZodType);
 	}
 
 	return undefined;

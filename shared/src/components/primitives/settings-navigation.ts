@@ -183,27 +183,28 @@ export class SettingsNavigation {
 		});
 
 		const searchContainer = buttonContainer.createDiv(this.css.cls("settings-search"));
-		this.searchInput = new TextComponent(searchContainer);
-		this.searchInput.setPlaceholder("Search settings...");
-		this.searchInput.setValue(this.searchQuery);
-		this.css.addCls(this.searchInput.inputEl, "settings-search-input");
+		const searchInput = new TextComponent(searchContainer);
+		this.searchInput = searchInput;
+		searchInput.setPlaceholder("Search settings...");
+		searchInput.setValue(this.searchQuery);
+		this.css.addCls(searchInput.inputEl, "settings-search-input");
 
 		let debounceTimer: number | null = null;
 
 		const applySearch = () => {
-			const value = this.searchInput!.inputEl.value;
+			const value = searchInput.inputEl.value;
 			if (value === this.searchQuery) return;
 			this.searchQuery = value;
 			this.updateNavActiveState();
 			this.renderContent();
 		};
 
-		this.searchInput.inputEl.addEventListener("input", () => {
+		searchInput.inputEl.addEventListener("input", () => {
 			if (debounceTimer) window.clearTimeout(debounceTimer);
 			debounceTimer = window.setTimeout(applySearch, 300);
 		});
 
-		this.searchInput.inputEl.addEventListener("keydown", (e: KeyboardEvent) => {
+		searchInput.inputEl.addEventListener("keydown", (e: KeyboardEvent) => {
 			if (e.key === "Enter") {
 				e.preventDefault();
 				if (debounceTimer) window.clearTimeout(debounceTimer);

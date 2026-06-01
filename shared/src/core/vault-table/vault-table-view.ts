@@ -106,7 +106,8 @@ export class VaultTableView<
 
 		for (const id of oldIds) {
 			if (!newMatchIds.has(id)) {
-				const oldRow = this.rowByFileName.get(id)!;
+				const oldRow = this.rowByFileName.get(id);
+				if (oldRow === undefined) continue;
 				this.rowByFileName.delete(id);
 				this.rowsDirty = true;
 				this.eventsSubject.next({ type: "row-deleted", id, filePath: oldRow.filePath, oldRow });
@@ -162,12 +163,12 @@ export class VaultTableView<
 	}
 
 	private handleRowUpdated(event: VaultTableEvent<TData> & { type: "row-updated" }): void {
-		const wasInView = this.rowByFileName.has(event.id);
+		const existingRow = this.rowByFileName.get(event.id);
+		const wasInView = existingRow !== undefined;
 		const isInView = this.filter(event.newRow);
 
 		if (wasInView && isInView) {
-			const shouldSuppress =
-				this.distinctBy !== undefined && this.distinctBy(this.rowByFileName.get(event.id)!, event.newRow);
+			const shouldSuppress = this.distinctBy !== undefined && this.distinctBy(existingRow, event.newRow);
 			this.rowByFileName.set(event.id, event.newRow);
 			this.rowsDirty = true;
 			if (!shouldSuppress) {
@@ -177,9 +178,8 @@ export class VaultTableView<
 			this.insertRow(event.newRow);
 			this.eventsSubject.next({ type: "row-created", id: event.id, filePath: event.filePath, row: event.newRow });
 		} else if (wasInView && !isInView) {
-			const oldRow = this.rowByFileName.get(event.id)!;
 			this.removeRow(event.id);
-			this.eventsSubject.next({ type: "row-deleted", id: event.id, filePath: event.filePath, oldRow });
+			this.eventsSubject.next({ type: "row-deleted", id: event.id, filePath: event.filePath, oldRow: existingRow });
 		}
 	}
 

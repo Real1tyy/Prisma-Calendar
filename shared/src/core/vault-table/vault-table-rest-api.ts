@@ -1,4 +1,4 @@
-import type { ZodTypeAny } from "zod";
+import type { ZodType } from "zod";
 
 import { ParamCoercion, type ActionDefMap, type HttpActionConfig } from "../../integrations/api-gateway";
 import type { SerializableSchema } from "./create-mapped-schema";
@@ -16,7 +16,7 @@ import {
 
 // ─── Types ──────────────────────────────────────────────────────
 
-type ZodShape = Record<string, ZodTypeAny>;
+type ZodShape = Record<string, ZodType>;
 
 export interface VaultTableRestConfig {
 	resourceName: string;

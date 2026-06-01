@@ -66,7 +66,7 @@ export function withTheme<TProps extends ThemedProps>(
 		const testIdPrefix = useResolvedTestIdPrefix(testIdPrefixOverride);
 		const cls = useMemo(() => makeCls(cssPrefix), [cssPrefix]);
 		const tid = useMemo(() => makeTid(testIdPrefix), [testIdPrefix]);
-		const injected = { cssPrefix, testIdPrefix, cls, tid } as ThemedProps;
+		const injected = { cssPrefix, testIdPrefix, cls, tid };
 		return <Component {...(rest as unknown as TProps)} {...injected} />;
 	}
 

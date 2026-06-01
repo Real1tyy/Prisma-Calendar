@@ -45,6 +45,11 @@ export default defineConfig([
 			"**/*.config.{js,mjs,cjs,ts}",
 			"**/*.mjs",
 			"stress/**",
+			// Node-side dev tooling (vite config, e2e build/clean scripts, codegen)
+			// has no tsconfig project, so `strictTypeChecked`'s projectService
+			// can't type-check it — same rationale as the config-file excludes above.
+			"configs/**",
+			"scripts/**",
 		],
 	},
 

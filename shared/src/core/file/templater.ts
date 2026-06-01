@@ -163,10 +163,8 @@ function mergeTemplateContent(processedContent: string, overrides: Record<string
 	const body = fmMatch[2];
 	const templateFm = parseYAML(rawTemplateFm) as Record<string, unknown>;
 
-	const mergedFm = { ...templateFm, ...overrides };
-
 	// Strip the sentinel key so it never ends up in the final written content
-	delete mergedFm[PENDING_WRITE_SENTINEL_FM_KEY];
+	const { [PENDING_WRITE_SENTINEL_FM_KEY]: _drop, ...mergedFm } = { ...templateFm, ...overrides };
 
 	return createFileContentWithFrontmatter(mergedFm, body);
 }
@@ -177,7 +175,7 @@ function mergeTemplateContent(processedContent: string, overrides: Record<string
 
 export function isTemplaterAvailable(app: App): boolean {
 	const appWithPlugins = app as App & {
-		plugins?: { getPlugin?: (id: string) => unknown | null | undefined };
+		plugins?: { getPlugin?: (id: string) => unknown };
 	};
 	return !!appWithPlugins.plugins?.getPlugin?.(TEMPLATER_ID);
 }
@@ -185,7 +183,7 @@ export function isTemplaterAvailable(app: App): boolean {
 /**
  * Checks if a template should be used based on availability and file existence.
  */
-export function shouldUseTemplate(app: App, templatePath: string | undefined): boolean {
+export function shouldUseTemplate(app: App, templatePath: string | undefined): templatePath is string {
 	return !!(
 		templatePath &&
 		templatePath.trim() !== "" &&
@@ -329,7 +327,7 @@ export async function createFileAtPathAtomic(
 	}
 
 	try {
-		const renderedContent = await renderTemplateContent(app, templatePath!, sentinelFile, frontmatter);
+		const renderedContent = await renderTemplateContent(app, templatePath, sentinelFile, frontmatter);
 
 		if (renderedContent !== null) {
 			const finalContent = content?.trim() ? appendBodyToRenderedContent(renderedContent, content) : renderedContent;
@@ -475,7 +473,7 @@ export async function createFileWithTemplate(app: App, options: FileCreationOpti
 	if (useTemplater && shouldUseTemplate(app, templatePath)) {
 		const templateFile = await createFromTemplate(
 			app,
-			templatePath!,
+			templatePath,
 			targetDirectory,
 			finalFilename,
 			false,

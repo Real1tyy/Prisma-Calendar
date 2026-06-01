@@ -109,7 +109,7 @@ export interface GridLayoutProps extends DivAttributes {
 	onOpenLayoutEditor?: GridLayoutConfig["onOpenLayoutEditor"];
 	commands?: GridLayoutCommandsConfig;
 	/** Fires once on mount with the imperative handle. Return a cleanup if you need one. */
-	onReady?: (handle: GridLayoutHandle) => (() => void) | void;
+	onReady?: (handle: GridLayoutHandle) => (() => void) | undefined;
 	/** External imperative handle (uncommon — prefer `onReady`). */
 	handleRef?: Ref<GridLayoutHandle>;
 }

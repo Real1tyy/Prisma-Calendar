@@ -40,10 +40,10 @@ export function createPageHeader(config: PageHeaderConfig): PageHeaderHandle {
 	const appliedLeaves = new Map<WorkspaceLeaf, AppliedLeafState>();
 	let destroyed = false;
 
-	const stateUnsubscribe = store.subscribe(() => {
+	const stateSubscription = store.subscribe(() => {
 		if (destroyed) return;
 		onStateChange?.(store.serialize());
-	}).unsubscribe;
+	});
 
 	function hideElement(el: HTMLElement): void {
 		el.classList.add(HIDDEN_CLS);
@@ -134,7 +134,7 @@ export function createPageHeader(config: PageHeaderConfig): PageHeaderHandle {
 	function cleanup(): void {
 		if (destroyed) return;
 		destroyed = true;
-		stateUnsubscribe();
+		stateSubscription.unsubscribe();
 		for (const leaf of [...appliedLeaves.keys()]) removeFromLeaf(leaf);
 	}
 

@@ -53,7 +53,7 @@ export function setNestedValue<T extends Record<string, unknown>>(obj: T, key: s
  * Navigates a Zod schema shape using dot notation to find a nested field schema.
  * Unwraps intermediate wrapper types (optional, default, catch, etc.) along the way.
  */
-export function navigateSchema(shape: ZodRawShape, dottedKey: string): unknown | undefined {
+export function navigateSchema(shape: ZodRawShape, dottedKey: string): unknown {
 	const keys = dottedKey.split(".");
 	let fieldSchema: unknown = shape;
 

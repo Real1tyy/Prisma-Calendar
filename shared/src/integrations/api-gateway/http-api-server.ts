@@ -60,24 +60,26 @@ export class HttpApiServer {
 	async start(): Promise<void> {
 		if (this.server) return;
 
-		this.server = http.createServer((req, res) => {
+		const server = http.createServer((req, res) => {
 			void this.handleRequest(req, res);
 		});
+		this.server = server;
 
 		return new Promise((resolve, reject) => {
-			this.server!.on("error", reject);
-			this.server!.listen(this.config.port, this.config.host, () => {
-				this.server!.removeListener("error", reject);
+			server.on("error", reject);
+			server.listen(this.config.port, this.config.host, () => {
+				server.removeListener("error", reject);
 				resolve();
 			});
 		});
 	}
 
 	async stop(): Promise<void> {
-		if (!this.server) return;
+		const server = this.server;
+		if (!server) return;
 
 		return new Promise((resolve) => {
-			this.server!.close(() => {
+			server.close(() => {
 				this.server = null;
 				resolve();
 			});

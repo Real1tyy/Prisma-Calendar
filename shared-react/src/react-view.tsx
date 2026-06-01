@@ -35,10 +35,6 @@ export function registerReactView<THandle extends ReactViewHandle = ReactViewHan
 	class ReactView extends ItemView {
 		private root: Root | null = null;
 
-		constructor(leaf: WorkspaceLeaf) {
-			super(leaf);
-		}
-
 		getViewType(): string {
 			return config.viewType;
 		}
@@ -51,7 +47,7 @@ export function registerReactView<THandle extends ReactViewHandle = ReactViewHan
 			return config.icon ?? "layout";
 		}
 
-		override async onOpen(): Promise<void> {
+		override onOpen(): Promise<void> {
 			const container = this.containerEl.children[1] as HTMLElement;
 			container.empty();
 			applyClsTokens(container, config.cls);
@@ -70,12 +66,14 @@ export function registerReactView<THandle extends ReactViewHandle = ReactViewHan
 					</AppContext>
 				</StrictMode>
 			);
+			return Promise.resolve();
 		}
 
-		override async onClose(): Promise<void> {
+		override onClose(): Promise<void> {
 			handleMap.delete(this.leaf);
 			this.root?.unmount();
 			this.root = null;
+			return Promise.resolve();
 		}
 	}
 

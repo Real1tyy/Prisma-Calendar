@@ -85,8 +85,9 @@ export class PluginApiGateway<TActions extends ActionDefMap> {
 
 		this.registerProtocol();
 
-		if (this.httpConfig?.enabled) {
-			this.httpServer = new HttpApiServer(this.httpConfig);
+		const httpConfig = this.httpConfig;
+		if (httpConfig?.enabled) {
+			this.httpServer = new HttpApiServer(httpConfig);
 			this.buildHttpRoutes();
 
 			if (this.pendingHttpRoutes.length > 0) {
@@ -97,11 +98,11 @@ export class PluginApiGateway<TActions extends ActionDefMap> {
 			void this.httpServer
 				.start()
 				.then(() => {
-					const host = this.httpConfig!.host ?? DEFAULT_HOST;
-					const base = this.httpConfig!.basePath ?? DEFAULT_BASE_PATH;
-					console.log(`[PluginApiGateway] HTTP server started at http://${host}:${this.httpConfig!.port}${base}`);
+					const host = httpConfig.host ?? DEFAULT_HOST;
+					const base = httpConfig.basePath ?? DEFAULT_BASE_PATH;
+					console.log(`[PluginApiGateway] HTTP server started at http://${host}:${httpConfig.port}${base}`);
 				})
-				.catch((error) => {
+				.catch((error: unknown) => {
 					console.error("[PluginApiGateway] Failed to start HTTP server:", error);
 					new Notice("Failed to start plugin HTTP API server");
 				});
@@ -120,12 +121,12 @@ export class PluginApiGateway<TActions extends ActionDefMap> {
 		if (this.httpServer) {
 			const server = this.httpServer;
 			this.httpServer = null;
-			void server.stop().catch((error) => {
+			void server.stop().catch((error: unknown) => {
 				console.error("[PluginApiGateway] Failed to stop HTTP server:", error);
 			});
 		}
 
-		delete (window as unknown as Record<string, unknown>)[this.globalKey];
+		Reflect.deleteProperty(window, this.globalKey);
 		this.api = null;
 	}
 
@@ -143,10 +144,7 @@ export class PluginApiGateway<TActions extends ActionDefMap> {
 	 * Generates a typed `obsidian://protocolKey?call=actionName&key=value...` URL.
 	 * Only available for actions that define `parseParams`.
 	 */
-	buildUrl<K extends UrlAccessibleActions<TActions> & string>(
-		call: K,
-		params?: Record<string, string | number | boolean>
-	): string {
+	buildUrl(call: UrlAccessibleActions<TActions> & string, params?: Record<string, string | number | boolean>): string {
 		if (!this.protocolKey) {
 			throw new Error("Cannot build URL: no protocolKey configured");
 		}

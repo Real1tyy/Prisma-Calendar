@@ -1,4 +1,4 @@
-import { ItemView, type Plugin, type WorkspaceLeaf } from "obsidian";
+import { ItemView, type Plugin } from "obsidian";
 
 import { activateView, type LeafPlacement } from "../../utils/activate-view";
 import { applyClsTokens } from "../../utils/css-utils";
@@ -9,10 +9,6 @@ export function registerComponentView(plugin: Plugin, config: ViewComponentConfi
 	// where Obsidian's ItemView constructor calls getViewType() before
 	// instance fields are assigned
 	class ComponentView extends ItemView {
-		constructor(leaf: WorkspaceLeaf) {
-			super(leaf);
-		}
-
 		getViewType(): string {
 			return config.viewType;
 		}
@@ -42,8 +38,9 @@ export function registerComponentView(plugin: Plugin, config: ViewComponentConfi
 			await config.render(root, ctx);
 		}
 
-		override async onClose(): Promise<void> {
+		override onClose(): Promise<void> {
 			config.cleanup?.();
+			return Promise.resolve();
 		}
 	}
 

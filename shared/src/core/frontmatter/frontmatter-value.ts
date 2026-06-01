@@ -1,3 +1,5 @@
+import { toSafeString } from "../../utils/date/date";
+
 // ============================================================================
 // Value Checking
 // ============================================================================
@@ -39,7 +41,7 @@ export function serializeValue(value: unknown): string {
 		return JSON.stringify(value);
 	}
 
-	return String(value);
+	return toSafeString(value) ?? "";
 }
 
 /**
@@ -343,9 +345,9 @@ export interface DisplaySettings {
  * Filters frontmatter properties based on display settings.
  * Returns an array of [key, value] pairs that should be displayed.
  */
-export function filterPropertiesForDisplay<TSettings extends DisplaySettings>(
+export function filterPropertiesForDisplay(
 	frontmatter: Record<string, unknown>,
-	settings: TSettings
+	settings: DisplaySettings
 ): Array<[string, unknown]> {
 	const entries = Object.entries(frontmatter);
 
@@ -368,10 +370,10 @@ export function filterPropertiesForDisplay<TSettings extends DisplaySettings>(
  * Filters a specific list of property names from frontmatter.
  * Useful when you want to display only specific properties (like in tooltips).
  */
-export function filterSpecificProperties<TSettings extends DisplaySettings>(
+export function filterSpecificProperties(
 	frontmatter: Record<string, unknown>,
 	propertyNames: string[],
-	settings: TSettings
+	settings: DisplaySettings
 ): Array<{ key: string; value: unknown }> {
 	return propertyNames
 		.filter((propName) => propName in frontmatter)

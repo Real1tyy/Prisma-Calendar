@@ -1,6 +1,7 @@
 import { SecretComponent, Setting, type App } from "obsidian";
 import { z } from "zod";
 
+import { toSafeString } from "../../utils/date/date";
 import { introspectShape } from "./introspect";
 import type {
 	ArrayFieldDescriptor,
@@ -137,7 +138,7 @@ function renderStringField(
 	}
 
 	applyFieldMeta(new Setting(el), desc, override).addText((text) => {
-		text.setPlaceholder(override?.placeholder ?? desc.placeholder ?? "").setValue(String(values[desc.key] ?? ""));
+		text.setPlaceholder(override?.placeholder ?? desc.placeholder ?? "").setValue(toSafeString(values[desc.key]) ?? "");
 		text.onChange((v) => (values[desc.key] = v));
 		stampTestId(text.inputEl, testId);
 	});
@@ -195,7 +196,7 @@ function renderDateField(
 	applyFieldMeta(new Setting(el), desc, override).addText((text) => {
 		text
 			.setPlaceholder(override?.placeholder ?? desc.placeholder ?? "YYYY-MM-DD")
-			.setValue(String(values[desc.key] ?? ""));
+			.setValue(toSafeString(values[desc.key]) ?? "");
 		text.inputEl.type = "date";
 		text.onChange((v) => (values[desc.key] = v));
 		stampTestId(text.inputEl, testId);
@@ -212,7 +213,7 @@ function renderDatetimeField(
 	applyFieldMeta(new Setting(el), desc, override).addText((text) => {
 		text
 			.setPlaceholder(override?.placeholder ?? desc.placeholder ?? "YYYY-MM-DDTHH:mm")
-			.setValue(String(values[desc.key] ?? ""));
+			.setValue(toSafeString(values[desc.key]) ?? "");
 		text.inputEl.type = "datetime-local";
 		text.onChange((v) => (values[desc.key] = v));
 		stampTestId(text.inputEl, testId);
@@ -248,7 +249,7 @@ function renderDropdownField(
 		for (const [value, label] of entries) {
 			dropdown.addOption(value, label);
 		}
-		dropdown.setValue(String(values[desc.key] ?? ""));
+		dropdown.setValue(toSafeString(values[desc.key]) ?? "");
 		dropdown.onChange((v) => (values[desc.key] = v));
 		stampTestId(dropdown.selectEl, testId);
 	});
@@ -264,7 +265,7 @@ function renderSecretField(
 	if (!app) return;
 
 	applyFieldMeta(new Setting(el), desc, override).addComponent((component) =>
-		new SecretComponent(app, component).setValue(String(values[desc.key] ?? "")).onChange((v) => {
+		new SecretComponent(app, component).setValue(toSafeString(values[desc.key]) ?? "").onChange((v) => {
 			values[desc.key] = v;
 		})
 	);
@@ -350,9 +351,9 @@ function formatReadonlyValue(desc: SchemaFieldDescriptor, value: unknown): strin
 		case "secret":
 			return SECRET_MASK;
 		case "array":
-			return Array.isArray(value) ? value.join(", ") || "—" : String(value);
+			return Array.isArray(value) ? value.join(", ") || "—" : (toSafeString(value) ?? "—");
 		default:
-			return String(value);
+			return toSafeString(value) ?? "—";
 	}
 }
 

@@ -248,7 +248,7 @@ export class VaultTable<
 	 */
 	subscribeAsync(handler: (event: VaultTableEvent<TData>) => Promise<void>): Subscription {
 		return this.events$.subscribe((event) => {
-			const settled = handler(event).catch((error) => {
+			const settled = handler(event).catch((error: unknown) => {
 				console.error("[VaultTable] async event handler error:", error);
 			});
 			// eslint-disable-next-line @typescript-eslint/no-floating-promises -- barrier owns the promise
@@ -445,7 +445,7 @@ export class VaultTable<
 		await withFrontmatter(this.app, existing.file, (fm) => {
 			for (const key of Object.keys(fm)) {
 				if (!(key in serialized)) {
-					delete fm[key];
+					Reflect.deleteProperty(fm, key);
 				}
 			}
 			Object.assign(fm, serialized);
@@ -656,8 +656,10 @@ export class VaultTable<
 
 		const relations = {} as RowRelations<TChildren>;
 		for (const key of Object.keys(this.childDefs) as Array<keyof TChildren & string>) {
+			const child = cache.get(key);
+			if (child === undefined) continue;
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			(relations as any)[key] = cache.get(key)!;
+			(relations as any)[key] = child;
 		}
 
 		return { ...row, relations };
@@ -728,11 +730,13 @@ export class VaultTable<
 	}
 
 	private async buildAndUpsertRow(id: string, filePath: string, data: TData, event: IndexerEvent): Promise<void> {
-		const file = event.source!.file;
+		const source = event.source;
+		if (!source) return;
+		const file = source.file;
 		const fullContent = await this.app.vault.cachedRead(file);
 		const content = extractContentAfterFrontmatter(fullContent);
-		const mtime = event.source?.mtime ?? Date.now();
-		const raw = event.source?.frontmatter;
+		const mtime = source.mtime;
+		const raw = source.frontmatter;
 
 		const oldRow = this.rowByFileName.get(id);
 		const newRow = this.buildRow(id, file, filePath, data, content, mtime);

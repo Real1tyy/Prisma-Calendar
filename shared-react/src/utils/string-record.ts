@@ -22,8 +22,7 @@ export function setOrDelete(
 	key: string,
 	value: string | undefined
 ): Record<string, string> {
-	const next = { ...record };
-	if (value !== undefined) next[key] = value;
-	else delete next[key];
-	return next;
+	if (value !== undefined) return { ...record, [key]: value };
+	const { [key]: _removed, ...rest } = record;
+	return rest;
 }

@@ -28,7 +28,7 @@ export interface TourStep {
 	 * note, await an element. The tour blocks (showing a loader) until it resolves,
 	 * which is what makes a multi-view tour deterministic and replayable.
 	 */
-	before?: (() => void | Promise<unknown>) | undefined;
+	before?: (() => unknown) | undefined;
 	/**
 	 * How much of the page the user can touch while this step is shown:
 	 * - `"none"` (default) — read-only. The overlay blocks every click, so the

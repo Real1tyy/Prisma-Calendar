@@ -24,7 +24,7 @@ import type { z } from "zod";
  * await syncStore.updateData({ readOnly: true });
  * ```
  */
-export class SyncStore<TSchema extends z.ZodTypeAny> {
+export class SyncStore<TSchema extends z.ZodType> {
 	private _data: z.infer<TSchema>;
 	private readonly syncFilePath: string;
 
@@ -34,7 +34,10 @@ export class SyncStore<TSchema extends z.ZodTypeAny> {
 		private schema: TSchema
 	) {
 		this._data = this.schema.parse({});
-		const pluginDir = this.plugin.manifest.dir!;
+		const pluginDir = this.plugin.manifest.dir;
+		if (pluginDir === undefined) {
+			throw new Error("Plugin manifest has no directory; cannot resolve sync.json path");
+		}
 		this.syncFilePath = `${pluginDir}/sync.json`;
 	}
 

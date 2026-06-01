@@ -52,7 +52,7 @@ export function buildGridStyleVars(
 		vars["--grid-rows"] = sizesToTemplate(rowSizes, rows, "auto");
 	}
 	if (gap) vars["--grid-gap"] = gap;
-	return vars as CSSProperties;
+	return vars;
 }
 
 export function bucketPlacementsByAxis(

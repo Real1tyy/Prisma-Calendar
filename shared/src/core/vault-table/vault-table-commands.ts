@@ -172,10 +172,6 @@ export class UpdateContentRowCommand<TData> extends SnapshotRowCommand<TData> {
 }
 
 export class DeleteRowCommand<TData> extends SnapshotCommand<TData> {
-	constructor(key: string, ops: VaultTableOps<TData>) {
-		super(key, ops);
-	}
-
 	protected async doExecute(): Promise<void> {
 		await this.ops.delete(this.key);
 	}

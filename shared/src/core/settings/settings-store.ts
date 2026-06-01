@@ -15,7 +15,7 @@ export type SettingsWatcher<TSettings> = readonly [
 	options?: WatchOptions,
 ];
 
-export class SettingsStore<TSchema extends z.ZodTypeAny> {
+export class SettingsStore<TSchema extends z.ZodType> {
 	private plugin: Plugin;
 	private schema: TSchema;
 	public readonly settings$: BehaviorSubject<z.infer<TSchema>>;
@@ -136,7 +136,10 @@ export class SettingsStore<TSchema extends z.ZodTypeAny> {
 			);
 			return () => teardowns.forEach((fn) => fn());
 		}
-		return this.watchSingle(selectorOrWatchers, callback!, options);
+		if (!callback) {
+			throw new Error("watch(selector) requires a callback");
+		}
+		return this.watchSingle(selectorOrWatchers, callback, options);
 	}
 
 	private watchSingle<R>(

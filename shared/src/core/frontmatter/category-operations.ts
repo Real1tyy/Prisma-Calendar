@@ -50,7 +50,7 @@ export async function deleteCategoryFromFile(
 		if (fm[categoryProp]) {
 			const updated = removeCategoryFromProperty(fm[categoryProp], categoryName);
 			if (updated === undefined || (Array.isArray(updated) && updated.length === 0)) {
-				delete fm[categoryProp];
+				Reflect.deleteProperty(fm, categoryProp);
 			} else {
 				fm[categoryProp] = updated;
 			}

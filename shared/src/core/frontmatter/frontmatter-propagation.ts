@@ -25,7 +25,7 @@ export async function applyFrontmatterChanges(
 			}
 
 			for (const change of diff.deleted) {
-				delete fm[change.key];
+				Reflect.deleteProperty(fm, change.key);
 			}
 		});
 	} catch (error) {

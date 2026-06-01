@@ -29,7 +29,7 @@ const ROW_PREFIX = "tab-manager";
 
 interface DragState {
 	id: string | null;
-	scope: "tab" | string;
+	scope: string;
 }
 
 interface TabManagerContextValue {

@@ -91,9 +91,10 @@ export class CommandManager {
 	}
 
 	registerExecutedCommand(command: Command): Promise<void> {
-		return this.queue.enqueue(async () => {
+		return this.queue.enqueue(() => {
 			this.history.push(command);
 			this.markActivity();
+			return Promise.resolve();
 		});
 	}
 
@@ -162,8 +163,9 @@ export class CommandManager {
 	}
 
 	clearHistory(): Promise<void> {
-		return this.queue.enqueue(async () => {
+		return this.queue.enqueue(() => {
 			this.history.clear();
+			return Promise.resolve();
 		});
 	}
 

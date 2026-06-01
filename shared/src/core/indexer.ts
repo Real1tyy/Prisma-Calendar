@@ -476,9 +476,9 @@ export class Indexer {
 	/**
 	 * Build an indexer event from a file
 	 */
-	private async buildEvent(file: TFile, oldPath?: string): Promise<IndexerEvent | null> {
+	private buildEvent(file: TFile, oldPath?: string): Promise<IndexerEvent | null> {
 		const cache = this.metadataCache.getFileCache(file);
-		if (!cache || !cache.frontmatter) return null;
+		if (!cache || !cache.frontmatter) return Promise.resolve(null);
 
 		const { frontmatter } = cache;
 		const oldFrontmatter = this.frontmatterCache.get(file.path);
@@ -514,6 +514,6 @@ export class Indexer {
 		}
 		this.frontmatterCache.set(file.path, structuredClone(cleanFm));
 
-		return event;
+		return Promise.resolve(event);
 	}
 }

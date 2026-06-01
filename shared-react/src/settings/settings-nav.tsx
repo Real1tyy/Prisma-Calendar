@@ -62,7 +62,7 @@ export const SettingsNav = memo(function SettingsNav({
 		const q = searchValue.trim().toLowerCase();
 		let visible = 0;
 		root.querySelectorAll<HTMLElement>(`.setting-item:not(.${FOOTER})`).forEach((el) => {
-			const match = String(el.textContent).toLowerCase().includes(q);
+			const match = el.textContent.toLowerCase().includes(q);
 			el.classList.toggle(HIDDEN, !match);
 			if (match) visible++;
 		});

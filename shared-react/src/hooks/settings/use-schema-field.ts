@@ -39,7 +39,7 @@ export type SchemaFieldBinding<V> = readonly [V, SchemaFieldSetter<V>] & {
 
 function makeBinding<V>(value: V, onChange: SchemaFieldSetter<V>): SchemaFieldBinding<V> {
 	const tuple = [value, onChange] as [V, SchemaFieldSetter<V>];
-	return Object.assign(tuple, { value, onChange }) as SchemaFieldBinding<V>;
+	return Object.assign(tuple, { value, onChange });
 }
 
 /**
@@ -88,8 +88,8 @@ export function useSchemaField<S extends object, P extends Paths<S> & string>(
 	store: BaseSettingsStorelike<S>,
 	path: P
 ): SchemaFieldBinding<PathValue<S, P>>;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function useSchemaField<V>(store: SettingsStorelike<any>, path: string): SchemaFieldBinding<V>;
+
+export function useSchemaField<V>(store: SettingsStorelike, path: string): SchemaFieldBinding<V>;
 export function useSchemaField<V>(store: SettingsStorelike, path: string): SchemaFieldBinding<V> {
 	const source = useMemo(() => pathFilteredSnapshot<V>(store, path), [store, path]);
 	const value = useExternalSnapshot(source);

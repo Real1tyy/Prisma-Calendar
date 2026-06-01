@@ -61,7 +61,7 @@ export class ReleaseCheckService {
 			return this.notice$.getValue();
 		}
 
-		const release = await this.fetchRelease(this.config.owner, this.config.repo).catch((error) => {
+		const release = await this.fetchRelease(this.config.owner, this.config.repo).catch((error: unknown) => {
 			console.warn(`[release-check] ${this.config.owner}/${this.config.repo} fetch failed`, error);
 			return null;
 		});

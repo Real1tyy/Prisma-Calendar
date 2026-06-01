@@ -3,6 +3,8 @@ import type { z, ZodObject, ZodRawShape } from "zod";
 
 import { camelCaseToLabel, introspectField } from "../../components/schema-modal/introspect";
 import type { EnumFieldDescriptor, NumberFieldDescriptor } from "../../components/schema-modal/types";
+import { toSafeString } from "../../utils/date/date";
+import { describeError } from "../../utils/errors";
 import { getNestedValue, inferArrayItemType, inferSliderBounds, setNestedValue } from "./schema-navigation";
 import type { SettingsStore } from "./settings-store";
 
@@ -109,7 +111,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 
 		if (!result.success) {
 			const errors = result.error.issues
-				.map((e) => `${String(e.path.join("."))}${e.path.length > 0 ? ": " : ""}${e.message}`)
+				.map((e) => `${e.path.join(".")}${e.path.length > 0 ? ": " : ""}${e.message}`)
 				.join(", ");
 			new Notice(`Validation failed: ${errors}`, 5000);
 			throw new Error(`Validation failed: ${errors}`);
@@ -153,7 +155,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 			.setName(name)
 			.setDesc(desc)
 			.addComponent((el) =>
-				new SecretComponent(app, el).setValue(String(value ?? "")).onChange(async (newValue) => {
+				new SecretComponent(app, el).setValue(toSafeString(value) ?? "").onChange(async (newValue) => {
 					await this.updateSetting(key, newValue);
 					onChanged?.();
 				})
@@ -275,7 +277,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 							await this.updateSetting(key, newValue);
 							onChanged?.();
 						} catch (error) {
-							new Notice(`Invalid input: ${error}`, 5000);
+							new Notice(`Invalid input: ${describeError(error)}`, 5000);
 						}
 					};
 
@@ -305,7 +307,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 				await this.updateSetting(key, clamped);
 				onChanged?.();
 			} catch (error) {
-				new Notice(`Invalid input: ${error}`, 5000);
+				new Notice(`Invalid input: ${describeError(error)}`, 5000);
 			}
 			return clamped;
 		};
@@ -315,7 +317,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 			slider.setLimits(min, max, step).setValue(value).setDynamicTooltip();
 
 			slider.onChange((newValue) => {
-				sliderInputEl!.setAttribute("aria-valuenow", String(newValue));
+				slider.sliderEl.setAttribute("aria-valuenow", String(newValue));
 				if (numberInputEl) numberInputEl.value = String(newValue);
 			});
 
@@ -343,7 +345,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 				await this.updateSetting(key, clamped);
 				onChanged?.();
 			} catch (error) {
-				new Notice(`Invalid input: ${error}`, 5000);
+				new Notice(`Invalid input: ${describeError(error)}`, 5000);
 			}
 			return clamped;
 		});
@@ -358,7 +360,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 			.setDesc(desc)
 			.addText((text) => {
 				text.setPlaceholder(placeholder);
-				text.setValue(String(value ?? ""));
+				text.setValue(toSafeString(value) ?? "");
 
 				if (commitOnChange) {
 					// Reactive: commit on every change
@@ -373,7 +375,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 							await this.updateSetting(key, inputValue);
 							onChanged?.();
 						} catch (error) {
-							new Notice(`Invalid input: ${error}`, 5000);
+							new Notice(`Invalid input: ${describeError(error)}`, 5000);
 						}
 					};
 
@@ -414,7 +416,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 			.setName(name)
 			.setDesc(desc)
 			.addColorPicker((colorPicker) =>
-				colorPicker.setValue(String(value ?? fallback ?? "#000000")).onChange(async (newValue) => {
+				colorPicker.setValue(toSafeString(value) ?? fallback ?? "#000000").onChange(async (newValue) => {
 					await this.updateSetting(key, newValue || fallback || "#000000");
 					onChanged?.();
 				})
@@ -427,7 +429,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 
 		const render = (): void => {
 			wrapper.empty();
-			const color = String(this.getNestedValue(key) ?? "");
+			const color = toSafeString(this.getNestedValue(key)) ?? "";
 
 			const setting = new Setting(wrapper).setName(name).addColorPicker((picker) => {
 				picker.setValue(color || fallback).onChange(async (value) => {
@@ -499,7 +501,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 						await this.updateSetting(key, items);
 						onChanged?.();
 					} catch (error) {
-						new Notice(`Invalid input: ${error}`, 5000);
+						new Notice(`Invalid input: ${describeError(error)}`, 5000);
 					}
 				};
 
@@ -538,7 +540,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 						await this.updateSetting(key, items);
 						onChanged?.();
 					} catch (error) {
-						new Notice(`Invalid input: ${error}`, 5000);
+						new Notice(`Invalid input: ${describeError(error)}`, 5000);
 					}
 				};
 
@@ -703,7 +705,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 	): void {
 		const [entryKey, field] = Object.entries(fieldEntry)[0];
 		const settingsKey = overrides?.key ?? entryKey;
-		const fieldKey = settingsKey.includes(".") ? settingsKey.split(".").pop()! : settingsKey;
+		const fieldKey = settingsKey.split(".").pop() ?? settingsKey;
 		const descriptor = introspectField(fieldKey, field);
 
 		const name = overrides?.label ?? descriptor.label;

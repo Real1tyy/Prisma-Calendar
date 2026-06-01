@@ -8,45 +8,47 @@ import {
 	type FilterValue,
 } from "./schema";
 
-export class BaseRenderer {
-	static render(base: BaseDefinition): string {
-		BaseDefinitionSchema.parse(base);
-		const sections: string[] = [];
+function render(base: BaseDefinition): string {
+	BaseDefinitionSchema.parse(base);
+	const sections: string[] = [];
 
-		if (base.filter) {
-			sections.push(renderFilterSection(base.filter, 0));
-		}
-
-		const hasTypedFormulas = base.formulas && base.formulas.length > 0;
-		const hasRawFormulas = base.rawFormulas && base.rawFormulas.trim();
-		if (hasTypedFormulas || hasRawFormulas) {
-			const parts: string[] = ["formulas:"];
-			if (hasTypedFormulas) {
-				parts.push(renderFormulasContent(base.formulas!));
-			}
-			if (hasRawFormulas) {
-				parts.push(base.rawFormulas!);
-			}
-			sections.push(parts.join("\n"));
-		}
-
-		if (base.properties && base.properties.length > 0) {
-			sections.push(renderPropertiesSection(base.properties));
-		}
-
-		if (base.summaries && Object.keys(base.summaries).length > 0) {
-			sections.push(renderSummariesSection(base.summaries, 0));
-		}
-
-		sections.push(renderViewsSection(base.views));
-
-		return sections.join("\n");
+	if (base.filter) {
+		sections.push(renderFilterSection(base.filter, 0));
 	}
 
-	static renderCodeBlock(base: BaseDefinition): string {
-		return `\`\`\`base\n${BaseRenderer.render(base)}\n\`\`\``;
+	const typedFormulas = base.formulas && base.formulas.length > 0 ? base.formulas : null;
+	const rawFormulas = base.rawFormulas && base.rawFormulas.trim() ? base.rawFormulas : null;
+	if (typedFormulas || rawFormulas) {
+		const parts: string[] = ["formulas:"];
+		if (typedFormulas) {
+			parts.push(renderFormulasContent(typedFormulas));
+		}
+		if (rawFormulas) {
+			parts.push(rawFormulas);
+		}
+		sections.push(parts.join("\n"));
 	}
+
+	if (base.properties && base.properties.length > 0) {
+		sections.push(renderPropertiesSection(base.properties));
+	}
+
+	if (base.summaries && Object.keys(base.summaries).length > 0) {
+		sections.push(renderSummariesSection(base.summaries, 0));
+	}
+
+	sections.push(renderViewsSection(base.views));
+
+	return sections.join("\n");
 }
+
+export const BaseRenderer = {
+	render,
+
+	renderCodeBlock(base: BaseDefinition): string {
+		return `\`\`\`base\n${render(base)}\n\`\`\``;
+	},
+};
 
 // ── Filter rendering ────────────────────────────────────────────────────
 

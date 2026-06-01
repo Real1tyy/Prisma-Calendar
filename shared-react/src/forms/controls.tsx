@@ -28,7 +28,7 @@ export function FormTextInput<TValues extends FieldValues, TName extends FieldPa
 	const { field } = useController({ control: form.control, name });
 	return (
 		<TextInput
-			value={String(field.value ?? "")}
+			value={field.value ?? ""}
 			onChange={field.onChange}
 			debounceMs={0}
 			{...(placeholder ? { placeholder } : {})}
@@ -48,7 +48,7 @@ export function FormNumberInput<TValues extends FieldValues, TName extends Field
 	const { field } = useController({ control: form.control, name });
 	return (
 		<NumberInput
-			value={Number(field.value ?? 0)}
+			value={field.value ?? 0}
 			onChange={field.onChange}
 			debounceMs={0}
 			{...(min !== undefined ? { min } : {})}
@@ -65,7 +65,7 @@ export function FormSecretField<TValues extends FieldValues, TName extends Field
 	testId,
 }: FormFieldBase<TValues, TName>) {
 	const { field } = useController({ control: form.control, name });
-	return <SecretField value={String(field.value ?? "")} onChange={field.onChange} {...testIdProp(testId)} />;
+	return <SecretField value={field.value ?? ""} onChange={field.onChange} {...testIdProp(testId)} />;
 }
 
 export function FormDropdown<TValues extends FieldValues, TName extends FieldPath<TValues>>({
@@ -75,7 +75,5 @@ export function FormDropdown<TValues extends FieldValues, TName extends FieldPat
 	testId,
 }: FormFieldBase<TValues, TName> & { options: Record<string, string> }) {
 	const { field } = useController({ control: form.control, name });
-	return (
-		<Dropdown value={String(field.value ?? "")} options={options} onChange={field.onChange} {...testIdProp(testId)} />
-	);
+	return <Dropdown value={field.value ?? ""} options={options} onChange={field.onChange} {...testIdProp(testId)} />;
 }

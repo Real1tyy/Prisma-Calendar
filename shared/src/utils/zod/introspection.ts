@@ -41,7 +41,8 @@ export function resolveFieldType(prop: JSONSchemaProperty): FieldType {
 		if (!prop.anyOf.length) return "unknown";
 		const types = new Set(prop.anyOf.map((p) => resolveFieldType(p)));
 		types.delete("unknown");
-		if (types.size === 1) return types.values().next().value!;
+		const [first] = types;
+		if (types.size === 1) return first;
 		if (types.has("string")) return "string";
 		return "unknown";
 	}

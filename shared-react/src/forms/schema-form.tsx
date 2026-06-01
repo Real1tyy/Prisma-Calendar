@@ -16,7 +16,7 @@ export interface SchemaFormFieldOverride {
 	max?: number;
 	step?: number;
 	hidden?: boolean;
-	render?: (props: { form: UseFormReturn<FieldValues>; name: string; descriptor: SchemaFieldDescriptor }) => ReactNode;
+	render?: (props: { form: UseFormReturn; name: string; descriptor: SchemaFieldDescriptor }) => ReactNode;
 }
 
 export interface SchemaFormSection {
@@ -63,7 +63,7 @@ function FormFieldRow<TValues extends FieldValues>({
 	if (override?.render) {
 		return (
 			<SettingItem name={label} description={description} testId={testId}>
-				{override.render({ form: form as UseFormReturn<FieldValues>, name: descriptor.key, descriptor })}
+				{override.render({ form: form as UseFormReturn, name: descriptor.key, descriptor })}
 				<FieldError message={errorMessage} />
 			</SettingItem>
 		);
@@ -170,7 +170,7 @@ export function SchemaForm<TValues extends FieldValues>({
 	sections,
 	testIdPrefix,
 }: SchemaFormProps<TValues>) {
-	const descriptors = useMemo(() => introspectShape(schema.shape as ZodRawShape), [schema]);
+	const descriptors = useMemo(() => introspectShape(schema.shape), [schema]);
 
 	if (sections) {
 		return (

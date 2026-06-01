@@ -35,6 +35,17 @@ export interface LocalKVOptions<T> {
 	backend?: KVBackend;
 }
 
+/**
+ * Patch shape accepted by {@link LocalKV.merge}. Unlike `Partial<T>` — which
+ * under `exactOptionalPropertyTypes` only means "key may be omitted" — every
+ * key here may be set to an explicit `undefined`, which `merge` treats as a
+ * delete signal for that field. The `| undefined` is load-bearing: without it
+ * `merge(scope, { foo: undefined })` would not type-check.
+ */
+export type MergePatch<T> = {
+	[K in keyof T]?: T[K] | undefined;
+};
+
 function resolveBackend(override: KVBackend | undefined): KVBackend {
 	if (override) return override;
 	// In-browser usage. Plugin renderer always has `window.localStorage`;
@@ -96,12 +107,12 @@ export class LocalKV<T> {
 	 * intent). If nothing is stored yet, the patch is applied on top of an
 	 * empty object and written as the initial value.
 	 */
-	merge(scope: string, patch: Partial<T>): void {
+	merge(scope: string, patch: MergePatch<T>): void {
 		const current = this.get(scope) ?? ({} as T);
 		const merged: T = { ...current, ...patch };
 		for (const key of Object.keys(patch) as Array<keyof T>) {
 			if (patch[key] === undefined) {
-				delete (merged as Record<string, unknown>)[key as string];
+				Reflect.deleteProperty(merged as Record<string, unknown>, key);
 			}
 		}
 		this.set(scope, merged);

@@ -28,11 +28,13 @@ export function compareContracts(
 ): ContractMatch | ContractDrift {
 	const drift: string[] = [];
 
-	// Compare via Number() to bypass the literal-type narrowing that makes
+	// Widen to `number` to bypass the literal-type narrowing that makes
 	// `1 !== 1` look tautological — the runtime values can diverge if the
 	// committed file was emitted by an older library version.
-	if (Number(emitted.contractVersion) !== Number(committed.contractVersion)) {
-		drift.push(`contractVersion: ${String(committed.contractVersion)} → ${String(emitted.contractVersion)}`);
+	const emittedVersion: number = emitted.contractVersion;
+	const committedVersion: number = committed.contractVersion;
+	if (emittedVersion !== committedVersion) {
+		drift.push(`contractVersion: ${String(committedVersion)} → ${String(emittedVersion)}`);
 	}
 	if (emitted.globalKey !== committed.globalKey) {
 		drift.push(`globalKey: "${committed.globalKey}" → "${emitted.globalKey}"`);

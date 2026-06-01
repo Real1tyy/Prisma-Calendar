@@ -42,12 +42,12 @@ export function zodV4Resolver<TValues extends FieldValues>(
 	context: unknown,
 	options: ResolverOptions<TValues>
 ) => Promise<{ values: TValues; errors: FieldErrors }> {
-	return async (values: TValues) => {
+	return (values: TValues) => {
 		const result = schema.safeParse(values);
 		if (result.success) {
-			return { values: result.data as TValues, errors: {} as FieldErrors };
+			return Promise.resolve({ values: result.data as TValues, errors: {} });
 		}
 		const zodError = result.error as unknown as { issues: ZodIssue[] };
-		return { values: {} as TValues, errors: toNestedErrors(parseZodIssues(zodError.issues)) };
+		return Promise.resolve({ values: {} as TValues, errors: toNestedErrors(parseZodIssues(zodError.issues)) });
 	};
 }

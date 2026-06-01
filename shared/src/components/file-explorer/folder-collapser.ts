@@ -443,7 +443,8 @@ export class FolderCollapser {
 		const fileExplorerPlugin = internalPlugins?.getEnabledPluginById?.("file-explorer");
 		if (!fileExplorerPlugin?.revealInFolder) return;
 
-		this.originalRevealInFolder = fileExplorerPlugin.revealInFolder.bind(fileExplorerPlugin);
+		const originalRevealInFolder: (file: unknown) => void = fileExplorerPlugin.revealInFolder.bind(fileExplorerPlugin);
+		this.originalRevealInFolder = originalRevealInFolder;
 
 		fileExplorerPlugin.revealInFolder = (file: unknown) => {
 			if (file instanceof TFile) {
@@ -453,7 +454,7 @@ export class FolderCollapser {
 					const folder = this.app.vault.getAbstractFileByPath(parentPath);
 					if (folder) {
 						document.body.classList.remove(this.cls.bodyActive);
-						this.originalRevealInFolder!.call(fileExplorerPlugin, folder);
+						originalRevealInFolder.call(fileExplorerPlugin, folder);
 						window.setTimeout(() => {
 							document.body.classList.add(this.cls.bodyActive);
 						}, 100);
@@ -461,7 +462,7 @@ export class FolderCollapser {
 					}
 				}
 			}
-			this.originalRevealInFolder!.call(fileExplorerPlugin, file);
+			originalRevealInFolder.call(fileExplorerPlugin, file);
 		};
 	}
 

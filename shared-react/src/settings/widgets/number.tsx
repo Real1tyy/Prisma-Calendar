@@ -1,3 +1,5 @@
+import { toSafeString } from "@real1ty-obsidian-plugins";
+
 import { NumberInput, Slider, TextInput } from "../../primitives/controls";
 import { testIdProp } from "../../utils/test-id";
 import { numericMax, numericMin, resolvePlaceholder, type WidgetProps } from "./common";
@@ -24,7 +26,7 @@ export function NumberWidget({ descriptor, override, binding, testId }: WidgetPr
 function OptionalNumberInput({ descriptor, override, binding, testId }: WidgetProps) {
 	const placeholder = resolvePlaceholder(descriptor, override);
 	const min = override?.min ?? numericMin(descriptor);
-	const display = binding.value !== undefined && binding.value !== null ? String(binding.value) : "";
+	const display = toSafeString(binding.value) ?? "";
 
 	return (
 		<TextInput
