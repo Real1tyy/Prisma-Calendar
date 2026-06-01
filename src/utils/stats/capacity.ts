@@ -13,26 +13,42 @@ export interface CapacityResult {
 const MS_PER_HOUR = 3_600_000;
 
 /**
- * Infers the earliest start time and latest end time from a set of timed events.
- * Returns fractional hours (e.g. 9.5 for 9:30). No rounding — uses exact event times.
+ * Infers the earliest start time and latest end time from a set of timed events,
+ * as fractional hours (e.g. 9.5 for 9:30). No rounding — uses exact event times.
  * Falls back to provided defaults when no timed events exist.
+ *
+ * Each event is clamped to [periodStart, periodEnd) and its hour-fractions are taken
+ * relative to the start-of-day of its clamped start. A crossing-midnight event clamps
+ * to the next midnight → an `endHour` of 24, so the inferred active window covers its
+ * evening hours instead of wrapping to a tiny post-midnight fraction that `maxHour`
+ * would ignore (which left `used` exceeding `capacity`). The post-midnight slice is
+ * attributed to the next day's window, where its clamped start is 0.
  */
 export function inferBoundaries(
 	events: CalendarEvent[],
+	periodStart: Date,
+	periodEnd: Date,
 	fallbackStart: number,
 	fallbackEnd: number
 ): { startHour: number; endHour: number } {
+	const periodStartMs = periodStart.getTime();
+	const periodEndMs = periodEnd.getTime();
+
 	let minHour = Infinity;
 	let maxHour = -Infinity;
 
 	for (const event of events) {
 		if (!isTimedEvent(event)) continue;
 
-		const start = new Date(event.start);
-		const end = new Date(event.end);
+		const clampedStartMs = Math.max(new Date(event.start).getTime(), periodStartMs);
+		const clampedEndMs = Math.min(new Date(event.end).getTime(), periodEndMs);
+		if (clampedEndMs <= clampedStartMs) continue;
 
-		const startFrac = start.getHours() + start.getMinutes() / 60;
-		const endFrac = end.getHours() + end.getMinutes() / 60;
+		const clampedStart = new Date(clampedStartMs);
+		const dayStartMs = new Date(clampedStart.getFullYear(), clampedStart.getMonth(), clampedStart.getDate()).getTime();
+
+		const startFrac = (clampedStartMs - dayStartMs) / MS_PER_HOUR;
+		const endFrac = Math.min(24, (clampedEndMs - dayStartMs) / MS_PER_HOUR);
 
 		if (startFrac < minHour) minHour = startFrac;
 		if (endFrac > maxHour) maxHour = endFrac;
@@ -86,7 +102,7 @@ export function calculateCapacityFromEvents(
 	fallbackStartHour: number,
 	fallbackEndHour: number
 ): CapacityResult {
-	const { startHour, endHour } = inferBoundaries(events, fallbackStartHour, fallbackEndHour);
+	const { startHour, endHour } = inferBoundaries(events, periodStart, periodEnd, fallbackStartHour, fallbackEndHour);
 	return calculateCapacity(events, periodStart, periodEnd, startHour, endHour);
 }
 

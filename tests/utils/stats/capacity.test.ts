@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { aggregateStats, getEventsInRange } from "../../../src/utils/stats";
+import { aggregateStats, getDayBounds, getEventsInRange } from "../../../src/utils/stats";
 import {
 	calculateCapacity,
 	calculateCapacityFromEvents,
@@ -12,26 +12,28 @@ import { createMockAllDayEvent, createMockTimedEvent } from "../../fixtures/even
 const MS_PER_HOUR = 3_600_000;
 
 describe("inferBoundaries", () => {
+	const day = getDayBounds(new Date("2026-03-18"));
+
 	it("should infer exact boundaries from the earliest start and latest end", () => {
 		const events = [
 			createMockTimedEvent({ start: "2026-03-18T09:30:00", end: "2026-03-18T11:00:00" }),
 			createMockTimedEvent({ start: "2026-03-18T14:00:00", end: "2026-03-18T20:45:00" }),
 		];
 
-		const result = inferBoundaries(events, 7, 23);
+		const result = inferBoundaries(events, day.start, day.end, 7, 23);
 		expect(result.startHour).toBe(9.5);
 		expect(result.endHour).toBe(20.75);
 	});
 
 	it("should use fallback when no timed events exist", () => {
-		const events = [createMockAllDayEvent()];
-		const result = inferBoundaries(events, 7, 23);
+		const events = [createMockAllDayEvent({ start: "2026-03-18T00:00:00" })];
+		const result = inferBoundaries(events, day.start, day.end, 7, 23);
 		expect(result.startHour).toBe(7);
 		expect(result.endHour).toBe(23);
 	});
 
 	it("should use fallback for empty event array", () => {
-		const result = inferBoundaries([], 8, 20);
+		const result = inferBoundaries([], day.start, day.end, 8, 20);
 		expect(result.startHour).toBe(8);
 		expect(result.endHour).toBe(20);
 	});
@@ -39,7 +41,7 @@ describe("inferBoundaries", () => {
 	it("should use exact fractional hours without rounding", () => {
 		const events = [createMockTimedEvent({ start: "2026-03-18T10:59:00", end: "2026-03-18T15:01:00" })];
 
-		const result = inferBoundaries(events, 7, 23);
+		const result = inferBoundaries(events, day.start, day.end, 7, 23);
 		expect(result.startHour).toBeCloseTo(10 + 59 / 60, 5);
 		expect(result.endHour).toBeCloseTo(15 + 1 / 60, 5);
 	});
@@ -129,6 +131,42 @@ describe("calculateCapacityFromEvents", () => {
 		expect(result.boundaryEnd).toBe(18);
 		expect(result.capacityMs).toBe(9 * MS_PER_HOUR);
 		expect(result.usedMs).toBe(7 * MS_PER_HOUR);
+	});
+});
+
+describe("calculateCapacityFromEvents — midnight-crossing window", () => {
+	// Daytime events, then a session that starts in the evening and runs past midnight.
+	// The crossing event's in-day slice (21:00→24:00 = 3h) lands in `used`, so the
+	// inferred active window must extend to midnight too — otherwise used > capacity and
+	// the label reads a false 100% / 0 remaining.
+	const dayChain = [
+		createMockTimedEvent({ id: "1", title: "Team Meeting", start: "2026-03-18T09:00:00", end: "2026-03-18T12:00:00" }),
+		createMockTimedEvent({
+			id: "2",
+			title: "Project Planning",
+			start: "2026-03-18T13:00:00",
+			end: "2026-03-18T17:00:00",
+		}),
+	];
+	const crossing = createMockTimedEvent({
+		id: "3",
+		title: "Workout",
+		start: "2026-03-18T21:00:00",
+		end: "2026-03-19T01:00:00",
+	});
+	const { start, end } = getDayBounds(new Date("2026-03-18"));
+
+	it("extends the inferred window to midnight so used never exceeds capacity", () => {
+		const result = calculateCapacityFromEvents([...dayChain, crossing], start, end, 9, 17);
+
+		expect(result.boundaryStart).toBe(9);
+		expect(result.boundaryEnd).toBe(24);
+		// 3h + 4h daytime + 3h in-day slice of the crossing event = 10h used.
+		expect(result.usedMs).toBe(10 * MS_PER_HOUR);
+		expect(result.capacityMs).toBe(15 * MS_PER_HOUR);
+		expect(result.usedMs).toBeLessThan(result.capacityMs);
+		expect(result.remainingMs).toBe(5 * MS_PER_HOUR);
+		expect(result.percentUsed).toBeCloseTo((10 / 15) * 100, 5);
 	});
 });
 

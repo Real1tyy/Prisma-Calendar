@@ -20,6 +20,8 @@ For example, if your earliest event starts at 9:00 and your latest ends at 20:00
 
 When no timed events exist in a period, the calendar's configured day start/end hours are used as fallback boundaries.
 
+An event that runs past midnight extends the inferred window to the end of the day (midnight) on its starting day, so its evening hours count toward that day's capacity instead of being left out — its after-midnight portion is attributed to the next day, starting from hour 0.
+
 ## Where Capacity Appears
 
 ### Page Header Indicator

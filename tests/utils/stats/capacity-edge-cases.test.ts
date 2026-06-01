@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { getDayBounds } from "../../../src/utils/stats";
 import {
 	calculateCapacity,
 	formatBoundaryHour,
@@ -9,8 +10,10 @@ import {
 import { createMockAllDayEvent, createMockTimedEvent } from "../../fixtures/event-fixtures";
 
 describe("inferBoundaries edge cases", () => {
+	const day = getDayBounds(new Date("2025-01-15"));
+
 	it("should return fallback values when no timed events exist", () => {
-		const { startHour, endHour } = inferBoundaries([], 8, 18);
+		const { startHour, endHour } = inferBoundaries([], day.start, day.end, 8, 18);
 		expect(startHour).toBe(8);
 		expect(endHour).toBe(18);
 	});
@@ -19,7 +22,7 @@ describe("inferBoundaries edge cases", () => {
 		const allDayEvent = createMockAllDayEvent({
 			start: "2025-01-15T00:00:00",
 		});
-		const { startHour, endHour } = inferBoundaries([allDayEvent], 9, 17);
+		const { startHour, endHour } = inferBoundaries([allDayEvent], day.start, day.end, 9, 17);
 		expect(startHour).toBe(9);
 		expect(endHour).toBe(17);
 	});
@@ -29,7 +32,7 @@ describe("inferBoundaries edge cases", () => {
 			start: "2025-01-15T09:30:00",
 			end: "2025-01-15T16:45:00",
 		});
-		const { startHour, endHour } = inferBoundaries([event], 8, 18);
+		const { startHour, endHour } = inferBoundaries([event], day.start, day.end, 8, 18);
 		expect(startHour).toBe(9.5);
 		expect(endHour).toBe(16.75);
 	});
@@ -40,18 +43,29 @@ describe("inferBoundaries edge cases", () => {
 			createMockTimedEvent({ id: "2", start: "2025-01-15T08:00:00", end: "2025-01-15T09:00:00" }),
 			createMockTimedEvent({ id: "3", start: "2025-01-15T14:00:00", end: "2025-01-15T18:30:00" }),
 		];
-		const { startHour, endHour } = inferBoundaries(events, 9, 17);
+		const { startHour, endHour } = inferBoundaries(events, day.start, day.end, 9, 17);
 		expect(startHour).toBe(8);
 		expect(endHour).toBe(18.5);
 	});
 
-	it("should handle midnight-spanning events", () => {
+	it("extends the window to midnight for a midnight-spanning event (start day)", () => {
 		const event = createMockTimedEvent({
 			start: "2025-01-15T23:00:00",
 			end: "2025-01-16T01:00:00",
 		});
-		const { startHour, endHour } = inferBoundaries([event], 8, 18);
+		const { startHour, endHour } = inferBoundaries([event], day.start, day.end, 8, 18);
 		expect(startHour).toBe(23);
+		expect(endHour).toBe(24);
+	});
+
+	it("attributes a midnight-spanning event's post-midnight slice to the next day from hour 0", () => {
+		const event = createMockTimedEvent({
+			start: "2025-01-15T23:00:00",
+			end: "2025-01-16T01:00:00",
+		});
+		const nextDay = getDayBounds(new Date("2025-01-16"));
+		const { startHour, endHour } = inferBoundaries([event], nextDay.start, nextDay.end, 8, 18);
+		expect(startHour).toBe(0);
 		expect(endHour).toBe(1);
 	});
 });
