@@ -1,3 +1,4 @@
+import { IANAZone } from "luxon";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { COMMON_TIMEZONES, createICSFromEvents, generateICSFilename } from "../../src/core/integrations/ics-export";
@@ -866,6 +867,72 @@ describe("ICS Export", () => {
 		it("should have labels with UTC offset info", () => {
 			const prague = COMMON_TIMEZONES.find((tz) => tz.id === "Europe/Prague");
 			expect(prague?.label).toBe("Europe/Prague (UTC+1)");
+		});
+
+		it("should include a UTC+2 European timezone", () => {
+			const athens = COMMON_TIMEZONES.find((tz) => tz.id === "Europe/Athens");
+			expect(athens?.label).toBe("Europe/Athens (UTC+2)");
+		});
+
+		it("should expose every id as a real, resolvable IANA zone (guards against typos)", () => {
+			const invalid = COMMON_TIMEZONES.filter((tz) => !IANAZone.isValidZone(tz.id));
+			expect(invalid).toEqual([]);
+		});
+
+		it("should not contain duplicate ids", () => {
+			const ids = COMMON_TIMEZONES.map((tz) => tz.id);
+			expect(new Set(ids).size).toBe(ids.length);
+		});
+
+		it("should give every non-UTC zone a label carrying its UTC offset", () => {
+			const missingOffset = COMMON_TIMEZONES.filter((tz) => tz.id !== "UTC" && !/\(UTC([+-]\d|\))/.test(tz.label));
+			expect(missingOffset).toEqual([]);
+		});
+
+		it("should cover every standard UTC offset from UTC-12 to UTC+14", () => {
+			const expectedOffsets = [
+				"UTC-12",
+				"UTC-11",
+				"UTC-10",
+				"UTC-9:30",
+				"UTC-9",
+				"UTC-8",
+				"UTC-7",
+				"UTC-6",
+				"UTC-5",
+				"UTC-4",
+				"UTC-3:30",
+				"UTC-3",
+				"UTC-2",
+				"UTC-1",
+				"UTC+1",
+				"UTC+2",
+				"UTC+3",
+				"UTC+3:30",
+				"UTC+4",
+				"UTC+4:30",
+				"UTC+5",
+				"UTC+5:30",
+				"UTC+5:45",
+				"UTC+6",
+				"UTC+6:30",
+				"UTC+7",
+				"UTC+8",
+				"UTC+8:45",
+				"UTC+9",
+				"UTC+9:30",
+				"UTC+10",
+				"UTC+10:30",
+				"UTC+11",
+				"UTC+12",
+				"UTC+12:45",
+				"UTC+13",
+				"UTC+14",
+			];
+			const labels = COMMON_TIMEZONES.map((tz) => tz.label);
+			for (const offset of expectedOffsets) {
+				expect(labels.some((label) => label.includes(`(${offset})`))).toBe(true);
+			}
 		});
 	});
 });

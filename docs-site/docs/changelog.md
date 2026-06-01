@@ -9,6 +9,7 @@ All notable changes to this project will be documented here.
 > **TLDR:** Your Pro license now re-verifies quietly in the background about once a day, with a clearer License settings panel and a **Deactivate this device** button. Notes with a single date property render as all-day events without an `All Day` flag, plus fixes for the running stopwatch's End time, stale events, and moves between planning systems.
 
 ### Improved
+- **Complete timezone coverage**: the ICS export/import and CalDAV timezone dropdown now lists a zone for every standard UTC offset from UTC−12 to UTC+14 — including the half-hour and 45-minute zones (e.g. UTC+2 Athens, UTC+3:30 Tehran, UTC+5:45 Kathmandu, UTC+12:45 Chatham) — so you can pick an accurate zone wherever you are. See [Integrations → Timezone Handling](./features/advanced/integrations.md#timezone-handling).
 - **License & Pro account management**: your Pro license now re-verifies quietly in the background about once a day while you're online, so access stays current without restarting Obsidian and the 7-day offline window keeps rolling forward (you're rarely asked to re-verify, even after long offline stretches). The License settings now show your trial, renewal, or cancellation date alongside the offline-grace date, with a clear next step when something needs attention (inactive subscription or device limit), and you can **Deactivate this device** to free a seat before switching computers. See [Free vs Pro](./features/free-vs-pro.md#how-to-upgrade).
 
 ### Fixed

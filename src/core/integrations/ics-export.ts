@@ -330,27 +330,57 @@ interface TimezoneInfo {
 }
 
 /**
- * Common timezones for use in ICS export and CalDAV sync settings
+ * Common timezones for use in ICS export and CalDAV sync settings.
+ *
+ * Covers every standard UTC offset from UTC-12 to UTC+14 (including the
+ * half-hour and 45-minute zones) via a representative IANA zone, so a user in
+ * any region can pick an accurate zone. The `(UTC±N)` label shows each zone's
+ * standard-time offset; the IANA id is what drives conversion, so DST is
+ * resolved correctly per zone. "UTC" stays pinned first as the neutral default.
  */
 export const COMMON_TIMEZONES: TimezoneInfo[] = [
 	{ id: "UTC", label: "UTC" },
+	{ id: "Etc/GMT+12", label: "Baker Island (UTC-12)" },
+	{ id: "Pacific/Pago_Pago", label: "Pacific/Pago_Pago (UTC-11)" },
+	{ id: "Pacific/Honolulu", label: "Pacific/Honolulu (UTC-10)" },
+	{ id: "Pacific/Marquesas", label: "Pacific/Marquesas (UTC-9:30)" },
+	{ id: "America/Anchorage", label: "America/Anchorage (UTC-9)" },
+	{ id: "America/Los_Angeles", label: "America/Los_Angeles (UTC-8)" },
+	{ id: "America/Denver", label: "America/Denver (UTC-7)" },
+	{ id: "America/Chicago", label: "America/Chicago (UTC-6)" },
+	{ id: "America/New_York", label: "America/New_York (UTC-5)" },
+	{ id: "America/Halifax", label: "America/Halifax (UTC-4)" },
+	{ id: "America/St_Johns", label: "America/St. John's (UTC-3:30)" },
+	{ id: "America/Sao_Paulo", label: "America/São Paulo (UTC-3)" },
+	{ id: "Atlantic/South_Georgia", label: "Atlantic/South Georgia (UTC-2)" },
+	{ id: "Atlantic/Azores", label: "Atlantic/Azores (UTC-1)" },
 	{ id: "Europe/London", label: "Europe/London (UTC)" },
 	{ id: "Europe/Paris", label: "Europe/Paris (UTC+1)" },
 	{ id: "Europe/Berlin", label: "Europe/Berlin (UTC+1)" },
 	{ id: "Europe/Prague", label: "Europe/Prague (UTC+1)" },
+	{ id: "Europe/Athens", label: "Europe/Athens (UTC+2)" },
 	{ id: "Europe/Moscow", label: "Europe/Moscow (UTC+3)" },
-	{ id: "America/New_York", label: "America/New_York (UTC-5)" },
-	{ id: "America/Chicago", label: "America/Chicago (UTC-6)" },
-	{ id: "America/Denver", label: "America/Denver (UTC-7)" },
-	{ id: "America/Los_Angeles", label: "America/Los_Angeles (UTC-8)" },
-	{ id: "America/Sao_Paulo", label: "America/São Paulo (UTC-3)" },
-	{ id: "Asia/Tokyo", label: "Asia/Tokyo (UTC+9)" },
+	{ id: "Asia/Tehran", label: "Asia/Tehran (UTC+3:30)" },
+	{ id: "Asia/Dubai", label: "Asia/Dubai (UTC+4)" },
+	{ id: "Asia/Kabul", label: "Asia/Kabul (UTC+4:30)" },
+	{ id: "Asia/Karachi", label: "Asia/Karachi (UTC+5)" },
+	{ id: "Asia/Kolkata", label: "Asia/Kolkata (UTC+5:30)" },
+	{ id: "Asia/Kathmandu", label: "Asia/Kathmandu (UTC+5:45)" },
+	{ id: "Asia/Dhaka", label: "Asia/Dhaka (UTC+6)" },
+	{ id: "Asia/Yangon", label: "Asia/Yangon (UTC+6:30)" },
+	{ id: "Asia/Bangkok", label: "Asia/Bangkok (UTC+7)" },
 	{ id: "Asia/Shanghai", label: "Asia/Shanghai (UTC+8)" },
 	{ id: "Asia/Singapore", label: "Asia/Singapore (UTC+8)" },
-	{ id: "Asia/Dubai", label: "Asia/Dubai (UTC+4)" },
-	{ id: "Asia/Kolkata", label: "Asia/Kolkata (UTC+5:30)" },
+	{ id: "Australia/Eucla", label: "Australia/Eucla (UTC+8:45)" },
+	{ id: "Asia/Tokyo", label: "Asia/Tokyo (UTC+9)" },
+	{ id: "Australia/Adelaide", label: "Australia/Adelaide (UTC+9:30)" },
 	{ id: "Australia/Sydney", label: "Australia/Sydney (UTC+10)" },
+	{ id: "Australia/Lord_Howe", label: "Australia/Lord Howe (UTC+10:30)" },
+	{ id: "Pacific/Guadalcanal", label: "Pacific/Guadalcanal (UTC+11)" },
 	{ id: "Pacific/Auckland", label: "Pacific/Auckland (UTC+12)" },
+	{ id: "Pacific/Chatham", label: "Pacific/Chatham (UTC+12:45)" },
+	{ id: "Pacific/Tongatapu", label: "Pacific/Tongatapu (UTC+13)" },
+	{ id: "Pacific/Kiritimati", label: "Pacific/Kiritimati (UTC+14)" },
 ];
 
 interface ExportBundle {

@@ -164,6 +164,8 @@ This applies to all import paths: manual ICS import, ICS URL subscriptions, and 
 
 **Import**: ICS event times are converted from the source timezone to your selected timezone and stored in frontmatter as local datetime strings.
 
+**Available zones**: The timezone dropdown (used for ICS export/import and CalDAV account setup) covers a zone for every standard UTC offset from UTC−12 through UTC+14, including the half-hour and 45-minute offsets (e.g. UTC+3:30 Tehran, UTC+5:45 Kathmandu, UTC+12:45 Chatham). Each entry is a real IANA zone, so daylight-saving transitions are applied correctly — the `(UTC±N)` shown in each label is the zone's standard-time offset. `UTC` stays pinned at the top as the neutral default.
+
 ## CalDAV Integration
 
 ### Overview
