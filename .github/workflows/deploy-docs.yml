@@ -32,7 +32,10 @@ jobs:
 
       - name: Install dependencies
         working-directory: docs-site
-        run: pnpm install --frozen-lockfile --ignore-workspace
+        # No --ignore-workspace: docs-site/pnpm-workspace.yaml is its own
+        # workspace root (isolated from the parent plugin workspace) and is
+        # where the overrides live, so pnpm must read it.
+        run: pnpm install --frozen-lockfile
 
       - name: Build site
         working-directory: docs-site
