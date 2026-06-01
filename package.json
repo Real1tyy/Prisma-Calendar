@@ -98,7 +98,7 @@
 		"vite": "^8.0.13",
 		"vite-plugin-babel": "^1.7.3",
 		"vite-tsconfig-paths": "^5.1.2",
-		"vitest": "^3.2.4"
+		"vitest": "^4.1.0"
 	},
 	"dependencies": {
 		"@fullcalendar/core": "^6.1.20",
