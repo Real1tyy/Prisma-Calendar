@@ -16,6 +16,7 @@ All notable changes to this project will be documented here.
 - **Stale events are cleared when you interact with them**: if an event's note is deleted or moved outside the calendar, clicking, right-clicking, or dragging the leftover event now removes it from the grid instead of erroring that it can't be opened or deleted. See [Calendar View → Removing stale events](./features/calendar/calendar-view.md#removing-stale-events).
 - **More reliable moves between planning systems**: moving an event to another planning system no longer occasionally leaves a duplicate behind, and Undo / Redo now reverses the move instead of sometimes reporting "Nothing to undo." See [Multiple Planning Systems → Moving an event between planning systems](./features/calendar/multiple-calendars.md#moving-an-event-between-planning-systems).
 - **A single date property now just works**: notes with one date value (e.g. `Date: 2026-06-01`) appear on the calendar as all-day events without needing an `All Day` flag — the flag is now an optional override, not a requirement. See [Properties → How Prisma decides event type](./configuration/properties.md#how-prisma-decides-event-type).
+- **Events crossing midnight are no longer double-counted in stats**: an event like 10:00 PM–12:15 AM now adds only its in-day slice to each day (2h to the first day, 15m to the next) across the daily, weekly, and monthly stats and the capacity total, instead of its full duration to both. See [Daily + Stats → Events that cross midnight](./features/views/daily-stats.md#events-that-cross-midnight).
 
 ---
 

@@ -3,7 +3,7 @@ import { parseCategories } from "@real1ty-obsidian-plugins";
 import { DEFAULT_CATEGORY_PROP } from "../../constants";
 import { isAllDayEvent, type CalendarEvent } from "../../types/calendar";
 import { extractNotesCoreName } from "../events/naming";
-import { getEventDuration } from "./duration";
+import { getEventDuration, getEventDurationInRange } from "./duration";
 import { getDayBounds, getEventsInRange, getMonthBounds, getWeekBounds } from "./periods";
 
 export type AggregationMode = "name" | "category";
@@ -36,6 +36,9 @@ export type WeeklyStatEntry = StatEntry;
  * 5. Events without a category are grouped under "No Category" when mode is "category"
  * 6. Break time is subtracted from duration if event has breakMinutes
  * 7. Events with multiple categories have their time split evenly across categories
+ * 8. When a period is given, an event contributes only the slice of its duration
+ *    that falls inside [periodStart, periodEnd) — a crossing-midnight event is no
+ *    longer double-counted in full across both days.
  */
 export function aggregateStats(
 	events: CalendarEvent[],
@@ -54,7 +57,11 @@ export function aggregateStats(
 
 	for (const event of filteredEvents) {
 		const isRecurring = event.virtualKind === "recurring";
-		const duration = isAllDayEvent(event) ? 0 : getEventDuration(event);
+		const duration = isAllDayEvent(event)
+			? 0
+			: periodStart && periodEnd
+				? getEventDurationInRange(event, periodStart, periodEnd)
+				: getEventDuration(event);
 
 		let groupKeys: string[];
 

@@ -10,6 +10,7 @@ import {
 	formatPercentage,
 	getDayBounds,
 	getEventDuration,
+	getEventDurationInRange,
 	getEventsInRange,
 	getMonthBounds,
 	getWeekBounds,
@@ -340,6 +341,57 @@ describe("getEventDuration", () => {
 			const duration = getEventDuration(event);
 			expect(duration).toBe(75 * 60 * 1000); // 120 - 45 = 75 minutes
 		});
+	});
+});
+
+describe("getEventDurationInRange", () => {
+	const HOUR = 60 * 60 * 1000;
+
+	it("returns the full duration when the event is wholly inside the range", () => {
+		const event = createMockTimedEvent({ start: "2026-04-12T09:00:00", end: "2026-04-12T11:00:00" });
+		const duration = getEventDurationInRange(
+			event,
+			getDayBounds(new Date("2026-04-12")).start,
+			getDayBounds(new Date("2026-04-12")).end
+		);
+		expect(duration).toBe(2 * HOUR);
+	});
+
+	it("attributes only the in-day slice of a crossing-midnight event to the start day", () => {
+		const event = createMockTimedEvent({ start: "2026-04-12T22:00:00", end: "2026-04-13T00:15:00" });
+		const { start, end } = getDayBounds(new Date("2026-04-12"));
+		expect(getEventDurationInRange(event, start, end)).toBe(2 * HOUR);
+	});
+
+	it("attributes only the in-day slice of a crossing-midnight event to the next day", () => {
+		const event = createMockTimedEvent({ start: "2026-04-12T22:00:00", end: "2026-04-13T00:15:00" });
+		const { start, end } = getDayBounds(new Date("2026-04-13"));
+		expect(getEventDurationInRange(event, start, end)).toBe(15 * 60 * 1000);
+	});
+
+	it("returns 0 for an event that does not overlap the range", () => {
+		const event = createMockTimedEvent({ start: "2026-04-12T09:00:00", end: "2026-04-12T10:00:00" });
+		const { start, end } = getDayBounds(new Date("2026-04-13"));
+		expect(getEventDurationInRange(event, start, end)).toBe(0);
+	});
+
+	it("clamps malformed crossing-midnight events (end before start) to 0", () => {
+		const event = createMockTimedEvent({ start: "2026-04-12T23:00:00", end: "2026-04-12T01:00:00" });
+		const { start, end } = getDayBounds(new Date("2026-04-12"));
+		expect(getEventDurationInRange(event, start, end)).toBe(0);
+	});
+
+	it("apportions break time to the in-range slice", () => {
+		// 4h event with a 60m break, split evenly across two days → each day loses 30m of break.
+		const event = createMockTimedEvent({
+			start: "2026-04-12T22:00:00",
+			end: "2026-04-13T02:00:00",
+			metadata: createDefaultMetadata({ breakMinutes: 60 }),
+		});
+		const day1 = getDayBounds(new Date("2026-04-12"));
+		const day2 = getDayBounds(new Date("2026-04-13"));
+		expect(getEventDurationInRange(event, day1.start, day1.end)).toBe(2 * HOUR - 30 * 60 * 1000);
+		expect(getEventDurationInRange(event, day2.start, day2.end)).toBe(2 * HOUR - 30 * 60 * 1000);
 	});
 });
 
@@ -1592,6 +1644,30 @@ describe("aggregateDailyStats", () => {
 
 		expect(stats.entries).toHaveLength(1);
 		expect(stats.entries[0].name).toBe("Today Event");
+	});
+
+	it("splits a crossing-midnight event's duration across both days instead of double-counting", () => {
+		const HOUR = 60 * 60 * 1000;
+		const nightShift = createMockTimedEvent({
+			id: "night",
+			title: "Night Shift",
+			start: "2026-04-12T22:00:00",
+			end: "2026-04-13T00:15:00",
+			metadata: createDefaultMetadata({ categories: ["Work"] }),
+		});
+
+		const startDay = aggregateDailyStats([nightShift], new Date("2026-04-12T12:00:00"), "category");
+		const nextDay = aggregateDailyStats([nightShift], new Date("2026-04-13T12:00:00"), "category");
+
+		expect(startDay.entries).toHaveLength(1);
+		expect(startDay.entries[0].name).toBe("Work");
+		expect(startDay.totalDuration).toBe(2 * HOUR);
+
+		expect(nextDay.entries).toHaveLength(1);
+		expect(nextDay.entries[0].name).toBe("Work");
+		expect(nextDay.totalDuration).toBe(15 * 60 * 1000);
+
+		expect(startDay.totalDuration + nextDay.totalDuration).toBe(getEventDuration(nightShift));
 	});
 
 	it("should count all-day events but assign them 0 duration", () => {

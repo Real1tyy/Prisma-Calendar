@@ -1,36 +1,76 @@
 import { isAllDayEvent, isTimedEvent, type CalendarEvent } from "../../types/calendar";
 
 /**
+ * Resolves the absolute [start, end) span of an event in epoch milliseconds.
+ * All-day events without an explicit end assume a 1-day span. Returns null for
+ * events that are neither timed nor all-day.
+ */
+function getEventSpan(event: CalendarEvent): { startMs: number; endMs: number } | null {
+	const start = new Date(event.start);
+
+	if (isTimedEvent(event)) {
+		return { startMs: start.getTime(), endMs: new Date(event.end).getTime() };
+	}
+	if (isAllDayEvent(event)) {
+		const end = new Date(start);
+		end.setDate(end.getDate() + 1);
+		return { startMs: start.getTime(), endMs: end.getTime() };
+	}
+	return null;
+}
+
+/**
+ * Subtracts break time from a duration. When the event is only partially inside
+ * the period it's being attributed to, `fractionOfSpan` scales the break so the
+ * deduction is apportioned to the same slice (a crossing-midnight event with a
+ * 30m break splits both work time and break time across the two days).
+ */
+function subtractBreak(durationMs: number, fractionOfSpan: number, breakMinutes: number | undefined): number {
+	if (typeof breakMinutes === "number" && breakMinutes > 0) {
+		const breakMs = breakMinutes * 60 * 1000 * fractionOfSpan;
+		return Math.max(0, durationMs - breakMs);
+	}
+	return durationMs;
+}
+
+/**
  * Calculates the duration of an event in milliseconds.
  * For all-day events without explicit end time, assumes 1 day duration.
  * If the event has a breakMinutes value, it's subtracted from the duration.
  */
 export function getEventDuration(event: CalendarEvent): number {
-	const start = new Date(event.start);
-	let end: Date;
-
-	if (isTimedEvent(event)) {
-		end = new Date(event.end);
-	} else if (isAllDayEvent(event)) {
-		end = new Date(start);
-		end.setDate(end.getDate() + 1);
-	} else {
-		return 0;
-	}
+	const span = getEventSpan(event);
+	if (!span) return 0;
 
 	// Clamp malformed events (end < start) to 0 instead of letting a negative duration
 	// poison aggregate totals, percentages, and capacity math. Happens in practice when
 	// an import or stopwatch save records a crossing-midnight event without advancing
 	// the end date (e.g. start 23:00, end 01:00 same day).
-	let duration = Math.max(0, end.getTime() - start.getTime());
+	const duration = Math.max(0, span.endMs - span.startMs);
 
-	const breakMinutes = event.metadata.breakMinutes;
-	if (typeof breakMinutes === "number" && breakMinutes > 0) {
-		const breakMs = breakMinutes * 60 * 1000;
-		duration = Math.max(0, duration - breakMs);
-	}
+	return subtractBreak(duration, 1, event.metadata.breakMinutes);
+}
 
-	return duration;
+/**
+ * Calculates the portion of an event's duration that falls inside the half-open
+ * period [rangeStart, rangeEnd), in milliseconds. A crossing-midnight event
+ * (e.g. 22:00–00:15) attributes only its in-day slice to each day instead of its
+ * full span to both — keeping daily/weekly/monthly stats and capacity accurate.
+ * Break time is apportioned to the in-range slice (see `subtractBreak`).
+ */
+export function getEventDurationInRange(event: CalendarEvent, rangeStart: Date, rangeEnd: Date): number {
+	const span = getEventSpan(event);
+	if (!span) return 0;
+
+	const fullSpan = span.endMs - span.startMs;
+	if (fullSpan <= 0) return 0;
+
+	const overlapStart = Math.max(span.startMs, rangeStart.getTime());
+	const overlapEnd = Math.min(span.endMs, rangeEnd.getTime());
+	const overlap = overlapEnd - overlapStart;
+	if (overlap <= 0) return 0;
+
+	return subtractBreak(overlap, overlap / fullSpan, event.metadata.breakMinutes);
 }
 
 /**

@@ -32,6 +32,10 @@ Daily statistics for the date shown in the adjacent calendar. Updates when you n
 - **Table**: Paginated breakdown of each entry with name, duration, percentage, and event count. Navigate pages with First/Prev/Next/Last buttons or type a page number directly.
 - **Capacity label** (when enabled): Shows used vs total hours and remaining time for the day. Boundaries are inferred from your earliest and latest events. See [Capacity Tracking](./capacity-tracking.md).
 
+## Events that cross midnight
+
+An event that spans midnight — say 10:00 PM to 12:15 AM — is counted only for the part that actually falls on each day. The starting day gets the 2 hours before midnight; the next day gets the 15 minutes after.
+
 ## Filtering by legend
 
 Click any label in the pie-chart legend to hide that entry from the totals. The slice disappears from the chart, the corresponding row disappears from the table, and every remaining percentage (chart, tooltip, and table) rescales to 100% over what is left. The duration and event-count stats above the chart recompute over the visible entries only.

@@ -1,5 +1,5 @@
 import { isTimedEvent, type CalendarEvent } from "../../types/calendar";
-import { getEventDuration, pickDurationFormatter } from "./duration";
+import { getEventDurationInRange, pickDurationFormatter } from "./duration";
 
 export interface CapacityResult {
 	capacityMs: number;
@@ -48,9 +48,11 @@ export function inferBoundaries(
 /**
  * Calculates capacity usage for a period.
  * Capacity = number of days × (endHour - startHour) hours per day.
- * Used = total duration of timed events in `events` (caller is responsible for
- * passing the in-period set; pair with `getEventsInRange` upstream so this
- * stays in lockstep with `aggregateStats.totalDuration`).
+ * Used = total in-period duration of timed events in `events`, each clamped to
+ * [periodStart, periodEnd) so a crossing-midnight event contributes only its
+ * in-day slice (caller is responsible for passing the in-period set; pair with
+ * `getEventsInRange` upstream so this stays in lockstep with
+ * `aggregateStats.totalDuration`).
  * Remaining = capacity - used (clamped to 0).
  */
 export function calculateCapacity(
@@ -64,7 +66,9 @@ export function calculateCapacity(
 	const days = Math.max(1, Math.round((periodEnd.getTime() - periodStart.getTime()) / (24 * MS_PER_HOUR)));
 	const capacityMs = days * hoursPerDay * MS_PER_HOUR;
 
-	const usedMs = events.filter(isTimedEvent).reduce((sum, e) => sum + getEventDuration(e), 0);
+	const usedMs = events
+		.filter(isTimedEvent)
+		.reduce((sum, e) => sum + getEventDurationInRange(e, periodStart, periodEnd), 0);
 	const remainingMs = Math.max(0, capacityMs - usedMs);
 	const percentUsed = capacityMs > 0 ? Math.min(100, (usedMs / capacityMs) * 100) : 0;
 
