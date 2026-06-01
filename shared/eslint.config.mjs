@@ -24,8 +24,12 @@ export default defineConfig([
 	reactHooks.configs.flat.recommended,
 	eslintConfigPrettier,
 
-	// Config files, `.mjs`, and `stress/**` are excluded so `strictTypeChecked`'s
-	// `projectService` doesn't fail on files that have no tsconfig project.
+	// Type-aware linting reads `tsconfig.eslint.json` (src + tests) via the `project`
+	// option rather than `projectService`, because the build `tsconfig.json` deliberately
+	// excludes `tests/**` (it emits declarations from `src` only). projectService resolves
+	// each file against the nearest `tsconfig.json`, which would leave every test file
+	// out-of-project. Config files, `.mjs`, and `stress/**` are still ignored so they don't
+	// have to belong to that project.
 	{
 		ignores: [
 			"**/node_modules/**",
@@ -68,7 +72,7 @@ export default defineConfig([
 				...globals.node,
 			},
 			parserOptions: {
-				projectService: true,
+				project: ["./tsconfig.eslint.json"],
 				tsconfigRootDir: import.meta.dirname,
 			},
 		},
