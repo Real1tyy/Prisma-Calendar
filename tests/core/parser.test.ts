@@ -1,7 +1,7 @@
-import { DateTime } from "luxon";
+import { DateTime, Settings } from "luxon";
 import type { App } from "obsidian";
 import { BehaviorSubject } from "rxjs";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { Parser } from "../../src/core/parser";
 import type { PrismaCalendarSettingsStore, SingleCalendarConfig } from "../../src/types";
@@ -290,6 +290,83 @@ describe("Parser", () => {
 			expect(events).toBeDefined();
 			expect(events!.start).not.toMatch(/Z$/);
 			expect(events!.start).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/);
+		});
+	});
+
+	// A frontmatter datetime carrying a trailing `Z` (and/or milliseconds) must be
+	// treated as the *same wall-clock* as the suffix-free form — Prisma stores
+	// wall-clock time and never timezone-shifts on read. Pinning a non-UTC default
+	// zone is what makes a latent UTC→local conversion observable: under it, a
+	// `...Z` value naively converted to local would land at a different hour than
+	// the bare value, so byte-identical output proves no conversion happens.
+	describe("datetime suffix & timezone parity", () => {
+		const originalZone = Settings.defaultZone;
+		beforeAll(() => {
+			Settings.defaultZone = "America/New_York";
+		});
+		afterAll(() => {
+			Settings.defaultZone = originalZone;
+		});
+
+		const parseStart = (value: string) =>
+			parser.parseEventSource(
+				createRawEventSource({
+					filePath: "Events/meeting.md",
+					mtime: 0,
+					frontmatter: { start: value },
+					folder: "Events",
+					isAllDay: false,
+					isUntracked: false,
+				})
+			);
+
+		it.each([
+			["with Z and milliseconds", "2025-06-15T10:00:00.000Z"],
+			["with a bare Z", "2025-06-15T10:00:00Z"],
+			["without any suffix", "2025-06-15T10:00:00"],
+			["without seconds", "2025-06-15T10:00"],
+			["space-separated", "2025-06-15 10:00"],
+		])("parses a start %s to the same wall-clock internal value", (_label, value) => {
+			const event = parseStart(value);
+			expect(event).not.toBeNull();
+			expect(isTimedEvent(event!)).toBe(true);
+			expect(event!.start).toBe("2025-06-15T10:00:00");
+		});
+
+		it("treats a Z/millisecond End Date identically to the bare form — no timezone shift", () => {
+			const withZ = parser.parseEventSource(
+				createRawEventSource({
+					filePath: "Events/with-z.md",
+					mtime: 0,
+					frontmatter: { start: "2025-06-15T09:00:00.000Z", end: "2025-06-15T10:00:00.000Z" },
+					folder: "Events",
+					isAllDay: false,
+					isUntracked: false,
+				})
+			);
+			const bare = parser.parseEventSource(
+				createRawEventSource({
+					filePath: "Events/bare.md",
+					mtime: 0,
+					frontmatter: { start: "2025-06-15T09:00:00", end: "2025-06-15T10:00:00" },
+					folder: "Events",
+					isAllDay: false,
+					isUntracked: false,
+				})
+			);
+
+			expect(withZ).not.toBeNull();
+			expect(bare).not.toBeNull();
+			expect(isTimedEvent(withZ!)).toBe(true);
+			expect(isTimedEvent(bare!)).toBe(true);
+			if (isTimedEvent(withZ!) && isTimedEvent(bare!)) {
+				expect(withZ.start).toBe(bare.start);
+				expect(withZ.end).toBe(bare.end);
+				expect(bare.start).toBe("2025-06-15T09:00:00");
+				expect(bare.end).toBe("2025-06-15T10:00:00");
+				expect(withZ.start).not.toMatch(/Z$/);
+				expect(withZ.end).not.toMatch(/Z$/);
+			}
 		});
 	});
 
