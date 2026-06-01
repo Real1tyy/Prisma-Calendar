@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom/vitest";
 
-import { act, screen, waitFor } from "@testing-library/react";
+import { act, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { IntervalStatsView, type IntervalStatsConfig } from "../../../../src/react/views/stats/interval-stats-view";
@@ -71,7 +71,7 @@ function getLastVisibilityHandler(): (label: string, visible: boolean) => void {
 async function renderAndWait(): Promise<void> {
 	const bundle = createMockReactBundle();
 	renderWithContexts(<IntervalStatsView bundle={bundle} config={config} date={new Date(2026, 4, 18)} />, { bundle });
-	await waitFor(() => expect(screen.getByTestId("prisma-stats-table")).toBeInTheDocument());
+	expect(await screen.findByTestId("prisma-stats-table")).toBeInTheDocument();
 }
 
 describe("IntervalStatsView — pie chart filter", () => {

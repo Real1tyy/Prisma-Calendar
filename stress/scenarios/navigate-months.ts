@@ -14,7 +14,7 @@ const BUILD_METRIC = "calendar.buildEvents";
 async function readBuildCount(page: Page): Promise<number> {
 	return page.evaluate(
 		({ key, metric }) => {
-			const bridge = (globalThis as Record<string, unknown>)[key] as
+			const bridge = (window as Record<string, unknown>)[key] as
 				| { snapshot: () => { timings: Record<string, { count: number }> } }
 				| undefined;
 			return bridge?.snapshot().timings[metric]?.count ?? 0;
@@ -31,7 +31,7 @@ export async function setMonthView(page: Page): Promise<void> {
 		.click();
 	await page.waitForFunction(
 		({ key, metric }) => {
-			const bridge = (globalThis as Record<string, unknown>)[key] as
+			const bridge = (window as Record<string, unknown>)[key] as
 				| { snapshot: () => { timings: Record<string, { count: number }> } }
 				| undefined;
 			return (bridge?.snapshot().timings[metric]?.count ?? 0) > 0;
@@ -58,7 +58,7 @@ export async function navigateMonths(page: Page, steps: number, record: RecordSt
 		await button.click();
 		await page.waitForFunction(
 			({ key, metric, baseline }) => {
-				const bridge = (globalThis as Record<string, unknown>)[key] as
+				const bridge = (window as Record<string, unknown>)[key] as
 					| { snapshot: () => { timings: Record<string, { count: number }> } }
 					| undefined;
 				return (bridge?.snapshot().timings[metric]?.count ?? 0) > baseline;

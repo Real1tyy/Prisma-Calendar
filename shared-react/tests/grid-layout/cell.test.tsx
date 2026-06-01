@@ -1,4 +1,5 @@
 import type { GridLayoutHandle } from "@real1ty-obsidian-plugins-react";
+import { screen } from "@testing-library/react";
 import { createRef } from "react";
 import { describe, expect, it, vi } from "vitest";
 
@@ -87,7 +88,7 @@ describe("walkCellChildren", () => {
 
 describe("<Cell> children API in <GridLayout>", () => {
 	it("infers row-major positions for children that omit row/col", () => {
-		const { container } = renderWithProviders(
+		renderWithProviders(
 			<GridLayout cssPrefix="t-" columns={2} rows={2}>
 				<Cell label="A">
 					<span data-testid="a">A</span>
@@ -104,8 +105,8 @@ describe("<Cell> children API in <GridLayout>", () => {
 			</GridLayout>
 		);
 		// Cell <div>s carry data-row/data-col.
-		const cellA = container.querySelector('[data-testid="a"]')?.closest("[data-row]") as HTMLElement;
-		const cellD = container.querySelector('[data-testid="d"]')?.closest("[data-row]") as HTMLElement;
+		const cellA = screen.getByTestId("a").closest("[data-row]") as HTMLElement;
+		const cellD = screen.getByTestId("d").closest("[data-row]") as HTMLElement;
 		expect(cellA.dataset.row).toBe("0");
 		expect(cellA.dataset.col).toBe("0");
 		expect(cellD.dataset.row).toBe("1");
@@ -113,21 +114,21 @@ describe("<Cell> children API in <GridLayout>", () => {
 	});
 
 	it("respects explicit row/col overrides on a <Cell>", () => {
-		const { container } = renderWithProviders(
+		renderWithProviders(
 			<GridLayout cssPrefix="t-" columns={2} rows={2}>
 				<Cell label="A" row={1} col={1}>
 					<span data-testid="a">A</span>
 				</Cell>
 			</GridLayout>
 		);
-		const cellA = container.querySelector('[data-testid="a"]')?.closest("[data-row]") as HTMLElement;
+		const cellA = screen.getByTestId("a").closest("[data-row]") as HTMLElement;
 		expect(cellA.dataset.row).toBe("1");
 		expect(cellA.dataset.col).toBe("1");
 	});
 
 	it("paletteOnly cell isn't placed initially", () => {
 		const ref = createRef<GridLayoutHandle>();
-		const { container } = renderWithProviders(
+		renderWithProviders(
 			<GridLayout cssPrefix="t-" columns={2} rows={1} handleRef={ref}>
 				<Cell label="Visible">
 					<span data-testid="visible">V</span>
@@ -137,8 +138,8 @@ describe("<Cell> children API in <GridLayout>", () => {
 				</Cell>
 			</GridLayout>
 		);
-		expect(container.querySelector('[data-testid="visible"]')).not.toBeNull();
-		expect(container.querySelector('[data-testid="hidden"]')).toBeNull();
+		expect(screen.getByTestId("visible")).toBeInTheDocument();
+		expect(screen.queryByTestId("hidden")).toBeNull();
 		// Placement count via state: only Visible is placed.
 		const state = ref.current?.getState();
 		expect(state?.cells.map((c) => c.optionId)).toEqual(["visible"]);
@@ -159,12 +160,12 @@ describe("<Cell> children API in <GridLayout>", () => {
 				</GridLayout>
 			);
 		}
-		const { rerender, container } = renderWithProviders(<Harness tick={0} />);
-		expect(container.querySelector('[data-testid="counter"]')?.textContent).toBe("tick=0");
+		const { rerender } = renderWithProviders(<Harness tick={0} />);
+		expect(screen.getByTestId("counter").textContent).toBe("tick=0");
 		rerender(<Harness tick={1} />);
-		expect(container.querySelector('[data-testid="counter"]')?.textContent).toBe("tick=1");
+		expect(screen.getByTestId("counter").textContent).toBe("tick=1");
 		rerender(<Harness tick={2} />);
-		expect(container.querySelector('[data-testid="counter"]')?.textContent).toBe("tick=2");
+		expect(screen.getByTestId("counter").textContent).toBe("tick=2");
 		// React reconciled the child in place — no unmount-and-remount of the React tree
 		// happens between renders, so the render count grows by 1 per tick (no double-mount).
 		expect(render).toHaveBeenCalledTimes(3);

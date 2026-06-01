@@ -1,5 +1,5 @@
 import type { GridLayoutHandle, GridLayoutState } from "@real1ty-obsidian-plugins-react";
-import { waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import type { Plugin } from "obsidian";
 import { createRef, useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -25,17 +25,12 @@ afterEach(() => {
 
 describe("GridLayout (React-native engine)", () => {
 	it("renders an empty grid container with the configured cssPrefix", () => {
-		const { container } = renderWithProviders(
-			<GridLayout cssPrefix="test-" columns={2} rows={2} data-testid="my-grid" />
-		);
-		const grid = container.querySelector(".test-grid") as HTMLElement | null;
-		expect(grid).not.toBeNull();
-		const root = container.querySelector('[data-testid="my-grid"]') as HTMLElement | null;
-		expect(root).toBe(grid);
+		renderWithProviders(<GridLayout cssPrefix="test-" columns={2} rows={2} data-testid="my-grid" />);
+		expect(screen.getByTestId("my-grid")).toHaveClass("test-grid");
 	});
 
 	it("forwards passthrough HTML attributes to the root", () => {
-		const { container } = renderWithProviders(
+		renderWithProviders(
 			<GridLayout
 				cssPrefix="test-"
 				columns={1}
@@ -45,7 +40,7 @@ describe("GridLayout (React-native engine)", () => {
 				style={{ flex: "1 1 auto" }}
 			/>
 		);
-		const el = container.querySelector('[data-testid="grid"]') as HTMLElement | null;
+		const el = screen.getByTestId("grid");
 		expect(el).not.toBeNull();
 		expect(el?.classList.contains("my-class")).toBe(true);
 		expect(el?.style.flex).toBe("1 1 auto");
@@ -59,13 +54,13 @@ describe("GridLayout (React-native engine)", () => {
 	// `repeat(2, 1fr)` regardless of `columns` / `rows` props. dual-daily/1-row
 	// layouts rendered as 2×2 grids, and saved rowSizes were ignored.
 	it("merges consumer style with internal CSS vars (does not let style override --grid-columns/--grid-rows)", () => {
-		const { container } = renderWithProviders(
+		renderWithProviders(
 			<GridLayout cssPrefix="t-" columns={2} rows={1} data-testid="grid" style={{ flex: "1 1 auto", minHeight: 0 }}>
 				<Cell label="A">a</Cell>
 				<Cell label="B">b</Cell>
 			</GridLayout>
 		);
-		const el = container.querySelector('[data-testid="grid"]') as HTMLElement | null;
+		const el = screen.getByTestId("grid");
 		expect(el).not.toBeNull();
 		expect(el?.style.flex).toBe("1 1 auto");
 		expect(el?.style.minHeight).toBe("0");
@@ -80,7 +75,7 @@ describe("GridLayout (React-native engine)", () => {
 			cells: [],
 			rowSizes: [0.65, 0.35],
 		};
-		const { container } = renderWithProviders(
+		renderWithProviders(
 			<GridLayout
 				cssPrefix="t-"
 				columns={2}
@@ -94,12 +89,12 @@ describe("GridLayout (React-native engine)", () => {
 				<Cell label="B">b</Cell>
 			</GridLayout>
 		);
-		const el = container.querySelector('[data-testid="grid"]') as HTMLElement | null;
+		const el = screen.getByTestId("grid");
 		expect(el?.style.getPropertyValue("--grid-rows")).toBe("0.65fr 0.35fr");
 	});
 
 	it("renders <Cell> children directly as React subtrees — no createRoot, no render(cellEl) shim", () => {
-		const { container } = renderWithProviders(
+		renderWithProviders(
 			<GridLayout cssPrefix="t-" columns={2} rows={1}>
 				<Cell label="Alpha">
 					<span data-testid="alpha-content">Alpha content</span>
@@ -109,8 +104,8 @@ describe("GridLayout (React-native engine)", () => {
 				</Cell>
 			</GridLayout>
 		);
-		expect(container.querySelector('[data-testid="alpha-content"]')?.textContent).toBe("Alpha content");
-		expect(container.querySelector('[data-testid="beta-content"]')?.textContent).toBe("Beta content");
+		expect(screen.getByTestId("alpha-content").textContent).toBe("Alpha content");
+		expect(screen.getByTestId("beta-content").textContent).toBe("Beta content");
 	});
 
 	it("invokes onStateChange when the layout mutates", async () => {
@@ -196,10 +191,10 @@ describe("GridLayout (React-native engine)", () => {
 				</>
 			);
 		}
-		const { container } = renderWithProviders(<Wrapper />);
+		renderWithProviders(<Wrapper />);
 		const initialHandle = ref.current;
 		expect(initialHandle).toBeTruthy();
-		(container.querySelector("button") as HTMLButtonElement).click();
+		screen.getByRole("button").click();
 		expect(ref.current).toBe(initialHandle);
 	});
 });
