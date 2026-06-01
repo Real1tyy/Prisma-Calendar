@@ -22,8 +22,8 @@
 	// Purely a visual veil — never swallow clicks on the grid underneath
 	// (re-indexing fires while the calendar is already interactive).
 	pointer-events: none;
-	background-color: color-mix(in srgb, var(--background-primary) 78%, transparent);
-	backdrop-filter: blur(2px);
+	background-color: color-mix(in srgb, var(--background-primary) 25%, transparent);
+	backdrop-filter: blur(1px);
 }
 
 .prisma-indexing-overlay-spinner {
