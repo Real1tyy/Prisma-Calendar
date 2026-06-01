@@ -17,21 +17,97 @@
 
 ## Initial Setup
 
-When you first install Prisma, a **Welcome** modal appears with two choices:
+The first time you open Prisma, a **Welcome** modal walks you through a one-time setup. There are only two things to decide: **which folder** Prisma should watch, and **which frontmatter properties** hold your dates. If you are starting fresh, you can use the defaults. You can change these values at any time later in the settings.
 
-- **Use notes you already have** — Prisma scans your vault for folders containing notes with date-like frontmatter. Detected properties are split into **datetime** (with a time component) and **date** (date-only) categories, each clickable to copy. Inline **"Use"** buttons next to the Start, End, and Date fields let you prefill them with one click. If multiple folders are detected, each can become its own planning system later.
-- **Start with a clean setup** — Prisma creates a new dedicated folder (e.g. `Tasks/`) so you can start planning right away.
+Prisma never forces a schema. It reads the notes you point it to look at and turns the ones with date properties into events — nothing is moved, rewritten, or migrated. The modal offers two starting points:
 
-### How Prisma Maps Your Notes
+| Choice | Best for | What Prisma does |
+| --- | --- | --- |
+| **Use notes you already have** | A vault that already has dated notes (daily notes, meetings, tasks, projects) | Reads an existing folder and turns those notes into events using *your* property names |
+| **Start with a clean setup** | A fresh planning system from scratch | Creates a dedicated folder (default `Tasks/`) with Prisma's default property names |
 
-Prisma looks for notes inside your chosen folder and reads their frontmatter properties to turn them into events:
+Both paths end in the same place: a folder Prisma watches and the property names it reads from. The only difference is whether you adopt names you already use or accept the defaults.
 
-- **Start / End properties** — datetime values used for timed events (e.g. `Start: 2025-06-15T09:00`).
-- **Date property** — a date value used for all-day events (e.g. `Date: 2025-06-15`).
+### Adapting Prisma to a folder you already have
 
-You choose which property names Prisma should look for during setup. If you already have notes with date properties, Prisma picks them up and visualizes them automatically — no migration needed.
+Choose **Use notes you already have** and Prisma scans your vault for folders that already contain notes with date-like frontmatter. For each candidate folder it shows the folder name, how many dated notes it found, and the properties it saw — split into:
 
-You can change these property names anytime in **Settings → Prisma Calendar → General**, or use the **Configure current** button in the calendar management section to re-run property detection on any planning system.
+- **Datetime properties** — values with a time component (e.g. `2025-06-15T09:00`), used for timed events.
+- **Date properties** — date-only values (e.g. `2025-06-15`), used for all-day events.
+
+Click a folder to select it. Prisma makes its best guess at the mapping — a datetime property whose name contains "start" becomes your **Start property**, one containing "end" becomes your **End property**, and a date-only property becomes your **Date property**. Every guess is editable: each field has inline **Use** buttons listing the detected properties, so you can fix the mapping in one click — or just type a name yourself.
+
+You're mapping three things:
+
+- **Start property** — the datetime a timed event begins (e.g. your existing `start`, `due`, or `Start Date` field).
+- **End property** — the datetime a timed event ends.
+- **Date property** — the date-only field for all-day events.
+
+#### Example: adopting an existing meetings folder
+
+Suppose your vault already has a `Meetings/` folder full of notes like this, written long before you installed Prisma:
+
+```yaml
+---
+start: 2025-06-15T09:00
+end: 2025-06-15T10:30
+attendees: [Alice, Bob]
+project: Q1 Planning
+---
+
+Agenda, notes, decisions — whatever you already keep in the note.
+```
+
+Point Prisma at `Meetings/`, set **Start property** to `start` and **End property** to `end`, and finish setup. Every note in that folder immediately shows up on the calendar as a timed event — **no edits to your notes required**. Your `attendees`, `project`, and the note body are left exactly as they were; Prisma only reads the two date fields you mapped.
+
+If no dated folders are detected, the modal tells you so — you can still type a folder path manually and set the property names yourself.
+
+:::tip Found more than one dated folder?
+Each can become its own independent planning system later — its own folder, its own property names, its own configuration. See [Multiple Planning Systems](#multiple-planning-systems).
+:::
+
+### Starting fresh
+
+Choose **Start with a clean setup** and Prisma pre-fills a dedicated folder (default `Tasks/`) and its default property names:
+
+| Field | Default property |
+| --- | --- |
+| Start property | `Start Date` |
+| End property | `End Date` |
+| Date property | `Date` |
+
+Rename the folder or the properties if you like, then finish. Prisma creates the folder and you're ready to go. From here on, every event you create through the UI becomes a new note in that folder, written with these property names.
+
+A **timed event** Prisma creates looks like this — start and end are stored as full ISO timestamps (down to milliseconds, ending in `Z`):
+
+```yaml
+---
+Start Date: 2025-06-15T09:00:00.000Z
+End Date: 2025-06-15T10:00:00.000Z
+All Day: false
+---
+
+# Team Meeting
+```
+
+An **all-day event** looks like this:
+
+```yaml
+---
+Date: 2025-06-20
+All Day: true
+---
+
+# Project Planning
+```
+
+### Changing your setup later
+
+Nothing chosen in the Welcome modal is permanent — Prisma is fully reactive, so changes re-read your notes and update the calendar immediately:
+
+- **Folder** — change the watched folder under **Settings → Prisma Calendar → General → Directory**.
+- **Property names** — change which frontmatter keys Prisma reads under **Settings → Prisma Calendar → Properties**. This is also where you map optional fields like the all-day flag, category, status, and location. See [Properties Settings](configuration/properties).
+- **Re-detect properties** — re-run folder and property detection on any planning system from its **Configure** action in the calendar management settings.
 
 ---
 

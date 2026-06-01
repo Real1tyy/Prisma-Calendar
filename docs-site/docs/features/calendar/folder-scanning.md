@@ -38,6 +38,32 @@ All Day: false
 ---
 ```
 
+## Adapting to a folder you already have
+
+You don't have to restructure anything to use Prisma. Point it at a folder that already contains dated notes, then tell Prisma which frontmatter keys hold your dates — it reads them as-is.
+
+The property names are entirely yours. If your existing notes use `due` and `finish` instead of `Start Date` and `End Date`, set the **Start property** to `due` and the **End property** to `finish` in [Properties Settings](../../configuration/properties), and those notes render immediately — no edits to the notes themselves.
+
+```yaml
+---
+due: 2025-12-18T08:45:00
+finish: 2025-12-18T11:30:00
+status: In Progress
+---
+
+Existing note body — links, tasks, anything. Untouched.
+```
+
+An **all-day** note only needs the Date property you mapped:
+
+```yaml
+---
+Date: 2025-12-20
+---
+```
+
+The Welcome modal can detect these folders and pre-fill the mapping for you on first launch — see [Adapting Prisma to a folder you already have](../../quickstart#adapting-prisma-to-a-folder-you-already-have) in the Quick Start.
+
 ## Date Property Normalization
 
 Enable "Normalize date property for sorting" in Properties Settings to make external tools (Dataview, Bases, etc.) sort all events chronologically.
