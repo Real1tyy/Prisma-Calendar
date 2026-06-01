@@ -24,7 +24,7 @@ function settingItemByName(page: Page, name: string): Locator {
 //   2. Clicking the Verify button calls `refreshLicense()` without throwing,
 //      and (with no key in keychain) leaves the status at "none".
 //   3. Status "valid" → status row prints "License active" wording + activations
-//      badge, CTA flips to "Manage Subscription".
+//      badge, CTA flips to "Manage subscription".
 //   4. The same status flip unlocks the heatmap / gantt / dashboard views —
 //      the upgrade-gate component is no longer mounted.
 //   5. Downgrading the status back to "expired" + setting isPro=false brings
@@ -75,7 +75,7 @@ test.describe("settings: pro license activation surface", () => {
 		await switchSettingsTab(page, "general");
 		await expect(statusItem.locator(".setting-item-description")).toContainText("License active");
 		await expect(statusItem.locator(LICENSE_ACTIVATIONS_BADGE_CLASS)).toHaveText("1/5 devices");
-		await expect(subscriptionItem.locator("button")).toHaveText("Manage Subscription");
+		await expect(subscriptionItem.locator("button")).toHaveText("Manage subscription");
 
 		// ── Phase 4: gates unlock everywhere ───────────────────────
 		await closeSettings(page);

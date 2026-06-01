@@ -44,6 +44,21 @@ async function countPhysicalBlocks(page: Page, title: string): Promise<number> {
 		.count();
 }
 
+/**
+ * The set of `YYYY-MM-DD` day cells the active month grid is currently painting.
+ * FullCalendar stamps each cell `.fc-daygrid-day[data-date=…]`; the grid only
+ * spans the weeks overlapping the focused month, so near a month boundary some
+ * physical-instance dates land off-grid and legitimately don't render a block.
+ * Counting expected dates against this set keeps the render assertion exact
+ * without coupling it to where today happens to fall in the month.
+ */
+async function renderedDayCells(page: Page): Promise<Set<string>> {
+	const dates = await page
+		.locator(`.workspace-leaf.mod-active .fc-daygrid-day[data-date]`)
+		.evaluateAll((cells) => cells.map((c) => c.getAttribute("data-date")).filter((d): d is string => !!d));
+	return new Set(dates);
+}
+
 /** Local midnight today — all date-offset expectations anchor here. */
 function todayMidnight(): Date {
 	const t = new Date();
@@ -208,8 +223,16 @@ test.describe("recurring events — physical vs virtual instances", () => {
 			.poll(() => collectInstanceDates(obsidian.vaultDir, "Past Daily"), { timeout: INSTANCE_TIMEOUT_MS })
 			.toEqual(expectedDates);
 
-		// Source + 6 physicals = 7 blocks with a data-event-file-path in the grid.
-		await expect.poll(() => countPhysicalBlocks(obsidian.page, "Past Daily"), { timeout: RENDER_TIMEOUT_MS }).toBe(7);
+		// Source + 6 physicals = 7 dates on disk, but the past dates spill into the
+		// previous month when today sits early in the month — those cells fall off
+		// the current grid. Assert only the physical dates whose day cell is actually
+		// rendered, so the count stays exact on every calendar day.
+		const physicalDates = [toYMD(pastStart), ...expectedDates];
+		const visibleCells = await renderedDayCells(obsidian.page);
+		const expectedVisible = physicalDates.filter((d) => visibleCells.has(d)).length;
+		await expect
+			.poll(() => countPhysicalBlocks(obsidian.page, "Past Daily"), { timeout: RENDER_TIMEOUT_MS })
+			.toBe(expectedVisible);
 	});
 
 	test("rrule until caps recurring generation at the inclusive end date", async ({ obsidian }) => {

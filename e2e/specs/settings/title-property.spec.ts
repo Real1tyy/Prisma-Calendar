@@ -207,10 +207,14 @@ test.describe("settings: titleProp — frontmatter title drives every view", () 
 
 		// Clicking the cell opens the inline day-detail panel, which stamps each
 		// row with `.prisma-heatmap-detail-title` containing `cleanupTitle(event.title)`.
-		await todayCell.click();
-
+		// The heatmap re-renders reactively after `switchView`, so a single click can
+		// land on a cell node that's about to be replaced and never open the panel —
+		// retry the click until the detail rows appear.
 		const titles = calendar.page.locator(".prisma-heatmap-detail-title");
-		await expect(titles).toHaveCount(2);
+		await expect(async () => {
+			await todayCell.click();
+			await expect(titles).toHaveCount(2);
+		}).toPass();
 		const texts = (await titles.allInnerTexts()).join("\n");
 		expect(texts).toContain("Heatmap Alpha");
 		expect(texts).toContain("Heatmap Bravo");

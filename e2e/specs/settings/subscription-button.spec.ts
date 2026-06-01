@@ -18,7 +18,7 @@ test.describe("settings: Subscription button", () => {
 		await expect(btn).toHaveClass(/mod-cta/);
 	});
 
-	test("shows Manage Subscription button when license is valid", async ({ obsidian }) => {
+	test("shows Manage subscription button when license is valid", async ({ obsidian }) => {
 		await obsidian.page.evaluate((pid) => {
 			const w = window as unknown as PrismaWindow;
 			const plugin = w.app.plugins.plugins[pid] as PrismaPlugin | undefined;
@@ -41,6 +41,6 @@ test.describe("settings: Subscription button", () => {
 		await expect(subscriptionItem).toBeVisible();
 
 		const btn = subscriptionItem.locator("button");
-		await expect(btn).toHaveText("Manage Subscription");
+		await expect(btn).toHaveText("Manage subscription");
 	});
 });

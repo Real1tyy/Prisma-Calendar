@@ -25,10 +25,9 @@ function countRealEvents(vaultDir: string, subdir: string): number {
 }
 
 // `activateCalendarView` fires `rememberLastUsedCalendar(id)` — a synchronous
-// write through `LocalKV` to `window.localStorage`. `resolveBundle` (used by
-// the palette Undo command) reads `plugin.lastUsedCalendarId`, so we poll
-// the value to make sure the activation actually took effect before
-// exercising undo.
+// write through `LocalKV` to `window.localStorage`. Event creation routes to
+// `plugin.lastUsedCalendarId`, so we poll the value to make sure the activation
+// actually took effect before creating an event in the intended calendar.
 async function ensureLastUsedCalendar(page: Page, calendarId: string): Promise<void> {
 	await page.waitForFunction(
 		({ id, pid }) => {
@@ -40,17 +39,25 @@ async function ensureLastUsedCalendar(page: Page, calendarId: string): Promise<v
 	);
 }
 
-// Two calendars seeded side-by-side → one CommandManager each, one undo stack
-// each. These specs guard three product-level promises:
+// Two calendars seeded side-by-side share one monotonic command sequencer, so
+// each bundle's CommandManager stamps a globally-comparable `lastActivityOrder`
+// on every history mutation (execute / undo / redo). `resolveHistoryBundle`
+// (src/core/api/read-operations.ts) routes the palette Undo / Redo to the bundle
+// whose stack was mutated most recently — NOT whichever calendar view is active.
+// That design exists so moving an event between planning systems (which records
+// the command on the SOURCE calendar but flips the active calendar to the
+// destination) still undoes against the right stack.
 //
-//   1. Each bundle owns its own stack (a create in primary does not land on
-//      secondary's redo stack, and vice versa).
-//   2. The palette "Undo" / "Redo" commands route to the *last-used* bundle —
-//      the bundle whose view was most recently activated (see
-//      `bundle-resolver.ts`). Switching calendars by activating the other
-//      view is how a real user changes the route.
-//   3. Activating a different calendar never clears the previous bundle's
-//      stack — switching back and undoing must still reverse the earlier op.
+// These specs guard three product-level promises of that contract:
+//
+//   1. Undo/redo follow the most-recently-mutated stack across calendars: the
+//      newest activity wins, and when the active calendar's stack runs dry the
+//      next-most-recent stack (on the other calendar) is drained — undo is never
+//      a silent no-op while *some* calendar still has history.
+//   2. Redo ignores which view is active and targets the bundle that actually
+//      holds a redo entry.
+//   3. Activating a different calendar never clears the other bundle's stack —
+//      a redo entry survives a view switch.
 //
 // If any of these break, the symptom in prod is "my undo didn't undo the
 // right thing" — the worst class of history bug.
@@ -65,7 +72,7 @@ test.describe("cross-calendar undo boundary (UI-driven)", () => {
 		await waitForWorkspaceReady(obsidian.page);
 	});
 
-	test("undo routes to last-used bundle; each stack stays isolated", async ({ calendar }) => {
+	test("undo/redo follow the most-recently-mutated stack across calendars", async ({ calendar }) => {
 		await switchToCalendar(calendar.page, MULTI_CALENDAR_PRIMARY_ID);
 		const primary = await calendar.createEvent(
 			{ title: "Primary Probe", start: isoLocal(1, 9), end: isoLocal(1, 10) },
@@ -80,24 +87,31 @@ test.describe("cross-calendar undo boundary (UI-driven)", () => {
 		);
 		expect(secondary.path.startsWith(MULTI_CALENDAR_SECONDARY_DIR)).toBe(true);
 
-		// Secondary was most recently activated, so Undo must pop *its* stack.
-		// Primary's file must stay on disk.
+		// Secondary's create is the newest activity, so the first Undo pops *its*
+		// stack and leaves primary untouched.
 		await calendar.undo();
 		await expect.poll(() => countRealEvents(calendar.vaultDir, MULTI_CALENDAR_SECONDARY_DIR)).toBe(0);
 		await expect.poll(() => countRealEvents(calendar.vaultDir, MULTI_CALENDAR_PRIMARY_DIR)).toBe(1);
 
-		// A second Undo with secondary still "active" is a no-op — its stack is
-		// empty, and primary's stack must not be touched.
-		await calendar.undo();
-		await expect.poll(() => countRealEvents(calendar.vaultDir, MULTI_CALENDAR_PRIMARY_DIR)).toBe(1);
-
-		// Switching to primary re-routes Undo to its stack.
-		await switchToCalendar(calendar.page, MULTI_CALENDAR_PRIMARY_ID);
+		// Secondary's stack is now empty. A second Undo is NOT a no-op — routing
+		// falls through to the next-most-recent stack, which is primary's create.
 		await calendar.undo();
 		await expect.poll(() => countRealEvents(calendar.vaultDir, MULTI_CALENDAR_PRIMARY_DIR)).toBe(0);
+		await expect.poll(() => countRealEvents(calendar.vaultDir, MULTI_CALENDAR_SECONDARY_DIR)).toBe(0);
+
+		// Both undos pushed onto their redo stacks; primary was undone last, so its
+		// redo entry is the most recent — Redo reinstates primary first...
+		await calendar.redo();
+		await expect.poll(() => countRealEvents(calendar.vaultDir, MULTI_CALENDAR_PRIMARY_DIR)).toBe(1);
+		await expect.poll(() => countRealEvents(calendar.vaultDir, MULTI_CALENDAR_SECONDARY_DIR)).toBe(0);
+
+		// ...and the next Redo reinstates secondary.
+		await calendar.redo();
+		await expect.poll(() => countRealEvents(calendar.vaultDir, MULTI_CALENDAR_SECONDARY_DIR)).toBe(1);
+		await expect.poll(() => countRealEvents(calendar.vaultDir, MULTI_CALENDAR_PRIMARY_DIR)).toBe(1);
 	});
 
-	test("redo targets the activated bundle's stack, not the other calendar's", async ({ calendar }) => {
+	test("redo targets the bundle holding the redo entry, regardless of active view", async ({ calendar }) => {
 		await switchToCalendar(calendar.page, MULTI_CALENDAR_PRIMARY_ID);
 		await calendar.createEvent(
 			{ title: "Primary Redo Probe", start: isoLocal(1, 9), end: isoLocal(1, 10) },
@@ -109,23 +123,18 @@ test.describe("cross-calendar undo boundary (UI-driven)", () => {
 			{ subdir: MULTI_CALENDAR_SECONDARY_DIR }
 		);
 
-		// Undo on secondary (last-used) → secondary's create is now on its redo
-		// stack. Switch to primary *without* undoing, then redo — primary's redo
-		// stack is empty, so the secondary file must NOT reappear.
+		// Undo on secondary (newest activity) → secondary's create moves onto its
+		// redo stack; secondary's file is gone, primary's stays.
 		await calendar.undo();
-		await expect.poll(() => countRealEvents(calendar.vaultDir, MULTI_CALENDAR_SECONDARY_DIR)).toBe(0);
-
-		await switchToCalendar(calendar.page, MULTI_CALENDAR_PRIMARY_ID);
-		await calendar.redo();
-		// Primary's redo stack was never built → secondary's undone create must
-		// still be absent on disk.
 		await expect.poll(() => countRealEvents(calendar.vaultDir, MULTI_CALENDAR_SECONDARY_DIR)).toBe(0);
 		await expect.poll(() => countRealEvents(calendar.vaultDir, MULTI_CALENDAR_PRIMARY_DIR)).toBe(1);
 
-		// Switch back to secondary and redo — now the secondary create should
-		// be reinstated because the stack was preserved across the switch.
-		await switchToCalendar(calendar.page, MULTI_CALENDAR_SECONDARY_ID);
+		// Activate primary WITHOUT undoing anything — primary has no redo entry.
+		// Redo routing follows the redo stack, not the active view, so secondary's
+		// undone create is reinstated and the switch did not clear it.
+		await switchToCalendar(calendar.page, MULTI_CALENDAR_PRIMARY_ID);
 		await calendar.redo();
 		await expect.poll(() => countRealEvents(calendar.vaultDir, MULTI_CALENDAR_SECONDARY_DIR)).toBe(1);
+		await expect.poll(() => countRealEvents(calendar.vaultDir, MULTI_CALENDAR_PRIMARY_DIR)).toBe(1);
 	});
 });
