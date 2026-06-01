@@ -28,7 +28,7 @@
 		"jsdom": "^29.1.1",
 		"typescript": "^5.9.3",
 		"vite-tsconfig-paths": "^5.1.2",
-		"vitest": "^3.2.4"
+		"vitest": "^4.1.0"
 	},
 	"scripts": {
 		"test": "vitest run",
