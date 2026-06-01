@@ -1,0 +1,43 @@
+@keyframes prisma-indexing-overlay-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+// The bare MountImperative tab host that wraps `.prisma-calendar-container`.
+// Made a containing block so the absolutely-positioned overlay covers the grid.
+.prisma-calendar-tab-host {
+	position: relative;
+}
+
+.prisma-indexing-overlay {
+	position: absolute;
+	inset: 0;
+	z-index: 50;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 1.1rem;
+	// Purely a visual veil — never swallow clicks on the grid underneath
+	// (re-indexing fires while the calendar is already interactive).
+	pointer-events: none;
+	background-color: color-mix(in srgb, var(--background-primary) 78%, transparent);
+	backdrop-filter: blur(2px);
+}
+
+.prisma-indexing-overlay-spinner {
+	width: 56px;
+	height: 56px;
+	border: 5px solid var(--background-modifier-border);
+	border-top-color: var(--interactive-accent);
+	border-radius: 50%;
+	animation: prisma-indexing-overlay-spin 0.9s linear infinite;
+}
+
+.prisma-indexing-overlay-text {
+	font-size: 1.05em;
+	font-weight: 600;
+	color: var(--text-normal);
+	letter-spacing: 0.02em;
+}

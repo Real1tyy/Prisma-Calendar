@@ -48,6 +48,7 @@ import { openFilteredEventsModal, openSelectedEventsModal, openSkippedEventsModa
 import { openEventsModal } from "../react/modals/event-list/events-modal-content";
 import { openEventCreateModal } from "../react/modals/event/event-create-modal";
 import { showStatsModal } from "../react/modals/stats/stats-modal";
+import { IndexingOverlay } from "../react/views/indexing-overlay";
 import { ZoomControl } from "../react/views/zoom-control";
 import {
 	isAnyVirtual,
@@ -105,6 +106,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	private viewType$ = new BehaviorSubject<string>("timeGridWeek");
 	private zoomMountEl: HTMLElement | null = null;
 	private zoomUnmount: (() => void) | null = null;
+	private indexingOverlayUnmount: (() => void) | null = null;
 	private searchFilter: ToolbarFilterHandle | null = null;
 	private expressionFilter: ToolbarFilterHandle | null = null;
 	private filterPresetSelector: FilterPresetSelectorMount | null = null;
@@ -184,9 +186,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	override async mount(): Promise<void> {
-		this.showLoading(this.rootEl, "Indexing calendar events…");
-
 		this.container = this.rootEl.createDiv(cls("calendar-container"));
+		this.mountIndexingOverlay();
 
 		await this.waitForLayout(this.container);
 		this.initializeCalendar(this.container);
@@ -245,14 +246,13 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		);
 		this.register(() => caldavSettingsSubscription.unsubscribe());
 
-		// Subscribe to indexing complete state
+		// Subscribe to indexing complete state. The IndexingOverlay renders the
+		// spinner reactively off the same observable; here we only refresh events
+		// once a scan finishes.
 		const indexingCompleteSubscription = this.bundle.fileRepository.indexingComplete$.subscribe((isComplete) => {
 			this.isIndexingComplete = isComplete;
 			if (isComplete) {
-				this.hideLoading();
 				this.scheduleRefreshEvents();
-			} else {
-				this.showLoading(this.rootEl, "Re-indexing calendar events…");
 			}
 		});
 		this.register(() => indexingCompleteSubscription.unsubscribe());
@@ -661,6 +661,28 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 				component.init();
 			}
 		}
+	}
+
+	private mountIndexingOverlay(): void {
+		// Mount on rootEl, never on `this.container` — FullCalendar's Preact render
+		// replaces the container's children, which would tear the overlay's React
+		// root out of the DOM. rootEl is the bare tab host FullCalendar never owns;
+		// the positioning class makes it the overlay's containing block.
+		this.rootEl.classList.add(cls("calendar-tab-host"));
+		const mountEl = this.rootEl.createDiv(cls("indexing-overlay-mount"));
+		this.indexingOverlayUnmount = renderReactInline(
+			mountEl,
+			createElement(IndexingOverlay, {
+				indexingComplete$: this.bundle.fileRepository.indexingComplete$,
+			}),
+			this.app,
+			{ cssPrefix: CSS_PREFIX }
+		);
+		this.register(() => {
+			this.indexingOverlayUnmount?.();
+			this.indexingOverlayUnmount = null;
+			mountEl.remove();
+		});
 	}
 
 	private mountZoomControl(): void {

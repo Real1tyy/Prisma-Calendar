@@ -254,3 +254,11 @@
 .prisma-series-scope-buttons {
 	/* intentional stub */
 }
+
+// React mount point for the IndexingOverlay — a static-flow wrapper holding a
+// single absolutely-positioned child (.prisma-indexing-overlay), so it never
+// paints or occupies layout. Hook only; the overlay itself is styled in
+// _indexing-overlay.scss.
+.prisma-indexing-overlay-mount {
+	/* intentional stub */
+}

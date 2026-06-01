@@ -250,6 +250,12 @@ Toggle Saturday and Sunday visibility in **Settings → Calendar → View Config
 
 Set which day starts the week (0 = Sunday, 1 = Monday, etc.) in **Settings → Calendar → View Configuration → First day of week**.
 
+## Indexing Indicator
+
+When you open the calendar, Prisma scans your vault to build its event index. While that scan runs, a spinner appears centered over the grid so it's clear the calendar is still loading rather than empty. The overlay clears automatically the moment indexing finishes.
+
+The same overlay reappears (labelled **Re-indexing calendar events…**) if Prisma needs to rebuild the index later — for example after a bulk change to your vault.
+
 ## See Also
 
 - [Configuration](../../configuration/calendar-ui) for the full settings reference
