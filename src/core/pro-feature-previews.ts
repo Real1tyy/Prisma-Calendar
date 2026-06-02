@@ -5,6 +5,7 @@
 // `<DOCS_BASE_URL>/img/pro-previews/<file>.png`.
 import { buildUtmUrl } from "@real1ty-obsidian-plugins";
 
+import { DOCS_BASE_URL } from "../constants";
 import { PRO_PURCHASE_URL, type PRO_FEATURES } from "./license";
 
 export type ProFeatureKey = keyof typeof PRO_FEATURES;
@@ -14,7 +15,6 @@ interface ProFeatureConfig {
 	previewFile?: string;
 }
 
-const DOCS_BASE_URL = "https://real1tyy.github.io/Prisma-Calendar";
 const PREVIEW_BASE_URL = `${DOCS_BASE_URL}/img/pro-previews`;
 
 const PRO_FEATURE_CONFIG: Record<ProFeatureKey, ProFeatureConfig> = {

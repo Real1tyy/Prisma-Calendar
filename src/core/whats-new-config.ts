@@ -1,11 +1,13 @@
 import { buildUtmUrl } from "@real1ty-obsidian-plugins";
 import type { WhatsNewModalConfig } from "@real1ty-obsidian-plugins-react";
 
+import { docsUrl } from "../constants";
+
 const GITHUB_URL = "https://github.com/Real1tyy/Prisma-Calendar";
 const PRODUCT_PAGE_URL = "https://matejvavroproductivity.com/tools/prisma-calendar/";
-const SUPPORT_URL = "https://real1tyy.github.io/Prisma-Calendar/support";
-const CHANGELOG_URL = "https://real1tyy.github.io/Prisma-Calendar/changelog";
-const DOCS_URL = "https://real1tyy.github.io/Prisma-Calendar/";
+const SUPPORT_URL = docsUrl("/support");
+const CHANGELOG_URL = docsUrl("/changelog");
+const DOCS_URL = docsUrl("/");
 
 export function buildWhatsNewConfig(changelogContent: string, utmSection: string): WhatsNewModalConfig {
 	const buildUrl = (baseUrl: string, campaignContent: string) =>

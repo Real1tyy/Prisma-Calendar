@@ -1,6 +1,6 @@
 import { buildUtmUrl } from "@real1ty-obsidian-plugins";
 
-import { cls, tid } from "../../constants";
+import { cls, docsUrl, tid } from "../../constants";
 import { PRO_PURCHASE_URL } from "../../core/license";
 import {
 	getFeatureDocUrl,
@@ -9,7 +9,7 @@ import {
 	type ProFeatureKey,
 } from "../../core/pro-feature-previews";
 
-const FREE_VS_PRO_URL = "https://real1tyy.github.io/Prisma-Calendar/features/free-vs-pro";
+const FREE_VS_PRO_URL = docsUrl("/features/free-vs-pro");
 
 export function renderProUpgradeBanner(
 	containerEl: HTMLElement,

@@ -3,6 +3,12 @@ import { createCssUtils } from "@real1ty-obsidian-plugins";
 /** Obsidian plugin id (matches manifest) — used for full command palette ids. */
 export const PRISMA_CALENDAR_PLUGIN_ID = "prisma-calendar" as const;
 
+/** Base URL of the public Prisma Calendar documentation site (Docusaurus, custom domain). */
+export const DOCS_BASE_URL = "https://prisma-calendar.matejvavroproductivity.com" as const;
+
+/** Build a docs-site URL from a leading-slash path, e.g. `docsUrl("/features/free-vs-pro")`. */
+export const docsUrl = (path = ""): string => `${DOCS_BASE_URL}${path}`;
+
 type ScreamingToKebab<S extends string> = S extends `${infer A}_${infer B}`
 	? `${Lowercase<A>}-${ScreamingToKebab<B>}`
 	: Lowercase<S>;

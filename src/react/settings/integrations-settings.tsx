@@ -12,7 +12,7 @@ import { memo, useCallback, useState } from "react";
 
 import { showConfirmDeleteModal } from "../../components/settings/generic";
 import { deleteTrackedIntegrationEvents } from "../../components/settings/integration-shared";
-import { cls, COMMAND_IDS, PRISMA_CALENDAR_PLUGIN_ID, tid } from "../../constants";
+import { cls, COMMAND_IDS, docsUrl, PRISMA_CALENDAR_PLUGIN_ID, tid } from "../../constants";
 import { PRO_FEATURES } from "../../core/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
@@ -95,7 +95,7 @@ const IntegrationsSection = memo(function IntegrationsSection({ settingsStore, a
 				<p>Export and import events using the .ics format, compatible with most calendar apps.</p>
 				<a
 					href={buildUtmUrl(
-						"https://real1tyy.github.io/Prisma-Calendar/configuration/integrations",
+						docsUrl("/configuration/integrations"),
 						"prisma-calendar",
 						"plugin",
 						"settings",

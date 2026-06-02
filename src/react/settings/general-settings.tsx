@@ -13,7 +13,7 @@ import {
 } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useState } from "react";
 
-import { cls, tid } from "../../constants";
+import { cls, DOCS_BASE_URL, docsUrl, tid } from "../../constants";
 import { ACCOUNT_URL, FREE_MAX_EVENT_PRESETS } from "../../core/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import { buildWhatsNewConfig } from "../../core/whats-new-config";
@@ -36,7 +36,6 @@ const PRISMA_NON_TRANSFERABLE_SETTINGS: ReadonlyArray<keyof CustomCalendarSettin
 	"version",
 ];
 
-const DOCS_BASE = "https://real1tyy.github.io/Prisma-Calendar";
 const GITHUB_ISSUES_URL = "https://github.com/Real1tyy/Prisma-Calendar/issues/new/choose";
 
 const PLANNING_FIELDS = ["directory", "templatePath", "indexSubdirectories"];
@@ -280,17 +279,17 @@ export const HelpSection = memo(function HelpSection({ plugin }: { plugin: Custo
 				</p>
 				<p>
 					Have a question? The{" "}
-					<a href={buildUtmUrl(DOCS_BASE, "prisma-calendar", "plugin", "settings", "help_documentation")}>
+					<a href={buildUtmUrl(DOCS_BASE_URL, "prisma-calendar", "plugin", "settings", "help_documentation")}>
 						<strong>documentation</strong>
 					</a>{" "}
 					covers most topics — use the search bar in the top right to quickly find what you need. Check the{" "}
-					<a href={buildUtmUrl(`${DOCS_BASE}/faq`, "prisma-calendar", "plugin", "settings", "help_faq")}>
+					<a href={buildUtmUrl(docsUrl("/faq"), "prisma-calendar", "plugin", "settings", "help_faq")}>
 						<strong>frequently asked questions</strong>
 					</a>{" "}
 					or{" "}
 					<a
 						href={buildUtmUrl(
-							`${DOCS_BASE}/troubleshooting`,
+							docsUrl("/troubleshooting"),
 							"prisma-calendar",
 							"plugin",
 							"settings",

@@ -24,9 +24,9 @@ const TAGLINE = (
 const FOOTER_LINKS = [
 	{
 		label: "Pro Features",
-		href: proUtm("https://real1tyy.github.io/Prisma-Calendar/features/free-vs-pro", "pro_features"),
+		href: proUtm("https://prisma-calendar.matejvavroproductivity.com/features/free-vs-pro", "pro_features"),
 	},
-	{ label: "Documentation", href: proUtm("https://real1tyy.github.io/Prisma-Calendar/", "documentation") },
+	{ label: "Documentation", href: proUtm("https://prisma-calendar.matejvavroproductivity.com/", "documentation") },
 	{ label: "Manage Subscription", href: proUtm(ACCOUNT_URL, "account") },
 	{
 		label: "Support",

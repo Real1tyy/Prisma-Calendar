@@ -17,7 +17,7 @@ const MONTH_VIEW_SELECTOR = '[data-testid="prisma-cal-toolbar-view-month"]';
 
 const docsUrl = (path: string, content: string): string =>
 	buildUtmUrl(
-		`https://real1tyy.github.io/Prisma-Calendar${path}`,
+		`https://prisma-calendar.matejvavroproductivity.com${path}`,
 		"prisma-calendar",
 		"plugin",
 		"onboarding_tour",

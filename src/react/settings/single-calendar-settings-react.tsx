@@ -2,7 +2,7 @@ import { buildUtmUrl } from "@real1ty-obsidian-plugins";
 import { SettingsNav, type SettingsFooterLink } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useDeferredValue, useState } from "react";
 
-import { cls } from "../../constants";
+import { cls, docsUrl } from "../../constants";
 import { PRO_FEATURES } from "../../core/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
@@ -36,43 +36,19 @@ const FOOTER_LINKS: SettingsFooterLink[] = [
 	},
 	{
 		text: "Documentation",
-		href: buildUtmUrl(
-			"https://real1tyy.github.io/Prisma-Calendar/",
-			"prisma-calendar",
-			"plugin",
-			"settings",
-			"documentation"
-		),
+		href: buildUtmUrl(docsUrl("/"), "prisma-calendar", "plugin", "settings", "documentation"),
 	},
 	{
 		text: "Changelog",
-		href: buildUtmUrl(
-			"https://real1tyy.github.io/Prisma-Calendar/changelog",
-			"prisma-calendar",
-			"plugin",
-			"settings",
-			"changelog"
-		),
+		href: buildUtmUrl(docsUrl("/changelog"), "prisma-calendar", "plugin", "settings", "changelog"),
 	},
 	{
 		text: "Gallery",
-		href: buildUtmUrl(
-			"https://real1tyy.github.io/Prisma-Calendar/gallery",
-			"prisma-calendar",
-			"plugin",
-			"settings",
-			"gallery"
-		),
+		href: buildUtmUrl(docsUrl("/gallery"), "prisma-calendar", "plugin", "settings", "gallery"),
 	},
 	{
 		text: "Free vs Pro",
-		href: buildUtmUrl(
-			"https://real1tyy.github.io/Prisma-Calendar/features/free-vs-pro",
-			"prisma-calendar",
-			"plugin",
-			"settings",
-			"free_vs_pro"
-		),
+		href: buildUtmUrl(docsUrl("/features/free-vs-pro"), "prisma-calendar", "plugin", "settings", "free_vs_pro"),
 	},
 	{
 		text: "Other Plugins",
