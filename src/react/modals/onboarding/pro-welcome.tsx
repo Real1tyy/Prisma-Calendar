@@ -3,7 +3,7 @@ import { showReactModal, WelcomeModalShell } from "@real1ty-obsidian-plugins-rea
 import type { App } from "obsidian";
 import { memo } from "react";
 
-import { cls, CSS_PREFIX, tid } from "../../../constants";
+import { cls, CSS_PREFIX, docsUrl, tid } from "../../../constants";
 import { ACCOUNT_URL } from "../../../core/license";
 
 const proUtm = (url: string, content: string) =>
@@ -24,9 +24,9 @@ const TAGLINE = (
 const FOOTER_LINKS = [
 	{
 		label: "Pro Features",
-		href: proUtm("https://prisma-calendar.matejvavroproductivity.com/features/free-vs-pro", "pro_features"),
+		href: proUtm(docsUrl("/features/free-vs-pro"), "pro_features"),
 	},
-	{ label: "Documentation", href: proUtm("https://prisma-calendar.matejvavroproductivity.com/", "documentation") },
+	{ label: "Documentation", href: proUtm(docsUrl("/"), "documentation") },
 	{ label: "Manage Subscription", href: proUtm(ACCOUNT_URL, "account") },
 	{
 		label: "Support",

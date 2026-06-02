@@ -6,7 +6,7 @@ import { memo, useCallback, useEffect, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
-import { cls, CSS_PREFIX, tid } from "../../../constants";
+import { cls, CSS_PREFIX, docsUrl, tid } from "../../../constants";
 import type { DirectorySuggestion } from "../../../core/directory-suggestions";
 import { computePrefill, Field, PropertyFields, SuggestionList } from "../calendar/property-config";
 
@@ -116,8 +116,8 @@ const welcomeUtm = (url: string, content: string) =>
 const FOOTER_LINKS = [
 	{ label: "Quickstart", href: welcomeUtm("https://www.youtube.com/watch?v=dziQK9UQhvE", "quickstart_video") },
 	{ label: "Features", href: welcomeUtm("https://www.youtube.com/watch?v=HrcNKh6uFH8", "features_video") },
-	{ label: "Documentation", href: welcomeUtm("https://prisma-calendar.matejvavroproductivity.com/", "documentation") },
-	{ label: "Changelog", href: welcomeUtm("https://prisma-calendar.matejvavroproductivity.com/changelog", "changelog") },
+	{ label: "Documentation", href: welcomeUtm(docsUrl("/"), "documentation") },
+	{ label: "Changelog", href: welcomeUtm(docsUrl("/changelog"), "changelog") },
 	{
 		label: "Product Page",
 		href: welcomeUtm("https://matejvavroproductivity.com/tools/prisma-calendar/", "product_page"),

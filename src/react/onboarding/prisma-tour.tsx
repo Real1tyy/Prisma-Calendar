@@ -3,7 +3,7 @@ import { startTour, waitForElement, type TourStep } from "@real1ty-obsidian-plug
 import { DateTime } from "luxon";
 
 import type { CalendarComponent } from "../../components/calendar-view";
-import { CSS_PREFIX } from "../../constants";
+import { CSS_PREFIX, docsUrl } from "../../constants";
 import { createEvent } from "../../core/api/event-crud";
 import type CustomCalendarPlugin from "../../main";
 import { PRISMA_TOUR_STEP_IDS, SAMPLE_EVENT_TITLE, type PrismaTourStepId } from "./tour-constants";
@@ -15,14 +15,8 @@ const SAMPLE_EVENT_SELECTOR = `[data-testid="prisma-cal-event"][data-event-title
 const CREATE_BUTTON_SELECTOR = '[data-testid="prisma-cal-toolbar-create"]';
 const MONTH_VIEW_SELECTOR = '[data-testid="prisma-cal-toolbar-view-month"]';
 
-const docsUrl = (path: string, content: string): string =>
-	buildUtmUrl(
-		`https://prisma-calendar.matejvavroproductivity.com${path}`,
-		"prisma-calendar",
-		"plugin",
-		"onboarding_tour",
-		content
-	);
+const tourDocsUrl = (path: string, content: string): string =>
+	buildUtmUrl(docsUrl(path), "prisma-calendar", "plugin", "onboarding_tour", content);
 
 async function ensureCalendarReady(plugin: CustomCalendarPlugin): Promise<CalendarComponent | null> {
 	let component = plugin.getActiveCalendarComponent();
@@ -150,7 +144,7 @@ export function buildPrismaTourSteps(plugin: CustomCalendarPlugin): TourStep[] {
 				<p>
 					Replay this tour anytime from <strong>Settings → General</strong> or the <em>"Start onboarding tutorial"</em>{" "}
 					command. Dive deeper in the{" "}
-					<a href={docsUrl("/", "documentation")} target="_blank" rel="noopener noreferrer">
+					<a href={tourDocsUrl("/", "documentation")} target="_blank" rel="noopener noreferrer">
 						documentation
 					</a>
 					. Happy planning!
