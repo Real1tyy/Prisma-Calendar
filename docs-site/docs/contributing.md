@@ -138,7 +138,7 @@ Documentation contributions are **highly appreciated** and help everyone in the 
 
 ## 🤝 Getting Help
 
-- **Documentation**: Check the [comprehensive docs](https://real1tyy.github.io/Prisma-Calendar/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=contributing&utm_content=docs_home)
+- **Documentation**: Check the [comprehensive docs](https://prisma-calendar.matejvavroproductivity.com/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=contributing&utm_content=docs_home)
 
 - **FAQ**: Common questions are answered in the [FAQ section](/faq)
 

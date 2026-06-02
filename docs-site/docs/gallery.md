@@ -959,8 +959,8 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
 ### [Licence Activation](features/free-vs-pro) — Activating Pro
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
-    <source src={useBaseUrl("/video/LicenceActivation.webm")} type="video/webm" />
-    <source src={useBaseUrl("/video/LicenceActivation.mp4")} type="video/mp4" />
+    <source src={useBaseUrl("/video/PrismaActivation.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/PrismaActivation.mp4")} type="video/mp4" />
     Your browser does not support the video tag.
   </video>
 </div>

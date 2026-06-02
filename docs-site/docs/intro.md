@@ -10,7 +10,7 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 
 ![Downloads](https://img.shields.io/github/downloads/Real1tyy/Prisma-Calendar/total?label=Downloads&style=for-the-badge&color=238636) ![Release](https://img.shields.io/github/v/release/Real1tyy/Prisma-Calendar?label=Latest%20Release&style=for-the-badge&color=1f6feb) ![Stars](https://img.shields.io/github/stars/Real1tyy/Prisma-Calendar?style=for-the-badge&color=f0c830) [![Product Page](https://img.shields.io/badge/Product_Page-8957e5?style=for-the-badge)](https://matejvavroproductivity.com/tools/prisma-calendar/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=intro&utm_content=product_page)
 
-[![Documentation](https://img.shields.io/badge/Documentation-238636?style=for-the-badge)](https://real1tyy.github.io/Prisma-Calendar/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=intro&utm_content=documentation)  [![Install in Obsidian](https://img.shields.io/badge/Install_in_Obsidian-7c3aed?style=for-the-badge&logo=obsidian&logoColor=white)](https://community.obsidian.md/plugins/prisma-calendar) [![Changelog](https://img.shields.io/badge/Changelog-0969da?style=for-the-badge)](/changelog)
+[![Documentation](https://img.shields.io/badge/Documentation-238636?style=for-the-badge)](https://prisma-calendar.matejvavroproductivity.com/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=intro&utm_content=documentation)  [![Install in Obsidian](https://img.shields.io/badge/Install_in_Obsidian-7c3aed?style=for-the-badge&logo=obsidian&logoColor=white)](https://community.obsidian.md/plugins/prisma-calendar) [![Changelog](https://img.shields.io/badge/Changelog-0969da?style=for-the-badge)](/changelog)
 
 ## **Turn any note with a date into a flexible planning system inside Obsidian.**
 
@@ -232,7 +232,7 @@ Browse, search, and manage all events across all planning systems from a single 
 
 ## 📸 Gallery & Documentation
 
-[![View Gallery](https://img.shields.io/badge/View_Gallery_→-1f6feb?style=for-the-badge)](/gallery) [![View Full Documentation](https://img.shields.io/badge/View_Full_Documentation_→-238636?style=for-the-badge)](https://real1tyy.github.io/Prisma-Calendar/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=intro&utm_content=documentation)
+[![View Gallery](https://img.shields.io/badge/View_Gallery_→-1f6feb?style=for-the-badge)](/gallery) [![View Full Documentation](https://img.shields.io/badge/View_Full_Documentation_→-238636?style=for-the-badge)](https://prisma-calendar.matejvavroproductivity.com/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=intro&utm_content=documentation)
 
 [Installation](/installation) • [Quickstart](/quickstart) • [Configuration](/configuration) • [Features Overview](/features/overview) • [FAQ](/faq) • [Troubleshooting](/troubleshooting)
 

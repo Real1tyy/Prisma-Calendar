@@ -432,7 +432,7 @@ Prisma is under active, full-time development. If you have ideas for improving t
 
 ### Added
 
-- **Detailed documentation with videos**: Added comprehensive video walkthroughs for every major feature, embedded directly into the documentation pages. Browse the full [documentation site](https://real1tyy.github.io/Prisma-Calendar/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=changelog&utm_content=docs_home) or visit the [Gallery](https://real1tyy.github.io/Prisma-Calendar/gallery?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=changelog&utm_content=gallery) for a visual overview of all features.
+- **Detailed documentation with videos**: Added comprehensive video walkthroughs for every major feature, embedded directly into the documentation pages. Browse the full [documentation site](https://prisma-calendar.matejvavroproductivity.com/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=changelog&utm_content=docs_home) or visit the [Gallery](https://prisma-calendar.matejvavroproductivity.com/gallery?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=changelog&utm_content=gallery) for a visual overview of all features.
 - **Templater support for recurring event instances**: Recurring event instances now use your configured Templater template when one is set. The template renders first, and any body content from the source recurring event is appended after the template body. Falls back gracefully if Templater is unavailable. See [Templater Integration — Recurring Event Instances](./features/advanced/templater.md#recurring-event-instances).
 
 ### Fixed
@@ -1263,7 +1263,7 @@ Prisma is under active, full-time development. If you have ideas for improving t
 
 - ⚠️ **NEVER use your main account password**
 - ✅ **ALWAYS use app-specific passwords** (iCloud, Google, Fastmail all support them)
-- 🔒 See [Security Considerations](https://real1tyy.github.io/Prisma-Calendar/features/advanced/integrations?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=changelog&utm_content=integrations_security#security-considerations) for detailed information
+- 🔒 See [Security Considerations](https://prisma-calendar.matejvavroproductivity.com/features/advanced/integrations?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=changelog&utm_content=integrations_security#security-considerations) for detailed information
 
 Anyone with access to your vault can read your credentials. Use with caution.
 :::

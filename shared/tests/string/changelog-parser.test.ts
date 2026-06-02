@@ -264,11 +264,11 @@ describe("Changelog Parser", () => {
 });
 
 const DOCS_BASE_WITH_UTM =
-	"https://real1tyy.github.io/Prisma-Calendar/?utm_campaign=prisma_calendar&utm_source=plugin&utm_medium=whats_new&utm_content=documentation";
-const DOCS_BASE_CLEAN = "https://real1tyy.github.io/Prisma-Calendar/";
+	"https://prisma-calendar.matejvavroproductivity.com/?utm_campaign=prisma_calendar&utm_source=plugin&utm_medium=whats_new&utm_content=documentation";
+const DOCS_BASE_CLEAN = "https://prisma-calendar.matejvavroproductivity.com/";
 
 const UTM_PREFIX = "utm_campaign=prisma_calendar&utm_source=plugin&utm_medium=whats_new&utm_content=";
-const BASE = "https://real1tyy.github.io/Prisma-Calendar";
+const BASE = "https://prisma-calendar.matejvavroproductivity.com";
 
 describe("resolveRelativeDocLinks", () => {
 	describe("path resolution with full URL verification", () => {
@@ -330,7 +330,7 @@ describe("resolveRelativeDocLinks", () => {
 
 		it("inherits utm_medium=settings when opened from settings", () => {
 			const settingsBase =
-				"https://real1tyy.github.io/Prisma-Calendar/?utm_campaign=prisma_calendar&utm_source=plugin&utm_medium=settings&utm_content=documentation";
+				"https://prisma-calendar.matejvavroproductivity.com/?utm_campaign=prisma_calendar&utm_source=plugin&utm_medium=settings&utm_content=documentation";
 			const result = resolveRelativeDocLinks("[QS](./quickstart.md)", settingsBase);
 
 			expect(result).toBe(
