@@ -295,3 +295,41 @@
 		}
 	}
 }
+
+// ─── Mobile / narrow pane: stack the editor rows so inputs stay usable ───────
+// Width is the scarce axis on a phone. The single-row layouts squeezed the
+// expression / name fields to near-zero and pushed the controls off the edge,
+// so reflow each row to use height instead: the text field(s) on a full-width
+// row, the color swatch + reorder/delete controls on a second row below.
+@media (width <= 768px) {
+	.prisma-color-rule-main-row {
+		flex-wrap: wrap;
+	}
+	.prisma-color-rule-left {
+		flex: 1 1 100%;
+	}
+	.prisma-color-rule-right {
+		flex: 1 1 100%;
+		justify-content: space-between;
+	}
+
+	.prisma-filter-preset-item {
+		flex-wrap: wrap;
+	}
+	.prisma-filter-preset-name-input {
+		flex: 1 1 100%;
+	}
+	.prisma-filter-preset-expression-input {
+		flex: 1 1 auto;
+	}
+
+	// The example callout's expression code is fixed-width and won't shrink, so
+	// drop the description onto its own line instead of letting it spill past
+	// the box (it was being clipped by the pane edge at phone width).
+	.prisma-color-example-item {
+		flex-wrap: wrap;
+	}
+	.prisma-color-example-description {
+		flex: 1 1 100%;
+	}
+}

@@ -52,3 +52,36 @@
 	gap: 1rem;
 	flex: 0 0 auto;
 }
+
+// ─── Mobile: wrap the toolbar instead of clipping it ───────
+// At phone width (or a narrow side-dock) the filter bar + the view's controls
+// don't fit on one row, and the base `overflow: hidden` hid the overflow — the
+// search input vanished off the right edge. Stack instead: the filter bar takes
+// its own full-width row(s) with its inputs wrapping, and the view controls drop
+// below. Mirrors the calendar toolbar's behaviour (see _fullcalendar-3.scss).
+@media (width <= 768px) {
+	.prisma-view-header-row {
+		flex-wrap: wrap;
+		overflow: visible;
+	}
+
+	.prisma-view-header-left {
+		flex: 1 1 100%;
+		overflow: visible;
+	}
+
+	.prisma-view-header-right {
+		flex: 1 1 auto;
+	}
+
+	.prisma-view-filter-bar {
+		flex-wrap: wrap;
+	}
+
+	.prisma-view-filter-bar .prisma-fc-expression-input,
+	.prisma-view-filter-bar .prisma-fc-search-input {
+		flex: 1 1 140px;
+		width: auto;
+		min-width: 0;
+	}
+}

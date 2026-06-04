@@ -83,6 +83,15 @@
 	}
 }
 
+// Mobile: the date-nav group sits on its own wrapped row (see _dashboard-3.scss).
+// Let it wrap and tighten its gap so year/month/day + Go/Today fit a phone width.
+@media (width <= 768px) {
+	.prisma-timeline-nav-date-group {
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+}
+
 // Tab-context padding tweaks (less generous than the modal).
 .prisma-tab-panel .prisma-timeline-modal {
 	> .prisma-timeline-modal-header {

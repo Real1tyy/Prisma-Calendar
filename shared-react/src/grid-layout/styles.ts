@@ -390,6 +390,11 @@ export function buildGridStyles(p: string): string {
 	.${p}grid-cell {
 		grid-row: auto;
 		grid-column: 1 / -1;
+		/* Let a stacked cell grow past its 50vh minimum and stay unclipped, so a
+		   tall panel (e.g. a stats view's distribution chart + table) flows to its
+		   full height and the tab scrolls to reveal it — rather than being cropped
+		   inside the cell. The desktop default is overflow: hidden. */
+		overflow: visible;
 	}
 	.${p}grid-resize-handle {
 		display: none;

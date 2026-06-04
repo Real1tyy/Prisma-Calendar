@@ -9,8 +9,10 @@ import {
 	enterMobileLayout,
 	measureHeatmapScroll,
 	measureMobileOverflow,
+	measureStatsChartReach,
 	type HeatmapScroll,
 	type MobileOverflow,
+	type StatsChartReach,
 } from "../../fixtures/viewport";
 
 // Mobile gallery: drive the REAL plugin in REAL Obsidian at a phone viewport,
@@ -76,6 +78,14 @@ const TAB_REACH_TOLERANCE_PX = 2;
 // A view's content must not extend past the pane horizontally (1px absorbs
 // rounding). Vertical scroll is expected and fine; horizontal scroll is the bug.
 const CONTENT_OVERFLOW_TOLERANCE_PX = 1;
+// The toolbar's "Search events…" input must sit within the pane: the Timeline /
+// Heatmap / Gantt toolbars wrap it onto its own row at phone width instead of
+// clipping it off the right edge. `> tolerance` means it's laid out off-screen.
+const FILTER_SEARCH_REACH_TOLERANCE_PX = 2;
+// A stats tab's distribution chart must not be cropped past a non-scrollable
+// ancestor in its ~50vh stacked cell — the panel flows to full height and the tab
+// scrolls to it. `> tolerance` means the bottom of the pie is unreachable.
+const STATS_CHART_REACH_TOLERANCE_PX = 2;
 // The yearly heatmap grid's start (January) must sit within its scroll container
 // at rest — `> tolerance` means it's stranded off the left, unreachable.
 const HEATMAP_START_TOLERANCE_PX = 2;
@@ -96,7 +106,7 @@ test.describe("cross-view: mobile gallery", () => {
 
 		const leaf = page.locator(`${ACTIVE_CALENDAR_LEAF} .view-content`).first();
 		const report: string[] = [];
-		const measurements: { name: string; overflow: MobileOverflow | null }[] = [];
+		const measurements: { name: string; overflow: MobileOverflow | null; chart: StatsChartReach }[] = [];
 		let heatmap: HeatmapScroll | null = null;
 
 		for (const view of VIEWS) {
@@ -111,15 +121,27 @@ test.describe("cross-view: mobile gallery", () => {
 			await testInfo.attach(`mobile-${view.name}`, { body: shot, contentType: "image/png" });
 
 			const m = await measureMobileOverflow(page);
-			measurements.push({ name: view.name, overflow: m });
+			const chart = await measureStatsChartReach(page);
+			measurements.push({ name: view.name, overflow: m, chart });
 			if (view.name === "heatmap") heatmap = await measureHeatmapScroll(page);
 
 			const tabFlag =
 				m && m.tabCroppedPx > TAB_REACH_TOLERANCE_PX ? `⚠ TAB CROPPED +${m.tabCroppedPx}px (unreachable)` : "tabs ok";
 			const contentFlag =
 				m && m.viewContentPx > CONTENT_OVERFLOW_TOLERANCE_PX ? `⚠ content +${m.viewContentPx}px` : "content ok";
+			const searchFlag =
+				m && m.filterSearchCroppedPx === null
+					? "no search"
+					: m && m.filterSearchCroppedPx > FILTER_SEARCH_REACH_TOLERANCE_PX
+						? `⚠ SEARCH CROPPED +${m.filterSearchCroppedPx}px`
+						: "search ok";
+			const chartFlag = !chart.found
+				? "no chart"
+				: chart.clippedPx > STATS_CHART_REACH_TOLERANCE_PX
+					? `⚠ CHART CLIPPED +${chart.clippedPx}px`
+					: "chart ok";
 			report.push(
-				`  ${view.name.padEnd(22)} pane=${String(m?.paneWidth ?? "?").padEnd(5)} ${tabFlag.padEnd(34)} ${contentFlag}`
+				`  ${view.name.padEnd(22)} pane=${String(m?.paneWidth ?? "?").padEnd(5)} ${tabFlag.padEnd(34)} ${contentFlag.padEnd(20)} ${searchFlag.padEnd(24)} ${chartFlag}`
 			);
 		}
 
@@ -150,10 +172,16 @@ test.describe("cross-view: mobile gallery", () => {
 			).toBeLessThanOrEqual(HEATMAP_START_TOLERANCE_PX);
 		}
 
-		for (const { name, overflow } of measurements) {
+		for (const { name, overflow, chart } of measurements) {
 			if (!overflow) {
 				expect(overflow, `view "${name}": pane not found — could not measure layout`).not.toBeNull();
 				continue;
+			}
+			if (chart.found) {
+				expect(
+					chart.clippedPx,
+					`view "${name}": the distribution chart is cropped ${chart.clippedPx}px past a non-scrollable ancestor (unreachable in its stacked cell)`
+				).toBeLessThanOrEqual(STATS_CHART_REACH_TOLERANCE_PX);
 			}
 			expect(
 				overflow.tabCroppedPx,
@@ -163,6 +191,12 @@ test.describe("cross-view: mobile gallery", () => {
 				overflow.viewContentPx,
 				`view "${name}": content overflows the pane horizontally by ${overflow.viewContentPx}px`
 			).toBeLessThanOrEqual(CONTENT_OVERFLOW_TOLERANCE_PX);
+			if (overflow.filterSearchCroppedPx !== null) {
+				expect(
+					overflow.filterSearchCroppedPx,
+					`view "${name}": the Search events… input sits ${overflow.filterSearchCroppedPx}px outside the pane (toolbar clipped it instead of wrapping)`
+				).toBeLessThanOrEqual(FILTER_SEARCH_REACH_TOLERANCE_PX);
+			}
 		}
 	});
 });

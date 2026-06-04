@@ -390,6 +390,26 @@ body .modal.prisma-weekly-stats-modal {
 	background-color: var(--background-secondary);
 }
 
+// Mobile: a stats tab lives in a stacked grid cell only ~50vh tall, which clipped
+// the bottom of its distribution chart. Let the panel flow to its full height and
+// the tab scroll to it: don't cap the view to the cell, stop clipping the content,
+// and let the table take its natural height (the page scrolls, not the table).
+// Scoped to .prisma-interval-stats-view, so the stats modal is unaffected.
+@media (width <= 768px) {
+	.prisma-interval-stats-view {
+		height: auto;
+	}
+
+	.prisma-interval-stats-view .prisma-stats-content {
+		overflow: visible;
+	}
+
+	.prisma-interval-stats-view .prisma-stats-table-container {
+		flex: 0 0 auto;
+		overflow: visible;
+	}
+}
+
 .prisma-weekly-stats-modal {
 	.prisma-stats-chart-container canvas {
 		max-height: 600px;

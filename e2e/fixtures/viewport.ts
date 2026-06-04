@@ -60,6 +60,15 @@ export interface MobileOverflow {
 	tabCroppedPx: number;
 	/** Number of view-tabs found in the strip (sanity: a real strip has several). */
 	tabCount: number;
+	/**
+	 * Px the toolbar's "Search events…" filter input extends beyond the pane's right
+	 * (or left) edge, or `null` if this view has no filter bar. `> 0` means the
+	 * search is laid out off-screen — the toolbar clipped it with `overflow: hidden`
+	 * instead of wrapping it onto its own row. Same resting-rect rationale as
+	 * `tabCroppedPx`. Timeline / Heatmap / Gantt render the filter bar, so a toolbar
+	 * that stops wrapping re-breaks here.
+	 */
+	filterSearchCroppedPx: number | null;
 }
 
 /**
@@ -83,11 +92,29 @@ export async function measureMobileOverflow(page: Page): Promise<MobileOverflow 
 			tabCroppedPx = Math.max(tabCroppedPx, r.right - paneRect.right, paneRect.left - r.left);
 		}
 
+		// Inactive view tabs stay mounted (hidden) in the same leaf, so there can be
+		// several "prisma-filter-search" inputs; measure the one that's actually
+		// displayed (the active view's). A search with a 0×0 rect is hidden and
+		// skipped — that covers both inactive tabs and the calendar toolbar, which
+		// intentionally collapses its filter controls behind a "Filters" toggle on
+		// mobile. `null` therefore means "no visible search here" (calendar / split /
+		// dashboard views); Timeline / Heatmap / Gantt show it inline and get measured.
+		const searches = Array.from(leaf.querySelectorAll('[data-testid="prisma-filter-search"]'));
+		let filterSearchCroppedPx: number | null = null;
+		for (const s of searches) {
+			const r = s.getBoundingClientRect();
+			if (r.width > 0 && r.height > 0) {
+				filterSearchCroppedPx = Math.max(0, Math.round(Math.max(r.right - paneRect.right, paneRect.left - r.left)));
+				break;
+			}
+		}
+
 		return {
 			paneWidth: Math.round(paneRect.width),
 			viewContentPx,
 			tabCroppedPx: Math.max(0, Math.round(tabCroppedPx)),
 			tabCount: tabs.length,
+			filterSearchCroppedPx,
 		};
 	}, ACTIVE_CALENDAR_LEAF);
 }
@@ -141,5 +168,56 @@ export async function measureHeatmapScroll(page: Page): Promise<HeatmapScroll | 
 			scrollable: overflowX === "auto" || overflowX === "scroll",
 			startClippedPx: Math.max(0, Math.round(cRect.left - svgRect.left)),
 		};
+	}, ACTIVE_CALENDAR_LEAF);
+}
+
+export interface StatsChartReach {
+	/** Whether a visible distribution-chart container was found in this view. */
+	found: boolean;
+	/**
+	 * Px of the distribution chart that sit below the clip edge of a non-scrollable
+	 * `overflow:hidden` ancestor — i.e. cropped with no way to scroll to them. `> 0`
+	 * is the bug: in a stacked ~50vh grid cell the chart was hidden past the cell's
+	 * bottom. The walk stops at the first scrollable ancestor (which CAN reveal the
+	 * overflow), so a normally-scrolling tab reads 0. Stays 0 once the stats panel
+	 * flows to full height with the clipping `overflow:hidden` lifted on mobile.
+	 */
+	clippedPx: number;
+}
+
+/**
+ * Measure whether a stats tab's distribution chart is reachable on a phone. The
+ * chart lives in a stacked grid cell only ~50vh tall; if an `overflow:hidden`
+ * ancestor between it and the nearest scroll container crops it, the bottom of the
+ * pie is unreachable. Returns `found:false` for views without a stats chart.
+ */
+export async function measureStatsChartReach(page: Page): Promise<StatsChartReach> {
+	return page.evaluate((leafSelector) => {
+		const leaf = document.querySelector(leafSelector);
+		const views = Array.from(leaf?.querySelectorAll(".prisma-interval-stats-view") ?? []);
+		let container: HTMLElement | null = null;
+		for (const v of views) {
+			const c = v.querySelector(".prisma-stats-chart-container") as HTMLElement | null;
+			if (c && c.getBoundingClientRect().height > 0) {
+				container = c;
+				break;
+			}
+		}
+		if (!container) return { found: false, clippedPx: 0 };
+
+		const chartBottom = container.getBoundingClientRect().bottom;
+		let clippedPx = 0;
+		let el = container.parentElement;
+		while (el && el !== document.body) {
+			const cs = getComputedStyle(el);
+			// A scrollable ancestor can reveal anything below it — reachability is safe
+			// from here up, so stop.
+			if (cs.overflowY === "auto" || cs.overflowY === "scroll") break;
+			if (cs.overflowY === "hidden" || cs.overflowY === "clip") {
+				clippedPx = Math.max(clippedPx, chartBottom - el.getBoundingClientRect().bottom);
+			}
+			el = el.parentElement;
+		}
+		return { found: true, clippedPx: Math.max(0, Math.round(clippedPx)) };
 	}, ACTIVE_CALENDAR_LEAF);
 }

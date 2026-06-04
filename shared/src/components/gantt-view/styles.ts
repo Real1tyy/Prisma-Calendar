@@ -40,7 +40,23 @@ function buildGanttStyles(p: string): string {
 	flex-shrink: 0;
 }
 
-
+/* Mobile / narrow pane: wrap the toolbar instead of clipping it — the filter
+   bar takes its own full-width row(s) and the nav controls drop below, so the
+   search input stays reachable rather than hidden off the right edge. */
+@media (max-width: 768px) {
+	.${p}gantt-toolbar {
+		flex-wrap: wrap;
+		overflow: visible;
+	}
+	.${p}gantt-toolbar-left {
+		flex: 1 1 100%;
+		flex-wrap: wrap;
+		overflow: visible;
+	}
+	.${p}gantt-toolbar-right {
+		flex: 1 1 auto;
+	}
+}
 
 .${p}gantt-nav {
 	display: flex;

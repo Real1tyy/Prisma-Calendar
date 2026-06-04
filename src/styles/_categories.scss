@@ -86,6 +86,28 @@
 	}
 }
 
+// Mobile / narrow pane: the stats line is long and the action buttons must not
+// shrink, so on one row they collide. Stack the card — name + stats on a
+// full-width row (name above its stats), the edit / delete / color controls on
+// their own row below — instead of overflowing.
+@media (width <= 768px) {
+	.prisma-category-settings-item {
+		flex-wrap: wrap;
+	}
+	.prisma-category-settings-item-left {
+		flex: 1 1 100%;
+	}
+	.prisma-category-settings-item-right {
+		flex: 1 1 100%;
+		justify-content: flex-end;
+	}
+	.prisma-category-settings-name-container {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 4px;
+	}
+}
+
 .prisma-categories-chart {
 	&-section {
 		margin-top: 32px;

@@ -4,9 +4,18 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 2.19.0 - 6/4/2026
+
+> **TLDR:** A mobile / narrow-pane layout pass. The view tabs wrap so every tab stays tappable, the Timeline / Heatmap / Gantt toolbars wrap so the **Search events…** box no longer disappears off the edge, the colour-rule / filter-preset / category settings editors reflow onto two rows so their inputs stay usable, the split and dashboard views scroll to reveal the full distribution chart instead of cropping it, the yearly heatmap scrolls sideways from January, and drag-to-edge paging works with touch.
+
+### Fixed
+- **Mobile**: a layout pass for phones and narrow panes. The view tabs wrap onto multiple rows so every tab (including Dual Daily and Dashboard) stays tappable instead of being cut off the right edge; the Timeline, Heatmap, and Gantt toolbars wrap so the filter and **Search events…** box stay visible instead of vanishing off the edge; the colour-rule, filter-preset, and category settings editors reflow onto two rows so their inputs are wide enough to type in; the split and dashboard views (Dual Daily, Daily + Stats, Monthly + Stats, Dashboard) render their panels in a single scrolling column and scroll to reveal the full distribution chart instead of cropping it; the yearly heatmap keeps its full width and scrolls sideways from January; and dragging an event to the left/right edge to page the calendar now works with touch, not just a mouse. See [Calendar View → Mobile layout](./features/calendar/calendar-view.md#mobile-layout).
+
+---
+
 ## 2.18.0 - 5/22/2026
 
-> **TLDR:** Your Pro license now re-verifies quietly in the background about once a day, with a clearer License panel and a **Deactivate this device** button. ICS export/import and the CalDAV timezone dropdown now cover every standard UTC offset, including the half- and 45-minute zones. Notes with a single date property render as all-day events without an `All Day` flag, plus fixes for midnight-crossing stats, the running stopwatch's End time, stale events, and moves between planning systems. **Mobile gets a big layout fix** too: the view tabs, split/dashboard views, and yearly heatmap now lay out correctly at phone width, and drag-to-edge paging works with touch.
+> **TLDR:** Your Pro license now re-verifies quietly in the background about once a day, with a clearer License panel and a **Deactivate this device** button. ICS export/import and the CalDAV timezone dropdown now cover every standard UTC offset, including the half- and 45-minute zones. Notes with a single date property render as all-day events without an `All Day` flag, plus fixes for midnight-crossing stats, the running stopwatch's End time, stale events, and moves between planning systems.
 
 ### Improved
 - **Complete timezone coverage**: the ICS export/import and CalDAV timezone dropdown now lists a zone for every standard UTC offset from UTC−12 to UTC+14 — including the half-hour and 45-minute zones (e.g. UTC+2 Athens, UTC+3:30 Tehran, UTC+5:45 Kathmandu, UTC+12:45 Chatham) — so you can pick an accurate zone wherever you are. See [Integrations → Timezone Handling](./features/advanced/integrations.md#timezone-handling).
@@ -19,9 +28,6 @@ All notable changes to this project will be documented here.
 - **A single date property now just works**: notes with one date value (e.g. `Date: 2026-06-01`) appear on the calendar as all-day events without needing an `All Day` flag — the flag is now an optional override, not a requirement. See [Properties → How Prisma decides event type](./configuration/properties.md#how-prisma-decides-event-type).
 - **Events crossing midnight are counted accurately in stats and capacity**: an event like 10:00 PM–12:15 AM now adds only its in-day slice to each day (2h to the first day, 15m to the next) across the daily, weekly, and monthly stats and the capacity total, instead of its full duration to both. Capacity tracking also stretches the day's active window to midnight to fit a late-running event. See [Daily + Stats → Events that cross midnight](./features/views/daily-stats.md#events-that-cross-midnight) and [Capacity Tracking](./features/views/capacity-tracking.md#how-it-works).
 - **Bigger indexing spinner in the middle of the calendar**: Calendar view now shows a loading spinner in the center instead of at the bottom, where it was easy to miss. See [Calendar View → Indexing Indicator](./features/calendar/calendar-view.md#indexing-indicator).
-
-### Fixed
-- **Mobile**: at phone width the view tabs now wrap so every tab stays tappable instead of being cut off the right edge, the split and dashboard views (Dual Daily, Daily + Stats, Monthly + Stats, Dashboard) render their content instead of a blank pane, and the yearly heatmap scrolls sideways from January instead of hiding the later months. Dragging an event to the left/right edge to page the calendar now works with touch, not just a mouse. See [Calendar View → Mobile layout](./features/calendar/calendar-view.md#mobile-layout).
 
 ---
 
