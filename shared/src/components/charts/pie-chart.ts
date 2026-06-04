@@ -82,6 +82,11 @@ export class PieChartBuilder {
 				},
 				plugins: {
 					legend: {
+						// On a phone the legend (one row per category, up to ~25) stacks tall
+						// enough to crowd the pie off-screen entirely. Hide it there and let
+						// the pie own the space — labels stay available via tap tooltips and
+						// the accompanying table/ranking. Desktop keeps the interactive legend.
+						display: !isMobile,
 						position: legendPosition,
 						align: legendAlign,
 						maxWidth: isMobile ? undefined : 350,

@@ -1,4 +1,5 @@
 import { PieChartBuilder, type ChartDataItem } from "@real1ty-obsidian-plugins";
+import { MOBILE_MEDIA_QUERY, useMediaQuery } from "@real1ty-obsidian-plugins-react";
 import { memo, useEffect, useRef } from "react";
 
 const MAX_CHART_LABELS = 25;
@@ -15,6 +16,7 @@ export const DashboardChart = memo(function DashboardChart({
 	tooltipFormatter,
 }: DashboardChartProps) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
+	const isMobile = useMediaQuery(MOBILE_MEDIA_QUERY);
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
@@ -22,12 +24,13 @@ export const DashboardChart = memo(function DashboardChart({
 
 		const limitedData = chartData.slice(0, MAX_CHART_LABELS);
 		const builder = new PieChartBuilder(canvas, limitedData, {
+			isMobile,
 			...(tooltipFormatter ? { tooltipFormatter } : {}),
 		});
 		builder.render();
 
 		return () => builder.destroy();
-	}, [chartData, chartId, tooltipFormatter]);
+	}, [chartData, chartId, tooltipFormatter, isMobile]);
 
 	if (chartData.length === 0) {
 		return <div className="prisma-dashboard-chart-empty">No data</div>;

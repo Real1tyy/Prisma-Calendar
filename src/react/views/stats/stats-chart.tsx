@@ -1,4 +1,5 @@
 import { generateColors, PieChartBuilder, type ChartDataItem } from "@real1ty-obsidian-plugins";
+import { MOBILE_MEDIA_QUERY, useMediaQuery } from "@real1ty-obsidian-plugins-react";
 import { memo, useEffect, useRef } from "react";
 
 import { formatDuration, type WeeklyStatEntry } from "../../../utils/stats";
@@ -22,6 +23,7 @@ export const StatsChart = memo(function StatsChart({
 	const chartRef = useRef<PieChartBuilder | null>(null);
 	const visibilityHandlerRef = useRef(onVisibilityChange);
 	visibilityHandlerRef.current = onVisibilityChange;
+	const isMobile = useMediaQuery(MOBILE_MEDIA_QUERY);
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
@@ -37,6 +39,7 @@ export const StatsChart = memo(function StatsChart({
 		}));
 
 		chartRef.current = new PieChartBuilder(canvas, chartData, {
+			isMobile,
 			tooltipFormatter: (label, value, percentage) => `${label}: ${formatDuration(value)} (${percentage}%)`,
 			onVisibilityChange: (label, visible) => visibilityHandlerRef.current?.(label, visible),
 		});
@@ -46,7 +49,7 @@ export const StatsChart = memo(function StatsChart({
 			chartRef.current?.destroy();
 			chartRef.current = null;
 		};
-	}, [entries, colorResolver]);
+	}, [entries, colorResolver, isMobile]);
 
 	// Sync Chart.js internal hidden-state with parent-owned `hiddenLabels` so
 	// imperative resets (e.g. "Show all" button) flip Chart.js back to visible
