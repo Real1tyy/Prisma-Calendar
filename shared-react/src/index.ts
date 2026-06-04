@@ -26,8 +26,12 @@ export { useThemed, withTheme } from "./contexts/with-theme";
 // ─── Forms ───
 export * from "./forms";
 
+// ─── Responsive ───
+export { MOBILE_BREAKPOINT_PX, MOBILE_MEDIA_QUERY } from "./responsive";
+
 // ─── Hooks ───
 export { useDomEvent } from "./hooks/dom";
+export { useMediaQuery } from "./hooks/dom";
 export { type Emitterlike, useObsidianEvent } from "./hooks/dom";
 export { useOutsideClick, type UseOutsideClickOptions } from "./hooks/dom";
 export { useScrollRestore } from "./hooks/dom";
