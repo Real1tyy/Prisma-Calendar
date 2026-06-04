@@ -656,12 +656,24 @@
 @media (width <= 768px) {
 	.prisma-event-modal {
 		&-header {
-			flex-direction: column;
-			align-items: stretch;
+			flex-wrap: wrap;
+			align-items: center;
 			gap: 8px;
 
+			// Title centered with the Virtual toggle inline on the same row (there's
+			// room for both); the minimize / clear / preset controls wrap below.
+			h2 {
+				flex: 1 1 auto;
+				text-align: center;
+				margin: 0;
+			}
+
+			.prisma-virtual-toggle {
+				flex: 0 0 auto;
+			}
+
 			&-controls {
-				width: 100%;
+				flex: 1 1 100%;
 				justify-content: flex-start;
 				flex-wrap: wrap;
 				gap: 6px;
@@ -695,10 +707,33 @@
 				select {
 					width: 100%;
 				}
+			}
 
-				&[type="checkbox"] {
-					margin-left: 0;
-					align-self: flex-start;
+			// Boolean rows (checkboxes: All day, Recurring; toggles: Mark as done,
+			// Skip) keep their label and control on one line instead of stacking like
+			// the text fields — stacking stretched the checkbox into a malformed sliver
+			// and pushed toggles onto a wasteful second row. Label left, control right.
+			&:has(> .prisma-setting-item-control[type="checkbox"]),
+			&:has(> .checkbox-container) {
+				flex-direction: row;
+				align-items: center;
+
+				.prisma-setting-item-name {
+					padding-bottom: 0;
+				}
+
+				.prisma-setting-item-control[type="checkbox"] {
+					flex: 0 0 auto;
+					margin-left: auto;
+					align-self: center;
+					// Bigger touch target on a phone — the default 18px box felt cramped.
+					width: 22px;
+					height: 22px;
+				}
+
+				> .checkbox-container {
+					margin-left: auto;
+					align-self: center;
 				}
 			}
 		}
@@ -1285,18 +1320,24 @@
 		}
 	}
 
+	// Keep the Now / Fill buttons compact so the date input keeps room on the same
+	// row instead of being squeezed off the edge; the input takes the remainder and
+	// only wraps to its own line if even that doesn't fit.
 	.prisma-datetime-input-wrapper {
 		flex-wrap: wrap;
 	}
 
-	.prisma-now-button {
-		flex: 1;
-		min-width: 80px;
+	.prisma-now-button,
+	.prisma-fill-button {
+		flex: 0 0 auto;
+		min-width: 0;
+		margin-left: 0;
+		padding: 4px 8px;
 	}
 
-	.prisma-fill-button {
-		flex: 1;
-		min-width: 80px;
+	.prisma-datetime-input-wrapper input[type="datetime-local"] {
+		flex: 1 1 130px;
+		min-width: 0;
 	}
 }
 

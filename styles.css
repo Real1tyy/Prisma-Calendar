@@ -3225,12 +3225,20 @@ button[class*=prisma-]:focus-visible {
 
 @media (width <= 768px) {
   .prisma-event-modal-header {
-    flex-direction: column;
-    align-items: stretch;
+    flex-wrap: wrap;
+    align-items: center;
     gap: 8px;
   }
+  .prisma-event-modal-header h2 {
+    flex: 1 1 auto;
+    text-align: center;
+    margin: 0;
+  }
+  .prisma-event-modal-header .prisma-virtual-toggle {
+    flex: 0 0 auto;
+  }
   .prisma-event-modal-header-controls {
-    width: 100%;
+    flex: 1 1 100%;
     justify-content: flex-start;
     flex-wrap: wrap;
     gap: 6px;
@@ -3256,9 +3264,23 @@ button[class*=prisma-]:focus-visible {
   .prisma-event-modal .prisma-setting-item-control select {
     width: 100%;
   }
-  .prisma-event-modal .prisma-setting-item-control[type=checkbox] {
-    margin-left: 0;
-    align-self: flex-start;
+  .prisma-event-modal .prisma-setting-item:has(> .prisma-setting-item-control[type=checkbox]), .prisma-event-modal .prisma-setting-item:has(> .checkbox-container) {
+    flex-direction: row;
+    align-items: center;
+  }
+  .prisma-event-modal .prisma-setting-item:has(> .prisma-setting-item-control[type=checkbox]) .prisma-setting-item-name, .prisma-event-modal .prisma-setting-item:has(> .checkbox-container) .prisma-setting-item-name {
+    padding-bottom: 0;
+  }
+  .prisma-event-modal .prisma-setting-item:has(> .prisma-setting-item-control[type=checkbox]) .prisma-setting-item-control[type=checkbox], .prisma-event-modal .prisma-setting-item:has(> .checkbox-container) .prisma-setting-item-control[type=checkbox] {
+    flex: 0 0 auto;
+    margin-left: auto;
+    align-self: center;
+    width: 22px;
+    height: 22px;
+  }
+  .prisma-event-modal .prisma-setting-item:has(> .prisma-setting-item-control[type=checkbox]) > .checkbox-container, .prisma-event-modal .prisma-setting-item:has(> .checkbox-container) > .checkbox-container {
+    margin-left: auto;
+    align-self: center;
   }
   .prisma-event-preset-selector-wrapper {
     flex: 1 1 auto;
@@ -3729,13 +3751,16 @@ button[class*=prisma-]:focus-visible {
   .prisma-datetime-input-wrapper {
     flex-wrap: wrap;
   }
-  .prisma-now-button {
-    flex: 1;
-    min-width: 80px;
-  }
+  .prisma-now-button,
   .prisma-fill-button {
-    flex: 1;
-    min-width: 80px;
+    flex: 0 0 auto;
+    min-width: 0;
+    margin-left: 0;
+    padding: 4px 8px;
+  }
+  .prisma-datetime-input-wrapper input[type=datetime-local] {
+    flex: 1 1 130px;
+    min-width: 0;
   }
 }
 .prisma-generic-event-list-modal h2 {
