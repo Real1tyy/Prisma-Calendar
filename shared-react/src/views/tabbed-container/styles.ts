@@ -18,16 +18,25 @@ export function buildTabbedContainerStyles(p: string): string {
 	border-radius: 8px;
 	background: var(--background-modifier-hover);
 	flex-shrink: 0;
-	/* When the tabs don't all fit — phone widths, narrow side-dock panes — wrap
-	   onto multiple rows so EVERY tab stays visible and tappable. A no-op on
-	   desktop where they fit in one row, so it needs no media query or platform
-	   check. Wrapping (not horizontal scroll) is deliberate: a scrollable strip
-	   crops the trailing tabs (Dual Daily, Dashboard) with no affordance to reach
-	   them on touch — they become unclickable. Wrapping keeps them all reachable. */
-	flex-wrap: wrap;
+	/* Header context (the desktop portal host is Obsidian's fixed-height
+	   view-header, which clips extra rows): a narrow side-dock scrolls the strip
+	   horizontally rather than spilling tabs past the pane. A no-op when they fit. */
+	overflow-x: auto;
+	scrollbar-width: none;
+}
+.${p}tab-bar::-webkit-scrollbar {
+	display: none;
 }
 .${p}tab-bar > * {
 	flex-shrink: 0;
+}
+/* Mobile: the bar renders inline in the content pane (see useTabBarPortal), which
+   can grow vertically — so it WRAPS onto multiple rows instead of scrolling,
+   keeping every tab tappable (touch can't reach a scrolled-off tab in a strip). */
+.${p}tabbed-container > .${p}tab-bar {
+	flex-wrap: wrap;
+	overflow-x: visible;
+	margin-top: 4px;
 }
 .${p}tab {
 	padding: 4px 12px;

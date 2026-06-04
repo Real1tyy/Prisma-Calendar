@@ -1,7 +1,7 @@
 import { act, screen } from "@testing-library/react";
 import type { App } from "obsidian";
 import { createElement, type RefObject } from "react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { TabbedContainer, type TabbedContainerHandle, type TabEntry } from "../../../src/views/tabbed-container/index";
 import { MountImperative } from "../../../src/widgets/mount-imperative/mount-imperative";
@@ -497,6 +497,57 @@ describe("TabbedContainer DOM isolation", () => {
 		expect(handleRef.current).not.toBeNull();
 		unmount();
 		expect(handleRef.current).toBeNull();
+	});
+});
+
+describe("TabbedContainer responsive tab bar placement", () => {
+	let original: typeof window.matchMedia;
+
+	const stubMatchMedia = (matches: boolean): void => {
+		window.matchMedia = ((query: string) => ({
+			matches,
+			media: query,
+			addEventListener: () => {},
+			removeEventListener: () => {},
+		})) as unknown as typeof window.matchMedia;
+	};
+
+	beforeEach(() => {
+		original = window.matchMedia;
+	});
+
+	afterEach(() => {
+		window.matchMedia = original;
+	});
+
+	it("portals the tab bar into the header host at desktop width", () => {
+		stubMatchMedia(false);
+		const host = document.createElement("div");
+		document.body.appendChild(host);
+
+		try {
+			const { container } = renderReact(<TabbedContainer tabs={makeTabs()} cssPrefix="t-" tabBarContainer={host} />);
+			expect(host.querySelectorAll(".t-tab-bar").length).toBe(1);
+			expect(container.querySelector(".t-tabbed-container > .t-tab-bar")).toBeNull();
+		} finally {
+			host.remove();
+		}
+	});
+
+	it("renders the tab bar inline in the content pane (not the fixed-height header) at mobile width", () => {
+		stubMatchMedia(true);
+		const host = document.createElement("div");
+		document.body.appendChild(host);
+
+		try {
+			const { container } = renderReact(<TabbedContainer tabs={makeTabs()} cssPrefix="t-" tabBarContainer={host} />);
+			expect(host.querySelectorAll(".t-tab-bar").length).toBe(0);
+			const inline = container.querySelector(".t-tabbed-container > .t-tab-bar");
+			expect(inline).not.toBeNull();
+			expect(inline?.querySelectorAll("button").length).toBe(3);
+		} finally {
+			host.remove();
+		}
 	});
 });
 

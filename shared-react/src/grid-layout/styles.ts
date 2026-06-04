@@ -370,6 +370,31 @@ export function buildGridStyles(p: string): string {
 	min-height: 0;
 	flex: 1;
 }
+
+/* Mobile: stack every grid view into a single scrollable column. Side-by-side
+   splits (dual-daily, the *-stats tabs, dashboard) are unusable on a phone — at
+   narrow width the tracks collapse and the panes render blank. Each stacked cell
+   gets at least half the viewport so calendars/charts (height:100% of their
+   cell) have room, and the grid grows past the pane so the tab content scrolls.
+   This overrides the var-driven template above via later source order — no
+   !important needed, since the template is set in the stylesheet, not inline. */
+@media (max-width: 768px) {
+	.${p}grid {
+		grid-template-columns: 1fr;
+		grid-template-rows: none;
+		grid-auto-flow: row;
+		grid-auto-rows: minmax(50vh, auto);
+		height: auto;
+		min-height: 100%;
+	}
+	.${p}grid-cell {
+		grid-row: auto;
+		grid-column: 1 / -1;
+	}
+	.${p}grid-resize-handle {
+		display: none;
+	}
+}
 `;
 }
 

@@ -14,8 +14,10 @@ import { createPortal } from "react-dom";
 
 import { AppContext } from "../../contexts/app-context";
 import { useDomEvent } from "../../hooks/dom/use-dom-event";
+import { useMediaQuery } from "../../hooks/dom/use-media-query";
 import { useInjectedStyles } from "../../hooks/styles/use-styles";
 import { ObsidianIcon } from "../../primitives/atoms/obsidian-icon";
+import { MOBILE_MEDIA_QUERY } from "../../responsive";
 import { cx } from "../../utils/cx";
 import { GroupDropdown } from "./group-dropdown";
 import { getActiveChild, type GroupChildState } from "./reorder";
@@ -137,7 +139,13 @@ export const TabbedContainer = memo(function TabbedContainer({
 		/>
 	);
 
-	const tabBarRendered = useTabBarPortal(tabBar, tabBarContainer ?? null, tabBarInsertBefore ?? null);
+	// On phones / narrow panes the portal host is Obsidian's fixed-height
+	// `.view-header`, which clips the tab bar if it needs more than one row. So at
+	// mobile width we skip the portal and render the bar inline in the content
+	// pane (where it can wrap freely and every tab stays reachable). Reactive, so
+	// rotating or resizing across the breakpoint moves the bar to the right place.
+	const isNarrow = useMediaQuery(MOBILE_MEDIA_QUERY);
+	const tabBarRendered = useTabBarPortal(tabBar, tabBarContainer ?? null, tabBarInsertBefore ?? null, !isNarrow);
 
 	const tree = (
 		<div ref={containerRef} className={`${cssPrefix}tabbed-container`}>
@@ -176,16 +184,20 @@ export const TabbedContainer = memo(function TabbedContainer({
 function useTabBarPortal(
 	node: React.ReactNode,
 	host: HTMLElement | null,
-	insertBefore: Element | null
+	insertBefore: Element | null,
+	enabled: boolean
 ): React.ReactNode {
+	// `enabled: false` (mobile) renders the bar inline instead of portaling it —
+	// the null placeholder below also short-circuits the effect, so it no-ops.
+	const activeHost = enabled ? host : null;
 	const placeholderRef = useRef<HTMLDivElement | null>(null);
 	const placeholderEl = useMemo(() => {
-		if (!host) return null;
+		if (!activeHost) return null;
 
 		const el = document.createElement("div");
 		el.style.display = "contents";
 		return el;
-	}, [host]);
+	}, [activeHost]);
 
 	useEffect(() => {
 		if (!host || !placeholderEl) return;
@@ -201,7 +213,7 @@ function useTabBarPortal(
 		};
 	}, [host, placeholderEl, insertBefore]);
 
-	if (!host) return node;
+	if (!activeHost) return node;
 	if (!placeholderEl) return null;
 	return createPortal(node, placeholderEl);
 }
