@@ -115,11 +115,20 @@
 		padding: 0.75rem 1.5rem;
 		overflow-x: auto;
 		display: flex;
-		justify-content: center;
+		// `safe` falls back to flex-start when the grid is wider than the pane (phones,
+		// narrow side-docks), keeping the first months reachable — plain `center`
+		// strands them off the left, where scrollLeft can't reach (it can't go negative).
+		justify-content: safe center;
 	}
 
 	&-svg {
 		display: block;
+		// Keep the grid at its intrinsic width: Obsidian's global `svg { max-width: 100% }`
+		// otherwise shrinks this (there's no viewBox) and hard-clips the trailing months
+		// instead of letting the container scroll. flex-shrink:0 stops the flex parent
+		// from squeezing it narrower than its content.
+		max-width: none;
+		flex-shrink: 0;
 	}
 
 	&-cell {

@@ -4713,10 +4713,12 @@ button[class*=prisma-]:focus-visible {
   padding: 0.75rem 1.5rem;
   overflow-x: auto;
   display: flex;
-  justify-content: center;
+  justify-content: safe center;
 }
 .prisma-heatmap-svg {
   display: block;
+  max-width: none;
+  flex-shrink: 0;
 }
 .prisma-heatmap-cell {
   cursor: pointer;
@@ -8883,7 +8885,7 @@ div.vis-tooltip {
   color: var(--text-accent-hover);
 }
 
-@media (width <= 720px) {
+@media (width <= 768px) {
   .prisma-first-launch-mode-grid {
     grid-template-columns: 1fr;
   }

@@ -544,7 +544,7 @@
 
 // ─── Responsive ───────────────────────────────────────────────────────────────
 
-@media (width <= 720px) {
+@media (width <= 768px) {
 	.prisma-first-launch-mode-grid {
 		grid-template-columns: 1fr;
 	}
