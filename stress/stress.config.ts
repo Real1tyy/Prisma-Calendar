@@ -69,4 +69,7 @@ export const BUDGETS: Record<string, StressBudget> = {
 	"event-edit-storm": {
 		"editStorm.converge.p95Ms": { comparison: "max", value: 120_000, unit: "ms" },
 	},
+	"year-view": {
+		"view.yearRender.p95Ms": { comparison: "max", value: 120_000, unit: "ms" },
+	},
 };

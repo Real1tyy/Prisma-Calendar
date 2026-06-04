@@ -195,10 +195,35 @@ export async function indexerEventCount(page: Page): Promise<number> {
  * take noticeably longer to ingest than the 500ms refresh window bakes in, so
  * the tolerance here is generous by default.
  */
-export async function waitForIndexerToReach(page: Page, expected: number): Promise<void> {
+export async function waitForIndexerToReach(page: Page, expected: number, timeoutMs?: number): Promise<void> {
 	await expect
-		.poll(() => indexerEventCount(page), { message: `indexer never reached ${expected} events` })
+		.poll(() => indexerEventCount(page), {
+			message: `indexer never reached ${expected} events`,
+			...(timeoutMs ? { timeout: timeoutMs } : {}),
+		})
 		.toBe(expected);
+}
+
+/**
+ * Poll until the indexer reaches **at least** `atLeast` events AND the count holds
+ * steady across two consecutive reads. For recurrence scenarios the source ingest
+ * is followed by physical-instance materialization that pushes the count *past* the
+ * source total, so the exact-count gate (`waitForIndexerToReach`) can't settle —
+ * this waits for "all sources in + materialization quiesced" instead.
+ */
+export async function waitForIndexerToSettle(page: Page, atLeast: number): Promise<void> {
+	let previous = -1;
+	await expect
+		.poll(
+			async () => {
+				const count = await indexerEventCount(page);
+				const settled = count >= atLeast && count === previous;
+				previous = count;
+				return settled;
+			},
+			{ message: `indexer never settled at >= ${atLeast} events` }
+		)
+		.toBe(true);
 }
 
 /**

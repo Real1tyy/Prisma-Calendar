@@ -6,7 +6,8 @@ import { defineConfig } from "@playwright/test";
 //   - generous timeout — seeding a large vault + many navigations is slow.
 const DEBUG_ON = !!process.env["PWDEBUG"] || process.argv.includes("--ui") || process.argv.includes("--debug");
 
-const TEST_TIMEOUT = DEBUG_ON ? 0 : 300_000;
+// Heavy (large-profile) runs can exceed the default — raise via STRESS_TIMEOUT_MS.
+const TEST_TIMEOUT = DEBUG_ON ? 0 : Number(process.env["STRESS_TIMEOUT_MS"]) || 300_000;
 const EXPECT_TIMEOUT = DEBUG_ON ? 0 : 60_000;
 const ACTION_TIMEOUT = DEBUG_ON ? 0 : 60_000;
 

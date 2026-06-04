@@ -49,7 +49,9 @@ test.describe("stress: startup (cold ingest)", () => {
 				seed: STRESS_CONFIG.seed,
 				buildEvent: buildPrismaEvent,
 			});
-			await waitForIndexerToReach(page, expectedCount);
+			// Large ingests far exceed the default 60s expect-poll — give the heavy
+			// tier room (the test timeout is raised via STRESS_TIMEOUT_MS for large).
+			await waitForIndexerToReach(page, expectedCount, PROFILE.name === "large" ? 900_000 : undefined);
 		});
 		const ingestMs = performance.now() - ingestStart;
 		const finishedAt = new Date().toISOString();
