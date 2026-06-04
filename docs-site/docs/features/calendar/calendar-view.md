@@ -256,6 +256,17 @@ When you open the calendar, Prisma scans your vault to build its event index. Wh
 
 The same overlay reappears (labelled **Re-indexing calendar events…**) if Prisma needs to rebuild the index later — for example after a bulk change to your vault.
 
+## Mobile layout
+
+On a phone — or any pane narrower than 768px — the calendar adapts so every view stays usable:
+
+- **The view tabs wrap onto multiple rows** instead of running off the right edge, so every tab (including Dual Daily and Dashboard) stays visible and tappable.
+- **Split views stack vertically.** Dual Daily, Daily + Stats, Monthly + Stats, and the Dashboard show their panels in a single full-width column you scroll through, rather than squeezing two columns side by side.
+- **The yearly heatmap scrolls sideways.** The full 12-month grid keeps its size and starts at January; swipe horizontally to reach the later months.
+- **Drag-to-edge paging works with touch.** While dragging an event, holding it near the left or right edge pages the calendar — on touch now, not just with a mouse.
+
+This is driven by the available width, so a narrow side-dock pane on desktop gets the same treatment. Pair it with a [Default mobile view](#mobile-view) to land on the most useful view when you open the calendar on a phone.
+
 ## See Also
 
 - [Configuration](../../configuration/calendar-ui) for the full settings reference
