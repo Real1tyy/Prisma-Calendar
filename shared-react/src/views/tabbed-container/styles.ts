@@ -18,14 +18,13 @@ export function buildTabbedContainerStyles(p: string): string {
 	border-radius: 8px;
 	background: var(--background-modifier-hover);
 	flex-shrink: 0;
-	/* When the tabs don't fit — phone widths, narrow side-dock panes — scroll the
-	   strip horizontally instead of spilling past the pane. A no-op on desktop
-	   where they fit, so it needs no media query or platform check. */
-	overflow-x: auto;
-	scrollbar-width: none;
-}
-.${p}tab-bar::-webkit-scrollbar {
-	display: none;
+	/* When the tabs don't all fit — phone widths, narrow side-dock panes — wrap
+	   onto multiple rows so EVERY tab stays visible and tappable. A no-op on
+	   desktop where they fit in one row, so it needs no media query or platform
+	   check. Wrapping (not horizontal scroll) is deliberate: a scrollable strip
+	   crops the trailing tabs (Dual Daily, Dashboard) with no affordance to reach
+	   them on touch — they become unclickable. Wrapping keeps them all reachable. */
+	flex-wrap: wrap;
 }
 .${p}tab-bar > * {
 	flex-shrink: 0;

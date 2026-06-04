@@ -62,6 +62,7 @@ import {
 	type FCPrismaEventInput,
 } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/index";
+import { edgeScrollDirection } from "../utils/calendar/edge-scroll";
 import { getCalendarRenderingKey } from "../utils/calendar/settings";
 import { stripZ } from "../utils/dates/iso";
 import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
@@ -122,7 +123,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	private filteredEventsCount = 0;
 	private skippedEventsCount = 0;
 	private selectedEventsCount = 0;
-	private dragEdgeScrollListener: ((e: MouseEvent) => void) | null = null;
+	private dragEdgeScrollListener: ((e: PointerEvent) => void) | null = null;
 	private dragEdgeScrollTimeout: number | null = null;
 	private lastEdgeScrollTime = 0;
 	private refreshRafId: number | null = null;
@@ -2114,34 +2115,33 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const EDGE_THRESHOLD = DRAG_EDGE_THRESHOLD_PX;
 		const scrollDelay = this.bundle.settingsStore.currentSettings.dragEdgeScrollDelayMs;
 
-		this.dragEdgeScrollListener = (e: MouseEvent) => {
+		// pointermove (not mousemove) so edge-scroll fires under touch drags too — a
+		// FullCalendar touch drag emits pointer events, never mousemove.
+		this.dragEdgeScrollListener = (e: PointerEvent) => {
 			if (!this.calendar) return;
-
-			const rect = this.container.getBoundingClientRect();
-			const mouseX = e.clientX;
-			const leftEdge = rect.left;
-			const rightEdge = rect.right;
 
 			const now = Date.now();
 			if (now - this.lastEdgeScrollTime < scrollDelay) {
 				return;
 			}
 
-			if (mouseX < leftEdge + EDGE_THRESHOLD) {
-				this.lastEdgeScrollTime = now;
+			const direction = edgeScrollDirection(e.clientX, this.container.getBoundingClientRect(), EDGE_THRESHOLD);
+			if (!direction) return;
+
+			this.lastEdgeScrollTime = now;
+			if (direction === "prev") {
 				this.calendar.prev();
-			} else if (mouseX > rightEdge - EDGE_THRESHOLD) {
-				this.lastEdgeScrollTime = now;
+			} else {
 				this.calendar.next();
 			}
 		};
 
-		activeDocument.addEventListener("mousemove", this.dragEdgeScrollListener);
+		activeDocument.addEventListener("pointermove", this.dragEdgeScrollListener);
 	}
 
 	private cleanupDragEdgeScrolling(): void {
 		if (this.dragEdgeScrollListener) {
-			activeDocument.removeEventListener("mousemove", this.dragEdgeScrollListener);
+			activeDocument.removeEventListener("pointermove", this.dragEdgeScrollListener);
 			this.dragEdgeScrollListener = null;
 		}
 		if (this.dragEdgeScrollTimeout) {
