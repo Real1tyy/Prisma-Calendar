@@ -2,6 +2,7 @@ import { fromAnchor } from "../../fixtures/dates";
 import type { CalendarHandle, EventCreate } from "../../fixtures/dsl";
 import { expect, test } from "../../fixtures/electron";
 import { assignPrerequisiteViaUI, ganttBarLocator } from "../../fixtures/helpers";
+import { enterMobileLayout } from "../../fixtures/viewport";
 
 // Gantt is a special case for cross-view assertions: the renderer FILTERS
 // events to only those connected in the prerequisite graph
@@ -46,6 +47,23 @@ test.describe("cross-view: gantt reactivity", () => {
 
 		await expect(ganttBarLocator(calendar.page, "Upstream Task")).toBeVisible();
 		await expect(ganttBarLocator(calendar.page, "Downstream Task")).toBeVisible();
+	});
+
+	test("connected gantt bars render at a phone viewport", async ({ calendar }) => {
+		await seedPrerequisiteChainAndOpenGantt(
+			calendar,
+			[
+				{ title: "Upstream Task", start: fromAnchor(0, 9, 0), end: fromAnchor(0, 10, 0) },
+				{ title: "Downstream Task", start: fromAnchor(2, 14, 0), end: fromAnchor(2, 15, 0) },
+			],
+			{ downstream: "Downstream Task", upstream: "Upstream Task" }
+		);
+
+		// The gantt is inherently wide; on a phone it must still render its bars (not
+		// a black void) and pan internally rather than collapsing. Connected events
+		// are the only ones the gantt draws, so seeing a bar proves it rendered.
+		await enterMobileLayout(calendar.page);
+		await expect(ganttBarLocator(calendar.page, "Upstream Task")).toBeVisible();
 	});
 
 	test("editing a connected event's title updates its gantt bar", async ({ calendar }) => {
