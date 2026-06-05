@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, screen } from "@testing-library/react";
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 
@@ -46,16 +46,31 @@ describe("TextareaInput", () => {
 		expect(screen.getByRole("textbox")).toHaveAttribute("placeholder", "write something");
 	});
 
-	it("emits a single onChange with the final value after the debounce window", async () => {
-		const onCommit = vi.fn();
-		const { user } = renderReact(<ControlledHarness onCommit={onCommit} debounceMs={20} />);
+	it("emits a single onChange with the final value after the debounce window", () => {
+		// Fake timers + fireEvent (not userEvent) drive the debounce
+		// deterministically: with real timers, keystroke latency under load can
+		// outrun the 20ms window and split the single trailing commit into
+		// several. (userEvent.type deadlocks under fake timers, so fireEvent it is.)
+		vi.useFakeTimers();
+		try {
+			const onCommit = vi.fn();
+			renderReact(<ControlledHarness onCommit={onCommit} debounceMs={20} />);
+			const textarea = screen.getByRole("textbox");
 
-		await user.type(screen.getByRole("textbox"), "abc");
+			fireEvent.change(textarea, { target: { value: "a" } });
+			fireEvent.change(textarea, { target: { value: "ab" } });
+			fireEvent.change(textarea, { target: { value: "abc" } });
+			expect(onCommit).not.toHaveBeenCalled();
 
-		await waitFor(() => {
+			act(() => {
+				vi.advanceTimersByTime(20);
+			});
+
 			expect(onCommit).toHaveBeenCalledTimes(1);
-		});
-		expect(onCommit).toHaveBeenCalledWith("abc");
+			expect(onCommit).toHaveBeenCalledWith("abc");
+		} finally {
+			vi.useRealTimers();
+		}
 	});
 
 	it("commits immediately on Ctrl+Enter, not plain Enter", async () => {

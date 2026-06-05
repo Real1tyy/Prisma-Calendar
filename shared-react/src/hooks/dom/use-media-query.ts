@@ -13,16 +13,30 @@ import { useCallback, useSyncExternalStore } from "react";
 export function useMediaQuery(query: string): boolean {
 	const subscribe = useCallback(
 		(onChange: () => void) => {
-			if (typeof window === "undefined" || !window.matchMedia) return () => {};
-			const mql = window.matchMedia(query);
+			const matchMedia = getMatchMedia();
+			if (!matchMedia) return () => {};
+			const mql = matchMedia(query);
 			mql.addEventListener("change", onChange);
 			return () => mql.removeEventListener("change", onChange);
 		},
 		[query]
 	);
 
-	const getSnapshot = (): boolean =>
-		typeof window !== "undefined" && !!window.matchMedia && window.matchMedia(query).matches;
+	const getSnapshot = (): boolean => {
+		const matchMedia = getMatchMedia();
+		return matchMedia ? matchMedia(query).matches : false;
+	};
 
 	return useSyncExternalStore(subscribe, getSnapshot, () => false);
+}
+
+/**
+ * `lib.dom` types `window.matchMedia` as always present, but it is absent under
+ * SSR and in jsdom test envs that don't implement it — read it through a
+ * nullable lens so the runtime guard stays honest instead of being optimised
+ * away by `no-unnecessary-condition`.
+ */
+function getMatchMedia(): typeof window.matchMedia | undefined {
+	if (typeof window === "undefined") return undefined;
+	return window.matchMedia;
 }

@@ -77,14 +77,14 @@ function usePackActionRow(
 		// from the observer callback can trip "ResizeObserver loop" warnings.
 		let frame = 0;
 		const schedule = (): void => {
-			if (frame) cancelAnimationFrame(frame);
-			frame = requestAnimationFrame(pack);
+			if (frame) window.cancelAnimationFrame(frame);
+			frame = window.requestAnimationFrame(pack);
 		};
 		const observer = new ResizeObserver(schedule);
 		if (header) observer.observe(header);
 		if (viewActions) observer.observe(viewActions);
 		return () => {
-			if (frame) cancelAnimationFrame(frame);
+			if (frame) window.cancelAnimationFrame(frame);
 			observer.disconnect();
 		};
 	}, [containerRef, cssPrefix, revision]);
