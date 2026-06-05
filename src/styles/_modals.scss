@@ -661,7 +661,8 @@
 			gap: 8px;
 
 			// Title centered with the Virtual toggle inline on the same row (there's
-			// room for both); the minimize / clear / preset controls wrap below.
+			// room for both); the minimize / clear / preset controls wrap below,
+			// separated by a divider with a little breathing room.
 			h2 {
 				flex: 1 1 auto;
 				text-align: center;
@@ -677,6 +678,9 @@
 				justify-content: flex-start;
 				flex-wrap: wrap;
 				gap: 6px;
+				margin-top: 4px;
+				padding-top: 10px;
+				border-top: 1px solid var(--background-modifier-border);
 			}
 		}
 
@@ -686,56 +690,43 @@
 			font-size: 11px;
 		}
 
-		// Mobile: Stack setting item label above control
-		.prisma-setting-item {
-			flex-direction: column;
-			align-items: stretch;
+		// Mobile keeps the SAME inline row layout as desktop (label left, control
+		// right) instead of stacking — stacking squeezed the text inputs and
+		// malformed the checkboxes into full-width slivers. Only two mobile tweaks:
 
-			&-name {
-				padding-right: 0;
-				padding-bottom: 6px;
-			}
+		// 1. Bigger checkbox for touch (desktop is 18px).
+		.prisma-setting-item-control[type="checkbox"] {
+			flex: 0 0 auto;
+			width: 24px;
+			height: 24px;
+		}
 
-			&-control {
-				&:is(input:not([type="checkbox"]), select) {
-					width: 100%;
-				}
+		// Boolean rows (checkbox / toggle): let the label fill the row so the control
+		// sits flush at the right with no awkward mid-row gap — the row reads full
+		// width. Text / date rows keep the desktop label width so their inputs grow.
+		.prisma-setting-item:has(> .prisma-setting-item-control[type="checkbox"]) .prisma-setting-item-name,
+		.prisma-setting-item:has(> .checkbox-container) .prisma-setting-item-name {
+			flex: 1 1 auto;
+			max-width: none;
+		}
 
-				input[type="text"],
-				input[type="number"],
-				input[type="datetime-local"],
-				select {
-					width: 100%;
-				}
-			}
+		// 2. Date rows: compact Now / Fill buttons so the picker keeps its width on
+		// the same row; the input wraps to its own line only if even that won't fit.
+		.prisma-datetime-input-wrapper {
+			flex-wrap: wrap;
+		}
 
-			// Boolean rows (checkboxes: All day, Recurring; toggles: Mark as done,
-			// Skip) keep their label and control on one line instead of stacking like
-			// the text fields — stacking stretched the checkbox into a malformed sliver
-			// and pushed toggles onto a wasteful second row. Label left, control right.
-			&:has(> .prisma-setting-item-control[type="checkbox"]),
-			&:has(> .checkbox-container) {
-				flex-direction: row;
-				align-items: center;
+		.prisma-now-button,
+		.prisma-fill-button {
+			flex: 0 0 auto;
+			min-width: 0;
+			margin-left: 0;
+			padding: 4px 8px;
+		}
 
-				.prisma-setting-item-name {
-					padding-bottom: 0;
-				}
-
-				.prisma-setting-item-control[type="checkbox"] {
-					flex: 0 0 auto;
-					margin-left: auto;
-					align-self: center;
-					// Bigger touch target on a phone — the default 18px box felt cramped.
-					width: 22px;
-					height: 22px;
-				}
-
-				> .checkbox-container {
-					margin-left: auto;
-					align-self: center;
-				}
-			}
+		.prisma-datetime-input-wrapper input[type="datetime-local"] {
+			flex: 1 1 130px;
+			min-width: 0;
 		}
 	}
 

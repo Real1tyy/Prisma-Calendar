@@ -3242,45 +3242,37 @@ button[class*=prisma-]:focus-visible {
     justify-content: flex-start;
     flex-wrap: wrap;
     gap: 6px;
+    margin-top: 4px;
+    padding-top: 10px;
+    border-top: 1px solid var(--background-modifier-border);
   }
   .prisma-event-modal-minimize-button, .prisma-event-modal-clear-button {
     padding: 4px 8px;
     font-size: 11px;
   }
-  .prisma-event-modal .prisma-setting-item {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .prisma-event-modal .prisma-setting-item-name {
-    padding-right: 0;
-    padding-bottom: 6px;
-  }
-  .prisma-event-modal .prisma-setting-item-control:is(input:not([type=checkbox]), select) {
-    width: 100%;
-  }
-  .prisma-event-modal .prisma-setting-item-control input[type=text],
-  .prisma-event-modal .prisma-setting-item-control input[type=number],
-  .prisma-event-modal .prisma-setting-item-control input[type=datetime-local],
-  .prisma-event-modal .prisma-setting-item-control select {
-    width: 100%;
-  }
-  .prisma-event-modal .prisma-setting-item:has(> .prisma-setting-item-control[type=checkbox]), .prisma-event-modal .prisma-setting-item:has(> .checkbox-container) {
-    flex-direction: row;
-    align-items: center;
-  }
-  .prisma-event-modal .prisma-setting-item:has(> .prisma-setting-item-control[type=checkbox]) .prisma-setting-item-name, .prisma-event-modal .prisma-setting-item:has(> .checkbox-container) .prisma-setting-item-name {
-    padding-bottom: 0;
-  }
-  .prisma-event-modal .prisma-setting-item:has(> .prisma-setting-item-control[type=checkbox]) .prisma-setting-item-control[type=checkbox], .prisma-event-modal .prisma-setting-item:has(> .checkbox-container) .prisma-setting-item-control[type=checkbox] {
+  .prisma-event-modal .prisma-setting-item-control[type=checkbox] {
     flex: 0 0 auto;
-    margin-left: auto;
-    align-self: center;
-    width: 22px;
-    height: 22px;
+    width: 24px;
+    height: 24px;
   }
-  .prisma-event-modal .prisma-setting-item:has(> .prisma-setting-item-control[type=checkbox]) > .checkbox-container, .prisma-event-modal .prisma-setting-item:has(> .checkbox-container) > .checkbox-container {
-    margin-left: auto;
-    align-self: center;
+  .prisma-event-modal .prisma-setting-item:has(> .prisma-setting-item-control[type=checkbox]) .prisma-setting-item-name,
+  .prisma-event-modal .prisma-setting-item:has(> .checkbox-container) .prisma-setting-item-name {
+    flex: 1 1 auto;
+    max-width: none;
+  }
+  .prisma-event-modal .prisma-datetime-input-wrapper {
+    flex-wrap: wrap;
+  }
+  .prisma-event-modal .prisma-now-button,
+  .prisma-event-modal .prisma-fill-button {
+    flex: 0 0 auto;
+    min-width: 0;
+    margin-left: 0;
+    padding: 4px 8px;
+  }
+  .prisma-event-modal .prisma-datetime-input-wrapper input[type=datetime-local] {
+    flex: 1 1 130px;
+    min-width: 0;
   }
   .prisma-event-preset-selector-wrapper {
     flex: 1 1 auto;
