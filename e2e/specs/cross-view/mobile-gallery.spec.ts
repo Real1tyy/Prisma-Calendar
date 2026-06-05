@@ -86,6 +86,9 @@ const FILTER_SEARCH_REACH_TOLERANCE_PX = 2;
 // ancestor in its ~50vh stacked cell — the panel flows to full height and the tab
 // scrolls to it. `> tolerance` means the bottom of the pie is unreachable.
 const STATS_CHART_REACH_TOLERANCE_PX = 2;
+// The page-header "Manage" button must stay within the pane: the action bar trims
+// to what fits and always keeps Manage, so it can't be pushed off the right edge.
+const HEADER_MANAGE_REACH_TOLERANCE_PX = 2;
 // The yearly heatmap grid's start (January) must sit within its scroll container
 // at rest — `> tolerance` means it's stranded off the left, unreachable.
 const HEATMAP_START_TOLERANCE_PX = 2;
@@ -140,8 +143,14 @@ test.describe("cross-view: mobile gallery", () => {
 				: chart.clippedPx > STATS_CHART_REACH_TOLERANCE_PX
 					? `⚠ CHART CLIPPED +${chart.clippedPx}px`
 					: "chart ok";
+			const manageFlag =
+				m && m.headerManageCroppedPx === null
+					? "no manage"
+					: m && m.headerManageCroppedPx > HEADER_MANAGE_REACH_TOLERANCE_PX
+						? `⚠ MANAGE CROPPED +${m.headerManageCroppedPx}px`
+						: "manage ok";
 			report.push(
-				`  ${view.name.padEnd(22)} pane=${String(m?.paneWidth ?? "?").padEnd(5)} ${tabFlag.padEnd(34)} ${contentFlag.padEnd(20)} ${searchFlag.padEnd(24)} ${chartFlag}`
+				`  ${view.name.padEnd(22)} pane=${String(m?.paneWidth ?? "?").padEnd(5)} ${tabFlag.padEnd(34)} ${contentFlag.padEnd(20)} ${searchFlag.padEnd(24)} ${chartFlag.padEnd(22)} ${manageFlag}`
 			);
 		}
 
@@ -196,6 +205,12 @@ test.describe("cross-view: mobile gallery", () => {
 					overflow.filterSearchCroppedPx,
 					`view "${name}": the Search events… input sits ${overflow.filterSearchCroppedPx}px outside the pane (toolbar clipped it instead of wrapping)`
 				).toBeLessThanOrEqual(FILTER_SEARCH_REACH_TOLERANCE_PX);
+			}
+			if (overflow.headerManageCroppedPx !== null) {
+				expect(
+					overflow.headerManageCroppedPx,
+					`view "${name}": the page-header Manage button sits ${overflow.headerManageCroppedPx}px outside the pane (actions overflowed instead of trimming to fit)`
+				).toBeLessThanOrEqual(HEADER_MANAGE_REACH_TOLERANCE_PX);
 			}
 		}
 	});

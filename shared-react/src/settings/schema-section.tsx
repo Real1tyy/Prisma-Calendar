@@ -16,7 +16,7 @@ interface SchemaSectionProps {
 	 * Explicit field order / subset. Defaults to every key in `shape`.
 	 * Fields listed here that aren't in the shape are ignored silently.
 	 */
-	fields?: string[];
+	fields?: readonly string[];
 	/** Per-field overrides, keyed by field name. */
 	overrides?: Record<string, SchemaFieldOverride>;
 	/**

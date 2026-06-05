@@ -21,12 +21,29 @@ export function buildPageHeaderStyles(p: string): string {
 	height: 12px;
 }
 
+/* The page header owns this pane's action area. Give it a dominant flex-grow so it
+   claims the header width left of it (the title shrinks to its content), and
+   right-align its buttons so the row sits at the top-right with Manage at the far
+   edge — the layout Obsidian had before. The fit logic in action-bar.tsx trims
+   trailing actions to what fits. Scoped via :has() so only our pane is affected. */
+.view-actions:has(> .${p}page-header-host) {
+	flex: 1000 1 auto;
+	min-width: 0;
+	justify-content: flex-end;
+}
+
 .${p}page-header-host {
 	display: contents;
 }
 
 .${p}page-header-actions {
 	display: contents;
+}
+
+/* Buttons the fit logic marks as overflowing the header are removed from the row
+   (they remain reachable through the action manager). */
+.${p}page-header-actions [data-ph-overflow="true"] {
+	display: none;
 }
 
 /* ─── Action Manager Modal ─── */

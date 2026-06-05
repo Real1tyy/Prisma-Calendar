@@ -69,6 +69,13 @@ export interface MobileOverflow {
 	 * that stops wrapping re-breaks here.
 	 */
 	filterSearchCroppedPx: number | null;
+	/**
+	 * Px the page-header "Manage" button extends beyond the pane edges, or `null` if
+	 * it isn't rendered. `> 0` means the header actions overflowed and pushed Manage
+	 * off-screen — unreachable. The action bar trims to what fits and keeps Manage,
+	 * so this stays 0 even with more actions configured than fit at phone width.
+	 */
+	headerManageCroppedPx: number | null;
 }
 
 /**
@@ -109,12 +116,20 @@ export async function measureMobileOverflow(page: Page): Promise<MobileOverflow 
 			}
 		}
 
+		const manage = leaf.querySelector('[data-testid="prisma-page-header-manage"]');
+		const manageRect = manage?.getBoundingClientRect();
+		const headerManageCroppedPx =
+			manageRect && manageRect.width > 0 && manageRect.height > 0
+				? Math.max(0, Math.round(Math.max(manageRect.right - paneRect.right, paneRect.left - manageRect.left)))
+				: null;
+
 		return {
 			paneWidth: Math.round(paneRect.width),
 			viewContentPx,
 			tabCroppedPx: Math.max(0, Math.round(tabCroppedPx)),
 			tabCount: tabs.length,
 			filterSearchCroppedPx,
+			headerManageCroppedPx,
 		};
 	}, ACTIVE_CALENDAR_LEAF);
 }
