@@ -30,6 +30,8 @@ When you open a Prisma Calendar view, the header bar displays a row of icon butt
 
 By default, a set of commonly used actions is shown — including event creation, navigation, search, statistics, category highlighting, undo/redo, refresh, and AI chat. The remaining actions are hidden but can be enabled at any time.
 
+The row is responsive at every pane size — on desktop and mobile alike it shows only as many icons as fit the available width and keeps the **Manage** gear anchored at the top-right so it's always reachable. It re-packs live as you resize the pane or reorder, add, or remove actions, so an action you move into range appears immediately.
+
 Header action state is persisted **per planning system** — each planning system remembers its own header configuration independently.
 
 ## Managing Actions
