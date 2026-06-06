@@ -11,6 +11,7 @@ export * from "./errors";
 export * from "./expression-utils";
 export * from "./generate";
 export * from "./list-utils";
+export * from "./security";
 export * from "./string";
 export * from "./styles";
 export * from "./utm";

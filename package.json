@@ -109,6 +109,7 @@
 		"@fullcalendar/multimonth": "^6.1.20",
 		"@fullcalendar/timegrid": "^6.1.20",
 		"@hookform/resolvers": "^5.2.2",
+		"@jsep-plugin/new": "^1.0.4",
 		"@real1ty-obsidian-plugins": "file:./shared",
 		"@real1ty-obsidian-plugins-react": "file:./shared-react",
 		"@svgdotjs/svg.js": "^3.2.4",

@@ -1,6 +1,7 @@
 import { Subject, takeUntil, type BehaviorSubject } from "rxjs";
 
 import { buildPropertyMapping, extractExpressionIdentifiers, sanitizeExpression } from "../../utils/expression-utils";
+import { evaluateSafeAst, parseSafeExpression, type SafeExpressionNode } from "./safe-expression";
 
 export interface BaseRule {
 	id: string;
@@ -9,12 +10,14 @@ export interface BaseRule {
 }
 
 /**
- * Generic base class for evaluating JavaScript expressions against frontmatter objects.
- * Provides reactive compilation of rules via RxJS subscription and safe evaluation.
+ * Generic base class for evaluating frontmatter predicate expressions against frontmatter
+ * objects. Rules come from persisted (and therefore untrusted) settings, so expressions are
+ * parsed into a safe AST and interpreted — never compiled with `new Function` — see
+ * {@link parseSafeExpression}. Compilation is reactive via an RxJS settings subscription.
  */
 export abstract class BaseEvaluator<TRule extends BaseRule, TSettings> {
 	protected rules: TRule[] = [];
-	private compiledFunctions = new Map<string, ((...args: unknown[]) => boolean) | null>();
+	private compiledExpressions = new Map<string, SafeExpressionNode>();
 	private expressionIdCache = new Map<string, string[]>();
 	private propertyMapping = new Map<string, string>();
 	private readonly destroy$ = new Subject<void>();
@@ -22,7 +25,7 @@ export abstract class BaseEvaluator<TRule extends BaseRule, TSettings> {
 	constructor(settingsStore: BehaviorSubject<TSettings>) {
 		settingsStore.pipe(takeUntil(this.destroy$)).subscribe((settings) => {
 			this.rules = this.extractRules(settings);
-			this.compiledFunctions.clear();
+			this.compiledExpressions.clear();
 			this.expressionIdCache.clear();
 			this.propertyMapping.clear();
 		});
@@ -33,7 +36,7 @@ export abstract class BaseEvaluator<TRule extends BaseRule, TSettings> {
 	destroy(): void {
 		this.destroy$.next();
 		this.destroy$.complete();
-		this.compiledFunctions.clear();
+		this.compiledExpressions.clear();
 		this.expressionIdCache.clear();
 		this.propertyMapping.clear();
 	}
@@ -60,41 +63,31 @@ export abstract class BaseEvaluator<TRule extends BaseRule, TSettings> {
 			const existingKeys = new Set(this.propertyMapping.keys());
 			const newKeys = [...currentKeys].filter((key) => !existingKeys.has(key));
 
-			// If new properties are found, rebuild the mapping and invalidate compiled functions
+			// If new properties are found, rebuild the mapping and invalidate cached ASTs
+			// (the sanitised expression depends on the property mapping).
 			if (newKeys.length > 0) {
 				const allKeys = new Set([...existingKeys, ...currentKeys]);
 				this.propertyMapping = buildPropertyMapping(Array.from(allKeys));
-				// Clear compiled functions since property mapping changed
-				this.compiledFunctions.clear();
+				this.compiledExpressions.clear();
 			}
 
-			let compiledFunc = this.compiledFunctions.get(rule.id);
+			let ast = this.compiledExpressions.get(rule.id);
 
-			if (!compiledFunc) {
+			if (!ast) {
 				const sanitized = sanitizeExpression(rule.expression, this.propertyMapping);
-				const params = Array.from(this.propertyMapping.values());
-
-				// Intentional dynamic compilation of user-authored filter expressions: the only
-				// scope reachable is the explicitly-passed frontmatter params (no closure access),
-				// runs in strict mode, and every throw (ReferenceError/SyntaxError) is caught below.
-				// There is no static, behaviour-equivalent alternative to a user-expression compiler.
-				// eslint-disable-next-line @typescript-eslint/no-implied-eval
-				compiledFunc = new Function(...params, `"use strict"; return ${sanitized};`) as (...args: unknown[]) => boolean;
-				this.compiledFunctions.set(rule.id, compiledFunc);
+				ast = parseSafeExpression(sanitized);
+				this.compiledExpressions.set(rule.id, ast);
 			}
 
-			// Use undefined for missing properties instead of letting them be undefined implicitly
-			const values = Array.from(this.propertyMapping.keys()).map((key) => frontmatter[key] ?? undefined);
-			const result = compiledFunc(...values);
+			const scope = new Map<string, unknown>();
+			for (const [original, mapped] of this.propertyMapping) {
+				scope.set(mapped, frontmatter[original] ?? undefined);
+			}
 
-			return result;
+			return Boolean(evaluateSafeAst(ast, scope));
 		} catch (error) {
-			// Suppress ReferenceError logs - these occur when properties don't exist in frontmatter
-			// which is expected behavior (e.g., Status === 'Done' when Status is undefined)
-			if (error instanceof ReferenceError) {
-				return false;
-			}
-			// Log other errors (syntax errors, etc.) as they indicate actual problems
+			// Malformed or disallowed expressions fail closed (no match). Missing properties are
+			// already handled as `undefined` by the interpreter and do not throw.
 			console.warn(`Invalid expression (${rule.id}):`, rule.expression, error);
 			return false;
 		}
