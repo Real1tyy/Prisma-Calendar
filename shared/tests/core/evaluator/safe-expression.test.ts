@@ -11,7 +11,6 @@ import {
 const SENTINEL = "__SAFE_EXPR_PWNED__" as const;
 
 declare global {
-	// eslint-disable-next-line no-var
 	var __SAFE_EXPR_PWNED__: boolean | undefined;
 }
 
@@ -145,6 +144,9 @@ describe("evaluateSafeExpression", () => {
 		});
 	});
 
+	// The RCE payload writes to `globalThis.__SAFE_EXPR_PWNED__`, so these assertions must
+	// observe that exact object — `window`/`activeWindow` would check the wrong global.
+	/* eslint-disable obsidianmd/no-global-this */
 	describe("security: no code execution (regression for new Function RCE)", () => {
 		afterEach(() => {
 			delete globalThis[SENTINEL];
@@ -169,4 +171,5 @@ describe("evaluateSafeExpression", () => {
 			expect(globalThis[SENTINEL]).toBe(false);
 		});
 	});
+	/* eslint-enable obsidianmd/no-global-this */
 });

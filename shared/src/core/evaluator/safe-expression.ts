@@ -63,8 +63,9 @@ const ALLOWED_METHODS = new Set([
 	"toFixed",
 ]);
 
-// Bare global functions callable as `Fn(x)`.
-const SIMPLE_GLOBAL_FNS: Record<string, (...args: unknown[]) => unknown> = {
+// Bare global functions callable as `Fn(x)`. The `| undefined` keeps the runtime
+// allowlist guard honest — an unknown name returns undefined, not a function.
+const SIMPLE_GLOBAL_FNS: Record<string, ((...args: unknown[]) => unknown) | undefined> = {
 	String: (...a) => String(a[0]),
 	Number: (...a) => Number(a[0]),
 	Boolean: (...a) => Boolean(a[0]),
@@ -76,7 +77,7 @@ const SIMPLE_GLOBAL_FNS: Record<string, (...args: unknown[]) => unknown> = {
 
 // Namespaced global functions callable as `Namespace.fn(x)`. Only these exact dotted paths
 // resolve — `Array.constructor`, `Math.constructor`, etc. are never reachable.
-const NAMESPACED_GLOBAL_FNS: Record<string, (...args: unknown[]) => unknown> = {
+const NAMESPACED_GLOBAL_FNS: Record<string, ((...args: unknown[]) => unknown) | undefined> = {
 	"Array.isArray": (...a) => Array.isArray(a[0]),
 	"Object.keys": (...a) => Object.keys(a[0] as object),
 	"Object.values": (...a) => Object.values(a[0] as object),
@@ -120,9 +121,7 @@ export function evaluateSafeAst(node: jsep.Expression, scope: Map<string, unknow
 		}
 
 		case "ArrayExpression":
-			return (node as jsep.ArrayExpression).elements.map((el) =>
-				el == null ? null : evaluateSafeAst(el as jsep.Expression, scope)
-			);
+			return (node as jsep.ArrayExpression).elements.map((el) => (el == null ? null : evaluateSafeAst(el, scope)));
 
 		case "NewExpression": {
 			const n = node as unknown as NewExpressionNode;
