@@ -48,17 +48,20 @@ describe("VaultTable + persistence (integration)", () => {
 
 	beforeEach(() => {
 		events$ = new Subject<IndexerEvent>();
-		vi.mocked(Indexer).mockImplementation(() => {
+		// vitest 4 constructs a mocked class with `new`, so the implementation
+		// must be a `function` that assigns onto `this` — arrow functions aren't
+		// constructable.
+		vi.mocked(Indexer).mockImplementation(function (this: Indexer) {
 			const complete$ = new BehaviorSubject<boolean>(false);
 			currentComplete$ = complete$;
-			return {
+			Object.assign(this, {
 				events$: events$.asObservable(),
 				indexingComplete$: complete$.asObservable(),
 				start: vi.fn().mockResolvedValue(undefined),
 				stop: vi.fn(),
 				resync: vi.fn(),
-			} as unknown as Indexer;
-		});
+			});
+		} as unknown as () => Indexer);
 	});
 
 	afterEach(() => {

@@ -1,3 +1,10 @@
+// vitest 4 moved the spy return type into @vitest/spy. This file is compiled
+// into shared's published declarations, so the inferred `Mock` type of every
+// `vi.fn()` field must be nameable — without an explicit import TS emits the
+// non-portable `.pnpm/@vitest+spy@…` realpath (TS2742). Importing `Mock` here
+// and annotating one field (see `addSettingTab` below) anchors the reference
+// for the whole file; don't remove the annotation without keeping the anchor.
+import type { Mock } from "@vitest/spy";
 import { vi } from "vitest";
 
 // Base Plugin class mock
@@ -12,7 +19,7 @@ export class Plugin {
 	}
 
 	// Core plugin methods
-	addSettingTab = vi.fn();
+	addSettingTab: Mock = vi.fn();
 	registerEvent = vi.fn();
 	loadData = vi.fn().mockResolvedValue({});
 	saveData = vi.fn().mockResolvedValue(undefined);
@@ -377,8 +384,13 @@ export function debounce<T extends (...args: unknown[]) => unknown>(func: T, wai
 	}) as T;
 }
 
-// setIcon mock
-export function setIcon(_el: HTMLElement, _iconId: string): void {}
+// setIcon mock — records calls and stamps a `data-icon` attribute so tests can
+// assert which icon was applied. A single shared `vi.fn` gives one stable spy
+// identity across files; under `isolate: false` per-file `setIcon` overrides
+// would clobber each other and break call tracking.
+export const setIcon = vi.fn((el: HTMLElement, iconId: string): void => {
+	el.setAttribute("data-icon", iconId);
+});
 
 // getIconIds mock
 export function getIconIds(): string[] {

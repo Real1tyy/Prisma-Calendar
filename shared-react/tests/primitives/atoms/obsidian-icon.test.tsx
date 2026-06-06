@@ -1,20 +1,8 @@
-import type * as ObsidianMockModule from "@real1ty-obsidian-plugins/testing";
+import { setIcon } from "obsidian";
 import { describe, expect, it, vi } from "vitest";
 
 import { ObsidianIcon } from "../../../src/primitives/atoms/obsidian-icon";
 import { renderReact } from "../../helpers/render-react";
-
-vi.mock("obsidian", async () => {
-	const actual = await vi.importActual<typeof ObsidianMockModule>("@real1ty-obsidian-plugins/testing");
-	return {
-		...actual,
-		setIcon: vi.fn((el: HTMLElement, icon: string) => {
-			el.setAttribute("data-icon", icon);
-		}),
-	};
-});
-
-const { setIcon } = await import("obsidian");
 
 describe("ObsidianIcon", () => {
 	it("invokes setIcon on mount with the given icon id", () => {

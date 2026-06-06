@@ -7,7 +7,7 @@
  * a stub so tests are deterministic and don't pull in date-holidays' data.
  */
 import { DateTime } from "luxon";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 
 import { HolidayStore } from "../../src/core/holidays/holiday-store";
 import type { HolidayConfig, HolidayEvent, HolidayProvider } from "../../src/core/holidays/types";
@@ -53,7 +53,7 @@ describe("HolidayStore", () => {
 	let app: ReturnType<typeof createStorageBackedApp>["app"];
 	let storage: Map<string, string>;
 	let store: HolidayStore;
-	let listSpy: ReturnType<typeof vi.fn>;
+	let listSpy: Mock<(year: number) => Promise<HolidayEvent[]>>;
 
 	beforeEach(() => {
 		const env = createStorageBackedApp();

@@ -36,24 +36,25 @@ export default defineConfig({
 	test: {
 		globals: true,
 		testTimeout: 10000,
+		// vitest 4 narrowed `vi.restoreAllMocks()` to only restore `vi.spyOn`
+		// spies — it no longer clears `vi.fn`/automock call history between tests
+		// (which v3 effectively did). Clear mock state before each test so specs
+		// reading `mock.calls`/`mock.results` see only their own invocations.
+		clearMocks: true,
 		exclude: ["**/node_modules/**", "**/dist/**", "tests/react/**"],
 		setupFiles: ["./src/testing/obsidian-dom-setup.ts"],
 		...VITEST_POOL_OPTIONS,
 		pool: "threads",
-		// `isolate: false` keeps a single worker per thread and shares the
-		// module cache across test files — ~3× faster than per-file isolation
-		// on this suite, but it leaks `vi.mock("obsidian", …)` overrides
-		// between files. Any test file that registers a partial `MockSetting`
-		// (or `MockModal` / `MockItemView` / etc.) MUST mirror the full method
-		// surface of `src/testing/mocks/obsidian.ts` — missing methods become
-		// `undefined is not a function` in unrelated tests that happen to
-		// share the worker. New polluters: add no-op `mockReturnThis()` stubs
-		// for every method on the shared mock, even ones you don't exercise.
-		// Consumer side: tests that depend on the full surface should define
-		// their own self-contained mock factory instead of trusting
-		// `importOriginal()` — see `tests/settings/license-settings.test.ts`.
-		// Flip this to `true` only if pollution becomes unmanageable.
-		isolate: false,
+		// `isolate: false` shares one module cache across all test files in a
+		// worker. Under vitest 3 the "mirror the full mock surface" convention kept
+		// this safe, but vitest 4 caches mocked modules cross-file far more
+		// aggressively: a per-file `vi.mock("obsidian" | "../indexer" | …)` now
+		// clobbers the shared module for every other file in the worker, producing
+		// order-dependent flakes (a different unrelated spec fails on each run).
+		// The convention can no longer contain it, so we isolate per file — the
+		// outcome the previous comment reserved for "when pollution becomes
+		// unmanageable".
+		isolate: true,
 		coverage: {
 			provider: "v8",
 			reporter: ["text", "json-summary", "html"],

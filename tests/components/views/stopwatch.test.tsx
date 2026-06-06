@@ -1,6 +1,6 @@
 import { act, render } from "@testing-library/react";
 import { createRef } from "react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 
 import { Stopwatch, type StopwatchHandle } from "../../../src/react/views/stopwatch";
 
@@ -22,11 +22,11 @@ function advanceTimers(ms: number): void {
 
 describe("Stopwatch", () => {
 	let mockCallbacks: {
-		onStart: ReturnType<typeof vi.fn>;
-		onContinueRequested: ReturnType<typeof vi.fn>;
-		onResumeRequested: ReturnType<typeof vi.fn>;
-		onStop: ReturnType<typeof vi.fn>;
-		onBreakUpdate: ReturnType<typeof vi.fn>;
+		onStart: Mock<(startTime: Date) => void>;
+		onContinueRequested: Mock<() => Date | null>;
+		onResumeRequested: Mock<() => Date | null>;
+		onStop: Mock<(endTime: Date) => void>;
+		onBreakUpdate: Mock<(breakMinutes: number) => void>;
 	};
 
 	function mountStopwatch(): {
@@ -56,11 +56,11 @@ describe("Stopwatch", () => {
 
 	beforeEach(() => {
 		mockCallbacks = {
-			onStart: vi.fn(),
-			onContinueRequested: vi.fn(() => new Date()),
-			onResumeRequested: vi.fn(() => null),
-			onStop: vi.fn(),
-			onBreakUpdate: vi.fn(),
+			onStart: vi.fn<(startTime: Date) => void>(),
+			onContinueRequested: vi.fn<() => Date | null>(() => new Date()),
+			onResumeRequested: vi.fn<() => Date | null>(() => null),
+			onStop: vi.fn<(endTime: Date) => void>(),
+			onBreakUpdate: vi.fn<(breakMinutes: number) => void>(),
 		};
 	});
 

@@ -1,3 +1,4 @@
+import type * as ObsidianMockModule from "@real1ty-obsidian-plugins/testing";
 import { screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -20,13 +21,20 @@ vi.mock("@real1ty-obsidian-plugins", async () => {
 	};
 });
 
-vi.mock("obsidian", () => ({
-	Notice: class {
-		constructor(message: string) {
-			noticeMessages.push(message);
-		}
-	},
-}));
+// Spread the full shared mock — vitest 4 caches the `obsidian` module across
+// files under `isolate: false`, so a partial mock here would drop exports
+// (e.g. setIcon) that other suites in the same worker rely on.
+vi.mock("obsidian", async () => {
+	const actual = await vi.importActual<typeof ObsidianMockModule>("@real1ty-obsidian-plugins/testing");
+	return {
+		...actual,
+		Notice: class {
+			constructor(message: string) {
+				noticeMessages.push(message);
+			}
+		},
+	};
+});
 
 interface CapturedModal {
 	mode: "export" | "import";

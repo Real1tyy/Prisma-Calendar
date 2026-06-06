@@ -83,16 +83,19 @@ beforeEach(() => {
 	mockIndexerEventsSubject = new Subject<IndexerEvent>();
 	mockIndexerCompleteSubject = new BehaviorSubject<boolean>(false);
 
-	vi.mocked(Indexer).mockImplementation(
-		() =>
-			({
-				events$: mockIndexerEventsSubject.asObservable(),
-				indexingComplete$: mockIndexerCompleteSubject.asObservable(),
-				start: vi.fn().mockResolvedValue(undefined),
-				stop: vi.fn(),
-				resync: vi.fn(),
-			}) as unknown as Indexer
-	);
+	// vitest 4 constructs a mocked class with `new`, so the implementation must
+	// be a `function` that assigns onto `this` — arrow functions aren't
+	// constructable, and a `function` that *returns* an object leaves vitest's
+	// tracked instance (`mock.results[].value`) out of sync with what callers get.
+	vi.mocked(Indexer).mockImplementation(function (this: Indexer) {
+		Object.assign(this, {
+			events$: mockIndexerEventsSubject.asObservable(),
+			indexingComplete$: mockIndexerCompleteSubject.asObservable(),
+			start: vi.fn().mockResolvedValue(undefined),
+			stop: vi.fn(),
+			resync: vi.fn(),
+		});
+	} as unknown as () => Indexer);
 });
 
 afterEach(() => {

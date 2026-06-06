@@ -30,11 +30,10 @@ function resolveSharedPackageSrc(pluginDir: string, name: string): string {
 //       that finish first while the slow files are still parsing).
 // 12 wins on both shapes without regressing the smaller packages. Bumping
 // further only helps when one pool dominates the run.
+// Vitest 4 removed `poolOptions`: `maxThreads`/`maxForks` collapsed into the
+// top-level `maxWorkers`, which applies to whichever pool the config selects.
 export const VITEST_POOL_OPTIONS = {
-	poolOptions: {
-		threads: { maxThreads: 12 },
-		forks: { maxForks: 12 },
-	},
+	maxWorkers: 12,
 };
 
 export function sharedVitestAliases(pluginDir: string) {

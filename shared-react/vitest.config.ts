@@ -38,7 +38,11 @@ export default defineConfig({
 					environment: "happy-dom",
 					include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"],
 					exclude: [...SHARED_EXCLUDE, ...JSDOM_PATTERNS],
-					isolate: false,
+					// vitest 4 caches modules across files when `isolate: false`, so a
+					// per-file `vi.mock("obsidian" | "../modal" | …)` clobbers the shared
+					// module for every other file in the worker (order-dependent flakes).
+					// This suite re-mocks shared modules heavily, so isolate per file.
+					isolate: true,
 				},
 			},
 			...(JSDOM_PATTERNS.length > 0
@@ -49,7 +53,7 @@ export default defineConfig({
 								name: "jsdom",
 								environment: "jsdom" as const,
 								include: JSDOM_PATTERNS,
-								isolate: false,
+								isolate: true,
 							},
 						},
 					]

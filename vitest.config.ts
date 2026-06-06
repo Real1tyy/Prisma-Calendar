@@ -32,11 +32,19 @@ export default defineConfig({
 	test: {
 		globals: true,
 		testTimeout: 10000,
+		// vitest 4 narrowed `vi.restoreAllMocks()` and no longer clears `vi.fn`/spy
+		// call history between tests the way v3 effectively did. Clear mock state
+		// before each test so specs asserting call counts (e.g. spyOn singletons)
+		// see only their own invocations.
+		clearMocks: true,
 		setupFiles: ["./tests/setup.ts"],
 		// Playwright owns *.visual.spec.ts and the e2e/ suite — vitest should skip them.
 		exclude: SHARED_EXCLUDE,
 		...VITEST_POOL_OPTIONS,
 		pool: "threads",
+		// Isolate per file: vitest 4 caches mocked modules across files when
+		// `isolate: false`, so per-file `vi.mock(…)` clobbers the shared module
+		// for other specs in the worker (order-dependent flakes).
 		projects: [
 			{
 				extends: true,
@@ -45,7 +53,7 @@ export default defineConfig({
 					environment: "node",
 					include: ["tests/**/*.test.ts"],
 					exclude: [...SHARED_EXCLUDE, ...DOM_PATTERNS],
-					isolate: false,
+					isolate: true,
 				},
 			},
 			{
@@ -55,7 +63,7 @@ export default defineConfig({
 					environment: "happy-dom",
 					include: DOM_PATTERNS,
 					exclude: [...SHARED_EXCLUDE, ...JSDOM_PATTERNS],
-					isolate: false,
+					isolate: true,
 				},
 			},
 			{
@@ -64,7 +72,7 @@ export default defineConfig({
 					name: "jsdom",
 					environment: "jsdom",
 					include: JSDOM_PATTERNS,
-					isolate: false,
+					isolate: true,
 				},
 			},
 		],

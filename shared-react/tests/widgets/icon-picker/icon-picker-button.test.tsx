@@ -1,4 +1,3 @@
-import type * as ObsidianMockModule from "@real1ty-obsidian-plugins/testing";
 import { screen } from "@testing-library/react";
 import type { App } from "obsidian";
 import { describe, expect, it, vi } from "vitest";
@@ -11,16 +10,6 @@ const showReactIconPickerMock = vi.fn();
 vi.mock("../../../src/modals/icon-picker-modal", () => ({
 	showReactIconPicker: (app: App, onDone: (icon: string | null) => void) => showReactIconPickerMock(app, onDone),
 }));
-
-vi.mock("obsidian", async () => {
-	const actual = await vi.importActual<typeof ObsidianMockModule>("@real1ty-obsidian-plugins/testing");
-	return {
-		...actual,
-		setIcon: vi.fn((el: HTMLElement, icon: string) => {
-			el.setAttribute("data-icon", icon);
-		}),
-	};
-});
 
 const fakeApp = { fake: true } as unknown as App;
 

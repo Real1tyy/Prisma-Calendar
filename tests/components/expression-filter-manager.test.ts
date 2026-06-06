@@ -3,7 +3,7 @@ import "@testing-library/jest-dom/vitest";
 import { act, waitFor } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import type { App } from "obsidian";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 
 import { mountExpressionFilter, type ToolbarFilterHandle } from "../../src/components/toolbar-filter-mount";
 
@@ -33,12 +33,12 @@ async function commit(input: HTMLInputElement, user: ReturnType<typeof userEvent
 describe("mountExpressionFilter", () => {
 	let container: HTMLElement;
 	let handle: ToolbarFilterHandle | null;
-	let onFilterChange: ReturnType<typeof vi.fn>;
+	let onFilterChange: Mock<() => void>;
 	let user: ReturnType<typeof userEvent.setup>;
 
 	beforeEach(() => {
 		container = makeContainer();
-		onFilterChange = vi.fn();
+		onFilterChange = vi.fn<() => void>();
 		handle = null;
 		user = userEvent.setup();
 	});
