@@ -187,7 +187,7 @@ export function obsidianPluginConfig(input: ObsidianPluginConfigInput): (env: { 
 				? []
 				: [
 						babel({
-							filter: /\.[jt]sx?$/,
+							include: /\.[jt]sx?$/,
 							babelConfig: {
 								babelrc: false,
 								configFile: false,
