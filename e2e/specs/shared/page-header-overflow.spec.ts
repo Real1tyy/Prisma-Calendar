@@ -218,7 +218,18 @@ test.describe("shared: page header overflow fit", () => {
 		expect(await isActionVisible(page, "global-search"), "global-search should be trimmed at 500px").toBe(false);
 
 		await trigger.click();
-		await page.locator(sel(PAGE_HEADER_OVERFLOW_MENU_TID)).first().waitFor({ state: "visible" });
+		const menu = page.locator(sel(PAGE_HEADER_OVERFLOW_MENU_TID)).first();
+		await menu.waitFor({ state: "visible" });
+
+		// The trigger sits at the header's far right, so the menu must open LEFTWARD and
+		// stay inside the viewport — a left-anchored menu spills off the right edge and
+		// crops every label.
+		const innerWidth = await page.evaluate(() => window.innerWidth);
+		const menuBox = await menu.boundingBox();
+		expect(menuBox, "overflow menu has no box").not.toBeNull();
+		expect(menuBox!.x, "overflow menu spills off the left edge").toBeGreaterThanOrEqual(-1);
+		expect(menuBox!.x + menuBox!.width, "overflow menu spills off the right edge").toBeLessThanOrEqual(innerWidth + 1);
+
 		await page
 			.locator(sel(overflowMenuItem("global-search")))
 			.first()

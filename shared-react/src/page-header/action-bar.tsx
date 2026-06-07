@@ -198,9 +198,11 @@ export const PageHeaderActionBar = memo(function PageHeaderActionBar({
 		}
 		if (items.length === 0) return;
 		const rect = overflowTriggerRef.current?.getBoundingClientRect();
+		// Anchor the menu's RIGHT edge to the trigger (it sits at the header's far right)
+		// so it opens leftward into the viewport instead of off the right edge.
 		setOverflowMenu({
 			items,
-			position: rect ? { x: rect.left, y: rect.bottom + 4 } : { x: 0, y: 0 },
+			position: rect ? { x: rect.right, y: rect.bottom + 4 } : { x: 0, y: 0 },
 		});
 	}, [snapshot, onActionClick]);
 
@@ -261,6 +263,7 @@ export const PageHeaderActionBar = memo(function PageHeaderActionBar({
 					position={overflowMenu.position}
 					onDismiss={() => setOverflowMenu(null)}
 					testIdPrefix={cssPrefix}
+					align="right"
 				/>
 			)}
 		</div>

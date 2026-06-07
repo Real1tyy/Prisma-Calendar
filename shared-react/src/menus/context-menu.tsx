@@ -12,9 +12,23 @@ export interface ContextMenuProps {
 	position: { x: number; y: number };
 	onDismiss: () => void;
 	testIdPrefix?: string;
+	/**
+	 * Horizontal anchor. `"left"` (default) puts the menu's left edge at `position.x`
+	 * and grows rightward — correct for a cursor-anchored right-click menu. `"right"`
+	 * puts its RIGHT edge at `position.x` and grows leftward — use when anchoring to a
+	 * control near the viewport's right edge (e.g. the page-header overflow trigger) so
+	 * the menu opens into the viewport instead of spilling off the right edge.
+	 */
+	align?: "left" | "right";
 }
 
-export const ContextMenu = memo(function ContextMenu({ items, position, onDismiss, testIdPrefix }: ContextMenuProps) {
+export const ContextMenu = memo(function ContextMenu({
+	items,
+	position,
+	onDismiss,
+	testIdPrefix,
+	align = "left",
+}: ContextMenuProps) {
 	const [focusIndex, setFocusIndex] = useState(0);
 	const menuRef = useRef<HTMLDivElement>(null);
 
@@ -62,7 +76,9 @@ export const ContextMenu = memo(function ContextMenu({ items, position, onDismis
 			onKeyDown={handleKeyDown}
 			style={{
 				position: "fixed",
-				left: position.x,
+				// "right" anchors the menu's right edge at position.x and grows leftward so a
+				// trigger near the viewport's right edge doesn't push the menu off-screen.
+				...(align === "right" ? { right: Math.max(0, window.innerWidth - position.x) } : { left: position.x }),
 				top: position.y,
 				zIndex: 1000,
 			}}
