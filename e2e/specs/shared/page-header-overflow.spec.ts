@@ -3,6 +3,13 @@ import type { CDPSession, Page } from "@playwright/test";
 import { ACTIVE_CALENDAR_LEAF } from "../../fixtures/constants";
 import { openActionManager } from "../../fixtures/dsl";
 import { expect, test } from "../../fixtures/electron";
+import {
+	LIST_MODAL_TID,
+	overflowMenuItem,
+	PAGE_HEADER_OVERFLOW_MENU_TID,
+	PAGE_HEADER_OVERFLOW_TID,
+	sel,
+} from "../../fixtures/testids";
 
 interface ObsidianSplitWin {
 	app?: { workspace?: { leftSplit?: { collapse?: () => void }; rightSplit?: { collapse?: () => void } } };
@@ -191,5 +198,33 @@ test.describe("shared: page header overflow fit", () => {
 				message: "reordering an action into the visible range did not reveal it (row not reactive to order)",
 			})
 			.toBe(true);
+	});
+
+	test("overflow trigger surfaces a trimmed action and invokes it", async ({ calendar }) => {
+		const page = calendar.page;
+		await calendar.unlockPro();
+		const resize = await makeResizer(page);
+
+		// Narrow enough that the bulk of the actions overflow off the bar.
+		await resize(500);
+		await page.waitForTimeout(500);
+
+		// The trigger reveals itself once the fit logic trims at least one action.
+		const trigger = page.locator(`${ACTIVE_CALENDAR_LEAF} ${sel(PAGE_HEADER_OVERFLOW_TID)}`).first();
+		await trigger.waitFor({ state: "visible" });
+
+		// global-search sits late enough in the default order that it's trimmed here —
+		// it's the reachability the menu exists to provide.
+		expect(await isActionVisible(page, "global-search"), "global-search should be trimmed at 500px").toBe(false);
+
+		await trigger.click();
+		await page.locator(sel(PAGE_HEADER_OVERFLOW_MENU_TID)).first().waitFor({ state: "visible" });
+		await page
+			.locator(sel(overflowMenuItem("global-search")))
+			.first()
+			.click();
+
+		// Selecting the overflowed action runs it — the global-search list modal opens.
+		await page.locator(sel(LIST_MODAL_TID)).first().waitFor({ state: "visible" });
 	});
 });

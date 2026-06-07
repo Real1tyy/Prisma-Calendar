@@ -297,8 +297,27 @@ const calendarFixture = async (
 	{ obsidian }: { obsidian: BootstrappedObsidian },
 	use: (handle: CalendarHandle) => Promise<void>
 ): Promise<void> => {
+	const handle = createCalendarHandle({ obsidian });
+	// Headless runs keep Obsidian's default ~1280px window with the file-explorer
+	// open, leaving the calendar leaf too narrow for the full page-header toolbar —
+	// the responsive header then trims most actions into the overflow menu, where
+	// specs that click them can't reach them directly. Emulate a wide desktop window
+	// and collapse the sidebar *before* the view mounts so the header packs the whole
+	// toolbar onto the bar from the first paint (no post-mount re-pack race), matching
+	// how the plugin is actually used on desktop. Specs that exercise narrow layouts
+	// (page-header overflow, mobile) override these metrics themselves afterwards.
+	const cdp = await obsidian.page.context().newCDPSession(obsidian.page);
+	await cdp.send("Emulation.setDeviceMetricsOverride", {
+		width: 1600,
+		height: 900,
+		deviceScaleFactor: 1,
+		mobile: false,
+		screenWidth: 1600,
+		screenHeight: 900,
+	});
+	await handle.collapseLeftSidebar();
 	await openCalendarReady(obsidian.page);
-	await use(createCalendarHandle({ obsidian }));
+	await use(handle);
 };
 
 export const test = base.extend<{

@@ -24,6 +24,8 @@ import {
 	dashboardItemByTitle,
 	HEATMAP_CELL_TID,
 	HEATMAP_CONTAINER_TID,
+	overflowMenuItem,
+	PAGE_HEADER_OVERFLOW_TID,
 	sel,
 	STATS_DATE_LABEL_TID,
 	TID,
@@ -405,6 +407,26 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 		await childTab.click();
 	};
 
+	// Click a page-header toolbar action, transparently reaching it through the
+	// overflow menu when the responsive header has trimmed it off the bar. Specs
+	// don't care whether an action is directly visible or in the overflow at the
+	// current pane width — they just want it invoked.
+	const clickToolbarAction = async (action: ToolbarActionKey): Promise<void> => {
+		const direct = page.locator(`${ACTIVE_CALENDAR_LEAF} ${sel(TID.pageHeader(action))}`).first();
+		await direct.waitFor({ state: "attached" });
+		if (await direct.isVisible()) {
+			await direct.click();
+			return;
+		}
+		// Trimmed off the bar — reach it the way a narrow-pane user would.
+		const trigger = page.locator(`${ACTIVE_CALENDAR_LEAF} ${sel(PAGE_HEADER_OVERFLOW_TID)}`).first();
+		await trigger.waitFor({ state: "visible" });
+		await trigger.click();
+		const item = page.locator(sel(overflowMenuItem(action))).first();
+		await item.waitFor({ state: "visible" });
+		await item.click();
+	};
+
 	return {
 		page,
 		vaultDir,
@@ -553,15 +575,11 @@ export function createCalendarHandle(deps: CalendarHandleDeps): CalendarHandle {
 		},
 
 		async clickToolbar(action) {
-			const btn = page.locator(`${ACTIVE_CALENDAR_LEAF} ${sel(TID.pageHeader(action))}`).first();
-			await btn.waitFor({ state: "visible" });
-			await btn.click();
+			await clickToolbarAction(action);
 		},
 
 		async openEventsModal() {
-			const btn = page.locator(`${ACTIVE_CALENDAR_LEAF} ${sel(TID.pageHeader("show-recurring"))}`).first();
-			await btn.waitFor({ state: "visible" });
-			await btn.click();
+			await clickToolbarAction("show-recurring");
 			const modal = page.locator(".modal").first();
 			await modal.waitFor({ state: "visible" });
 			return createEventsModalHandle(page, modal);

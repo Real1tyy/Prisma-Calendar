@@ -161,6 +161,14 @@ export const BATCH_CONFIRM_TID = "prisma-batch-confirm-submit";
 export const PAGE_HEADER_MANAGE_BTN = "prisma-page-header-manage";
 export const ACTION_MANAGER_MODAL = "prisma-action-manager-modal";
 export const ACTION_MANAGER_RESET_BTN = "prisma-action-manager-reset";
+/**
+ * Page-header overflow trigger (the "More actions" button) + the menu it opens.
+ * When the responsive header trims actions off the bar they're reachable here.
+ * Menu items are the shared `ContextMenu`'s `prisma-ctx-item-<action>` entries.
+ */
+export const PAGE_HEADER_OVERFLOW_TID = "prisma-page-header-overflow";
+export const PAGE_HEADER_OVERFLOW_MENU_TID = "prisma-ctx-menu";
+export const overflowMenuItem = (key: ToolbarActionKey): string => `prisma-ctx-item-${key}`;
 /** Tabbed-container tab-manager modal parts. */
 export const TABBED_CONTAINER_MANAGE_BTN = "prisma-tabbed-container-manage";
 export const TAB_MANAGER_MODAL = "prisma-tab-manager-modal";
