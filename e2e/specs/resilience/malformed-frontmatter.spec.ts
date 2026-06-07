@@ -1,6 +1,7 @@
 import { expect } from "@playwright/test";
 import { isPluginLoaded } from "@real1ty-obsidian-plugins/testing/e2e";
 
+import { ACTIVE_CALENDAR_LEAF } from "../../fixtures/constants";
 import { testResilience as test } from "../../fixtures/electron";
 import {
 	PLUGIN_ID,
@@ -75,7 +76,7 @@ test.describe("malformed frontmatter", () => {
 
 		expect(await isPluginLoaded(calendar.page, PLUGIN_ID)).toBe(true);
 
-		await expect(calendar.page.locator(".workspace-leaf").first()).toBeVisible();
+		await expect(calendar.page.locator(ACTIVE_CALENDAR_LEAF)).toBeVisible();
 
 		// The valid event lands months outside the default visible window, so
 		// assert against Obsidian's vault API rather than the rendered DOM. The

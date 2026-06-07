@@ -152,7 +152,10 @@ test.describe("sort normalization conflict between calendars", () => {
 				timeout: 20_000,
 			})
 			.toBe(EXPECTED_SORT_DATE);
-		const writtenSortDate = readEventFrontmatter(obsidian.vaultDir, eventPath)["Sort Date"];
+		// The poll above already proved disk == EXPECTED_SORT_DATE. Re-reading
+		// here can race an atomic frontmatter rewrite and capture undefined, so
+		// snapshot the constant the poll converged on instead.
+		const writtenSortDate = EXPECTED_SORT_DATE;
 
 		// Add the conflicting peer (default strategy = none) sharing the directory.
 		// The runtime guard must freeze BOTH calendars' sort-date writes; the
