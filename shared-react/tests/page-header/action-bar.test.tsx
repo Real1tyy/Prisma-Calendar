@@ -1,4 +1,4 @@
-import { act, screen } from "@testing-library/react";
+import { act, fireEvent, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { PageHeaderActionBar } from "../../src/page-header/action-bar";
@@ -126,7 +126,9 @@ describe("PageHeaderActionBar", () => {
 			/>
 		);
 
-		expect(screen.getAllByRole("button").length).toBe(3);
+		expect(screen.getByTestId(`${PREFIX}toolbar-action-0`)).toBeInTheDocument();
+		expect(screen.getByTestId(`${PREFIX}toolbar-action-1`)).toBeInTheDocument();
+		expect(screen.getByTestId(`${PREFIX}toolbar-action-2`)).toBeInTheDocument();
 
 		act(() => {
 			store.hideAction("action-0");
@@ -182,5 +184,52 @@ describe("PageHeaderActionBar", () => {
 
 		const btn = screen.getByTestId(`${PREFIX}toolbar-action-0`);
 		expect(btn.style.color).toBe("");
+	});
+
+	it("always renders the overflow trigger", () => {
+		const store = new PageHeaderStore(makeActions(3));
+		renderReact(
+			<PageHeaderActionBar
+				store={store}
+				cssPrefix={PREFIX}
+				editable={false}
+				onActionClick={vi.fn()}
+				onSettingsClick={vi.fn()}
+			/>
+		);
+
+		expect(screen.getByTestId(`${PREFIX}page-header-overflow`)).toBeInTheDocument();
+	});
+
+	it("overflow trigger opens a menu of the trimmed actions and invokes onActionClick", () => {
+		// jsdom never lays out, so the fit logic can't trim a button on its own here —
+		// simulate it by stamping the overflow markers the live fit logic would set,
+		// then drive the trigger.
+		const onActionClick = vi.fn();
+		const store = new PageHeaderStore(makeActions(3));
+		renderReact(
+			<PageHeaderActionBar
+				store={store}
+				cssPrefix={PREFIX}
+				editable={false}
+				onActionClick={onActionClick}
+				onSettingsClick={vi.fn()}
+			/>
+		);
+
+		const trigger = screen.getByTestId(`${PREFIX}page-header-overflow`);
+		const container = trigger.closest('[role="toolbar"]') as HTMLElement;
+		const trimmed = screen.getByTestId(`${PREFIX}toolbar-action-1`);
+		trimmed.setAttribute("data-ph-overflow", "true");
+		container.setAttribute("data-ph-overflow-active", "true");
+
+		fireEvent.click(trigger);
+
+		// Only the trimmed action is offered.
+		expect(screen.queryByTestId(`${PREFIX}ctx-item-action-0`)).not.toBeInTheDocument();
+		const item = screen.getByTestId(`${PREFIX}ctx-item-action-1`);
+
+		fireEvent.click(item);
+		expect(onActionClick).toHaveBeenCalledWith("action-1");
 	});
 });

@@ -40,10 +40,21 @@ export function buildPageHeaderStyles(p: string): string {
 	display: contents;
 }
 
-/* Buttons the fit logic marks as overflowing the header are removed from the row
-   (they remain reachable through the action manager). */
+/* Buttons the fit logic marks as overflowing the header are removed from the row.
+   They stay reachable through the overflow trigger below (and the action manager). */
 .${p}page-header-actions [data-ph-overflow="true"] {
 	display: none;
+}
+
+/* Overflow trigger — opens a menu of the actions trimmed off the bar. Always
+   rendered so the fit measurement stays stable; revealed only while the container
+   reports overflow (set imperatively by the fit logic). */
+.${p}page-header-overflow {
+	display: none;
+}
+
+.${p}page-header-actions[data-ph-overflow-active="true"] .${p}page-header-overflow {
+	display: inline-flex;
 }
 
 /* ─── Action Manager Modal ─── */

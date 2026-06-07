@@ -32,6 +32,8 @@ By default, a set of commonly used actions is shown — including event creation
 
 The row is responsive at every pane size — on desktop and mobile alike it shows only as many icons as fit the available width and keeps the **Manage** gear anchored at the top-right so it's always reachable. It re-packs live as you resize the pane or reorder, add, or remove actions, so an action you move into range appears immediately.
 
+When more actions are enabled than fit the current width, the ones that don't fit collapse into a **More actions** (⋯) menu that appears just before the **Manage** gear. Click it to see the trimmed actions and run any of them — so an action is never stranded off-screen, no matter how narrow the pane. Widen the pane (or reorder a buried action toward the front) and it returns to the bar.
+
 Header action state is persisted **per planning system** — each planning system remembers its own header configuration independently.
 
 ## Managing Actions
