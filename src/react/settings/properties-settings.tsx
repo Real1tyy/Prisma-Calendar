@@ -3,34 +3,24 @@ import { memo } from "react";
 
 import { cls } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
+import type CustomCalendarPlugin from "../../main";
 import { SingleCalendarConfigSchema, type SingleCalendarConfig } from "../../types/settings";
+import {
+	DISPLAY_FIELDS,
+	IDENTITY_FIELDS,
+	METADATA_FIELDS,
+	NOTIFICATION_PROP_FIELDS,
+	RECURRENCE_FIELDS,
+	STATUS_FIELDS,
+	TIMING_FIELDS,
+} from "../../utils/calendar/settings";
 import { PrismaSection } from "./_section";
+import { IndexingStatsInfo } from "./indexing-stats-info";
 
 interface PropertiesSettingsProps {
 	settingsStore: CalendarSettingsStore;
+	plugin: CustomCalendarPlugin;
 }
-
-const TIMING_FIELDS = ["startProp", "endProp", "dateProp", "allDayProp"];
-const IDENTITY_FIELDS = ["titleProp", "calendarTitleProp", "zettelIdProp", "skipProp", "iconProp"];
-const RECURRENCE_FIELDS = [
-	"rruleProp",
-	"rruleSpecProp",
-	"rruleUntilProp",
-	"rruleIdProp",
-	"sourceProp",
-	"instanceDateProp",
-	"futureInstancesCountProp",
-	"generatePastEventsProp",
-];
-const STATUS_FIELDS = ["statusProperty", "doneValue", "notDoneValue", "customDoneProperty", "customUndoneProperty"];
-const METADATA_FIELDS = ["categoryProp", "locationProp", "participantsProp", "breakProp", "prerequisiteProp"];
-const NOTIFICATION_PROP_FIELDS = ["minutesBeforeProp", "daysBeforeProp", "alreadyNotifiedProp"];
-const DISPLAY_FIELDS = [
-	"frontmatterDisplayProperties",
-	"frontmatterDisplayPropertiesAllDay",
-	"frontmatterDisplayPropertiesUntracked",
-	"frontmatterDisplayPropertiesHeatmap",
-];
 
 const propLabel = (descriptor: { label: string }): string => descriptor.label.replace(/ Prop$/, " property");
 
@@ -38,15 +28,18 @@ const SHAPE = SingleCalendarConfigSchema.shape;
 
 export const PropertiesSettingsReact = memo(function PropertiesSettingsReact({
 	settingsStore,
+	plugin,
 }: PropertiesSettingsProps) {
 	const [settings] = useSettingsStore(settingsStore);
+	const bundle = plugin.getBundleById(settingsStore.calendarId);
 
-	const propSection = (heading: string, fields: string[]) => (
+	const propSection = (heading: string, fields: readonly string[]) => (
 		<PrismaSection store={settingsStore} shape={SHAPE} heading={heading} fields={fields} labelTransform={propLabel} />
 	);
 
 	return (
 		<>
+			{bundle && <IndexingStatsInfo bundle={bundle} />}
 			{propSection("Event timing", TIMING_FIELDS)}
 			<EventTypesInfo settings={settings} />
 			{propSection("Sorting", ["sortingStrategy", "sortDateProp"])}

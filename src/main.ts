@@ -189,6 +189,10 @@ export default class CustomCalendarPlugin extends Plugin {
 		return this.getActiveBundleFromLeaf()?.viewRef.calendarComponent ?? null;
 	}
 
+	getBundleById(calendarId: string): CalendarBundle | undefined {
+		return this.calendarBundles.find((b) => b.calendarId === calendarId);
+	}
+
 	private initializeCalendarBundles(): void {
 		const settings = this.settingsStore.currentSettings;
 

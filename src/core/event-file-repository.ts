@@ -15,12 +15,15 @@ import { BehaviorSubject, Subject, type Observable, type Subscription } from "rx
 import type { Frontmatter, PrismaSyncDataSchema, SingleCalendarConfig } from "../types";
 import type { CalendarEventSource, IndexerEvent, RawEventSource } from "../types/event-source";
 import type { NodeRecurringEvent } from "../types/recurring";
+import { PARSE_AFFECTING_KEYS, parseAffectingSettingsChanged } from "../utils/calendar/settings";
 import { parseRRuleFromFrontmatter } from "../utils/dates/recurring";
 import { ensureFileHasZettelId } from "../utils/events/file-naming";
 import { parseEventMetadata, shouldEventBeMarkedAsDone } from "../utils/events/frontmatter";
 import { cleanupTitle } from "../utils/events/naming";
 import { generateUniqueRruleId, hasTimestamp } from "../utils/events/zettel-id";
 import { createEventSchema } from "./event-schema";
+
+export { PARSE_AFFECTING_KEYS, parseAffectingSettingsChanged };
 
 /**
  * Namespace for the IndexedDB cache. One DB per plugin — isolated from other
@@ -94,6 +97,8 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 					.catch((error: unknown) =>
 						console.error("[EventFileRepository] table.start() failed after settings change:", error)
 					);
+			} else if (parseAffectingSettingsChanged(prevSettings, newSettings)) {
+				this.reemitAllRows();
 			}
 		});
 	}
@@ -242,6 +247,23 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 		this.table.destroy();
 		this.eventsSubject.complete();
 		this.indexingCompleteSubject.complete();
+	}
+
+	/**
+	 * Re-runs the parser over every in-memory row so a parse-affecting settings
+	 * change (a property remap, a filter edit) takes effect without an Obsidian
+	 * reload. Metadata-only — reuses the rows already in the table rather than
+	 * re-reading from disk. Each row re-emits the same event type
+	 * (`file-changed` / `untracked-file-changed`) it would on a normal edit, so
+	 * the two stores cross-invalidate correctly when a note crosses the
+	 * tracked/untracked boundary under the new mapping.
+	 */
+	private reemitAllRows(): void {
+		for (const row of this.table.toArray()) {
+			void this.emitFileEvents(row, undefined, undefined).catch((error: unknown) =>
+				console.error(`[EventFileRepository] Error re-emitting ${row.filePath} after settings change:`, error)
+			);
+		}
 	}
 
 	// ─── VaultTable Event Bridge ─────────────────────────────────

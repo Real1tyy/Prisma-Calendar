@@ -21,6 +21,21 @@ If **Title property** is blank, the event's title is derived from the filename (
 
 Priority when resolving an event's display title: `Title property` (user-controlled) → `Calendar title property` (auto-computed back-link) → filename.
 
+## Indexing summary and reindex
+
+At the top of the **Properties** tab, an **Indexing** panel shows how the notes in this planning system's folder resolved against your property mapping:
+
+> Indexed: 9 timed · 14 all-day · 3 untracked · 3 couldn't be read
+
+This answers "is my folder wired up?" at a glance. The counts mean:
+
+- **timed** — notes with a valid start (and optional end) time.
+- **all-day** — notes with a valid date and the all-day flag.
+- **untracked** — notes in the folder with no date-like property (reference notes, etc.).
+- **couldn't be read** — notes that look like they wanted to be events but didn't parse: a date value in an unrecognised format, a date-like property you haven't mapped, or a property name with a trailing space.
+
+The first time a folder is indexed, a one-time notice summarises the same counts.
+
 ## Sorting Normalization
 
 - **Sorting normalization strategy**: write a normalized datetime to a dedicated sort property so external tools (Bases, Dataview) can sort all event types by a single field. See [Sorting Normalization for External Tools](#sorting-normalization-for-external-tools) below for full details.

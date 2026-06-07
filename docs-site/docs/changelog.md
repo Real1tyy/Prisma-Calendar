@@ -4,6 +4,18 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 2.20.0 - 6/7/2026
+
+> **TLDR:** The **Properties** tab now shows an indexing summary — how many notes became events and how many couldn't be read — with a **Reindex** button to force a fresh re-read. And changing any property mapping or filter now takes effect immediately instead of doing nothing until you restart Obsidian.
+
+### Added
+- **Indexing summary and one-click reindex**: The **Properties** tab now shows how your folder's notes resolved — *9 timed · 14 all-day · 3 untracked · 3 couldn't be read* — so you can tell at a glance whether the calendar is wired up, with a **Reindex** button to force a fresh re-read. A one-time notice summarises the same counts the first time a folder is indexed. See [Indexing summary and reindex](./configuration/properties.md#indexing-summary-and-reindex).
+
+### Fixed
+- **Reactive to property and filter changes**: renaming or remapping any property (dates, title, category, status, recurrence, notifications…) or editing a filter now makes Prisma re-read your existing notes on the spot — it just works immediately, instead of doing nothing until you restart Obsidian.
+
+---
+
 ## 2.19.0 - 6/4/2026
 
 > **TLDR:** The view-header action buttons are now responsive at every pane size — only as many icons as fit show, the rest tuck into a **More actions** overflow menu, and **Manage** stays anchored at the top-right. A mobile / narrow-pane layout pass wraps the view tabs and toolbars, reflows the settings editors and Create Event modal, and makes the split/dashboard charts and yearly heatmap scrollable. Onboarding is clearer too: the license and integrations settings now link straight to their docs, including a new license-activation guide and a step-by-step Google Calendar guide.

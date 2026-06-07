@@ -13,6 +13,7 @@ const DOM_PATTERNS = [
 	"tests/components/**/*.test.ts",
 	"tests/components/**/*.test.tsx",
 	"tests/integrations/calendar-bundle.test.ts",
+	"tests/core/first-index-notice-store.test.ts",
 	"tests/core/minimized-modal-manager.test.ts",
 	"tests/core/notification-manager.test.ts",
 	"tests/utils/event-tooltip-snapshots.test.ts",
