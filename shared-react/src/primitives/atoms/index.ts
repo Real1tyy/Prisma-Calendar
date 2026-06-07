@@ -11,6 +11,8 @@ export { EmptyHint } from "./empty-hint";
 export type { ModalDescriptionProps } from "./modal-description";
 export { ModalDescription } from "./modal-description";
 export { ObsidianIcon } from "./obsidian-icon";
+export type { OutboundLinkProps } from "./outbound-link";
+export { OutboundLink } from "./outbound-link";
 export { SecretField } from "./secret-field";
 export type { TextareaProps } from "./textarea";
 export { Textarea } from "./textarea";

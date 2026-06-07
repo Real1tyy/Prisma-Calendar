@@ -10,8 +10,10 @@ import { memo, useCallback, useState, type ReactNode } from "react";
 import { useCssPrefix, useScopedCls } from "../../contexts/theme-context";
 import { useExternalSnapshot } from "../../hooks/reactive/use-external-snapshot";
 import { useInjectedStyles } from "../../hooks/styles/use-styles";
+import { OutboundLink } from "../../primitives/atoms/outbound-link";
 import { SecretField } from "../../primitives/atoms/secret-field";
 import { SettingHeading, SettingItem } from "../../primitives/layout/setting-item";
+import { openExternal } from "../../utils/open-external";
 import { buildLicenseStyles } from "./license-section.styles";
 
 interface LicenseSectionProps {
@@ -27,6 +29,10 @@ interface LicenseSectionProps {
 		billing: string;
 		devices: string;
 	};
+	// Doc page explaining how activation works (where the key comes from, that
+	// the device ID is arbitrary, keychain storage, second-device activation).
+	// When set, the License heading links to it and the key field points at it.
+	activationGuideUrl?: string;
 }
 
 // Nudge to reconnect once the cached offline token is within this window of
@@ -105,6 +111,7 @@ export const LicenseSection = memo(function LicenseSection({
 	currentSecretName,
 	onSecretChange,
 	accountUrls,
+	activationGuideUrl,
 }: LicenseSectionProps) {
 	const cssPrefix = useCssPrefix();
 	useInjectedStyles(`${cssPrefix}license-styles`, buildLicenseStyles(cssPrefix));
@@ -141,10 +148,14 @@ export const LicenseSection = memo(function LicenseSection({
 
 	const keyDescription: ReactNode = (
 		<>
-			{`Enter your ${licenseManager.productName} Pro license key to unlock advanced features. `}
-			<a href={licenseManager.purchaseUrl} target="_blank" rel="noopener noreferrer">
-				Start your 30-day free trial
-			</a>
+			{`Paste your ${licenseManager.productName} Pro license key as the Secret to unlock advanced features — the ID can be anything. The one-click activation link from your sign-up email or account page sets this up for you. `}
+			{activationGuideUrl !== undefined && (
+				<>
+					<OutboundLink href={activationGuideUrl}>How activation works</OutboundLink>
+					{" · "}
+				</>
+			)}
+			<OutboundLink href={licenseManager.purchaseUrl}>Start your 30-day free trial</OutboundLink>
 		</>
 	);
 
@@ -158,7 +169,7 @@ export const LicenseSection = memo(function LicenseSection({
 
 	return (
 		<>
-			<SettingHeading name="License" />
+			<SettingHeading name="License" docHref={activationGuideUrl} docLabel="Setup guide" />
 			<SettingItem name="License key" description={keyDescription}>
 				<SecretField value={currentSecretName} onChange={(v) => void onSecretChange(v)} />
 			</SettingItem>
@@ -179,11 +190,7 @@ export const LicenseSection = memo(function LicenseSection({
 			)}
 			{accountUrls != null && (
 				<SettingItem name="Subscription" description={subDescription}>
-					<button
-						type="button"
-						className={subAction.cta ? "mod-cta" : ""}
-						onClick={() => window.open(subHref, "_blank")}
-					>
+					<button type="button" className={subAction.cta ? "mod-cta" : ""} onClick={() => openExternal(subHref)}>
 						{subAction.label}
 					</button>
 				</SettingItem>

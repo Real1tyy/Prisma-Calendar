@@ -44,4 +44,29 @@ describe("SettingHeading", () => {
 		expect(screen.getByText("Section")).toBeInTheDocument();
 		expect(container.querySelector(".setting-item-heading")).not.toBeNull();
 	});
+
+	it("omits the doc link when `docHref` is absent", () => {
+		const { container } = renderReact(<SettingHeading name="Section" />);
+
+		expect(container.querySelector("a")).toBeNull();
+	});
+
+	it("renders a clickable doc link with target/rel when `docHref` is set", () => {
+		renderReact(<SettingHeading name="License" docHref="https://example.com/docs/license" docTestId="lic-doc" />);
+
+		const link = screen.getByTestId("lic-doc");
+		expect(link.tagName).toBe("A");
+		expect(link).toHaveTextContent("Guide ↗");
+		expect(link).toHaveAttribute("href", "https://example.com/docs/license");
+		expect(link).toHaveAttribute("target", "_blank");
+		expect(link).toHaveAttribute("aria-label", "Open documentation for License");
+	});
+
+	it("uses a custom `docLabel` when provided", () => {
+		renderReact(
+			<SettingHeading name="License" docHref="https://example.com" docLabel="Setup guide" docTestId="lic-doc" />
+		);
+
+		expect(screen.getByTestId("lic-doc")).toHaveTextContent("Setup guide ↗");
+	});
 });

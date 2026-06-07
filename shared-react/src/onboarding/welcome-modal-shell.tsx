@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { useScopedStyles } from "../hooks/styles/use-styles";
 import { Button } from "../primitives/atoms/button";
+import { openExternal } from "../utils/open-external";
 import { buildWelcomeShellStyles } from "./welcome-modal-shell.styles";
 
 export interface WelcomeModalFooterLink {
@@ -18,10 +19,6 @@ export interface WelcomeModalShellProps {
 	submitDisabled?: boolean | undefined;
 	onSubmit: () => void;
 	children: ReactNode;
-}
-
-function openExternal(href: string): void {
-	window.open(href, "_blank", "noopener,noreferrer");
 }
 
 function slugify(label: string): string {

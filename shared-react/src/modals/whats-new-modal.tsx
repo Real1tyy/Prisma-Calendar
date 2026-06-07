@@ -10,6 +10,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useApp } from "../contexts/app-context";
 import { useScopedStyles } from "../hooks/styles/use-styles";
 import { showReactModal } from "../show-react-modal";
+import { openExternal } from "../utils/open-external";
 import { buildWhatsNewStyles } from "./whats-new-modal.styles";
 
 const LINES_PER_PAGE = 15;
@@ -84,7 +85,7 @@ function computeNextBatch(sections: VersionSection[], renderedCount: number): Ve
 }
 
 function FooterButton({ label, href }: { label: string; href: string }) {
-	const handleClick = useCallback(() => window.open(href, "_blank"), [href]);
+	const handleClick = useCallback(() => openExternal(href), [href]);
 	return (
 		<button type="button" onClick={handleClick}>
 			{label}

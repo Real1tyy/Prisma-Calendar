@@ -2,6 +2,7 @@ import { memo, useCallback, useEffect, useRef, useState, type KeyboardEvent, typ
 
 import { useCls } from "../contexts/theme-context";
 import { useScopedStyles } from "../hooks/styles/use-styles";
+import { OutboundLink } from "../primitives/atoms/outbound-link";
 import { cx } from "../utils/cx";
 import { buildSettingsNavStyles } from "./settings-nav.styles";
 
@@ -151,9 +152,9 @@ export const SettingsNav = memo(function SettingsNav({
 				<div className={`setting-item ${settingsCls("footer")}`}>
 					<div className={settingsCls("footer-links")}>
 						{footerLinks.map((link) => (
-							<a key={link.href} href={link.href} className={settingsCls("support-link")}>
+							<OutboundLink key={link.href} href={link.href} className={settingsCls("support-link")}>
 								{link.text}
-							</a>
+							</OutboundLink>
 						))}
 					</div>
 				</div>

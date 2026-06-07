@@ -3,6 +3,7 @@ import { memo, useCallback } from "react";
 
 import { useScopedCls } from "../../contexts/theme-context";
 import { useReleaseCheck } from "../../hooks/services/use-release-check";
+import { openExternal } from "../../utils/open-external";
 
 export interface UpdateAvailableBadgeProps {
 	service: ReleaseCheckService | null | undefined;
@@ -30,7 +31,7 @@ export const UpdateAvailableBadge = memo(function UpdateAvailableBadge({
 		if (!notice) return;
 		const url = hrefOverride ?? notice.url;
 		if (!url) return;
-		window.open(url, "_blank", "noopener,noreferrer");
+		openExternal(url);
 	}, [notice, hrefOverride]);
 
 	if (!notice) return null;
