@@ -4,8 +4,38 @@ import { createPortal } from "react-dom";
 import { useOutsideClick } from "../hooks/dom/use-outside-click";
 import { useFocusOnMount } from "../hooks/focus/use-focus";
 import { useEscapeKey } from "../hooks/keyboard/use-trigger-keys";
+import { useInjectedStyles } from "../hooks/styles/use-styles";
 import { MenuEntry } from "./menu-items";
 import type { ContextMenuEntryDef, ContextMenuSeparatorDef } from "./types";
+
+// Scoped to our portaled React menu only (NOT Obsidian's global `.menu`), so we
+// never restyle native menus. Adds a clear hover/focus highlight, a divider between
+// rows, and vertical scrolling (the per-instance max-height is set inline from the
+// anchor position).
+const CONTEXT_MENU_CLASS = "shared-ctx-menu";
+const CONTEXT_MENU_STYLES = `
+.${CONTEXT_MENU_CLASS} {
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+.${CONTEXT_MENU_CLASS} .menu-item {
+	cursor: pointer;
+	transition: background-color 0.12s ease;
+}
+.${CONTEXT_MENU_CLASS} > .menu-item:not(:last-child) {
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+.${CONTEXT_MENU_CLASS} .menu-item:hover,
+.${CONTEXT_MENU_CLASS} .menu-item:focus,
+.${CONTEXT_MENU_CLASS} .menu-item:focus-visible {
+	background-color: var(--background-modifier-hover);
+	outline: none;
+}
+.${CONTEXT_MENU_CLASS} .menu-item.is-disabled:hover {
+	background-color: transparent;
+	cursor: default;
+}
+`;
 
 export interface ContextMenuProps {
 	items: ContextMenuEntryDef[];
@@ -29,6 +59,7 @@ export const ContextMenu = memo(function ContextMenu({
 	testIdPrefix,
 	align = "left",
 }: ContextMenuProps) {
+	useInjectedStyles(`${CONTEXT_MENU_CLASS}-styles`, CONTEXT_MENU_STYLES);
 	const [focusIndex, setFocusIndex] = useState(0);
 	const menuRef = useRef<HTMLDivElement>(null);
 
@@ -70,7 +101,7 @@ export const ContextMenu = memo(function ContextMenu({
 	return createPortal(
 		<div
 			ref={menuRef}
-			className="menu"
+			className={`menu ${CONTEXT_MENU_CLASS}`}
 			role="menu"
 			tabIndex={-1}
 			onKeyDown={handleKeyDown}
@@ -80,6 +111,9 @@ export const ContextMenu = memo(function ContextMenu({
 				// trigger near the viewport's right edge doesn't push the menu off-screen.
 				...(align === "right" ? { right: Math.max(0, window.innerWidth - position.x) } : { left: position.x }),
 				top: position.y,
+				// Cap to the space below the anchor so a tall menu scrolls instead of
+				// running off the bottom of the viewport.
+				maxHeight: `calc(100vh - ${Math.round(position.y) + 8}px)`,
 				zIndex: 1000,
 			}}
 			data-testid={`${testIdPrefix ?? ""}ctx-menu`}

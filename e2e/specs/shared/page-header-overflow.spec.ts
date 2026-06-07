@@ -230,6 +230,22 @@ test.describe("shared: page header overflow fit", () => {
 		expect(menuBox!.x, "overflow menu spills off the left edge").toBeGreaterThanOrEqual(-1);
 		expect(menuBox!.x + menuBox!.width, "overflow menu spills off the right edge").toBeLessThanOrEqual(innerWidth + 1);
 
+		// Styled like a proper dropdown: scrolls when tall, rows divided, rows highlight on hover.
+		expect(await menu.evaluate((el) => getComputedStyle(el).overflowY), "menu should scroll vertically").toBe("auto");
+		const rows = menu.locator(".menu-item");
+		expect(
+			await rows.first().evaluate((el) => getComputedStyle(el).borderBottomWidth),
+			"menu rows should be divided"
+		).not.toBe("0px");
+		const hoverRow = rows.nth(1);
+		const beforeBg = await hoverRow.evaluate((el) => getComputedStyle(el).backgroundColor);
+		await hoverRow.hover();
+		await expect
+			.poll(() => hoverRow.evaluate((el) => getComputedStyle(el).backgroundColor), {
+				message: "hovering a row should highlight it",
+			})
+			.not.toBe(beforeBg);
+
 		await page
 			.locator(sel(overflowMenuItem("global-search")))
 			.first()
