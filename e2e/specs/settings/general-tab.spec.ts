@@ -1,3 +1,4 @@
+import { expect } from "@playwright/test";
 import {
 	expectPluginData,
 	setDropdown,
@@ -12,6 +13,23 @@ import { test } from "../../fixtures/electron";
 import { openPrismaSettings, switchSettingsTab } from "../../fixtures/helpers";
 
 test.describe("settings: General tab", () => {
+	// Onboarding aid (driven by a real support question): the License section
+	// links to the activation guide both from the heading and inline, so users
+	// who don't know where their key comes from can find the docs in one click.
+	test("license section links to the activation guide", async ({ obsidian }) => {
+		const page = obsidian.page;
+		await openPrismaSettings(page);
+		await switchSettingsTab(page, "general");
+
+		const headingGuide = page.getByRole("link", { name: "Open documentation for License" });
+		await expect(headingGuide).toBeVisible();
+		await expect(headingGuide).toHaveAttribute("href", /\/configuration\/license\?/);
+
+		const inlineGuide = page.getByRole("link", { name: "How activation works" });
+		await expect(inlineGuide).toBeVisible();
+		await expect(inlineGuide).toHaveAttribute("href", /\/configuration\/license\?/);
+	});
+
 	test("writes every major field group to data.json", async ({ obsidian }) => {
 		await openPrismaSettings(obsidian.page);
 		await switchSettingsTab(obsidian.page, "general");

@@ -2,6 +2,7 @@ import { buildUtmUrl } from "@real1ty-obsidian-plugins";
 import {
 	Dropdown,
 	LicenseSection,
+	OutboundLink,
 	SettingCard,
 	SettingHeading,
 	SettingItem,
@@ -13,7 +14,7 @@ import {
 } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useState } from "react";
 
-import { cls, DOCS_BASE_URL, docsUrl, tid } from "../../constants";
+import { cls, settingsDocUrl, tid } from "../../constants";
 import { ACCOUNT_URL, FREE_MAX_EVENT_PRESETS } from "../../core/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import { buildWhatsNewConfig } from "../../core/whats-new-config";
@@ -37,6 +38,7 @@ const PRISMA_NON_TRANSFERABLE_SETTINGS: ReadonlyArray<keyof CustomCalendarSettin
 ];
 
 const GITHUB_ISSUES_URL = "https://github.com/Real1tyy/Prisma-Calendar/issues/new/choose";
+const FEEDBACK_URL = "https://matejvavroproductivity.com/feedback";
 
 const PLANNING_FIELDS = ["directory", "templatePath", "indexSubdirectories"];
 const INTERFACE_FIELDS = ["locale", "showRibbonIcon", "enableKeyboardNavigation", "autoAssignZettelId"];
@@ -79,6 +81,7 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 				licenseManager={plugin.licenseManager}
 				currentSecretName={licenseKeySecretName}
 				onSecretChange={onSecretChange}
+				activationGuideUrl={settingsDocUrl("/configuration/license", "license_guide")}
 				accountUrls={{
 					subscription: buildUtmUrl(ACCOUNT_URL, "prisma-calendar", "plugin", "settings", "manage_subscription"),
 					billing: buildUtmUrl(ACCOUNT_URL, "prisma-calendar", "plugin", "settings", "manage_billing"),
@@ -279,37 +282,33 @@ export const HelpSection = memo(function HelpSection({ plugin }: { plugin: Custo
 				</p>
 				<p>
 					Have a question? The{" "}
-					<a href={buildUtmUrl(DOCS_BASE_URL, "prisma-calendar", "plugin", "settings", "help_documentation")}>
+					<OutboundLink href={settingsDocUrl("", "help_documentation")}>
 						<strong>documentation</strong>
-					</a>{" "}
+					</OutboundLink>{" "}
 					covers most topics — use the search bar in the top right to quickly find what you need. Check the{" "}
-					<a href={buildUtmUrl(docsUrl("/faq"), "prisma-calendar", "plugin", "settings", "help_faq")}>
+					<OutboundLink href={settingsDocUrl("/faq", "help_faq")}>
 						<strong>frequently asked questions</strong>
-					</a>{" "}
+					</OutboundLink>{" "}
 					or{" "}
-					<a
-						href={buildUtmUrl(
-							docsUrl("/troubleshooting"),
-							"prisma-calendar",
-							"plugin",
-							"settings",
-							"help_troubleshooting"
-						)}
-					>
+					<OutboundLink href={settingsDocUrl("/troubleshooting", "help_troubleshooting")}>
 						<strong>troubleshooting</strong>
-					</a>{" "}
+					</OutboundLink>{" "}
 					pages for common issues and solutions.
 				</p>
 				<p>
 					If you spot any bugs or see ways to improve it, don't hesitate to share your feedback — please{" "}
-					<a href={GITHUB_ISSUES_URL}>
+					<OutboundLink href={GITHUB_ISSUES_URL}>
 						<strong>create a GitHub issue</strong>
-					</a>
+					</OutboundLink>{" "}
+					or reach me any time through the{" "}
+					<OutboundLink href={buildUtmUrl(FEEDBACK_URL, "prisma-calendar", "plugin", "settings", "help_feedback")}>
+						<strong>feedback page</strong>
+					</OutboundLink>
 					. I would love to hear your thoughts.
 				</p>
 				<p>
 					For more connected, advanced workflows,{" "}
-					<a
+					<OutboundLink
 						href={buildUtmUrl(
 							"https://matejvavroproductivity.com/tools/prisma-calendar/",
 							"prisma-calendar",
@@ -319,10 +318,10 @@ export const HelpSection = memo(function HelpSection({ plugin }: { plugin: Custo
 						)}
 					>
 						<strong>Prisma Pro</strong>
-					</a>{" "}
+					</OutboundLink>{" "}
 					unlocks external synchronization, advanced visualizations, Bases integration for embedding views directly
 					inside notes, and other power-user capabilities built for serious planning inside Obsidian.{" "}
-					<a
+					<OutboundLink
 						href={buildUtmUrl(
 							"https://matejvavroproductivity.com/tools/prisma-calendar/",
 							"prisma-calendar",
@@ -332,7 +331,7 @@ export const HelpSection = memo(function HelpSection({ plugin }: { plugin: Custo
 						)}
 					>
 						<strong>Try every Pro feature with a 30-day free trial</strong>
-					</a>{" "}
+					</OutboundLink>{" "}
 					— cancel anytime.
 				</p>
 			</SettingCard>

@@ -202,7 +202,7 @@ Yes! Prisma Calendar is built using [FullCalendar](https://fullcalendar.io/), a 
 <details>
 <summary>Something isn't working as expected — what should I do?</summary>
 
-Check the [Troubleshooting guide](./troubleshooting.md) for common issues and solutions — including performance tips, event display problems, multi-calendar conflicts, Bases integration, and Templater setup. If your problem isn't covered there, please [open a GitHub issue](https://github.com/Real1tyy/Prisma-Calendar/issues/new/choose) with steps to reproduce.
+Check the [Troubleshooting guide](./troubleshooting.md) for common issues and solutions — including performance tips, event display problems, multi-calendar conflicts, Bases integration, and Templater setup. If your problem isn't covered there, please [open a GitHub issue](https://github.com/Real1tyy/Prisma-Calendar/issues/new/choose) with steps to reproduce, or [send me your feedback](https://matejvavroproductivity.com/feedback?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=faq&utm_content=feedback).
 
 </details>
 

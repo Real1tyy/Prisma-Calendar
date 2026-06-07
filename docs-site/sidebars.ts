@@ -94,7 +94,13 @@ const sidebars: SidebarsConfig = {
 					collapsible: true,
 					items: [
 						"features/advanced/templater",
-						"features/advanced/integrations",
+						{
+							type: "category",
+							label: "Integrations",
+							collapsible: true,
+							link: { type: "doc", id: "features/advanced/integrations" },
+							items: ["features/advanced/integrations/google-calendar"],
+						},
 						"features/advanced/hotkeys",
 						"features/advanced/prerequisite-connections",
 						{
@@ -126,6 +132,7 @@ const sidebars: SidebarsConfig = {
 			items: [
 				"configuration/index",
 				"configuration/general",
+				"configuration/license",
 				"configuration/properties",
 				"configuration/calendar-ui",
 				"configuration/toolbar-and-menus",

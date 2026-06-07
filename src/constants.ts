@@ -1,4 +1,4 @@
-import { createCssUtils } from "@real1ty-obsidian-plugins";
+import { buildUtmUrl, createCssUtils } from "@real1ty-obsidian-plugins";
 
 /** Obsidian plugin id (matches manifest) — used for full command palette ids. */
 export const PRISMA_CALENDAR_PLUGIN_ID = "prisma-calendar" as const;
@@ -8,6 +8,15 @@ export const DOCS_BASE_URL = "https://prisma-calendar.matejvavroproductivity.com
 
 /** Build a docs-site URL from a leading-slash path, e.g. `docsUrl("/features/free-vs-pro")`. */
 export const docsUrl = (path = ""): string => `${DOCS_BASE_URL}${path}`;
+
+/**
+ * Build a UTM-tracked docs-site link for a Settings-tab affordance. Binds the
+ * plugin slug + `plugin`/`settings` UTM so callers pass only the doc `path` and
+ * a short `content` tag (the settings element clicked) — keeps every settings →
+ * docs link consistent without repeating the slug/source/medium boilerplate.
+ */
+export const settingsDocUrl = (path: string, content: string): string =>
+	buildUtmUrl(docsUrl(path), PRISMA_CALENDAR_PLUGIN_ID, "plugin", "settings", content);
 
 type ScreamingToKebab<S extends string> = S extends `${infer A}_${infer B}`
 	? `${Lowercase<A>}-${ScreamingToKebab<B>}`

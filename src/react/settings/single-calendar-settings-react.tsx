@@ -23,62 +23,41 @@ import { PropertiesSettingsReact } from "./properties-settings";
 import { RulesSettingsReact } from "./rules-settings";
 import { SETTINGS_TAB_DEFINITIONS } from "./tabs";
 
+const settingsLink = (url: string, content: string): string =>
+	buildUtmUrl(url, "prisma-calendar", "plugin", "settings", content);
+
 const FOOTER_LINKS: SettingsFooterLink[] = [
 	{
 		text: "Product Page",
-		href: buildUtmUrl(
-			"https://matejvavroproductivity.com/tools/prisma-calendar/",
-			"prisma-calendar",
-			"plugin",
-			"settings",
-			"product_page"
-		),
+		href: settingsLink("https://matejvavroproductivity.com/tools/prisma-calendar/", "product_page"),
 	},
 	{
 		text: "Documentation",
-		href: buildUtmUrl(docsUrl("/"), "prisma-calendar", "plugin", "settings", "documentation"),
+		href: settingsLink(docsUrl("/"), "documentation"),
 	},
 	{
 		text: "Changelog",
-		href: buildUtmUrl(docsUrl("/changelog"), "prisma-calendar", "plugin", "settings", "changelog"),
+		href: settingsLink(docsUrl("/changelog"), "changelog"),
 	},
 	{
 		text: "Gallery",
-		href: buildUtmUrl(docsUrl("/gallery"), "prisma-calendar", "plugin", "settings", "gallery"),
+		href: settingsLink(docsUrl("/gallery"), "gallery"),
 	},
 	{
 		text: "Free vs Pro",
-		href: buildUtmUrl(docsUrl("/features/free-vs-pro"), "prisma-calendar", "plugin", "settings", "free_vs_pro"),
+		href: settingsLink(docsUrl("/features/free-vs-pro"), "free_vs_pro"),
 	},
 	{
 		text: "Other Plugins",
-		href: buildUtmUrl(
-			"https://matejvavroproductivity.com/tools/",
-			"prisma-calendar",
-			"plugin",
-			"settings",
-			"other_plugins"
-		),
+		href: settingsLink("https://matejvavroproductivity.com/tools/", "other_plugins"),
 	},
 	{
 		text: "Support",
-		href: buildUtmUrl(
-			"https://matejvavroproductivity.com/support/",
-			"prisma-calendar",
-			"plugin",
-			"settings",
-			"support"
-		),
+		href: settingsLink("https://matejvavroproductivity.com/support/", "support"),
 	},
 	{
 		text: "Playlist",
-		href: buildUtmUrl(
-			"https://www.youtube.com/playlist?list=PLMVJknbUasLCULubO4MdCDvg9MyXu3kG4",
-			"prisma-calendar",
-			"plugin",
-			"settings",
-			"youtube"
-		),
+		href: settingsLink("https://www.youtube.com/playlist?list=PLMVJknbUasLCULubO4MdCDvg9MyXu3kG4", "youtube"),
 	},
 ];
 

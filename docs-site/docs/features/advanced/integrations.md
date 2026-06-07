@@ -35,6 +35,10 @@ Prisma Calendar offers three integration methods:
 </div>
 Example with Google Calendar
 
+:::tip Connecting Google Calendar?
+Follow the dedicated step-by-step [Connect Google Calendar](./integrations/google-calendar.md) guide — it's the most common setup. More provider guides will be added here over time.
+:::
+
 ## Exporting Events
 
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>

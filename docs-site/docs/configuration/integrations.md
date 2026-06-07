@@ -2,6 +2,8 @@
 
 Integration settings for connecting with external calendar services and importing/exporting events. Access via Settings → Integrations.
 
+New to this? Start with the [Integrations overview](../features/advanced/integrations) for the available methods, or jump straight to the step-by-step [Connect Google Calendar](../features/advanced/integrations/google-calendar) guide.
+
 ## ICS Export/Import
 
 - **Export folder**: folder where exported .ics files are saved (default: `Prisma-Exports`)
@@ -16,7 +18,7 @@ Configure CalDAV accounts for one-way read-only sync from external calendar serv
 
 ## ICS URL Subscriptions
 
-Subscribe to external calendars via public ICS URLs for automatic periodic syncing. See the [ICS Subscriptions](../features/advanced/integrations#ics-url-subscriptions) documentation.
+Subscribe to external calendars via public ICS URLs for automatic periodic syncing. See the [ICS Subscriptions](../features/advanced/integrations#ics-url-subscriptions) documentation, or follow the [Connect Google Calendar](../features/advanced/integrations/google-calendar) guide for the most common setup.
 
 ## Holidays
 

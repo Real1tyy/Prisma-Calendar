@@ -179,3 +179,9 @@ This ensures the template is applied atomically when Prisma creates the event fi
 **Result**: Consistent `sort_date` property across all events for reliable chronological sorting in Bases, Dataview, or other tools.
 
 </details>
+
+---
+
+## Still stuck?
+
+If none of the above fixes your issue, I'm happy to help — [open a GitHub issue](https://github.com/Real1tyy/Prisma-Calendar/issues/new/choose) with steps to reproduce, or [send me your feedback](https://matejvavroproductivity.com/feedback?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=troubleshooting&utm_content=feedback).

@@ -1,6 +1,7 @@
-import { buildUtmUrl, executeCommand } from "@real1ty-obsidian-plugins";
+import { executeCommand } from "@real1ty-obsidian-plugins";
 import {
 	Dropdown,
+	OutboundLink,
 	SettingHeading,
 	SettingItem,
 	TextInput,
@@ -12,7 +13,7 @@ import { memo, useCallback, useState } from "react";
 
 import { showConfirmDeleteModal } from "../../components/settings/generic";
 import { deleteTrackedIntegrationEvents } from "../../components/settings/integration-shared";
-import { cls, COMMAND_IDS, docsUrl, PRISMA_CALENDAR_PLUGIN_ID, tid } from "../../constants";
+import { cls, COMMAND_IDS, PRISMA_CALENDAR_PLUGIN_ID, settingsDocUrl, tid } from "../../constants";
 import { PRO_FEATURES } from "../../core/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
@@ -38,6 +39,23 @@ import { ProUpgradeBanner } from "./pro-upgrade-banner";
 const S = SingleCalendarConfigSchema.shape;
 const CaldavShape = CalDAVSettingsSchema.shape;
 const IcsShape = ICSSubscriptionSettingsSchema.shape;
+
+const CALDAV_DOC_HREF = settingsDocUrl("/features/advanced/integrations#caldav-integration", "caldav_heading");
+const ICS_DOC_HREF = settingsDocUrl("/features/advanced/integrations#ics-url-subscriptions", "ics_heading");
+
+const GoogleCalendarGuideLink = memo(function GoogleCalendarGuideLink({ section }: { section: "caldav" | "ics" }) {
+	return (
+		<div className={cls("settings-docs-links")}>
+			<OutboundLink
+				href={settingsDocUrl("/features/advanced/integrations/google-calendar", `${section}_google_calendar_guide`)}
+				className={cls("settings-docs-link")}
+				testId={tid("settings", section, "docs-google-calendar")}
+			>
+				Google Calendar setup guide
+			</OutboundLink>
+		</div>
+	);
+});
 
 interface IntegrationsSettingsProps {
 	settingsStore: CalendarSettingsStore;
@@ -93,20 +111,12 @@ const IntegrationsSection = memo(function IntegrationsSection({ settingsStore, a
 			<SettingHeading name="Integrations" />
 			<div className={cls("settings-integrations-desc")}>
 				<p>Export and import events using the .ics format, compatible with most calendar apps.</p>
-				<a
-					href={buildUtmUrl(
-						docsUrl("/configuration/integrations"),
-						"prisma-calendar",
-						"plugin",
-						"settings",
-						"integrations_docs"
-					)}
+				<OutboundLink
+					href={settingsDocUrl("/configuration/integrations", "integrations_docs")}
 					className={cls("settings-docs-link")}
-					target="_blank"
-					rel="noopener"
 				>
 					Documentation
-				</a>
+				</OutboundLink>
 			</div>
 
 			<PrismaSection store={settingsStore} shape={{ exportFolder: S.exportFolder }} />
@@ -201,11 +211,16 @@ const CalDAVSection = memo(function CalDAVSection({ mainSettingsStore, plugin, c
 
 	return (
 		<>
-			<SettingHeading name="Calendar sync (read-only)" />
+			<SettingHeading
+				name="Calendar sync (read-only)"
+				docHref={CALDAV_DOC_HREF}
+				docTestId={tid("settings", "caldav", "heading-doc")}
+			/>
 			<div className={cls("settings-caldav-desc")}>
 				<p>Sync events from external calendar servers.</p>
 				<p className={cls("settings-muted")}>Events are synced one-way from the server.</p>
 			</div>
+			<GoogleCalendarGuideLink section="caldav" />
 
 			<div className={cls("caldav-accounts-wrapper")}>
 				<div className={cls("caldav-accounts-container")}>
@@ -379,13 +394,18 @@ const ICSSection = memo(function ICSSection({ mainSettingsStore, plugin, calenda
 
 	return (
 		<>
-			<SettingHeading name="ICS URL subscriptions (read-only)" />
+			<SettingHeading
+				name="ICS URL subscriptions (read-only)"
+				docHref={ICS_DOC_HREF}
+				docTestId={tid("settings", "ics", "heading-doc")}
+			/>
 			<div className={cls("settings-caldav-desc")}>
 				<p>Subscribe to external calendars via public ICS URLs.</p>
 				<p className={cls("settings-muted")}>
 					Events are synced one-way from the URL. Removed events are deleted locally.
 				</p>
 			</div>
+			<GoogleCalendarGuideLink section="ics" />
 
 			<div className={cls("caldav-accounts-wrapper")}>
 				<div className={cls("caldav-accounts-container")}>

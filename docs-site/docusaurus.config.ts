@@ -138,6 +138,11 @@ const config: Config = {
 					label: "GitHub",
 					position: "right",
 				},
+				{
+					href: "https://matejvavroproductivity.com/feedback?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=navbar&utm_content=feedback",
+					label: "Feedback",
+					position: "right",
+				},
 			],
 		},
 		footer: {
@@ -233,6 +238,10 @@ const config: Config = {
 				{
 					title: "Support & Legal",
 					items: [
+						{
+							label: "Contact & Feedback",
+							href: "https://matejvavroproductivity.com/feedback?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=footer&utm_content=feedback",
+						},
 						{
 							label: "Support Prisma",
 							to: "/support",

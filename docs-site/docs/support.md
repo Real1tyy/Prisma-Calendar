@@ -42,6 +42,10 @@ If you'd like to support the development with a one-time or recurring donation, 
 
 **👉 [View all donation options](https://matejvavroproductivity.com/support/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=support&utm_content=donate)**
 
+## Questions or Feedback?
+
+Have a question, hit a bug, or have an idea to make Prisma better? I'd love to hear from you — [reach out through the feedback page](https://matejvavroproductivity.com/feedback?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=support&utm_content=feedback). I read every message.
+
 ---
 
 **Thank you for using Prisma Calendar!** Your support helps make the plugin better for everyone.

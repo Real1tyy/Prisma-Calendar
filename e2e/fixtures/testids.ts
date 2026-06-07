@@ -348,6 +348,13 @@ export const CALDAV_PRESET_TID = "prisma-caldav-preset";
 export const CALDAV_ADD_ACCOUNT_BTN_CLASS = ".prisma-caldav-add-account-button";
 export const caldavField = (key: string): string => `prisma-caldav-add-control-${key}`;
 
+/** Clickable "Guide ↗" doc link on the CalDAV / ICS section headings. */
+export const integrationHeadingDoc = (section: "caldav" | "ics"): string => `prisma-settings-${section}-heading-doc`;
+
+/** Inline "Google Calendar setup guide" link inside the CalDAV / ICS sections. */
+export const integrationDocsLink = (section: "caldav" | "ics"): string =>
+	`prisma-settings-${section}-docs-google-calendar`;
+
 /** Move-by modal sub-elements. */
 export const MOVE_BY_MODAL_TID = "prisma-modal-move-by";
 export const MOVE_BY_VALUE_TID = "prisma-move-by-value";

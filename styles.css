@@ -2417,6 +2417,12 @@ button[class*=prisma-]:focus-visible {
 .prisma-settings-docs-link:hover {
   text-decoration: underline;
 }
+.prisma-settings-docs-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
 .prisma-settings-integrations-buttons {
   display: flex;
   gap: 0.75rem;

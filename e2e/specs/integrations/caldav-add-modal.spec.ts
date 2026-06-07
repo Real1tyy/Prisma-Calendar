@@ -8,6 +8,8 @@ import {
 	CALDAV_PRESET_TID,
 	CALDAV_TEST_CONNECTION_TID,
 	caldavField,
+	integrationDocsLink,
+	integrationHeadingDoc,
 	proGate,
 	sel,
 } from "../../fixtures/testids";
@@ -77,6 +79,32 @@ test.describe("integrations: CalDAV add modal UI surface", () => {
 		// Cancel returns to the integrations tab without writing any account.
 		await page.keyboard.press("Escape");
 		await expect(modal).toBeHidden();
+		await closeSettings(page);
+	});
+
+	// Onboarding aid: each Pro sync section has a clickable "Guide ↗" heading
+	// linking to its docs anchor, plus an inline "Google Calendar setup guide"
+	// link — so the docs are one click away while configuring a sync source.
+	test("unlocked: CalDAV and ICS sections link to the integration + Google Calendar guides", async ({ calendar }) => {
+		const page = calendar.page;
+		await calendar.unlockPro();
+		await openPrismaSettings(page);
+		await switchSettingsTab(page, "integrations");
+
+		const caldavHeading = page.locator(sel(integrationHeadingDoc("caldav")));
+		await expect(caldavHeading).toBeVisible();
+		await expect(caldavHeading).toHaveAttribute("href", /\/features\/advanced\/integrations\?.*#caldav-integration$/);
+
+		const icsHeading = page.locator(sel(integrationHeadingDoc("ics")));
+		await expect(icsHeading).toBeVisible();
+		await expect(icsHeading).toHaveAttribute("href", /\/features\/advanced\/integrations\?.*#ics-url-subscriptions$/);
+
+		for (const section of ["caldav", "ics"] as const) {
+			const google = page.locator(sel(integrationDocsLink(section)));
+			await expect(google).toBeVisible();
+			await expect(google).toHaveAttribute("href", /\/features\/advanced\/integrations\/google-calendar\?/);
+		}
+
 		await closeSettings(page);
 	});
 });
