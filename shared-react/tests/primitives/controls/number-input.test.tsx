@@ -35,7 +35,11 @@ describe("NumberInput", () => {
 
 	it("commits the parsed number once after the debounce window", async () => {
 		const onCommit = vi.fn();
-		const { user } = renderReact(<ControlledHarness onCommit={onCommit} debounceMs={20} />);
+		// delay: null types both keystrokes synchronously so the 20ms debounce can't fire
+		// between "4" and "2" and commit an intermediate value (flaked under parallel CI load).
+		const { user } = renderReact(<ControlledHarness onCommit={onCommit} debounceMs={20} />, undefined, {
+			delay: null,
+		});
 		const input = screen.getByRole("spinbutton");
 
 		await user.click(input);
