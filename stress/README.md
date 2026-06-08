@@ -4,7 +4,7 @@ Deterministic, agent-runnable performance measurement — separate from the
 correctness `e2e/` suite. Reproduces a large-vault scenario, captures objective
 metrics (internal stage timings + CDP), writes a report, and compares against a
 same-machine baseline. See [docs/stress-testing.md](../../docs/stress-testing.md)
-and [the spec](../../docs/specs/2026-05-21-performance-stress-harness.md).
+and [the spec](../../docs/specs/2026-05-21-120008-performance-stress-harness.md).
 
 **Not wired into CI.** This is a local / agent-driven loop.
 
