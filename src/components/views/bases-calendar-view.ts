@@ -1,4 +1,4 @@
-import { Calendar, type CalendarOptions, type CustomButtonInput } from "@fullcalendar/core";
+import { Calendar, type CalendarOptions } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -292,7 +292,7 @@ class PrismaBasesView extends BasesView {
 					text: "Batch Select",
 					click: () => this.toggleBatchSelection(bundle),
 				},
-			} as Record<string, CustomButtonInput>,
+			},
 			events: (fetchInfo: { start: Date; end: Date }, successCallback: (events: FCPrismaEventInput[]) => void) => {
 				const visible = this.cachedPrismaEvents.filter((ev) => eventOverlapsRange(ev, fetchInfo.start, fetchInfo.end));
 				successCallback(visible);

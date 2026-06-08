@@ -135,7 +135,7 @@ function SettingsTransferButtonsInner<T extends Record<string, unknown>>({
 				{exportButtonText}
 			</Button>
 			{!hideResetButton && (
-				<Button testId={tid("reset-button")} variant="warning" onClick={handleReset}>
+				<Button testId={tid("reset-button")} variant="warning" onClick={() => void handleReset()}>
 					{resetButtonText}
 				</Button>
 			)}

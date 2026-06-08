@@ -51,10 +51,10 @@ function makeBinding<V>(value: V, onChange: SchemaFieldSetter<V>): SchemaFieldBi
  */
 export function pathFilteredSnapshot<V>(store: SettingsStorelike, path: string): SnapshotSubscribable<V> {
 	return {
-		getValue: () => getNestedValue(store.settings$.getValue(), path) as V,
+		getValue: () => getNestedValue(store.settings$.getValue() as Record<string, unknown>, path) as V,
 		subscribe(listener) {
-			let last = getNestedValue(store.settings$.getValue(), path);
-			const sub = store.settings$.subscribe((settings) => {
+			let last = getNestedValue(store.settings$.getValue() as Record<string, unknown>, path);
+			const sub = store.settings$.subscribe((settings: Record<string, unknown>) => {
 				const next = getNestedValue(settings, path);
 				if (next !== last) {
 					last = next;
@@ -95,7 +95,7 @@ export function useSchemaField<V>(store: SettingsStorelike, path: string): Schem
 
 	const onChange = useCallback<SchemaFieldSetter<V>>(
 		(next) => {
-			void store.updateSettings((s) => {
+			void store.updateSettings((s: Record<string, unknown>) => {
 				const resolved = typeof next === "function" ? (next as (prev: V) => V)(getNestedValue(s, path) as V) : next;
 				return setNestedValue(s, path, resolved);
 			});

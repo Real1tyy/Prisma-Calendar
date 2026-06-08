@@ -77,7 +77,7 @@ export const ResetToDefaultsButton = memo(function ResetToDefaultsButton({
 		<button
 			type="button"
 			className={`${cssPrefix}reset-to-defaults-btn mod-warning`}
-			onClick={handleClick}
+			onClick={() => void handleClick()}
 			disabled={disabled}
 			aria-label={label}
 			title={label}

@@ -128,7 +128,7 @@ export function TransferPanel({
 						<Button testId={tid("download")} variant="primary" onClick={handleDownload}>
 							{strings.downloadButton}
 						</Button>
-						<Button testId={tid("copy")} onClick={handleCopy}>
+						<Button testId={tid("copy")} onClick={() => void handleCopy()}>
 							{strings.copyButton}
 						</Button>
 					</>
@@ -142,10 +142,10 @@ export function TransferPanel({
 							type="file"
 							accept=".json,application/json,text/json"
 							style={{ display: "none" }}
-							onChange={handleFileChange}
+							onChange={(e) => void handleFileChange(e)}
 							data-testid={tid("file-input")}
 						/>
-						<Button testId={tid("apply")} variant="primary" onClick={handleImport} disabled={isBusy}>
+						<Button testId={tid("apply")} variant="primary" onClick={() => void handleImport()} disabled={isBusy}>
 							{strings.applyImportButton}
 						</Button>
 					</>

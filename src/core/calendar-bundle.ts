@@ -33,7 +33,7 @@ import type { EventStore, UntrackedEventStore } from "./event-store";
 import { FirstIndexNoticeStore } from "./first-index-notice-store";
 import { HolidayStore, type HolidayConfig } from "./holidays";
 import { IndexerRegistry } from "./indexer-registry";
-import { formatFirstIndexNotice, formatIndexingSummary, tallyIndexedRows, type IndexingTally } from "./indexing-stats";
+import { formatFirstIndexNotice, tallyIndexedRows, type IndexingTally } from "./indexing-stats";
 import { CalDAVSyncService } from "./integrations/caldav/sync";
 import { CalDAVSyncStateManager } from "./integrations/caldav/sync-state-manager";
 import { ICSSubscriptionSyncService } from "./integrations/ics-subscription/sync";
@@ -171,7 +171,6 @@ export class CalendarBundle {
 			this.fileRepository.indexingComplete$.pipe(filter(Boolean)).subscribe(() => {
 				if (this.destroyed) return;
 				const tally = this.getIndexingTally();
-				console.info(formatIndexingSummary(this.settingsStore.currentSettings.name, tally));
 				this.maybeShowFirstIndexNotice(tally);
 			})
 		);

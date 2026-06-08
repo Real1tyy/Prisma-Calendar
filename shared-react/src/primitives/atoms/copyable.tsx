@@ -21,7 +21,7 @@ export const Copyable = memo(function Copyable({ text, children, className, succ
 		<button
 			type="button"
 			className={`copyable${copied ? " is-copied" : ""}${className ? ` ${className}` : ""}`}
-			onClick={copy}
+			onClick={() => void copy()}
 			title="Click to copy"
 			aria-label={`Copy ${text}`}
 		>

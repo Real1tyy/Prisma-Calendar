@@ -44,7 +44,7 @@ export function zodV4Resolver<TValues extends FieldValues>(
 	return (values: TValues) => {
 		const result = schema.safeParse(values);
 		if (result.success) {
-			return Promise.resolve({ values: result.data as TValues, errors: {} });
+			return Promise.resolve({ values: result.data, errors: {} });
 		}
 		const zodError = result.error as unknown as { issues: ZodIssue[] };
 		return Promise.resolve({ values: {} as TValues, errors: toNestedErrors(parseZodIssues(zodError.issues)) });

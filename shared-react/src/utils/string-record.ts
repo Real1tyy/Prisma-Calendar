@@ -23,6 +23,5 @@ export function setOrDelete(
 	value: string | undefined
 ): Record<string, string> {
 	if (value !== undefined) return { ...record, [key]: value };
-	const { [key]: _removed, ...rest } = record;
-	return rest;
+	return Object.fromEntries(Object.entries(record).filter(([k]) => k !== key));
 }
