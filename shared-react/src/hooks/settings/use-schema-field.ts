@@ -10,7 +10,6 @@ import type { SettingsStorelike as BaseSettingsStorelike } from "./use-settings-
  * invariant settings generics into a single concrete shape. Field values are
  * unknown at this layer; the schema carries the real types.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- intentional escape hatch: field values are untyped at this loose structural layer; callers supply V via generics
 export type SettingsStorelike<T = any> = BaseSettingsStorelike<T>;
 
 /**

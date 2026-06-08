@@ -35,7 +35,7 @@ function toNestedErrors(flatErrors: Record<string, FieldError>): FieldErrors {
 }
 
 export function zodV4Resolver<TValues extends FieldValues>(
-	schema: ZodType
+	schema: ZodType<TValues>
 ): (
 	values: TValues,
 	context: unknown,

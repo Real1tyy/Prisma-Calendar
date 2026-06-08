@@ -52,7 +52,7 @@ export function collectSuggestions(query: string, bundle: CalendarBundle): Title
 	for (const [nameKey, filePaths] of nameSeriesMap) {
 		if (nameKey.includes(lowerQuery) && !seen.has(nameKey)) {
 			seen.add(nameKey);
-			const firstPath = filePaths.values().next().value;
+			const firstPath = [...filePaths].at(0);
 			if (!firstPath) continue;
 			const title = bundle.eventStore.getEventByPath(firstPath)?.title ?? nameKey;
 			nameEntries.push({ text: title, frequency: filePaths.size });

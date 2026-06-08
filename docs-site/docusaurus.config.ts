@@ -73,6 +73,7 @@ const config: Config = {
 		],
 	],
 
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Docusaurus preset ThemeConfig type is unresolvable in this tsconfig context
 	themeConfig: {
 		// Replace with your project's social card
 		image: "img/prisma_logo.png",
@@ -264,7 +265,9 @@ const config: Config = {
 			copyright: `© ${new Date().getFullYear()} Prisma Calendar`,
 		},
 		prism: {
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- prism-react-renderer themes object lacks index types
 			theme: prismThemes.github,
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- see above
 			darkTheme: prismThemes.dracula,
 			additionalLanguages: ["bash", "json", "typescript"],
 		},

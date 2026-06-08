@@ -116,7 +116,7 @@ function setupScrollTracking(): void {
 	window.addEventListener("scroll", () => {
 		if (ticking) return;
 		ticking = true;
-		requestAnimationFrame(() => {
+		window.requestAnimationFrame(() => {
 			const depth = getScrollDepth();
 			if (depth > maxScrollDepth) {
 				maxScrollDepth = depth;
@@ -136,6 +136,7 @@ function setupUnloadFlush(): void {
 	window.addEventListener("pagehide", flush);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- Docusaurus ExecutionEnvironment is untyped
 if (ExecutionEnvironment.canUseDOM) {
 	getSessionAttribution();
 	cleanTrackingParams();
@@ -146,9 +147,11 @@ if (ExecutionEnvironment.canUseDOM) {
 
 const clientModule: ClientModule = {
 	onRouteDidUpdate({ location, previousLocation }) {
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- Docusaurus ClientModule location types are untyped
 		if (location.pathname !== previousLocation?.pathname) {
 			flushPageEngagement();
 			const prevFullUrl = previousLocation
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- see above
 				? `${window.location.origin}${previousLocation.pathname}`
 				: null;
 			trackPageView(false, prevFullUrl);
