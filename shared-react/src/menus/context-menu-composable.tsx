@@ -63,7 +63,7 @@ export function ContextMenuContent({ children }: { children: ReactNode }) {
 		>
 			{children}
 		</div>,
-		document.body
+		activeDocument.body
 	);
 }
 

@@ -390,7 +390,7 @@ export async function waitForModalClosed(page: Page, timeoutMs = MODAL_CLOSE_TIM
 export function readRawFrontmatter(absolutePath: string): string {
 	const raw = readFileSync(absolutePath, "utf8");
 	const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-	return match ? match[1]! : "";
+	return match ? match[1] : "";
 }
 
 export function readRawFrontmatterFromVault(vaultDir: string, relativePath: string): string {

@@ -49,8 +49,6 @@ export const GridResizeHandles = memo(function GridResizeHandles({
 		const gridEl = getContainerRef.current();
 		if (!gridEl) return;
 
-		gridEl.style.position = "relative";
-
 		const positionHandles = (): void => {
 			const currentGrid = getContainerRef.current();
 			if (!currentGrid) return;
@@ -116,12 +114,12 @@ export const GridResizeHandles = memo(function GridResizeHandles({
 
 		const onUp = (): void => {
 			css.removeCls(gridEl, "grid-resizing", layout.resizingCls);
-			document.removeEventListener("pointermove", onMove);
-			document.removeEventListener("pointerup", onUp);
+			activeDocument.removeEventListener("pointermove", onMove);
+			activeDocument.removeEventListener("pointerup", onUp);
 		};
 
-		document.addEventListener("pointermove", onMove);
-		document.addEventListener("pointerup", onUp);
+		activeDocument.addEventListener("pointermove", onMove);
+		activeDocument.addEventListener("pointerup", onUp);
 	};
 
 	handleRefs.current.length = count;

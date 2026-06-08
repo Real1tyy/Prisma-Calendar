@@ -105,7 +105,7 @@ export default defineConfig([
 			"obsidianmd/detach-leaves": "error",
 			"obsidianmd/editor-drop-paste": "error",
 			"obsidianmd/vault/iterate": "error",
-			"obsidianmd/no-static-styles-assignment": "off",
+			"obsidianmd/no-static-styles-assignment": "warn",
 			"obsidianmd/ui/sentence-case": "off",
 			"obsidianmd/commands/no-plugin-id-in-command-id": "off",
 			"obsidianmd/commands/no-plugin-name-in-command-name": "off",
@@ -126,6 +126,12 @@ export default defineConfig([
 			// The `no-unsafe-*` family is deferred: thousands of hits from Obsidian's
 			// untyped `any` API surface — clearing them needs a typed API wrapper layer.
 			"@typescript-eslint/no-unsafe-argument": "off",
+			// Restore the `attributes: false` option that strictTypeChecked overwrites.
+			// JSX event handlers returning Promise are idiomatic React; suppress the void-return check there.
+			"@typescript-eslint/no-misused-promises": [
+				"error",
+				{ checksVoidReturn: { arguments: false, attributes: false } },
+			],
 			"@typescript-eslint/no-unsafe-assignment": "off",
 			"@typescript-eslint/no-unsafe-call": "off",
 			"@typescript-eslint/no-unsafe-member-access": "off",
@@ -175,6 +181,7 @@ export default defineConfig([
 		],
 		rules: {
 			"obsidianmd/no-global-this": "off",
+			"obsidianmd/platform": "off",
 		},
 	},
 
@@ -184,6 +191,7 @@ export default defineConfig([
 		rules: {
 			"react-hooks/rules-of-hooks": "off",
 			"obsidianmd/hardcoded-config-path": "off",
+			"obsidianmd/platform": "off",
 		},
 	},
 	{

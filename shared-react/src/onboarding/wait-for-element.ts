@@ -12,7 +12,7 @@ export function waitForElement(
 	selector: string,
 	options?: { timeout?: number | undefined; root?: ParentNode | undefined }
 ): Promise<HTMLElement | null> {
-	const root = options?.root ?? document;
+	const root = options?.root ?? activeDocument;
 	const timeout = options?.timeout ?? 5000;
 
 	const immediate = root.querySelector<HTMLElement>(selector);

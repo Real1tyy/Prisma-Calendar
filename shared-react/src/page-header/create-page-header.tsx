@@ -71,7 +71,7 @@ export function createPageHeader(config: PageHeaderConfig): PageHeaderHandle {
 		const container = discoverActionsContainer(view);
 		if (!container) return;
 
-		const host = document.createElement("div");
+		const host = activeDocument.createElement("div");
 		host.className = `${cssPrefix}${HOST_CLS_SUFFIX}`;
 		container.insertBefore(host, container.firstChild);
 

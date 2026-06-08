@@ -100,7 +100,7 @@ export function useSettingsFields<S extends object, const K extends readonly (ke
 
 	const source = useMemo(
 		() => fieldsFilteredSnapshot<S, K[number]>(store, keys),
-		// eslint-disable-next-line react-hooks/exhaustive-deps
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- keysKey is a stable string derived from keys; using keys directly would invalidate on every render
 		[store, keysKey]
 	);
 	const projection = useExternalSnapshot(source);
@@ -113,7 +113,7 @@ export function useSettingsFields<S extends object, const K extends readonly (ke
 				for (const key of keys) prev[key] = s[key];
 				return { ...s, ...patch(prev) };
 			}),
-		// eslint-disable-next-line react-hooks/exhaustive-deps
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- keysKey is a stable string derived from keys; using keys directly would invalidate on every render
 		[store, keysKey]
 	);
 

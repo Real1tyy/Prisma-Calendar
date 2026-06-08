@@ -334,7 +334,7 @@ export const GridLayout = memo(function GridLayout(props: GridLayoutProps) {
 		return () => {
 			cleanup?.();
 		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- onReady is a one-shot initialization callback; re-running on every render would call it multiple times
 	}, [handle]);
 
 	const commandsPlugin = commands?.plugin;

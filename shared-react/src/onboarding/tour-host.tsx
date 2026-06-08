@@ -75,7 +75,7 @@ function TourRunner({ steps, onClose }: TourRunnerProps): ReactElement | null {
 export function startTour(options: TourOptions): TourHandle {
 	const { app, cssPrefix, testIdPrefix, steps, onClose } = options;
 
-	const container = document.body.appendChild(document.createElement("div"));
+	const container = activeDocument.body.appendChild(activeDocument.createElement("div"));
 	container.className = `${cssPrefix ?? ""}tour-portal`;
 	const root = createRoot(container);
 

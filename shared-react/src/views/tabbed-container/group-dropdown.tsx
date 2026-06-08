@@ -77,6 +77,6 @@ export const GroupDropdown = memo(function GroupDropdown({
 				);
 			})}
 		</div>,
-		document.body
+		activeDocument.body
 	);
 });

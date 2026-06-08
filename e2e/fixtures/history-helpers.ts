@@ -119,7 +119,7 @@ export async function createEventViaToolbar(
 	await fillEventModal(page, input);
 	await saveEventModal(page);
 	const [newPath] = await waitForNewEventFiles(vaultDir, baseline);
-	return newPath!;
+	return newPath;
 }
 
 export async function enterBatchMode(page: Page): Promise<void> {

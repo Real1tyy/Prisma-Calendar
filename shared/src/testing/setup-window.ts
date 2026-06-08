@@ -9,3 +9,11 @@
 if (typeof (globalThis as { window?: unknown }).window === "undefined") {
 	(globalThis as { window: typeof globalThis }).window = globalThis;
 }
+// Obsidian provides `activeDocument` pointing to the focused window's document.
+// In tests, alias it to the jsdom document so hooks using `activeDocument` resolve.
+if (
+	typeof document !== "undefined" &&
+	typeof (globalThis as { activeDocument?: unknown }).activeDocument === "undefined"
+) {
+	(globalThis as unknown as { activeDocument: Document }).activeDocument = document;
+}

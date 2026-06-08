@@ -1,4 +1,11 @@
-import { useForm, type DefaultValues, type FieldValues, type UseFormProps, type UseFormReturn } from "react-hook-form";
+import {
+	useForm,
+	type DefaultValues,
+	type FieldValues,
+	type Resolver,
+	type UseFormProps,
+	type UseFormReturn,
+} from "react-hook-form";
 import type { z, ZodType } from "zod";
 
 import { zodV4Resolver } from "./zod-resolver";
@@ -19,7 +26,6 @@ export function useZodForm<TSchema extends ZodType<FieldValues>>(
 	return useForm<z.infer<TSchema>>({
 		...rest,
 		defaultValues: resolvedDefaults,
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		resolver: zodV4Resolver(schema) as any,
+		resolver: zodV4Resolver(schema) as Resolver<z.infer<TSchema>>,
 	});
 }

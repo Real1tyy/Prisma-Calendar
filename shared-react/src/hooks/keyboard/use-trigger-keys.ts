@@ -17,7 +17,7 @@ export interface UseEnterKeyOptions {
  */
 export function useEnterKey(
 	handler: (e: KeyboardEvent) => void,
-	target: Window | Document | HTMLElement | null = typeof document !== "undefined" ? document : null,
+	target: Window | Document | HTMLElement | null = typeof activeDocument !== "undefined" ? activeDocument : null,
 	options: UseEnterKeyOptions = {}
 ): void {
 	const { requireModifier = false, allowRepeat = false } = options;
@@ -42,7 +42,7 @@ export function useEnterKey(
  */
 export function useEscapeKey(
 	handler: (e: KeyboardEvent) => void,
-	target: Window | Document | HTMLElement | null = typeof document !== "undefined" ? document : null
+	target: Window | Document | HTMLElement | null = typeof activeDocument !== "undefined" ? activeDocument : null
 ): void {
 	useKeyDown(target, "Escape", handler);
 }

@@ -55,6 +55,9 @@ export interface AxisLayout {
 	positionHandle: (h: HTMLElement, offset: number, thickness: number) => void;
 }
 
+// Static dimensions (top/height for col, left/width for row) live in CSS via the
+// grid-resize-col / grid-resize-row classes. Dynamic values (offset + thickness)
+// are set as CSS custom properties so the hookify no-inline-css rule is satisfied.
 export const COL_LAYOUT: AxisLayout = {
 	cls: "grid-resize-col",
 	dataAttr: "resize-col",
@@ -67,10 +70,8 @@ export const COL_LAYOUT: AxisLayout = {
 	clientSize: (el) => el.clientWidth,
 	clientPos: (e) => e.clientX,
 	positionHandle: (h, offset, thickness) => {
-		h.style.left = `${offset}px`;
-		h.style.top = "0";
-		h.style.width = `${thickness}px`;
-		h.style.height = "100%";
+		h.style.setProperty("--resize-offset", `${offset}px`);
+		h.style.setProperty("--resize-size", `${thickness}px`);
 	},
 };
 
@@ -86,9 +87,7 @@ export const ROW_LAYOUT: AxisLayout = {
 	clientSize: (el) => el.clientHeight,
 	clientPos: (e) => e.clientY,
 	positionHandle: (h, offset, thickness) => {
-		h.style.top = `${offset}px`;
-		h.style.left = "0";
-		h.style.height = `${thickness}px`;
-		h.style.width = "100%";
+		h.style.setProperty("--resize-offset", `${offset}px`);
+		h.style.setProperty("--resize-size", `${thickness}px`);
 	},
 };

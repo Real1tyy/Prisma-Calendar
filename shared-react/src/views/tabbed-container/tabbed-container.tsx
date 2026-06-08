@@ -67,7 +67,7 @@ export const TabbedContainer = memo(function TabbedContainer({
 	const tabBarRef = useRef<HTMLDivElement>(null);
 	const isActiveRef = useRef(false);
 
-	useDomEvent(typeof document !== "undefined" ? document : null, "pointerdown", (e) => {
+	useDomEvent(typeof activeDocument !== "undefined" ? activeDocument : null, "pointerdown", (e) => {
 		const target = e.target as Node;
 		isActiveRef.current = !!(
 			(containerRef.current && containerRef.current.contains(target)) ||
@@ -75,7 +75,7 @@ export const TabbedContainer = memo(function TabbedContainer({
 		);
 	});
 
-	useDomEvent(typeof document !== "undefined" ? document : null, "keydown", (e) => {
+	useDomEvent(typeof activeDocument !== "undefined" ? activeDocument : null, "keydown", (e) => {
 		if (!isActiveRef.current) return;
 		const handler = activeTab?.keyHandlers?.[e.key];
 		if (handler) {
@@ -145,7 +145,13 @@ export const TabbedContainer = memo(function TabbedContainer({
 	// pane (where it can wrap freely and every tab stays reachable). Reactive, so
 	// rotating or resizing across the breakpoint moves the bar to the right place.
 	const isNarrow = useMediaQuery(MOBILE_MEDIA_QUERY);
-	const tabBarRendered = useTabBarPortal(tabBar, tabBarContainer ?? null, tabBarInsertBefore ?? null, !isNarrow);
+	const tabBarRendered = useTabBarPortal(
+		tabBar,
+		tabBarContainer ?? null,
+		tabBarInsertBefore ?? null,
+		!isNarrow,
+		cssPrefix
+	);
 
 	const tree = (
 		<div ref={containerRef} className={`${cssPrefix}tabbed-container`}>
@@ -185,7 +191,8 @@ function useTabBarPortal(
 	node: React.ReactNode,
 	host: HTMLElement | null,
 	insertBefore: Element | null,
-	enabled: boolean
+	enabled: boolean,
+	cssPrefix: string
 ): React.ReactNode {
 	// `enabled: false` (mobile) renders the bar inline instead of portaling it —
 	// the null placeholder below also short-circuits the effect, so it no-ops.
@@ -194,10 +201,10 @@ function useTabBarPortal(
 	const placeholderEl = useMemo(() => {
 		if (!activeHost) return null;
 
-		const el = document.createElement("div");
-		el.style.display = "contents";
+		const el = activeDocument.createElement("div");
+		el.className = `${cssPrefix}tab-portal-slot`;
 		return el;
-	}, [activeHost]);
+	}, [activeHost, cssPrefix]);
 
 	useEffect(() => {
 		if (!host || !placeholderEl) return;

@@ -133,6 +133,6 @@ export const ContextMenu = memo(function ContextMenu({
 				);
 			})}
 		</div>,
-		document.body
+		activeDocument.body
 	);
 });

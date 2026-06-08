@@ -42,7 +42,7 @@ export function useHandleKeyDown(chord: KeyChord, handler: () => void): void {
 			event.stopPropagation();
 			handlerRef.current();
 		};
-		document.addEventListener("keydown", onKeyDown, true);
-		return () => document.removeEventListener("keydown", onKeyDown, true);
+		activeDocument.addEventListener("keydown", onKeyDown, true);
+		return () => activeDocument.removeEventListener("keydown", onKeyDown, true);
 	}, [key, shift, mod, alt]);
 }

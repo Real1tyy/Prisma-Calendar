@@ -212,6 +212,7 @@ export async function measureStatsChartReach(page: Page): Promise<StatsChartReac
 		const views = Array.from(leaf?.querySelectorAll(".prisma-interval-stats-view") ?? []);
 		let container: HTMLElement | null = null;
 		for (const v of views) {
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- querySelector returns Element | null; HTMLElement narrowing is required to call getBoundingClientRect
 			const c = v.querySelector(".prisma-stats-chart-container") as HTMLElement | null;
 			if (c && c.getBoundingClientRect().height > 0) {
 				container = c;

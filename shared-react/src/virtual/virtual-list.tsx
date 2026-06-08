@@ -27,7 +27,7 @@ function VirtualListInner<T>(
 	// by TanStack — React Compiler flags this as incompatible because auto-
 	// memoizing them would stale the UI. There is no library-side alternative;
 	// the component renders correctly without compiler memoization.
-	// eslint-disable-next-line react-hooks/incompatible-library
+	// eslint-disable-next-line react-hooks/incompatible-library -- useVirtualizer returns a stateful object whose methods are intentionally not memoized by TanStack; there is no library-side alternative
 	const virtualizer = useVirtualizer({
 		count: items.length,
 		getScrollElement: () => scrollRef.current,

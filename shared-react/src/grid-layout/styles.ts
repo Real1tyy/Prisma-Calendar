@@ -378,6 +378,18 @@ export function buildGridStyles(p: string): string {
    cell) have room, and the grid grows past the pane so the tab content scrolls.
    This overrides the var-driven template above via later source order — no
    !important needed, since the template is set in the stylesheet, not inline. */
+.${p}grid-resize-col {
+	top: 0;
+	height: 100%;
+	left: var(--resize-offset, 0px);
+	width: var(--resize-size, 0px);
+}
+.${p}grid-resize-row {
+	left: 0;
+	width: 100%;
+	top: var(--resize-offset, 0px);
+	height: var(--resize-size, 0px);
+}
 @media (max-width: 768px) {
 	.${p}grid {
 		grid-template-columns: 1fr;

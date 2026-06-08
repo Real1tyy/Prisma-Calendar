@@ -43,7 +43,7 @@ export function useFocusOnMount<T extends HTMLElement>(
 		let rafId: number | null = null;
 		let timer: number | null = null;
 
-		const doc = ref.current?.ownerDocument ?? document;
+		const doc = ref.current?.ownerDocument ?? activeDocument;
 		const win = doc.defaultView ?? window;
 
 		const stopForUserInteraction = () => {

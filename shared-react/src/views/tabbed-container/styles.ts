@@ -3,6 +3,9 @@ import { buildManagerToolbarStyles } from "../../widgets/manager-list/manager-to
 
 export function buildTabbedContainerStyles(p: string): string {
 	return `
+.${p}tab-portal-slot {
+	display: contents;
+}
 .${p}tabbed-container {
 	display: flex;
 	flex-direction: column;

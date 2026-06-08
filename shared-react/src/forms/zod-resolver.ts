@@ -22,15 +22,14 @@ function toNestedErrors(flatErrors: Record<string, FieldError>): FieldErrors {
 	const result: FieldErrors = {};
 	for (const [path, error] of Object.entries(flatErrors)) {
 		const parts = path.split(".");
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		let current: any = result;
+		let current = result as Record<string, unknown>;
 		for (let i = 0; i < parts.length - 1; i++) {
 			if (!current[parts[i]] || typeof current[parts[i]] !== "object") {
 				current[parts[i]] = {};
 			}
-			current = current[parts[i]];
+			current = current[parts[i]] as Record<string, unknown>;
 		}
-		current[parts[parts.length - 1]] = error;
+		(current as Record<string, FieldError>)[parts[parts.length - 1]] = error;
 	}
 	return result;
 }

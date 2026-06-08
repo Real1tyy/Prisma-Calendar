@@ -1,4 +1,4 @@
-import { Calendar, type CustomButtonInput } from "@fullcalendar/core";
+import { Calendar, type CalendarOptions, type CustomButtonInput } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -282,8 +282,7 @@ class PrismaBasesView extends BasesView {
 		const viewType = this.resolveView();
 		this.currentViewType = viewType;
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- FullCalendar's exactOptionalPropertyTypes requires building options dynamically
-		const calendarOptions: Record<string, any> = {
+		const calendarOptions: CalendarOptions = {
 			...coreOptions,
 			plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
 			initialView: viewType,

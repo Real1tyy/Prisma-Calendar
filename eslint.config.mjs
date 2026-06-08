@@ -101,7 +101,7 @@ export default defineConfig([
 			"obsidianmd/detach-leaves": "error",
 			"obsidianmd/editor-drop-paste": "error",
 			"obsidianmd/vault/iterate": "error",
-			"obsidianmd/no-static-styles-assignment": "off",
+			"obsidianmd/no-static-styles-assignment": "warn",
 			"obsidianmd/ui/sentence-case": "off",
 			"obsidianmd/commands/no-plugin-id-in-command-id": "off",
 			"obsidianmd/commands/no-plugin-name-in-command-name": "off",
@@ -171,6 +171,7 @@ export default defineConfig([
 		],
 		rules: {
 			"obsidianmd/no-global-this": "off",
+			"obsidianmd/platform": "off",
 		},
 	},
 
@@ -180,6 +181,9 @@ export default defineConfig([
 		rules: {
 			"react-hooks/rules-of-hooks": "off",
 			"obsidianmd/hardcoded-config-path": "off",
+			// E2E tests run in the Playwright Node host, not the Obsidian renderer —
+			// `activeDocument` and other Obsidian globals are unavailable there.
+			"obsidianmd/platform": "off",
 		},
 	},
 	{

@@ -132,7 +132,7 @@ export async function patchDefaultCalendar(
 				const calendars = (current["calendars"] as Array<Record<string, unknown>> | undefined) ?? [];
 				if (!calendars[i]) throw new Error(`no calendar at index ${i}`);
 				const next = [...calendars];
-				next[i] = { ...next[i]!, ...p };
+				next[i] = { ...next[i], ...p };
 				return { ...current, calendars: next };
 			});
 			if (typeof plugin.ensureCalendarBundlesReady === "function") {

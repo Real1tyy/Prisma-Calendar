@@ -324,7 +324,7 @@ export const test = base.extend<{
 	obsidian: BootstrappedObsidian;
 	calendar: CalendarHandle;
 }>({
-	// eslint-disable-next-line no-empty-pattern
+	// eslint-disable-next-line no-empty-pattern -- Playwright fixture API requires destructuring even when no fixtures are needed
 	obsidian: async ({}, use) => {
 		await runWithObsidianHandle({ prefix: "spec" }, use);
 	},
@@ -351,7 +351,7 @@ export const testWithSeededFiles = base.extend<{
 	obsidian: BootstrappedObsidian;
 	calendar: CalendarHandle;
 }>({
-	// eslint-disable-next-line no-empty-pattern
+	// eslint-disable-next-line no-empty-pattern -- Playwright fixture API requires destructuring even when no fixtures are needed
 	obsidian: async ({}, use) => {
 		await runWithObsidianHandle({ prefix: "seed-spec", expectedErrorPatterns: FILE_SEED_EXPECTED_ERRORS }, use);
 	},
@@ -374,7 +374,7 @@ export const testResilience = base.extend<{
 	obsidian: BootstrappedObsidian;
 	calendar: CalendarHandle;
 }>({
-	// eslint-disable-next-line no-empty-pattern
+	// eslint-disable-next-line no-empty-pattern -- Playwright fixture API requires destructuring even when no fixtures are needed
 	obsidian: async ({}, use) => {
 		await runWithObsidianHandle({ prefix: "resilience-spec", expectedErrorPatterns: RESILIENCE_EXPECTED_ERRORS }, use);
 	},
@@ -402,7 +402,7 @@ export const testIntegrations = base.extend<{
 	obsidian: BootstrappedObsidian;
 	calendar: CalendarHandle;
 }>({
-	// eslint-disable-next-line no-empty-pattern
+	// eslint-disable-next-line no-empty-pattern -- Playwright fixture API requires destructuring even when no fixtures are needed
 	obsidian: async ({}, use) => {
 		await runWithObsidianHandle(
 			{ prefix: "integration-spec", expectedErrorPatterns: ICS_SUBSCRIPTION_EXPECTED_ERRORS },
@@ -462,7 +462,7 @@ export const testWithNotifications = base.extend<{
 	obsidian: BootstrappedObsidian;
 	calendar: CalendarHandle;
 }>({
-	// eslint-disable-next-line no-empty-pattern
+	// eslint-disable-next-line no-empty-pattern -- Playwright fixture API requires destructuring even when no fixtures are needed
 	obsidian: async ({}, use) => {
 		await runWithObsidianHandle({ prefix: "notif-spec", overrides: NOTIFICATIONS_ON_OVERRIDES }, use);
 	},
@@ -482,7 +482,7 @@ export const testOnboarding = base.extend<{
 	obsidian: BootstrappedObsidian;
 	calendar: CalendarHandle;
 }>({
-	// eslint-disable-next-line no-empty-pattern
+	// eslint-disable-next-line no-empty-pattern -- Playwright fixture API requires destructuring even when no fixtures are needed
 	obsidian: async ({}, use) => {
 		await runWithObsidianHandle({ prefix: "onboarding-spec", overrides: ONBOARDING_INCOMPLETE_OVERRIDES }, use);
 	},
@@ -499,7 +499,7 @@ export const testWithSeededICSSubscription = base.extend<{
 	obsidian: BootstrappedObsidian;
 	calendar: CalendarHandle;
 }>({
-	// eslint-disable-next-line no-empty-pattern
+	// eslint-disable-next-line no-empty-pattern -- Playwright fixture API requires destructuring even when no fixtures are needed
 	obsidian: async ({}, use) => {
 		await runWithObsidianHandle({ prefix: "ics-sub-spec", overrides: SEEDED_ICS_SUBSCRIPTION_OVERRIDES }, use);
 	},
@@ -539,7 +539,7 @@ export const testMultiCalendar = base.extend<{
 	obsidian: BootstrappedObsidian;
 	calendar: CalendarHandle;
 }>({
-	// eslint-disable-next-line no-empty-pattern
+	// eslint-disable-next-line no-empty-pattern -- Playwright fixture API requires destructuring even when no fixtures are needed
 	obsidian: async ({}, use) => {
 		await runWithObsidianHandle({ prefix: "multi-cal-spec", overrides: MULTI_CALENDAR_OVERRIDES }, use);
 	},

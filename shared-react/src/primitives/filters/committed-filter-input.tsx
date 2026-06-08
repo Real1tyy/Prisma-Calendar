@@ -67,7 +67,7 @@ export function CommittedFilterInput({
 		handleRef,
 		() => ({
 			focus: () => inputRef.current?.focus(),
-			isFocused: () => inputRef.current !== null && inputRef.current === document.activeElement,
+			isFocused: () => inputRef.current !== null && inputRef.current === activeDocument.activeElement,
 			setValue: (next: string) => {
 				setValue(next);
 				if (next === committedRef.current) return;

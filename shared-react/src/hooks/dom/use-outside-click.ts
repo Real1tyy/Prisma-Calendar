@@ -50,7 +50,7 @@ export function useOutsideClick(
 			}
 			onOutsideRef.current(e);
 		};
-		document.addEventListener(event, handler);
-		return () => document.removeEventListener(event, handler);
+		activeDocument.addEventListener(event, handler);
+		return () => activeDocument.removeEventListener(event, handler);
 	}, [enabled, event]);
 }

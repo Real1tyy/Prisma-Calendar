@@ -180,6 +180,7 @@ export default defineConfig([
 		],
 		rules: {
 			"obsidianmd/no-global-this": "off",
+			"obsidianmd/platform": "off",
 		},
 	},
 
@@ -189,6 +190,7 @@ export default defineConfig([
 		rules: {
 			"react-hooks/rules-of-hooks": "off",
 			"obsidianmd/hardcoded-config-path": "off",
+			"obsidianmd/platform": "off",
 		},
 	},
 	{
