@@ -57,7 +57,7 @@ export async function setSchemaNumberInput(page: Page, key: string, value: numbe
 	if (inputType === "range") {
 		await input.evaluate((el, v) => {
 			const inp = el as HTMLInputElement;
-			// eslint-disable-next-line @typescript-eslint/unbound-method -- prototype setter is intentionally extracted for explicit .call() binding on inp
+			// prototype setter is intentionally extracted for explicit .call() binding on inp
 			const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
 			setter?.call(inp, String(v));
 			inp.dispatchEvent(new Event("input", { bubbles: true }));

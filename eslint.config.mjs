@@ -158,6 +158,8 @@ export default defineConfig([
 			"@typescript-eslint/no-unnecessary-condition": "off",
 			"obsidianmd/hardcoded-config-path": "off",
 			"obsidianmd/no-tfile-tfolder-cast": "off",
+			// Tests poke `.style` directly to assert DOM cleanup (e.g. unmount clears inline styles).
+			"obsidianmd/no-static-styles-assignment": "off",
 		},
 	},
 

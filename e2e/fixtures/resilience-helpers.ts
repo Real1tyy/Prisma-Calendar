@@ -8,7 +8,7 @@ import { seedEvent, type SeedEventInput } from "./seed-events";
 import type { PrismaPlugin, PrismaWindow } from "./window-types";
 
 export function dataJsonPath(vaultDir: string): string {
-	// eslint-disable-next-line obsidianmd/hardcoded-config-path -- test fixture intentionally seeds the Obsidian config directory by path
+	// test fixture intentionally seeds the Obsidian config directory by path
 	return join(vaultDir, ".obsidian", "plugins", PLUGIN_ID, "data.json");
 }
 
@@ -262,9 +262,9 @@ export async function resolveByZettelId(page: Page, zettelId: string): Promise<s
 		const w = window as unknown as PrismaWindow;
 		const winners: string[] = [];
 		for (const f of w.app.vault.getFiles()) {
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- frontmatter is untyped in Obsidian API
+			// frontmatter is untyped in Obsidian API
 			const fm = w.app.metadataCache.getFileCache(f)?.frontmatter;
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- frontmatter fields are dynamically keyed
+			// frontmatter fields are dynamically keyed
 			if (fm && String(fm["ZettelID"]) === id) winners.push(f.path);
 		}
 		return winners;
