@@ -39,13 +39,28 @@ Every planning system is fully isolated. You can use separate directories or poi
 
 ## Managing planning systems
 
-All management happens in Settings at the top of the page — create, clone, rename, configure, or delete planning systems from the action buttons.
+All management happens in Settings at the top of the page — **Create**, **Delete**, **Clone**, **Rename**, **Configure**, or **Reindex** the active planning system from the action buttons under the **Active planning system** selector.
 
 - **Settings remember your last-used system** — opening settings pre-selects the planning system you last interacted with.
 - **Creating or deleting** a planning system is instant and never disrupts other open systems — no re-indexing, no settings closing.
 - **Renaming** immediately updates the ribbon icon tooltip and command palette entries.
-- **Configure current** opens a focused modal that scans your vault for date-like properties and lets you set the directory and property names with auto-detection.
+- **Configure** opens a focused modal that scans your vault for date-like properties and lets you set the directory and property names with auto-detection.
 - **Collapsible management section** — click the chevron toggle next to the version badge to collapse the planning system selector and action buttons, freeing up vertical space for the settings tabs below.
+
+### Indexing summary and reindex
+
+A one-line summary under the **Active planning system** selector shows how the notes in the selected folder resolved against your property mapping:
+
+> 9 timed · 14 all-day · 3 untracked · 3 couldn't be read
+
+This answers "is my folder wired up?" at a glance. The counts mean:
+
+- **timed** — notes with a valid start (and optional end) time.
+- **all-day** — notes with a valid date and the all-day flag.
+- **untracked** — notes in the folder with no date-like property (reference notes, etc.).
+- **couldn't be read** — notes that look like they wanted to be events but didn't parse: a date value in an unrecognised format, a date-like property you haven't mapped, or a property name with a trailing space.
+
+The **Reindex** button forces a full re-read of the folder — handy if events ever look out of sync. (Property and filter changes already re-read your notes immediately, with no restart needed.) The first time a folder is indexed, a one-time notice summarises the same counts.
 
 ## Example Configurations
 

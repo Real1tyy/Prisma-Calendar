@@ -1,43 +1,21 @@
-import { useObservable } from "@real1ty-obsidian-plugins-react";
-import { Notice } from "obsidian";
-import { memo, useCallback } from "react";
+import { memo } from "react";
 
 import { cls, tid } from "../../constants";
-import type { CalendarBundle } from "../../core/calendar-bundle";
-import { formatIndexingTally } from "../../core/indexing-stats";
+import { formatIndexingTally, type IndexingTally } from "../../core/indexing-stats";
 
 interface IndexingStatsInfoProps {
-	bundle: CalendarBundle;
+	tally: IndexingTally;
 }
 
 /**
- * Live "is my folder wired up?" panel for the Properties tab. Shows the
- * per-planning-system tally and a one-click reindex for when a property remap
- * needs the already-indexed notes re-read.
+ * Compact "is the active planning system wired up?" line shown under the
+ * planning-system selector. Presentational — the parent computes the tally
+ * on demand (no background re-classification), so this just renders it.
  */
-export const IndexingStatsInfo = memo(function IndexingStatsInfo({ bundle }: IndexingStatsInfoProps) {
-	const stats = useObservable(bundle.indexingStats$, null);
-
-	const handleReindex = useCallback(() => {
-		bundle.refreshCalendar();
-		new Notice("Prisma Calendar — reindexing…");
-	}, [bundle]);
-
+export const IndexingStatsInfo = memo(function IndexingStatsInfo({ tally }: IndexingStatsInfoProps) {
 	return (
-		<div className={cls("settings-info-box")}>
-			<h4>Indexing</h4>
-			<p data-testid={tid("indexing-stats")}>{stats ? `Indexed: ${formatIndexingTally(stats)}` : "Indexing…"}</p>
-			<p className="setting-item-description">
-				How the notes in this planning system's folder resolved. If events are missing, try reindexing to re-read them.
-			</p>
-			<button
-				type="button"
-				className={cls("calendar-action-button")}
-				data-testid={tid("reindex-calendar")}
-				onClick={handleReindex}
-			>
-				Reindex
-			</button>
+		<div className={cls("indexing-stats")} data-testid={tid("indexing-stats")}>
+			{formatIndexingTally(tally)}
 		</div>
 	);
 });

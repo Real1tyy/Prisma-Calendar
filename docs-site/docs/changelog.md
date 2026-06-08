@@ -9,7 +9,7 @@ All notable changes to this project will be documented here.
 > **TLDR:** The **Properties** tab now shows an indexing summary — how many notes became events and how many couldn't be read — with a **Reindex** button to force a fresh re-read. And changing any property mapping or filter now takes effect immediately instead of doing nothing until you restart Obsidian.
 
 ### Added
-- **Indexing summary and one-click reindex**: The **Properties** tab now shows how your folder's notes resolved — *9 timed · 14 all-day · 3 untracked · 3 couldn't be read* — so you can tell at a glance whether the calendar is wired up, with a **Reindex** button to force a fresh re-read. A one-time notice summarises the same counts the first time a folder is indexed. See [Indexing summary and reindex](./configuration/properties.md#indexing-summary-and-reindex).
+- **Indexing summary and one-click reindex**: settings now shows how your folder's notes resolved right under the **Active planning system** selector — *9 timed · 14 all-day · 3 untracked · 3 couldn't be read* — so you can tell at a glance whether the calendar is wired up, with a **Reindex** button (alongside the now concisely-named Create / Delete / Clone / Rename / Configure) to force a fresh re-read. A one-time notice summarises the same counts the first time a folder is indexed. See [Indexing summary and reindex](./features/calendar/multiple-calendars.md#indexing-summary-and-reindex).
 
 ### Fixed
 - **Reactive to property and filter changes**: renaming or remapping any property (dates, title, category, status, recurrence, notifications…) or editing a filter now makes Prisma re-read your existing notes on the spot — it just works immediately, instead of doing nothing until you restart Obsidian.

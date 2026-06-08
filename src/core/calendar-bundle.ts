@@ -7,15 +7,7 @@ import {
 	type HistoryStack,
 } from "@real1ty-obsidian-plugins";
 import { Notice, TFile, type App } from "obsidian";
-import {
-	BehaviorSubject,
-	debounceTime,
-	distinctUntilChanged,
-	filter,
-	firstValueFrom,
-	type Observable,
-	type Subscription,
-} from "rxjs";
+import { distinctUntilChanged, filter, firstValueFrom, type Subscription } from "rxjs";
 
 import { getCalendarViewType, tid } from "../constants";
 import type CustomCalendarPlugin from "../main";
@@ -56,8 +48,6 @@ import type { RecurringEventManager } from "./recurring-event-manager";
 import { CalendarSettingsStore } from "./settings-store";
 import { VirtualEventStore } from "./virtual-event-store";
 
-const STATS_RECOMPUTE_DEBOUNCE_MS = 150;
-
 export interface CalendarBundleInfo {
 	calendarId: string;
 	name: string;
@@ -88,9 +78,6 @@ export class CalendarBundle {
 	public readonly holidayStore: HolidayStore;
 	public readonly virtualEventStore: VirtualEventStore;
 	public readonly viewType: string;
-	private readonly indexingStatsSubject = new BehaviorSubject<IndexingTally | null>(null);
-	/** Live per-planning-system tally (timed/all-day/untracked/dropped). `null` until the first index settles. */
-	public readonly indexingStats$: Observable<IndexingTally | null> = this.indexingStatsSubject.asObservable();
 	private readonly firstIndexNoticeStore = new FirstIndexNoticeStore();
 	private app: App;
 	private directory: string;
@@ -180,30 +167,24 @@ export class CalendarBundle {
 				if (holidaySettingsChanged) {
 					this.eventStore.refreshVirtualEvents();
 				}
-
-				// A property remap changes how the already-indexed rows classify, so
-				// refresh the settings tally even though the row set is unchanged.
-				this.recomputeIndexingStats();
 			}),
 			this.fileRepository.indexingComplete$.pipe(filter(Boolean)).subscribe(() => {
 				if (this.destroyed) return;
-				const tally = this.recomputeIndexingStats();
+				const tally = this.getIndexingTally();
 				console.info(formatIndexingSummary(this.settingsStore.currentSettings.name, tally));
 				this.maybeShowFirstIndexNotice(tally);
-			}),
-			// Incremental file additions/edits after the initial scan don't re-fire
-			// indexingComplete$, so keep the tally live off the repository's change stream.
-			this.fileRepository.events$.pipe(debounceTime(STATS_RECOMPUTE_DEBOUNCE_MS)).subscribe(() => {
-				if (this.destroyed) return;
-				this.recomputeIndexingStats();
 			})
 		);
 	}
 
-	private recomputeIndexingStats(): IndexingTally {
-		const tally = tallyIndexedRows(this.fileRepository.getAllRows(), this.settingsStore.currentSettings);
-		this.indexingStatsSubject.next(tally);
-		return tally;
+	/**
+	 * On-demand tally of how the indexed rows resolve against the current property
+	 * mapping (timed/all-day/untracked/dropped). Computed lazily — the settings
+	 * header reads it when shown — so we don't re-run the per-row classifier in the
+	 * background on every file change.
+	 */
+	getIndexingTally(): IndexingTally {
+		return tallyIndexedRows(this.fileRepository.getAllRows(), this.settingsStore.currentSettings);
 	}
 
 	private maybeShowFirstIndexNotice(tally: IndexingTally): void {
@@ -321,7 +302,6 @@ export class CalendarBundle {
 		// Detaching in onunload causes leaves to reset to their original positions
 		// See: https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines#Don't+detach+leaves+in+%60onunload%60
 		for (const sub of this.subscriptions) sub.unsubscribe();
-		this.indexingStatsSubject.complete();
 
 		if (this.ribbonIconEl) {
 			this.ribbonIconEl.remove();

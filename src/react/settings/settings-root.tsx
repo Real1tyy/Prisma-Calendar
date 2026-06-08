@@ -9,6 +9,7 @@ import {
 	useSchemaField,
 	useScrollRestore,
 } from "@real1ty-obsidian-plugins-react";
+import { Notice } from "obsidian";
 import { memo, useCallback, useMemo, useState } from "react";
 
 import { cls, CSS_PREFIX, tid } from "../../constants";
@@ -21,6 +22,7 @@ import {
 	generateUniqueCalendarId,
 } from "../../utils/calendar/settings";
 import { openConfigureCalendarModal } from "../modals/calendar/configure-calendar-modal";
+import { IndexingStatsInfo } from "./indexing-stats-info";
 import { SingleCalendarSettingsReact } from "./single-calendar-settings-react";
 
 const GITHUB_REPO_URL = "https://github.com/Real1tyy/Prisma-Calendar";
@@ -137,6 +139,19 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 		}
 	}, [app, selectedCalendar, updateSelectedCalendar]);
 
+	// Computed per render (cheap map lookup + an on-demand tally) rather than via a
+	// background subscription, so there is no per-row classification cost when
+	// settings are closed. settings-root re-renders whenever `calendars` changes, so
+	// the tally stays fresh after a property remap without an explicit dependency.
+	const selectedBundle = plugin.getBundleById(selectedCalendarId) ?? null;
+	const indexingTally = selectedBundle?.getIndexingTally() ?? null;
+
+	const handleReindex = useCallback(() => {
+		if (!selectedBundle) return;
+		selectedBundle.refreshCalendar();
+		new Notice("Prisma Calendar — reindexing…");
+	}, [selectedBundle]);
+
 	const scrollRef = useScrollRestore(plugin.settingsSessionState.scrollTop, ".vertical-tab-content");
 
 	return (
@@ -177,6 +192,8 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 							<Dropdown value={selectedCalendarId} options={calendarOptions} onChange={setSelectedCalendarId} />
 						</SettingItem>
 
+						{indexingTally && <IndexingStatsInfo tally={indexingTally} />}
+
 						<div className={cls("calendar-actions")}>
 							<button
 								type="button"
@@ -186,33 +203,7 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 								title={maxTitle}
 								onClick={() => void handleCreate()}
 							>
-								Create new
-							</button>
-							<button
-								type="button"
-								className={cls("calendar-action-button", "calendar-clone-button")}
-								data-testid={tid("settings-calendar-clone")}
-								disabled={isAtMax}
-								title={maxTitle}
-								onClick={() => void handleClone()}
-							>
-								Clone current
-							</button>
-							<button
-								type="button"
-								className={cls("calendar-action-button", "calendar-configure-button")}
-								data-testid={tid("settings-calendar-configure")}
-								onClick={() => void handleConfigure()}
-							>
-								Configure current
-							</button>
-							<button
-								type="button"
-								className={cls("calendar-action-button", "calendar-rename-button")}
-								data-testid={tid("settings-calendar-rename")}
-								onClick={() => void handleRename()}
-							>
-								Rename current
+								Create
 							</button>
 							<button
 								type="button"
@@ -222,7 +213,43 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 								title={calendars.length <= 1 ? "At least one planning system is required" : undefined}
 								onClick={() => void handleDelete()}
 							>
-								Delete current
+								Delete
+							</button>
+							<button
+								type="button"
+								className={cls("calendar-action-button", "calendar-clone-button")}
+								data-testid={tid("settings-calendar-clone")}
+								disabled={isAtMax}
+								title={maxTitle}
+								onClick={() => void handleClone()}
+							>
+								Clone
+							</button>
+							<button
+								type="button"
+								className={cls("calendar-action-button", "calendar-rename-button")}
+								data-testid={tid("settings-calendar-rename")}
+								onClick={() => void handleRename()}
+							>
+								Rename
+							</button>
+							<button
+								type="button"
+								className={cls("calendar-action-button", "calendar-configure-button")}
+								data-testid={tid("settings-calendar-configure")}
+								onClick={() => void handleConfigure()}
+							>
+								Configure
+							</button>
+							<button
+								type="button"
+								className={cls("calendar-action-button", "calendar-reindex-button")}
+								data-testid={tid("settings-calendar-reindex")}
+								disabled={!selectedBundle}
+								title="Re-read every note in this planning system's folder"
+								onClick={handleReindex}
+							>
+								Reindex
 							</button>
 						</div>
 

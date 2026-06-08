@@ -132,7 +132,7 @@ const TabContent = memo(function TabContent({ tabId, settingsStore, plugin, main
 		case "general":
 			return <GeneralSettingsReact settingsStore={settingsStore} plugin={plugin} />;
 		case "properties":
-			return <PropertiesSettingsReact settingsStore={settingsStore} plugin={plugin} />;
+			return <PropertiesSettingsReact settingsStore={settingsStore} />;
 		case "calendar":
 			return <CalendarSettingsReact settingsStore={settingsStore} />;
 		case "event-groups":

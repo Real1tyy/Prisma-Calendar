@@ -3,7 +3,6 @@ import { memo } from "react";
 
 import { cls } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
-import type CustomCalendarPlugin from "../../main";
 import { SingleCalendarConfigSchema, type SingleCalendarConfig } from "../../types/settings";
 import {
 	DISPLAY_FIELDS,
@@ -15,11 +14,9 @@ import {
 	TIMING_FIELDS,
 } from "../../utils/calendar/settings";
 import { PrismaSection } from "./_section";
-import { IndexingStatsInfo } from "./indexing-stats-info";
 
 interface PropertiesSettingsProps {
 	settingsStore: CalendarSettingsStore;
-	plugin: CustomCalendarPlugin;
 }
 
 const propLabel = (descriptor: { label: string }): string => descriptor.label.replace(/ Prop$/, " property");
@@ -28,10 +25,8 @@ const SHAPE = SingleCalendarConfigSchema.shape;
 
 export const PropertiesSettingsReact = memo(function PropertiesSettingsReact({
 	settingsStore,
-	plugin,
 }: PropertiesSettingsProps) {
 	const [settings] = useSettingsStore(settingsStore);
-	const bundle = plugin.getBundleById(settingsStore.calendarId);
 
 	const propSection = (heading: string, fields: readonly string[]) => (
 		<PrismaSection store={settingsStore} shape={SHAPE} heading={heading} fields={fields} labelTransform={propLabel} />
@@ -39,7 +34,6 @@ export const PropertiesSettingsReact = memo(function PropertiesSettingsReact({
 
 	return (
 		<>
-			{bundle && <IndexingStatsInfo bundle={bundle} />}
 			{propSection("Event timing", TIMING_FIELDS)}
 			<EventTypesInfo settings={settings} />
 			{propSection("Sorting", ["sortingStrategy", "sortDateProp"])}

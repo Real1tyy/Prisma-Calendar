@@ -2616,13 +2616,15 @@ button[class*=prisma-]:focus-visible {
 }
 
 .prisma-calendar-clone-button,
-.prisma-calendar-rename-button {
+.prisma-calendar-rename-button,
+.prisma-calendar-reindex-button {
   border: 1px solid var(--background-modifier-border);
   background-color: var(--background-secondary);
   color: var(--text-normal);
 }
 .prisma-calendar-clone-button:hover:not(:disabled),
-.prisma-calendar-rename-button:hover:not(:disabled) {
+.prisma-calendar-rename-button:hover:not(:disabled),
+.prisma-calendar-reindex-button:hover:not(:disabled) {
   background-color: var(--background-modifier-hover);
   border-color: var(--background-modifier-border-hover);
 }
@@ -2640,6 +2642,12 @@ button[class*=prisma-]:focus-visible {
 .prisma-calendar-count-info {
   margin-top: 8px;
   font-size: 12px;
+  color: var(--text-muted);
+}
+
+.prisma-indexing-stats {
+  margin-top: 8px;
+  font-size: var(--font-ui-small);
   color: var(--text-muted);
 }
 
