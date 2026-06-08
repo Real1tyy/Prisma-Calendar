@@ -9,7 +9,12 @@ import type { SettingsStorelike as BaseSettingsStorelike } from "./use-settings-
  * Looser structural type so schema-driven primitives don't force consumers'
  * invariant settings generics into a single concrete shape. Field values are
  * unknown at this layer; the schema carries the real types.
+ *
+ * The `any` default is load-bearing: `BehaviorSubject` is invariant in `T` and
+ * concrete settings shapes carry no index signature, so `unknown`/`Record`/`object`
+ * defaults break consumer typecheck (e.g. page-header). It cannot be retyped.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- load-bearing default; see above
 export type SettingsStorelike<T = any> = BaseSettingsStorelike<T>;
 
 /**

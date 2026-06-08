@@ -22,7 +22,7 @@ export function useZodForm<TSchema extends ZodType<FieldValues>>(
 	options: UseZodFormOptions<z.infer<TSchema>, TSchema>
 ): UseFormReturn<z.infer<TSchema>> {
 	const { schema, defaultValues, ...rest } = options;
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- schema.parse returns z.infer<TSchema> which widens to any via FieldValues; caller's generic narrows it at usage
+	// schema.parse returns z.infer<TSchema>, which widens to any via FieldValues; the cast narrows it back for the caller's generic
 	const resolvedDefaults = defaultValues ?? (schema.parse({}) as DefaultValues<z.infer<TSchema>>);
 	return useForm<z.infer<TSchema>>({
 		...rest,
