@@ -1,5 +1,5 @@
-import { parseFrontmatterRecord, serializeFrontmatterValue, toLocalISOString } from "@real1ty-obsidian-plugins";
-import { useFocusOnMount, useHandleKeyDown, useSettingsFields, useZodForm } from "@real1ty-obsidian-plugins-react";
+import { parseFrontmatterRecord, serializeFrontmatterValue, toLocalISOString } from "@real1ty/obsidian-plugins";
+import { useFocusOnMount, useHandleKeyDown, useSettingsFields, useZodForm } from "@real1ty/obsidian-plugins-react";
 import { Notice } from "obsidian";
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { useController, useWatch, type UseFormReturn } from "react-hook-form";

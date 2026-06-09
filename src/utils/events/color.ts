@@ -3,7 +3,7 @@ import {
 	parseColorToRgb,
 	type ColorEvaluator,
 	type RgbColor,
-} from "@real1ty-obsidian-plugins";
+} from "@real1ty/obsidian-plugins";
 
 import type { SingleCalendarConfig } from "../../types/settings";
 import { normalizeFrontmatterForColorEvaluation } from "../filters/expressions";

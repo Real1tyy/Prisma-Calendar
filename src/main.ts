@@ -9,8 +9,8 @@ import {
 	SyncStore,
 	waitForCacheReady,
 	type Sequencer,
-} from "@real1ty-obsidian-plugins";
-import { showReactIconPicker, showWhatsNewReactModal } from "@real1ty-obsidian-plugins-react";
+} from "@real1ty/obsidian-plugins";
+import { showReactIconPicker, showWhatsNewReactModal } from "@real1ty/obsidian-plugins-react";
 import { Notice, Plugin, TFile, type View, type WorkspaceLeaf } from "obsidian";
 
 import CHANGELOG_CONTENT from "../../docs-site/docs/changelog.md";

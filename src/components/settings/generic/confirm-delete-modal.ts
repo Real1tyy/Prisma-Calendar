@@ -1,4 +1,4 @@
-import { openConfirmation } from "@real1ty-obsidian-plugins-react";
+import { openConfirmation } from "@real1ty/obsidian-plugins-react";
 import type { App } from "obsidian";
 
 export function showConfirmDeleteModal(app: App, entityName: string, entityType: string, onConfirm: () => void): void {

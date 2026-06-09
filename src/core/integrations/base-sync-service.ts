@@ -1,4 +1,4 @@
-import { sanitizeForFilename } from "@real1ty-obsidian-plugins";
+import { sanitizeForFilename } from "@real1ty/obsidian-plugins";
 import { normalizePath, Notice, TFile, type App } from "obsidian";
 import type { Subscription } from "rxjs";
 

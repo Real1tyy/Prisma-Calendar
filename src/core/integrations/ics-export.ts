@@ -2,7 +2,7 @@ import {
 	extractContentAfterFrontmatter,
 	getFilenameFromPath,
 	serializeFrontmatterValue,
-} from "@real1ty-obsidian-plugins";
+} from "@real1ty/obsidian-plugins";
 import ICAL from "ical.js";
 import { Notice, TFile, type App } from "obsidian";
 

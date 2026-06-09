@@ -5,7 +5,7 @@ import {
 	removeMarkdownExtension,
 	toSafeString,
 	type DateLikeKind,
-} from "@real1ty-obsidian-plugins";
+} from "@real1ty/obsidian-plugins";
 import { v5 as uuidv5 } from "uuid";
 
 import { PRISMA_CALENDAR_NAMESPACE } from "../constants";

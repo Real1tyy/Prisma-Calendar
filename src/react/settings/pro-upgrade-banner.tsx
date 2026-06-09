@@ -1,4 +1,4 @@
-import { buildUtmUrl } from "@real1ty-obsidian-plugins";
+import { buildUtmUrl } from "@real1ty/obsidian-plugins";
 import { memo, useCallback } from "react";
 
 import { cls, docsUrl, tid } from "../../constants";

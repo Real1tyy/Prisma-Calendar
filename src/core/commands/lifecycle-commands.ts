@@ -8,7 +8,7 @@ import {
 	restoreFrontmatter,
 	sanitizeForFilename,
 	type Command,
-} from "@real1ty-obsidian-plugins";
+} from "@real1ty/obsidian-plugins";
 import type { DurationLike } from "luxon";
 import { getFrontMatterInfo, parseYaml, TFile, type App } from "obsidian";
 

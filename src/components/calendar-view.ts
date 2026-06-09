@@ -17,8 +17,8 @@ import {
 	roundToNearestHour,
 	toLocalISOString,
 	type RgbColor,
-} from "@real1ty-obsidian-plugins";
-import { renderReactInline } from "@real1ty-obsidian-plugins-react";
+} from "@real1ty/obsidian-plugins";
+import { renderReactInline } from "@real1ty/obsidian-plugins-react";
 import { Component, Notice, Platform, TFile, type App, type WorkspaceLeaf } from "obsidian";
 import { createElement } from "react";
 import { BehaviorSubject } from "rxjs";

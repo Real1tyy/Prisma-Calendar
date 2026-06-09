@@ -1,4 +1,4 @@
-import { capitalize, parsePositiveInt } from "@real1ty-obsidian-plugins";
+import { capitalize, parsePositiveInt } from "@real1ty/obsidian-plugins";
 import type { DateTime } from "luxon";
 
 import type { Frontmatter } from "../../types/index";

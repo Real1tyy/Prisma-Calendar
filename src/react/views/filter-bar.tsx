@@ -1,4 +1,4 @@
-import { CommittedFilterInput, type CommittedFilterInputHandle } from "@real1ty-obsidian-plugins-react";
+import { CommittedFilterInput, type CommittedFilterInputHandle } from "@real1ty/obsidian-plugins-react";
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 
 import type { CalendarEvent } from "../../types/calendar";

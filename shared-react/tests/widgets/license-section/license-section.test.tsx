@@ -1,4 +1,4 @@
-import { LicenseStatusSchema, type LicenseManager, type LicenseStatus } from "@real1ty-obsidian-plugins";
+import { LicenseStatusSchema, type LicenseManager, type LicenseStatus } from "@real1ty/obsidian-plugins";
 import { screen } from "@testing-library/react";
 import { BehaviorSubject } from "rxjs";
 import { describe, expect, it, vi } from "vitest";

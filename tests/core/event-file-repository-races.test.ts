@@ -21,7 +21,7 @@
  *    drain, `fmLocks.get(path)` is undefined — otherwise the Map grows
  *    unbounded across a long session.
  */
-import { createDeferredVoid } from "@real1ty-obsidian-plugins/testing";
+import { createDeferredVoid } from "@real1ty/obsidian-plugins/testing";
 import type { BehaviorSubject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 

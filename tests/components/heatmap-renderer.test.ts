@@ -6,7 +6,7 @@
  * event count; these tests pin the exact SVG output so layout, label placement,
  * class names, and aria/title metadata regressions surface in the diff.
  */
-import { renderToApprovalString } from "@real1ty-obsidian-plugins/testing";
+import { renderToApprovalString } from "@real1ty/obsidian-plugins/testing";
 import { describe, expect, it } from "vitest";
 
 import { buildHeatmapDataset } from "../../src/components/heatmap/heatmap-data";

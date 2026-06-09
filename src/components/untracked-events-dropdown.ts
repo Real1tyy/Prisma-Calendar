@@ -1,5 +1,5 @@
 import type { Calendar } from "@fullcalendar/core";
-import { renderReactInline } from "@real1ty-obsidian-plugins-react";
+import { renderReactInline } from "@real1ty/obsidian-plugins-react";
 import type { App } from "obsidian";
 import { createElement, createRef } from "react";
 

@@ -1,4 +1,4 @@
-import { type TabDefinition } from "@real1ty-obsidian-plugins-react";
+import { type TabDefinition } from "@real1ty/obsidian-plugins-react";
 import type { App } from "obsidian";
 import type { ReactElement } from "react";
 

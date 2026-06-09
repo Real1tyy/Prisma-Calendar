@@ -1,4 +1,4 @@
-import { parseAsLocalDate } from "@real1ty-obsidian-plugins";
+import { parseAsLocalDate } from "@real1ty/obsidian-plugins";
 import { BehaviorSubject, Subject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 

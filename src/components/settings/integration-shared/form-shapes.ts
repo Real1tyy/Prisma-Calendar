@@ -1,4 +1,4 @@
-import { zSecret } from "@real1ty-obsidian-plugins";
+import { zSecret } from "@real1ty/obsidian-plugins";
 import { z } from "zod";
 
 import { CALDAV_DEFAULTS, ICS_SUBSCRIPTION_DEFAULTS } from "../../../constants";

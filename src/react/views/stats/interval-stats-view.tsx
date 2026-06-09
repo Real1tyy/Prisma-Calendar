@@ -1,4 +1,4 @@
-import { useSettingsStore } from "@real1ty-obsidian-plugins-react";
+import { useSettingsStore } from "@real1ty/obsidian-plugins-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { CalendarBundle } from "../../../core/calendar-bundle";

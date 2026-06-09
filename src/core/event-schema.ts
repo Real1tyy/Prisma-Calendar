@@ -1,4 +1,4 @@
-import { withSerialize, type SerializableSchema } from "@real1ty-obsidian-plugins";
+import { withSerialize, type SerializableSchema } from "@real1ty/obsidian-plugins";
 import { z } from "zod";
 
 import type { Frontmatter } from "../types";

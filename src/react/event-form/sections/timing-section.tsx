@@ -1,4 +1,4 @@
-import { calculateDurationMinutes } from "@real1ty-obsidian-plugins";
+import { calculateDurationMinutes } from "@real1ty/obsidian-plugins";
 import { memo, useCallback } from "react";
 import { useController, useWatch, type UseFormReturn } from "react-hook-form";
 

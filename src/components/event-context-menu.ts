@@ -5,13 +5,13 @@ import {
 	parseIntoList,
 	toLocalISOString,
 	type Frontmatter,
-} from "@real1ty-obsidian-plugins";
+} from "@real1ty/obsidian-plugins";
 import {
 	createCustomizableContextMenu,
 	type ContextMenuState,
 	type CustomizableContextMenuHandle,
 	type CustomizableContextMenuItem,
-} from "@real1ty-obsidian-plugins-react";
+} from "@real1ty/obsidian-plugins-react";
 import { Notice, type App } from "obsidian";
 
 import { CSS_PREFIX, EVENT_HIGHLIGHT_DURATION_MS, GO_TO_SOURCE_HIGHLIGHT_DELAY_MS, MS_PER_DAY } from "../constants";

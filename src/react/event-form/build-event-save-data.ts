@@ -1,4 +1,4 @@
-import { ensureISOSuffix } from "@real1ty-obsidian-plugins";
+import { ensureISOSuffix } from "@real1ty/obsidian-plugins";
 
 import {
 	applyDateFieldsToFrontmatter,

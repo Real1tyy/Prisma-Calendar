@@ -7,7 +7,7 @@ import {
 	visualEndTime,
 	type GanttTask,
 	type PackedTask,
-} from "@real1ty-obsidian-plugins";
+} from "@real1ty/obsidian-plugins";
 import { describe, expect, it } from "vitest";
 
 import { sanitizeGanttId } from "../../src/components/gantt";

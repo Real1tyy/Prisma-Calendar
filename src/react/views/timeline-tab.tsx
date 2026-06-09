@@ -1,4 +1,4 @@
-import { renderReactInline, useApp } from "@real1ty-obsidian-plugins-react";
+import { renderReactInline, useApp } from "@real1ty/obsidian-plugins-react";
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { distinctUntilChanged, map, skip } from "rxjs";
 

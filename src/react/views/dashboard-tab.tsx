@@ -1,5 +1,5 @@
-import type { ChartDataItem } from "@real1ty-obsidian-plugins";
-import { Cell, GridLayout, useApp, usePersistedGridStateById } from "@real1ty-obsidian-plugins-react";
+import type { ChartDataItem } from "@real1ty/obsidian-plugins";
+import { Cell, GridLayout, useApp, usePersistedGridStateById } from "@real1ty/obsidian-plugins-react";
 import type { App } from "obsidian";
 import { memo, useMemo, type ReactElement } from "react";
 

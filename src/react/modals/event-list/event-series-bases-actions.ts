@@ -1,4 +1,4 @@
-import { showModal } from "@real1ty-obsidian-plugins";
+import { showModal } from "@real1ty/obsidian-plugins";
 
 import {
 	showEventSeriesBasesViewModal,

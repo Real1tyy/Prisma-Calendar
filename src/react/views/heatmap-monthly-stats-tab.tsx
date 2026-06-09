@@ -1,4 +1,4 @@
-import { Cell, GridLayout, ImperativeCellHost, useApp, usePersistedGridState } from "@real1ty-obsidian-plugins-react";
+import { Cell, GridLayout, ImperativeCellHost, useApp, usePersistedGridState } from "@real1ty/obsidian-plugins-react";
 import { memo, useCallback, useImperativeHandle, useRef, type Ref } from "react";
 
 import { renderHeatmapInto, type HeatmapHandle } from "../../components/modals";

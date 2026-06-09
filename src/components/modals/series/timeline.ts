@@ -1,4 +1,4 @@
-import { buildColorGradient, ColorEvaluator, MS_PER_DAY, showModal, toLocalISOString } from "@real1ty-obsidian-plugins";
+import { buildColorGradient, ColorEvaluator, MS_PER_DAY, showModal, toLocalISOString } from "@real1ty/obsidian-plugins";
 import type { App } from "obsidian";
 import { DataSet } from "vis-data";
 import { Timeline, type DataItem, type TimelineOptions } from "vis-timeline";

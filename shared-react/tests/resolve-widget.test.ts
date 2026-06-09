@@ -1,4 +1,4 @@
-import type { SchemaFieldDescriptor } from "@real1ty-obsidian-plugins";
+import type { SchemaFieldDescriptor } from "@real1ty/obsidian-plugins";
 import { describe, expect, it } from "vitest";
 
 import { resolveWidget } from "../src/settings/resolve-widget";

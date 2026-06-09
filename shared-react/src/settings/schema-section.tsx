@@ -1,4 +1,4 @@
-import { introspectShape, type SchemaFieldDescriptor } from "@real1ty-obsidian-plugins";
+import { introspectShape, type SchemaFieldDescriptor } from "@real1ty/obsidian-plugins";
 import { memo, useMemo } from "react";
 import type { ZodRawShape } from "zod";
 

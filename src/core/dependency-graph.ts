@@ -1,4 +1,4 @@
-import { parseLinkedList } from "@real1ty-obsidian-plugins";
+import { parseLinkedList } from "@real1ty/obsidian-plugins";
 import type { App } from "obsidian";
 
 import type { CalendarEvent } from "../types/calendar";

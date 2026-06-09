@@ -1,11 +1,11 @@
-import { ColorSchema, normalizeDirectoryPath, type SettingsStore } from "@real1ty-obsidian-plugins";
+import { ColorSchema, normalizeDirectoryPath, type SettingsStore } from "@real1ty/obsidian-plugins";
 import {
 	ContextMenuStateSchema,
 	gridStateField,
 	gridStateRecordField,
 	PageHeaderStateSchema,
 	TabbedContainerStateSchema,
-} from "@real1ty-obsidian-plugins-react";
+} from "@real1ty/obsidian-plugins-react";
 import { z } from "zod";
 
 import {

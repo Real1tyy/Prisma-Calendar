@@ -1,4 +1,4 @@
-import { BaseEvaluator, type BaseRule } from "@real1ty-obsidian-plugins";
+import { BaseEvaluator, type BaseRule } from "@real1ty/obsidian-plugins";
 
 import type { SingleCalendarConfig } from "../../types/settings";
 

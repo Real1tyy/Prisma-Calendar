@@ -1,5 +1,5 @@
 import { Draggable } from "@fullcalendar/interaction";
-import type { ColorEvaluator } from "@real1ty-obsidian-plugins";
+import type { ColorEvaluator } from "@real1ty/obsidian-plugins";
 import {
 	PropertyValue,
 	useApp,
@@ -10,7 +10,7 @@ import {
 	useSettingsFields,
 	useSubscription,
 	VirtualList,
-} from "@real1ty-obsidian-plugins-react";
+} from "@real1ty/obsidian-plugins-react";
 import {
 	forwardRef,
 	memo,

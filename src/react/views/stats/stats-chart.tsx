@@ -1,5 +1,5 @@
-import { generateColors, PieChartBuilder, type ChartDataItem } from "@real1ty-obsidian-plugins";
-import { MOBILE_MEDIA_QUERY, useMediaQuery } from "@real1ty-obsidian-plugins-react";
+import { generateColors, PieChartBuilder, type ChartDataItem } from "@real1ty/obsidian-plugins";
+import { MOBILE_MEDIA_QUERY, useMediaQuery } from "@real1ty/obsidian-plugins-react";
 import { memo, useEffect, useRef } from "react";
 
 import { formatDuration, type WeeklyStatEntry } from "../../../utils/stats";

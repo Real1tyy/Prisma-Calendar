@@ -1,4 +1,4 @@
-import { describeError } from "@real1ty-obsidian-plugins";
+import { describeError } from "@real1ty/obsidian-plugins";
 import { requestUrl, TFile } from "obsidian";
 
 import type { ICSSubscription } from "../../../types/integrations";

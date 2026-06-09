@@ -6,7 +6,7 @@ import {
 	showModal,
 	type BaseFilterNode,
 	type BaseViewType,
-} from "@real1ty-obsidian-plugins";
+} from "@real1ty/obsidian-plugins";
 import { Component, MarkdownRenderer, type App } from "obsidian";
 
 import { cls } from "../../../constants";

@@ -9,7 +9,7 @@ import {
 import type { ActionDefMap } from "../../../src/integrations/api-gateway/types";
 
 const SOURCE_PATH = "TestPlugin/api-contract.json";
-const REGEN_CMD = "pnpm --filter @real1ty-obsidian-plugins run emit-external-apis";
+const REGEN_CMD = "pnpm --filter @real1ty/obsidian-plugins run emit-external-apis";
 
 function buildEmit(actions: ActionDefMap, globalKey = "TestPlugin"): Promise<string> {
 	const contract = emitContract({ globalKey, pluginVersion: "0.0.0", actions });

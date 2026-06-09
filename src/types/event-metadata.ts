@@ -5,7 +5,7 @@ import {
 	optionalPositiveNumber,
 	optionalTrimmedString,
 	strictBooleanOptional,
-} from "@real1ty-obsidian-plugins";
+} from "@real1ty/obsidian-plugins";
 import { z } from "zod";
 
 import type { SingleCalendarConfig } from "./settings";

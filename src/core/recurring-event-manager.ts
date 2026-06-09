@@ -18,7 +18,7 @@ import {
 	withLock,
 	type FrontmatterDiff,
 	type SyncStore,
-} from "@real1ty-obsidian-plugins";
+} from "@real1ty/obsidian-plugins";
 import { DateTime } from "luxon";
 import { TFile, type App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";

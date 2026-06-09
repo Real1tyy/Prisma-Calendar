@@ -1,5 +1,5 @@
-import { executeCommand } from "@real1ty-obsidian-plugins";
-import { ObsidianIcon, useApp, type HeaderActionDefinition } from "@real1ty-obsidian-plugins-react";
+import { executeCommand } from "@real1ty/obsidian-plugins";
+import { ObsidianIcon, useApp, type HeaderActionDefinition } from "@real1ty/obsidian-plugins-react";
 import type { App } from "obsidian";
 import { memo, useCallback, type CSSProperties } from "react";
 

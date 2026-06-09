@@ -1,5 +1,5 @@
-import { formatLocaleShortDate, formatLocaleTimeHm, toLocalISOString } from "@real1ty-obsidian-plugins";
-import { showReactModal, useColorEvaluator } from "@real1ty-obsidian-plugins-react";
+import { formatLocaleShortDate, formatLocaleTimeHm, toLocalISOString } from "@real1ty/obsidian-plugins";
+import { showReactModal, useColorEvaluator } from "@real1ty/obsidian-plugins-react";
 import { Notice, type App } from "obsidian";
 import { startTransition, useCallback, useDeferredValue, useMemo, useState } from "react";
 

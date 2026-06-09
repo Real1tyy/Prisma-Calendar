@@ -1,4 +1,4 @@
-import type * as ObsidianMockModule from "@real1ty-obsidian-plugins/testing";
+import type * as ObsidianMockModule from "@real1ty/obsidian-plugins/testing";
 import { screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -11,7 +11,7 @@ import { renderReact } from "../helpers/render-react";
 const confirmActionMock = vi.fn<() => Promise<boolean>>();
 const noticeMessages: string[] = [];
 
-vi.mock("@real1ty-obsidian-plugins", async () => {
+vi.mock("@real1ty/obsidian-plugins", async () => {
 	const transfer = await vi.importActual<typeof TransferCoreModule>(
 		"../../../shared/src/core/settings/settings-transfer"
 	);
@@ -25,7 +25,7 @@ vi.mock("@real1ty-obsidian-plugins", async () => {
 // files under `isolate: false`, so a partial mock here would drop exports
 // (e.g. setIcon) that other suites in the same worker rely on.
 vi.mock("obsidian", async () => {
-	const actual = await vi.importActual<typeof ObsidianMockModule>("@real1ty-obsidian-plugins/testing");
+	const actual = await vi.importActual<typeof ObsidianMockModule>("@real1ty/obsidian-plugins/testing");
 	return {
 		...actual,
 		Notice: class {

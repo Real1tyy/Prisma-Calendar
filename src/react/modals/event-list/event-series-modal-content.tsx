@@ -1,4 +1,4 @@
-import { showReactModal, useColorEvaluator } from "@real1ty-obsidian-plugins-react";
+import { showReactModal, useColorEvaluator } from "@real1ty/obsidian-plugins-react";
 import { DateTime } from "luxon";
 import type { App } from "obsidian";
 import { useCallback, useMemo, useState, type CSSProperties, type ReactNode } from "react";

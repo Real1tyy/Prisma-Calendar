@@ -1,4 +1,4 @@
-import { buildUtmUrl, LicenseManager, type LicenseManagerConfig } from "@real1ty-obsidian-plugins";
+import { buildUtmUrl, LicenseManager, type LicenseManagerConfig } from "@real1ty/obsidian-plugins";
 import type { App } from "obsidian";
 
 import type { PrismaCalendarSettingsStore } from "../types";
@@ -9,7 +9,7 @@ export type {
 	LicenseManagerConfig,
 	LicenseStatus,
 	LicenseVerifyResponse,
-} from "@real1ty-obsidian-plugins";
+} from "@real1ty/obsidian-plugins";
 
 export const FREE_MAX_CALENDARS = 3;
 export const FREE_MAX_EVENT_PRESETS = 2;

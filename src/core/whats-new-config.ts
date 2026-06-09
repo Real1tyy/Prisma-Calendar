@@ -1,5 +1,5 @@
-import { buildUtmUrl } from "@real1ty-obsidian-plugins";
-import type { WhatsNewModalConfig } from "@real1ty-obsidian-plugins-react";
+import { buildUtmUrl } from "@real1ty/obsidian-plugins";
+import type { WhatsNewModalConfig } from "@real1ty/obsidian-plugins-react";
 
 import { docsUrl } from "../constants";
 

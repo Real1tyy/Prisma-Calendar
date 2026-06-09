@@ -9,7 +9,7 @@ import {
 	type AssignmentModalConfig,
 } from "../../../src/react/modals/category/assignment-modal";
 
-vi.mock("@real1ty-obsidian-plugins-react", async (importOriginal) => {
+vi.mock("@real1ty/obsidian-plugins-react", async (importOriginal) => {
 	const actual = await importOriginal<Record<string, unknown>>();
 	return {
 		...actual,

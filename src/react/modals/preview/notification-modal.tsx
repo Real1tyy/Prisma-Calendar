@@ -1,5 +1,5 @@
-import { formatLocaleLongDate, formatLocaleLongDateTime, formatLocaleTimeHm } from "@real1ty-obsidian-plugins";
-import { AppContext, PropertyItem, SharedReactThemeProvider, showReactModal } from "@real1ty-obsidian-plugins-react";
+import { formatLocaleLongDate, formatLocaleLongDateTime, formatLocaleTimeHm } from "@real1ty/obsidian-plugins";
+import { AppContext, PropertyItem, SharedReactThemeProvider, showReactModal } from "@real1ty/obsidian-plugins-react";
 import type { App } from "obsidian";
 import { useState } from "react";
 import { flushSync } from "react-dom";

@@ -1,4 +1,4 @@
-import { useObservable } from "@real1ty-obsidian-plugins-react";
+import { useObservable } from "@real1ty/obsidian-plugins-react";
 import { memo, type ReactNode } from "react";
 
 import { tid } from "../../constants";

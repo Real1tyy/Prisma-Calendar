@@ -1,4 +1,4 @@
-import type { ReleaseCheckService } from "@real1ty-obsidian-plugins";
+import type { ReleaseCheckService } from "@real1ty/obsidian-plugins";
 import { memo, useCallback } from "react";
 
 import { useScopedCls } from "../../contexts/theme-context";

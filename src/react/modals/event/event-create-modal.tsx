@@ -1,4 +1,4 @@
-import { showReactModal } from "@real1ty-obsidian-plugins-react";
+import { showReactModal } from "@real1ty/obsidian-plugins-react";
 import type { App } from "obsidian";
 
 import {

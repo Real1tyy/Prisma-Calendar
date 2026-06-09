@@ -1,4 +1,4 @@
-import { batchCommand, type MacroCommand } from "@real1ty-obsidian-plugins";
+import { batchCommand, type MacroCommand } from "@real1ty/obsidian-plugins";
 import type { DurationLike } from "luxon";
 import type { App } from "obsidian";
 

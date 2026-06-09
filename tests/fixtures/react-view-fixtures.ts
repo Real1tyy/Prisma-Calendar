@@ -1,4 +1,4 @@
-import { AppContext } from "@real1ty-obsidian-plugins-react";
+import { AppContext } from "@real1ty/obsidian-plugins-react";
 import { render, type RenderOptions, type RenderResult } from "@testing-library/react";
 import type { App } from "obsidian";
 import { createElement, type ReactElement, type ReactNode } from "react";

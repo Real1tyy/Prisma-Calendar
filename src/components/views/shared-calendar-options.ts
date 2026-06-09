@@ -1,6 +1,6 @@
 import type { Calendar, CalendarOptions, EventContentArg } from "@fullcalendar/core";
 import allLocales from "@fullcalendar/core/locales-all";
-import { calculateDuration, formatDuration, toLocalISOString, type ColorEvaluator } from "@real1ty-obsidian-plugins";
+import { calculateDuration, formatDuration, toLocalISOString, type ColorEvaluator } from "@real1ty/obsidian-plugins";
 import type { App } from "obsidian";
 
 import { cls, tid, toggleCls } from "../../constants";

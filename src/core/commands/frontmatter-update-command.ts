@@ -4,7 +4,7 @@ import {
 	parseIntoList,
 	FrontmatterUpdateCommand as SharedFrontmatterUpdateCommand,
 	toDisplayLink,
-} from "@real1ty-obsidian-plugins";
+} from "@real1ty/obsidian-plugins";
 import type { DurationLike } from "luxon";
 
 import type { Frontmatter } from "../../types";

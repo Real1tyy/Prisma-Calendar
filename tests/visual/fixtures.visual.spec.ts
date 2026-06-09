@@ -1,7 +1,7 @@
 import { join } from "node:path";
 
 import { expect, test } from "@playwright/test";
-import { listFixtureFiles } from "@real1ty-obsidian-plugins/testing/visual";
+import { listFixtureFiles } from "@real1ty/obsidian-plugins/testing/visual";
 
 const FIXTURES_DIR = join(__dirname, "fixtures");
 const fixtures = listFixtureFiles(FIXTURES_DIR);

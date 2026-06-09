@@ -1,4 +1,4 @@
-import { CodeBlockRepository, debounceMsForEnv, type CodeBlockBinding } from "@real1ty-obsidian-plugins";
+import { CodeBlockRepository, debounceMsForEnv, type CodeBlockBinding } from "@real1ty/obsidian-plugins";
 import type { DateTime } from "luxon";
 import type { App } from "obsidian";
 import { BehaviorSubject, debounceTime, type Subscription } from "rxjs";

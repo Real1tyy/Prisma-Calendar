@@ -1,5 +1,5 @@
-import { buildUtmUrl } from "@real1ty-obsidian-plugins";
-import { startTour, waitForElement, type TourStep } from "@real1ty-obsidian-plugins-react";
+import { buildUtmUrl } from "@real1ty/obsidian-plugins";
+import { startTour, waitForElement, type TourStep } from "@real1ty/obsidian-plugins-react";
 import { DateTime } from "luxon";
 
 import type { CalendarComponent } from "../../components/calendar-view";

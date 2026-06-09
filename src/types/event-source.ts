@@ -1,4 +1,4 @@
-import type { FrontmatterDiff } from "@real1ty-obsidian-plugins";
+import type { FrontmatterDiff } from "@real1ty/obsidian-plugins";
 import type { Observable } from "rxjs";
 
 import type { EventMetadata } from "./event-metadata";

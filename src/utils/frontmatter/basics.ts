@@ -1,4 +1,4 @@
-import { ensureISOSuffix } from "@real1ty-obsidian-plugins";
+import { ensureISOSuffix } from "@real1ty/obsidian-plugins";
 import { DateTime, type DurationLike } from "luxon";
 
 import type { Frontmatter, SingleCalendarConfig } from "../../types";

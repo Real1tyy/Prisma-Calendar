@@ -1,4 +1,4 @@
-import { DebouncedNotifier } from "@real1ty-obsidian-plugins";
+import { DebouncedNotifier } from "@real1ty/obsidian-plugins";
 import type { Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
 

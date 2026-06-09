@@ -1,4 +1,4 @@
-import { toLocalISOString } from "@real1ty-obsidian-plugins";
+import { toLocalISOString } from "@real1ty/obsidian-plugins";
 
 import type { CalendarEvent, SingleCalendarConfig } from "../../types";
 import { isTimedEvent } from "../../types/calendar";

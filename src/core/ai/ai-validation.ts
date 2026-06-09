@@ -1,4 +1,4 @@
-import { calculateDurationMinutes, intoDate, toLocalISOString } from "@real1ty-obsidian-plugins";
+import { calculateDurationMinutes, intoDate, toLocalISOString } from "@real1ty/obsidian-plugins";
 
 import type { AIMode } from "../../types/ai";
 import { stripZ } from "../../utils/dates/iso";

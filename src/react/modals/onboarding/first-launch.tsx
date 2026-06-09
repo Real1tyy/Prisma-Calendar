@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { buildUtmUrl } from "@real1ty-obsidian-plugins";
-import { Button, openReactModal, TextInput, WelcomeModalShell } from "@real1ty-obsidian-plugins-react";
+import { buildUtmUrl } from "@real1ty/obsidian-plugins";
+import { Button, openReactModal, TextInput, WelcomeModalShell } from "@real1ty/obsidian-plugins-react";
 import type { App } from "obsidian";
 import { memo, useCallback, useEffect, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";

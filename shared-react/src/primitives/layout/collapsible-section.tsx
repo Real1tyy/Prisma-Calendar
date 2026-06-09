@@ -1,4 +1,4 @@
-import { buildCollapsibleStyles } from "@real1ty-obsidian-plugins";
+import { buildCollapsibleStyles } from "@real1ty/obsidian-plugins";
 import { memo, useState, type ReactNode } from "react";
 
 import { useScoped } from "../../contexts/theme-context";

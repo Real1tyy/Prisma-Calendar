@@ -8,7 +8,7 @@ import {
 	useApp,
 	useSchemaField,
 	useScrollRestore,
-} from "@real1ty-obsidian-plugins-react";
+} from "@real1ty/obsidian-plugins-react";
 import { Notice } from "obsidian";
 import { memo, useCallback, useMemo, useState } from "react";
 

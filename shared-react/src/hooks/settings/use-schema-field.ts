@@ -1,4 +1,4 @@
-import { getNestedValue, setNestedValue } from "@real1ty-obsidian-plugins";
+import { getNestedValue, setNestedValue } from "@real1ty/obsidian-plugins";
 import { useCallback, useMemo } from "react";
 
 import { useExternalSnapshot, type SnapshotSubscribable } from "../reactive/use-external-snapshot";

@@ -1,4 +1,4 @@
-import { introspectField } from "@real1ty-obsidian-plugins";
+import { introspectField } from "@real1ty/obsidian-plugins";
 import { screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";

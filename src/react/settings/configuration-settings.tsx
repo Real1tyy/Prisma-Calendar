@@ -1,4 +1,4 @@
-import { SettingHeading, Toggle, useSchemaField } from "@real1ty-obsidian-plugins-react";
+import { SettingHeading, Toggle, useSchemaField } from "@real1ty/obsidian-plugins-react";
 import { memo, useCallback, useMemo } from "react";
 
 import {

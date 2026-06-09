@@ -1,4 +1,4 @@
-import { useSchemaField } from "@real1ty-obsidian-plugins-react";
+import { useSchemaField } from "@real1ty/obsidian-plugins-react";
 import { memo, useCallback, useRef, type ChangeEvent } from "react";
 
 import { cls, tid } from "../../constants";

@@ -1,4 +1,4 @@
-import type { Command } from "@real1ty-obsidian-plugins";
+import type { Command } from "@real1ty/obsidian-plugins";
 
 import type { SingleCalendarConfig } from "../../types";
 import type { CalendarSettingsStore } from "../settings-store";

@@ -1,4 +1,4 @@
-import type { SettingsNavTab } from "@real1ty-obsidian-plugins-react";
+import type { SettingsNavTab } from "@real1ty/obsidian-plugins-react";
 
 export const SETTINGS_TAB_DEFINITIONS: SettingsNavTab[] = [
 	{ id: "general", label: "General" },

@@ -1,4 +1,4 @@
-import { generateZettelId, getUniqueFilePathFromFull, isFolderNote, withFrontmatter } from "@real1ty-obsidian-plugins";
+import { generateZettelId, getUniqueFilePathFromFull, isFolderNote, withFrontmatter } from "@real1ty/obsidian-plugins";
 import type { App, TFile } from "obsidian";
 
 import { extractZettelId, hasTimestamp, removeZettelId } from "./zettel-id";

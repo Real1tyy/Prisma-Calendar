@@ -1,5 +1,5 @@
-import { calculateDuration, intoDate } from "@real1ty-obsidian-plugins";
-import { AppContext, PropertyItem, SharedReactThemeProvider, showReactModal } from "@real1ty-obsidian-plugins-react";
+import { calculateDuration, intoDate } from "@real1ty/obsidian-plugins";
+import { AppContext, PropertyItem, SharedReactThemeProvider, showReactModal } from "@real1ty/obsidian-plugins-react";
 import { TFile, type App } from "obsidian";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";

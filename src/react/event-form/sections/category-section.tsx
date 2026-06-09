@@ -1,4 +1,4 @@
-import { ChipList, type ChipCollection, type ChipDisplay, type ChipInteraction } from "@real1ty-obsidian-plugins-react";
+import { ChipList, type ChipCollection, type ChipDisplay, type ChipInteraction } from "@real1ty/obsidian-plugins-react";
 import { Platform } from "obsidian";
 import { memo, useCallback, useMemo, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 

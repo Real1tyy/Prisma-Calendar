@@ -5,7 +5,7 @@ import {
 	TemplaterService,
 	type Command,
 	type HistoryStack,
-} from "@real1ty-obsidian-plugins";
+} from "@real1ty/obsidian-plugins";
 import { Notice, TFile, type App } from "obsidian";
 import { distinctUntilChanged, filter, firstValueFrom, type Subscription } from "rxjs";
 

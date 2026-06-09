@@ -14,7 +14,7 @@
 
 import { resolve } from "node:path";
 
-import { generateFixtures } from "@real1ty-obsidian-plugins/testing/visual";
+import { generateFixtures } from "@real1ty/obsidian-plugins/testing/visual";
 import { describe, expect, it } from "vitest";
 
 import { ALL_SCENARIOS } from "./scenarios";

@@ -1,4 +1,4 @@
-import { buildUtmUrl } from "@real1ty-obsidian-plugins";
+import { buildUtmUrl } from "@real1ty/obsidian-plugins";
 import { requestUrl, type App } from "obsidian";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 

@@ -1,4 +1,4 @@
-import { isObsidianLink } from "@real1ty-obsidian-plugins";
+import { isObsidianLink } from "@real1ty/obsidian-plugins";
 import { useCallback, useMemo } from "react";
 import { useWatch, type UseFormReturn } from "react-hook-form";
 

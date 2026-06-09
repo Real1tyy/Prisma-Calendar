@@ -8,7 +8,7 @@ import {
 	hexToRgb,
 	parseColorToRgb,
 	type RgbColor,
-} from "@real1ty-obsidian-plugins";
+} from "@real1ty/obsidian-plugins";
 import { TFile, type App } from "obsidian";
 
 import { cls } from "../constants";
@@ -272,7 +272,7 @@ export function injectOverflowDots(
 	parent.appendChild(container);
 }
 
-export { buildColorGradient } from "@real1ty-obsidian-plugins";
+export { buildColorGradient } from "@real1ty/obsidian-plugins";
 
 export function applyMultiColorIndicators(
 	element: HTMLElement,

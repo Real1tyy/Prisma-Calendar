@@ -1,4 +1,4 @@
-import { camelCaseToLabel, introspectShape, type SchemaFieldDescriptor } from "@real1ty-obsidian-plugins";
+import { camelCaseToLabel, introspectShape, type SchemaFieldDescriptor } from "@real1ty/obsidian-plugins";
 import { useMemo, type ReactNode } from "react";
 import { useFormState, type FieldValues, type UseFormReturn } from "react-hook-form";
 import type { ZodObject, ZodRawShape } from "zod";

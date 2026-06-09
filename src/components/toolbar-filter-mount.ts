@@ -2,7 +2,7 @@ import {
 	CommittedFilterInput,
 	renderReactInline,
 	type CommittedFilterInputHandle,
-} from "@real1ty-obsidian-plugins-react";
+} from "@real1ty/obsidian-plugins-react";
 import type { App } from "obsidian";
 import { createElement, createRef } from "react";
 

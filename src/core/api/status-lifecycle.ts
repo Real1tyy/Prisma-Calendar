@@ -1,4 +1,4 @@
-import type { Command } from "@real1ty-obsidian-plugins";
+import type { Command } from "@real1ty/obsidian-plugins";
 import { Notice, TFile } from "obsidian";
 
 import type CustomCalendarPlugin from "../../main";

@@ -1,4 +1,4 @@
-import { openReactModal } from "@real1ty-obsidian-plugins-react";
+import { openReactModal } from "@real1ty/obsidian-plugins-react";
 import type { App } from "obsidian";
 
 export type SeriesEditScope = "this" | "following" | "all";

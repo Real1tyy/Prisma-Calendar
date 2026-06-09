@@ -6,7 +6,7 @@ import {
 	runBatchOperation,
 	toLocalISOString,
 	type Command,
-} from "@real1ty-obsidian-plugins";
+} from "@real1ty/obsidian-plugins";
 import { Modal, Notice, type App } from "obsidian";
 
 import { addCls, cls, removeCls, tid } from "../constants";

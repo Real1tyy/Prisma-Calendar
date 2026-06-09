@@ -1,4 +1,4 @@
-import { MockVaultTable } from "@real1ty-obsidian-plugins/testing";
+import { MockVaultTable } from "@real1ty/obsidian-plugins/testing";
 import { BehaviorSubject } from "rxjs";
 import { vi } from "vitest";
 

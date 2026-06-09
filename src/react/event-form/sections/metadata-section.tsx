@@ -1,5 +1,5 @@
-import { serializeFrontmatterValue } from "@real1ty-obsidian-plugins";
-import { Toggle } from "@real1ty-obsidian-plugins-react";
+import { serializeFrontmatterValue } from "@real1ty/obsidian-plugins";
+import { Toggle } from "@real1ty/obsidian-plugins-react";
 import { memo, useCallback } from "react";
 
 import type { SingleCalendarConfig } from "../../../types/settings";

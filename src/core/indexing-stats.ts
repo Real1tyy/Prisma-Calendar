@@ -1,4 +1,4 @@
-import { classifyDateLikeString, optionalDateTimeTransform, optionalDateTransform } from "@real1ty-obsidian-plugins";
+import { classifyDateLikeString, optionalDateTimeTransform, optionalDateTransform } from "@real1ty/obsidian-plugins";
 
 import type { Frontmatter, SingleCalendarConfig } from "../types";
 

@@ -1,4 +1,4 @@
-import { activateView, applyClsTokens, type LeafPlacement } from "@real1ty-obsidian-plugins";
+import { activateView, applyClsTokens, type LeafPlacement } from "@real1ty/obsidian-plugins";
 import { ItemView, type Plugin, type WorkspaceLeaf } from "obsidian";
 import { StrictMode, type ReactNode, type RefCallback } from "react";
 import { createRoot, type Root } from "react-dom/client";

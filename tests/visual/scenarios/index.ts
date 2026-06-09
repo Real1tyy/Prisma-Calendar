@@ -1,4 +1,4 @@
-import type { Scenario } from "@real1ty-obsidian-plugins/testing/visual";
+import type { Scenario } from "@real1ty/obsidian-plugins/testing/visual";
 
 import { scenarios as stickyBannerScenarios } from "./sticky-banner";
 

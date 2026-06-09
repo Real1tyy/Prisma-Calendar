@@ -1,4 +1,4 @@
-// Plain leaf module — no Obsidian / `@real1ty-obsidian-plugins` deps — so e2e
+// Plain leaf module — no Obsidian / `@real1ty/obsidian-plugins` deps — so e2e
 // fixtures and other build-free contexts can import these without dragging the
 // full plugin runtime through ts-node. `src/constants.ts` re-exports the same
 // symbols for plugin source code.

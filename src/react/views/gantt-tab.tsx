@@ -1,4 +1,4 @@
-import { ColorEvaluator, parseIntoList } from "@real1ty-obsidian-plugins";
+import { ColorEvaluator, parseIntoList } from "@real1ty/obsidian-plugins";
 import {
 	createCustomizableContextMenu,
 	renderReactInline,
@@ -6,7 +6,7 @@ import {
 	useObservable,
 	type CustomizableContextMenuHandle,
 	type CustomizableContextMenuItem,
-} from "@real1ty-obsidian-plugins-react";
+} from "@real1ty/obsidian-plugins-react";
 import { Menu, Notice, type App } from "obsidian";
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { BehaviorSubject, debounceTime, distinctUntilChanged, map, merge, skip } from "rxjs";

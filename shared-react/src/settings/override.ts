@@ -1,4 +1,4 @@
-import type { SchemaFieldDescriptor } from "@real1ty-obsidian-plugins";
+import type { SchemaFieldDescriptor } from "@real1ty/obsidian-plugins";
 import type { ReactNode } from "react";
 
 /**

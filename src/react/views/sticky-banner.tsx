@@ -1,4 +1,4 @@
-import { useEscapeKey } from "@real1ty-obsidian-plugins-react";
+import { useEscapeKey } from "@real1ty/obsidian-plugins-react";
 import { memo } from "react";
 
 import { cls, tid } from "../../constants";

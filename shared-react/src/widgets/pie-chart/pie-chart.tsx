@@ -4,7 +4,7 @@ import {
 	normalizeData,
 	type PieChartConfig as ImperativePieChartConfig,
 	type PieChartData,
-} from "@real1ty-obsidian-plugins";
+} from "@real1ty/obsidian-plugins";
 import type { Chart, ChartConfiguration } from "chart.js";
 import { memo, useEffect, useRef } from "react";
 

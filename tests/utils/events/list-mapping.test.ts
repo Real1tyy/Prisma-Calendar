@@ -1,4 +1,4 @@
-import type { ColorEvaluator } from "@real1ty-obsidian-plugins";
+import type { ColorEvaluator } from "@real1ty/obsidian-plugins";
 import { describe, expect, it, vi } from "vitest";
 
 import type { CalendarBundle } from "../../../src/core/calendar-bundle";

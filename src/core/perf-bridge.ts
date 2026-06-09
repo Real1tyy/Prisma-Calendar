@@ -1,9 +1,9 @@
-import { installPerfBridge, perf } from "@real1ty-obsidian-plugins";
+import { installPerfBridge, perf } from "@real1ty/obsidian-plugins";
 
 import type CustomCalendarPlugin from "../main";
 
 // Stress/E2E-only: installs the generic in-app perf bridge (from
-// @real1ty-obsidian-plugins/perf) and feeds it Prisma's live index/resource
+// @real1ty/obsidian-plugins/perf) and feeds it Prisma's live index/resource
 // counts + identity. The shared bridge owns the global key + snapshot plumbing;
 // this file only supplies the plugin-specific data. Installed only when
 // `window.E2E` is set, so production runs pay nothing.

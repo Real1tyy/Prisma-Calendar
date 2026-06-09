@@ -8,7 +8,7 @@ import {
 	intoDate,
 	isNotEmpty,
 	toDisplayLink,
-} from "@real1ty-obsidian-plugins";
+} from "@real1ty/obsidian-plugins";
 import { DateTime } from "luxon";
 
 import type { Frontmatter } from "../types";

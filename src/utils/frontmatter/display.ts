@@ -3,7 +3,7 @@ import {
 	isNotEmpty,
 	renderPropertyValue as renderPropertyValueUtil,
 	type PropertyRendererConfig,
-} from "@real1ty-obsidian-plugins";
+} from "@real1ty/obsidian-plugins";
 import type { App } from "obsidian";
 
 export function getDisplayProperties(

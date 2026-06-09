@@ -1,4 +1,4 @@
-import { ColorEvaluator, type ColorRule } from "@real1ty-obsidian-plugins";
+import { ColorEvaluator, type ColorRule } from "@real1ty/obsidian-plugins";
 import { useEffect, useState } from "react";
 import type { BehaviorSubject } from "rxjs";
 

@@ -1,4 +1,4 @@
-import { getISODatePart } from "@real1ty-obsidian-plugins";
+import { getISODatePart } from "@real1ty/obsidian-plugins";
 
 import type { CalendarEvent } from "../../types/calendar";
 

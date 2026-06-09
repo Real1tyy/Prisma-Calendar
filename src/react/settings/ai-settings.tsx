@@ -1,4 +1,4 @@
-import { SettingHeading, useSchemaField } from "@real1ty-obsidian-plugins-react";
+import { SettingHeading, useSchemaField } from "@real1ty/obsidian-plugins-react";
 import { memo, useCallback, useState } from "react";
 
 import { cls, tid } from "../../constants";

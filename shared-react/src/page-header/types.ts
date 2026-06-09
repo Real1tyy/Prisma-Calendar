@@ -1,4 +1,4 @@
-import { CustomizableUIBaseStateSchema } from "@real1ty-obsidian-plugins";
+import { CustomizableUIBaseStateSchema } from "@real1ty/obsidian-plugins";
 import type { App, ItemView, WorkspaceLeaf } from "obsidian";
 import { z } from "zod";
 

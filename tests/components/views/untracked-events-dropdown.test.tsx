@@ -13,7 +13,7 @@ vi.mock("../../../src/core/api/modal-actions", () => ({
 	openCreateUntrackedEventModal: vi.fn(),
 }));
 
-vi.mock("@real1ty-obsidian-plugins", async (importOriginal) => {
+vi.mock("@real1ty/obsidian-plugins", async (importOriginal) => {
 	const actual: Record<string, unknown> = await importOriginal();
 	return {
 		...actual,
@@ -29,7 +29,7 @@ vi.mock("@real1ty-obsidian-plugins", async (importOriginal) => {
 // VirtualList relies on measured DOM (offsetHeight) for virtualization. jsdom
 // reports 0 for unmeasured nodes so no items would render. Replace it with a
 // plain map that renders every item — enough for the assertions below.
-vi.mock("@real1ty-obsidian-plugins-react", async (importOriginal) => {
+vi.mock("@real1ty/obsidian-plugins-react", async (importOriginal) => {
 	const actual: Record<string, unknown> = await importOriginal();
 	return {
 		...actual,

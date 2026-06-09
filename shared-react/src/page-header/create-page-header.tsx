@@ -1,4 +1,4 @@
-import { injectStyleSheet } from "@real1ty-obsidian-plugins";
+import { injectStyleSheet } from "@real1ty/obsidian-plugins";
 import type { ItemView, WorkspaceLeaf } from "obsidian";
 
 import { renderReactInline } from "../react-inline";

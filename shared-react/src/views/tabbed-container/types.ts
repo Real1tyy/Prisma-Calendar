@@ -1,4 +1,4 @@
-import { CustomizableUIBaseStateSchema } from "@real1ty-obsidian-plugins";
+import { CustomizableUIBaseStateSchema } from "@real1ty/obsidian-plugins";
 import type { App } from "obsidian";
 import type { ReactNode } from "react";
 import { z } from "zod";

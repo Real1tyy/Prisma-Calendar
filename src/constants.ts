@@ -1,4 +1,4 @@
-import { buildUtmUrl, createCssUtils } from "@real1ty-obsidian-plugins";
+import { buildUtmUrl, createCssUtils } from "@real1ty/obsidian-plugins";
 
 /** Obsidian plugin id (matches manifest) — used for full command palette ids. */
 export const PRISMA_CALENDAR_PLUGIN_ID = "prisma-calendar" as const;

@@ -1,4 +1,4 @@
-import { createCssUtils } from "@real1ty-obsidian-plugins";
+import { createCssUtils } from "@real1ty/obsidian-plugins";
 import type { App, Plugin } from "obsidian";
 import {
 	memo,

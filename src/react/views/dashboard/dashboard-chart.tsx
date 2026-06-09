@@ -1,5 +1,5 @@
-import { PieChartBuilder, type ChartDataItem } from "@real1ty-obsidian-plugins";
-import { MOBILE_MEDIA_QUERY, useMediaQuery } from "@real1ty-obsidian-plugins-react";
+import { PieChartBuilder, type ChartDataItem } from "@real1ty/obsidian-plugins";
+import { MOBILE_MEDIA_QUERY, useMediaQuery } from "@real1ty/obsidian-plugins-react";
 import { memo, useEffect, useRef } from "react";
 
 const MAX_CHART_LABELS = 25;

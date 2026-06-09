@@ -1,4 +1,4 @@
-import { extractDisplayName, toSafeString } from "@real1ty-obsidian-plugins";
+import { extractDisplayName, toSafeString } from "@real1ty/obsidian-plugins";
 
 import { removeZettelId } from "./zettel-id";
 

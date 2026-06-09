@@ -1,4 +1,4 @@
-import { MacroCommand, toLocalISOString, type Command } from "@real1ty-obsidian-plugins";
+import { MacroCommand, toLocalISOString, type Command } from "@real1ty/obsidian-plugins";
 
 import type CustomCalendarPlugin from "../../main";
 import { AIOperationsSchema, type AIOperation } from "../../types/ai";

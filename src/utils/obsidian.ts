@@ -1,4 +1,4 @@
-import { parseIntoList } from "@real1ty-obsidian-plugins";
+import { parseIntoList } from "@real1ty/obsidian-plugins";
 import { Notice, TFile, type App, type WorkspaceLeaf } from "obsidian";
 
 import { getCalendarViewType } from "../constants";

@@ -1,4 +1,4 @@
-import { ensureISOSuffix, formatMsToHHMMSS, formatMsToMMSS, toLocalISOString } from "@real1ty-obsidian-plugins";
+import { ensureISOSuffix, formatMsToHHMMSS, formatMsToMMSS, toLocalISOString } from "@real1ty/obsidian-plugins";
 import { Notice, TFile, type App } from "obsidian";
 import type { Subscription } from "rxjs";
 

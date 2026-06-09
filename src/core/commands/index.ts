@@ -42,4 +42,4 @@ export {
 	CreateVirtualEventCommand,
 	DeleteVirtualEventCommand,
 } from "./virtual-event-commands";
-export { CommandManager } from "@real1ty-obsidian-plugins";
+export { CommandManager } from "@real1ty/obsidian-plugins";

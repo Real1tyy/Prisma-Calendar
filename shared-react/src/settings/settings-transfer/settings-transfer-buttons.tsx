@@ -4,7 +4,7 @@ import {
 	createTransferableSettingsSnapshot,
 	SETTINGS_TRANSFER_DEFAULT_FILENAME,
 	type SettingsTransferOptions,
-} from "@real1ty-obsidian-plugins";
+} from "@real1ty/obsidian-plugins";
 import { Notice } from "obsidian";
 import { memo, useCallback, useMemo, type ReactNode } from "react";
 

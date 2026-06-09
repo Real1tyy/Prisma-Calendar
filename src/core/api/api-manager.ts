@@ -1,4 +1,4 @@
-import { PluginApiGateway, type ActionDefMap } from "@real1ty-obsidian-plugins";
+import { PluginApiGateway, type ActionDefMap } from "@real1ty/obsidian-plugins";
 
 import type CustomCalendarPlugin from "../../main";
 import { buildActions, GLOBAL_KEY } from "./action-definitions";

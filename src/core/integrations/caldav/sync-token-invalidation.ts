@@ -1,4 +1,4 @@
-import { describeError } from "@real1ty-obsidian-plugins";
+import { describeError } from "@real1ty/obsidian-plugins";
 
 /**
  * Heuristic for detecting when the server has rejected our stored CalDAV

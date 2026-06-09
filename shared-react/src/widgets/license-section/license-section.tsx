@@ -3,7 +3,7 @@ import {
 	getSubscriptionDateText,
 	type LicenseManager,
 	type LicenseStatus,
-} from "@real1ty-obsidian-plugins";
+} from "@real1ty/obsidian-plugins";
 import { Notice } from "obsidian";
 import { memo, useCallback, useState, type ReactNode } from "react";
 

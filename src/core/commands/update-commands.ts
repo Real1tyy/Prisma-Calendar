@@ -6,7 +6,7 @@ import {
 	toLocalISOString,
 	withFrontmatter,
 	type Command,
-} from "@real1ty-obsidian-plugins";
+} from "@real1ty/obsidian-plugins";
 import type { App, TFile } from "obsidian";
 
 import type { EventDateTime, Frontmatter, SingleCalendarConfig } from "../../types";

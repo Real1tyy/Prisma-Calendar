@@ -3,7 +3,7 @@ import {
 	getChangelogSince,
 	resolveRelativeDocLinks,
 	type VersionSection,
-} from "@real1ty-obsidian-plugins";
+} from "@real1ty/obsidian-plugins";
 import { Component, MarkdownRenderer, type App, type Plugin } from "obsidian";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 

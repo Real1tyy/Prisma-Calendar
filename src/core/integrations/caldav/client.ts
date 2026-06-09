@@ -1,4 +1,4 @@
-import { describeError } from "@real1ty-obsidian-plugins";
+import { describeError } from "@real1ty/obsidian-plugins";
 import type { App } from "obsidian";
 import type { DAVClient } from "tsdav";
 

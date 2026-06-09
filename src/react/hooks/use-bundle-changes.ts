@@ -1,4 +1,4 @@
-import { useSubscription } from "@real1ty-obsidian-plugins-react";
+import { useSubscription } from "@real1ty/obsidian-plugins-react";
 import { useMemo, useState } from "react";
 import { debounceTime, merge, type Observable } from "rxjs";
 

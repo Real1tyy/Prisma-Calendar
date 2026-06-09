@@ -1,4 +1,4 @@
-import { buildChipListStyles } from "@real1ty-obsidian-plugins";
+import { buildChipListStyles } from "@real1ty/obsidian-plugins";
 import { memo, useCallback, type ReactNode } from "react";
 
 import { useScopedStyles } from "../../hooks/styles/use-styles";

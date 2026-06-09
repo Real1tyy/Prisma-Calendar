@@ -1,4 +1,4 @@
-import { hexToRgb, type PieChartData } from "@real1ty-obsidian-plugins";
+import { hexToRgb, type PieChartData } from "@real1ty/obsidian-plugins";
 import {
 	ColorInput,
 	ObsidianIcon,
@@ -8,7 +8,7 @@ import {
 	useSchemaField,
 	useSettingsFields,
 	useThrottledObservable,
-} from "@real1ty-obsidian-plugins-react";
+} from "@real1ty/obsidian-plugins-react";
 import { ArcElement, Chart, Legend, PieController, Tooltip } from "chart.js";
 import { nanoid } from "nanoid";
 import React, { memo, useCallback, useMemo, useState } from "react";

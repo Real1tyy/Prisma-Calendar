@@ -1,4 +1,4 @@
-import { defineAction, type ActionDefMap } from "@real1ty-obsidian-plugins";
+import { defineAction, type ActionDefMap } from "@real1ty/obsidian-plugins";
 import { z } from "zod";
 
 import type CustomCalendarPlugin from "../../main";

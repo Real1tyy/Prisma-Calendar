@@ -1,4 +1,4 @@
-import { parseAsLocalDate, toSafeString } from "@real1ty-obsidian-plugins";
+import { parseAsLocalDate, toSafeString } from "@real1ty/obsidian-plugins";
 import { useCallback, useEffect, useRef, type Dispatch, type RefObject, type SetStateAction } from "react";
 import { useWatch, type UseFormReturn } from "react-hook-form";
 

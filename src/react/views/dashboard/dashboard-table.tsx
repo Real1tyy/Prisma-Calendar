@@ -1,4 +1,4 @@
-import { hexToRgb } from "@real1ty-obsidian-plugins";
+import { hexToRgb } from "@real1ty/obsidian-plugins";
 import { memo, useCallback, useMemo, useState, type CSSProperties } from "react";
 
 import type { ColumnDef, DashboardItem } from "./dashboard-types";

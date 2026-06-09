@@ -102,10 +102,10 @@ importers:
       '@jsep-plugin/new':
         specifier: ^1.0.4
         version: 1.0.4(jsep@1.4.0)
-      '@real1ty-obsidian-plugins':
+      '@real1ty/obsidian-plugins':
         specifier: file:./shared
         version: link:shared
-      '@real1ty-obsidian-plugins-react':
+      '@real1ty/obsidian-plugins-react':
         specifier: file:./shared-react
         version: link:shared-react
       '@svgdotjs/svg.js':
@@ -417,7 +417,7 @@ importers:
         version: 4.1.8(@opentelemetry/api@1.9.0)(@types/node@25.9.0)(@vitest/coverage-v8@4.1.8)(happy-dom@20.9.0)(jsdom@29.1.1)(vite@8.0.13(@types/node@25.9.0)(esbuild@0.27.2)(jiti@2.7.0)(sass@1.99.0)(tsx@4.21.0)(yaml@2.9.0))
   shared-react:
     dependencies:
-      '@real1ty-obsidian-plugins':
+      '@real1ty/obsidian-plugins':
         specifier: file:../shared
         version: link:../shared
       '@tanstack/react-virtual':

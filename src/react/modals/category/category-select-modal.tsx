@@ -1,4 +1,4 @@
-import { ModalForm, openReactModal } from "@real1ty-obsidian-plugins-react";
+import { ModalForm, openReactModal } from "@real1ty/obsidian-plugins-react";
 import type { App } from "obsidian";
 import React, { memo, useCallback, useMemo, useState } from "react";
 

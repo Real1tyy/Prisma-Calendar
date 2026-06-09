@@ -1,4 +1,4 @@
-import { useObservable } from "@real1ty-obsidian-plugins-react";
+import { useObservable } from "@real1ty/obsidian-plugins-react";
 import { memo, useEffect, useRef } from "react";
 import type { Observable } from "rxjs";
 

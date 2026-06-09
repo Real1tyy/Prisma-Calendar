@@ -1,4 +1,4 @@
-import { getChangelogSince } from "@real1ty-obsidian-plugins";
+import { getChangelogSince } from "@real1ty/obsidian-plugins";
 import { screen } from "@testing-library/react";
 import type { Plugin } from "obsidian";
 import { describe, expect, it, vi } from "vitest";
@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from "vitest";
 import { WhatsNewContent, type WhatsNewModalConfig } from "../../src/modals/whats-new-modal";
 import { renderWithProviders } from "../harness/render-with-providers";
 
-vi.mock("@real1ty-obsidian-plugins", async (importOriginal) => {
+vi.mock("@real1ty/obsidian-plugins", async (importOriginal) => {
 	const actual = await importOriginal();
 	return {
 		...(actual as Record<string, unknown>),

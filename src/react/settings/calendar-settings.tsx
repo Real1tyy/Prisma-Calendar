@@ -1,4 +1,4 @@
-import { Dropdown, SettingItem, useSchemaField } from "@real1ty-obsidian-plugins-react";
+import { Dropdown, SettingItem, useSchemaField } from "@real1ty/obsidian-plugins-react";
 import { memo, useCallback } from "react";
 
 import type { CalendarSettingsStore } from "../../core/settings-store";

@@ -1,4 +1,4 @@
-import { FilterEvaluator } from "@real1ty-obsidian-plugins";
+import { FilterEvaluator } from "@real1ty/obsidian-plugins";
 import type { App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 

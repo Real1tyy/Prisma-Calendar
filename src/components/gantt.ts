@@ -1,4 +1,4 @@
-import { MS_PER_DAY, type ColorEvaluator, type GanttTask } from "@real1ty-obsidian-plugins";
+import { MS_PER_DAY, type ColorEvaluator, type GanttTask } from "@real1ty/obsidian-plugins";
 
 import type { CalendarBundle } from "../core/calendar-bundle";
 import type { DependencyGraph } from "../core/dependency-graph";
@@ -19,7 +19,7 @@ export type {
 	LayoutFn,
 	PackedTask,
 	Viewport,
-} from "@real1ty-obsidian-plugins";
+} from "@real1ty/obsidian-plugins";
 export {
 	buildViewport,
 	centerViewportOnTasks,
@@ -30,7 +30,7 @@ export {
 	MS_PER_DAY,
 	packRows,
 	visualEndTime,
-} from "@real1ty-obsidian-plugins";
+} from "@real1ty/obsidian-plugins";
 
 export function sanitizeGanttId(filePath: string): string {
 	return filePath.replace(/[^a-zA-Z0-9]/g, "_");

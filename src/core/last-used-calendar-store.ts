@@ -1,4 +1,4 @@
-import { LocalKV } from "@real1ty-obsidian-plugins";
+import { LocalKV } from "@real1ty/obsidian-plugins";
 import { z } from "zod";
 
 const NAMESPACE = "prisma-calendar:state:last-used-calendar";

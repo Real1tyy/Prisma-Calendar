@@ -1,4 +1,4 @@
-import { parseIntoList } from "@real1ty-obsidian-plugins";
+import { parseIntoList } from "@real1ty/obsidian-plugins";
 import { z } from "zod";
 
 import {

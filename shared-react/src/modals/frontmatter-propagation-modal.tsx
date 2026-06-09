@@ -1,4 +1,4 @@
-import { formatChangeForDisplay, type FrontmatterChange, type FrontmatterDiff } from "@real1ty-obsidian-plugins";
+import { formatChangeForDisplay, type FrontmatterChange, type FrontmatterDiff } from "@real1ty/obsidian-plugins";
 import type { App } from "obsidian";
 import { memo } from "react";
 

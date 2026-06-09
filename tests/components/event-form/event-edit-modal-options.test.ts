@@ -13,8 +13,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { openEventEditModal } from "../../../src/react/modals/event/event-edit-modal";
 
 const showReactModalSpy = vi.fn();
-vi.mock("@real1ty-obsidian-plugins-react", async () => {
-	const actual = await vi.importActual<Record<string, unknown>>("@real1ty-obsidian-plugins-react");
+vi.mock("@real1ty/obsidian-plugins-react", async () => {
+	const actual = await vi.importActual<Record<string, unknown>>("@real1ty/obsidian-plugins-react");
 	return {
 		...actual,
 		showReactModal: (cfg: { render: (close: () => void) => unknown }) => {

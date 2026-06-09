@@ -1,4 +1,4 @@
-import { useEnterToSubmit } from "@real1ty-obsidian-plugins-react";
+import { useEnterToSubmit } from "@real1ty/obsidian-plugins-react";
 import type React from "react";
 import { useCallback, useEffect, useEffectEvent, useRef, type RefObject } from "react";
 

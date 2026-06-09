@@ -1,4 +1,4 @@
-import { toSafeString } from "@real1ty-obsidian-plugins";
+import { toSafeString } from "@real1ty/obsidian-plugins";
 
 import { NumberInput, Slider, TextInput } from "../../primitives/controls";
 import { testIdProp } from "../../utils/test-id";

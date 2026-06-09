@@ -1,4 +1,4 @@
-import type { ReleaseCheckService, ReleaseUpdateNotice } from "@real1ty-obsidian-plugins";
+import type { ReleaseCheckService, ReleaseUpdateNotice } from "@real1ty/obsidian-plugins";
 import { useEffect } from "react";
 
 import { useExternalSnapshot } from "../reactive/use-external-snapshot";

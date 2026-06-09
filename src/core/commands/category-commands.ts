@@ -1,4 +1,4 @@
-import { removeCategoryFromProperty, renameCategoryInProperty } from "@real1ty-obsidian-plugins";
+import { removeCategoryFromProperty, renameCategoryInProperty } from "@real1ty/obsidian-plugins";
 
 import type { Frontmatter } from "../../types";
 import type { EventFileRepository } from "../event-file-repository";

@@ -1,4 +1,4 @@
-import "@real1ty-obsidian-plugins/testing/setup-window";
+import "@real1ty/obsidian-plugins/testing/setup-window";
 
 import { beforeEach, vi } from "vitest";
 
@@ -17,19 +17,19 @@ import {
 } from "./mocks/obsidian";
 
 // Mock problematic utils modules that depend on obsidian
-vi.mock("@real1ty-obsidian-plugins/utils/templater-utils", () => ({
+vi.mock("@real1ty/obsidian-plugins/utils/templater-utils", () => ({
 	createFromTemplate: vi.fn().mockResolvedValue("created content"),
 	isTemplaterAvailable: vi.fn().mockReturnValue(false),
 }));
 
-vi.mock("@real1ty-obsidian-plugins/utils/file-operations", () => ({
+vi.mock("@real1ty/obsidian-plugins/utils/file-operations", () => ({
 	duplicateFileWithNewZettelId: vi.fn().mockResolvedValue(undefined),
 	withFile: vi.fn().mockImplementation((callback) => callback),
 	withFileOperation: vi.fn().mockImplementation((callback) => callback),
 }));
 
 // Mock the common-plugin package that has missing files
-vi.mock("@real1ty-obsidian-plugins/common-plugin", () => ({
+vi.mock("@real1ty/obsidian-plugins/common-plugin", () => ({
 	MountableView: (BaseClass: any) => {
 		return class extends BaseClass {
 			app: any;
@@ -42,7 +42,7 @@ vi.mock("@real1ty-obsidian-plugins/common-plugin", () => ({
 }));
 
 // Mock async-utils that might be missing
-vi.mock("@real1ty-obsidian-plugins/utils/async-utils", () => ({
+vi.mock("@real1ty/obsidian-plugins/utils/async-utils", () => ({
 	onceAsync: vi.fn().mockImplementation((fn) => fn),
 }));
 

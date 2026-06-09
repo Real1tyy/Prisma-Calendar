@@ -1,4 +1,4 @@
-import { roundToNearestHour, toLocalISOString } from "@real1ty-obsidian-plugins";
+import { roundToNearestHour, toLocalISOString } from "@real1ty/obsidian-plugins";
 import { Notice, TFile } from "obsidian";
 
 import type CustomCalendarPlugin from "../../main";

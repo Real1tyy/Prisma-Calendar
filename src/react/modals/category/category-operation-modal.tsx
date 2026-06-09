@@ -1,5 +1,5 @@
-import { describeError, showProgressModal, type MacroCommand } from "@real1ty-obsidian-plugins";
-import { openConfirmation, openRenameModal } from "@real1ty-obsidian-plugins-react";
+import { describeError, showProgressModal, type MacroCommand } from "@real1ty/obsidian-plugins";
+import { openConfirmation, openRenameModal } from "@real1ty/obsidian-plugins-react";
 import { Notice, type App } from "obsidian";
 import { memo } from "react";
 

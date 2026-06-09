@@ -1,4 +1,4 @@
-import { toLocalISOString } from "@real1ty-obsidian-plugins";
+import { toLocalISOString } from "@real1ty/obsidian-plugins";
 
 import type { EventStore } from "../../core/event-store";
 import type { CalendarEvent } from "../../types/calendar";

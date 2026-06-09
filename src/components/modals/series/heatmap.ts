@@ -1,4 +1,4 @@
-import { buildColorGradient, ColorEvaluator, hexToRgb, showModal } from "@real1ty-obsidian-plugins";
+import { buildColorGradient, ColorEvaluator, hexToRgb, showModal } from "@real1ty/obsidian-plugins";
 import { DateTime } from "luxon";
 import type { App } from "obsidian";
 

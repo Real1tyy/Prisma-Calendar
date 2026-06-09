@@ -1,4 +1,4 @@
-import { booleanTransform, capitalize, optionalDateTransform, optionalTimeTransform } from "@real1ty-obsidian-plugins";
+import { booleanTransform, capitalize, optionalDateTransform, optionalTimeTransform } from "@real1ty/obsidian-plugins";
 import type { DateTime } from "luxon";
 import { z } from "zod";
 

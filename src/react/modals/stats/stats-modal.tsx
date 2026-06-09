@@ -1,4 +1,4 @@
-import { showReactModal, useArrowLeft, useArrowRight, useSettingsStore } from "@real1ty-obsidian-plugins-react";
+import { showReactModal, useArrowLeft, useArrowRight, useSettingsStore } from "@real1ty/obsidian-plugins-react";
 import type { App } from "obsidian";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 

@@ -8,7 +8,7 @@ import { describe, expect, it, vi } from "vitest";
 import { PageHeaderActions, type PageHeaderActionsProps } from "../../../src/react/views/page-header-actions";
 import { createMockApp, renderWithContexts } from "../../fixtures/react-view-fixtures";
 
-vi.mock("@real1ty-obsidian-plugins-react", async (importOriginal) => {
+vi.mock("@real1ty/obsidian-plugins-react", async (importOriginal) => {
 	const actual: Record<string, unknown> = await importOriginal();
 	return {
 		...actual,

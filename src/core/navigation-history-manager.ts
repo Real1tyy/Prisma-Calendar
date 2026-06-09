@@ -1,4 +1,4 @@
-import { HistoryStack } from "@real1ty-obsidian-plugins";
+import { HistoryStack } from "@real1ty/obsidian-plugins";
 
 export interface NavigationEntry {
 	date: Date;

@@ -1,4 +1,4 @@
-import { ensureISOSuffix, type Command } from "@real1ty-obsidian-plugins";
+import { ensureISOSuffix, type Command } from "@real1ty/obsidian-plugins";
 import { Notice, TFile } from "obsidian";
 
 import type CustomCalendarPlugin from "../../main";

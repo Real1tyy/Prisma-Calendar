@@ -1,4 +1,4 @@
-import { ModalSchemaForm, openReactModal, SchemaForm, useZodForm } from "@real1ty-obsidian-plugins-react";
+import { ModalSchemaForm, openReactModal, SchemaForm, useZodForm } from "@real1ty/obsidian-plugins-react";
 import type { App } from "obsidian";
 import { z } from "zod";
 

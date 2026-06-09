@@ -1,4 +1,4 @@
-import { TextInput } from "@real1ty-obsidian-plugins-react";
+import { TextInput } from "@real1ty/obsidian-plugins-react";
 import { memo, useCallback, useState, type ReactNode } from "react";
 
 import { cls } from "../../../constants";

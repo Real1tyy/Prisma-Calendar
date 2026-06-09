@@ -6,7 +6,7 @@ import {
 	toSafeString,
 	withFrontmatter,
 	type FrontmatterDiff,
-} from "@real1ty-obsidian-plugins";
+} from "@real1ty/obsidian-plugins";
 import { DateTime, type DurationLike } from "luxon";
 import { TFile, type App } from "obsidian";
 

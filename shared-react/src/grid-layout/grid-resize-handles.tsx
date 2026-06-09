@@ -1,4 +1,4 @@
-import { createCssUtils } from "@real1ty-obsidian-plugins";
+import { createCssUtils } from "@real1ty/obsidian-plugins";
 import { memo, useEffect, useLayoutEffect, useRef, type CSSProperties } from "react";
 
 import {

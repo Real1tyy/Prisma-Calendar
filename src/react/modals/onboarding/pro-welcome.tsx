@@ -1,5 +1,5 @@
-import { buildUtmUrl } from "@real1ty-obsidian-plugins";
-import { showReactModal, WelcomeModalShell } from "@real1ty-obsidian-plugins-react";
+import { buildUtmUrl } from "@real1ty/obsidian-plugins";
+import { showReactModal, WelcomeModalShell } from "@real1ty/obsidian-plugins-react";
 import type { App } from "obsidian";
 import { memo } from "react";
 

@@ -1,4 +1,4 @@
-import { injectStyleSheet } from "@real1ty-obsidian-plugins";
+import { injectStyleSheet } from "@real1ty/obsidian-plugins";
 import { useEffect } from "react";
 
 import { useScoped, type ScopedTheme } from "../../contexts/theme-context";

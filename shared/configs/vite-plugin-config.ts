@@ -171,8 +171,8 @@ export function obsidianPluginConfig(input: ObsidianPluginConfigInput): (env: { 
 		? pluginDir
 		: path.resolve(pluginDir, "..");
 	const defaultAliases = {
-		"@real1ty-obsidian-plugins-react": path.resolve(sharedRoot, "shared-react/src/index.ts"),
-		"@real1ty-obsidian-plugins": path.resolve(sharedRoot, "shared/src/index.ts"),
+		"@real1ty/obsidian-plugins-react": path.resolve(sharedRoot, "shared-react/src/index.ts"),
+		"@real1ty/obsidian-plugins": path.resolve(sharedRoot, "shared/src/index.ts"),
 	};
 
 	return ({ mode }) => {

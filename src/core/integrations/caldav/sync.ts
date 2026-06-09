@@ -1,4 +1,4 @@
-import { describeError, LocalKV, type KVBackend } from "@real1ty-obsidian-plugins";
+import { describeError, LocalKV, type KVBackend } from "@real1ty/obsidian-plugins";
 import { TFile } from "obsidian";
 
 import {

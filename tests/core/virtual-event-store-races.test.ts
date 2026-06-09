@@ -21,7 +21,7 @@
  * callback aborts and unsubscribes its freshly-produced binding if its
  * captured epoch is stale. These tests pin that behavior.
  */
-import { createDeferred } from "@real1ty-obsidian-plugins/testing";
+import { createDeferred } from "@real1ty/obsidian-plugins/testing";
 import type { BehaviorSubject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 

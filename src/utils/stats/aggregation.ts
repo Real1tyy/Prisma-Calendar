@@ -1,4 +1,4 @@
-import { parseCategories } from "@real1ty-obsidian-plugins";
+import { parseCategories } from "@real1ty/obsidian-plugins";
 
 import { DEFAULT_CATEGORY_PROP } from "../../constants";
 import { isAllDayEvent, type CalendarEvent } from "../../types/calendar";

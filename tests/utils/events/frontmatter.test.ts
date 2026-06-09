@@ -1,4 +1,4 @@
-import type { FrontmatterDiff } from "@real1ty-obsidian-plugins";
+import type { FrontmatterDiff } from "@real1ty/obsidian-plugins";
 import { describe, expect, it } from "vitest";
 
 import type { SingleCalendarConfig } from "../../../src/types/settings";

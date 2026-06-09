@@ -1,4 +1,4 @@
-import { activateView } from "@real1ty-obsidian-plugins";
+import { activateView } from "@real1ty/obsidian-plugins";
 import { Notice } from "obsidian";
 
 import { AI_CHAT_VIEW_TYPE } from "./components/ai-chat-view";

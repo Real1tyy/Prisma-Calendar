@@ -1,4 +1,4 @@
-import { AppContext, SharedReactThemeProvider } from "@real1ty-obsidian-plugins-react";
+import { AppContext, SharedReactThemeProvider } from "@real1ty/obsidian-plugins-react";
 import { render } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { BehaviorSubject } from "rxjs";

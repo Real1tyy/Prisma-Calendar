@@ -1,5 +1,5 @@
-import { buildUtmUrl } from "@real1ty-obsidian-plugins";
-import { SettingsNav, type SettingsFooterLink } from "@real1ty-obsidian-plugins-react";
+import { buildUtmUrl } from "@real1ty/obsidian-plugins";
+import { SettingsNav, type SettingsFooterLink } from "@real1ty/obsidian-plugins-react";
 import { memo, useCallback, useDeferredValue, useState } from "react";
 
 import { cls, docsUrl } from "../../constants";

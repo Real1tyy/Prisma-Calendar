@@ -1,4 +1,4 @@
-import { ReleaseCheckService } from "@real1ty-obsidian-plugins";
+import { ReleaseCheckService } from "@real1ty/obsidian-plugins";
 import { screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 

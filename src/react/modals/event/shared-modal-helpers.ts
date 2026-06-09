@@ -1,4 +1,4 @@
-import { serializeFrontmatterValue } from "@real1ty-obsidian-plugins";
+import { serializeFrontmatterValue } from "@real1ty/obsidian-plugins";
 import { Notice, type App } from "obsidian";
 
 import { extractPresetFromState, type EventFormState } from "../../../components/modals/event/event-form-state";

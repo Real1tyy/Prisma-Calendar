@@ -10,7 +10,7 @@
  * satisfy the renderer's field accesses, typed as `any` because FullCalendar's
  * EventImpl has a much larger surface we don't need.
  */
-import { renderToApprovalString } from "@real1ty-obsidian-plugins/testing";
+import { renderToApprovalString } from "@real1ty/obsidian-plugins/testing";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { renderEventContent } from "../../src/components/calendar-event-renderer";

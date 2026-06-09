@@ -1,4 +1,4 @@
-import { useFocusOnMount, VirtualList, type VirtualListHandle } from "@real1ty-obsidian-plugins-react";
+import { useFocusOnMount, VirtualList, type VirtualListHandle } from "@real1ty/obsidian-plugins-react";
 import React, {
 	memo,
 	useCallback,

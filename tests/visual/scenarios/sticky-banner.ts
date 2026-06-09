@@ -1,5 +1,5 @@
-import { createMockApp } from "@real1ty-obsidian-plugins/testing";
-import { makeContainer, type Scenario } from "@real1ty-obsidian-plugins/testing/visual";
+import { createMockApp } from "@real1ty/obsidian-plugins/testing";
+import { makeContainer, type Scenario } from "@real1ty/obsidian-plugins/testing/visual";
 import type { App } from "obsidian";
 
 import { createStickyBanner } from "../../../src/components/sticky-banner";

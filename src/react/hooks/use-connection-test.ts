@@ -1,4 +1,4 @@
-import { describeError } from "@real1ty-obsidian-plugins";
+import { describeError } from "@real1ty/obsidian-plugins";
 import { Notice } from "obsidian";
 import { useCallback, useState } from "react";
 

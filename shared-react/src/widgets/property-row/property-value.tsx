@@ -1,4 +1,4 @@
-import { getObsidianLinkAlias, getObsidianLinkPath, isObsidianLink } from "@real1ty-obsidian-plugins";
+import { getObsidianLinkAlias, getObsidianLinkPath, isObsidianLink } from "@real1ty/obsidian-plugins";
 import type { App } from "obsidian";
 import { Fragment, memo, type MouseEvent } from "react";
 

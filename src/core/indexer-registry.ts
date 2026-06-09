@@ -1,4 +1,4 @@
-import type { SyncStore } from "@real1ty-obsidian-plugins";
+import type { SyncStore } from "@real1ty/obsidian-plugins";
 import type { App } from "obsidian";
 import type { BehaviorSubject } from "rxjs";
 

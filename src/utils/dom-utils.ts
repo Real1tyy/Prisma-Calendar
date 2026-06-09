@@ -1,4 +1,4 @@
-import { createModalButtons as createModalButtonsBase } from "@real1ty-obsidian-plugins";
+import { createModalButtons as createModalButtonsBase } from "@real1ty/obsidian-plugins";
 
 import { CSS_PREFIX } from "../constants";
 

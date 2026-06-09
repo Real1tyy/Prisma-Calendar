@@ -1,4 +1,4 @@
-import { ensureISOSuffix, toLocalISOString } from "@real1ty-obsidian-plugins";
+import { ensureISOSuffix, toLocalISOString } from "@real1ty/obsidian-plugins";
 import { Subject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 

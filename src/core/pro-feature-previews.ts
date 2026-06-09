@@ -3,7 +3,7 @@
 // inlining all PNGs added ~1 MB to the bundle. The source images still live in
 // `docs-site/static/img/pro-previews/` and are deployed by Docusaurus to
 // `<DOCS_BASE_URL>/img/pro-previews/<file>.png`.
-import { buildUtmUrl } from "@real1ty-obsidian-plugins";
+import { buildUtmUrl } from "@real1ty/obsidian-plugins";
 
 import { DOCS_BASE_URL } from "../constants";
 import { PRO_PURCHASE_URL, type PRO_FEATURES } from "./license";

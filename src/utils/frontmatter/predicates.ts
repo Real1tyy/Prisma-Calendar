@@ -1,4 +1,4 @@
-import { parseAsLocalDate, toSafeString } from "@real1ty-obsidian-plugins";
+import { parseAsLocalDate, toSafeString } from "@real1ty/obsidian-plugins";
 
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
 

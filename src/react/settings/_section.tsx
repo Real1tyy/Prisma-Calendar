@@ -1,4 +1,4 @@
-import { SchemaSection } from "@real1ty-obsidian-plugins-react";
+import { SchemaSection } from "@real1ty/obsidian-plugins-react";
 import type { ComponentProps } from "react";
 
 export const PRISMA_SETTINGS_TEST_ID_PREFIX = "prisma-settings-";

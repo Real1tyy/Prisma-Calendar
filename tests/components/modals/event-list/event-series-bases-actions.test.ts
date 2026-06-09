@@ -1,4 +1,4 @@
-import type * as RealityPlugins from "@real1ty-obsidian-plugins";
+import type * as RealityPlugins from "@real1ty/obsidian-plugins";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { CalendarBundle } from "../../../../src/core/calendar-bundle";
@@ -16,8 +16,8 @@ const showHeatmapModal = vi.hoisted(() => vi.fn());
 const showTimelineModal = vi.hoisted(() => vi.fn());
 const renderProUpgradeBanner = vi.hoisted(() => vi.fn());
 
-vi.mock("@real1ty-obsidian-plugins", async () => {
-	const actual = await vi.importActual<typeof RealityPlugins>("@real1ty-obsidian-plugins");
+vi.mock("@real1ty/obsidian-plugins", async () => {
+	const actual = await vi.importActual<typeof RealityPlugins>("@real1ty/obsidian-plugins");
 	return { ...actual, showModal };
 });
 vi.mock("../../../../src/components/modals", () => ({

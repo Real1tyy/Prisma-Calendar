@@ -2,7 +2,7 @@ import { Calendar, type CalendarOptions } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import { ColorEvaluator, MS_PER_DAY } from "@real1ty-obsidian-plugins";
+import { ColorEvaluator, MS_PER_DAY } from "@real1ty/obsidian-plugins";
 import { BasesView, Notice, type BasesQueryResult, type QueryController } from "obsidian";
 import { distinctUntilChanged, skip, type Subscription } from "rxjs";
 

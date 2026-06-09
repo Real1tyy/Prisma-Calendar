@@ -41,7 +41,7 @@ export interface CellProps {
 	children: ReactNode;
 }
 
-const CELL_MARKER: unique symbol = Symbol.for("@real1ty-obsidian-plugins-react/grid-layout/Cell");
+const CELL_MARKER: unique symbol = Symbol.for("@real1ty/obsidian-plugins-react/grid-layout/Cell");
 
 interface CellComponent {
 	(props: CellProps): null;

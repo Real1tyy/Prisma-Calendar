@@ -1,4 +1,4 @@
-import { mergeSorted, perf } from "@real1ty-obsidian-plugins";
+import { mergeSorted, perf } from "@real1ty/obsidian-plugins";
 import { DateTime } from "luxon";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import BTree from "sorted-btree";

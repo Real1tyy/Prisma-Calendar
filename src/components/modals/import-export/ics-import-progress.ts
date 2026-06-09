@@ -1,4 +1,4 @@
-import { showProgressModal } from "@real1ty-obsidian-plugins";
+import { showProgressModal } from "@real1ty/obsidian-plugins";
 import type { App } from "obsidian";
 
 import { CSS_PREFIX } from "../../../constants";

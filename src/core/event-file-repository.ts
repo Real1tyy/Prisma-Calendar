@@ -8,7 +8,7 @@ import {
 	type SyncStore,
 	type VaultRow,
 	type VaultTableEvent,
-} from "@real1ty-obsidian-plugins";
+} from "@real1ty/obsidian-plugins";
 import { TFile, type App } from "obsidian";
 import { BehaviorSubject, Subject, type Observable, type Subscription } from "rxjs";
 

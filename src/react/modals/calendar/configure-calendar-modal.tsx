@@ -1,4 +1,4 @@
-import { openReactModal, TextInput } from "@real1ty-obsidian-plugins-react";
+import { openReactModal, TextInput } from "@real1ty/obsidian-plugins-react";
 import type { App } from "obsidian";
 import { memo, useCallback, useEffect, useState } from "react";
 

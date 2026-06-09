@@ -12,7 +12,7 @@ import {
 	type TabbedContainerState,
 	type TabDefinition,
 	type TabEntry,
-} from "@real1ty-obsidian-plugins-react";
+} from "@real1ty/obsidian-plugins-react";
 import type { App, WorkspaceLeaf } from "obsidian";
 import { createElement, memo, useEffect, useRef, type RefObject } from "react";
 

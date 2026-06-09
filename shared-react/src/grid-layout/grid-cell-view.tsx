@@ -1,4 +1,4 @@
-import { createCssUtils, showModal } from "@real1ty-obsidian-plugins";
+import { createCssUtils, showModal } from "@real1ty/obsidian-plugins";
 import { setIcon, type App } from "obsidian";
 import { memo, useCallback, useEffect, useMemo, useRef, type CSSProperties } from "react";
 
