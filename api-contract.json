@@ -1,7 +1,7 @@
 {
 	"contractVersion": 1,
 	"globalKey": "PrismaCalendar",
-	"pluginVersion": "2.20.0",
+	"pluginVersion": "2.20.1",
 	"actions": {
 		"activate": {
 			"description": "Activate the Pro license by key. Persists the key to plugin settings.",
