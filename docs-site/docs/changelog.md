@@ -4,6 +4,13 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 2.20.1 - 6/9/2026
+
+### Fixed
+- **Obsidian ESLint rule compliance**: cleaned up code flagged by the Obsidian-specific ESLint rules so the project passes the stricter plugin lint checks without changing runtime behavior.
+
+---
+
 ## 2.20.0 - 6/7/2026
 
 > **TLDR:** The **Properties** tab now shows an indexing summary — how many notes became events and how many couldn't be read — with a **Reindex** button to force a fresh re-read. And changing any property mapping or filter now takes effect immediately instead of doing nothing until you restart Obsidian.
