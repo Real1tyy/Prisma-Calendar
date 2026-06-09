@@ -9,13 +9,8 @@ import type { SettingsStorelike as BaseSettingsStorelike } from "./use-settings-
  * Looser structural type so schema-driven primitives don't force consumers'
  * invariant settings generics into a single concrete shape. Field values are
  * unknown at this layer; the schema carries the real types.
- *
- * The `any` default is load-bearing: `BehaviorSubject` is invariant in `T` and
- * concrete settings shapes carry no index signature, so `unknown`/`Record`/`object`
- * defaults break consumer typecheck (e.g. page-header). It cannot be retyped.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- load-bearing default; see above
-export type SettingsStorelike<T = any> = BaseSettingsStorelike<T>;
+export type SettingsStorelike<T = Record<string, unknown>> = BaseSettingsStorelike<T>;
 
 /**
  * Setter accepts either a direct value OR an updater function that receives
@@ -56,9 +51,9 @@ function makeBinding<V>(value: V, onChange: SchemaFieldSetter<V>): SchemaFieldBi
  */
 export function pathFilteredSnapshot<V>(store: SettingsStorelike, path: string): SnapshotSubscribable<V> {
 	return {
-		getValue: () => getNestedValue(store.settings$.getValue() as Record<string, unknown>, path) as V,
+		getValue: () => getNestedValue(store.settings$.getValue(), path) as V,
 		subscribe(listener) {
-			let last = getNestedValue(store.settings$.getValue() as Record<string, unknown>, path);
+			let last = getNestedValue(store.settings$.getValue(), path);
 			const sub = store.settings$.subscribe((settings: Record<string, unknown>) => {
 				const next = getNestedValue(settings, path);
 				if (next !== last) {

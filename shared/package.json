@@ -1,5 +1,5 @@
 {
-	"name": "shared",
+	"name": "@real1ty-obsidian-plugins",
 	"version": "2.34.0",
 	"type": "module",
 	"main": "./src/index.ts",

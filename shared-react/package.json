@@ -1,5 +1,5 @@
 {
-	"name": "shared-react",
+	"name": "@real1ty-obsidian-plugins-react",
 	"version": "0.1.0",
 	"type": "module",
 	"main": "./src/index.ts",
