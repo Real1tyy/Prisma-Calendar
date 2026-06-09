@@ -105,8 +105,8 @@ export function useSchemaField<V>(store: SettingsStorelike, path: string): Schem
 
 	const onChange = useCallback<SchemaFieldSetter<V>>(
 		(next) => {
-			const updateSettings = store.updateSettings as BaseSettingsStorelike<Record<string, unknown>>["updateSettings"];
-			void updateSettings((s) => {
+			const typedStore = store as BaseSettingsStorelike<Record<string, unknown>>;
+			void typedStore.updateSettings((s) => {
 				const resolved = typeof next === "function" ? (next as (prev: V) => V)(getNestedValue(s, path) as V) : next;
 				return setNestedValue(s, path, resolved);
 			});
