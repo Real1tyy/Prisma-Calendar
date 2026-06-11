@@ -1,3 +1,4 @@
+export * from "./general-section";
 export * from "./icon-picker";
 export * from "./license-section";
 export * from "./manager-list";
