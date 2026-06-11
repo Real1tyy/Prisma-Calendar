@@ -67,6 +67,14 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 			};
 		}
 
+		// Block until the indexer has fed every already-synced note into the
+		// tracked-state map. A sync that races hydration (cold start, auto-sync
+		// tick, or mid-resync) would see an empty map and re-create every event.
+		await this.syncStateManager.whenHydrated();
+		if (this.destroyed) {
+			return { ...defaultResult, success: false, errors: ["Sync service destroyed"] };
+		}
+
 		const result: ICSSubscriptionSyncResult = { ...defaultResult };
 
 		try {

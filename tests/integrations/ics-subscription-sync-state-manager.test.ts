@@ -16,15 +16,16 @@
  * call.
  */
 import type { App } from "obsidian";
-import { BehaviorSubject, NEVER } from "rxjs";
+import { BehaviorSubject, NEVER, Subject } from "rxjs";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ImportedEvent } from "../../src/core/integrations/ics-import";
 import { computeIcsSubscriptionSyncPlan } from "../../src/core/integrations/ics-subscription/sync-planner";
 import { ICSSubscriptionSyncStateManager } from "../../src/core/integrations/ics-subscription/sync-state-manager";
 import type { ICSSubscriptionSyncMetadata } from "../../src/core/integrations/ics-subscription/types";
-import type { CalendarEventSource } from "../../src/types/event-source";
+import type { CalendarEventSource, IndexerEvent } from "../../src/types/event-source";
 import type { SingleCalendarConfig } from "../../src/types/settings";
+import { createRawEventSource } from "../fixtures";
 import { createMockSingleCalendarSettings } from "../fixtures/settings-fixtures";
 import { createMockApp } from "../setup";
 
@@ -159,5 +160,118 @@ describe("ICSSubscriptionSyncStateManager — planner integration on a rapid sec
 		});
 
 		expect(plan.summary).toMatchObject({ create: 2, skipUnchanged: 0, delete: 0 });
+	});
+});
+
+// The race this guards: `byUid` is hydrated reactively from the indexer's
+// `events$`. The pre-fix bug let a sync run before that hydration finished, so
+// the planner treated every already-on-disk event as `create` — the duplicate
+// storm that self-healing then had to trash. The state manager now exposes a
+// `whenHydrated()` gate the sync services await; these tests drive it through a
+// controllable indexer signal — the race is impossible to force deterministically
+// in E2E, where a small seeded vault finishes indexing before any sync can fire.
+describe("ICSSubscriptionSyncStateManager — index-hydration gate", () => {
+	function controllableSource(): {
+		source: CalendarEventSource;
+		events$: Subject<IndexerEvent>;
+		indexingComplete$: BehaviorSubject<boolean>;
+	} {
+		const events$ = new Subject<IndexerEvent>();
+		const indexingComplete$ = new BehaviorSubject<boolean>(false);
+		const source: CalendarEventSource = {
+			events$,
+			indexingComplete$,
+			markFileAsDone: vi.fn().mockResolvedValue(undefined),
+			resync: vi.fn(),
+		};
+		return { source, events$, indexingComplete$ };
+	}
+
+	function makeManager(source: CalendarEventSource) {
+		const app = createMockApp() as unknown as App;
+		const settings = createMockSingleCalendarSettings();
+		const settings$ = new BehaviorSubject<SingleCalendarConfig>(settings);
+		const manager = new ICSSubscriptionSyncStateManager(app, source, settings$);
+		return { manager, settings };
+	}
+
+	// Drain the microtask queue so a `whenHydrated()` that is genuinely pending
+	// has had every chance to settle before we assert it has not.
+	const flushMicrotasks = async (): Promise<void> => {
+		await Promise.resolve();
+		await Promise.resolve();
+	};
+
+	it("whenHydrated() stays pending until the indexer signals completion", async () => {
+		const { source, indexingComplete$ } = controllableSource();
+		const { manager } = makeManager(source);
+
+		let resolved = false;
+		const gate = manager.whenHydrated().then(() => {
+			resolved = true;
+		});
+
+		await flushMicrotasks();
+		expect(resolved).toBe(false);
+
+		indexingComplete$.next(true);
+		await gate;
+		expect(resolved).toBe(true);
+	});
+
+	it("whenHydrated() resolves immediately when the index is already hydrated", async () => {
+		const { source, indexingComplete$ } = controllableSource();
+		indexingComplete$.next(true);
+		const { manager } = makeManager(source);
+
+		await expect(manager.whenHydrated()).resolves.toBeUndefined();
+	});
+
+	it("re-arms after a resync: pending while re-indexing, resolves once it completes again", async () => {
+		const { source, indexingComplete$ } = controllableSource();
+		indexingComplete$.next(true);
+		const { manager } = makeManager(source);
+
+		indexingComplete$.next(false); // resync()/reindex started — byUid is stale
+		let resolved = false;
+		const gate = manager.whenHydrated().then(() => {
+			resolved = true;
+		});
+
+		await flushMicrotasks();
+		expect(resolved).toBe(false);
+
+		indexingComplete$.next(true);
+		await gate;
+		expect(resolved).toBe(true);
+	});
+
+	it("a pre-existing note streamed by the indexer is tracked before hydration completes, so the planner skips it instead of re-creating", async () => {
+		const { source, events$, indexingComplete$ } = controllableSource();
+		const { manager, settings } = makeManager(source);
+
+		const trackedMeta = meta({ uid: "uid-existing" });
+		events$.next({
+			type: "file-changed",
+			filePath: "Events/Existing.md",
+			source: createRawEventSource({
+				filePath: "Events/Existing.md",
+				frontmatter: { [settings.icsSubscriptionProp]: trackedMeta },
+			}),
+		});
+		indexingComplete$.next(true);
+		await manager.whenHydrated();
+
+		const trackedBySubscription = manager.getAllForSubscription("sub-a");
+		expect(trackedBySubscription).toHaveLength(1);
+
+		const plan = computeIcsSubscriptionSyncPlan({
+			subscriptionId: "sub-a",
+			remoteEvents: [remote("uid-existing", "Existing")],
+			trackedBySubscription,
+			findByUidGlobal: (uid) => manager.findByUidGlobal(uid),
+		});
+
+		expect(plan.summary).toMatchObject({ create: 0, skipUnchanged: 1 });
 	});
 });

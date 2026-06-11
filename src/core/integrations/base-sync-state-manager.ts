@@ -1,5 +1,5 @@
 import type { App } from "obsidian";
-import type { BehaviorSubject, Subscription } from "rxjs";
+import { firstValueFrom, type BehaviorSubject, type Observable, type Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
 import type { z } from "zod";
 
@@ -16,6 +16,9 @@ export interface TrackedSyncEvent<TMetadata> {
 export abstract class BaseSyncStateManager<TMetadata extends { uid: string }> {
 	private indexerSubscription: Subscription | null = null;
 	private settingsSubscription: Subscription | null = null;
+	private indexingCompleteSubscription: Subscription | null = null;
+	private readonly indexingComplete$: Observable<boolean>;
+	private indexHydrated = false;
 	protected frontmatterProp: string;
 	protected readonly byUid: Map<string, TrackedSyncEvent<TMetadata>> = new Map();
 
@@ -37,6 +40,11 @@ export abstract class BaseSyncStateManager<TMetadata extends { uid: string }> {
 			.subscribe((event: IndexerEvent) => {
 				this.handleIndexerEvent(event);
 			});
+
+		this.indexingComplete$ = eventSource.indexingComplete$;
+		this.indexingCompleteSubscription = eventSource.indexingComplete$.subscribe((complete) => {
+			this.indexHydrated = complete;
+		});
 	}
 
 	destroy(): void {
@@ -44,7 +52,33 @@ export abstract class BaseSyncStateManager<TMetadata extends { uid: string }> {
 		this.indexerSubscription = null;
 		this.settingsSubscription?.unsubscribe();
 		this.settingsSubscription = null;
+		this.indexingCompleteSubscription?.unsubscribe();
+		this.indexingCompleteSubscription = null;
 		this.clearState();
+	}
+
+	/**
+	 * Resolves once the indexer has finished its scan and fed every tracked file
+	 * into `byUid`. Sync services MUST await this before computing a plan: the
+	 * tracked-state map is hydrated reactively off `events$`, so a sync that runs
+	 * before the scan drains sees an empty map and re-creates every
+	 * already-synced event as a duplicate (then self-heals by trashing the
+	 * collisions). Gating the sync itself — not just the startup caller — makes
+	 * every entry point safe: cold start, the auto-sync interval (armed at
+	 * construction), a manual trigger, and a sync that lands mid-`resync()`
+	 * (where `indexingComplete$` has flipped back to `false`) all wait here.
+	 *
+	 * Already-hydrated is the hot path: `indexingComplete$` holds `true`, so this
+	 * returns synchronously with no real wait.
+	 */
+	async whenHydrated(): Promise<void> {
+		if (this.indexHydrated) return;
+		try {
+			await firstValueFrom(this.indexingComplete$.pipe(filter((complete) => complete)));
+		} catch {
+			// The source completed (manager destroyed) before hydration. The
+			// caller's own destroyed-guard handles the rest — never hang the sync.
+		}
 	}
 
 	findByUidGlobal(uid: string): TrackedSyncEvent<TMetadata> | null {
