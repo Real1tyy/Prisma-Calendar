@@ -16,3 +16,23 @@ export function edgeScrollDirection(
 	if (pointerX > rect.right - threshold) return "next";
 	return null;
 }
+
+/** Vertical edge a pointer is within, while dragging — the cue to scroll the time grid. */
+export type VerticalEdgeScrollDirection = "up" | "down" | null;
+
+/**
+ * Which vertical edge (if any) a pointer at `pointerY` is hovering, given the
+ * time-grid scroller's bounding `rect` and a `threshold` px band inside each
+ * edge. Pure twin of `edgeScrollDirection` — the drag listener maps the result
+ * to a per-frame `scrollTop` nudge so a zoomed-in time grid scrolls slowly
+ * toward the dragged-to-time while the pointer rests near the top/bottom edge.
+ */
+export function verticalEdgeScrollDirection(
+	pointerY: number,
+	rect: { top: number; bottom: number },
+	threshold: number
+): VerticalEdgeScrollDirection {
+	if (pointerY < rect.top + threshold) return "up";
+	if (pointerY > rect.bottom - threshold) return "down";
+	return null;
+}

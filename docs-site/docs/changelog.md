@@ -4,6 +4,15 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 2.21.0 - 6/11/2026
+
+> **TLDR:** Dragging an event to the top or bottom edge of a zoomed-in day/week view now scrolls the grid slowly so you can drop it on an off-screen time.
+
+### Added
+- **Scroll while dragging vertically**: in day and week views, holding a dragged event against the top or bottom edge of a zoomed-in grid now scrolls it slowly up or down — the vertical counterpart to the existing left/right edge paging — so you can drop on a time that's currently off-screen. See [Calendar View → Scrolling while dragging](./features/calendar/calendar-view.md#scrolling-while-dragging).
+
+---
+
 ## 2.20.1 - 6/9/2026
 
 ### Fixed

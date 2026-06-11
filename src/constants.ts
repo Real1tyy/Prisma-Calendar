@@ -239,5 +239,7 @@ export const EVENT_HIGHLIGHT_DURATION_MS = 5_000;
 export const GO_TO_SOURCE_HIGHLIGHT_DELAY_MS = 300;
 export const DOUBLE_TAP_DELAY_MS = 300;
 export const DRAG_EDGE_THRESHOLD_PX = 50;
+/** Per-animation-frame scroll step (px) when an event drag rests near the time grid's top/bottom edge. */
+export const DRAG_VERTICAL_SCROLL_SPEED_PX = 8;
 export const POINTER_UP_IGNORE_CLICKS_DELAY_MS = 1_500;
 export const MS_PER_DAY = 24 * 60 * 60 * 1000;

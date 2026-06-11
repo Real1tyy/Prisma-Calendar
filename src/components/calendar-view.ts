@@ -30,6 +30,7 @@ import {
 	CSS_PREFIX,
 	DOUBLE_TAP_DELAY_MS,
 	DRAG_EDGE_THRESHOLD_PX,
+	DRAG_VERTICAL_SCROLL_SPEED_PX,
 	EVENT_HIGHLIGHT_DURATION_MS,
 	INITIAL_SIZE_UPDATE_DELAY_MS,
 	POINTER_UP_IGNORE_CLICKS_DELAY_MS,
@@ -62,7 +63,11 @@ import {
 	type FCPrismaEventInput,
 } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/index";
-import { edgeScrollDirection } from "../utils/calendar/edge-scroll";
+import {
+	edgeScrollDirection,
+	verticalEdgeScrollDirection,
+	type VerticalEdgeScrollDirection,
+} from "../utils/calendar/edge-scroll";
 import { getCalendarRenderingKey } from "../utils/calendar/settings";
 import { stripZ } from "../utils/dates/iso";
 import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
@@ -126,6 +131,9 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	private dragEdgeScrollListener: ((e: PointerEvent) => void) | null = null;
 	private dragEdgeScrollTimeout: number | null = null;
 	private lastEdgeScrollTime = 0;
+	private dragVerticalScroller: HTMLElement | null = null;
+	private dragVerticalScrollDir: VerticalEdgeScrollDirection = null;
+	private dragVerticalScrollFrame: number | null = null;
 	private refreshRafId: number | null = null;
 	private lastMobileTapTime = 0;
 	private get navigationHistory() {
@@ -2115,10 +2123,22 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const EDGE_THRESHOLD = DRAG_EDGE_THRESHOLD_PX;
 		const scrollDelay = this.bundle.settingsStore.currentSettings.dragEdgeScrollDelayMs;
 
+		// The time grid's scrollable element only exists, and only overflows, when
+		// the view is zoomed in enough that the day doesn't fit. When it does, a
+		// pointer resting near the top/bottom edge scrolls it slowly so the drop
+		// can land on an off-screen time.
+		this.dragVerticalScroller = this.findVerticalScroller();
+
 		// pointermove (not mousemove) so edge-scroll fires under touch drags too — a
 		// FullCalendar touch drag emits pointer events, never mousemove.
 		this.dragEdgeScrollListener = (e: PointerEvent) => {
 			if (!this.calendar) return;
+
+			if (this.dragVerticalScroller) {
+				const vRect = this.dragVerticalScroller.getBoundingClientRect();
+				this.dragVerticalScrollDir = verticalEdgeScrollDirection(e.clientY, vRect, EDGE_THRESHOLD);
+				if (this.dragVerticalScrollDir) this.ensureVerticalScrollLoop();
+			}
 
 			const now = Date.now();
 			if (now - this.lastEdgeScrollTime < scrollDelay) {
@@ -2139,6 +2159,41 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		activeDocument.addEventListener("pointermove", this.dragEdgeScrollListener);
 	}
 
+	/**
+	 * The element whose `scrollTop` moves the time grid vertically. The calendar
+	 * runs `height: "auto"`, so FullCalendar has no internal scroller — the outer
+	 * `.prisma-tab-content` (Obsidian's `.view-content` as fallback) is the sole
+	 * scroll container, same element `refreshEvents`/zoom restore drive. Returns
+	 * `null` when it doesn't overflow (the day fits, so nothing to scroll).
+	 */
+	private findVerticalScroller(): HTMLElement | null {
+		const scroller =
+			this.hostEl.querySelector<HTMLElement>(".prisma-tab-content") ??
+			this.hostEl.querySelector<HTMLElement>(".view-content");
+		if (!scroller || scroller.scrollHeight <= scroller.clientHeight) return null;
+		return scroller;
+	}
+
+	/**
+	 * Drive a per-frame `scrollTop` nudge while the pointer rests in a vertical
+	 * edge band. Self-terminates the moment the direction clears (pointer left the
+	 * band) so a still pointer in the band keeps scrolling, and a centred one stops.
+	 */
+	private ensureVerticalScrollLoop(): void {
+		if (this.dragVerticalScrollFrame !== null) return;
+		const step = () => {
+			const dir = this.dragVerticalScrollDir;
+			const scroller = this.dragVerticalScroller;
+			if (!dir || !scroller) {
+				this.dragVerticalScrollFrame = null;
+				return;
+			}
+			scroller.scrollTop += dir === "up" ? -DRAG_VERTICAL_SCROLL_SPEED_PX : DRAG_VERTICAL_SCROLL_SPEED_PX;
+			this.dragVerticalScrollFrame = activeWindow.requestAnimationFrame(step);
+		};
+		this.dragVerticalScrollFrame = activeWindow.requestAnimationFrame(step);
+	}
+
 	private cleanupDragEdgeScrolling(): void {
 		if (this.dragEdgeScrollListener) {
 			activeDocument.removeEventListener("pointermove", this.dragEdgeScrollListener);
@@ -2148,6 +2203,12 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			window.clearTimeout(this.dragEdgeScrollTimeout);
 			this.dragEdgeScrollTimeout = null;
 		}
+		if (this.dragVerticalScrollFrame !== null) {
+			activeWindow.cancelAnimationFrame(this.dragVerticalScrollFrame);
+			this.dragVerticalScrollFrame = null;
+		}
+		this.dragVerticalScrollDir = null;
+		this.dragVerticalScroller = null;
 		this.lastEdgeScrollTime = 0;
 	}
 

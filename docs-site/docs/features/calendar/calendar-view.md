@@ -230,6 +230,15 @@ Configure in **Settings → Calendar → Event Interaction**.
 
 If an event's underlying note is deleted or moved outside the calendar, the event can briefly linger on the grid with nothing behind it. Clicking, right-clicking, or dragging such a stale event removes it from the calendar — instead of failing to open or edit a file that no longer exists.
 
+### Scrolling while dragging
+
+In day and week views, hold a dragged event near an edge of the grid and the calendar follows along so you can drop it somewhere that's currently off-screen:
+
+- **Left or right edge** — pages to the previous or next period, so you can move an event to another week or day without letting go.
+- **Top or bottom edge** — when you're zoomed in far enough that the whole day doesn't fit, the grid scrolls slowly up or down so you can drop the event on an earlier or later time. Rest the event against the edge to keep scrolling; move back toward the middle to stop.
+
+The pause before paging at the left/right edge is the **Drag edge scroll delay** setting; vertical scrolling starts as soon as you reach the top or bottom edge.
+
 ## Event Overlap
 
 Control how events display when they share the same time:
