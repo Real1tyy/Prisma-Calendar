@@ -1,12 +1,9 @@
 import { buildUtmUrl } from "@real1ty/obsidian-plugins";
 import {
 	Dropdown,
-	LicenseSection,
-	OutboundLink,
-	SettingCard,
+	GeneralSection,
 	SettingHeading,
 	SettingItem,
-	SettingsTransferButtons,
 	showWhatsNewReactModal,
 	Toggle,
 	useSchemaField,
@@ -14,7 +11,7 @@ import {
 } from "@real1ty/obsidian-plugins-react";
 import { memo, useCallback, useState } from "react";
 
-import { cls, settingsDocUrl, tid } from "../../constants";
+import { cls, docsUrl, settingsDocUrl, tid } from "../../constants";
 import { ACCOUNT_URL, FREE_MAX_EVENT_PRESETS } from "../../core/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import { buildWhatsNewConfig } from "../../core/whats-new-config";
@@ -24,9 +21,7 @@ import {
 	SingleCalendarConfigSchema,
 	type CustomCalendarSettings,
 } from "../../types/settings";
-// Onboarding tour disabled for now — kept in the codebase but not wired up.
-// import { startPrismaTour } from "../onboarding/prisma-tour";
-import { PrismaSection } from "./_section";
+import { PRISMA_SETTINGS_TEST_ID_PREFIX, PrismaSection } from "./_section";
 import { ProUpgradeBanner } from "./pro-upgrade-banner";
 
 const SHAPE = SingleCalendarConfigSchema.shape;
@@ -39,6 +34,9 @@ const PRISMA_NON_TRANSFERABLE_SETTINGS: ReadonlyArray<keyof CustomCalendarSettin
 
 const GITHUB_ISSUES_URL = "https://github.com/Real1tyy/Prisma-Calendar/issues/new/choose";
 const FEEDBACK_URL = "https://matejvavroproductivity.com/feedback";
+const PRODUCT_PAGE_URL = "https://matejvavroproductivity.com/tools/prisma-calendar/";
+const PRO_PITCH =
+	"unlocks external synchronization, advanced visualizations, Bases integration for embedding views directly inside notes, and other power-user capabilities built for serious planning inside Obsidian.";
 
 const PLANNING_FIELDS = ["directory", "templatePath", "indexSubdirectories"];
 const INTERFACE_FIELDS = ["locale", "showRibbonIcon", "enableKeyboardNavigation", "autoAssignZettelId"];
@@ -68,6 +66,11 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 		[setLicenseKeySecretName]
 	);
 
+	const handleViewChangelog = useCallback(() => {
+		const config = buildWhatsNewConfig(plugin.changelogContent, "settings");
+		showWhatsNewReactModal(plugin.app, plugin, config, "0.0.0", plugin.manifest.version);
+	}, [plugin]);
+
 	const calendarSection = (heading: string, fields: string[]) => (
 		<PrismaSection store={settingsStore} shape={SHAPE} heading={heading} fields={fields} />
 	);
@@ -76,18 +79,43 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 	);
 
 	return (
-		<>
-			<LicenseSection
-				licenseManager={plugin.licenseManager}
-				currentSecretName={licenseKeySecretName}
-				onSecretChange={onSecretChange}
-				activationGuideUrl={settingsDocUrl("/configuration/license", "license_guide")}
-				accountUrls={{
+		<GeneralSection
+			slug="prisma-calendar"
+			testIdPrefix={PRISMA_SETTINGS_TEST_ID_PREFIX}
+			license={{
+				enabled: true,
+				licenseManager: plugin.licenseManager,
+				currentSecretName: licenseKeySecretName,
+				onSecretChange,
+				activationGuideUrl: settingsDocUrl("/configuration/license", "license_guide"),
+				accountUrls: {
 					subscription: buildUtmUrl(ACCOUNT_URL, "prisma-calendar", "plugin", "settings", "manage_subscription"),
 					billing: buildUtmUrl(ACCOUNT_URL, "prisma-calendar", "plugin", "settings", "manage_billing"),
 					devices: buildUtmUrl(ACCOUNT_URL, "prisma-calendar", "plugin", "settings", "manage_devices"),
-				}}
-			/>
+				},
+			}}
+			help={{
+				pluginDisplayName: "Prisma",
+				documentationUrl: docsUrl(""),
+				faqUrl: docsUrl("/faq"),
+				troubleshootingUrl: docsUrl("/troubleshooting"),
+				githubIssuesUrl: GITHUB_ISSUES_URL,
+				feedbackUrl: FEEDBACK_URL,
+				pro: {
+					productName: "Prisma Pro",
+					productPageUrl: PRODUCT_PAGE_URL,
+					pitch: PRO_PITCH,
+				},
+			}}
+			changelog={{ onView: handleViewChangelog }}
+			settingsTransfer={{
+				store: plugin.settingsStore,
+				defaults: plugin.settingsStore.getDefaults(),
+				nonTransferableKeys: PRISMA_NON_TRANSFERABLE_SETTINGS,
+				filename: "prisma-calendar-settings.json",
+				modalClass: cls("settings-transfer-modal"),
+			}}
+		>
 			{calendarSection("Planning system", PLANNING_FIELDS)}
 			<ReadOnlyField plugin={plugin} />
 			{calendarSection("Interface", INTERFACE_FIELDS)}
@@ -96,9 +124,7 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 			{calendarSection("Time tracker", ["showStopwatch"])}
 			{calendarSection("Statistics", ["showDecimalHours", "defaultAggregationMode"])}
 			<EventPresetsSection settingsStore={settingsStore} plugin={plugin} />
-			<SettingsTransferSection plugin={plugin} />
-			<HelpSection plugin={plugin} />
-		</>
+		</GeneralSection>
 	);
 });
 
@@ -120,22 +146,6 @@ const ReadOnlyField = memo(function ReadOnlyField({ plugin }: { plugin: CustomCa
 		>
 			<Toggle value={readOnly} onChange={handleChange} testId={tid("settings-control-read-only")} />
 		</SettingItem>
-	);
-});
-
-const SettingsTransferSection = memo(function SettingsTransferSection({ plugin }: { plugin: CustomCalendarPlugin }) {
-	return (
-		<>
-			<SettingHeading name="Settings transfer" />
-			<SettingsTransferButtons
-				store={plugin.settingsStore}
-				defaults={plugin.settingsStore.getDefaults()}
-				nonTransferableKeys={PRISMA_NON_TRANSFERABLE_SETTINGS}
-				filename="prisma-calendar-settings.json"
-				modalClass={cls("settings-transfer-modal")}
-				testIdPrefix={tid("settings-transfer")}
-			/>
-		</>
 	);
 });
 
@@ -254,107 +264,6 @@ const EventPresetsSection = memo(function EventPresetsSection({ settingsStore, p
 					</div>
 				))
 			)}
-		</>
-	);
-});
-
-export const HelpSection = memo(function HelpSection({ plugin }: { plugin: CustomCalendarPlugin }) {
-	const handleViewChangelog = useCallback(() => {
-		const config = buildWhatsNewConfig(plugin.changelogContent, "settings");
-		showWhatsNewReactModal(plugin.app, plugin, config, "0.0.0", plugin.manifest.version);
-	}, [plugin]);
-
-	// Onboarding tour disabled for now — handler kept here but not wired to any control.
-	// const handleStartTutorial = useCallback(() => {
-	// 	// Dismiss the settings modal first — otherwise the tour's spotlight opens
-	// 	// behind it and the user sees nothing.
-	// 	plugin.app.setting.close();
-	// 	startPrismaTour(plugin);
-	// }, [plugin]);
-
-	return (
-		<>
-			<SettingHeading name="Help & support" />
-			<SettingCard testId={tid("settings-help")}>
-				<p>
-					Thanks for giving Prisma a try. I hope you enjoy using it, and that it helps you become more productive and
-					organized inside Obsidian.
-				</p>
-				<p>
-					Have a question? The{" "}
-					<OutboundLink href={settingsDocUrl("", "help_documentation")}>
-						<strong>documentation</strong>
-					</OutboundLink>{" "}
-					covers most topics — use the search bar in the top right to quickly find what you need. Check the{" "}
-					<OutboundLink href={settingsDocUrl("/faq", "help_faq")}>
-						<strong>frequently asked questions</strong>
-					</OutboundLink>{" "}
-					or{" "}
-					<OutboundLink href={settingsDocUrl("/troubleshooting", "help_troubleshooting")}>
-						<strong>troubleshooting</strong>
-					</OutboundLink>{" "}
-					pages for common issues and solutions.
-				</p>
-				<p>
-					If you spot any bugs or see ways to improve it, don't hesitate to share your feedback — please{" "}
-					<OutboundLink href={GITHUB_ISSUES_URL}>
-						<strong>create a GitHub issue</strong>
-					</OutboundLink>{" "}
-					or reach me any time through the{" "}
-					<OutboundLink href={buildUtmUrl(FEEDBACK_URL, "prisma-calendar", "plugin", "settings", "help_feedback")}>
-						<strong>feedback page</strong>
-					</OutboundLink>
-					. I would love to hear your thoughts.
-				</p>
-				<p>
-					For more connected, advanced workflows,{" "}
-					<OutboundLink
-						href={buildUtmUrl(
-							"https://matejvavroproductivity.com/tools/prisma-calendar/",
-							"prisma-calendar",
-							"plugin",
-							"settings",
-							"help_pro"
-						)}
-					>
-						<strong>Prisma Pro</strong>
-					</OutboundLink>{" "}
-					unlocks external synchronization, advanced visualizations, Bases integration for embedding views directly
-					inside notes, and other power-user capabilities built for serious planning inside Obsidian.{" "}
-					<OutboundLink
-						href={buildUtmUrl(
-							"https://matejvavroproductivity.com/tools/prisma-calendar/",
-							"prisma-calendar",
-							"plugin",
-							"settings",
-							"help_free_trial"
-						)}
-					>
-						<strong>Try every Pro feature with a 30-day free trial</strong>
-					</OutboundLink>{" "}
-					— cancel anytime.
-				</p>
-			</SettingCard>
-			{/* Onboarding tour disabled for now — control kept here but not rendered.
-			<SettingItem
-				name="Interactive tutorial"
-				description="Take a guided walkthrough that creates a sample event and shows you how to move, resize, create, and open events."
-				testId={tid("settings-field-tutorial")}
-			>
-				<button type="button" onClick={handleStartTutorial} data-testid={tid("settings-tutorial-btn")}>
-					{tutorialCompleted ? "Replay tutorial" : "Take the tutorial"}
-				</button>
-			</SettingItem>
-			*/}
-			<SettingItem
-				name="Changelog"
-				description="Browse the full changelog with every update since the first release"
-				testId={tid("settings-field-changelog")}
-			>
-				<button type="button" onClick={handleViewChangelog} data-testid={tid("settings-changelog-btn")}>
-					View changelog
-				</button>
-			</SettingItem>
 		</>
 	);
 });
