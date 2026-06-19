@@ -30,6 +30,12 @@ interface MountOptions {
 	app: App;
 	container: HTMLElement;
 	onFilterChange: () => void;
+	/**
+	 * Mount the input invisibly (`.prisma-hidden`) while keeping it fully
+	 * functional. Lets filter presets fill and apply the expression filter even
+	 * when its visible input isn't a toolbar button.
+	 */
+	hidden?: boolean;
 }
 
 interface InternalMountOptions extends MountOptions {
@@ -50,12 +56,13 @@ interface InternalMountOptions extends MountOptions {
  * Instead the wrapper itself is the mount root, so the DOM is identical
  * to the imperative version: `.fc-toolbar-chunk > .prisma-fc-filter-wrapper > input`.
  */
-function injectFilterWrapper(container: HTMLElement): HTMLElement | null {
+function injectFilterWrapper(container: HTMLElement, hidden: boolean): HTMLElement | null {
 	const toolbarLeft = container.querySelector(".fc-toolbar-chunk:first-child");
 	if (!toolbarLeft) return null;
 
 	const wrapper = activeDocument.createElement("div");
 	wrapper.className = cls("fc-filter-wrapper");
+	if (hidden) wrapper.classList.add(cls("hidden"));
 
 	const zoomButton = toolbarLeft.querySelector(".fc-zoomLevel-button");
 	if (zoomButton?.parentNode) {
@@ -77,7 +84,7 @@ function mountFilter(opts: InternalMountOptions): ToolbarFilterHandle {
 		opts.onFilterChange();
 	};
 
-	const wrapperEl = injectFilterWrapper(opts.container);
+	const wrapperEl = injectFilterWrapper(opts.container, opts.hidden ?? false);
 	const unmountReact = wrapperEl
 		? renderReactInline(
 				wrapperEl,

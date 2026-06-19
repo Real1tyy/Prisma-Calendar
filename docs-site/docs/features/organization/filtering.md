@@ -124,6 +124,10 @@ Project === 'Work' && Priority === 'High' && Status !== 'Done'
   - "Clear" option to reset filters
   - Hotkey support via `Open filter preset selector` command
 
+:::note
+The preset dropdown works on its own — you don't need to also enable the **Expression Filter** toolbar button. Selecting a preset applies its expression in the background, so you can keep the ▼ dropdown as the only filter control in your toolbar.
+:::
+
 **Setting Up Presets:**
 1. Go to Settings → Prisma Calendar → Rules → Filter Presets
 2. Click "Add Preset"

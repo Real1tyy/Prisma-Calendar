@@ -68,6 +68,38 @@ describe("mountExpressionFilter", () => {
 		});
 	});
 
+	describe("hidden mount", () => {
+		function mountHidden(): ToolbarFilterHandle {
+			act(() => {
+				handle = mountExpressionFilter({ app: STUB_APP, container, onFilterChange, hidden: true });
+			});
+			return handle!;
+		}
+
+		it("adds prisma-hidden to the wrapper but keeps the input present", () => {
+			mountHidden();
+			const wrapper = container.querySelector(".prisma-fc-filter-wrapper");
+			expect(wrapper?.classList.contains("prisma-hidden")).toBe(true);
+			expect(container.querySelector(EXPR_INPUT_SELECTOR)).toBeTruthy();
+		});
+
+		it("seeds and applies a preset-supplied expression while hidden", () => {
+			mountHidden();
+			act(() => handle!.setFilterValue('Status === "Done"'));
+
+			expect(handle!.getCurrentFilterValue()).toBe('Status === "Done"');
+			expect(onFilterChange).toHaveBeenCalled();
+			expect(handle!.shouldInclude({ meta: { Status: "Done" } })).toBe(true);
+			expect(handle!.shouldInclude({ meta: { Status: "Pending" } })).toBe(false);
+		});
+
+		it("leaves the wrapper unhidden by default", () => {
+			mount();
+			const wrapper = container.querySelector(".prisma-fc-filter-wrapper");
+			expect(wrapper?.classList.contains("prisma-hidden")).toBe(false);
+		});
+	});
+
 	describe("shouldInclude with expressions", () => {
 		it("returns true when no expression is set", () => {
 			mount();

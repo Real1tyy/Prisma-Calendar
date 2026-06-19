@@ -1175,6 +1175,18 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 				id: "filterPresets",
 				init: () => {
 					this.filterPresetSelector?.destroy();
+					// Presets fill the expression filter. When the expression filter input
+					// isn't an enabled toolbar button there's nothing to fill, so mount a
+					// headless (hidden) one that presets still seed and that participates in
+					// filtering — otherwise selecting a preset would silently do nothing.
+					if (!this.expressionFilter) {
+						this.expressionFilter = mountExpressionFilter({
+							app: this.app,
+							container: this.container,
+							onFilterChange: () => this.scheduleRefreshEvents(),
+							hidden: true,
+						});
+					}
 					this.filterPresetSelector = mountFilterPresetSelector({
 						app: this.app,
 						bundle: this.bundle,
