@@ -111,6 +111,8 @@ describe("LicenseSection", () => {
 			expect(screen.getByRole("button", { name: "Select existing secret" })).toBeInTheDocument();
 			// No key yet → no manual Refresh button (activation auto-verifies).
 			expect(screen.queryByRole("button", { name: "Refresh" })).toBeNull();
+			// Trial CTA isn't repeated here — it lives in the Subscription row.
+			expect(screen.queryByText("Start your 30-day free trial")).toBeNull();
 		});
 
 		it("disables Activate until a non-blank key is entered", async () => {
@@ -223,7 +225,8 @@ describe("LicenseSection", () => {
 			// Invalid → re-paste path stays open, no manual Refresh; error rides the Subscription row.
 			expect(screen.queryByRole("button", { name: "Refresh" })).toBeNull();
 			expect(screen.getByRole("textbox", { name: "License key" })).toBeInTheDocument();
-			expect(screen.getByText(/no longer valid/)).toBeInTheDocument();
+			// The error is surfaced as the dominant (alert-styled) line, not muted body text.
+			expect(screen.getByText(/no longer valid/)).toHaveClass(`${PREFIX}license-status-alert`);
 		});
 	});
 });

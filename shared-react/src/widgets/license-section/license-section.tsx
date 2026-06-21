@@ -100,9 +100,15 @@ function StatusDescription({ status }: { status: LicenseStatus }): ReactNode {
 	const cls = useScopedCls("license");
 	const subscriptionLine = getSubscriptionDateText(status);
 	const nudge = graceNudge(status);
+	const statusText = getLicenseStatusText(status);
+	// Anything that isn't a healthy "active" or the empty "none" baseline is a
+	// problem the user must act on (expired / invalid / billing / seat limit).
+	// Surfaced in the same row as the action CTA, a muted line gets missed — so
+	// give the alert line weight/colour to make it the row's dominant text.
+	const needsAttention = status.state !== "valid" && status.state !== "none";
 	return (
 		<>
-			{getLicenseStatusText(status)}
+			{needsAttention ? <span className={cls("status-alert")}>{statusText}</span> : statusText}
 			{status.state === "valid" && (
 				<span className={cls("activations-badge")}>
 					{status.activationsCurrent}/{status.activationsLimit} devices
@@ -208,13 +214,15 @@ export const LicenseSection = memo(function LicenseSection({
 	const keyDescription: ReactNode = (
 		<>
 			{keyIntro}
-			{activationGuideUrl !== undefined && (
+			{activationGuideUrl !== undefined && <OutboundLink href={activationGuideUrl}>How activation works</OutboundLink>}
+			{/* The trial CTA already lives in the Subscription row; only repeat it
+			    here for consumers that have no Subscription row to carry it. */}
+			{accountUrls === undefined && (
 				<>
-					<OutboundLink href={activationGuideUrl}>How activation works</OutboundLink>
-					{" · "}
+					{activationGuideUrl !== undefined && " · "}
+					<OutboundLink href={licenseManager.purchaseUrl}>Start your 30-day free trial</OutboundLink>
 				</>
 			)}
-			<OutboundLink href={licenseManager.purchaseUrl}>Start your 30-day free trial</OutboundLink>
 		</>
 	);
 
