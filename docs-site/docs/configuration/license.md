@@ -18,18 +18,16 @@ Open that link with Obsidian running and it does everything for you — it creat
 
 ## Manual activation
 
-Prefer to enter the key yourself? Prisma stores it using Obsidian's built-in secrets.
-
-**The Secret is your license key. The ID is just a name — it can be anything.**
+Prefer to enter the key yourself? It's a single paste — no secrets dialog, no IDs.
 
 1. Open **Prisma Calendar → Settings → General → License**.
-2. Click the **License key** field. Prisma opens Obsidian's secrets menu, where you can **pick an existing secret** or **create a new one**.
-3. When creating one, the **Add secret** dialog asks for two things:
-   - **Secret** — paste your **license key** here. This is the part that matters.
-   - **ID** — any label you like (lowercase letters, numbers, dashes). It has no effect on activation; it's just a name for the entry.
-4. **Save**, then click **Verify**.
+2. Paste your **license key** into the **License key** field and click **Activate**.
 
-The **License status** row then shows your plan and how many device seats are in use.
+That's it. Prisma saves your key as a secret in Obsidian's keychain for you and activates Pro — you never have to create a secret or pick an ID and value by hand. The **License status** row then shows your plan and how many device seats are in use.
+
+### Reusing a secret you already saved
+
+Already keep your license key as a secret in Obsidian's secret storage — for example one you manage yourself? Under **License key**, open **Use an existing secret → Select existing secret** and pick it instead of pasting the key again, then click **Verify**.
 
 ## Where to find your license key
 
@@ -46,8 +44,8 @@ Each device is activated separately. When you open the same vault on a new devic
 The easiest fix is to open the **one-click activation link** on that device. Or do it manually:
 
 1. On the new device, open **Prisma Calendar → Settings → General → License**.
-2. Add your license key as a secret — or pick an existing one — exactly as above (**Secret** = your license key, **ID** = any label).
-3. Click **Verify**.
+2. Paste your license key into the **License key** field and click **Activate** (or use **Use an existing secret** to pick one you've already saved).
+3. The **License status** row updates once activation completes — click **Verify** any time to re-check.
 
 Each activated device takes one **seat** on your plan, shown in the **License status** row (for example, `2/5 devices`).
 
@@ -60,7 +58,7 @@ Each activated device takes one **seat** on your plan, shown in the **License st
 
 | Problem | What to do |
 |---|---|
-| Pro features are locked on a new device | Open the one-click activation link on that device, or add your license key as a secret and click **Verify**. |
+| Pro features are locked on a new device | Open the one-click activation link on that device, or paste your license key into the **License key** field and click **Activate**. |
 | "Device limit reached" | Free a seat with **Deactivate this device** on a device you no longer use, or manage devices on your [account page](https://matejvavroproductivity.com/account). |
 | Can't find your key | Use the one-click link from your sign-up email, or open your [account page](https://matejvavroproductivity.com/account). |
 | Subscription isn't active | Update billing on your [account page](https://matejvavroproductivity.com/account), then click **Verify**. |

@@ -12,6 +12,7 @@ import {
 import { memo, useCallback, useState } from "react";
 
 import { cls, docsUrl, settingsDocUrl, tid } from "../../constants";
+import { LICENSE_SECRET_ID } from "../../core/api/license-activation";
 import { ACCOUNT_URL, FREE_MAX_EVENT_PRESETS } from "../../core/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import { buildWhatsNewConfig } from "../../core/whats-new-config";
@@ -86,6 +87,7 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 				enabled: true,
 				licenseManager: plugin.licenseManager,
 				currentSecretName: licenseKeySecretName,
+				licenseSecretId: LICENSE_SECRET_ID,
 				onSecretChange,
 				activationGuideUrl: settingsDocUrl("/configuration/license", "license_guide"),
 				accountUrls: {

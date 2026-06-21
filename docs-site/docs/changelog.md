@@ -10,6 +10,7 @@ All notable changes to this project will be documented here.
 
 ### Added
 - **Scroll while dragging vertically**: in day and week views, holding a dragged event against the top or bottom edge of a zoomed-in grid now scrolls it slowly up or down — the vertical counterpart to the existing left/right edge paging — so you can drop on a time that's currently off-screen. See [Calendar View → Scrolling while dragging](./features/calendar/calendar-view.md#scrolling-while-dragging).
+- **One-click license activation**: activate Pro by pasting your license key straight into **Settings → General → License → License key** and clicking **Activate** — Prisma creates the secret for you behind the scenes, so there's no more opening Obsidian's secrets dialog or picking an ID and value by hand. Already keep your key as a saved secret? **Use an existing secret → Select existing secret** still lets you choose it. See [License & activation](./configuration/license.md).
 
 ### Fixed
 - **Filter presets work without the expression filter**: selecting a saved preset from the ▼ dropdown now applies its expression even when the **Expression Filter** toolbar button isn't enabled. Previously the preset had nothing to fill and silently did nothing until you added and used the expression filter first. See [Filtering → Filter Presets](./features/organization/filtering.md#3-filter-presets-quick-access).

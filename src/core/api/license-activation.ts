@@ -2,7 +2,7 @@ import { Notice } from "obsidian";
 
 import type CustomCalendarPlugin from "../../main";
 
-const LICENSE_SECRET_ID = "prisma-calendar-license";
+export const LICENSE_SECRET_ID = "prisma-calendar-license";
 
 export async function activateLicense(plugin: CustomCalendarPlugin, key: string): Promise<void> {
 	plugin.app.secretStorage.setSecret(LICENSE_SECRET_ID, key);
