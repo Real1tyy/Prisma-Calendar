@@ -173,5 +173,25 @@ describe("LicenseSection", () => {
 			expect(container.querySelector(".setting-secret-host")).not.toBeNull();
 			expect(screen.queryByRole("button", { name: "Select existing secret" })).toBeNull();
 		});
+
+		it("hides the activation surface and shows Deactivate above Verify once active", () => {
+			setup(
+				makeStatus({ state: "valid", entitlementStatus: "active", activationsCurrent: 1, activationsLimit: 5 }),
+				undefined,
+				{
+					licenseSecretId: SECRET_ID,
+				}
+			);
+
+			// Nothing to activate when Pro is already live on this device.
+			expect(screen.queryByRole("textbox", { name: "License key" })).toBeNull();
+			expect(screen.queryByRole("button", { name: "Activate" })).toBeNull();
+			expect(screen.queryByRole("button", { name: "Select existing secret" })).toBeNull();
+
+			// Deactivate takes the Activate slot — above the Verify (License status) row.
+			const deactivate = screen.getByRole("button", { name: "Deactivate this device" });
+			const verify = screen.getByRole("button", { name: "Verify" });
+			expect(deactivate.compareDocumentPosition(verify) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+		});
 	});
 });

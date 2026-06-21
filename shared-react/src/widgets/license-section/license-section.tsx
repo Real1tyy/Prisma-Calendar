@@ -189,7 +189,7 @@ export const LicenseSection = memo(function LicenseSection({
 	}, [confirmDeactivate, licenseManager]);
 
 	const keyIntro = oneClick
-		? `Paste your ${licenseManager.productName} Pro license key and click Activate — that's it. We save it securely in Obsidian's keychain for you. The one-click activation link from your sign-up email does the same in a single tap. `
+		? `Paste your ${licenseManager.productName} Pro license key and click Activate to unlock Pro features. That's it. `
 		: `Paste your ${licenseManager.productName} Pro license key as the Secret to unlock advanced features — the ID can be anything. The one-click activation link from your sign-up email or account page sets this up for you. `;
 
 	const keyDescription: ReactNode = (
@@ -206,6 +206,10 @@ export const LicenseSection = memo(function LicenseSection({
 	);
 
 	const showDeviceMgmt = status.state === "valid" || status.state === "device_limit";
+	// Once Pro is active on this device there's nothing to activate — the key is
+	// already in the keychain. Hide the activation surface (paste field + secret
+	// picker) and let "Deactivate this device" take the Activate slot.
+	const activated = status.state === "valid";
 	const subAction = subscriptionAction(status);
 	const subHref =
 		subAction.action != null && accountUrls != null ? accountUrls[subAction.action] : licenseManager.purchaseUrl;
@@ -216,56 +220,55 @@ export const LicenseSection = memo(function LicenseSection({
 	return (
 		<>
 			<SettingHeading name="License" docHref={activationGuideUrl} docLabel="Setup guide" />
-			<SettingItem name="License key" description={keyDescription}>
-				{oneClick ? (
-					<div className={cls("activate-row")}>
-						<input
-							type="text"
-							className={cls("activate-input")}
-							placeholder="Paste your license key"
-							aria-label="License key"
-							value={keyInput}
-							disabled={activating}
-							onChange={(e) => setKeyInput(e.target.value)}
-							onKeyDown={(e) => {
-								if (e.key === "Enter") {
-									e.preventDefault();
-									void handleActivate();
-								}
-							}}
-						/>
-						<button
-							type="button"
-							className="mod-cta"
-							disabled={activating || keyInput.trim() === ""}
-							onClick={() => void handleActivate()}
+			{!activated && (
+				<>
+					<SettingItem name="License key" description={keyDescription}>
+						{oneClick ? (
+							<div className={cls("activate-row")}>
+								<input
+									type="text"
+									className={cls("activate-input")}
+									placeholder="Paste your license key"
+									aria-label="License key"
+									value={keyInput}
+									disabled={activating}
+									onChange={(e) => setKeyInput(e.target.value)}
+									onKeyDown={(e) => {
+										if (e.key === "Enter") {
+											e.preventDefault();
+											void handleActivate();
+										}
+									}}
+								/>
+								<button
+									type="button"
+									className="mod-cta"
+									disabled={activating || keyInput.trim() === ""}
+									onClick={() => void handleActivate()}
+								>
+									{activating ? "Activating..." : "Activate"}
+								</button>
+							</div>
+						) : (
+							<SecretField value={currentSecretName} onChange={(v) => void onSecretChange(v)} />
+						)}
+					</SettingItem>
+					{oneClick && (
+						<SettingItem
+							name="Use an existing secret"
+							description="Already keep your license key as a secret in Obsidian's secret storage? Select it here instead of pasting the key again."
 						>
-							{activating ? "Activating..." : "Activate"}
-						</button>
-					</div>
-				) : (
-					<SecretField value={currentSecretName} onChange={(v) => void onSecretChange(v)} />
-				)}
-			</SettingItem>
-			{oneClick && (
-				<SettingItem
-					name="Use an existing secret"
-					description="Already keep your license key as a secret in Obsidian's secret storage? Select it here instead of pasting the key again."
-				>
-					{showSecretPicker ? (
-						<SecretField value={currentSecretName} onChange={(v) => void onSecretChange(v)} />
-					) : (
-						<button type="button" onClick={() => setShowSecretPicker(true)}>
-							Select existing secret
-						</button>
+							{showSecretPicker ? (
+								<SecretField value={currentSecretName} onChange={(v) => void onSecretChange(v)} />
+							) : (
+								<button type="button" onClick={() => setShowSecretPicker(true)}>
+									Select existing secret
+								</button>
+							)}
+						</SettingItem>
 					)}
-				</SettingItem>
+				</>
 			)}
-			<SettingItem name="License status" description={<StatusDescription status={status} />}>
-				<button type="button" className="mod-cta" disabled={verifying} onClick={() => void handleVerify()}>
-					{verifying ? "Verifying..." : "Verify"}
-				</button>
-			</SettingItem>
 			{showDeviceMgmt && (
 				<SettingItem
 					name="This device"
@@ -276,6 +279,11 @@ export const LicenseSection = memo(function LicenseSection({
 					</button>
 				</SettingItem>
 			)}
+			<SettingItem name="License status" description={<StatusDescription status={status} />}>
+				<button type="button" className="mod-cta" disabled={verifying} onClick={() => void handleVerify()}>
+					{verifying ? "Verifying..." : "Verify"}
+				</button>
+			</SettingItem>
 			{accountUrls != null && (
 				<SettingItem name="Subscription" description={subDescription}>
 					<button type="button" className={subAction.cta ? "mod-cta" : ""} onClick={() => openExternal(subHref)}>
