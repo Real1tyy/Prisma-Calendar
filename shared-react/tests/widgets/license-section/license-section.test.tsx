@@ -17,16 +17,20 @@ function makeStatus(overrides: Partial<LicenseStatus>): LicenseStatus {
 	return { ...LicenseStatusSchema.parse({}), ...overrides };
 }
 
-function makeManager(
-	status: LicenseStatus,
-	fns?: { deactivateDevice?: () => Promise<boolean>; refreshLicense?: () => Promise<void> }
-): LicenseManager {
+interface ManagerFns {
+	deactivateDevice?: () => Promise<boolean>;
+	refreshLicense?: () => Promise<void>;
+	isPro?: boolean;
+}
+
+function makeManager(status: LicenseStatus, fns?: ManagerFns): LicenseManager {
 	const status$ = new BehaviorSubject<LicenseStatus>(status);
 	return {
 		status$,
 		get status() {
 			return status$.getValue();
 		},
+		isPro: fns?.isPro ?? false,
 		productName: "Test Plugin",
 		purchaseUrl: "https://example.com/buy",
 		refreshLicense: fns?.refreshLicense ?? vi.fn().mockResolvedValue(undefined),
@@ -34,14 +38,20 @@ function makeManager(
 	} as unknown as LicenseManager;
 }
 
-function setup(status: LicenseStatus, fns?: Parameters<typeof makeManager>[1]) {
+interface SetupProps {
+	licenseSecretId?: string;
+	onSecretChange?: (value: string) => Promise<void>;
+}
+
+function setup(status: LicenseStatus, fns?: ManagerFns, props?: SetupProps) {
 	const manager = makeManager(status, fns);
 	const ui = (
 		<LicenseSection
 			licenseManager={manager}
 			currentSecretName="my-secret"
-			onSecretChange={() => Promise.resolve()}
+			onSecretChange={props?.onSecretChange ?? (() => Promise.resolve())}
 			accountUrls={ACCOUNT_URLS}
+			{...(props?.licenseSecretId !== undefined ? { licenseSecretId: props.licenseSecretId } : {})}
 		/>
 	);
 	return { manager, ...renderWithProviders(ui, { cssPrefix: PREFIX, testIdPrefix: PREFIX }) };
@@ -86,5 +96,82 @@ describe("LicenseSection", () => {
 
 		await user.click(screen.getByRole("button", { name: "Click again to confirm" }));
 		expect(deactivateDevice).toHaveBeenCalledOnce();
+	});
+
+	describe("one-click activation (licenseSecretId set)", () => {
+		const SECRET_ID = "test-plugin-license";
+
+		it("renders a paste-and-activate field instead of the raw secret picker", () => {
+			const { container } = setup(makeStatus({ state: "none" }), undefined, { licenseSecretId: SECRET_ID });
+
+			expect(screen.getByRole("textbox", { name: "License key" })).toBeInTheDocument();
+			expect(screen.getByRole("button", { name: "Activate" })).toBeInTheDocument();
+			// The raw secret picker stays hidden behind the advanced toggle.
+			expect(container.querySelector(".setting-secret-host")).toBeNull();
+			expect(screen.getByRole("button", { name: "Select existing secret" })).toBeInTheDocument();
+		});
+
+		it("disables Activate until a non-blank key is entered", async () => {
+			const { user } = setup(makeStatus({ state: "none" }), undefined, { licenseSecretId: SECRET_ID });
+
+			const activate = screen.getByRole("button", { name: "Activate" });
+			expect(activate).toBeDisabled();
+
+			await user.type(screen.getByRole("textbox", { name: "License key" }), "   ");
+			expect(activate).toBeDisabled();
+
+			await user.type(screen.getByRole("textbox", { name: "License key" }), "KEY-123");
+			expect(activate).toBeEnabled();
+		});
+
+		it("creates the secret, points settings at it, verifies, and clears the field on success", async () => {
+			const refreshLicense = vi.fn().mockResolvedValue(undefined);
+			const onSecretChange = vi.fn().mockResolvedValue(undefined);
+			const { user, app } = setup(
+				makeStatus({ state: "none" }),
+				{ refreshLicense, isPro: true },
+				{
+					licenseSecretId: SECRET_ID,
+					onSecretChange,
+				}
+			);
+
+			const input = screen.getByRole("textbox", { name: "License key" });
+			await user.type(input, "  KEY-ABC-789  ");
+			await user.click(screen.getByRole("button", { name: "Activate" }));
+
+			expect(app.secretStorage.setSecret).toHaveBeenCalledWith(SECRET_ID, "KEY-ABC-789");
+			expect(onSecretChange).toHaveBeenCalledWith(SECRET_ID);
+			expect(refreshLicense).toHaveBeenCalledOnce();
+			expect(input).toHaveValue("");
+		});
+
+		it("keeps the typed key when activation does not yield Pro", async () => {
+			const onSecretChange = vi.fn().mockResolvedValue(undefined);
+			const { user, app } = setup(
+				makeStatus({ state: "invalid", errorMessage: "bad key" }),
+				{ isPro: false },
+				{
+					licenseSecretId: SECRET_ID,
+					onSecretChange,
+				}
+			);
+
+			const input = screen.getByRole("textbox", { name: "License key" });
+			await user.type(input, "BAD-KEY");
+			await user.click(screen.getByRole("button", { name: "Activate" }));
+
+			expect(app.secretStorage.setSecret).toHaveBeenCalledWith(SECRET_ID, "BAD-KEY");
+			expect(input).toHaveValue("BAD-KEY");
+		});
+
+		it("reveals the secret picker when the advanced option is chosen", async () => {
+			const { user, container } = setup(makeStatus({ state: "none" }), undefined, { licenseSecretId: SECRET_ID });
+
+			await user.click(screen.getByRole("button", { name: "Select existing secret" }));
+
+			expect(container.querySelector(".setting-secret-host")).not.toBeNull();
+			expect(screen.queryByRole("button", { name: "Select existing secret" })).toBeNull();
+		});
 	});
 });

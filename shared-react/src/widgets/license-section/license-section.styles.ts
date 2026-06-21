@@ -6,5 +6,7 @@ export function buildLicenseStyles(p: string): string {
 }
 .${p}license-sub-line { margin-top: 4px; font-size: 0.85em; color: var(--text-muted); }
 .${p}license-grace-nudge { margin-top: 4px; font-size: 0.85em; color: var(--text-warning); }
+.${p}license-activate-row { display: flex; gap: 8px; align-items: center; }
+.${p}license-activate-input { flex: 1 1 auto; min-width: 180px; }
 `;
 }

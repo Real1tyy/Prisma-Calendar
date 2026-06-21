@@ -7,6 +7,7 @@ import {
 import { Notice } from "obsidian";
 import { memo, useCallback, useState, type ReactNode } from "react";
 
+import { useApp } from "../../contexts/app-context";
 import { useCssPrefix, useScopedCls } from "../../contexts/theme-context";
 import { useExternalSnapshot } from "../../hooks/reactive/use-external-snapshot";
 import { useInjectedStyles } from "../../hooks/styles/use-styles";
@@ -20,6 +21,13 @@ interface LicenseSectionProps {
 	licenseManager: LicenseManager;
 	currentSecretName: string;
 	onSecretChange: (value: string) => Promise<void>;
+	// When set, the License key row becomes a one-click paste-and-activate flow:
+	// the user pastes their key, we write it to the OS keychain under THIS fixed
+	// id (`app.secretStorage.setSecret`), point the plugin's settings at it via
+	// `onSecretChange`, and verify — no manual secret-creation steps. The
+	// "select an existing secret" path stays available behind an advanced toggle.
+	// Omit to keep only the raw secret-picker (plugins without a fixed key id).
+	licenseSecretId?: string;
 	// Per-CTA account-management URLs, each pre-built with a distinct
 	// `utm_content` so subscription / billing / device-limit clicks are
 	// attributable separately. Omit to hide the Subscription row entirely
@@ -110,15 +118,49 @@ export const LicenseSection = memo(function LicenseSection({
 	licenseManager,
 	currentSecretName,
 	onSecretChange,
+	licenseSecretId,
 	accountUrls,
 	activationGuideUrl,
 }: LicenseSectionProps) {
+	const app = useApp();
 	const cssPrefix = useCssPrefix();
+	const cls = useScopedCls("license");
 	useInjectedStyles(`${cssPrefix}license-styles`, buildLicenseStyles(cssPrefix));
 	const status = useExternalSnapshot(licenseManager.status$);
 	const [verifying, setVerifying] = useState(false);
 	const [deactivating, setDeactivating] = useState(false);
 	const [confirmDeactivate, setConfirmDeactivate] = useState(false);
+	const [keyInput, setKeyInput] = useState("");
+	const [activating, setActivating] = useState(false);
+	const [showSecretPicker, setShowSecretPicker] = useState(false);
+
+	const oneClick = licenseSecretId !== undefined;
+
+	const handleActivate = useCallback(async () => {
+		if (licenseSecretId === undefined) return;
+		const key = keyInput.trim();
+		if (key === "") return;
+		setActivating(true);
+		try {
+			// Store the raw key in the OS keychain ourselves and point settings at
+			// our fixed id — the user never touches Obsidian's create-secret dialog.
+			app.secretStorage.setSecret(licenseSecretId, key);
+			await onSecretChange(licenseSecretId);
+			await licenseManager.refreshLicense();
+			if (licenseManager.isPro) {
+				new Notice(`${licenseManager.productName} Pro activated successfully!`);
+				setKeyInput("");
+			} else {
+				const current = licenseManager.status;
+				new Notice(`Activation failed — ${current.errorMessage ?? current.state}`);
+			}
+		} catch (error) {
+			console.error("[Settings] License activation failed:", error);
+			new Notice("Activation failed — see the console for details.");
+		} finally {
+			setActivating(false);
+		}
+	}, [app, keyInput, licenseManager, licenseSecretId, onSecretChange]);
 
 	const handleVerify = useCallback(async () => {
 		setVerifying(true);
@@ -146,9 +188,13 @@ export const LicenseSection = memo(function LicenseSection({
 		}
 	}, [confirmDeactivate, licenseManager]);
 
+	const keyIntro = oneClick
+		? `Paste your ${licenseManager.productName} Pro license key and click Activate — that's it. We save it securely in Obsidian's keychain for you. The one-click activation link from your sign-up email does the same in a single tap. `
+		: `Paste your ${licenseManager.productName} Pro license key as the Secret to unlock advanced features — the ID can be anything. The one-click activation link from your sign-up email or account page sets this up for you. `;
+
 	const keyDescription: ReactNode = (
 		<>
-			{`Paste your ${licenseManager.productName} Pro license key as the Secret to unlock advanced features — the ID can be anything. The one-click activation link from your sign-up email or account page sets this up for you. `}
+			{keyIntro}
 			{activationGuideUrl !== undefined && (
 				<>
 					<OutboundLink href={activationGuideUrl}>How activation works</OutboundLink>
@@ -171,8 +217,50 @@ export const LicenseSection = memo(function LicenseSection({
 		<>
 			<SettingHeading name="License" docHref={activationGuideUrl} docLabel="Setup guide" />
 			<SettingItem name="License key" description={keyDescription}>
-				<SecretField value={currentSecretName} onChange={(v) => void onSecretChange(v)} />
+				{oneClick ? (
+					<div className={cls("activate-row")}>
+						<input
+							type="text"
+							className={cls("activate-input")}
+							placeholder="Paste your license key"
+							aria-label="License key"
+							value={keyInput}
+							disabled={activating}
+							onChange={(e) => setKeyInput(e.target.value)}
+							onKeyDown={(e) => {
+								if (e.key === "Enter") {
+									e.preventDefault();
+									void handleActivate();
+								}
+							}}
+						/>
+						<button
+							type="button"
+							className="mod-cta"
+							disabled={activating || keyInput.trim() === ""}
+							onClick={() => void handleActivate()}
+						>
+							{activating ? "Activating..." : "Activate"}
+						</button>
+					</div>
+				) : (
+					<SecretField value={currentSecretName} onChange={(v) => void onSecretChange(v)} />
+				)}
 			</SettingItem>
+			{oneClick && (
+				<SettingItem
+					name="Use an existing secret"
+					description="Already keep your license key as a secret in Obsidian's secret storage? Select it here instead of pasting the key again."
+				>
+					{showSecretPicker ? (
+						<SecretField value={currentSecretName} onChange={(v) => void onSecretChange(v)} />
+					) : (
+						<button type="button" onClick={() => setShowSecretPicker(true)}>
+							Select existing secret
+						</button>
+					)}
+				</SettingItem>
+			)}
 			<SettingItem name="License status" description={<StatusDescription status={status} />}>
 				<button type="button" className="mod-cta" disabled={verifying} onClick={() => void handleVerify()}>
 					{verifying ? "Verifying..." : "Verify"}

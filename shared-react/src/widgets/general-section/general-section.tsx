@@ -66,6 +66,13 @@ export interface GeneralLicenseConfig extends ToggleableConfig {
 	licenseManager: LicenseManager;
 	currentSecretName: string;
 	onSecretChange: (value: string) => Promise<void>;
+	/**
+	 * Fixed keychain id for the one-click paste-and-activate flow. When set, the
+	 * License key row lets the user paste their key and Activate in one step (the
+	 * secret is created behind the scenes); the manual secret-picker stays behind
+	 * an advanced toggle. Omit to render only the secret-picker.
+	 */
+	licenseSecretId?: string;
 	activationGuideUrl?: string;
 	accountUrls?: {
 		subscription: string;
@@ -255,6 +262,7 @@ function GeneralSectionInner<T extends Record<string, unknown>>({
 					licenseManager={license.licenseManager}
 					currentSecretName={license.currentSecretName}
 					onSecretChange={license.onSecretChange}
+					{...(license.licenseSecretId !== undefined ? { licenseSecretId: license.licenseSecretId } : {})}
 					{...(license.activationGuideUrl !== undefined ? { activationGuideUrl: license.activationGuideUrl } : {})}
 					{...(license.accountUrls !== undefined ? { accountUrls: license.accountUrls } : {})}
 				/>

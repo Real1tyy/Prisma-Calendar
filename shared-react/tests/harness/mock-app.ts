@@ -66,5 +66,10 @@ export function createMockApp(): MockApp {
 		fileManager: {
 			processFrontMatter: vi.fn(),
 		},
+		secretStorage: {
+			setSecret: vi.fn(),
+			getSecret: vi.fn().mockReturnValue(null),
+			listSecrets: vi.fn().mockReturnValue([]),
+		},
 	} as unknown as MockApp;
 }
