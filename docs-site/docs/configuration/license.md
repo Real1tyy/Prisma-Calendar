@@ -23,11 +23,11 @@ Prefer to enter the key yourself? It's a single paste — no secrets dialog, no 
 1. Open **Prisma Calendar → Settings → General → License**.
 2. Paste your **license key** into the **License key** field and click **Activate**.
 
-That's it. Prisma saves your key as a secret in Obsidian's keychain for you and activates Pro — you never have to create a secret or pick an ID and value by hand. The **License status** row then shows your plan and how many device seats are in use.
+That's it. Prisma saves your key as a secret in Obsidian's keychain for you and activates Pro right away — you never have to create a secret or pick an ID and value by hand. The **Subscription** row then shows your plan and how many device seats are in use.
 
 ### Reusing a secret you already saved
 
-Already keep your license key as a secret in Obsidian's secret storage — for example one you manage yourself? Under **License key**, open **Use an existing secret → Select existing secret** and pick it instead of pasting the key again, then click **Verify**.
+Already keep your license key as a secret in Obsidian's secret storage — for example one you manage yourself? Under **License key**, open **Use an existing secret → Select existing secret** and pick it instead of pasting the key again. It activates as soon as you select it.
 
 ## Where to find your license key
 
@@ -45,13 +45,12 @@ The easiest fix is to open the **one-click activation link** on that device. Or 
 
 1. On the new device, open **Prisma Calendar → Settings → General → License**.
 2. Paste your license key into the **License key** field and click **Activate** (or use **Use an existing secret** to pick one you've already saved).
-3. The **License status** row updates once activation completes — click **Verify** any time to re-check.
 
-Each activated device takes one **seat** on your plan, shown in the **License status** row (for example, `2/5 devices`).
+Pro unlocks as soon as activation completes — the **Subscription** row shows your plan and how many seats are in use. Each activated device takes one **seat** on your plan (for example, `2/5 devices`).
 
 ### Freeing up a seat
 
-- Switching or retiring a device? Click **Deactivate this device** in the License section to release its seat — you can re-activate any time by clicking **Verify**.
+- Switching or retiring a device? Click **Deactivate this device** in the License section to release its seat — paste your key again any time to re-activate.
 - You can also review and remove devices from your [account page](https://matejvavroproductivity.com/account).
 
 ## Troubleshooting
@@ -61,7 +60,7 @@ Each activated device takes one **seat** on your plan, shown in the **License st
 | Pro features are locked on a new device | Open the one-click activation link on that device, or paste your license key into the **License key** field and click **Activate**. |
 | "Device limit reached" | Free a seat with **Deactivate this device** on a device you no longer use, or manage devices on your [account page](https://matejvavroproductivity.com/account). |
 | Can't find your key | Use the one-click link from your sign-up email, or open your [account page](https://matejvavroproductivity.com/account). |
-| Subscription isn't active | Update billing on your [account page](https://matejvavroproductivity.com/account), then click **Verify**. |
+| Subscription isn't active | Update billing on your [account page](https://matejvavroproductivity.com/account) — Pro restores automatically once your subscription is active again. |
 
 ## Still need help?
 

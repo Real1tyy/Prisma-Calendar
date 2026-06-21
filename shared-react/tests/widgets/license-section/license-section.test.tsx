@@ -109,6 +109,8 @@ describe("LicenseSection", () => {
 			// The raw secret picker stays hidden behind the advanced toggle.
 			expect(container.querySelector(".setting-secret-host")).toBeNull();
 			expect(screen.getByRole("button", { name: "Select existing secret" })).toBeInTheDocument();
+			// No key yet → no Verify button (activation auto-verifies).
+			expect(screen.queryByRole("button", { name: "Verify" })).toBeNull();
 		});
 
 		it("disables Activate until a non-blank key is entered", async () => {
@@ -174,24 +176,30 @@ describe("LicenseSection", () => {
 			expect(screen.queryByRole("button", { name: "Select existing secret" })).toBeNull();
 		});
 
-		it("hides the activation surface and shows Deactivate above Verify once active", () => {
+		it("drops the activation surface and Verify, surfacing Deactivate + status, once active", () => {
 			setup(
-				makeStatus({ state: "valid", entitlementStatus: "active", activationsCurrent: 1, activationsLimit: 5 }),
+				makeStatus({
+					state: "valid",
+					entitlementStatus: "active",
+					currentPeriodEnd: "2026-06-25T00:00:00Z",
+					activationsCurrent: 1,
+					activationsLimit: 5,
+				}),
 				undefined,
-				{
-					licenseSecretId: SECRET_ID,
-				}
+				{ licenseSecretId: SECRET_ID }
 			);
 
-			// Nothing to activate when Pro is already live on this device.
+			// Nothing to activate when Pro is already live on this device, and no
+			// manual Verify — activation auto-verifies and the daily heartbeat re-checks.
 			expect(screen.queryByRole("textbox", { name: "License key" })).toBeNull();
 			expect(screen.queryByRole("button", { name: "Activate" })).toBeNull();
 			expect(screen.queryByRole("button", { name: "Select existing secret" })).toBeNull();
+			expect(screen.queryByRole("button", { name: "Verify" })).toBeNull();
 
-			// Deactivate takes the Activate slot — above the Verify (License status) row.
-			const deactivate = screen.getByRole("button", { name: "Deactivate this device" });
-			const verify = screen.getByRole("button", { name: "Verify" });
-			expect(deactivate.compareDocumentPosition(verify) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+			// Deactivate is present; the live status now rides in the Subscription row.
+			expect(screen.getByRole("button", { name: "Deactivate this device" })).toBeInTheDocument();
+			expect(screen.getByText(/1\/5 devices/)).toBeInTheDocument();
+			expect(screen.getByRole("button", { name: "Manage subscription" })).toBeInTheDocument();
 		});
 	});
 });

@@ -127,7 +127,6 @@ export const LicenseSection = memo(function LicenseSection({
 	const cls = useScopedCls("license");
 	useInjectedStyles(`${cssPrefix}license-styles`, buildLicenseStyles(cssPrefix));
 	const status = useExternalSnapshot(licenseManager.status$);
-	const [verifying, setVerifying] = useState(false);
 	const [deactivating, setDeactivating] = useState(false);
 	const [confirmDeactivate, setConfirmDeactivate] = useState(false);
 	const [keyInput, setKeyInput] = useState("");
@@ -135,6 +134,16 @@ export const LicenseSection = memo(function LicenseSection({
 	const [showSecretPicker, setShowSecretPicker] = useState(false);
 
 	const oneClick = licenseSecretId !== undefined;
+
+	// Picking an existing secret should verify on the spot — same as pasting a
+	// key — so there's never a separate "now click Verify" step.
+	const handleSecretSelected = useCallback(
+		async (value: string) => {
+			await onSecretChange(value);
+			await licenseManager.refreshLicense();
+		},
+		[onSecretChange, licenseManager]
+	);
 
 	const handleActivate = useCallback(async () => {
 		if (licenseSecretId === undefined) return;
@@ -161,17 +170,6 @@ export const LicenseSection = memo(function LicenseSection({
 			setActivating(false);
 		}
 	}, [app, keyInput, licenseManager, licenseSecretId, onSecretChange]);
-
-	const handleVerify = useCallback(async () => {
-		setVerifying(true);
-		try {
-			await licenseManager.refreshLicense();
-		} catch (error) {
-			console.error("[Settings] License verification failed:", error);
-		} finally {
-			setVerifying(false);
-		}
-	}, [licenseManager]);
 
 	const handleDeactivate = useCallback(async () => {
 		if (!confirmDeactivate) {
@@ -213,9 +211,16 @@ export const LicenseSection = memo(function LicenseSection({
 	const subAction = subscriptionAction(status);
 	const subHref =
 		subAction.action != null && accountUrls != null ? accountUrls[subAction.action] : licenseManager.purchaseUrl;
-	const subDescription =
-		subAction.description ??
-		`Try every ${licenseManager.productName} Pro feature with a 30-day free trial — cancel anytime`;
+	// Status now lives in the Subscription row instead of a redundant standalone
+	// row + Verify button: once a key is configured the row shows the live status
+	// (active / devices / renewal, or the error message) next to its fix-it CTA.
+	// With no key yet there's nothing to report, so it falls back to the pitch.
+	const subDescription: ReactNode =
+		status.state === "none" ? (
+			`Try every ${licenseManager.productName} Pro feature with a 30-day free trial — cancel anytime`
+		) : (
+			<StatusDescription status={status} />
+		);
 
 	return (
 		<>
@@ -250,7 +255,7 @@ export const LicenseSection = memo(function LicenseSection({
 								</button>
 							</div>
 						) : (
-							<SecretField value={currentSecretName} onChange={(v) => void onSecretChange(v)} />
+							<SecretField value={currentSecretName} onChange={(v) => void handleSecretSelected(v)} />
 						)}
 					</SettingItem>
 					{oneClick && (
@@ -259,7 +264,7 @@ export const LicenseSection = memo(function LicenseSection({
 							description="Already keep your license key as a secret in Obsidian's secret storage? Select it here instead of pasting the key again."
 						>
 							{showSecretPicker ? (
-								<SecretField value={currentSecretName} onChange={(v) => void onSecretChange(v)} />
+								<SecretField value={currentSecretName} onChange={(v) => void handleSecretSelected(v)} />
 							) : (
 								<button type="button" onClick={() => setShowSecretPicker(true)}>
 									Select existing secret
@@ -272,23 +277,23 @@ export const LicenseSection = memo(function LicenseSection({
 			{showDeviceMgmt && (
 				<SettingItem
 					name="This device"
-					description="Free up this device's activation seat — for example before moving to another computer. Click Verify to re-activate anytime."
+					description="Free up this device's seat — for example before switching computers. To use a different license key, deactivate here, then paste the new one."
 				>
 					<button type="button" disabled={deactivating} onClick={() => void handleDeactivate()}>
 						{deactivating ? "Deactivating..." : confirmDeactivate ? "Click again to confirm" : "Deactivate this device"}
 					</button>
 				</SettingItem>
 			)}
-			<SettingItem name="License status" description={<StatusDescription status={status} />}>
-				<button type="button" className="mod-cta" disabled={verifying} onClick={() => void handleVerify()}>
-					{verifying ? "Verifying..." : "Verify"}
-				</button>
-			</SettingItem>
 			{accountUrls != null && (
 				<SettingItem name="Subscription" description={subDescription}>
 					<button type="button" className={subAction.cta ? "mod-cta" : ""} onClick={() => openExternal(subHref)}>
 						{subAction.label}
 					</button>
+				</SettingItem>
+			)}
+			{accountUrls == null && status.state !== "none" && (
+				<SettingItem name="License status" description={<StatusDescription status={status} />}>
+					{null}
 				</SettingItem>
 			)}
 		</>
