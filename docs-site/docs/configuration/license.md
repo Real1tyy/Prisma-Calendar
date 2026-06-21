@@ -23,7 +23,7 @@ Prefer to enter the key yourself? It's a single paste — no secrets dialog, no 
 1. Open **Prisma Calendar → Settings → General → License**.
 2. Paste your **license key** into the **License key** field and click **Activate**.
 
-That's it. Prisma saves your key as a secret in Obsidian's keychain for you and activates Pro right away — you never have to create a secret or pick an ID and value by hand. The **Subscription** row then shows your plan and how many device seats are in use.
+That's it. Prisma saves your key as a secret in Obsidian's keychain for you and activates Pro right away — you never have to create a secret or pick an ID and value by hand. Once active, the **License status** row shows your plan and how many device seats are in use (for example, `2/5 devices`), with a **Refresh** button to re-check with the server any time.
 
 ### Reusing a secret you already saved
 
@@ -46,7 +46,7 @@ The easiest fix is to open the **one-click activation link** on that device. Or 
 1. On the new device, open **Prisma Calendar → Settings → General → License**.
 2. Paste your license key into the **License key** field and click **Activate** (or use **Use an existing secret** to pick one you've already saved).
 
-Pro unlocks as soon as activation completes — the **Subscription** row shows your plan and how many seats are in use. Each activated device takes one **seat** on your plan (for example, `2/5 devices`).
+Pro unlocks as soon as activation completes — the **License status** row shows your plan and how many seats are in use. Each activated device takes one **seat** on your plan (for example, `2/5 devices`).
 
 ### Freeing up a seat
 

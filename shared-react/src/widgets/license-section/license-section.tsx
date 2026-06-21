@@ -131,6 +131,7 @@ export const LicenseSection = memo(function LicenseSection({
 	const [confirmDeactivate, setConfirmDeactivate] = useState(false);
 	const [keyInput, setKeyInput] = useState("");
 	const [activating, setActivating] = useState(false);
+	const [refreshing, setRefreshing] = useState(false);
 	const [showSecretPicker, setShowSecretPicker] = useState(false);
 
 	const oneClick = licenseSecretId !== undefined;
@@ -170,6 +171,20 @@ export const LicenseSection = memo(function LicenseSection({
 			setActivating(false);
 		}
 	}, [app, keyInput, licenseManager, licenseSecretId, onSecretChange]);
+
+	// Activation already auto-verifies; this is the manual "re-check with the
+	// server" escape hatch for when the situation changed elsewhere (renewed
+	// billing, freed a seat) without the local secret value changing.
+	const handleRefresh = useCallback(async () => {
+		setRefreshing(true);
+		try {
+			await licenseManager.refreshLicense();
+		} catch (error) {
+			console.error("[Settings] License refresh failed:", error);
+		} finally {
+			setRefreshing(false);
+		}
+	}, [licenseManager]);
 
 	const handleDeactivate = useCallback(async () => {
 		if (!confirmDeactivate) {
@@ -211,13 +226,16 @@ export const LicenseSection = memo(function LicenseSection({
 	const subAction = subscriptionAction(status);
 	const subHref =
 		subAction.action != null && accountUrls != null ? accountUrls[subAction.action] : licenseManager.purchaseUrl;
-	// Status now lives in the Subscription row instead of a redundant standalone
-	// row + Verify button: once a key is configured the row shows the live status
-	// (active / devices / renewal, or the error message) next to its fix-it CTA.
-	// With no key yet there's nothing to report, so it falls back to the pitch.
+	// The error/lapsed states fold their status into the Subscription row (no
+	// separate row, no Refresh — the fix is a new key or a billing/device action,
+	// and we re-check reactively as the secret changes). When valid, status gets
+	// its own row with the manual Refresh button, so here we show the plain action
+	// hint; with no key yet there's nothing to report, so it's the trial pitch.
 	const subDescription: ReactNode =
 		status.state === "none" ? (
 			`Try every ${licenseManager.productName} Pro feature with a 30-day free trial — cancel anytime`
+		) : activated ? (
+			(subAction.description ?? "Manage billing and subscription settings")
 		) : (
 			<StatusDescription status={status} />
 		);
@@ -284,6 +302,13 @@ export const LicenseSection = memo(function LicenseSection({
 					</button>
 				</SettingItem>
 			)}
+			{activated && (
+				<SettingItem name="License status" description={<StatusDescription status={status} />}>
+					<button type="button" disabled={refreshing} onClick={() => void handleRefresh()}>
+						{refreshing ? "Refreshing..." : "Refresh"}
+					</button>
+				</SettingItem>
+			)}
 			{accountUrls != null && (
 				<SettingItem name="Subscription" description={subDescription}>
 					<button type="button" className={subAction.cta ? "mod-cta" : ""} onClick={() => openExternal(subHref)}>
@@ -291,7 +316,7 @@ export const LicenseSection = memo(function LicenseSection({
 					</button>
 				</SettingItem>
 			)}
-			{accountUrls == null && status.state !== "none" && (
+			{accountUrls == null && !activated && status.state !== "none" && (
 				<SettingItem name="License status" description={<StatusDescription status={status} />}>
 					{null}
 				</SettingItem>

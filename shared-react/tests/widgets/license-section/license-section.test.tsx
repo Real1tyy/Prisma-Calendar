@@ -109,8 +109,8 @@ describe("LicenseSection", () => {
 			// The raw secret picker stays hidden behind the advanced toggle.
 			expect(container.querySelector(".setting-secret-host")).toBeNull();
 			expect(screen.getByRole("button", { name: "Select existing secret" })).toBeInTheDocument();
-			// No key yet → no Verify button (activation auto-verifies).
-			expect(screen.queryByRole("button", { name: "Verify" })).toBeNull();
+			// No key yet → no manual Refresh button (activation auto-verifies).
+			expect(screen.queryByRole("button", { name: "Refresh" })).toBeNull();
 		});
 
 		it("disables Activate until a non-blank key is entered", async () => {
@@ -176,7 +176,7 @@ describe("LicenseSection", () => {
 			expect(screen.queryByRole("button", { name: "Select existing secret" })).toBeNull();
 		});
 
-		it("drops the activation surface and Verify, surfacing Deactivate + status, once active", () => {
+		it("drops the activation surface but surfaces a manual Refresh + Deactivate once active", () => {
 			setup(
 				makeStatus({
 					state: "valid",
@@ -189,17 +189,41 @@ describe("LicenseSection", () => {
 				{ licenseSecretId: SECRET_ID }
 			);
 
-			// Nothing to activate when Pro is already live on this device, and no
-			// manual Verify — activation auto-verifies and the daily heartbeat re-checks.
+			// Nothing to activate when Pro is already live on this device.
 			expect(screen.queryByRole("textbox", { name: "License key" })).toBeNull();
 			expect(screen.queryByRole("button", { name: "Activate" })).toBeNull();
 			expect(screen.queryByRole("button", { name: "Select existing secret" })).toBeNull();
-			expect(screen.queryByRole("button", { name: "Verify" })).toBeNull();
 
-			// Deactivate is present; the live status now rides in the Subscription row.
+			// Manual Refresh + Deactivate + live status are all surfaced.
+			expect(screen.getByRole("button", { name: "Refresh" })).toBeInTheDocument();
 			expect(screen.getByRole("button", { name: "Deactivate this device" })).toBeInTheDocument();
 			expect(screen.getByText(/1\/5 devices/)).toBeInTheDocument();
 			expect(screen.getByRole("button", { name: "Manage subscription" })).toBeInTheDocument();
+		});
+
+		it("triggers a manual refresh via refreshLicense when active", async () => {
+			const refreshLicense = vi.fn().mockResolvedValue(undefined);
+			const { user } = setup(
+				makeStatus({ state: "valid", entitlementStatus: "active" }),
+				{ refreshLicense, isPro: true },
+				{
+					licenseSecretId: SECRET_ID,
+				}
+			);
+
+			await user.click(screen.getByRole("button", { name: "Refresh" }));
+			expect(refreshLicense).toHaveBeenCalledOnce();
+		});
+
+		it("does not show Refresh for an invalid key — only the error surfaces", () => {
+			setup(makeStatus({ state: "invalid", errorMessage: "This license key is no longer valid." }), undefined, {
+				licenseSecretId: SECRET_ID,
+			});
+
+			// Invalid → re-paste path stays open, no manual Refresh; error rides the Subscription row.
+			expect(screen.queryByRole("button", { name: "Refresh" })).toBeNull();
+			expect(screen.getByRole("textbox", { name: "License key" })).toBeInTheDocument();
+			expect(screen.getByText(/no longer valid/)).toBeInTheDocument();
 		});
 	});
 });
