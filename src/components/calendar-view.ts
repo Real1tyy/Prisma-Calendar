@@ -2201,9 +2201,9 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 				return;
 			}
 			scroller.scrollTop += dir === "up" ? -DRAG_VERTICAL_SCROLL_SPEED_PX : DRAG_VERTICAL_SCROLL_SPEED_PX;
-			this.dragVerticalScrollFrame = activeWindow.requestAnimationFrame(step);
+			this.dragVerticalScrollFrame = window.requestAnimationFrame(step);
 		};
-		this.dragVerticalScrollFrame = activeWindow.requestAnimationFrame(step);
+		this.dragVerticalScrollFrame = window.requestAnimationFrame(step);
 	}
 
 	private cleanupDragEdgeScrolling(): void {
@@ -2216,7 +2216,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			this.dragEdgeScrollTimeout = null;
 		}
 		if (this.dragVerticalScrollFrame !== null) {
-			activeWindow.cancelAnimationFrame(this.dragVerticalScrollFrame);
+			window.cancelAnimationFrame(this.dragVerticalScrollFrame);
 			this.dragVerticalScrollFrame = null;
 		}
 		this.dragVerticalScrollDir = null;
