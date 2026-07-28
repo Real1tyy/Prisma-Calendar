@@ -172,15 +172,7 @@ This applies to all import paths: manual ICS import, ICS URL subscriptions, and 
 
 ## Syncing and Vault Indexing
 
-Both CalDAV accounts and ICS URL subscriptions decide what to create by comparing the remote calendar against the events they already track in your vault. That tracking list is rebuilt every time Prisma indexes the vault, so a sync **waits for indexing to finish** before it plans anything.
-
-This matters whenever a sync and an index run at the same time:
-
-- **On startup**, when "Sync on startup" fires while the vault is still being read
-- **On an auto-sync tick**, when the interval elapses during a cold start
-- **After a reindex**, triggered by a settings change or the **Reindex** button
-
-Without that wait, the sync would see an empty tracking list, treat every remote event as new, and create a second note for events it already had — visible as a burst of duplicates that Prisma then moves to trash. Waiting means no duplicates are created in the first place. A sync started during indexing simply takes a little longer to report its result; nothing is skipped.
+Both CalDAV accounts and ICS URL subscriptions decide what to create by comparing the remote calendar against the events they already track in your vault. That tracking list is rebuilt every time Prisma indexes the vault, so a sync **waits for indexing to finish** before it plans anything — otherwise it would create a duplicate note for every event it already had. A sync started during indexing just takes a little longer to report its result; nothing is skipped.
 
 ## CalDAV Integration
 
