@@ -71,7 +71,10 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 		// tracked-state map. A sync that races hydration (cold start, auto-sync
 		// tick, or mid-resync) would see an empty map and re-create every event.
 		await this.syncStateManager.whenHydrated();
-		if (this.destroyed) {
+		// Read through the accessor: TypeScript still carries the `false` narrowing
+		// from the pre-await check across the `await`, so a direct `this.destroyed`
+		// here reads as dead code — but `destroy()` can land while we wait.
+		if (this.isDestroyed()) {
 			return { ...defaultResult, success: false, errors: ["Sync service destroyed"] };
 		}
 

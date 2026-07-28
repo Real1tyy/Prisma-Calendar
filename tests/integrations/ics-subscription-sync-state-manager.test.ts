@@ -19,14 +19,17 @@ import type { App } from "obsidian";
 import { BehaviorSubject, NEVER, Subject } from "rxjs";
 import { describe, expect, it, vi } from "vitest";
 
+import type { CalendarBundle } from "../../src/core/calendar-bundle";
 import type { ImportedEvent } from "../../src/core/integrations/ics-import";
+import { ICSSubscriptionSyncService } from "../../src/core/integrations/ics-subscription/sync";
 import { computeIcsSubscriptionSyncPlan } from "../../src/core/integrations/ics-subscription/sync-planner";
 import { ICSSubscriptionSyncStateManager } from "../../src/core/integrations/ics-subscription/sync-state-manager";
 import type { ICSSubscriptionSyncMetadata } from "../../src/core/integrations/ics-subscription/types";
 import type { CalendarEventSource, IndexerEvent } from "../../src/types/event-source";
+import type { ICSSubscription } from "../../src/types/integrations";
 import type { SingleCalendarConfig } from "../../src/types/settings";
 import { createRawEventSource } from "../fixtures";
-import { createMockSingleCalendarSettings } from "../fixtures/settings-fixtures";
+import { createMockMainSettingsStore, createMockSingleCalendarSettings } from "../fixtures/settings-fixtures";
 import { createMockApp } from "../setup";
 
 function silentEventSource(): CalendarEventSource {
@@ -273,5 +276,47 @@ describe("ICSSubscriptionSyncStateManager — index-hydration gate", () => {
 		});
 
 		expect(plan.summary).toMatchObject({ create: 0, skipUnchanged: 1 });
+	});
+
+	// The gate makes `sync()` await an indexer signal that may never come while the
+	// service is still alive — a calendar torn down mid-wait (plugin unload, calendar
+	// deleted) must abandon the sync rather than plan writes against a dead bundle.
+	// TypeScript narrows `this.destroyed` to `false` from the pre-await check and
+	// keeps that narrowing across the `await`, so the post-await guard reads through
+	// `isDestroyed()`; this test is what stops it being "simplified" back.
+	it("a sync destroyed while awaiting hydration abandons instead of planning writes", async () => {
+		const { source, indexingComplete$ } = controllableSource();
+		const { manager } = makeManager(source);
+		const subscription: ICSSubscription = {
+			id: "sub-a",
+			name: "Team Calendar",
+			urlSecretName: "team-calendar-url",
+			enabled: true,
+			calendarId: "cal-a",
+			syncIntervalMinutes: 60,
+			timezone: "UTC",
+			createdAt: 1_700_000_000_000,
+		};
+		const service = new ICSSubscriptionSyncService({
+			app: createMockApp() as unknown as App,
+			bundle: {} as CalendarBundle,
+			mainSettingsStore: createMockMainSettingsStore(),
+			syncStateManager: manager,
+			subscription,
+		});
+
+		const syncResult = service.sync();
+		await flushMicrotasks();
+
+		service.destroy();
+		indexingComplete$.next(true);
+
+		await expect(syncResult).resolves.toMatchObject({
+			success: false,
+			errors: ["Sync service destroyed"],
+			created: 0,
+			updated: 0,
+			deleted: 0,
+		});
 	});
 });
