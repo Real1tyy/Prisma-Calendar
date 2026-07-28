@@ -38,5 +38,9 @@ export function useMediaQuery(query: string): boolean {
  */
 function getMatchMedia(): typeof window.matchMedia | undefined {
 	if (typeof window === "undefined") return undefined;
-	return window.matchMedia;
+	const win = window as { matchMedia?: typeof window.matchMedia };
+	if (!win.matchMedia) return undefined;
+	// Bound to the window: `matchMedia` throws "Illegal invocation" when called
+	// with any other `this`, and both call sites above invoke it detached.
+	return win.matchMedia.bind(window);
 }
