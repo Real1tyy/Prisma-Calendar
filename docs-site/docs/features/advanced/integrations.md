@@ -170,6 +170,18 @@ This applies to all import paths: manual ICS import, ICS URL subscriptions, and 
 
 **Available zones**: The timezone dropdown (used for ICS export/import and CalDAV account setup) covers a zone for every standard UTC offset from UTC−12 through UTC+14, including the half-hour and 45-minute offsets (e.g. UTC+3:30 Tehran, UTC+5:45 Kathmandu, UTC+12:45 Chatham). Each entry is a real IANA zone, so daylight-saving transitions are applied correctly — the `(UTC±N)` shown in each label is the zone's standard-time offset. `UTC` stays pinned at the top as the neutral default.
 
+## Syncing and Vault Indexing
+
+Both CalDAV accounts and ICS URL subscriptions decide what to create by comparing the remote calendar against the events they already track in your vault. That tracking list is rebuilt every time Prisma indexes the vault, so a sync **waits for indexing to finish** before it plans anything.
+
+This matters whenever a sync and an index run at the same time:
+
+- **On startup**, when "Sync on startup" fires while the vault is still being read
+- **On an auto-sync tick**, when the interval elapses during a cold start
+- **After a reindex**, triggered by a settings change or the **Reindex** button
+
+Without that wait, the sync would see an empty tracking list, treat every remote event as new, and create a second note for events it already had — visible as a burst of duplicates that Prisma then moves to trash. Waiting means no duplicates are created in the first place. A sync started during indexing simply takes a little longer to report its result; nothing is skipped.
+
 ## CalDAV Integration
 
 ### Overview
@@ -240,6 +252,8 @@ Configure automatic synchronization behavior:
 **Calendar Icons**: When you set an icon for a CalDAV account, it appears in the top-right corner of all events synced from that calendar. This makes it easy to visually identify which external calendar each event came from. Icons use the same marker system as recurring events and holidays.
 
 ### How CalDAV Sync Works
+
+Every sync first waits for vault indexing to complete — see [Syncing and Vault Indexing](#syncing-and-vault-indexing).
 
 #### Initial Sync
 
@@ -369,6 +383,8 @@ Configure automatic synchronization behavior:
 **Calendar Icons**: When you set an icon for an ICS subscription, it appears in the top-right corner of all events synced from that subscription. This makes it easy to visually identify which external calendar each event came from. Icons use the same marker system as recurring events and holidays.
 
 ### How ICS URL Sync Works
+
+Every sync first waits for vault indexing to complete — see [Syncing and Vault Indexing](#syncing-and-vault-indexing).
 
 #### Sync Process
 

@@ -6,7 +6,7 @@ All notable changes to this project will be documented here.
 
 ## 2.21.0 - 6/11/2026
 
-> **TLDR:** Dragging an event to the top or bottom edge of a zoomed-in day/week view now scrolls the grid slowly so you can drop it on an off-screen time.
+> **TLDR:** Activating Pro is now a single paste-and-click in **Settings → General → License** — no secrets dialog, no ID/value steps. Dragging an event to the top or bottom edge of a zoomed-in day/week view now scrolls the grid slowly so you can drop it on an off-screen time.
 
 ### Added
 - **Scroll while dragging vertically**: in day and week views, holding a dragged event against the top or bottom edge of a zoomed-in grid now scrolls it slowly up or down — the vertical counterpart to the existing left/right edge paging — so you can drop on a time that's currently off-screen. See [Calendar View → Scrolling while dragging](./features/calendar/calendar-view.md#scrolling-while-dragging).
@@ -14,6 +14,7 @@ All notable changes to this project will be documented here.
 
 ### Fixed
 - **Filter presets work without the expression filter**: selecting a saved preset from the ▼ dropdown now applies its expression even when the **Expression Filter** toolbar button isn't enabled. Previously the preset had nothing to fill and silently did nothing until you added and used the expression filter first. See [Filtering → Filter Presets](./features/organization/filtering.md#3-filter-presets-quick-access).
+- **Duplicate synced events on startup**: CalDAV accounts and ICS URL subscriptions no longer re-create notes for events they already track. A sync that ran while the vault was still being indexed — on startup, on an auto-sync tick, or right after a reindex — could create a fresh note for every remote event and then trash the copies moments later; syncs now wait for indexing to finish before deciding what to create. See [Integrations → Syncing and vault indexing](./features/advanced/integrations.md#syncing-and-vault-indexing).
 
 ---
 
