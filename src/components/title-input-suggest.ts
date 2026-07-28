@@ -200,7 +200,7 @@ export class TitleInputSuggest extends AbstractInputSuggest<TitleSuggestion> {
 	// One canvas context per suggester — avoids re-creating it per keystroke.
 	private getMeasureCtx(): CanvasRenderingContext2D | null {
 		if (this.measureCtx) return this.measureCtx;
-		const canvas = this.titleInputEl.ownerDocument.createElement("canvas");
+		const canvas = createEl("canvas");
 		this.measureCtx = canvas.getContext("2d");
 		return this.measureCtx;
 	}

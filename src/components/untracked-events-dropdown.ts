@@ -29,8 +29,7 @@ export class UntrackedEventsDropdown {
 			const slot = container.querySelector(selector);
 			if (!slot) return;
 
-			this.wrapperEl = activeDocument.createElement("div");
-			this.wrapperEl.className = "prisma-untracked-dropdown-wrapper";
+			this.wrapperEl = createDiv({ cls: "prisma-untracked-dropdown-wrapper" });
 
 			if (placement === "left") {
 				slot.appendChild(this.wrapperEl);

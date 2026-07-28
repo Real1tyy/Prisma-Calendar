@@ -29,8 +29,7 @@ export function mountFilterPresetSelector(opts: MountOptions): FilterPresetSelec
 	const toolbarLeft = opts.container.querySelector(".fc-toolbar-chunk:first-child");
 	if (!toolbarLeft) return null;
 
-	const wrapper = activeDocument.createElement("div");
-	wrapper.className = cls("fc-filter-preset-wrapper");
+	const wrapper = createDiv({ cls: cls("fc-filter-preset-wrapper") });
 
 	const zoomButton = toolbarLeft.querySelector(".fc-zoomLevel-button");
 	if (zoomButton?.parentNode) {

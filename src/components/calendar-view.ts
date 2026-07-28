@@ -1681,7 +1681,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			const colors = this.colorDotIndex.get(dateAttr);
 			if (!colors || colors.size === 0) continue;
 
-			const frag = activeDocument.createDocumentFragment();
+			const frag = createFragment();
 			frag.appendChild(buildColorDotsContainer([...colors], maxDots));
 			dayCell.querySelector(".fc-daygrid-day-top")?.appendChild(frag);
 		}

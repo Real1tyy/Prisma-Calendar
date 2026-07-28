@@ -69,15 +69,12 @@ export const ProUpgradeBanner = memo(function ProUpgradeBanner({
 });
 
 function openImageLightbox(src: string, alt: string): void {
-	const overlay = activeDocument.createElement("div");
-	overlay.className = cls("pro-lightbox-overlay");
+	const overlay = createDiv({ cls: cls("pro-lightbox-overlay") });
 
-	const img = activeDocument.createElement("img");
-	img.className = cls("pro-lightbox-img");
+	const img = overlay.createEl("img", { cls: cls("pro-lightbox-img") });
 	img.src = src;
 	img.alt = alt;
 	img.draggable = false;
-	overlay.appendChild(img);
 
 	const close = (): void => overlay.remove();
 	overlay.addEventListener("click", (e) => {

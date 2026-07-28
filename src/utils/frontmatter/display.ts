@@ -25,11 +25,10 @@ export interface PropertyRendererOptions {
 export function renderPropertyValue(container: HTMLElement, value: unknown, options: PropertyRendererOptions): void {
 	const config: PropertyRendererConfig = {
 		createLink: (text: string, path: string) => {
-			const link = activeDocument.createElement("a");
+			const link = createEl("a", { text });
 			if (options.linkClassName) {
 				link.className = options.linkClassName;
 			}
-			link.textContent = text;
 			link.onclick = (e) => {
 				e.preventDefault();
 				e.stopPropagation();
@@ -61,26 +60,11 @@ export function renderPropertyValue(container: HTMLElement, value: unknown, opti
 export function extractPropertyText(value: unknown): string {
 	if (value == null) return "";
 
-	const tempContainer = activeDocument.createElement("div");
+	const tempContainer = createDiv();
 	const config: PropertyRendererConfig = {
-		createLink: (text: string, _path: string, _isObsidianLink: boolean) => {
-			const textNode = activeDocument.createTextNode(text);
-			const span = activeDocument.createElement("span");
-			span.appendChild(textNode);
-			return span;
-		},
-		createText: (text: string) => {
-			const textNode = activeDocument.createTextNode(text);
-			const span = activeDocument.createElement("span");
-			span.appendChild(textNode);
-			return span;
-		},
-		createSeparator: () => {
-			const textNode = activeDocument.createTextNode(", ");
-			const span = activeDocument.createElement("span");
-			span.appendChild(textNode);
-			return span;
-		},
+		createLink: (text: string, _path: string, _isObsidianLink: boolean) => createSpan({ text }),
+		createText: (text: string) => createSpan({ text }),
+		createSeparator: () => createSpan({ text: ", " }),
 	};
 
 	renderPropertyValueUtil(tempContainer, value, config);

@@ -156,11 +156,42 @@ function polyfillObsidianDOM(): void {
 		return createAndAppend(this, tag, options);
 	};
 
-	(window as any).createDiv = function (arg?: string | ElOptions) {
-		const div = document.createElement("div");
-		if (typeof arg === "string") div.className = arg;
-		else if (arg) applyOptions(div, arg);
-		return div;
+	// On Element, not HTMLElement: `createSvg` is chained off SVG nodes, whose
+	// prototype chain is SVGElement → Element and never passes through HTMLElement.
+	(Element.prototype as any).createSvg = function (this: Element, tag: string, arg?: string | ElOptions) {
+		const el = createDetachedSvg(tag, arg);
+		this.appendChild(el);
+		return el;
+	};
+
+	function createDetached(tag: string, arg?: string | ElOptions): HTMLElement {
+		const el = document.createElement(tag);
+		if (typeof arg === "string") el.className = arg;
+		else if (arg) applyOptions(el, arg);
+		return el;
+	}
+
+	function createDetachedSvg(tag: string, arg?: string | ElOptions): SVGElement {
+		const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+		const cls = typeof arg === "string" ? arg : arg?.cls;
+		if (cls) el.setAttribute("class", Array.isArray(cls) ? cls.join(" ") : cls);
+		return el;
+	}
+
+	// Obsidian exposes the detached constructors as bare globals and source code
+	// calls them unqualified. They go on `globalThis` rather than `window`: the
+	// two are not the same object in every Vitest environment this suite runs
+	// (the `dom` project among them), and an unqualified call resolves against
+	// `globalThis` only.
+	const g = globalThis as any;
+	g.createDiv = (arg?: string | ElOptions) => createDetached("div", arg);
+	g.createSpan = (arg?: string | ElOptions) => createDetached("span", arg);
+	g.createEl = (tag: string, arg?: string | ElOptions) => createDetached(tag, arg);
+	g.createSvg = (tag: string, arg?: string | ElOptions) => createDetachedSvg(tag, arg);
+	g.createFragment = (callback?: (el: DocumentFragment) => void) => {
+		const frag = document.createDocumentFragment();
+		callback?.(frag);
+		return frag;
 	};
 }
 

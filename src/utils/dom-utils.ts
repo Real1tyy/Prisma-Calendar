@@ -3,7 +3,7 @@ import { createModalButtons as createModalButtonsBase } from "@real1ty/obsidian-
 import { CSS_PREFIX } from "../constants";
 
 export function createTextDiv(parent: HTMLElement, text: string, cls: string): HTMLDivElement {
-	return parent.createEl("div", { text, cls });
+	return parent.createDiv({ text, cls });
 }
 
 export function toggleEventHighlight(

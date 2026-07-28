@@ -35,7 +35,7 @@ export function renderProUpgradeBanner(
 		}
 	}
 
-	banner.createEl("span", {
+	banner.createSpan({
 		text: "PRO",
 		cls: cls("pro-upgrade-badge"),
 	});

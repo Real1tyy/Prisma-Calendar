@@ -5,7 +5,10 @@ import { requestUrl, type RequestUrlResponse } from "obsidian";
 // the test setup polyfill installs the `window = globalThis` alias. Runtime
 // call sites below use `window.fetch` directly — they only execute from
 // inside Obsidian, where `window` is always defined.
-const initialFetch: typeof fetch | undefined = typeof window !== "undefined" ? window.fetch : undefined;
+//
+// Bound at capture: `fetch` throws "Illegal invocation" when called with a
+// `this` other than the window, and every use below invokes it detached.
+const initialFetch: typeof fetch | undefined = typeof window !== "undefined" ? window.fetch.bind(window) : undefined;
 
 /**
  * Response wrapper that makes Obsidian's RequestUrlResponse compatible with the Fetch API Response interface.
@@ -88,7 +91,7 @@ async function obsidianFetch(input: RequestInfo | URL, init?: RequestInit): Prom
 
 	const protocol = parsed?.protocol ?? "";
 	if (protocol && protocol !== "http:" && protocol !== "https:") {
-		const fallbackFetch = originalFetch ?? initialFetch ?? window.fetch;
+		const fallbackFetch = originalFetch ?? initialFetch ?? window.fetch.bind(window);
 		return fallbackFetch(input, init);
 	}
 
@@ -136,7 +139,7 @@ let originalFetch: typeof fetch | undefined;
  * Call this before importing/using libraries that use fetch (like tsdav).
  */
 export function patchGlobalFetch(): () => void {
-	const prev = window.fetch;
+	const prev = window.fetch.bind(window);
 	if (!originalFetch) {
 		originalFetch = prev;
 	}

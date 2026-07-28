@@ -105,16 +105,14 @@ export function buildSharedEventContent(
 		const calendarIconCache = deps.getCalendarIconCache();
 		const { userIcon, integrationIcon } = getEventIcon(event, settings, calendarIconCache);
 
-		const container = activeDocument.createElement("div");
-		container.className = cls("fc-event-content-wrapper");
+		const container = createDiv({ cls: cls("fc-event-content-wrapper") });
 
 		const hasRecurringMarker =
 			(isSourceRecurring && settings.showSourceRecurringMarker) ||
 			(isPhysicalRecurring && settings.showPhysicalRecurringMarker);
 
 		if (userIcon || hasRecurringMarker || integrationIcon || holiday) {
-			const markerEl = activeDocument.createElement("div");
-			markerEl.className = cls("event-marker");
+			const markerEl = container.createDiv({ cls: cls("event-marker") });
 
 			if (userIcon) {
 				markerEl.textContent = userIcon;
@@ -127,23 +125,16 @@ export function buildSharedEventContent(
 			} else if (holiday) {
 				markerEl.textContent = "🏳️";
 			}
-
-			container.appendChild(markerEl);
 		}
 
-		const headerEl = activeDocument.createElement("div");
-		headerEl.className = cls("fc-event-header");
+		const headerEl = container.createDiv({ cls: cls("fc-event-header") });
 
 		const showTime = !event.allDay && event.start;
 		if (showTime) {
-			const timeEl = activeDocument.createElement("div");
-			timeEl.className = cls("fc-event-time");
-			timeEl.textContent = arg.timeText;
-			headerEl.appendChild(timeEl);
+			headerEl.createDiv({ cls: cls("fc-event-time"), text: arg.timeText });
 		}
 
-		const titleEl = activeDocument.createElement("div");
-		titleEl.className = cls("fc-event-title-custom");
+		const titleEl = headerEl.createDiv({ cls: cls("fc-event-title-custom") });
 		let title = cleanupTitle(event.title);
 
 		if (settings.showDurationInTitle && !event.allDay && event.start && event.end) {
@@ -152,9 +143,6 @@ export function buildSharedEventContent(
 		}
 
 		titleEl.textContent = title;
-		headerEl.appendChild(titleEl);
-
-		container.appendChild(headerEl);
 
 		const displayPropertiesList = event.allDay
 			? settings.frontmatterDisplayPropertiesAllDay
@@ -162,30 +150,20 @@ export function buildSharedEventContent(
 
 		const displayProperties = getDisplayProperties(displayData, displayPropertiesList);
 		if (displayProperties.length > 0) {
-			const propsContainer = activeDocument.createElement("div");
-			propsContainer.className = cls("fc-event-props");
+			const propsContainer = container.createDiv({ cls: cls("fc-event-props") });
 
 			for (const [prop, value] of displayProperties) {
-				const propEl = activeDocument.createElement("div");
-				propEl.className = cls("fc-event-prop");
+				const propEl = propsContainer.createDiv({ cls: cls("fc-event-prop") });
 
-				const keyEl = activeDocument.createElement("span");
-				keyEl.className = cls("fc-event-prop-key");
-				keyEl.textContent = `${prop}:`;
-				propEl.appendChild(keyEl);
+				propEl.createSpan({ cls: cls("fc-event-prop-key"), text: `${prop}:` });
 
-				const valueEl = activeDocument.createElement("span");
-				valueEl.className = cls("fc-event-prop-value");
+				const valueEl = propEl.createSpan({ cls: cls("fc-event-prop-value") });
 				renderPropertyValue(valueEl, value, {
 					app: deps.app,
 					linkClassName: cls("fc-event-prop-link"),
 					addSpacePrefixToText: true,
 				});
-				propEl.appendChild(valueEl);
-
-				propsContainer.appendChild(propEl);
 			}
-			container.appendChild(propsContainer);
 		}
 
 		return { domNodes: [container] };
