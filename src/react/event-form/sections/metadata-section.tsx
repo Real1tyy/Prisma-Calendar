@@ -34,6 +34,7 @@ const MetadataToggleField = memo(function MetadataToggleField({ field, value, on
 			name={field.label}
 			{...(field.description ? { description: field.description } : {})}
 			testId={`prisma-event-field-${field.key}`}
+			booleanControl
 		>
 			<Toggle
 				value={Boolean(value)}

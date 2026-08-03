@@ -704,8 +704,10 @@
 		// Boolean rows (checkbox / toggle): let the label fill the row so the control
 		// sits flush at the right with no awkward mid-row gap — the row reads full
 		// width. Text / date rows keep the desktop label width so their inputs grow.
-		.prisma-setting-item:has(> .prisma-setting-item-control[type="checkbox"]) .prisma-setting-item-name,
-		.prisma-setting-item:has(> .checkbox-container) .prisma-setting-item-name {
+		// `PrismaSettingItem` stamps `data-control="boolean"` rather than us matching
+		// the control with `:has()`, which costs a parent invalidation pass — same
+		// reasoning as the `data-tab-id` branch in `_base.scss`.
+		.prisma-setting-item[data-control="boolean"] .prisma-setting-item-name {
 			flex: 1 1 auto;
 			max-width: none;
 		}

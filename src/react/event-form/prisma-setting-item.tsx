@@ -5,6 +5,17 @@ interface PrismaSettingItemProps {
 	description?: ReactNode;
 	children: ReactNode;
 	testId?: string | undefined;
+	/**
+	 * Set on rows whose control is a checkbox or toggle. The mobile stylesheet
+	 * widens the label on those rows so the control sits flush right instead of
+	 * leaving a mid-row gap.
+	 *
+	 * Declared explicitly rather than detected from `children` with `:has()`:
+	 * the control arrives as an opaque node, and `:has()` costs a parent
+	 * invalidation pass on every match — the same reason `_base.scss` branches on
+	 * `data-tab-id`.
+	 */
+	booleanControl?: boolean;
 }
 
 /**
@@ -19,9 +30,14 @@ export const PrismaSettingItem = memo(function PrismaSettingItem({
 	description,
 	children,
 	testId,
+	booleanControl,
 }: PrismaSettingItemProps) {
 	return (
-		<div className="prisma-setting-item" {...(testId ? { "data-testid": testId } : {})}>
+		<div
+			className="prisma-setting-item"
+			{...(booleanControl ? { "data-control": "boolean" } : {})}
+			{...(testId ? { "data-testid": testId } : {})}
+		>
 			<div className="prisma-setting-item-name">{name}</div>
 			{description !== undefined && description !== null && description !== false && (
 				<div className="prisma-setting-item-description">{description}</div>

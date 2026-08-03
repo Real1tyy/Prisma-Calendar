@@ -3269,8 +3269,7 @@ button[class*=prisma-]:focus-visible {
     width: 24px;
     height: 24px;
   }
-  .prisma-event-modal .prisma-setting-item:has(> .prisma-setting-item-control[type=checkbox]) .prisma-setting-item-name,
-  .prisma-event-modal .prisma-setting-item:has(> .checkbox-container) .prisma-setting-item-name {
+  .prisma-event-modal .prisma-setting-item[data-control=boolean] .prisma-setting-item-name {
     flex: 1 1 auto;
     max-width: none;
   }

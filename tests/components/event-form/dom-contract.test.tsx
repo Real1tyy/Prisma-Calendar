@@ -52,6 +52,24 @@ describe("Imperative DOM contract — TimingSection layout", () => {
 		expect(label!.textContent).toBe("All day");
 	});
 
+	it("All day row carries data-control=boolean for the mobile label-width rule", () => {
+		// `_modals.scss` widens the label on boolean rows so the control sits flush
+		// right at phone width. It selects `[data-control="boolean"]` rather than
+		// `:has(> .prisma-setting-item-control[type="checkbox"])` — `:has()` costs a
+		// parent invalidation pass and Obsidian's CSS lint flags it. If this attribute
+		// stops being stamped the selector silently matches nothing and the row
+		// regresses to a mid-row gap, which no other assertion would catch.
+		render(<TimingWrapper />);
+		const row = screen.getByTestId("prisma-event-control-all-day").closest(".prisma-setting-item");
+		expect(row!.getAttribute("data-control")).toBe("boolean");
+	});
+
+	it("Non-boolean rows omit data-control so they keep the fixed label width", () => {
+		render(<TimingWrapper initial={{ allDay: true }} />);
+		const dateRow = screen.getByTestId("prisma-event-field-date");
+		expect(dateRow.getAttribute("data-control")).toBeNull();
+	});
+
 	it("Setting-item rows do NOT use Obsidian's .setting-item-info wrapper", () => {
 		// Imperative emits a flat row: <div class="prisma-setting-item"> direct-child
 		// <div class="prisma-setting-item-name"> + control. Obsidian wraps the name in
