@@ -6,7 +6,7 @@
 	"dependencies": {
 		"@real1ty/obsidian-plugins": "file:../shared",
 		"@tanstack/react-virtual": "^3.10.9",
-		"obsidian": "^1.11.4",
+		"obsidian": "^1.13.1",
 		"react": "^19.2.5",
 		"react-dom": "^19.2.5",
 		"react-hook-form": "^7.54.2",
