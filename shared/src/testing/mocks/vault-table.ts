@@ -98,7 +98,7 @@ export class MockVaultTable<TData extends Record<string, unknown> = Record<strin
 
 	async update(key: string, data: Partial<TData>): Promise<VaultRow<TData>> {
 		const oldRow = this.require(key);
-		const merged = { ...oldRow.data, ...data } as TData;
+		const merged = { ...oldRow.data, ...data };
 		const newRow = this.buildRow(key, merged, oldRow.content);
 		this.rowsByKey.set(key, newRow);
 
@@ -252,7 +252,7 @@ export class MockVaultTable<TData extends Record<string, unknown> = Record<strin
 	 */
 	emitUpdateWithDiff(key: string, newData: Partial<TData>, diff: FrontmatterDiff): void {
 		const oldRow = this.require(key);
-		const merged = { ...oldRow.data, ...newData } as TData;
+		const merged = { ...oldRow.data, ...newData };
 		const newRow = this.buildRow(key, merged, oldRow.content);
 		this.rowsByKey.set(key, newRow);
 
@@ -279,8 +279,10 @@ export class MockVaultTable<TData extends Record<string, unknown> = Record<strin
 		const filePath = `${this.directory}/${key}.md`;
 		const mtime = this.mtimeCounter++;
 		const file = new TFile(filePath);
-		(file.stat as Record<string, unknown>) = { mtime };
+		file.stat = { ctime: mtime, mtime, size: 0 };
 
-		return { id: key, file: file as any, filePath, data, content, mtime };
+		// The mock TFile intentionally leaves `vault` untyped — a mock vault would
+		// have to implement the whole Vault surface for no test to touch it.
+		return { id: key, file: file as unknown as VaultRow<TData>["file"], filePath, data, content, mtime };
 	}
 }

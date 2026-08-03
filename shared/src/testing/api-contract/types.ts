@@ -27,10 +27,12 @@ export interface ContractStep {
 	/** API action name on the window surface. */
 	action: string;
 	/**
-	 * Params for the action. Either a literal value or a resolver function
-	 * that derives params from the outputs of prior steps.
+	 * Params for the action. Either a literal value or a resolver function that
+	 * derives params from the outputs of prior steps — the runner calls it when
+	 * it is a function. Typed as bare `unknown` because `unknown` already admits
+	 * functions; spelling the union out would collapse to `unknown` anyway.
 	 */
-	params: unknown | ((prev: ResolvedSteps) => unknown);
+	params: unknown;
 	/** Optional assertion on the result of this step. Receives the previous step results too. */
 	expect?: (result: unknown, prev: ResolvedSteps) => void | Promise<void>;
 }

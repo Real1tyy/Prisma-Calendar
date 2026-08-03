@@ -69,7 +69,7 @@ export class PluginSettingTab {
 	constructor(app: unknown, plugin: unknown) {
 		this.app = app;
 		this.plugin = plugin;
-		this.containerEl = document.createElement("div");
+		this.containerEl = createDiv();
 	}
 
 	display = vi.fn();
@@ -99,7 +99,7 @@ export class ItemView {
 		this.leaf = leaf;
 
 		this.app = (leaf as { app?: unknown })?.app;
-		this.containerEl = document.createElement("div");
+		this.containerEl = createDiv();
 	}
 
 	// Don't override onOpen/onClose - let subclasses implement them
@@ -112,7 +112,7 @@ export class ItemView {
 	}
 
 	getDisplayText(): string {
-		return "Mock View";
+		return "Mock view";
 	}
 
 	getIcon(): string {
@@ -131,10 +131,10 @@ export class Setting {
 	controlEl: HTMLElement;
 
 	constructor(_containerEl: HTMLElement) {
-		this.settingEl = document.createElement("div");
-		this.nameEl = document.createElement("div");
-		this.descEl = document.createElement("div");
-		this.controlEl = document.createElement("div");
+		this.settingEl = createDiv();
+		this.nameEl = createDiv();
+		this.descEl = createDiv();
+		this.controlEl = createDiv();
 	}
 
 	setName = vi.fn().mockReturnThis();
@@ -181,7 +181,9 @@ export class TFile {
 	name: string;
 	basename: string;
 	extension: string;
-	stat: unknown;
+	// Structurally `FileStats` so a mock TFile stays assignable to the real one
+	// where production signatures ask for it (e.g. VaultRow.file).
+	stat: { ctime: number; mtime: number; size: number };
 	vault: unknown;
 	parent: TFolder | null;
 
@@ -190,7 +192,7 @@ export class TFile {
 		this.name = path.split("/").pop() || "";
 		this.basename = this.name.replace(/\.[^/.]+$/, ""); // Remove extension
 		this.extension = path.split(".").pop() || "md";
-		this.stat = {};
+		this.stat = { ctime: 0, mtime: 0, size: 0 };
 		this.vault = {};
 
 		// Set parent based on path or explicit parentPath
@@ -219,10 +221,10 @@ export class Modal {
 
 	constructor(app: unknown) {
 		this.app = app;
-		this.containerEl = document.createElement("div");
-		this.titleEl = document.createElement("div");
-		this.contentEl = document.createElement("div");
-		this.modalEl = document.createElement("div");
+		this.containerEl = createDiv();
+		this.titleEl = createDiv();
+		this.contentEl = createDiv();
+		this.modalEl = createDiv();
 		this.scope = { register: vi.fn() };
 	}
 
@@ -276,7 +278,7 @@ export class TextComponent {
 	inputEl: HTMLInputElement;
 
 	constructor(containerEl: HTMLElement) {
-		this.inputEl = document.createElement("input");
+		this.inputEl = createEl("input");
 		containerEl.appendChild(this.inputEl);
 	}
 
@@ -329,7 +331,7 @@ export class SliderComponent {
 	sliderEl: HTMLInputElement;
 	private changeHandler: ((value: number) => void) | null = null;
 	constructor(el: HTMLElement) {
-		this.sliderEl = document.createElement("input");
+		this.sliderEl = createEl("input");
 		this.sliderEl.type = "range";
 		this.sliderEl.className = "slider";
 		this.sliderEl.addEventListener("input", () => {

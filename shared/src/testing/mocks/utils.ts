@@ -1,21 +1,31 @@
+import type { Mock } from "@vitest/spy";
 import { expect, vi } from "vitest";
+
+/** The slice of a TFile these mocks read — kept structural so tests can pass literals. */
+interface FileLike {
+	basename?: string;
+	path?: string;
+	parent?: { path?: string } | null;
+}
 
 // File operations mocks
 export const mockFileOperations = {
-	arraysEqual: vi.fn(),
-	normalizeArray: vi.fn(),
-	createFileLink: vi.fn(),
+	arraysEqual: vi.fn<(a: unknown, b: unknown) => boolean>(),
+	normalizeArray: vi.fn<(arr: unknown) => unknown[]>(),
+	createFileLink: vi.fn<(file: FileLike | null | undefined) => string>(),
 };
 
 // Link parser mocks
 export const mockLinkParser = {
-	extractFilePathFromLink: vi.fn(),
+	extractFilePathFromLink: vi.fn<(link: unknown) => string | null>(),
 };
 
 // Default mock implementations that match the actual behavior
 export function setupDefaultMockImplementations() {
 	// Set up file operations mocks
-	mockFileOperations.normalizeArray.mockImplementation((arr) => (Array.isArray(arr) ? arr : arr ? [arr] : []));
+	mockFileOperations.normalizeArray.mockImplementation((arr) =>
+		Array.isArray(arr) ? (arr as unknown[]) : arr ? [arr] : []
+	);
 
 	mockFileOperations.arraysEqual.mockImplementation((a, b) => JSON.stringify(a) === JSON.stringify(b));
 
@@ -68,47 +78,33 @@ export function resetAllMocks() {
 	});
 }
 
-// Helper to setup mocks with specific implementations
-export function setupMockImplementation(
-	mockName: keyof typeof mockFileOperations | keyof typeof mockLinkParser,
-	implementation: (...args: unknown[]) => unknown
-) {
+type MockName = keyof typeof mockFileOperations | keyof typeof mockLinkParser;
+
+/**
+ * Resolve a mock by name as the erased `Mock` type. The two registries hold
+ * different call signatures, so the union cannot be driven directly — every
+ * helper below only reaches the signature-agnostic spy surface.
+ */
+function resolveMock(mockName: MockName): Mock {
 	if (mockName in mockFileOperations) {
-		const mock = mockFileOperations[mockName as keyof typeof mockFileOperations];
-
-		(mock as any).mockImplementation(implementation);
-	} else if (mockName in mockLinkParser) {
-		const mock = mockLinkParser[mockName as keyof typeof mockLinkParser];
-
-		(mock as any).mockImplementation(implementation);
+		return mockFileOperations[mockName as keyof typeof mockFileOperations] as Mock;
 	}
+	return mockLinkParser[mockName as keyof typeof mockLinkParser] as Mock;
+}
+
+// Helper to setup mocks with specific implementations
+export function setupMockImplementation(mockName: MockName, implementation: (...args: unknown[]) => unknown) {
+	resolveMock(mockName).mockImplementation(implementation);
 }
 
 // Helper to setup mock return values
-export function setupMockReturnValue(
-	mockName: keyof typeof mockFileOperations | keyof typeof mockLinkParser,
-	value: unknown
-) {
-	if (mockName in mockFileOperations) {
-		const mock = mockFileOperations[mockName as keyof typeof mockFileOperations];
-
-		(mock as any).mockReturnValue(value);
-	} else if (mockName in mockLinkParser) {
-		const mock = mockLinkParser[mockName as keyof typeof mockLinkParser];
-
-		(mock as any).mockReturnValue(value);
-	}
+export function setupMockReturnValue(mockName: MockName, value: unknown) {
+	resolveMock(mockName).mockReturnValue(value);
 }
 
 // Helper to verify mock calls
-export function verifyMockCalls(
-	mockName: keyof typeof mockFileOperations | keyof typeof mockLinkParser,
-	expectedCalls: unknown[][]
-) {
-	const mock =
-		mockName in mockFileOperations
-			? (mockFileOperations[mockName as keyof typeof mockFileOperations] as unknown)
-			: (mockLinkParser[mockName as keyof typeof mockLinkParser] as unknown);
+export function verifyMockCalls(mockName: MockName, expectedCalls: unknown[][]) {
+	const mock = resolveMock(mockName);
 
 	expect(mock).toHaveBeenCalledTimes(expectedCalls.length);
 	expectedCalls.forEach((args, index) => {

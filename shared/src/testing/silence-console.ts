@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, vi } from "vitest";
+import { afterEach, beforeEach, vi, type MockInstance } from "vitest";
 
 type ConsoleMethod = "log" | "info" | "warn" | "error" | "debug";
 
@@ -12,7 +12,7 @@ type ConsoleMethod = "log" | "info" | "warn" | "error" | "debug";
  * `afterEach` hooks. Must be called inside a describe block.
  */
 export function silenceConsole(methods: ConsoleMethod[] = ["error", "warn"]): void {
-	const spies: ReturnType<typeof vi.spyOn>[] = [];
+	const spies: MockInstance<(...args: unknown[]) => void>[] = [];
 
 	beforeEach(() => {
 		for (const method of methods) {
