@@ -39,7 +39,7 @@ interface FileVaultTableDef<
 interface FolderNoteVaultTableDef<
 	TData,
 	TSchema extends SerializableSchema<TData> = SerializableSchema<TData>,
-	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+	// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- `{}` is the "no children declared" default; Record<string, never> would reject every concrete child map
 	TChildren extends VaultTableDefMap = {},
 > extends VaultTableDefBase<TData, TSchema> {
 	nodeType: "folderNotes";
@@ -50,11 +50,17 @@ interface FolderNoteVaultTableDef<
 export type VaultTableDef<
 	TData,
 	TSchema extends SerializableSchema<TData> = SerializableSchema<TData>,
-	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+	// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- `{}` is the "no children declared" default; Record<string, never> would reject every concrete child map
 	TChildren extends VaultTableDefMap = {},
 > = FileVaultTableDef<TData, TSchema> | FolderNoteVaultTableDef<TData, TSchema, TChildren>;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/**
+ * A table definition with its generics erased, for collections that hold
+ * heterogeneous definitions (child maps, registries). `any` rather than
+ * `unknown` is load-bearing: `TData` reaches contravariant positions in the
+ * schema and CRUD signatures, so `unknown` would make every concrete
+ * `VaultTableDef<Foo>` unassignable to this alias.
+ */
 export type AnyVaultTableDef = VaultTableDef<any, any, any>;
 
 export type VaultTableDefMap = Record<string, AnyVaultTableDef>;
@@ -75,7 +81,7 @@ export interface VaultTableHistoryConfig {
 export type VaultTableConfig<
 	TData,
 	TSchema extends SerializableSchema<TData> = SerializableSchema<TData>,
-	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+	// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- `{}` is the "no children declared" default; Record<string, never> would reject every concrete child map
 	TChildren extends VaultTableDefMap = {},
 > = VaultTableDef<TData, TSchema, TChildren> & {
 	app: App;

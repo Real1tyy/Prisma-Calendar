@@ -64,6 +64,6 @@ export function deepEqualJsonLike(a: unknown, b: unknown): boolean {
 
 function isPlainObject(value: unknown): boolean {
 	if (value === null || typeof value !== "object") return false;
-	const proto = Object.getPrototypeOf(value);
+	const proto: unknown = Object.getPrototypeOf(value);
 	return proto === Object.prototype || proto === null;
 }

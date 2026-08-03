@@ -175,8 +175,7 @@ export function upsertElement<K extends keyof HTMLElementTagNameMap>(
 	let el = parent.querySelector<HTMLElementTagNameMap[K]>(`.${className}`);
 
 	if (!el) {
-		el = document.createElement(tag);
-		el.className = className;
+		el = createEl(tag, { cls: className });
 		parent.appendChild(el);
 	}
 

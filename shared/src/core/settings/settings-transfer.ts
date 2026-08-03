@@ -7,7 +7,7 @@ export interface SettingsTransferOptions {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
-	const proto = Object.getPrototypeOf(value);
+	const proto: unknown = Object.getPrototypeOf(value);
 	return proto === Object.prototype || proto === null;
 }
 
@@ -24,9 +24,10 @@ function toBlockSet(keys: SettingsTransferOptions["nonTransferableKeys"]): Set<s
 function coerceToShape(template: unknown, incoming: unknown): unknown {
 	if (Array.isArray(template)) {
 		if (!Array.isArray(incoming)) return template;
-		const itemTemplate = template[0];
-		if (itemTemplate === undefined) return [...incoming];
-		return incoming.map((item) => coerceToShape(itemTemplate, item));
+		const incomingItems = incoming as unknown[];
+		const itemTemplate: unknown = (template as unknown[])[0];
+		if (itemTemplate === undefined) return [...incomingItems];
+		return incomingItems.map((item) => coerceToShape(itemTemplate, item));
 	}
 
 	if (isRecord(template)) {

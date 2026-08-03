@@ -71,8 +71,8 @@ export function createPageHeader(config: PageHeaderConfig): PageHeaderHandle {
 		const container = discoverActionsContainer(view);
 		if (!container) return;
 
-		const host = activeDocument.createElement("div");
-		host.className = `${cssPrefix}${HOST_CLS_SUFFIX}`;
+		// Detached on purpose — it is positioned with insertBefore, not appended.
+		const host = createDiv({ cls: `${cssPrefix}${HOST_CLS_SUFFIX}` });
 		container.insertBefore(host, container.firstChild);
 
 		const leafState: AppliedLeafState = {

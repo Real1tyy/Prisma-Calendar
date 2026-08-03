@@ -1,7 +1,66 @@
 import http from "node:http";
 
 import { stripTrailingChars } from "../../utils/string/string";
-import type { HttpMethod, HttpResponse, HttpRoute, HttpServerConfig, ParsedHttpRequest } from "./http-types";
+import {
+	DEFAULT_BASE_PATH,
+	DEFAULT_CORS,
+	DEFAULT_HOST,
+	type HttpApiServerLike,
+	type HttpMethod,
+	type HttpResponse,
+	type HttpRoute,
+	type HttpServerConfig,
+	type ParsedHttpRequest,
+} from "./http-types";
+
+/**
+ * Minimal structural types for the slice of `node:http` this server touches.
+ *
+ * Declared locally rather than taken from `@types/node`: the published plugin
+ * mirrors do not carry that package, so `http.IncomingMessage` & friends resolve
+ * to nothing there and every `req`/`res` member access degrades to an implicit
+ * any — which is what Obsidian's review reports as a wall of unsafe-member-access
+ * errors. Typing the surface here keeps the file sound in both trees.
+ */
+interface NodeIncomingMessage {
+	method?: string;
+	url?: string;
+	headers: Record<string, string | string[] | undefined>;
+	on(event: "data", listener: (chunk: Uint8Array) => void): void;
+	on(event: "end", listener: () => void): void;
+	on(event: "error", listener: (error: Error) => void): void;
+	destroy(): void;
+}
+
+interface NodeServerResponse {
+	setHeader(name: string, value: string): void;
+	writeHead(status: number): void;
+	end(body?: string): void;
+}
+
+interface NodeServer {
+	listen(port: number, host: string, listener: () => void): void;
+	close(callback: () => void): void;
+	on(event: "error", listener: (error: Error) => void): void;
+	removeListener(event: "error", listener: (error: Error) => void): void;
+	address(): { port: number } | string | null;
+}
+
+interface NodeHttpModule {
+	createServer(handler: (req: NodeIncomingMessage, res: NodeServerResponse) => void): NodeServer;
+}
+
+const nodeHttp = http as unknown as NodeHttpModule;
+
+function concatChunks(chunks: Uint8Array[], totalSize: number): Uint8Array {
+	const merged = new Uint8Array(totalSize);
+	let offset = 0;
+	for (const chunk of chunks) {
+		merged.set(chunk, offset);
+		offset += chunk.length;
+	}
+	return merged;
+}
 
 interface CompiledRoute {
 	method: HttpMethod;
@@ -15,18 +74,14 @@ const BODY_METHODS = new Set<HttpMethod>(["POST", "PUT", "PATCH"]);
 const MAX_BODY_SIZE = 1_048_576; // 1 MB
 const INTROSPECTION_PATH = "/_routes";
 
-export const DEFAULT_HOST = "127.0.0.1";
-export const DEFAULT_BASE_PATH = "";
-export const DEFAULT_CORS = true;
-
 function normalizeBasePath(basePath: string): string {
 	if (!basePath) return "";
 	const trimmed = stripTrailingChars(basePath, "/");
 	return trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
 }
 
-export class HttpApiServer {
-	private server: http.Server | null = null;
+export class HttpApiServer implements HttpApiServerLike {
+	private server: NodeServer | null = null;
 	private readonly compiledRoutes: CompiledRoute[] = [];
 	private readonly config: Required<HttpServerConfig>;
 
@@ -60,7 +115,7 @@ export class HttpApiServer {
 	async start(): Promise<void> {
 		if (this.server) return;
 
-		const server = http.createServer((req, res) => {
+		const server = nodeHttp.createServer((req, res) => {
 			void this.handleRequest(req, res);
 		});
 		this.server = server;
@@ -99,7 +154,7 @@ export class HttpApiServer {
 
 	// ─── Request Handling ───────────────────────────────────────
 
-	private async handleRequest(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
+	private async handleRequest(req: NodeIncomingMessage, res: NodeServerResponse): Promise<void> {
 		if (this.config.cors) {
 			res.setHeader("Access-Control-Allow-Origin", "*");
 			res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
@@ -224,17 +279,18 @@ export class HttpApiServer {
 	// ─── Helpers ────────────────────────────────────────────────
 
 	/** Reads and parses a JSON request body. This server is JSON-only. */
-	private readBody(req: http.IncomingMessage): Promise<unknown> {
-		const contentType = req.headers["content-type"] ?? "";
+	private readBody(req: NodeIncomingMessage): Promise<unknown> {
+		const rawContentType = req.headers["content-type"];
+		const contentType = Array.isArray(rawContentType) ? (rawContentType[0] ?? "") : (rawContentType ?? "");
 		if (contentType && !contentType.includes("application/json")) {
 			return Promise.reject(new Error("Unsupported Content-Type; expected application/json"));
 		}
 
 		return new Promise((resolve, reject) => {
-			const chunks: Buffer[] = [];
+			const chunks: Uint8Array[] = [];
 			let size = 0;
 
-			req.on("data", (chunk: Buffer) => {
+			req.on("data", (chunk) => {
 				size += chunk.length;
 				if (size > MAX_BODY_SIZE) {
 					req.destroy();
@@ -245,7 +301,7 @@ export class HttpApiServer {
 			});
 
 			req.on("end", () => {
-				const raw = Buffer.concat(chunks).toString("utf-8").trim();
+				const raw = new TextDecoder("utf-8").decode(concatChunks(chunks, size)).trim();
 				if (!raw) {
 					resolve(undefined);
 					return;
@@ -261,7 +317,7 @@ export class HttpApiServer {
 		});
 	}
 
-	private sendJson(res: http.ServerResponse, status: number, body: unknown): void {
+	private sendJson(res: NodeServerResponse, status: number, body: unknown): void {
 		res.setHeader("Content-Type", "application/json");
 		res.writeHead(status);
 		res.end(JSON.stringify(body));

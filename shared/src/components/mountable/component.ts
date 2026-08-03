@@ -2,12 +2,6 @@ import type { Component } from "obsidian";
 
 import { MountableHelpers } from "./helpers";
 
-// WHY: TypeScript's mixin pattern requires `any[]` for variadic constructor args.
-// `unknown[]` would prevent `super(...args)` from typechecking in subclasses with
-// concrete parameter lists. See https://www.typescriptlang.org/docs/handbook/mixins.html.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AbstractCtor<T = Record<string, never>> = abstract new (...args: any[]) => T;
-
 /**
  * Mixin that adds lifecycle helpers to any Component subclass.
  * Mirrors MountableView but works with Component instead of ItemView.
@@ -20,15 +14,16 @@ type AbstractCtor<T = Record<string, never>> = abstract new (...args: any[]) => 
  * }
  * ```
  */
-export function MountableComponent<TBase extends AbstractCtor<Component>>(Base: TBase, prefix?: string) {
+// Deliberately NOT generic over the base class. A mixin whose base is a type
+// parameter forces `constructor(...args: any[])` (TS2545), and `any` cannot be
+// suppressed in code Obsidian reviews. Both mixins are only ever applied to the
+// one concrete Obsidian base named here, so the generic bought nothing.
+export function MountableComponent(Base: typeof Component, prefix?: string) {
 	abstract class Mountable extends Base {
 		#helpers: MountableHelpers;
 
-		// WHY: mixin constructor must accept `any[]` to forward to the base class
-		// constructor regardless of its parameter list — see AbstractCtor above.
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		constructor(..._args: any[]) {
-			super(..._args);
+		constructor() {
+			super();
 			this.#helpers = new MountableHelpers(prefix, (cb) => this.register(cb));
 		}
 

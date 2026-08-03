@@ -15,7 +15,9 @@ export async function applyFrontmatterChanges(
 			return;
 		}
 
-		await app.fileManager.processFrontMatter(file, (fm) => {
+		// Obsidian types the frontmatter callback parameter as `any`; narrowing it
+		// here keeps every property access below type-checked.
+		await app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
 			for (const change of diff.added) {
 				fm[change.key] = sourceFrontmatter[change.key];
 			}

@@ -46,7 +46,7 @@ export class SettingsStore<TSchema extends z.ZodType> {
 
 	async loadSettings(): Promise<void> {
 		try {
-			const data = await this.plugin.loadData();
+			const data: unknown = await this.plugin.loadData();
 			const sanitized = this.schema.parse(data ?? {});
 			this.settings$.next(sanitized);
 

@@ -24,6 +24,7 @@ import { ReadableTableMixin } from "./readable-table";
 import {
 	HISTORY_MAX_SIZE,
 	HISTORY_SHOW_NOTICES,
+	type AnyVaultTableDef,
 	type InsertVaultRow,
 	type InvalidStrategy,
 	type NodeType,
@@ -52,7 +53,7 @@ type ResolveChildRelations<T extends VaultTableDefMap> = {
 
 export type RowRelations<T extends VaultTableDefMap> = ResolveChildRelations<T>;
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- `{}` is the "no children declared" default; Record<string, never> would reject every concrete child map
 export type VaultTableRow<TData, TChildren extends VaultTableDefMap = {}> = VaultRow<TData> & {
 	relations: RowRelations<TChildren>;
 };
@@ -60,7 +61,7 @@ export type VaultTableRow<TData, TChildren extends VaultTableDefMap = {}> = Vaul
 export class VaultTable<
 	TData,
 	TSchema extends SerializableSchema<TData> = SerializableSchema<TData>,
-	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+	// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- `{}` is the "no children declared" default; Record<string, never> would reject every concrete child map
 	TChildren extends VaultTableDefMap = {},
 > extends ReadableTableMixin<TData> {
 	readonly app: App;
@@ -89,7 +90,9 @@ export class VaultTable<
 	private readonly persistenceIdbFactory: IdbFactory | undefined;
 	private persistentCache: PersistentTableCache<TData> | null = null;
 	private hydratedByPath: Map<string, PersistentEntry<TData>> | null = null;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	// `any` erases the per-child generics on purpose: the cache is keyed by path and
+	// holds heterogeneous child tables whose TData differs per key. Callers recover the
+	// real type through `RowRelations<TChildren>` when the relation is read.
 	private readonly childCacheByPath = new Map<string, Map<string, VaultTable<any, any, any>>>();
 
 	private readonly commandManager: CommandManager | null;
@@ -543,7 +546,7 @@ export class VaultTable<
 
 	private async doDelete(key: string): Promise<void> {
 		const existing = this.require(key);
-		await this.app.vault.trash(existing.file, true);
+		await this.app.fileManager.trashFile(existing.file);
 		this.removeRow(existing.id);
 
 		if (this.emitCrudEvents) {
@@ -647,9 +650,8 @@ export class VaultTable<
 
 		for (const key of Object.keys(this.childDefs) as Array<keyof TChildren & string>) {
 			if (!cache.has(key)) {
-				const childDef = this.childDefs[key];
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				const child = await this.startChildTable(rowDir, childDef as any, row.filePath);
+				const childDef: AnyVaultTableDef = this.childDefs[key];
+				const child = await this.startChildTable(rowDir, childDef, row.filePath);
 				cache.set(key, child);
 			}
 		}
@@ -658,8 +660,7 @@ export class VaultTable<
 		for (const key of Object.keys(this.childDefs) as Array<keyof TChildren & string>) {
 			const child = cache.get(key);
 			if (child === undefined) continue;
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			(relations as any)[key] = child;
+			(relations as Record<string, unknown>)[key] = child;
 		}
 
 		return { ...row, relations };

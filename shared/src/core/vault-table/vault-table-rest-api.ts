@@ -121,7 +121,9 @@ function buildChildActions(
 	async function requireChildTable(parentId: string) {
 		const hydrated = await parentTable.getHydrated(parentId);
 		if (!hydrated) return null;
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		// Generics erased: the relation map is keyed by child name and each child
+		// table has a different TData. The REST layer only calls the erased
+		// read/CRUD surface, so it never needs the concrete row type back.
 		const relations = hydrated.relations as Record<string, VaultTable<any, any, any>>;
 		return relations[childKey] ?? null;
 	}

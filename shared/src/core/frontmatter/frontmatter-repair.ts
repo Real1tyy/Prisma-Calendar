@@ -24,7 +24,7 @@ export async function correctFrontmatter<TData>(
 export async function deleteInvalidFile(app: App, filePath: string): Promise<void> {
 	try {
 		const file = getTFileOrThrow(app, filePath);
-		await app.vault.trash(file, true);
+		await app.fileManager.trashFile(file);
 	} catch {
 		// File may already be gone
 	}

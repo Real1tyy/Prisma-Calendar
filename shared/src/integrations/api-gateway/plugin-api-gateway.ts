@@ -1,8 +1,7 @@
 import { Notice } from "obsidian";
 
 import { canDeriveUrlCoercer, deriveUrlCoercer } from "./derive-url-coercer";
-import { DEFAULT_BASE_PATH, DEFAULT_HOST, HttpApiServer } from "./http-api-server";
-import type { HttpRoute, HttpServerConfig } from "./http-types";
+import { DEFAULT_BASE_PATH, DEFAULT_HOST, type HttpApiServerLike, type HttpRoute } from "./http-types";
 import type { ActionDef, ActionDefMap, InferWindowApi, PluginApiGatewayOptions, UrlAccessibleActions } from "./types";
 
 function camelToKebab(str: string): string {
@@ -21,20 +20,22 @@ function camelToKebab(str: string): string {
  *   globalKey: "PrismaCalendar",
  *   protocolKey: "prisma-calendar",
  *   actions: { ... },
- *   http: { enabled: true, port: 27124 },
  * });
  * gateway.expose();   // onload
  * gateway.unexpose(); // onunload
  * ```
+ *
+ * The HTTP transport is opt-in and desktop-only — see `PluginApiGatewayOptions.http`
+ * for why the server has to be injected rather than imported here.
  */
 export class PluginApiGateway<TActions extends ActionDefMap> {
 	private readonly plugin: PluginApiGatewayOptions<TActions>["plugin"];
 	private readonly globalKey: string;
 	private readonly protocolKey: string | undefined;
 	private readonly actions: TActions;
-	private readonly httpConfig: (HttpServerConfig & { enabled?: boolean }) | undefined;
+	private readonly httpConfig: PluginApiGatewayOptions<TActions>["http"];
 	private api: InferWindowApi<TActions> | null = null;
-	private httpServer: HttpApiServer | null = null;
+	private httpServer: HttpApiServerLike | null = null;
 	private isExposed = false;
 	private isProtocolRegistered = false;
 	private pendingHttpRoutes: HttpRoute[] = [];
@@ -87,7 +88,7 @@ export class PluginApiGateway<TActions extends ActionDefMap> {
 
 		const httpConfig = this.httpConfig;
 		if (httpConfig?.enabled) {
-			this.httpServer = new HttpApiServer(httpConfig);
+			this.httpServer = httpConfig.createServer(httpConfig);
 			this.buildHttpRoutes();
 
 			if (this.pendingHttpRoutes.length > 0) {
@@ -100,7 +101,7 @@ export class PluginApiGateway<TActions extends ActionDefMap> {
 				.then(() => {
 					const host = httpConfig.host ?? DEFAULT_HOST;
 					const base = httpConfig.basePath ?? DEFAULT_BASE_PATH;
-					console.log(`[PluginApiGateway] HTTP server started at http://${host}:${httpConfig.port}${base}`);
+					console.debug(`[PluginApiGateway] HTTP server started at http://${host}:${httpConfig.port}${base}`);
 				})
 				.catch((error: unknown) => {
 					console.error("[PluginApiGateway] Failed to start HTTP server:", error);
@@ -164,7 +165,7 @@ export class PluginApiGateway<TActions extends ActionDefMap> {
 	/**
 	 * Returns the HTTP server instance if running, for adding custom routes.
 	 */
-	getHttpServer(): HttpApiServer | null {
+	getHttpServer(): HttpApiServerLike | null {
 		return this.httpServer;
 	}
 
@@ -205,8 +206,8 @@ export class PluginApiGateway<TActions extends ActionDefMap> {
 				path,
 				handler: async (req) => {
 					try {
-						const params = this.resolveHandlerParams(def, urlCoercer, req);
-						const result = await def.handler(params);
+						const params: unknown = this.resolveHandlerParams(def, urlCoercer, req);
+						const result: unknown = await def.handler(params);
 						return { status: 200, body: result === undefined ? { success: true } : result };
 					} catch (error) {
 						const message = error instanceof Error ? error.message : String(error);

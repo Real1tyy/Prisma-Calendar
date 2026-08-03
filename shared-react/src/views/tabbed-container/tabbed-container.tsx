@@ -201,9 +201,8 @@ function useTabBarPortal(
 	const placeholderEl = useMemo(() => {
 		if (!activeHost) return null;
 
-		const el = activeDocument.createElement("div");
-		el.className = `${cssPrefix}tab-portal-slot`;
-		return el;
+		// Detached on purpose — the effect below decides where it lands.
+		return createDiv({ cls: `${cssPrefix}tab-portal-slot` });
 	}, [activeHost, cssPrefix]);
 
 	useEffect(() => {

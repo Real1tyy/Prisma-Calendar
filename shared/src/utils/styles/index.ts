@@ -1,1 +1,1 @@
-export { clearInjectedStyles, injectStyleSheet } from "./inject";
+export { clearInjectedStyles, injectStyleSheet, readInjectedStyleSheet, removeInjectedStyleSheet } from "./inject";

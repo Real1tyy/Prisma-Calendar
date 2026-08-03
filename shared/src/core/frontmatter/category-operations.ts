@@ -46,7 +46,9 @@ export async function deleteCategoryFromFile(
 	categoryName: string,
 	categoryProp: string
 ): Promise<void> {
-	await app.fileManager.processFrontMatter(file, (fm) => {
+	// Obsidian types the frontmatter callback parameter as `any`; narrowing it
+	// here keeps every property access below type-checked.
+	await app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
 		if (fm[categoryProp]) {
 			const updated = removeCategoryFromProperty(fm[categoryProp], categoryName);
 			if (updated === undefined || (Array.isArray(updated) && updated.length === 0)) {
@@ -65,7 +67,7 @@ export async function renameCategoryInFile(
 	newCategoryName: string,
 	categoryProp: string
 ): Promise<void> {
-	await app.fileManager.processFrontMatter(file, (fm) => {
+	await app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
 		if (fm[categoryProp]) {
 			fm[categoryProp] = renameCategoryInProperty(fm[categoryProp], oldCategoryName, newCategoryName);
 		}

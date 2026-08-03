@@ -80,7 +80,7 @@ const SIMPLE_GLOBAL_FNS: Record<string, ((...args: unknown[]) => unknown) | unde
 const NAMESPACED_GLOBAL_FNS: Record<string, ((...args: unknown[]) => unknown) | undefined> = {
 	"Array.isArray": (...a) => Array.isArray(a[0]),
 	"Object.keys": (...a) => Object.keys(a[0] as object),
-	"Object.values": (...a) => Object.values(a[0] as object),
+	"Object.values": (...a) => Object.values(a[0] as Record<string, unknown>),
 	"Object.entries": (...a) => Object.entries(a[0] as object),
 	"Math.abs": (...a) => Math.abs(a[0] as number),
 	"Math.min": (...a) => Math.min(...(a as number[])),

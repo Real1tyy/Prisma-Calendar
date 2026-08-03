@@ -144,7 +144,7 @@ export class ChipList {
 		this.el.empty();
 
 		if (this.items.length === 0) {
-			this.el.createEl("span", {
+			this.el.createSpan({
 				text: this.config.emptyText ?? DEFAULT_EMPTY_TEXT,
 				cls: this.css.cls(EMPTY_SUFFIX),
 			});
@@ -166,7 +166,7 @@ export class ChipList {
 			this.config.renderPrefix?.(chipEl, item);
 
 			const displayName = this.config.getDisplayName?.(item) ?? item;
-			const nameSpan = chipEl.createEl("span", {
+			const nameSpan = chipEl.createSpan({
 				text: displayName,
 				cls: this.css.cls(NAME_SUFFIX),
 			});
@@ -181,7 +181,7 @@ export class ChipList {
 				nameSpan.addEventListener("click", () => handler(item));
 			}
 
-			const removeButton = chipEl.createEl("span", {
+			const removeButton = chipEl.createSpan({
 				text: "\u00D7",
 				cls: this.css.cls(REMOVE_SUFFIX),
 			});

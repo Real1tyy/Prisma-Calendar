@@ -130,6 +130,53 @@ function assertNoReactScriptInjection(): Plugin {
 	};
 }
 
+// Hard guard: fail the build if a Node builtin reaches a plugin bundle's
+// top-level imports. Every manifest declares `isDesktopOnly: false`, and every
+// builtin is externalized (see DEFAULT_EXTERNALS + `builtins`), so Rollup emits
+// an unconditional `require("node:http")` in the CJS preamble for any module in
+// the graph that imports one — whether or not the binding is ever read. That
+// require has nothing to resolve on mobile, so the plugin dies at load.
+//
+// Reads `chunk.imports` (Rollup's own static-import list) rather than grepping
+// the code. That distinction is load-bearing: a lazy `require()` nested inside a
+// function or try/catch — e.g. the vendored `sax` parser's `require("stream")`
+// in Prisma-Calendar — degrades safely on mobile and must NOT fail the build.
+// `chunk.imports` contains only the hoisted top-level imports, so the two cases
+// separate cleanly with no text heuristic.
+//
+// If this fires, the fix is a barrel edge, not an allowlist: find the import
+// chain it names and move the Node-only module off the runtime barrel to a deep
+// subpath. See [[spec-no-node-builtins-in-bundles]] and the discipline comment
+// in shared/src/integrations/api-gateway/index.ts.
+export function assertNoNodeBuiltinImports(pluginDir: string): Plugin {
+	const builtinSet = new Set(builtins);
+	return {
+		name: "obsidian-assert-no-node-builtins",
+		generateBundle(_options, bundle) {
+			for (const [fileName, asset] of Object.entries(bundle)) {
+				if (asset.type !== "chunk") continue;
+				const offenders = asset.imports.filter((id) => builtinSet.has(id));
+				if (offenders.length === 0) continue;
+
+				const findings = offenders.map((offender) => {
+					const importers = asset.moduleIds.filter((id) => this.getModuleInfo(id)?.importedIds.includes(offender));
+					const via = importers.length > 0 ? importers.map((id) => path.relative(pluginDir, id)) : ["<unknown>"];
+					return `  - ${offender} — imported by ${via.join(", ")}`;
+				});
+
+				this.error(
+					`Node builtins reached the top level of ${fileName}:\n` +
+						findings.join("\n") +
+						"\n\nEvery plugin manifest declares isDesktopOnly: false, and a top-level " +
+						"require() of a Node builtin fails to resolve on mobile — the plugin will " +
+						"not load. Move the Node-only module off the runtime barrel and import it " +
+						"via its deep subpath instead. See shared/src/integrations/api-gateway/index.ts."
+				);
+			}
+		},
+	};
+}
+
 function obsidianAssets(pluginDir: string): Plugin[] {
 	return [
 		{
@@ -199,6 +246,7 @@ export function obsidianPluginConfig(input: ObsidianPluginConfigInput): (env: { 
 			react(),
 			stripReactScriptInjection(),
 			assertNoReactScriptInjection(),
+			assertNoNodeBuiltinImports(pluginDir),
 			...obsidianAssets(pluginDir),
 		];
 

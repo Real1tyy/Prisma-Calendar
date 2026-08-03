@@ -132,7 +132,7 @@ export class LicenseManager {
 		if (docsUrl) lines.push(`Docs: ${docsUrl}`);
 		lines.push(`Get Pro: ${purchaseUrl}`);
 		new Notice(lines.join("\n"), 8000);
-		console.log(
+		console.debug(
 			`[${this.config.productName}] Pro feature required: ${featureName}` +
 				(docsUrl ? `\n  Docs: ${docsUrl}` : "") +
 				`\n  Purchase: ${purchaseUrl}`
@@ -356,11 +356,12 @@ export class LicenseManager {
 	}
 
 	private getOrCreateDeviceId(): string {
-		let id = this.app.loadLocalStorage(this.config.deviceIdStorageKey);
-		if (!id) {
-			id = crypto.randomUUID();
-			this.app.saveLocalStorage(this.config.deviceIdStorageKey, id);
-		}
+		// `loadLocalStorage` is typed `any` by Obsidian — narrow before trusting it.
+		const stored: unknown = this.app.loadLocalStorage(this.config.deviceIdStorageKey);
+		if (typeof stored === "string" && stored) return stored;
+
+		const id = crypto.randomUUID();
+		this.app.saveLocalStorage(this.config.deviceIdStorageKey, id);
 		return id;
 	}
 
@@ -419,8 +420,8 @@ export class LicenseManager {
 	}
 
 	private readCacheFromStorage(): CachedLicenseData | null {
-		const raw = this.app.loadLocalStorage(this.config.licenseCacheStorageKey);
-		if (!raw) return null;
+		const raw: unknown = this.app.loadLocalStorage(this.config.licenseCacheStorageKey);
+		if (typeof raw !== "string" || !raw) return null;
 		try {
 			return JSON.parse(raw) as CachedLicenseData;
 		} catch {

@@ -75,10 +75,10 @@ export function showModal(config: ModalComponentConfig): void {
 				const contentArea = contentEl.createDiv(css.cls(SEARCH_CONTENT_SUFFIX));
 				await config.render(contentArea, ctx);
 
-				input.addEventListener("input", async () => {
+				input.addEventListener("input", () => {
 					ctx.searchQuery = input.value.toLowerCase();
 					contentArea.empty();
-					await config.render(contentArea, ctx);
+					void config.render(contentArea, ctx);
 				});
 			} else {
 				await config.render(contentEl, ctx);

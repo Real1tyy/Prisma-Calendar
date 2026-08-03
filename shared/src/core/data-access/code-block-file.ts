@@ -60,7 +60,7 @@ export class CodeBlockFile<T> {
 		try {
 			const parsed: unknown = JSON.parse(raw);
 			if (!Array.isArray(parsed)) return [];
-			return parsed.filter((item) => this.itemSchema.safeParse(item).success);
+			return (parsed as unknown[]).filter((item): item is T => this.itemSchema.safeParse(item).success);
 		} catch {
 			return [];
 		}

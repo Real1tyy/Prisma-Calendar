@@ -245,7 +245,7 @@ function renderDropdownField(
 	testId: string | undefined
 ): void {
 	applyFieldMeta(new Setting(el), desc, override).addDropdown((dropdown) => {
-		if (desc.optional) dropdown.addOption("", "-- None --");
+		if (desc.optional) dropdown.addOption("", "-- none --");
 		for (const [value, label] of entries) {
 			dropdown.addOption(value, label);
 		}

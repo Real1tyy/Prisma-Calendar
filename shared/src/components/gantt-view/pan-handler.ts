@@ -12,6 +12,7 @@ export function createPanHandler(
 	bodyWrapper: HTMLElement,
 	pxPerDay: number,
 	barSelector: string,
+	panningCls: string,
 	state: PanState
 ): () => void {
 	let isPending = false;
@@ -45,7 +46,7 @@ export function createPanHandler(
 			if (Math.abs(dx) + Math.abs(dy) < DRAG_THRESHOLD_PX) return;
 			isDragging = true;
 			isPending = false;
-			bodyWrapper.style.cursor = "grabbing";
+			bodyWrapper.addClass(panningCls);
 		}
 
 		if (!isDragging) return;
@@ -59,7 +60,7 @@ export function createPanHandler(
 		isPending = false;
 		if (!isDragging) return;
 		isDragging = false;
-		bodyWrapper.style.cursor = "";
+		bodyWrapper.removeClass(panningCls);
 	};
 
 	bodyWrapper.addEventListener("pointerdown", onPointerDown);

@@ -168,7 +168,7 @@ export function mergeSorted<T>(a: T[], b: T[], compare: (a: T, b: T) => number):
 	if (b.length === 0) return a;
 	if (a.length === 0) return b;
 
-	const result: T[] = new Array(a.length + b.length);
+	const result = new Array<T>(a.length + b.length);
 	let i = 0;
 	let j = 0;
 	let k = 0;

@@ -43,7 +43,7 @@ export function renderManagerEditForm(container: HTMLElement, config: ManagerEdi
 			btn.onClick(onReset);
 			resetEl = btn.extraSettingsEl;
 		});
-		if (!visible) resetEl.style.display = "none";
+		resetEl.toggle(visible);
 		return resetEl;
 	}
 

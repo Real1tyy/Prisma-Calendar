@@ -44,7 +44,7 @@ export class SyncStore<TSchema extends z.ZodType> {
 	async loadData(): Promise<void> {
 		try {
 			const content = await this.app.vault.adapter.read(this.syncFilePath);
-			const parsed = JSON.parse(content);
+			const parsed: unknown = JSON.parse(content);
 			this._data = this.schema.parse(parsed);
 		} catch {
 			// File doesn't exist or is invalid - use defaults

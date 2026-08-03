@@ -5,15 +5,11 @@ import type { BarLayout, GanttInteractionHooks, PackedTask } from "../gantt-type
 const MAX_OVERFLOW_DOTS = 6;
 
 function appendColorDots(parent: HTMLElement, colors: string[], cls: ClsFn): void {
-	const container = document.createElement("div");
-	container.className = cls("gantt-bar-color-dots");
+	const container = parent.createDiv({ cls: cls("gantt-bar-color-dots") });
 	for (const color of colors.slice(0, MAX_OVERFLOW_DOTS)) {
-		const dot = document.createElement("div");
-		dot.className = cls("gantt-bar-color-dot");
+		const dot = container.createDiv({ cls: cls("gantt-bar-color-dot") });
 		dot.style.setProperty("--dot-color", color);
-		container.appendChild(dot);
 	}
-	parent.appendChild(container);
 }
 
 export function renderBars(

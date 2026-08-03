@@ -12,7 +12,7 @@ export interface LicenseSettingsConfig {
 
 function refreshStatusDesc(setting: Setting, licenseManager: LicenseManager, cssPrefix: string): void {
 	const status = licenseManager.status;
-	const fragment = document.createDocumentFragment();
+	const fragment = createFragment();
 	fragment.appendText(getLicenseStatusText(status));
 	if (status.state === "valid") {
 		const badge = fragment.createSpan({ cls: `${cssPrefix}license-activations-badge` });
@@ -28,7 +28,7 @@ export function renderLicenseSettings(containerEl: HTMLElement, config: LicenseS
 
 	new Setting(containerEl).setName("License").setHeading();
 
-	const desc = document.createDocumentFragment();
+	const desc = createFragment();
 	desc.appendText(`Enter your ${productName} Pro license key to unlock advanced features. `);
 	const link = desc.createEl("a", { text: "Get a license", href: purchaseUrl });
 	link.setAttr("target", "_blank");

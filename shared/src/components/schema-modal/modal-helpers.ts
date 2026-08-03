@@ -1,3 +1,5 @@
+import type { Scope } from "obsidian";
+
 import type { ModalButtonOptions } from "./types";
 
 export function createModalButtons(
@@ -20,7 +22,7 @@ export function createModalButtons(
 	return { submitButton, cancelButton };
 }
 
-export function registerSubmitHotkey(scope: { register: CallableFunction }, onSubmit: () => void): void {
+export function registerSubmitHotkey(scope: Scope, onSubmit: () => void): void {
 	scope.register([], "Enter", (e: KeyboardEvent) => {
 		// Ignore Enter presses inside text inputs / textareas / contenteditable —
 		// those fields have their own Enter handling (e.g., commit a participant

@@ -125,7 +125,7 @@ export function createGanttRenderer(
 
 	viewportStartMs = todayStartMs() - (getDaysVisible() / 2) * MS_PER_DAY;
 
-	cleanupPan = createPanHandler(bodyWrapper, config.pxPerDay, `.${cls("gantt-bar")}`, {
+	cleanupPan = createPanHandler(bodyWrapper, config.pxPerDay, `.${cls("gantt-bar")}`, cls("gantt-panning"), {
 		getViewportStartMs: () => viewportStartMs,
 		setViewportStartMs: (ms) => {
 			viewportStartMs = ms;

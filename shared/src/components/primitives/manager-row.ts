@@ -44,16 +44,16 @@ export function renderManagerRowContent<T extends EditableItem>(row: HTMLElement
 
 	const label = row.createDiv(css.cls(`${rowPrefix}-label`));
 	if (displayIcon) {
-		const iconSpan = label.createEl("span", { cls: css.cls(`${rowPrefix}-icon`) });
+		const iconSpan = label.createSpan({ cls: css.cls(`${rowPrefix}-icon`) });
 		setIcon(iconSpan, displayIcon);
 		if (displayColor && displayColor !== DEFAULT_COLOR_SENTINEL) {
 			iconSpan.style.setProperty("color", displayColor);
 		}
 	}
-	label.createEl("span", { text: displayLabel, cls: css.cls(`${rowPrefix}-label-text`) });
+	label.createSpan({ text: displayLabel, cls: css.cls(`${rowPrefix}-label-text`) });
 
 	if (renames.has(item.id)) {
-		const originalBadge = label.createEl("span", {
+		const originalBadge = label.createSpan({
 			text: item.label,
 			cls: css.cls(`${rowPrefix}-label-original`),
 		});

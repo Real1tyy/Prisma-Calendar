@@ -2,10 +2,10 @@ import { z } from "zod";
 
 import { canDeriveUrlCoercer } from "../derive-url-coercer";
 import type { HttpMethod } from "../http-types";
-import type { ActionDef, ActionDefMap } from "../types";
+import type { ActionDefMap, AnyActionDef } from "../types";
 import type { JsonSchemaFragment, PluginApiContract, PluginApiContractAction } from "./types";
 
-function isUrlAccessible(def: ActionDef): boolean {
+function isUrlAccessible(def: AnyActionDef): boolean {
 	if (def.parseParams !== undefined) return true;
 	if (!def.input) return false;
 	return canDeriveUrlCoercer(def.input);
@@ -20,7 +20,7 @@ function camelToKebab(str: string): string {
  * same method/path the gateway would expose if HTTP were enabled. Keeping the
  * two derivations in sync is enforced by `shared/tests/api-gateway/contract/*`.
  */
-function deriveHttp(name: string, def: ActionDef): { method: HttpMethod; path: string } | undefined {
+function deriveHttp(name: string, def: AnyActionDef): { method: HttpMethod; path: string } | undefined {
 	if (def.http?.disabled) return undefined;
 	const hasUrlInputs = def.parseParams !== undefined || (def.input !== undefined && canDeriveUrlCoercer(def.input));
 	const method: HttpMethod = def.http?.method ?? (hasUrlInputs || def.http?.parseBody ? "POST" : "GET");
@@ -51,7 +51,7 @@ function toJsonSchema(schema: z.ZodType | undefined): JsonSchemaFragment | null 
  */
 function sortKeysDeep<T>(value: T): T {
 	if (Array.isArray(value)) {
-		return value.map((v) => sortKeysDeep(v)) as unknown as T;
+		return (value as unknown[]).map((v) => sortKeysDeep(v)) as unknown as T;
 	}
 	if (value !== null && typeof value === "object") {
 		const entries = Object.entries(value as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b));

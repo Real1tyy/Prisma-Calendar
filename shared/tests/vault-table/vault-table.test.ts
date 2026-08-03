@@ -43,7 +43,6 @@ function createTestConfig(
 				fileStore.set(path, file);
 				return Promise.resolve(file);
 			}),
-			trash: vi.fn().mockResolvedValue(undefined),
 			cachedRead: vi.fn().mockResolvedValue(""),
 			getAbstractFileByPath: vi.fn().mockImplementation((path: string) => fileStore.get(path) ?? null),
 			getFileByPath: vi.fn().mockImplementation((path: string) => fileStore.get(path) ?? null),
@@ -60,6 +59,7 @@ function createTestConfig(
 				fn(fm);
 				return Promise.resolve();
 			}),
+			trashFile: vi.fn().mockResolvedValue(undefined),
 		},
 	});
 
@@ -707,7 +707,7 @@ describe("VaultTable", () => {
 			table.destroy();
 		});
 
-		it("should call vault.trash for invalid frontmatter with delete strategy", async () => {
+		it("should call fileManager.trashFile for invalid frontmatter with delete strategy", async () => {
 			const { config, mockApp, fileStore } = createTestConfig({ invalidStrategy: "delete" });
 			const table = new VaultTable(config);
 			const mockFile = createMockTFile("test-table/bad.md", 100);
@@ -719,7 +719,7 @@ describe("VaultTable", () => {
 
 			await new Promise((r) => window.setTimeout(r, 50));
 
-			expect(mockApp.vault.trash).toHaveBeenCalledWith(mockFile, true);
+			expect(mockApp.fileManager.trashFile).toHaveBeenCalledWith(mockFile);
 
 			table.destroy();
 		});
@@ -867,7 +867,7 @@ describe("VaultTable", () => {
 			table.destroy();
 		});
 
-		it("should call vault.trash on delete by id", async () => {
+		it("should call fileManager.trashFile on delete by id", async () => {
 			const { config, mockApp } = createTestConfig();
 			const table = new VaultTable(config);
 
@@ -878,12 +878,12 @@ describe("VaultTable", () => {
 			await table.delete("task");
 
 			expect(table.count()).toBe(0);
-			expect(mockApp.vault.trash).toHaveBeenCalledWith(created.file, true);
+			expect(mockApp.fileManager.trashFile).toHaveBeenCalledWith(created.file);
 
 			table.destroy();
 		});
 
-		it("should call vault.trash on delete", async () => {
+		it("should call fileManager.trashFile on delete", async () => {
 			const { config, mockApp } = createTestConfig();
 			const table = new VaultTable(config);
 
@@ -893,7 +893,7 @@ describe("VaultTable", () => {
 			await table.delete("task");
 
 			expect(table.count()).toBe(0);
-			expect(mockApp.vault.trash).toHaveBeenCalledWith(created.file, true);
+			expect(mockApp.fileManager.trashFile).toHaveBeenCalledWith(created.file);
 
 			table.destroy();
 		});
@@ -1411,7 +1411,7 @@ describe("VaultTable", () => {
 			expect(table.get("gamma")).toBeUndefined();
 			expect(table.get("delta")).toBeDefined();
 			expect(table.get("epsilon")).toBeDefined();
-			expect(mockApp.vault.trash).toHaveBeenCalledTimes(3);
+			expect(mockApp.fileManager.trashFile).toHaveBeenCalledTimes(3);
 
 			table.destroy();
 		});
@@ -1424,7 +1424,7 @@ describe("VaultTable", () => {
 			expect(table.count()).toBe(3);
 			expect(table.get("alpha")).toBeUndefined();
 			expect(table.get("beta")).toBeUndefined();
-			expect(mockApp.vault.trash).toHaveBeenCalledTimes(2);
+			expect(mockApp.fileManager.trashFile).toHaveBeenCalledTimes(2);
 
 			table.destroy();
 		});

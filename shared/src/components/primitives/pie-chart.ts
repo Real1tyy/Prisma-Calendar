@@ -219,12 +219,12 @@ export function renderPieChart(container: HTMLElement, config: PieChartConfig): 
 			emptyEl.remove();
 			emptyEl = null;
 		}
-		canvas.style.display = "";
+		canvas.toggle(true);
 
 		const normalized = normalizeData(chartData, maxLegendItems);
 
 		if (normalized.values.length === 0) {
-			canvas.style.display = "none";
+			canvas.toggle(false);
 			emptyEl = wrapper.createDiv({ text: emptyText, cls: css.cls(EMPTY_SUFFIX) });
 			return;
 		}

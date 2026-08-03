@@ -37,10 +37,6 @@ function createTestConfig(overrides?: Record<string, unknown>) {
 				fileStore.set(path, file);
 				return Promise.resolve(file);
 			}),
-			trash: vi.fn().mockImplementation((file: TFile) => {
-				fileStore.delete(file.path);
-				return Promise.resolve();
-			}),
 			modify: vi.fn().mockResolvedValue(undefined),
 			cachedRead: vi.fn().mockResolvedValue(""),
 			getAbstractFileByPath: vi.fn().mockImplementation((path: string) => fileStore.get(path) ?? null),
@@ -56,6 +52,10 @@ function createTestConfig(overrides?: Record<string, unknown>) {
 			processFrontMatter: vi.fn().mockImplementation((_file: TFile, fn: (fm: Record<string, unknown>) => void) => {
 				const fm: Record<string, unknown> = {};
 				fn(fm);
+				return Promise.resolve();
+			}),
+			trashFile: vi.fn().mockImplementation((file: TFile) => {
+				fileStore.delete(file.path);
 				return Promise.resolve();
 			}),
 		},
@@ -167,7 +167,7 @@ describe("VaultTable history", () => {
 
 			expect(table.count()).toBe(0);
 			expect(table.get("task")).toBeUndefined();
-			expect(mockApp.vault.trash).toHaveBeenCalled();
+			expect(mockApp.fileManager.trashFile).toHaveBeenCalled();
 			expect(table.canUndo()).toBe(false);
 			expect(table.canRedo()).toBe(true);
 

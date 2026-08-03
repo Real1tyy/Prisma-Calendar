@@ -174,7 +174,7 @@ export class OpenIdbConnection {
 
 	async getStoredSchemaVersion(): Promise<number | undefined> {
 		const tx = this.db.transaction(META_STORE, "readonly");
-		const value = await requestAsPromise(tx.objectStore(META_STORE).get(META_SCHEMA_VERSION_KEY));
+		const value = await requestAsPromise<unknown>(tx.objectStore(META_STORE).get(META_SCHEMA_VERSION_KEY));
 		return typeof value === "number" ? value : undefined;
 	}
 
@@ -188,7 +188,8 @@ export class OpenIdbConnection {
 
 	async getAllInRange(prefix: string): Promise<StoredRecord[]> {
 		const tx = this.db.transaction(STORE_NAME, "readonly");
-		return requestAsPromise<StoredRecord[]>(tx.objectStore(STORE_NAME).getAll(prefixRange(prefix)));
+		const request = tx.objectStore(STORE_NAME).getAll(prefixRange(prefix)) as IDBRequest<StoredRecord[]>;
+		return requestAsPromise(request);
 	}
 
 	/**

@@ -144,8 +144,7 @@ export const WhatsNewContent = memo(function WhatsNewContent({
 
 				const batchMarkdown = resolveRelativeDocLinks(formatChangelogSections(batch), config.links.documentation);
 
-				const batchContainer = el.ownerDocument.createElement("div");
-				el.appendChild(batchContainer);
+				const batchContainer = el.createDiv();
 
 				await MarkdownRenderer.render(app, batchMarkdown, batchContainer, "/", component);
 				makeExternalLinksClickable(batchContainer);

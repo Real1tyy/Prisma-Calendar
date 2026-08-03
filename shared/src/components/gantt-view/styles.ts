@@ -130,6 +130,10 @@ function buildGanttStyles(p: string): string {
 	cursor: grab;
 }
 
+.${p}gantt-body.${p}gantt-panning {
+	cursor: grabbing;
+}
+
 .${p}gantt-grid-svg {
 	position: absolute;
 	top: 0;

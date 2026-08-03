@@ -1,26 +1,40 @@
+import { readInjectedStyleSheet } from "@real1ty/obsidian-plugins";
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { useInjectedStyles } from "../../src/hooks/styles/use-styles";
 
+function uniqueId(): string {
+	return `test-style-${Math.random().toString(36).slice(2)}`;
+}
+
 describe("useInjectedStyles", () => {
-	it("injects a <style> element with the given id and css", () => {
-		const id = `test-style-${Math.random().toString(36).slice(2)}`;
+	it("adopts a stylesheet carrying the given css under the given id", () => {
+		const id = uniqueId();
 		const css = ".foo { color: red; }";
+
 		renderHook(() => useInjectedStyles(id, css));
 
-		const el = document.getElementById(id);
-		expect(el).not.toBeNull();
-		expect(el?.tagName).toBe("STYLE");
-		expect(el?.textContent).toBe(css);
+		expect(readInjectedStyleSheet(id)).toBe(css);
 	});
 
-	it("is idempotent across multiple mounts of the same id", () => {
-		const id = `test-style-${Math.random().toString(36).slice(2)}`;
+	it("adopts exactly one sheet across multiple mounts of the same id", () => {
+		const id = uniqueId();
+		const before = document.adoptedStyleSheets.length;
+
 		renderHook(() => useInjectedStyles(id, ".a {}"));
 		renderHook(() => useInjectedStyles(id, ".a {}"));
 		renderHook(() => useInjectedStyles(id, ".a {}"));
 
-		expect(document.querySelectorAll(`#${id}`)).toHaveLength(1);
+		expect(document.adoptedStyleSheets.length - before).toBe(1);
+	});
+
+	it("never attaches a style element — Obsidian forbids them", () => {
+		const id = uniqueId();
+
+		renderHook(() => useInjectedStyles(id, ".foo { color: red; }"));
+
+		expect(document.getElementById(id)).toBeNull();
+		expect(document.head.querySelector("style")).toBeNull();
 	});
 });

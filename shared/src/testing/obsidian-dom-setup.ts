@@ -62,6 +62,33 @@ function setupObsidianDom(): void {
 		};
 	}
 
+	if (!proto.createSpan) {
+		(proto as any).createSpan = function (
+			this: HTMLElement,
+			opts?: string | { cls?: string; text?: string }
+		): HTMLSpanElement {
+			const el = document.createElement("span");
+			const cls = typeof opts === "string" ? opts : opts?.cls;
+			if (cls) {
+				for (const c of cls.split(" ")) {
+					if (c) el.classList.add(c);
+				}
+			}
+			if (typeof opts === "object" && opts.text) el.textContent = opts.text;
+			this.appendChild(el);
+			return el;
+		};
+	}
+
+	// Mirrors Obsidian's `HTMLElement.toggle(show)`, which really does drive
+	// `display` inline — this polyfill has to match it for tests to observe
+	// the same thing production does.
+	if (!proto.toggle) {
+		(proto as any).toggle = function (this: HTMLElement, show: boolean): void {
+			this.style.setProperty("display", show ? "" : "none");
+		};
+	}
+
 	if (!proto.empty) {
 		(proto as any).empty = function (this: HTMLElement): void {
 			this.innerHTML = "";
@@ -123,6 +150,33 @@ function setupObsidianDom(): void {
 				}
 			}
 			return el;
+		};
+	}
+
+	if (typeof window.createFragment !== "function") {
+		(window as any).createFragment = function (callback?: (frag: DocumentFragment) => void): DocumentFragment {
+			const frag = document.createDocumentFragment();
+			callback?.(frag);
+			return frag;
+		};
+	}
+
+	// Neither jsdom nor happy-dom implements constructable stylesheets, which is
+	// how `injectStyleSheet` ships runtime CSS. Stand in a minimal version so
+	// tests can read back what a component adopted (see `readAdoptedCss`).
+	if (!Array.isArray(document.adoptedStyleSheets)) {
+		Object.defineProperty(document, "adoptedStyleSheets", { value: [], writable: true });
+	}
+	const NativeCSSStyleSheet = globalThis.CSSStyleSheet as (new () => { replaceSync?: unknown }) | undefined;
+	const hasConstructableSheets =
+		typeof NativeCSSStyleSheet === "function" &&
+		typeof (NativeCSSStyleSheet.prototype as { replaceSync?: unknown }).replaceSync === "function";
+	if (!hasConstructableSheets) {
+		(globalThis as any).CSSStyleSheet = class {
+			cssText = "";
+			replaceSync(css: string): void {
+				this.cssText = css;
+			}
 		};
 	}
 

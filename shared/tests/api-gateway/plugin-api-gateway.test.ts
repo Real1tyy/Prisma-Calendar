@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
 import { defineAction } from "../../src/integrations/api-gateway/contract/define-action";
+import type { HttpApiServerLike, HttpRoute, HttpServerConfig } from "../../src/integrations/api-gateway/http-types";
 import { PluginApiGateway } from "../../src/integrations/api-gateway/plugin-api-gateway";
 import type { ActionDefMap } from "../../src/integrations/api-gateway/types";
 import { createMockApp, Plugin } from "../../src/testing";
@@ -9,6 +10,49 @@ import { createMockApp, Plugin } from "../../src/testing";
 function createPlugin() {
 	const app = createMockApp();
 	return new Plugin(app, { id: "test-plugin", name: "Test Plugin" });
+}
+
+/**
+ * Stand-in for `HttpApiServer`, which cannot be used here: it imports `node:http`
+ * and binds a real socket. Injecting the server is what makes this path testable
+ * at the unit tier at all — see [[spec-no-node-builtins-in-bundles]].
+ */
+class FakeHttpServer implements HttpApiServerLike {
+	readonly routes: HttpRoute[] = [];
+	started = false;
+	stopped = false;
+
+	constructor(readonly config: HttpServerConfig) {}
+
+	addRoute(route: HttpRoute): void {
+		this.routes.push(route);
+	}
+
+	addRoutes(routes: HttpRoute[]): void {
+		this.routes.push(...routes);
+	}
+
+	async start(): Promise<void> {
+		this.started = true;
+	}
+
+	async stop(): Promise<void> {
+		this.stopped = true;
+	}
+}
+
+function createFakeServerFactory() {
+	const created: FakeHttpServer[] = [];
+	const createServer = vi.fn((config: HttpServerConfig) => {
+		const server = new FakeHttpServer(config);
+		created.push(server);
+		return server;
+	});
+	return { created, createServer };
+}
+
+function routeKey(route: HttpRoute): string {
+	return `${route.method} ${route.path}`;
 }
 
 function createActions(): ActionDefMap {
@@ -354,6 +398,182 @@ describe("PluginApiGateway", () => {
 
 			expect(consoleSpy).toHaveBeenCalled();
 			consoleSpy.mockRestore();
+		});
+	});
+
+	describe("http transport", () => {
+		it("should not create a server when no http config is given", () => {
+			const gateway = new PluginApiGateway({
+				plugin: plugin as any,
+				globalKey: "TestApi",
+				actions,
+			});
+
+			gateway.expose();
+
+			expect(gateway.getHttpServer()).toBeNull();
+		});
+
+		it("should not create a server when http is configured but disabled", () => {
+			const { createServer } = createFakeServerFactory();
+			const gateway = new PluginApiGateway({
+				plugin: plugin as any,
+				globalKey: "TestApi",
+				actions,
+				http: { enabled: false, port: 27124, createServer },
+			});
+
+			gateway.expose();
+
+			expect(createServer).not.toHaveBeenCalled();
+			expect(gateway.getHttpServer()).toBeNull();
+		});
+
+		it("should build the server through the injected factory with the http config", () => {
+			const { created, createServer } = createFakeServerFactory();
+			const gateway = new PluginApiGateway({
+				plugin: plugin as any,
+				globalKey: "TestApi",
+				actions,
+				http: { enabled: true, port: 27124, host: "0.0.0.0", createServer },
+			});
+
+			gateway.expose();
+
+			expect(createServer).toHaveBeenCalledTimes(1);
+			expect(created).toHaveLength(1);
+			expect(created[0].config.port).toBe(27124);
+			expect(created[0].config.host).toBe("0.0.0.0");
+			expect(created[0].started).toBe(true);
+			expect(gateway.getHttpServer()).toBe(created[0]);
+		});
+
+		it("should register one kebab-cased route per action", () => {
+			const { created, createServer } = createFakeServerFactory();
+			const gateway = new PluginApiGateway({
+				plugin: plugin as any,
+				globalKey: "TestApi",
+				actions,
+				http: { enabled: true, port: 27124, createServer },
+			});
+
+			gateway.expose();
+
+			expect(created[0].routes.map(routeKey)).toEqual(["POST /greet", "POST /farewell", "GET /window-only"]);
+		});
+
+		it("should skip actions that opt out of the http transport", () => {
+			const { created, createServer } = createFakeServerFactory();
+			const gateway = new PluginApiGateway({
+				plugin: plugin as any,
+				globalKey: "TestApi",
+				actions: {
+					visible: { handler: vi.fn() },
+					hidden: { handler: vi.fn(), http: { disabled: true } },
+				},
+				http: { enabled: true, port: 27124, createServer },
+			});
+
+			gateway.expose();
+
+			expect(created[0].routes.map(routeKey)).toEqual(["GET /visible"]);
+		});
+
+		it("should flush routes queued before expose", () => {
+			const { created, createServer } = createFakeServerFactory();
+			const gateway = new PluginApiGateway({
+				plugin: plugin as any,
+				globalKey: "TestApi",
+				actions: { visible: { handler: vi.fn() } },
+				http: { enabled: true, port: 27124, createServer },
+			});
+
+			gateway.addHttpRoutes([{ method: "GET", path: "/custom", handler: async () => ({ status: 200, body: {} }) }]);
+			gateway.expose();
+
+			expect(created[0].routes.map(routeKey)).toEqual(["GET /visible", "GET /custom"]);
+		});
+
+		it("should pass routes straight through once the server is running", () => {
+			const { created, createServer } = createFakeServerFactory();
+			const gateway = new PluginApiGateway({
+				plugin: plugin as any,
+				globalKey: "TestApi",
+				actions: { visible: { handler: vi.fn() } },
+				http: { enabled: true, port: 27124, createServer },
+			});
+
+			gateway.expose();
+			gateway.addHttpRoutes([{ method: "GET", path: "/late", handler: async () => ({ status: 200, body: {} }) }]);
+
+			expect(created[0].routes.map(routeKey)).toEqual(["GET /visible", "GET /late"]);
+		});
+
+		it("should stop and release the server on unexpose", () => {
+			const { created, createServer } = createFakeServerFactory();
+			const gateway = new PluginApiGateway({
+				plugin: plugin as any,
+				globalKey: "TestApi",
+				actions,
+				http: { enabled: true, port: 27124, createServer },
+			});
+
+			gateway.expose();
+			gateway.unexpose();
+
+			expect(created[0].stopped).toBe(true);
+			expect(gateway.getHttpServer()).toBeNull();
+		});
+
+		it("should dispatch an action through its generated route handler", async () => {
+			const { created, createServer } = createFakeServerFactory();
+			const gateway = new PluginApiGateway({
+				plugin: plugin as any,
+				globalKey: "TestApi",
+				actions,
+				http: { enabled: true, port: 27124, createServer },
+			});
+
+			gateway.expose();
+			const greetRoute = created[0].routes.find((route) => route.path === "/greet");
+
+			const response = await greetRoute!.handler({
+				method: "POST",
+				path: "/greet",
+				params: {},
+				query: { name: "Alice" },
+				body: undefined,
+			});
+
+			expect(actions.greet.handler).toHaveBeenCalledWith({ name: "Alice" });
+			expect(response.status).toBe(200);
+		});
+
+		it("should answer 400 when the action handler throws", async () => {
+			const { created, createServer } = createFakeServerFactory();
+			const gateway = new PluginApiGateway({
+				plugin: plugin as any,
+				globalKey: "TestApi",
+				actions: {
+					failing: {
+						handler: vi.fn().mockRejectedValue(new Error("Handler failed")),
+						parseParams: (raw: Record<string, string>) => raw,
+					},
+				},
+				http: { enabled: true, port: 27124, createServer },
+			});
+
+			gateway.expose();
+			const response = await created[0].routes[0].handler({
+				method: "POST",
+				path: "/failing",
+				params: {},
+				query: {},
+				body: undefined,
+			});
+
+			expect(response.status).toBe(400);
+			expect(response.body).toEqual({ error: "Handler failed" });
 		});
 	});
 });
