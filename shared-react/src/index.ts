@@ -177,6 +177,7 @@ export {
 // ─── Mount bridges ───
 export type { RenderReactInlineOptions } from "./react-inline";
 export { renderReactInline } from "./react-inline";
+export { reactSettingDefinitions } from "./react-settings-definitions";
 export type { ReactViewConfig, ReactViewHandle } from "./react-view";
 export { registerReactView } from "./react-view";
 export type {
