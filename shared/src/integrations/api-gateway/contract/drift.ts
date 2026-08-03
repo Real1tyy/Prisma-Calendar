@@ -1,8 +1,24 @@
-import { readFile } from "node:fs/promises";
+import { Platform } from "obsidian";
 
 import type { ActionDefMap } from "../types";
 import { emitContract } from "./emit-contract";
 import type { PluginApiContract, PluginApiContractAction } from "./types";
+
+/**
+ * Reads the committed contract from disk, desktop-only.
+ *
+ * The guard must be this function's FIRST statement — that is the shape
+ * `obsidianmd/no-nodejs-modules` recognises. Drift checking only ever runs at
+ * build/test time on desktop, so the throw is unreachable in practice; it exists
+ * to make the Node dependency explicit rather than to be caught.
+ */
+async function readCommittedContract(committedPath: string): Promise<string> {
+	if (!Platform.isDesktop) {
+		throw new Error("Contract drift checking is only available on desktop.");
+	}
+	const { readFile } = await import("node:fs/promises");
+	return readFile(committedPath, "utf-8");
+}
 
 export interface ContractMatch {
 	ok: true;
@@ -136,7 +152,7 @@ export async function assertNoContractDrift(args: {
 
 	let committedRaw: string;
 	try {
-		committedRaw = await readFile(args.committedPath, "utf-8");
+		committedRaw = await readCommittedContract(args.committedPath);
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
 		throw new ContractDriftError(

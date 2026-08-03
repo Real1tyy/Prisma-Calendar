@@ -1,4 +1,4 @@
-import http from "node:http";
+import { Platform } from "obsidian";
 
 import { stripTrailingChars } from "../../utils/string/string";
 import {
@@ -50,7 +50,22 @@ interface NodeHttpModule {
 	createServer(handler: (req: NodeIncomingMessage, res: NodeServerResponse) => void): NodeServer;
 }
 
-const nodeHttp = http as unknown as NodeHttpModule;
+/**
+ * Loads `node:http` only once the desktop guard has passed.
+ *
+ * The guard must be this function's FIRST statement — that is the shape
+ * `obsidianmd/no-nodejs-modules` recognises as a legitimate Node import in a
+ * plugin whose manifest declares `isDesktopOnly: false`. Keeping the import
+ * dynamic also keeps `node:http` out of every bundle's static import graph,
+ * which is what `assertNoNodeBuiltinImports` enforces at build time.
+ */
+async function loadNodeHttp(): Promise<NodeHttpModule> {
+	if (!Platform.isDesktop) {
+		throw new Error("The plugin HTTP API server is only available on desktop.");
+	}
+	const mod: unknown = await import("node:http");
+	return mod as NodeHttpModule;
+}
 
 function concatChunks(chunks: Uint8Array[], totalSize: number): Uint8Array {
 	const merged = new Uint8Array(totalSize);
@@ -115,6 +130,7 @@ export class HttpApiServer implements HttpApiServerLike {
 	async start(): Promise<void> {
 		if (this.server) return;
 
+		const nodeHttp = await loadNodeHttp();
 		const server = nodeHttp.createServer((req, res) => {
 			void this.handleRequest(req, res);
 		});

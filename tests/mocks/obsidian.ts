@@ -271,6 +271,8 @@ export const Notice = vi.fn();
 
 // Platform mock
 export const Platform = {
+	isDesktop: true,
+	isMobile: false,
 	isDesktopApp: true,
 	isMobileApp: false,
 	isMacOS: false,

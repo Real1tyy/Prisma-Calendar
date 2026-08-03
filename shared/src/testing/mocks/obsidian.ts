@@ -302,6 +302,11 @@ export class Notice {
 
 // Platform mock
 export const Platform = {
+	// `isDesktop` is true on the desktop app AND in a desktop browser; `isDesktopApp`
+	// is the app only. Code gating Node access checks `isDesktop`, so a mock missing
+	// it silently reads `undefined` and takes the mobile branch.
+	isDesktop: true,
+	isMobile: false,
 	isDesktopApp: true,
 	isMobileApp: false,
 	isMacOS: false,
