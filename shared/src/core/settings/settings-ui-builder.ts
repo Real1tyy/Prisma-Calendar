@@ -5,6 +5,7 @@ import { camelCaseToLabel, introspectField } from "../../components/schema-modal
 import type { EnumFieldDescriptor, NumberFieldDescriptor } from "../../components/schema-modal/types";
 import { toSafeString } from "../../utils/date/date";
 import { describeError } from "../../utils/errors";
+import { markDestructive, showSliderValue } from "../../utils/obsidian-compat";
 import { getNestedValue, inferArrayItemType, inferSliderBounds, setNestedValue } from "./schema-navigation";
 import type { SettingsStore } from "./settings-store";
 
@@ -264,7 +265,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 			.setName(name)
 			.setDesc(desc)
 			.addSlider((slider) => {
-				slider.setLimits(min, max, step).setValue(value).setDynamicTooltip();
+				showSliderValue(slider.setLimits(min, max, step).setValue(value));
 
 				if (commitOnChange) {
 					slider.onChange(async (newValue) => {
@@ -314,7 +315,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 
 		setting.addSlider((slider) => {
 			sliderInputEl = slider.sliderEl;
-			slider.setLimits(min, max, step).setValue(value).setDynamicTooltip();
+			showSliderValue(slider.setLimits(min, max, step).setValue(value));
 
 			slider.onChange((newValue) => {
 				slider.sliderEl.setAttribute("aria-valuenow", String(newValue));
@@ -602,25 +603,22 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 
 			for (const item of currentItems) {
 				const itemSetting = new Setting(listContainer).setName(String(item)).addButton((button) =>
-					button
-						.setButtonText(removeButtonText)
-						.setWarning()
-						.onClick(async () => {
-							let newItems = currentItems.filter((i) => i !== item);
+					markDestructive(button.setButtonText(removeButtonText)).onClick(async () => {
+						let newItems = currentItems.filter((i) => i !== item);
 
-							// Apply custom logic before removal
-							if (onBeforeRemove) {
-								newItems = await onBeforeRemove(item, currentItems);
-							}
+						// Apply custom logic before removal
+						if (onBeforeRemove) {
+							newItems = await onBeforeRemove(item, currentItems);
+						}
 
-							// Prevent empty array if configured
-							if (preventEmpty && newItems.length === 0) {
-								newItems = Array.isArray(emptyArrayFallback) ? emptyArrayFallback : [emptyArrayFallback];
-							}
+						// Prevent empty array if configured
+						if (preventEmpty && newItems.length === 0) {
+							newItems = Array.isArray(emptyArrayFallback) ? emptyArrayFallback : [emptyArrayFallback];
+						}
 
-							await this.updateSetting(key, newItems);
-							render();
-						})
+						await this.updateSetting(key, newItems);
+						render();
+					})
 				);
 
 				// Add custom description for each item if provided

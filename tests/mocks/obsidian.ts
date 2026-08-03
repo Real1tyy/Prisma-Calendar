@@ -426,6 +426,11 @@ export function createMockApp(): MockApp {
 // No-op stand-in for Obsidian's setIcon — paint-only utility, not relevant in jsdom.
 export function setIcon(_el: HTMLElement, _iconId: string): void {}
 
+// Defaults to `false` (the running app is older than the queried version), which
+// matches this plugin's `minAppVersion` floor and keeps version-gated shared code
+// — `showSliderValue`, `markDestructive` — on its pre-1.13 branch.
+export const requireApiVersion = vi.fn((_version: string): boolean => false);
+
 // Helper to create mock TFile instances
 export function createMockFile(
 	path: string,

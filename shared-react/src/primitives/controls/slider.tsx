@@ -1,3 +1,4 @@
+import { showSliderValue } from "@real1ty/obsidian-plugins";
 import { SliderComponent } from "obsidian";
 import { memo, useEffect, useRef } from "react";
 
@@ -34,11 +35,9 @@ export const Slider = memo(function Slider({ value, min, max, step, onChange, de
 	useEffect(() => {
 		const el = hostRef.current;
 		if (!el) return;
-		const component = new SliderComponent(el)
-			.setLimits(min, max, step ?? 1)
-			.setValue(initialDraftRef.current)
-			.setDynamicTooltip()
-			.onChange((next) => setDraftRef.current(next));
+		const component = showSliderValue(
+			new SliderComponent(el).setLimits(min, max, step ?? 1).setValue(initialDraftRef.current)
+		).onChange((next) => setDraftRef.current(next));
 		componentRef.current = component;
 		const flushOnRelease = () => flushRef.current();
 		const sliderEl = el.querySelector("input[type='range']");

@@ -392,6 +392,12 @@ export const setIcon = vi.fn((el: HTMLElement, iconId: string): void => {
 	el.setAttribute("data-icon", iconId);
 });
 
+// requireApiVersion mock — defaults to `false` (the running app is older than
+// the queried version), which matches every plugin's current `minAppVersion`
+// floor and keeps version-gated code on its pre-1.13 branch by default. A spy so
+// a test exercising the newer branch can `mockReturnValue(true)`.
+export const requireApiVersion = vi.fn((_version: string): boolean => false);
+
 // getIconIds mock
 export function getIconIds(): string[] {
 	return ["check", "circle", "star", "calendar", "edit", "trash", "settings"];
