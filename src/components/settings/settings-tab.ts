@@ -1,5 +1,5 @@
-import { reactSettingDefinitions, renderReactInline } from "@real1ty/obsidian-plugins-react";
-import { PluginSettingTab, requireApiVersion, type App, type SettingDefinitionItem } from "obsidian";
+import { renderReactInline } from "@real1ty/obsidian-plugins-react";
+import { PluginSettingTab, type App } from "obsidian";
 import { createElement } from "react";
 
 import { CSS_PREFIX } from "../../constants";
@@ -16,7 +16,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 
 		this.plugin.licenseManager.status$.subscribe(() => {
 			if (this.containerEl.isShown()) {
-				this.refresh();
+				this.remount();
 			}
 		});
 	}
@@ -25,39 +25,17 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		this.remount();
 	}
 
-	override getSettingDefinitions(): SettingDefinitionItem[] {
-		return reactSettingDefinitions("Prisma Calendar", (containerEl) => this.mountSettings(containerEl));
-	}
-
 	override hide(): void {
 		this.unmount?.();
 		this.unmount = null;
 	}
 
-	private mountSettings(containerEl: HTMLElement): () => void {
-		return renderReactInline(containerEl, createElement(SettingsRoot, { plugin: this.plugin }), this.app, {
-			cssPrefix: CSS_PREFIX,
-			testIdPrefix: CSS_PREFIX,
-		});
-	}
-
 	private remount(): void {
 		this.unmount?.();
 		this.containerEl.empty();
-		this.unmount = this.mountSettings(this.containerEl);
-	}
-
-	/**
-	 * Re-render after the license status moves. The two paths are not
-	 * interchangeable: on 1.13 the tab is rendered from `getSettingDefinitions()`
-	 * and `display()` is skipped, so remounting into `containerEl` here would
-	 * strand a second React root underneath the declarative one.
-	 */
-	private refresh(): void {
-		if (requireApiVersion("1.13.0")) {
-			this.update();
-		} else {
-			this.remount();
-		}
+		this.unmount = renderReactInline(this.containerEl, createElement(SettingsRoot, { plugin: this.plugin }), this.app, {
+			cssPrefix: CSS_PREFIX,
+			testIdPrefix: CSS_PREFIX,
+		});
 	}
 }
