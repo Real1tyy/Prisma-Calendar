@@ -4,7 +4,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.21.1 - 8/4/2026
+## 2.22.0 - 8/4/2026
 
 > **TLDR:** Event text color is now chosen by real contrast — bright backgrounds like yellow or cyan get dark text instead of unreadable white.
 
