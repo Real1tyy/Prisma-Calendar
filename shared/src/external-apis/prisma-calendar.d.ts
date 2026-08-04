@@ -882,11 +882,11 @@ export type EventStackLimit = number;
  */
 export type AllowEventOverlap = boolean;
 /**
- * Text color for events with dark backgrounds (default: white)
+ * Preferred event text color (default: white)
  */
 export type DefaultEventTextColor = string;
 /**
- * Text color used when event background is light or white (e.g., pastel colors) for better contrast
+ * Used instead when it contrasts better with the event background (e.g., yellow or pastel colors)
  */
 export type AlternativeEventTextColor = string;
 /**
@@ -1218,11 +1218,11 @@ export type PrismaCalendarToggleSkipOutput = boolean;
  */
 
 /**
- * Text color for events with dark backgrounds (default: white)
+ * Preferred event text color (default: white)
  */
 
 /**
- * Text color used when event background is light or white (e.g., pastel colors) for better contrast
+ * Used instead when it contrasts better with the event background (e.g., yellow or pastel colors)
  */
 
 /**

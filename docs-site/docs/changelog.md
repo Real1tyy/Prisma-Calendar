@@ -4,6 +4,15 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 2.21.1 - 8/4/2026
+
+> **TLDR:** Event text color is now chosen by real contrast — bright backgrounds like yellow or cyan get dark text instead of unreadable white.
+
+### Fixed
+- **Readable text on bright event colors**: events with vivid light backgrounds — yellow, cyan, light green — now use the alternative (dark) text color instead of near-invisible white. The calendar picks whichever of your two text colors actually contrasts better with the event's background, and named CSS colors in color rules (like `yellow`) are recognized too. See [Calendar View → Event Text Coloring](./features/calendar/calendar-view.md#event-text-coloring).
+
+---
+
 ## 2.21.0 - 6/11/2026
 
 > **TLDR:** Activating Pro is now a single paste-and-click in **Settings → General → License** — no secrets dialog, no ID/value steps. Dragging an event to the top or bottom edge of a zoomed-in day/week view now scrolls the grid slowly so you can drop it on an off-screen time.

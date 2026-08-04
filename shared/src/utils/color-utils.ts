@@ -1,6 +1,10 @@
-import { colord } from "colord";
+import { colord, extend } from "colord";
+import a11yPlugin from "colord/plugins/a11y";
+import namesPlugin from "colord/plugins/names";
 
-const VERY_CLOSE_SHADE_DISTANCE = 48;
+// names: settings colors pass ColorSchema (any CSS.supports color), so named
+// colors like "yellow" must parse or the contrast pick silently degrades.
+extend([a11yPlugin, namesPlugin]);
 
 export interface RgbColor {
 	r: number;
@@ -9,58 +13,16 @@ export interface RgbColor {
 }
 
 /**
- * Parses a color string into RGB components.
- * Returns null if the color is invalid.
+ * Picks whichever candidate text color is more readable on the background,
+ * by WCAG contrast ratio. RGB distance is the wrong axis for this: yellow is
+ * far from white in RGB space yet nearly as luminous, so white text on it is
+ * unreadable (contrast ≈ 1.07:1). Falls back to `primary` when the background
+ * can't be parsed.
  */
-export function parseColorToRgb(color: string): RgbColor | null {
-	const parsed = colord(color);
-	if (!parsed.isValid()) return null;
-	return parsed.toRgb();
-}
-
-/**
- * Calculates the Euclidean distance between two RGB colors.
- */
-function calculateRgbDistance(rgb1: RgbColor, rgb2: RgbColor): number {
-	return Math.sqrt(
-		(rgb1.r - rgb2.r) * (rgb1.r - rgb2.r) +
-			(rgb1.g - rgb2.g) * (rgb1.g - rgb2.g) +
-			(rgb1.b - rgb2.b) * (rgb1.b - rgb2.b)
-	);
-}
-
-/**
- * True when two colors are very close in shade (RGB distance).
- * Used to switch to alternative text color only when default text color
- * is nearly the same color as the event background.
- */
-export function hasVeryCloseShade(foregroundColor: string, backgroundColor: string): boolean {
-	const foregroundRgb = parseColorToRgb(foregroundColor);
-	const backgroundRgb = parseColorToRgb(backgroundColor);
-	if (!foregroundRgb || !backgroundRgb) return false;
-
-	const distance = calculateRgbDistance(foregroundRgb, backgroundRgb);
-	return distance <= VERY_CLOSE_SHADE_DISTANCE;
-}
-
-/**
- * Like hasVeryCloseShade but accepts a pre-parsed foreground RGB value.
- * Avoids re-parsing the same foreground color for every event.
- */
-export function hasVeryCloseShadeFromRgb(foregroundRgb: RgbColor, backgroundColor: string): boolean {
-	const backgroundRgb = parseColorToRgb(backgroundColor);
-	if (!backgroundRgb) return false;
-
-	const distance = calculateRgbDistance(foregroundRgb, backgroundRgb);
-	return distance <= VERY_CLOSE_SHADE_DISTANCE;
-}
-
-export function parseColor(color: string): { h: number; s: number; l: number } | null {
-	const parsed = colord(color);
-	if (!parsed.isValid()) {
-		return null;
-	}
-	return parsed.toHsl();
+export function pickHigherContrastColor(backgroundColor: string, primary: string, alternative: string): string {
+	const background = colord(backgroundColor);
+	if (!background.isValid()) return primary;
+	return background.contrast(primary) >= background.contrast(alternative) ? primary : alternative;
 }
 
 /**
@@ -120,7 +82,7 @@ export function buildColorGradient(colors: string[]): string {
 	return `linear-gradient(90deg, ${stops})`;
 }
 
-export function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+export function hexToRgb(hex: string): RgbColor | null {
 	const short = /^#?([a-f\d])([a-f\d])([a-f\d])$/i.exec(hex);
 	if (short) {
 		return {

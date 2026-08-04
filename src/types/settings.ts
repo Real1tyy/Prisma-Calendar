@@ -753,10 +753,10 @@ const CalendarSettingsSchema = z
 		monthEvenColor: ColorSchema.catch("#131313").meta({ widget: "color" }),
 		monthOddColor: ColorSchema.catch("#6b9080").meta({ widget: "color" }),
 		eventTextColor: ColorSchema.catch("#ffffff")
-			.describe("Text color for events with dark backgrounds (default: white)")
+			.describe("Preferred event text color (default: white)")
 			.meta({ title: "Default event text color", widget: "color" }),
 		eventTextColorAlt: ColorSchema.catch("#000000")
-			.describe("Text color used when event background is light or white (e.g., pastel colors) for better contrast")
+			.describe("Used instead when it contrasts better with the event background (e.g., yellow or pastel colors)")
 			.meta({ title: "Alternative event text color", widget: "color" }),
 		connectionColor: ColorSchema.catch("#7c3aed")
 			.describe("Color of the prerequisite connection arrows on the Calendar tab")

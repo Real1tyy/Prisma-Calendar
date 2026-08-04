@@ -16,7 +16,6 @@ import {
 	perf,
 	roundToNearestHour,
 	toLocalISOString,
-	type RgbColor,
 } from "@real1ty/obsidian-plugins";
 import { renderReactInline } from "@real1ty/obsidian-plugins-react";
 import { Component, Notice, Platform, TFile, type App, type WorkspaceLeaf } from "obsidian";
@@ -155,8 +154,6 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	private calendarIconCache: Map<string, string | undefined> = new Map();
 	private pendingRefreshRequest = false;
 	private stickyOffsetsRafId: number | null = null;
-	private cachedTextColorRgb: RgbColor | null = null;
-	private cachedTextColorSource: string | null = null;
 	/** Pre-indexed map of date string → unique event colors, built during buildCalendarEvents(). */
 	private colorDotIndex = new Map<string, Set<string>>();
 	/** Serialized snapshot of colorDotIndex used to skip redundant DOM rebuilds. */
@@ -1634,12 +1631,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const allColors = event.extendedProps.computedColors ?? [];
 		const eventColor = allColors[0] || this.getEventColor({ meta: event.extendedProps.frontmatterDisplayData ?? {} });
 
-		const textColorCache = applyEventMountStyling(element, event, settings, eventColor, allColors, {
-			rgb: this.cachedTextColorRgb,
-			source: this.cachedTextColorSource,
-		});
-		this.cachedTextColorRgb = textColorCache.rgb;
-		this.cachedTextColorSource = textColorCache.source;
+		applyEventMountStyling(element, event, settings, eventColor, allColors);
 
 		const filePath = event.extendedProps["filePath"];
 		if (filePath && isFileBackedEvent(event)) {

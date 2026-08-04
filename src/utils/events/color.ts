@@ -1,31 +1,11 @@
-import {
-	hasVeryCloseShadeFromRgb,
-	parseColorToRgb,
-	type ColorEvaluator,
-	type RgbColor,
-} from "@real1ty/obsidian-plugins";
+import { pickHigherContrastColor, type ColorEvaluator } from "@real1ty/obsidian-plugins";
 
 import type { SingleCalendarConfig } from "../../types/settings";
 import { normalizeFrontmatterForColorEvaluation } from "../filters/expressions";
 
-export function createTextColorResolver(): (
-	eventColor: string | undefined,
-	settings: SingleCalendarConfig
-) => string | undefined {
-	let cachedTextColorRgb: RgbColor | null = null;
-	let cachedTextColorSource: string | null = null;
-
-	return (eventColor, settings) => {
-		if (!eventColor) return undefined;
-		if (cachedTextColorSource !== settings.eventTextColor) {
-			cachedTextColorRgb = parseColorToRgb(settings.eventTextColor);
-			cachedTextColorSource = settings.eventTextColor;
-		}
-		if (!cachedTextColorRgb) return settings.eventTextColor;
-		return hasVeryCloseShadeFromRgb(cachedTextColorRgb, eventColor)
-			? settings.eventTextColorAlt
-			: settings.eventTextColor;
-	};
+export function resolveTextColor(eventColor: string | undefined, settings: SingleCalendarConfig): string | undefined {
+	if (!eventColor) return undefined;
+	return pickHigherContrastColor(eventColor, settings.eventTextColor, settings.eventTextColorAlt);
 }
 
 interface EventColorContext {

@@ -26,7 +26,7 @@ import { getDisplayProperties, renderPropertyValue } from "../../utils/frontmatt
 import { parseFCExtendedProps } from "../../utils/frontmatter/extended-props";
 import { emitHover } from "../../utils/obsidian";
 import type { BatchSelectionManager } from "../batch-selection-manager";
-import { applyEventMountStyling, attachLazyNotePreview, type TextColorCache } from "../calendar-event-renderer";
+import { applyEventMountStyling, attachLazyNotePreview } from "../calendar-event-renderer";
 import type { CalendarHost } from "../calendar-host";
 import type { EventContextMenu } from "../event-context-menu";
 import { showEventPreviewModal } from "../modals";
@@ -180,8 +180,6 @@ export function buildSharedEventDidMount(
 	eventContextMenu: EventContextMenu,
 	getBatchSelectionManager: () => BatchSelectionManager | null
 ): (info: SharedEventMountInfo) => void {
-	const cachedTextColor: TextColorCache = { rgb: null, source: null };
-
 	return (info) => {
 		const { el, event } = info;
 
@@ -213,7 +211,7 @@ export function buildSharedEventDidMount(
 			computedColors[0] || resolveEventColor(ep.frontmatterDisplayData, deps.bundle, deps.colorEvaluator);
 		const settings = deps.bundle.settingsStore.currentSettings;
 
-		applyEventMountStyling(el, event, settings, eventColor, computedColors, cachedTextColor);
+		applyEventMountStyling(el, event, settings, eventColor, computedColors);
 
 		if (eventFilePath && !isAnyVirtual(virtualKind)) {
 			attachLazyNotePreview(el, eventFilePath, deps.app);

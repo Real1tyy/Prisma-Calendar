@@ -4,10 +4,7 @@ import {
 	calculateDuration,
 	extractContentAfterFrontmatter,
 	getNotePreviewLines,
-	hasVeryCloseShadeFromRgb,
 	hexToRgb,
-	parseColorToRgb,
-	type RgbColor,
 } from "@real1ty/obsidian-plugins";
 import { TFile, type App } from "obsidian";
 
@@ -15,6 +12,7 @@ import { cls } from "../constants";
 import type { CalendarEventData } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/settings";
 import { isHolidayEvent } from "../utils/events/classification";
+import { resolveTextColor } from "../utils/events/color";
 import { cleanupTitle } from "../utils/events/naming";
 import { buildEventTooltip } from "../utils/format";
 import { getDisplayProperties, renderPropertyValue } from "../utils/frontmatter/display";
@@ -106,26 +104,13 @@ export function renderEventContent(arg: EventContentArg, context: EventRenderCon
 	return { domNodes: [container] };
 }
 
-/**
- * Cached text-color state for `applyEventMountStyling`.
- * Passed in by the caller and **mutated in-place** when the settings color
- * changes, so the parsed RGB is reused across consecutive mount calls.
- * The (potentially updated) cache is also returned for callers that
- * destructure into their own fields.
- */
-export interface TextColorCache {
-	rgb: RgbColor | null;
-	source: string | null;
-}
-
 export function applyEventMountStyling(
 	element: HTMLElement,
 	event: CalendarEventData,
 	settings: SingleCalendarConfig,
 	eventColor: string,
-	allColors: string[],
-	cachedTextColor: TextColorCache
-): TextColorCache {
+	allColors: string[]
+): void {
 	element.style.setProperty("--event-color", eventColor);
 
 	// Color gradient for multi-color mode
@@ -146,17 +131,8 @@ export function applyEventMountStyling(
 		}
 	}
 
-	// Text color (cached to avoid re-parsing the same setting for every event)
-	if (cachedTextColor.source !== settings.eventTextColor) {
-		cachedTextColor.rgb = parseColorToRgb(settings.eventTextColor);
-		cachedTextColor.source = settings.eventTextColor;
-	}
-
-	const textColor =
-		cachedTextColor.rgb && hasVeryCloseShadeFromRgb(cachedTextColor.rgb, eventColor)
-			? settings.eventTextColorAlt
-			: settings.eventTextColor;
-	element.style.setProperty("--event-text-color", textColor);
+	const textColor = resolveTextColor(eventColor, settings);
+	if (textColor) element.style.setProperty("--event-text-color", textColor);
 	element.classList.add(cls("calendar-event"));
 
 	// Past event opacity
@@ -182,8 +158,6 @@ export function applyEventMountStyling(
 
 	const tooltip = buildEventTooltip(event, settings);
 	element.setAttribute("title", tooltip);
-
-	return cachedTextColor;
 }
 
 function appendEventColorDots(element: HTMLElement, colors: string[]): void {

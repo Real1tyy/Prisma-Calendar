@@ -25,8 +25,8 @@ These settings control the calendar's view modes, time display, visual appearanc
 - **Show color dots**: color indicator dots in monthly view (enabled by default)
 - **Thicker hour lines**: bolder full-hour lines in day/week views (enabled by default)
 - **Show duration in event title**: appends duration after event title (enabled by default)
-- **Default event text color**: text color for events with dark backgrounds (default: white)
-- **Alternative event text color**: text color for events with light backgrounds (default: black). See [Calendar View → Event Text Coloring](../features/calendar/calendar-view#event-text-coloring) for details.
+- **Default event text color**: preferred event text color (default: white)
+- **Alternative event text color**: used instead when it contrasts better with the event's background (default: black). See [Calendar View → Event Text Coloring](../features/calendar/calendar-view#event-text-coloring) for details.
 - **Sticky day headers**: pin day/date headers when scrolling in day/week views (enabled by default)
 - **Sticky all-day events**: pin all-day section when scrolling in day/week views (enabled by default)
 

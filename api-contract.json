@@ -1768,14 +1768,14 @@
 							},
 							"eventTextColor": {
 								"default": "#ffffff",
-								"description": "Text color for events with dark backgrounds (default: white)",
+								"description": "Preferred event text color (default: white)",
 								"title": "Default event text color",
 								"type": "string",
 								"widget": "color"
 							},
 							"eventTextColorAlt": {
 								"default": "#000000",
-								"description": "Text color used when event background is light or white (e.g., pastel colors) for better contrast",
+								"description": "Used instead when it contrasts better with the event background (e.g., yellow or pastel colors)",
 								"title": "Alternative event text color",
 								"type": "string",
 								"widget": "color"
@@ -3946,14 +3946,14 @@
 							},
 							"eventTextColor": {
 								"default": "#ffffff",
-								"description": "Text color for events with dark backgrounds (default: white)",
+								"description": "Preferred event text color (default: white)",
 								"title": "Default event text color",
 								"type": "string",
 								"widget": "color"
 							},
 							"eventTextColorAlt": {
 								"default": "#000000",
-								"description": "Text color used when event background is light or white (e.g., pastel colors) for better contrast",
+								"description": "Used instead when it contrasts better with the event background (e.g., yellow or pastel colors)",
 								"title": "Alternative event text color",
 								"type": "string",
 								"widget": "color"
