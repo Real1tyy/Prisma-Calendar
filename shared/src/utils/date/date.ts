@@ -63,6 +63,34 @@ export const formatDateForInput = (dateString: string): string => {
 	}
 };
 
+/** A `Date` → the `YYYY-MM-DD` an `<input type="date">` expects, read off local components. */
+export function formatDateInputValue(date: Date): string {
+	const p = formatDateParts(date);
+	return `${p.year}-${p.month}-${p.day}`;
+}
+
+/**
+ * The `YYYY-MM-DD` an `<input type="date">` yields → local midnight.
+ *
+ * `new Date("2026-10-14")` parses the bare date form as *UTC* midnight, which
+ * renders as the previous day at any negative offset — a jump the user never
+ * asked for. Building from Y/M/D components keeps the calendar day intact.
+ * Returns `null` for anything malformed or out-of-range (`2026-02-31` would
+ * otherwise silently roll forward into March).
+ */
+export function parseDateInputValue(value: string): Date | null {
+	const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
+	if (!match) return null;
+
+	const year = Number(match[1]);
+	const month = Number(match[2]);
+	const day = Number(match[3]);
+	const date = new Date(year, month - 1, day);
+
+	if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return null;
+	return date;
+}
+
 /**
  * Converts input value to ISO string, handling edge cases where
  * browser datetime-local inputs behave differently across platforms.
