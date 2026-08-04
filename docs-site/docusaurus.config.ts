@@ -31,7 +31,7 @@ const config: Config = {
 		locales: ["en"],
 	},
 
-	clientModules: [require.resolve("./src/analytics")],
+	clientModules: ["./src/analytics.ts"],
 
 	presets: [
 		[
