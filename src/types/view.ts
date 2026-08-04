@@ -28,8 +28,14 @@ export const DAY_CELL_COLORING_OPTIONS: Record<string, string> = {
 };
 
 export const TEXT_CONTRAST_MODE_OPTIONS: Record<string, string> = {
-	"prefer-primary": "Prefer primary color",
-	balanced: "Balanced",
+	"always-primary": "Always primary color",
+	minimal: "Minimal (switch below 1.5:1)",
+	low: "Low (switch below 2:1)",
+	moderate: "Moderate (switch below 2.5:1)",
+	"prefer-primary": "Prefer primary (switch below 3:1)",
+	high: "High (switch below 3.5:1)",
+	strong: "Strong (switch below 4:1)",
+	balanced: "Balanced (switch below 4.5:1)",
 	maximum: "Maximum contrast",
 };
 

@@ -891,9 +891,18 @@ export type DefaultEventTextColor = string;
  */
 export type AlternativeEventTextColor = string;
 /**
- * When to switch to the alternative text color. Prefer primary: only when the default drops below 3:1 contrast against the event background. Balanced: below 4.5:1 (WCAG AA). Maximum contrast: always use whichever of the two colors contrasts more.
+ * When to switch to the alternative text color. Each step is a contrast floor the default text color must clear against the event background to stay: Always primary never switches, then the floor rises in half-steps from 1.5:1 (Minimal) to 4.5:1 (Balanced, the WCAG AA level) — lower floors keep your default color on more backgrounds. Maximum contrast always uses whichever of the two colors contrasts more.
  */
-export type TextContrastSensitivity = "prefer-primary" | "balanced" | "maximum";
+export type TextContrastSensitivity =
+	| "always-primary"
+	| "minimal"
+	| "low"
+	| "moderate"
+	| "prefer-primary"
+	| "high"
+	| "strong"
+	| "balanced"
+	| "maximum";
 /**
  * Comma-separated list of frontmatter property names to exclude when propagating changes across category series members.
  */
@@ -1231,7 +1240,7 @@ export type PrismaCalendarToggleSkipOutput = boolean;
  */
 
 /**
- * When to switch to the alternative text color. Prefer primary: only when the default drops below 3:1 contrast against the event background. Balanced: below 4.5:1 (WCAG AA). Maximum contrast: always use whichever of the two colors contrasts more.
+ * When to switch to the alternative text color. Each step is a contrast floor the default text color must clear against the event background to stay: Always primary never switches, then the floor rises in half-steps from 1.5:1 (Minimal) to 4.5:1 (Balanced, the WCAG AA level) — lower floors keep your default color on more backgrounds. Maximum contrast always uses whichever of the two colors contrasts more.
  */
 
 /**

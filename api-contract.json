@@ -1782,12 +1782,28 @@
 							},
 							"eventTextContrastMode": {
 								"default": "prefer-primary",
-								"description": "When to switch to the alternative text color. Prefer primary: only when the default drops below 3:1 contrast against the event background. Balanced: below 4.5:1 (WCAG AA). Maximum contrast: always use whichever of the two colors contrasts more.",
-								"enum": ["prefer-primary", "balanced", "maximum"],
+								"description": "When to switch to the alternative text color. Each step is a contrast floor the default text color must clear against the event background to stay: Always primary never switches, then the floor rises in half-steps from 1.5:1 (Minimal) to 4.5:1 (Balanced, the WCAG AA level) — lower floors keep your default color on more backgrounds. Maximum contrast always uses whichever of the two colors contrasts more.",
+								"enum": [
+									"always-primary",
+									"minimal",
+									"low",
+									"moderate",
+									"prefer-primary",
+									"high",
+									"strong",
+									"balanced",
+									"maximum"
+								],
 								"enumLabels": {
-									"balanced": "Balanced",
+									"always-primary": "Always primary color",
+									"balanced": "Balanced (switch below 4.5:1)",
+									"high": "High (switch below 3.5:1)",
+									"low": "Low (switch below 2:1)",
 									"maximum": "Maximum contrast",
-									"prefer-primary": "Prefer primary color"
+									"minimal": "Minimal (switch below 1.5:1)",
+									"moderate": "Moderate (switch below 2.5:1)",
+									"prefer-primary": "Prefer primary (switch below 3:1)",
+									"strong": "Strong (switch below 4:1)"
 								},
 								"title": "Text contrast sensitivity",
 								"type": "string"
@@ -3973,12 +3989,28 @@
 							},
 							"eventTextContrastMode": {
 								"default": "prefer-primary",
-								"description": "When to switch to the alternative text color. Prefer primary: only when the default drops below 3:1 contrast against the event background. Balanced: below 4.5:1 (WCAG AA). Maximum contrast: always use whichever of the two colors contrasts more.",
-								"enum": ["prefer-primary", "balanced", "maximum"],
+								"description": "When to switch to the alternative text color. Each step is a contrast floor the default text color must clear against the event background to stay: Always primary never switches, then the floor rises in half-steps from 1.5:1 (Minimal) to 4.5:1 (Balanced, the WCAG AA level) — lower floors keep your default color on more backgrounds. Maximum contrast always uses whichever of the two colors contrasts more.",
+								"enum": [
+									"always-primary",
+									"minimal",
+									"low",
+									"moderate",
+									"prefer-primary",
+									"high",
+									"strong",
+									"balanced",
+									"maximum"
+								],
 								"enumLabels": {
-									"balanced": "Balanced",
+									"always-primary": "Always primary color",
+									"balanced": "Balanced (switch below 4.5:1)",
+									"high": "High (switch below 3.5:1)",
+									"low": "Low (switch below 2:1)",
 									"maximum": "Maximum contrast",
-									"prefer-primary": "Prefer primary color"
+									"minimal": "Minimal (switch below 1.5:1)",
+									"moderate": "Moderate (switch below 2.5:1)",
+									"prefer-primary": "Prefer primary (switch below 3:1)",
+									"strong": "Strong (switch below 4:1)"
 								},
 								"title": "Text contrast sensitivity",
 								"type": "string"
