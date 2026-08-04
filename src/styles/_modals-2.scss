@@ -218,6 +218,19 @@
 	}
 }
 
+// Go To Date Modal
+.prisma-go-to-date-modal {
+	h3 {
+		margin: 0 0 16px;
+		font-size: var(--font-ui-large);
+	}
+
+	.setting-item {
+		border-top: none;
+		padding-top: 0;
+	}
+}
+
 // Frontmatter Propagation Modal
 .prisma-frontmatter-changes {
 	margin: 1.5rem 0;

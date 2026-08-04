@@ -9,6 +9,7 @@ import {
 	afterRender,
 	calculateEndTime,
 	ColorEvaluator,
+	formatDateInputValue,
 	formatDuration,
 	formatLocaleMonthDay,
 	formatLocaleYearMonth,
@@ -43,7 +44,12 @@ import { buildDependencyGraph } from "../core/dependency-graph";
 import { PRO_FEATURES } from "../core/license";
 import { MinimizedModalManager } from "../core/minimized-modal-manager";
 import { getProGateUrls } from "../core/pro-feature-previews";
-import { openBatchFrontmatterModal, openCategoryAssignModal, openCategorySelectModal } from "../react/modals";
+import {
+	openBatchFrontmatterModal,
+	openCategoryAssignModal,
+	openCategorySelectModal,
+	openGoToDateModal,
+} from "../react/modals";
 import { openFilteredEventsModal, openSelectedEventsModal, openSkippedEventsModal } from "../react/modals/event-list";
 import { openEventsModal } from "../react/modals/event-list/events-modal-content";
 import { openEventCreateModal } from "../react/modals/event/event-create-modal";
@@ -590,6 +596,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.applyContainerStyles(container, settings);
 
 		this.setupMouseTracking(container);
+		this.setupToolbarTitleClick(container);
 		this.startUpcomingEventCheck();
 	}
 
@@ -900,6 +907,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			}
 		}
 		const map: Array<[string, string]> = [
+			[".fc-toolbar-title", "prisma-cal-toolbar-title"],
 			[".fc-prev-button", "prisma-cal-toolbar-prev"],
 			[".fc-next-button", "prisma-cal-toolbar-next"],
 			[".fc-today-button", "prisma-cal-toolbar-today"],
@@ -2220,6 +2228,19 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		container.addEventListener("mousedown", () => (this.mouseDownTime = Date.now()));
 	}
 
+	// FullCalendar recycles its toolbar DOM on every `setOption("headerToolbar")`
+	// call (see `stampToolbarTestIds`), so a listener bound to the title element
+	// itself would be silently dropped — or double-bound on the next re-render.
+	// Delegating from the stable container sidesteps the whole lifecycle.
+	private setupToolbarTitleClick(container: HTMLElement): void {
+		container.addEventListener("click", (event) => {
+			const target = event.target;
+			if (target instanceof HTMLElement && target.closest(".fc-toolbar-title")) {
+				this.showGoToDateModal();
+			}
+		});
+	}
+
 	// ─── Navigation ──────────────────────────────────────────────
 
 	navigateToDate(date: Date, viewType?: string): void {
@@ -2235,6 +2256,16 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	goToToday(): void {
 		if (!this.calendar) return;
 		this.calendar.today();
+	}
+
+	showGoToDateModal(): void {
+		if (!this.calendar) return;
+		const anchor = new Date(this.calendar.getDate());
+		void openGoToDateModal(this.app, anchor).then((date) => {
+			// Passing no `viewType` keeps FullCalendar's active view — `gotoDate`
+			// only moves the anchor, so Week stays Week, Month stays Month.
+			if (date && formatDateInputValue(date) !== formatDateInputValue(anchor)) this.navigateToDate(date);
+		});
 	}
 
 	navigateBack(): boolean {

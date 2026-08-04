@@ -42,10 +42,20 @@
 		gap: 0.5rem;
 	}
 
+	// The title doubles as the Go-to-date affordance (see `setupToolbarTitleClick`),
+	// so it needs to read as clickable — FullCalendar renders it as a plain <h2>.
 	.fc-toolbar-title {
 		color: var(--text-normal);
 		font-size: var(--font-ui-medium);
 		font-weight: var(--font-weight-medium);
+		cursor: pointer;
+		border-radius: var(--radius-s);
+		padding: 2px 6px;
+
+		&:hover {
+			background-color: var(--background-modifier-hover);
+			color: var(--text-accent);
+		}
 	}
 
 	.fc-button {

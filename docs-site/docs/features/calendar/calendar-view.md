@@ -43,6 +43,13 @@ The toolbar sits at the top of the calendar and provides quick access to navigat
 | **Right** (▶) | Navigate to the next period |
 | **Today** | Jump to today's date |
 | **Now** | Scroll to the current time in day and week views. In year and month views, scrolls to today's cell. Not available in list view. |
+| **Title** (e.g. "October 2026") | Click to open the Go to date picker — see below |
+
+### Go to Date
+
+To jump straight to a date instead of stepping there with the arrows, click the toolbar title or run the **Go to date** command (bind it to a hotkey in **Settings → Hotkeys**). A small picker opens, prefilled with the date you're currently on — pick a day and press Enter.
+
+The jump keeps whatever view you're in: from Week view you land on the target date's week, from Month view on its month, from Day view on that day. **Navigate back** returns you to where you were, so checking what's already planned around a future date and coming back is two keystrokes.
 
 ### Event Creation
 

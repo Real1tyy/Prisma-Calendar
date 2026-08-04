@@ -36,6 +36,7 @@ export { openICSImportModal } from "./import-export/ics-import-modal";
 // Calendar modals
 export type { ConfigureCalendarResult } from "./calendar/configure-calendar-modal";
 export { ConfigureCalendarController, openConfigureCalendarModal } from "./calendar/configure-calendar-modal";
+export { openGoToDateModal } from "./calendar/go-to-date-modal";
 
 // Onboarding modals
 export type {

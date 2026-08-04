@@ -109,6 +109,18 @@ Here is a complete list of the batch operations you can assign hotkeys to:
     -   Quickly re-center the calendar on the current date
 -   **Available As**: Toolbar button ("Today") and Obsidian command
 
+### Go to Date
+
+-   **Function**: Opens a date picker and moves the calendar to the date you choose
+-   **Behavior**:
+    -   The picker is prefilled with the date the calendar is currently showing
+    -   The jump keeps your current view — Week stays Week, Month stays Month, Day stays Day
+    -   **Navigate back** returns to where you were before the jump
+-   **Use Cases**:
+    -   Check what is already planned around a date months away before scheduling something
+    -   Reach a distant date without clicking the arrows week by week
+-   **Available As**: A click on the calendar toolbar title and an Obsidian command (no default hotkey — assign one in **Settings → Hotkeys**)
+
 ### Scroll to Current Time
 
 -   **Function**: Scrolls the viewport to the current time indicator within the current view

@@ -231,6 +231,7 @@ export function registerPrismaCalendarCommands(plugin: CustomCalendarPlugin): vo
 		view.showIntervalEventsModal()
 	);
 	addCalendarViewCommand(COMMAND_IDS.GO_TO_TODAY, "Go to today", (view) => view.goToToday());
+	addCalendarViewCommand(COMMAND_IDS.GO_TO_DATE, "Go to date", (view) => view.showGoToDateModal());
 	addCalendarViewCommand(COMMAND_IDS.SCROLL_TO_NOW, "Scroll to current time", (view) => view.scrollToNow());
 	addCalendarViewCommand(COMMAND_IDS.TOGGLE_PREREQUISITE_CONNECTIONS, "Toggle prerequisite connection arrows", (view) =>
 		view.toggleConnections()

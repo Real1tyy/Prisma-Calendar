@@ -6,7 +6,10 @@ All notable changes to this project will be documented here.
 
 ## 2.22.0 - 8/4/2026
 
-> **TLDR:** Event text color is now chosen by real contrast — bright backgrounds like yellow or cyan get dark text instead of unreadable white.
+> **TLDR:** Jump the calendar straight to any date — click the toolbar title or run the new **Go to date** command instead of clicking the arrows week by week. Event text color is now chosen by real contrast, so bright backgrounds like yellow or cyan get dark text instead of unreadable white.
+
+### Added
+- **Go to date**: click the calendar toolbar title (or run the **Go to date** command, hotkey-able in **Settings → Hotkeys**) to open a date picker prefilled with the date you're on, and jump anywhere. The jump keeps your current view — Week stays Week, Month stays Month — and **Navigate back** returns you to where you were, so you can check what's already planned around a date months out and come straight back. See [Calendar View → Go to Date](./features/calendar/calendar-view.md#go-to-date).
 
 ### Fixed
 - **Readable text on bright event colors**: events with vivid light backgrounds — yellow, cyan, light green — now use the alternative (dark) text color instead of near-invisible white. The calendar picks whichever of your two text colors actually contrasts better with the event's background, and named CSS colors in color rules (like `yellow`) are recognized too. See [Calendar View → Event Text Coloring](./features/calendar/calendar-view.md#event-text-coloring).
