@@ -1781,7 +1781,7 @@
 								"widget": "color"
 							},
 							"eventTextContrastMode": {
-								"default": "prefer-primary",
+								"default": "moderate",
 								"description": "When to switch to the alternative text color. Each step is a contrast floor the default text color must clear against the event background to stay: Always primary never switches, then the floor rises in half-steps from 1.5:1 (Minimal) to 4.5:1 (Balanced, the WCAG AA level) — lower floors keep your default color on more backgrounds. Maximum contrast always uses whichever of the two colors contrasts more.",
 								"enum": [
 									"always-primary",
@@ -3988,7 +3988,7 @@
 								"widget": "color"
 							},
 							"eventTextContrastMode": {
-								"default": "prefer-primary",
+								"default": "moderate",
 								"description": "When to switch to the alternative text color. Each step is a contrast floor the default text color must clear against the event background to stay: Always primary never switches, then the floor rises in half-steps from 1.5:1 (Minimal) to 4.5:1 (Balanced, the WCAG AA level) — lower floors keep your default color on more backgrounds. Maximum contrast always uses whichever of the two colors contrasts more.",
 								"enum": [
 									"always-primary",

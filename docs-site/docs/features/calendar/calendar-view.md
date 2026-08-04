@@ -149,7 +149,7 @@ The calendar automatically adjusts event text color based on the event's backgro
 The detection is automatic — the calendar measures the default color's WCAG contrast ratio against the event's background and switches to the alternative only when it falls below a readability floor. **Text contrast sensitivity** sets that floor on a nine-step ladder, so you can dial in exactly how eagerly the alternative kicks in:
 
 - **Always primary color**: never switch — your default color everywhere.
-- **Minimal (1.5:1)** through **Balanced (4.5:1)**: the floor rises in half-steps (1.5, 2, 2.5, 3, 3.5, 4, 4.5). Lower floors keep your default color on more backgrounds — e.g. a bright green (≈2.8:1 for white text) keeps white text at **Low (2:1)** but switches at the default **Prefer primary (3:1)**. 4.5:1 is the WCAG AA level for normal text.
+- **Minimal (1.5:1)** through **Balanced (4.5:1)**: the floor rises in half-steps (1.5, 2, 2.5, 3, 3.5, 4, 4.5). Lower floors keep your default color on more backgrounds — e.g. a bright green (≈2.8:1 for white text) keeps white text at the default **Moderate (2.5:1)** but switches at **Prefer primary (3:1)**. 4.5:1 is the WCAG AA level for normal text.
 - **Maximum contrast**: always use whichever of the two colors contrasts more with the background.
 
 Configure all three settings in **Settings → Calendar → Visual Appearance**.

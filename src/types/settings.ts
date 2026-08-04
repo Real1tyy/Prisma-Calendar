@@ -761,7 +761,7 @@ const CalendarSettingsSchema = z
 			.meta({ title: "Alternative event text color", widget: "color" }),
 		eventTextContrastMode: z
 			.enum(["always-primary", "minimal", "low", "moderate", "prefer-primary", "high", "strong", "balanced", "maximum"])
-			.catch("prefer-primary" as const)
+			.catch("moderate" as const)
 			.describe(
 				"When to switch to the alternative text color. Each step is a contrast floor the default text color must clear against the event background to stay: Always primary never switches, then the floor rises in half-steps from 1.5:1 (Minimal) to 4.5:1 (Balanced, the WCAG AA level) — lower floors keep your default color on more backgrounds. Maximum contrast always uses whichever of the two colors contrasts more."
 			)
