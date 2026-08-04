@@ -7,7 +7,7 @@ interface Group {
 }
 
 function matches(el: Element, query: string): boolean {
-	return (el.textContent ?? "").toLowerCase().includes(query);
+	return el.textContent.toLowerCase().includes(query);
 }
 
 function setHidden(el: Element, hidden: boolean, hiddenClass: string): void {

@@ -29,13 +29,19 @@ export interface EmitExternalApiDtsArgs {
 	sourcePath: string;
 	regenerateCommand: string;
 	/**
-	 * Anchor path used to resolve the closest `.prettierrc` so the emitted
-	 * output matches what lefthook's prettier hook would produce. Required —
-	 * the previous `process.cwd()` fallback read an untyped Node global in
-	 * shipped code, which Obsidian's review (linting without `@types/node`)
-	 * reports as unsafe.
+	 * Absolute path of the `.d.ts` this call is emitting. Prettier config is
+	 * resolved FOR THAT FILE, so the emitted bytes match what the repo's
+	 * prettier hook would produce for it.
+	 *
+	 * Must be the file, never its directory: `prettier.resolveConfig` treats
+	 * its argument as a file path and searches upward from the argument's
+	 * PARENT. Handing it the monorepo root searched from the root's parent,
+	 * found no `.prettierrc`, and silently emitted prettier defaults — while
+	 * the same call from a worktree (two levels deeper) found the real config.
+	 * The drift check was therefore green in every worktree and red only in
+	 * the main checkout. See [[decision-external-apis-shared-emission]].
 	 */
-	prettierConfigPath: string;
+	outputPath: string;
 }
 
 /**
@@ -100,7 +106,16 @@ export async function emitExternalApiDts(args: EmitExternalApiDtsArgs): Promise<
 	// inside the emitter makes the committed file already match what prettier
 	// would produce, so commit-time prettier becomes a no-op and the drift
 	// test compares deterministic, prettier-formatted output to itself.
-	const resolved = (await prettierResolveConfig(args.prettierConfigPath)) ?? {};
+	// A null resolve means the upward search escaped the repo. Falling back to
+	// prettier's DEFAULTS here is what made the failure silent: the emitter
+	// produced valid-but-differently-formatted bytes, so the drift check
+	// reported "the contract changed" when nothing about the contract had.
+	const resolved = await prettierResolveConfig(args.outputPath);
+	if (resolved === null) {
+		throw new Error(
+			`No prettier config found for ${args.outputPath}. The emitted .d.ts is compared byte-for-byte against the committed one, so falling back to prettier defaults would report phantom drift. Pass the .d.ts destination path, not its directory.`
+		);
+	}
 	return prettierFormat(raw, { ...resolved, parser: "typescript" });
 }
 
