@@ -18,6 +18,29 @@
  *   node check-unused-css.mjs <plugin-dir> --undefined-classes  # reverse check
  *   node check-unused-css.mjs <plugin-dir> --undefined-classes --suggest-allowlist
  *   node check-unused-css.mjs <plugin-dir> --no-unused      # only reverse check
+ *
+ * Resolving an undefined-class finding (triage protocol):
+ *   The reverse check is purely lexical — it cannot tell whether a flagged
+ *   class is a DOM hook (no paint needed) or a class that genuinely needs
+ *   styling. You must read the source and decide:
+ *
+ *     1. DOM hook / test selector / visibility toggle target
+ *        → Empty stub in SCSS:
+ *            .prisma-foo { /* intentional stub *\/ }
+ *          The block comment is mandatory: Sass drops bare `{}` and the
+ *          selector would vanish from styles.css.
+ *
+ *     2. Genuinely missing styling (the element is user-visible and looks
+ *        unstyled where it shouldn't)
+ *        → Real CSS in the appropriate feature partial — never in
+ *          _bootstrap-cleanup.scss.
+ *
+ *   Heuristic: `git show HEAD:<plugin>/styles.css | grep <class>`. If the
+ *   class never had a rule and the app shipped fine, it's a hook → stub.
+ *   Fabricating styles for hooks is a regression vector — e.g. inventing
+ *   `display: flex` on a container the runtime hides via `.prisma-hidden
+ *   { display: none }` silently wins the cascade at equal specificity.
+ *   See CLAUDE.md → "CSS Allowlist — Triage Undefined Classes".
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -815,6 +838,72 @@ function findRuntimeStylesheetFiles(dirs) {
 	return matches;
 }
 
+/** Every `.scss` under `<plugin>/src/styles/` — the sources `styles.css` is built from. */
+function findScssSources(pluginDir) {
+	const stylesDir = path.join(pluginDir, "src", "styles");
+	if (!fs.existsSync(stylesDir)) return [];
+
+	const matches = [];
+	function walk(d) {
+		for (const entry of fs.readdirSync(d, { withFileTypes: true })) {
+			if (entry.isDirectory()) {
+				if (!SKIP_DIRS.has(entry.name)) walk(path.join(d, entry.name));
+			} else if (entry.isFile() && entry.name.endsWith(".scss")) {
+				matches.push(path.join(d, entry.name));
+			}
+		}
+	}
+	walk(stylesDir);
+	return matches;
+}
+
+/**
+ * Detect a `styles.css` that predates its SCSS sources.
+ *
+ * Both scans read the *built* `styles.css`, never the SCSS partials — so a class
+ * added to `_base.scss` but not yet compiled reads as undefined, and one deleted
+ * from SCSS still reads as defined. Both look exactly like a triage mistake, and
+ * the documented response to the first (write a stub, or worse, fabricate a rule)
+ * is a regression vector. Surfacing the mtime skew turns that trap into a
+ * one-line "run the build" instruction.
+ *
+ * Returns null when the stylesheet is current, there are no SCSS sources (a
+ * hand-authored `styles.css` is legitimate), or a file vanished mid-scan.
+ */
+export function detectStaleStylesheet(pluginDir) {
+	const stylesPath = path.join(pluginDir, "styles.css");
+	const sources = findScssSources(pluginDir);
+	if (sources.length === 0) return null;
+
+	let builtAt;
+	try {
+		builtAt = fs.statSync(stylesPath).mtimeMs;
+	} catch {
+		return null;
+	}
+
+	let newest = null;
+	for (const file of sources) {
+		let mtimeMs;
+		try {
+			mtimeMs = fs.statSync(file).mtimeMs;
+		} catch {
+			continue;
+		}
+		if (mtimeMs > builtAt && (newest === null || mtimeMs > newest.mtimeMs)) {
+			newest = { file, mtimeMs };
+		}
+	}
+	if (newest === null) return null;
+
+	return {
+		builtAt,
+		newestSource: path.relative(pluginDir, newest.file),
+		newestSourceAt: newest.mtimeMs,
+		staleBySeconds: Math.round((newest.mtimeMs - builtAt) / 1000),
+	};
+}
+
 // ─── Reverse check: built-in Obsidian/library external classes ──────────────
 
 /**
@@ -1271,6 +1360,7 @@ export function scanPlugin(pluginDir, opts = {}) {
 		plugin: pluginName,
 		pluginDir,
 		prefix,
+		staleStylesheet: detectStaleStylesheet(pluginDir),
 		fileCount,
 		dirsScanned: dirsToScan.map((d) => path.relative(pluginDir, d)),
 		totals: {
@@ -1308,7 +1398,27 @@ function listAllPlugins() {
 		});
 }
 
+function printStaleWarning(result) {
+	const stale = result.staleStylesheet;
+	if (!stale) return;
+	console.log(`⚠️  styles.css is STALE — ${stale.newestSource} is newer by ${formatAge(stale.staleBySeconds)}.`);
+	console.log("    Both scans read the built styles.css, not the SCSS sources, so classes you just");
+	console.log("    added read as undefined and classes you just deleted read as defined.");
+	console.log(`    Rebuild before triaging:  mise run build:css ${result.plugin}`);
+	console.log();
+}
+
+/** Coarse human duration for the staleness warning — precision past the unit is noise. */
+function formatAge(seconds) {
+	if (seconds < 60) return `${seconds}s`;
+	if (seconds < 3600) return `${Math.round(seconds / 60)}m`;
+	if (seconds < 86400) return `${Math.round(seconds / 3600)}h`;
+	return `${Math.round(seconds / 86400)}d`;
+}
+
 function printFullReport(result, flags = {}) {
+	printStaleWarning(result);
+
 	if (flags.noUnused !== true) {
 		console.log(`🔍 Scanning ${result.plugin} for unused CSS...\n`);
 		console.log(`  Styles:  styles.css`);
@@ -1343,7 +1453,9 @@ function printFullReport(result, flags = {}) {
 
 	if (result.reverse) {
 		const r = result.reverse;
-		console.log();
+		// Separator only when a forward report precedes us — the stale warning
+		// already ends in a blank line.
+		if (flags.noUnused !== true) console.log();
 		console.log(`🔍 Scanning ${result.plugin} for undefined CSS references...\n`);
 		console.log(`  Code refs:    ${r.totalRefs}`);
 		console.log(`  Defined:      ${r.definedCount} (${r.runtimeClassCount} from runtime builders)`);
@@ -1382,9 +1494,11 @@ function printSummaryLine(result, flags = {}) {
 	}
 	if (result.reverse && undefinedCount > 0) parts.push(`${undefinedCount} undefined`);
 	if (allowlistIssueCount > 0) parts.push(`${allowlistIssueCount} allowlist issues`);
+	// Warn-only: a stale stylesheet never changes the exit code, it explains one.
+	if (result.staleStylesheet) parts.push("styles.css STALE — rebuild");
 
 	const total = (flags.noUnused ? 0 : classesUnused + varsUnused) + undefinedCount + allowlistIssueCount;
-	const status = total === 0 ? "✅" : "⚠ ";
+	const status = total === 0 && !result.staleStylesheet ? "✅" : "⚠ ";
 	const detail = parts.length > 0 ? parts.join(", ") : "clean";
 	console.log(`  ${status} ${result.plugin.padEnd(24)} ${detail}`);
 }
@@ -1602,6 +1716,13 @@ function main() {
 			for (const e of errors) console.log(`  ❌ ${e.plugin}: ${e.error}`);
 		}
 		console.log();
+		const staleCount = results.filter((r) => r.staleStylesheet).length;
+		if (staleCount > 0) {
+			console.log(
+				`  ⚠  ${staleCount} plugin${staleCount === 1 ? " has a" : "s have"} stale styles.css — findings above may be build lag, not real. Rebuild first.`
+			);
+			console.log();
+		}
 		if (totalClasses + totalVars + totalUndefined + totalAllowlistIssues === 0) {
 			console.log(`  ✅ All ${results.length} plugin${results.length === 1 ? "" : "s"} clean`);
 		} else {
