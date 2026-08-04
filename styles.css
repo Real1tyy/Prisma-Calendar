@@ -766,6 +766,12 @@ button[class*=prisma-]:focus-visible {
   height: var(--prisma-drag-allday-height);
   overflow: hidden;
 }
+.prisma-calendar-container.prisma-drag-allday-pinned .fc-timegrid .fc-scrollgrid-section-body:first-of-type .fc-scrollgrid-sync-table {
+  height: var(--prisma-drag-allday-height);
+}
+.prisma-calendar-container.prisma-drag-allday-pinned .fc-timegrid .fc-scrollgrid-section-body:first-of-type .fc-daygrid-day-frame {
+  height: 100%;
+}
 .prisma-calendar-container .fc-timegrid .fc-daygrid-day-frame {
   min-height: 48px;
 }

@@ -43,9 +43,24 @@
 	// `eventDragStart` and clamps it here until the drag ends; overflow is
 	// clipped only for the drag's duration. See
 	// spec-fix-cross-week-drag-cursor-offset.
-	&.prisma-drag-allday-pinned .fc-timegrid .fc-scrollgrid-section-body:first-of-type .fc-scroller {
-		height: var(--prisma-drag-allday-height);
-		overflow: hidden;
+	&.prisma-drag-allday-pinned .fc-timegrid .fc-scrollgrid-section-body:first-of-type {
+		.fc-scroller {
+			height: var(--prisma-drag-allday-height);
+			overflow: hidden;
+		}
+
+		// The clamp alone leaves the reserved height as a bare background band
+		// when the rendered week has fewer all-day rows than the pin was
+		// measured from — a detached-looking slab below the cells. Stretch the
+		// day-cell table to the pinned height so the reserved space renders as
+		// normal bordered day cells (spec-allday-drag-pin-visual-integration).
+		.fc-scrollgrid-sync-table {
+			height: var(--prisma-drag-allday-height);
+		}
+
+		.fc-daygrid-day-frame {
+			height: 100%;
+		}
 	}
 
 	// A generous, always-hittable all-day drop target (folds in
