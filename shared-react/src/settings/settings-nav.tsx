@@ -5,6 +5,7 @@ import { useScopedStyles } from "../hooks/styles/use-styles";
 import { OutboundLink } from "../primitives/atoms/outbound-link";
 import { cx } from "../utils/cx";
 import { buildSettingsNavStyles } from "./settings-nav.styles";
+import { applySettingsSearchFilter, clearSettingsSearchFilter } from "./settings-search-filter";
 
 export interface SettingsNavTab {
 	id: string;
@@ -43,31 +44,23 @@ export const SettingsNav = memo(function SettingsNav({
 	const [focusedIndex, setFocusedIndex] = useState(-1);
 	const [noResults, setNoResults] = useState(false);
 	const buttonsRef = useRef<(HTMLButtonElement | null)[]>([]);
-	const rootRef = useRef<HTMLDivElement>(null);
+	const scopeRef = useRef<HTMLDivElement>(null);
 
 	const isSearching = searchValue.trim().length >= 2;
 
 	useEffect(() => {
-		const root = rootRef.current;
-		if (!root) return;
+		const scope = scopeRef.current;
+		if (!scope) return;
 
 		const HIDDEN = settingsCls("search-hidden");
-		const FOOTER = settingsCls("footer");
 
 		if (!isSearching) {
-			root.querySelectorAll(`.${HIDDEN}`).forEach((el) => el.classList.remove(HIDDEN));
+			clearSettingsSearchFilter(scope, HIDDEN);
 			setNoResults(false);
 			return;
 		}
 
-		const q = searchValue.trim().toLowerCase();
-		let visible = 0;
-		root.querySelectorAll<HTMLElement>(`.setting-item:not(.${FOOTER})`).forEach((el) => {
-			const match = el.textContent.toLowerCase().includes(q);
-			el.classList.toggle(HIDDEN, !match);
-			if (match) visible++;
-		});
-		setNoResults(visible === 0);
+		setNoResults(!applySettingsSearchFilter(scope, searchValue.trim().toLowerCase(), HIDDEN));
 	}, [searchValue, isSearching, settingsCls]);
 
 	const visibleTabs = tabs.filter((tab) => tab.visible !== false);
@@ -102,7 +95,7 @@ export const SettingsNav = memo(function SettingsNav({
 	);
 
 	return (
-		<div ref={rootRef}>
+		<div>
 			<nav className={settingsCls("nav")} role="tablist" aria-label="Settings navigation">
 				<div className={cls("nav-buttons")} onKeyDown={handleKeyDown}>
 					{visibleTabs.map((tab, index) => {
@@ -146,7 +139,11 @@ export const SettingsNav = memo(function SettingsNav({
 				<div className={settingsCls("search-no-results")}>No settings found for &quot;{searchValue}&quot;</div>
 			)}
 
-			{children}
+			{/* Layout-transparent (`display: contents`) so scoping the search filter
+			    to the tab content costs consumers no box in their layout. */}
+			<div ref={scopeRef} className={settingsCls("search-scope")}>
+				{children}
+			</div>
 
 			{footerLinks && footerLinks.length > 0 && (
 				<div className={`setting-item ${settingsCls("footer")}`}>

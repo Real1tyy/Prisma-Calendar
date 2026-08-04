@@ -28,7 +28,11 @@ export function buildSettingsNavStyles(p: string): string {
 	border-color: var(--interactive-accent);
 	box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2); width: 200px;
 }
-.${p}settings-search-hidden.setting-item { display: none; }
+.${p}settings-search-scope { display: contents; }
+/* Scoped, not bare, so it outranks the single-class \`display\` rule a hidden block
+   carries of its own (\`.x-color-rule-item { display: flex }\`) without depending on
+   which stylesheet the app appended last. */
+.${p}settings-search-scope .${p}settings-search-hidden { display: none; }
 .${p}settings-search-no-results {
 	padding: 24px; text-align: center; color: var(--text-muted); font-style: italic;
 }
