@@ -67,7 +67,7 @@ export const CalendarSettingsReact = memo(function CalendarSettingsReact({ setti
 			{section("Time grid", TIME_GRID_FIELDS, STEP_OVERRIDES)}
 			<FirstDayOfWeekField settingsStore={settingsStore} />
 			{section("Event overlap", OVERLAP_FIELDS)}
-			{section("Event text colors", ["eventTextColor", "eventTextColorAlt"])}
+			{section("Event text colors", ["eventTextColor", "eventTextColorAlt", "eventTextContrastMode"])}
 			{section("Capacity tracking", ["capacityTrackingEnabled"])}
 			{section("Prerequisite arrows", ["connectionColor", "connectionStrokeWidth", "connectionArrowSize"])}
 		</>

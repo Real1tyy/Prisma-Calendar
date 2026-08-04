@@ -32,6 +32,7 @@ import {
 	DENSITY_OPTIONS,
 	LOCALE_KEYS,
 	LOCALE_OPTIONS,
+	TEXT_CONTRAST_MODE_OPTIONS,
 	ToolbarButtonSchema,
 } from "./view";
 
@@ -756,8 +757,15 @@ const CalendarSettingsSchema = z
 			.describe("Preferred event text color (default: white)")
 			.meta({ title: "Default event text color", widget: "color" }),
 		eventTextColorAlt: ColorSchema.catch("#000000")
-			.describe("Used instead when it contrasts better with the event background (e.g., yellow or pastel colors)")
+			.describe("Used instead when the default text color is not readable enough on the event background")
 			.meta({ title: "Alternative event text color", widget: "color" }),
+		eventTextContrastMode: z
+			.enum(["prefer-primary", "balanced", "maximum"])
+			.catch("prefer-primary" as const)
+			.describe(
+				"When to switch to the alternative text color. Prefer primary: only when the default drops below 3:1 contrast against the event background. Balanced: below 4.5:1 (WCAG AA). Maximum contrast: always use whichever of the two colors contrasts more."
+			)
+			.meta({ title: "Text contrast sensitivity", enumLabels: TEXT_CONTRAST_MODE_OPTIONS }),
 		connectionColor: ColorSchema.catch("#7c3aed")
 			.describe("Color of the prerequisite connection arrows on the Calendar tab")
 			.meta({ title: "Arrow color", widget: "color" }),

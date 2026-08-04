@@ -1,11 +1,24 @@
-import { pickHigherContrastColor, type ColorEvaluator } from "@real1ty/obsidian-plugins";
+import { pickReadableTextColor, type ColorEvaluator } from "@real1ty/obsidian-plugins";
 
 import type { SingleCalendarConfig } from "../../types/settings";
 import { normalizeFrontmatterForColorEvaluation } from "../filters/expressions";
 
+// 3:1 is the WCAG large-text minimum, 4.5:1 the AA normal-text floor;
+// `maximum` omits the floor so the higher-contrast color always wins.
+const CONTRAST_MODE_THRESHOLDS: Record<SingleCalendarConfig["eventTextContrastMode"], number | undefined> = {
+	"prefer-primary": 3,
+	balanced: 4.5,
+	maximum: undefined,
+};
+
 export function resolveTextColor(eventColor: string | undefined, settings: SingleCalendarConfig): string | undefined {
 	if (!eventColor) return undefined;
-	return pickHigherContrastColor(eventColor, settings.eventTextColor, settings.eventTextColorAlt);
+	return pickReadableTextColor(
+		eventColor,
+		settings.eventTextColor,
+		settings.eventTextColorAlt,
+		CONTRAST_MODE_THRESHOLDS[settings.eventTextContrastMode]
+	);
 }
 
 interface EventColorContext {

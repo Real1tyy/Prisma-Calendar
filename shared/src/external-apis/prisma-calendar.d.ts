@@ -498,6 +498,7 @@ export type PrismaCalendarGetSettingsOutput = {
 	}[];
 	eventTextColor: DefaultEventTextColor;
 	eventTextColorAlt: AlternativeEventTextColor;
+	eventTextContrastMode: TextContrastSensitivity;
 	excludedCategorySeriesProps: ExcludedProperties;
 	excludedNameSeriesProps: ExcludedProperties1;
 	excludedRecurringInstanceProps: ExcludedProperties2;
@@ -886,9 +887,13 @@ export type AllowEventOverlap = boolean;
  */
 export type DefaultEventTextColor = string;
 /**
- * Used instead when it contrasts better with the event background (e.g., yellow or pastel colors)
+ * Used instead when the default text color is not readable enough on the event background
  */
 export type AlternativeEventTextColor = string;
+/**
+ * When to switch to the alternative text color. Prefer primary: only when the default drops below 3:1 contrast against the event background. Balanced: below 4.5:1 (WCAG AA). Maximum contrast: always use whichever of the two colors contrasts more.
+ */
+export type TextContrastSensitivity = "prefer-primary" | "balanced" | "maximum";
 /**
  * Comma-separated list of frontmatter property names to exclude when propagating changes across category series members.
  */
@@ -1222,7 +1227,11 @@ export type PrismaCalendarToggleSkipOutput = boolean;
  */
 
 /**
- * Used instead when it contrasts better with the event background (e.g., yellow or pastel colors)
+ * Used instead when the default text color is not readable enough on the event background
+ */
+
+/**
+ * When to switch to the alternative text color. Prefer primary: only when the default drops below 3:1 contrast against the event background. Balanced: below 4.5:1 (WCAG AA). Maximum contrast: always use whichever of the two colors contrasts more.
  */
 
 /**
@@ -1599,6 +1608,7 @@ export interface PrismaCalendarUpdateSettingsInput {
 		}[];
 		eventTextColor?: DefaultEventTextColor;
 		eventTextColorAlt?: AlternativeEventTextColor;
+		eventTextContrastMode?: TextContrastSensitivity;
 		excludedCategorySeriesProps?: ExcludedProperties;
 		excludedNameSeriesProps?: ExcludedProperties1;
 		excludedRecurringInstanceProps?: ExcludedProperties2;

@@ -1775,10 +1775,22 @@
 							},
 							"eventTextColorAlt": {
 								"default": "#000000",
-								"description": "Used instead when it contrasts better with the event background (e.g., yellow or pastel colors)",
+								"description": "Used instead when the default text color is not readable enough on the event background",
 								"title": "Alternative event text color",
 								"type": "string",
 								"widget": "color"
+							},
+							"eventTextContrastMode": {
+								"default": "prefer-primary",
+								"description": "When to switch to the alternative text color. Prefer primary: only when the default drops below 3:1 contrast against the event background. Balanced: below 4.5:1 (WCAG AA). Maximum contrast: always use whichever of the two colors contrasts more.",
+								"enum": ["prefer-primary", "balanced", "maximum"],
+								"enumLabels": {
+									"balanced": "Balanced",
+									"maximum": "Maximum contrast",
+									"prefer-primary": "Prefer primary color"
+								},
+								"title": "Text contrast sensitivity",
+								"type": "string"
 							},
 							"excludedCategorySeriesProps": {
 								"default": "",
@@ -2616,6 +2628,7 @@
 							"monthOddColor",
 							"eventTextColor",
 							"eventTextColorAlt",
+							"eventTextContrastMode",
 							"connectionColor",
 							"connectionStrokeWidth",
 							"connectionArrowSize",
@@ -3953,10 +3966,22 @@
 							},
 							"eventTextColorAlt": {
 								"default": "#000000",
-								"description": "Used instead when it contrasts better with the event background (e.g., yellow or pastel colors)",
+								"description": "Used instead when the default text color is not readable enough on the event background",
 								"title": "Alternative event text color",
 								"type": "string",
 								"widget": "color"
+							},
+							"eventTextContrastMode": {
+								"default": "prefer-primary",
+								"description": "When to switch to the alternative text color. Prefer primary: only when the default drops below 3:1 contrast against the event background. Balanced: below 4.5:1 (WCAG AA). Maximum contrast: always use whichever of the two colors contrasts more.",
+								"enum": ["prefer-primary", "balanced", "maximum"],
+								"enumLabels": {
+									"balanced": "Balanced",
+									"maximum": "Maximum contrast",
+									"prefer-primary": "Prefer primary color"
+								},
+								"title": "Text contrast sensitivity",
+								"type": "string"
 							},
 							"excludedCategorySeriesProps": {
 								"default": "",

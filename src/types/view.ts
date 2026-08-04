@@ -27,6 +27,12 @@ export const DAY_CELL_COLORING_OPTIONS: Record<string, string> = {
 	boundary: "Month boundary",
 };
 
+export const TEXT_CONTRAST_MODE_OPTIONS: Record<string, string> = {
+	"prefer-primary": "Prefer primary color",
+	balanced: "Balanced",
+	maximum: "Maximum contrast",
+};
+
 export const COLOR_MODE_OPTIONS: Record<string, string> = {
 	off: "Don't color events",
 	"1": "Color events",

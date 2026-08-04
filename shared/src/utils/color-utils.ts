@@ -13,16 +13,28 @@ export interface RgbColor {
 }
 
 /**
- * Picks whichever candidate text color is more readable on the background,
- * by WCAG contrast ratio. RGB distance is the wrong axis for this: yellow is
- * far from white in RGB space yet nearly as luminous, so white text on it is
- * unreadable (contrast ≈ 1.07:1). Falls back to `primary` when the background
- * can't be parsed.
+ * Picks the text color to render on the background, by WCAG contrast ratio.
+ * RGB distance is the wrong axis for this: yellow is far from white in RGB
+ * space yet nearly as luminous, so white text on it is unreadable
+ * (contrast ≈ 1.07:1). Falls back to `primary` when the background can't be
+ * parsed.
+ *
+ * With `minContrast`, `primary` wins whenever it meets that floor — the
+ * alternative is a readability fallback, not a competitor (a bare argmax
+ * flips mid-tone backgrounds like pure red where the primary is perfectly
+ * readable). Without it, the higher-contrast color wins; ties prefer primary.
  */
-export function pickHigherContrastColor(backgroundColor: string, primary: string, alternative: string): string {
+export function pickReadableTextColor(
+	backgroundColor: string,
+	primary: string,
+	alternative: string,
+	minContrast?: number
+): string {
 	const background = colord(backgroundColor);
 	if (!background.isValid()) return primary;
-	return background.contrast(primary) >= background.contrast(alternative) ? primary : alternative;
+	const primaryContrast = background.contrast(primary);
+	if (minContrast !== undefined && primaryContrast >= minContrast) return primary;
+	return primaryContrast >= background.contrast(alternative) ? primary : alternative;
 }
 
 /**

@@ -107,6 +107,7 @@ function getSharedRenderingFields(settings: SingleCalendarConfig): unknown[] {
 		settings.showEventColorDots,
 		settings.eventTextColor,
 		settings.eventTextColorAlt,
+		settings.eventTextContrastMode,
 		settings.caldavProp,
 		settings.icsSubscriptionProp,
 		settings.skipProp,
