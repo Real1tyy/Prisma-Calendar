@@ -61,6 +61,7 @@ export type VaultTableDef<
  * schema and CRUD signatures, so `unknown` would make every concrete
  * `VaultTableDef<Foo>` unassignable to this alias.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- load-bearing for variance, see the doc comment above
 export type AnyVaultTableDef = VaultTableDef<any, any, any>;
 
 export type VaultTableDefMap = Record<string, AnyVaultTableDef>;

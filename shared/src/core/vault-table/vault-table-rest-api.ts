@@ -3,7 +3,7 @@ import type { ZodType } from "zod";
 import { ParamCoercion, type ActionDefMap, type HttpActionConfig } from "../../integrations/api-gateway";
 import type { SerializableSchema } from "./create-mapped-schema";
 import type { VaultRow, VaultTableDefMap } from "./types";
-import type { VaultTable } from "./vault-table";
+import type { AnyVaultTable, VaultTable } from "./vault-table";
 import { VaultTableQuery, type VaultTableQueryResult } from "./vault-table-query";
 import {
 	inferFilterFields,
@@ -124,7 +124,7 @@ function buildChildActions(
 		// Generics erased: the relation map is keyed by child name and each child
 		// table has a different TData. The REST layer only calls the erased
 		// read/CRUD surface, so it never needs the concrete row type back.
-		const relations = hydrated.relations as Record<string, VaultTable<any, any, any>>;
+		const relations = hydrated.relations as Record<string, AnyVaultTable>;
 		return relations[childKey] ?? null;
 	}
 

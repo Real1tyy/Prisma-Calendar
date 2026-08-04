@@ -36,6 +36,7 @@ export interface ActionDef<TParams = void, TReturn = void> {
  * consumers narrow via `InferWindowApi<TActions>` which preserves the original
  * handler signature.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- load-bearing for variance, see the WHY comment above
 export type AnyActionDef = ActionDef<any, any>;
 
 export type ActionDefMap = Record<string, AnyActionDef>;
