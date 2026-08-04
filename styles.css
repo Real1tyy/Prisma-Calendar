@@ -762,6 +762,13 @@ button[class*=prisma-]:focus-visible {
 .prisma-calendar-container.prisma-sticky-all-day-events:not(.prisma-sticky-day-headers) .fc-scrollgrid-section-body:first-of-type {
   top: calc(var(--prisma-sticky-toolbar-offset) + 1px);
 }
+.prisma-calendar-container.prisma-drag-allday-pinned .fc-timegrid .fc-scrollgrid-section-body:first-of-type .fc-scroller {
+  height: var(--prisma-drag-allday-height);
+  overflow: hidden;
+}
+.prisma-calendar-container .fc-timegrid .fc-daygrid-day-frame {
+  min-height: 48px;
+}
 .prisma-calendar-container .fc-timegrid-divider.fc-cell-shaded {
   background: transparent;
   border-width: 0;

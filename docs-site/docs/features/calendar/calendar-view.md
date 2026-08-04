@@ -246,6 +246,8 @@ In day and week views, hold a dragged event near an edge of the grid and the cal
 
 The pause before paging at the left/right edge is the **Drag edge scroll delay** setting; vertical scrolling starts as soon as you reach the top or bottom edge.
 
+Drops stay precise across a page: after the calendar pages to another week, the event lands on the slot under your cursor and keeps its duration — even when the destination week shows a different number of all-day events. All-day events can be dropped anywhere within a day's all-day strip, not just at its top edge, and the strip always keeps a comfortable minimum height so it's an easy target.
+
 ## Event Overlap
 
 Control how events display when they share the same time:

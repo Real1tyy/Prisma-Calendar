@@ -36,6 +36,27 @@
 		top: calc(var(--prisma-sticky-toolbar-offset) + 1px);
 	}
 
+	// Mid-drag geometry pin — FC's hit geometry is snapshotted once at
+	// pointerdown, so the all-day strip must not change height while a drag is
+	// in flight (a cross-week edge navigation can render a week with a
+	// different all-day count). The plugin measures the strip in
+	// `eventDragStart` and clamps it here until the drag ends; overflow is
+	// clipped only for the drag's duration. See
+	// spec-fix-cross-week-drag-cursor-offset.
+	&.prisma-drag-allday-pinned .fc-timegrid .fc-scrollgrid-section-body:first-of-type .fc-scroller {
+		height: var(--prisma-drag-allday-height);
+		overflow: hidden;
+	}
+
+	// A generous, always-hittable all-day drop target (folds in
+	// spec-improve-the-all-day-drag-hitbox): an empty strip collapses to a
+	// single text line whose top edge is the only registering drop zone.
+	// `.fc-daygrid-day-frame` only exists inside the all-day section in
+	// timeGrid views, so the timed grid is unaffected.
+	.fc-timegrid .fc-daygrid-day-frame {
+		min-height: 48px;
+	}
+
 	// Remove FullCalendar's extra divider row border between all-day and timed grid.
 	// The sticky stack already provides the intended single separator line.
 	.fc-timegrid-divider.fc-cell-shaded {

@@ -24,6 +24,7 @@ import { createElement } from "react";
 import { BehaviorSubject } from "rxjs";
 
 import {
+	addCls,
 	CATEGORY_HIGHLIGHT_DURATION_MS,
 	CLICK_THRESHOLD_MS,
 	cls,
@@ -34,6 +35,7 @@ import {
 	EVENT_HIGHLIGHT_DURATION_MS,
 	INITIAL_SIZE_UPDATE_DELAY_MS,
 	POINTER_UP_IGNORE_CLICKS_DELAY_MS,
+	removeCls,
 	RESTORATION_DELAY_MS,
 	toggleCls,
 	UPCOMING_EVENT_CHECK_INTERVAL_MS,
@@ -2135,6 +2137,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const EDGE_THRESHOLD = DRAG_EDGE_THRESHOLD_PX;
 		const scrollDelay = this.bundle.settingsStore.currentSettings.dragEdgeScrollDelayMs;
 
+		this.pinAllDaySectionForDrag();
+
 		// The time grid's scrollable element only exists, and only overflows, when
 		// the view is zoomed in enough that the day doesn't fit. When it does, a
 		// pointer resting near the top/bottom edge scrolls it slowly so the drop
@@ -2169,6 +2173,36 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		};
 
 		activeDocument.addEventListener("pointermove", this.dragEdgeScrollListener);
+	}
+
+	/**
+	 * Freeze the all-day section at its current rendered height for the life of
+	 * the drag. FullCalendar snapshots its hit geometry once at pointerdown
+	 * (`OffsetTracker.origRect` in `prepareHits`) and never refreshes it, so
+	 * when a mid-drag `prev()`/`next()` renders a week whose all-day count
+	 * differs, the strip would grow/shrink and shift the timed grid under the
+	 * stale geometry — drops land hours off the cursor or revert. Pinning the
+	 * strip keeps the timed grid's vertical origin invariant across the
+	 * navigation; resting layout is untouched. The height rides a CSS var so
+	 * the clamp survives FC's in-place re-render (our container persists even
+	 * when FC reconciles the section's children).
+	 * See spec-fix-cross-week-drag-cursor-offset.
+	 */
+	private pinAllDaySectionForDrag(): void {
+		const allDayScroller = this.container.querySelector<HTMLElement>(
+			".fc-timegrid .fc-scrollgrid-section-body:first-of-type .fc-scroller"
+		);
+		if (!allDayScroller) return;
+		this.container.style.setProperty(
+			"--prisma-drag-allday-height",
+			`${allDayScroller.getBoundingClientRect().height}px`
+		);
+		addCls(this.container, "drag-allday-pinned");
+	}
+
+	private unpinAllDaySectionForDrag(): void {
+		removeCls(this.container, "drag-allday-pinned");
+		this.container.style.removeProperty("--prisma-drag-allday-height");
 	}
 
 	/**
@@ -2207,6 +2241,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private cleanupDragEdgeScrolling(): void {
+		this.unpinAllDaySectionForDrag();
 		if (this.dragEdgeScrollListener) {
 			activeDocument.removeEventListener("pointermove", this.dragEdgeScrollListener);
 			this.dragEdgeScrollListener = null;
