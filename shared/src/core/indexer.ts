@@ -371,7 +371,7 @@ export class Indexer {
 	/**
 	 * Build the file system events observable stream.
 	 *
-	 * Listens to four events (see docs/obsidian/event-firing-order.md):
+	 * Listens to four events (see docs/knowledge/2026-08-04-101012-obsidian-event-firing-order.md):
 	 *
 	 * 1. metadataCache "changed" — covers file creation and frontmatter modifications.
 	 *
