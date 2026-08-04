@@ -35,8 +35,14 @@ export interface ActionDef<TParams = void, TReturn = void> {
  * being assignable. The map intentionally erases the per-action generics;
  * consumers narrow via `InferWindowApi<TActions>` which preserves the original
  * handler signature.
+ *
+ * No eslint-disable here — Obsidian's review preset treats disabling
+ * `no-explicit-any` as a blocking ERROR while the `any` itself is only a
+ * warning (budgeted in the parity scan). Day-to-day suppression lives at
+ * config level — `shared/eslint.config.mjs` (this package's lint) plus the
+ * root `eslint.config.js`/`.oxlintrc.json`.
+ * See [[decision-obsidian-parity-scan-in-ci-full]].
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- load-bearing for variance, see the WHY comment above
 export type AnyActionDef = ActionDef<any, any>;
 
 export type ActionDefMap = Record<string, AnyActionDef>;

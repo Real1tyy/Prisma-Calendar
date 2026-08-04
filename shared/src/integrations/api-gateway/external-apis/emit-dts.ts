@@ -29,12 +29,13 @@ export interface EmitExternalApiDtsArgs {
 	sourcePath: string;
 	regenerateCommand: string;
 	/**
-	 * Optional anchor path used to resolve the closest `.prettierrc` so the
-	 * emitted output matches what lefthook's prettier hook would produce.
-	 * Defaults to the file the emitter writes; callers in tests typically pass
-	 * the repo root.
+	 * Anchor path used to resolve the closest `.prettierrc` so the emitted
+	 * output matches what lefthook's prettier hook would produce. Required —
+	 * the previous `process.cwd()` fallback read an untyped Node global in
+	 * shipped code, which Obsidian's review (linting without `@types/node`)
+	 * reports as unsafe.
 	 */
-	prettierConfigPath?: string;
+	prettierConfigPath: string;
 }
 
 /**
@@ -99,7 +100,7 @@ export async function emitExternalApiDts(args: EmitExternalApiDtsArgs): Promise<
 	// inside the emitter makes the committed file already match what prettier
 	// would produce, so commit-time prettier becomes a no-op and the drift
 	// test compares deterministic, prettier-formatted output to itself.
-	const resolved = (await prettierResolveConfig(args.prettierConfigPath ?? process.cwd())) ?? {};
+	const resolved = (await prettierResolveConfig(args.prettierConfigPath)) ?? {};
 	return prettierFormat(raw, { ...resolved, parser: "typescript" });
 }
 

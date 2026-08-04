@@ -60,8 +60,14 @@ export type VaultTableDef<
  * `unknown` is load-bearing: `TData` reaches contravariant positions in the
  * schema and CRUD signatures, so `unknown` would make every concrete
  * `VaultTableDef<Foo>` unassignable to this alias.
+ *
+ * No eslint-disable here — Obsidian's review preset treats disabling
+ * `no-explicit-any` as a blocking ERROR while the `any` itself is only a
+ * warning (budgeted in the parity scan). Day-to-day suppression lives at
+ * config level — `shared/eslint.config.mjs` (this package's lint) plus the
+ * root `eslint.config.js`/`.oxlintrc.json`.
+ * See [[decision-obsidian-parity-scan-in-ci-full]].
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- load-bearing for variance, see the doc comment above
 export type AnyVaultTableDef = VaultTableDef<any, any, any>;
 
 export type VaultTableDefMap = Record<string, AnyVaultTableDef>;

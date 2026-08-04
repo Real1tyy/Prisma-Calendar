@@ -16,7 +16,12 @@ async function readCommittedContract(committedPath: string): Promise<string> {
 	if (!Platform.isDesktop) {
 		throw new Error("Contract drift checking is only available on desktop.");
 	}
-	const { readFile } = await import("node:fs/promises");
+	// The assertion pins the used surface: the mirrors lint without
+	// `@types/node`, so the unannotated import degrades to an error type there
+	// and every use reads as unsafe to Obsidian's review.
+	const { readFile } = (await import("node:fs/promises")) as {
+		readFile: (path: string, encoding: "utf-8") => Promise<string>;
+	};
 	return readFile(committedPath, "utf-8");
 }
 

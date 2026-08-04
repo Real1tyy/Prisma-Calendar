@@ -65,8 +65,10 @@ export type VaultTableRow<TData, TChildren extends VaultTableDefMap = {}> = Vaul
  * schema and CRUD signatures, so `unknown` would make every concrete
  * `VaultTable<Foo>` unassignable. Callers recover the real type through
  * `RowRelations<TChildren>` when the relation is read.
+ *
+ * No eslint-disable here — see {@link AnyVaultTableDef} for why the directive
+ * is banned and where the suppression lives instead.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- load-bearing for variance, see the doc comment above
 export type AnyVaultTable = VaultTable<any, any, any>;
 
 export class VaultTable<
