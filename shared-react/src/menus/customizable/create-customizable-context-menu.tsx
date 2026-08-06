@@ -1,9 +1,7 @@
-import { injectStyleSheet } from "@real1ty/obsidian-plugins";
 import { Menu, type MenuItem as ObsidianMenuItem } from "obsidian";
 
 import { openItemManagerModal } from "./item-manager-modal";
 import { CustomizableMenuStore } from "./store";
-import { buildMenuChromeStyles } from "./styles";
 import type {
 	ContextMenuState,
 	CustomizableContextMenuConfig,
@@ -14,10 +12,6 @@ import type {
 type MenuItemInternals = ObsidianMenuItem & {
 	dom?: HTMLElement;
 	iconEl?: HTMLElement;
-};
-
-type MenuInternals = Menu & {
-	dom?: HTMLElement;
 };
 
 function getMenuItemDom(item: ObsidianMenuItem): HTMLElement | undefined {
@@ -99,20 +93,10 @@ export function createCustomizableContextMenu(config: CustomizableContextMenuCon
 			});
 		}
 
-		// Duck-typed, not `instanceof MouseEvent`: events from a pop-out window
-		// are instances of that window's MouseEvent, not this realm's.
-		if ("clientX" in eOrPosition) {
+		if (eOrPosition instanceof MouseEvent) {
 			menu.showAtMouseEvent(eOrPosition);
 		} else {
 			menu.showAtPosition(eOrPosition);
-		}
-
-		// After show — the menu DOM has joined its final document (main window
-		// or pop-out) only once attached.
-		const menuDom = (menu as MenuInternals).dom;
-		if (menuDom) {
-			menuDom.classList.add(`${cssPrefix}menu`);
-			injectStyleSheet(`${cssPrefix}menu-chrome-styles`, buildMenuChromeStyles(cssPrefix), menuDom.ownerDocument);
 		}
 	}
 
