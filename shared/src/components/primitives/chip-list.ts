@@ -107,8 +107,6 @@ export class ChipList {
 		this.config = config;
 		this.css = createCssUtils(config.cssPrefix);
 
-		injectStyleSheet(`${config.cssPrefix}chip-list-styles`, buildChipListStyles(config.cssPrefix));
-
 		this.el = createDiv(this.css.cls(LIST_SUFFIX));
 		this.render();
 	}
@@ -141,6 +139,14 @@ export class ChipList {
 	}
 
 	private render(): void {
+		// Injected per render, not in the constructor: `el` is created in the
+		// main window's realm and only reveals its final document (pop-out vs
+		// main) once a caller has attached it.
+		injectStyleSheet(
+			`${this.config.cssPrefix}chip-list-styles`,
+			buildChipListStyles(this.config.cssPrefix),
+			this.el.ownerDocument
+		);
 		this.el.empty();
 
 		if (this.items.length === 0) {

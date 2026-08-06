@@ -73,7 +73,11 @@ class ReactModal extends Modal {
 		this.root.render(
 			<StrictMode>
 				<AppContext value={this.app}>
-					<SharedReactThemeProvider cssPrefix={this.options.cssPrefix} testIdPrefix={testIdPrefix}>
+					<SharedReactThemeProvider
+						cssPrefix={this.options.cssPrefix}
+						testIdPrefix={testIdPrefix}
+						ownerDocument={contentEl.ownerDocument}
+					>
 						{this.renderContent(() => this.close())}
 					</SharedReactThemeProvider>
 				</AppContext>

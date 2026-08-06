@@ -56,7 +56,7 @@ export class MountableHelpers {
 		text = "Loading…",
 		classes?: { container?: string; spinner?: string; text?: string }
 	): void {
-		injectStyleSheet(`${this.classPrefix}-loading-styles`, buildLoadingStyles(this.prefix));
+		injectStyleSheet(`${this.classPrefix}-loading-styles`, buildLoadingStyles(this.prefix), container.ownerDocument);
 		this.hideLoading();
 
 		const containerClass = classes?.container ?? `${this.classPrefix}-loading-container`;

@@ -63,7 +63,7 @@ export function showModal(config: ModalComponentConfig): void {
 				const { cssPrefix } = config.search;
 				const css = createCssUtils(cssPrefix);
 
-				injectStyleSheet(`${cssPrefix}modal-search-styles`, buildSearchStyles(cssPrefix));
+				injectStyleSheet(`${cssPrefix}modal-search-styles`, buildSearchStyles(cssPrefix), contentEl.ownerDocument);
 
 				const searchContainer = contentEl.createDiv(css.cls(SEARCH_SUFFIX));
 				const input = searchContainer.createEl("input", {

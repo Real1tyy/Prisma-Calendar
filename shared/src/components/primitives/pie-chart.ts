@@ -197,7 +197,7 @@ export function renderPieChart(container: HTMLElement, config: PieChartConfig): 
 	} = config;
 
 	const css = createCssUtils(cssPrefix);
-	injectStyleSheet(`${cssPrefix}pie-chart-styles`, buildPieChartStyles(cssPrefix));
+	injectStyleSheet(`${cssPrefix}pie-chart-styles`, buildPieChartStyles(cssPrefix), container.ownerDocument);
 
 	const wrapper = container.createDiv({ cls: css.cls(CELL_SUFFIX) });
 	if (title) {

@@ -14,6 +14,7 @@ import {
 } from "react";
 import { flushSync } from "react-dom";
 
+import { useOwnerDocument } from "../contexts/theme-context";
 import { walkCellChildren } from "./cell";
 import { openCellPicker } from "./cell-picker-modal";
 import { registerGridCommands } from "./commands";
@@ -345,9 +346,10 @@ export const GridLayout = memo(function GridLayout(props: GridLayoutProps) {
 		registerGridCommands(commandsPlugin, commandsId, commandsLabel, handle);
 	}, [commandsPlugin, commandsId, commandsLabel, handle]);
 
+	const ownerDocument = useOwnerDocument();
 	useEffect(() => {
-		injectGridStyles(cssPrefix);
-	}, [cssPrefix]);
+		injectGridStyles(cssPrefix, ownerDocument);
+	}, [cssPrefix, ownerDocument]);
 
 	// ─── Render ──────────────────────────────────────────────────────────────
 	const css = useMemo(() => createCssUtils(cssPrefix), [cssPrefix]);

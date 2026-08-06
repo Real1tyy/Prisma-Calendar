@@ -102,7 +102,7 @@ export function renderCollapsibleSection(
 	const { cssPrefix, label, renderBody, startCollapsed = false, stateMap, renderHeaderActions, testIdSlug } = config;
 
 	const css = createCssUtils(cssPrefix);
-	injectStyleSheet(`${cssPrefix}collapsible-styles`, buildCollapsibleStyles(cssPrefix));
+	injectStyleSheet(`${cssPrefix}collapsible-styles`, buildCollapsibleStyles(cssPrefix), container.ownerDocument);
 
 	let collapsed = stateMap?.get(label) ?? startCollapsed;
 

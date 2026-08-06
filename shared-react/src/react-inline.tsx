@@ -28,7 +28,11 @@ export function renderReactInline(
 	root.render(
 		<StrictMode>
 			<AppContext value={app}>
-				<SharedReactThemeProvider cssPrefix={options?.cssPrefix} testIdPrefix={testIdPrefix}>
+				<SharedReactThemeProvider
+					cssPrefix={options?.cssPrefix}
+					testIdPrefix={testIdPrefix}
+					ownerDocument={container.ownerDocument}
+				>
 					{content}
 				</SharedReactThemeProvider>
 			</AppContext>

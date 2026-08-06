@@ -43,3 +43,8 @@ tools/showrunner/out/
 # theme picker. They are third-party artifacts we don't author, and some trip
 # Prettier's CSS parser. Keep them byte-for-byte as shipped upstream.
 tools/obsidian-preview/public/themes/**
+
+# Vendored Obsidian app stylesheet — extracted byte-for-byte from the installed
+# app asar by `mise run preview:refresh-css`. Reformatting it makes every
+# refresh a spurious mega-diff against the generator's output.
+tools/obsidian-preview/public/obsidian-app.css

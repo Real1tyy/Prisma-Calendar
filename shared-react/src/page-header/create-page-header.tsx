@@ -12,8 +12,8 @@ const HIDDEN_CLS = "page-header-original-hidden";
 const HOST_CLS_SUFFIX = "page-header-host";
 const HIDDEN_STYLE_ID = "page-header-hidden-cls";
 
-function ensureHiddenStyle(): void {
-	injectStyleSheet(HIDDEN_STYLE_ID, `.${HIDDEN_CLS} { display: none !important; }`);
+function ensureHiddenStyle(targetDoc: Document): void {
+	injectStyleSheet(HIDDEN_STYLE_ID, `.${HIDDEN_CLS} { display: none !important; }`, targetDoc);
 }
 
 interface AppliedLeafState {
@@ -32,9 +32,6 @@ function discoverActionsContainer(view: ItemView): HTMLElement | null {
 }
 
 export function createPageHeader(config: PageHeaderConfig): PageHeaderHandle {
-	ensureHiddenStyle();
-	injectStyleSheet(`${config.cssPrefix}page-header-styles`, buildPageHeaderStyles(config.cssPrefix));
-
 	const { app, onStateChange, editable = false, mode = "override", cssPrefix } = config;
 	const store = new PageHeaderStore(config.actions, config.currentState, config.defaults);
 	const appliedLeaves = new Map<WorkspaceLeaf, AppliedLeafState>();
@@ -70,6 +67,11 @@ export function createPageHeader(config: PageHeaderConfig): PageHeaderHandle {
 
 		const container = discoverActionsContainer(view);
 		if (!container) return;
+
+		// Per leaf, not per handle — a leaf can live in a pop-out window, and
+		// adopted sheets never cross a window boundary.
+		ensureHiddenStyle(container.ownerDocument);
+		injectStyleSheet(`${cssPrefix}page-header-styles`, buildPageHeaderStyles(cssPrefix), container.ownerDocument);
 
 		// Detached on purpose — it is positioned with insertBefore, not appended.
 		const host = createDiv({ cls: `${cssPrefix}${HOST_CLS_SUFFIX}` });

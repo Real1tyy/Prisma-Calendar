@@ -13,15 +13,25 @@ export interface SharedReactTheme {
 	 * modals such as `confirmation-modal`).
 	 */
 	testIdPrefix: string;
+	/**
+	 * Document the subtree is mounted into. Obsidian is multi-window (pop-out
+	 * leaves; the settings window since 1.13) and adopted stylesheets never
+	 * cross a window boundary, so style-injecting hooks must target the mount
+	 * document — the mount bridges supply it from their container. `undefined`
+	 * (no bridge above) means the main window; resolved lazily so importing
+	 * this module never touches the DOM (node-environment tests).
+	 */
+	ownerDocument: Document | undefined;
 }
 
-const DEFAULT_THEME: SharedReactTheme = { cssPrefix: "", testIdPrefix: "" };
+const DEFAULT_THEME: SharedReactTheme = { cssPrefix: "", testIdPrefix: "", ownerDocument: undefined };
 
 const ThemeContext = createContext<SharedReactTheme>(DEFAULT_THEME);
 
 export interface SharedReactThemeProviderProps {
 	cssPrefix?: string | undefined;
 	testIdPrefix?: string | undefined;
+	ownerDocument?: Document | undefined;
 	children: ReactNode;
 }
 
@@ -31,14 +41,20 @@ export interface SharedReactThemeProviderProps {
  * accepting them as explicit props. Unspecified values inherit from the
  * surrounding theme.
  */
-export function SharedReactThemeProvider({ cssPrefix, testIdPrefix, children }: SharedReactThemeProviderProps) {
+export function SharedReactThemeProvider({
+	cssPrefix,
+	testIdPrefix,
+	ownerDocument,
+	children,
+}: SharedReactThemeProviderProps) {
 	const parent = useContext(ThemeContext);
 	const value = useMemo<SharedReactTheme>(
 		() => ({
 			cssPrefix: cssPrefix ?? parent.cssPrefix,
 			testIdPrefix: testIdPrefix ?? parent.testIdPrefix,
+			ownerDocument: ownerDocument ?? parent.ownerDocument,
 		}),
-		[cssPrefix, testIdPrefix, parent.cssPrefix, parent.testIdPrefix]
+		[cssPrefix, testIdPrefix, ownerDocument, parent.cssPrefix, parent.testIdPrefix, parent.ownerDocument]
 	);
 	return <ThemeContext value={value}>{children}</ThemeContext>;
 }
@@ -53,6 +69,11 @@ export function useCssPrefix(): string {
 
 export function useTestIdPrefix(): string {
 	return useContext(ThemeContext).testIdPrefix;
+}
+
+/** The document this React subtree is mounted into (main window or a pop-out). */
+export function useOwnerDocument(): Document {
+	return useContext(ThemeContext).ownerDocument ?? document;
 }
 
 /**

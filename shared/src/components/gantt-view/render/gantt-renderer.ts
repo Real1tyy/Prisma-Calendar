@@ -53,7 +53,7 @@ export function createGanttRenderer(
 	const config: GanttConfig = { ...GANTT_DEFAULTS, ...rendererConfig.ganttConfig };
 	const { cls } = createCssUtils(rendererConfig.cssPrefix);
 	const markerId = `${rendererConfig.cssPrefix}gantt-arrowhead`;
-	injectGanttStyles(rendererConfig.cssPrefix);
+	injectGanttStyles(rendererConfig.cssPrefix, container.ownerDocument);
 
 	let viewportStartMs = 0;
 	let layoutFn: LayoutFn | null = null;

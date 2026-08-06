@@ -118,8 +118,8 @@ function buildStyleRules(prefix: string): string {
 `;
 }
 
-function injectStyles(prefix: string): void {
-	injectStyleSheet(`${prefix}settings-nav-styles`, buildStyleRules(prefix));
+function injectStyles(prefix: string, targetDoc: Document): void {
+	injectStyleSheet(`${prefix}settings-nav-styles`, buildStyleRules(prefix), targetDoc);
 }
 
 export class SettingsNavigation {
@@ -142,7 +142,7 @@ export class SettingsNavigation {
 
 	display(containerEl: HTMLElement): void {
 		containerEl.empty();
-		injectStyles(this.cssPrefix);
+		injectStyles(this.cssPrefix, containerEl.ownerDocument);
 		this.createNavBar(containerEl);
 		this.contentContainer = containerEl.createDiv(this.css.cls("settings-content"));
 		this.renderContent();

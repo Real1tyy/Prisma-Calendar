@@ -60,7 +60,11 @@ export function registerReactView<THandle extends ReactViewHandle = ReactViewHan
 			this.root.render(
 				<StrictMode>
 					<AppContext value={this.app}>
-						<SharedReactThemeProvider cssPrefix={config.cssPrefix} testIdPrefix={config.testIdPrefix}>
+						<SharedReactThemeProvider
+							cssPrefix={config.cssPrefix}
+							testIdPrefix={config.testIdPrefix}
+							ownerDocument={container.ownerDocument}
+						>
 							{config.render(setHandle)}
 						</SharedReactThemeProvider>
 					</AppContext>

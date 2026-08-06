@@ -14,8 +14,6 @@ function deriveTitleFromShape(shape: Record<string, unknown>): string {
 }
 
 export function showSchemaFormModal<S extends ZodRawShape>(config: SchemaFormModalConfig<S>): void {
-	injectSchemaFormStyles(config.prefix);
-
 	const title = config.title ?? deriveTitleFromShape(config.shape);
 	const baseCls = `${config.prefix}schema-form-modal`;
 	const submitText = config.submitText ?? "Save";
@@ -25,6 +23,7 @@ export function showSchemaFormModal<S extends ZodRawShape>(config: SchemaFormMod
 		cls: baseCls,
 		title,
 		render: (el, ctx) => {
+			injectSchemaFormStyles(config.prefix, el.ownerDocument);
 			if (config.cls && ctx.type === "modal") {
 				ctx.modalEl.addClass(config.cls);
 			}

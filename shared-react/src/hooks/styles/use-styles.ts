@@ -1,19 +1,22 @@
 import { injectStyleSheet } from "@real1ty/obsidian-plugins";
 import { useEffect } from "react";
 
-import { useScoped, type ScopedTheme } from "../../contexts/theme-context";
+import { useOwnerDocument, useScoped, type ScopedTheme } from "../../contexts/theme-context";
 
 /**
- * Inject a stylesheet into `document.head` once per id on mount. Idempotent —
- * safe to call from multiple components referencing the same id.
+ * Adopt a stylesheet into the mount document once per id on mount. Idempotent —
+ * safe to call from multiple components referencing the same id. Targets the
+ * document the surrounding mount bridge rendered into, so components styled
+ * this way keep working in pop-out windows (settings window, popped-out leaves).
  *
  * Used by React ports of imperative DSLs so they carry their own baseline
  * styling and don't depend on the imperative component being rendered first.
  */
 export function useInjectedStyles(id: string, css: string): void {
+	const ownerDocument = useOwnerDocument();
 	useEffect(() => {
-		injectStyleSheet(id, css);
-	}, [id, css]);
+		injectStyleSheet(id, css, ownerDocument);
+	}, [id, css, ownerDocument]);
 }
 
 /**

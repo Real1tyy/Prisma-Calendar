@@ -32,6 +32,6 @@ function buildSchemaFormStyles(p: string): string {
 `;
 }
 
-export function injectSchemaFormStyles(prefix: string): void {
-	injectStyleSheet(`${prefix}schema-form-styles`, buildSchemaFormStyles(prefix));
+export function injectSchemaFormStyles(prefix: string, targetDoc: Document = document): void {
+	injectStyleSheet(`${prefix}schema-form-styles`, buildSchemaFormStyles(prefix), targetDoc);
 }

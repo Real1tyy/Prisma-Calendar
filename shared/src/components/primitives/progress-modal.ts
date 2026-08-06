@@ -141,8 +141,6 @@ export function showProgressModal(config: ProgressModalConfig): ProgressModalHan
 	const safeTotal = Math.max(total, 1);
 	const baseTitle = title.replace(/\.{3}$/, "");
 
-	injectStyleSheet(`${cssPrefix}progress-modal-styles`, buildProgressStyles(cssPrefix));
-
 	let progressBar: HTMLElement;
 	let statusText: HTMLElement;
 	let detailsText: HTMLElement;
@@ -159,6 +157,7 @@ export function showProgressModal(config: ProgressModalConfig): ProgressModalHan
 		render: (el, ctx) => {
 			closeModal = ctx.close;
 
+			injectStyleSheet(`${cssPrefix}progress-modal-styles`, buildProgressStyles(cssPrefix), el.ownerDocument);
 			el.setAttribute("data-testid", `${cssPrefix}progress-modal`);
 
 			el.createEl("h2", { text: title });

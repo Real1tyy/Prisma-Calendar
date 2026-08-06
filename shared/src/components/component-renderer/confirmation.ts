@@ -86,11 +86,13 @@ function renderConfirmation(el: HTMLElement, config: ConfirmationModalConfig, cl
 }
 
 export function showConfirmationModal(app: App, config: ConfirmationModalConfig): void {
-	injectStyleSheet(CONFIRMATION_STYLES_ID, CONFIRMATION_STYLES);
 	showModal({
 		app,
 		cls: config.cls ?? "confirmation-modal",
-		render: (el, ctx) => renderConfirmation(el, config, ctx.close),
+		render: (el, ctx) => {
+			injectStyleSheet(CONFIRMATION_STYLES_ID, CONFIRMATION_STYLES, el.ownerDocument);
+			renderConfirmation(el, config, ctx.close);
+		},
 	});
 }
 

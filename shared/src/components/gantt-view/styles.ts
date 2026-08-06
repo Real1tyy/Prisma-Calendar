@@ -228,6 +228,6 @@ function buildGanttStyles(p: string): string {
 `;
 }
 
-export function injectGanttStyles(prefix: string): void {
-	injectStyleSheet(`${prefix}gantt-styles`, buildGanttStyles(prefix));
+export function injectGanttStyles(prefix: string, targetDoc: Document = document): void {
+	injectStyleSheet(`${prefix}gantt-styles`, buildGanttStyles(prefix), targetDoc);
 }
