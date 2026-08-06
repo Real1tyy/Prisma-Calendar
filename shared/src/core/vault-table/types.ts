@@ -56,21 +56,18 @@ export type VaultTableDef<
 
 /**
  * A table definition with its generics erased, for collections that hold
- * heterogeneous definitions (child maps, registries). `any` rather than
- * `unknown` is load-bearing: `TData` reaches contravariant positions in the
- * schema and CRUD signatures, so `unknown` would make every concrete
- * `VaultTableDef<Foo>` unassignable to this alias.
- *
- * No eslint-disable here — Obsidian's review preset treats disabling
- * `no-explicit-any` as a blocking ERROR while the `any` itself is only a
- * warning (budgeted in the parity scan). Day-to-day suppression lives at
- * config level — `shared/eslint.config.mjs` (this package's lint) plus the
- * root `eslint.config.js`/`.oxlintrc.json`.
- * See [[decision-obsidian-parity-scan-in-ci-full]].
+ * heterogeneous definitions (child maps, registries). Erasing to `unknown` is
+ * sound because every `TData` occurrence in a def is covariant: the schema is
+ * covariant thanks to zod v4's `out` variance and `SerializableSchema`'s
+ * method-syntax `serialize`, and nothing else in the def mentions `TData`.
  */
-export type AnyVaultTableDef = VaultTableDef<any, any, any>;
+export type AnyVaultTableDef = VaultTableDef<unknown, SerializableSchema<unknown>, VaultTableDefMap>;
 
-export type VaultTableDefMap = Record<string, AnyVaultTableDef>;
+// An interface (not a Record alias) so the AnyVaultTableDef ↔ VaultTableDefMap
+// recursion is deferred through a member and stays legal (TS2456 otherwise).
+export interface VaultTableDefMap {
+	[key: string]: AnyVaultTableDef;
+}
 
 export function defineChildren<T extends VaultTableDefMap>(defs: T): T {
 	return defs;

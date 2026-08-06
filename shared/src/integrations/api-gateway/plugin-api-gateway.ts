@@ -2,7 +2,14 @@ import { Notice } from "obsidian";
 
 import { canDeriveUrlCoercer, deriveUrlCoercer } from "./derive-url-coercer";
 import { DEFAULT_BASE_PATH, DEFAULT_HOST, type HttpApiServerLike, type HttpRoute } from "./http-types";
-import type { ActionDef, ActionDefMap, InferWindowApi, PluginApiGatewayOptions, UrlAccessibleActions } from "./types";
+import type {
+	ActionDefMap,
+	ActionHandler,
+	AnyActionDef,
+	InferWindowApi,
+	PluginApiGatewayOptions,
+	UrlAccessibleActions,
+} from "./types";
 
 function camelToKebab(str: string): string {
 	return str.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
@@ -39,10 +46,7 @@ export class PluginApiGateway<TActions extends ActionDefMap> {
 	private isExposed = false;
 	private isProtocolRegistered = false;
 	private pendingHttpRoutes: HttpRoute[] = [];
-	private readonly urlCoercerCache = new WeakMap<
-		ActionDef<unknown, unknown>,
-		(raw: Record<string, string>) => unknown
-	>();
+	private readonly urlCoercerCache = new WeakMap<AnyActionDef, (raw: Record<string, string>) => unknown>();
 
 	constructor(options: PluginApiGatewayOptions<TActions>) {
 		this.plugin = options.plugin;
@@ -207,7 +211,7 @@ export class PluginApiGateway<TActions extends ActionDefMap> {
 				handler: async (req) => {
 					try {
 						const params: unknown = this.resolveHandlerParams(def, urlCoercer, req);
-						const result: unknown = await def.handler(params);
+						const result: unknown = await (def.handler as ActionHandler<unknown, unknown>)(params);
 						return { status: 200, body: result === undefined ? { success: true } : result };
 					} catch (error) {
 						const message = error instanceof Error ? error.message : String(error);
@@ -262,12 +266,11 @@ export class PluginApiGateway<TActions extends ActionDefMap> {
 		if (def.parseParams) return def.parseParams;
 		if (!def.input || !canDeriveUrlCoercer(def.input)) return null;
 
-		const typedDef = def as ActionDef<unknown, unknown>;
-		const cached = this.urlCoercerCache.get(typedDef);
+		const cached = this.urlCoercerCache.get(def);
 		if (cached) return cached;
 
-		const coercer = deriveUrlCoercer(def.input) as (raw: Record<string, string>) => unknown;
-		this.urlCoercerCache.set(typedDef, coercer);
+		const coercer = deriveUrlCoercer(def.input);
+		this.urlCoercerCache.set(def, coercer);
 		return coercer;
 	}
 
@@ -293,7 +296,7 @@ export class PluginApiGateway<TActions extends ActionDefMap> {
 
 		try {
 			const typedParams = urlCoercer(params);
-			await actionDef.handler(typedParams);
+			await (actionDef.handler as ActionHandler<unknown, unknown>)(typedParams);
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
 			new Notice(`Protocol error: ${message}`);

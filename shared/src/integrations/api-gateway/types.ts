@@ -27,23 +27,18 @@ export interface ActionDef<TParams = void, TReturn = void> {
 }
 
 /**
- * Map of action name → action definition.
- *
- * WHY (no-explicit-any): `any` is load-bearing here for variance — `ActionDef`'s
- * `TParams` sits in a contravariant position (function parameter), so `unknown`
- * would prevent concrete handlers like `(p: { id: string }) => string` from
- * being assignable. The map intentionally erases the per-action generics;
- * consumers narrow via `InferWindowApi<TActions>` which preserves the original
- * handler signature.
- *
- * No eslint-disable here — Obsidian's review preset treats disabling
- * `no-explicit-any` as a blocking ERROR while the `any` itself is only a
- * warning (budgeted in the parity scan). Day-to-day suppression lives at
- * config level — `shared/eslint.config.mjs` (this package's lint) plus the
- * root `eslint.config.js`/`.oxlintrc.json`.
- * See [[decision-obsidian-parity-scan-in-ci-full]].
+ * An action definition with its per-action generics erased, for heterogeneous
+ * maps. `TParams` is contravariant in `handler` but covariant in `parseParams`
+ * and `input`, so no single `ActionDef<X, Y>` instantiation erases it — the
+ * handler's parameter is widened to `never` (every concrete handler is
+ * assignable) while everything else erases to `unknown`. Dispatch sites cast
+ * the handler back to `ActionHandler<unknown, unknown>` at the boundary where
+ * params have already been runtime-validated. Consumers narrow via
+ * `InferWindowApi<TActions>`, which preserves the original handler signature.
  */
-export type AnyActionDef = ActionDef<any, any>;
+export interface AnyActionDef extends Omit<ActionDef<unknown, unknown>, "handler"> {
+	handler: ActionHandler<never, unknown>;
+}
 
 export type ActionDefMap = Record<string, AnyActionDef>;
 

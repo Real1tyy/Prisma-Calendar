@@ -1,7 +1,12 @@
 import { z } from "zod";
 
 export interface SerializableSchema<TData> extends z.ZodType<TData> {
-	serialize: (data: TData) => Record<string, unknown>;
+	// Method syntax (not a function property) is deliberate: method parameters are
+	// bivariant, so SerializableSchema<Concrete> stays assignable to the erased
+	// SerializableSchema<unknown> behind AnyVaultTable / AnyVaultTableDef. A
+	// function property would be strictly contravariant in TData and force those
+	// aliases back to `any`.
+	serialize(data: TData): Record<string, unknown>;
 }
 
 /**
@@ -113,6 +118,6 @@ export function createMappedSchema<TShape extends z.ZodRawShape>(
 
 	schema.serialize = serialize;
 
-	byKey.set(cacheKey, schema as unknown as SerializableSchema<unknown>);
+	byKey.set(cacheKey, schema);
 	return schema;
 }

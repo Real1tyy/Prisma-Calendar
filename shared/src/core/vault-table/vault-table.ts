@@ -60,16 +60,13 @@ export type VaultTableRow<TData, TChildren extends VaultTableDefMap = {}> = Vaul
 
 /**
  * A table instance with its generics erased, for collections that hold
- * heterogeneous tables (child caches, relation maps). Same variance constraint
- * as {@link AnyVaultTableDef}: `TData` reaches contravariant positions in the
- * schema and CRUD signatures, so `unknown` would make every concrete
- * `VaultTable<Foo>` unassignable. Callers recover the real type through
+ * heterogeneous tables (child caches, relation maps). Erasing to `unknown` is
+ * sound for the same reason as {@link AnyVaultTableDef}: the schema is
+ * covariant, and every `TData`-contravariant member (CRUD signatures, ops) is
+ * method-syntax and therefore bivariant. Callers recover the real type through
  * `RowRelations<TChildren>` when the relation is read.
- *
- * No eslint-disable here — see {@link AnyVaultTableDef} for why the directive
- * is banned and where the suppression lives instead.
  */
-export type AnyVaultTable = VaultTable<any, any, any>;
+export type AnyVaultTable = VaultTable<unknown, SerializableSchema<unknown>, VaultTableDefMap>;
 
 export class VaultTable<
 	TData,

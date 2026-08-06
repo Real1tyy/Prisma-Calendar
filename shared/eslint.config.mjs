@@ -151,23 +151,6 @@ export default defineConfig([
 		},
 	}),
 
-	// Erased-generics aliases (AnyVaultTableDef / AnyVaultTable / AnyActionDef)
-	// where `any` is load-bearing for variance. An inline eslint-disable is NOT
-	// an option — Obsidian's review preset bans disabling `no-explicit-any` at
-	// ERROR severity, so the suppression lives at config level, which that
-	// review never reads. The parity scan's SHARED_WARNING_BUDGET still caps
-	// these exactly. See [[decision-obsidian-parity-scan-in-ci-full]].
-	{
-		files: [
-			"src/core/vault-table/types.ts",
-			"src/core/vault-table/vault-table.ts",
-			"src/integrations/api-gateway/types.ts",
-		],
-		rules: {
-			"@typescript-eslint/no-explicit-any": "off",
-		},
-	},
-
 	// Test files and testing utilities — relax strict rules for mocks/test doubles.
 	{
 		files: [
