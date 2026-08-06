@@ -1,6 +1,27 @@
 import { buildManagerToolbarStyles } from "../../widgets/manager-list/manager-toolbar.styles";
 
 /**
+ * Chrome restoration for our customizable context menus. Obsidian 1.13's menu
+ * redesign hides every leading `.menu-item-icon` and bumps items to
+ * `--font-ui-medium`; our menus carry user-configured icons and icon colours
+ * (the item manager lets users pick them), so the icon column and the compact
+ * pre-1.13 sizing are restored — scoped to `.{prefix}menu` only, never
+ * Obsidian's own menus.
+ */
+export function buildMenuChromeStyles(prefix: string): string {
+	const p = prefix;
+	return `
+.menu.${p}menu .menu-item {
+	font-size: var(--font-ui-small);
+}
+
+.menu.${p}menu .menu-item-icon:first-child {
+	display: flex;
+}
+`;
+}
+
+/**
  * Section-only styles for the customizable context-menu item manager modal.
  * Row, grip, arrow, label, button, and edit-form styles are injected by the
  * shared `ManagerRow` / `ManagerEditForm` components — keep them out of here
