@@ -4,7 +4,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.22.1 - 8/5/2026
+## 2.23.0 - 8/5/2026
 
 > **TLDR:** Obsidian 1.13 compatibility — the changelog modal and every Prisma dialog now render fully styled inside the new separate settings window (and pop-out windows in general), and event context menus keep their icons, icon colors, and compact sizing under Obsidian's redesigned menus.
 

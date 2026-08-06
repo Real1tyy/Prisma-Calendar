@@ -39,8 +39,6 @@ Available buttons are the same as desktop: Previous/Next, Today, Now, Create Eve
 
 The context menu appears when you right-click any event. It is fully customizable — you can reorder, rename, change icons, pick colors, and show/hide individual items directly from the menu itself.
 
-Prisma's menus keep their icon column, your icon colors, and their compact sizing on every Obsidian version — including Obsidian 1.13+, whose redesigned menus hide item icons and use larger text. Obsidian's own menus follow the new system look; only Prisma's menus opt out, so your icon and color customizations stay visible.
-
 ### Managing menu items
 
 Click **"Manage menu items..."** at the bottom of the context menu to open the item manager. From there you can:
