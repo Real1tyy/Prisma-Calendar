@@ -19,10 +19,12 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
 
 ## Settings Search
 
-A search input sits to the right of the section tabs (General, Properties, Calendar, etc.). Type a keyword to filter settings across **all sections** at once — only matching settings and their headings are shown. This is useful when you know the name of a setting but not which tab it's under.
+A search input sits to the right of the section tabs (General, Properties, Calendar, etc.). Type a keyword to filter settings across **all sections** at once. This is useful when you know the name of a setting but not which tab it's under.
 
-- **Debounced**: filters automatically after a short delay (300ms) while typing
-- **Enter**: applies the filter immediately
+Everything on the page answers to the query — not only the individual settings, but the explanation boxes, color rules, presets, category rows and account rows around them. A section disappears entirely when nothing in it matches.
+
+- **A matching heading shows its whole section**: searching `color` matches the **Event colors** heading, so every rule under it stays visible even though the rules themselves don't contain the word
+- **Two characters minimum**: shorter queries leave the normal tabbed view alone
 - **Clear**: remove the search text or click any tab to return to normal tabbed navigation
 
 ## Settings State Persistence

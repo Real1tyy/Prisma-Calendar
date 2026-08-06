@@ -9,7 +9,7 @@ All notable changes to this project will be documented here.
 > **TLDR:** Obsidian 1.13 compatibility — settings search filters again, and the changelog modal and every Prisma dialog now render fully styled inside the new separate settings window (and pop-out windows in general).
 
 ### Fixed
-- **Settings search filters again**: with Obsidian 1.13's **Open settings in new window** enabled, typing in the settings search box hid nothing — every section stayed on screen, even below the "No settings found" message. Search filters correctly again. See [Configuration → Settings Search](./configuration/index.md#settings-search).
+- **Settings search filters again**: with Obsidian 1.13's **Open settings in new window** enabled, typing in the settings search box hid nothing — every section stayed on screen, even below the "No settings found" message. Search filters correctly again, and it now filters the whole page rather than only the individual setting rows: explanation boxes, color rules, presets, category rows and help cards answer to the query too, and a section disappears entirely when nothing in it matches. A query that matches a section heading shows that whole section — searching `color` keeps the rules under **Event colors** even though the rules themselves don't contain the word. See [Configuration → Settings Search](./configuration/index.md#settings-search).
 - **Dialogs styled in the settings window and pop-outs**: with Obsidian 1.13's **Open settings in new window** enabled, the changelog modal — and every other Prisma dialog opened from settings or a popped-out view — appeared unstyled and its collapsible Pro section wouldn't collapse. All Prisma styling now follows dialogs into whichever window they open in.
 
 ## 2.22.0 - 8/4/2026
