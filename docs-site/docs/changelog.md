@@ -4,6 +4,14 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 2.22.1 - 8/5/2026
+
+> **TLDR:** Obsidian 1.13 compatibility — the changelog modal and every Prisma dialog now render fully styled inside the new separate settings window (and pop-out windows in general), and event context menus keep their icons, icon colors, and compact sizing under Obsidian's redesigned menus.
+
+### Fixed
+- **Dialogs styled in the settings window and pop-outs**: with Obsidian 1.13's **Open settings in new window** enabled, the changelog modal — and every other Prisma dialog opened from settings or a popped-out view — appeared unstyled and its collapsible Pro section wouldn't collapse. All Prisma styling now follows dialogs into whichever window they open in. See [General → Changelog viewer](./configuration/general.md#changelog-viewer).
+- **Context menu icons and compact sizing on Obsidian 1.13**: Obsidian's menu redesign hides item icons and enlarges menu text, which erased the icons and colors you configure in **Manage menu items...**. Prisma's event menus now keep the icon column, your colors, and the compact pre-1.13 look; Obsidian's own menus keep the new system style. See [Toolbar & Menus → Context Menu](./configuration/toolbar-and-menus.md#context-menu).
+
 ## 2.22.0 - 8/4/2026
 
 > **TLDR:** Jump the calendar straight to any date — click the toolbar title or run the new **Go to date** command instead of clicking the arrows week by week. Dragging an event into a different week now lands it exactly where you drop it — no more landing hours off the cursor or snapping back — and the all-day strip accepts drops anywhere in its height. Event text color is now chosen by real contrast — bright backgrounds like yellow get dark text instead of unreadable white — with a new nine-step **Text contrast sensitivity** setting controlling how eagerly the alternative color kicks in.

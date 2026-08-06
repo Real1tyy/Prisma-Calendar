@@ -156,3 +156,5 @@ The **Help & support** section at the bottom of the General tab provides quick l
 ### Changelog viewer
 
 Click **View changelog** to open the full changelog as a scrollable modal. Entries load in batches — click **Load more** to see older versions. The same modal appears automatically after each plugin update showing only the new changes.
+
+The modal — like every Prisma dialog opened from settings — renders fully styled whether your settings live inside the main window or in Obsidian 1.13's separate settings window (**Settings → Interface → Open settings in new window**), and the same holds for Prisma views popped out into their own windows.
