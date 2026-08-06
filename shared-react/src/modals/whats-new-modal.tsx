@@ -177,11 +177,20 @@ export const WhatsNewContent = memo(function WhatsNewContent({
 
 			<div className={cls("support")}>
 				{/* biome-ignore lint/a11y/useKeyboardHandler: collapsible header */}
-				<div className={cls("support-header")} onClick={toggleSupport} role="button" tabIndex={0}>
+				<div
+					className={cls("support-header")}
+					data-testid={tid("support-header")}
+					onClick={toggleSupport}
+					role="button"
+					tabIndex={0}
+				>
 					<h3>{headingText}</h3>
 					<span className={cls("support-chevron")}>{supportCollapsed ? "▶" : "▼"}</span>
 				</div>
-				<div className={`${cls("support-body")}${supportCollapsed ? ` ${cls("support-collapsed")}` : ""}`}>
+				<div
+					className={`${cls("support-body")}${supportCollapsed ? ` ${cls("support-collapsed")}` : ""}`}
+					data-testid={tid("support-body")}
+				>
 					{config.supportSection ? (
 						<>
 							<p>{config.supportSection.description}</p>
