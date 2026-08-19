@@ -9,7 +9,7 @@ import {
 	hasCls,
 	tid,
 } from "../constants";
-import type { DependencyGraph, EventIdMap } from "../core/dependency-graph";
+import type { DependencyGraph } from "../core/dependency-graph";
 import type { CalendarSettingsStore } from "../core/settings-store";
 import type { CalendarEvent } from "../types/calendar";
 
@@ -17,6 +17,26 @@ const ARROW_MARKER_ID = tid("arrow-head");
 const SVG_Z_VAR = "--prisma-connection-z";
 const Z_ABOVE_ALLDAY = "12";
 const Z_BELOW_ALLDAY = "5";
+
+/**
+ * Resolve a prerequisite/dependent event to its rendered tile by file path.
+ *
+ * We key on `data-event-file-path` (refreshed on every event mount) rather than
+ * `data-event-id`: the latter is set only for batch-selectable events and is
+ * never cleared on unmount, so a FullCalendar-recycled all-day tile can carry a
+ * previous event's stale id and mis-anchor the arrow. The dependency graph is
+ * already keyed by file path, so this also drops the id indirection entirely.
+ */
+export function resolveEventElementByFilePath(container: ParentNode, filePath: string): HTMLElement | null {
+	// Compare the attribute directly rather than interpolating the (arbitrary,
+	// space/bracket-laden) file path into a selector string — that parses
+	// unreliably and is an injection footgun.
+	const tiles = container.querySelectorAll<HTMLElement>("[data-event-file-path]");
+	for (let i = 0; i < tiles.length; i++) {
+		if (tiles[i].getAttribute("data-event-file-path") === filePath) return tiles[i];
+	}
+	return null;
+}
 
 interface ConnectionStyle {
 	color: string;
@@ -41,7 +61,6 @@ export class ConnectionRenderer {
 	private height = 0;
 	private renderArgs: {
 		graph: DependencyGraph;
-		eventIdMap: EventIdMap;
 		allEvents: CalendarEvent[];
 		viewStart: Date;
 		viewEnd: Date;
@@ -83,31 +102,21 @@ export class ConnectionRenderer {
 			.subscribe((newStyle) => {
 				this.style = newStyle;
 				if (this.renderArgs) {
-					const { graph, eventIdMap, allEvents, viewStart, viewEnd } = this.renderArgs;
-					this.render(graph, eventIdMap, allEvents, viewStart, viewEnd);
+					const { graph, allEvents, viewStart, viewEnd } = this.renderArgs;
+					this.render(graph, allEvents, viewStart, viewEnd);
 				}
 			});
 	}
 
-	render(
-		graph: DependencyGraph,
-		eventIdMap: EventIdMap,
-		allEvents: CalendarEvent[],
-		viewStart: Date,
-		viewEnd: Date
-	): void {
-		this.renderArgs = { graph, eventIdMap, allEvents, viewStart, viewEnd };
+	render(graph: DependencyGraph, allEvents: CalendarEvent[], viewStart: Date, viewEnd: Date): void {
+		this.renderArgs = { graph, allEvents, viewStart, viewEnd };
 		this.clear();
 		this.rebuildMarker();
 
 		const eventStartMap = new Map(allEvents.map((e) => [e.ref.filePath, new Date(e.start)]));
 		const svgRect = this.svg.node.getBoundingClientRect();
 
-		const findEl = (filePath: string): HTMLElement | null => {
-			const id = eventIdMap.get(filePath);
-			if (!id) return null;
-			return this.container.querySelector<HTMLElement>(`[data-event-id="${id}"]`);
-		};
+		const findEl = (filePath: string): HTMLElement | null => resolveEventElementByFilePath(this.container, filePath);
 
 		for (const [depFilePath, prereqPaths] of graph.entries()) {
 			const depEl = findEl(depFilePath);
@@ -179,8 +188,8 @@ export class ConnectionRenderer {
 		this.rafId = window.requestAnimationFrame(() => {
 			this.rafId = null;
 			if (this.renderArgs) {
-				const { graph, eventIdMap, allEvents, viewStart, viewEnd } = this.renderArgs;
-				this.render(graph, eventIdMap, allEvents, viewStart, viewEnd);
+				const { graph, allEvents, viewStart, viewEnd } = this.renderArgs;
+				this.render(graph, allEvents, viewStart, viewEnd);
 			}
 		});
 	}

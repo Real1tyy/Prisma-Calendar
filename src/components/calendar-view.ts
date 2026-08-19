@@ -2569,14 +2569,13 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		if (!this.connectionRenderer) {
 			this.connectionRenderer = new ConnectionRenderer(this.container, this.bundle.settingsStore);
 		}
-		const { graph, eventIdMap } = buildDependencyGraph(
+		const graph = buildDependencyGraph(
 			this.bundle.eventStore.getAllEvents(),
 			this.bundle.settingsStore.currentSettings,
 			this.app
 		);
 		this.connectionRenderer.render(
 			graph,
-			eventIdMap,
 			this.bundle.eventStore.getAllEvents(),
 			this.currentViewStart,
 			this.currentViewEnd

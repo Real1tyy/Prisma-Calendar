@@ -5,7 +5,6 @@ import type { CalendarEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/settings";
 
 export type DependencyGraph = Map<string, string[]>;
-export type EventIdMap = Map<string, string>;
 
 export function resolveWikiLinks(value: unknown, app: App): string[] {
 	return parseLinkedList(value, {
@@ -17,15 +16,12 @@ export function buildDependencyGraph(
 	events: CalendarEvent[],
 	settings: SingleCalendarConfig,
 	app: App
-): { graph: DependencyGraph; eventIdMap: EventIdMap } {
+): DependencyGraph {
 	const graph: DependencyGraph = new Map();
-	const eventIdMap: EventIdMap = new Map();
 
-	if (!settings.prerequisiteProp) return { graph, eventIdMap };
+	if (!settings.prerequisiteProp) return graph;
 
 	for (const event of events) {
-		eventIdMap.set(event.ref.filePath, event.id);
-
 		const raw = event.meta[settings.prerequisiteProp];
 		const prereqs = resolveWikiLinks(raw, app);
 		if (prereqs.length > 0) {
@@ -33,7 +29,7 @@ export function buildDependencyGraph(
 		}
 	}
 
-	return { graph, eventIdMap };
+	return graph;
 }
 
 export function getPrerequisitesOf(graph: DependencyGraph, filePath: string): string[] {
