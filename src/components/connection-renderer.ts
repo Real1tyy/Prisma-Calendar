@@ -81,10 +81,11 @@ export function isTileHidden(el: HTMLElement): boolean {
 
 /**
  * True for a tile rendered in an all-day lane (`.fc-daygrid-event`) rather than
- * the timed grid (`.fc-timegrid-event`). Arrows whose *both* endpoints are
- * all-day live entirely inside the sticky all-day row, so they must draw on the
- * always-on-top overlay — otherwise the z-index drop that keeps timed arrows
- * from painting over the sticky header would bury them behind the all-day tiles.
+ * the timed grid (`.fc-timegrid-event`). Any arrow touching an all-day tile —
+ * both endpoints all-day, or all-day to timed — starts or ends inside the
+ * sticky all-day row, so it must draw on the always-on-top overlay; the
+ * z-index drop that keeps timed↔timed arrows from painting over the stuck
+ * all-day section would otherwise swallow it while scrolling.
  */
 export function isAllDayTile(el: HTMLElement): boolean {
 	return el.classList.contains("fc-daygrid-event");
@@ -132,9 +133,9 @@ interface ConnectionStyle {
 }
 
 export class ConnectionRenderer {
-	/** z-toggling overlay for arrows that touch the timed grid. */
+	/** z-toggling overlay for arrows that live entirely in the timed grid. */
 	private mainLayer: ArrowLayer;
-	/** always-above overlay for arrows that live entirely in the all-day row. */
+	/** always-above overlay for arrows touching the all-day row. */
 	private allDayLayer: ArrowLayer;
 	private resizeObserver: ResizeObserver;
 	private mutationObserver: MutationObserver;
@@ -359,7 +360,7 @@ export class ConnectionRenderer {
 	private drawFullArrow(from: HTMLElement, to: HTMLElement, svgRect: DOMRect): void {
 		const f = this.toLocal(from, svgRect);
 		const t = this.toLocal(to, svgRect);
-		const layer = isAllDayTile(from) && isAllDayTile(to) ? this.allDayLayer : this.mainLayer;
+		const layer = isAllDayTile(from) || isAllDayTile(to) ? this.allDayLayer : this.mainLayer;
 		this.drawCubicArrow(layer, f.x + f.w, f.y + f.h / 2, t.x, t.y + t.h / 2, false);
 	}
 
