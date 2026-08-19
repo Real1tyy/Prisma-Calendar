@@ -422,7 +422,7 @@ export function buildFrontmatterFromImportedEvent(
 	return fm;
 }
 
-export function resolveImportCategoryContext(bundle: CalendarBundle): ImportCategoryContext {
+function resolveImportCategoryContext(bundle: CalendarBundle): ImportCategoryContext {
 	return {
 		availableCategories: bundle.categoryTracker.getCategories(),
 		isProEnabled: bundle.plugin.isProEnabled,
