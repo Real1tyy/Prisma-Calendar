@@ -41,6 +41,13 @@ interface ArrowLayer {
  * attribute can go stale while the content — title and this attribute — is
  * always current. Resolving against the content node, then walking up to the
  * enclosing `.fc-event` tile for geometry, keeps arrows anchored correctly.
+ *
+ * Hidden tiles never resolve ({@link isTileHidden}): their rect is a
+ * pre-layout placeholder, so anchoring there paints an arrow onto whichever
+ * event sorts first in the lane for a frame (visible flicker) — or forever,
+ * for an event collapsed behind a "+N more" link. Skipping them also means a
+ * drag mirror (visible, same path attribute) wins over the hidden original,
+ * so arrows track the tile the user actually sees.
  */
 export function resolveEventElementByFilePath(container: ParentNode, filePath: string): HTMLElement | null {
 	// Compare the attribute directly rather than interpolating the (arbitrary,
@@ -48,11 +55,28 @@ export function resolveEventElementByFilePath(container: ParentNode, filePath: s
 	// unreliably and is an injection footgun.
 	const contentNodes = container.querySelectorAll<HTMLElement>(`[${CONNECTION_PATH_ATTR}]`);
 	for (let i = 0; i < contentNodes.length; i++) {
-		if (contentNodes[i].getAttribute(CONNECTION_PATH_ATTR) === filePath) {
-			return contentNodes[i].closest<HTMLElement>(".fc-event") ?? contentNodes[i];
-		}
+		if (contentNodes[i].getAttribute(CONNECTION_PATH_ATTR) !== filePath) continue;
+		const tile = contentNodes[i].closest<HTMLElement>(".fc-event") ?? contentNodes[i];
+		if (!isTileHidden(tile)) return tile;
 	}
 	return null;
+}
+
+/**
+ * True while FullCalendar has the tile stamped `visibility: hidden`. Both
+ * grids do this inline on the event harness for a segment that is not a valid
+ * anchor yet (or at all): day-grid segments awaiting the measuring pass (they
+ * sit at the top of the stack until `updateSizing()` assigns the real `top`),
+ * segments collapsed behind a "+N more" link, and originals suppressed while
+ * their drag mirror is shown. Inline style is checked — not computed style —
+ * because inline is exactly what FullCalendar sets, and this runs per tile on
+ * every arrow render.
+ */
+export function isTileHidden(el: HTMLElement): boolean {
+	const harness = el.closest<HTMLElement>(".fc-daygrid-event-harness, .fc-timegrid-event-harness");
+	return (
+		el.style.getPropertyValue("visibility") === "hidden" || harness?.style.getPropertyValue("visibility") === "hidden"
+	);
 }
 
 /**
