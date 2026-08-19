@@ -48,5 +48,3 @@ When active, directed SVG arrows draw from each prerequisite event to its depend
 
 Arrows update automatically when you navigate dates, change zoom levels, or scroll the calendar. Connection lines render behind the sticky toolbar, day headers, and all-day section so they never obscure fixed UI elements.
 
-Each arrow stays anchored to its real prerequisite — whether that event is timed or all-day, and even when several events share the same day.
-
