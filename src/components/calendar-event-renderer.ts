@@ -8,7 +8,7 @@ import {
 } from "@real1ty/obsidian-plugins";
 import { TFile, type App } from "obsidian";
 
-import { cls } from "../constants";
+import { cls, CONNECTION_PATH_ATTR } from "../constants";
 import type { CalendarEventData } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/settings";
 import { isHolidayEvent } from "../utils/events/classification";
@@ -16,6 +16,7 @@ import { resolveTextColor } from "../utils/events/color";
 import { cleanupTitle } from "../utils/events/naming";
 import { buildEventTooltip } from "../utils/format";
 import { getDisplayProperties, renderPropertyValue } from "../utils/frontmatter/display";
+import { getFilePath } from "../utils/frontmatter/extended-props";
 
 export interface EventRenderContext {
 	app: App;
@@ -30,6 +31,14 @@ export function renderEventContent(arg: EventContentArg, context: EventRenderCon
 	const isMonthView = arg.view.type === "dayGridMonth" || arg.view.type === "multiMonthYear";
 
 	const container = createDiv({ cls: cls("fc-event-content-wrapper") });
+
+	// Stamp the file path on this freshly-rendered content node so the
+	// connection renderer can resolve arrow endpoints against an attribute that
+	// always reflects the event currently shown — unlike the harness's
+	// `data-event-file-path`, which goes stale on a recycled tile. See
+	// CONNECTION_PATH_ATTR.
+	const filePath = getFilePath(event);
+	if (filePath) container.setAttribute(CONNECTION_PATH_ATTR, filePath);
 
 	const displayData = event.extendedProps["frontmatterDisplayData"] as Record<string, unknown> | undefined;
 	const isSourceRecurring = displayData?.[settings.rruleProp];

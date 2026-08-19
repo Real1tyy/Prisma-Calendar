@@ -36,7 +36,7 @@ All notable changes to this project will be documented here.
 ### Fixed
 - **Filter presets work without the expression filter**: selecting a saved preset from the ▼ dropdown now applies its expression even when the **Expression Filter** toolbar button isn't enabled. Previously the preset had nothing to fill and silently did nothing until you added and used the expression filter first. See [Filtering → Filter Presets](./features/organization/filtering.md#3-filter-presets-quick-access).
 - **Duplicate synced events on startup**: CalDAV accounts and ICS URL subscriptions no longer re-create notes for events they already track. A sync that ran while the vault was still being indexed — on startup, on an auto-sync tick, or right after a reindex — could create a fresh note for every remote event and then trash the copies moments later; syncs now wait for indexing to finish before deciding what to create. See [Integrations → Syncing and vault indexing](./features/advanced/integrations.md#syncing-and-vault-indexing).
-- **Prerequisite arrows point to the right event**: a prerequisite arrow no longer jumps to a different event when its target is moved onto a day that already has an all-day event. See [Prerequisite Connections](./features/advanced/prerequisite-connections.md#connection-arrows).
+- **Prerequisite arrows point to the right event**: a prerequisite arrow no longer jumps to a different event when you reschedule an event onto a day that already has all-day events. See [Prerequisite Connections](./features/advanced/prerequisite-connections.md#connection-arrows).
 
 ---
 

@@ -138,6 +138,17 @@ export const DEFAULT_EVENT_COLOR = "hsl(270, 70%, 50%)";
 export const DEFAULT_CONNECTION_COLOR = "#7c3aed";
 export const DEFAULT_CONNECTION_STROKE_WIDTH = 3;
 export const DEFAULT_CONNECTION_ARROW_SIZE = 12;
+
+/**
+ * File-path attribute the connection renderer resolves arrow endpoints against.
+ * Stamped on the event's *content* node (re-rendered on every update) rather
+ * than the harness element (tagged once in `eventDidMount`, which FullCalendar
+ * does not re-run when it recycles a pooled tile for a different event — that
+ * leaves the harness `data-event-file-path` stale and mis-anchors arrows). The
+ * content node always reflects the event currently shown, so it is the safe
+ * source of truth for resolution.
+ */
+export const CONNECTION_PATH_ATTR = "data-conn-event-path";
 export const DEFAULT_EXPORT_FOLDER = "Prisma-Exports";
 export const VIRTUAL_EVENTS_CODE_FENCE = "prisma-virtual-events";
 export const BASE_NAME = "calendar";

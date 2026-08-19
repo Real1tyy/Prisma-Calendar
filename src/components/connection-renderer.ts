@@ -3,6 +3,7 @@ import { distinctUntilChanged, map, type Subscription } from "rxjs";
 
 import {
 	cls,
+	CONNECTION_PATH_ATTR,
 	DEFAULT_CONNECTION_ARROW_SIZE,
 	DEFAULT_CONNECTION_COLOR,
 	DEFAULT_CONNECTION_STROKE_WIDTH,
@@ -21,19 +22,23 @@ const Z_BELOW_ALLDAY = "5";
 /**
  * Resolve a prerequisite/dependent event to its rendered tile by file path.
  *
- * We key on `data-event-file-path` (refreshed on every event mount) rather than
- * `data-event-id`: the latter is set only for batch-selectable events and is
- * never cleared on unmount, so a FullCalendar-recycled all-day tile can carry a
- * previous event's stale id and mis-anchor the arrow. The dependency graph is
- * already keyed by file path, so this also drops the id indirection entirely.
+ * Keys on {@link CONNECTION_PATH_ATTR}, stamped on each event's *content* node
+ * (re-rendered on every update), not the harness `data-event-file-path` (set
+ * once in `eventDidMount`). FullCalendar pools event tiles and reuses a node
+ * for a different event without re-running `eventDidMount`, so the harness
+ * attribute can go stale while the content — title and this attribute — is
+ * always current. Resolving against the content node, then walking up to the
+ * enclosing `.fc-event` tile for geometry, keeps arrows anchored correctly.
  */
 export function resolveEventElementByFilePath(container: ParentNode, filePath: string): HTMLElement | null {
 	// Compare the attribute directly rather than interpolating the (arbitrary,
 	// space/bracket-laden) file path into a selector string — that parses
 	// unreliably and is an injection footgun.
-	const tiles = container.querySelectorAll<HTMLElement>("[data-event-file-path]");
-	for (let i = 0; i < tiles.length; i++) {
-		if (tiles[i].getAttribute("data-event-file-path") === filePath) return tiles[i];
+	const contentNodes = container.querySelectorAll<HTMLElement>(`[${CONNECTION_PATH_ATTR}]`);
+	for (let i = 0; i < contentNodes.length; i++) {
+		if (contentNodes[i].getAttribute(CONNECTION_PATH_ATTR) === filePath) {
+			return contentNodes[i].closest<HTMLElement>(".fc-event") ?? contentNodes[i];
+		}
 	}
 	return null;
 }
