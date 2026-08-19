@@ -46,5 +46,5 @@ Toggle arrows on the Calendar tab with the **"Toggle prerequisite connection arr
 
 When active, directed SVG arrows draw from each prerequisite event to its dependent. If a connected event is outside the current view range, a **dashed stub arrow** appears at the left or right calendar edge to indicate a dependency continues off-screen.
 
-Arrows update automatically when you navigate dates, change zoom levels, scroll, or reschedule an event — including dragging it between the timed grid and the all-day row — so each arrow keeps tracking its real prerequisite. Connection lines render behind the sticky toolbar, day headers, and all-day section so they never obscure fixed UI elements.
+Arrows update automatically when you navigate dates, change zoom levels, scroll, or reschedule an event — including dragging it between the timed grid and the all-day row — so each arrow keeps tracking its real prerequisite. Connection lines render behind the sticky toolbar and day headers so they never obscure fixed UI elements; arrows that connect two all-day events draw above the all-day row so they stay visible even when it is pinned.
 

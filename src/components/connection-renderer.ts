@@ -15,25 +15,20 @@ import type { CalendarSettingsStore } from "../core/settings-store";
 import type { CalendarEvent } from "../types/calendar";
 
 const ARROW_MARKER_ID = tid("arrow-head");
+const ARROW_MARKER_ID_ALLDAY = tid("arrow-head-allday");
 const SVG_Z_VAR = "--prisma-connection-z";
 const Z_ABOVE_ALLDAY = "12";
 const Z_BELOW_ALLDAY = "5";
 
-/** TEMP: prerequisite-arrow diagnostics. Set false / remove once the bug is found. */
-const CONNECTION_DEBUG = true;
-
-function debugLogEdge(role: string, filePath: string, el: HTMLElement | null, svgRect: DOMRect): void {
-	if (!el) {
-		console.log(`[prereq-arrows] ${role}: path=${filePath} → UNRESOLVED (no tile)`);
-		return;
-	}
-	const r = el.getBoundingClientRect();
-	const title = el.querySelector(`.${cls("fc-event-title-custom")}`)?.textContent ?? "?";
-	console.log(
-		`[prereq-arrows] ${role}: path=${filePath} → tile "${title}" ` +
-			`local x=${(r.left - svgRect.left).toFixed(0)} y=${(r.top - svgRect.top).toFixed(0)} ` +
-			`w=${r.width.toFixed(0)} h=${r.height.toFixed(0)}`
-	);
+/**
+ * A drawing layer = one SVG overlay plus the id of the arrowhead marker defined
+ * inside it (each overlay needs its own `<marker>`; a shared id would resolve to
+ * whichever appears first in the document, pointing the other layer's arrows at
+ * the wrong defs).
+ */
+interface ArrowLayer {
+	svg: Svg;
+	markerId: string;
 }
 
 /**
@@ -60,6 +55,17 @@ export function resolveEventElementByFilePath(container: ParentNode, filePath: s
 	return null;
 }
 
+/**
+ * True for a tile rendered in an all-day lane (`.fc-daygrid-event`) rather than
+ * the timed grid (`.fc-timegrid-event`). Arrows whose *both* endpoints are
+ * all-day live entirely inside the sticky all-day row, so they must draw on the
+ * always-on-top overlay — otherwise the z-index drop that keeps timed arrows
+ * from painting over the sticky header would bury them behind the all-day tiles.
+ */
+export function isAllDayTile(el: HTMLElement): boolean {
+	return el.classList.contains("fc-daygrid-event");
+}
+
 interface ConnectionStyle {
 	color: string;
 	strokeWidth: number;
@@ -67,7 +73,10 @@ interface ConnectionStyle {
 }
 
 export class ConnectionRenderer {
-	private svg: Svg;
+	/** z-toggling overlay for arrows that touch the timed grid. */
+	private mainLayer: ArrowLayer;
+	/** always-above overlay for arrows that live entirely in the all-day row. */
+	private allDayLayer: ArrowLayer;
 	private resizeObserver: ResizeObserver;
 	private container: HTMLElement;
 	private scrollHandler: (() => void) | null = null;
@@ -92,8 +101,23 @@ export class ConnectionRenderer {
 		this.container = container;
 		container.style.setProperty(SVG_Z_VAR, Z_ABOVE_ALLDAY);
 
-		this.svg = SVG().addTo(container).addClass(cls("connection-overlay"));
-		this.svg.css({ position: "absolute", inset: "0", "pointer-events": "none", overflow: "visible" });
+		// Main overlay: z driven by `--prisma-connection-z` (drops below the
+		// all-day section when it is stuck — see updateZIndex).
+		const mainSvg = SVG().addTo(container).addClass(cls("connection-overlay"));
+		mainSvg.css({ position: "absolute", inset: "0", "pointer-events": "none", overflow: "visible" });
+		this.mainLayer = { svg: mainSvg, markerId: ARROW_MARKER_ID };
+
+		// All-day overlay: pinned above the all-day section (fixed inline z-index
+		// overrides the class's var) so all-day↔all-day arrows are never buried.
+		const allDaySvg = SVG().addTo(container).addClass(cls("connection-overlay"));
+		allDaySvg.css({
+			position: "absolute",
+			inset: "0",
+			"pointer-events": "none",
+			overflow: "visible",
+			"z-index": Z_ABOVE_ALLDAY,
+		});
+		this.allDayLayer = { svg: allDaySvg, markerId: ARROW_MARKER_ID_ALLDAY };
 
 		this.resizeObserver = new ResizeObserver(() => this.syncSize());
 		this.resizeObserver.observe(container);
@@ -136,11 +160,9 @@ export class ConnectionRenderer {
 		this.rebuildMarker();
 
 		const eventStartMap = new Map(allEvents.map((e) => [e.ref.filePath, new Date(e.start)]));
-		const svgRect = this.svg.node.getBoundingClientRect();
+		const svgRect = this.mainLayer.svg.node.getBoundingClientRect();
 
 		const findEl = (filePath: string): HTMLElement | null => resolveEventElementByFilePath(this.container, filePath);
-
-		if (CONNECTION_DEBUG) this.debugDumpTiles(svgRect);
 
 		for (const [depFilePath, prereqPaths] of graph.entries()) {
 			const depEl = findEl(depFilePath);
@@ -149,25 +171,15 @@ export class ConnectionRenderer {
 				const prereqEl = findEl(prereqFilePath);
 				const prereqStart = eventStartMap.get(prereqFilePath);
 
-				if (CONNECTION_DEBUG) {
-					debugLogEdge("dep", depFilePath, depEl, svgRect);
-					debugLogEdge("prereq", prereqFilePath, prereqEl, svgRect);
-				}
-
 				if (prereqEl && depEl) {
-					if (CONNECTION_DEBUG) console.log("[prereq-arrows]   → FULL arrow prereq→dep");
 					this.drawFullArrow(prereqEl, depEl, svgRect);
 				} else if (!prereqEl && depEl && prereqStart && prereqStart < viewStart) {
-					if (CONNECTION_DEBUG) console.log("[prereq-arrows]   → STUB left (prereq off-screen)");
 					this.drawStubLeft(depEl, svgRect);
 				} else if (prereqEl && !depEl) {
 					const depStart = eventStartMap.get(depFilePath);
 					if (depStart && depStart > viewEnd) {
-						if (CONNECTION_DEBUG) console.log("[prereq-arrows]   → STUB right (dep off-screen)");
 						this.drawStubRight(prereqEl, svgRect);
 					}
-				} else if (CONNECTION_DEBUG) {
-					console.log("[prereq-arrows]   → NO arrow drawn (prereqEl/depEl unresolved)");
 				}
 			}
 		}
@@ -175,26 +187,12 @@ export class ConnectionRenderer {
 		this.updateZIndex();
 	}
 
-	private debugDumpTiles(svgRect: DOMRect): void {
-		const nodes = this.container.querySelectorAll<HTMLElement>(`[${CONNECTION_PATH_ATTR}]`);
-		console.log(`[prereq-arrows] svgRect: left=${svgRect.left.toFixed(0)} top=${svgRect.top.toFixed(0)}`);
-		console.log(`[prereq-arrows] ${nodes.length} content node(s) with ${CONNECTION_PATH_ATTR}:`);
-		nodes.forEach((node) => {
-			const tile = node.closest<HTMLElement>(".fc-event");
-			const r = (tile ?? node).getBoundingClientRect();
-			const title = node.querySelector(`.${cls("fc-event-title-custom")}`)?.textContent ?? "?";
-			console.log(
-				`[prereq-arrows]   "${title}" path=${node.getAttribute(CONNECTION_PATH_ATTR)} ` +
-					`local-rect x=${(r.left - svgRect.left).toFixed(0)} y=${(r.top - svgRect.top).toFixed(0)} ` +
-					`w=${r.width.toFixed(0)} h=${r.height.toFixed(0)} (allday=${!!tile?.closest(".fc-daygrid-event")})`
-			);
-		});
-	}
-
 	clear(): void {
-		this.svg.children().forEach((child) => {
-			if (child.type !== "defs") child.remove();
-		});
+		for (const layer of [this.mainLayer, this.allDayLayer]) {
+			layer.svg.children().forEach((child) => {
+				if (child.type !== "defs") child.remove();
+			});
+		}
 	}
 
 	destroy(): void {
@@ -209,7 +207,8 @@ export class ConnectionRenderer {
 		}
 		this.scrollTargets = [];
 		this.container.style.removeProperty(SVG_Z_VAR);
-		this.svg.remove();
+		this.mainLayer.svg.remove();
+		this.allDayLayer.svg.remove();
 	}
 
 	private updateZIndex(): void {
@@ -245,21 +244,23 @@ export class ConnectionRenderer {
 	}
 
 	private rebuildMarker(): void {
-		this.svg.find("defs").forEach((d) => d.remove());
-
 		const { arrowSize, color } = this.style;
-		this.svg
-			.defs()
-			.marker(arrowSize, arrowSize, function (add) {
-				add.polygon(`0 0, ${arrowSize} ${arrowSize / 2}, 0 ${arrowSize}`).fill(color);
-			})
-			.attr({ id: ARROW_MARKER_ID, refX: arrowSize - 2, refY: arrowSize / 2, orient: "auto" });
+		for (const layer of [this.mainLayer, this.allDayLayer]) {
+			layer.svg.find("defs").forEach((d) => d.remove());
+			layer.svg
+				.defs()
+				.marker(arrowSize, arrowSize, function (add) {
+					add.polygon(`0 0, ${arrowSize} ${arrowSize / 2}, 0 ${arrowSize}`).fill(color);
+				})
+				.attr({ id: layer.markerId, refX: arrowSize - 2, refY: arrowSize / 2, orient: "auto" });
+		}
 	}
 
 	private syncSize(): void {
 		this.width = this.container.clientWidth;
 		this.height = this.container.clientHeight;
-		this.svg.size(this.width, this.height);
+		this.mainLayer.svg.size(this.width, this.height);
+		this.allDayLayer.svg.size(this.width, this.height);
 	}
 
 	private toLocal(el: HTMLElement, svgRect: DOMRect): { x: number; y: number; w: number; h: number } {
@@ -272,33 +273,36 @@ export class ConnectionRenderer {
 		};
 	}
 
-	private drawCubicArrow(x1: number, y1: number, x2: number, y2: number, dashed: boolean): void {
+	private drawCubicArrow(layer: ArrowLayer, x1: number, y1: number, x2: number, y2: number, dashed: boolean): void {
 		const cx = (x1 + x2) / 2;
-		this.appendPath(`M ${x1} ${y1} C ${cx} ${y1}, ${cx} ${y2}, ${x2} ${y2}`, dashed);
+		this.appendPath(layer, `M ${x1} ${y1} C ${cx} ${y1}, ${cx} ${y2}, ${x2} ${y2}`, dashed);
 	}
 
 	private drawFullArrow(from: HTMLElement, to: HTMLElement, svgRect: DOMRect): void {
 		const f = this.toLocal(from, svgRect);
 		const t = this.toLocal(to, svgRect);
-		this.drawCubicArrow(f.x + f.w, f.y + f.h / 2, t.x, t.y + t.h / 2, false);
+		const layer = isAllDayTile(from) && isAllDayTile(to) ? this.allDayLayer : this.mainLayer;
+		this.drawCubicArrow(layer, f.x + f.w, f.y + f.h / 2, t.x, t.y + t.h / 2, false);
 	}
 
 	private drawStubLeft(depEl: HTMLElement, svgRect: DOMRect): void {
 		const t = this.toLocal(depEl, svgRect);
-		this.drawCubicArrow(0, t.y + t.h / 2, t.x, t.y + t.h / 2, true);
+		const layer = isAllDayTile(depEl) ? this.allDayLayer : this.mainLayer;
+		this.drawCubicArrow(layer, 0, t.y + t.h / 2, t.x, t.y + t.h / 2, true);
 	}
 
 	private drawStubRight(prereqEl: HTMLElement, svgRect: DOMRect): void {
 		const f = this.toLocal(prereqEl, svgRect);
-		this.drawCubicArrow(f.x + f.w, f.y + f.h / 2, this.width, f.y + f.h / 2, true);
+		const layer = isAllDayTile(prereqEl) ? this.allDayLayer : this.mainLayer;
+		this.drawCubicArrow(layer, f.x + f.w, f.y + f.h / 2, this.width, f.y + f.h / 2, true);
 	}
 
-	private appendPath(d: string, dashed: boolean): void {
-		const p = this.svg
+	private appendPath(layer: ArrowLayer, d: string, dashed: boolean): void {
+		const p = layer.svg
 			.path(d)
 			.fill("none")
 			.stroke({ color: this.style.color, width: this.style.strokeWidth })
-			.attr({ "marker-end": `url(#${ARROW_MARKER_ID})`, "data-testid": tid("connection-arrow") });
+			.attr({ "marker-end": `url(#${layer.markerId})`, "data-testid": tid("connection-arrow") });
 		if (dashed) p.attr({ "stroke-dasharray": "8 5", "data-arrow-stub": "true" });
 	}
 }
