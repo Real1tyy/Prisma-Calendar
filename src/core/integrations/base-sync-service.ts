@@ -100,7 +100,11 @@ export abstract class BaseSyncService<TResult extends BaseSyncResult> {
 			}
 		}
 
-		const eventFm = buildFrontmatterFromImportedEvent(event, settings, timezone);
+		// `null` — auto-assign is a creation-time rule. Re-running it on every
+		// sync would overwrite a category the user set by hand on an already
+		// imported note, and re-scanning existing events is deliberately out of
+		// scope (see [[spec-apply-category-assignments-to-imported-events]]).
+		const eventFm = buildFrontmatterFromImportedEvent(event, settings, timezone, null);
 
 		if (!titleChanged) {
 			const existingFm = this.app.metadataCache.getFileCache(file)?.frontmatter;

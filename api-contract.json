@@ -1166,6 +1166,12 @@
 								"description": "Show a confirmation modal before propagating frontmatter changes to name series members. Allows you to review changes before applying them.",
 								"type": "boolean"
 							},
+							"autoAssignCategoriesOnImport": {
+								"default": true,
+								"description": "Apply the auto-assignment rules above to events pulled in from ICS files and calendar subscriptions. Only fills in categories the feed left empty — categories the feed itself provided are never overwritten. Turn off to keep imported events exactly as the source published them.",
+								"title": "Auto-assign categories on import",
+								"type": "boolean"
+							},
 							"autoAssignCategoryByIncludes": {
 								"default": true,
 								"description": "Use substring matching (case-insensitive) for category auto-assignment and category assignment presets. When enabled, categories match if the event name contains the category name, and preset event names match if the event name contains the preset name. Example: 'Youtube Analysis' matches the 'Youtube' category and a preset with event name 'Youtube'.",
@@ -2631,6 +2637,7 @@
 							"allDayEventHeight",
 							"autoAssignCategoryByName",
 							"autoAssignCategoryByIncludes",
+							"autoAssignCategoriesOnImport",
 							"titleAutocomplete",
 							"categoryAssignmentPresets",
 							"contextMenuItems",
@@ -3371,6 +3378,12 @@
 							"askBeforePropagatingToNameSeries": {
 								"default": false,
 								"description": "Show a confirmation modal before propagating frontmatter changes to name series members. Allows you to review changes before applying them.",
+								"type": "boolean"
+							},
+							"autoAssignCategoriesOnImport": {
+								"default": true,
+								"description": "Apply the auto-assignment rules above to events pulled in from ICS files and calendar subscriptions. Only fills in categories the feed left empty — categories the feed itself provided are never overwritten. Turn off to keep imported events exactly as the source published them.",
+								"title": "Auto-assign categories on import",
 								"type": "boolean"
 							},
 							"autoAssignCategoryByIncludes": {

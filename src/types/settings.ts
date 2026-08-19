@@ -709,6 +709,13 @@ const CalendarSettingsSchema = z
 				"Use substring matching (case-insensitive) for category auto-assignment and category assignment presets. When enabled, categories match if the event name contains the category name, and preset event names match if the event name contains the preset name. Example: 'Youtube Analysis' matches the 'Youtube' category and a preset with event name 'Youtube'."
 			)
 			.meta({ title: "Substring matching for categories and presets" }),
+		autoAssignCategoriesOnImport: z
+			.boolean()
+			.catch(true)
+			.describe(
+				"Apply the auto-assignment rules above to events pulled in from ICS files and calendar subscriptions. Only fills in categories the feed left empty — categories the feed itself provided are never overwritten. Turn off to keep imported events exactly as the source published them."
+			)
+			.meta({ title: "Auto-assign categories on import" }),
 		titleAutocomplete: z
 			.boolean()
 			.catch(true)

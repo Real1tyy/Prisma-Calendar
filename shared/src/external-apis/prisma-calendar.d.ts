@@ -294,6 +294,7 @@ export type PrismaCalendarGetSettingsOutput = {
 	 * Show a confirmation modal before propagating frontmatter changes to name series members. Allows you to review changes before applying them.
 	 */
 	askBeforePropagatingToNameSeries: boolean;
+	autoAssignCategoriesOnImport: AutoAssignCategoriesOnImport;
 	autoAssignCategoryByIncludes: SubstringMatchingForCategoriesAndPresets;
 	autoAssignCategoryByName: AutoAssignWhenNameMatchesCategory;
 	autoAssignZettelId: AutoAssignZettelID;
@@ -795,6 +796,10 @@ export type PrismaCalendarGetSettingsOutput = {
 	zoomLevels: ZoomLevelsMinutes;
 } | null;
 /**
+ * Apply the auto-assignment rules above to events pulled in from ICS files and calendar subscriptions. Only fills in categories the feed left empty — categories the feed itself provided are never overwritten. Turn off to keep imported events exactly as the source published them.
+ */
+export type AutoAssignCategoriesOnImport = boolean;
+/**
  * Use substring matching (case-insensitive) for category auto-assignment and category assignment presets. When enabled, categories match if the event name contains the category name, and preset event names match if the event name contains the preset name. Example: 'Youtube Analysis' matches the 'Youtube' category and a preset with event name 'Youtube'.
  */
 export type SubstringMatchingForCategoriesAndPresets = boolean;
@@ -1144,6 +1149,10 @@ export interface PrismaCalendarToggleSkipInput {
 }
 export type PrismaCalendarToggleSkipOutput = boolean;
 /**
+ * Apply the auto-assignment rules above to events pulled in from ICS files and calendar subscriptions. Only fills in categories the feed left empty — categories the feed itself provided are never overwritten. Turn off to keep imported events exactly as the source published them.
+ */
+
+/**
  * Use substring matching (case-insensitive) for category auto-assignment and category assignment presets. When enabled, categories match if the event name contains the category name, and preset event names match if the event name contains the preset name. Example: 'Youtube Analysis' matches the 'Youtube' category and a preset with event name 'Youtube'.
  */
 
@@ -1413,6 +1422,7 @@ export interface PrismaCalendarUpdateSettingsInput {
 		 * Show a confirmation modal before propagating frontmatter changes to name series members. Allows you to review changes before applying them.
 		 */
 		askBeforePropagatingToNameSeries?: boolean;
+		autoAssignCategoriesOnImport?: AutoAssignCategoriesOnImport;
 		autoAssignCategoryByIncludes?: SubstringMatchingForCategoriesAndPresets;
 		autoAssignCategoryByName?: AutoAssignWhenNameMatchesCategory;
 		autoAssignZettelId?: AutoAssignZettelID;

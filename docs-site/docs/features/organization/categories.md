@@ -135,6 +135,16 @@ Define custom rules to automatically assign specific categories based on event n
 For consistent event naming, use [Title Autocomplete](../events/title-autocomplete.md) — it suggests matching names as you type, preventing typos before they happen.
 :::
 
+#### Auto-assign categories on import
+
+Events pulled in from an `.ics` file or a calendar subscription run the same rules. When the feed publishes no `CATEGORIES` for an event, its name is matched against your presets and name/substring rules and the result is written to the category property — so a synced "Gym" event lands under "Health" just like one you created by hand, and colors, filtering, and stats treat it identically.
+
+- **Categories the feed does publish are never overwritten** — the source wins.
+- Only newly imported events are categorized. Re-syncing an event you have already categorized by hand leaves your choice alone.
+- Substring matching applies here too, and external calendars often have wordier titles than your own — if a feed produces over-eager matches, turn **Substring matching for categories and presets** off, or turn this toggle off.
+
+Turn it off in **Settings → Categories → Auto-assign categories → Auto-assign categories on import** to keep imported events exactly as the source published them. It is on by default and is independent of the toggles above, which keep working for hand-created events.
+
 ### 2. Individual Events (Manual)
 
 Edit the event note directly and add the category property:

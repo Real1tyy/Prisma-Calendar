@@ -12,6 +12,7 @@ import type { Frontmatter, SingleCalendarConfig } from "../../types";
 import type { RecurrenceType } from "../../types/recurring";
 import { generateUniqueEventPath } from "../../utils/events/file-naming";
 import { assignListToFrontmatter, setEventBasics } from "../../utils/events/frontmatter";
+import { autoAssignCategories } from "../../utils/events/matching";
 import { extractZettelId, removeZettelId } from "../../utils/events/zettel-id";
 import type { CalendarBundle } from "../calendar-bundle";
 
@@ -328,10 +329,33 @@ function dateToTimezoneDate(date: Date, timezone: string): string {
 	return dt.toISODate() || date.toISOString().split("T")[0];
 }
 
+/**
+ * The category universe and Pro state the auto-assign rules run against. Passed
+ * in rather than read from a bundle so the frontmatter build stays pure — and
+ * required (`null` to opt out) so a new caller can't silently skip the rules.
+ */
+export interface ImportCategoryContext {
+	/** Same source the event form uses — `bundle.categoryTracker.getCategories()`. */
+	availableCategories: string[];
+	isProEnabled: boolean;
+}
+
+/**
+ * A round-tripped Prisma note can carry its own category property through the
+ * `X-PRISMA-FM-*` block even when the feed publishes no `CATEGORIES` — treat
+ * that as user-authored and leave the rules out of it.
+ */
+function carriesCategories(fm: Frontmatter, settings: SingleCalendarConfig): boolean {
+	const carried = fm[settings.categoryProp];
+	if (Array.isArray(carried)) return carried.length > 0;
+	return carried !== undefined && carried !== null && carried !== "";
+}
+
 export function buildFrontmatterFromImportedEvent(
 	event: ImportedEvent,
 	settings: SingleCalendarConfig,
-	timezone: string = "UTC"
+	timezone: string,
+	categoryContext: ImportCategoryContext | null
 ): Frontmatter {
 	const fm: Frontmatter = { ...event.frontmatter };
 
@@ -362,6 +386,21 @@ export function buildFrontmatterFromImportedEvent(
 
 	if (event.categories && event.categories.length > 0) {
 		assignListToFrontmatter(fm, settings.categoryProp, event.categories);
+	} else if (
+		categoryContext &&
+		settings.autoAssignCategoriesOnImport &&
+		settings.categoryProp &&
+		!carriesCategories(fm, settings)
+	) {
+		const assigned = autoAssignCategories(
+			event.title,
+			settings,
+			categoryContext.availableCategories,
+			categoryContext.isProEnabled
+		);
+		if (assigned.length > 0) {
+			assignListToFrontmatter(fm, settings.categoryProp, assigned);
+		}
 	}
 
 	if (event.location && settings.locationProp) {
@@ -381,6 +420,13 @@ export function buildFrontmatterFromImportedEvent(
 	}
 
 	return fm;
+}
+
+export function resolveImportCategoryContext(bundle: CalendarBundle): ImportCategoryContext {
+	return {
+		availableCategories: bundle.categoryTracker.getCategories(),
+		isProEnabled: bundle.plugin.isProEnabled,
+	};
 }
 
 export async function createEventNoteFromImportedEvent(
@@ -413,7 +459,12 @@ export async function createEventNoteFromImportedEvent(
 	}
 
 	const calendarSettings = bundle.settingsStore.currentSettings;
-	const frontmatter = buildFrontmatterFromImportedEvent(event, calendarSettings, timezone);
+	const frontmatter = buildFrontmatterFromImportedEvent(
+		event,
+		calendarSettings,
+		timezone,
+		resolveImportCategoryContext(bundle)
+	);
 
 	if (calendarSettings.zettelIdProp) {
 		frontmatter[calendarSettings.zettelIdProp] = zettelId;

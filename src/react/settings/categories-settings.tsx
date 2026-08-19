@@ -335,7 +335,7 @@ interface AutoAssignSectionProps {
 	categoryTracker: CategoryTracker;
 }
 
-const AutoAssignSection = memo(function AutoAssignSection({
+export const AutoAssignSection = memo(function AutoAssignSection({
 	settingsStore,
 	settings,
 	plugin,
@@ -362,6 +362,7 @@ const AutoAssignSection = memo(function AutoAssignSection({
 				shape={{
 					autoAssignCategoryByName: S.autoAssignCategoryByName,
 					autoAssignCategoryByIncludes: S.autoAssignCategoryByIncludes,
+					autoAssignCategoriesOnImport: S.autoAssignCategoriesOnImport,
 				}}
 			/>
 
