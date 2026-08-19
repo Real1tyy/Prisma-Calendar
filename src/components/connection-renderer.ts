@@ -19,6 +19,23 @@ const SVG_Z_VAR = "--prisma-connection-z";
 const Z_ABOVE_ALLDAY = "12";
 const Z_BELOW_ALLDAY = "5";
 
+/** TEMP: prerequisite-arrow diagnostics. Set false / remove once the bug is found. */
+const CONNECTION_DEBUG = true;
+
+function debugLogEdge(role: string, filePath: string, el: HTMLElement | null, svgRect: DOMRect): void {
+	if (!el) {
+		console.log(`[prereq-arrows] ${role}: path=${filePath} → UNRESOLVED (no tile)`);
+		return;
+	}
+	const r = el.getBoundingClientRect();
+	const title = el.querySelector(`.${cls("fc-event-title-custom")}`)?.textContent ?? "?";
+	console.log(
+		`[prereq-arrows] ${role}: path=${filePath} → tile "${title}" ` +
+			`local x=${(r.left - svgRect.left).toFixed(0)} y=${(r.top - svgRect.top).toFixed(0)} ` +
+			`w=${r.width.toFixed(0)} h=${r.height.toFixed(0)}`
+	);
+}
+
 /**
  * Resolve a prerequisite/dependent event to its rendered tile by file path.
  *
@@ -123,6 +140,8 @@ export class ConnectionRenderer {
 
 		const findEl = (filePath: string): HTMLElement | null => resolveEventElementByFilePath(this.container, filePath);
 
+		if (CONNECTION_DEBUG) this.debugDumpTiles(svgRect);
+
 		for (const [depFilePath, prereqPaths] of graph.entries()) {
 			const depEl = findEl(depFilePath);
 
@@ -130,20 +149,46 @@ export class ConnectionRenderer {
 				const prereqEl = findEl(prereqFilePath);
 				const prereqStart = eventStartMap.get(prereqFilePath);
 
+				if (CONNECTION_DEBUG) {
+					debugLogEdge("dep", depFilePath, depEl, svgRect);
+					debugLogEdge("prereq", prereqFilePath, prereqEl, svgRect);
+				}
+
 				if (prereqEl && depEl) {
+					if (CONNECTION_DEBUG) console.log("[prereq-arrows]   → FULL arrow prereq→dep");
 					this.drawFullArrow(prereqEl, depEl, svgRect);
 				} else if (!prereqEl && depEl && prereqStart && prereqStart < viewStart) {
+					if (CONNECTION_DEBUG) console.log("[prereq-arrows]   → STUB left (prereq off-screen)");
 					this.drawStubLeft(depEl, svgRect);
 				} else if (prereqEl && !depEl) {
 					const depStart = eventStartMap.get(depFilePath);
 					if (depStart && depStart > viewEnd) {
+						if (CONNECTION_DEBUG) console.log("[prereq-arrows]   → STUB right (dep off-screen)");
 						this.drawStubRight(prereqEl, svgRect);
 					}
+				} else if (CONNECTION_DEBUG) {
+					console.log("[prereq-arrows]   → NO arrow drawn (prereqEl/depEl unresolved)");
 				}
 			}
 		}
 
 		this.updateZIndex();
+	}
+
+	private debugDumpTiles(svgRect: DOMRect): void {
+		const nodes = this.container.querySelectorAll<HTMLElement>(`[${CONNECTION_PATH_ATTR}]`);
+		console.log(`[prereq-arrows] svgRect: left=${svgRect.left.toFixed(0)} top=${svgRect.top.toFixed(0)}`);
+		console.log(`[prereq-arrows] ${nodes.length} content node(s) with ${CONNECTION_PATH_ATTR}:`);
+		nodes.forEach((node) => {
+			const tile = node.closest<HTMLElement>(".fc-event");
+			const r = (tile ?? node).getBoundingClientRect();
+			const title = node.querySelector(`.${cls("fc-event-title-custom")}`)?.textContent ?? "?";
+			console.log(
+				`[prereq-arrows]   "${title}" path=${node.getAttribute(CONNECTION_PATH_ATTR)} ` +
+					`local-rect x=${(r.left - svgRect.left).toFixed(0)} y=${(r.top - svgRect.top).toFixed(0)} ` +
+					`w=${r.width.toFixed(0)} h=${r.height.toFixed(0)} (allday=${!!tile?.closest(".fc-daygrid-event")})`
+			);
+		});
 	}
 
 	clear(): void {
