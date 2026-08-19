@@ -66,6 +66,41 @@ export function isAllDayTile(el: HTMLElement): boolean {
 	return el.classList.contains("fc-daygrid-event");
 }
 
+/**
+ * Re-render arrows when FullCalendar moves tiles *after* we've drawn.
+ *
+ * FullCalendar's dayGrid positions event harnesses in two passes: a segment
+ * whose height hasn't been measured yet renders at `top: 0` (the top of the
+ * day's stack — where the first sorted tile paints), and only a later
+ * `updateSizing()` state pass assigns its real `top`. Arrows render
+ * synchronously on `eventsSet`, so after a drag into an all-day lane they read
+ * that pre-layout rect and point at whichever event sorts first — and stay
+ * there, because nothing else re-renders them.
+ *
+ * Watching inline-style and child-list mutations under the container (and
+ * re-rendering, rAF-coalesced) heals every late-positioning case regardless of
+ * how many passes FullCalendar takes. Mutations inside our own SVG overlays
+ * and style writes on the container itself (the z-index CSS var each render
+ * sets) are ignored — reacting to those would re-trigger on our own output and
+ * loop forever.
+ */
+export function createTileGeometryObserver(
+	container: HTMLElement,
+	ignoredRoots: readonly Node[],
+	onGeometryChange: () => void
+): MutationObserver {
+	const observer = new MutationObserver((mutations) => {
+		for (const mutation of mutations) {
+			if (mutation.target === container && mutation.type === "attributes") continue;
+			if (ignoredRoots.some((root) => root.contains(mutation.target))) continue;
+			onGeometryChange();
+			return;
+		}
+	});
+	observer.observe(container, { subtree: true, childList: true, attributes: true, attributeFilter: ["style"] });
+	return observer;
+}
+
 interface ConnectionStyle {
 	color: string;
 	strokeWidth: number;
@@ -78,6 +113,7 @@ export class ConnectionRenderer {
 	/** always-above overlay for arrows that live entirely in the all-day row. */
 	private allDayLayer: ArrowLayer;
 	private resizeObserver: ResizeObserver;
+	private mutationObserver: MutationObserver;
 	private container: HTMLElement;
 	private scrollHandler: (() => void) | null = null;
 	private scrollTargets: HTMLElement[] = [];
@@ -119,9 +155,16 @@ export class ConnectionRenderer {
 		});
 		this.allDayLayer = { svg: allDaySvg, markerId: ARROW_MARKER_ID_ALLDAY };
 
-		this.resizeObserver = new ResizeObserver(() => this.syncSize());
+		this.resizeObserver = new ResizeObserver(() => {
+			this.syncSize();
+			this.scheduleRender();
+		});
 		this.resizeObserver.observe(container);
 		this.syncSize();
+
+		this.mutationObserver = createTileGeometryObserver(container, [mainSvg.node, allDaySvg.node], () =>
+			this.scheduleRender()
+		);
 
 		this.scrollHandler = () => this.scheduleRender();
 
@@ -156,7 +199,7 @@ export class ConnectionRenderer {
 
 	render(graph: DependencyGraph, allEvents: CalendarEvent[], viewStart: Date, viewEnd: Date): void {
 		this.renderArgs = { graph, allEvents, viewStart, viewEnd };
-		this.clear();
+		this.clearPaths();
 		this.rebuildMarker();
 
 		const eventStartMap = new Map(allEvents.map((e) => [e.ref.filePath, new Date(e.start)]));
@@ -187,7 +230,17 @@ export class ConnectionRenderer {
 		this.updateZIndex();
 	}
 
+	/**
+	 * Hide the arrows and forget the last render args — scroll/resize/mutation
+	 * triggers keep firing after a hide, and any of them would otherwise redraw
+	 * the cleared arrows from the retained args.
+	 */
 	clear(): void {
+		this.renderArgs = null;
+		this.clearPaths();
+	}
+
+	private clearPaths(): void {
 		for (const layer of [this.mainLayer, this.allDayLayer]) {
 			layer.svg.children().forEach((child) => {
 				if (child.type !== "defs") child.remove();
@@ -197,6 +250,7 @@ export class ConnectionRenderer {
 
 	destroy(): void {
 		this.resizeObserver.disconnect();
+		this.mutationObserver.disconnect();
 		this.settingsSub?.unsubscribe();
 		if (this.rafId !== null) cancelAnimationFrame(this.rafId);
 		if (this.scrollHandler) {
