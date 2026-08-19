@@ -138,7 +138,8 @@ export class ConnectionRenderer {
 	/** always-above overlay for arrows touching the all-day row. */
 	private allDayLayer: ArrowLayer;
 	private resizeObserver: ResizeObserver;
-	private mutationObserver: MutationObserver;
+	/** Non-null only while arrows are shown — see `observeTiles`. */
+	private mutationObserver: MutationObserver | null = null;
 	private container: HTMLElement;
 	private scrollHandler: (() => void) | null = null;
 	private scrollTargets: HTMLElement[] = [];
@@ -187,9 +188,9 @@ export class ConnectionRenderer {
 		this.resizeObserver.observe(container);
 		this.syncSize();
 
-		this.mutationObserver = createTileGeometryObserver(container, [mainSvg.node, allDaySvg.node], () =>
-			this.scheduleRender()
-		);
+		// The tile observer is attached by `render()`, not here: it is the most
+		// expensive listener we own (subtree childList + inline style over the whole
+		// calendar) and it is only useful while arrows are on screen.
 
 		this.scrollHandler = () => this.scheduleRender();
 
@@ -253,6 +254,25 @@ export class ConnectionRenderer {
 		}
 
 		this.updateZIndex();
+		this.observeTiles();
+	}
+
+	/**
+	 * Watch for FullCalendar re-positioning tiles after we drew. Idempotent, and
+	 * only attached while arrows are on screen — `clear()` detaches it again.
+	 */
+	private observeTiles(): void {
+		if (this.mutationObserver) return;
+		this.mutationObserver = createTileGeometryObserver(
+			this.container,
+			[this.mainLayer.svg.node, this.allDayLayer.svg.node],
+			() => this.scheduleRender()
+		);
+	}
+
+	private unobserveTiles(): void {
+		this.mutationObserver?.disconnect();
+		this.mutationObserver = null;
 	}
 
 	/**
@@ -262,6 +282,7 @@ export class ConnectionRenderer {
 	 */
 	clear(): void {
 		this.renderArgs = null;
+		this.unobserveTiles();
 		this.clearPaths();
 	}
 
@@ -275,7 +296,7 @@ export class ConnectionRenderer {
 
 	destroy(): void {
 		this.resizeObserver.disconnect();
-		this.mutationObserver.disconnect();
+		this.unobserveTiles();
 		this.settingsSub?.unsubscribe();
 		if (this.rafId !== null) cancelAnimationFrame(this.rafId);
 		if (this.scrollHandler) {
@@ -312,6 +333,9 @@ export class ConnectionRenderer {
 	}
 
 	private scheduleRender(): void {
+		// Nothing drawn → nothing to re-draw. Scroll and resize listeners outlive a
+		// hide, so bail before booking a frame rather than inside it.
+		if (this.renderArgs === null) return;
 		if (this.rafId !== null) return;
 		this.rafId = window.requestAnimationFrame(() => {
 			this.rafId = null;
