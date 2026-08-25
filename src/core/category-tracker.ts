@@ -91,7 +91,8 @@ export class CategoryTracker extends VaultTableView<Frontmatter> {
 					targetPath,
 					sourceFm,
 					diff,
-					getExcludedProps(this.settings, this.settings.excludedCategorySeriesProps)
+					getExcludedProps(this.settings, this.settings.excludedCategorySeriesProps),
+					this.settings
 				),
 			resolveTargets: (filePath, groupKey) => this.getFilePathsWithCategory(groupKey).filter((fp) => fp !== filePath),
 		});

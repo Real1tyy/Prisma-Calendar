@@ -21,6 +21,7 @@ import { ensureFileHasZettelId } from "../utils/events/file-naming";
 import { parseEventMetadata, shouldEventBeMarkedAsDone } from "../utils/events/frontmatter";
 import { cleanupTitle } from "../utils/events/naming";
 import { generateUniqueRruleId, hasTimestamp } from "../utils/events/zettel-id";
+import { enforceEventPropertyOrder, getOrderedPropertyNames } from "../utils/frontmatter/ordering";
 import { createEventSchema } from "./event-schema";
 
 export { PARSE_AFFECTING_KEYS, parseAffectingSettingsChanged };
@@ -519,7 +520,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 
 		this.zettelIdRenamesInFlight.add(file.path);
 		try {
-			await ensureFileHasZettelId(this.app, file, this.settings.zettelIdProp);
+			await ensureFileHasZettelId(this.app, file, this.settings);
 		} catch (error) {
 			console.error(`[EventFileRepository] Error auto-assigning ZettelID to ${file.path}:`, error);
 		} finally {
@@ -551,7 +552,12 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 				const current = this.app.vault.getAbstractFileByPath(path);
 				if (!(current instanceof TFile)) return;
 				try {
-					await this.app.fileManager.processFrontMatter(current, fn);
+					// Inline (not withOrderedFrontmatter) to keep the queue's promise depth
+					// unchanged — the race tests pin the exact dequeue timing.
+					await this.app.fileManager.processFrontMatter(current, (fm: Frontmatter) => {
+						fn(fm);
+						enforceEventPropertyOrder(fm, this.settings);
+					});
 				} catch (err: unknown) {
 					if (err instanceof Error && err.message.includes("ENOENT")) return;
 					throw err;
@@ -575,6 +581,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 			debounceMs: 100,
 			emitCrudEvents: true,
 			recursive: settings.indexSubdirectories,
+			propertyOrder: () => getOrderedPropertyNames(this.settings),
 			persistence: {
 				namespace: PRISMA_CACHE_NAMESPACE,
 				schemaVersion: PRISMA_CACHE_SCHEMA_VERSION,

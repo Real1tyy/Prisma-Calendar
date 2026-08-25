@@ -15,6 +15,7 @@ import type { IndexerEvent } from "../types/event-source";
 import type { EventPreset, SingleCalendarConfig } from "../types/settings";
 import { getEventName } from "../utils/events/naming";
 import { formatDateTimeForInput } from "../utils/format";
+import { withOrderedFrontmatter } from "../utils/frontmatter/ordering";
 import { getCategoriesFromFilePath } from "../utils/obsidian";
 import type { CalendarBundle } from "./calendar-bundle";
 import { assignCategories } from "./commands/frontmatter-update-command";
@@ -177,7 +178,7 @@ class MinimizedModalManagerClass {
 
 		const now = new Date();
 		const nowIso = ensureISOSuffix(toLocalISOString(now));
-		await this.app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
+		await withOrderedFrontmatter(this.app, file, settings, (fm: Frontmatter) => {
 			fm[settings.endProp] = nowIso;
 		});
 
@@ -330,7 +331,7 @@ class MinimizedModalManagerClass {
 		const file = app.vault.getAbstractFileByPath(filePath);
 		if (!(file instanceof TFile)) return;
 		try {
-			await app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
+			await withOrderedFrontmatter(app, file, settings, (fm: Frontmatter) => {
 				fm[settings.startProp] = ensureISOSuffix(startIso);
 				fm[settings.endProp] = ensureISOSuffix(endIso);
 				if (settings.allDayProp && fm[settings.allDayProp]) {

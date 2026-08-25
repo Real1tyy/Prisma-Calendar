@@ -4,6 +4,7 @@ import type { Subscription } from "rxjs";
 
 import type { Frontmatter, PrismaCalendarSettingsStore } from "../../types";
 import { extractZettelId, removeZettelId } from "../../utils/events/zettel-id";
+import { withOrderedFrontmatter } from "../../utils/frontmatter/ordering";
 import type { CalendarBundle } from "../calendar-bundle";
 import { buildFrontmatterFromImportedEvent, createEventNoteFromImportedEvent, type ImportedEvent } from "./ics-import";
 
@@ -113,7 +114,7 @@ export abstract class BaseSyncService<TResult extends BaseSyncResult> {
 			}
 		}
 
-		await this.app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
+		await withOrderedFrontmatter(this.app, file, settings, (fm: Frontmatter) => {
 			Object.assign(fm, eventFm);
 			Object.assign(fm, additionalFrontmatter);
 		});

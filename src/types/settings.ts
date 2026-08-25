@@ -339,6 +339,13 @@ const PropsSettingsSchema = z
 			.describe(
 				"Frontmatter property name for event prerequisites (wiki-links to other events that must complete before this event)"
 			),
+		propertyOrder: z
+			.array(z.string())
+			.catch([])
+			.describe(
+				"Ordered list of Prisma property keys controlling the on-disk frontmatter order. Every write regroups Prisma's properties into this order (other properties are left untouched) so files stay byte-identical across synced devices. Empty means the built-in semantic default."
+			)
+			.meta({ title: "Property order" }),
 		basesViewProperties: z
 			.array(z.string())
 			.catch([DEFAULT_CATEGORY_PROP])

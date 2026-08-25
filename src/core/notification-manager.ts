@@ -9,6 +9,7 @@ import type { EventMetadata } from "../types/event-metadata";
 import type { CalendarEventSource, IndexerEvent } from "../types/event-source";
 import type { SingleCalendarConfig } from "../types/settings";
 import { getEventName } from "../utils/events/naming";
+import { withOrderedFrontmatter } from "../utils/frontmatter/ordering";
 import { getFileByPathOrThrow, openFileInNewTab } from "../utils/obsidian";
 
 interface NotificationEntry {
@@ -264,7 +265,7 @@ export class NotificationManager {
 
 		try {
 			const file = getFileByPathOrThrow(this.app, filePath);
-			await this.app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
+			await withOrderedFrontmatter(this.app, file, this.settings, (fm: Frontmatter) => {
 				fm[this.settings.alreadyNotifiedProp] = true;
 			});
 		} catch (error) {
@@ -338,7 +339,7 @@ export class NotificationManager {
 
 			this.alreadyFired.delete(entry.filePath);
 
-			await this.app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
+			await withOrderedFrontmatter(this.app, file, this.settings, (fm: Frontmatter) => {
 				fm[this.settings.alreadyNotifiedProp] = false;
 
 				// Calculate minutesBefore so notification triggers exactly snoozeMinutes from NOW

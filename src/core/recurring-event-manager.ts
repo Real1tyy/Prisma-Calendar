@@ -14,7 +14,6 @@ import {
 	replaceISOTime,
 	sanitizeForFilename,
 	showFrontmatterPropagationModal,
-	withFrontmatter,
 	withLock,
 	type FrontmatterDiff,
 	type SyncStore,
@@ -45,6 +44,7 @@ import {
 	type TimePropagationDiff,
 } from "../utils/events/frontmatter";
 import { hashRRuleIdToZettelFormat, removeZettelId } from "../utils/events/zettel-id";
+import { enforceEventPropertyOrder, withOrderedFrontmatter } from "../utils/frontmatter/ordering";
 import {
 	batchedPromiseAll,
 	deleteFilesByPaths,
@@ -323,7 +323,8 @@ export class RecurringEventManager extends DebouncedNotifier {
 					instance.filePath,
 					recurringEvent.frontmatter,
 					frontmatterDiff,
-					excludedProps
+					excludedProps,
+					this.settings
 				),
 			this.settings.fileConcurrencyLimit
 		);
@@ -407,7 +408,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 			if (applicableChanges.length === 0) return;
 
 			const file = getFileByPathOrThrow(this.app, instance.filePath);
-			await withFrontmatter(this.app, file, (fm) => {
+			await withOrderedFrontmatter(this.app, file, this.settings, (fm) => {
 				for (const { prop, newTimePart } of applicableChanges) {
 					fm[prop] = replaceISOTime(fm[prop] as string, newTimePart);
 				}
@@ -621,7 +622,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 				if (!(file instanceof TFile)) {
 					return;
 				}
-				await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
+				await withOrderedFrontmatter(this.app, file, this.settings, (fm) => {
 					if (fm[this.settings.rruleIdProp] !== newRRuleId) {
 						fm[this.settings.rruleIdProp] = newRRuleId;
 					}
@@ -778,6 +779,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 			});
 
 			markInstanceStatusIfPast(instanceFrontmatter, this.settings, instanceStart, instanceEnd);
+			enforceEventPropertyOrder(instanceFrontmatter, this.settings);
 
 			const uniquePath = getUniqueFilePathFromFull(this.app, filePath);
 

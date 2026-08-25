@@ -1,6 +1,8 @@
-import { generateZettelId, getUniqueFilePathFromFull, isFolderNote, withFrontmatter } from "@real1ty/obsidian-plugins";
+import { generateZettelId, getUniqueFilePathFromFull, isFolderNote } from "@real1ty/obsidian-plugins";
 import type { App, TFile } from "obsidian";
 
+import type { SingleCalendarConfig } from "../../types/settings";
+import { withOrderedFrontmatter } from "../frontmatter/ordering";
 import { extractZettelId, hasTimestamp, removeZettelId } from "./zettel-id";
 
 /**
@@ -86,13 +88,14 @@ export const computeMovePath = (app: App, file: TFile, targetDirectory: string):
 export const ensureFileHasZettelId = async (
 	app: App,
 	file: TFile,
-	zettelIdProp?: string
+	settings: SingleCalendarConfig
 ): Promise<{ zettelId: string; file: TFile }> => {
+	const zettelIdProp = settings.zettelIdProp;
 	const existingZettelId = extractZettelId(file.basename);
 
 	if (existingZettelId) {
 		if (zettelIdProp) {
-			await withFrontmatter(app, file, (fm) => {
+			await withOrderedFrontmatter(app, file, settings, (fm) => {
 				if (!fm[zettelIdProp]) {
 					fm[zettelIdProp] = existingZettelId;
 				}
@@ -111,7 +114,7 @@ export const ensureFileHasZettelId = async (
 	await app.fileManager.renameFile(file, fullPath);
 
 	if (zettelIdProp) {
-		await withFrontmatter(app, file, (fm) => {
+		await withOrderedFrontmatter(app, file, settings, (fm) => {
 			fm[zettelIdProp] = zettelId;
 		});
 	}

@@ -1,6 +1,20 @@
 # Properties Settings
 
-Tell Prisma Calendar which frontmatter keys you use.
+Tell Prisma Calendar which frontmatter keys you use — and in what order they live on disk.
+
+## Property Order & Sync-Safe Writes
+
+The Properties tab lists every Prisma property in a single reorderable table. Each row shows the property's purpose and an input to rename its frontmatter key; drag a row (or use the arrow buttons) to change its position.
+
+The row order is not cosmetic: **it is the exact frontmatter order Prisma writes to disk.** On every save, Prisma regroups its own properties into one contiguous block in this order, anchored where its properties already sit in the file. Properties Prisma doesn't manage — your own keys, or ones written by other plugins — are never moved relative to each other.
+
+Why this matters: Obsidian appends new frontmatter keys at the end of the file, so the key order depends on the history of edits. Two synced devices accumulate different orders, and from then on every save produces textually different files with identical content — which sync tools (LiveSync, iCloud, Syncthing) report as conflicts, most visibly on auto-written keys like `Sort Date`. With a deterministic order, all devices converge to byte-identical files and those conflicts disappear.
+
+Notes:
+
+- **Multiple planning systems (or plugins) on one directory** coexist: each one only groups its *own* properties, at the position they already occupy — no plugin fights another for the end of the file.
+- **Convergence is lazy** — a file adopts the configured order the next time Prisma writes to it. To converge an already-divergent vault immediately, run the **Normalize property order** command from the command palette on *one* device and let sync propagate the result. Files already in order are left untouched.
+- Keep the order setting itself in sync across devices (it lives in the plugin's `data.json`), so every device enforces the same order.
 
 ## Core Event Properties
 

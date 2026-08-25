@@ -1,18 +1,17 @@
-import { useSettingsStore } from "@real1ty/obsidian-plugins-react";
-import { memo } from "react";
+import { introspectShape, mergePropertyOrder, toSafeString } from "@real1ty/obsidian-plugins";
+import {
+	PropertyOrderTable,
+	SettingHeading,
+	useSettingsStore,
+	type PropertyOrderEntry,
+} from "@real1ty/obsidian-plugins-react";
+import { memo, useCallback, useMemo } from "react";
 
 import { cls } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
+import { DEFAULT_PROPERTY_ORDER } from "../../types/event-metadata";
 import { SingleCalendarConfigSchema, type SingleCalendarConfig } from "../../types/settings";
-import {
-	DISPLAY_FIELDS,
-	IDENTITY_FIELDS,
-	METADATA_FIELDS,
-	NOTIFICATION_PROP_FIELDS,
-	RECURRENCE_FIELDS,
-	STATUS_FIELDS,
-	TIMING_FIELDS,
-} from "../../utils/calendar/settings";
+import { DISPLAY_FIELDS } from "../../utils/calendar/settings";
 import { PrismaSection } from "./_section";
 
 interface PropertiesSettingsProps {
@@ -23,10 +22,38 @@ const propLabel = (descriptor: { label: string }): string => descriptor.label.re
 
 const SHAPE = SingleCalendarConfigSchema.shape;
 
+const STATUS_VALUE_FIELDS = ["doneValue", "notDoneValue", "customDoneProperty", "customUndoneProperty"] as const;
+
 export const PropertiesSettingsReact = memo(function PropertiesSettingsReact({
 	settingsStore,
 }: PropertiesSettingsProps) {
-	const [settings] = useSettingsStore(settingsStore);
+	const [settings, updateSettings] = useSettingsStore(settingsStore);
+
+	const descriptorsByKey = useMemo(() => new Map(introspectShape(SHAPE).map((d) => [d.key, d])), []);
+
+	const entries = useMemo<PropertyOrderEntry[]>(() => {
+		const orderedKeys = mergePropertyOrder(settings.propertyOrder ?? [], DEFAULT_PROPERTY_ORDER);
+		return orderedKeys.map((key) => {
+			const descriptor = descriptorsByKey.get(key);
+			return {
+				key,
+				label: descriptor ? propLabel(descriptor) : key,
+				description: descriptor?.description,
+				name: toSafeString(settings[key as keyof SingleCalendarConfig]) ?? "",
+				placeholder: descriptor?.placeholder,
+			};
+		});
+	}, [settings, descriptorsByKey]);
+
+	const handleReorder = useCallback(
+		(orderedKeys: string[]) => void updateSettings((s) => ({ ...s, propertyOrder: orderedKeys })),
+		[updateSettings]
+	);
+
+	const handleRename = useCallback(
+		(key: string, name: string) => void updateSettings((s) => ({ ...s, [key]: name })),
+		[updateSettings]
+	);
 
 	const propSection = (heading: string, fields: readonly string[]) => (
 		<PrismaSection store={settingsStore} shape={SHAPE} heading={heading} fields={fields} labelTransform={propLabel} />
@@ -34,19 +61,33 @@ export const PropertiesSettingsReact = memo(function PropertiesSettingsReact({
 
 	return (
 		<>
-			{propSection("Event timing", TIMING_FIELDS)}
+			<SettingHeading name="Properties" />
+			<PropertyOrderIntro />
+			<PropertyOrderTable entries={entries} onReorder={handleReorder} onRename={handleRename} />
+			{propSection("Sorting", ["sortingStrategy"])}
 			<EventTypesInfo settings={settings} />
-			{propSection("Sorting", ["sortingStrategy", "sortDateProp"])}
-			{propSection("Identity", IDENTITY_FIELDS)}
-			{propSection("Recurrence", RECURRENCE_FIELDS)}
 			<RecurringEventsInfo settings={settings} />
-			{propSection("Status", STATUS_FIELDS)}
-			{propSection("Metadata", METADATA_FIELDS)}
-			{propSection("Notifications", NOTIFICATION_PROP_FIELDS)}
-			{propSection("Integrations", ["caldavProp", "icsSubscriptionProp"])}
+			{propSection("Status values", STATUS_VALUE_FIELDS)}
 			<FrontmatterDisplayIntro />
 			<PrismaSection store={settingsStore} shape={SHAPE} heading="Display in events" fields={DISPLAY_FIELDS} />
 		</>
+	);
+});
+
+const PropertyOrderIntro = memo(function PropertyOrderIntro() {
+	return (
+		<div className={cls("settings-info-box")}>
+			<p>
+				Rename any property and arrange the rows — drag a row or use the arrows. The row order is the exact frontmatter
+				order Prisma writes to disk: on every save, Prisma's own properties are regrouped into this order (other
+				properties are never touched), so files stay byte-identical across synced devices and sync conflicts caused by
+				shuffled property order disappear.
+			</p>
+			<p className="setting-item-description">
+				Already-divergent vaults converge lazily as events are edited, or immediately via the "Normalize property order"
+				command — run it on one device and let sync propagate the result.
+			</p>
+		</div>
 	);
 });
 

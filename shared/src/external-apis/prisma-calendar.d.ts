@@ -678,6 +678,7 @@ export type PrismaCalendarGetSettingsOutput = {
 	 * Automatically propagate frontmatter changes across events that share the same title. When you update custom properties on one event, all other events with the same name are updated immediately.
 	 */
 	propagateFrontmatterToNameSeries: boolean;
+	propertyOrder: PropertyOrder;
 	rruleIdProp: RRuleIDProperty;
 	rruleProp: RRuleProperty;
 	rruleSpecProp: RRuleSpecificationProperty;
@@ -972,6 +973,10 @@ export type PlayNotificationSound = boolean;
  * Display a line showing the current time in weekly and daily views
  */
 export type ShowCurrentTimeIndicator = boolean;
+/**
+ * Ordered list of Prisma property keys controlling the on-disk frontmatter order. Every write regroups Prisma's properties into this order (other properties are left untouched) so files stay byte-identical across synced devices. Empty means the built-in semantic default.
+ */
+export type PropertyOrder = string[];
 /**
  * Frontmatter property name for recurring event unique identifier
  */
@@ -1314,6 +1319,10 @@ export type PrismaCalendarToggleSkipOutput = boolean;
 
 /**
  * Display a line showing the current time in weekly and daily views
+ */
+
+/**
+ * Ordered list of Prisma property keys controlling the on-disk frontmatter order. Every write regroups Prisma's properties into this order (other properties are left untouched) so files stay byte-identical across synced devices. Empty means the built-in semantic default.
  */
 
 /**
@@ -1806,6 +1815,7 @@ export interface PrismaCalendarUpdateSettingsInput {
 		 * Automatically propagate frontmatter changes across events that share the same title. When you update custom properties on one event, all other events with the same name are updated immediately.
 		 */
 		propagateFrontmatterToNameSeries?: boolean;
+		propertyOrder?: PropertyOrder;
 		rruleIdProp?: RRuleIDProperty;
 		rruleProp?: RRuleProperty;
 		rruleSpecProp?: RRuleSpecificationProperty;

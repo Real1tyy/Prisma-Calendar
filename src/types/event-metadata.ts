@@ -44,7 +44,7 @@ export type EventMetadata = z.infer<typeof EventMetadataSchema>;
 // Used by parseEventMetadata() to build the candidate object from frontmatter.
 
 type MetadataKey = keyof EventMetadata;
-type SettingsPropKey = keyof SingleCalendarConfig;
+export type SettingsPropKey = keyof SingleCalendarConfig;
 
 interface MetadataFieldEntry<M extends MetadataKey = MetadataKey, S extends SettingsPropKey = SettingsPropKey> {
 	metadataKey: M;
@@ -322,3 +322,43 @@ export const PROP_CLASSIFICATIONS: readonly PropClassification[] = [
 		notificationDedicatedUI: true,
 	},
 ] as const;
+
+// ─── Deterministic Property Order ────────────────────────────────────
+// Default on-disk ordering for every Prisma-owned frontmatter property —
+// semantic (most important scheduling props first), not alphabetical. Users
+// reorder it per calendar via the Properties settings tab (`propertyOrder`);
+// every frontmatter flush rewrites Prisma's properties as one contiguous
+// block in this order so replicas synced across devices converge instead of
+// conflicting. Must cover exactly the PROP_CLASSIFICATIONS keys — enforced by
+// a unit test. See [[decision-deterministic-property-ordering]].
+export const DEFAULT_PROPERTY_ORDER: readonly SettingsPropKey[] = [
+	"dateProp",
+	"startProp",
+	"endProp",
+	"allDayProp",
+	"sortDateProp",
+	"titleProp",
+	"calendarTitleProp",
+	"categoryProp",
+	"statusProperty",
+	"iconProp",
+	"locationProp",
+	"participantsProp",
+	"prerequisiteProp",
+	"breakProp",
+	"skipProp",
+	"rruleProp",
+	"rruleSpecProp",
+	"rruleUntilProp",
+	"rruleIdProp",
+	"sourceProp",
+	"instanceDateProp",
+	"futureInstancesCountProp",
+	"generatePastEventsProp",
+	"minutesBeforeProp",
+	"daysBeforeProp",
+	"alreadyNotifiedProp",
+	"caldavProp",
+	"icsSubscriptionProp",
+	"zettelIdProp",
+];

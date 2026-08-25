@@ -61,7 +61,8 @@ export class NameSeriesTracker extends VaultTableView<Frontmatter> {
 					targetPath,
 					sourceFm,
 					diff,
-					getExcludedProps(this.settings, this.settings.excludedNameSeriesProps)
+					getExcludedProps(this.settings, this.settings.excludedNameSeriesProps),
+					this.settings
 				),
 			resolveTargets: (filePath, groupKey) => {
 				return this.nameGroups

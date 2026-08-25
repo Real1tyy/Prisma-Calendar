@@ -13,6 +13,7 @@ import {
 	openEditActiveNoteModal,
 	triggerCurrentEventStopwatch,
 } from "./core/api/modal-actions";
+import { normalizePropertyOrderAcrossCalendars } from "./core/api/normalize-property-order";
 import { redo, undo } from "./core/api/read-operations";
 import { PRO_FEATURES } from "./core/license";
 import { getProGateUrls } from "./core/pro-feature-previews";
@@ -157,6 +158,11 @@ export function registerPrismaCalendarCommands(plugin: CustomCalendarPlugin): vo
 		COMMAND_IDS.TRIGGER_CURRENT_EVENT_STOPWATCH,
 		"Trigger current event stopwatch",
 		() => void triggerCurrentEventStopwatch(plugin)
+	);
+	addApiCommand(
+		COMMAND_IDS.NORMALIZE_PROPERTY_ORDER,
+		"Normalize property order",
+		() => void normalizePropertyOrderAcrossCalendars(plugin)
 	);
 	addCalendarViewCommand(COMMAND_IDS.EDIT_LAST_FOCUSED_EVENT, "Edit last focused event", (view) =>
 		view.openEditModalForFocusedEvent()

@@ -4,7 +4,6 @@ import {
 	getTFileOrThrow,
 	restoreFrontmatter,
 	toLocalISOString,
-	withFrontmatter,
 	type Command,
 } from "@real1ty/obsidian-plugins";
 import type { App, TFile } from "obsidian";
@@ -13,6 +12,7 @@ import type { EventDateTime, Frontmatter, SingleCalendarConfig } from "../../typ
 import { ensureFileHasZettelId } from "../../utils/events/file-naming";
 import { extractZettelId, rebuildPhysicalInstanceWithNewDate } from "../../utils/events/zettel-id";
 import { setEventBasics } from "../../utils/frontmatter/basics";
+import { withOrderedFrontmatter } from "../../utils/frontmatter/ordering";
 import { isPhysicalRecurringEvent } from "../../utils/frontmatter/predicates";
 import type { CalendarBundle } from "../calendar-bundle";
 import type { EventFileRepository, FrontmatterSnapshot } from "../event-file-repository";
@@ -88,7 +88,7 @@ export class UpdateEventCommand implements Command {
 			endTime = toLocalISOString(startDate);
 		}
 
-		await withFrontmatter(this.app, file, (fm: Frontmatter) => {
+		await withOrderedFrontmatter(this.app, file, settings, (fm: Frontmatter) => {
 			setEventBasics(fm, settings, {
 				start: this.newDateTime.start,
 				end: endTime,
@@ -131,7 +131,7 @@ export class UpdateEventCommand implements Command {
 		const file = getTFileOrThrow(this.app, currentFilePath);
 		const settings = this.bundle.settingsStore.currentSettings;
 
-		await withFrontmatter(this.app, file, (fm: Frontmatter) => {
+		await withOrderedFrontmatter(this.app, file, settings, (fm: Frontmatter) => {
 			setEventBasics(fm, settings, {
 				start: this.oldDateTime.start,
 				end: this.oldDateTime.end,
@@ -174,14 +174,14 @@ export class ConvertFileToEventCommand implements Command {
 
 		const settings = this.bundle.settingsStore.currentSettings;
 		const hadZettelId = !!extractZettelId(file.basename);
-		const ensured = await ensureFileHasZettelId(this.app, file, settings.zettelIdProp);
+		const ensured = await ensureFileHasZettelId(this.app, file, settings);
 		file = ensured.file;
 
 		if (!hadZettelId) {
 			this.renamedFilePath = file.path;
 		}
 
-		await withFrontmatter(this.app, file, (fm: Frontmatter) => Object.assign(fm, this.newFrontmatter));
+		await withOrderedFrontmatter(this.app, file, settings, (fm: Frontmatter) => Object.assign(fm, this.newFrontmatter));
 	}
 
 	async undo(): Promise<void> {
@@ -225,7 +225,7 @@ export class AddZettelIdCommand implements Command {
 		if (!this.originalFrontmatter) this.originalFrontmatter = await backupFrontmatter(this.app, file);
 
 		const settings = this.bundle.settingsStore.currentSettings;
-		const result = await ensureFileHasZettelId(this.app, file, settings.zettelIdProp);
+		const result = await ensureFileHasZettelId(this.app, file, settings);
 
 		if (result.file.path !== this.originalFilePath) {
 			this.renamedFilePath = result.file.path;

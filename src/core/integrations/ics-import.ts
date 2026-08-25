@@ -14,6 +14,7 @@ import { generateUniqueEventPath } from "../../utils/events/file-naming";
 import { assignListToFrontmatter, setEventBasics } from "../../utils/events/frontmatter";
 import { autoAssignCategories } from "../../utils/events/matching";
 import { extractZettelId, removeZettelId } from "../../utils/events/zettel-id";
+import { enforceEventPropertyOrder } from "../../utils/frontmatter/ordering";
 import type { CalendarBundle } from "../calendar-bundle";
 
 const MINUTES_PER_DAY = 24 * 60;
@@ -473,6 +474,8 @@ export async function createEventNoteFromImportedEvent(
 	if (additionalFrontmatter) {
 		Object.assign(frontmatter, additionalFrontmatter);
 	}
+
+	enforceEventPropertyOrder(frontmatter, calendarSettings);
 
 	return await bundle.templateService.createFileAtomic({
 		title: event.title,

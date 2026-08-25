@@ -4,7 +4,6 @@ import {
 	parseIntoList,
 	serializeFrontmatterValue,
 	toSafeString,
-	withFrontmatter,
 	type FrontmatterDiff,
 } from "@real1ty/obsidian-plugins";
 import { DateTime, type DurationLike } from "luxon";
@@ -27,6 +26,7 @@ import {
 	SYSTEM_PROP_KEYS,
 } from "../../types/settings";
 import { stripZ } from "../dates/iso";
+import { withOrderedFrontmatter } from "../frontmatter/ordering";
 import { getFileAndFrontmatter, getFileByPathOrThrow } from "../obsidian";
 
 export function parseEventMetadata(frontmatter: Frontmatter, settings: SingleCalendarConfig): EventMetadata {
@@ -158,7 +158,7 @@ export const applyDateNormalizationToFile = async (
 		if (!settings.sortDateProp || !(settings.sortDateProp in frontmatter)) return;
 		try {
 			const file = getFileByPathOrThrow(app, filePath);
-			await app.fileManager.processFrontMatter(file, (fm: Frontmatter) =>
+			await withOrderedFrontmatter(app, file, settings, (fm: Frontmatter) =>
 				Reflect.deleteProperty(fm, settings.sortDateProp)
 			);
 		} catch (error) {
@@ -172,7 +172,7 @@ export const applyDateNormalizationToFile = async (
 
 	try {
 		const file = getFileByPathOrThrow(app, filePath);
-		await app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
+		await withOrderedFrontmatter(app, file, settings, (fm: Frontmatter) => {
 			fm[targetProp] = value;
 		});
 	} catch (error) {
@@ -366,12 +366,13 @@ export const applyFrontmatterChangesToInstance = async (
 	filePath: string,
 	sourceFrontmatter: Frontmatter,
 	diff: FrontmatterDiff,
-	excludedProps: Set<string>
+	excludedProps: Set<string>,
+	settings: SingleCalendarConfig
 ): Promise<void> => {
 	try {
 		const file = getFileByPathOrThrow(app, filePath);
 
-		await withFrontmatter(app, file, (fm) => {
+		await withOrderedFrontmatter(app, file, settings, (fm) => {
 			for (const change of diff.added) {
 				if (!excludedProps.has(change.key)) {
 					fm[change.key] = sourceFrontmatter[change.key];

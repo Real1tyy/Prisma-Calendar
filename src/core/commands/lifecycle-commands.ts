@@ -16,6 +16,7 @@ import type { Frontmatter, SingleCalendarConfig } from "../../types";
 import { computeMovePath, ensureFileHasZettelId, generateUniqueEventPath } from "../../utils/events/file-naming";
 import { removeZettelId } from "../../utils/events/zettel-id";
 import { applyStartEndOffsets } from "../../utils/frontmatter/basics";
+import { enforceEventPropertyOrder } from "../../utils/frontmatter/ordering";
 import { removeNonCloneableProperties } from "../../utils/frontmatter/props";
 import { translateFrontmatterToCalendar } from "../../utils/frontmatter/translate-calendar";
 import type { CalendarBundle } from "../calendar-bundle";
@@ -107,6 +108,8 @@ export class CreateEventCommand extends CreatedFileCommand {
 		if (settings.zettelIdProp) {
 			frontmatter[settings.zettelIdProp] = zettelId;
 		}
+
+		enforceEventPropertyOrder(frontmatter, settings);
 
 		const file = await this.bundle.templateService.createFileAtomic({
 			title,
@@ -225,13 +228,14 @@ export class CloneEventCommand extends CreatedFileCommand {
 		let src = getTFileOrThrow(this.app, this.sourceFilePath);
 		const settings = this.bundle.settingsStore.currentSettings;
 
-		const sourceResult = await ensureFileHasZettelId(this.app, src, settings.zettelIdProp);
+		const sourceResult = await ensureFileHasZettelId(this.app, src, settings);
 		src = sourceResult.file;
 
 		const { fullPath, frontmatter, body } = await prepareFileCopy(this.app, src, settings);
 
 		applyStartEndOffsets(frontmatter, settings, this.startOffset, this.endOffset);
 		removeNonCloneableProperties(frontmatter, settings);
+		enforceEventPropertyOrder(frontmatter, settings);
 
 		const uniquePath = getUniqueFilePathFromFull(this.app, fullPath);
 		const file = await createFileAtPath(this.app, uniquePath, body, frontmatter);
