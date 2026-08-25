@@ -4,20 +4,12 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.24.0 - 8/19/2026
+## 2.23.0 - 8/5/2026
 
-> **TLDR:** Sync-safe frontmatter — Prisma now writes its properties in one consistent, configurable order on every save, so vaults synced across devices (LiveSync, iCloud, Syncthing) stop conflicting over shuffled property order. Arrange the order yourself in the redesigned Properties tab — drag rows or use the arrows — and run the new **Normalize property order** command once to converge an already-divergent vault.
+> **TLDR:** Sync-safe frontmatter — Prisma now writes its properties in one consistent, configurable order on every save, so vaults synced across devices (LiveSync, iCloud, Syncthing) stop conflicting over shuffled property order; arrange it in the redesigned Properties tab and run **Normalize property order** once to converge an existing vault. Imported and synced events now pick up your categories automatically, so a "Gym" event from Google Calendar lands under "Health" without you touching it. Obsidian 1.13 compatibility — settings search filters again, and every Prisma dialog renders fully styled inside the new separate settings window.
 
 ### Added
 - **Deterministic property order**: every save now regroups Prisma's own frontmatter properties into one consistent block in a configurable order, leaving all other properties untouched — synced devices produce byte-identical files instead of endless conflicts on keys like `Sort Date`. The Properties settings tab is now a single reorderable table: rename any property as before, and drag rows (or use the arrow buttons) to choose the exact on-disk order, with the most important scheduling properties first by default. Files converge as they're edited, or all at once via the new **Normalize property order** command — run it on one device and let sync propagate. See [Properties Settings → Property Order](./configuration/properties.md#property-order--sync-safe-writes).
-
----
-
-## 2.23.0 - 8/5/2026
-
-> **TLDR:** Imported and synced events now pick up your categories automatically, so a "Gym" event from Google Calendar lands under "Health" without you touching it. Obsidian 1.13 compatibility — settings search filters again, and the changelog modal and every Prisma dialog now render fully styled inside the new separate settings window (and pop-out windows in general). Prerequisite arrows also stay anchored to the right event when you drag one into a day's all-day lane.
-
-### Added
 - **Categories for imported events**: events pulled in from an `.ics` file or a calendar subscription now run the same auto-assignment rules your hand-created events do — presets, name matching, and substring matching — so a synced "Gym" event lands under "Health" and colors, filtering, and stats treat it like any other event. Categories the feed itself publishes are kept as-is and never overwritten, and events you have already categorized by hand are left alone on re-sync. Turn it off with **Settings → Categories → Auto-assign categories → Auto-assign categories on import**. See [Categories → Auto-assign categories on import](./features/organization/categories.md#auto-assign-categories-on-import).
 
 ### Fixed
