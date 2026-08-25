@@ -49,7 +49,8 @@ export function expandMorePopover(popoverEl: HTMLElement, viewportHeight: number
 		// FullCalendar writes `top` inline, relative to the offset parent — so
 		// shift that value by the viewport-space delta rather than trying to
 		// re-derive the offset parent's origin.
-		const currentTop = Number.parseFloat(popoverEl.style.top) || popoverEl.offsetTop;
+		const inlineTop = Number.parseFloat(popoverEl.style.top);
+		const currentTop = Number.isFinite(inlineTop) ? inlineTop : popoverEl.offsetTop;
 		popoverEl.style.top = `${currentTop + (top - naturalTop)}px`;
 	}
 
@@ -61,14 +62,14 @@ export function expandMorePopover(popoverEl: HTMLElement, viewportHeight: number
  * doesn't exist yet when `moreLinkClick` fires. Retry across a few frames
  * instead of guessing how many the render takes.
  */
-export function scheduleMorePopoverExpand(doc: Document, win: Window, remainingFrames = 5): void {
+export function scheduleMorePopoverExpand(root: ParentNode, win: Window, remainingFrames = 5): void {
 	win.requestAnimationFrame(() => {
-		const popoverEl = doc.querySelector<HTMLElement>(".fc-popover");
+		const popoverEl = root.querySelector<HTMLElement>(".fc-popover");
 		if (popoverEl) {
 			expandMorePopover(popoverEl, win.innerHeight);
 			return;
 		}
-		if (remainingFrames > 1) scheduleMorePopoverExpand(doc, win, remainingFrames - 1);
+		if (remainingFrames > 1) scheduleMorePopoverExpand(root, win, remainingFrames - 1);
 	});
 }
 
@@ -81,6 +82,9 @@ export function handleMoreLinkClick(arg: MoreLinkArg): "popover" {
 	const target = arg.jsEvent.target as Element | null;
 	const doc = target?.ownerDocument ?? document;
 	const win = doc.defaultView;
-	if (win) scheduleMorePopoverExpand(doc, win);
+	// FullCalendar portals the popover into the clicked link's view harness, so
+	// searching from there can't pick up another leaf's (or another window's).
+	const root = target?.closest(".fc-view-harness") ?? doc;
+	if (win) scheduleMorePopoverExpand(root, win);
 	return "popover";
 }
