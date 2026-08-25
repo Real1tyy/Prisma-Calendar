@@ -17,6 +17,7 @@ import { ensureDirectory, extractContentAfterFrontmatter, withFrontmatter } from
 import { createFileAtPathAtomic, guardFromTemplater } from "../file/templater";
 import { correctFrontmatter, deleteInvalidFile } from "../frontmatter/frontmatter-repair";
 import { createFileContentWithFrontmatter } from "../frontmatter/frontmatter-serialization";
+import { enforcePropertyOrder } from "../frontmatter/property-order";
 import { Indexer, type IndexerConfig, type IndexerEvent } from "../indexer";
 import type { SerializableSchema } from "./create-mapped-schema";
 import { PersistentTableCache, type IdbFactory, type PersistenceConfig, type PersistentEntry } from "./persistence";
@@ -84,6 +85,7 @@ export class VaultTable<
 	private readonly filePathResolver: (directory: string, fileName: string) => string;
 	private readonly childDefs: TChildren | undefined;
 	private readonly emitCrudEvents: boolean;
+	private readonly propertyOrder: (() => readonly string[]) | undefined;
 	private templatePath: string | undefined;
 	private parentLink: { property: string; displayLink: string } | undefined;
 
@@ -134,6 +136,7 @@ export class VaultTable<
 
 		this.childDefs = config.children;
 		this.emitCrudEvents = config.emitCrudEvents ?? false;
+		this.propertyOrder = config.propertyOrder;
 		this.templatePath = config.templatePath;
 
 		this.commandManager = this.buildCommandManager(config.history);
@@ -461,6 +464,7 @@ export class VaultTable<
 				}
 			}
 			Object.assign(fm, serialized);
+			this.applyPropertyOrder(fm);
 		});
 
 		const newRow = this.buildRow(
@@ -496,6 +500,7 @@ export class VaultTable<
 
 		await withFrontmatter(this.app, existing.file, (fm) => {
 			Object.assign(fm, serialized);
+			this.applyPropertyOrder(fm);
 		});
 
 		const newRow = this.buildRow(
@@ -525,7 +530,9 @@ export class VaultTable<
 
 	private async doUpdateContent(key: string, content: string): Promise<VaultRow<TData>> {
 		const existing = this.require(key);
-		const fileContent = createFileContentWithFrontmatter(this.serialize(existing.data), content);
+		const serialized = this.serialize(existing.data);
+		this.applyPropertyOrder(serialized);
+		const fileContent = createFileContentWithFrontmatter(serialized, content);
 		await this.app.vault.modify(existing.file, fileContent);
 
 		const newRow = this.buildRow(
@@ -835,7 +842,7 @@ export class VaultTable<
 				break;
 			}
 			case "correct": {
-				void correctFrontmatter(this.app, this.schema, filePath, raw);
+				void correctFrontmatter(this.app, this.schema, filePath, raw, this.propertyOrder?.());
 				break;
 			}
 			case "delete": {
@@ -903,6 +910,7 @@ export class VaultTable<
 	private async persistNewFile(filePath: string, data: TData, content: string): Promise<TFile> {
 		await ensureDirectory(this.app, getFolderPath(filePath));
 		const frontmatter = this.serializeWithParentLink(data);
+		this.applyPropertyOrder(frontmatter);
 
 		if (this.templatePath) {
 			return createFileAtPathAtomic(this.app, filePath, {
@@ -915,6 +923,12 @@ export class VaultTable<
 		const fileContent = createFileContentWithFrontmatter(frontmatter, content);
 		guardFromTemplater(this.app, filePath);
 		return this.app.vault.create(filePath, fileContent);
+	}
+
+	/** Converge owned keys to the configured deterministic order on every flush. */
+	private applyPropertyOrder(fm: Record<string, unknown>): void {
+		const order = this.propertyOrder?.();
+		if (order && order.length > 0) enforcePropertyOrder(fm, order);
 	}
 
 	private serialize(data: TData): Record<string, unknown> {

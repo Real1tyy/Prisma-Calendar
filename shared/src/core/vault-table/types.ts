@@ -110,6 +110,14 @@ export type VaultTableConfig<
 	 * to the browser's `indexedDB`.
 	 */
 	persistenceIdbFactory?: IdbFactory;
+	/**
+	 * Ordered frontmatter property names this table owns. When provided, every
+	 * frontmatter flush rewrites the owned keys as one contiguous block in this
+	 * order (foreign keys untouched), so replicas synced across devices converge
+	 * to identical bytes instead of conflicting on append-history key order.
+	 * A thunk so it can track live settings. See [[decision-deterministic-property-ordering]].
+	 */
+	propertyOrder?: () => readonly string[];
 };
 
 /**

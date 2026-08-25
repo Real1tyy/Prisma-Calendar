@@ -7,4 +7,5 @@ export * from "./frontmatter-propagator";
 export * from "./frontmatter-repair";
 export * from "./frontmatter-serialization";
 export * from "./frontmatter-value";
+export * from "./property-order";
 export * from "./property-utils";
