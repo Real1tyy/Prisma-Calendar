@@ -46,6 +46,12 @@ export const RECURRENCE_TYPE_OPTIONS = {
 
 export type RecurrencePreset = keyof typeof RECURRENCE_TYPE_OPTIONS;
 
+// The recurrence <select> carries no empty option, so a form value outside this map leaves the
+// browser showing the first preset while the form still holds the unrepresented value — a silent
+// desync that saves an empty RRule. The `RecurrencePreset` annotation is what keeps every default
+// that seeds `recurring.rruleType` selectable.
+export const DEFAULT_RECURRENCE_TYPE: RecurrencePreset = "daily";
+
 export type RecurrenceType = RecurrencePreset | (string & {});
 
 export const WEEKDAY_SUPPORTED_TYPES = ["weekly", "bi-weekly", "weekdays", "weekends"] as const;

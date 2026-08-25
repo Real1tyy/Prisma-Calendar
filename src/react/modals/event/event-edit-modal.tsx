@@ -2,7 +2,11 @@ import { parseIntoList, serializeFrontmatterValue } from "@real1ty/obsidian-plug
 import { showReactModal } from "@real1ty/obsidian-plugins-react";
 import type { App } from "obsidian";
 
-import { createDefaultState, type EventFormState } from "../../../components/modals/event/event-form-state";
+import {
+	createDefaultState,
+	DEFAULT_RECURRING_FORM_STATE,
+	type EventFormState,
+} from "../../../components/modals/event/event-form-state";
 import { loadSimpleFieldValues } from "../../../components/modals/event/event-frontmatter-mapper";
 import { CSS_PREFIX } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
@@ -322,16 +326,7 @@ export function composeTitleWithZettel(
 function loadRecurringState(fm: Frontmatter, settings: SingleCalendarConfig) {
 	const rruleType = fm[settings.rruleProp] as string | undefined;
 	if (!rruleType) {
-		return {
-			enabled: false,
-			rruleType: "",
-			weekdays: [] as string[],
-			customFreq: "DAILY",
-			customInterval: "1",
-			untilDate: "",
-			futureInstancesCount: "",
-			generatePastEvents: false,
-		};
+		return { ...DEFAULT_RECURRING_FORM_STATE };
 	}
 
 	const weekdays: string[] = [];

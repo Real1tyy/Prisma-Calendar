@@ -183,6 +183,8 @@ The recurring events modal (accessible via command palette: "Show recurring even
 - `semi-annual` - Every 6 months
 - `yearly` - Every year
 
+**In the modal:** Enable "Recurring Event" and pick a pattern from the **Recurrence pattern** dropdown. It opens on **Daily**, so leaving it untouched saves `RRule: daily`.
+
 ### Custom Intervals
 
 For intervals not covered by presets, use the custom interval format: `FREQ;INTERVAL=N` where FREQ is `DAILY`, `WEEKLY`, `MONTHLY`, or `YEARLY`, and N is the number of intervals (must be 1 or greater).

@@ -7,11 +7,12 @@ import {
 	PositiveFloat,
 	PositiveInt,
 } from "../../../types/event-boundaries";
+import { DEFAULT_RECURRENCE_TYPE } from "../../../types/recurring";
 import type { EventPreset } from "../../../types/settings";
 
 export const RecurringFormStateSchema = z.object({
 	enabled: z.boolean().default(false),
-	rruleType: z.string().default(""),
+	rruleType: z.string().default(DEFAULT_RECURRENCE_TYPE),
 	weekdays: z.array(z.string()).default([]),
 	customFreq: z.string().default("DAILY"),
 	customInterval: z.string().default("1"),
@@ -20,6 +21,8 @@ export const RecurringFormStateSchema = z.object({
 	generatePastEvents: z.boolean().default(false),
 });
 export type RecurringFormState = z.infer<typeof RecurringFormStateSchema>;
+
+export const DEFAULT_RECURRING_FORM_STATE: RecurringFormState = RecurringFormStateSchema.parse({});
 
 export const CustomPropertyEntrySchema = z.object({
 	key: z.string().default(""),
@@ -39,16 +42,7 @@ export const EventFormStateSchema = z
 		participants: z.array(z.string()).default([]),
 		prerequisites: z.array(z.string()).default([]),
 		notifyBefore: z.string().default(""),
-		recurring: RecurringFormStateSchema.default({
-			enabled: false,
-			rruleType: "",
-			weekdays: [],
-			customFreq: "DAILY",
-			customInterval: "1",
-			untilDate: "",
-			futureInstancesCount: "",
-			generatePastEvents: false,
-		}),
+		recurring: RecurringFormStateSchema.default(DEFAULT_RECURRING_FORM_STATE),
 		customPropertiesDisplay: z.array(CustomPropertyEntrySchema).default([]),
 		customPropertiesOther: z.array(CustomPropertyEntrySchema).default([]),
 	})
