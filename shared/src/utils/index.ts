@@ -11,6 +11,7 @@ export * from "./errors";
 export * from "./expression-utils";
 export * from "./generate";
 export * from "./list-utils";
+export * from "./notice";
 export * from "./obsidian-compat";
 export * from "./security";
 export * from "./string";

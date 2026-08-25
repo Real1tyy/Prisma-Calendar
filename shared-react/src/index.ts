@@ -149,6 +149,9 @@ export { openRenameModal, RenameModalContent } from "./modals/rename-modal";
 export type { WhatsNewModalConfig } from "./modals/whats-new-modal";
 export { DEFAULT_WHATS_NEW_LINKS, showWhatsNewReactModal } from "./modals/whats-new-modal";
 
+// ─── Notices ───
+export * from "./notices";
+
 // ─── Onboarding ───
 export * from "./onboarding";
 
