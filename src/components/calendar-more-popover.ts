@@ -12,7 +12,7 @@ import type { MoreLinkArg } from "@fullcalendar/core";
  */
 
 /** Bare minimum of screen left below the popover, per the product decision. */
-export const POPOVER_BOTTOM_GAP_PX = 100;
+export const POPOVER_BOTTOM_GAP_PX = 30;
 
 /** Matches FullCalendar's own `PADDING_FROM_VIEWPORT` so we never fight it. */
 export const POPOVER_TOP_GAP_PX = 10;
