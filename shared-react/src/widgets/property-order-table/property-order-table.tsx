@@ -81,6 +81,9 @@ export const PropertyOrderTable = memo(function PropertyOrderTable({
 						dragOverKey === entry.key && cls("row-dragover")
 					)}
 					data-testid={tid("row", entry.key)}
+					// The description is single-line-clipped; the full text surfaces on hover
+					// anywhere in the row, not just over the clipped span.
+					title={entry.description}
 					draggable
 					onDragStart={(e: DragEvent<HTMLDivElement>) => {
 						setDraggedKey(entry.key);
@@ -128,11 +131,7 @@ export const PropertyOrderTable = memo(function PropertyOrderTable({
 					</div>
 					<div className={cls("info")}>
 						<span className={cls("label")}>{entry.label}</span>
-						{entry.description && (
-							<span className={cls("description")} title={entry.description}>
-								{entry.description}
-							</span>
-						)}
+						{entry.description && <span className={cls("description")}>{entry.description}</span>}
 					</div>
 					<span className={cls("name-input")} aria-label={`${entry.label} name`}>
 						<TextInput

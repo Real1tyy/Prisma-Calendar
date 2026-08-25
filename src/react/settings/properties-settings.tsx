@@ -99,8 +99,7 @@ const PropertyOrderIntro = memo(function PropertyOrderIntro() {
 			<p>
 				Rename any property and arrange the rows — drag a row or use the arrows. The row order is the exact frontmatter
 				order Prisma writes to disk: on every save, Prisma's own properties are regrouped into this order (other
-				properties are never touched), so files stay byte-identical across synced devices and sync conflicts caused by
-				shuffled property order disappear.
+				properties are never touched).
 			</p>
 			<p className="setting-item-description">
 				Existing files pick up the order the next time Prisma writes to them. To apply it everywhere right away —

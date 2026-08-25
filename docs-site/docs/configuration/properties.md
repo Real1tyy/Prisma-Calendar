@@ -21,7 +21,7 @@ Notes:
 The **Scan and normalize…** button on the Properties tab (also available as the **Normalize property order** command in the command palette) converges an existing vault in one pass:
 
 1. **Scan** — every event file is checked against the configured order without writing anything.
-2. **Review** — a dialog lists the files whose Prisma properties are out of order. Cancel here and nothing changes.
+2. **Review** — a dialog lists the files whose Prisma properties are out of order (the first 20, plus a count of the rest for large vaults). Cancel here and nothing changes.
 3. **Normalize** — on confirmation, the listed files are rewritten with a progress bar; the dialog closes with a summary of how many files were updated (and any that failed, with details in the developer console).
 
 Only Prisma's own properties move; other properties keep their positions. Files already in order are never touched, so re-running it is harmless. Run it on **one** device after changing the property order and let sync propagate the result — running it on several devices at once would just make them race to write the same files.

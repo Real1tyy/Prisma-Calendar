@@ -9,6 +9,8 @@ import type { SingleCalendarConfig } from "../../types/settings";
 import { enforceEventPropertyOrder, withOrderedFrontmatter } from "../../utils/frontmatter/ordering";
 import { batchedPromiseAll } from "../../utils/obsidian";
 
+const MAX_LISTED_DEVIATIONS = 20;
+
 export interface PropertyOrderDeviation {
 	filePath: string;
 	settings: SingleCalendarConfig;
@@ -91,11 +93,23 @@ export async function runNormalizePropertyOrder(plugin: CustomCalendarPlugin): P
 		cancelLabel: "Cancel",
 		testIdPrefix: tid("normalize-order-"),
 		initialExtras: deviations.map((d) => d.filePath),
+		// A vault can have thousands of deviating files — show a sample, not a wall.
 		renderExtras: (paths) =>
 			createElement(
 				"ul",
 				{ className: `${CSS_PREFIX}normalize-order-list`, "data-testid": tid("normalize-order-list") },
-				paths.map((path) => createElement("li", { key: path }, path))
+				[
+					...paths.slice(0, MAX_LISTED_DEVIATIONS).map((path) => createElement("li", { key: path }, path)),
+					...(paths.length > MAX_LISTED_DEVIATIONS
+						? [
+								createElement(
+									"li",
+									{ key: "__more", "data-testid": tid("normalize-order-list-more") },
+									`…and ${paths.length - MAX_LISTED_DEVIATIONS} more`
+								),
+							]
+						: []),
+				]
 			),
 	});
 	if (!confirmed) return;
