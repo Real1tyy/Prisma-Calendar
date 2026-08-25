@@ -28,6 +28,7 @@ import { emitHover } from "../../utils/obsidian";
 import type { BatchSelectionManager } from "../batch-selection-manager";
 import { applyEventMountStyling, attachLazyNotePreview } from "../calendar-event-renderer";
 import type { CalendarHost } from "../calendar-host";
+import { handleMoreLinkClick } from "../calendar-more-popover";
 import type { EventContextMenu } from "../event-context-menu";
 import { showEventPreviewModal } from "../modals";
 
@@ -68,6 +69,7 @@ export function buildCoreCalendarOptions(settings: SingleCalendarConfig): Partia
 		firstDay: settings.firstDayOfWeek,
 		eventOverlap: settings.eventOverlap,
 		slotEventOverlap: settings.slotEventOverlap,
+		moreLinkClick: handleMoreLinkClick,
 	};
 }
 

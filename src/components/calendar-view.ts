@@ -101,6 +101,7 @@ import {
 	type EventRenderContext,
 } from "./calendar-event-renderer";
 import type { CalendarHost } from "./calendar-host";
+import { handleMoreLinkClick } from "./calendar-more-popover";
 import { ConnectionRenderer } from "./connection-renderer";
 import { EventContextMenu } from "./event-context-menu";
 import { mountFilterPresetSelector, type FilterPresetSelectorMount } from "./filter-preset-selector-mount";
@@ -380,6 +381,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			eventMaxStack: settings.eventMaxStack,
 
 			dayMaxEvents: this.isMobileView() ? settings.mobileMaxEventsPerDay : settings.desktopMaxEventsPerDay || false,
+
+			moreLinkClick: handleMoreLinkClick,
 
 			windowResize: () => this.handleWindowResize(),
 

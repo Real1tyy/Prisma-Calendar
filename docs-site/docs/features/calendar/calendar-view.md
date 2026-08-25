@@ -264,6 +264,14 @@ Control how events display when they share the same time:
 
 Configure in **Settings → Calendar → Event Overlap**.
 
+### Day Overflow Popover
+
+When a day holds more events than its cell can show, the cell ends with a **+N more** link. Clicking it opens a popover listing every event on that day — each with its time, title and property pills, one per row.
+
+The popover is as tall as the screen allows: it starts at the day cell and extends to roughly 100px above the bottom of the window, scrolling inside when the day has more events than fit. If the day sits low on the screen, the popover moves up so it still gets a usable height. Click an event to open it, or close the popover with the ✕, `Esc`, or a click outside.
+
+Year view always shows a **+N more** link on busy days — its month cells are too small to list events in full. In Month view the link appears once **Desktop max events per day** (or **Mobile max events per day**) is set above zero.
+
 ## Hide Weekends
 
 Toggle Saturday and Sunday visibility in **Settings → Calendar → View Configuration → Hide weekends**.

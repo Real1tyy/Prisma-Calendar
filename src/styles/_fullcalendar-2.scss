@@ -25,17 +25,29 @@
 		box-shadow: 0 4px 16px rgb(0 0 0 / 15%);
 		max-width: 300px;
 
+		// Height budget written by `expandMorePopover` when the popover opens —
+		// it reaches down to a fixed gap above the viewport bottom. The fallback
+		// only applies if that hook never runs.
+		max-height: var(--prisma-popover-max-height, 400px);
+
+		// Fixed header, scrolling body — the body owns the overflow so the title
+		// and close button stay reachable on a crowded day.
+		display: flex;
+		flex-direction: column;
+
 		&-header {
 			background: var(--background-secondary);
 			padding: 8px 12px;
 			border-bottom: 1px solid var(--background-modifier-border);
 			font-weight: var(--font-weight-medium);
 			color: var(--text-normal);
+			flex: 0 0 auto;
 		}
 
 		&-body {
 			padding: 8px;
-			max-height: 300px;
+			flex: 1 1 auto;
+			min-height: 0;
 			overflow-y: auto;
 		}
 

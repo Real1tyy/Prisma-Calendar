@@ -716,6 +716,9 @@ button[class*=prisma-]:focus-visible {
   border-radius: var(--radius-m);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   max-width: 300px;
+  max-height: var(--prisma-popover-max-height, 400px);
+  display: flex;
+  flex-direction: column;
 }
 .prisma-calendar-container .fc-popover-header {
   background: var(--background-secondary);
@@ -723,10 +726,12 @@ button[class*=prisma-]:focus-visible {
   border-bottom: 1px solid var(--background-modifier-border);
   font-weight: var(--font-weight-medium);
   color: var(--text-normal);
+  flex: 0 0 auto;
 }
 .prisma-calendar-container .fc-popover-body {
   padding: 8px;
-  max-height: 300px;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
 }
 .prisma-calendar-container .fc-popover-close {
@@ -1030,24 +1035,22 @@ button[class*=prisma-]:focus-visible {
     height: 12px;
   }
 }
+.prisma-calendar-container .fc-popover .fc-popover-body .fc-daygrid-event-harness {
+  max-height: none;
+  overflow: visible;
+}
 .prisma-calendar-container .fc-popover .fc-popover-body .fc-daygrid-event {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 8px;
+  flex-direction: column;
+  align-items: stretch;
+  height: auto;
+  margin-top: 4px;
+  padding: 2px 4px;
 }
-.prisma-calendar-container .fc-popover .fc-popover-body .fc-event-time {
-  display: inline-block;
-  font-size: 12px;
-  color: var(--text-muted);
-  flex-shrink: 0;
-  min-width: 50px;
-}
-.prisma-calendar-container .fc-popover .fc-popover-body .fc-event-title {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.prisma-calendar-container .fc-popover .fc-popover-body .fc-event-main,
+.prisma-calendar-container .fc-popover .fc-popover-body .prisma-fc-event-content-wrapper {
+  height: auto;
+  overflow: visible;
 }
 
 .prisma-calendar-container .fc-multimonth {

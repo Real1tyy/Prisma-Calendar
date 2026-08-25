@@ -281,27 +281,31 @@
 	}
 }
 
-// Popover styling - show time for events in the +more popover
+// "+more" popover — every hidden event stacked in normal flow, each chip as
+// tall as its own content.
+//
+// The container-wide `--all-day-event-height` harness clamp must not reach in
+// here: the popover shows the frontmatter property pills that the month grid
+// hides, so a clamped harness leaves the taller chip spilling (it is
+// `overflow: visible`) over the one below it.
 .prisma-calendar-container .fc-popover .fc-popover-body {
+	.fc-daygrid-event-harness {
+		max-height: none;
+		overflow: visible;
+	}
+
 	.fc-daygrid-event {
 		display: flex;
-		align-items: center;
-		gap: 6px;
-		padding: 4px 8px;
+		flex-direction: column;
+		align-items: stretch;
+		height: auto;
+		margin-top: 4px;
+		padding: 2px 4px;
 	}
 
-	.fc-event-time {
-		display: inline-block;
-		font-size: 12px;
-		color: var(--text-muted);
-		flex-shrink: 0;
-		min-width: 50px;
-	}
-
-	.fc-event-title {
-		flex: 1;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
+	.fc-event-main,
+	.prisma-fc-event-content-wrapper {
+		height: auto;
+		overflow: visible;
 	}
 }
