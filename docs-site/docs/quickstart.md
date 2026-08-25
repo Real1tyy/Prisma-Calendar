@@ -35,7 +35,9 @@ Choose **Use notes you already have** and Prisma scans your vault for folders th
 - **Datetime properties** — values with a time component (e.g. `2025-06-15T09:00`), used for timed events.
 - **Date properties** — date-only values (e.g. `2025-06-15`), used for all-day events.
 
-Click a folder to select it. Prisma makes its best guess at the mapping — a datetime property whose name contains "start" becomes your **Start property**, one containing "end" becomes your **End property**, and a date-only property becomes your **Date property**. Every guess is editable: each field has inline **Use** buttons listing the detected properties, so you can fix the mapping in one click — or just type a name yourself.
+Click a folder to select it. Prisma makes its best guess at the mapping — a datetime property whose name contains "start" becomes your **Start property**, one containing "end" becomes your **End property**, and a date-only property becomes your **Date property**. A property already named like a Prisma default (`Date`, `Start Date`, `End Date`) is always offered first, even if some other dated property appears in more notes; properties Prisma writes itself (`RRuleUntil`, `Sort Date`, and the other recurrence fields) are never offered, and vault bookkeeping like `Created` or `Modified` is offered last. Every guess is editable: each field has inline **Use** buttons listing the detected properties, so you can fix the mapping in one click — or just type a name yourself.
+
+The scan reads dates however Obsidian stores them — as plain text, as a **Date** or **Date & time** typed property, or inside a list property — so a folder is detected on the values you actually have, without retyping anything.
 
 You're mapping three things:
 
