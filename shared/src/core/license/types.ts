@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import type { ShowLinkNotice } from "../../utils/notice";
+
 // Stable machine-readable result codes returned by every verify/deactivate
 // response (success and error). Clients switch on `code` — never on the human
 // `error` string, which is for logs/support only. Mirrors the backend
@@ -83,4 +85,11 @@ export interface LicenseManagerConfig {
 	purchaseUrl: string;
 	deviceIdStorageKey: string;
 	licenseCacheStorageKey: string;
+	/**
+	 * Renders the Pro gate notice. Injected because the labelled-link renderer
+	 * is React and lives one layer up — wire it to
+	 * `createLinkNoticeRenderer(CSS_PREFIX)` from
+	 * `@real1ty/obsidian-plugins-react`.
+	 */
+	showNotice: ShowLinkNotice;
 }

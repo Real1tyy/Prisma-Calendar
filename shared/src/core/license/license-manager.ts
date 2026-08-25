@@ -1,7 +1,8 @@
 import { errors, importSPKI, jwtVerify } from "jose";
-import { apiVersion, Notice, Platform, requestUrl, type App } from "obsidian";
+import { apiVersion, Platform, requestUrl, type App } from "obsidian";
 import { BehaviorSubject, type Observable } from "rxjs";
 
+import type { NoticeLink } from "../../utils/notice";
 import {
 	LicenseStatusSchema,
 	type CachedLicenseData,
@@ -38,6 +39,9 @@ export const HEARTBEAT_INTERVAL_MS = 24 * 60 * 60 * 1000;
 export const HEARTBEAT_POLL_MS = 30 * 60 * 1000;
 // When a re-verify is due, delay it by a random 0..JITTER.
 export const HEARTBEAT_JITTER_MS = 5 * 60 * 1000;
+// Longer than a plain toast: the gate is only useful if the reader gets to the
+// Docs / Get Pro links before it fades.
+const PRO_GATE_NOTICE_MS = 10000;
 
 export class LicenseManager {
 	private app: App;
@@ -128,10 +132,16 @@ export class LicenseManager {
 		if (this.isPro) return true;
 		const purchaseUrl = options?.purchaseUrl ?? this.config.purchaseUrl;
 		const docsUrl = options?.docsUrl;
-		const lines = [`${featureName} requires ${this.config.productName} Pro.`];
-		if (docsUrl) lines.push(`Docs: ${docsUrl}`);
-		lines.push(`Get Pro: ${purchaseUrl}`);
-		new Notice(lines.join("\n"), 8000);
+		// Labels only — the hrefs carry UTM query strings that are unreadable as
+		// notice text and, since notice text is inert, not even copyable.
+		const links: NoticeLink[] = [];
+		if (docsUrl) links.push({ label: "Docs", href: docsUrl });
+		links.push({ label: "Get Pro", href: purchaseUrl });
+		this.config.showNotice({
+			message: `${featureName} requires ${this.config.productName} Pro.`,
+			links,
+			durationMs: PRO_GATE_NOTICE_MS,
+		});
 		console.debug(
 			`[${this.config.productName}] Pro feature required: ${featureName}` +
 				(docsUrl ? `\n  Docs: ${docsUrl}` : "") +

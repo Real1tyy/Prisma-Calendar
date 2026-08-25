@@ -1,6 +1,8 @@
 import { buildUtmUrl, LicenseManager, type LicenseManagerConfig } from "@real1ty/obsidian-plugins";
+import { createLinkNoticeRenderer } from "@real1ty/obsidian-plugins-react";
 import type { App } from "obsidian";
 
+import { CSS_PREFIX } from "../constants";
 import type { PrismaCalendarSettingsStore } from "../types";
 
 export { LicenseManager };
@@ -40,6 +42,7 @@ const LICENSE_CONFIG: LicenseManagerConfig = {
 	purchaseUrl: buildUtmUrl(PRO_PURCHASE_URL, "prisma-calendar", "plugin", "settings", "license_section"),
 	deviceIdStorageKey: DEVICE_ID_STORAGE_KEY,
 	licenseCacheStorageKey: LICENSE_CACHE_STORAGE_KEY,
+	showNotice: createLinkNoticeRenderer(CSS_PREFIX),
 };
 
 export function createLicenseManager(

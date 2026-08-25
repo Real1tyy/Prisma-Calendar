@@ -68,6 +68,15 @@ Pro unlocks these additional capabilities on top of everything in the free tier:
 | Programmatic API | — | Included |
 | Custom category presets | — | Included |
 
+## When a Pro Feature Is Locked
+
+Running a Pro command or opening a Pro view on the free plan shows a notice naming the feature, with two links you can click straight from the notice:
+
+- **Docs** — that feature's documentation page, so you can see exactly what it does before deciding
+- **Get Pro** — the purchase page, where the 30-day free trial starts
+
+The notice stays on screen for ten seconds so there's time to click. Clicking a link opens it in your browser and dismisses the notice.
+
 ## How to Upgrade
 
 1. Visit [matejvavroproductivity.com/tools/prisma-calendar](https://matejvavroproductivity.com/tools/prisma-calendar/?utm_source=docs-site&utm_medium=content&utm_content=free-vs-pro-upgrade) and start a 30-day free trial
