@@ -101,17 +101,20 @@ export interface GeneralSectionProps<T extends Record<string, unknown> = Record<
 	 * `${testIdPrefix}changelog-btn`, …) and threaded into the settings-transfer
 	 * buttons. Omit to emit no testids.
 	 */
-	testIdPrefix?: string;
+	// Every optional prop below spells `| undefined` because callers thread a
+	// possibly-undefined override through rather than omitting the key, and
+	// exactOptionalPropertyTypes rejects the bare `?:` form for that.
+	testIdPrefix?: string | undefined;
 	/** Help & support card. Default-on; pass `enabled: false` to hide. */
-	help?: GeneralHelpConfig;
+	help?: GeneralHelpConfig | undefined;
 	/** Changelog row. Default-on; pass `enabled: false` to hide. */
-	changelog?: GeneralChangelogConfig;
+	changelog?: GeneralChangelogConfig | undefined;
 	/** Import/export/reset row. Default-on; pass `enabled: false` to hide. */
-	settingsTransfer?: GeneralSettingsTransferConfig<T>;
+	settingsTransfer?: GeneralSettingsTransferConfig<T> | undefined;
 	/** License card. Opt-in — only renders when `enabled: true`. */
-	license?: GeneralLicenseConfig;
+	license?: GeneralLicenseConfig | undefined;
 	/** Universal sub-sections registered by other specs (logging, doctor). */
-	extraSections?: GeneralSubSection[];
+	extraSections?: GeneralSubSection[] | undefined;
 	/**
 	 * Stable slot for cross-cutting action buttons (rating, feedback). The
 	 * container always renders so future specs can fill it without restructuring

@@ -27,9 +27,12 @@ export interface SchemaFormSection {
 export interface SchemaFormProps<TValues extends FieldValues = FieldValues> {
 	form: UseFormReturn<TValues>;
 	schema: ZodObject<ZodRawShape>;
-	fieldOverrides?: Record<string, SchemaFormFieldOverride>;
-	sections?: SchemaFormSection[];
-	testIdPrefix?: string;
+	// `| undefined` is load-bearing under exactOptionalPropertyTypes: callers forward a
+	// possibly-undefined value rather than omitting the prop. Matches `testIdPrefix` on
+	// SchemaFormFieldProps below.
+	fieldOverrides?: Record<string, SchemaFormFieldOverride> | undefined;
+	sections?: SchemaFormSection[] | undefined;
+	testIdPrefix?: string | undefined;
 }
 
 function FieldError({ message }: { message: string | undefined }) {
