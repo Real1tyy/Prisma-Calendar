@@ -1,14 +1,18 @@
 import { introspectShape, mergePropertyOrder, toSafeString } from "@real1ty/obsidian-plugins";
 import {
+	Button,
 	PropertyOrderTable,
 	SettingHeading,
+	SettingItem,
 	useSettingsStore,
 	type PropertyOrderEntry,
 } from "@real1ty/obsidian-plugins-react";
 import { memo, useCallback, useMemo } from "react";
 
-import { cls } from "../../constants";
+import { cls, tid } from "../../constants";
+import { runNormalizePropertyOrder } from "../../core/api/normalize-property-order";
 import type { CalendarSettingsStore } from "../../core/settings-store";
+import type CustomCalendarPlugin from "../../main";
 import { DEFAULT_PROPERTY_ORDER } from "../../types/event-metadata";
 import { SingleCalendarConfigSchema, type SingleCalendarConfig } from "../../types/settings";
 import { DISPLAY_FIELDS } from "../../utils/calendar/settings";
@@ -16,6 +20,7 @@ import { PrismaSection } from "./_section";
 
 interface PropertiesSettingsProps {
 	settingsStore: CalendarSettingsStore;
+	plugin: CustomCalendarPlugin;
 }
 
 const propLabel = (descriptor: { label: string }): string => descriptor.label.replace(/ Prop$/, " property");
@@ -26,6 +31,7 @@ const STATUS_VALUE_FIELDS = ["doneValue", "notDoneValue", "customDoneProperty", 
 
 export const PropertiesSettingsReact = memo(function PropertiesSettingsReact({
 	settingsStore,
+	plugin,
 }: PropertiesSettingsProps) {
 	const [settings, updateSettings] = useSettingsStore(settingsStore);
 
@@ -64,6 +70,19 @@ export const PropertiesSettingsReact = memo(function PropertiesSettingsReact({
 			<SettingHeading name="Properties" />
 			<PropertyOrderIntro />
 			<PropertyOrderTable entries={entries} onReorder={handleReorder} onRename={handleRename} />
+			<SettingItem
+				name="Normalize property order"
+				description="Scan every event file for Prisma properties out of the order above, review the list, and rewrite them in one pass with a progress bar. Run it on one device and let sync propagate."
+				testId={tid("settings-normalize-property-order")}
+			>
+				<Button
+					variant="primary"
+					onClick={() => void runNormalizePropertyOrder(plugin)}
+					testId={tid("settings-normalize-property-order-button")}
+				>
+					Scan and normalize…
+				</Button>
+			</SettingItem>
 			{propSection("Sorting", ["sortingStrategy"])}
 			<EventTypesInfo settings={settings} />
 			<RecurringEventsInfo settings={settings} />
@@ -84,8 +103,9 @@ const PropertyOrderIntro = memo(function PropertyOrderIntro() {
 				shuffled property order disappear.
 			</p>
 			<p className="setting-item-description">
-				Already-divergent vaults converge lazily as events are edited, or immediately via the "Normalize property order"
-				command — run it on one device and let sync propagate the result.
+				Existing files pick up the order the next time Prisma writes to them. To apply it everywhere right away —
+				whether you're fixing sync conflicts or just setting the baseline for a new order — press "Scan and normalize…"
+				below or run the "Normalize property order" command, on one device, and let sync propagate.
 			</p>
 		</div>
 	);

@@ -16,9 +16,7 @@ import { DEFAULT_PROPERTY_ORDER } from "../../types/event-metadata";
  */
 export const getOrderedPropertyNames = (settings: SingleCalendarConfig): string[] =>
 	resolveOrderedPropertyNames(
-		// `?? []` — hand-rolled test settings (and pre-migration persisted configs) may
-		// predate the propertyOrder field; an absent order means "use the default".
-		mergePropertyOrder(settings.propertyOrder ?? [], DEFAULT_PROPERTY_ORDER),
+		mergePropertyOrder(settings.propertyOrder, DEFAULT_PROPERTY_ORDER),
 		(key) => toSafeString(settings[key as keyof SingleCalendarConfig]) ?? undefined
 	);
 

@@ -47,7 +47,7 @@ export function trashDuplicateFile(app: App, filePath: string, context: string):
  * main thread between batches so the UI stays responsive.
  */
 export async function batchedPromiseAll<T>(
-	items: T[],
+	items: readonly T[],
 	fn: (item: T) => Promise<void>,
 	batchSize: number
 ): Promise<void> {

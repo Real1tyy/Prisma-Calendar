@@ -2,7 +2,7 @@
 
 Tell Prisma Calendar which frontmatter keys you use — and in what order they live on disk.
 
-## Property Order & Sync-Safe Writes
+## Property Order
 
 The Properties tab lists every Prisma property in a single reorderable table. Each row shows the property's purpose and an input to rename its frontmatter key; drag a row (or use the arrow buttons) to change its position.
 
@@ -12,9 +12,19 @@ Why this matters: Obsidian appends new frontmatter keys at the end of the file, 
 
 Notes:
 
+- **Convergence is eventual** — a file adopts the configured order the next time Prisma writes to it. Use [Normalize property order](#normalize-property-order) to converge everything at once.
 - **Multiple planning systems (or plugins) on one directory** coexist: each one only groups its *own* properties, at the position they already occupy — no plugin fights another for the end of the file.
-- **Convergence is lazy** — a file adopts the configured order the next time Prisma writes to it. To converge an already-divergent vault immediately, run the **Normalize property order** command from the command palette on *one* device and let sync propagate the result. Files already in order are left untouched.
 - Keep the order setting itself in sync across devices (it lives in the plugin's `data.json`), so every device enforces the same order.
+
+## Normalize property order
+
+The **Scan and normalize…** button on the Properties tab (also available as the **Normalize property order** command in the command palette) converges an existing vault in one pass:
+
+1. **Scan** — every event file is checked against the configured order without writing anything.
+2. **Review** — a dialog lists the files whose Prisma properties are out of order. Cancel here and nothing changes.
+3. **Normalize** — on confirmation, the listed files are rewritten with a progress bar; the dialog closes with a summary of how many files were updated (and any that failed, with details in the developer console).
+
+Only Prisma's own properties move; other properties keep their positions. Files already in order are never touched, so re-running it is harmless. Run it on **one** device after changing the property order and let sync propagate the result — running it on several devices at once would just make them race to write the same files.
 
 ## Core Event Properties
 
