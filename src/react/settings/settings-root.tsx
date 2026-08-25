@@ -127,12 +127,16 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 	const handleConfigure = useCallback(async () => {
 		if (!selectedCalendar) return;
 
-		const result = await openConfigureCalendarModal(app, {
-			directory: selectedCalendar.directory,
-			startProp: selectedCalendar.startProp,
-			endProp: selectedCalendar.endProp,
-			dateProp: selectedCalendar.dateProp,
-		});
+		const result = await openConfigureCalendarModal(
+			app,
+			{
+				directory: selectedCalendar.directory,
+				startProp: selectedCalendar.startProp,
+				endProp: selectedCalendar.endProp,
+				dateProp: selectedCalendar.dateProp,
+			},
+			selectedCalendar
+		);
 
 		if (result) {
 			updateSelectedCalendar(result);

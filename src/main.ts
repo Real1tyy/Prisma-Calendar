@@ -381,8 +381,8 @@ export default class CustomCalendarPlugin extends Plugin {
 	}
 
 	private async showFirstLaunchOnboarding(): Promise<void> {
-		const scannedSuggestionsPromise = scanVaultForDirectorySuggestions(this.app);
 		const primaryCalendar = this.settingsStore.currentSettings.calendars[0];
+		const scannedSuggestionsPromise = scanVaultForDirectorySuggestions(this.app, primaryCalendar);
 
 		const result = await openFirstLaunchModal({
 			app: this.app,

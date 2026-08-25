@@ -3,7 +3,11 @@ import type { App } from "obsidian";
 import { memo, useCallback, useEffect, useState } from "react";
 
 import { cls, tid } from "../../../constants";
-import { scanVaultForDirectorySuggestions, type DirectorySuggestion } from "../../../core/directory-suggestions";
+import {
+	scanVaultForDirectorySuggestions,
+	type DirectorySuggestion,
+	type ScanPropNames,
+} from "../../../core/directory-suggestions";
 import { computePrefill, Field, PropertyFields, SuggestionList } from "./property-config";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -26,7 +30,8 @@ export interface ConfigureCalendarControllerProps {
 
 export async function openConfigureCalendarModal(
 	app: App,
-	initialValues: ConfigureCalendarResult
+	initialValues: ConfigureCalendarResult,
+	propNames: ScanPropNames
 ): Promise<ConfigureCalendarResult | null> {
 	return openReactModal<ConfigureCalendarResult>({
 		app,
@@ -34,7 +39,7 @@ export async function openConfigureCalendarModal(
 		testId: tid("configure-calendar-modal"),
 		render: (submit, cancel) => (
 			<ConfigureCalendarController
-				loadSuggestions={() => scanVaultForDirectorySuggestions(app)}
+				loadSuggestions={() => scanVaultForDirectorySuggestions(app, propNames)}
 				initialValues={initialValues}
 				onSubmit={submit}
 				onCancel={cancel}
