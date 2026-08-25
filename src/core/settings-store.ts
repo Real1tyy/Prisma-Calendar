@@ -1,43 +1,23 @@
-import { BehaviorSubject, type Subscription } from "rxjs";
+import { arrayElementLens, ScopedSettingsStore } from "@real1ty/obsidian-plugins";
 
 import { TOOLBAR_BUTTON_IDS } from "../constants";
 import {
 	SingleCalendarConfigSchema,
+	type CustomCalendarSettings,
 	type PrismaCalendarSettingsStore,
 	type SingleCalendarConfig,
 } from "../types/index";
-import { getCalendarById } from "../utils/calendar/settings";
 
 export type ToolbarButtonsKey = "toolbarButtons" | "mobileToolbarButtons";
 
-export class CalendarSettingsStore {
-	private subscription: Subscription | null = null;
-	public readonly settings$: BehaviorSubject<SingleCalendarConfig>;
-	public currentSettings: SingleCalendarConfig;
+export class CalendarSettingsStore extends ScopedSettingsStore<CustomCalendarSettings, SingleCalendarConfig> {
 	public readonly validationSchema = SingleCalendarConfigSchema;
 
 	constructor(
 		public readonly mainSettingsStore: PrismaCalendarSettingsStore,
 		public readonly calendarId: string
 	) {
-		const initialSettings = getCalendarById(mainSettingsStore.currentSettings, calendarId);
-		if (!initialSettings) {
-			throw new Error(`Calendar with id ${calendarId} not found`);
-		}
-		this.currentSettings = initialSettings;
-		this.settings$ = new BehaviorSubject(this.currentSettings);
-
-		this.subscription = mainSettingsStore.settings$.subscribe((fullSettings) => {
-			const newCalendarSettings = getCalendarById(fullSettings, this.calendarId);
-			if (newCalendarSettings) {
-				if (JSON.stringify(this.currentSettings) !== JSON.stringify(newCalendarSettings)) {
-					this.currentSettings = newCalendarSettings;
-					this.settings$.next(this.currentSettings);
-				}
-			} else {
-				// The Calendar was deleted
-			}
-		});
+		super(mainSettingsStore, arrayElementLens<CustomCalendarSettings, SingleCalendarConfig>("calendars", calendarId));
 	}
 
 	async toggleToolbarButton(key: ToolbarButtonsKey, buttonId: string, enabled: boolean): Promise<void> {
@@ -46,21 +26,5 @@ export class CalendarSettingsStore {
 			? TOOLBAR_BUTTON_IDS.filter((id) => current.includes(id) || id === buttonId)
 			: current.filter((id) => id !== buttonId);
 		await this.updateSettings((s) => ({ ...s, [key]: updated }));
-	}
-
-	async updateSettings(updater: (settings: SingleCalendarConfig) => SingleCalendarConfig): Promise<void> {
-		const newSettings = updater(this.currentSettings);
-		await this.mainSettingsStore.updateSettings((fullSettings) => {
-			return {
-				...fullSettings,
-				calendars: fullSettings.calendars.map((calendar) => (calendar.id === this.calendarId ? newSettings : calendar)),
-			};
-		});
-	}
-
-	destroy(): void {
-		this.subscription?.unsubscribe();
-		this.subscription = null;
-		this.settings$.complete();
 	}
 }
