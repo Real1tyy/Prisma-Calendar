@@ -257,6 +257,14 @@ export function obsidianPluginConfig(input: ObsidianPluginConfigInput): (env: { 
 			},
 			resolve: {
 				alias: { ...defaultAliases, ...resolveAliases },
+				// A plugin's src and shared-react's src can resolve `react` to two
+				// different copies (e.g. the workspace root's 19.2.8 vs shared-react's
+				// 19.2.5 when the plugin declares no react dep of its own). Two React
+				// instances in one bundle crash at first hook call — react-dom only
+				// initializes the dispatcher of ITS copy ("Cannot read properties of
+				// null (reading 'useRef')"). Dedupe pins every react import in the
+				// module graph to the copy resolved from the plugin root.
+				dedupe: ["react", "react-dom"],
 			},
 			build: {
 				target: "es2018",
