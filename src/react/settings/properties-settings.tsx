@@ -87,8 +87,9 @@ export const PropertiesSettingsReact = memo(function PropertiesSettingsReact({
 			<EventTypesInfo settings={settings} />
 			<RecurringEventsInfo settings={settings} />
 			{propSection("Status values", STATUS_VALUE_FIELDS)}
+			<SettingHeading name="Display properties" />
 			<FrontmatterDisplayIntro />
-			<PrismaSection store={settingsStore} shape={SHAPE} heading="Display in events" fields={DISPLAY_FIELDS} />
+			<PrismaSection store={settingsStore} shape={SHAPE} fields={DISPLAY_FIELDS} />
 		</>
 	);
 });

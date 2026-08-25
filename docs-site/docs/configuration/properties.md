@@ -105,9 +105,9 @@ RRuleID: standup-2025
 ---
 ```
 
-## Frontmatter Display
+## Display Properties
 
-Show extra frontmatter properties inside event chips (scrollable when space is tight).
+The **Display properties** section at the bottom of the Properties tab shows extra frontmatter properties inside event chips (scrollable when space is tight).
 
 - **Display properties (timed events)**: comma-separated list of properties to show in timed event chips (e.g., `status, priority, project, tags`). Shown in weekly and daily views, hidden in monthly view.
 - **Display properties (all-day events)**: comma-separated list of properties to show in all-day event chips (can differ from timed events). Shown in weekly and daily views, hidden in monthly view.
