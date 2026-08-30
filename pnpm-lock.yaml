@@ -78,8 +78,10 @@ overrides:
   esbuild@>=0.27.3 <0.28.1: '>=0.28.1 <0.29'
   fast-uri@<3.1.5: '>=3.1.5 <4'
   immutable@>=5.0.0-beta.1 <5.1.8: '>=5.1.8 <6'
-  js-yaml@>=4.0.0 <4.3.0: '>=4.3.0 <5'
+  js-yaml@<3.15.1: '>=3.15.1 <4'
+  js-yaml@>=4.0.0 <4.3.1: '>=4.3.1 <5'
   jsonata@<2.2.0: '>=2.2.0 <3'
+  nanoid@<3.3.18: '>=3.3.18 <4'
   postcss@<=8.5.17: '>=8.5.18 <9'
   re2@<=1.25.1: '>=1.25.2 <2'
   undici@>=7.0.0 <7.28.0: '>=7.28.0 <8'
@@ -152,8 +154,8 @@ importers:
         specifier: ^3.7.2
         version: 3.7.2
       nanoid:
-        specifier: ^5.1.11
-        version: 5.1.11
+        specifier: ^5.1.16
+        version: 5.1.16
       obsidian:
         specifier: 1.13.1
         version: 1.13.1(@codemirror/state@6.6.0)(@codemirror/view@6.43.0)
@@ -2837,9 +2839,9 @@ packages:
   js-tokens@4.0.0:
     resolution:
       integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==
-  js-yaml@4.3.0:
+  js-yaml@4.3.2:
     resolution:
-      integrity: sha512-1td788aAnnZ5qs7V2QIRl1owjtYpbKt749Y3xauqQgwIIGF/xXWz1wMTEBx5O3LK3lXLVuqXPdPxj2BoFHaW9Q==
+      integrity: sha512-SFNOvSJ+Dgf/9An904Yx+CgSlIPCkIpao4qo51lpee25TIRejdH3rhR4EZMGoNx3/TP3O+wzWuiTFl4sqbltzA==
     hasBin: true
   jsdom@29.1.1:
     resolution:
@@ -3110,15 +3112,15 @@ packages:
   ms@2.1.3:
     resolution:
       integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==
-  nanoid@3.3.16:
+  nanoid@3.3.18:
     resolution:
-      integrity: sha512-bzlKTyNJ7+LdGIIwy8ijFpIqEQIvafahV7eYykJ8Cvh42EdJeODoJ6gUJXpQJvej1BddH8OqTXZNE/KfbWAu8Q==
+      integrity: sha512-DTg4MJbGMWkfi6VZFdNt2/caMbQy4Ou+Op/hJQvGEWcnVfoA1QA+xzRKAzw9jD6+GVOOeYr/mIcuDSdug6F6+w==
     engines:
       node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1
     hasBin: true
-  nanoid@5.1.11:
+  nanoid@5.1.16:
     resolution:
-      integrity: sha512-v+KEsUv2ps74PaSKv0gHTxTCgMXOIfBEbaqa6w6ISIGC7ZsvHN4N9oJ8d4cmf0n5oTzQz2SLmThbQWhjd/8eKg==
+      integrity: sha512-kVrnsrJqMR8+oLJnGEmSWw9BivK5mt7H3FZatVRjrc5wGqFYuBxX1yG7+A7Gi5AefkX6t/oCkizcQgpu0cY1dQ==
     engines:
       node: ^18 || >=20
     hasBin: true
@@ -3748,7 +3750,7 @@ packages:
     resolution:
       integrity: sha512-cYj0LRuLV2c2sMqhqhGpaO3LretdtMn/BVX4cPLanIZuwwrkVl+lK84E/miEXkCHWXuq65rhNN4rXsBcOB3S4w==
     peerDependencies:
-      vite: '>=7.3.2'
+      vite: '>=8.0.16 <9'
     peerDependenciesMeta:
       vite:
         optional: true
@@ -3814,7 +3816,7 @@ packages:
       '@vitest/ui': 4.1.8
       happy-dom: '*'
       jsdom: '*'
-      vite: '>=7.3.2'
+      vite: '>=8.0.16 <9'
     peerDependenciesMeta:
       '@edge-runtime/vm':
         optional: true
@@ -3963,7 +3965,7 @@ snapshots:
     dependencies:
       '@jsdevtools/ono': 7.1.3
       '@types/json-schema': 7.0.15
-      js-yaml: 4.3.0
+      js-yaml: 4.3.2
   '@asamuzakjp/css-color@5.1.11':
     dependencies:
       '@asamuzakjp/generational-cache': 1.0.1
@@ -4946,7 +4948,7 @@ snapshots:
     dependencies:
       env-paths: 2.2.1
       import-fresh: 3.3.1
-      js-yaml: 4.3.0
+      js-yaml: 4.3.2
       parse-json: 5.2.0
     optionalDependencies:
       typescript: 5.9.3
@@ -4989,7 +4991,7 @@ snapshots:
   date-holidays@3.26.8:
     dependencies:
       date-holidays-parser: 3.4.7
-      js-yaml: 4.3.0
+      js-yaml: 4.3.2
       lodash: 4.18.1
       prepin: 1.0.3
   debug@4.4.3:
@@ -5202,7 +5204,7 @@ snapshots:
   jose@6.2.1: {}
   js-tokens@10.0.0: {}
   js-tokens@4.0.0: {}
-  js-yaml@4.3.0:
+  js-yaml@4.3.2:
     dependencies:
       argparse: 2.0.1
   jsdom@29.1.1:
@@ -5239,7 +5241,7 @@ snapshots:
       '@types/json-schema': 7.0.15
       '@types/lodash': 4.17.24
       is-glob: 4.0.3
-      js-yaml: 4.3.0
+      js-yaml: 4.3.2
       lodash: 4.18.1
       minimist: 1.2.8
       prettier: 3.8.1
@@ -5351,8 +5353,8 @@ snapshots:
   moment@2.29.4: {}
   moment@2.30.1: {}
   ms@2.1.3: {}
-  nanoid@3.3.16: {}
-  nanoid@5.1.11: {}
+  nanoid@3.3.18: {}
+  nanoid@5.1.16: {}
   napi-macros@2.2.2: {}
   node-addon-api@7.1.1:
     optional: true
@@ -5477,7 +5479,7 @@ snapshots:
   postcss-value-parser@4.2.0: {}
   postcss@8.5.25:
     dependencies:
-      nanoid: 3.3.16
+      nanoid: 3.3.18
       picocolors: 1.1.1
       source-map-js: 1.2.1
   preact@10.12.1: {}
