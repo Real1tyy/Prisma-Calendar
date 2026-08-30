@@ -56,7 +56,8 @@ export function showLinkNotice({
 	testIdPrefix,
 }: ShowLinkNoticeOptions): Notice {
 	const doc = resolveDocument();
-	const container = doc.createElement("div");
+	const fragment = createFragment();
+	const container = fragment.createDiv();
 	const root = createRoot(container);
 	root.render(
 		<StrictMode>
@@ -66,8 +67,6 @@ export function showLinkNotice({
 		</StrictMode>
 	);
 
-	const fragment = doc.createDocumentFragment();
-	fragment.appendChild(container);
 	const notice = new Notice(fragment, durationMs);
 	unmountWhenDetached(notice.containerEl, root);
 	return notice;
