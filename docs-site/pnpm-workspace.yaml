@@ -25,12 +25,13 @@ overrides:
   'follow-redirects@<=1.15.11': '1.16.0'
   'http-proxy-middleware@>=0.16.0 <2.0.10': '2.0.10'
   'joi@<17.13.4': '17.13.4'
-  'js-yaml@<3.15.0': '3.15.0'
-  'js-yaml@>=4.0.0 <4.3.0': '4.3.0'
+  'js-yaml@<3.15.1': '3.15.1'
+  'js-yaml@>=4.0.0 <4.3.1': '4.3.1'
   'launch-editor@<=2.14.0': '2.14.1'
   'lodash@<=4.17.23': '4.18.1'
   'mdast-util-to-hast@>=13.0.0 <13.2.1': '13.2.1'
   'minimatch@<3.1.4': '3.1.4'
+  'nanoid@<3.3.18': '3.3.18'
   'node-forge@<1.4.0': '1.4.0'
   'path-to-regexp@<0.1.13': '0.1.13'
   'picomatch@<2.3.2': '2.3.2'
@@ -53,6 +54,11 @@ overrides:
 # sits below the --fail-on=high release threshold; revisit if uuid backports a
 # bounds check to 8.x, or when Docusaurus stops depending on uuid@8.
 
+# image-size has no floor because none exists to write: GHSA-w3rx-r6r6-pgpr and
+# GHSA-5p2g-fcmc-qvqq both name >=2.0.3 as patched, and npm's newest published
+# image-size is 2.0.2. Both are HIGH, so unlike uuid above they are carried in
+# .config/deps-audit-waivers.toml, which keeps them visible in the gate output.
+
 # A security floor must not wait out pnpm's new-release quarantine — these
 # versions are pinned *because* they are the fix.
 minimumReleaseAgeExclude:
@@ -62,6 +68,9 @@ minimumReleaseAgeExclude:
   - fast-uri@3.1.5
   - http-proxy-middleware@2.0.10
   - joi@17.13.4
+  - js-yaml@3.15.1
+  - js-yaml@4.3.1
   - launch-editor@2.14.1
+  - nanoid@3.3.18
   - postcss@8.5.24
   - webpack-dev-server@5.2.6
