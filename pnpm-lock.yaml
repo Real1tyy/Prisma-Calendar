@@ -74,7 +74,7 @@ overrides:
   '@opentelemetry/core@<2.8.0': '>=2.8.0 <3'
   brace-expansion@<1.1.17: '>=1.1.17 <2'
   brace-expansion@>=4.0.0 <5.0.9: '>=5.0.9 <6'
-  dompurify@<=3.4.11: '>=3.4.12 <4'
+  dompurify@<=3.4.12: '>=3.4.13 <4'
   esbuild@>=0.27.3 <0.28.1: '>=0.28.1 <0.29'
   fast-uri@<3.1.5: '>=3.1.5 <4'
   immutable@>=5.0.0-beta.1 <5.1.8: '>=5.1.8 <6'
@@ -3750,7 +3750,7 @@ packages:
     resolution:
       integrity: sha512-cYj0LRuLV2c2sMqhqhGpaO3LretdtMn/BVX4cPLanIZuwwrkVl+lK84E/miEXkCHWXuq65rhNN4rXsBcOB3S4w==
     peerDependencies:
-      vite: '>=8.0.16 <9'
+      vite: '>=7.3.2'
     peerDependenciesMeta:
       vite:
         optional: true
@@ -3816,7 +3816,7 @@ packages:
       '@vitest/ui': 4.1.8
       happy-dom: '*'
       jsdom: '*'
-      vite: '>=8.0.16 <9'
+      vite: '>=7.3.2'
     peerDependenciesMeta:
       '@edge-runtime/vm':
         optional: true
