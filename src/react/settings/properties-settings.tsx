@@ -38,7 +38,7 @@ export const PropertiesSettingsReact = memo(function PropertiesSettingsReact({
 	const descriptorsByKey = useMemo(() => new Map(introspectShape(SHAPE).map((d) => [d.key, d])), []);
 
 	const entries = useMemo<PropertyOrderEntry[]>(() => {
-		const orderedKeys = mergePropertyOrder(settings.propertyOrder ?? [], DEFAULT_PROPERTY_ORDER);
+		const orderedKeys = mergePropertyOrder(settings.propertyOrder, DEFAULT_PROPERTY_ORDER);
 		return orderedKeys.map((key) => {
 			const descriptor = descriptorsByKey.get(key);
 			return {
