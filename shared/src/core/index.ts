@@ -8,6 +8,7 @@ export * from "./frontmatter";
 export * from "./history-stack";
 export * from "./indexer";
 export * from "./license";
+export * from "./logging";
 export * from "./release-check";
 export * from "./settings";
 export * from "./storage";
