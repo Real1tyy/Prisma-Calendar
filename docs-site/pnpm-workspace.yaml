@@ -51,8 +51,13 @@ overrides:
 # advisory's only patched line is >=11.1.1 — three majors up — and uuid dropped
 # its callable default export in v7, so forcing it is exactly the cross-major
 # breakage [[decision-deps-audit-fix-within-major-cap]] exists to prevent. It
-# sits below the --fail-on=high release threshold; revisit if uuid backports a
-# bounds check to 8.x, or when Docusaurus stops depending on uuid@8.
+# sits below the --fail-on=high release threshold.
+#
+# The constraint is `sockjs`, not Docusaurus: sockjs@0.3.24 declares uuid ^8, and
+# 0.3.24 IS the newest sockjs, so no upgrade path exists on either side. sockjs
+# reaches only webpack-dev-server, so this never enters built docs output.
+# Revisit if uuid backports a bounds check to 8.x, or if sockjs ships a release
+# that moves off uuid@8.
 
 # image-size has no floor because none exists to write: GHSA-w3rx-r6r6-pgpr and
 # GHSA-5p2g-fcmc-qvqq both name >=2.0.3 as patched, and npm's newest published
