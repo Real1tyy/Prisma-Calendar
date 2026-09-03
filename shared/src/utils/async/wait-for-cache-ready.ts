@@ -1,70 +1,62 @@
 import type { App, MetadataCache } from "obsidian";
 
 /**
- * Undocumented `MetadataCache` members Obsidian uses for its own "Indexing
- * complete" notice (read out of `obsidian.asar`, see
- * [[knowledge-obsidian-metadata-cache-startup-internals]]). Boot order is
+ * The one undocumented `MetadataCache` member the startup gate reads (see
+ * [[knowledge-obsidian-metadata-cache-startup-internals]]): the number of
+ * parse tasks Obsidian still has in flight. Boot order is
  * `await metadataCache.initialize()` → `workspace.loadLayout()`, so by
- * `onLayoutReady` `initialized` is always true and the only thing left to wait
- * for is the parse worker + link resolver draining — which is exactly
- * `isCacheClean()`. Feature-detected on every call, never assumed.
+ * `onLayoutReady` every file is either cached or queued for a parse, and
+ * "no parse in flight" is exactly "every file's frontmatter is current".
+ *
+ * Deliberately NOT `isCacheClean()` / `onCleanCache()`: those also require the
+ * link-resolver queue to be empty and idle, and in the wild that half sits
+ * false on an idle vault (observed: 0 tasks in flight for a full minute while
+ * `isCacheClean()` stayed false). Link resolution says nothing about
+ * frontmatter, so waiting on it only ever delays startup. Feature-detected on
+ * every call, never assumed.
  */
 export interface MetadataCacheInternals {
-	initialized: boolean;
 	inProgressTaskCount: number;
-	isCacheClean: () => boolean;
-	onCleanCache: (callback: () => void) => void;
 }
 
 export function getMetadataCacheInternals(cache: MetadataCache): MetadataCacheInternals | null {
 	const candidate = cache as unknown as Partial<MetadataCacheInternals>;
-	if (typeof candidate.isCacheClean !== "function" || typeof candidate.onCleanCache !== "function") return null;
-	return candidate as MetadataCacheInternals;
+	return typeof candidate.inProgressTaskCount === "number" ? (candidate as MetadataCacheInternals) : null;
 }
 
-/**
- * `isCacheClean` dereferences Obsidian's link-resolver queue, which Obsidian
- * nulls on cancel. A throw means the internals are not usable right now;
- * callers treat `null` as "fall back to the public signals".
- */
-export function isCacheCleanSafe(internals: MetadataCacheInternals): boolean | null {
-	try {
-		return internals.isCacheClean();
-	} catch {
-		return null;
-	}
+/** True when Obsidian has no metadata parse in flight — every file's cache entry is current. */
+export function isParsingIdle(internals: MetadataCacheInternals): boolean {
+	return internals.inProgressTaskCount === 0;
 }
 
 /** Fallback (no internals): give up after this long even if `resolved` never fires. */
 const CACHE_READY_TIMEOUT_MS = 30_000;
+/** How often the internals path re-reads the in-flight counter. */
+const POLL_MS = 250;
 /**
- * Stall watchdog for the internals path. `onCleanCache` is Obsidian's own
- * promise that the callback fires once indexing drains; the one way it never
- * fires is a wedged worker whose `inProgressTaskCount` stops moving. Sample it
- * and only give up when it has not changed for a full window — a slow vault
- * that is still making progress waits as long as it needs.
+ * Stall watchdog for the internals path: the one way the counter never reaches
+ * zero is a wedged parse worker, which shows as the counter not moving. Give up
+ * only after it has not changed for a full window — a slow vault that is still
+ * making progress waits as long as it needs.
  */
-const STALL_SAMPLE_MS = 5_000;
 const STALL_GIVE_UP_MS = 60_000;
 
 /**
- * Resolves once Obsidian's metadata cache is fully ready: layout loaded, every
- * queued parse finished, link resolution drained. The single startup gate every
- * plugin in this repo sits behind before it scans, reads, or writes anything.
+ * Resolves once Obsidian's metadata cache is fully ready: layout loaded and
+ * every queued parse finished. The single startup gate every plugin in this
+ * repo sits behind before it scans, reads, or writes anything.
  *
- * With Obsidian's internals available this is the same condition Obsidian uses
- * for its "Indexing complete" notice. Without them (tests, a future build that
- * renames them) it falls back to "every markdown file has a cache entry, else
- * wait for `resolved`" with a hard timeout — weaker, because a file modified
- * since the last session serves its stale entry until reparsed.
+ * Without the internals (tests, a future build that renames the member) it
+ * falls back to "every markdown file has a cache entry, else wait for
+ * `resolved`" with a hard timeout — weaker, because a file modified since the
+ * last session serves its stale entry until reparsed.
  */
 export function waitForCacheReady(app: App): Promise<void> {
 	return new Promise<void>((resolve) => {
 		app.workspace.onLayoutReady(() => {
 			const internals = getMetadataCacheInternals(app.metadataCache);
-			const clean = internals ? isCacheCleanSafe(internals) : null;
-			if (internals && clean !== null) {
-				waitForCleanCache(internals, clean, resolve);
+			if (internals) {
+				waitForParsingIdle(internals, resolve);
 			} else {
 				waitForCacheReadyHeuristic(app, resolve);
 			}
@@ -72,25 +64,23 @@ export function waitForCacheReady(app: App): Promise<void> {
 	});
 }
 
-function waitForCleanCache(internals: MetadataCacheInternals, cleanNow: boolean, resolve: () => void): void {
-	if (cleanNow) {
+function waitForParsingIdle(internals: MetadataCacheInternals, resolve: () => void): void {
+	if (isParsingIdle(internals)) {
 		resolve();
 		return;
 	}
 
-	let settled = false;
 	let lastCount = internals.inProgressTaskCount;
 	let lastProgressAt = Date.now();
-	const finish = (): void => {
-		if (settled) return;
-		settled = true;
-		window.clearInterval(watchdog);
-		resolve();
-	};
-	const watchdog = window.setInterval(() => {
-		// A throw mid-wait (queue cancelled) has nothing better to wait for.
-		if (isCacheCleanSafe(internals) !== false) {
-			finish();
+	// Diagnostic breadcrumb: a "stuck on the indexing overlay" report is only
+	// actionable if the console shows which gate was waiting and on what.
+	console.info(
+		`[waitForCacheReady] Obsidian is still indexing (${lastCount} parse task(s) in flight); waiting for it to finish before the plugin starts.`
+	);
+	const poll = window.setInterval(() => {
+		if (isParsingIdle(internals)) {
+			window.clearInterval(poll);
+			resolve();
 			return;
 		}
 		if (internals.inProgressTaskCount !== lastCount) {
@@ -102,11 +92,10 @@ function waitForCleanCache(internals: MetadataCacheInternals, cleanNow: boolean,
 			console.error(
 				`[waitForCacheReady] Obsidian's metadata indexing has made no progress for ${STALL_GIVE_UP_MS}ms (${lastCount} task(s) in flight); proceeding with a partial cache.`
 			);
-			finish();
+			window.clearInterval(poll);
+			resolve();
 		}
-	}, STALL_SAMPLE_MS);
-
-	internals.onCleanCache(finish);
+	}, POLL_MS);
 }
 
 function waitForCacheReadyHeuristic(app: App, resolve: () => void): void {

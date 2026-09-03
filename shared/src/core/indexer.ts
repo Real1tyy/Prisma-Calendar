@@ -23,7 +23,7 @@ import {
 import { filter, map, mergeMap, toArray } from "rxjs/operators";
 
 import { perf } from "../perf";
-import { getMetadataCacheInternals, isCacheCleanSafe, waitForCacheReady } from "../utils/async/wait-for-cache-ready";
+import { getMetadataCacheInternals, isParsingIdle, waitForCacheReady } from "../utils/async/wait-for-cache-ready";
 import { compareFrontmatter, type FrontmatterDiff } from "./frontmatter/frontmatter-diff";
 
 /**
@@ -327,17 +327,16 @@ export class Indexer {
 	}
 
 	/**
-	 * Once Obsidian reports its indexing drained (`isCacheClean()` — the same
-	 * condition behind its "Indexing complete" notice), a file that is still
-	 * uncached is one Obsidian itself failed to parse ("Metadata failed to
-	 * parse" in its console). Nothing will ever cache it, so waiting out the
-	 * inactivity window would only delay every consumer for nothing. Drop it
-	 * with a warning and complete. Returns true when it completed the scan.
+	 * Once Obsidian has no parse task in flight, a file that is still uncached
+	 * is one Obsidian itself failed to parse ("Metadata failed to parse" in its
+	 * console). Nothing will ever cache it, so waiting out the inactivity
+	 * window would only delay every consumer for nothing. Drop it with a
+	 * warning and complete. Returns true when it completed the scan.
 	 */
 	private dropUnparseableIfCacheClean(): boolean {
 		if (this.pendingCacheFiles.size === 0) return false;
 		const internals = getMetadataCacheInternals(this.metadataCache);
-		if (!internals || isCacheCleanSafe(internals) !== true) return false;
+		if (!internals || !isParsingIdle(internals)) return false;
 		const paths = Array.from(this.pendingCacheFiles.keys());
 		console.warn(
 			`[Indexer] Obsidian finished indexing but ${paths.length} file(s) have no metadata cache — Obsidian could not parse them (check its console for "Metadata failed to parse"); completing the scan without them:`,
