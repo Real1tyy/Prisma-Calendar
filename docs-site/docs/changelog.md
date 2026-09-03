@@ -10,11 +10,11 @@ All notable changes to this project will be documented here.
 
 ### Added
 - **In-app Help Center**: **General → Help & support** now has an **Open help center** button that opens a tabbed modal embedding the FAQ and Troubleshooting documentation pages (bundled with the plugin, so they're always current) plus one-click links to the docs, GitHub issues and feedback. See [General → Help Center](./configuration/general.md#help-center).
-- **Separate icon and text colors**: the edit form for tabs (including subgroup tabs), header actions, and context menu items now has two color controls — *icon color* tints the glyph, *text color* tints the label — each with its own reset. See [Tabbed Views → Tab Icons and colors](./features/views/tabbed-views.md#tab-icons-and-colors).
+- **Independent icon, text, and background colors**: tabs (including subgroup tabs), header actions, and context-menu items now have separate, resettable controls. Icon color tints the glyph, text color tints the label, and background color styles the tab, action, or menu-item surface; configured colors also preview in their managers. See [Tabbed Views → Tab Icons and colors](./features/views/tabbed-views.md#tab-icons-and-colors).
 
 ### Fixed
 - **More robust startup**: Prisma now waits until Obsidian has finished indexing your vault before it does any work of its own — calendar-subscription and CalDAV syncs, recurring instances, marking past events done, cleaning up duplicates. The wait is progressive, so a large vault on a slow start simply takes as long as it needs, and nothing is written until the index is complete. See [Integrations → Syncing and vault indexing](./features/advanced/integrations.md#syncing-and-vault-indexing).
-- **"No icon" now removes a tab's icon**: selecting **No icon** in the tab manager's icon picker previously snapped the tab back to its default icon instead of clearing it; it now leaves the tab showing label text only, with the reset button restoring the default.
+- **"No icon" now removes a tab's icon**: selecting **No icon** in the tab manager's icon picker now persists an explicit removal instead of snapping back to the default icon. The tab keeps its label text, and reset restores the default icon.
 
 ---
 
