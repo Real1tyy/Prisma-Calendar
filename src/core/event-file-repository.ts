@@ -424,6 +424,22 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 
 	// ─── Recurring Event Detection ───────────────────────────────
 
+	/**
+	 * Never awaited. `tryParseRecurring` runs inside a table event handler that
+	 * the readiness barrier tracks, and the frontmatter queue holds writes until
+	 * the table is ready — awaiting the write here would make readiness wait on
+	 * a handler that waits on readiness, and the plugin would never start. The
+	 * generated id is already in the event being emitted; the disk write lands
+	 * once the scan settles.
+	 */
+	private queueRRuleIdWrite(row: VaultRow<Frontmatter>, rRuleId: string): void {
+		void this.enqueueFrontmatterWrite(row.file, (fm: Frontmatter) => {
+			fm[this.settings.rruleIdProp] = rRuleId;
+		}).catch((error: unknown) => {
+			console.error(`[EventFileRepository] Error writing rRuleId to ${row.filePath}:`, error);
+		});
+	}
+
 	private async tryParseRecurring(
 		row: VaultRow<Frontmatter>,
 		oldFrontmatter?: Frontmatter
@@ -441,9 +457,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 		if (rRuleId && previousRRuleId && rRuleId !== previousRRuleId) {
 			rRuleId = previousRRuleId;
 			if (!this.syncStore?.data.readOnly) {
-				await this.enqueueFrontmatterWrite(row.file, (fm: Frontmatter) => {
-					fm[this.settings.rruleIdProp] = rRuleId;
-				});
+				this.queueRRuleIdWrite(row, rRuleId);
 			}
 		}
 
@@ -467,9 +481,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 				return null;
 			} else {
 				rRuleId = generateUniqueRruleId();
-				await this.enqueueFrontmatterWrite(row.file, (fm: Frontmatter) => {
-					fm[this.settings.rruleIdProp] = rRuleId;
-				});
+				this.queueRRuleIdWrite(row, rRuleId);
 			}
 		}
 
