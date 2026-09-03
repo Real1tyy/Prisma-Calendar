@@ -281,35 +281,23 @@
 
 // Event Modal - Content and internal layout
 .prisma-event-modal {
-	&.modal {
-		height: auto;
-		max-height: calc(100vh - 32px);
-	}
-
-	// Let the form use its natural height until it reaches the viewport. At that
-	// point this outer modal content is the one scroll owner, so the header and
-	// footer can remain sticky without a nested form-body scrollbar.
+	// Keep the modal at its established height. Header and footer are siblings
+	// of the one scrollable form body, so they remain visible without relying on
+	// fragile sticky positioning inside a flex scroller.
+	.modal-content,
 	.prisma-event-modal-content {
 		display: flex;
 		flex-direction: column;
+		max-height: min(100vh, 740px);
+		overflow: hidden;
 		gap: 0;
 	}
 
-	.modal-content {
-		max-height: calc(100vh - 32px);
-		overflow-y: auto;
-	}
-
-	.prisma-event-modal-content {
-		max-height: none;
-		overflow: visible;
-	}
-
-	// Header + form fields stay in the same document flow.
+	// Only the event fields scroll; the header and footer remain fixed.
 	.prisma-event-modal-body {
-		flex: none;
-		min-height: auto;
-		overflow: visible;
+		flex: 1;
+		min-height: 0;
+		overflow-y: auto;
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
@@ -871,7 +859,8 @@
 		width: 100%;
 		box-sizing: border-box;
 		min-height: 10rem;
-		resize: vertical;
+		overflow-y: hidden;
+		resize: none;
 	}
 }
 

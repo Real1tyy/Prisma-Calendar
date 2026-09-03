@@ -2951,27 +2951,18 @@ button[class*=prisma-]:focus-visible {
   color: var(--text-normal);
 }
 
-.prisma-event-modal.modal {
-  height: auto;
-  max-height: calc(100vh - 32px);
-}
+.prisma-event-modal .modal-content,
 .prisma-event-modal .prisma-event-modal-content {
   display: flex;
   flex-direction: column;
+  max-height: min(100vh, 740px);
+  overflow: hidden;
   gap: 0;
 }
-.prisma-event-modal .modal-content {
-  max-height: calc(100vh - 32px);
-  overflow-y: auto;
-}
-.prisma-event-modal .prisma-event-modal-content {
-  max-height: none;
-  overflow: visible;
-}
 .prisma-event-modal .prisma-event-modal-body {
-  flex: none;
-  min-height: auto;
-  overflow: visible;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -3427,7 +3418,8 @@ button[class*=prisma-]:focus-visible {
   width: 100%;
   box-sizing: border-box;
   min-height: 10rem;
-  resize: vertical;
+  overflow-y: hidden;
+  resize: none;
 }
 
 .prisma-note-content-conflict {

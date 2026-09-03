@@ -1,7 +1,7 @@
 import { extractContentAfterFrontmatter } from "@real1ty/obsidian-plugins";
 import { TextareaInput } from "@real1ty/obsidian-plugins-react";
 import { TFile, type App } from "obsidian";
-import { memo, useEffect, useRef, useState, type RefObject } from "react";
+import { memo, useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
 import { useController, type UseFormReturn } from "react-hook-form";
 
 import type { EventFormState } from "../../../components/modals/event/event-form-state";
@@ -79,6 +79,13 @@ export const NoteContentSection = memo(function NoteContentSection({
 		});
 		return () => app.vault.offref(ref);
 	}, [app, filePath, form, onConflictChange]);
+
+	useLayoutEffect(() => {
+		const textarea = containerRef.current?.querySelector<HTMLTextAreaElement>("textarea");
+		if (!textarea) return;
+		textarea.style.height = "auto";
+		textarea.style.height = `${textarea.scrollHeight}px`;
+	}, [containerRef, field.value]);
 
 	return (
 		<div ref={containerRef} className="prisma-note-content-section" data-testid="prisma-event-field-content">
