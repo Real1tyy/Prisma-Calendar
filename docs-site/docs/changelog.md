@@ -8,6 +8,9 @@ All notable changes to this project will be documented here.
 
 ## Unreleased
 
+### Added
+- **In-app Help Center**: **General → Help & support** now has an **Open help center** button that opens a tabbed modal embedding the FAQ and Troubleshooting documentation pages (bundled with the plugin, so they're always current) plus one-click links to the docs, GitHub issues and feedback. See [General → Help Center](./configuration/general.md#help-center).
+
 ### Fixed
 - **More robust startup**: Prisma now waits until Obsidian has finished indexing your vault before it does any work of its own — calendar-subscription and CalDAV syncs, recurring instances, marking past events done, cleaning up duplicates. The wait is progressive, so a large vault on a slow start simply takes as long as it needs, and nothing is written until the index is complete. See [Integrations → Syncing and vault indexing](./features/advanced/integrations.md#syncing-and-vault-indexing).
 
