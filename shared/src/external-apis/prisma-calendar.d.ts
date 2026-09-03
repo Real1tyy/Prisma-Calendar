@@ -399,6 +399,9 @@ export type PrismaCalendarGetSettingsOutput = {
 		| "makeUntracked"
 	)[];
 	contextMenuState?: {
+		backgroundColorOverrides?: {
+			[k: string]: string;
+		};
 		colorOverrides?: {
 			[k: string]: string;
 		};
@@ -545,6 +548,9 @@ export type PrismaCalendarGetSettingsOutput = {
 	 */
 	futureInstancesCountProp: string;
 	ganttContextMenuState?: {
+		backgroundColorOverrides?: {
+			[k: string]: string;
+		};
 		colorOverrides?: {
 			[k: string]: string;
 		};
@@ -656,6 +662,9 @@ export type PrismaCalendarGetSettingsOutput = {
 	notificationSound: PlayNotificationSound;
 	nowIndicator: ShowCurrentTimeIndicator;
 	pageHeaderState?: {
+		backgroundColorOverrides?: {
+			[k: string]: string;
+		};
 		colorOverrides?: {
 			[k: string]: string;
 		};
@@ -1557,6 +1566,9 @@ export interface PrismaCalendarUpdateSettingsInput {
 			| "makeUntracked"
 		)[];
 		contextMenuState?: {
+			backgroundColorOverrides?: {
+				[k: string]: string;
+			};
 			colorOverrides?: {
 				[k: string]: string;
 			};
@@ -1703,6 +1715,9 @@ export interface PrismaCalendarUpdateSettingsInput {
 		 */
 		futureInstancesCountProp?: string;
 		ganttContextMenuState?: {
+			backgroundColorOverrides?: {
+				[k: string]: string;
+			};
 			colorOverrides?: {
 				[k: string]: string;
 			};
@@ -1814,6 +1829,9 @@ export interface PrismaCalendarUpdateSettingsInput {
 		notificationSound?: PlayNotificationSound;
 		nowIndicator?: ShowCurrentTimeIndicator;
 		pageHeaderState?: {
+			backgroundColorOverrides?: {
+				[k: string]: string;
+			};
 			colorOverrides?: {
 				[k: string]: string;
 			};

@@ -17,6 +17,7 @@ export const CustomizableUIBaseStateSchema = z.object({
 	iconOverrides: optionalStringRecord,
 	colorOverrides: optionalStringRecord,
 	textColorOverrides: optionalStringRecord,
+	backgroundColorOverrides: optionalStringRecord,
 	showSettingsButton: z.boolean().optional().catch(undefined),
 });
 

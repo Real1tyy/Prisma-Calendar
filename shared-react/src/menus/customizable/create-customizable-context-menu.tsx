@@ -77,6 +77,7 @@ export function createCustomizableContextMenu(config: CustomizableContextMenuCon
 			const icon = store.getIcon(item);
 			const color = store.getColor(item);
 			const textColor = store.getTextColor(item);
+			const backgroundColor = store.getBackgroundColor(item);
 
 			menu.addItem((menuItem) => {
 				menuItem.setTitle(label).onClick(() => item.onAction());
@@ -88,6 +89,7 @@ export function createCustomizableContextMenu(config: CustomizableContextMenuCon
 				if (textColor) {
 					getMenuItemTitleEl(menuItem)?.style.setProperty("color", textColor);
 				}
+				if (backgroundColor) getMenuItemDom(menuItem)?.style.setProperty("background-color", backgroundColor);
 			});
 		}
 

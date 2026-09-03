@@ -2,7 +2,13 @@ import { moveItem, reorderList } from "../utils/list-reorder";
 import { loadStringRecords, setOrDelete, writeNonEmptyStringRecords } from "../utils/string-record";
 import type { HeaderActionDefinition, PageHeaderState } from "./types";
 
-const OVERRIDE_FIELDS = ["renames", "iconOverrides", "colorOverrides", "textColorOverrides"] as const;
+const OVERRIDE_FIELDS = [
+	"renames",
+	"iconOverrides",
+	"colorOverrides",
+	"textColorOverrides",
+	"backgroundColorOverrides",
+] as const;
 
 export interface PageHeaderSnapshot {
 	visibleActions: HeaderActionDefinition[];
@@ -10,6 +16,7 @@ export interface PageHeaderSnapshot {
 	iconOverrides: Readonly<Record<string, string>>;
 	colorOverrides: Readonly<Record<string, string>>;
 	textColorOverrides: Readonly<Record<string, string>>;
+	backgroundColorOverrides: Readonly<Record<string, string>>;
 	showSettingsButton: boolean;
 }
 
@@ -19,6 +26,7 @@ interface ResolvedInitial {
 	iconOverrides: Record<string, string>;
 	colorOverrides: Record<string, string>;
 	textColorOverrides: Record<string, string>;
+	backgroundColorOverrides: Record<string, string>;
 	showSettingsButton: boolean;
 }
 
@@ -51,6 +59,7 @@ export class PageHeaderStore {
 	private iconOverrides: Record<string, string>;
 	private colorOverrides: Record<string, string>;
 	private textColorOverrides: Record<string, string>;
+	private backgroundColorOverrides: Record<string, string>;
 	private visibleActions: HeaderActionDefinition[];
 	private showSettingsButton: boolean;
 
@@ -65,6 +74,7 @@ export class PageHeaderStore {
 		this.iconOverrides = resolved.iconOverrides;
 		this.colorOverrides = resolved.colorOverrides;
 		this.textColorOverrides = resolved.textColorOverrides;
+		this.backgroundColorOverrides = resolved.backgroundColorOverrides;
 		this.showSettingsButton = resolved.showSettingsButton;
 		this.defaultOrder = allActions.map((a) => a.id);
 		this.defaults = defaults;
@@ -78,6 +88,7 @@ export class PageHeaderStore {
 			iconOverrides: this.iconOverrides,
 			colorOverrides: this.colorOverrides,
 			textColorOverrides: this.textColorOverrides,
+			backgroundColorOverrides: this.backgroundColorOverrides,
 			showSettingsButton: this.showSettingsButton,
 		};
 	}
@@ -183,6 +194,13 @@ export class PageHeaderStore {
 		this.notify();
 	}
 
+	setBackgroundColorOverride(id: string, color: string | undefined): void {
+		const next = this.applyOverride(this.backgroundColorOverrides, id, color, () => false);
+		if (!next) return;
+		this.backgroundColorOverrides = next;
+		this.notify();
+	}
+
 	setShowSettingsButton(visible: boolean): void {
 		if (this.showSettingsButton === visible) return;
 		this.showSettingsButton = visible;
@@ -196,6 +214,7 @@ export class PageHeaderStore {
 		this.iconOverrides = resolved.iconOverrides;
 		this.colorOverrides = resolved.colorOverrides;
 		this.textColorOverrides = resolved.textColorOverrides;
+		this.backgroundColorOverrides = resolved.backgroundColorOverrides;
 		this.showSettingsButton = resolved.showSettingsButton;
 		this.notify();
 	}
@@ -210,6 +229,7 @@ export class PageHeaderStore {
 				iconOverrides: this.iconOverrides,
 				colorOverrides: this.colorOverrides,
 				textColorOverrides: this.textColorOverrides,
+				backgroundColorOverrides: this.backgroundColorOverrides,
 			},
 			OVERRIDE_FIELDS
 		);

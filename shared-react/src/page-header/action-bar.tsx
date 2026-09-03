@@ -157,8 +157,11 @@ const ActionButton = memo(function ActionButton({
 	);
 });
 
-function resolveColorStyle(color: string | undefined): CSSProperties | undefined {
-	return color && color !== DEFAULT_COLOR_SENTINEL ? { color } : undefined;
+function resolveColorStyle(color: string | undefined, backgroundColor?: string): CSSProperties | undefined {
+	const style: CSSProperties = {};
+	if (color && color !== DEFAULT_COLOR_SENTINEL) style.color = color;
+	if (backgroundColor && backgroundColor !== DEFAULT_COLOR_SENTINEL) style.backgroundColor = backgroundColor;
+	return Object.keys(style).length ? style : undefined;
 }
 
 export const PageHeaderActionBar = memo(function PageHeaderActionBar({
@@ -220,7 +223,8 @@ export const PageHeaderActionBar = memo(function PageHeaderActionBar({
 				const label = snapshot.renames[action.id] ?? action.label;
 				const icon = snapshot.iconOverrides[action.id] ?? action.icon;
 				const color = snapshot.colorOverrides[action.id] ?? action.color;
-				const style = resolveColorStyle(color);
+				const backgroundColor = snapshot.backgroundColorOverrides[action.id] ?? action.backgroundColor;
+				const style = resolveColorStyle(color, backgroundColor);
 
 				return (
 					<ActionButton

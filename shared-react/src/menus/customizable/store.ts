@@ -2,7 +2,13 @@ import { loadStringRecordMaps, writeNonEmptyStringRecordMaps } from "../../utils
 import type { ContextMenuState, CustomizableContextMenuItem } from "./types";
 
 const DEFAULT_SECTION = "";
-const OVERRIDE_FIELDS = ["renames", "iconOverrides", "colorOverrides", "textColorOverrides"] as const;
+const OVERRIDE_FIELDS = [
+	"renames",
+	"iconOverrides",
+	"colorOverrides",
+	"textColorOverrides",
+	"backgroundColorOverrides",
+] as const;
 
 export interface CustomizableMenuSnapshot {
 	visibleItems: CustomizableContextMenuItem[];
@@ -10,6 +16,7 @@ export interface CustomizableMenuSnapshot {
 	iconOverrides: ReadonlyMap<string, string>;
 	colorOverrides: ReadonlyMap<string, string>;
 	textColorOverrides: ReadonlyMap<string, string>;
+	backgroundColorOverrides: ReadonlyMap<string, string>;
 	sectionOverrides: ReadonlyMap<string, string>;
 	showSettingsButton: boolean;
 }
@@ -78,6 +85,8 @@ export class CustomizableMenuStore {
 	getTextColor = (item: CustomizableContextMenuItem): string | undefined => {
 		return this.snapshot.textColorOverrides.get(item.id) ?? item.textColor;
 	};
+	getBackgroundColor = (item: CustomizableContextMenuItem): string | undefined =>
+		this.snapshot.backgroundColorOverrides.get(item.id) ?? item.backgroundColor;
 
 	get visibleCount(): number {
 		return this.snapshot.visibleItems.length;
@@ -91,6 +100,7 @@ export class CustomizableMenuStore {
 			iconOverrides,
 			colorOverrides,
 			textColorOverrides,
+			backgroundColorOverrides,
 			sectionOverrides,
 			showSettingsButton,
 			visibleItems,
@@ -99,7 +109,7 @@ export class CustomizableMenuStore {
 
 		writeNonEmptyStringRecordMaps(
 			state,
-			{ renames, iconOverrides, colorOverrides, textColorOverrides },
+			{ renames, iconOverrides, colorOverrides, textColorOverrides, backgroundColorOverrides },
 			OVERRIDE_FIELDS
 		);
 		if (sectionOverrides.size > 0) state.sectionOverrides = Object.fromEntries(sectionOverrides);
@@ -251,6 +261,13 @@ export class CustomizableMenuStore {
 		}
 
 		this.update({ textColorOverrides: next });
+	};
+
+	setBackgroundColor = (id: string, color: string | undefined): void => {
+		const next = new Map(this.snapshot.backgroundColorOverrides);
+		if (color) next.set(id, color);
+		else next.delete(id);
+		this.update({ backgroundColorOverrides: next });
 	};
 
 	setShowSettingsButton = (visible: boolean): void => {

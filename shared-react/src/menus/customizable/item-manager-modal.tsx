@@ -315,11 +315,13 @@ function MenuItemRow({
 	const displayIcon = store.getIcon(item);
 	const displayColor = store.getColor(item);
 	const displayTextColor = store.getTextColor(item);
+	const displayBackgroundColor = store.getBackgroundColor(item);
 	const isDraggable = draggable && isVisible;
 	const hasRename = displayLabel !== item.label;
 	const hasIcon = displayIcon !== item.icon;
 	const hasColor = displayColor !== item.color;
 	const hasTextColor = displayTextColor !== item.textColor;
+	const hasBackgroundColor = displayBackgroundColor !== item.backgroundColor;
 
 	const editForm: ReactNode = isExpanded ? (
 		<ManagerEditForm
@@ -331,19 +333,28 @@ function MenuItemRow({
 						icon: item.icon ?? "",
 						...(item.color !== undefined ? { color: item.color } : {}),
 						...(item.textColor !== undefined ? { textColor: item.textColor } : {}),
+						...(item.backgroundColor !== undefined ? { backgroundColor: item.backgroundColor } : {}),
 					},
 					values: {
 						label: displayLabel,
 						icon: displayIcon ?? "",
 						color: displayColor ?? DEFAULT_EDIT_COLOR,
 						textColor: displayTextColor ?? DEFAULT_EDIT_COLOR,
+						backgroundColor: displayBackgroundColor ?? DEFAULT_EDIT_COLOR,
 					},
-					overrides: { label: hasRename, icon: hasIcon, color: hasColor, textColor: hasTextColor },
+					overrides: {
+						label: hasRename,
+						icon: hasIcon,
+						color: hasColor,
+						textColor: hasTextColor,
+						backgroundColor: hasBackgroundColor,
+					},
 					actions: {
 						rename: (label) => store.setRename(item.id, label),
 						changeIcon: (icon) => store.setIcon(item.id, icon),
 						changeColor: (color) => store.setColor(item.id, color),
 						changeTextColor: (color) => store.setTextColor(item.id, color),
+						changeBackgroundColor: (color) => store.setBackgroundColor(item.id, color),
 						pickIcon: (cb: (icon: string | null) => void) => pickIcon(item.id, (icon) => cb(icon)),
 					},
 				} satisfies ManagerEditController

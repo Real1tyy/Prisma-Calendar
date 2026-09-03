@@ -35,6 +35,8 @@ export interface HeaderActionDefinition {
 	color?: string;
 	/** Optional default color for the action label text (surfaced in the manager list). */
 	textColor?: string;
+	/** Optional default background color for the action button. */
+	backgroundColor?: string;
 	/** Callback executed when the header button is clicked. */
 	onAction: (view: ItemView) => void;
 }

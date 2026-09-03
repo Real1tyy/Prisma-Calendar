@@ -21,6 +21,8 @@ export interface CustomizableContextMenuItem {
 	color?: string;
 	/** Optional default color for the item label text. */
 	textColor?: string;
+	/** Optional default background color for the menu item. */
+	backgroundColor?: string;
 	/** Items with the same section are grouped; separators are inserted between different sections. */
 	section?: string;
 	/** Callback executed when the menu item is clicked. */

@@ -28,14 +28,17 @@ interface ActionRowEditFormProps {
 	displayIcon: string;
 	displayColor: string;
 	displayTextColor: string;
+	displayBackgroundColor: string;
 	hasRenameOverride: boolean;
 	hasIconOverride: boolean;
 	hasColorOverride: boolean;
 	hasTextColorOverride: boolean;
+	hasBackgroundColorOverride: boolean;
 	rename: (label: string | undefined) => void;
 	changeIcon: (icon: string | undefined) => void;
 	changeColor: (color: string | undefined) => void;
 	changeTextColor: (color: string | undefined) => void;
+	changeBackgroundColor: (color: string | undefined) => void;
 	pickIcon: (callback: (icon: string | null) => void) => void;
 }
 
@@ -45,37 +48,55 @@ function ActionRowEditForm({
 	displayIcon,
 	displayColor,
 	displayTextColor,
+	displayBackgroundColor,
 	hasRenameOverride,
 	hasIconOverride,
 	hasColorOverride,
 	hasTextColorOverride,
+	hasBackgroundColorOverride,
 	rename,
 	changeIcon,
 	changeColor,
 	changeTextColor,
+	changeBackgroundColor,
 	pickIcon,
 }: ActionRowEditFormProps) {
 	const item = useMemo(() => {
-		const base: { id: string; label: string; icon: string; color?: string; textColor?: string } = {
+		const base: {
+			id: string;
+			label: string;
+			icon: string;
+			color?: string;
+			textColor?: string;
+			backgroundColor?: string;
+		} = {
 			id: action.id,
 			label: action.label,
 			icon: action.icon ?? "",
 		};
 		if (action.color !== undefined) base.color = action.color;
 		if (action.textColor !== undefined) base.textColor = action.textColor;
+		if (action.backgroundColor !== undefined) base.backgroundColor = action.backgroundColor;
 		return base;
-	}, [action.id, action.label, action.icon, action.color, action.textColor]);
+	}, [action.id, action.label, action.icon, action.color, action.textColor, action.backgroundColor]);
 
 	const controller: ManagerEditController = {
 		item,
-		values: { label: displayLabel, icon: displayIcon, color: displayColor, textColor: displayTextColor },
+		values: {
+			label: displayLabel,
+			icon: displayIcon,
+			color: displayColor,
+			textColor: displayTextColor,
+			backgroundColor: displayBackgroundColor,
+		},
 		overrides: {
 			label: hasRenameOverride,
 			icon: hasIconOverride,
 			color: hasColorOverride,
 			textColor: hasTextColorOverride,
+			backgroundColor: hasBackgroundColorOverride,
 		},
-		actions: { rename, changeIcon, changeColor, changeTextColor, pickIcon },
+		actions: { rename, changeIcon, changeColor, changeTextColor, changeBackgroundColor, pickIcon },
 	};
 
 	return <ManagerEditForm controller={controller} formPrefix={ROW_PREFIX} />;
@@ -160,10 +181,12 @@ export const ActionManagerContent = memo(function ActionManagerContent({ app, st
 						const displayIcon = snapshot.iconOverrides[action.id] ?? action.icon;
 						const displayColor = snapshot.colorOverrides[action.id] ?? action.color;
 						const displayTextColor = snapshot.textColorOverrides[action.id] ?? action.textColor;
+						const displayBackgroundColor = snapshot.backgroundColorOverrides[action.id] ?? action.backgroundColor;
 						const hasRenameOverride = action.id in snapshot.renames;
 						const hasIconOverride = action.id in snapshot.iconOverrides;
 						const hasColorOverride = action.id in snapshot.colorOverrides;
 						const hasTextColorOverride = action.id in snapshot.textColorOverrides;
+						const hasBackgroundColorOverride = action.id in snapshot.backgroundColorOverrides;
 
 						const item = {
 							id: action.id,
@@ -211,14 +234,17 @@ export const ActionManagerContent = memo(function ActionManagerContent({ app, st
 										displayIcon={displayIcon}
 										displayColor={displayColor ?? FALLBACK_EDIT_COLOR}
 										displayTextColor={displayTextColor ?? FALLBACK_EDIT_COLOR}
+										displayBackgroundColor={displayBackgroundColor ?? FALLBACK_EDIT_COLOR}
 										hasRenameOverride={hasRenameOverride}
 										hasIconOverride={hasIconOverride}
 										hasColorOverride={hasColorOverride}
 										hasTextColorOverride={hasTextColorOverride}
+										hasBackgroundColorOverride={hasBackgroundColorOverride}
 										rename={(label) => store.setRename(action.id, label)}
 										changeIcon={(icon) => store.setIconOverride(action.id, icon)}
 										changeColor={(color) => store.setColorOverride(action.id, color)}
 										changeTextColor={(color) => store.setTextColorOverride(action.id, color)}
+										changeBackgroundColor={(color) => store.setBackgroundColorOverride(action.id, color)}
 										pickIcon={pickIcon}
 									/>
 								)}
