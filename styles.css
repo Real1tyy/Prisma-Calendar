@@ -2953,15 +2953,20 @@ button[class*=prisma-]:focus-visible {
 
 .prisma-event-modal.modal {
   height: auto;
-  max-height: none;
+  max-height: calc(100vh - 32px);
 }
-.prisma-event-modal .modal-content,
 .prisma-event-modal .prisma-event-modal-content {
   display: flex;
   flex-direction: column;
+  gap: 0;
+}
+.prisma-event-modal .modal-content {
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+}
+.prisma-event-modal .prisma-event-modal-content {
   max-height: none;
   overflow: visible;
-  gap: 0;
 }
 .prisma-event-modal .prisma-event-modal-body {
   flex: none;

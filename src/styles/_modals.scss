@@ -283,19 +283,26 @@
 .prisma-event-modal {
 	&.modal {
 		height: auto;
-		max-height: none;
+		max-height: calc(100vh - 32px);
 	}
 
-	// Let the modal grow to show the full event form. Obsidian may still scroll
-	// its surrounding window when the form exceeds the viewport, but the form
-	// itself never creates a second, cramped scroll area.
-	.modal-content,
+	// Let the form use its natural height until it reaches the viewport. At that
+	// point this outer modal content is the one scroll owner, so the header and
+	// footer can remain sticky without a nested form-body scrollbar.
 	.prisma-event-modal-content {
 		display: flex;
 		flex-direction: column;
+		gap: 0;
+	}
+
+	.modal-content {
+		max-height: calc(100vh - 32px);
+		overflow-y: auto;
+	}
+
+	.prisma-event-modal-content {
 		max-height: none;
 		overflow: visible;
-		gap: 0;
 	}
 
 	// Header + form fields stay in the same document flow.
