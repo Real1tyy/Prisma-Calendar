@@ -264,18 +264,19 @@ export class Indexer {
 			this._descendantFiles = descendants;
 
 			const results$ = from(files).pipe(
-				mergeMap(async (file) => {
+				mergeMap((file): Observable<IndexerEvent> => {
 					try {
 						// `null` is "Obsidian has not indexed this file yet", not "no
 						// frontmatter" — park it and let finishScan() hold completion.
 						if (this.metadataCache.getFileCache(file) === null) {
 							this.pendingCacheFiles.set(file.path, file);
-							return null;
+							return EMPTY;
 						}
-						return this.buildEvent(file);
+						const event = this.buildEvent(file);
+						return event ? of(event) : EMPTY;
 					} catch (error) {
 						console.error(`Error processing file ${file.path}:`, error);
-						return null;
+						return EMPTY;
 					}
 				}, this.config.scanConcurrency),
 				toArray()
@@ -284,9 +285,7 @@ export class Indexer {
 			const results = await lastValueFrom(results$, { defaultValue: [] });
 
 			for (const event of results) {
-				if (event) {
-					this.scanEventsSubject.next(event);
-				}
+				this.scanEventsSubject.next(event);
 			}
 		} catch (error) {
 			console.error("❌ Error during file scanning:", error);

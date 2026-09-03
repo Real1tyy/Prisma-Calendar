@@ -31,6 +31,14 @@ export class VaultTableView<
 	private subscription: Subscription | null = null;
 
 	public readonly events$: Observable<VaultTableEvent<TData>>;
+	/**
+	 * The parent table's readiness, passed through unchanged. A view built
+	 * before the table's initial scan settles is legitimate — it fills in as
+	 * rows arrive — but nothing derived from it is a basis for a write until
+	 * this flips true. Consumers gate on this instead of tracking indexing
+	 * completion themselves.
+	 */
+	public readonly ready$: Observable<boolean>;
 
 	constructor(
 		private readonly table: VaultTable<TData, TSchema>,
@@ -40,6 +48,7 @@ export class VaultTableView<
 		this.filter = config.filter;
 		if (config.distinctBy) this.distinctBy = config.distinctBy;
 		this.events$ = this.eventsSubject.asObservable();
+		this.ready$ = this.table.ready$;
 
 		this.populateFromTable();
 
@@ -62,6 +71,14 @@ export class VaultTableView<
 			this.rowsDirty = false;
 		}
 		return this.rows;
+	}
+
+	get isReady(): boolean {
+		return this.table.isReady;
+	}
+
+	waitUntilReady(): Promise<void> {
+		return this.table.waitUntilReady();
 	}
 
 	// =========================================================================

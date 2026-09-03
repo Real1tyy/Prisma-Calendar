@@ -69,6 +69,24 @@ export type VaultTableRow<TData, TChildren extends VaultTableDefMap = {}> = Vaul
  */
 export type AnyVaultTable = VaultTable<unknown, SerializableSchema<unknown>, VaultTableDefMap>;
 
+/**
+ * Thrown by every mutating {@link VaultTable} entry point while the table's
+ * scan has not settled. A write at that point would persist a decision made on
+ * a partial view of the vault — the root of every startup duplicate-note
+ * report — so it is refused rather than queued.
+ */
+export class VaultTableNotReadyError extends Error {
+	constructor(
+		readonly directory: string,
+		readonly operation: string
+	) {
+		super(
+			`VaultTable "${directory}" is not ready: refused ${operation}. Await table.waitUntilReady() (or ready$) before writing.`
+		);
+		this.name = "VaultTableNotReadyError";
+	}
+}
+
 export class VaultTable<
 	TData,
 	TSchema extends SerializableSchema<TData> = SerializableSchema<TData>,
@@ -230,6 +248,11 @@ export class VaultTable<
 		});
 
 		await this.indexer.start();
+		// `start()` resolves only once the table is a complete view of the vault —
+		// Obsidian's cache drained, every in-scope file scanned, every async
+		// subscriber settled. Callers can write the moment it returns; anything
+		// that wants rows earlier subscribes to `events$` and gates on `ready$`.
+		await this.waitUntilReady();
 	}
 
 	/**
@@ -273,7 +296,29 @@ export class VaultTable<
 
 	async waitUntilReady(): Promise<void> {
 		if (this.readySubject.value) return;
-		await firstValueFrom(this.ready$.pipe(filter(Boolean)));
+		// A table destroyed before it ever became ready (plugin unloaded mid-scan)
+		// completes `ready$` without a `true`; resolve rather than reject so the
+		// awaiting startup path winds down quietly.
+		await firstValueFrom(this.ready$.pipe(filter(Boolean)), { defaultValue: false });
+	}
+
+	/** True once the initial scan (or the scan after a `resync()`) has fully settled. */
+	get isReady(): boolean {
+		return this.readySubject.value;
+	}
+
+	/**
+	 * The write gate. Every mutating entry point calls this first, so a write
+	 * issued while the table is still a partial view of the vault fails loudly
+	 * instead of persisting a decision made on incomplete data — the failure
+	 * mode behind every "startup duplicated my notes" report. Deliberately a
+	 * throw, not a queue: a queued write would preserve the bad decision and
+	 * only delay it. Callers that legitimately run early await
+	 * {@link waitUntilReady} and decide *after* it resolves.
+	 */
+	assertWritable(operation: string): void {
+		if (this.readySubject.value) return;
+		throw new VaultTableNotReadyError(this.directory, operation);
 	}
 
 	stop(): void {
@@ -342,10 +387,12 @@ export class VaultTable<
 	// =========================================================================
 
 	async create(insert: InsertVaultRow<TData>): Promise<VaultRow<TData>> {
+		this.assertWritable("create");
 		return this.executeWithHistory(new CreateRowCommand(insert, this.ops), () => this.doCreate(insert));
 	}
 
 	async update(key: string, data: Partial<TData>): Promise<VaultRow<TData>> {
+		this.assertWritable("update");
 		return this.executeWithHistory(new UpdateRowCommand(key, data, this.ops), () => this.doUpdate(key, data));
 	}
 
@@ -355,10 +402,12 @@ export class VaultTable<
 	 * update() merges partials and would resurrect deleted keys from existing data.
 	 */
 	async replace(key: string, data: TData): Promise<VaultRow<TData>> {
+		this.assertWritable("replace");
 		return this.executeWithHistory(new ReplaceRowCommand(key, data, this.ops), () => this.doReplace(key, data));
 	}
 
 	async updateContent(key: string, content: string): Promise<VaultRow<TData>> {
+		this.assertWritable("updateContent");
 		return this.executeWithHistory(new UpdateContentRowCommand(key, content, this.ops), () =>
 			this.doUpdateContent(key, content)
 		);
@@ -373,6 +422,7 @@ export class VaultTable<
 	}
 
 	async delete(key: string): Promise<void> {
+		this.assertWritable("delete");
 		if (!this.commandManager) {
 			await this.doDelete(key);
 			return;
