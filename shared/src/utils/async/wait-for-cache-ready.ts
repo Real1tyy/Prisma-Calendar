@@ -22,6 +22,19 @@ export function getMetadataCacheInternals(cache: MetadataCache): MetadataCacheIn
 	return candidate as MetadataCacheInternals;
 }
 
+/**
+ * `isCacheClean` dereferences Obsidian's link-resolver queue, which Obsidian
+ * nulls on cancel. A throw means the internals are not usable right now;
+ * callers treat `null` as "fall back to the public signals".
+ */
+export function isCacheCleanSafe(internals: MetadataCacheInternals): boolean | null {
+	try {
+		return internals.isCacheClean();
+	} catch {
+		return null;
+	}
+}
+
 /** Fallback (no internals): give up after this long even if `resolved` never fires. */
 const CACHE_READY_TIMEOUT_MS = 30_000;
 /**
@@ -49,8 +62,9 @@ export function waitForCacheReady(app: App): Promise<void> {
 	return new Promise<void>((resolve) => {
 		app.workspace.onLayoutReady(() => {
 			const internals = getMetadataCacheInternals(app.metadataCache);
-			if (internals) {
-				waitForCleanCache(internals, resolve);
+			const clean = internals ? isCacheCleanSafe(internals) : null;
+			if (internals && clean !== null) {
+				waitForCleanCache(internals, clean, resolve);
 			} else {
 				waitForCacheReadyHeuristic(app, resolve);
 			}
@@ -58,8 +72,8 @@ export function waitForCacheReady(app: App): Promise<void> {
 	});
 }
 
-function waitForCleanCache(internals: MetadataCacheInternals, resolve: () => void): void {
-	if (internals.isCacheClean()) {
+function waitForCleanCache(internals: MetadataCacheInternals, cleanNow: boolean, resolve: () => void): void {
+	if (cleanNow) {
 		resolve();
 		return;
 	}
@@ -74,7 +88,8 @@ function waitForCleanCache(internals: MetadataCacheInternals, resolve: () => voi
 		resolve();
 	};
 	const watchdog = window.setInterval(() => {
-		if (internals.isCacheClean()) {
+		// A throw mid-wait (queue cancelled) has nothing better to wait for.
+		if (isCacheCleanSafe(internals) !== false) {
 			finish();
 			return;
 		}
