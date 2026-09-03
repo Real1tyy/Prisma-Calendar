@@ -6,7 +6,6 @@ import type { z } from "zod";
 import type { Frontmatter } from "../../types";
 import type { CalendarEventSource, IndexerEvent } from "../../types/event-source";
 import type { SingleCalendarConfig } from "../../types/settings";
-import { trashDuplicateFile } from "../../utils/obsidian";
 
 export interface TrackedSyncEvent<TMetadata> {
 	filePath: string;
@@ -19,12 +18,19 @@ export abstract class BaseSyncStateManager<TMetadata extends { uid: string }> {
 	private indexingCompleteSubscription: Subscription | null = null;
 	private readonly indexingComplete$: Observable<boolean>;
 	private indexHydrated = false;
+	/**
+	 * Duplicate-UID files spotted while the index was still hydrating. Trashing
+	 * is a write, and no write may land on a partial index — the second file
+	 * seen might be the *original* arriving late. They are trashed only once
+	 * hydration completes, when "second path for a tracked UID" is trustworthy.
+	 */
+	private readonly pendingDuplicateTrash = new Map<string, string>();
 	protected frontmatterProp: string;
 	protected readonly byUid: Map<string, TrackedSyncEvent<TMetadata>> = new Map();
 
 	constructor(
 		protected app: App,
-		eventSource: CalendarEventSource,
+		private readonly eventSource: CalendarEventSource,
 		settings$: BehaviorSubject<SingleCalendarConfig>,
 		getPropFromSettings: (settings: SingleCalendarConfig) => string,
 		private schema: z.ZodType<TMetadata>
@@ -44,6 +50,7 @@ export abstract class BaseSyncStateManager<TMetadata extends { uid: string }> {
 		this.indexingComplete$ = eventSource.indexingComplete$;
 		this.indexingCompleteSubscription = eventSource.indexingComplete$.subscribe((complete) => {
 			this.indexHydrated = complete;
+			if (complete) this.flushPendingDuplicateTrash();
 		});
 	}
 
@@ -110,10 +117,34 @@ export abstract class BaseSyncStateManager<TMetadata extends { uid: string }> {
 	protected trackEvent(filePath: string, metadata: TMetadata): void {
 		const existing = this.byUid.get(metadata.uid);
 		if (existing && existing.filePath !== filePath) {
-			trashDuplicateFile(this.app, filePath, `${this.getIntegrationLabel()} event (UID: ${metadata.uid})`);
+			this.trashDuplicate(filePath, metadata.uid);
 			return;
 		}
 		this.byUid.set(metadata.uid, { filePath, metadata });
+	}
+
+	private trashDuplicate(filePath: string, uid: string): void {
+		if (!this.indexHydrated) {
+			this.pendingDuplicateTrash.set(filePath, uid);
+			return;
+		}
+		console.warn(
+			`[Prisma] Self-healing: trashing duplicate ${this.getIntegrationLabel()} event (UID: ${uid}): ${filePath}`
+		);
+		void this.eventSource.trashByPath(filePath).catch((error: unknown) => {
+			console.error(`[Prisma] Failed to trash duplicate ${filePath}:`, error);
+		});
+	}
+
+	private flushPendingDuplicateTrash(): void {
+		const pending = Array.from(this.pendingDuplicateTrash.entries());
+		this.pendingDuplicateTrash.clear();
+		for (const [filePath, uid] of pending) {
+			// Re-check: the "original" may have been deleted or re-keyed while we waited.
+			const tracked = this.byUid.get(uid);
+			if (!tracked || tracked.filePath === filePath) continue;
+			this.trashDuplicate(filePath, uid);
+		}
 	}
 
 	protected untrackByPath(filePath: string): boolean {

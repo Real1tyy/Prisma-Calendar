@@ -45,13 +45,7 @@ import {
 } from "../utils/events/frontmatter";
 import { hashRRuleIdToZettelFormat, removeZettelId } from "../utils/events/zettel-id";
 import { enforceEventPropertyOrder, withOrderedFrontmatter } from "../utils/frontmatter/ordering";
-import {
-	batchedPromiseAll,
-	deleteFilesByPaths,
-	getFileAndFrontmatter,
-	getFileByPathOrThrow,
-	trashDuplicateFile,
-} from "../utils/obsidian";
+import { batchedPromiseAll, deleteFilesByPaths, getFileAndFrontmatter, getFileByPathOrThrow } from "../utils/obsidian";
 import type { CategoryTracker } from "./category-tracker";
 import type { EventStore } from "./event-store";
 
@@ -109,6 +103,8 @@ export class RecurringEventManager extends DebouncedNotifier {
 	private settingsSubscription: Subscription | null = null;
 	private indexingCompleteSubscription: Subscription | null = null;
 	private indexingComplete = false;
+	/** Duplicate physical instances seen before indexing completed — see trashDuplicateInstance. */
+	private readonly pendingDuplicateInstanceTrash = new Map<string, { rruleId: string; dateKey: string }>();
 	private creationLocks: Map<string, Promise<string | null>> = new Map();
 	private sourceFileToRRuleId: Map<string, string> = new Map();
 	private instanceFileToRRuleId: Map<string, string> = new Map();
@@ -143,6 +139,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		this.indexingCompleteSubscription = this.eventSource.indexingComplete$.subscribe((isComplete) => {
 			this.indexingComplete = isComplete;
 			if (isComplete) {
+				this.flushPendingDuplicateInstanceTrash();
 				void this.processAllRecurringEvents();
 			}
 		});
@@ -246,7 +243,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 			const oldPath = instance.filePath;
 			const folderPath = file.parent?.path ? `${file.parent.path}/` : "";
 			const newPath = `${folderPath}${newBasename}.md`;
-			await this.app.fileManager.renameFile(file, newPath);
+			await this.eventSource.renameByPath(file.path, newPath);
 			instance.filePath = newPath;
 			this.instanceFileToRRuleId.delete(oldPath);
 			this.instanceFileToRRuleId.set(newPath, rruleId);
@@ -439,7 +436,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 					const existing = recurringData.physicalInstances.get(dateKey);
 					if (existing && existing.filePath !== filePath) {
 						// First file wins — trash the newcomer (matches ICS/CalDAV convention)
-						trashDuplicateFile(this.app, filePath, `recurring instance (rruleId: ${rruleId}, date: ${dateKey})`);
+						this.trashDuplicateInstance(filePath, rruleId, dateKey);
 						return;
 					}
 
@@ -514,6 +511,35 @@ export class RecurringEventManager extends DebouncedNotifier {
 	}
 
 	// ─── Recurring Event Registration ─────────────────────────────
+
+	/**
+	 * Trashing a duplicate physical instance is a write, and no write may land
+	 * on a partial index: while the scan is still running the "newcomer" might
+	 * be the original arriving late. Held until indexing completes, then
+	 * re-checked against the map before it is trashed.
+	 */
+	private trashDuplicateInstance(filePath: string, rruleId: string, dateKey: string): void {
+		if (!this.indexingComplete) {
+			this.pendingDuplicateInstanceTrash.set(filePath, { rruleId, dateKey });
+			return;
+		}
+		console.warn(
+			`[Prisma] Self-healing: trashing duplicate recurring instance (rruleId: ${rruleId}, date: ${dateKey}): ${filePath}`
+		);
+		void this.eventSource.trashByPath(filePath).catch((error: unknown) => {
+			console.error(`[RecurringEvents] Failed to trash duplicate instance ${filePath}:`, error);
+		});
+	}
+
+	private flushPendingDuplicateInstanceTrash(): void {
+		const pending = Array.from(this.pendingDuplicateInstanceTrash.entries());
+		this.pendingDuplicateInstanceTrash.clear();
+		for (const [filePath, { rruleId, dateKey }] of pending) {
+			const winner = this.recurringEventsMap.get(rruleId)?.physicalInstances.get(dateKey);
+			if (!winner || winner.filePath === filePath) continue;
+			this.trashDuplicateInstance(filePath, rruleId, dateKey);
+		}
+	}
 
 	private async processAllRecurringEvents(): Promise<void> {
 		await Promise.all(

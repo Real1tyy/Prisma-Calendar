@@ -114,6 +114,31 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 
 	// ─── CalendarEventSource ─────────────────────────────────────
 
+	/** True once the table's scan has settled — the precondition for every write. */
+	get isWritable(): boolean {
+		return this.table.isReady;
+	}
+
+	/** Throws while the table is not ready. Raw-write helpers call this first. */
+	assertWritable(operation: string): void {
+		this.table.assertWritable(operation);
+	}
+
+	async trashByPath(filePath: string): Promise<boolean> {
+		this.assertWritable(`trash ${filePath}`);
+		const file = this.app.vault.getAbstractFileByPath(filePath);
+		if (!(file instanceof TFile)) return false;
+		await this.app.fileManager.trashFile(file);
+		return true;
+	}
+
+	async renameByPath(filePath: string, newPath: string): Promise<void> {
+		this.assertWritable(`rename ${filePath}`);
+		const file = this.app.vault.getAbstractFileByPath(filePath);
+		if (!(file instanceof TFile)) throw new Error(`[EventFileRepository] File not found for rename: ${filePath}`);
+		await this.app.fileManager.renameFile(file, newPath);
+	}
+
 	async markFileAsDone(filePath: string): Promise<void> {
 		if (this.syncStore?.data.readOnly) return;
 
@@ -222,6 +247,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 	}
 
 	async restoreSnapshot(snapshot: FrontmatterSnapshot): Promise<void> {
+		this.assertWritable(`restore ${snapshot.filePath}`);
 		// snapshot.file.path stays current through renames; snapshot.filePath
 		// is the path at capture time (used as fallback for deleted files).
 		const currentPath = snapshot.file.path;
@@ -551,6 +577,15 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 	 * queued write finally dequeues, the TFile is stale and processFrontMatter
 	 * throws ENOENT. Re-resolve the path at dequeue time and no-op if the file is
 	 * gone — the deletion already rendered the write moot.
+	 *
+	 * This is the one write path that *defers* rather than refuses while the
+	 * table is not ready: everything queued here is an idempotent normalisation
+	 * of a single file's own frontmatter (ZettelID, title link, rRuleId,
+	 * mark-done), never a decision that depends on the rest of the index, so
+	 * holding it until the scan settles is safe — and the deferral is what lets
+	 * the scan itself queue them. Decisions that *do* depend on the index go
+	 * through the table's gated CRUD or {@link trashByPath} / {@link renameByPath},
+	 * which throw instead.
 	 */
 	private enqueueFrontmatterWrite(file: TFile, fn: (fm: Frontmatter) => void): Promise<void> {
 		const path = file.path;
@@ -561,6 +596,9 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 		const result = prev
 			.catch(() => {})
 			.then(async () => {
+				// Synchronous check first: awaiting an already-ready table would add a
+				// microtask the race tests pin against.
+				if (!this.table.isReady) await this.table.waitUntilReady();
 				const current = this.app.vault.getAbstractFileByPath(path);
 				if (!(current instanceof TFile)) return;
 				try {

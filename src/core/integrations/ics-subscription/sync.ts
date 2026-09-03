@@ -1,5 +1,5 @@
 import { describeError } from "@real1ty/obsidian-plugins";
-import { requestUrl, TFile } from "obsidian";
+import { requestUrl } from "obsidian";
 
 import type { ICSSubscription } from "../../../types/integrations";
 import type { CustomCalendarSettings } from "../../../types/settings";
@@ -125,9 +125,7 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 						const wasUpdated = await this.updateNoteFromEvent(action.filePath, action.event, action.uid);
 						if (wasUpdated) result.updated++;
 					} else if (action.kind === "delete") {
-						const file = this.app.vault.getAbstractFileByPath(action.filePath);
-						if (file instanceof TFile) {
-							await this.app.fileManager.trashFile(file);
+						if (await this.bundle.fileRepository.trashByPath(action.filePath)) {
 							this.syncStateManager.unregisterTracked(action.filePath);
 							result.deleted++;
 						}

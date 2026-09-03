@@ -36,5 +36,13 @@ export interface CalendarEventSource {
 	readonly events$: Observable<IndexerEvent>;
 	readonly indexingComplete$: Observable<boolean>;
 	markFileAsDone(filePath: string): Promise<void>;
+	/**
+	 * The only sanctioned way for an automatic writer to trash or rename a
+	 * note. Both refuse (throw) while the underlying table is not ready, so a
+	 * decision taken on a partial index can never reach disk — see
+	 * [[decision-vaulttable-write-gate]].
+	 */
+	trashByPath(filePath: string): Promise<boolean>;
+	renameByPath(filePath: string, newPath: string): Promise<void>;
 	resync(): void;
 }

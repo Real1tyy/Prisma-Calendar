@@ -1,5 +1,4 @@
 import { describeError, LocalKV, type KVBackend } from "@real1ty/obsidian-plugins";
-import { TFile } from "obsidian";
 
 import {
 	CalDAVCalendarSyncStateSchema,
@@ -217,10 +216,7 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 						const wasUpdated = await this.updateNoteFromEvent(action.filePath, action.event);
 						if (wasUpdated) result.updated++;
 					} else if (action.kind === "delete") {
-						const file = this.app.vault.getAbstractFileByPath(action.filePath);
-						if (file instanceof TFile) {
-							await this.app.fileManager.trashFile(file);
-						}
+						await this.bundle.fileRepository.trashByPath(action.filePath);
 						this.syncStateManager.unregisterTracked(action.filePath);
 						result.deleted++;
 					} else {

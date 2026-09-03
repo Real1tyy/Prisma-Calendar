@@ -142,6 +142,37 @@ export default defineConfig([
 		},
 	}),
 
+	// Automatic writers (sync, recurring generation, event store, notifications)
+	// must not touch the vault directly. Every write goes through
+	// EventFileRepository / VaultTable, whose write gate refuses anything issued
+	// before the index is ready — see [[decision-vaulttable-write-gate]].
+	{
+		files: [
+			"src/core/integrations/**/*.ts",
+			"src/core/event-store/**/*.ts",
+			"src/core/recurring-event-manager.ts",
+			"src/core/notification-manager.ts",
+		],
+		ignores: ["src/core/integrations/ics-export.ts"],
+		rules: {
+			"no-restricted-syntax": [
+				"error",
+				{
+					selector:
+						"MemberExpression[object.property.name='vault'][property.name=/^(create|modify|delete|rename|copy)$/]",
+					message:
+						"Raw vault writes are banned here: go through bundle.fileRepository (VaultTable), whose write gate refuses writes before the index is ready.",
+				},
+				{
+					selector:
+						"MemberExpression[object.property.name='fileManager'][property.name=/^(processFrontMatter|trashFile|renameFile)$/]",
+					message:
+						"Raw fileManager writes are banned here: use fileRepository.trashByPath / renameByPath / updateFrontmatterByPath, which refuse writes before the index is ready.",
+				},
+			],
+		},
+	},
+
 	// Test files and testing utilities — relax strict rules for mocks/test doubles.
 	{
 		files: [

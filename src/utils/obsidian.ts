@@ -32,17 +32,6 @@ export const emitHover = (
 };
 
 /**
- * Trashes a file by path if it exists. Fire-and-forget — logs a warning and does not throw.
- */
-export function trashDuplicateFile(app: App, filePath: string, context: string): void {
-	const file = app.vault.getAbstractFileByPath(filePath);
-	if (file instanceof TFile) {
-		console.warn(`[Prisma] Self-healing: trashing duplicate ${context}: ${filePath}`);
-		void app.fileManager.trashFile(file);
-	}
-}
-
-/**
  * Runs an async operation over a list of items in batches, yielding to the
  * main thread between batches so the UI stays responsive.
  */

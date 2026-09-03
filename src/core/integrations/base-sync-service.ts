@@ -56,6 +56,7 @@ export abstract class BaseSyncService<TResult extends BaseSyncResult> {
 		timezone: string,
 		additionalFrontmatter: Record<string, unknown>
 	): Promise<TFile> {
+		this.bundle.fileRepository.assertWritable(`sync create "${event.title}"`);
 		const folderPath = this.getSyncFolderPath();
 
 		return await createEventNoteFromImportedEvent(this.app, this.bundle, event, {
@@ -71,6 +72,7 @@ export abstract class BaseSyncService<TResult extends BaseSyncResult> {
 		timezone: string,
 		additionalFrontmatter: Record<string, unknown>
 	): Promise<{ wasUpdated: boolean; filePath: string }> {
+		this.bundle.fileRepository.assertWritable(`sync update ${filePath}`);
 		let file = this.app.vault.getAbstractFileByPath(filePath);
 		if (!(file instanceof TFile)) {
 			throw new Error(`File not found: ${filePath}`);
@@ -92,7 +94,7 @@ export abstract class BaseSyncService<TResult extends BaseSyncResult> {
 				const newFilename = `${newTitle}-${existingZettelId}`;
 				const newPath = directory ? `${directory}/${newFilename}.md` : `${newFilename}.md`;
 
-				await this.app.fileManager.renameFile(file, newPath);
+				await this.bundle.fileRepository.renameByPath(file.path, newPath);
 
 				file = this.app.vault.getAbstractFileByPath(newPath);
 				if (!(file instanceof TFile)) {
