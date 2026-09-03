@@ -1,14 +1,13 @@
 import { introspectShape, mergePropertyOrder, toSafeString } from "@real1ty/obsidian-plugins";
 import {
 	Button,
-	CollapsibleSection,
 	PropertyOrderTable,
 	SettingHeading,
 	SettingItem,
 	useSettingsStore,
 	type PropertyOrderEntry,
 } from "@real1ty/obsidian-plugins-react";
-import { memo, useCallback, useMemo, type ReactNode } from "react";
+import { memo, useCallback, useMemo } from "react";
 
 import { cls, tid } from "../../constants";
 import { runNormalizePropertyOrder } from "../../core/api/normalize-property-order";
@@ -17,6 +16,7 @@ import type CustomCalendarPlugin from "../../main";
 import { DEFAULT_PROPERTY_ORDER } from "../../types/event-metadata";
 import { SingleCalendarConfigSchema, type SingleCalendarConfig } from "../../types/settings";
 import { DISPLAY_FIELDS } from "../../utils/calendar/settings";
+import { HelpBox } from "./_help-box";
 import { PrismaSection } from "./_section";
 
 interface PropertiesSettingsProps {
@@ -92,26 +92,6 @@ export const PropertiesSettingsReact = memo(function PropertiesSettingsReact({
 			<FrontmatterDisplayIntro />
 			<PrismaSection store={settingsStore} shape={SHAPE} fields={DISPLAY_FIELDS} />
 		</>
-	);
-});
-
-// Device-local, so a user who has read an explanation is not shown it again on this
-// machine. Namespaced per plugin — every plugin shares one localStorage origin.
-const HELP_STORAGE_PREFIX = "prisma-calendar:properties:";
-
-/**
- * A standing explanation on this tab: worth reading once, clutter above the controls
- * forever after. Each folds away under its own remembered key.
- *
- * Deliberately no `settings-info-box` wrapper — `CollapsibleSection` already paints the
- * panel these boxes used to paint themselves (same border, same `--background-secondary`),
- * so nesting the two renders a box inside an identical box.
- */
-const HelpBox = memo(function HelpBox({ label, slug, children }: { label: string; slug: string; children: ReactNode }) {
-	return (
-		<CollapsibleSection label={label} storageKey={`${HELP_STORAGE_PREFIX}${slug}`} testIdSlug={`${slug}-help`}>
-			{children}
-		</CollapsibleSection>
 	);
 });
 

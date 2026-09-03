@@ -5,6 +5,7 @@ import React, { memo, useCallback, useState } from "react";
 import { cls, tid } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import { SingleCalendarConfigSchema, type FilterPreset } from "../../types/settings";
+import { HelpBox } from "./_help-box";
 import { PrismaSection } from "./_section";
 
 const S = SingleCalendarConfigSchema.shape;
@@ -64,7 +65,7 @@ const ColorRulesSection = memo(function ColorRulesSection({ settingsStore }: Col
 					Define color rules based on frontmatter properties. Rules are evaluated in order - the first matching rule
 					determines the event color.
 				</p>
-				<ExamplesList title="Example color rules:" examples={COLOR_RULE_EXAMPLES} />
+				<ExamplesList title="Example color rules" slug="color-rules" examples={COLOR_RULE_EXAMPLES} />
 				<div className={cls("settings-warning-box")}>
 					<strong>&#9888;&#65039; important:</strong>
 					<p>Use property names directly — invalid expressions will be ignored</p>
@@ -267,7 +268,7 @@ const FilterSection = memo(function FilterSection({ store }: FilterSectionProps)
 					Filter events based on their frontmatter properties using JavaScript expressions. Each expression should
 					evaluate to true/false. Events must pass all filters to be included.
 				</p>
-				<ExamplesList title="Example filter expressions" examples={FILTER_EXAMPLES} />
+				<ExamplesList title="Example filter expressions" slug="event-filters" examples={FILTER_EXAMPLES} />
 				<div className={cls("settings-warning-box")}>
 					<strong>&#9888;&#65039; important:</strong>
 					<p>
@@ -294,7 +295,7 @@ const UntrackedFilterSection = memo(function UntrackedFilterSection({ store }: U
 					Filter untracked events (events without dates) based on their frontmatter properties. This works the same as
 					event filtering but only applies to untracked events in the dropdown.
 				</p>
-				<ExamplesList title="Example filter expressions" examples={UNTRACKED_FILTER_EXAMPLES} />
+				<ExamplesList title="Example filter expressions" slug="untracked-filters" examples={UNTRACKED_FILTER_EXAMPLES} />
 				<div className={cls("settings-warning-box")}>
 					<strong>&#9888;&#65039; important:</strong>
 					<p>Use property names directly. Invalid expressions will be ignored and logged to console.</p>
@@ -333,7 +334,7 @@ const FilterPresetsSection = memo(function FilterPresetsSection({ settingsStore 
 					Create named filter presets for quick access via a dropdown in the calendar toolbar. These presets auto-fill
 					the filter expression input.
 				</p>
-				<ExamplesList title="Example filter presets" examples={FILTER_PRESET_EXAMPLES} />
+				<ExamplesList title="Example filter presets" slug="filter-presets" examples={FILTER_PRESET_EXAMPLES} />
 				<div className={cls("settings-warning-box")}>
 					<strong>&#128161; tip:</strong>
 					<p>
@@ -470,10 +471,17 @@ interface ExampleItem {
 	color?: string;
 }
 
-const ExamplesList = memo(function ExamplesList({ title, examples }: { title: string; examples: ExampleItem[] }) {
+const ExamplesList = memo(function ExamplesList({
+	title,
+	slug,
+	examples,
+}: {
+	title: string;
+	slug: string;
+	examples: ExampleItem[];
+}) {
 	return (
-		<div className={cls("settings-info-box")}>
-			<strong>{title}</strong>
+		<HelpBox label={title} slug={slug}>
 			<ul>
 				{examples.map((ex) => (
 					<li key={ex.expression} className={cls("color-example-item")}>
@@ -489,6 +497,6 @@ const ExamplesList = memo(function ExamplesList({ title, examples }: { title: st
 					</li>
 				))}
 			</ul>
-		</div>
+		</HelpBox>
 	);
 });

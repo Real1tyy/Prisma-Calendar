@@ -1,5 +1,9 @@
 # Rules Settings
 
+Each worked-example panel on this tab — color rules, event filters, untracked filters,
+filter presets — folds away once you've read it. Click its header to collapse or reopen it;
+each panel remembers its own state on that device.
+
 ## Event Colors
 
 Configure event colors based on frontmatter properties with a clean, modern interface:
