@@ -85,6 +85,15 @@ export const extractContentAfterFrontmatter = (fullContent: string): string => {
 	return fullContent.substring((match.index ?? 0) + match[0].length).replace(/^(?:[^\S\n]*\n)*/, "");
 };
 
+/**
+ * Replaces only a note's body while preserving its serialized frontmatter.
+ * A file without frontmatter becomes the supplied body.
+ */
+export const replaceContentAfterFrontmatter = (fullContent: string, content: string): string => {
+	const frontmatter = /^---[^\S\n]*\n[\s\S]*?\n---[^\S\n]*\n/.exec(fullContent);
+	return frontmatter ? `${frontmatter[0]}${content}` : content;
+};
+
 export async function ensureDirectory(app: App, directory: string): Promise<void> {
 	const folder = app.vault.getAbstractFileByPath(directory);
 	if (!folder) {

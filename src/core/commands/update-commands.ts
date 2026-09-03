@@ -51,10 +51,8 @@ export class EditEventCommand implements Command {
 			}
 		});
 
-		if (this.newEventData.content !== undefined) {
-			const file = getTFileOrThrow(this.app, this.filePath);
-			await this.app.vault.process(file, (current) => replaceBody(current, this.newEventData.content ?? ""));
-		}
+		if (this.newEventData.content !== undefined)
+			await this.repo.replaceBodyByPath(this.filePath, this.newEventData.content ?? "");
 	}
 
 	async undo(): Promise<void> {
@@ -62,7 +60,7 @@ export class EditEventCommand implements Command {
 		const file = getTFileOrThrow(this.app, this.filePath);
 		if (this.originalBodySnapshot !== null) {
 			await restoreFrontmatter(this.app, file, this.originalFrontmatter);
-			await this.app.vault.process(file, (current) => replaceBody(current, this.originalBodySnapshot ?? ""));
+			await this.repo.replaceBodyByPath(this.filePath, this.originalBodySnapshot);
 			return;
 		}
 		await restoreFrontmatter(this.app, file, this.originalFrontmatter);
@@ -75,12 +73,6 @@ export class EditEventCommand implements Command {
 	canUndo(): boolean {
 		return this.originalFrontmatter !== null;
 	}
-}
-
-function replaceBody(current: string, body: string): string {
-	const frontmatter = /^---[^\S\n]*\n[\s\S]*?\n---[^\S\n]*\n/.exec(current);
-	if (!frontmatter) return body;
-	return `${frontmatter[0]}${body}`;
 }
 
 export class UpdateEventCommand implements Command {

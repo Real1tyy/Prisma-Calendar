@@ -333,7 +333,7 @@ export const EventForm = memo(function EventForm({
 					onMinimize={handleMinimize}
 					onClear={handleClear}
 					onPresetChange={handlePresetChange}
-					onJumpToContent={showContent && settings.showJumpToContentButton ? jumpToContent : undefined}
+					onJumpToContent={showContent ? jumpToContent : undefined}
 				/>
 
 				{/* Title */}

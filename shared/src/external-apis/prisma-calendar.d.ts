@@ -728,10 +728,6 @@ export type PrismaCalendarGetSettingsOutput = {
 	showDurationInTitle: ShowDurationInEventTitle;
 	showEventColorDots: ShowOverflowColorDots;
 	/**
-	 * Display a button in event modals that jumps to the note content field.
-	 */
-	showJumpToContentButton: boolean;
-	/**
 	 * Display a marker indicator on physical recurring instance events (actual instances created from source).
 	 */
 	showPhysicalRecurringMarker: boolean;
@@ -1898,10 +1894,6 @@ export interface PrismaCalendarUpdateSettingsInput {
 		showDurationField?: boolean;
 		showDurationInTitle?: ShowDurationInEventTitle;
 		showEventColorDots?: ShowOverflowColorDots;
-		/**
-		 * Display a button in event modals that jumps to the note content field.
-		 */
-		showJumpToContentButton?: boolean;
 		/**
 		 * Display a marker indicator on physical recurring instance events (actual instances created from source).
 		 */

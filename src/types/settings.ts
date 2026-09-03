@@ -94,10 +94,6 @@ const GeneralSettingsSchema = z
 			.describe(
 				"Display a duration in minutes field in the event creation/edit modal for quick editing. Changes to duration automatically update the end date, and vice versa."
 			),
-		showJumpToContentButton: z
-			.boolean()
-			.catch(true)
-			.describe("Display a button in event modals that jumps to the note content field."),
 		showStopwatch: z
 			.boolean()
 			.catch(true)

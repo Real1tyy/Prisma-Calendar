@@ -1,5 +1,6 @@
 import {
 	isFolderNote,
+	replaceContentAfterFrontmatter,
 	removeMarkdownExtension,
 	toSafeString,
 	VaultTable,
@@ -230,6 +231,13 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 		updater(updated);
 		const row = await this.table.replace(key, updated);
 		return row.data;
+	}
+
+	/** Replaces a note body without routing arbitrary content through the event index. */
+	async replaceBodyByPath(filePath: string, body: string): Promise<void> {
+		const row = this.table.get(this.toKey(filePath));
+		if (!row) throw new Error(`Event file not found: ${filePath}`);
+		await this.app.vault.process(row.file, (current) => replaceContentAfterFrontmatter(current, body));
 	}
 
 	async snapshotByPath(filePath: string): Promise<FrontmatterSnapshot> {

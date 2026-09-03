@@ -63,6 +63,8 @@ The jump keeps whatever view you're in: from Week view you land on the target da
 
 </div>
 
+The Create Event and Edit Event modals include a **Note content** field for the Markdown body of file-backed events. It supports agendas, meeting notes, links, and other note text; editing preserves a typed draft when the backing note changes elsewhere and asks before replacing that changed body. Select **Note content** in the header, or press `Ctrl/Cmd+Shift+N`, to scroll to and focus the field. Virtual events do not include the field because they have no backing note.
+
 ### Zoom Level
 
 | Button | Action |
