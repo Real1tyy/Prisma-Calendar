@@ -13,15 +13,18 @@ const BaseEventFieldsSchema = z.object({
 
 export const CreateEventDataSchema = BaseEventFieldsSchema.extend({
 	virtual: z.boolean(),
+	content: z.string().optional(),
 });
 
 export const UpdateEventDataSchema = BaseEventFieldsSchema.extend({
 	filePath: z.string(),
+	content: z.string().optional(),
 });
 
 export const EventSaveDataSchema = BaseEventFieldsSchema.extend({
 	filePath: z.string().nullable(),
 	virtual: z.boolean(),
+	content: z.string().optional(),
 });
 
 export type CreateEventData = z.infer<typeof CreateEventDataSchema>;

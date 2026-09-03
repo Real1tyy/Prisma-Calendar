@@ -45,6 +45,7 @@ const INTERFACE_FIELDS = ["locale", "showRibbonIcon", "enableKeyboardNavigation"
 const EVENT_DEFAULTS_FIELDS = [
 	"defaultDurationMinutes",
 	"showDurationField",
+	"showJumpToContentButton",
 	"titleAutocomplete",
 	"markPastInstancesAsDone",
 ];

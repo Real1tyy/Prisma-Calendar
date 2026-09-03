@@ -2446,6 +2446,11 @@
 								"title": "Show overflow color dots",
 								"type": "boolean"
 							},
+							"showJumpToContentButton": {
+								"default": true,
+								"description": "Display a button in event modals that jumps to the note content field.",
+								"type": "boolean"
+							},
 							"showPhysicalRecurringMarker": {
 								"default": true,
 								"description": "Display a marker indicator on physical recurring instance events (actual instances created from source).",
@@ -2645,6 +2650,7 @@
 							"directory",
 							"defaultDurationMinutes",
 							"showDurationField",
+							"showJumpToContentButton",
 							"showStopwatch",
 							"showRibbonIcon",
 							"locale",
@@ -4758,6 +4764,11 @@
 								"default": true,
 								"description": "Show color dots in the bottom-right corner of events for matched color rules that were not applied as the event background. Displays overflow colors that exceed the color mode limit, or all matched colors when coloring is disabled.",
 								"title": "Show overflow color dots",
+								"type": "boolean"
+							},
+							"showJumpToContentButton": {
+								"default": true,
+								"description": "Display a button in event modals that jumps to the note content field.",
 								"type": "boolean"
 							},
 							"showPhysicalRecurringMarker": {

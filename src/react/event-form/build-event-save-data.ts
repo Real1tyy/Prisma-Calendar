@@ -123,5 +123,6 @@ export function buildEventSaveData(
 		allDay: isUntracked ? false : formState.allDay,
 		virtual: formState.virtual,
 		preservedFrontmatter: fm,
+		...(formState.content ? { content: formState.content } : {}),
 	};
 }

@@ -817,6 +817,21 @@
 	margin-top: 16px;
 }
 
+.prisma-note-content-section {
+	margin-top: 16px;
+
+	textarea {
+		min-height: 10rem;
+		resize: vertical;
+	}
+}
+
+.prisma-note-content-conflict {
+	margin: 6px 0 0;
+	color: var(--text-warning);
+	font-size: var(--font-ui-smaller);
+}
+
 // Button positioning in setting-item for property sections - scoped to plugin modals only
 .modal.prisma-generic-event-list-modal .prisma-setting-item button.prisma-mod-cta {
 	margin-left: auto;

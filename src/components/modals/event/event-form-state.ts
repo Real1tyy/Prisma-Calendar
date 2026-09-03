@@ -45,6 +45,7 @@ export const EventFormStateSchema = z
 		recurring: RecurringFormStateSchema.default(DEFAULT_RECURRING_FORM_STATE),
 		customPropertiesDisplay: z.array(CustomPropertyEntrySchema).default([]),
 		customPropertiesOther: z.array(CustomPropertyEntrySchema).default([]),
+		content: z.string().default(""),
 	})
 	.extend(EventEditableFormFieldsSchema.omit({ notifyBefore: true }).shape);
 

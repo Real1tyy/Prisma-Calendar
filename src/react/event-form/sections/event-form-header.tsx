@@ -12,6 +12,7 @@ export interface EventFormHeaderProps {
 	onMinimize: () => void;
 	onClear: () => void;
 	onPresetChange: (id: string) => void;
+	onJumpToContent?: (() => void) | undefined;
 }
 
 export const EventFormHeader = memo(function EventFormHeader({
@@ -21,12 +22,24 @@ export const EventFormHeader = memo(function EventFormHeader({
 	onMinimize,
 	onClear,
 	onPresetChange,
+	onJumpToContent,
 }: EventFormHeaderProps) {
 	return (
 		<div className="prisma-event-modal-header">
 			<h2>{mode === "create" ? "Create Event" : "Edit Event"}</h2>
 			<VirtualToggle form={form} />
 			<div className="prisma-event-modal-header-controls">
+				{onJumpToContent && (
+					<button
+						type="button"
+						className="prisma-event-modal-jump-content-button"
+						onClick={onJumpToContent}
+						title="Jump to note content (Ctrl/Cmd+Shift+N)"
+						data-testid="prisma-event-btn-jump-content"
+					>
+						Note content
+					</button>
+				)}
 				<button
 					type="button"
 					className="prisma-event-modal-minimize-button"

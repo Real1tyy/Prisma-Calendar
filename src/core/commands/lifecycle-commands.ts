@@ -29,6 +29,7 @@ export interface EventData {
 	end?: string | undefined;
 	allDay?: boolean | undefined;
 	preservedFrontmatter: Frontmatter;
+	content?: string | undefined;
 }
 
 /** Shared base for commands that create a new file and support undo by trashing it. */
@@ -116,6 +117,7 @@ export class CreateEventCommand extends CreatedFileCommand {
 			targetDirectory: this.targetDirectory,
 			filename,
 			frontmatter,
+			...(this.eventData.content !== undefined ? { content: this.eventData.content } : {}),
 			...(settings.templatePath ? { templatePath: settings.templatePath, useTemplater: true } : {}),
 		});
 

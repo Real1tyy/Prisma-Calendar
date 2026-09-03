@@ -81,6 +81,9 @@ export function openEventCreateModal(
 				}
 				autoStartStopwatch={options.autoStartStopwatch === true}
 				currentFilePath={eventData.extendedProps?.filePath ?? null}
+				isVirtualEvent={initialState.virtual}
+				initialContentDirty={restoreState?.contentDirty}
+				initialContentChangedOnDisk={restoreState?.contentChangedOnDisk}
 				onSubmit={(values) => {
 					handleCreateSubmit(app, bundle, eventData, values, options);
 					close();

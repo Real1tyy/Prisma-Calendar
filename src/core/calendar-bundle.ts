@@ -540,6 +540,7 @@ export class CalendarBundle {
 				end: eventData.end ?? undefined,
 				allDay: eventData.allDay,
 				preservedFrontmatter: eventData.preservedFrontmatter,
+				...(eventData.content !== undefined ? { content: eventData.content } : {}),
 			},
 			settings.directory
 		);
@@ -625,7 +626,7 @@ export class CalendarBundle {
 				...eventData,
 				end: eventData.end ?? undefined,
 			};
-			const editCommand = new EditEventCommand(this.fileRepository, finalFilePath, eventDataForCommand);
+			const editCommand = new EditEventCommand(this.app, this.fileRepository, finalFilePath, eventDataForCommand);
 
 			if (zettelIdCommand || pathBeforeTitleRename) {
 				await editCommand.execute();

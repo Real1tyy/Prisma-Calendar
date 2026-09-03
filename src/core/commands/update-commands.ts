@@ -1,6 +1,7 @@
 import {
 	backupFrontmatter,
 	compareFrontmatter,
+	extractContentAfterFrontmatter,
 	getTFileOrThrow,
 	restoreFrontmatter,
 	toLocalISOString,
@@ -15,21 +16,28 @@ import { setEventBasics } from "../../utils/frontmatter/basics";
 import { withOrderedFrontmatter } from "../../utils/frontmatter/ordering";
 import { isPhysicalRecurringEvent } from "../../utils/frontmatter/predicates";
 import type { CalendarBundle } from "../calendar-bundle";
-import type { EventFileRepository, FrontmatterSnapshot } from "../event-file-repository";
+import type { EventFileRepository } from "../event-file-repository";
 import type { EventData } from "./lifecycle-commands";
 
 export class EditEventCommand implements Command {
-	private snapshot: FrontmatterSnapshot | null = null;
+	private originalFrontmatter: Frontmatter | null = null;
+	private originalBodySnapshot: string | null = null;
 
 	constructor(
+		private app: App,
 		private repo: EventFileRepository,
 		private filePath: string,
 		private newEventData: EventData
 	) {}
 
 	async execute(): Promise<void> {
-		if (!this.snapshot) this.snapshot = await this.repo.snapshotByPath(this.filePath);
-		const diff = compareFrontmatter(this.snapshot.data, this.newEventData.preservedFrontmatter);
+		if (!this.originalFrontmatter) {
+			const snapshot = await this.repo.snapshotByPath(this.filePath);
+			this.originalFrontmatter = snapshot.data;
+			if (this.newEventData.content !== undefined)
+				this.originalBodySnapshot = extractContentAfterFrontmatter(snapshot.content);
+		}
+		const diff = compareFrontmatter(this.originalFrontmatter, this.newEventData.preservedFrontmatter);
 
 		await this.repo.updateFrontmatterByPath(this.filePath, (fm: Frontmatter) => {
 			for (const change of diff.deleted) {
@@ -42,11 +50,22 @@ export class EditEventCommand implements Command {
 				fm[change.key] = change.newValue;
 			}
 		});
+
+		if (this.newEventData.content !== undefined) {
+			const file = getTFileOrThrow(this.app, this.filePath);
+			await this.app.vault.process(file, (current) => replaceBody(current, this.newEventData.content ?? ""));
+		}
 	}
 
 	async undo(): Promise<void> {
-		if (!this.snapshot) return;
-		await this.repo.restoreSnapshot(this.snapshot);
+		if (!this.originalFrontmatter) return;
+		const file = getTFileOrThrow(this.app, this.filePath);
+		if (this.originalBodySnapshot !== null) {
+			await restoreFrontmatter(this.app, file, this.originalFrontmatter);
+			await this.app.vault.process(file, (current) => replaceBody(current, this.originalBodySnapshot ?? ""));
+			return;
+		}
+		await restoreFrontmatter(this.app, file, this.originalFrontmatter);
 	}
 
 	getType() {
@@ -54,8 +73,14 @@ export class EditEventCommand implements Command {
 	}
 
 	canUndo(): boolean {
-		return this.snapshot !== null;
+		return this.originalFrontmatter !== null;
 	}
+}
+
+function replaceBody(current: string, body: string): string {
+	const frontmatter = /^---[^\S\n]*\n[\s\S]*?\n---[^\S\n]*\n/.exec(current);
+	if (!frontmatter) return body;
+	return `${frontmatter[0]}${body}`;
 }
 
 export class UpdateEventCommand implements Command {

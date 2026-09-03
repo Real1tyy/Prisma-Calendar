@@ -71,7 +71,7 @@ export function buildEditEventCommand(
 		preservedFrontmatter: frontmatter,
 	};
 
-	const command = new EditEventCommand(bundle.fileRepository, file.path, eventData);
+	const command = new EditEventCommand(plugin.app, bundle.fileRepository, file.path, eventData);
 	return { command, bundle };
 }
 

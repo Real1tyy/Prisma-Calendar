@@ -29,6 +29,7 @@ import {
 	EventFormFooter,
 	EventFormHeader,
 	MetadataSection,
+	NoteContentSection,
 	NotificationSection,
 	ParticipantSection,
 	PrerequisiteSection,
@@ -42,6 +43,8 @@ export interface EventFormValues {
 	customProperties: Record<string, unknown>;
 	stopwatchSnapshot: StopwatchSnapshot | null;
 	initialMarkAsDoneState: boolean;
+	contentDirty?: boolean | undefined;
+	contentChangedOnDisk?: boolean | undefined;
 }
 
 export interface EventFormConfig {
@@ -54,7 +57,10 @@ export interface EventFormConfig {
 	originalCustomPropertyKeys?: Set<string> | undefined;
 	autoStartStopwatch?: boolean | undefined;
 	currentFilePath?: string | null | undefined;
-	onSubmit: (values: EventFormValues) => void;
+	isVirtualEvent?: boolean | undefined;
+	initialContentDirty?: boolean | undefined;
+	initialContentChangedOnDisk?: boolean | undefined;
+	onSubmit: (values: EventFormValues) => void | Promise<void>;
 	onCancel: () => void;
 	onMinimize?: ((values: EventFormValues) => void) | undefined;
 	onSavePreset?: ((state: EventFormState, customProperties: Record<string, unknown>) => void) | undefined;
@@ -74,6 +80,9 @@ export const EventForm = memo(function EventForm({
 	initialStopwatchSnapshot,
 	autoStartStopwatch = false,
 	currentFilePath,
+	isVirtualEvent = false,
+	initialContentDirty = false,
+	initialContentChangedOnDisk = false,
 	onSubmit,
 	onCancel,
 	onMinimize,
@@ -107,6 +116,9 @@ export const EventForm = memo(function EventForm({
 	);
 	const [initialMarkAsDone] = useState(() => initialState?.markAsDone ?? false);
 	const titleInputRef = useRef<HTMLInputElement | null>(null);
+	const contentSectionRef = useRef<HTMLDivElement | null>(null);
+	const [contentDirty, setContentDirty] = useState(initialContentDirty);
+	const [contentChangedOnDisk, setContentChangedOnDisk] = useState(initialContentChangedOnDisk);
 
 	const [metadataValues, setMetadataValues] = useState<Record<string, unknown>>(() => ({
 		location: initialState?.location ?? "",
@@ -152,8 +164,18 @@ export const EventForm = memo(function EventForm({
 			customProperties: customProps,
 			stopwatchSnapshot: stopwatchSnapshotRef.current,
 			initialMarkAsDoneState: initialMarkAsDone,
+			contentDirty,
+			contentChangedOnDisk,
 		};
-	}, [refreshStopwatchSnapshot, stopwatchSnapshotRef, form, metadataValues, initialMarkAsDone]);
+	}, [
+		refreshStopwatchSnapshot,
+		stopwatchSnapshotRef,
+		form,
+		metadataValues,
+		initialMarkAsDone,
+		contentDirty,
+		contentChangedOnDisk,
+	]);
 
 	const handleSubmit = useCallback(() => {
 		const titleCheck = validateEventTitle(form.getValues("title"));
@@ -179,7 +201,7 @@ export const EventForm = memo(function EventForm({
 			return;
 		}
 		categoriesApi.applyAutoCategories();
-		onSubmit(collectFormValues());
+		void onSubmit(collectFormValues());
 	}, [categoriesApi, form, onSubmit, collectFormValues]);
 
 	const { handleKeyDown, handleMinimize } = useEventFormLifecycle({
@@ -209,6 +231,8 @@ export const EventForm = memo(function EventForm({
 		// of the form. Without this, a running stopwatch survives Clear and the
 		// next onBreakUpdate writes into the just-cleared breakMinutes field.
 		resetStopwatch();
+		setContentDirty(false);
+		setContentChangedOnDisk(false);
 	}, [form, resetStopwatch]);
 
 	const handleSavePreset = useCallback(() => {
@@ -285,12 +309,19 @@ export const EventForm = memo(function EventForm({
 	);
 
 	const allDay = useWatch({ control: form.control, name: "allDay" });
+	const virtual = useWatch({ control: form.control, name: "virtual" });
+	const showContent = !isVirtualEvent && !virtual;
+	const jumpToContent = useCallback(() => {
+		contentSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+		contentSectionRef.current?.querySelector<HTMLTextAreaElement>("textarea")?.focus();
+	}, []);
 
 	// Retry focus for ~500ms — Obsidian's leaf-then-modal activation can
 	// outlast a single focus call when Create is triggered from outside the
 	// calendar (command palette, ribbon, hotkey). Stops on first user
 	// interaction so we never steal focus from a deliberate click.
 	useFocusOnMount(titleInputRef, { retryMs: 500 });
+	useHandleKeyDown({ key: "n", shift: true, mod: true }, jumpToContent);
 
 	return (
 		<div className="prisma-event-modal-content" onKeyDown={handleKeyDown}>
@@ -302,6 +333,7 @@ export const EventForm = memo(function EventForm({
 					onMinimize={handleMinimize}
 					onClear={handleClear}
 					onPresetChange={handlePresetChange}
+					onJumpToContent={showContent && settings.showJumpToContentButton ? jumpToContent : undefined}
 				/>
 
 				{/* Title */}
@@ -374,6 +406,18 @@ export const EventForm = memo(function EventForm({
 				<div className="prisma-other-section-spacing">
 					<CustomPropertiesSection section="other" title="Other Properties" form={form} name="customPropertiesOther" />
 				</div>
+
+				{showContent && (
+					<NoteContentSection
+						app={bundle.plugin.app}
+						form={form}
+						filePath={currentFilePath}
+						contentDirty={contentDirty}
+						onContentDirty={() => setContentDirty(true)}
+						onConflictChange={setContentChangedOnDisk}
+						containerRef={contentSectionRef}
+					/>
+				)}
 			</div>
 
 			<EventFormFooter

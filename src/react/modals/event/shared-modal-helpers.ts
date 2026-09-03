@@ -38,6 +38,8 @@ export function buildMinimizedState(
 ): MinimizedModalState {
 	return {
 		formState: values.formState,
+		contentDirty: values.contentDirty,
+		contentChangedOnDisk: values.contentChangedOnDisk,
 		...(Object.keys(values.customProperties).length > 0 && {
 			customProperties: values.customProperties,
 		}),

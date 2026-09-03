@@ -42,6 +42,8 @@ export interface FormData extends PresetFormData {
  */
 export interface MinimizedModalState extends FormData {
 	formState: EventFormState;
+	contentDirty?: boolean | undefined;
+	contentChangedOnDisk?: boolean | undefined;
 
 	stopwatch: StopwatchSnapshot;
 

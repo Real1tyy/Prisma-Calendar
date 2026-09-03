@@ -1,5 +1,5 @@
 import { parseIntoList, serializeFrontmatterValue } from "@real1ty/obsidian-plugins";
-import { showReactModal } from "@real1ty/obsidian-plugins-react";
+import { openConfirmation, showReactModal } from "@real1ty/obsidian-plugins-react";
 import type { App } from "obsidian";
 
 import {
@@ -21,6 +21,7 @@ import { getVirtualKind } from "../../../utils/frontmatter/extended-props";
 import { getCategoriesFromFilePath, getFileAndFrontmatter } from "../../../utils/obsidian";
 import { buildEventSaveData } from "../../event-form/build-event-save-data";
 import { EventForm, type EventFormValues } from "../../event-form/event-form";
+import { decideNoteContentSave } from "../../event-form/note-content-save-decision";
 import type { EventModalData } from "./event-create-modal";
 import {
 	buildMinimizedState,
@@ -167,8 +168,12 @@ export function openEventEditModal(
 				originalFrontmatter={originalFrontmatter}
 				originalCustomPropertyKeys={originalCustomPropertyKeys}
 				currentFilePath={eventData.extendedProps?.filePath ?? null}
-				onSubmit={(values) => {
-					handleEditSubmit(
+				isVirtualEvent={getVirtualKind(eventData) !== "none"}
+				initialContentDirty={restoreState?.contentDirty}
+				initialContentChangedOnDisk={restoreState?.contentChangedOnDisk}
+				onSubmit={async (values) => {
+					const saved = await handleEditSubmit(
+						app,
 						bundle,
 						eventData,
 						values,
@@ -179,7 +184,7 @@ export function openEventEditModal(
 						titleHadInstanceDate,
 						ensureZettelIdOnSave
 					);
-					close();
+					if (saved) close();
 				}}
 				onCancel={close}
 				onMinimize={(values) => {
@@ -238,7 +243,8 @@ function extractTitleMetadata(rawTitle: string, filePath: string | null): TitleM
 	return { originalZettelId, instanceDateStr, titleHadInstanceDate, displayTitle };
 }
 
-function handleEditSubmit(
+async function handleEditSubmit(
+	app: App,
 	bundle: CalendarBundle,
 	eventData: EventModalData,
 	values: EventFormValues,
@@ -248,7 +254,7 @@ function handleEditSubmit(
 	instanceDateStr: string | null,
 	titleHadInstanceDate: boolean,
 	ensureZettelIdOnSave: boolean
-): void {
+): Promise<boolean> {
 	const settings = bundle.settingsStore.currentSettings;
 	const saveData = buildEventSaveData(
 		values,
@@ -265,49 +271,67 @@ function handleEditSubmit(
 		titleHadInstanceDate
 	);
 	saveData.filePath = eventData.extendedProps?.filePath ?? null;
+	const contentDecision = decideNoteContentSave(values.contentDirty ?? false, values.contentChangedOnDisk ?? false);
+	if (contentDecision === "confirm-then-write") {
+		const confirmed = await openConfirmation(app, {
+			title: "Overwrite changed note content?",
+			message: "This note changed on disk while you were editing its content. Saving will overwrite that change.",
+			confirmLabel: "Overwrite content",
+			cancelLabel: "Keep editing",
+			destructive: true,
+		});
+		if (confirmed === null) return false;
+	}
+	if (contentDecision === "skip") {
+		Reflect.deleteProperty(saveData, "content");
+	} else {
+		saveData.content = values.formState.content;
+	}
 
 	const wasManualVirtual = eventData.extendedProps?.["virtualKind"] === "manual";
 	const virtualEventId = eventData.extendedProps?.["virtualEventId"] as string | undefined;
 
 	if (saveData.virtual && wasManualVirtual && virtualEventId) {
 		void bundle.virtualEventStore.updateFromEventData(virtualEventId, saveData);
-		return;
+		return true;
 	}
 
 	if (saveData.virtual && !wasManualVirtual && saveData.filePath) {
 		void bundle.convertToVirtual(saveData.filePath);
-		return;
+		return true;
 	}
 
 	if (!saveData.virtual && wasManualVirtual && virtualEventId) {
 		void bundle.convertToReal(virtualEventId);
-		return;
+		return true;
 	}
 
 	if (!saveData.filePath) {
 		console.error("[EventEdit] Broken invariant: updateEvent reached without filePath.");
-		return;
+		return false;
 	}
 
 	const updateData: UpdateEventData = { ...saveData, filePath: saveData.filePath };
 
-	bundle
-		.updateEvent(updateData, { ensureZettelId: ensureZettelIdOnSave })
-		.then((newFilePath) => {
-			if (newFilePath && newFilePath !== saveData.filePath) {
-				setExtendedPropSafe(eventData, "filePath", newFilePath);
-				// Mirror base-event-modal-edit-modal.ts:314-321 — if the user
-				// saved with a still-active stopwatch, the modal is closing now
-				// and EventForm's unmount-cleanup will save state under the OLD
-				// filePath. Patch the manager state so subsequent persists hit
-				// the renamed file.
-				const minState = MinimizedModalManager.getState();
-				if (minState && minState.modalType === "edit" && minState.filePath === saveData.filePath) {
-					MinimizedModalManager.saveState({ ...minState, filePath: newFilePath }, bundle);
-				}
+	try {
+		const newFilePath = await bundle.updateEvent(updateData, { ensureZettelId: ensureZettelIdOnSave });
+		if (newFilePath && newFilePath !== saveData.filePath) {
+			setExtendedPropSafe(eventData, "filePath", newFilePath);
+			// Mirror base-event-modal-edit-modal.ts:314-321 — if the user
+			// saved with a still-active stopwatch, the modal is closing now
+			// and EventForm's unmount-cleanup will save state under the OLD
+			// filePath. Patch the manager state so subsequent persists hit
+			// the renamed file.
+			const minState = MinimizedModalManager.getState();
+			if (minState && minState.modalType === "edit" && minState.filePath === saveData.filePath) {
+				MinimizedModalManager.saveState({ ...minState, filePath: newFilePath }, bundle);
 			}
-		})
-		.catch((error: unknown) => console.error("[EventEdit] Error updating event:", error));
+		}
+		return newFilePath !== null;
+	} catch (error) {
+		console.error("[EventEdit] Error updating event:", error);
+		return false;
+	}
 }
 
 export function composeTitleWithZettel(
