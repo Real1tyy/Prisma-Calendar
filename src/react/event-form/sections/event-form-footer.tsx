@@ -1,3 +1,4 @@
+import { ObsidianIcon } from "@real1ty/obsidian-plugins-react";
 import { memo } from "react";
 
 export interface EventFormFooterProps {
@@ -5,6 +6,7 @@ export interface EventFormFooterProps {
 	onCancel: () => void;
 	onSavePreset?: (() => void) | undefined;
 	onSubmit: () => void;
+	onJumpToTop?: (() => void) | undefined;
 }
 
 export const EventFormFooter = memo(function EventFormFooter({
@@ -12,10 +14,23 @@ export const EventFormFooter = memo(function EventFormFooter({
 	onCancel,
 	onSavePreset,
 	onSubmit,
+	onJumpToTop,
 }: EventFormFooterProps) {
 	return (
 		<div className="prisma-event-modal-footer">
 			<div className="prisma-modal-button-container">
+				{onJumpToTop && (
+					<button
+						type="button"
+						className="prisma-event-modal-jump-content-button"
+						onClick={onJumpToTop}
+						title="Back to event details"
+						aria-label="Back to event details"
+						data-testid="prisma-event-btn-jump-top"
+					>
+						<ObsidianIcon icon="chevron-up" />
+					</button>
+				)}
 				<button type="button" onClick={onCancel} data-testid="prisma-event-btn-cancel">
 					Cancel
 				</button>

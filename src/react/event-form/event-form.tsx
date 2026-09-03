@@ -420,7 +420,6 @@ export const EventForm = memo(function EventForm({
 						contentDirty={contentDirty}
 						onContentDirty={() => setContentDirty(true)}
 						onConflictChange={setContentChangedOnDisk}
-						onJumpToTop={jumpToTop}
 						containerRef={contentSectionRef}
 					/>
 				)}
@@ -431,6 +430,7 @@ export const EventForm = memo(function EventForm({
 				onCancel={onCancel}
 				onSavePreset={onSavePreset ? handleSavePreset : undefined}
 				onSubmit={handleSubmit}
+				onJumpToTop={showContent ? jumpToTop : undefined}
 			/>
 		</div>
 	);

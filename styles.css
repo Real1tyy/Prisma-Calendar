@@ -2951,18 +2951,22 @@ button[class*=prisma-]:focus-visible {
   color: var(--text-normal);
 }
 
+.prisma-event-modal.modal {
+  height: auto;
+  max-height: none;
+}
 .prisma-event-modal .modal-content,
 .prisma-event-modal .prisma-event-modal-content {
   display: flex;
   flex-direction: column;
-  max-height: min(100vh, 740px);
-  overflow: hidden;
+  max-height: none;
+  overflow: visible;
   gap: 0;
 }
 .prisma-event-modal .prisma-event-modal-body {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
+  flex: none;
+  min-height: auto;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -3425,12 +3429,6 @@ button[class*=prisma-]:focus-visible {
   margin: 6px 0 0;
   color: var(--text-warning);
   font-size: var(--font-ui-smaller);
-}
-
-.prisma-note-content-back-to-top {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 0.5rem;
 }
 
 .modal.prisma-generic-event-list-modal .prisma-setting-item button.prisma-mod-cta {
