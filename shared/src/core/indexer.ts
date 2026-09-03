@@ -1,9 +1,15 @@
-import { TFile, type App, type CachedMetadata, type MetadataCache, type TAbstractFile, type Vault } from "obsidian";
+import {
+	TFile,
+	type App,
+	type CachedMetadata,
+	type EventRef,
+	type MetadataCache,
+	type TAbstractFile,
+	type Vault,
+} from "obsidian";
 import {
 	EMPTY,
-	from,
 	fromEventPattern,
-	lastValueFrom,
 	merge,
 	Observable,
 	of,
@@ -12,7 +18,7 @@ import {
 	type BehaviorSubject,
 	type Subscription,
 } from "rxjs";
-import { catchError, filter, map, mergeMap, toArray } from "rxjs/operators";
+import { filter, map, mergeMap } from "rxjs/operators";
 
 import { perf } from "../perf";
 import { waitForCacheReady } from "../utils/async/wait-for-cache-ready";
@@ -25,6 +31,14 @@ export type IndexerFrontmatter = Record<string, unknown>;
 
 const DEFAULT_SCAN_CONCURRENCY = 10;
 const DEFAULT_DEBOUNCE_MS = 100;
+
+/**
+ * How long the scan waits for Obsidian to cache a file it found uncached before
+ * completing without it. Measured from the last pending file that settled, not
+ * from scan start, so a slow-but-progressing cold index is never cut short —
+ * only a genuinely stuck one.
+ */
+const PENDING_CACHE_INACTIVITY_MS = 30_000;
 
 /**
  * Obsidian-internal properties on FrontMatterCache that are not real
@@ -139,6 +153,15 @@ export class Indexer {
 	private frontmatterCache: Map<string, IndexerFrontmatter> = new Map();
 	private effectiveExcludedProps: Set<string> = new Set();
 	private _descendantFiles: TFile[] = [];
+	/**
+	 * In-scope files whose `getFileCache()` was `null` when the scan visited
+	 * them. Obsidian fills its cache progressively on a cold or lagging start,
+	 * so `null` means "not indexed yet", not "no frontmatter". The scan is not
+	 * complete until every one of these has settled — see {@link finishScan}.
+	 */
+	private pendingCacheFiles: Map<string, TFile> = new Map();
+	private pendingCacheTimer: number | null = null;
+	private pendingCacheResolvedRef: EventRef | null = null;
 
 	public readonly events$: Observable<IndexerEvent>;
 	public readonly indexingComplete$: Observable<boolean>;
@@ -161,7 +184,7 @@ export class Indexer {
 
 			if (includeFileChanged) {
 				this.indexingCompleteSubject.next(false);
-				void this.scanAllFiles();
+				this.scanAllFiles();
 			}
 		});
 
@@ -193,10 +216,10 @@ export class Indexer {
 		const fileSystemEvents$ = this.buildFileSystemEvents$();
 
 		this.fileSub = fileSystemEvents$.subscribe((event) => {
-			this.scanEventsSubject.next(event);
+			this.emit(event);
 		});
 
-		await this.scanAllFiles();
+		this.scanAllFiles();
 	}
 
 	stop(): void {
@@ -205,6 +228,7 @@ export class Indexer {
 		this.configSubscription?.unsubscribe();
 		this.configSubscription = null;
 		this._descendantFiles = [];
+		this.clearPendingCacheWait();
 		this.indexingCompleteSubject.next(false);
 	}
 
@@ -212,14 +236,15 @@ export class Indexer {
 		this.frontmatterCache.clear();
 		this._descendantFiles = [];
 		this.indexingCompleteSubject.next(false);
-		void this.scanAllFiles();
+		this.scanAllFiles();
 	}
 
 	/**
 	 * Scan all markdown files in the configured directory.
 	 */
-	private async scanAllFiles(): Promise<void> {
+	private scanAllFiles(): void {
 		const scanStart = performance.now();
+		this.clearPendingCacheWait();
 		try {
 			const allFiles = this.config.preloadedFiles ?? this.vault.getMarkdownFiles();
 			const files: TFile[] = [];
@@ -236,23 +261,16 @@ export class Indexer {
 
 			this._descendantFiles = descendants;
 
-			const results$ = from(files).pipe(
-				mergeMap(async (file) => {
-					try {
-						return await this.buildEvent(file);
-					} catch (error) {
-						console.error(`Error processing file ${file.path}:`, error);
-						return null;
+			for (const file of files) {
+				try {
+					if (this.metadataCache.getFileCache(file) === null) {
+						this.pendingCacheFiles.set(file.path, file);
+						continue;
 					}
-				}, this.config.scanConcurrency),
-				toArray()
-			);
-
-			const results = await lastValueFrom(results$, { defaultValue: [] });
-
-			for (const event of results) {
-				if (event) {
-					this.scanEventsSubject.next(event);
+					const event = this.buildEvent(file);
+					if (event) this.scanEventsSubject.next(event);
+				} catch (error) {
+					console.error(`Error processing file ${file.path}:`, error);
 				}
 			}
 		} catch (error) {
@@ -260,7 +278,91 @@ export class Indexer {
 		}
 
 		perf.record("index.scanVault", performance.now() - scanStart);
-		this.indexingCompleteSubject.next(true);
+		this.finishScan();
+	}
+
+	/**
+	 * Declares the scan complete only once every file it found uncached has
+	 * settled: arrived through the live `changed` pipeline, been deleted, or
+	 * become cached by the time Obsidian reports `resolved`. Until then the
+	 * scan is a partial view, and downstream consumers that gate on
+	 * `indexingComplete$` (sync services above all) must keep waiting — a
+	 * partial map is exactly what re-creates every already-synced note.
+	 */
+	private finishScan(): void {
+		if (this.pendingCacheFiles.size === 0) {
+			this.indexingCompleteSubject.next(true);
+			return;
+		}
+		this.pendingCacheResolvedRef = this.metadataCache.on("resolved", () => this.retryPendingCache());
+		this.armPendingCacheTimer();
+	}
+
+	private retryPendingCache(): void {
+		for (const [path, file] of Array.from(this.pendingCacheFiles.entries())) {
+			if (this.metadataCache.getFileCache(file) === null) continue;
+			const event = this.buildEvent(file);
+			if (event) {
+				this.emit(event);
+			} else {
+				this.settlePendingCache(path);
+			}
+		}
+	}
+
+	private settlePendingCache(path: string): void {
+		if (!this.pendingCacheFiles.delete(path)) return;
+		if (this.pendingCacheFiles.size === 0) {
+			this.clearPendingCacheWait();
+			this.indexingCompleteSubject.next(true);
+			return;
+		}
+		this.armPendingCacheTimer();
+	}
+
+	private armPendingCacheTimer(): void {
+		if (this.pendingCacheTimer !== null) window.clearTimeout(this.pendingCacheTimer);
+		this.pendingCacheTimer = window.setTimeout(() => {
+			const paths = Array.from(this.pendingCacheFiles.keys());
+			console.warn(
+				`[Indexer] ${paths.length} file(s) never appeared in the metadata cache after ${PENDING_CACHE_INACTIVITY_MS}ms of inactivity; completing the scan without them:`,
+				paths
+			);
+			this.clearPendingCacheWait();
+			this.indexingCompleteSubject.next(true);
+		}, PENDING_CACHE_INACTIVITY_MS);
+	}
+
+	private clearPendingCacheWait(): void {
+		this.pendingCacheFiles.clear();
+		if (this.pendingCacheTimer !== null) {
+			window.clearTimeout(this.pendingCacheTimer);
+			this.pendingCacheTimer = null;
+		}
+		if (this.pendingCacheResolvedRef) {
+			this.metadataCache.offref(this.pendingCacheResolvedRef);
+			this.pendingCacheResolvedRef = null;
+		}
+	}
+
+	/**
+	 * Single exit for every event after the scan. Settles the pending-cache
+	 * entry the event accounts for, so a file that was uncached at scan time
+	 * counts as indexed the moment its real event goes out — not a debounce
+	 * window earlier, when the raw `changed` notification arrived.
+	 */
+	private emit(event: IndexerEvent): void {
+		this.scanEventsSubject.next(event);
+		if (this.pendingCacheFiles.size === 0) return;
+		if (event.type === "file-renamed" && event.oldPath !== undefined) {
+			const file = this.pendingCacheFiles.get(event.oldPath);
+			if (file) {
+				this.pendingCacheFiles.delete(event.oldPath);
+				this.pendingCacheFiles.set(event.filePath, file);
+			}
+			return;
+		}
+		this.settlePendingCache(event.filePath);
 	}
 
 	/**
@@ -462,13 +564,13 @@ export class Indexer {
 					});
 				}
 
-				return from(this.buildEvent(intent.file, intent.oldPath)).pipe(
-					filter((e): e is IndexerEvent => e !== null),
-					catchError((error) => {
-						console.error(`Error building event for ${intent.path}:`, error);
-						return EMPTY;
-					})
-				);
+				try {
+					const event = this.buildEvent(intent.file, intent.oldPath);
+					return event ? of(event) : EMPTY;
+				} catch (error) {
+					console.error(`Error building event for ${intent.path}:`, error);
+					return EMPTY;
+				}
 			}, this.config.scanConcurrency)
 		);
 	}
@@ -476,9 +578,9 @@ export class Indexer {
 	/**
 	 * Build an indexer event from a file
 	 */
-	private buildEvent(file: TFile, oldPath?: string): Promise<IndexerEvent | null> {
+	private buildEvent(file: TFile, oldPath?: string): IndexerEvent | null {
 		const cache = this.metadataCache.getFileCache(file);
-		if (!cache || !cache.frontmatter) return Promise.resolve(null);
+		if (!cache || !cache.frontmatter) return null;
 
 		const { frontmatter } = cache;
 		const oldFrontmatter = this.frontmatterCache.get(file.path);
@@ -514,6 +616,6 @@ export class Indexer {
 		}
 		this.frontmatterCache.set(file.path, structuredClone(cleanFm));
 
-		return Promise.resolve(event);
+		return event;
 	}
 }

@@ -11,6 +11,9 @@ const CACHE_READY_TIMEOUT_MS = 30_000;
  *
  * Handles hot reload: if the cache is already populated (no pending batch),
  * the `resolved` event will never fire, so we detect that and resolve immediately.
+ * "Populated" means every markdown file has a cache entry — Obsidian indexes a
+ * cold vault progressively, so checking only the first file resolves while
+ * most of the vault is still unindexed and lets consumers scan a partial cache.
  *
  * Includes a safety timeout to prevent hanging indefinitely if the cache
  * never resolves (e.g., Obsidian internal issue or empty vault edge case).
@@ -23,7 +26,8 @@ export function waitForCacheReady(app: App): Promise<void> {
 
 		app.workspace.onLayoutReady(() => {
 			const files = app.vault.getMarkdownFiles();
-			if (files.length === 0 || app.metadataCache.getFileCache(files[0]) !== null) {
+			const hasUncachedFile = files.some((file) => app.metadataCache.getFileCache(file) === null);
+			if (!hasUncachedFile) {
 				window.clearTimeout(timeout);
 				resolve();
 				return;
