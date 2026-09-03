@@ -3,6 +3,7 @@ import {
 	removeMarkdownExtension,
 	toSafeString,
 	VaultTable,
+	waitForFileCache,
 	type FrontmatterDiff,
 	type FrontmatterRepo,
 	type SyncStore,
@@ -33,6 +34,13 @@ export { PARSE_AFFECTING_KEYS, parseAffectingSettingsChanged };
  */
 const PRISMA_CACHE_NAMESPACE = "prisma-calendar";
 const PRISMA_CACHE_SCHEMA_VERSION = 2;
+
+/**
+ * Longest we wait for the metadata cache to catch up with a content-only
+ * modify before minting a new rRuleId. The wait ends early on the file's
+ * `changed` event; this is only the ceiling.
+ */
+const RRULE_ID_CACHE_CATCHUP_MS = 200;
 
 export type FrontmatterSnapshot = {
 	key: string;
@@ -416,9 +424,13 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 		if (!rRuleId) {
 			// vault.on("modify") fires BEFORE the metadata cache updates, so the rRuleId
 			// might already exist on disk but not be in the cache yet. Wait for the
-			// cache to catch up before deciding to generate a new ID — prevents duplicates.
-			await new Promise((resolve) => window.setTimeout(resolve, 200));
-			const freshCache = this.app.metadataCache.getFileCache(row.file);
+			// cache's next `changed` for this file (bounded, since a `changed`-sourced
+			// event has no follow-up) before deciding to generate a new ID — prevents
+			// duplicates. `afterChange` is load-bearing: the cache exists but is stale.
+			const freshCache = await waitForFileCache(this.app, row.file, {
+				afterChange: true,
+				timeoutMs: RRULE_ID_CACHE_CATCHUP_MS,
+			});
 			const cachedId = toSafeString(freshCache?.frontmatter?.[this.settings.rruleIdProp]);
 
 			if (cachedId) {
