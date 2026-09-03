@@ -153,6 +153,16 @@ The **license key secret name** is local to each vault and is never exported, ov
 
 The **Help & support** section at the bottom of the General tab provides quick links to documentation, FAQ, troubleshooting, and GitHub issues.
 
+### Help Center
+
+Click **Open help center** to open an in-app modal — no need to leave Obsidian. It has three tabs:
+
+- **FAQ** — this documentation's [FAQ](../faq.md) page, embedded and rendered in place.
+- **Troubleshooting** — the [Troubleshooting](../troubleshooting.md) page, embedded the same way.
+- **Get help** — one-click buttons to open the documentation, file a GitHub issue, or send feedback.
+
+The FAQ and troubleshooting tabs render the **actual documentation pages, bundled into the plugin at build time** — so what you read in-app is always the current docs, never a stale copy. The same expandable sections you see on the docs site work inside the modal.
+
 ### Changelog viewer
 
 Click **View changelog** to open the full changelog as a scrollable modal. Entries load in batches — click **Load more** to see older versions. The same modal appears automatically after each plugin update showing only the new changes.

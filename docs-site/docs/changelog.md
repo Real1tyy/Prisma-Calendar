@@ -46,9 +46,10 @@ All notable changes to this project will be documented here.
 
 ## 2.21.0 - 6/11/2026
 
-> **TLDR:** Activating Pro is now a single paste-and-click in **Settings → General → License** — no secrets dialog, no ID/value steps. Dragging an event to the top or bottom edge of a zoomed-in day/week view now scrolls the grid slowly so you can drop it on an off-screen time.
+> **TLDR:** A new **Open help center** button in **General → Help & support** opens an in-app modal that embeds the FAQ and Troubleshooting docs (plus quick GitHub / docs / feedback links) so you can find answers without leaving Obsidian. Activating Pro is now a single paste-and-click in **Settings → General → License** — no secrets dialog, no ID/value steps. Dragging an event to the top or bottom edge of a zoomed-in day/week view now scrolls the grid slowly so you can drop it on an off-screen time.
 
 ### Added
+- **In-app Help Center**: **General → Help & support** now has an **Open help center** button that opens a tabbed modal embedding the FAQ and Troubleshooting documentation pages (bundled with the plugin, so they're always current) plus one-click links to the docs, GitHub issues and feedback. See [General → Help Center](./configuration/general.md#help-center).
 - **Scroll while dragging vertically**: in day and week views, holding a dragged event against the top or bottom edge of a zoomed-in grid now scrolls it slowly up or down — the vertical counterpart to the existing left/right edge paging — so you can drop on a time that's currently off-screen. See [Calendar View → Scrolling while dragging](./features/calendar/calendar-view.md#scrolling-while-dragging).
 - **Simpler license activation**: paste your license key into **Settings → General → License** and click **Activate** — Prisma stores it behind the scenes and verifies automatically, with no secrets dialog or ID/value steps (the **Use an existing secret** option is still there if you keep your own). Once active, the section streamlines to your status, a **Refresh** button, and **Deactivate this device**; subscription problems (expired, billing, device limit) are now surfaced prominently so they're hard to miss. See [License & activation](./configuration/license.md).
 

@@ -23,6 +23,7 @@ import {
 	type CustomCalendarSettings,
 } from "../../types/settings";
 import { PRISMA_SETTINGS_TEST_ID_PREFIX, PrismaSection } from "./_section";
+import { PRISMA_HELP_CENTER } from "./help-content";
 import { ProUpgradeBanner } from "./pro-upgrade-banner";
 
 const SHAPE = SingleCalendarConfigSchema.shape;
@@ -103,6 +104,7 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 				troubleshootingUrl: docsUrl("/troubleshooting"),
 				githubIssuesUrl: GITHUB_ISSUES_URL,
 				feedbackUrl: FEEDBACK_URL,
+				helpCenter: PRISMA_HELP_CENTER,
 				pro: {
 					productName: "Prisma Pro",
 					productPageUrl: PRODUCT_PAGE_URL,
