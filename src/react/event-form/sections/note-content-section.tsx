@@ -96,7 +96,9 @@ export const NoteContentSection = memo(function NoteContentSection({
 				/>
 			</PrismaSettingItem>
 			{conflicted && (
-				<p className="prisma-note-content-conflict">The note changed on disk while you were editing it.</p>
+				<p className="prisma-note-content-conflict" data-testid="prisma-event-field-content-conflict">
+					The note changed on disk while you were editing it.
+				</p>
 			)}
 		</div>
 	);
