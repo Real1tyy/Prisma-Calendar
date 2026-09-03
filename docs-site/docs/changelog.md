@@ -6,13 +6,6 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.23.1 - 9/2/2026
-
-> **TLDR:** A more robust startup — Prisma now waits for Obsidian to finish indexing your vault before it syncs, generates, or cleans anything up, and it waits progressively rather than on a fixed timer, so a slow start no longer races the index and produces duplicate or conflicting notes.
-
-### Fixed
-- **Startup writes no longer race Obsidian's indexing**: on a slow start, work Prisma does on its own — calendar-subscription and CalDAV syncs, recurring instances, marking past events done, cleaning up duplicate notes — could run against a half-built index and act on notes it had not seen yet, which showed up as re-created synced events, trashed originals, and conflict storms in vault-sync tools like LiveSync. Prisma now treats "indexed" the way Obsidian itself does: it waits, progressively, until Obsidian reports the index complete, keeps waiting while Obsidian is still making progress, and only then lets any automatic write go ahead. A write attempted earlier is refused rather than applied, and bookkeeping Prisma adds to your notes itself — such as the ID a recurring event needs — is written right after indexing finishes, never during it. See [Integrations → Syncing and vault indexing](./features/advanced/integrations.md#syncing-and-vault-indexing).
-
 ## 2.23.0 - 8/31/2026
 
 > **TLDR:** Sync-safe frontmatter — Prisma now writes its properties in one consistent order you arrange yourself in the redesigned Properties tab, so vaults synced across devices (LiveSync, iCloud, Syncthing) stop conflicting over shuffled property order; a new **Normalize property order** button and command scans your vault, shows what's out of order, and fixes it in one confirmed pass with a progress bar. Imported and synced events now pick up your categories automatically, so a "Gym" event from Google Calendar lands under "Health" without you touching it. Obsidian 1.13 compatibility — settings search filters again, and every Prisma dialog renders fully styled inside the new separate settings window. Prerequisite arrows stay anchored to the right event when you drag one into a day's all-day lane, and setup on an existing vault finds the date property you actually use instead of an internal one.
