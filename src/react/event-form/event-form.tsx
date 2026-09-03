@@ -341,12 +341,7 @@ export const EventForm = memo(function EventForm({
 					onJumpToContent={showContent ? jumpToContent : undefined}
 				/>
 
-				<TitleField
-					form={form}
-					onBlur={categoriesApi.onTitleBlur}
-					bundle={bundle}
-					titleInputRef={titleInputRef}
-				/>
+				<TitleField form={form} onBlur={categoriesApi.onTitleBlur} bundle={bundle} titleInputRef={titleInputRef} />
 			</div>
 
 			<div ref={bodyRef} className="prisma-event-modal-body">

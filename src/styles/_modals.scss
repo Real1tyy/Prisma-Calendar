@@ -296,7 +296,12 @@
 	// The modal heading and event title stay visible above the scrolling fields.
 	.prisma-event-modal-top {
 		flex-shrink: 0;
+		padding-bottom: 0.5rem;
 		background: var(--background-primary);
+
+		> .prisma-setting-item:last-child {
+			border-bottom: 1px solid var(--background-modifier-border);
+		}
 	}
 
 	// Only the fields below the title scroll; the top region and footer remain fixed.
