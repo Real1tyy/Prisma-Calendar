@@ -252,6 +252,25 @@
 			color: var(--text-normal);
 		}
 	}
+
+	&-jump-content-button {
+		width: 28px;
+		height: 28px;
+		padding: 0;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		background-color: var(--background-modifier-hover);
+		border: 1px solid var(--background-modifier-border);
+		border-radius: var(--radius-s);
+		color: var(--text-muted);
+		cursor: pointer;
+
+		&:hover {
+			background-color: var(--background-modifier-border);
+			color: var(--text-normal);
+		}
+	}
 }
 
 // Event Modal - Content and internal layout
@@ -819,8 +838,19 @@
 
 .prisma-note-content-section {
 	margin-top: 16px;
+	padding-top: 0.5rem;
+	border-top: 1px solid var(--background-modifier-border);
+
+	.prisma-note-content-heading {
+		margin: 0 0 0.5rem;
+		font-size: var(--font-ui-small);
+		font-weight: var(--font-weight-semibold);
+		color: var(--text-normal);
+	}
 
 	textarea {
+		width: 100%;
+		box-sizing: border-box;
 		min-height: 10rem;
 		resize: vertical;
 	}

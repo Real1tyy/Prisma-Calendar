@@ -2927,6 +2927,23 @@ button[class*=prisma-]:focus-visible {
   background-color: var(--background-modifier-border);
   color: var(--text-normal);
 }
+.prisma-event-modal-jump-content-button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--background-modifier-hover);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.prisma-event-modal-jump-content-button:hover {
+  background-color: var(--background-modifier-border);
+  color: var(--text-normal);
+}
 
 .prisma-event-modal .modal-content,
 .prisma-event-modal .prisma-event-modal-content {
@@ -3382,8 +3399,18 @@ button[class*=prisma-]:focus-visible {
 
 .prisma-note-content-section {
   margin-top: 16px;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--background-modifier-border);
+}
+.prisma-note-content-section .prisma-note-content-heading {
+  margin: 0 0 0.5rem;
+  font-size: var(--font-ui-small);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-normal);
 }
 .prisma-note-content-section textarea {
+  width: 100%;
+  box-sizing: border-box;
   min-height: 10rem;
   resize: vertical;
 }

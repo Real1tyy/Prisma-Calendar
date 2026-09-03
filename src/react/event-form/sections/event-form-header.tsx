@@ -1,3 +1,4 @@
+import { ObsidianIcon } from "@real1ty/obsidian-plugins-react";
 import { memo } from "react";
 import { useController, type UseFormReturn } from "react-hook-form";
 
@@ -35,9 +36,10 @@ export const EventFormHeader = memo(function EventFormHeader({
 						className="prisma-event-modal-jump-content-button"
 						onClick={onJumpToContent}
 						title="Jump to note content (Ctrl/Cmd+Shift+N)"
+						aria-label="Jump to note content"
 						data-testid="prisma-event-btn-jump-content"
 					>
-						Note content
+						<ObsidianIcon icon="chevron-down" />
 					</button>
 				)}
 				<button

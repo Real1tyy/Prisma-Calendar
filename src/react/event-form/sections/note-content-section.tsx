@@ -5,7 +5,6 @@ import { memo, useEffect, useRef, useState, type RefObject } from "react";
 import { useController, type UseFormReturn } from "react-hook-form";
 
 import type { EventFormState } from "../../../components/modals/event/event-form-state";
-import { PrismaSettingItem } from "../prisma-setting-item";
 
 interface NoteContentSectionProps {
 	app: App;
@@ -83,18 +82,19 @@ export const NoteContentSection = memo(function NoteContentSection({
 
 	return (
 		<div ref={containerRef} className="prisma-note-content-section" data-testid="prisma-event-field-content">
-			<PrismaSettingItem name="Note content" testId="prisma-event-field-content-label">
-				<TextareaInput
-					value={field.value}
-					onChange={(content) => {
-						onContentDirty();
-						field.onChange(content);
-					}}
-					rows={8}
-					debounceMs={0}
-					testId="prisma-event-control-content"
-				/>
-			</PrismaSettingItem>
+			<h3 className="prisma-note-content-heading" data-testid="prisma-event-field-content-label">
+				Note content
+			</h3>
+			<TextareaInput
+				value={field.value}
+				onChange={(content) => {
+					onContentDirty();
+					field.onChange(content);
+				}}
+				rows={8}
+				debounceMs={0}
+				testId="prisma-event-control-content"
+			/>
 			{conflicted && (
 				<p className="prisma-note-content-conflict" data-testid="prisma-event-field-content-conflict">
 					The note changed on disk while you were editing it.
