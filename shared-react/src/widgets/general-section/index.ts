@@ -1,5 +1,6 @@
 export type {
 	GeneralChangelogConfig,
+	GeneralHelpCenterConfig,
 	GeneralHelpConfig,
 	GeneralLicenseConfig,
 	GeneralSectionProps,

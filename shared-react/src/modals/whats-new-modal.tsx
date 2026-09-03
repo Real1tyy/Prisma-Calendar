@@ -10,6 +10,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useApp } from "../contexts/app-context";
 import { useScopedStyles } from "../hooks/styles/use-styles";
 import { showReactModal } from "../show-react-modal";
+import { makeExternalLinksClickable } from "../utils/external-links";
 import { openExternal } from "../utils/open-external";
 import { buildWhatsNewStyles } from "./whats-new-modal.styles";
 
@@ -46,25 +47,6 @@ interface WhatsNewContentProps {
 	fromVersion: string;
 	toVersion: string;
 	close: () => void;
-}
-
-function openExternalFromElement(source: HTMLElement, href: string): void {
-	const ownerWindow = source.ownerDocument.defaultView ?? window;
-	ownerWindow.open(href, "_blank");
-}
-
-function makeExternalLinksClickable(container: HTMLElement): void {
-	const links = container.querySelectorAll<HTMLAnchorElement>("a[href]");
-	for (const link of Array.from(links)) {
-		const href = link.getAttribute("href");
-		if (!href || !href.startsWith("http")) continue;
-
-		link.addEventListener("click", (e: MouseEvent) => {
-			e.preventDefault();
-			openExternalFromElement(link, href);
-		});
-		link.classList.add("external-link");
-	}
 }
 
 function countNonEmptyLines(content: string): number {

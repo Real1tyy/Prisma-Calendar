@@ -144,6 +144,8 @@ export type { ShowReactIconPickerOptions } from "./modals/icon-picker-modal";
 export { showReactIconPicker } from "./modals/icon-picker-modal";
 export type { ProgressModalConfig, ProgressModalHandle } from "./modals/progress-modal";
 export { openProgressModal } from "./modals/progress-modal";
+export type { HelpCenterConfig, HelpCenterContent } from "./modals/help-center-modal";
+export { HelpCenterView, showHelpCenterReactModal } from "./modals/help-center-modal";
 export type { OpenRenameOptions, RenameModalProps, RenameModalResult } from "./modals/rename-modal";
 export { openRenameModal, RenameModalContent } from "./modals/rename-modal";
 export type { WhatsNewModalConfig } from "./modals/whats-new-modal";

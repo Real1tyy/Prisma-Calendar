@@ -1,6 +1,9 @@
 import { buildUtmUrl, type LicenseManager, type PluginSlug } from "@real1ty/obsidian-plugins";
-import { memo, type ReactNode } from "react";
+import { memo, useCallback, type ReactNode } from "react";
 
+import { useApp } from "../../contexts/app-context";
+import { useCssPrefix } from "../../contexts/theme-context";
+import { showHelpCenterReactModal, type HelpCenterContent } from "../../modals/help-center-modal";
 import { OutboundLink } from "../../primitives/atoms/outbound-link";
 import { SettingCard, SettingHeading, SettingItem } from "../../primitives/layout/setting-item";
 import { SettingsTransferButtons, type SettingsTransferButtonsProps } from "../../settings/settings-transfer";
@@ -37,6 +40,13 @@ export interface GeneralHelpConfig extends ToggleableConfig {
 	githubIssuesUrl: string;
 	/** Optional contact/feedback page URL. */
 	feedbackUrl?: string;
+	/**
+	 * In-app Help Center modal. The "Open help center" button renders by default
+	 * for every plugin (using this config's links + display name); supply
+	 * `about` / `faq` / `troubleshooting` content to enrich it, or `enabled:
+	 * false` to suppress the button.
+	 */
+	helpCenter?: GeneralHelpCenterConfig;
 	/** Optional Pro upsell paragraph. */
 	pro?: {
 		/** Link text for the product page, e.g. `"Prisma Pro"`. */
@@ -46,6 +56,19 @@ export interface GeneralHelpConfig extends ToggleableConfig {
 		/** Verb phrase completing "{productName} {pitch}", e.g. "unlocks …". */
 		pitch: string;
 	};
+}
+
+/**
+ * Per-plugin Help Center content. Every field is optional — with none supplied,
+ * the modal still surfaces the About blurb and Get-help links derived from the
+ * surrounding `GeneralHelpConfig`, so adoption costs nothing and content is
+ * enriched over time.
+ */
+export interface GeneralHelpCenterConfig extends HelpCenterContent {
+	/** Set `false` to hide the in-app Help Center button. Default: shown. */
+	enabled?: boolean;
+	/** Button label. Default: `"Open help center"`. */
+	buttonLabel?: string;
 }
 
 export interface GeneralChangelogConfig extends ToggleableConfig {
@@ -142,14 +165,38 @@ function HelpAndSupport({
 	config,
 	slug,
 	testId,
+	buttonTestId,
 }: {
 	config: GeneralHelpConfig;
 	slug: PluginSlug;
 	testId?: string | undefined;
+	buttonTestId?: string | undefined;
 }): ReactNode {
+	const app = useApp();
+	const cssPrefix = useCssPrefix();
 	const utm = (url: string, content: string): string =>
 		buildUtmUrl(url, slug, GENERAL_UTM_SOURCE, GENERAL_UTM_MEDIUM, content);
-	const { faqUrl, troubleshootingUrl, feedbackUrl, pro } = config;
+	const { faqUrl, troubleshootingUrl, feedbackUrl, pro, helpCenter } = config;
+
+	const showHelpCenter = helpCenter?.enabled !== false;
+	const openHelpCenter = useCallback(() => {
+		const content: HelpCenterContent = {
+			...(helpCenter?.about !== undefined ? { about: helpCenter.about } : {}),
+			...(helpCenter?.faq !== undefined ? { faq: helpCenter.faq } : {}),
+			...(helpCenter?.troubleshooting !== undefined ? { troubleshooting: helpCenter.troubleshooting } : {}),
+		};
+		showHelpCenterReactModal(app, {
+			cssPrefix,
+			pluginName: config.pluginDisplayName,
+			slug,
+			links: {
+				documentation: config.documentationUrl,
+				githubIssues: config.githubIssuesUrl,
+				...(config.feedbackUrl !== undefined ? { feedback: config.feedbackUrl } : {}),
+			},
+			...content,
+		});
+	}, [app, cssPrefix, config, slug, helpCenter]);
 
 	return (
 		<>
@@ -204,6 +251,13 @@ function HelpAndSupport({
 							<strong>Try every Pro feature with a 30-day free trial</strong>
 						</OutboundLink>{" "}
 						— cancel anytime.
+					</p>
+				)}
+				{showHelpCenter && (
+					<p>
+						<button type="button" className="mod-cta" onClick={openHelpCenter} {...testIdAttr(buttonTestId)}>
+							{helpCenter?.buttonLabel ?? "Open help center"}
+						</button>
 					</p>
 				)}
 			</SettingCard>
@@ -287,7 +341,9 @@ function GeneralSectionInner<T extends Record<string, unknown>>({
 				</>
 			)}
 
-			{isOn(help, true) && help !== undefined && <HelpAndSupport config={help} slug={slug} testId={tid("help")} />}
+			{isOn(help, true) && help !== undefined && (
+				<HelpAndSupport config={help} slug={slug} testId={tid("help")} buttonTestId={tid("help-center-btn")} />
+			)}
 
 			{isOn(changelog, true) && changelog !== undefined && (
 				<ChangelogRow config={changelog} fieldTestId={tid("field-changelog")} buttonTestId={tid("changelog-btn")} />
