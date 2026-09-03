@@ -246,6 +246,24 @@ export function stripDefaultColors(appearance: Appearance): Appearance {
 }
 
 /**
+ * Narrow an appearance to the colour axes a surface can actually paint. A surface
+ * that renders no label text — the page header's icon-only buttons — has nothing for
+ * `textColor` to tint, so offering the control or previewing the colour would promise
+ * an effect the render boundary never delivers. Any value already persisted for a
+ * dropped axis is left on disk untouched; it simply stops being shown.
+ */
+export function limitToColorAxes(appearance: Appearance, axes: readonly AppearanceColorAxis[]): Appearance {
+	const painted = new Set<AppearanceColorAxis>(axes);
+	const limited: Record<AppearanceAxis, string | undefined> = {
+		icon: appearance.icon,
+		color: painted.has("color") ? appearance.color : undefined,
+		textColor: painted.has("textColor") ? appearance.textColor : undefined,
+		backgroundColor: painted.has("backgroundColor") ? appearance.backgroundColor : undefined,
+	};
+	return limited;
+}
+
+/**
  * Which CSS property each colour axis paints. `color` and `textColor` both land on
  * CSS `color` — the axis says which *element* the caller applies the style to (the
  * icon span vs. the label), not which property.

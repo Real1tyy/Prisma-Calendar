@@ -6,6 +6,7 @@ import { useInjectedStyles } from "../hooks/styles/use-styles";
 import { showReactIconPicker } from "../modals/icon-picker-modal";
 import { Toggle } from "../primitives/controls";
 import { showShelledModal } from "../show-react-modal";
+import { limitToColorAxes, type AppearanceColorAxis } from "../utils/appearance";
 import { ManagerEditForm, type ManagerEditController } from "../widgets/manager-list/manager-edit-form";
 import { ManagerRow } from "../widgets/manager-list/manager-row";
 import { ManagerToolbar } from "../widgets/manager-list/manager-toolbar";
@@ -14,6 +15,14 @@ import { buildPageHeaderStyles } from "./styles";
 import type { HeaderActionDefinition } from "./types";
 
 const ROW_PREFIX = "action-manager";
+
+/**
+ * A header action renders as an icon-only button — its label is the `aria-label`, never
+ * text on screen — so there is nothing for the text-colour axis to tint. Offering the
+ * control (or previewing the colour on the manager row) would advertise an effect the
+ * header never delivers, so the surface declares the two axes it can actually paint.
+ */
+const HEADER_COLOR_AXES: readonly AppearanceColorAxis[] = ["color", "backgroundColor"];
 
 export interface ActionManagerProps {
 	app: App;
@@ -29,10 +38,11 @@ interface ActionRowEditFormProps {
 
 function ActionRowEditForm({ action, store, pickIcon }: ActionRowEditFormProps) {
 	const controller: ManagerEditController = {
-		item: { id: action.id, label: action.label, appearance: action },
+		item: { id: action.id, label: action.label, appearance: limitToColorAxes(action, HEADER_COLOR_AXES) },
 		label: store.getLabel(action),
-		appearance: store.getAppearance(action),
+		appearance: limitToColorAxes(store.getAppearance(action), HEADER_COLOR_AXES),
 		overridden: { label: action.id in store.getValue().renames, appearance: store.getOverridden(action.id) },
+		colorAxes: HEADER_COLOR_AXES,
 		actions: {
 			rename: (label) => store.setRename(action.id, label),
 			setAppearance: (axis, value) => store.setAppearanceOverride(action.id, axis, value),
@@ -123,7 +133,7 @@ export const ActionManagerContent = memo(function ActionManagerContent({ app, st
 							<ManagerRow
 								key={action.id}
 								item={action}
-								appearance={store.getAppearance(action)}
+								appearance={limitToColorAxes(store.getAppearance(action), HEADER_COLOR_AXES)}
 								rowPrefix={ROW_PREFIX}
 								isVisible={isVisible}
 								isExpanded={isExpanded}

@@ -6,7 +6,13 @@ import { ObsidianIcon } from "../../primitives/atoms/obsidian-icon";
 import { ColorInput } from "../../primitives/controls/color-input";
 import { TextInput } from "../../primitives/controls/text-input";
 import { SettingItem } from "../../primitives/layout/setting-item";
-import type { Appearance, AppearanceAxis, AppearanceColorAxis, AppearanceOverridden } from "../../utils/appearance";
+import {
+	APPEARANCE_COLOR_AXES,
+	type Appearance,
+	type AppearanceAxis,
+	type AppearanceColorAxis,
+	type AppearanceOverridden,
+} from "../../utils/appearance";
 import { buildManagerEditFormStyles } from "./manager-edit-form.styles";
 
 /**
@@ -65,6 +71,12 @@ export interface ManagerEditController {
 	appearance: Appearance;
 	overridden: { label: boolean; appearance: AppearanceOverridden };
 	actions: ManagerEditActions;
+	/**
+	 * The colour axes this surface can actually paint — defaults to all of them. A
+	 * surface that renders no label text (the page header's icon-only buttons) omits
+	 * `textColor` so the form does not offer a control with nothing to tint.
+	 */
+	colorAxes?: readonly AppearanceColorAxis[];
 }
 
 export interface ManagerEditFormProps {
@@ -76,7 +88,7 @@ export const ManagerEditForm = memo(function ManagerEditForm({
 	controller,
 	formPrefix = "manager",
 }: ManagerEditFormProps) {
-	const { item, label, appearance, overridden, actions } = controller;
+	const { item, label, appearance, overridden, actions, colorAxes = APPEARANCE_COLOR_AXES } = controller;
 	const { cls, tid, cssPrefix } = useScoped(formPrefix);
 	useInjectedStyles(`${cssPrefix}${formPrefix}-edit-form-styles`, buildManagerEditFormStyles(cssPrefix, formPrefix));
 	const [labelValue, setLabelValue] = useState(label);
@@ -151,7 +163,7 @@ export const ManagerEditForm = memo(function ManagerEditForm({
 				)}
 			</SettingItem>
 
-			{COLOR_CONTROLS.map((control) => (
+			{COLOR_CONTROLS.filter((control) => colorAxes.includes(control.axis)).map((control) => (
 				<ColorControl
 					key={control.axis}
 					control={control}
