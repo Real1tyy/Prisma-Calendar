@@ -9,7 +9,7 @@ const optionalStringRecord = z.record(z.string(), z.string()).optional().catch(u
 export const TabbedContainerStateSchema = CustomizableUIBaseStateSchema.extend({
 	/** Ordered list of visible tab IDs. Controls both visibility and order. When absent, all tabs shown in default order. */
 	visibleTabIds: z.array(z.string()).optional().catch(undefined),
-	/** Per-group child state: visibility order, renames, and icon/color overrides. */
+	/** Per-group child state: visibility order, renames, and icon/icon-colour/text-colour overrides. */
 	groupState: z
 		.record(
 			z.string(),
@@ -18,6 +18,7 @@ export const TabbedContainerStateSchema = CustomizableUIBaseStateSchema.extend({
 				childRenames: optionalStringRecord,
 				childIconOverrides: optionalStringRecord,
 				childColorOverrides: optionalStringRecord,
+				childTextColorOverrides: optionalStringRecord,
 			})
 		)
 		.optional()
@@ -52,6 +53,8 @@ export interface TabDefinition {
 	icon?: string;
 	/** Optional default color for the tab icon. */
 	color?: string;
+	/** Optional default color for the tab label text. */
+	textColor?: string;
 	/** React content rendered inside the tab panel when active. May be a node or a thunk for lazy evaluation. */
 	content: ReactNode | (() => ReactNode);
 	/** Key handlers dispatched when this tab is active and the container was last interacted with. Keys are `KeyboardEvent.key` values (e.g. "ArrowLeft"). */
@@ -65,6 +68,8 @@ export interface GroupTabDefinition {
 	icon?: string;
 	/** Optional default color for the group tab icon. */
 	color?: string;
+	/** Optional default color for the group tab label text. */
+	textColor?: string;
 	children: TabDefinition[];
 }
 

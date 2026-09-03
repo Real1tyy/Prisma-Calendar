@@ -314,10 +314,12 @@ function MenuItemRow({
 	const displayLabel = store.getLabel(item);
 	const displayIcon = store.getIcon(item);
 	const displayColor = store.getColor(item);
+	const displayTextColor = store.getTextColor(item);
 	const isDraggable = draggable && isVisible;
 	const hasRename = displayLabel !== item.label;
 	const hasIcon = displayIcon !== item.icon;
 	const hasColor = displayColor !== item.color;
+	const hasTextColor = displayTextColor !== item.textColor;
 
 	const editForm: ReactNode = isExpanded ? (
 		<ManagerEditForm
@@ -328,17 +330,20 @@ function MenuItemRow({
 						label: item.label,
 						icon: item.icon ?? "",
 						...(item.color !== undefined ? { color: item.color } : {}),
+						...(item.textColor !== undefined ? { textColor: item.textColor } : {}),
 					},
 					values: {
 						label: displayLabel,
 						icon: displayIcon ?? "",
 						color: displayColor ?? DEFAULT_EDIT_COLOR,
+						textColor: displayTextColor ?? DEFAULT_EDIT_COLOR,
 					},
-					overrides: { label: hasRename, icon: hasIcon, color: hasColor },
+					overrides: { label: hasRename, icon: hasIcon, color: hasColor, textColor: hasTextColor },
 					actions: {
 						rename: (label) => store.setRename(item.id, label),
 						changeIcon: (icon) => store.setIcon(item.id, icon),
 						changeColor: (color) => store.setColor(item.id, color),
+						changeTextColor: (color) => store.setTextColor(item.id, color),
 						pickIcon: (cb: (icon: string | null) => void) => pickIcon(item.id, (icon) => cb(icon)),
 					},
 				} satisfies ManagerEditController
@@ -348,6 +353,7 @@ function MenuItemRow({
 	) : null;
 
 	const effectiveColor = displayColor && displayColor !== "#000000" ? displayColor : undefined;
+	const effectiveTextColor = displayTextColor && displayTextColor !== "#000000" ? displayTextColor : undefined;
 
 	return (
 		<ManagerRow
@@ -356,11 +362,13 @@ function MenuItemRow({
 				label: item.label,
 				icon: displayIcon ?? "",
 				...(item.color !== undefined ? { color: item.color } : {}),
+				...(item.textColor !== undefined ? { textColor: item.textColor } : {}),
 			}}
 			rowPrefix={ROW_PREFIX}
 			displayLabel={displayLabel}
 			displayIcon={displayIcon ?? ""}
 			{...(effectiveColor !== undefined ? { displayColor: effectiveColor } : {})}
+			{...(effectiveTextColor !== undefined ? { displayTextColor: effectiveTextColor } : {})}
 			hasRename={hasRename}
 			isVisible={isVisible}
 			isExpanded={isExpanded}

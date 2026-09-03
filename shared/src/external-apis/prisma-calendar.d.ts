@@ -258,6 +258,9 @@ export type PrismaCalendarGetSettingsOutput = {
 				childRenames?: {
 					[k: string]: string;
 				};
+				childTextColorOverrides?: {
+					[k: string]: string;
+				};
 				visibleChildIds?: string[];
 			};
 		};
@@ -268,6 +271,9 @@ export type PrismaCalendarGetSettingsOutput = {
 			[k: string]: string;
 		};
 		showSettingsButton?: boolean;
+		textColorOverrides?: {
+			[k: string]: string;
+		};
 		visibleTabIds?: string[];
 	};
 	/**
@@ -400,6 +406,9 @@ export type PrismaCalendarGetSettingsOutput = {
 			[k: string]: string;
 		};
 		showSettingsButton?: boolean;
+		textColorOverrides?: {
+			[k: string]: string;
+		};
 		visibleItemIds?: string[];
 	};
 	/**
@@ -543,6 +552,9 @@ export type PrismaCalendarGetSettingsOutput = {
 			[k: string]: string;
 		};
 		showSettingsButton?: boolean;
+		textColorOverrides?: {
+			[k: string]: string;
+		};
 		visibleItemIds?: string[];
 	};
 	/**
@@ -648,6 +660,9 @@ export type PrismaCalendarGetSettingsOutput = {
 			[k: string]: string;
 		};
 		showSettingsButton?: boolean;
+		textColorOverrides?: {
+			[k: string]: string;
+		};
 		visibleActionIds?: string[];
 	};
 	/**
@@ -1395,6 +1410,9 @@ export interface PrismaCalendarUpdateSettingsInput {
 					childRenames?: {
 						[k: string]: string;
 					};
+					childTextColorOverrides?: {
+						[k: string]: string;
+					};
 					visibleChildIds?: string[];
 				};
 			};
@@ -1405,6 +1423,9 @@ export interface PrismaCalendarUpdateSettingsInput {
 				[k: string]: string;
 			};
 			showSettingsButton?: boolean;
+			textColorOverrides?: {
+				[k: string]: string;
+			};
 			visibleTabIds?: string[];
 		};
 		/**
@@ -1537,6 +1558,9 @@ export interface PrismaCalendarUpdateSettingsInput {
 				[k: string]: string;
 			};
 			showSettingsButton?: boolean;
+			textColorOverrides?: {
+				[k: string]: string;
+			};
 			visibleItemIds?: string[];
 		};
 		/**
@@ -1680,6 +1704,9 @@ export interface PrismaCalendarUpdateSettingsInput {
 				[k: string]: string;
 			};
 			showSettingsButton?: boolean;
+			textColorOverrides?: {
+				[k: string]: string;
+			};
 			visibleItemIds?: string[];
 		};
 		/**
@@ -1785,6 +1812,9 @@ export interface PrismaCalendarUpdateSettingsInput {
 				[k: string]: string;
 			};
 			showSettingsButton?: boolean;
+			textColorOverrides?: {
+				[k: string]: string;
+			};
 			visibleActionIds?: string[];
 		};
 		/**

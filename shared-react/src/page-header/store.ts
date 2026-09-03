@@ -7,6 +7,7 @@ export interface PageHeaderSnapshot {
 	renames: Readonly<Record<string, string>>;
 	iconOverrides: Readonly<Record<string, string>>;
 	colorOverrides: Readonly<Record<string, string>>;
+	textColorOverrides: Readonly<Record<string, string>>;
 	showSettingsButton: boolean;
 }
 
@@ -15,6 +16,7 @@ interface ResolvedInitial {
 	renames: Record<string, string>;
 	iconOverrides: Record<string, string>;
 	colorOverrides: Record<string, string>;
+	textColorOverrides: Record<string, string>;
 	showSettingsButton: boolean;
 }
 
@@ -22,6 +24,7 @@ function resolveState(allActions: HeaderActionDefinition[], state?: PageHeaderSt
 	const renames = loadStringRecord(state?.renames);
 	const iconOverrides = loadStringRecord(state?.iconOverrides);
 	const colorOverrides = loadStringRecord(state?.colorOverrides);
+	const textColorOverrides = loadStringRecord(state?.textColorOverrides);
 	const showSettingsButton = state?.showSettingsButton !== false;
 
 	let visibleActions = allActions;
@@ -33,7 +36,14 @@ function resolveState(allActions: HeaderActionDefinition[], state?: PageHeaderSt
 		if (visible.length > 0) visibleActions = visible;
 	}
 
-	return { visibleActions: [...visibleActions], renames, iconOverrides, colorOverrides, showSettingsButton };
+	return {
+		visibleActions: [...visibleActions],
+		renames,
+		iconOverrides,
+		colorOverrides,
+		textColorOverrides,
+		showSettingsButton,
+	};
 }
 
 export class PageHeaderStore {
@@ -44,6 +54,7 @@ export class PageHeaderStore {
 	private renames: Record<string, string>;
 	private iconOverrides: Record<string, string>;
 	private colorOverrides: Record<string, string>;
+	private textColorOverrides: Record<string, string>;
 	private visibleActions: HeaderActionDefinition[];
 	private showSettingsButton: boolean;
 
@@ -57,6 +68,7 @@ export class PageHeaderStore {
 		this.renames = resolved.renames;
 		this.iconOverrides = resolved.iconOverrides;
 		this.colorOverrides = resolved.colorOverrides;
+		this.textColorOverrides = resolved.textColorOverrides;
 		this.showSettingsButton = resolved.showSettingsButton;
 		this.defaultOrder = allActions.map((a) => a.id);
 		this.defaults = defaults;
@@ -69,6 +81,7 @@ export class PageHeaderStore {
 			renames: this.renames,
 			iconOverrides: this.iconOverrides,
 			colorOverrides: this.colorOverrides,
+			textColorOverrides: this.textColorOverrides,
 			showSettingsButton: this.showSettingsButton,
 		};
 	}
@@ -167,6 +180,13 @@ export class PageHeaderStore {
 		this.notify();
 	}
 
+	setTextColorOverride(id: string, color: string | undefined): void {
+		const next = this.applyOverride(this.textColorOverrides, id, color, () => false);
+		if (!next) return;
+		this.textColorOverrides = next;
+		this.notify();
+	}
+
 	setShowSettingsButton(visible: boolean): void {
 		if (this.showSettingsButton === visible) return;
 		this.showSettingsButton = visible;
@@ -179,6 +199,7 @@ export class PageHeaderStore {
 		this.renames = resolved.renames;
 		this.iconOverrides = resolved.iconOverrides;
 		this.colorOverrides = resolved.colorOverrides;
+		this.textColorOverrides = resolved.textColorOverrides;
 		this.showSettingsButton = resolved.showSettingsButton;
 		this.notify();
 	}
@@ -192,6 +213,8 @@ export class PageHeaderStore {
 		if (iconsOut) state.iconOverrides = iconsOut;
 		const colorsOut = nonEmptyRecord(this.colorOverrides);
 		if (colorsOut) state.colorOverrides = colorsOut;
+		const textColorsOut = nonEmptyRecord(this.textColorOverrides);
+		if (textColorsOut) state.textColorOverrides = textColorsOut;
 
 		const currentOrder = this.visibleActions.map((a) => a.id);
 		const orderChanged =

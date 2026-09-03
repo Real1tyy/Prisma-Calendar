@@ -11,6 +11,7 @@ export interface EditableItem {
 	label: string;
 	icon: string;
 	color?: string;
+	textColor?: string;
 }
 
 export interface ManagerRowAction {
@@ -33,6 +34,7 @@ export interface ManagerRowProps {
 	displayLabel?: string;
 	displayIcon?: string;
 	displayColor?: string;
+	displayTextColor?: string;
 	hasRename?: boolean;
 	/**
 	 * Sub-namespace for class names and testids — `"manager"` produces
@@ -66,6 +68,7 @@ export const ManagerRow = memo(function ManagerRow({
 	displayLabel,
 	displayIcon,
 	displayColor,
+	displayTextColor,
 	hasRename = false,
 	rowPrefix = "manager",
 	children,
@@ -84,6 +87,7 @@ export const ManagerRow = memo(function ManagerRow({
 	const label = displayLabel ?? item.label;
 	const icon = displayIcon ?? item.icon;
 	const color = displayColor ?? item.color;
+	const textColor = displayTextColor ?? item.textColor;
 
 	const handleEdit = useCallback(() => onEdit?.(), [onEdit]);
 	const handleToggle = useCallback(() => onToggleVisibility?.(), [onToggleVisibility]);
@@ -162,10 +166,17 @@ export const ManagerRow = memo(function ManagerRow({
 			)}
 
 			<div className={cls("label")}>
-				<span className={cls("icon")} style={color && color !== "#000000" ? { color } : undefined}>
-					<ObsidianIcon icon={icon} />
+				{icon && (
+					<span className={cls("icon")} style={color && color !== "#000000" ? { color } : undefined}>
+						<ObsidianIcon icon={icon} />
+					</span>
+				)}
+				<span
+					className={cls("label-text")}
+					style={textColor && textColor !== "#000000" ? { color: textColor } : undefined}
+				>
+					{label}
 				</span>
-				<span className={cls("label-text")}>{label}</span>
 				{hasRename && (
 					<span className={cls("label-original")} title="Original name">
 						{item.label}

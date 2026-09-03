@@ -187,8 +187,10 @@ interface EditableRowModel {
 	displayLabel: string;
 	displayIcon: string | undefined;
 	displayColor: string | undefined;
+	displayTextColor: string | undefined;
 	hasIconOverride: boolean;
 	hasColorOverride: boolean;
+	hasTextColorOverride: boolean;
 	isVisible: boolean;
 	visibleIndex: number;
 	visibleCount: number;
@@ -207,6 +209,7 @@ interface EditableRowActions {
 	rename: (value: string | undefined) => void;
 	changeIcon: (value: string | undefined) => void;
 	changeColor: (value: string | undefined) => void;
+	changeTextColor: (value: string | undefined) => void;
 }
 
 interface EditableRowProps {
@@ -223,8 +226,10 @@ const EditableRow = memo(function EditableRow({ row, actions }: EditableRowProps
 		displayLabel,
 		displayIcon,
 		displayColor,
+		displayTextColor,
 		hasIconOverride,
 		hasColorOverride,
+		hasTextColorOverride,
 		isVisible,
 		visibleIndex,
 		visibleCount,
@@ -253,18 +258,27 @@ const EditableRow = memo(function EditableRow({ row, actions }: EditableRowProps
 			label: originalLabel,
 			icon: displayIcon ?? "",
 			...(displayColor !== undefined ? { color: displayColor } : {}),
+			...(displayTextColor !== undefined ? { textColor: displayTextColor } : {}),
 		},
 		values: {
 			label: displayLabel,
 			icon: displayIcon ?? "",
 			color: displayColor ?? "#ffffff",
+			textColor: displayTextColor ?? "#ffffff",
 		},
 		overrides: {
 			label: hasRename,
 			icon: hasIconOverride,
 			color: hasColorOverride,
+			textColor: hasTextColorOverride,
 		},
-		actions: { rename: actions.rename, changeIcon: actions.changeIcon, changeColor: actions.changeColor, pickIcon },
+		actions: {
+			rename: actions.rename,
+			changeIcon: actions.changeIcon,
+			changeColor: actions.changeColor,
+			changeTextColor: actions.changeTextColor,
+			pickIcon,
+		},
 	};
 
 	const item = {
@@ -272,6 +286,7 @@ const EditableRow = memo(function EditableRow({ row, actions }: EditableRowProps
 		label: originalLabel,
 		icon: displayIcon ?? "",
 		...(displayColor !== undefined ? { color: displayColor } : {}),
+		...(displayTextColor !== undefined ? { textColor: displayTextColor } : {}),
 	};
 
 	return (
@@ -282,6 +297,7 @@ const EditableRow = memo(function EditableRow({ row, actions }: EditableRowProps
 			displayLabel={displayLabel}
 			displayIcon={displayIcon ?? ""}
 			{...(displayColor !== undefined ? { displayColor } : {})}
+			{...(displayTextColor !== undefined ? { displayTextColor } : {})}
 			hasRename={hasRename}
 			isVisible={isVisible}
 			isExpanded={isExpanded}
@@ -349,8 +365,10 @@ const TabManagerRow = memo(function TabManagerRow({ tab, index, isVisible, visib
 			displayLabel: state.getLabel(tab),
 			displayIcon: state.getIcon(tab),
 			displayColor: state.getColor(tab),
+			displayTextColor: state.getTextColor(tab),
 			hasIconOverride: tab.id in state.iconOverrides,
 			hasColorOverride: tab.id in state.colorOverrides,
+			hasTextColorOverride: tab.id in state.textColorOverrides,
 			isVisible,
 			visibleIndex: index,
 			visibleCount,
@@ -372,6 +390,7 @@ const TabManagerRow = memo(function TabManagerRow({ tab, index, isVisible, visib
 			rename: (value) => actions.rename(tab.id, value),
 			changeIcon: (value) => actions.setIcon(tab.id, value),
 			changeColor: (value) => actions.setColor(tab.id, value),
+			changeTextColor: (value) => actions.setTextColor(tab.id, value),
 		}),
 		[actions, tab.id, isVisible, isExpanded, setExpandedId, setDrag, onTabDrop]
 	);
@@ -440,8 +459,10 @@ const GroupChildRow = memo(function GroupChildRow({
 			displayLabel: state.getChildLabel(group.id, child),
 			displayIcon: state.getChildIcon(group.id, child),
 			displayColor: state.getChildColor(group.id, child),
+			displayTextColor: state.getChildTextColor(group.id, child),
 			hasIconOverride: gs?.childIconOverrides[child.id] !== undefined,
 			hasColorOverride: gs?.childColorOverrides[child.id] !== undefined,
+			hasTextColorOverride: gs?.childTextColorOverrides[child.id] !== undefined,
 			isVisible,
 			visibleIndex: index,
 			visibleCount,
@@ -463,6 +484,7 @@ const GroupChildRow = memo(function GroupChildRow({
 			rename: (value) => actions.renameChild(group.id, child.id, value),
 			changeIcon: (value) => actions.setChildIcon(group.id, child.id, value),
 			changeColor: (value) => actions.setChildColor(group.id, child.id, value),
+			changeTextColor: (value) => actions.setChildTextColor(group.id, child.id, value),
 		}),
 		[actions, group.id, child.id, isVisible, isExpanded, expandedKey, setExpandedId, setDrag, onChildDrop]
 	);

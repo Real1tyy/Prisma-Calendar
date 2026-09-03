@@ -7,6 +7,7 @@ export interface CustomizableMenuSnapshot {
 	renames: ReadonlyMap<string, string>;
 	iconOverrides: ReadonlyMap<string, string>;
 	colorOverrides: ReadonlyMap<string, string>;
+	textColorOverrides: ReadonlyMap<string, string>;
 	sectionOverrides: ReadonlyMap<string, string>;
 	showSettingsButton: boolean;
 }
@@ -72,6 +73,10 @@ export class CustomizableMenuStore {
 		return this.snapshot.colorOverrides.get(item.id) ?? item.color;
 	};
 
+	getTextColor = (item: CustomizableContextMenuItem): string | undefined => {
+		return this.snapshot.textColorOverrides.get(item.id) ?? item.textColor;
+	};
+
 	get visibleCount(): number {
 		return this.snapshot.visibleItems.length;
 	}
@@ -79,13 +84,21 @@ export class CustomizableMenuStore {
 	// ─── Serialization ────────────────────────────────────────────
 
 	getState = (): ContextMenuState => {
-		const { renames, iconOverrides, colorOverrides, sectionOverrides, showSettingsButton, visibleItems } =
-			this.snapshot;
+		const {
+			renames,
+			iconOverrides,
+			colorOverrides,
+			textColorOverrides,
+			sectionOverrides,
+			showSettingsButton,
+			visibleItems,
+		} = this.snapshot;
 		const state: ContextMenuState = {};
 
 		if (renames.size > 0) state.renames = Object.fromEntries(renames);
 		if (iconOverrides.size > 0) state.iconOverrides = Object.fromEntries(iconOverrides);
 		if (colorOverrides.size > 0) state.colorOverrides = Object.fromEntries(colorOverrides);
+		if (textColorOverrides.size > 0) state.textColorOverrides = Object.fromEntries(textColorOverrides);
 		if (sectionOverrides.size > 0) state.sectionOverrides = Object.fromEntries(sectionOverrides);
 
 		const currentOrder = visibleItems.map((i) => i.id);
@@ -203,10 +216,13 @@ export class CustomizableMenuStore {
 		if (!item) return;
 
 		const next = new Map(this.snapshot.iconOverrides);
-		if (icon && icon !== item.icon) {
-			next.set(id, icon);
-		} else {
+		// `undefined` clears the override (fall back to default). An empty string is a
+		// deliberate "no icon" and must persist — only collapse it away when it equals
+		// the item's own default, where the override would be redundant.
+		if (icon === undefined || icon === item.icon) {
 			next.delete(id);
+		} else {
+			next.set(id, icon);
 		}
 
 		this.update({ iconOverrides: next });
@@ -221,6 +237,17 @@ export class CustomizableMenuStore {
 		}
 
 		this.update({ colorOverrides: next });
+	};
+
+	setTextColor = (id: string, color: string | undefined): void => {
+		const next = new Map(this.snapshot.textColorOverrides);
+		if (color) {
+			next.set(id, color);
+		} else {
+			next.delete(id);
+		}
+
+		this.update({ textColorOverrides: next });
 	};
 
 	setShowSettingsButton = (visible: boolean): void => {
@@ -238,6 +265,9 @@ export class CustomizableMenuStore {
 		const renames = new Map(initialState?.renames ? Object.entries(initialState.renames) : []);
 		const iconOverrides = new Map(initialState?.iconOverrides ? Object.entries(initialState.iconOverrides) : []);
 		const colorOverrides = new Map(initialState?.colorOverrides ? Object.entries(initialState.colorOverrides) : []);
+		const textColorOverrides = new Map(
+			initialState?.textColorOverrides ? Object.entries(initialState.textColorOverrides) : []
+		);
 		const sectionOverrides = new Map(
 			initialState?.sectionOverrides ? Object.entries(initialState.sectionOverrides) : []
 		);
@@ -259,6 +289,7 @@ export class CustomizableMenuStore {
 			renames,
 			iconOverrides,
 			colorOverrides,
+			textColorOverrides,
 			sectionOverrides,
 			showSettingsButton,
 		};

@@ -9,7 +9,7 @@ import { showShelledModal } from "../show-react-modal";
 import { ManagerEditForm, type ManagerEditController } from "../widgets/manager-list/manager-edit-form";
 import { ManagerRow } from "../widgets/manager-list/manager-row";
 import { ManagerToolbar } from "../widgets/manager-list/manager-toolbar";
-import { DEFAULT_COLOR_SENTINEL } from "./constants";
+import { DEFAULT_COLOR_SENTINEL, FALLBACK_EDIT_COLOR } from "./constants";
 import type { PageHeaderSnapshot, PageHeaderStore } from "./store";
 import { buildPageHeaderStyles } from "./styles";
 import type { HeaderActionDefinition } from "./types";
@@ -27,12 +27,15 @@ interface ActionRowEditFormProps {
 	displayLabel: string;
 	displayIcon: string;
 	displayColor: string;
+	displayTextColor: string;
 	hasRenameOverride: boolean;
 	hasIconOverride: boolean;
 	hasColorOverride: boolean;
+	hasTextColorOverride: boolean;
 	rename: (label: string | undefined) => void;
 	changeIcon: (icon: string | undefined) => void;
 	changeColor: (color: string | undefined) => void;
+	changeTextColor: (color: string | undefined) => void;
 	pickIcon: (callback: (icon: string | null) => void) => void;
 }
 
@@ -41,24 +44,38 @@ function ActionRowEditForm({
 	displayLabel,
 	displayIcon,
 	displayColor,
+	displayTextColor,
 	hasRenameOverride,
 	hasIconOverride,
 	hasColorOverride,
+	hasTextColorOverride,
 	rename,
 	changeIcon,
 	changeColor,
+	changeTextColor,
 	pickIcon,
 }: ActionRowEditFormProps) {
 	const item = useMemo(() => {
-		const base = { id: action.id, label: action.label, icon: action.icon ?? "" };
-		return action.color !== undefined ? { ...base, color: action.color } : base;
-	}, [action.id, action.label, action.icon, action.color]);
+		const base: { id: string; label: string; icon: string; color?: string; textColor?: string } = {
+			id: action.id,
+			label: action.label,
+			icon: action.icon ?? "",
+		};
+		if (action.color !== undefined) base.color = action.color;
+		if (action.textColor !== undefined) base.textColor = action.textColor;
+		return base;
+	}, [action.id, action.label, action.icon, action.color, action.textColor]);
 
 	const controller: ManagerEditController = {
 		item,
-		values: { label: displayLabel, icon: displayIcon, color: displayColor },
-		overrides: { label: hasRenameOverride, icon: hasIconOverride, color: hasColorOverride },
-		actions: { rename, changeIcon, changeColor, pickIcon },
+		values: { label: displayLabel, icon: displayIcon, color: displayColor, textColor: displayTextColor },
+		overrides: {
+			label: hasRenameOverride,
+			icon: hasIconOverride,
+			color: hasColorOverride,
+			textColor: hasTextColorOverride,
+		},
+		actions: { rename, changeIcon, changeColor, changeTextColor, pickIcon },
 	};
 
 	return <ManagerEditForm controller={controller} formPrefix={ROW_PREFIX} />;
@@ -142,17 +159,22 @@ export const ActionManagerContent = memo(function ActionManagerContent({ app, st
 						const displayLabel = snapshot.renames[action.id] ?? action.label;
 						const displayIcon = snapshot.iconOverrides[action.id] ?? action.icon;
 						const displayColor = snapshot.colorOverrides[action.id] ?? action.color;
+						const displayTextColor = snapshot.textColorOverrides[action.id] ?? action.textColor;
 						const hasRenameOverride = action.id in snapshot.renames;
 						const hasIconOverride = action.id in snapshot.iconOverrides;
 						const hasColorOverride = action.id in snapshot.colorOverrides;
+						const hasTextColorOverride = action.id in snapshot.textColorOverrides;
 
 						const item = {
 							id: action.id,
 							label: action.label,
 							icon: action.icon ?? "",
 							...(action.color !== undefined ? { color: action.color } : {}),
+							...(action.textColor !== undefined ? { textColor: action.textColor } : {}),
 						};
 						const effectiveColor = displayColor && displayColor !== DEFAULT_COLOR_SENTINEL ? displayColor : undefined;
+						const effectiveTextColor =
+							displayTextColor && displayTextColor !== DEFAULT_COLOR_SENTINEL ? displayTextColor : undefined;
 
 						return (
 							<ManagerRow
@@ -165,6 +187,7 @@ export const ActionManagerContent = memo(function ActionManagerContent({ app, st
 								displayLabel={displayLabel}
 								displayIcon={displayIcon}
 								{...(effectiveColor !== undefined ? { displayColor: effectiveColor } : {})}
+								{...(effectiveTextColor !== undefined ? { displayTextColor: effectiveTextColor } : {})}
 								hasRename={hasRenameOverride}
 								draggable={draggable}
 								isDragging={draggedId === action.id}
@@ -186,13 +209,16 @@ export const ActionManagerContent = memo(function ActionManagerContent({ app, st
 										action={action}
 										displayLabel={displayLabel}
 										displayIcon={displayIcon}
-										displayColor={displayColor}
+										displayColor={displayColor ?? FALLBACK_EDIT_COLOR}
+										displayTextColor={displayTextColor ?? FALLBACK_EDIT_COLOR}
 										hasRenameOverride={hasRenameOverride}
 										hasIconOverride={hasIconOverride}
 										hasColorOverride={hasColorOverride}
+										hasTextColorOverride={hasTextColorOverride}
 										rename={(label) => store.setRename(action.id, label)}
 										changeIcon={(icon) => store.setIconOverride(action.id, icon)}
 										changeColor={(color) => store.setColorOverride(action.id, color)}
+										changeTextColor={(color) => store.setTextColorOverride(action.id, color)}
 										pickIcon={pickIcon}
 									/>
 								)}

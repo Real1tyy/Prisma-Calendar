@@ -1090,6 +1090,15 @@
 													},
 													"type": "object"
 												},
+												"childTextColorOverrides": {
+													"additionalProperties": {
+														"type": "string"
+													},
+													"propertyNames": {
+														"type": "string"
+													},
+													"type": "object"
+												},
 												"visibleChildIds": {
 													"items": {
 														"type": "string"
@@ -1124,6 +1133,15 @@
 									},
 									"showSettingsButton": {
 										"type": "boolean"
+									},
+									"textColorOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
 									},
 									"visibleTabIds": {
 										"items": {
@@ -1475,6 +1493,15 @@
 									},
 									"showSettingsButton": {
 										"type": "boolean"
+									},
+									"textColorOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
 									},
 									"visibleItemIds": {
 										"items": {
@@ -1969,6 +1996,15 @@
 									"showSettingsButton": {
 										"type": "boolean"
 									},
+									"textColorOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
 									"visibleItemIds": {
 										"items": {
 											"type": "string"
@@ -2249,6 +2285,15 @@
 									},
 									"showSettingsButton": {
 										"type": "boolean"
+									},
+									"textColorOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
 									},
 									"visibleActionIds": {
 										"items": {
@@ -3314,6 +3359,15 @@
 													},
 													"type": "object"
 												},
+												"childTextColorOverrides": {
+													"additionalProperties": {
+														"type": "string"
+													},
+													"propertyNames": {
+														"type": "string"
+													},
+													"type": "object"
+												},
 												"visibleChildIds": {
 													"items": {
 														"type": "string"
@@ -3348,6 +3402,15 @@
 									},
 									"showSettingsButton": {
 										"type": "boolean"
+									},
+									"textColorOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
 									},
 									"visibleTabIds": {
 										"items": {
@@ -3699,6 +3762,15 @@
 									},
 									"showSettingsButton": {
 										"type": "boolean"
+									},
+									"textColorOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
 									},
 									"visibleItemIds": {
 										"items": {
@@ -4193,6 +4265,15 @@
 									"showSettingsButton": {
 										"type": "boolean"
 									},
+									"textColorOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
 									"visibleItemIds": {
 										"items": {
 											"type": "string"
@@ -4473,6 +4554,15 @@
 									},
 									"showSettingsButton": {
 										"type": "boolean"
+									},
+									"textColorOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
 									},
 									"visibleActionIds": {
 										"items": {

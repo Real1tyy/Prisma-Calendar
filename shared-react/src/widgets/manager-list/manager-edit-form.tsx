@@ -8,29 +8,46 @@ import { TextInput } from "../../primitives/controls/text-input";
 import { SettingItem } from "../../primitives/layout/setting-item";
 import { buildManagerEditFormStyles } from "./manager-edit-form.styles";
 
+/**
+ * Icon override value meaning "render no icon at all" — a deliberate user choice,
+ * distinct from `undefined` ("no override → fall back to the item's default icon").
+ * The picker's "No icon" button resolves to this; the stores persist it verbatim.
+ */
+export const NO_ICON = "";
+
+const FALLBACK_COLOR = "#ffffff";
+
 export interface EditableItem {
 	id: string;
 	label: string;
 	icon: string;
+	/** Default icon color. */
 	color?: string;
+	/** Default label-text color. */
+	textColor?: string;
 }
 
 export interface ManagerEditValues {
 	label: string;
 	icon: string;
+	/** Current icon color. */
 	color: string;
+	/** Current label-text color. */
+	textColor: string;
 }
 
 export interface ManagerEditOverrides {
 	label: boolean;
 	icon: boolean;
 	color: boolean;
+	textColor: boolean;
 }
 
 export interface ManagerEditActions {
 	rename: (label: string | undefined) => void;
 	changeIcon: (icon: string | undefined) => void;
 	changeColor: (color: string | undefined) => void;
+	changeTextColor: (color: string | undefined) => void;
 	pickIcon?: (callback: (icon: string | null) => void) => void;
 }
 
@@ -78,23 +95,37 @@ export const ManagerEditForm = memo(function ManagerEditForm({
 		actions.changeColor(undefined);
 	}, [actions]);
 
+	const handleResetTextColor = useCallback(() => {
+		actions.changeTextColor(undefined);
+	}, [actions]);
+
 	const handleIconClick = useCallback(() => {
 		actions.pickIcon?.((icon) => {
-			// null = the user clicked "No icon" in the picker → clear the override.
-			// Picking the item's default icon also clears so we don't store a
-			// redundant override that would prevent future default changes.
-			const resolved = icon === null || icon === item.icon ? undefined : icon;
+			// null = the user clicked "No icon" → persist an explicit empty override
+			// (NO_ICON) so the icon is actually removed. Picking the item's default
+			// icon clears the override instead, so we don't store a redundant one that
+			// would pin the icon against future default changes.
+			const resolved = icon === null ? NO_ICON : icon === item.icon ? undefined : icon;
 			actions.changeIcon(resolved);
 		});
 	}, [item.icon, actions]);
 
 	const handleColorChange = useCallback(
 		(next: string) => {
-			const defaultColor = item.color ?? "#ffffff";
+			const defaultColor = item.color ?? FALLBACK_COLOR;
 			const resolved = next !== defaultColor ? next : undefined;
 			actions.changeColor(resolved);
 		},
 		[item.color, actions]
+	);
+
+	const handleTextColorChange = useCallback(
+		(next: string) => {
+			const defaultColor = item.textColor ?? FALLBACK_COLOR;
+			const resolved = next !== defaultColor ? next : undefined;
+			actions.changeTextColor(resolved);
+		},
+		[item.textColor, actions]
 	);
 
 	return (
@@ -121,7 +152,7 @@ export const ManagerEditForm = memo(function ManagerEditForm({
 
 			<SettingItem name="Icon">
 				<button type="button" onClick={handleIconClick} data-testid={tid("icon-btn", item.id)}>
-					{values.icon}
+					{values.icon || "No icon"}
 				</button>
 				{overrides.icon && (
 					<button
@@ -136,15 +167,34 @@ export const ManagerEditForm = memo(function ManagerEditForm({
 				)}
 			</SettingItem>
 
-			<SettingItem name="Color">
+			<SettingItem name="Icon color">
 				<ColorInput value={values.color} onChange={handleColorChange} testId={tid("color-input", item.id)} />
 				{overrides.color && (
 					<button
 						type="button"
 						className="clickable-icon"
 						onClick={handleResetColor}
-						title="Reset to default color"
+						title="Reset to default icon color"
 						data-testid={tid("color-reset", item.id)}
+					>
+						<ObsidianIcon icon="rotate-ccw" />
+					</button>
+				)}
+			</SettingItem>
+
+			<SettingItem name="Text color">
+				<ColorInput
+					value={values.textColor}
+					onChange={handleTextColorChange}
+					testId={tid("text-color-input", item.id)}
+				/>
+				{overrides.textColor && (
+					<button
+						type="button"
+						className="clickable-icon"
+						onClick={handleResetTextColor}
+						title="Reset to default text color"
+						data-testid={tid("text-color-reset", item.id)}
 					>
 						<ObsidianIcon icon="rotate-ccw" />
 					</button>

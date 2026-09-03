@@ -12,6 +12,7 @@ import type {
 type MenuItemInternals = ObsidianMenuItem & {
 	dom?: HTMLElement;
 	iconEl?: HTMLElement;
+	titleEl?: HTMLElement;
 };
 
 function getMenuItemDom(item: ObsidianMenuItem): HTMLElement | undefined {
@@ -20,6 +21,10 @@ function getMenuItemDom(item: ObsidianMenuItem): HTMLElement | undefined {
 
 function getMenuItemIconEl(item: ObsidianMenuItem): HTMLElement | undefined {
 	return (item as MenuItemInternals).iconEl;
+}
+
+function getMenuItemTitleEl(item: ObsidianMenuItem): HTMLElement | undefined {
+	return (item as MenuItemInternals).titleEl;
 }
 
 /**
@@ -71,6 +76,7 @@ export function createCustomizableContextMenu(config: CustomizableContextMenuCon
 			const label = titleOverrides?.[item.id] ?? store.getLabel(item);
 			const icon = store.getIcon(item);
 			const color = store.getColor(item);
+			const textColor = store.getTextColor(item);
 
 			menu.addItem((menuItem) => {
 				menuItem.setTitle(label).onClick(() => item.onAction());
@@ -78,6 +84,9 @@ export function createCustomizableContextMenu(config: CustomizableContextMenuCon
 				getMenuItemDom(menuItem)?.setAttribute("data-testid", `${testIdPrefix}${item.id}`);
 				if (color) {
 					getMenuItemIconEl(menuItem)?.style.setProperty("color", color);
+				}
+				if (textColor) {
+					getMenuItemTitleEl(menuItem)?.style.setProperty("color", textColor);
 				}
 			});
 		}

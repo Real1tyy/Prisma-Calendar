@@ -17,6 +17,7 @@ export interface GroupChildState {
 	childRenames: Record<string, string>;
 	childIconOverrides: Record<string, string>;
 	childColorOverrides: Record<string, string>;
+	childTextColorOverrides: Record<string, string>;
 }
 
 export function recalcActiveChildIndex(visibleChildren: TabDefinition[], previousActiveId: string | undefined): number {
@@ -31,6 +32,7 @@ export function initialGroupChildState(
 	const childRenames = loadStringRecord(saved?.childRenames);
 	const childIconOverrides = loadStringRecord(saved?.childIconOverrides);
 	const childColorOverrides = loadStringRecord(saved?.childColorOverrides);
+	const childTextColorOverrides = loadStringRecord(saved?.childTextColorOverrides);
 
 	let visibleChildren: TabDefinition[];
 	if (saved?.visibleChildIds) {
@@ -47,6 +49,7 @@ export function initialGroupChildState(
 		childRenames,
 		childIconOverrides,
 		childColorOverrides,
+		childTextColorOverrides,
 	};
 }
 
@@ -62,6 +65,7 @@ export interface ResolvedInitialState {
 	renames: Record<string, string>;
 	iconOverrides: Record<string, string>;
 	colorOverrides: Record<string, string>;
+	textColorOverrides: Record<string, string>;
 	showSettingsButton: boolean;
 }
 
@@ -72,10 +76,11 @@ export function resolveVisibleTabs(
 	const renames = loadStringRecord(initialState?.renames);
 	const iconOverrides = loadStringRecord(initialState?.iconOverrides);
 	const colorOverrides = loadStringRecord(initialState?.colorOverrides);
+	const textColorOverrides = loadStringRecord(initialState?.textColorOverrides);
 	const showSettingsButton = initialState?.showSettingsButton !== false;
 
 	if (!initialState?.visibleTabIds) {
-		return { visibleTabs: tabs, renames, iconOverrides, colorOverrides, showSettingsButton };
+		return { visibleTabs: tabs, renames, iconOverrides, colorOverrides, textColorOverrides, showSettingsButton };
 	}
 
 	const tabMap = new Map(tabs.map((t) => [t.id, t]));
@@ -90,6 +95,7 @@ export function resolveVisibleTabs(
 		renames,
 		iconOverrides,
 		colorOverrides,
+		textColorOverrides,
 		showSettingsButton,
 	};
 }
@@ -100,6 +106,7 @@ export interface BuildStateInput {
 	renames: Record<string, string>;
 	iconOverrides: Record<string, string>;
 	colorOverrides: Record<string, string>;
+	textColorOverrides: Record<string, string>;
 	showSettingsButton: boolean;
 	groupStates: Map<string, GroupChildState>;
 }
@@ -110,6 +117,7 @@ export function buildState({
 	renames,
 	iconOverrides,
 	colorOverrides,
+	textColorOverrides,
 	showSettingsButton,
 	groupStates,
 }: BuildStateInput): TabbedContainerState {
@@ -120,6 +128,8 @@ export function buildState({
 	if (iconsOut) state.iconOverrides = iconsOut;
 	const colorsOut = nonEmptyRecord(colorOverrides);
 	if (colorsOut) state.colorOverrides = colorsOut;
+	const textColorsOut = nonEmptyRecord(textColorOverrides);
+	if (textColorsOut) state.textColorOverrides = textColorsOut;
 
 	const defaultOrder = allTabs.map((t) => t.id);
 	const currentOrder = visibleTabs.map((t) => t.id);
@@ -160,6 +170,11 @@ export function buildState({
 		const cc = nonEmptyRecord(childState.childColorOverrides);
 		if (cc) {
 			entry.childColorOverrides = cc;
+			hasEntry = true;
+		}
+		const ctc = nonEmptyRecord(childState.childTextColorOverrides);
+		if (ctc) {
+			entry.childTextColorOverrides = ctc;
 			hasEntry = true;
 		}
 

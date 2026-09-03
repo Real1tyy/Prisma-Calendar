@@ -128,9 +128,11 @@ export const TabbedContainer = memo(function TabbedContainer({
 			getLabel={state.getLabel}
 			getIcon={state.getIcon}
 			getColor={state.getColor}
+			getTextColor={state.getTextColor}
 			getChildLabel={state.getChildLabel}
 			getChildIcon={state.getChildIcon}
 			getChildColor={state.getChildColor}
+			getChildTextColor={state.getChildTextColor}
 			onSelectTab={actions.switchTo}
 			onSelectGroupChild={actions.switchGroupChild}
 			onShowManager={() => setManagerOpen(true)}
@@ -237,9 +239,11 @@ interface TabBarProps {
 	getLabel: (entry: TabEntry) => string;
 	getIcon: (entry: TabEntry) => string | undefined;
 	getColor: (entry: TabEntry) => string | undefined;
+	getTextColor: (entry: TabEntry) => string | undefined;
 	getChildLabel: (groupId: string, child: TabDefinition) => string;
 	getChildIcon: (groupId: string, child: TabDefinition) => string | undefined;
 	getChildColor: (groupId: string, child: TabDefinition) => string | undefined;
+	getChildTextColor: (groupId: string, child: TabDefinition) => string | undefined;
 	onSelectTab: (id: string) => void;
 	onSelectGroupChild: (groupId: string, childId: string) => void;
 	onShowManager: () => void;
@@ -258,9 +262,11 @@ const TabBar = memo(function TabBar({
 	getLabel,
 	getIcon,
 	getColor,
+	getTextColor,
 	getChildLabel,
 	getChildIcon,
 	getChildColor,
+	getChildTextColor,
 	onSelectTab,
 	onSelectGroupChild,
 	onShowManager,
@@ -282,9 +288,11 @@ const TabBar = memo(function TabBar({
 							label={getLabel(entry)}
 							icon={getIcon(entry)}
 							color={getColor(entry)}
+							textColor={getTextColor(entry)}
 							getChildLabel={(child) => getChildLabel(entry.id, child)}
 							getChildIcon={(child) => getChildIcon(entry.id, child)}
 							getChildColor={(child) => getChildColor(entry.id, child)}
+							getChildTextColor={(child) => getChildTextColor(entry.id, child)}
 							visibleChildren={groupStates.get(entry.id)?.visibleChildren ?? entry.children}
 							onSelectChild={(childId) => onSelectGroupChild(entry.id, childId)}
 						/>
@@ -299,6 +307,7 @@ const TabBar = memo(function TabBar({
 						label={getLabel(entry)}
 						icon={getIcon(entry)}
 						color={getColor(entry)}
+						textColor={getTextColor(entry)}
 						onClick={() => onSelectTab(entry.id)}
 					/>
 				);
@@ -325,6 +334,7 @@ interface TabButtonProps {
 	label: string;
 	icon: string | undefined;
 	color: string | undefined;
+	textColor?: string | undefined;
 	isActive: boolean;
 	extraClass?: string;
 	trailing?: ReactNode;
@@ -343,6 +353,7 @@ const TabButton = memo(function TabButton({
 	label,
 	icon,
 	color,
+	textColor,
 	isActive,
 	extraClass,
 	trailing,
@@ -375,7 +386,7 @@ const TabButton = memo(function TabButton({
 					<ObsidianIcon icon={icon} />
 				</span>
 			)}
-			<span>{label}</span>
+			<span style={textColor ? { color: textColor } : undefined}>{label}</span>
 			{trailing}
 		</button>
 	);
@@ -389,9 +400,11 @@ interface GroupTabButtonProps {
 	label: string;
 	icon: string | undefined;
 	color: string | undefined;
+	textColor: string | undefined;
 	getChildLabel: (child: TabDefinition) => string;
 	getChildIcon: (child: TabDefinition) => string | undefined;
 	getChildColor: (child: TabDefinition) => string | undefined;
+	getChildTextColor: (child: TabDefinition) => string | undefined;
 	visibleChildren: TabDefinition[];
 	onSelectChild: (childId: string) => void;
 }
@@ -404,9 +417,11 @@ const GroupTabButton = memo(function GroupTabButton({
 	label,
 	icon,
 	color,
+	textColor,
 	getChildLabel,
 	getChildIcon,
 	getChildColor,
+	getChildTextColor,
 	visibleChildren,
 	onSelectChild,
 }: GroupTabButtonProps) {
@@ -485,6 +500,7 @@ const GroupTabButton = memo(function GroupTabButton({
 				label={label}
 				icon={icon}
 				color={color}
+				textColor={textColor}
 				isActive={isActive}
 				extraClass={`${cssPrefix}tab-group`}
 				buttonRef={buttonRef}
@@ -510,6 +526,7 @@ const GroupTabButton = memo(function GroupTabButton({
 					getChildLabel={getChildLabel}
 					getChildIcon={getChildIcon}
 					getChildColor={getChildColor}
+					getChildTextColor={getChildTextColor}
 					onSelect={handleSelect}
 					onDismiss={close}
 					hoverDropdown={hoverDropdown}

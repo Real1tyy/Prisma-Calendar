@@ -15,6 +15,7 @@ export interface GroupDropdownProps {
 	getChildLabel: (child: TabDefinition) => string;
 	getChildIcon?: (child: TabDefinition) => string | undefined;
 	getChildColor?: (child: TabDefinition) => string | undefined;
+	getChildTextColor?: (child: TabDefinition) => string | undefined;
 	onSelect: (childId: string) => void;
 	onDismiss: () => void;
 	hoverDropdown: boolean;
@@ -31,6 +32,7 @@ export const GroupDropdown = memo(function GroupDropdown({
 	getChildLabel,
 	getChildIcon,
 	getChildColor,
+	getChildTextColor,
 	onSelect,
 	onDismiss,
 	hoverDropdown,
@@ -56,6 +58,7 @@ export const GroupDropdown = memo(function GroupDropdown({
 			{items.map((child) => {
 				const icon = getChildIcon?.(child);
 				const color = getChildColor?.(child);
+				const textColor = getChildTextColor?.(child);
 				return (
 					<button
 						key={child.id}
@@ -72,7 +75,7 @@ export const GroupDropdown = memo(function GroupDropdown({
 								<ObsidianIcon icon={icon} />
 							</span>
 						)}
-						<span>{getChildLabel(child)}</span>
+						<span style={textColor ? { color: textColor } : undefined}>{getChildLabel(child)}</span>
 					</button>
 				);
 			})}
