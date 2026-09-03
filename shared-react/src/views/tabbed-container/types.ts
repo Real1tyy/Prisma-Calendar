@@ -7,11 +7,9 @@ const optionalStringRecord = z.record(z.string(), z.string()).optional().catch(u
 
 /** Zod schema for persisted tab container state. Reuse in plugin settings schemas. */
 export const TabbedContainerStateSchema = CustomizableUIBaseStateSchema.extend({
-	/** Per-tab background-color overrides for tab pills. */
-	backgroundColorOverrides: optionalStringRecord,
 	/** Ordered list of visible tab IDs. Controls both visibility and order. When absent, all tabs shown in default order. */
 	visibleTabIds: z.array(z.string()).optional().catch(undefined),
-	/** Per-group child state: visibility order, renames, and icon/icon-colour/text-colour overrides. */
+	/** Per-group child state: visibility order, renames, and one key per appearance axis. */
 	groupState: z
 		.record(
 			z.string(),

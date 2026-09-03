@@ -1,22 +1,22 @@
-import { loadStringRecordMaps, writeNonEmptyStringRecordMaps } from "../../utils/string-record";
+import {
+	appearanceOverriddenFromMaps,
+	loadAppearanceOverrideMaps,
+	resolveAppearanceFromMaps,
+	setAppearanceOverrideMap,
+	writeAppearanceOverrideMaps,
+	type Appearance,
+	type AppearanceAxis,
+	type AppearanceOverridden,
+	type AppearanceOverrideMaps,
+} from "../../utils/appearance";
 import type { ContextMenuState, CustomizableContextMenuItem } from "./types";
 
 const DEFAULT_SECTION = "";
-const OVERRIDE_FIELDS = [
-	"renames",
-	"iconOverrides",
-	"colorOverrides",
-	"textColorOverrides",
-	"backgroundColorOverrides",
-] as const;
 
 export interface CustomizableMenuSnapshot {
 	visibleItems: CustomizableContextMenuItem[];
 	renames: ReadonlyMap<string, string>;
-	iconOverrides: ReadonlyMap<string, string>;
-	colorOverrides: ReadonlyMap<string, string>;
-	textColorOverrides: ReadonlyMap<string, string>;
-	backgroundColorOverrides: ReadonlyMap<string, string>;
+	appearance: AppearanceOverrideMaps;
 	sectionOverrides: ReadonlyMap<string, string>;
 	showSettingsButton: boolean;
 }
@@ -74,19 +74,11 @@ export class CustomizableMenuStore {
 		return this.snapshot.renames.get(item.id) ?? item.label;
 	};
 
-	getIcon = (item: CustomizableContextMenuItem): string | undefined => {
-		return this.snapshot.iconOverrides.get(item.id) ?? item.icon;
-	};
+	/** The item as it renders: overrides applied over the definition's own defaults. */
+	getAppearance = (item: CustomizableContextMenuItem): Appearance =>
+		resolveAppearanceFromMaps(item, this.snapshot.appearance, item.id);
 
-	getColor = (item: CustomizableContextMenuItem): string | undefined => {
-		return this.snapshot.colorOverrides.get(item.id) ?? item.color;
-	};
-
-	getTextColor = (item: CustomizableContextMenuItem): string | undefined => {
-		return this.snapshot.textColorOverrides.get(item.id) ?? item.textColor;
-	};
-	getBackgroundColor = (item: CustomizableContextMenuItem): string | undefined =>
-		this.snapshot.backgroundColorOverrides.get(item.id) ?? item.backgroundColor;
+	getOverridden = (id: string): AppearanceOverridden => appearanceOverriddenFromMaps(this.snapshot.appearance, id);
 
 	get visibleCount(): number {
 		return this.snapshot.visibleItems.length;
@@ -95,23 +87,11 @@ export class CustomizableMenuStore {
 	// ─── Serialization ────────────────────────────────────────────
 
 	getState = (): ContextMenuState => {
-		const {
-			renames,
-			iconOverrides,
-			colorOverrides,
-			textColorOverrides,
-			backgroundColorOverrides,
-			sectionOverrides,
-			showSettingsButton,
-			visibleItems,
-		} = this.snapshot;
+		const { renames, appearance, sectionOverrides, showSettingsButton, visibleItems } = this.snapshot;
 		const state: ContextMenuState = {};
 
-		writeNonEmptyStringRecordMaps(
-			state,
-			{ renames, iconOverrides, colorOverrides, textColorOverrides, backgroundColorOverrides },
-			OVERRIDE_FIELDS
-		);
+		if (renames.size > 0) state.renames = Object.fromEntries(renames);
+		writeAppearanceOverrideMaps(state, appearance);
 		if (sectionOverrides.size > 0) state.sectionOverrides = Object.fromEntries(sectionOverrides);
 
 		const currentOrder = visibleItems.map((i) => i.id);
@@ -224,50 +204,13 @@ export class CustomizableMenuStore {
 		this.update({ renames: next });
 	};
 
-	setIcon = (id: string, icon: string | undefined): void => {
+	setAppearanceOverride = (id: string, axis: AppearanceAxis, value: string | undefined): void => {
 		const item = this.allItems.find((i) => i.id === id);
 		if (!item) return;
 
-		const next = new Map(this.snapshot.iconOverrides);
-		// `undefined` clears the override (fall back to default). An empty string is a
-		// deliberate "no icon" and must persist — only collapse it away when it equals
-		// the item's own default, where the override would be redundant.
-		if (icon === undefined || icon === item.icon) {
-			next.delete(id);
-		} else {
-			next.set(id, icon);
-		}
-
-		this.update({ iconOverrides: next });
-	};
-
-	setColor = (id: string, color: string | undefined): void => {
-		const next = new Map(this.snapshot.colorOverrides);
-		if (color) {
-			next.set(id, color);
-		} else {
-			next.delete(id);
-		}
-
-		this.update({ colorOverrides: next });
-	};
-
-	setTextColor = (id: string, color: string | undefined): void => {
-		const next = new Map(this.snapshot.textColorOverrides);
-		if (color) {
-			next.set(id, color);
-		} else {
-			next.delete(id);
-		}
-
-		this.update({ textColorOverrides: next });
-	};
-
-	setBackgroundColor = (id: string, color: string | undefined): void => {
-		const next = new Map(this.snapshot.backgroundColorOverrides);
-		if (color) next.set(id, color);
-		else next.delete(id);
-		this.update({ backgroundColorOverrides: next });
+		const next = setAppearanceOverrideMap(this.snapshot.appearance, axis, id, value, item);
+		if (!next) return;
+		this.update({ appearance: next });
 	};
 
 	setShowSettingsButton = (visible: boolean): void => {
@@ -282,7 +225,8 @@ export class CustomizableMenuStore {
 	// ─── Internals ────────────────────────────────────────────────
 
 	private buildInitialSnapshot(initialState?: ContextMenuState): CustomizableMenuSnapshot {
-		const overrides = loadStringRecordMaps(initialState, OVERRIDE_FIELDS);
+		const renames = new Map(initialState?.renames ? Object.entries(initialState.renames) : []);
+		const appearance = loadAppearanceOverrideMaps(initialState);
 		const sectionOverrides = new Map(
 			initialState?.sectionOverrides ? Object.entries(initialState.sectionOverrides) : []
 		);
@@ -299,12 +243,7 @@ export class CustomizableMenuStore {
 			visibleItems = [...this.allItems];
 		}
 
-		return {
-			visibleItems,
-			...overrides,
-			sectionOverrides,
-			showSettingsButton,
-		};
+		return { visibleItems, renames, appearance, sectionOverrides, showSettingsButton };
 	}
 
 	private findEndOfSectionIndex(

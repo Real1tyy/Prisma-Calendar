@@ -9,7 +9,6 @@ import { showShelledModal } from "../show-react-modal";
 import { ManagerEditForm, type ManagerEditController } from "../widgets/manager-list/manager-edit-form";
 import { ManagerRow } from "../widgets/manager-list/manager-row";
 import { ManagerToolbar } from "../widgets/manager-list/manager-toolbar";
-import { DEFAULT_COLOR_SENTINEL, FALLBACK_EDIT_COLOR } from "./constants";
 import type { PageHeaderSnapshot, PageHeaderStore } from "./store";
 import { buildPageHeaderStyles } from "./styles";
 import type { HeaderActionDefinition } from "./types";
@@ -24,79 +23,21 @@ export interface ActionManagerProps {
 
 interface ActionRowEditFormProps {
 	action: HeaderActionDefinition;
-	displayLabel: string;
-	displayIcon: string;
-	displayColor: string;
-	displayTextColor: string;
-	displayBackgroundColor: string;
-	hasRenameOverride: boolean;
-	hasIconOverride: boolean;
-	hasColorOverride: boolean;
-	hasTextColorOverride: boolean;
-	hasBackgroundColorOverride: boolean;
-	rename: (label: string | undefined) => void;
-	changeIcon: (icon: string | undefined) => void;
-	changeColor: (color: string | undefined) => void;
-	changeTextColor: (color: string | undefined) => void;
-	changeBackgroundColor: (color: string | undefined) => void;
+	store: PageHeaderStore;
 	pickIcon: (callback: (icon: string | null) => void) => void;
 }
 
-function ActionRowEditForm({
-	action,
-	displayLabel,
-	displayIcon,
-	displayColor,
-	displayTextColor,
-	displayBackgroundColor,
-	hasRenameOverride,
-	hasIconOverride,
-	hasColorOverride,
-	hasTextColorOverride,
-	hasBackgroundColorOverride,
-	rename,
-	changeIcon,
-	changeColor,
-	changeTextColor,
-	changeBackgroundColor,
-	pickIcon,
-}: ActionRowEditFormProps) {
-	const item = useMemo(() => {
-		const base: {
-			id: string;
-			label: string;
-			icon: string;
-			color?: string;
-			textColor?: string;
-			backgroundColor?: string;
-		} = {
-			id: action.id,
-			label: action.label,
-			icon: action.icon ?? "",
-		};
-		if (action.color !== undefined) base.color = action.color;
-		if (action.textColor !== undefined) base.textColor = action.textColor;
-		if (action.backgroundColor !== undefined) base.backgroundColor = action.backgroundColor;
-		return base;
-	}, [action.id, action.label, action.icon, action.color, action.textColor, action.backgroundColor]);
-
+function ActionRowEditForm({ action, store, pickIcon }: ActionRowEditFormProps) {
 	const controller: ManagerEditController = {
-		item,
-		values: {
-			label: displayLabel,
-			icon: displayIcon,
-			color: displayColor,
-			textColor: displayTextColor,
-			backgroundColor: displayBackgroundColor,
+		item: { id: action.id, label: action.label, appearance: action },
+		label: store.getLabel(action),
+		appearance: store.getAppearance(action),
+		overridden: { label: action.id in store.getValue().renames, appearance: store.getOverridden(action.id) },
+		actions: {
+			rename: (label) => store.setRename(action.id, label),
+			setAppearance: (axis, value) => store.setAppearanceOverride(action.id, axis, value),
+			pickIcon,
 		},
-		overrides: {
-			label: hasRenameOverride,
-			icon: hasIconOverride,
-			color: hasColorOverride,
-			textColor: hasTextColorOverride,
-			backgroundColor: hasBackgroundColorOverride,
-		},
-		actions: { rename, changeIcon, changeColor, changeTextColor, changeBackgroundColor, pickIcon },
 	};
 
 	return <ManagerEditForm controller={controller} formPrefix={ROW_PREFIX} />;
@@ -177,43 +118,18 @@ export const ActionManagerContent = memo(function ActionManagerContent({ app, st
 						const visibleIndex = snapshot.visibleActions.findIndex((a) => a.id === action.id);
 						const isExpanded = expandedId === action.id;
 						const draggable = isVisible && !isSearching;
-						const displayLabel = snapshot.renames[action.id] ?? action.label;
-						const displayIcon = snapshot.iconOverrides[action.id] ?? action.icon;
-						const displayColor = snapshot.colorOverrides[action.id] ?? action.color;
-						const displayTextColor = snapshot.textColorOverrides[action.id] ?? action.textColor;
-						const displayBackgroundColor = snapshot.backgroundColorOverrides[action.id] ?? action.backgroundColor;
-						const hasRenameOverride = action.id in snapshot.renames;
-						const hasIconOverride = action.id in snapshot.iconOverrides;
-						const hasColorOverride = action.id in snapshot.colorOverrides;
-						const hasTextColorOverride = action.id in snapshot.textColorOverrides;
-						const hasBackgroundColorOverride = action.id in snapshot.backgroundColorOverrides;
-
-						const item = {
-							id: action.id,
-							label: action.label,
-							icon: action.icon ?? "",
-							...(action.color !== undefined ? { color: action.color } : {}),
-							...(action.textColor !== undefined ? { textColor: action.textColor } : {}),
-							...(action.backgroundColor !== undefined ? { backgroundColor: action.backgroundColor } : {}),
-						};
-						const effectiveColor = displayColor && displayColor !== DEFAULT_COLOR_SENTINEL ? displayColor : undefined;
-						const effectiveTextColor =
-							displayTextColor && displayTextColor !== DEFAULT_COLOR_SENTINEL ? displayTextColor : undefined;
 
 						return (
 							<ManagerRow
 								key={action.id}
-								item={item}
+								item={action}
+								appearance={store.getAppearance(action)}
 								rowPrefix={ROW_PREFIX}
 								isVisible={isVisible}
 								isExpanded={isExpanded}
 								visibleCount={visibleCount}
-								displayLabel={displayLabel}
-								displayIcon={displayIcon}
-								{...(effectiveColor !== undefined ? { displayColor: effectiveColor } : {})}
-								{...(effectiveTextColor !== undefined ? { displayTextColor: effectiveTextColor } : {})}
-								{...(displayBackgroundColor !== undefined ? { displayBackgroundColor } : {})}
-								hasRename={hasRenameOverride}
+								displayLabel={store.getLabel(action)}
+								hasRename={action.id in snapshot.renames}
 								draggable={draggable}
 								isDragging={draggedId === action.id}
 								{...(draggable && visibleIndex > 0 ? { onMoveUp: () => store.moveAction(action.id, -1) } : {})}
@@ -229,27 +145,7 @@ export const ActionManagerContent = memo(function ActionManagerContent({ app, st
 								onEdit={() => setExpandedId(isExpanded ? null : action.id)}
 								onToggleVisibility={() => (isVisible ? store.hideAction(action.id) : store.restoreAction(action.id))}
 							>
-								{isExpanded && (
-									<ActionRowEditForm
-										action={action}
-										displayLabel={displayLabel}
-										displayIcon={displayIcon}
-										displayColor={displayColor ?? FALLBACK_EDIT_COLOR}
-										displayTextColor={displayTextColor ?? FALLBACK_EDIT_COLOR}
-										displayBackgroundColor={displayBackgroundColor ?? FALLBACK_EDIT_COLOR}
-										hasRenameOverride={hasRenameOverride}
-										hasIconOverride={hasIconOverride}
-										hasColorOverride={hasColorOverride}
-										hasTextColorOverride={hasTextColorOverride}
-										hasBackgroundColorOverride={hasBackgroundColorOverride}
-										rename={(label) => store.setRename(action.id, label)}
-										changeIcon={(icon) => store.setIconOverride(action.id, icon)}
-										changeColor={(color) => store.setColorOverride(action.id, color)}
-										changeTextColor={(color) => store.setTextColorOverride(action.id, color)}
-										changeBackgroundColor={(color) => store.setBackgroundColorOverride(action.id, color)}
-										pickIcon={pickIcon}
-									/>
-								)}
+								{isExpanded && <ActionRowEditForm action={action} store={store} pickIcon={pickIcon} />}
 							</ManagerRow>
 						);
 					})}

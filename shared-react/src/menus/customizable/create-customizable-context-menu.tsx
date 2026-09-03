@@ -74,10 +74,7 @@ export function createCustomizableContextMenu(config: CustomizableContextMenuCon
 			lastSection = section;
 
 			const label = titleOverrides?.[item.id] ?? store.getLabel(item);
-			const icon = store.getIcon(item);
-			const color = store.getColor(item);
-			const textColor = store.getTextColor(item);
-			const backgroundColor = store.getBackgroundColor(item);
+			const { icon, color, textColor, backgroundColor } = store.getAppearance(item);
 
 			menu.addItem((menuItem) => {
 				menuItem.setTitle(label).onClick(() => item.onAction());

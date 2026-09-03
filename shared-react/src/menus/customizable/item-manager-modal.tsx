@@ -14,7 +14,6 @@ import { buildCustomizableMenuStyles } from "./styles";
 import type { CustomizableContextMenuItem } from "./types";
 
 const ROW_PREFIX = "item-manager";
-const DEFAULT_EDIT_COLOR = "#ffffff";
 
 interface SectionGroup {
 	section: string;
@@ -86,7 +85,7 @@ export const ItemManagerContent = memo(function ItemManagerContent({ app, store 
 			showReactIconPicker(
 				app,
 				(icon) => {
-					if (icon === null) store.setIcon(itemId, undefined);
+					if (icon === null) store.setAppearanceOverride(itemId, "icon", undefined);
 					else callback(icon);
 				},
 				{ allowNoIcon: false }
@@ -312,49 +311,21 @@ function MenuItemRow({
 }: MenuItemRowProps) {
 	const isExpanded = expandedItemId === item.id;
 	const displayLabel = store.getLabel(item);
-	const displayIcon = store.getIcon(item);
-	const displayColor = store.getColor(item);
-	const displayTextColor = store.getTextColor(item);
-	const displayBackgroundColor = store.getBackgroundColor(item);
+	const appearance = store.getAppearance(item);
 	const isDraggable = draggable && isVisible;
 	const hasRename = displayLabel !== item.label;
-	const hasIcon = displayIcon !== item.icon;
-	const hasColor = displayColor !== item.color;
-	const hasTextColor = displayTextColor !== item.textColor;
-	const hasBackgroundColor = displayBackgroundColor !== item.backgroundColor;
 
 	const editForm: ReactNode = isExpanded ? (
 		<ManagerEditForm
 			controller={
 				{
-					item: {
-						id: item.id,
-						label: item.label,
-						icon: item.icon ?? "",
-						...(item.color !== undefined ? { color: item.color } : {}),
-						...(item.textColor !== undefined ? { textColor: item.textColor } : {}),
-						...(item.backgroundColor !== undefined ? { backgroundColor: item.backgroundColor } : {}),
-					},
-					values: {
-						label: displayLabel,
-						icon: displayIcon ?? "",
-						color: displayColor ?? DEFAULT_EDIT_COLOR,
-						textColor: displayTextColor ?? DEFAULT_EDIT_COLOR,
-						backgroundColor: displayBackgroundColor ?? DEFAULT_EDIT_COLOR,
-					},
-					overrides: {
-						label: hasRename,
-						icon: hasIcon,
-						color: hasColor,
-						textColor: hasTextColor,
-						backgroundColor: hasBackgroundColor,
-					},
+					item: { id: item.id, label: item.label, appearance: item },
+					label: displayLabel,
+					appearance,
+					overridden: { label: hasRename, appearance: store.getOverridden(item.id) },
 					actions: {
 						rename: (label) => store.setRename(item.id, label),
-						changeIcon: (icon) => store.setIcon(item.id, icon),
-						changeColor: (color) => store.setColor(item.id, color),
-						changeTextColor: (color) => store.setTextColor(item.id, color),
-						changeBackgroundColor: (color) => store.setBackgroundColor(item.id, color),
+						setAppearance: (axis, value) => store.setAppearanceOverride(item.id, axis, value),
 						pickIcon: (cb: (icon: string | null) => void) => pickIcon(item.id, (icon) => cb(icon)),
 					},
 				} satisfies ManagerEditController
@@ -363,25 +334,12 @@ function MenuItemRow({
 		/>
 	) : null;
 
-	const effectiveColor = displayColor && displayColor !== "#000000" ? displayColor : undefined;
-	const effectiveTextColor = displayTextColor && displayTextColor !== "#000000" ? displayTextColor : undefined;
-
 	return (
 		<ManagerRow
-			item={{
-				id: item.id,
-				label: item.label,
-				icon: displayIcon ?? "",
-				...(item.color !== undefined ? { color: item.color } : {}),
-				...(item.textColor !== undefined ? { textColor: item.textColor } : {}),
-				...(item.backgroundColor !== undefined ? { backgroundColor: item.backgroundColor } : {}),
-			}}
+			item={item}
+			appearance={appearance}
 			rowPrefix={ROW_PREFIX}
 			displayLabel={displayLabel}
-			displayIcon={displayIcon ?? ""}
-			{...(effectiveColor !== undefined ? { displayColor: effectiveColor } : {})}
-			{...(effectiveTextColor !== undefined ? { displayTextColor: effectiveTextColor } : {})}
-			{...(displayBackgroundColor !== undefined ? { displayBackgroundColor } : {})}
 			hasRename={hasRename}
 			isVisible={isVisible}
 			isExpanded={isExpanded}

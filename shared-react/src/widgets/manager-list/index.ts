@@ -1,13 +1,11 @@
 export type {
-	EditableItem as ManagerEditableItem,
 	ManagerEditActions,
 	ManagerEditController,
 	ManagerEditFormProps,
-	ManagerEditOverrides,
-	ManagerEditValues,
+	ManagerEditItem,
 } from "./manager-edit-form";
 export { ManagerEditForm } from "./manager-edit-form";
-export type { EditableItem, ManagerRowAction, ManagerRowProps } from "./manager-row";
+export type { ManagerRowAction, ManagerRowItem, ManagerRowProps } from "./manager-row";
 export { ManagerRow } from "./manager-row";
 export type { ManagerToolbarProps } from "./manager-toolbar";
 export { ManagerToolbar } from "./manager-toolbar";

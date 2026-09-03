@@ -1,5 +1,11 @@
+import {
+	CHILD_APPEARANCE_KEYS,
+	loadAppearanceOverrides,
+	writeAppearanceOverrides,
+	type AppearanceOverrides,
+} from "../../utils/appearance";
 import { moveItem, reorderList } from "../../utils/list-reorder";
-import { loadStringRecords, writeNonEmptyStringRecords } from "../../utils/string-record";
+import { loadStringRecord, nonEmptyRecord } from "../../utils/string-record";
 import {
 	isGroupTab,
 	type GroupStatePersisted,
@@ -11,29 +17,11 @@ import {
 
 export { moveItem, reorderList };
 
-const OVERRIDE_FIELDS = [
-	"renames",
-	"iconOverrides",
-	"colorOverrides",
-	"textColorOverrides",
-	"backgroundColorOverrides",
-] as const;
-const CHILD_OVERRIDE_FIELDS = [
-	"childRenames",
-	"childIconOverrides",
-	"childColorOverrides",
-	"childTextColorOverrides",
-	"childBackgroundColorOverrides",
-] as const;
-
 export interface GroupChildState {
 	visibleChildren: TabDefinition[];
 	activeChildIndex: number;
 	childRenames: Record<string, string>;
-	childIconOverrides: Record<string, string>;
-	childColorOverrides: Record<string, string>;
-	childTextColorOverrides: Record<string, string>;
-	childBackgroundColorOverrides?: Record<string, string>;
+	childAppearance: AppearanceOverrides;
 }
 
 export function recalcActiveChildIndex(visibleChildren: TabDefinition[], previousActiveId: string | undefined): number {
@@ -45,8 +33,6 @@ export function initialGroupChildState(
 	group: GroupTabDefinition,
 	saved: GroupStatePersisted | undefined
 ): GroupChildState {
-	const childOverrides = loadStringRecords(saved, CHILD_OVERRIDE_FIELDS);
-
 	let visibleChildren: TabDefinition[];
 	if (saved?.visibleChildIds) {
 		const childMap = new Map(group.children.map((c) => [c.id, c]));
@@ -59,7 +45,8 @@ export function initialGroupChildState(
 	return {
 		visibleChildren,
 		activeChildIndex: 0,
-		...childOverrides,
+		childRenames: loadStringRecord(saved?.childRenames),
+		childAppearance: loadAppearanceOverrides(saved, CHILD_APPEARANCE_KEYS),
 	};
 }
 
@@ -73,10 +60,7 @@ export function getActiveChild(entry: TabEntry, groupStates: Map<string, GroupCh
 export interface ResolvedInitialState {
 	visibleTabs: TabEntry[];
 	renames: Record<string, string>;
-	iconOverrides: Record<string, string>;
-	colorOverrides: Record<string, string>;
-	textColorOverrides: Record<string, string>;
-	backgroundColorOverrides: Record<string, string>;
+	appearance: AppearanceOverrides;
 	showSettingsButton: boolean;
 }
 
@@ -84,11 +68,14 @@ export function resolveVisibleTabs(
 	tabs: TabEntry[],
 	initialState: TabbedContainerState | undefined
 ): ResolvedInitialState {
-	const overrides = loadStringRecords(initialState, OVERRIDE_FIELDS);
-	const showSettingsButton = initialState?.showSettingsButton !== false;
+	const overrides = {
+		renames: loadStringRecord(initialState?.renames),
+		appearance: loadAppearanceOverrides(initialState),
+		showSettingsButton: initialState?.showSettingsButton !== false,
+	};
 
 	if (!initialState?.visibleTabIds) {
-		return { visibleTabs: tabs, ...overrides, showSettingsButton };
+		return { visibleTabs: tabs, ...overrides };
 	}
 
 	const tabMap = new Map(tabs.map((t) => [t.id, t]));
@@ -98,21 +85,14 @@ export function resolveVisibleTabs(
 		if (tab) visible.push(tab);
 	}
 
-	return {
-		visibleTabs: visible.length > 0 ? visible : tabs,
-		...overrides,
-		showSettingsButton,
-	};
+	return { visibleTabs: visible.length > 0 ? visible : tabs, ...overrides };
 }
 
 export interface BuildStateInput {
 	allTabs: TabEntry[];
 	visibleTabs: TabEntry[];
 	renames: Record<string, string>;
-	iconOverrides: Record<string, string>;
-	colorOverrides: Record<string, string>;
-	textColorOverrides: Record<string, string>;
-	backgroundColorOverrides?: Record<string, string>;
+	appearance: AppearanceOverrides;
 	showSettingsButton: boolean;
 	groupStates: Map<string, GroupChildState>;
 }
@@ -121,19 +101,14 @@ export function buildState({
 	allTabs,
 	visibleTabs,
 	renames,
-	iconOverrides,
-	colorOverrides,
-	textColorOverrides,
-	backgroundColorOverrides = {},
+	appearance,
 	showSettingsButton,
 	groupStates,
 }: BuildStateInput): TabbedContainerState {
 	const state: TabbedContainerState = {};
-	writeNonEmptyStringRecords(
-		state,
-		{ renames, iconOverrides, colorOverrides, textColorOverrides, backgroundColorOverrides },
-		OVERRIDE_FIELDS
-	);
+	const renamesOut = nonEmptyRecord(renames);
+	if (renamesOut) state.renames = renamesOut;
+	writeAppearanceOverrides(state, appearance);
 
 	const defaultOrder = allTabs.map((t) => t.id);
 	const currentOrder = visibleTabs.map((t) => t.id);
@@ -161,12 +136,14 @@ export function buildState({
 			hasEntry = true;
 		}
 
-		hasEntry =
-			writeNonEmptyStringRecords(
-				entry,
-				{ ...childState, childBackgroundColorOverrides: childState.childBackgroundColorOverrides ?? {} },
-				CHILD_OVERRIDE_FIELDS
-			) || hasEntry;
+		const childRenames = nonEmptyRecord(childState.childRenames);
+		if (childRenames) {
+			entry.childRenames = childRenames;
+			hasEntry = true;
+		}
+		// Deliberately not short-circuiting: the overrides must be written even when
+		// a reordered child list already set `hasEntry`.
+		hasEntry = writeAppearanceOverrides(entry, childState.childAppearance, CHILD_APPEARANCE_KEYS) || hasEntry;
 
 		if (hasEntry) {
 			gs[groupId] = entry;

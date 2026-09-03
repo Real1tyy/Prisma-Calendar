@@ -1,5 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import {
+	emptyAppearanceOverrides,
+	resolveAppearance,
+	setAppearanceOverride,
+	type Appearance,
+	type AppearanceAxis,
+	type AppearanceOverrides,
+} from "../../utils/appearance";
 import { setOrDelete } from "../../utils/string-record";
 import {
 	buildState,
@@ -31,23 +39,15 @@ export interface TabbedContainerStateAccess {
 	activeId: string;
 	activeTab: TabDefinition | null;
 	renames: Record<string, string>;
-	iconOverrides: Record<string, string>;
-	colorOverrides: Record<string, string>;
-	textColorOverrides: Record<string, string>;
-	backgroundColorOverrides: Record<string, string>;
+	appearance: AppearanceOverrides;
 	showSettingsButton: boolean;
 	groupStates: Map<string, GroupChildState>;
 	rendered: Set<string>;
 	getLabel: (entry: TabEntry) => string;
-	getIcon: (entry: TabEntry) => string | undefined;
-	getColor: (entry: TabEntry) => string | undefined;
-	getTextColor: (entry: TabEntry) => string | undefined;
-	getBackgroundColor: (entry: TabEntry) => string | undefined;
+	/** A tab as it renders: overrides applied over the definition's own defaults. */
+	getAppearance: (entry: TabEntry) => Appearance;
 	getChildLabel: (groupId: string, child: TabDefinition) => string;
-	getChildIcon: (groupId: string, child: TabDefinition) => string | undefined;
-	getChildColor: (groupId: string, child: TabDefinition) => string | undefined;
-	getChildTextColor: (groupId: string, child: TabDefinition) => string | undefined;
-	getChildBackgroundColor: (groupId: string, child: TabDefinition) => string | undefined;
+	getChildAppearance: (groupId: string, child: TabDefinition) => Appearance;
 }
 
 export interface TabbedContainerActions {
@@ -63,15 +63,10 @@ export interface TabbedContainerActions {
 	reorderGroupChildren: (groupId: string, fromId: string, toId: string) => void;
 	moveGroupChild: (groupId: string, childId: string, direction: -1 | 1) => void;
 	rename: (id: string, value: string | undefined) => void;
-	setIcon: (id: string, value: string | undefined) => void;
-	setColor: (id: string, value: string | undefined) => void;
-	setTextColor: (id: string, value: string | undefined) => void;
-	setBackgroundColor: (id: string, value: string | undefined) => void;
+	/** `undefined` clears the axis back to the tab's own default. */
+	setAppearance: (id: string, axis: AppearanceAxis, value: string | undefined) => void;
 	renameChild: (groupId: string, childId: string, value: string | undefined) => void;
-	setChildIcon: (groupId: string, childId: string, value: string | undefined) => void;
-	setChildColor: (groupId: string, childId: string, value: string | undefined) => void;
-	setChildTextColor: (groupId: string, childId: string, value: string | undefined) => void;
-	setChildBackgroundColor: (groupId: string, childId: string, value: string | undefined) => void;
+	setChildAppearance: (groupId: string, childId: string, axis: AppearanceAxis, value: string | undefined) => void;
 	reorderTabs: (fromId: string, toId: string) => void;
 	setShowSettingsButton: (value: boolean) => void;
 	resetToDefaults: () => void;
@@ -103,12 +98,7 @@ export function useTabbedContainer({
 	const [visibleTabs, setVisibleTabs] = useState<TabEntry[]>(initial.visibleTabs);
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const [renames, setRenames] = useState<Record<string, string>>(initial.renames);
-	const [iconOverrides, setIconOverrides] = useState<Record<string, string>>(initial.iconOverrides);
-	const [colorOverrides, setColorOverrides] = useState<Record<string, string>>(initial.colorOverrides);
-	const [textColorOverrides, setTextColorOverrides] = useState<Record<string, string>>(initial.textColorOverrides);
-	const [backgroundColorOverrides, setBackgroundColorOverrides] = useState<Record<string, string>>(
-		initial.backgroundColorOverrides
-	);
+	const [appearance, setAppearanceOverrides] = useState<AppearanceOverrides>(initial.appearance);
 	const [showSettingsButton, setShowSettingsButton] = useState(initial.showSettingsButton);
 
 	const [groupStates, setGroupStates] = useState<Map<string, GroupChildState>>(() => {
@@ -133,45 +123,18 @@ export function useTabbedContainer({
 	const allTabs = tabs;
 
 	const getLabel = useCallback((entry: TabEntry): string => renames[entry.id] ?? entry.label, [renames]);
-	const getIcon = useCallback(
-		(entry: TabEntry): string | undefined => iconOverrides[entry.id] ?? entry.icon,
-		[iconOverrides]
-	);
-	const getColor = useCallback(
-		(entry: TabEntry): string | undefined => colorOverrides[entry.id] ?? entry.color,
-		[colorOverrides]
-	);
-	const getTextColor = useCallback(
-		(entry: TabEntry): string | undefined => textColorOverrides[entry.id] ?? entry.textColor,
-		[textColorOverrides]
-	);
-	const getBackgroundColor = useCallback(
-		(entry: TabEntry): string | undefined => backgroundColorOverrides[entry.id] ?? entry.backgroundColor,
-		[backgroundColorOverrides]
+	const getAppearance = useCallback(
+		(entry: TabEntry): Appearance => resolveAppearance(entry, appearance, entry.id),
+		[appearance]
 	);
 
 	const getChildLabel = useCallback(
 		(groupId: string, child: TabDefinition): string => groupStates.get(groupId)?.childRenames[child.id] ?? child.label,
 		[groupStates]
 	);
-	const getChildIcon = useCallback(
-		(groupId: string, child: TabDefinition): string | undefined =>
-			groupStates.get(groupId)?.childIconOverrides[child.id] ?? child.icon,
-		[groupStates]
-	);
-	const getChildColor = useCallback(
-		(groupId: string, child: TabDefinition): string | undefined =>
-			groupStates.get(groupId)?.childColorOverrides[child.id] ?? child.color,
-		[groupStates]
-	);
-	const getChildTextColor = useCallback(
-		(groupId: string, child: TabDefinition): string | undefined =>
-			groupStates.get(groupId)?.childTextColorOverrides[child.id] ?? child.textColor,
-		[groupStates]
-	);
-	const getChildBackgroundColor = useCallback(
-		(groupId: string, child: TabDefinition): string | undefined =>
-			groupStates.get(groupId)?.childBackgroundColorOverrides?.[child.id] ?? child.backgroundColor,
+	const getChildAppearance = useCallback(
+		(groupId: string, child: TabDefinition): Appearance =>
+			resolveAppearance(child, groupStates.get(groupId)?.childAppearance ?? emptyAppearanceOverrides(), child.id),
 		[groupStates]
 	);
 
@@ -183,27 +146,14 @@ export function useTabbedContainer({
 					allTabs,
 					visibleTabs,
 					renames,
-					iconOverrides,
-					colorOverrides,
-					textColorOverrides,
-					backgroundColorOverrides,
+					appearance,
 					showSettingsButton,
 					groupStates,
 					...overrides,
 				})
 			);
 		},
-		[
-			allTabs,
-			visibleTabs,
-			renames,
-			iconOverrides,
-			colorOverrides,
-			textColorOverrides,
-			backgroundColorOverrides,
-			showSettingsButton,
-			groupStates,
-		]
+		[allTabs, visibleTabs, renames, appearance, showSettingsButton, groupStates]
 	);
 
 	const activeEntry: TabEntry | undefined = visibleTabs.at(currentIndex);
@@ -399,39 +349,14 @@ export function useTabbedContainer({
 		[renames, emit]
 	);
 
-	const setIcon = useCallback(
-		(id: string, value: string | undefined): void => {
-			const updated = setOrDelete(iconOverrides, id, value);
-			setIconOverrides(updated);
-			emit({ iconOverrides: updated });
+	const setAppearance = useCallback(
+		(id: string, axis: AppearanceAxis, value: string | undefined): void => {
+			const updated = setAppearanceOverride(appearance, axis, id, value);
+			if (!updated) return;
+			setAppearanceOverrides(updated);
+			emit({ appearance: updated });
 		},
-		[iconOverrides, emit]
-	);
-
-	const setColor = useCallback(
-		(id: string, value: string | undefined): void => {
-			const updated = setOrDelete(colorOverrides, id, value);
-			setColorOverrides(updated);
-			emit({ colorOverrides: updated });
-		},
-		[colorOverrides, emit]
-	);
-
-	const setTextColor = useCallback(
-		(id: string, value: string | undefined): void => {
-			const updated = setOrDelete(textColorOverrides, id, value);
-			setTextColorOverrides(updated);
-			emit({ textColorOverrides: updated });
-		},
-		[textColorOverrides, emit]
-	);
-	const setBackgroundColor = useCallback(
-		(id: string, value: string | undefined): void => {
-			const updated = setOrDelete(backgroundColorOverrides, id, value);
-			setBackgroundColorOverrides(updated);
-			emit({ backgroundColorOverrides: updated });
-		},
-		[backgroundColorOverrides, emit]
+		[appearance, emit]
 	);
 
 	const renameChild = useCallback(
@@ -441,41 +366,12 @@ export function useTabbedContainer({
 		[updateGroupState]
 	);
 
-	const setChildIcon = useCallback(
-		(groupId: string, childId: string, value: string | undefined): void => {
-			updateGroupState(groupId, (gs) => ({
-				...gs,
-				childIconOverrides: setOrDelete(gs.childIconOverrides, childId, value),
-			}));
-		},
-		[updateGroupState]
-	);
-
-	const setChildColor = useCallback(
-		(groupId: string, childId: string, value: string | undefined): void => {
-			updateGroupState(groupId, (gs) => ({
-				...gs,
-				childColorOverrides: setOrDelete(gs.childColorOverrides, childId, value),
-			}));
-		},
-		[updateGroupState]
-	);
-
-	const setChildTextColor = useCallback(
-		(groupId: string, childId: string, value: string | undefined): void => {
-			updateGroupState(groupId, (gs) => ({
-				...gs,
-				childTextColorOverrides: setOrDelete(gs.childTextColorOverrides, childId, value),
-			}));
-		},
-		[updateGroupState]
-	);
-	const setChildBackgroundColor = useCallback(
-		(groupId: string, childId: string, value: string | undefined): void => {
-			updateGroupState(groupId, (gs) => ({
-				...gs,
-				childBackgroundColorOverrides: setOrDelete(gs.childBackgroundColorOverrides ?? {}, childId, value),
-			}));
+	const setChildAppearance = useCallback(
+		(groupId: string, childId: string, axis: AppearanceAxis, value: string | undefined): void => {
+			updateGroupState(groupId, (gs) => {
+				const updated = setAppearanceOverride(gs.childAppearance, axis, childId, value);
+				return updated ? { ...gs, childAppearance: updated } : null;
+			});
 		},
 		[updateGroupState]
 	);
@@ -498,48 +394,21 @@ export function useTabbedContainer({
 		setVisibleTabs(defaultsResolved.visibleTabs);
 		setCurrentIndex(0);
 		setRenames(defaultsResolved.renames);
-		setIconOverrides(defaultsResolved.iconOverrides);
-		setColorOverrides(defaultsResolved.colorOverrides);
-		setTextColorOverrides(defaultsResolved.textColorOverrides);
-		setBackgroundColorOverrides(defaultsResolved.backgroundColorOverrides);
+		setAppearanceOverrides(defaultsResolved.appearance);
 		setShowSettingsButton(defaultsResolved.showSettingsButton);
 		setGroupStates(freshGroupStates);
 		emit({
 			visibleTabs: defaultsResolved.visibleTabs,
 			renames: defaultsResolved.renames,
-			iconOverrides: defaultsResolved.iconOverrides,
-			colorOverrides: defaultsResolved.colorOverrides,
-			textColorOverrides: defaultsResolved.textColorOverrides,
-			backgroundColorOverrides: defaultsResolved.backgroundColorOverrides,
+			appearance: defaultsResolved.appearance,
 			showSettingsButton: defaultsResolved.showSettingsButton,
 			groupStates: freshGroupStates,
 		});
 	}, [tabs, defaults, defaultsResolved, emit]);
 
 	const getState = useCallback(
-		() =>
-			buildState({
-				allTabs,
-				visibleTabs,
-				renames,
-				iconOverrides,
-				colorOverrides,
-				textColorOverrides,
-				backgroundColorOverrides,
-				showSettingsButton,
-				groupStates,
-			}),
-		[
-			allTabs,
-			visibleTabs,
-			renames,
-			iconOverrides,
-			colorOverrides,
-			textColorOverrides,
-			backgroundColorOverrides,
-			showSettingsButton,
-			groupStates,
-		]
+		() => buildState({ allTabs, visibleTabs, renames, appearance, showSettingsButton, groupStates }),
+		[allTabs, visibleTabs, renames, appearance, showSettingsButton, groupStates]
 	);
 
 	const getVisibleLabels = useCallback((): string[] => visibleTabs.map(getLabel), [visibleTabs, getLabel]);
@@ -551,23 +420,14 @@ export function useTabbedContainer({
 		activeId,
 		activeTab,
 		renames,
-		iconOverrides,
-		colorOverrides,
-		textColorOverrides,
-		backgroundColorOverrides,
+		appearance,
 		showSettingsButton,
 		groupStates,
 		rendered,
 		getLabel,
-		getIcon,
-		getColor,
-		getTextColor,
-		getBackgroundColor,
+		getAppearance,
 		getChildLabel,
-		getChildIcon,
-		getChildColor,
-		getChildTextColor,
-		getChildBackgroundColor,
+		getChildAppearance,
 	};
 
 	const actions: TabbedContainerActions = {
@@ -583,15 +443,9 @@ export function useTabbedContainer({
 		reorderGroupChildren,
 		moveGroupChild,
 		rename,
-		setIcon,
-		setColor,
-		setTextColor,
-		setBackgroundColor,
+		setAppearance,
 		renameChild,
-		setChildIcon,
-		setChildColor,
-		setChildTextColor,
-		setChildBackgroundColor,
+		setChildAppearance,
 		reorderTabs,
 		setShowSettingsButton: setShowSettingsButtonAction,
 		resetToDefaults,

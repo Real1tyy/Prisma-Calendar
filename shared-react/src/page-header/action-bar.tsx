@@ -6,7 +6,7 @@ import { useInjectedStyles } from "../hooks/styles/use-styles";
 import { ContextMenu } from "../menus/context-menu";
 import type { ContextMenuItemDef } from "../menus/types";
 import { ObsidianIcon } from "../primitives/atoms/obsidian-icon";
-import { DEFAULT_COLOR_SENTINEL } from "./constants";
+import { appearanceStyle, stripDefaultColors } from "../utils/appearance";
 import type { PageHeaderStore } from "./store";
 import { buildPageHeaderStyles } from "./styles";
 
@@ -157,13 +157,6 @@ const ActionButton = memo(function ActionButton({
 	);
 });
 
-function resolveColorStyle(color: string | undefined, backgroundColor?: string): CSSProperties | undefined {
-	const style: CSSProperties = {};
-	if (color && color !== DEFAULT_COLOR_SENTINEL) style.color = color;
-	if (backgroundColor && backgroundColor !== DEFAULT_COLOR_SENTINEL) style.backgroundColor = backgroundColor;
-	return Object.keys(style).length ? style : undefined;
-}
-
 export const PageHeaderActionBar = memo(function PageHeaderActionBar({
 	store,
 	cssPrefix,
@@ -195,8 +188,8 @@ export const PageHeaderActionBar = memo(function PageHeaderActionBar({
 			const id = el.getAttribute(ACTION_ID_ATTR);
 			const action = id ? byId.get(id) : undefined;
 			if (!id || !action) continue;
-			const label = snapshot.renames[id] ?? action.label;
-			const icon = snapshot.iconOverrides[id] ?? action.icon;
+			const label = store.getLabel(action);
+			const { icon } = store.getAppearance(action);
 			items.push({ kind: "item", id, label, ...(icon ? { icon } : {}), onSelect: () => onActionClick(id) });
 		}
 		if (items.length === 0) return;
@@ -207,7 +200,7 @@ export const PageHeaderActionBar = memo(function PageHeaderActionBar({
 			items,
 			position: rect ? { x: rect.right, y: rect.bottom + 4 } : { x: 0, y: 0 },
 		});
-	}, [snapshot, onActionClick]);
+	}, [snapshot, store, onActionClick]);
 
 	// Re-pack whenever the visible set, its ORDER, or the Manage button's presence
 	// changes — so reordering a previously-overflowed action into the visible range
@@ -220,17 +213,14 @@ export const PageHeaderActionBar = memo(function PageHeaderActionBar({
 	return (
 		<div ref={containerRef} className={`${cssPrefix}page-header-actions`} role="toolbar">
 			{snapshot.visibleActions.map((action) => {
-				const label = snapshot.renames[action.id] ?? action.label;
-				const icon = snapshot.iconOverrides[action.id] ?? action.icon;
-				const color = snapshot.colorOverrides[action.id] ?? action.color;
-				const backgroundColor = snapshot.backgroundColorOverrides[action.id] ?? action.backgroundColor;
-				const style = resolveColorStyle(color, backgroundColor);
+				const appearance = stripDefaultColors(store.getAppearance(action));
+				const style = appearanceStyle(appearance, "color", "backgroundColor");
 
 				return (
 					<ActionButton
 						key={action.id}
-						icon={icon}
-						label={label}
+						icon={appearance.icon}
+						label={store.getLabel(action)}
 						className={`clickable-icon view-action ${cssPrefix}header-btn`}
 						testId={`${cssPrefix}toolbar-${action.id}`}
 						actionId={action.id}

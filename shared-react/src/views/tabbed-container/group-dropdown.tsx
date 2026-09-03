@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import { useOutsideClick } from "../../hooks/dom/use-outside-click";
 import { useEscapeKey } from "../../hooks/keyboard/use-trigger-keys";
 import { ObsidianIcon } from "../../primitives/atoms/obsidian-icon";
+import { appearanceStyle, type Appearance } from "../../utils/appearance";
 import type { TabDefinition } from "./types";
 
 export interface GroupDropdownProps {
@@ -13,10 +14,7 @@ export interface GroupDropdownProps {
 	position: { x: number; y: number };
 	items: TabDefinition[];
 	getChildLabel: (child: TabDefinition) => string;
-	getChildIcon?: (child: TabDefinition) => string | undefined;
-	getChildColor?: (child: TabDefinition) => string | undefined;
-	getChildTextColor?: (child: TabDefinition) => string | undefined;
-	getChildBackgroundColor?: (child: TabDefinition) => string | undefined;
+	getChildAppearance?: (child: TabDefinition) => Appearance;
 	onSelect: (childId: string) => void;
 	onDismiss: () => void;
 	hoverDropdown: boolean;
@@ -31,10 +29,7 @@ export const GroupDropdown = memo(function GroupDropdown({
 	position,
 	items,
 	getChildLabel,
-	getChildIcon,
-	getChildColor,
-	getChildTextColor,
-	getChildBackgroundColor,
+	getChildAppearance,
 	onSelect,
 	onDismiss,
 	hoverDropdown,
@@ -58,10 +53,7 @@ export const GroupDropdown = memo(function GroupDropdown({
 			onMouseLeave={hoverDropdown ? onMouseLeave : undefined}
 		>
 			{items.map((child) => {
-				const icon = getChildIcon?.(child);
-				const color = getChildColor?.(child);
-				const textColor = getChildTextColor?.(child);
-				const backgroundColor = getChildBackgroundColor?.(child);
+				const appearance = getChildAppearance?.(child) ?? {};
 				return (
 					<button
 						key={child.id}
@@ -69,17 +61,17 @@ export const GroupDropdown = memo(function GroupDropdown({
 						role="menuitem"
 						className={`${cssPrefix}tab-group-dropdown-item`}
 						data-testid={`${testIdPrefix}view-tab-${child.id}`}
-						style={backgroundColor ? { backgroundColor } : undefined}
+						style={appearanceStyle(appearance, "backgroundColor")}
 						onClick={() => {
 							onSelect(child.id);
 						}}
 					>
-						{icon && (
-							<span className={`${cssPrefix}tab-icon`} style={color ? { color } : undefined}>
-								<ObsidianIcon icon={icon} />
+						{appearance.icon && (
+							<span className={`${cssPrefix}tab-icon`} style={appearanceStyle(appearance, "color")}>
+								<ObsidianIcon icon={appearance.icon} />
 							</span>
 						)}
-						<span style={textColor ? { color: textColor } : undefined}>{getChildLabel(child)}</span>
+						<span style={appearanceStyle(appearance, "textColor")}>{getChildLabel(child)}</span>
 					</button>
 				);
 			})}

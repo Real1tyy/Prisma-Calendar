@@ -18,6 +18,7 @@ import { useMediaQuery } from "../../hooks/dom/use-media-query";
 import { useInjectedStyles } from "../../hooks/styles/use-styles";
 import { ObsidianIcon } from "../../primitives/atoms/obsidian-icon";
 import { MOBILE_MEDIA_QUERY } from "../../responsive";
+import { appearanceStyle, type Appearance } from "../../utils/appearance";
 import { cx } from "../../utils/cx";
 import { GroupDropdown } from "./group-dropdown";
 import { getActiveChild, type GroupChildState } from "./reorder";
@@ -126,15 +127,9 @@ export const TabbedContainer = memo(function TabbedContainer({
 			showSettingsButton={showSettingsButton}
 			hoverDropdown={hoverDropdown}
 			getLabel={state.getLabel}
-			getIcon={state.getIcon}
-			getColor={state.getColor}
-			getTextColor={state.getTextColor}
-			getBackgroundColor={state.getBackgroundColor}
+			getAppearance={state.getAppearance}
 			getChildLabel={state.getChildLabel}
-			getChildIcon={state.getChildIcon}
-			getChildColor={state.getChildColor}
-			getChildTextColor={state.getChildTextColor}
-			getChildBackgroundColor={state.getChildBackgroundColor}
+			getChildAppearance={state.getChildAppearance}
 			onSelectTab={actions.switchTo}
 			onSelectGroupChild={actions.switchGroupChild}
 			onShowManager={() => setManagerOpen(true)}
@@ -239,15 +234,9 @@ interface TabBarProps {
 	showSettingsButton: boolean;
 	hoverDropdown: boolean;
 	getLabel: (entry: TabEntry) => string;
-	getIcon: (entry: TabEntry) => string | undefined;
-	getColor: (entry: TabEntry) => string | undefined;
-	getTextColor: (entry: TabEntry) => string | undefined;
-	getBackgroundColor: (entry: TabEntry) => string | undefined;
+	getAppearance: (entry: TabEntry) => Appearance;
 	getChildLabel: (groupId: string, child: TabDefinition) => string;
-	getChildIcon: (groupId: string, child: TabDefinition) => string | undefined;
-	getChildColor: (groupId: string, child: TabDefinition) => string | undefined;
-	getChildTextColor: (groupId: string, child: TabDefinition) => string | undefined;
-	getChildBackgroundColor: (groupId: string, child: TabDefinition) => string | undefined;
+	getChildAppearance: (groupId: string, child: TabDefinition) => Appearance;
 	onSelectTab: (id: string) => void;
 	onSelectGroupChild: (groupId: string, childId: string) => void;
 	onShowManager: () => void;
@@ -264,15 +253,9 @@ const TabBar = memo(function TabBar({
 	showSettingsButton,
 	hoverDropdown,
 	getLabel,
-	getIcon,
-	getColor,
-	getTextColor,
-	getBackgroundColor,
+	getAppearance,
 	getChildLabel,
-	getChildIcon,
-	getChildColor,
-	getChildTextColor,
-	getChildBackgroundColor,
+	getChildAppearance,
 	onSelectTab,
 	onSelectGroupChild,
 	onShowManager,
@@ -292,15 +275,9 @@ const TabBar = memo(function TabBar({
 							isActive={isActive}
 							hoverDropdown={hoverDropdown}
 							label={getLabel(entry)}
-							icon={getIcon(entry)}
-							color={getColor(entry)}
-							textColor={getTextColor(entry)}
-							backgroundColor={getBackgroundColor(entry)}
+							appearance={getAppearance(entry)}
 							getChildLabel={(child) => getChildLabel(entry.id, child)}
-							getChildIcon={(child) => getChildIcon(entry.id, child)}
-							getChildColor={(child) => getChildColor(entry.id, child)}
-							getChildTextColor={(child) => getChildTextColor(entry.id, child)}
-							getChildBackgroundColor={(child) => getChildBackgroundColor(entry.id, child)}
+							getChildAppearance={(child) => getChildAppearance(entry.id, child)}
 							visibleChildren={groupStates.get(entry.id)?.visibleChildren ?? entry.children}
 							onSelectChild={(childId) => onSelectGroupChild(entry.id, childId)}
 						/>
@@ -313,10 +290,7 @@ const TabBar = memo(function TabBar({
 						id={entry.id}
 						isActive={isActive}
 						label={getLabel(entry)}
-						icon={getIcon(entry)}
-						color={getColor(entry)}
-						textColor={getTextColor(entry)}
-						backgroundColor={getBackgroundColor(entry)}
+						appearance={getAppearance(entry)}
 						onClick={() => onSelectTab(entry.id)}
 					/>
 				);
@@ -341,10 +315,7 @@ interface TabButtonProps {
 	cssPrefix: string;
 	id: string;
 	label: string;
-	icon: string | undefined;
-	color: string | undefined;
-	textColor?: string | undefined;
-	backgroundColor?: string | undefined;
+	appearance: Appearance;
 	isActive: boolean;
 	extraClass?: string;
 	trailing?: ReactNode;
@@ -361,10 +332,7 @@ const TabButton = memo(function TabButton({
 	cssPrefix,
 	id,
 	label,
-	icon,
-	color,
-	textColor,
-	backgroundColor,
+	appearance,
 	isActive,
 	extraClass,
 	trailing,
@@ -391,14 +359,14 @@ const TabButton = memo(function TabButton({
 			onMouseLeave={onMouseLeave}
 			data-tab-id={id}
 			data-testid={`${cssPrefix}view-tab-${id}`}
-			style={backgroundColor ? { backgroundColor } : undefined}
+			style={appearanceStyle(appearance, "backgroundColor")}
 		>
-			{icon && (
-				<span className={`${cssPrefix}tab-icon`} style={color ? { color } : undefined}>
-					<ObsidianIcon icon={icon} />
+			{appearance.icon && (
+				<span className={`${cssPrefix}tab-icon`} style={appearanceStyle(appearance, "color")}>
+					<ObsidianIcon icon={appearance.icon} />
 				</span>
 			)}
-			<span style={textColor ? { color: textColor } : undefined}>{label}</span>
+			<span style={appearanceStyle(appearance, "textColor")}>{label}</span>
 			{trailing}
 		</button>
 	);
@@ -410,15 +378,9 @@ interface GroupTabButtonProps {
 	isActive: boolean;
 	hoverDropdown: boolean;
 	label: string;
-	icon: string | undefined;
-	color: string | undefined;
-	textColor: string | undefined;
-	backgroundColor: string | undefined;
+	appearance: Appearance;
 	getChildLabel: (child: TabDefinition) => string;
-	getChildIcon: (child: TabDefinition) => string | undefined;
-	getChildColor: (child: TabDefinition) => string | undefined;
-	getChildTextColor: (child: TabDefinition) => string | undefined;
-	getChildBackgroundColor: (child: TabDefinition) => string | undefined;
+	getChildAppearance: (child: TabDefinition) => Appearance;
 	visibleChildren: TabDefinition[];
 	onSelectChild: (childId: string) => void;
 }
@@ -429,15 +391,9 @@ const GroupTabButton = memo(function GroupTabButton({
 	isActive,
 	hoverDropdown,
 	label,
-	icon,
-	color,
-	textColor,
-	backgroundColor,
+	appearance,
 	getChildLabel,
-	getChildIcon,
-	getChildColor,
-	getChildTextColor,
-	getChildBackgroundColor,
+	getChildAppearance,
 	visibleChildren,
 	onSelectChild,
 }: GroupTabButtonProps) {
@@ -514,10 +470,7 @@ const GroupTabButton = memo(function GroupTabButton({
 				cssPrefix={cssPrefix}
 				id={group.id}
 				label={label}
-				icon={icon}
-				color={color}
-				textColor={textColor}
-				backgroundColor={backgroundColor}
+				appearance={appearance}
 				isActive={isActive}
 				extraClass={`${cssPrefix}tab-group`}
 				buttonRef={buttonRef}
@@ -541,10 +494,7 @@ const GroupTabButton = memo(function GroupTabButton({
 					position={position}
 					items={visibleChildren}
 					getChildLabel={getChildLabel}
-					getChildIcon={getChildIcon}
-					getChildColor={getChildColor}
-					getChildTextColor={getChildTextColor}
-					getChildBackgroundColor={getChildBackgroundColor}
+					getChildAppearance={getChildAppearance}
 					onSelect={handleSelect}
 					onDismiss={close}
 					hoverDropdown={hoverDropdown}

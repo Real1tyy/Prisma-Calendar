@@ -3,16 +3,14 @@ import { memo, useCallback, useState, type DragEvent, type ReactNode } from "rea
 import { useScoped } from "../../contexts/theme-context";
 import { useInjectedStyles } from "../../hooks/styles/use-styles";
 import { ObsidianIcon } from "../../primitives/atoms/obsidian-icon";
+import { appearanceStyle, stripDefaultColors, type Appearance } from "../../utils/appearance";
 import { cx } from "../../utils/cx";
 import { buildManagerRowStyles } from "./manager-row.styles";
 
-export interface EditableItem {
+export interface ManagerRowItem {
 	id: string;
+	/** The label as defined — shown beside a renamed row as the original name. */
 	label: string;
-	icon: string;
-	color?: string;
-	textColor?: string;
-	backgroundColor?: string;
 }
 
 export interface ManagerRowAction {
@@ -24,7 +22,9 @@ export interface ManagerRowAction {
 }
 
 export interface ManagerRowProps {
-	item: EditableItem;
+	item: ManagerRowItem;
+	/** Resolved appearance — override where the user set one, definition default otherwise. */
+	appearance?: Appearance;
 	chip?: ReactNode;
 	actions?: ManagerRowAction[];
 	isVisible?: boolean;
@@ -33,10 +33,6 @@ export interface ManagerRowProps {
 	onToggleVisibility?: () => void;
 	visibleCount?: number;
 	displayLabel?: string;
-	displayIcon?: string;
-	displayColor?: string;
-	displayTextColor?: string;
-	displayBackgroundColor?: string;
 	hasRename?: boolean;
 	/**
 	 * Sub-namespace for class names and testids — `"manager"` produces
@@ -68,10 +64,7 @@ export const ManagerRow = memo(function ManagerRow({
 	onToggleVisibility,
 	visibleCount = 1,
 	displayLabel,
-	displayIcon,
-	displayColor,
-	displayTextColor,
-	displayBackgroundColor,
+	appearance = {},
 	hasRename = false,
 	rowPrefix = "manager",
 	children,
@@ -88,10 +81,9 @@ export const ManagerRow = memo(function ManagerRow({
 	const [dragOver, setDragOver] = useState(false);
 
 	const label = displayLabel ?? item.label;
-	const icon = displayIcon ?? item.icon;
-	const color = displayColor ?? item.color;
-	const textColor = displayTextColor ?? item.textColor;
-	const backgroundColor = displayBackgroundColor ?? item.backgroundColor;
+	// A row previews the item as it will render, so the picker's untouched-black
+	// sentinel must not paint the whole row black.
+	const painted = stripDefaultColors(appearance);
 
 	const handleEdit = useCallback(() => onEdit?.(), [onEdit]);
 	const handleToggle = useCallback(() => onToggleVisibility?.(), [onToggleVisibility]);
@@ -129,7 +121,7 @@ export const ManagerRow = memo(function ManagerRow({
 			)}
 			data-testid={tid("row", item.id)}
 			data-row-id={item.id}
-			style={backgroundColor && backgroundColor !== "#000000" ? { backgroundColor } : undefined}
+			style={appearanceStyle(painted, "backgroundColor")}
 			draggable={draggable}
 			{...dragHandlers}
 		>
@@ -171,15 +163,12 @@ export const ManagerRow = memo(function ManagerRow({
 			)}
 
 			<div className={cls("label")}>
-				{icon && (
-					<span className={cls("icon")} style={color && color !== "#000000" ? { color } : undefined}>
-						<ObsidianIcon icon={icon} />
+				{appearance.icon && (
+					<span className={cls("icon")} style={appearanceStyle(painted, "color")}>
+						<ObsidianIcon icon={appearance.icon} />
 					</span>
 				)}
-				<span
-					className={cls("label-text")}
-					style={textColor && textColor !== "#000000" ? { color: textColor } : undefined}
-				>
+				<span className={cls("label-text")} style={appearanceStyle(painted, "textColor")}>
 					{label}
 				</span>
 				{hasRename && (

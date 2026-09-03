@@ -17,6 +17,13 @@ import { useInjectedStyles } from "../../hooks/styles/use-styles";
 import { showReactIconPicker } from "../../modals/icon-picker-modal";
 import { ObsidianIcon } from "../../primitives/atoms/obsidian-icon";
 import { Toggle } from "../../primitives/controls";
+import {
+	appearanceOverridden,
+	emptyAppearanceOverrides,
+	type Appearance,
+	type AppearanceAxis,
+	type AppearanceOverridden,
+} from "../../utils/appearance";
 import { ManagerEditForm, type ManagerEditController } from "../../widgets/manager-list/manager-edit-form";
 import { ManagerRow } from "../../widgets/manager-list/manager-row";
 import { ManagerToolbar } from "../../widgets/manager-list/manager-toolbar";
@@ -184,15 +191,11 @@ export const TabManagerContent = memo(function TabManagerContent({
 interface EditableRowModel {
 	id: string;
 	originalLabel: string;
+	/** The row's own defaults, before overrides — the edit form's reset targets. */
+	defaultAppearance: Appearance;
 	displayLabel: string;
-	displayIcon: string | undefined;
-	displayColor: string | undefined;
-	displayTextColor: string | undefined;
-	displayBackgroundColor: string | undefined;
-	hasIconOverride: boolean;
-	hasColorOverride: boolean;
-	hasTextColorOverride: boolean;
-	hasBackgroundColorOverride: boolean;
+	appearance: Appearance;
+	overridden: AppearanceOverridden;
 	isVisible: boolean;
 	visibleIndex: number;
 	visibleCount: number;
@@ -209,10 +212,7 @@ interface EditableRowActions {
 	dragEnd: () => void;
 	drop: () => void;
 	rename: (value: string | undefined) => void;
-	changeIcon: (value: string | undefined) => void;
-	changeColor: (value: string | undefined) => void;
-	changeTextColor: (value: string | undefined) => void;
-	changeBackgroundColor: (value: string | undefined) => void;
+	setAppearance: (axis: AppearanceAxis, value: string | undefined) => void;
 }
 
 interface EditableRowProps {
@@ -226,15 +226,10 @@ const EditableRow = memo(function EditableRow({ row, actions }: EditableRowProps
 	const {
 		id,
 		originalLabel,
+		defaultAppearance,
 		displayLabel,
-		displayIcon,
-		displayColor,
-		displayTextColor,
-		displayBackgroundColor,
-		hasIconOverride,
-		hasColorOverride,
-		hasTextColorOverride,
-		hasBackgroundColorOverride,
+		appearance,
+		overridden,
 		isVisible,
 		visibleIndex,
 		visibleCount,
@@ -258,57 +253,20 @@ const EditableRow = memo(function EditableRow({ row, actions }: EditableRowProps
 	);
 
 	const editController: ManagerEditController = {
-		item: {
-			id,
-			label: originalLabel,
-			icon: displayIcon ?? "",
-			...(displayColor !== undefined ? { color: displayColor } : {}),
-			...(displayTextColor !== undefined ? { textColor: displayTextColor } : {}),
-			...(displayBackgroundColor !== undefined ? { backgroundColor: displayBackgroundColor } : {}),
-		},
-		values: {
-			label: displayLabel,
-			icon: displayIcon ?? "",
-			color: displayColor ?? "#ffffff",
-			textColor: displayTextColor ?? "#ffffff",
-			backgroundColor: displayBackgroundColor ?? "#ffffff",
-		},
-		overrides: {
-			label: hasRename,
-			icon: hasIconOverride,
-			color: hasColorOverride,
-			textColor: hasTextColorOverride,
-			backgroundColor: hasBackgroundColorOverride,
-		},
-		actions: {
-			rename: actions.rename,
-			changeIcon: actions.changeIcon,
-			changeColor: actions.changeColor,
-			changeTextColor: actions.changeTextColor,
-			changeBackgroundColor: actions.changeBackgroundColor,
-			pickIcon,
-		},
-	};
-
-	const item = {
-		id,
-		label: originalLabel,
-		icon: displayIcon ?? "",
-		...(displayColor !== undefined ? { color: displayColor } : {}),
-		...(displayTextColor !== undefined ? { textColor: displayTextColor } : {}),
-		...(displayBackgroundColor !== undefined ? { backgroundColor: displayBackgroundColor } : {}),
+		item: { id, label: originalLabel, appearance: defaultAppearance },
+		label: displayLabel,
+		appearance,
+		overridden: { label: hasRename, appearance: overridden },
+		actions: { rename: actions.rename, setAppearance: actions.setAppearance, pickIcon },
 	};
 
 	return (
 		<ManagerRow
-			item={item}
+			item={{ id, label: originalLabel }}
+			appearance={appearance}
 			chip={leadingSlot}
 			rowPrefix={ROW_PREFIX}
 			displayLabel={displayLabel}
-			displayIcon={displayIcon ?? ""}
-			{...(displayColor !== undefined ? { displayColor } : {})}
-			{...(displayTextColor !== undefined ? { displayTextColor } : {})}
-			{...(displayBackgroundColor !== undefined ? { displayBackgroundColor } : {})}
 			hasRename={hasRename}
 			isVisible={isVisible}
 			isExpanded={isExpanded}
@@ -373,15 +331,10 @@ const TabManagerRow = memo(function TabManagerRow({ tab, index, isVisible, visib
 		() => ({
 			id: tab.id,
 			originalLabel: tab.label,
+			defaultAppearance: tab,
 			displayLabel: state.getLabel(tab),
-			displayIcon: state.getIcon(tab),
-			displayColor: state.getColor(tab),
-			displayTextColor: state.getTextColor(tab),
-			displayBackgroundColor: state.getBackgroundColor(tab),
-			hasIconOverride: tab.id in state.iconOverrides,
-			hasColorOverride: tab.id in state.colorOverrides,
-			hasTextColorOverride: tab.id in state.textColorOverrides,
-			hasBackgroundColorOverride: tab.id in state.backgroundColorOverrides,
+			appearance: state.getAppearance(tab),
+			overridden: appearanceOverridden(state.appearance, tab.id),
 			isVisible,
 			visibleIndex: index,
 			visibleCount,
@@ -401,10 +354,7 @@ const TabManagerRow = memo(function TabManagerRow({ tab, index, isVisible, visib
 			dragEnd: () => setDrag({ id: null, scope: "tab" }),
 			drop: () => onTabDrop(tab.id),
 			rename: (value) => actions.rename(tab.id, value),
-			changeIcon: (value) => actions.setIcon(tab.id, value),
-			changeColor: (value) => actions.setColor(tab.id, value),
-			changeTextColor: (value) => actions.setTextColor(tab.id, value),
-			changeBackgroundColor: (value) => actions.setBackgroundColor(tab.id, value),
+			setAppearance: (axis, value) => actions.setAppearance(tab.id, axis, value),
 		}),
 		[actions, tab.id, isVisible, isExpanded, setExpandedId, setDrag, onTabDrop]
 	);
@@ -470,15 +420,10 @@ const GroupChildRow = memo(function GroupChildRow({
 		() => ({
 			id: child.id,
 			originalLabel: child.label,
+			defaultAppearance: child,
 			displayLabel: state.getChildLabel(group.id, child),
-			displayIcon: state.getChildIcon(group.id, child),
-			displayColor: state.getChildColor(group.id, child),
-			displayTextColor: state.getChildTextColor(group.id, child),
-			displayBackgroundColor: state.getChildBackgroundColor(group.id, child),
-			hasIconOverride: gs?.childIconOverrides[child.id] !== undefined,
-			hasColorOverride: gs?.childColorOverrides[child.id] !== undefined,
-			hasTextColorOverride: gs?.childTextColorOverrides[child.id] !== undefined,
-			hasBackgroundColorOverride: gs?.childBackgroundColorOverrides?.[child.id] !== undefined,
+			appearance: state.getChildAppearance(group.id, child),
+			overridden: appearanceOverridden(gs?.childAppearance ?? emptyAppearanceOverrides(), child.id),
 			isVisible,
 			visibleIndex: index,
 			visibleCount,
@@ -498,10 +443,7 @@ const GroupChildRow = memo(function GroupChildRow({
 			dragEnd: () => setDrag({ id: null, scope: group.id }),
 			drop: () => onChildDrop(group.id, child.id),
 			rename: (value) => actions.renameChild(group.id, child.id, value),
-			changeIcon: (value) => actions.setChildIcon(group.id, child.id, value),
-			changeColor: (value) => actions.setChildColor(group.id, child.id, value),
-			changeTextColor: (value) => actions.setChildTextColor(group.id, child.id, value),
-			changeBackgroundColor: (value) => actions.setChildBackgroundColor(group.id, child.id, value),
+			setAppearance: (axis, value) => actions.setChildAppearance(group.id, child.id, axis, value),
 		}),
 		[actions, group.id, child.id, isVisible, isExpanded, expandedKey, setExpandedId, setDrag, onChildDrop]
 	);
