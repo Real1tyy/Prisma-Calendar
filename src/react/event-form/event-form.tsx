@@ -311,10 +311,15 @@ export const EventForm = memo(function EventForm({
 	const allDay = useWatch({ control: form.control, name: "allDay" });
 	const virtual = useWatch({ control: form.control, name: "virtual" });
 	const showContent = !isVirtualEvent && !virtual;
+	const bodyRef = useRef<HTMLDivElement>(null);
 	const jumpToContent = useCallback(() => {
 		contentSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 		contentSectionRef.current?.querySelector<HTMLTextAreaElement>("textarea")?.focus();
 	}, []);
+	const jumpToTop = useCallback(() => {
+		bodyRef.current?.scrollTo?.({ top: 0, behavior: "smooth" });
+		titleInputRef.current?.focus();
+	}, [titleInputRef]);
 
 	// Retry focus for ~500ms — Obsidian's leaf-then-modal activation can
 	// outlast a single focus call when Create is triggered from outside the
@@ -325,7 +330,7 @@ export const EventForm = memo(function EventForm({
 
 	return (
 		<div className="prisma-event-modal-content" onKeyDown={handleKeyDown}>
-			<div className="prisma-event-modal-body">
+			<div ref={bodyRef} className="prisma-event-modal-body">
 				<EventFormHeader
 					mode={mode}
 					form={form}
@@ -415,6 +420,7 @@ export const EventForm = memo(function EventForm({
 						contentDirty={contentDirty}
 						onContentDirty={() => setContentDirty(true)}
 						onConflictChange={setContentChangedOnDisk}
+						onJumpToTop={jumpToTop}
 						containerRef={contentSectionRef}
 					/>
 				)}

@@ -2733,6 +2733,9 @@ button[class*=prisma-]:focus-visible {
   border-radius: 12px;
 }
 .prisma-event-preview-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2876,7 +2879,10 @@ button[class*=prisma-]:focus-visible {
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 16px;
-  margin-top: 1rem;
+  margin-top: 0;
+  padding: 1rem 0;
+  background: var(--background-primary);
+  border-bottom: 1px solid var(--background-modifier-border);
 }
 .prisma-event-modal-header h2 {
   margin: 0;
@@ -3419,6 +3425,12 @@ button[class*=prisma-]:focus-visible {
   margin: 6px 0 0;
   color: var(--text-warning);
   font-size: var(--font-ui-smaller);
+}
+
+.prisma-note-content-back-to-top {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
 }
 
 .modal.prisma-generic-event-list-modal .prisma-setting-item button.prisma-mod-cta {

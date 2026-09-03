@@ -1,5 +1,5 @@
 import { extractContentAfterFrontmatter } from "@real1ty/obsidian-plugins";
-import { TextareaInput } from "@real1ty/obsidian-plugins-react";
+import { ObsidianIcon, TextareaInput } from "@real1ty/obsidian-plugins-react";
 import { TFile, type App } from "obsidian";
 import { memo, useEffect, useRef, useState, type RefObject } from "react";
 import { useController, type UseFormReturn } from "react-hook-form";
@@ -13,6 +13,7 @@ interface NoteContentSectionProps {
 	contentDirty: boolean;
 	onContentDirty: () => void;
 	onConflictChange: (conflicted: boolean) => void;
+	onJumpToTop: () => void;
 	containerRef: RefObject<HTMLDivElement | null>;
 }
 
@@ -28,6 +29,7 @@ export const NoteContentSection = memo(function NoteContentSection({
 	contentDirty,
 	onContentDirty,
 	onConflictChange,
+	onJumpToTop,
 	containerRef,
 }: NoteContentSectionProps) {
 	const { field } = useController({ control: form.control, name: "content" });
@@ -100,6 +102,18 @@ export const NoteContentSection = memo(function NoteContentSection({
 					The note changed on disk while you were editing it.
 				</p>
 			)}
+			<div className="prisma-note-content-back-to-top">
+				<button
+					type="button"
+					className="prisma-event-modal-jump-content-button"
+					onClick={onJumpToTop}
+					title="Back to event details"
+					aria-label="Back to event details"
+					data-testid="prisma-event-btn-jump-top"
+				>
+					<ObsidianIcon icon="chevron-up" />
+				</button>
+			</div>
 		</div>
 	);
 });

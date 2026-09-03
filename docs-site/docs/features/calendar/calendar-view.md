@@ -63,7 +63,7 @@ The jump keeps whatever view you're in: from Week view you land on the target da
 
 </div>
 
-The Create Event and Edit Event modals include a **Note content** field for the Markdown body of file-backed events. It supports agendas, meeting notes, links, and other note text. While the modal is open, the field listens for changes to its backing note: an untouched field updates automatically; after you type, Prisma retains your draft and surfaces a conflict notice if the file changes. Saving a conflict asks before replacing the note body. Select the down-arrow button in the header, or press `Ctrl/Cmd+Shift+N`, to scroll to and focus the field. Virtual events do not include the field because they have no backing note.
+The Create Event and Edit Event modals include a **Note content** field for the Markdown body of file-backed events. It supports agendas, meeting notes, links, and other note text. While the modal is open, the field listens for changes to its backing note: an untouched field updates automatically; after you type, Prisma retains your draft and surfaces a conflict notice if the file changes. Saving a conflict asks before replacing the note body. The event header remains available while scrolling; select its down-arrow button, or press `Ctrl/Cmd+Shift+N`, to scroll to and focus the field. The up-arrow below the field returns to event details. Virtual events do not include the field because they have no backing note.
 
 ### Zoom Level
 
