@@ -1,5 +1,7 @@
 # Changelog
 
+Changes that have landed but are not yet part of a shipped release appear under the **Unreleased** section at the top — check it to see what is coming in the next version.
+
 All notable changes to this project will be documented here.
 
 ---
