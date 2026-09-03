@@ -295,7 +295,11 @@ const UntrackedFilterSection = memo(function UntrackedFilterSection({ store }: U
 					Filter untracked events (events without dates) based on their frontmatter properties. This works the same as
 					event filtering but only applies to untracked events in the dropdown.
 				</p>
-				<ExamplesList title="Example filter expressions" slug="untracked-filters" examples={UNTRACKED_FILTER_EXAMPLES} />
+				<ExamplesList
+					title="Example filter expressions"
+					slug="untracked-filters"
+					examples={UNTRACKED_FILTER_EXAMPLES}
+				/>
 				<div className={cls("settings-warning-box")}>
 					<strong>&#9888;&#65039; important:</strong>
 					<p>Use property names directly. Invalid expressions will be ignored and logged to console.</p>
