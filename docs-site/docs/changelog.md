@@ -6,6 +6,13 @@ All notable changes to this project will be documented here.
 
 ---
 
+## Unreleased
+
+### Fixed
+- **More robust startup**: Prisma now waits until Obsidian has finished indexing your vault before it does any work of its own — calendar-subscription and CalDAV syncs, recurring instances, marking past events done, cleaning up duplicates. The wait is progressive, so a large vault on a slow start simply takes as long as it needs, and nothing is written until the index is complete. See [Integrations → Syncing and vault indexing](./features/advanced/integrations.md#syncing-and-vault-indexing).
+
+---
+
 ## 2.23.0 - 8/31/2026
 
 > **TLDR:** Sync-safe frontmatter — Prisma now writes its properties in one consistent order you arrange yourself in the redesigned Properties tab, so vaults synced across devices (LiveSync, iCloud, Syncthing) stop conflicting over shuffled property order; a new **Normalize property order** button and command scans your vault, shows what's out of order, and fixes it in one confirmed pass with a progress bar. Imported and synced events now pick up your categories automatically, so a "Gym" event from Google Calendar lands under "Health" without you touching it. Obsidian 1.13 compatibility — settings search filters again, and every Prisma dialog renders fully styled inside the new separate settings window. Prerequisite arrows stay anchored to the right event when you drag one into a day's all-day lane, and setup on an existing vault finds the date property you actually use instead of an internal one.
