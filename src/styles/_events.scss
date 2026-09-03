@@ -168,6 +168,37 @@
 	white-space: normal;
 }
 
+.prisma-fc-event-time-small {
+	font-size: 0.8em;
+}
+
+.prisma-calendar-container .fc-daygrid-event .prisma-fc-event-time.prisma-fc-event-time-small,
+.prisma-calendar-container .fc-timegrid-event .prisma-fc-event-time.prisma-fc-event-time-small {
+	font-size: 0.8em;
+}
+
+.fc-timegrid-event:has(.prisma-fc-event-time-auto-timegrid) {
+	container-name: prisma-event-time-grid;
+	container-type: size;
+}
+
+.fc-daygrid-event:has(.prisma-fc-event-time-auto-month) {
+	container-name: prisma-event-time-month;
+	container-type: inline-size;
+}
+
+@container prisma-event-time-grid (max-height: 30px) {
+	.prisma-fc-event-time-auto {
+		display: none;
+	}
+}
+
+@container prisma-event-time-month (max-width: 90px) {
+	.prisma-fc-event-time-auto {
+		display: none;
+	}
+}
+
 // Title, bold, wraps to multiple lines
 .prisma-fc-event-title-custom {
 	margin: 0;

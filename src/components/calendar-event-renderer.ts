@@ -25,6 +25,73 @@ export interface EventRenderContext {
 	calendarIconCache: Map<string, string | undefined>;
 }
 
+type EventTimeDisplayDecision = "omit" | "render" | "render-small" | "render-auto";
+
+interface EventTimeDisplayContext {
+	allDay: boolean;
+	hasStart: boolean;
+	isMobile: boolean;
+	viewType: string;
+}
+
+interface EventTimeRenderContext {
+	containerEl: HTMLElement;
+	isMobile: boolean;
+}
+
+function isMonthGridView(viewType: string): boolean {
+	return viewType === "dayGridMonth" || viewType === "multiMonthYear";
+}
+
+function isTimeGridView(viewType: string): boolean {
+	return viewType === "timeGridDay" || viewType === "timeGridWeek";
+}
+
+/** Resolve the DOM treatment before rendering so both FullCalendar renderers stay in lockstep. */
+export function getEventTimeDisplayDecision(
+	settings: Pick<SingleCalendarConfig, "timeGridEventTimeDisplay" | "monthEventTimeDisplay">,
+	{ allDay, hasStart, isMobile, viewType }: EventTimeDisplayContext
+): EventTimeDisplayDecision {
+	if (allDay || !hasStart || (isMobile && isMonthGridView(viewType))) return "omit";
+
+	const mode = isTimeGridView(viewType)
+		? settings.timeGridEventTimeDisplay
+		: isMonthGridView(viewType)
+			? settings.monthEventTimeDisplay
+			: "normal";
+
+	if (mode === "hidden") return "omit";
+	if (mode === "small") return "render-small";
+	if (mode === "auto") return "render-auto";
+	return "render";
+}
+
+export function renderEventTime(
+	headerEl: HTMLElement,
+	arg: EventContentArg,
+	settings: SingleCalendarConfig,
+	context: EventTimeRenderContext
+): void {
+	const decision = getEventTimeDisplayDecision(settings, {
+		allDay: arg.event.allDay,
+		hasStart: Boolean(arg.event.start),
+		isMobile: context.isMobile,
+		viewType: arg.view.type,
+	});
+	if (decision === "omit") return;
+
+	const timeEl = headerEl.createDiv({ cls: cls("fc-event-time"), text: arg.timeText });
+	if (decision === "render-small") {
+		timeEl.addClass(cls("fc-event-time-small"));
+	}
+	if (decision === "render-auto") {
+		timeEl.addClass(cls("fc-event-time-auto"));
+		context.containerEl.addClass(
+			cls(isTimeGridView(arg.view.type) ? "fc-event-time-auto-timegrid" : "fc-event-time-auto-month")
+		);
+	}
+}
+
 export function renderEventContent(arg: EventContentArg, context: EventRenderContext): { domNodes: HTMLElement[] } {
 	const event = arg.event;
 	const { settings, isMobile, calendarIconCache } = context;
@@ -69,10 +136,7 @@ export function renderEventContent(arg: EventContentArg, context: EventRenderCon
 
 	const headerEl = container.createDiv({ cls: cls("fc-event-header") });
 
-	const showTime = !event.allDay && event.start && !(isMobile && isMonthView);
-	if (showTime) {
-		headerEl.createDiv({ cls: cls("fc-event-time"), text: arg.timeText });
-	}
+	renderEventTime(headerEl, arg, settings, { containerEl: container, isMobile });
 
 	const titleEl = headerEl.createDiv({ cls: cls("fc-event-title-custom") });
 	let title = cleanupTitle(event.title);

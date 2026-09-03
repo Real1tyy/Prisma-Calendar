@@ -1,7 +1,7 @@
 import type { Calendar, CalendarOptions, EventContentArg } from "@fullcalendar/core";
 import allLocales from "@fullcalendar/core/locales-all";
 import { calculateDuration, formatDuration, toLocalISOString, type ColorEvaluator } from "@real1ty/obsidian-plugins";
-import type { App } from "obsidian";
+import { Platform, type App } from "obsidian";
 
 import { cls, tid, toggleCls } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
@@ -25,8 +25,9 @@ import { cleanupTitle } from "../../utils/events/naming";
 import { getDisplayProperties, renderPropertyValue } from "../../utils/frontmatter/display";
 import { parseFCExtendedProps } from "../../utils/frontmatter/extended-props";
 import { emitHover } from "../../utils/obsidian";
+import { shouldUseMobileLayout } from "../../utils/responsive";
 import type { BatchSelectionManager } from "../batch-selection-manager";
-import { applyEventMountStyling, attachLazyNotePreview } from "../calendar-event-renderer";
+import { applyEventMountStyling, attachLazyNotePreview, renderEventTime } from "../calendar-event-renderer";
 import type { CalendarHost } from "../calendar-host";
 import { handleMoreLinkClick } from "../calendar-more-popover";
 import type { EventContextMenu } from "../event-context-menu";
@@ -131,10 +132,10 @@ export function buildSharedEventContent(
 
 		const headerEl = container.createDiv({ cls: cls("fc-event-header") });
 
-		const showTime = !event.allDay && event.start;
-		if (showTime) {
-			headerEl.createDiv({ cls: cls("fc-event-time"), text: arg.timeText });
-		}
+		renderEventTime(headerEl, arg, settings, {
+			containerEl: container,
+			isMobile: shouldUseMobileLayout({ isPlatformMobile: Platform.isMobile, width: window.innerWidth }),
+		});
 
 		const titleEl = headerEl.createDiv({ cls: cls("fc-event-title-custom") });
 		let title = cleanupTitle(event.title);

@@ -25,6 +25,8 @@ These settings control the calendar's view modes, time display, visual appearanc
 - **Show color dots**: color indicator dots in monthly view (enabled by default)
 - **Thicker hour lines**: bolder full-hour lines in day/week views (enabled by default)
 - **Show duration in event title**: appends duration after event title (enabled by default)
+- **Event time in week/day views**: choose whether timed event start times are normal size, small, hidden, or automatically hidden when the rendered time-grid tile is too short (default: Normal)
+- **Event time in month views**: choose whether timed event start times are normal size, small, hidden, or automatically hidden when the rendered month or year tile is too narrow (default: Normal). Month view continues to hide times on mobile.
 - **Default event text color**: preferred event text color (default: white)
 - **Alternative event text color**: fallback used when the default isn't readable enough on the event's background (default: black)
 - **Text contrast sensitivity**: how eagerly the alternative kicks in — a nine-step ladder from Always primary (never switch) through half-step contrast floors (1.5:1 up to 4.5:1; default: Moderate, 2.5:1) to Maximum contrast (always the stronger of the two). See [Calendar View → Event Text Coloring](../features/calendar/calendar-view#event-text-coloring) for details.

@@ -758,6 +758,22 @@ const CalendarSettingsSchema = z
 			.catch(true)
 			.describe("Display event duration (e.g., 2h 30m) in parentheses after the event title for timed events")
 			.meta({ title: "Show duration in event title" }),
+		timeGridEventTimeDisplay: z
+			.enum(["normal", "small", "hidden", "auto"])
+			.catch("normal")
+			.describe("Control how timed event start times appear in week and day views")
+			.meta({
+				title: "Event time in week/day views",
+				enumLabels: { normal: "Normal", small: "Small", hidden: "Hidden", auto: "Auto" },
+			}),
+		monthEventTimeDisplay: z
+			.enum(["normal", "small", "hidden", "auto"])
+			.catch("normal")
+			.describe("Control how timed event start times appear in month and year views")
+			.meta({
+				title: "Event time in month views",
+				enumLabels: { normal: "Normal", small: "Small", hidden: "Hidden", auto: "Auto" },
+			}),
 		dayCellColoring: z
 			.enum(["off", "uniform", "boundary"])
 			.catch("off" as const)

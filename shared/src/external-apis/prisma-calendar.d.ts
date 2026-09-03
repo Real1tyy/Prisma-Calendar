@@ -650,6 +650,7 @@ export type PrismaCalendarGetSettingsOutput = {
 		| "untrackedEvents"
 	)[];
 	monthEvenColor: string;
+	monthEventTimeDisplay: EventTimeInMonthViews;
 	monthlyCalendarStatsGridState: {
 		[k: string]: unknown;
 	};
@@ -796,6 +797,7 @@ export type PrismaCalendarGetSettingsOutput = {
 	 * Make full-hour lines (12:00, 13:00, etc.) thicker in day and week views for better visual contrast
 	 */
 	thickerHourLines: boolean;
+	timeGridEventTimeDisplay: EventTimeInWeekDayViews;
 	/**
 	 * Show inline type-ahead suggestions when typing event titles in the create/edit modal. Suggests categories, event presets, and frequently used event names.
 	 */
@@ -996,6 +998,10 @@ export type MarkPastEventsAsDone = boolean;
  */
 export type MobileEventsPerDay = number;
 /**
+ * Control how timed event start times appear in month and year views
+ */
+export type EventTimeInMonthViews = "normal" | "small" | "hidden" | "auto";
+/**
  * Play a system sound when notifications are shown
  */
 export type PlayNotificationSound = boolean;
@@ -1057,6 +1063,10 @@ export type SortingNormalizationStrategy =
 	| "allDayOnly"
 	| "allStartDate"
 	| "allEndDate";
+/**
+ * Control how timed event start times appear in week and day views
+ */
+export type EventTimeInWeekDayViews = "normal" | "small" | "hidden" | "auto";
 /**
  * Frontmatter property name for auto-generated ZettelID (optional, generates timestamp-based ID on creation/cloning)
  */
@@ -1344,6 +1354,10 @@ export type PrismaCalendarToggleSkipOutput = boolean;
  */
 
 /**
+ * Control how timed event start times appear in month and year views
+ */
+
+/**
  * Play a system sound when notifications are shown
  */
 
@@ -1397,6 +1411,10 @@ export type PrismaCalendarToggleSkipOutput = boolean;
 
 /**
  * Write a normalized datetime to a dedicated sort property so external tools (Bases, Dataview) can sort all event types by a single field. Timed events use the full datetime. All-day events get T00:00:00 appended for consistent cross-type sorting. The value is written to the sort date property configured below.
+ */
+
+/**
+ * Control how timed event start times appear in week and day views
  */
 
 /**
@@ -1817,6 +1835,7 @@ export interface PrismaCalendarUpdateSettingsInput {
 			| "untrackedEvents"
 		)[];
 		monthEvenColor?: string;
+		monthEventTimeDisplay?: EventTimeInMonthViews;
 		monthlyCalendarStatsGridState?: {
 			[k: string]: unknown;
 		};
@@ -1963,6 +1982,7 @@ export interface PrismaCalendarUpdateSettingsInput {
 		 * Make full-hour lines (12:00, 13:00, etc.) thicker in day and week views for better visual contrast
 		 */
 		thickerHourLines?: boolean;
+		timeGridEventTimeDisplay?: EventTimeInWeekDayViews;
 		/**
 		 * Show inline type-ahead suggestions when typing event titles in the create/edit modal. Suggests categories, event presets, and frequently used event names.
 		 */

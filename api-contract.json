@@ -2255,6 +2255,19 @@
 								"type": "string",
 								"widget": "color"
 							},
+							"monthEventTimeDisplay": {
+								"default": "normal",
+								"description": "Control how timed event start times appear in month and year views",
+								"enum": ["normal", "small", "hidden", "auto"],
+								"enumLabels": {
+									"auto": "Auto",
+									"hidden": "Hidden",
+									"normal": "Normal",
+									"small": "Small"
+								},
+								"title": "Event time in month views",
+								"type": "string"
+							},
 							"monthlyCalendarStatsGridState": {
 								"default": {
 									"cells": [],
@@ -2571,6 +2584,19 @@
 								"description": "Make full-hour lines (12:00, 13:00, etc.) thicker in day and week views for better visual contrast",
 								"type": "boolean"
 							},
+							"timeGridEventTimeDisplay": {
+								"default": "normal",
+								"description": "Control how timed event start times appear in week and day views",
+								"enum": ["normal", "small", "hidden", "auto"],
+								"enumLabels": {
+									"auto": "Auto",
+									"hidden": "Hidden",
+									"normal": "Normal",
+									"small": "Small"
+								},
+								"title": "Event time in week/day views",
+								"type": "string"
+							},
 							"titleAutocomplete": {
 								"default": true,
 								"description": "Show inline type-ahead suggestions when typing event titles in the create/edit modal. Suggests categories, event presets, and frequently used event names.",
@@ -2746,6 +2772,8 @@
 							"sourceRecurringMarker",
 							"physicalRecurringMarker",
 							"showDurationInTitle",
+							"timeGridEventTimeDisplay",
+							"monthEventTimeDisplay",
 							"dayCellColoring",
 							"monthEvenColor",
 							"monthOddColor",
@@ -4569,6 +4597,19 @@
 								"type": "string",
 								"widget": "color"
 							},
+							"monthEventTimeDisplay": {
+								"default": "normal",
+								"description": "Control how timed event start times appear in month and year views",
+								"enum": ["normal", "small", "hidden", "auto"],
+								"enumLabels": {
+									"auto": "Auto",
+									"hidden": "Hidden",
+									"normal": "Normal",
+									"small": "Small"
+								},
+								"title": "Event time in month views",
+								"type": "string"
+							},
 							"monthlyCalendarStatsGridState": {
 								"default": {
 									"cells": [],
@@ -4884,6 +4925,19 @@
 								"default": true,
 								"description": "Make full-hour lines (12:00, 13:00, etc.) thicker in day and week views for better visual contrast",
 								"type": "boolean"
+							},
+							"timeGridEventTimeDisplay": {
+								"default": "normal",
+								"description": "Control how timed event start times appear in week and day views",
+								"enum": ["normal", "small", "hidden", "auto"],
+								"enumLabels": {
+									"auto": "Auto",
+									"hidden": "Hidden",
+									"normal": "Normal",
+									"small": "Small"
+								},
+								"title": "Event time in week/day views",
+								"type": "string"
 							},
 							"titleAutocomplete": {
 								"default": true,

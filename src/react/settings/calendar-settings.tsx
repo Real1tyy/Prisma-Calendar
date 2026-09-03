@@ -16,6 +16,8 @@ const APPEARANCE_FIELDS = [
 	"enableEventPreview",
 	"skipUnderscoreProperties",
 	"showDurationInTitle",
+	"timeGridEventTimeDisplay",
+	"monthEventTimeDisplay",
 	"highlightUpcomingEvent",
 	"nowIndicator",
 	"thickerHourLines",
