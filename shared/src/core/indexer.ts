@@ -9,7 +9,9 @@ import {
 } from "obsidian";
 import {
 	EMPTY,
+	from,
 	fromEventPattern,
+	lastValueFrom,
 	merge,
 	Observable,
 	of,
@@ -18,7 +20,7 @@ import {
 	type BehaviorSubject,
 	type Subscription,
 } from "rxjs";
-import { filter, map, mergeMap } from "rxjs/operators";
+import { filter, map, mergeMap, toArray } from "rxjs/operators";
 
 import { perf } from "../perf";
 import { waitForCacheReady } from "../utils/async/wait-for-cache-ready";
@@ -184,7 +186,7 @@ export class Indexer {
 
 			if (includeFileChanged) {
 				this.indexingCompleteSubject.next(false);
-				this.scanAllFiles();
+				void this.scanAllFiles();
 			}
 		});
 
@@ -219,7 +221,7 @@ export class Indexer {
 			this.emit(event);
 		});
 
-		this.scanAllFiles();
+		await this.scanAllFiles();
 	}
 
 	stop(): void {
@@ -236,13 +238,13 @@ export class Indexer {
 		this.frontmatterCache.clear();
 		this._descendantFiles = [];
 		this.indexingCompleteSubject.next(false);
-		this.scanAllFiles();
+		void this.scanAllFiles();
 	}
 
 	/**
 	 * Scan all markdown files in the configured directory.
 	 */
-	private scanAllFiles(): void {
+	private async scanAllFiles(): Promise<void> {
 		const scanStart = performance.now();
 		this.clearPendingCacheWait();
 		try {
@@ -261,16 +263,29 @@ export class Indexer {
 
 			this._descendantFiles = descendants;
 
-			for (const file of files) {
-				try {
-					if (this.metadataCache.getFileCache(file) === null) {
-						this.pendingCacheFiles.set(file.path, file);
-						continue;
+			const results$ = from(files).pipe(
+				mergeMap(async (file) => {
+					try {
+						// `null` is "Obsidian has not indexed this file yet", not "no
+						// frontmatter" — park it and let finishScan() hold completion.
+						if (this.metadataCache.getFileCache(file) === null) {
+							this.pendingCacheFiles.set(file.path, file);
+							return null;
+						}
+						return this.buildEvent(file);
+					} catch (error) {
+						console.error(`Error processing file ${file.path}:`, error);
+						return null;
 					}
-					const event = this.buildEvent(file);
-					if (event) this.scanEventsSubject.next(event);
-				} catch (error) {
-					console.error(`Error processing file ${file.path}:`, error);
+				}, this.config.scanConcurrency),
+				toArray()
+			);
+
+			const results = await lastValueFrom(results$, { defaultValue: [] });
+
+			for (const event of results) {
+				if (event) {
+					this.scanEventsSubject.next(event);
 				}
 			}
 		} catch (error) {
