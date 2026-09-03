@@ -1,6 +1,7 @@
 import { introspectShape, mergePropertyOrder, toSafeString } from "@real1ty/obsidian-plugins";
 import {
 	Button,
+	CollapsibleSection,
 	PropertyOrderTable,
 	SettingHeading,
 	SettingItem,
@@ -68,7 +69,7 @@ export const PropertiesSettingsReact = memo(function PropertiesSettingsReact({
 	return (
 		<>
 			<SettingHeading name="Properties" />
-			<PropertyOrderIntro />
+			<PropertyOrderIntro settings={settings} />
 			<PropertyOrderTable entries={entries} onReorder={handleReorder} onRename={handleRename} />
 			<SettingItem
 				name="Normalize property order"
@@ -94,20 +95,68 @@ export const PropertiesSettingsReact = memo(function PropertiesSettingsReact({
 	);
 });
 
-const PropertyOrderIntro = memo(function PropertyOrderIntro() {
+// Device-local, so a user who has read the explanation is not shown it again on this
+// machine. Namespaced per plugin — every plugin shares one localStorage origin.
+const PROPERTY_ORDER_HELP_STORAGE_KEY = "prisma-calendar:properties:order-help";
+
+const PropertyOrderIntro = memo(function PropertyOrderIntro({ settings }: { settings: SingleCalendarConfig }) {
 	return (
-		<div className={cls("settings-info-box")}>
-			<p>
-				Rename any property and arrange the rows — drag a row or use the arrows. The row order is the exact frontmatter
-				order Prisma writes to disk: on every save, Prisma's own properties are regrouped into this order (other
-				properties are never touched).
-			</p>
-			<p className="setting-item-description">
-				Existing files pick up the order the next time Prisma writes to them. To apply it everywhere right away —
-				whether you're fixing sync conflicts or just setting the baseline for a new order — press "Scan and normalize…"
-				below or run the "Normalize property order" command, on one device, and let sync propagate.
-			</p>
-		</div>
+		<CollapsibleSection
+			label="How property order works"
+			storageKey={PROPERTY_ORDER_HELP_STORAGE_KEY}
+			testIdSlug="property-order-help"
+		>
+			<div className={cls("settings-info-box")}>
+				<p>
+					Rename any property and arrange the rows — drag a row or use the arrows. The row order is the exact
+					frontmatter order Prisma writes to disk: on every save, Prisma pulls its own properties together into one
+					block in this order, placed where your first Prisma property already sits. Your own properties — and any
+					written by other plugins — keep their values and their order relative to each other, flowing above and below
+					that block.
+				</p>
+				<div>
+					<strong>Before</strong>
+					<pre className={cls("settings-info-box-example")}>{`---
+Project: Website Redesign
+${settings.startProp}: 2024-01-15T09:00
+Tags: [work]
+${settings.sortDateProp}: 2024-01-15T09:00
+---`}</pre>
+				</div>
+				<div>
+					<strong>After the next save</strong>
+					<pre className={cls("settings-info-box-example")}>{`---
+Project: Website Redesign
+${settings.startProp}: 2024-01-15T09:00
+${settings.sortDateProp}: 2024-01-15T09:00
+Tags: [work]
+---`}</pre>
+					<p className="setting-item-description">
+						Nothing was renamed or deleted. <code>Tags</code> sat between two Prisma properties, so it ends up below the
+						block — <code>Project</code> was already above it and stays there.
+					</p>
+				</div>
+				<div>
+					<strong>You choose where the block lands</strong>
+					<p className="setting-item-description">
+						The block anchors on whichever Prisma property comes first in the file, so the keys you put above it decide
+						its position. Keep a property of your own at the top and the block sits underneath it; move your own keys
+						below — or delete them — and the block takes the top of the frontmatter.
+					</p>
+					<pre className={cls("settings-info-box-example")}>{`---
+${settings.startProp}: 2024-01-15T09:00
+${settings.sortDateProp}: 2024-01-15T09:00
+Project: Website Redesign
+Tags: [work]
+---`}</pre>
+				</div>
+				<p className="setting-item-description">
+					Existing files pick up the order the next time Prisma writes to them. To apply it everywhere right away —
+					whether you're fixing sync conflicts or just setting the baseline for a new order — press "Scan and
+					normalize…" below or run the "Normalize property order" command, on one device, and let sync propagate.
+				</p>
+			</div>
+		</CollapsibleSection>
 	);
 });
 

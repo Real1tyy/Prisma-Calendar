@@ -88,7 +88,7 @@ export async function runNormalizePropertyOrder(plugin: CustomCalendarPlugin): P
 
 	const confirmed = await openConfirmation<string[]>(plugin.app, {
 		title: "Normalize property order?",
-		message: `${deviations.length} event file(s) have Prisma properties out of the configured order. Rewriting them regroups only Prisma's own properties — other properties are left untouched. Run this on one device and let sync propagate.`,
+		message: `${deviations.length} event file(s) have Prisma properties out of the configured order. Rewriting them reorders only Prisma's own properties — your own keys keep their values and their order relative to each other. Run this on one device and let sync propagate.`,
 		confirmLabel: `Normalize ${deviations.length} file(s)`,
 		cancelLabel: "Cancel",
 		testIdPrefix: tid("normalize-order-"),

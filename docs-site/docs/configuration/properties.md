@@ -6,15 +6,58 @@ Tell Prisma Calendar which frontmatter keys you use — and in what order they l
 
 The Properties tab lists every Prisma property in a single reorderable table. Each row shows the property's purpose and an input to rename its frontmatter key; drag a row (or use the arrow buttons) to change its position.
 
-The row order is not cosmetic: **it is the exact frontmatter order Prisma writes to disk.** On every save, Prisma regroups its own properties into one contiguous block in this order, anchored where its properties already sit in the file. Properties Prisma doesn't manage — your own keys, or ones written by other plugins — are never moved relative to each other.
+The row order is not cosmetic: **it is the exact frontmatter order Prisma writes to disk.** On every save, Prisma pulls its own properties together into one contiguous block in this order, placed where the first Prisma property already sits in the file. Properties Prisma doesn't manage — your own keys, or ones written by other plugins — keep their values and their order relative to each other, flowing above and below that block.
 
 Why this matters: Obsidian appends new frontmatter keys at the end of the file, so the key order depends on the history of edits. Two synced devices accumulate different orders, and from then on every save produces textually different files with identical content — which sync tools (LiveSync, iCloud, Syncthing) report as conflicts, most visibly on auto-written keys like `Sort Date`. With a deterministic order, all devices converge to byte-identical files and those conflicts disappear.
+
+### What a save changes
+
+Given the row order `Start Date` → `Sort Date`, a note whose keys arrived in a different order:
+
+```yaml
+---
+Project: Website Redesign
+Start Date: 2024-01-15T09:00
+Tags: [work]
+Sort Date: 2024-01-15T09:00
+---
+```
+
+comes back from the next save as:
+
+```yaml
+---
+Project: Website Redesign
+Start Date: 2024-01-15T09:00
+Sort Date: 2024-01-15T09:00
+Tags: [work]
+---
+```
+
+`Project` sat above the first Prisma property and stays there. `Tags` sat between two Prisma properties, so the block closes around it and it lands below — its value is untouched, and it keeps its order relative to every other key you own.
+
+### Choosing where the block lands
+
+The block anchors on whichever Prisma property comes first in the file, so **the keys you put above it decide its position.** Keep one of your own properties at the top and the block sits underneath it, as above. Move your own keys below the first Prisma property — or delete them — and the block takes the top of the frontmatter:
+
+```yaml
+---
+Start Date: 2024-01-15T09:00
+Sort Date: 2024-01-15T09:00
+Project: Website Redesign
+Tags: [work]
+---
+```
+
+Either layout is stable: once the file matches the configured order, later saves leave it alone.
 
 Notes:
 
 - **Convergence is eventual** — a file adopts the configured order the next time Prisma writes to it. Use [Normalize property order](#normalize-property-order) to converge everything at once.
+- **A file with only one Prisma property is left alone** — there is no block to form, so nothing moves.
 - **Multiple planning systems (or plugins) on one directory** coexist: each one only groups its *own* properties, at the position they already occupy — no plugin fights another for the end of the file.
 - Keep the order setting itself in sync across devices (it lives in the plugin's `data.json`), so every device enforces the same order.
+- The explanation above the property table folds away once you've read it; the arrow in its header reopens it, and the choice is remembered on that device.
 
 ## Normalize property order
 
@@ -24,7 +67,7 @@ The **Scan and normalize…** button on the Properties tab (also available as th
 2. **Review** — a dialog lists the files whose Prisma properties are out of order (the first 20, plus a count of the rest for large vaults). Cancel here and nothing changes.
 3. **Normalize** — on confirmation, the listed files are rewritten with a progress bar; the dialog closes with a summary of how many files were updated (and any that failed, with details in the developer console).
 
-Only Prisma's own properties move; other properties keep their positions. Files already in order are never touched, so re-running it is harmless. Run it on **one** device after changing the property order and let sync propagate the result — running it on several devices at once would just make them race to write the same files.
+Only Prisma's own properties are reordered; your keys keep their values and their order relative to each other, exactly as on any other save. Files already in order are never touched, so re-running it is harmless. Run it on **one** device after changing the property order and let sync propagate the result — running it on several devices at once would just make them race to write the same files.
 
 ## Core Event Properties
 
