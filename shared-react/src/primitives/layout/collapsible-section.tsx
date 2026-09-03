@@ -1,5 +1,6 @@
-import { buildCollapsibleStyles } from "@real1ty/obsidian-plugins";
-import { memo, useState, type ReactNode } from "react";
+import { buildCollapsibleStyles, LocalKV } from "@real1ty/obsidian-plugins";
+import { memo, useCallback, useState, type ReactNode } from "react";
+import { z } from "zod";
 
 import { useScoped } from "../../contexts/theme-context";
 import { useActivatable } from "../../hooks/interaction/use-activatable";
@@ -68,6 +69,42 @@ export const SectionBody = memo(function SectionBody({ collapsed, children, test
 	);
 });
 
+// ─── Persisted collapse state ───
+
+const COLLAPSED_NAMESPACE = "obsidian-plugins:collapsible";
+const CollapsedSchema = z.boolean();
+
+// `LocalKV`'s constructor resolves `window.localStorage`, so the store is built on
+// first use rather than at module scope — importing this file must stay safe in a
+// non-DOM environment.
+let collapsedStore: LocalKV<boolean> | undefined;
+const collapsedKV = (): LocalKV<boolean> =>
+	(collapsedStore ??= new LocalKV<boolean>({ namespace: COLLAPSED_NAMESPACE, schema: CollapsedSchema }));
+
+/**
+ * Uncontrolled collapsed state, optionally persisted per device under `storageKey`.
+ * `LocalKV` validates on read, so a corrupt or wrong-typed entry reads back as absent
+ * and degrades to `defaultCollapsed` instead of throwing.
+ */
+function usePersistedCollapsed(
+	storageKey: string | undefined,
+	defaultCollapsed: boolean
+): readonly [boolean, (next: boolean) => void] {
+	const [collapsed, setCollapsed] = useState(() =>
+		storageKey === undefined ? defaultCollapsed : (collapsedKV().get(storageKey) ?? defaultCollapsed)
+	);
+
+	const update = useCallback(
+		(next: boolean) => {
+			setCollapsed(next);
+			if (storageKey !== undefined) collapsedKV().set(storageKey, next);
+		},
+		[storageKey]
+	);
+
+	return [collapsed, update] as const;
+}
+
 // ─── CollapsibleSection ───
 
 export interface CollapsibleSectionProps {
@@ -81,14 +118,22 @@ export interface CollapsibleSectionProps {
 	onToggle?: (next: boolean) => void;
 	/** Uncontrolled initial value. Ignored when `collapsed` is provided. */
 	defaultCollapsed?: boolean;
+	/**
+	 * Uncontrolled mode: remembers the collapsed flag in this device's `localStorage`
+	 * under this key and seeds the initial state from it, falling back to
+	 * `defaultCollapsed` when nothing valid is stored. Ignored when `collapsed` is
+	 * provided. Every plugin shares one storage origin, so qualify the key per plugin.
+	 */
+	storageKey?: string;
 	/** Optional slug used to stamp data-testid attributes on the section, header, body, and toggle. */
 	testIdSlug?: string;
 }
 
 /**
  * Expandable section with a clickable header. Works controlled
- * (`collapsed` + `onToggle`) for persisted state, or uncontrolled with
- * `defaultCollapsed` for local-only UI.
+ * (`collapsed` + `onToggle`) when the parent owns the state, or uncontrolled with
+ * `defaultCollapsed` — optionally remembering the user's choice per device via
+ * `storageKey`.
  */
 export const CollapsibleSection = memo(function CollapsibleSection({
 	label,
@@ -97,11 +142,12 @@ export const CollapsibleSection = memo(function CollapsibleSection({
 	collapsed: controlledCollapsed,
 	onToggle,
 	defaultCollapsed = false,
+	storageKey,
 	testIdSlug,
 }: CollapsibleSectionProps) {
 	const { cls, tid } = useScopedStyles("collapsible", buildCollapsibleStyles);
 
-	const [uncontrolledCollapsed, setUncontrolledCollapsed] = useState(defaultCollapsed);
+	const [uncontrolledCollapsed, setUncontrolledCollapsed] = usePersistedCollapsed(storageKey, defaultCollapsed);
 	const collapsed = controlledCollapsed ?? uncontrolledCollapsed;
 
 	const handleToggle = () => {

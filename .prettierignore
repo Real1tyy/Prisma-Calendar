@@ -48,3 +48,10 @@ tools/obsidian-preview/public/themes/**
 # app asar by `mise run preview:refresh-css`. Reformatting it makes every
 # refresh a spurious mega-diff against the generator's output.
 tools/obsidian-preview/public/obsidian-app.css
+
+# Cross-plugin API contracts, emitted by `contract:emit` (the release script
+# regenerates them alongside the version bump). JSON.stringify always expands
+# arrays, so the generator's output can never match Prettier's collapsed form —
+# a formatted contract is red again the next time it is regenerated. Generated
+# output is not ours to restyle; the drift checker is what reviews it.
+*/api-contract.json
