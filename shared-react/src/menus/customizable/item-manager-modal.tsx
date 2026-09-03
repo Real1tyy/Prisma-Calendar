@@ -374,12 +374,14 @@ function MenuItemRow({
 				icon: displayIcon ?? "",
 				...(item.color !== undefined ? { color: item.color } : {}),
 				...(item.textColor !== undefined ? { textColor: item.textColor } : {}),
+				...(item.backgroundColor !== undefined ? { backgroundColor: item.backgroundColor } : {}),
 			}}
 			rowPrefix={ROW_PREFIX}
 			displayLabel={displayLabel}
 			displayIcon={displayIcon ?? ""}
 			{...(effectiveColor !== undefined ? { displayColor: effectiveColor } : {})}
 			{...(effectiveTextColor !== undefined ? { displayTextColor: effectiveTextColor } : {})}
+			{...(displayBackgroundColor !== undefined ? { displayBackgroundColor } : {})}
 			hasRename={hasRename}
 			isVisible={isVisible}
 			isExpanded={isExpanded}

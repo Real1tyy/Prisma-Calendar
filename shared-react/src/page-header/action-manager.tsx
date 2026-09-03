@@ -194,6 +194,7 @@ export const ActionManagerContent = memo(function ActionManagerContent({ app, st
 							icon: action.icon ?? "",
 							...(action.color !== undefined ? { color: action.color } : {}),
 							...(action.textColor !== undefined ? { textColor: action.textColor } : {}),
+							...(action.backgroundColor !== undefined ? { backgroundColor: action.backgroundColor } : {}),
 						};
 						const effectiveColor = displayColor && displayColor !== DEFAULT_COLOR_SENTINEL ? displayColor : undefined;
 						const effectiveTextColor =
@@ -211,6 +212,7 @@ export const ActionManagerContent = memo(function ActionManagerContent({ app, st
 								displayIcon={displayIcon}
 								{...(effectiveColor !== undefined ? { displayColor: effectiveColor } : {})}
 								{...(effectiveTextColor !== undefined ? { displayTextColor: effectiveTextColor } : {})}
+								{...(displayBackgroundColor !== undefined ? { displayBackgroundColor } : {})}
 								hasRename={hasRenameOverride}
 								draggable={draggable}
 								isDragging={draggedId === action.id}

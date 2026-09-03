@@ -12,6 +12,7 @@ export interface EditableItem {
 	icon: string;
 	color?: string;
 	textColor?: string;
+	backgroundColor?: string;
 }
 
 export interface ManagerRowAction {
@@ -35,6 +36,7 @@ export interface ManagerRowProps {
 	displayIcon?: string;
 	displayColor?: string;
 	displayTextColor?: string;
+	displayBackgroundColor?: string;
 	hasRename?: boolean;
 	/**
 	 * Sub-namespace for class names and testids — `"manager"` produces
@@ -69,6 +71,7 @@ export const ManagerRow = memo(function ManagerRow({
 	displayIcon,
 	displayColor,
 	displayTextColor,
+	displayBackgroundColor,
 	hasRename = false,
 	rowPrefix = "manager",
 	children,
@@ -88,6 +91,7 @@ export const ManagerRow = memo(function ManagerRow({
 	const icon = displayIcon ?? item.icon;
 	const color = displayColor ?? item.color;
 	const textColor = displayTextColor ?? item.textColor;
+	const backgroundColor = displayBackgroundColor ?? item.backgroundColor;
 
 	const handleEdit = useCallback(() => onEdit?.(), [onEdit]);
 	const handleToggle = useCallback(() => onToggleVisibility?.(), [onToggleVisibility]);
@@ -125,6 +129,7 @@ export const ManagerRow = memo(function ManagerRow({
 			)}
 			data-testid={tid("row", item.id)}
 			data-row-id={item.id}
+			style={backgroundColor && backgroundColor !== "#000000" ? { backgroundColor } : undefined}
 			draggable={draggable}
 			{...dragHandlers}
 		>

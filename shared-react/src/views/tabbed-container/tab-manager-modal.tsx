@@ -308,6 +308,7 @@ const EditableRow = memo(function EditableRow({ row, actions }: EditableRowProps
 			displayIcon={displayIcon ?? ""}
 			{...(displayColor !== undefined ? { displayColor } : {})}
 			{...(displayTextColor !== undefined ? { displayTextColor } : {})}
+			{...(displayBackgroundColor !== undefined ? { displayBackgroundColor } : {})}
 			hasRename={hasRename}
 			isVisible={isVisible}
 			isExpanded={isExpanded}
