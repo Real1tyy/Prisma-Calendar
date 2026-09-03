@@ -16,6 +16,7 @@ export interface GroupDropdownProps {
 	getChildIcon?: (child: TabDefinition) => string | undefined;
 	getChildColor?: (child: TabDefinition) => string | undefined;
 	getChildTextColor?: (child: TabDefinition) => string | undefined;
+	getChildBackgroundColor?: (child: TabDefinition) => string | undefined;
 	onSelect: (childId: string) => void;
 	onDismiss: () => void;
 	hoverDropdown: boolean;
@@ -33,6 +34,7 @@ export const GroupDropdown = memo(function GroupDropdown({
 	getChildIcon,
 	getChildColor,
 	getChildTextColor,
+	getChildBackgroundColor,
 	onSelect,
 	onDismiss,
 	hoverDropdown,
@@ -59,6 +61,7 @@ export const GroupDropdown = memo(function GroupDropdown({
 				const icon = getChildIcon?.(child);
 				const color = getChildColor?.(child);
 				const textColor = getChildTextColor?.(child);
+				const backgroundColor = getChildBackgroundColor?.(child);
 				return (
 					<button
 						key={child.id}
@@ -66,6 +69,7 @@ export const GroupDropdown = memo(function GroupDropdown({
 						role="menuitem"
 						className={`${cssPrefix}tab-group-dropdown-item`}
 						data-testid={`${testIdPrefix}view-tab-${child.id}`}
+						style={backgroundColor ? { backgroundColor } : undefined}
 						onClick={() => {
 							onSelect(child.id);
 						}}

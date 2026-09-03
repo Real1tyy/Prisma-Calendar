@@ -25,6 +25,8 @@ export interface EditableItem {
 	color?: string;
 	/** Default label-text color. */
 	textColor?: string;
+	/** Default background color for a pill-style item. Omit when unsupported. */
+	backgroundColor?: string;
 }
 
 export interface ManagerEditValues {
@@ -34,6 +36,7 @@ export interface ManagerEditValues {
 	color: string;
 	/** Current label-text color. */
 	textColor: string;
+	backgroundColor?: string;
 }
 
 export interface ManagerEditOverrides {
@@ -41,6 +44,7 @@ export interface ManagerEditOverrides {
 	icon: boolean;
 	color: boolean;
 	textColor: boolean;
+	backgroundColor?: boolean;
 }
 
 export interface ManagerEditActions {
@@ -48,6 +52,7 @@ export interface ManagerEditActions {
 	changeIcon: (icon: string | undefined) => void;
 	changeColor: (color: string | undefined) => void;
 	changeTextColor: (color: string | undefined) => void;
+	changeBackgroundColor?: (color: string | undefined) => void;
 	pickIcon?: (callback: (icon: string | null) => void) => void;
 }
 
@@ -98,6 +103,13 @@ export const ManagerEditForm = memo(function ManagerEditForm({
 	const handleResetTextColor = useCallback(() => {
 		actions.changeTextColor(undefined);
 	}, [actions]);
+	const handleBackgroundColorChange = useCallback(
+		(next: string) => {
+			const resolved = next !== (item.backgroundColor ?? FALLBACK_COLOR) ? next : undefined;
+			actions.changeBackgroundColor?.(resolved);
+		},
+		[item.backgroundColor, actions]
+	);
 
 	const handleIconClick = useCallback(() => {
 		actions.pickIcon?.((icon) => {
@@ -200,6 +212,27 @@ export const ManagerEditForm = memo(function ManagerEditForm({
 					</button>
 				)}
 			</SettingItem>
+
+			{values.backgroundColor !== undefined && actions.changeBackgroundColor && (
+				<SettingItem name="Background color">
+					<ColorInput
+						value={values.backgroundColor}
+						onChange={handleBackgroundColorChange}
+						testId={tid("background-color-input", item.id)}
+					/>
+					{overrides.backgroundColor && (
+						<button
+							type="button"
+							className="clickable-icon"
+							onClick={() => actions.changeBackgroundColor?.(undefined)}
+							title="Reset to default background color"
+							data-testid={tid("background-color-reset", item.id)}
+						>
+							<ObsidianIcon icon="rotate-ccw" />
+						</button>
+					)}
+				</SettingItem>
+			)}
 		</div>
 	);
 });

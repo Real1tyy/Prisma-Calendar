@@ -11,12 +11,19 @@ import {
 
 export { moveItem, reorderList };
 
-const OVERRIDE_FIELDS = ["renames", "iconOverrides", "colorOverrides", "textColorOverrides"] as const;
+const OVERRIDE_FIELDS = [
+	"renames",
+	"iconOverrides",
+	"colorOverrides",
+	"textColorOverrides",
+	"backgroundColorOverrides",
+] as const;
 const CHILD_OVERRIDE_FIELDS = [
 	"childRenames",
 	"childIconOverrides",
 	"childColorOverrides",
 	"childTextColorOverrides",
+	"childBackgroundColorOverrides",
 ] as const;
 
 export interface GroupChildState {
@@ -26,6 +33,7 @@ export interface GroupChildState {
 	childIconOverrides: Record<string, string>;
 	childColorOverrides: Record<string, string>;
 	childTextColorOverrides: Record<string, string>;
+	childBackgroundColorOverrides?: Record<string, string>;
 }
 
 export function recalcActiveChildIndex(visibleChildren: TabDefinition[], previousActiveId: string | undefined): number {
@@ -68,6 +76,7 @@ export interface ResolvedInitialState {
 	iconOverrides: Record<string, string>;
 	colorOverrides: Record<string, string>;
 	textColorOverrides: Record<string, string>;
+	backgroundColorOverrides: Record<string, string>;
 	showSettingsButton: boolean;
 }
 
@@ -103,6 +112,7 @@ export interface BuildStateInput {
 	iconOverrides: Record<string, string>;
 	colorOverrides: Record<string, string>;
 	textColorOverrides: Record<string, string>;
+	backgroundColorOverrides?: Record<string, string>;
 	showSettingsButton: boolean;
 	groupStates: Map<string, GroupChildState>;
 }
@@ -114,11 +124,16 @@ export function buildState({
 	iconOverrides,
 	colorOverrides,
 	textColorOverrides,
+	backgroundColorOverrides = {},
 	showSettingsButton,
 	groupStates,
 }: BuildStateInput): TabbedContainerState {
 	const state: TabbedContainerState = {};
-	writeNonEmptyStringRecords(state, { renames, iconOverrides, colorOverrides, textColorOverrides }, OVERRIDE_FIELDS);
+	writeNonEmptyStringRecords(
+		state,
+		{ renames, iconOverrides, colorOverrides, textColorOverrides, backgroundColorOverrides },
+		OVERRIDE_FIELDS
+	);
 
 	const defaultOrder = allTabs.map((t) => t.id);
 	const currentOrder = visibleTabs.map((t) => t.id);
@@ -146,7 +161,12 @@ export function buildState({
 			hasEntry = true;
 		}
 
-		hasEntry = writeNonEmptyStringRecords(entry, childState, CHILD_OVERRIDE_FIELDS) || hasEntry;
+		hasEntry =
+			writeNonEmptyStringRecords(
+				entry,
+				{ ...childState, childBackgroundColorOverrides: childState.childBackgroundColorOverrides ?? {} },
+				CHILD_OVERRIDE_FIELDS
+			) || hasEntry;
 
 		if (hasEntry) {
 			gs[groupId] = entry;

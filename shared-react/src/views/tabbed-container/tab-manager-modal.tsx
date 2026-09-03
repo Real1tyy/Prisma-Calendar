@@ -188,9 +188,11 @@ interface EditableRowModel {
 	displayIcon: string | undefined;
 	displayColor: string | undefined;
 	displayTextColor: string | undefined;
+	displayBackgroundColor: string | undefined;
 	hasIconOverride: boolean;
 	hasColorOverride: boolean;
 	hasTextColorOverride: boolean;
+	hasBackgroundColorOverride: boolean;
 	isVisible: boolean;
 	visibleIndex: number;
 	visibleCount: number;
@@ -210,6 +212,7 @@ interface EditableRowActions {
 	changeIcon: (value: string | undefined) => void;
 	changeColor: (value: string | undefined) => void;
 	changeTextColor: (value: string | undefined) => void;
+	changeBackgroundColor: (value: string | undefined) => void;
 }
 
 interface EditableRowProps {
@@ -227,9 +230,11 @@ const EditableRow = memo(function EditableRow({ row, actions }: EditableRowProps
 		displayIcon,
 		displayColor,
 		displayTextColor,
+		displayBackgroundColor,
 		hasIconOverride,
 		hasColorOverride,
 		hasTextColorOverride,
+		hasBackgroundColorOverride,
 		isVisible,
 		visibleIndex,
 		visibleCount,
@@ -259,24 +264,28 @@ const EditableRow = memo(function EditableRow({ row, actions }: EditableRowProps
 			icon: displayIcon ?? "",
 			...(displayColor !== undefined ? { color: displayColor } : {}),
 			...(displayTextColor !== undefined ? { textColor: displayTextColor } : {}),
+			...(displayBackgroundColor !== undefined ? { backgroundColor: displayBackgroundColor } : {}),
 		},
 		values: {
 			label: displayLabel,
 			icon: displayIcon ?? "",
 			color: displayColor ?? "#ffffff",
 			textColor: displayTextColor ?? "#ffffff",
+			backgroundColor: displayBackgroundColor ?? "#ffffff",
 		},
 		overrides: {
 			label: hasRename,
 			icon: hasIconOverride,
 			color: hasColorOverride,
 			textColor: hasTextColorOverride,
+			backgroundColor: hasBackgroundColorOverride,
 		},
 		actions: {
 			rename: actions.rename,
 			changeIcon: actions.changeIcon,
 			changeColor: actions.changeColor,
 			changeTextColor: actions.changeTextColor,
+			changeBackgroundColor: actions.changeBackgroundColor,
 			pickIcon,
 		},
 	};
@@ -287,6 +296,7 @@ const EditableRow = memo(function EditableRow({ row, actions }: EditableRowProps
 		icon: displayIcon ?? "",
 		...(displayColor !== undefined ? { color: displayColor } : {}),
 		...(displayTextColor !== undefined ? { textColor: displayTextColor } : {}),
+		...(displayBackgroundColor !== undefined ? { backgroundColor: displayBackgroundColor } : {}),
 	};
 
 	return (
@@ -366,9 +376,11 @@ const TabManagerRow = memo(function TabManagerRow({ tab, index, isVisible, visib
 			displayIcon: state.getIcon(tab),
 			displayColor: state.getColor(tab),
 			displayTextColor: state.getTextColor(tab),
+			displayBackgroundColor: state.getBackgroundColor(tab),
 			hasIconOverride: tab.id in state.iconOverrides,
 			hasColorOverride: tab.id in state.colorOverrides,
 			hasTextColorOverride: tab.id in state.textColorOverrides,
+			hasBackgroundColorOverride: tab.id in state.backgroundColorOverrides,
 			isVisible,
 			visibleIndex: index,
 			visibleCount,
@@ -391,6 +403,7 @@ const TabManagerRow = memo(function TabManagerRow({ tab, index, isVisible, visib
 			changeIcon: (value) => actions.setIcon(tab.id, value),
 			changeColor: (value) => actions.setColor(tab.id, value),
 			changeTextColor: (value) => actions.setTextColor(tab.id, value),
+			changeBackgroundColor: (value) => actions.setBackgroundColor(tab.id, value),
 		}),
 		[actions, tab.id, isVisible, isExpanded, setExpandedId, setDrag, onTabDrop]
 	);
@@ -460,9 +473,11 @@ const GroupChildRow = memo(function GroupChildRow({
 			displayIcon: state.getChildIcon(group.id, child),
 			displayColor: state.getChildColor(group.id, child),
 			displayTextColor: state.getChildTextColor(group.id, child),
+			displayBackgroundColor: state.getChildBackgroundColor(group.id, child),
 			hasIconOverride: gs?.childIconOverrides[child.id] !== undefined,
 			hasColorOverride: gs?.childColorOverrides[child.id] !== undefined,
 			hasTextColorOverride: gs?.childTextColorOverrides[child.id] !== undefined,
+			hasBackgroundColorOverride: gs?.childBackgroundColorOverrides?.[child.id] !== undefined,
 			isVisible,
 			visibleIndex: index,
 			visibleCount,
@@ -485,6 +500,7 @@ const GroupChildRow = memo(function GroupChildRow({
 			changeIcon: (value) => actions.setChildIcon(group.id, child.id, value),
 			changeColor: (value) => actions.setChildColor(group.id, child.id, value),
 			changeTextColor: (value) => actions.setChildTextColor(group.id, child.id, value),
+			changeBackgroundColor: (value) => actions.setChildBackgroundColor(group.id, child.id, value),
 		}),
 		[actions, group.id, child.id, isVisible, isExpanded, expandedKey, setExpandedId, setDrag, onChildDrop]
 	);

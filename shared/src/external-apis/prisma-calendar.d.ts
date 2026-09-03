@@ -244,11 +244,17 @@ export interface PrismaCalendarGetSettingsInput {
 }
 export type PrismaCalendarGetSettingsOutput = {
 	activeTab?: {
+		backgroundColorOverrides?: {
+			[k: string]: string;
+		};
 		colorOverrides?: {
 			[k: string]: string;
 		};
 		groupState?: {
 			[k: string]: {
+				childBackgroundColorOverrides?: {
+					[k: string]: string;
+				};
 				childColorOverrides?: {
 					[k: string]: string;
 				};
@@ -1396,11 +1402,17 @@ export interface PrismaCalendarUpdateSettingsInput {
 	calendarId?: string;
 	settings: {
 		activeTab?: {
+			backgroundColorOverrides?: {
+				[k: string]: string;
+			};
 			colorOverrides?: {
 				[k: string]: string;
 			};
 			groupState?: {
 				[k: string]: {
+					childBackgroundColorOverrides?: {
+						[k: string]: string;
+					};
 					childColorOverrides?: {
 						[k: string]: string;
 					};

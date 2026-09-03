@@ -1050,6 +1050,15 @@
 							"activeTab": {
 								"additionalProperties": false,
 								"properties": {
+									"backgroundColorOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
 									"colorOverrides": {
 										"additionalProperties": {
 											"type": "string"
@@ -1063,6 +1072,15 @@
 										"additionalProperties": {
 											"additionalProperties": false,
 											"properties": {
+												"childBackgroundColorOverrides": {
+													"additionalProperties": {
+														"type": "string"
+													},
+													"propertyNames": {
+														"type": "string"
+													},
+													"type": "object"
+												},
 												"childColorOverrides": {
 													"additionalProperties": {
 														"type": "string"
@@ -3319,6 +3337,15 @@
 							"activeTab": {
 								"additionalProperties": false,
 								"properties": {
+									"backgroundColorOverrides": {
+										"additionalProperties": {
+											"type": "string"
+										},
+										"propertyNames": {
+											"type": "string"
+										},
+										"type": "object"
+									},
 									"colorOverrides": {
 										"additionalProperties": {
 											"type": "string"
@@ -3332,6 +3359,15 @@
 										"additionalProperties": {
 											"additionalProperties": false,
 											"properties": {
+												"childBackgroundColorOverrides": {
+													"additionalProperties": {
+														"type": "string"
+													},
+													"propertyNames": {
+														"type": "string"
+													},
+													"type": "object"
+												},
 												"childColorOverrides": {
 													"additionalProperties": {
 														"type": "string"
