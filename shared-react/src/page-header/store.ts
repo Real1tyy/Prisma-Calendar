@@ -1,6 +1,8 @@
 import { moveItem, reorderList } from "../utils/list-reorder";
-import { loadStringRecord, nonEmptyRecord, setOrDelete } from "../utils/string-record";
+import { loadStringRecords, setOrDelete, writeNonEmptyStringRecords } from "../utils/string-record";
 import type { HeaderActionDefinition, PageHeaderState } from "./types";
+
+const OVERRIDE_FIELDS = ["renames", "iconOverrides", "colorOverrides", "textColorOverrides"] as const;
 
 export interface PageHeaderSnapshot {
 	visibleActions: HeaderActionDefinition[];
@@ -21,10 +23,7 @@ interface ResolvedInitial {
 }
 
 function resolveState(allActions: HeaderActionDefinition[], state?: PageHeaderState): ResolvedInitial {
-	const renames = loadStringRecord(state?.renames);
-	const iconOverrides = loadStringRecord(state?.iconOverrides);
-	const colorOverrides = loadStringRecord(state?.colorOverrides);
-	const textColorOverrides = loadStringRecord(state?.textColorOverrides);
+	const overrides = loadStringRecords(state, OVERRIDE_FIELDS);
 	const showSettingsButton = state?.showSettingsButton !== false;
 
 	let visibleActions = allActions;
@@ -38,10 +37,7 @@ function resolveState(allActions: HeaderActionDefinition[], state?: PageHeaderSt
 
 	return {
 		visibleActions: [...visibleActions],
-		renames,
-		iconOverrides,
-		colorOverrides,
-		textColorOverrides,
+		...overrides,
 		showSettingsButton,
 	};
 }
@@ -207,14 +203,16 @@ export class PageHeaderStore {
 	serialize(): PageHeaderState {
 		const state: PageHeaderState = {};
 
-		const renamesOut = nonEmptyRecord(this.renames);
-		if (renamesOut) state.renames = renamesOut;
-		const iconsOut = nonEmptyRecord(this.iconOverrides);
-		if (iconsOut) state.iconOverrides = iconsOut;
-		const colorsOut = nonEmptyRecord(this.colorOverrides);
-		if (colorsOut) state.colorOverrides = colorsOut;
-		const textColorsOut = nonEmptyRecord(this.textColorOverrides);
-		if (textColorsOut) state.textColorOverrides = textColorsOut;
+		writeNonEmptyStringRecords(
+			state,
+			{
+				renames: this.renames,
+				iconOverrides: this.iconOverrides,
+				colorOverrides: this.colorOverrides,
+				textColorOverrides: this.textColorOverrides,
+			},
+			OVERRIDE_FIELDS
+		);
 
 		const currentOrder = this.visibleActions.map((a) => a.id);
 		const orderChanged =

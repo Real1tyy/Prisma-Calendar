@@ -79,7 +79,10 @@ export const HelpCenterView = memo(function HelpCenterView({ config }: { config:
 	// Absolutise the relative links the bundled docs use (e.g. `./features/x.md`)
 	// against the live docs site so they resolve when clicked from inside Obsidian.
 	const docBase = links.documentation;
-	const aboutMd = useMemo(() => (about !== undefined ? resolveRelativeDocLinks(about, docBase) : undefined), [about, docBase]);
+	const aboutMd = useMemo(
+		() => (about !== undefined ? resolveRelativeDocLinks(about, docBase) : undefined),
+		[about, docBase]
+	);
 	const faqMd = useMemo(() => (faq !== undefined ? resolveRelativeDocLinks(faq, docBase) : undefined), [faq, docBase]);
 	const troubleshootingMd = useMemo(
 		() => (troubleshooting !== undefined ? resolveRelativeDocLinks(troubleshooting, docBase) : undefined),

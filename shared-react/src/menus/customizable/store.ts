@@ -1,6 +1,8 @@
+import { loadStringRecordMaps, writeNonEmptyStringRecordMaps } from "../../utils/string-record";
 import type { ContextMenuState, CustomizableContextMenuItem } from "./types";
 
 const DEFAULT_SECTION = "";
+const OVERRIDE_FIELDS = ["renames", "iconOverrides", "colorOverrides", "textColorOverrides"] as const;
 
 export interface CustomizableMenuSnapshot {
 	visibleItems: CustomizableContextMenuItem[];
@@ -95,10 +97,11 @@ export class CustomizableMenuStore {
 		} = this.snapshot;
 		const state: ContextMenuState = {};
 
-		if (renames.size > 0) state.renames = Object.fromEntries(renames);
-		if (iconOverrides.size > 0) state.iconOverrides = Object.fromEntries(iconOverrides);
-		if (colorOverrides.size > 0) state.colorOverrides = Object.fromEntries(colorOverrides);
-		if (textColorOverrides.size > 0) state.textColorOverrides = Object.fromEntries(textColorOverrides);
+		writeNonEmptyStringRecordMaps(
+			state,
+			{ renames, iconOverrides, colorOverrides, textColorOverrides },
+			OVERRIDE_FIELDS
+		);
 		if (sectionOverrides.size > 0) state.sectionOverrides = Object.fromEntries(sectionOverrides);
 
 		const currentOrder = visibleItems.map((i) => i.id);
@@ -262,12 +265,7 @@ export class CustomizableMenuStore {
 	// ─── Internals ────────────────────────────────────────────────
 
 	private buildInitialSnapshot(initialState?: ContextMenuState): CustomizableMenuSnapshot {
-		const renames = new Map(initialState?.renames ? Object.entries(initialState.renames) : []);
-		const iconOverrides = new Map(initialState?.iconOverrides ? Object.entries(initialState.iconOverrides) : []);
-		const colorOverrides = new Map(initialState?.colorOverrides ? Object.entries(initialState.colorOverrides) : []);
-		const textColorOverrides = new Map(
-			initialState?.textColorOverrides ? Object.entries(initialState.textColorOverrides) : []
-		);
+		const overrides = loadStringRecordMaps(initialState, OVERRIDE_FIELDS);
 		const sectionOverrides = new Map(
 			initialState?.sectionOverrides ? Object.entries(initialState.sectionOverrides) : []
 		);
@@ -286,10 +284,7 @@ export class CustomizableMenuStore {
 
 		return {
 			visibleItems,
-			renames,
-			iconOverrides,
-			colorOverrides,
-			textColorOverrides,
+			...overrides,
 			sectionOverrides,
 			showSettingsButton,
 		};

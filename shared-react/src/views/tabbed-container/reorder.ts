@@ -1,5 +1,5 @@
 import { moveItem, reorderList } from "../../utils/list-reorder";
-import { loadStringRecord, nonEmptyRecord } from "../../utils/string-record";
+import { loadStringRecords, writeNonEmptyStringRecords } from "../../utils/string-record";
 import {
 	isGroupTab,
 	type GroupStatePersisted,
@@ -10,6 +10,14 @@ import {
 } from "./types";
 
 export { moveItem, reorderList };
+
+const OVERRIDE_FIELDS = ["renames", "iconOverrides", "colorOverrides", "textColorOverrides"] as const;
+const CHILD_OVERRIDE_FIELDS = [
+	"childRenames",
+	"childIconOverrides",
+	"childColorOverrides",
+	"childTextColorOverrides",
+] as const;
 
 export interface GroupChildState {
 	visibleChildren: TabDefinition[];
@@ -29,10 +37,7 @@ export function initialGroupChildState(
 	group: GroupTabDefinition,
 	saved: GroupStatePersisted | undefined
 ): GroupChildState {
-	const childRenames = loadStringRecord(saved?.childRenames);
-	const childIconOverrides = loadStringRecord(saved?.childIconOverrides);
-	const childColorOverrides = loadStringRecord(saved?.childColorOverrides);
-	const childTextColorOverrides = loadStringRecord(saved?.childTextColorOverrides);
+	const childOverrides = loadStringRecords(saved, CHILD_OVERRIDE_FIELDS);
 
 	let visibleChildren: TabDefinition[];
 	if (saved?.visibleChildIds) {
@@ -46,10 +51,7 @@ export function initialGroupChildState(
 	return {
 		visibleChildren,
 		activeChildIndex: 0,
-		childRenames,
-		childIconOverrides,
-		childColorOverrides,
-		childTextColorOverrides,
+		...childOverrides,
 	};
 }
 
@@ -73,14 +75,11 @@ export function resolveVisibleTabs(
 	tabs: TabEntry[],
 	initialState: TabbedContainerState | undefined
 ): ResolvedInitialState {
-	const renames = loadStringRecord(initialState?.renames);
-	const iconOverrides = loadStringRecord(initialState?.iconOverrides);
-	const colorOverrides = loadStringRecord(initialState?.colorOverrides);
-	const textColorOverrides = loadStringRecord(initialState?.textColorOverrides);
+	const overrides = loadStringRecords(initialState, OVERRIDE_FIELDS);
 	const showSettingsButton = initialState?.showSettingsButton !== false;
 
 	if (!initialState?.visibleTabIds) {
-		return { visibleTabs: tabs, renames, iconOverrides, colorOverrides, textColorOverrides, showSettingsButton };
+		return { visibleTabs: tabs, ...overrides, showSettingsButton };
 	}
 
 	const tabMap = new Map(tabs.map((t) => [t.id, t]));
@@ -92,10 +91,7 @@ export function resolveVisibleTabs(
 
 	return {
 		visibleTabs: visible.length > 0 ? visible : tabs,
-		renames,
-		iconOverrides,
-		colorOverrides,
-		textColorOverrides,
+		...overrides,
 		showSettingsButton,
 	};
 }
@@ -122,14 +118,7 @@ export function buildState({
 	groupStates,
 }: BuildStateInput): TabbedContainerState {
 	const state: TabbedContainerState = {};
-	const renamesOut = nonEmptyRecord(renames);
-	if (renamesOut) state.renames = renamesOut;
-	const iconsOut = nonEmptyRecord(iconOverrides);
-	if (iconsOut) state.iconOverrides = iconsOut;
-	const colorsOut = nonEmptyRecord(colorOverrides);
-	if (colorsOut) state.colorOverrides = colorsOut;
-	const textColorsOut = nonEmptyRecord(textColorOverrides);
-	if (textColorsOut) state.textColorOverrides = textColorsOut;
+	writeNonEmptyStringRecords(state, { renames, iconOverrides, colorOverrides, textColorOverrides }, OVERRIDE_FIELDS);
 
 	const defaultOrder = allTabs.map((t) => t.id);
 	const currentOrder = visibleTabs.map((t) => t.id);
@@ -157,26 +146,7 @@ export function buildState({
 			hasEntry = true;
 		}
 
-		const cr = nonEmptyRecord(childState.childRenames);
-		if (cr) {
-			entry.childRenames = cr;
-			hasEntry = true;
-		}
-		const ci = nonEmptyRecord(childState.childIconOverrides);
-		if (ci) {
-			entry.childIconOverrides = ci;
-			hasEntry = true;
-		}
-		const cc = nonEmptyRecord(childState.childColorOverrides);
-		if (cc) {
-			entry.childColorOverrides = cc;
-			hasEntry = true;
-		}
-		const ctc = nonEmptyRecord(childState.childTextColorOverrides);
-		if (ctc) {
-			entry.childTextColorOverrides = ctc;
-			hasEntry = true;
-		}
+		hasEntry = writeNonEmptyStringRecords(entry, childState, CHILD_OVERRIDE_FIELDS) || hasEntry;
 
 		if (hasEntry) {
 			gs[groupId] = entry;
