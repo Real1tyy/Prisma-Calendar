@@ -61,14 +61,40 @@ export const DEFAULT_COLOR_SENTINEL = "#000000";
 
 type PersistedState = Readonly<Record<string, unknown>>;
 
+/**
+ * Build one value per axis. Spelling the axes out is deliberate: it makes the set
+ * exhaustive, so adding an axis to {@link APPEARANCE_AXES} stops compiling here and
+ * the compiler walks you to every table that needs the new entry — where
+ * `Object.fromEntries` plus a cast would have silently produced a record with a
+ * missing key.
+ */
+function byAxis<T>(valueFor: (axis: AppearanceAxis) => T): Record<AppearanceAxis, T> {
+	return {
+		icon: valueFor("icon"),
+		color: valueFor("color"),
+		textColor: valueFor("textColor"),
+		backgroundColor: valueFor("backgroundColor"),
+	};
+}
+
+/**
+ * Persisted axis records have already been validated by the settings schema
+ * (`CustomizableUIBaseStateSchema`), which is what guarantees string values. This
+ * only re-checks the shape, so a hand-edited settings file handing us an array or
+ * a scalar degrades to "no overrides" instead of throwing at render time.
+ */
+function isStringRecord(value: unknown): value is Record<string, string> {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 function readRecord(state: PersistedState | undefined, key: string): Record<string, string> {
 	const value = state?.[key];
-	return value && typeof value === "object" ? { ...(value as Record<string, string>) } : {};
+	return isStringRecord(value) ? { ...value } : {};
 }
 
 /** Every axis mapped to an empty override record. */
 export function emptyAppearanceOverrides(): AppearanceOverrides {
-	return { icon: {}, color: {}, textColor: {}, backgroundColor: {} };
+	return byAxis((): Record<string, string> => ({}));
 }
 
 /** Read each axis's overrides out of persisted state, defaulting absent axes to empty. */
@@ -76,9 +102,7 @@ export function loadAppearanceOverrides(
 	state: PersistedState | undefined,
 	keys: AppearanceKeyMap = APPEARANCE_KEYS
 ): AppearanceOverrides {
-	return Object.fromEntries(
-		APPEARANCE_AXES.map((axis) => [axis, readRecord(state, keys[axis])])
-	) as AppearanceOverrides;
+	return byAxis((axis) => readRecord(state, keys[axis]));
 }
 
 /** The `Map`-backed counterpart of {@link loadAppearanceOverrides}. */
@@ -86,9 +110,7 @@ export function loadAppearanceOverrideMaps(
 	state: PersistedState | undefined,
 	keys: AppearanceKeyMap = APPEARANCE_KEYS
 ): AppearanceOverrideMaps {
-	return Object.fromEntries(
-		APPEARANCE_AXES.map((axis) => [axis, new Map(Object.entries(readRecord(state, keys[axis])))])
-	) as AppearanceOverrideMaps;
+	return byAxis((axis) => new Map(Object.entries(readRecord(state, keys[axis]))));
 }
 
 /**
@@ -133,7 +155,7 @@ export function writeAppearanceOverrideMaps(
  * only an absent key falls back.
  */
 export function resolveAppearance(defaults: Appearance, overrides: AppearanceOverrides, id: string): Appearance {
-	return Object.fromEntries(APPEARANCE_AXES.map((axis) => [axis, overrides[axis][id] ?? defaults[axis]])) as Appearance;
+	return byAxis((axis) => overrides[axis][id] ?? defaults[axis]);
 }
 
 /** The `Map`-backed counterpart of {@link resolveAppearance}. */
@@ -142,14 +164,14 @@ export function resolveAppearanceFromMaps(
 	maps: Readonly<Record<AppearanceAxis, ReadonlyMap<string, string>>>,
 	id: string
 ): Appearance {
-	return Object.fromEntries(APPEARANCE_AXES.map((axis) => [axis, maps[axis].get(id) ?? defaults[axis]])) as Appearance;
+	return byAxis((axis) => maps[axis].get(id) ?? defaults[axis]);
 }
 
 /** Which axes currently carry a user override for this item — drives the reset buttons. */
 export type AppearanceOverridden = Record<AppearanceAxis, boolean>;
 
 export function appearanceOverridden(overrides: AppearanceOverrides, id: string): AppearanceOverridden {
-	return Object.fromEntries(APPEARANCE_AXES.map((axis) => [axis, id in overrides[axis]])) as AppearanceOverridden;
+	return byAxis((axis) => id in overrides[axis]);
 }
 
 /** The `Map`-backed counterpart of {@link appearanceOverridden}. */
@@ -157,7 +179,7 @@ export function appearanceOverriddenFromMaps(
 	maps: Readonly<Record<AppearanceAxis, ReadonlyMap<string, string>>>,
 	id: string
 ): AppearanceOverridden {
-	return Object.fromEntries(APPEARANCE_AXES.map((axis) => [axis, maps[axis].has(id)])) as AppearanceOverridden;
+	return byAxis((axis) => maps[axis].has(id));
 }
 
 /**
@@ -203,26 +225,40 @@ export function setAppearanceOverrideMap(
 	return { ...maps, [axis]: next };
 }
 
-/** Drop colour axes still holding the picker's untouched-black sentinel. */
+/** A colour the user actually picked — `undefined` for the picker's untouched value. */
+function pickedColor(color: string | undefined): string | undefined {
+	return color === DEFAULT_COLOR_SENTINEL ? undefined : color;
+}
+
+/**
+ * Blank out colour axes still holding the picker's untouched-black sentinel, so a
+ * surface that opts in renders them unstyled instead of painting everything black.
+ * The icon axis passes through — it holds an icon id, never a colour.
+ */
 export function stripDefaultColors(appearance: Appearance): Appearance {
-	const stripped: Appearance = { ...appearance };
-	for (const axis of APPEARANCE_COLOR_AXES) {
-		if (stripped[axis] === DEFAULT_COLOR_SENTINEL) delete stripped[axis];
-	}
+	const stripped: Record<AppearanceAxis, string | undefined> = {
+		icon: appearance.icon,
+		color: pickedColor(appearance.color),
+		textColor: pickedColor(appearance.textColor),
+		backgroundColor: pickedColor(appearance.backgroundColor),
+	};
 	return stripped;
 }
 
-const CSS_PROPERTY = {
+/**
+ * Which CSS property each colour axis paints. `color` and `textColor` both land on
+ * CSS `color` — the axis says which *element* the caller applies the style to (the
+ * icon span vs. the label), not which property.
+ */
+const CSS_PROPERTY: Record<AppearanceColorAxis, "color" | "backgroundColor"> = {
 	color: "color",
 	textColor: "color",
 	backgroundColor: "backgroundColor",
-} as const satisfies Record<AppearanceColorAxis, keyof CSSProperties>;
+};
 
 /**
  * Inline style for the given colour axes — `undefined` when none carries a value,
  * so the element stays unstyled rather than picking up an empty `style` attribute.
- * `color` and `textColor` both paint CSS `color`; they differ only in which element
- * the caller applies them to (the icon span vs. the label).
  */
 export function appearanceStyle(
 	appearance: Appearance,
@@ -231,7 +267,9 @@ export function appearanceStyle(
 	const style: CSSProperties = {};
 	for (const axis of axes) {
 		const value = appearance[axis];
-		if (value) style[CSS_PROPERTY[axis]] = value;
+		if (!value) continue;
+		if (CSS_PROPERTY[axis] === "backgroundColor") style.backgroundColor = value;
+		else style.color = value;
 	}
 	return Object.keys(style).length > 0 ? style : undefined;
 }
