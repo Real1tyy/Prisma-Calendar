@@ -57,7 +57,7 @@ Notes:
 - **A file with only one Prisma property is left alone** — there is no block to form, so nothing moves.
 - **Multiple planning systems (or plugins) on one directory** coexist: each one only groups its *own* properties, at the position they already occupy — no plugin fights another for the end of the file.
 - Keep the order setting itself in sync across devices (it lives in the plugin's `data.json`), so every device enforces the same order.
-- The explanation above the property table folds away once you've read it; the arrow in its header reopens it, and the choice is remembered on that device.
+- Every explanation panel on the tab folds away once you've read it — click its header to collapse or reopen it. Each panel remembers its own state, on that device.
 
 ## Normalize property order
 

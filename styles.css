@@ -1612,6 +1612,7 @@ button[class*=prisma-]:focus-visible {
 }
 .prisma-settings-info-box-example {
   background-color: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
   padding: 8px;
   border-radius: 4px;
   margin-top: 8px;

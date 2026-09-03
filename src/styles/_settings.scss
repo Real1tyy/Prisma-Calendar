@@ -76,8 +76,12 @@
 		margin-top: 0;
 	}
 
+	// Standalone class, not a descendant — these code samples also appear inside a
+	// CollapsibleSection, whose body has no fill, so the border (not a contrasting
+	// background) is what makes them read as code blocks on either surface.
 	&-example {
 		background-color: var(--background-primary);
+		border: 1px solid var(--background-modifier-border);
 		padding: 8px;
 		border-radius: 4px;
 		margin-top: 8px;

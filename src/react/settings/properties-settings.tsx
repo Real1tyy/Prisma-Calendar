@@ -8,7 +8,7 @@ import {
 	useSettingsStore,
 	type PropertyOrderEntry,
 } from "@real1ty/obsidian-plugins-react";
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo, type ReactNode } from "react";
 
 import { cls, tid } from "../../constants";
 import { runNormalizePropertyOrder } from "../../core/api/normalize-property-order";
@@ -95,75 +95,83 @@ export const PropertiesSettingsReact = memo(function PropertiesSettingsReact({
 	);
 });
 
-// Device-local, so a user who has read the explanation is not shown it again on this
+// Device-local, so a user who has read an explanation is not shown it again on this
 // machine. Namespaced per plugin — every plugin shares one localStorage origin.
-const PROPERTY_ORDER_HELP_STORAGE_KEY = "prisma-calendar:properties:order-help";
+const HELP_STORAGE_PREFIX = "prisma-calendar:properties:";
+
+/**
+ * A standing explanation on this tab: worth reading once, clutter above the controls
+ * forever after. Each folds away under its own remembered key.
+ *
+ * Deliberately no `settings-info-box` wrapper — `CollapsibleSection` already paints the
+ * panel these boxes used to paint themselves (same border, same `--background-secondary`),
+ * so nesting the two renders a box inside an identical box.
+ */
+const HelpBox = memo(function HelpBox({ label, slug, children }: { label: string; slug: string; children: ReactNode }) {
+	return (
+		<CollapsibleSection label={label} storageKey={`${HELP_STORAGE_PREFIX}${slug}`} testIdSlug={`${slug}-help`}>
+			{children}
+		</CollapsibleSection>
+	);
+});
 
 const PropertyOrderIntro = memo(function PropertyOrderIntro({ settings }: { settings: SingleCalendarConfig }) {
 	return (
-		<CollapsibleSection
-			label="How property order works"
-			storageKey={PROPERTY_ORDER_HELP_STORAGE_KEY}
-			testIdSlug="property-order-help"
-		>
-			<div className={cls("settings-info-box")}>
-				<p>
-					Rename any property and arrange the rows — drag a row or use the arrows. The row order is the exact
-					frontmatter order Prisma writes to disk: on every save, Prisma pulls its own properties together into one
-					block in this order, placed where your first Prisma property already sits. Your own properties — and any
-					written by other plugins — keep their values and their order relative to each other, flowing above and below
-					that block.
-				</p>
-				<div>
-					<strong>Before</strong>
-					<pre className={cls("settings-info-box-example")}>{`---
+		<HelpBox label="How property order works" slug="property-order">
+			<p>
+				Rename any property and arrange the rows — drag a row or use the arrows. The row order is the exact frontmatter
+				order Prisma writes to disk: on every save, Prisma pulls its own properties together into one block in this
+				order, placed where your first Prisma property already sits. Your own properties — and any written by other
+				plugins — keep their values and their order relative to each other, flowing above and below that block.
+			</p>
+			<div>
+				<strong>Before</strong>
+				<pre className={cls("settings-info-box-example")}>{`---
 Project: Website Redesign
 ${settings.startProp}: 2024-01-15T09:00
 Tags: [work]
 ${settings.sortDateProp}: 2024-01-15T09:00
 ---`}</pre>
-				</div>
-				<div>
-					<strong>After the next save</strong>
-					<pre className={cls("settings-info-box-example")}>{`---
+			</div>
+			<div>
+				<strong>After the next save</strong>
+				<pre className={cls("settings-info-box-example")}>{`---
 Project: Website Redesign
 ${settings.startProp}: 2024-01-15T09:00
 ${settings.sortDateProp}: 2024-01-15T09:00
 Tags: [work]
 ---`}</pre>
-					<p className="setting-item-description">
-						Nothing was renamed or deleted. <code>Tags</code> sat between two Prisma properties, so it ends up below the
-						block — <code>Project</code> was already above it and stays there.
-					</p>
-				</div>
-				<div>
-					<strong>You choose where the block lands</strong>
-					<p className="setting-item-description">
-						The block anchors on whichever Prisma property comes first in the file, so the keys you put above it decide
-						its position. Keep a property of your own at the top and the block sits underneath it; move your own keys
-						below — or delete them — and the block takes the top of the frontmatter.
-					</p>
-					<pre className={cls("settings-info-box-example")}>{`---
-${settings.startProp}: 2024-01-15T09:00
-${settings.sortDateProp}: 2024-01-15T09:00
-Project: Website Redesign
-Tags: [work]
----`}</pre>
-				</div>
 				<p className="setting-item-description">
-					Existing files pick up the order the next time Prisma writes to them. To apply it everywhere right away —
-					whether you're fixing sync conflicts or just setting the baseline for a new order — press "Scan and
-					normalize…" below or run the "Normalize property order" command, on one device, and let sync propagate.
+					Nothing was renamed or deleted. <code>Tags</code> sat between two Prisma properties, so it ends up below the
+					block — <code>Project</code> was already above it and stays there.
 				</p>
 			</div>
-		</CollapsibleSection>
+			<div>
+				<strong>You choose where the block lands</strong>
+				<p className="setting-item-description">
+					The block anchors on whichever Prisma property comes first in the file, so the keys you put above it decide
+					its position. Keep a property of your own at the top and the block sits underneath it; move your own keys
+					below — or delete them — and the block takes the top of the frontmatter.
+				</p>
+				<pre className={cls("settings-info-box-example")}>{`---
+${settings.startProp}: 2024-01-15T09:00
+${settings.sortDateProp}: 2024-01-15T09:00
+Project: Website Redesign
+Tags: [work]
+---`}</pre>
+			</div>
+			<p className="setting-item-description">
+				Existing files pick up the order the next time Prisma writes to them. To apply it everywhere right away —
+				whether you're fixing sync conflicts or just setting the baseline for a new order — press "Scan and normalize…"
+				below or run the "Normalize property order" command, on one device, and let sync propagate.
+			</p>
+		</HelpBox>
 	);
 });
 
 const EventTypesInfo = memo(function EventTypesInfo({ settings }: { settings: SingleCalendarConfig }) {
 	return (
-		<div className={cls("settings-info-box")}>
-			<h4>Event types</h4>
+		<HelpBox label="Event types" slug="event-types">
 			<p>There are two types of events: timed events and all-day events. Each uses different properties.</p>
 			<div>
 				<strong>Timed event example:</strong>
@@ -184,7 +192,7 @@ ${settings.allDayProp}: true
 
 # Conference Day`}</pre>
 			</div>
-		</div>
+		</HelpBox>
 	);
 });
 
@@ -192,8 +200,7 @@ const RRULE_TYPES = ["daily", "weekly", "bi-weekly", "monthly", "bi-monthly", "q
 
 const RecurringEventsInfo = memo(function RecurringEventsInfo({ settings }: { settings: SingleCalendarConfig }) {
 	return (
-		<div className={cls("settings-info-box")}>
-			<h4>Recurring events</h4>
+		<HelpBox label="Recurring events" slug="recurring-events">
 			<p>
 				To create recurring events, add the rrule property to any event file's frontmatter. The plugin will
 				automatically detect these and create recurring instances.
@@ -223,13 +230,13 @@ ${settings.futureInstancesCountProp}: 5
 				<strong>Rrule spec (for weekly and bi-weekly)</strong>
 				<p>Comma-separated weekdays: sunday, monday, tuesday, wednesday, thursday, friday, saturday</p>
 			</div>
-		</div>
+		</HelpBox>
 	);
 });
 
 const FrontmatterDisplayIntro = memo(function FrontmatterDisplayIntro() {
 	return (
-		<div>
+		<HelpBox label="How display properties work" slug="display-properties">
 			<p>
 				Display additional frontmatter properties in events. Properties appear below the event title in a 'key: value'
 				format. If the event is too small to show all properties, the content is scrollable.
@@ -238,6 +245,6 @@ const FrontmatterDisplayIntro = memo(function FrontmatterDisplayIntro() {
 				Enter comma-separated property names (e.g., status, priority, project, tags). Only properties that exist in the
 				note's frontmatter are displayed.
 			</p>
-		</div>
+		</HelpBox>
 	);
 });
