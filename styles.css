@@ -2959,6 +2959,10 @@ button[class*=prisma-]:focus-visible {
   overflow: hidden;
   gap: 0;
 }
+.prisma-event-modal .prisma-event-modal-top {
+  flex-shrink: 0;
+  background: var(--background-primary);
+}
 .prisma-event-modal .prisma-event-modal-body {
   flex: 1;
   min-height: 0;

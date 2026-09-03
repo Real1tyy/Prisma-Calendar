@@ -330,20 +330,26 @@ export const EventForm = memo(function EventForm({
 
 	return (
 		<div className="prisma-event-modal-content" onKeyDown={handleKeyDown}>
-			<EventFormHeader
-				mode={mode}
-				form={form}
-				presets={presets}
-				onMinimize={handleMinimize}
-				onClear={handleClear}
-				onPresetChange={handlePresetChange}
-				onJumpToContent={showContent ? jumpToContent : undefined}
-			/>
+			<div className="prisma-event-modal-top">
+				<EventFormHeader
+					mode={mode}
+					form={form}
+					presets={presets}
+					onMinimize={handleMinimize}
+					onClear={handleClear}
+					onPresetChange={handlePresetChange}
+					onJumpToContent={showContent ? jumpToContent : undefined}
+				/>
+
+				<TitleField
+					form={form}
+					onBlur={categoriesApi.onTitleBlur}
+					bundle={bundle}
+					titleInputRef={titleInputRef}
+				/>
+			</div>
 
 			<div ref={bodyRef} className="prisma-event-modal-body">
-				{/* Title */}
-				<TitleField form={form} onBlur={categoriesApi.onTitleBlur} bundle={bundle} titleInputRef={titleInputRef} />
-
 				{/* Timing */}
 				<TimingSection form={form} showDurationField={settings.showDurationField} onFill={fillFromAdjacent} />
 

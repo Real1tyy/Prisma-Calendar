@@ -293,7 +293,13 @@
 		gap: 0;
 	}
 
-	// Only the event fields scroll; the header and footer remain fixed.
+	// The modal heading and event title stay visible above the scrolling fields.
+	.prisma-event-modal-top {
+		flex-shrink: 0;
+		background: var(--background-primary);
+	}
+
+	// Only the fields below the title scroll; the top region and footer remain fixed.
 	.prisma-event-modal-body {
 		flex: 1;
 		min-height: 0;
