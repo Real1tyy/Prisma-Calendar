@@ -1,7 +1,7 @@
 import {
 	isFolderNote,
-	replaceContentAfterFrontmatter,
 	removeMarkdownExtension,
+	replaceContentAfterFrontmatter,
 	toSafeString,
 	VaultTable,
 	waitForFileCache,
