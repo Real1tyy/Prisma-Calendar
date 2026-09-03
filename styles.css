@@ -2961,7 +2961,7 @@ button[class*=prisma-]:focus-visible {
 }
 .prisma-event-modal .prisma-event-modal-top {
   flex-shrink: 0;
-  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
   background: var(--background-primary);
 }
 .prisma-event-modal .prisma-event-modal-top > .prisma-setting-item:last-child {
