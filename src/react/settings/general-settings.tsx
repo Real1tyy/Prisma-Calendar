@@ -1,6 +1,7 @@
 import { buildUtmUrl } from "@real1ty/obsidian-plugins";
 import {
 	Dropdown,
+	Button,
 	GeneralSection,
 	OutboundLink,
 	SettingHeading,
@@ -21,20 +22,18 @@ import type CustomCalendarPlugin from "../../main";
 import {
 	CustomCalendarSettingsSchema,
 	SingleCalendarConfigSchema,
-	type CustomCalendarSettings,
 } from "../../types/settings";
 import { HelpBox } from "./_help-box";
+import {
+	PRISMA_NON_TRANSFERABLE_SETTINGS,
+	PRISMA_SETTINGS_TRANSFER_FILENAME,
+} from "../../utils/settings-transfer";
 import { PRISMA_SETTINGS_TEST_ID_PREFIX, PrismaSection } from "./_section";
 import { PRISMA_HELP_CENTER } from "./help-content";
 import { ProUpgradeBanner } from "./pro-upgrade-banner";
 
 const SHAPE = SingleCalendarConfigSchema.shape;
 const MAIN_SHAPE = CustomCalendarSettingsSchema.shape;
-
-const PRISMA_NON_TRANSFERABLE_SETTINGS: ReadonlyArray<keyof CustomCalendarSettings> = [
-	"licenseKeySecretName",
-	"version",
-];
 
 const GITHUB_ISSUES_URL = "https://github.com/Real1tyy/Prisma-Calendar/issues/new/choose";
 const FEEDBACK_URL = "https://matejvavroproductivity.com/feedback";
@@ -118,7 +117,7 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 				store: plugin.settingsStore,
 				defaults: plugin.settingsStore.getDefaults(),
 				nonTransferableKeys: PRISMA_NON_TRANSFERABLE_SETTINGS,
-				filename: "prisma-calendar-settings.json",
+				filename: PRISMA_SETTINGS_TRANSFER_FILENAME,
 				modalClass: cls("settings-transfer-modal"),
 			}}
 		>
@@ -136,23 +135,37 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 });
 
 const ReadOnlyField = memo(function ReadOnlyField({ plugin }: { plugin: CustomCalendarPlugin }) {
-	const [readOnly, setReadOnly] = useState(plugin.syncStore.data.readOnly);
+	const [readOnly, setReadOnly] = useState(plugin.deviceRoleStore.data.readOnly);
+	const [hasSelectedRole, setHasSelectedRole] = useState(plugin.deviceRoleStore.hasSelectedRole);
 	const handleChange = useCallback(
 		(value: boolean) => {
 			setReadOnly(value);
-			void plugin.syncStore.updateData({ readOnly: value });
+			setHasSelectedRole(true);
+			void plugin.deviceRoleStore.updateData({ readOnly: value });
 		},
 		[plugin]
 	);
 
 	return (
-		<SettingItem
-			name="Read-only mode"
-			description="This device performs none of Prisma's automatic writes: no recurring instances, marking done, Sort Date or Calendar Title normalisation, ZettelID assignment, CalDAV/ICS sync, series propagation, time-tracker saves or reminder flags. Everything you do by hand still works. Stored in sync.json so the flag stays on this device."
-			testId={tid("settings-field-read-only")}
-		>
-			<Toggle value={readOnly} onChange={handleChange} testId={tid("settings-control-read-only")} />
-		</SettingItem>
+		<>
+			{!hasSelectedRole && (
+				<div className={cls("settings-warning-box")} data-testid={tid("settings-device-role-warning")}>
+					<p>
+						<strong>Choose this device's role.</strong> Prisma is using safe Reader mode until you explicitly choose.
+					</p>
+					<Button testId={tid("settings-confirm-reader")} onClick={() => handleChange(true)}>
+						Keep Reader
+					</Button>
+				</div>
+			)}
+			<SettingItem
+				name="Read-only mode"
+				description="Reader devices perform none of Prisma's automatic writes: no recurring instances, marking done, Sort Date or Calendar Title normalisation, ZettelID assignment, CalDAV/ICS sync, series propagation, time-tracker saves or reminder flags. Manual actions still work. This choice stays in this browser's local storage and never syncs with the vault."
+				testId={tid("settings-field-read-only")}
+			>
+				<Toggle value={readOnly} onChange={handleChange} testId={tid("settings-control-read-only")} />
+			</SettingItem>
+		</>
 	);
 });
 
@@ -167,10 +180,9 @@ const MultiDeviceHelp = memo(function MultiDeviceHelp() {
 	return (
 		<HelpBox label="Using several devices" slug="multi-device">
 			<p>
-				Prisma does not coordinate devices. Everything it writes on its own — recurring instances, marking events done,
-				Sort Date, Calendar Title, synced calendar notes, duplicate cleanup — is computed from the notes and these
-				settings, so every device produces the same files and your sync tool merges them silently. Two things make that
-				work:
+				Prisma does not coordinate devices that have the same vault open concurrently. Current automatic writes,
+				including recurring-event and integration IDs, are designed to converge. Different settings, versions, or
+				non-deterministic templates can still produce conflicts. Use these safeguards:
 			</p>
 			<ul>
 				<li>
@@ -178,11 +190,11 @@ const MultiDeviceHelp = memo(function MultiDeviceHelp() {
 					different property names, property order or done values produce different files.
 				</li>
 				<li>
-					<strong>Nominate one writing device</strong> when you want no automatic activity elsewhere: turn on Read-only
-					mode on every other device. Automatic writes then come from one place.
+					<strong>Nominate one Writer</strong> — usually the device where you create most things — and use Reader mode on
+					other devices that may be open at the same time.
 				</li>
 			</ul>
-			<p>Still device-dependent, and worth a single writing device:</p>
+			<p>The risk is substantially reduced when the vault is not open on several devices at once. Still device-dependent:</p>
 			<ul>
 				<li>
 					<strong>Auto-assigned ZettelIDs</strong> take the device's clock; two devices that index the same new note

@@ -63,9 +63,9 @@ Prisma Calendar can quietly check GitHub once a day for newer releases. When a n
 **Read-only mode** prevents the plugin from automatically writing to files without user interaction.
 
 **Storage Location:**
-- Read-only mode state is stored in `.obsidian/plugins/prisma-calendar/sync.json` (separate from main settings)
-- This allows you to prevent the read-only state from syncing across devices
-- **For Git users:** Add `.obsidian/plugins/prisma-calendar/sync.json` to your `.gitignore` to keep read-only mode device-specific
+- The device role is stored in the browser's local storage, outside the vault
+- It never syncs through Obsidian Sync, git, or another file-sync tool
+- An unresolved role behaves as Reader, prompts again next startup, and shows a warning here
 
 **Access:**
 - Toggle in Settings → General → "Read-only mode"
@@ -80,7 +80,7 @@ Prisma Calendar can quietly check GitHub once a day for newer releases. When a n
 - Series changes are not propagated
 - The time tracker does not save its progress into the event
 
-**When disabled (default):**
+**When disabled (Writer):**
 - All automatic file modifications work normally
 
 **Manual actions still work:**
@@ -149,6 +149,8 @@ At the bottom of the General tab, the **Settings transfer** row provides three b
 - **Reset to defaults** asks for confirmation and then restores every transferable setting to its default value. Use it as a quick "start over" when you've experimented yourself into a corner.
 
 The **license key secret name** is local to each vault and is never exported, overwritten on import, or cleared on reset. The exported JSON has no version field: forward- and backward-compatibility is handled by a type-coercing merge on import plus the plugin's own schema fallbacks.
+
+The same **Import settings** flow is available in first-launch setup. A successful import completes the directory/property step, then Prisma asks whether the device is a Writer or Reader before indexing begins.
 
 ## Help & Support
 

@@ -16,14 +16,13 @@ import {
 	showFrontmatterPropagationModal,
 	withLock,
 	type FrontmatterDiff,
-	type SyncStore,
 } from "@real1ty/obsidian-plugins";
 import { DateTime } from "luxon";
 import { TFile, type App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 
 import { PROPAGATION_DEBOUNCE_MS } from "../constants";
-import { eventDefaults, type CalendarEvent, type Frontmatter, type PrismaSyncDataSchema } from "../types";
+import { eventDefaults, type CalendarEvent, type Frontmatter } from "../types";
 import type { EventMetadata } from "../types/event-metadata";
 import type { CalendarEventSource, IndexerEvent } from "../types/event-source";
 import type { NodeRecurringEvent, RecurringEventSeries } from "../types/recurring";
@@ -47,6 +46,7 @@ import { hashRRuleIdToZettelFormat, removeZettelId } from "../utils/events/zette
 import { enforceEventPropertyOrder } from "../utils/frontmatter/ordering";
 import { batchedPromiseAll, deleteFilesByPaths, getFileAndFrontmatter, getFileByPathOrThrow } from "../utils/obsidian";
 import type { CategoryTracker } from "./category-tracker";
+import type { DeviceRoleStore } from "./device-role-store";
 import type { EventStore } from "./event-store";
 
 const DATE_FORMAT = "yyyy-MM-dd";
@@ -120,7 +120,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		private app: App,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>,
 		private eventSource: CalendarEventSource,
-		private syncStore: SyncStore<typeof PrismaSyncDataSchema> | null
+		private deviceRoleStore: Pick<DeviceRoleStore, "data"> | null
 	) {
 		super();
 		this.settings = settingsStore.value;
@@ -216,7 +216,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 	private async handleRecurringEventRenamed(recurringEvent: NodeRecurringEvent): Promise<void> {
 		// Renaming the instances is an automatic write; read-only devices leave it
 		// to a writing device (the renames sync in like any other change).
-		if (this.syncStore?.data.readOnly) return;
+		if (this.deviceRoleStore?.data.readOnly) return;
 		const data = this.recurringEventsMap.get(recurringEvent.rRuleId);
 		if (!data || data.physicalInstances.size === 0) {
 			return;
@@ -529,7 +529,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 	 */
 	private trashDuplicateInstance(filePath: string, rruleId: string, dateKey: string): void {
 		// An automatic write: a read-only device leaves the twin for a writing device.
-		if (this.syncStore?.data.readOnly) return;
+		if (this.deviceRoleStore?.data.readOnly) return;
 		if (!this.indexingComplete) {
 			this.pendingDuplicateInstanceTrash.set(filePath, { rruleId, dateKey });
 			return;
@@ -675,7 +675,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 	private async ensurePhysicalInstances(data: RecurringEventData): Promise<void> {
 		if (!data.recurringEvent) return;
 
-		if (this.syncStore?.data.readOnly) {
+		if (this.deviceRoleStore?.data.readOnly) {
 			return;
 		}
 

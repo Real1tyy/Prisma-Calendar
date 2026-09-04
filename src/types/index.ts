@@ -3,7 +3,6 @@ export {
 	type CustomCalendarSettings,
 	CustomCalendarSettingsSchema,
 	type PrismaCalendarSettingsStore,
-	PrismaSyncDataSchema,
 	type SingleCalendarConfig,
 	SingleCalendarConfigSchema,
 } from "./settings";

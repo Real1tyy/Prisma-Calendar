@@ -8689,6 +8689,14 @@ div.vis-tooltip {
   gap: 1rem;
 }
 
+.prisma-first-launch-import {
+  margin-bottom: 1rem;
+}
+
+.prisma-device-role-modal {
+  width: min(720px, 100vw - 2rem);
+}
+
 .prisma-first-launch-mode-card {
   box-sizing: border-box;
   position: relative;
@@ -8736,6 +8744,35 @@ div.vis-tooltip {
 }
 .prisma-first-launch-mode-card.is-selected .prisma-first-launch-mode-title {
   color: color-mix(in srgb, var(--text-normal) 70%, var(--interactive-accent) 30%);
+}
+
+.prisma-device-role-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.prisma-device-role-content h2,
+.prisma-device-role-content p {
+  margin: 0;
+}
+.prisma-device-role-content .prisma-first-launch-mode-card {
+  gap: 0.75rem;
+  cursor: default;
+}
+
+.prisma-device-role-warning {
+  padding: 1rem;
+  border-left: 3px solid var(--text-warning);
+  border-radius: var(--radius-s);
+  background: var(--background-secondary);
+}
+.prisma-device-role-warning p {
+  margin-top: 0.4rem;
+}
+
+.prisma-device-role-footnote {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
 }
 
 .prisma-first-launch-mode-title {

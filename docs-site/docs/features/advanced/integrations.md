@@ -178,7 +178,7 @@ Both CalDAV accounts and ICS URL subscriptions decide what to create by comparin
 
 Every device that has an account or subscription configured syncs it on its own — there is no coordination between devices, and the sync-token that tracks incremental changes is per device (see [Where the sync-token lives](#where-the-sync-token-lives)). Prisma derives each new note name from the remote event UID, so every device names the note the same way and sync never sees two copies. The default **Remote event UID** naming mode is under **Settings → Integrations**; choose **Creation time** there if filename timestamps are part of your workflow.
 
-To sync each external calendar from only **one** device, turn on **Read-only mode** (Settings → General) on the others. A read-only device does not sync at all — it only shows the notes the syncing device produces, and it never trashes anything. Everything else on the [Multiple devices and sync](./multi-device-sync.md) page applies to synced notes as well.
+To sync each external calendar from only **one** device, choose **Reader** (Read-only mode under Settings → General) on the others. A Reader does not sync at all — it only shows the notes the Writer produces, and it never trashes anything. The role is device-local and never syncs with the vault. Everything else on the [Multiple devices and sync](./multi-device-sync.md) page applies to synced notes as well.
 
 Manual ICS imports record each event's UID. Importing the same file again skips those events, and a later ICS URL subscription with the same UIDs adopts the existing notes. Notes created before UID-based naming keep their current names and remain tracked.
 

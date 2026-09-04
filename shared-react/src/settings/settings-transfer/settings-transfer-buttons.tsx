@@ -39,6 +39,8 @@ export interface SettingsTransferButtonsProps<T extends Record<string, unknown>>
 	resetSuccessMessage?: string;
 	/** Hide the reset button entirely. Default: false (button is shown). */
 	hideResetButton?: boolean;
+	/** Hide the export button entirely. Default: false (button is shown). */
+	hideExportButton?: boolean;
 	/** CSS class added to the modal elements. Use for scoping styles per-plugin. */
 	modalClass?: string;
 	testIdPrefix?: string;
@@ -61,6 +63,7 @@ function SettingsTransferButtonsInner<T extends Record<string, unknown>>({
 	resetConfirmMessage = "All settings will be restored to their defaults. This cannot be undone.",
 	resetSuccessMessage = "Settings reset to defaults.",
 	hideResetButton = false,
+	hideExportButton = false,
 	modalClass,
 	testIdPrefix,
 }: SettingsTransferButtonsProps<T>) {
@@ -131,9 +134,11 @@ function SettingsTransferButtonsInner<T extends Record<string, unknown>>({
 			<Button testId={tid("import-button")} onClick={openImport}>
 				{importButtonText}
 			</Button>
-			<Button testId={tid("export-button")} onClick={openExport}>
-				{exportButtonText}
-			</Button>
+			{!hideExportButton && (
+				<Button testId={tid("export-button")} onClick={openExport}>
+					{exportButtonText}
+				</Button>
+			)}
 			{!hideResetButton && (
 				<Button testId={tid("reset-button")} variant="warning" onClick={() => void handleReset()}>
 					{resetButtonText}

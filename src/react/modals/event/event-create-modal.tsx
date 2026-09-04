@@ -115,7 +115,7 @@ function handleCreateSubmit(
 	options: OpenCreateModalOptions
 ): void {
 	const settings = bundle.settingsStore.currentSettings;
-	const saveData = buildEventSaveData(values, settings, {}, new Set(), bundle.plugin.syncStore.data.readOnly);
+	const saveData = buildEventSaveData(values, settings, {}, new Set(), bundle.plugin.deviceRoleStore.data.readOnly);
 
 	if (saveData.virtual) {
 		void bundle.createVirtualEvent(saveData);

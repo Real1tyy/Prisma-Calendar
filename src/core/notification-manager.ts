@@ -1,10 +1,10 @@
-import { formatLocaleTimeHm, parseAsLocalDate, toSafeString, type SyncStore } from "@real1ty/obsidian-plugins";
+import { formatLocaleTimeHm, parseAsLocalDate, toSafeString } from "@real1ty/obsidian-plugins";
 import type { App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 
 import { showNotificationModal } from "../components/modals";
 import { MAX_PAST_NOTIFICATION_THRESHOLD, NOTIFICATION_CHECK_INTERVAL_MS } from "../constants";
-import type { Frontmatter, PrismaSyncDataSchema } from "../types";
+import type { Frontmatter } from "../types";
 import type { EventMetadata } from "../types/event-metadata";
 import type { CalendarEventSource, IndexerEvent } from "../types/event-source";
 import type { SingleCalendarConfig } from "../types/settings";
@@ -48,9 +48,7 @@ export class NotificationManager {
 	constructor(
 		private app: App,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>,
-		private eventSource: CalendarEventSource,
-		// Read-only handling lives in the repository's automatic write path now.
-		_syncStore: SyncStore<typeof PrismaSyncDataSchema> | null
+		private eventSource: CalendarEventSource
 	) {
 		this.settings = settingsStore.value;
 

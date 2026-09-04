@@ -8,14 +8,13 @@ import {
 	waitForFileCache,
 	type FrontmatterDiff,
 	type FrontmatterRepo,
-	type SyncStore,
 	type VaultRow,
 	type VaultTableEvent,
 } from "@real1ty/obsidian-plugins";
 import { TFile, type App } from "obsidian";
 import { BehaviorSubject, Subject, type Observable, type Subscription } from "rxjs";
 
-import type { Frontmatter, PrismaSyncDataSchema, SingleCalendarConfig } from "../types";
+import type { Frontmatter, SingleCalendarConfig } from "../types";
 import type { CalendarEventSource, IndexerEvent, RawEventSource } from "../types/event-source";
 import type { NodeRecurringEvent } from "../types/recurring";
 import { PARSE_AFFECTING_KEYS, parseAffectingSettingsChanged } from "../utils/calendar/settings";
@@ -27,6 +26,7 @@ import { deriveRRuleId, hasTimestamp } from "../utils/events/zettel-id";
 import { enforceEventPropertyOrder, getOrderedPropertyNames } from "../utils/frontmatter/ordering";
 import { shouldEventBeMarkedAsDone } from "../utils/frontmatter/predicates";
 import { createEventSchema } from "./event-schema";
+import type { DeviceRoleStore } from "./device-role-store";
 
 export { PARSE_AFFECTING_KEYS, parseAffectingSettingsChanged };
 
@@ -91,7 +91,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 	constructor(
 		readonly app: App,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>,
-		private syncStore: SyncStore<typeof PrismaSyncDataSchema> | null
+		private deviceRoleStore: Pick<DeviceRoleStore, "data"> | null
 	) {
 		this.settings = settingsStore.value;
 		this.table = this.createTable(this.settings);
@@ -149,7 +149,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 
 	/** True on a device the user set to read-only: automatic writers must perform nothing. */
 	get isReadOnly(): boolean {
-		return this.syncStore?.data.readOnly === true;
+		return this.deviceRoleStore?.data.readOnly === true;
 	}
 
 	/**
@@ -504,7 +504,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 
 			if (cachedId) {
 				rRuleId = cachedId;
-			} else if (this.syncStore?.data.readOnly) {
+			} else if (this.deviceRoleStore?.data.readOnly) {
 				// In readOnly mode we can't write an rRuleId — skip this recurring event entirely.
 				// Without a stable ID, instances can't be deduplicated across reloads.
 				return null;
@@ -560,7 +560,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 		frontmatter: Frontmatter,
 		isUntracked: boolean
 	): Promise<void> {
-		if (this.syncStore?.data.readOnly) return;
+		if (this.deviceRoleStore?.data.readOnly) return;
 
 		const settings = this.settings;
 		const { calendarTitleProp, sortDateProp, statusProperty, doneValue } = settings;
@@ -590,7 +590,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 		const mode = this.settings.autoAssignZettelId;
 		if (mode === "disabled") return;
 		if (mode === "calendarEvents" && isUntracked) return;
-		if (this.syncStore?.data.readOnly) return;
+		if (this.deviceRoleStore?.data.readOnly) return;
 		if (hasTimestamp(file.basename)) return;
 		if (isFolderNote(file.path)) return;
 		// Prevent re-entrant renames: if we're already renaming this file (by original path),

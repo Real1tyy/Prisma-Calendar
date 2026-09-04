@@ -1016,11 +1016,3 @@ export type EventPreset = z.infer<typeof EventPresetSchema>;
 export type SingleCalendarConfig = z.infer<typeof SingleCalendarConfigSchema>;
 export type CustomCalendarSettings = z.infer<typeof CustomCalendarSettingsSchema>;
 export type PrismaCalendarSettingsStore = SettingsStore<typeof CustomCalendarSettingsSchema>;
-
-// ─── Sync-Persisted Plugin State ─────────────────────────────────────
-
-export const PrismaSyncDataSchema = z
-	.object({
-		readOnly: z.boolean().catch(false),
-	})
-	.strip();

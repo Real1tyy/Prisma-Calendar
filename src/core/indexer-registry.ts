@@ -1,10 +1,9 @@
-import type { SyncStore } from "@real1ty/obsidian-plugins";
 import type { App } from "obsidian";
 import type { BehaviorSubject } from "rxjs";
 
-import type { PrismaSyncDataSchema } from "../types";
 import type { PrismaCalendarSettingsStore, SingleCalendarConfig } from "../types/settings";
 import { CategoryTracker } from "./category-tracker";
+import type { DeviceRoleStore } from "./device-role-store";
 import { EventFileRepository } from "./event-file-repository";
 import { EventStore, UntrackedEventStore } from "./event-store";
 import { NameSeriesTracker } from "./name-series-tracker";
@@ -55,7 +54,7 @@ type SharedInfrastructure = Pick<
 export class IndexerRegistry {
 	private static instance: IndexerRegistry | null = null;
 	private registry: Map<string, RegistryEntry> = new Map();
-	private syncStore: SyncStore<typeof PrismaSyncDataSchema> | null = null;
+	private deviceRoleStore: DeviceRoleStore | null = null;
 
 	private constructor(private app: App) {}
 
@@ -66,8 +65,8 @@ export class IndexerRegistry {
 		return IndexerRegistry.instance;
 	}
 
-	setSyncStore(syncStore: SyncStore<typeof PrismaSyncDataSchema>): void {
-		this.syncStore = syncStore;
+	setDeviceRoleStore(deviceRoleStore: DeviceRoleStore): void {
+		this.deviceRoleStore = deviceRoleStore;
 	}
 
 	/**
@@ -91,9 +90,14 @@ export class IndexerRegistry {
 			entry.refCount++;
 			entry.calendarIds.add(calendarId);
 		} else {
-			const fileRepository = new EventFileRepository(this.app, settingsStore, this.syncStore);
-			const recurringEventManager = new RecurringEventManager(this.app, settingsStore, fileRepository, this.syncStore);
-			const notificationManager = new NotificationManager(this.app, settingsStore, fileRepository, this.syncStore);
+			const fileRepository = new EventFileRepository(this.app, settingsStore, this.deviceRoleStore);
+			const recurringEventManager = new RecurringEventManager(
+				this.app,
+				settingsStore,
+				fileRepository,
+				this.deviceRoleStore
+			);
+			const notificationManager = new NotificationManager(this.app, settingsStore, fileRepository);
 			const parser = new Parser(settingsStore, mainSettingsStore, calendarId, fileRepository);
 			const eventStore = new EventStore(fileRepository, parser, recurringEventManager, settingsStore);
 			const categoryTracker = new CategoryTracker(this.app, fileRepository, eventStore, settingsStore);

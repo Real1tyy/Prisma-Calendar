@@ -434,7 +434,7 @@ class MinimizedModalManagerClass {
 			settings,
 			originalFrontmatter,
 			new Set(Object.keys(customProperties)),
-			bundle.plugin.syncStore.data.readOnly
+			bundle.plugin.deviceRoleStore.data.readOnly
 		);
 
 		this.clear();

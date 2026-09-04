@@ -17,7 +17,7 @@
 
 ## Initial Setup
 
-The first time you open Prisma, a **Welcome** modal walks you through a one-time setup. There are only two things to decide: **which folder** Prisma should watch, and **which frontmatter properties** hold your dates. If you are starting fresh, you can use the defaults. You can change these values at any time later in the settings.
+The first time you open Prisma, a **Welcome** modal walks you through setup. Choose **which folder** Prisma should watch and **which frontmatter properties** hold your dates, or click **Import settings** to upload a Prisma JSON file or paste JSON from another setup. Imported settings are applied before Prisma starts indexing.
 
 Prisma never forces a schema. It reads the notes you point it to look at and turns the ones with date properties into events — nothing is moved, rewritten, or migrated. The modal offers two starting points:
 
@@ -27,6 +27,15 @@ Prisma never forces a schema. It reads the notes you point it to look at and tur
 | **Start with a clean setup** | A fresh planning system from scratch | Creates a dedicated folder (default `Tasks/`) with Prisma's default property names |
 
 Both paths end in the same place: a folder Prisma watches and the property names it reads from. The only difference is whether you adopt names you already use or accept the defaults.
+
+### Choose this device's role
+
+After directory setup or import, choose **Writer** or **Reader**:
+
+- **Writer** performs Prisma's automatic writes. Use this for the device where you create and edit most often.
+- **Reader** shows synchronized notes but performs no automatic writes. Manual actions still work.
+
+For a vault that may be open on several synchronized devices, nominate one Writer and make the others Readers. Closing the role prompt keeps that session in safe Reader mode; Prisma asks again next startup and shows a warning in General Settings. The choice is stored only in that browser's local storage and does not sync with the vault. See [Multiple devices and sync](features/advanced/multi-device-sync).
 
 ### Adapting Prisma to a folder you already have
 

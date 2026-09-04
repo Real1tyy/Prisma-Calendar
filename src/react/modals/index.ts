@@ -39,6 +39,8 @@ export { ConfigureCalendarController, openConfigureCalendarModal } from "./calen
 export { openGoToDateModal } from "./calendar/go-to-date-modal";
 
 // Onboarding modals
+export type { DeviceRoleControllerProps } from "./onboarding/device-role";
+export { DeviceRoleController, openDeviceRoleModal } from "./onboarding/device-role";
 export type {
 	FirstLaunchControllerProps,
 	FirstLaunchInitialProps,

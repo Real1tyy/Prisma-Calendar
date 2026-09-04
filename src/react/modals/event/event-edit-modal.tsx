@@ -261,7 +261,7 @@ async function handleEditSubmit(
 		settings,
 		originalFrontmatter,
 		originalCustomPropertyKeys,
-		bundle.plugin.syncStore.data.readOnly
+		bundle.plugin.deviceRoleStore.data.readOnly
 	);
 
 	saveData.title = composeTitleWithZettel(

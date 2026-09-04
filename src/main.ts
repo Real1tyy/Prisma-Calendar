@@ -6,7 +6,6 @@ import {
 	ReleaseCheckService,
 	setIconPickerImplementation,
 	SettingsStore,
-	SyncStore,
 	waitForCacheReady,
 	type Sequencer,
 } from "@real1ty/obsidian-plugins";
@@ -24,6 +23,7 @@ import { VirtualEventsBlockRenderer } from "./components/virtual-events-block";
 import { VIRTUAL_EVENTS_CODE_FENCE } from "./constants";
 import {
 	CalendarBundle,
+	DeviceRoleStore,
 	IndexerRegistry,
 	LastUsedCalendarStore,
 	MinimizedModalManager,
@@ -35,10 +35,10 @@ import { importEventsToCalendar } from "./core/integrations/ics-import";
 import { createLicenseManager, type LicenseManager } from "./core/license";
 import { installPrismaPerfBridge } from "./core/perf-bridge";
 import { buildWhatsNewConfig } from "./core/whats-new-config";
-import { openCalendarSelectModal, openFirstLaunchModal, openICSImportModal } from "./react/modals";
+import { openCalendarSelectModal, openDeviceRoleModal, openFirstLaunchModal, openICSImportModal } from "./react/modals";
 // Onboarding tour disabled for now — kept in the codebase but not wired up.
 // import { startPrismaTour } from "./react/onboarding/prisma-tour";
-import { CustomCalendarSettingsSchema, PrismaSyncDataSchema, type PrismaCalendarSettingsStore } from "./types";
+import { CustomCalendarSettingsSchema, type PrismaCalendarSettingsStore } from "./types";
 import { type CalDAVAccount, type ICSSubscription } from "./types/integrations";
 import { migrateSharedExcludedProps } from "./utils/calendar/migrations";
 import { createDefaultCalendarConfig } from "./utils/calendar/settings";
@@ -46,7 +46,7 @@ import { createDefaultCalendarConfig } from "./utils/calendar/settings";
 export default class CustomCalendarPlugin extends Plugin {
 	readonly changelogContent: string = CHANGELOG_CONTENT;
 	settingsStore!: PrismaCalendarSettingsStore;
-	syncStore!: SyncStore<typeof PrismaSyncDataSchema>;
+	deviceRoleStore!: DeviceRoleStore;
 	calendarBundles: CalendarBundle[] = [];
 	apiManager!: PrismaCalendarApiManager;
 	licenseManager!: LicenseManager;
@@ -78,11 +78,13 @@ export default class CustomCalendarPlugin extends Plugin {
 			isEnabled: () => this.settingsStore.currentSettings.checkForReleaseUpdates,
 		});
 
-		this.syncStore = new SyncStore(this.app, this, PrismaSyncDataSchema);
-		await this.syncStore.loadData();
+		const pluginDir = this.manifest.dir;
+		if (!pluginDir) throw new Error("Prisma Calendar cannot resolve its plugin directory");
+		this.deviceRoleStore = new DeviceRoleStore(this.app.vault.adapter, pluginDir);
+		await this.deviceRoleStore.load();
 
 		const registry = IndexerRegistry.getInstance(this.app);
-		registry.setSyncStore(this.syncStore);
+		registry.setDeviceRoleStore(this.deviceRoleStore);
 
 		await this.ensureMinimumCalendars();
 
@@ -117,6 +119,7 @@ export default class CustomCalendarPlugin extends Plugin {
 				if (isFirstLaunch) {
 					await this.showFirstLaunchOnboarding();
 				} else {
+					await this.promptForDeviceRole();
 					await this.ensureCalendarBundlesReady();
 					void this.checkForUpdates();
 					void this.releaseCheckService.checkForUpdates();
@@ -392,6 +395,7 @@ export default class CustomCalendarPlugin extends Plugin {
 				endProp: primaryCalendar.endProp,
 				dateProp: primaryCalendar.dateProp,
 			},
+			settingsStore: this.settingsStore,
 		});
 
 		const currentVersion = this.manifest.version;
@@ -417,12 +421,23 @@ export default class CustomCalendarPlugin extends Plugin {
 			),
 		}));
 
-		await this.ensureCalendarBundlesReady();
+		await this.promptForDeviceRole();
+		if (result?.importedSettings) {
+			await this.refreshCalendarBundles();
+		} else {
+			await this.ensureCalendarBundlesReady();
+		}
 
 		const bundle = this.calendarBundles.at(0);
 		if (bundle) {
 			await bundle.activateCalendarView();
 		}
+	}
+
+	private async promptForDeviceRole(): Promise<void> {
+		if (this.deviceRoleStore.hasSelectedRole) return;
+		const role = await openDeviceRoleModal(this.app);
+		if (role) this.deviceRoleStore.select(role);
 	}
 
 	// Onboarding tour disabled for now — kept here but not invoked anywhere.

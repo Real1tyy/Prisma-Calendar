@@ -1,6 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { buildUtmUrl } from "@real1ty/obsidian-plugins";
-import { Button, openReactModal, TextInput, WelcomeModalShell } from "@real1ty/obsidian-plugins-react";
+import {
+	Button,
+	openReactModal,
+	SettingsTransferButtons,
+	TextInput,
+	WelcomeModalShell,
+} from "@real1ty/obsidian-plugins-react";
 import type { App } from "obsidian";
 import { memo, useCallback, useEffect, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
@@ -8,6 +14,11 @@ import { z } from "zod";
 
 import { cls, CSS_PREFIX, docsUrl, tid } from "../../../constants";
 import type { DirectorySuggestion } from "../../../core/directory-suggestions";
+import type { CustomCalendarSettings, PrismaCalendarSettingsStore } from "../../../types/settings";
+import {
+	PRISMA_NON_TRANSFERABLE_SETTINGS,
+	PRISMA_SETTINGS_TRANSFER_FILENAME,
+} from "../../../utils/settings-transfer";
 import { computePrefill, Field, PropertyFields, SuggestionList } from "../calendar/property-config";
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
@@ -27,12 +38,16 @@ type FormValues = z.infer<typeof FormSchema>;
 export type FirstLaunchMode = FormValues["mode"];
 export type FirstLaunchInitialProps = Pick<FormValues, "startProp" | "endProp" | "dateProp">;
 export type FirstLaunchInitialState = Partial<FormValues>;
-export type FirstLaunchModalResult = FormValues & { selectedSuggestion: DirectorySuggestion | null };
+export type FirstLaunchModalResult = FormValues & {
+	selectedSuggestion: DirectorySuggestion | null;
+	importedSettings: boolean;
+};
 
 export interface FirstLaunchControllerProps {
 	initialProps: FirstLaunchInitialProps;
 	loadSuggestions: () => Promise<DirectorySuggestion[]>;
 	initialState?: FirstLaunchInitialState | undefined;
+	settingsStore?: PrismaCalendarSettingsStore | undefined;
 	onSubmit: (result: FirstLaunchModalResult) => void;
 }
 
@@ -56,6 +71,7 @@ export async function openFirstLaunchModal(
 				initialProps={options.initialProps}
 				loadSuggestions={options.loadSuggestions}
 				initialState={options.initialState}
+				settingsStore={options.settingsStore}
 				onSubmit={submit}
 			/>
 		),
@@ -131,6 +147,7 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 	initialProps,
 	loadSuggestions,
 	initialState,
+	settingsStore,
 	onSubmit,
 }: FirstLaunchControllerProps) {
 	const [suggestions, setSuggestions] = useState<DirectorySuggestion[]>([]);
@@ -189,6 +206,23 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 		[setValue, initialProps]
 	);
 
+	const completeImportedSetup = useCallback(
+		(settings: CustomCalendarSettings): void => {
+			const primary = settings.calendars.at(0);
+			if (!primary) return;
+			onSubmit({
+				mode: "existing",
+				directory: primary.directory,
+				startProp: primary.startProp,
+				endProp: primary.endProp,
+				dateProp: primary.dateProp,
+				selectedSuggestion: null,
+				importedSettings: true,
+			});
+		},
+		[onSubmit]
+	);
+
 	const submit = handleSubmit((values) => {
 		onSubmit({
 			...values,
@@ -197,6 +231,7 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 			endProp: values.endProp.trim() || initialProps.endProp,
 			dateProp: values.dateProp.trim() || initialProps.dateProp,
 			selectedSuggestion: matchedSuggestion,
+			importedSettings: false,
 		});
 	});
 
@@ -210,6 +245,24 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 			submitDisabled={!currentDirectory.trim()}
 			onSubmit={() => void submit()}
 		>
+			{settingsStore ? (
+				<section className={cls("first-launch-import")}>
+					<SettingsTransferButtons
+						store={settingsStore}
+						defaults={settingsStore.getDefaults()}
+						nonTransferableKeys={PRISMA_NON_TRANSFERABLE_SETTINGS}
+						filename={PRISMA_SETTINGS_TRANSFER_FILENAME}
+						onImport={completeImportedSetup}
+						name="Already have Prisma settings?"
+						description="Import a JSON file or paste JSON to use that configuration immediately."
+						importButtonText="Import settings"
+						hideExportButton
+						hideResetButton
+						modalClass={cls("settings-transfer-modal")}
+						testIdPrefix={welcomeTid("settings-import")}
+					/>
+				</section>
+			) : null}
 			<section className={cls("first-launch-mode-grid")}>
 				<ModeCard
 					title="Use notes you already have"

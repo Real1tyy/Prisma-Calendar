@@ -23,7 +23,7 @@ Anything you do yourself — editing a note on two devices at once — is the sy
 
 - **Your notes** — of course.
 - **Prisma's settings** (`.obsidian/plugins/prisma-calendar/data.json`). The property order, the done value, the recurring-instance count and the property names are inputs to every automatic write; devices with different settings produce different files. Most sync tools sync plugin settings by default; LiveSync needs *Sync hidden files* / plugin settings sync turned on.
-- Do **not** sync per-device state. Prisma keeps CalDAV sync tokens in the browser's local storage and the read-only flag in `sync.json`, both of which are meant to differ per device.
+- Do **not** sync per-device state. Prisma keeps CalDAV sync tokens and the Writer/Reader choice in the browser's local storage, where each device can differ safely.
 
 ## How automatic writes reach your notes
 
@@ -31,9 +31,11 @@ Every automatic write goes through one queue per note: it waits until Obsidian h
 
 ## Limiting writes to one device
 
-If you prefer that only one device generates instances, syncs external calendars, and marks events done, turn on **Read-only mode** under **Settings → General** on every other device. A read-only device shows and lets you edit events normally, but performs no automatic writes of its own: no recurring instances, no marking done, no **Sort Date** or **Calendar Title** normalisation, no automatic ZettelID assignment, no CalDAV/ICS sync, no series propagation, no time-tracker progress saves, no reminder flags. Edits you make by hand are written as usual.
+On first setup Prisma asks whether the device is a **Writer** or **Reader**. Nominate one Writer—usually the device where you create most things—and use Reader mode on other devices that may be open concurrently. A Reader shows and lets you edit events normally, but performs no automatic writes of its own: no recurring instances, no marking done, no **Sort Date** or **Calendar Title** normalisation, no automatic ZettelID assignment, no CalDAV/ICS sync, no series propagation, no time-tracker progress saves, no reminder flags. Edits you make by hand are written as usual.
 
-The flag lives in `sync.json`, next to the plugin settings, and is meant to stay on the device where you set it — most sync tools leave it alone; git users add it to `.gitignore`.
+The choice lives in browser-local storage, never in the vault. Closing the prompt leaves the choice unresolved and uses safe Reader behavior for that session; Prisma asks again next startup and shows a warning under **Settings → General**.
+
+Current Prisma versions derive recurring-series and integration-event identities from synchronized inputs, so equivalent automatic writes converge. A single Writer remains useful because devices cannot coordinate: different plugin versions or settings, templates that insert the current time or random values, and concurrent manual edits can still produce different files. Avoiding simultaneous use substantially reduces those risks.
 
 ## What to be aware of
 
