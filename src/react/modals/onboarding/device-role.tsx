@@ -14,8 +14,8 @@ export const DeviceRoleController = memo(function DeviceRoleController({ onSelec
 		<div className={cls("device-role-content")}>
 			<h2>Choose this device's role</h2>
 			<p>
-				Prisma cannot coordinate devices that have the same vault open at the same time. If you use a file-sync
-				tool, choose one primary Writer and make concurrently open devices Readers.
+				Prisma cannot coordinate devices that have the same vault open at the same time. If you use a file-sync tool,
+				choose one primary Writer and make concurrently open devices Readers.
 			</p>
 			<div className={cls("first-launch-mode-grid")}>
 				<section className={cls("first-launch-mode-card")}>
@@ -46,8 +46,8 @@ export const DeviceRoleController = memo(function DeviceRoleController({ onSelec
 				</p>
 			</div>
 			<p className={cls("device-role-footnote")}>
-				You can change this later in Settings → General. Closing this window keeps Prisma in safe Reader mode and
-				asks again next startup.
+				You can change this later in Settings → General. Closing this window keeps Prisma in safe Reader mode and asks
+				again next startup.
 			</p>
 		</div>
 	);

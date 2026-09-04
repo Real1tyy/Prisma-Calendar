@@ -15,10 +15,7 @@ import { z } from "zod";
 import { cls, CSS_PREFIX, docsUrl, tid } from "../../../constants";
 import type { DirectorySuggestion } from "../../../core/directory-suggestions";
 import type { CustomCalendarSettings, PrismaCalendarSettingsStore } from "../../../types/settings";
-import {
-	PRISMA_NON_TRANSFERABLE_SETTINGS,
-	PRISMA_SETTINGS_TRANSFER_FILENAME,
-} from "../../../utils/settings-transfer";
+import { PRISMA_NON_TRANSFERABLE_SETTINGS, PRISMA_SETTINGS_TRANSFER_FILENAME } from "../../../utils/settings-transfer";
 import { computePrefill, Field, PropertyFields, SuggestionList } from "../calendar/property-config";
 
 // ─── Schema ───────────────────────────────────────────────────────────────────

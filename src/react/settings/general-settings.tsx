@@ -1,7 +1,7 @@
 import { buildUtmUrl } from "@real1ty/obsidian-plugins";
 import {
-	Dropdown,
 	Button,
+	Dropdown,
 	GeneralSection,
 	OutboundLink,
 	SettingHeading,
@@ -19,15 +19,9 @@ import { ACCOUNT_URL, FREE_MAX_EVENT_PRESETS } from "../../core/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import { buildWhatsNewConfig } from "../../core/whats-new-config";
 import type CustomCalendarPlugin from "../../main";
-import {
-	CustomCalendarSettingsSchema,
-	SingleCalendarConfigSchema,
-} from "../../types/settings";
+import { CustomCalendarSettingsSchema, SingleCalendarConfigSchema } from "../../types/settings";
+import { PRISMA_NON_TRANSFERABLE_SETTINGS, PRISMA_SETTINGS_TRANSFER_FILENAME } from "../../utils/settings-transfer";
 import { HelpBox } from "./_help-box";
-import {
-	PRISMA_NON_TRANSFERABLE_SETTINGS,
-	PRISMA_SETTINGS_TRANSFER_FILENAME,
-} from "../../utils/settings-transfer";
 import { PRISMA_SETTINGS_TEST_ID_PREFIX, PrismaSection } from "./_section";
 import { PRISMA_HELP_CENTER } from "./help-content";
 import { ProUpgradeBanner } from "./pro-upgrade-banner";
@@ -190,11 +184,13 @@ const MultiDeviceHelp = memo(function MultiDeviceHelp() {
 					different property names, property order or done values produce different files.
 				</li>
 				<li>
-					<strong>Nominate one Writer</strong> — usually the device where you create most things — and use Reader mode on
-					other devices that may be open at the same time.
+					<strong>Nominate one Writer</strong> — usually the device where you create most things — and use Reader mode
+					on other devices that may be open at the same time.
 				</li>
 			</ul>
-			<p>The risk is substantially reduced when the vault is not open on several devices at once. Still device-dependent:</p>
+			<p>
+				The risk is substantially reduced when the vault is not open on several devices at once. Still device-dependent:
+			</p>
 			<ul>
 				<li>
 					<strong>Auto-assigned ZettelIDs</strong> take the device's clock; two devices that index the same new note

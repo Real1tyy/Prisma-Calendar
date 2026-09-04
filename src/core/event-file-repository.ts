@@ -25,8 +25,8 @@ import { cleanupTitle } from "../utils/events/naming";
 import { deriveRRuleId, hasTimestamp } from "../utils/events/zettel-id";
 import { enforceEventPropertyOrder, getOrderedPropertyNames } from "../utils/frontmatter/ordering";
 import { shouldEventBeMarkedAsDone } from "../utils/frontmatter/predicates";
-import { createEventSchema } from "./event-schema";
 import type { DeviceRoleStore } from "./device-role-store";
+import { createEventSchema } from "./event-schema";
 
 export { PARSE_AFFECTING_KEYS, parseAffectingSettingsChanged };
 
