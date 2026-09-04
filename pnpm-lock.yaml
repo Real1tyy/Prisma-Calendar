@@ -61,8 +61,6 @@ overrides:
   protobufjs@<7.5.5: '>=7.5.5'
   simple-git@<3.36.0: '>=3.36.0'
   dompurify@<3.3.2: '>=3.3.2'
-  fast-uri@<=3.1.0: '>=3.1.1'
-  fast-uri@<=3.1.1: '>=3.1.2'
   fast-xml-parser@<5.7.0: '>=5.7.0'
   protobufjs@<=7.5.5: '>=7.5.6'
   brace-expansion@>=5.0.0 <5.0.6: '>=5.0.6'
@@ -76,13 +74,16 @@ overrides:
   brace-expansion@>=4.0.0 <5.0.9: '>=5.0.9 <6'
   dompurify@<=3.4.12: '>=3.4.13 <4'
   esbuild@>=0.27.3 <0.28.1: '>=0.28.1 <0.29'
-  fast-uri@<3.1.5: '>=3.1.5 <4'
+  fast-uri@<3.1.6: '>=3.1.6 <4'
+  fflate@<0.8.3: '>=0.8.3 <0.9'
   immutable@>=5.0.0-beta.1 <5.1.8: '>=5.1.8 <6'
   js-yaml@<3.15.1: '>=3.15.1 <4'
   js-yaml@>=4.0.0 <4.3.1: '>=4.3.1 <5'
   jsonata@<2.2.0: '>=2.2.0 <3'
   nanoid@<3.3.18: '>=3.3.18 <4'
   postcss@<=8.5.17: '>=8.5.18 <9'
+  postcss-selector-parser@>=7.0.0 <7.1.3: '>=7.1.3 <8'
+  qs@<6.16.0: '>=6.16.0 <7'
   re2@<=1.25.1: '>=1.25.2 <2'
   undici@>=7.0.0 <7.28.0: '>=7.28.0 <8'
   vite@>=8.0.0 <=8.0.15: '>=8.0.16 <9'
@@ -825,14 +826,14 @@ packages:
     engines:
       node: '>=20.19.0'
     peerDependencies:
-      postcss-selector-parser: ^7.1.1
+      postcss-selector-parser: '>=7.1.3 <8'
   '@csstools/selector-specificity@6.0.0':
     resolution:
       integrity: sha512-4sSgl78OtOXEX/2d++8A83zHNTgwCJMaR24FvsYL7Uf/VS8HZk9PTwR51elTbGqMuwH3szLvvOXEaVnqn0Z3zA==
     engines:
       node: '>=20.19.0'
     peerDependencies:
-      postcss-selector-parser: ^7.1.1
+      postcss-selector-parser: '>=7.1.3 <8'
   '@egjs/hammerjs@2.0.17':
     resolution:
       integrity: sha512-XQsZgjm2EcVUiZQf11UBJQfmZeEmOW8DpI1gsFeln6w0ae0ii4dMQEQ0kjl6DspdWX1aGY1/loyXnP0JS06e/A==
@@ -2569,9 +2570,9 @@ packages:
       integrity: sha512-7MptL8U0cqcFdzIzwOTHoilX9x5BrNqye7Z/LuC7kCMRio1EMSyqRK3BEAUD7sXRq4iT4AzTVuZdhgQ2TCvYLg==
     engines:
       node: '>=8.6.0'
-  fast-uri@3.1.5:
+  fast-uri@3.1.7:
     resolution:
-      integrity: sha512-gHwA1O9LDIcKunMKhObS/HimwtehO1nPUECKAu5TpKgaO19fcWEl4bliWe1jWxVFvIXztJjjQ4L8XQ1EU9f7Jw==
+      integrity: sha512-dOvZVzjdZdz7phd9v6jCbwxrBW3fK6n8Rc0CtdmM4bumzMnxywBYhuph6J819RRw/ku+rLbelwfMunktuzVVHg==
   fast-xml-builder@1.3.0:
     resolution:
       integrity: sha512-F74cZEdCvuw9P41GAC3rod4X04jjWGM1JPEv/GWSqFTWLsdyMSBMBMlm9Hk3GLBgLBbdBNY8yee0pQh2RBVESQ==
@@ -3240,9 +3241,9 @@ packages:
       node: '>=12.0'
     peerDependencies:
       postcss: '>=8.5.18 <9'
-  postcss-selector-parser@7.1.1:
+  postcss-selector-parser@7.1.5:
     resolution:
-      integrity: sha512-orRsuYpJVw8LdAwqqLykBj9ecS5/cRHlI5+nvTo8LcCKmzDmqVORXtOIYEEQuL9D4BxtA1lm5isAqzQZCoQ6Eg==
+      integrity: sha512-KvvtD7SrlBP7dlgkBghEE3r84CABm5SmV2aNcG4oCA+qDnJ/tvKonFVvwWAyyWUEwxuNawdfEAZKP9zM3oZ2Uw==
     engines:
       node: '>=4'
   postcss-value-parser@4.2.0:
@@ -3804,7 +3805,7 @@ packages:
       '@vitest/ui': 4.1.8
       happy-dom: '*'
       jsdom: '*'
-      vite: '>=7.3.2'
+      vite: '>=8.0.16 <9'
     peerDependenciesMeta:
       '@edge-runtime/vm':
         optional: true
@@ -4224,12 +4225,12 @@ snapshots:
   : dependencies:
       '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-tokenizer': 4.0.0
-  '@csstools/selector-resolve-nested@4.0.0(postcss-selector-parser@7.1.1)':
+  '@csstools/selector-resolve-nested@4.0.0(postcss-selector-parser@7.1.5)':
     dependencies:
-      postcss-selector-parser: 7.1.1
-  '@csstools/selector-specificity@6.0.0(postcss-selector-parser@7.1.1)':
+      postcss-selector-parser: 7.1.5
+  '@csstools/selector-specificity@6.0.0(postcss-selector-parser@7.1.5)':
     dependencies:
-      postcss-selector-parser: 7.1.1
+      postcss-selector-parser: 7.1.5
   '@egjs/hammerjs@2.0.17':
     dependencies:
       '@types/hammerjs': 2.0.46
@@ -4833,7 +4834,7 @@ snapshots:
   ajv@8.20.0:
     dependencies:
       fast-deep-equal: 3.1.3
-      fast-uri: 3.1.5
+      fast-uri: 3.1.7
       json-schema-traverse: 1.0.0
       require-from-string: 2.0.2
   ansi-regex@5.0.1: {}
@@ -5040,7 +5041,7 @@ snapshots:
       glob-parent: 5.1.2
       merge2: 1.4.1
       micromatch: 4.0.8
-  fast-uri@3.1.5: {}
+  fast-uri@3.1.7: {}
   fast-xml-builder@1.3.0:
     dependencies:
       path-expression-matcher: 1.6.2
@@ -5446,7 +5447,7 @@ snapshots:
   postcss-scss@4.0.9(postcss@8.5.25):
     dependencies:
       postcss: 8.5.25
-  postcss-selector-parser@7.1.1:
+  postcss-selector-parser@7.1.5:
     dependencies:
       cssesc: 3.0.0
       util-deprecate: 1.0.2
@@ -5632,7 +5633,7 @@ snapshots:
       known-css-properties: 0.37.0
       postcss-media-query-parser: 0.2.3
       postcss-resolve-nested-selector: 0.1.6
-      postcss-selector-parser: 7.1.1
+      postcss-selector-parser: 7.1.5
       postcss-value-parser: 4.2.0
       stylelint: 17.11.1(typescript@5.9.3)
   stylelint@17.11.1(typescript@5.9.3):
@@ -5642,8 +5643,8 @@ snapshots:
       '@csstools/css-syntax-patches-for-csstree': 1.1.4(css-tree@3.2.1)
       '@csstools/css-tokenizer': 4.0.0
       '@csstools/media-query-list-parser': 5.0.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
-      '@csstools/selector-resolve-nested': 4.0.0(postcss-selector-parser@7.1.1)
-      '@csstools/selector-specificity': 6.0.0(postcss-selector-parser@7.1.1)
+      '@csstools/selector-resolve-nested': 4.0.0(postcss-selector-parser@7.1.5)
+      '@csstools/selector-specificity': 6.0.0(postcss-selector-parser@7.1.5)
       colord: 2.9.3
       cosmiconfig: 9.0.1(typescript@5.9.3)
       css-functions-list: 3.3.3
@@ -5665,7 +5666,7 @@ snapshots:
       picocolors: 1.1.1
       postcss: 8.5.25
       postcss-safe-parser: 7.0.1(postcss@8.5.25)
-      postcss-selector-parser: 7.1.1
+      postcss-selector-parser: 7.1.5
       postcss-value-parser: 4.2.0
       string-width: 8.2.1
       supports-hyperlinks: 4.4.0
