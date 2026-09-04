@@ -4,12 +4,14 @@ import {
 	LoggingController,
 	LogService,
 	PluginLog,
+	resolveDeviceLogId,
 	type FlushScheduler,
 } from "@real1ty/obsidian-plugins";
 import type { Plugin } from "obsidian";
 
 /** Sub-folder of the plugin directory the file sink writes into. */
 export const LOG_DIR_NAME = "logs";
+const DEVICE_ID_NAMESPACE = "prisma-calendar:logging";
 
 /**
  * The plugin-wide logger every module writes to: `log.warn("recurring", …)`
@@ -28,6 +30,8 @@ export interface PrismaLoggingOptions {
 	now?: () => number;
 	/** Injected under test so file flushes do not depend on a real timer. */
 	schedule?: FlushScheduler;
+	/** Injected under test so log file names do not depend on a minted id. */
+	deviceId?: string;
 }
 
 type LoggingHost = Pick<Plugin, "app" | "manifest">;
@@ -47,6 +51,7 @@ export function createPrismaLogging(plugin: LoggingHost, options: PrismaLoggingO
 	const now = options.now ?? (() => Date.now());
 	const service = new LogService({ now });
 	const dir = logDirectory(plugin);
+	const deviceId = options.deviceId ?? resolveDeviceLogId({ namespace: DEVICE_ID_NAMESPACE });
 	const controller = new LoggingController({
 		service,
 		createFileSink: (settings, onError) =>
@@ -57,6 +62,7 @@ export function createPrismaLogging(plugin: LoggingHost, options: PrismaLoggingO
 				maxFileSizeKb: settings.maxFileSizeKb,
 				maxFiles: settings.maxFiles,
 				maxAgeDays: settings.maxAgeDays,
+				deviceId,
 				onError,
 				...(options.schedule !== undefined ? { schedule: options.schedule } : {}),
 			}),

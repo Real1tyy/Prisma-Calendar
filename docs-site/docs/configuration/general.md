@@ -147,13 +147,26 @@ Prisma keeps a structured log of its own work — indexing, date parsing, recurr
 - **Minimum level**: the lowest level kept in the in-app log — **Debug**, **Info** (default), **Warnings**, or **Errors only**. Lower it to Debug while reproducing a problem, then raise it back; Debug is chatty.
 - **Mirror to developer console**: also print entries to Obsidian's developer console (`Ctrl/Cmd+Shift+I`). Enabled by default.
 - **Console level**: the lowest level mirrored to the console (default: Warnings), independent of the minimum level above.
-- **Write log files**: write entries as one JSON object per line to `.obsidian/plugins/prisma-calendar/logs/current.jsonl` inside your vault, so they survive a restart and can be attached to a bug report. Off by default — the file can contain note paths and property values, and if your sync tool syncs the `.obsidian` folder it travels with it.
+- **Write log files**: write entries as one JSON object per line into `.obsidian/plugins/prisma-calendar/logs/` inside your vault, so they survive a restart and can be attached to a bug report. Off by default — the files can contain note paths and property values, and if your sync tool syncs the `.obsidian` folder they travel with it.
 - **Show advanced options** reveals the file limits:
-  - **Rotate after (KB)**: when `current.jsonl` grows past this size (default 512 KB) it is renamed to a dated file such as `20260610-120000-123.jsonl` and a fresh `current.jsonl` starts.
+  - **Rotate after (KB)**: when the current file grows past this size (default 512 KB) it is renamed to a dated file and a fresh current file starts.
   - **Keep rotated files**: how many dated files to keep (default 5). The oldest are deleted automatically.
   - **Delete rotated files after (days)**: dated files older than this (default 30 days; up to 365 days) are deleted automatically, even when under the count limit.
 
 Changes take effect immediately — no reload. Rotation and cleanup run when a file rotates and each time the plugin loads; the current file is never deleted by cleanup. If the log file cannot be written (a read-only vault, for example), file logging switches itself off and records why in the in-app log.
+
+### Log file names
+
+Every log file is named after the device that wrote it, so the folder looks like this:
+
+```
+current-a1b2c3d4.jsonl              ← the file this device is writing now
+20260610-120000-123-a1b2c3d4.jsonl  ← rotated: 2026-06-10, 12:00:00.123 UTC
+```
+
+The trailing `a1b2c3d4` is a short random id, generated the first time this device writes a log and stored on the device itself — never in the vault, so it does not travel with your notes and identifies nothing about you or your machine. Each device therefore gets its own id and its own set of files.
+
+That is what keeps file logging safe on a vault whose `.obsidian` folder is synced: two devices with file logging on write to two different files, so the sync tool has nothing to merge and produces no conflict copies. Cleanup is scoped the same way — a device deletes only files it wrote, so the logs your laptop collected are still there when you open the vault on it next week, whatever your desktop has been doing in the meantime.
 
 ## Settings Transfer
 
