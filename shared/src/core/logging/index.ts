@@ -11,12 +11,14 @@ export {
 	serializeForExport,
 } from "./redact";
 export { ConsoleSink, DEFAULT_CONSOLE_MIRROR_LEVEL, type ConsoleLike, type ConsoleSinkOptions } from "./console-sink";
+export { DEVICE_ID_LENGTH, resolveDeviceLogId, type DeviceLogIdOptions } from "./device-id";
 export {
 	FileSink,
 	LOG_FILE_ACTIVE_NAME,
-	rotatedFileTime,
+	parseRotatedLogName,
 	type FileSinkOptions,
 	type FlushScheduler,
+	type RotatedLogFile,
 } from "./file-sink";
 export { createVaultLogFileSystem, type LogFileSystem } from "./log-file-system";
 export { LogService, type LogServiceOptions } from "./log-service";

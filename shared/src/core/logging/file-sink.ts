@@ -1,11 +1,18 @@
+import { DEVICE_ID_LENGTH } from "./device-id";
 import type { LogFileSystem } from "./log-file-system";
 import { formatLogLine } from "./serialize";
 import type { LogEntry, LogSink } from "./types";
 
 export const LOG_FILE_ACTIVE_NAME = "current.jsonl";
+const ACTIVE_STEM = "current";
 const DEFAULT_FLUSH_DELAY_MS = 250;
 const MS_PER_DAY = 86_400_000;
-const ROTATED_NAME = /^(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})-(\d{3})(?:-\d+)?\.jsonl$/;
+/**
+ * `<yyyymmdd>-<hhmmss>-<mmm>[-<device>][-<n>].jsonl`. The device segment is
+ * exactly {@link DEVICE_ID_LENGTH} characters and the collision counter at
+ * most four digits, so the two can never be read for each other.
+ */
+const ROTATED_NAME = /^(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})-(\d{3})(?:-([0-9a-z]{8}))?(?:-(\d{1,4}))?\.jsonl$/;
 
 /** `(callback, delayMs) → cancel`. Injected so tests drive flushes by hand. */
 export type FlushScheduler = (callback: () => void, delayMs: number) => () => void;
@@ -18,6 +25,12 @@ export interface FileSinkOptions {
 	maxFileSizeKb: number;
 	maxFiles: number;
 	maxAgeDays: number;
+	/**
+	 * Identifier of the device writing these files, from `resolveDeviceLogId`.
+	 * Present, it names every file this sink owns and scopes retention to
+	 * them; absent, the sink writes the unsuffixed legacy names.
+	 */
+	deviceId?: string;
 	/**
 	 * Called once, on the failure that disabled the sink. The sink has already
 	 * stopped accepting writes when this fires, so the handler may log freely.
@@ -36,20 +49,40 @@ function basename(path: string): string {
 	return path.slice(path.lastIndexOf("/") + 1);
 }
 
-/** Timestamp a rotated file's name encodes, or `null` for a file the sink does not own. */
-export function rotatedFileTime(path: string): number | null {
+/** What a rotated file's name encodes: when it was rotated, and by which device. */
+export interface RotatedLogFile {
+	time: number;
+	/** `null` for a file written before log names carried a device id. */
+	device: string | null;
+}
+
+/** Reads a rotated file's name, or `null` for a file the sink does not own. */
+export function parseRotatedLogName(path: string): RotatedLogFile | null {
 	const match = ROTATED_NAME.exec(basename(path));
 	if (!match) return null;
-	const [, year, month, day, hour, minute, second, millisecond] = match;
-	return Date.UTC(
-		Number(year),
-		Number(month) - 1,
-		Number(day),
-		Number(hour),
-		Number(minute),
-		Number(second),
-		Number(millisecond)
-	);
+	const [, year, month, day, hour, minute, second, millisecond, device] = match;
+	return {
+		time: Date.UTC(
+			Number(year),
+			Number(month) - 1,
+			Number(day),
+			Number(hour),
+			Number(minute),
+			Number(second),
+			Number(millisecond)
+		),
+		device: device ?? null,
+	};
+}
+
+/**
+ * The device segment used in file names: lower-case alphanumerics, padded or
+ * truncated to a fixed width so the name stays unambiguous to parse. An empty
+ * id yields `""`, which is what produces the legacy unsuffixed names.
+ */
+function deviceSegment(deviceId: string | undefined): string {
+	const normalized = (deviceId ?? "").toLowerCase().replace(/[^0-9a-z]/g, "");
+	return normalized === "" ? "" : normalized.slice(0, DEVICE_ID_LENGTH).padEnd(DEVICE_ID_LENGTH, "0");
 }
 
 function rotatedStamp(ts: number): string {
@@ -66,7 +99,14 @@ function rotatedStamp(ts: number): string {
  * worth retrying against on every entry, and the in-memory sink still has the
  * data. Rotation renames the active file to a UTC-stamped sibling; pruning
  * reads only those siblings (one directory listing, no per-file stat) and
- * never touches the active file. See [[spec-logging-config-sinks-and-instrumentation]].
+ * never touches the active file.
+ *
+ * Every file name carries the writing device's id, because a vault whose sync
+ * tool covers `.obsidian` otherwise has two machines appending to one
+ * `current.jsonl` and racing into conflict copies. Retention is scoped the
+ * same way: a device prunes only what it wrote (plus the unsuffixed files from
+ * before device ids existed), never another machine's history.
+ * See [[spec-logging-config-sinks-and-instrumentation]].
  */
 export class FileSink implements LogSink {
 	readonly activePath: string;
@@ -79,6 +119,7 @@ export class FileSink implements LogSink {
 	private readonly onError: (error: unknown) => void;
 	private readonly flushDelayMs: number;
 	private readonly schedule: FlushScheduler;
+	private readonly device: string;
 	private readonly encoder = new TextEncoder();
 
 	private pending: string[] = [];
@@ -92,7 +133,9 @@ export class FileSink implements LogSink {
 		this.fs = options.fs;
 		this.now = options.now;
 		this.dir = options.dir.replace(/\/+$/, "");
-		this.activePath = `${this.dir}/${LOG_FILE_ACTIVE_NAME}`;
+		this.device = deviceSegment(options.deviceId);
+		this.activePath =
+			this.device === "" ? `${this.dir}/${LOG_FILE_ACTIVE_NAME}` : `${this.dir}/${ACTIVE_STEM}-${this.device}.jsonl`;
 		this.maxBytes = Math.max(1, options.maxFileSizeKb) * 1024;
 		this.maxFiles = Math.max(0, Math.floor(options.maxFiles));
 		this.maxAgeMs = Math.max(0, options.maxAgeDays) * MS_PER_DAY;
@@ -165,11 +208,12 @@ export class FileSink implements LogSink {
 
 	private async rotate(): Promise<void> {
 		const stamp = rotatedStamp(this.now());
-		let target = `${this.dir}/${stamp}.jsonl`;
+		const stem = this.device === "" ? stamp : `${stamp}-${this.device}`;
+		let target = `${this.dir}/${stem}.jsonl`;
 		// Two rotations inside one millisecond only happen under a fake clock,
 		// but a silent overwrite would lose a whole file — disambiguate instead.
 		for (let suffix = 1; await this.fs.exists(target); suffix++) {
-			target = `${this.dir}/${stamp}-${suffix}.jsonl`;
+			target = `${this.dir}/${stem}-${suffix}.jsonl`;
 		}
 		await this.fs.rename(this.activePath, target);
 		this.activeSize = 0;
@@ -178,13 +222,25 @@ export class FileSink implements LogSink {
 
 	private async prune(): Promise<void> {
 		const rotated = (await this.fs.listFiles(this.dir))
-			.map((path) => ({ path, time: rotatedFileTime(path) }))
-			.filter((file): file is { path: string; time: number } => file.time !== null)
+			.map((path) => ({ path, parsed: parseRotatedLogName(path) }))
+			.filter((file): file is { path: string; parsed: RotatedLogFile } => file.parsed !== null)
+			.filter((file) => this.owns(file.parsed.device))
+			.map((file) => ({ path: file.path, time: file.parsed.time }))
 			.sort((a, b) => b.time - a.time);
 		const cutoff = this.now() - this.maxAgeMs;
 		for (const [index, file] of rotated.entries()) {
 			if (index >= this.maxFiles || file.time < cutoff) await this.fs.remove(file.path);
 		}
+	}
+
+	/**
+	 * A rotated file this device may delete: one it wrote, or one from before
+	 * device ids existed — those are this device's own history in a
+	 * single-device vault, and in a synced one they are already
+	 * indistinguishable, so leaving them would strand them forever.
+	 */
+	private owns(device: string | null): boolean {
+		return device === null || device === this.device;
 	}
 
 	private fail(error: unknown): void {
