@@ -1,3 +1,4 @@
+export * from "./duplicate-resolution";
 export * from "./file";
 export * from "./file-operations";
 export * from "./file-utils";

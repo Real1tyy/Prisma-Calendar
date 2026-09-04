@@ -126,6 +126,15 @@ export class VaultTable<
 
 	private readonly commandManager: CommandManager | null;
 	private readonly ops: VaultTableOps<TData>;
+	/**
+	 * Per-row write chains. Every mutation of one row runs after the previous
+	 * mutation of that row has settled, so a second writer always observes the
+	 * first writer's row (a concurrent `create` of the same key fails on the
+	 * in-memory check instead of racing `vault.create`; a concurrent `update`
+	 * merges onto the updated row instead of a stale snapshot). Different rows
+	 * never wait on each other. Entries are dropped once a chain drains.
+	 */
+	private readonly rowWriteChains = new Map<string, Promise<unknown>>();
 
 	private readonly eventsSubject = new Subject<VaultTableEvent<TData>>();
 	private readonly readySubject = new BehaviorSubject<boolean>(false);
@@ -474,7 +483,51 @@ export class VaultTable<
 	// Raw CRUD — no history tracking, used by commands internally
 	// =========================================================================
 
-	private async doCreate(insert: InsertVaultRow<TData>): Promise<VaultRow<TData>> {
+	/**
+	 * Runs `work` after every earlier write to the same row has settled. A
+	 * rejected predecessor does not block the successor — the caller of the
+	 * failed write sees its rejection; the next write starts from the row as
+	 * it actually is.
+	 */
+	private serializeRowWrite<T>(key: string, work: () => Promise<T>): Promise<T> {
+		const previous = this.rowWriteChains.get(key) ?? Promise.resolve();
+		const result = previous.catch(() => undefined).then(work);
+		const chain: Promise<unknown> = result
+			.catch(() => undefined)
+			.finally(() => {
+				if (this.rowWriteChains.get(key) === chain) this.rowWriteChains.delete(key);
+			});
+		this.rowWriteChains.set(key, chain);
+		return result;
+	}
+
+	private doCreate(insert: InsertVaultRow<TData>): Promise<VaultRow<TData>> {
+		return this.serializeRowWrite(insert.fileName, () => this.createRow(insert));
+	}
+
+	private doReplace(key: string, data: TData): Promise<VaultRow<TData>> {
+		return this.serializeRowWrite(key, () => this.replaceRow(key, data));
+	}
+
+	private doUpdate(key: string, data: Partial<TData>): Promise<VaultRow<TData>> {
+		return this.serializeRowWrite(key, () => this.updateRow(key, data));
+	}
+
+	private doUpdateContent(key: string, content: string): Promise<VaultRow<TData>> {
+		return this.serializeRowWrite(key, () => this.updateRowContent(key, content));
+	}
+
+	private doDelete(key: string): Promise<void> {
+		return this.serializeRowWrite(key, () => this.deleteRow(key));
+	}
+
+	private doRestoreFile(filePath: string, rawContent: string, data: TData, bodyContent: string): Promise<void> {
+		return this.serializeRowWrite(this.toRowKey(filePath), () =>
+			this.restoreRowFile(filePath, rawContent, data, bodyContent)
+		);
+	}
+
+	private async createRow(insert: InsertVaultRow<TData>): Promise<VaultRow<TData>> {
 		const id = insert.fileName;
 		if (this.rowByFileName.has(id)) {
 			throw new Error(`VaultTable: row "${id}" already exists`);
@@ -499,7 +552,7 @@ export class VaultTable<
 		return row;
 	}
 
-	private async doReplace(key: string, data: TData): Promise<VaultRow<TData>> {
+	private async replaceRow(key: string, data: TData): Promise<VaultRow<TData>> {
 		const existing = this.require(key);
 		const validated = this.schema.parse(data) as TData;
 		const serialized = this.serialize(validated);
@@ -542,7 +595,7 @@ export class VaultTable<
 		return newRow;
 	}
 
-	private async doUpdate(key: string, data: Partial<TData>): Promise<VaultRow<TData>> {
+	private async updateRow(key: string, data: Partial<TData>): Promise<VaultRow<TData>> {
 		const existing = this.require(key);
 		const merged = { ...existing.data, ...data };
 		const validated = this.schema.parse(merged) as TData;
@@ -578,7 +631,7 @@ export class VaultTable<
 		return newRow;
 	}
 
-	private async doUpdateContent(key: string, content: string): Promise<VaultRow<TData>> {
+	private async updateRowContent(key: string, content: string): Promise<VaultRow<TData>> {
 		const existing = this.require(key);
 		const serialized = this.serialize(existing.data);
 		this.applyPropertyOrder(serialized);
@@ -610,7 +663,7 @@ export class VaultTable<
 		return newRow;
 	}
 
-	private async doDelete(key: string): Promise<void> {
+	private async deleteRow(key: string): Promise<void> {
 		const existing = this.require(key);
 		await this.app.fileManager.trashFile(existing.file);
 		this.removeRow(existing.id);
@@ -625,7 +678,7 @@ export class VaultTable<
 		return this.app.vault.read(row.file);
 	}
 
-	private async doRestoreFile(filePath: string, rawContent: string, data: TData, bodyContent: string): Promise<void> {
+	private async restoreRowFile(filePath: string, rawContent: string, data: TData, bodyContent: string): Promise<void> {
 		const id = this.toRowKey(filePath);
 		const existing = this.rowByFileName.get(id);
 
