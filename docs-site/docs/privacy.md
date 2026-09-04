@@ -28,7 +28,7 @@ Diagnostics are high-level and about the plugin's own behaviour: which feature r
 | License keys, API keys, tokens, passwords, authorization headers | **Always removed**, in every mode. There is no setting that includes them. |
 
 The `.obsidian` folder marker may remain visible because it explains that a problem involved plugin
-configuration. Its descendants — plugin names, profiles, and custom filenames — are tokenized too.
+configuration. Its descendants — plugin names and configuration filenames — are tokenized too.
 
 ## A complete redaction example
 
@@ -48,7 +48,7 @@ token does not reveal the original name.
     "Attendees": ["Bob", "Marek"],
     "Budget": 48000
   },
-  "configPath": "C:\\Users\\Bob\\Documents\\Project Atlas\\.obsidian\\plugins\\prisma-calendar\\profiles\\client-work.json",
+  "configPath": "C:\\Users\\Bob\\Documents\\Project Atlas\\.obsidian\\plugins\\prisma-calendar\\data.json",
   "request": {
     "Authorization": "Bearer example-access-token-that-is-never-shared",
     "apiKey": "sk_live_example-key-that-is-never-shared"
@@ -67,7 +67,7 @@ token does not reveal the original name.
     "Attendees": "[array:2]",
     "Budget": "[number]"
   },
-  "configPath": "vault://.obsidian/{4d2e71}/{0b843c}/{e29af5}/{71c9f4}.json",
+  "configPath": "vault://.obsidian/{4d2e71}/{0b843c}/{e29af5}.json",
   "request": {
     "Authorization": "[redacted:secret]",
     "apiKey": "[redacted:secret]"
@@ -78,9 +78,9 @@ token does not reveal the original name.
 In other words: the support recipient can see that an index operation failed, that the note is three
 folders deep, that it is a Markdown file with a heading, and which property names and value types
 were involved. They can also see only the structural `.obsidian` marker, which says that a plugin
-configuration path was involved; its plugin name, profile, filename, and values are all tokenized.
+configuration path was involved; its plugin name, filename, and values are all tokenized.
 They cannot see your Windows or macOS account name, vault location, folder names, note title,
-heading, property values, configuration profile, or credentials. The same rules apply to Windows
+heading, property values, configuration filename, or credentials. The same rules apply to Windows
 drive paths, macOS volume paths, and network shares.
 
 ### Why `.obsidian` is visible
@@ -94,7 +94,7 @@ that decision.
 For example, the local path starts as:
 
 ```text
-C:\Users\Bob\Documents\Project Atlas\.obsidian\plugins\prisma-calendar\profiles\client-work.json
+C:\Users\Bob\Documents\Project Atlas\.obsidian\plugins\prisma-calendar\data.json
 ```
 
 It is transformed in four steps:
@@ -102,13 +102,13 @@ It is transformed in four steps:
 1. `C:\Users\Bob\Documents\Project Atlas` is recognized as the configured vault root and becomes
    `vault://`.
 2. The literal structural directory `.obsidian` remains `.obsidian`.
-3. Every following segment — `plugins`, `prisma-calendar`, `profiles`, and `client-work` — becomes a
-   stable short token. The `.json` extension remains so the file type is still useful for diagnosis.
-4. The result is `vault://.obsidian/{4d2e71}/{0b843c}/{e29af5}/{71c9f4}.json` (the exact number of tokens
+3. Every following segment — `plugins`, `prisma-calendar`, and `data` — becomes a stable short token.
+   The `.json` extension remains so the file type is still useful for diagnosis.
+4. The result is `vault://.obsidian/{4d2e71}/{0b843c}/{e29af5}.json` (the exact number of tokens
    reflects the path's structure; tokens here are illustrative).
 
 So the support recipient learns only, “a path under Obsidian's configuration folder was involved.”
-They do **not** learn which plugin, which profile, which configuration file, or any configuration
+They do **not** learn which plugin, which configuration file, or any configuration
 content. If a path does not contain `.obsidian`, the marker is not added; it is never guessed.
 
 ## Including full detail
