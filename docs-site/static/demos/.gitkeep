@@ -1,0 +1,4 @@
+# showrunner publishes compressed demo assets here (`<id>.{mp4,webm,poster.png}`).
+# Published assets are committed normally — small, web-compressed, no LFS — while
+# the raw recordings under tools/showrunner/out/ stay gitignored.
+# See docs/decisions for the showrunner demo pipeline ADR.
