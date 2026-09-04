@@ -67,7 +67,7 @@ token does not reveal the original name.
     "Attendees": "[array:2]",
     "Budget": "[number]"
   },
-  "configPath": "vault://.obsidian/{4d2e71}/{0b843c}/{e29af5}.json",
+  "configPath": "vault://.obsidian/{4d2e71}/{0b843c}/{e29af5}/{71c9f4}.json",
   "request": {
     "Authorization": "[redacted:secret]",
     "apiKey": "[redacted:secret]"
@@ -82,6 +82,34 @@ configuration path was involved; its plugin name, profile, filename, and values 
 They cannot see your Windows or macOS account name, vault location, folder names, note title,
 heading, property values, configuration profile, or credentials. The same rules apply to Windows
 drive paths, macOS volume paths, and network shares.
+
+### Why `.obsidian` is visible
+
+This is a deliberately small exception for **one generic folder name**, not a scan of your plugin
+configuration. The redactor only sees a path string. If that string contains the literal directory
+name `.obsidian`, it keeps that directory name so the recipient can distinguish a plugin-setting
+issue from a note-path issue. It does not open, read, or understand any configuration file to make
+that decision.
+
+For example, the local path starts as:
+
+```text
+C:\Users\Bob\Documents\Project Atlas\.obsidian\plugins\prisma-calendar\profiles\client-work.json
+```
+
+It is transformed in four steps:
+
+1. `C:\Users\Bob\Documents\Project Atlas` is recognized as the configured vault root and becomes
+   `vault://`.
+2. The literal structural directory `.obsidian` remains `.obsidian`.
+3. Every following segment — `plugins`, `prisma-calendar`, `profiles`, and `client-work` — becomes a
+   stable short token. The `.json` extension remains so the file type is still useful for diagnosis.
+4. The result is `vault://.obsidian/{4d2e71}/{0b843c}/{e29af5}/{71c9f4}.json` (the exact number of tokens
+   reflects the path's structure; tokens here are illustrative).
+
+So the support recipient learns only, “a path under Obsidian's configuration folder was involved.”
+They do **not** learn which plugin, which profile, which configuration file, or any configuration
+content. If a path does not contain `.obsidian`, the marker is not added; it is never guessed.
 
 ## Including full detail
 
