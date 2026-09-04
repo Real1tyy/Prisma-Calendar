@@ -18,7 +18,12 @@ export async function yieldToMainThread(): Promise<void> {
 	await new Promise((resolve) => window.setTimeout(resolve, 0));
 }
 
-function stripLastSyncedAt(value: unknown): unknown {
+/**
+ * Notes written before `lastSyncedAt` was dropped still carry it. It is not a
+ * reason to rewrite the note on its own — the field goes away with the next
+ * real update, when the whole metadata object is replaced.
+ */
+function stripLegacyLastSyncedAt(value: unknown): unknown {
 	if (!value || typeof value !== "object" || Array.isArray(value)) return value;
 	const { lastSyncedAt: _dropped, ...rest } = value as Record<string, unknown>;
 	return rest;
@@ -148,15 +153,14 @@ export abstract class BaseSyncService<TResult extends BaseSyncResult> {
 	 * no mapped event field changed: a server-side etag bump with identical
 	 * content otherwise left the note carrying the old etag, the in-memory
 	 * index carrying the new one, and every later session re-planning the same
-	 * update forever. `lastSyncedAt` is excluded — it is the write moment and
-	 * would make every sync a change.
+	 * update forever.
 	 */
 	private hasSyncMetadataChanges(
 		additionalFrontmatter: Record<string, unknown>,
 		existingFm: Record<string, unknown>
 	): boolean {
 		for (const [key, value] of Object.entries(additionalFrontmatter)) {
-			if (JSON.stringify(stripLastSyncedAt(existingFm[key])) !== JSON.stringify(stripLastSyncedAt(value))) {
+			if (JSON.stringify(stripLegacyLastSyncedAt(existingFm[key])) !== JSON.stringify(value)) {
 				return true;
 			}
 		}

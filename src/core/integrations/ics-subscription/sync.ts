@@ -169,7 +169,6 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 			subscriptionId: this.subscription.id,
 			uid,
 			lastModified: event.lastModified,
-			lastSyncedAt: Date.now(),
 		};
 
 		const file = await this.createNoteFromImportedEvent(event, this.subscription.timezone, {
@@ -185,7 +184,6 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 			subscriptionId: this.subscription.id,
 			uid,
 			lastModified: event.lastModified,
-			lastSyncedAt: Date.now(),
 		};
 
 		const { wasUpdated, filePath: newFilePath } = await this.updateNoteFromImportedEvent(

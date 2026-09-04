@@ -4,7 +4,8 @@ export const ICSSubscriptionSyncMetadataSchema = z.object({
 	subscriptionId: z.string(),
 	uid: z.string(),
 	lastModified: z.number().int().positive().optional(),
-	lastSyncedAt: z.number().int().positive(),
+	// Legacy: see CalDAVSyncMetadataSchema — accepted, never written.
+	lastSyncedAt: z.number().int().positive().optional(),
 });
 
 export type ICSSubscriptionSyncMetadata = z.infer<typeof ICSSubscriptionSyncMetadataSchema>;

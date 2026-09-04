@@ -7,7 +7,10 @@ export const CalDAVSyncMetadataSchema = z.object({
 	etag: z.string(),
 	uid: z.string(),
 	lastModified: z.number().int().positive().optional(),
-	lastSyncedAt: z.number().int().positive(),
+	// Legacy: the write moment on the writing device, dropped from every new
+	// write because two devices can never agree on it. Still accepted so notes
+	// written before the change parse; the next update removes it.
+	lastSyncedAt: z.number().int().positive().optional(),
 });
 
 export type CalDAVSyncMetadata = z.infer<typeof CalDAVSyncMetadataSchema>;

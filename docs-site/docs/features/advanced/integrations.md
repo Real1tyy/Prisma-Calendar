@@ -176,12 +176,11 @@ Both CalDAV accounts and ICS URL subscriptions decide what to create by comparin
 
 ### Several devices
 
-Every device that has an account or subscription configured syncs it on its own — there is no coordination between devices, and the sync-token that tracks incremental changes is per device (see [Where the sync-token lives](#where-the-sync-token-lives)). Two consequences to plan for:
+Every device that has an account or subscription configured syncs it on its own — there is no coordination between devices, and the sync-token that tracks incremental changes is per device (see [Where the sync-token lives](#where-the-sync-token-lives)). The metadata written into a synced note comes only from the remote event and the account, so two devices updating the same note write identical bytes. One consequence to plan for:
 
 - **A new remote event can get one note per device.** Each device names the note it creates with its own clock, so two devices that both sync before the other's note arrives create two notes for one event. Both devices then keep the same one — the canonical name — and trash the other, which you see as a note appearing and going to the trash on the second device. Names derived from the remote event's id are planned.
-- **`lastSyncedAt` differs per device.** Each device stamps the time it synced into the note; a sync tool that merges text resolves it silently, one that makes conflicted copies (iCloud, Syncthing, Drive) can flag a synced note both devices updated. Dropping the value is planned.
 
-The setup that avoids both: sync each external calendar from **one** device, and turn on **Read-only mode** (Settings → General) on the others. A read-only device does not sync at all — it only shows the notes the syncing device produces, and it never trashes anything. Everything else on the [Multiple devices and sync](./multi-device-sync.md) page applies to synced notes as well.
+The setup that avoids it: sync each external calendar from **one** device, and turn on **Read-only mode** (Settings → General) on the others. A read-only device does not sync at all — it only shows the notes the syncing device produces, and it never trashes anything. Everything else on the [Multiple devices and sync](./multi-device-sync.md) page applies to synced notes as well.
 
 A synced note remembers which account or subscription created it. If that id no longer exists on the device you are syncing from — the plugin settings have not synced yet, or you removed and re-added the account — the current account adopts the note on its next sync and keeps updating and deleting it as usual. A note that belongs to *another* account still configured on the device is left to that account.
 
@@ -300,7 +299,6 @@ Synced events include CalDAV tracking in frontmatter:
 - `etag`: Version tag for change detection
 - `uid`: iCalendar unique identifier
 - `lastModified`: When event was last changed on server
-- `lastSyncedAt`: When Prisma last synced this event
 
 ### Visual Integration
 
@@ -405,7 +403,8 @@ Synced events include ICS subscription tracking in frontmatter:
 - `subscriptionId`: Which subscription manages this event
 - `uid`: iCalendar unique identifier
 - `lastModified`: When event was last changed on the source
-- `lastSyncedAt`: When Prisma last synced this event
+
+Every value comes from the remote event or the account, never from the device or the clock, so two devices syncing the same event write identical metadata.
 
 ### Deleting a Subscription
 

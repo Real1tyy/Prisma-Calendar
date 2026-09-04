@@ -287,7 +287,6 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 			etag: event.etag,
 			uid: event.uid ?? importedEvent.uid,
 			lastModified: importedEvent.lastModified,
-			lastSyncedAt: Date.now(),
 		};
 
 		const file = await this.createNoteFromImportedEvent(importedEvent, this.account.timezone, {
@@ -312,7 +311,6 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 			etag: event.etag,
 			uid: event.uid ?? importedEvent.uid,
 			lastModified: importedEvent.lastModified,
-			lastSyncedAt: Date.now(),
 		};
 
 		const { wasUpdated, filePath: newFilePath } = await this.updateNoteFromImportedEvent(

@@ -70,14 +70,9 @@ const MultiDeviceIntegrationsHelp = memo(function MultiDeviceIntegrationsHelp() 
 					<strong>Sync-tokens are per device.</strong> They live in this device's local storage, so each device tracks
 					the server on its own and a device that has not synced for a long time refetches in full.
 				</li>
-				<li>
-					<strong>Synced notes record the time this device synced them.</strong> Sync tools that merge text resolve the
-					difference silently; tools that make conflicted copies (iCloud, Syncthing, Drive) can flag a note both devices
-					updated.
-				</li>
 			</ul>
 			<p>
-				The setup that avoids all three: sync each external calendar from <strong>one</strong> device and turn on{" "}
+				The setup that avoids both: sync each external calendar from <strong>one</strong> device and turn on{" "}
 				<strong>Read-only mode</strong> (General) on the others. A read-only device shows the synced notes but syncs and
 				trashes nothing.
 			</p>
