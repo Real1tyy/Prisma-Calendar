@@ -169,7 +169,7 @@ const ReadOnlyField = memo(function ReadOnlyField({ plugin }: { plugin: CustomCa
 			)}
 			<SettingItem
 				name="Device role"
-				description="Choose Writer for a single device, or on every device when this vault is not open simultaneously. Reader devices perform none of Prisma's automatic writes: no recurring instances, marking done, Sort Date or Calendar Title normalisation, ZettelID assignment, CalDAV/ICS sync, series propagation, time-tracker saves or reminder flags. Manual actions still work. If concurrent use produces conflicts, make the other devices Readers. This choice stays in this browser's local storage and never syncs with the vault."
+				description="Choose Writer for a single device or your primary device—the one you use most—or on every device when this vault is not open simultaneously. Reader devices perform none of Prisma's automatic writes: no recurring instances, marking done, Sort Date or Calendar Title normalisation, ZettelID assignment, CalDAV/ICS sync, series propagation, time-tracker saves or reminder flags. Manual actions still work. If concurrent use produces conflicts, make the other devices Readers. This choice stays in this browser's local storage and never syncs with the vault."
 				testId={tid("settings-field-read-only")}
 			>
 				<div className={cls("device-role-setting-control")}>

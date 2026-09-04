@@ -31,7 +31,7 @@ Every automatic write goes through one queue per note: it waits until Obsidian h
 
 ## Limiting writes to one device
 
-On first setup Prisma asks whether the device is a **Writer** or **Reader**. Choose Writer for a single device. You can also use Writer on every device when the vault is not open simultaneously. If concurrent use produces conflicts, keep one primary Writer—usually the device where you create most things—and use Reader mode on the other devices. A Reader shows and lets you edit events normally, but performs no automatic writes of its own: no recurring instances, no marking done, no **Sort Date** or **Calendar Title** normalisation, no automatic ZettelID assignment, no CalDAV/ICS sync, no series propagation, no time-tracker progress saves, no reminder flags. Edits you make by hand are written as usual.
+On first setup Prisma asks whether the device is a **Writer** or **Reader**. Choose Writer for a single device or your primary device—the one you use most. You can also use Writer on every device when the vault is not open simultaneously. If concurrent use produces conflicts, use Reader mode on the other devices. A Reader shows and lets you edit events normally, but performs no automatic writes of its own: no recurring instances, no marking done, no **Sort Date** or **Calendar Title** normalisation, no automatic ZettelID assignment, no CalDAV/ICS sync, no series propagation, no time-tracker progress saves, no reminder flags. Edits you make by hand are written as usual.
 
 The choice lives in browser-local storage, never in the vault. Closing the prompt leaves the choice unresolved and uses safe Reader behavior for that session; Prisma asks again next startup and shows a warning under **Settings → General**.
 

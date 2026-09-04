@@ -35,7 +35,7 @@ After directory setup or import, choose **Writer** or **Reader**:
 - **Writer** performs Prisma's automatic writes. Use this for the device where you create and edit most often.
 - **Reader** shows synchronized notes but performs no automatic writes. Manual actions still work.
 
-Choose Writer for a single device. You can also use Writer on every device when you do not open the same vault simultaneously. If concurrent use produces conflicts, keep one primary Writer—usually the device where you create most things—and make the others Readers. Closing the role prompt keeps that session in safe Reader mode; Prisma asks again next startup and shows a warning in General Settings. The choice is stored only in that browser's local storage and does not sync with the vault. The chooser links directly to [Multiple devices and sync](features/advanced/multi-device-sync), which explains the trade-offs in detail.
+Choose Writer for a single device or your primary device—the one you use most. You can also use Writer on every device when you do not open the same vault simultaneously. If concurrent use produces conflicts, make the other devices Readers. Closing the role prompt keeps that session in safe Reader mode; Prisma asks again next startup and shows a warning in General Settings. The choice is stored only in that browser's local storage and does not sync with the vault. The chooser links directly to [Multiple devices and sync](features/advanced/multi-device-sync), which explains the trade-offs in detail.
 
 ### Adapting Prisma to a folder you already have
 
