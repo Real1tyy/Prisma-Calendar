@@ -3,16 +3,15 @@ import type { LogFileSystem } from "./log-file-system";
 import { formatLogLine } from "./serialize";
 import type { LogEntry, LogSink } from "./types";
 
-export const LOG_FILE_ACTIVE_NAME = "current.jsonl";
 const ACTIVE_STEM = "current";
 const DEFAULT_FLUSH_DELAY_MS = 250;
 const MS_PER_DAY = 86_400_000;
 /**
- * `<yyyymmdd>-<hhmmss>-<mmm>[-<device>][-<n>].jsonl`. The device segment is
+ * `<yyyymmdd>-<hhmmss>-<mmm>-<device>[-<n>].jsonl`. The device segment is
  * exactly {@link DEVICE_ID_LENGTH} characters and the collision counter at
  * most four digits, so the two can never be read for each other.
  */
-const ROTATED_NAME = /^(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})-(\d{3})(?:-([0-9a-z]{8}))?(?:-(\d{1,4}))?\.jsonl$/;
+const ROTATED_NAME = /^(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})-(\d{3})-([0-9a-z]{8})(?:-(\d{1,4}))?\.jsonl$/;
 
 /** `(callback, delayMs) → cancel`. Injected so tests drive flushes by hand. */
 export type FlushScheduler = (callback: () => void, delayMs: number) => () => void;
@@ -27,10 +26,9 @@ export interface FileSinkOptions {
 	maxAgeDays: number;
 	/**
 	 * Identifier of the device writing these files, from `resolveDeviceLogId`.
-	 * Present, it names every file this sink owns and scopes retention to
-	 * them; absent, the sink writes the unsuffixed legacy names.
+	 * It names every file this sink owns and scopes retention to them.
 	 */
-	deviceId?: string;
+	deviceId: string;
 	/**
 	 * Called once, on the failure that disabled the sink. The sink has already
 	 * stopped accepting writes when this fires, so the handler may log freely.
@@ -52,11 +50,10 @@ function basename(path: string): string {
 /** What a rotated file's name encodes: when it was rotated, and by which device. */
 export interface RotatedLogFile {
 	time: number;
-	/** `null` for a file written before log names carried a device id. */
-	device: string | null;
+	device: string;
 }
 
-/** Reads a rotated file's name, or `null` for a file the sink does not own. */
+/** Reads a rotated file's name, or `null` for a file no sink wrote. */
 export function parseRotatedLogName(path: string): RotatedLogFile | null {
 	const match = ROTATED_NAME.exec(basename(path));
 	if (!match) return null;
@@ -77,12 +74,14 @@ export function parseRotatedLogName(path: string): RotatedLogFile | null {
 
 /**
  * The device segment used in file names: lower-case alphanumerics, padded or
- * truncated to a fixed width so the name stays unambiguous to parse. An empty
- * id yields `""`, which is what produces the legacy unsuffixed names.
+ * truncated to a fixed width so the name stays unambiguous to parse.
  */
-function deviceSegment(deviceId: string | undefined): string {
-	const normalized = (deviceId ?? "").toLowerCase().replace(/[^0-9a-z]/g, "");
-	return normalized === "" ? "" : normalized.slice(0, DEVICE_ID_LENGTH).padEnd(DEVICE_ID_LENGTH, "0");
+function deviceSegment(deviceId: string): string {
+	return deviceId
+		.toLowerCase()
+		.replace(/[^0-9a-z]/g, "")
+		.slice(0, DEVICE_ID_LENGTH)
+		.padEnd(DEVICE_ID_LENGTH, "0");
 }
 
 function rotatedStamp(ts: number): string {
@@ -102,11 +101,10 @@ function rotatedStamp(ts: number): string {
  * never touches the active file.
  *
  * Every file name carries the writing device's id, because a vault whose sync
- * tool covers `.obsidian` otherwise has two machines appending to one
+ * tool covers `.obsidian` would otherwise have two machines appending to one
  * `current.jsonl` and racing into conflict copies. Retention is scoped the
- * same way: a device prunes only what it wrote (plus the unsuffixed files from
- * before device ids existed), never another machine's history.
- * See [[spec-logging-config-sinks-and-instrumentation]].
+ * same way: a device prunes only the files it wrote, never another machine's
+ * history. See [[spec-logging-config-sinks-and-instrumentation]].
  */
 export class FileSink implements LogSink {
 	readonly activePath: string;
@@ -134,8 +132,7 @@ export class FileSink implements LogSink {
 		this.now = options.now;
 		this.dir = options.dir.replace(/\/+$/, "");
 		this.device = deviceSegment(options.deviceId);
-		this.activePath =
-			this.device === "" ? `${this.dir}/${LOG_FILE_ACTIVE_NAME}` : `${this.dir}/${ACTIVE_STEM}-${this.device}.jsonl`;
+		this.activePath = `${this.dir}/${ACTIVE_STEM}-${this.device}.jsonl`;
 		this.maxBytes = Math.max(1, options.maxFileSizeKb) * 1024;
 		this.maxFiles = Math.max(0, Math.floor(options.maxFiles));
 		this.maxAgeMs = Math.max(0, options.maxAgeDays) * MS_PER_DAY;
@@ -162,28 +159,10 @@ export class FileSink implements LogSink {
 		if (this.disabled) return;
 		try {
 			if (!(await this.fs.exists(this.dir))) await this.fs.mkdir(this.dir);
-			await this.adoptLegacyActiveFile();
 			this.activeSize = (await this.fs.stat(this.activePath))?.size ?? 0;
 			await this.prune();
 		} catch (error) {
 			this.fail(error);
-		}
-	}
-
-	/**
-	 * Rotate away a `current.jsonl` written before file names carried a device
-	 * id — nothing appends to it any more, and as an active-file name pruning
-	 * would never consider it, so it would sit in the folder forever. Losing
-	 * the race to another device on a synced vault is not a failure: the file
-	 * is already gone, which is the outcome we wanted.
-	 */
-	private async adoptLegacyActiveFile(): Promise<void> {
-		const legacy = `${this.dir}/${LOG_FILE_ACTIVE_NAME}`;
-		if (this.device === "" || !(await this.fs.exists(legacy))) return;
-		try {
-			await this.fs.rename(legacy, await this.freeRotatedPath());
-		} catch {
-			return;
 		}
 	}
 
@@ -232,8 +211,7 @@ export class FileSink implements LogSink {
 
 	/** A rotated name for right now that nothing occupies yet. */
 	private async freeRotatedPath(): Promise<string> {
-		const stamp = rotatedStamp(this.now());
-		const stem = this.device === "" ? stamp : `${stamp}-${this.device}`;
+		const stem = `${rotatedStamp(this.now())}-${this.device}`;
 		let target = `${this.dir}/${stem}.jsonl`;
 		// Two rotations inside one millisecond only happen under a fake clock,
 		// but a silent overwrite would lose a whole file — disambiguate instead.
@@ -247,23 +225,14 @@ export class FileSink implements LogSink {
 		const rotated = (await this.fs.listFiles(this.dir))
 			.map((path) => ({ path, parsed: parseRotatedLogName(path) }))
 			.filter((file): file is { path: string; parsed: RotatedLogFile } => file.parsed !== null)
-			.filter((file) => this.owns(file.parsed.device))
+			// Another device's history is not ours to delete, however old it is.
+			.filter((file) => file.parsed.device === this.device)
 			.map((file) => ({ path: file.path, time: file.parsed.time }))
 			.sort((a, b) => b.time - a.time);
 		const cutoff = this.now() - this.maxAgeMs;
 		for (const [index, file] of rotated.entries()) {
 			if (index >= this.maxFiles || file.time < cutoff) await this.fs.remove(file.path);
 		}
-	}
-
-	/**
-	 * A rotated file this device may delete: one it wrote, or one from before
-	 * device ids existed — those are this device's own history in a
-	 * single-device vault, and in a synced one they are already
-	 * indistinguishable, so leaving them would strand them forever.
-	 */
-	private owns(device: string | null): boolean {
-		return device === null || device === this.device;
 	}
 
 	private fail(error: unknown): void {

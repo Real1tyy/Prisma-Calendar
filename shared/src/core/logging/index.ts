@@ -14,7 +14,6 @@ export { ConsoleSink, DEFAULT_CONSOLE_MIRROR_LEVEL, type ConsoleLike, type Conso
 export { DEVICE_ID_LENGTH, resolveDeviceLogId, type DeviceLogIdOptions } from "./device-id";
 export {
 	FileSink,
-	LOG_FILE_ACTIVE_NAME,
 	parseRotatedLogName,
 	type FileSinkOptions,
 	type FlushScheduler,
