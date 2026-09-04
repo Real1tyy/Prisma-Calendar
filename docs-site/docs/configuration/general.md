@@ -172,10 +172,10 @@ Click **View changelog** to open the full changelog as a scrollable modal. Entri
 
 ## Rate & Review
 
-Click **Review** to rate Prisma from inside Obsidian. Pick one to five stars, optionally add a few words, and hit **Submit** — the rating goes straight to me and shapes what gets built next.
+Click **Review** to rate Prisma from inside Obsidian. Pick half a star to five stars in half-star steps, optionally add a few words, and hit **Submit** — the rating goes straight to me and shapes what gets built next.
 
 The button is the only way this ever comes up: Prisma never interrupts you with a rating prompt.
 
-**What gets sent:** your star rating, your written note if you left one, the plugin version, your Obsidian version, your platform (macOS, Windows, Linux, iOS, Android), a random id stored in this vault so duplicate submissions can be collapsed, and — if you have one — your license key, so that feedback from a licensed user can be recognised and followed up. Nothing else: no note or calendar content, no vault name, no name, no email. On the free tier no license key is sent, because there isn't one.
+**What gets sent:** your star rating, your written note if you left one, the plugin version, your Obsidian version, your platform (macOS, Windows, Linux, iOS, Android), and a random id stored in this vault so duplicate submissions can be collapsed. If this vault has an entered license key and a verified Pro entitlement, a default-on checkbox lets you include the key so the review can be linked to your Pro account; uncheck it to keep the key on your device. The checkbox is not shown and no key is sent otherwise. Nothing else is sent: no note or calendar content, vault name, name, or email.
 
 If the submission can't reach the server — you're offline, or it's having a bad day — the modal says so and keeps everything you typed, so **Try again** resends it as-is.

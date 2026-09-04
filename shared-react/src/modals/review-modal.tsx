@@ -8,7 +8,7 @@ import { showReactModal } from "../show-react-modal";
 import { cx } from "../utils/cx";
 import { buildReviewStyles } from "./review-modal.styles";
 
-const STARS: readonly StarRating[] = [1, 2, 3, 4, 5];
+const RATINGS: readonly StarRating[] = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
 
 /**
  * `form` collects the rating, `sending` is in flight, `sent` is terminal. The
@@ -20,8 +20,10 @@ type Phase = "form" | "sending" | "sent";
 export interface ReviewModalProps {
 	/** Short plugin name woven into the prompt, e.g. `"Prisma Calendar"`. */
 	pluginDisplayName: string;
+	/** Whether this verified Pro install can attach its license key. */
+	licenseAttributionAvailable?: boolean | undefined;
 	/** Posts the rating. Returns a typed result — it never throws. */
-	submit: (submission: ReviewSubmission) => Promise<SubmissionResult>;
+	submit: (submission: ReviewSubmission, includeLicenseKey: boolean) => Promise<SubmissionResult>;
 	onClose: () => void;
 }
 
@@ -31,18 +33,18 @@ function starLabel(value: StarRating): string {
 
 /** Arrow/Home/End navigation inside the star radiogroup. `null` = key not ours. */
 function nextStar(key: string, current: StarRating): StarRating | null {
-	const clamp = (value: number): StarRating => Math.min(STARS.length, Math.max(1, value)) as StarRating;
+	const clamp = (value: number): StarRating => Math.min(5, Math.max(0.5, value)) as StarRating;
 	switch (key) {
 		case "ArrowRight":
 		case "ArrowUp":
-			return clamp(current + 1);
+			return clamp(current + 0.5);
 		case "ArrowLeft":
 		case "ArrowDown":
-			return clamp(current - 1);
+			return clamp(current - 0.5);
 		case "Home":
-			return 1;
+			return 0.5;
 		case "End":
-			return STARS.length as StarRating;
+			return 5;
 		default:
 			return null;
 	}
@@ -50,12 +52,14 @@ function nextStar(key: string, current: StarRating): StarRating | null {
 
 export const ReviewModalContent = memo(function ReviewModalContent({
 	pluginDisplayName,
+	licenseAttributionAvailable = false,
 	submit,
 	onClose,
 }: ReviewModalProps) {
 	const { cls, tid } = useScopedStyles("review", buildReviewStyles);
 	const [rating, setRating] = useState<StarRating | null>(null);
 	const [text, setText] = useState("");
+	const [includeLicenseKey, setIncludeLicenseKey] = useState(licenseAttributionAvailable);
 	const [phase, setPhase] = useState<Phase>("form");
 	const [error, setError] = useState<string | null>(null);
 	const starRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -65,7 +69,7 @@ export const ReviewModalContent = memo(function ReviewModalContent({
 
 	const chooseStar = useCallback((value: StarRating) => {
 		setRating(value);
-		starRefs.current[value - 1]?.focus();
+		starRefs.current[RATINGS.indexOf(value)]?.focus();
 	}, []);
 
 	const handleStarKeyDown = useCallback(
@@ -85,7 +89,7 @@ export const ReviewModalContent = memo(function ReviewModalContent({
 		setError(null);
 
 		const submission: ReviewSubmission = { rating, ...(text.trim() ? { text: text.trim() } : {}) };
-		const result = await submit(submission);
+		const result = await submit(submission, licenseAttributionAvailable && includeLicenseKey);
 
 		inFlightRef.current = false;
 		if (result.ok) {
@@ -96,7 +100,7 @@ export const ReviewModalContent = memo(function ReviewModalContent({
 		// user nothing, so "Try again" resubmits exactly what they wrote.
 		setPhase("form");
 		setError(result.message);
-	}, [rating, text, submit]);
+	}, [includeLicenseKey, licenseAttributionAvailable, rating, text, submit]);
 
 	if (phase === "sent") {
 		return (
@@ -119,27 +123,33 @@ export const ReviewModalContent = memo(function ReviewModalContent({
 			<p className={cls("intro")}>How would you rate your experience so far? A rating is enough — words optional.</p>
 
 			<div role="radiogroup" aria-label="Star rating" className={cls("stars")} data-testid={tid("stars")}>
-				{STARS.map((value) => (
-					<button
-						key={value}
-						ref={(el) => {
-							starRefs.current[value - 1] = el;
-						}}
-						type="button"
-						role="radio"
-						aria-checked={rating === value}
-						aria-label={starLabel(value)}
-						// Roving tabindex: one stop for the whole group, landing on the
-						// current choice (or the first star before anything is chosen).
-						tabIndex={rating === null ? (value === 1 ? 0 : -1) : rating === value ? 0 : -1}
-						className={cx(cls("star"), rating !== null && value <= rating && cls("star-filled"))}
-						onClick={() => chooseStar(value)}
-						onKeyDown={(event) => handleStarKeyDown(event, value)}
-						data-testid={tid(`star-${value}`)}
-					>
-						★
-					</button>
-				))}
+				{RATINGS.map((value, index) => {
+					return (
+						<button
+							key={value}
+							ref={(el) => {
+								starRefs.current[index] = el;
+							}}
+							type="button"
+							role="radio"
+							aria-checked={rating === value}
+							aria-label={starLabel(value)}
+							// Roving tabindex: one stop for the group, landing on the
+							// current choice (or half a star before anything is chosen).
+							tabIndex={rating === null ? (value === 0.5 ? 0 : -1) : rating === value ? 0 : -1}
+							className={cx(
+								cls("star-half"),
+								Number.isInteger(value) ? cls("star-right") : cls("star-left"),
+								rating !== null && value <= rating && cls("star-filled")
+							)}
+							onClick={() => chooseStar(value)}
+							onKeyDown={(event) => handleStarKeyDown(event, value)}
+							data-testid={tid(`star-${value}`)}
+						>
+							<span aria-hidden="true">★</span>
+						</button>
+					);
+				})}
 			</div>
 
 			<textarea
@@ -150,6 +160,18 @@ export const ReviewModalContent = memo(function ReviewModalContent({
 				onChange={(event) => setText(event.target.value)}
 				data-testid={tid("text")}
 			/>
+
+			{licenseAttributionAvailable && (
+				<label className={cls("license-option")}>
+					<input
+						type="checkbox"
+						checked={includeLicenseKey}
+						onChange={(event) => setIncludeLicenseKey(event.target.checked)}
+						data-testid={tid("include-license")}
+					/>
+					<span>Include my license key so this review can be linked to my Pro account</span>
+				</label>
+			)}
 
 			{error !== null && (
 				<p className={cls("error")} role="alert" data-testid={tid("error")}>
@@ -178,7 +200,8 @@ export interface ShowReviewModalConfig {
 	/** Trailing-dash CSS prefix, e.g. `"prisma-"` — drives the modal class + styles. */
 	cssPrefix: string;
 	pluginDisplayName: string;
-	submit: (submission: ReviewSubmission) => Promise<SubmissionResult>;
+	licenseAttributionAvailable?: boolean | undefined;
+	submit: (submission: ReviewSubmission, includeLicenseKey: boolean) => Promise<SubmissionResult>;
 }
 
 export function showReviewReactModal(app: App, config: ShowReviewModalConfig): void {
@@ -189,7 +212,12 @@ export function showReviewReactModal(app: App, config: ShowReviewModalConfig): v
 		testIdPrefix: config.cssPrefix,
 		title: `Enjoying ${config.pluginDisplayName}?`,
 		render: (close) => (
-			<ReviewModalContent pluginDisplayName={config.pluginDisplayName} submit={config.submit} onClose={close} />
+			<ReviewModalContent
+				pluginDisplayName={config.pluginDisplayName}
+				licenseAttributionAvailable={config.licenseAttributionAvailable}
+				submit={config.submit}
+				onClose={close}
+			/>
 		),
 	});
 }

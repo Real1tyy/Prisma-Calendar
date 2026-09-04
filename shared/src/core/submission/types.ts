@@ -12,7 +12,8 @@ export const SUBMISSION_ENDPOINTS = {
 
 export type SubmissionKind = keyof typeof SUBMISSION_ENDPOINTS;
 
-export type StarRating = 1 | 2 | 3 | 4 | 5;
+/** Ratings use full- or half-star increments from 0.5 through 5. */
+export type StarRating = 0.5 | 1 | 1.5 | 2 | 2.5 | 3 | 3.5 | 4 | 4.5 | 5;
 
 export interface ReviewSubmission {
 	rating: StarRating;

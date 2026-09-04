@@ -1,3 +1,3 @@
 ### Added
 
-- Rate Prisma without leaving Obsidian — the General settings tab now has a **Review** button that opens a star rating with an optional note, sent straight to me. A rating sends your stars, your note, the plugin and Obsidian versions, your platform, and your license key if you have one, so licensed feedback can be recognised and followed up. No note or calendar content, no name, no email.
+- **In-app ratings**: Rate Prisma without leaving Obsidian from the General settings tab's **Review** button, using full or half stars and an optional note. Verified Pro users can choose whether to include their license key for attribution; the choice is on by default and can be unchecked before sending. No note or calendar content, vault name, name, or email is sent. See [General settings](./configuration/general.md#rate--review).

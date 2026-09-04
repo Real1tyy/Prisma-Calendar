@@ -47,12 +47,12 @@ export const ReviewAction = memo(function ReviewAction({
 	const app = useApp();
 	const cssPrefix = useCssPrefix();
 
-	// Built per submission rather than per click: reading the key goes through
-	// Obsidian's async secret storage, and a key activated while the modal is
-	// open should still land on the submission.
 	const submit = useCallback(
-		async (submission: ReviewSubmission): Promise<SubmissionResult> => {
-			const licenseKey = (await licenseManager?.getLicenseKey()) ?? null;
+		async (submission: ReviewSubmission, includeLicenseKey: boolean): Promise<SubmissionResult> => {
+			// Re-check entitlement and the secret at send time. If either changed
+			// while the modal was open, the key stays on the device.
+			const licenseKey =
+				includeLicenseKey && licenseManager?.isPro === true ? await licenseManager.getLicenseKey() : null;
 			const context: SubmissionContext = {
 				pluginId: slug,
 				pluginVersion,
@@ -66,9 +66,17 @@ export const ReviewAction = memo(function ReviewAction({
 		[app, slug, pluginVersion, licenseManager]
 	);
 
-	const openReview = useCallback(() => {
-		showReviewReactModal(app, { cssPrefix, pluginDisplayName, submit });
-	}, [app, cssPrefix, pluginDisplayName, submit]);
+	const openReview = useCallback(async () => {
+		// Reading the secret is asynchronous. The opt-in only appears when both
+		// the verified entitlement and an entered key exist.
+		const licenseKey = licenseManager?.isPro === true ? await licenseManager.getLicenseKey() : null;
+		showReviewReactModal(app, {
+			cssPrefix,
+			pluginDisplayName,
+			licenseAttributionAvailable: licenseKey !== null,
+			submit,
+		});
+	}, [app, cssPrefix, licenseManager, pluginDisplayName, submit]);
 
 	return (
 		<SettingItem
@@ -76,7 +84,7 @@ export const ReviewAction = memo(function ReviewAction({
 			description="Leave a star rating and a few words. It takes ten seconds and it genuinely shapes what gets built next."
 			testId={fieldTestId}
 		>
-			<button type="button" className="mod-cta" onClick={openReview} {...testIdAttr(buttonTestId)}>
+			<button type="button" className="mod-cta" onClick={() => void openReview()} {...testIdAttr(buttonTestId)}>
 				Review
 			</button>
 		</SettingItem>
