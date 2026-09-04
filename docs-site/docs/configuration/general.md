@@ -151,7 +151,7 @@ Prisma keeps a structured log of its own work — indexing, date parsing, recurr
 - **Show advanced options** reveals the file limits:
   - **Rotate after (KB)**: when `current.jsonl` grows past this size (default 512 KB) it is renamed to a dated file such as `20260610-120000-123.jsonl` and a fresh `current.jsonl` starts.
   - **Keep rotated files**: how many dated files to keep (default 5). The oldest are deleted automatically.
-  - **Delete rotated files after (days)**: dated files older than this (default 14 days) are deleted automatically, even when under the count limit.
+  - **Delete rotated files after (days)**: dated files older than this (default 30 days; up to 365 days) are deleted automatically, even when under the count limit.
 
 Changes take effect immediately — no reload. Rotation and cleanup run when a file rotates and each time the plugin loads; the current file is never deleted by cleanup. If the log file cannot be written (a read-only vault, for example), file logging switches itself off and records why in the in-app log.
 

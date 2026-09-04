@@ -64,7 +64,7 @@ export const LoggingSettingsSchema = z.object({
 		.int()
 		.min(1)
 		.max(365)
-		.catch(14)
+		.catch(30)
 		.describe("Rotated files older than this are deleted automatically.")
 		.meta({ title: "Delete rotated files after (days)", widget: "number" }),
 });
