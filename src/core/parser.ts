@@ -1,10 +1,9 @@
 import { FilterEvaluator } from "@real1ty/obsidian-plugins";
-import type { App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 
 import type { CalendarEvent } from "../types/calendar";
 import { buildEventSchemaInput, createEventSchema, type CalendarEventParser } from "../types/event-schemas";
-import type { RawEventSource } from "../types/event-source";
+import type { AutomaticFrontmatterWriter, RawEventSource } from "../types/event-source";
 import type { PrismaCalendarSettingsStore, SingleCalendarConfig } from "../types/index";
 import { findConflictForCalendar } from "../utils/calendar/conflicts";
 import { applyDateNormalizationToFile } from "../utils/events/frontmatter";
@@ -20,10 +19,10 @@ export class Parser {
 	private hasNormalizationConflict = false;
 
 	constructor(
-		private app: App,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>,
 		private mainSettingsStore: PrismaCalendarSettingsStore,
-		private calendarId: string
+		private calendarId: string,
+		private writer: AutomaticFrontmatterWriter
 	) {
 		this.settings = settingsStore.value;
 		this.filterEvaluator = new FilterEvaluator<SingleCalendarConfig>(settingsStore);
@@ -73,7 +72,7 @@ export class Parser {
 			const end = event.type === "timed" ? event.end : undefined;
 			const allDay = event.type === "allDay";
 			void applyDateNormalizationToFile(
-				this.app,
+				this.writer,
 				source.filePath,
 				source.frontmatter,
 				this.settings,

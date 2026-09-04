@@ -24,9 +24,17 @@ Anything you do yourself — editing a note on two devices at once — is the sy
 - **Prisma's settings** (`.obsidian/plugins/prisma-calendar/data.json`). The property order, the done value, the recurring-instance count and the property names are inputs to every automatic write; devices with different settings produce different files. Most sync tools sync plugin settings by default; LiveSync needs *Sync hidden files* / plugin settings sync turned on.
 - Do **not** sync per-device state. Prisma keeps CalDAV sync tokens in the browser's local storage and the read-only flag in `sync.json`, both of which are meant to differ per device.
 
+## How automatic writes reach your notes
+
+Every automatic write goes through one queue per note: it waits until Obsidian has finished indexing the vault, runs after any earlier write to the same note, writes Prisma's properties in the configured order, and is dropped when the note already holds exactly what it would write. A note another device already updated is therefore never rewritten just to end up identical, and a write queued for a note that is renamed in the meantime follows the note.
+
 ## Limiting writes to one device
 
-If you prefer that only one device generates instances, syncs external calendars, and marks events done, turn on **Read-only mode** under **Settings → General** on every other device. A read-only device shows and lets you edit events normally, but performs no automatic writes of its own.
+If you prefer that only one device generates instances, syncs external calendars, and marks events done, turn on **Read-only mode** under **Settings → General** on every other device. A read-only device shows and lets you edit events normally, but performs no automatic writes of its own: no recurring instances, no marking done, no **Sort Date** or **Calendar Title** normalisation, no CalDAV/ICS sync, no series propagation, no time-tracker progress saves, no reminder flags. Edits you make by hand are written as usual.
+
+## Reminders on several devices
+
+A reminder fires on every device that has the vault open at that moment; each one shows its own notification and writes the same **Already Notified** flag, so the note converges. Prisma does not elect one device to own reminders — there is no reliable way to tell which device you are looking at.
 
 ## Templater and other plugins
 

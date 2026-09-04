@@ -9,7 +9,6 @@ import type { EventMetadata } from "../types/event-metadata";
 import type { CalendarEventSource, IndexerEvent } from "../types/event-source";
 import type { SingleCalendarConfig } from "../types/settings";
 import { getEventName } from "../utils/events/naming";
-import { withOrderedFrontmatter } from "../utils/frontmatter/ordering";
 import { getFileByPathOrThrow, openFileInNewTab } from "../utils/obsidian";
 
 interface NotificationEntry {
@@ -50,7 +49,8 @@ export class NotificationManager {
 		private app: App,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>,
 		private eventSource: CalendarEventSource,
-		private syncStore: SyncStore<typeof PrismaSyncDataSchema> | null
+		// Read-only handling lives in the repository's automatic write path now.
+		_syncStore: SyncStore<typeof PrismaSyncDataSchema> | null
 	) {
 		this.settings = settingsStore.value;
 
@@ -258,14 +258,15 @@ export class NotificationManager {
 		}
 	}
 
+	/**
+	 * Every device with the vault open fires this notification and writes the
+	 * same `true`; the writes converge byte-for-byte, and a device whose copy
+	 * already carries the flag (synced from a peer) queues a no-op. The N
+	 * popups are inherent: nothing coordinates which device "owns" a reminder.
+	 */
 	private async markAsNotified(filePath: string): Promise<void> {
-		if (this.syncStore?.data.readOnly) {
-			return;
-		}
-
 		try {
-			const file = getFileByPathOrThrow(this.app, filePath);
-			await withOrderedFrontmatter(this.app, file, this.settings, (fm: Frontmatter) => {
+			await this.eventSource.automaticWriteFrontmatter(filePath, (fm: Frontmatter) => {
 				fm[this.settings.alreadyNotifiedProp] = true;
 			});
 		} catch (error) {
@@ -339,7 +340,7 @@ export class NotificationManager {
 
 			this.alreadyFired.delete(entry.filePath);
 
-			await withOrderedFrontmatter(this.app, file, this.settings, (fm: Frontmatter) => {
+			await this.eventSource.writeFrontmatter(file.path, (fm: Frontmatter) => {
 				fm[this.settings.alreadyNotifiedProp] = false;
 
 				// Calculate minutesBefore so notification triggers exactly snoozeMinutes from NOW

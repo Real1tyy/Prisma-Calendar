@@ -55,14 +55,13 @@ export class NameSeriesTracker extends VaultTableView<Frontmatter> {
 			getExcludedProps: () => getExcludedProps(this.settings, this.settings.excludedNameSeriesProps),
 			getModalTitle: (groupKey) => `Name series: ${groupKey}`,
 			showModal: showFrontmatterPropagationModal,
-			applyChanges: (a, targetPath, sourceFm, diff) =>
+			applyChanges: (_app, targetPath, sourceFm, diff) =>
 				applyFrontmatterChangesToInstance(
-					a,
+					repo,
 					targetPath,
 					sourceFm,
 					diff,
-					getExcludedProps(this.settings, this.settings.excludedNameSeriesProps),
-					this.settings
+					getExcludedProps(this.settings, this.settings.excludedNameSeriesProps)
 				),
 			resolveTargets: (filePath, groupKey) => {
 				return this.nameGroups

@@ -419,6 +419,9 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 
 	private scanPastEventsForMarkDone(): void {
 		if (!this.settings.markPastInstancesAsDone) return;
+		// A read-only device performs no automatic writes; skip the scan rather
+		// than dispatch a thousand writes the repository would drop one by one.
+		if (this.eventSource.isReadOnly) return;
 
 		const now = DateTime.now();
 		const nowIso = now.toISO({ suppressMilliseconds: true, includeOffset: false });

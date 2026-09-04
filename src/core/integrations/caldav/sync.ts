@@ -157,6 +157,9 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 		if (this.destroyed) {
 			return { ...defaultResult, success: false, errors: ["Sync service destroyed"] };
 		}
+		// A read-only device performs no automatic writes; a sync is nothing but
+		// automatic writes, so it does not even fetch.
+		if (this.bundle.fileRepository.isReadOnly) return defaultResult;
 
 		if (!this.account.enabled) {
 			return {

@@ -15,7 +15,6 @@ import type { IndexerEvent } from "../types/event-source";
 import type { EventPreset, SingleCalendarConfig } from "../types/settings";
 import { getEventName } from "../utils/events/naming";
 import { formatDateTimeForInput } from "../utils/format";
-import { withOrderedFrontmatter } from "../utils/frontmatter/ordering";
 import { getCategoriesFromFilePath } from "../utils/obsidian";
 import type { CalendarBundle } from "./calendar-bundle";
 import { assignCategories } from "./commands/frontmatter-update-command";
@@ -175,12 +174,14 @@ class MinimizedModalManagerClass {
 		if (this.savedState.stopwatch.state !== "running") return;
 
 		const settings = this.bundle.settingsStore.currentSettings;
-		const file = this.app.vault.getAbstractFileByPath(this.savedState.filePath);
-		if (!(file instanceof TFile)) return;
 
+		// Inherently non-convergent: the value *is* the write moment on this device.
+		// A running stopwatch is one device's activity; the queue keeps it gated,
+		// serialized and off read-only devices. See the stopwatch spec for the
+		// cross-device design.
 		const now = new Date();
 		const nowIso = ensureISOSuffix(toLocalISOString(now));
-		await withOrderedFrontmatter(this.app, file, settings, (fm: Frontmatter) => {
+		await this.bundle.fileRepository.automaticWriteFrontmatter(this.savedState.filePath, (fm: Frontmatter) => {
 			fm[settings.endProp] = nowIso;
 		});
 
@@ -331,9 +332,9 @@ class MinimizedModalManagerClass {
 		endIso: string
 	): Promise<void> {
 		const file = app.vault.getAbstractFileByPath(filePath);
-		if (!(file instanceof TFile)) return;
+		if (!(file instanceof TFile) || !this.bundle) return;
 		try {
-			await withOrderedFrontmatter(app, file, settings, (fm: Frontmatter) => {
+			await this.bundle.fileRepository.writeFrontmatter(file.path, (fm: Frontmatter) => {
 				fm[settings.startProp] = ensureISOSuffix(startIso);
 				fm[settings.endProp] = ensureISOSuffix(endIso);
 				if (settings.allDayProp && fm[settings.allDayProp]) {

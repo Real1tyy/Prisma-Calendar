@@ -1,4 +1,5 @@
 import {
+	deepEqualJsonLike,
 	isFolderNote,
 	removeMarkdownExtension,
 	replaceContentAfterFrontmatter,
@@ -20,10 +21,11 @@ import type { NodeRecurringEvent } from "../types/recurring";
 import { PARSE_AFFECTING_KEYS, parseAffectingSettingsChanged } from "../utils/calendar/settings";
 import { parseRRuleFromFrontmatter } from "../utils/dates/recurring";
 import { ensureFileHasZettelId } from "../utils/events/file-naming";
-import { parseEventMetadata, shouldEventBeMarkedAsDone } from "../utils/events/frontmatter";
+import { parseEventMetadata } from "../utils/events/frontmatter";
 import { cleanupTitle } from "../utils/events/naming";
 import { deriveRRuleId, hasTimestamp } from "../utils/events/zettel-id";
 import { enforceEventPropertyOrder, getOrderedPropertyNames } from "../utils/frontmatter/ordering";
+import { shouldEventBeMarkedAsDone } from "../utils/frontmatter/predicates";
 import { createEventSchema } from "./event-schema";
 
 export { PARSE_AFFECTING_KEYS, parseAffectingSettingsChanged };
@@ -65,8 +67,13 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 	private readonly eventsSubject = new Subject<IndexerEvent>();
 	private readonly indexingCompleteSubject = new BehaviorSubject<boolean>(false);
 
-	/** Per-file queue to serialize processFrontMatter calls */
-	private fmLocks = new Map<string, Promise<void>>();
+	/**
+	 * Per-file queue to serialize processFrontMatter calls. Keyed by the `TFile`,
+	 * not its path: Obsidian keeps `TFile.path` current through renames, so a
+	 * write queued before a ZettelID rename still finds the note and still
+	 * serializes against writes queued after it.
+	 */
+	private fmLocks = new Map<TFile, Promise<void>>();
 	/** Tracks files currently being renamed for ZettelID to prevent re-entrant triggers */
 	private zettelIdRenamesInFlight = new Set<string>();
 	/**
@@ -82,7 +89,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 	public readonly indexingComplete$: Observable<boolean>;
 
 	constructor(
-		private app: App,
+		readonly app: App,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>,
 		private syncStore: SyncStore<typeof PrismaSyncDataSchema> | null
 	) {
@@ -140,14 +147,37 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 		await this.app.fileManager.renameFile(file, newPath);
 	}
 
-	async markFileAsDone(filePath: string): Promise<void> {
-		if (this.syncStore?.data.readOnly) return;
+	/** True on a device the user set to read-only: automatic writers must perform nothing. */
+	get isReadOnly(): boolean {
+		return this.syncStore?.data.readOnly === true;
+	}
 
+	/**
+	 * Edits one note's frontmatter through the per-file queue: held until the
+	 * table is ready, serialized per note, written in the deterministic property
+	 * order, and skipped when the mutation would not change the file. For
+	 * user-initiated edits; automatic writers use {@link automaticWriteFrontmatter}.
+	 */
+	async writeFrontmatter(filePath: string, mutate: (fm: Frontmatter) => void): Promise<void> {
 		const file = this.app.vault.getAbstractFileByPath(filePath);
 		if (!(file instanceof TFile)) return;
+		await this.enqueueFrontmatterWrite(file, mutate);
+	}
 
+	/**
+	 * {@link writeFrontmatter} for writes the plugin performs without a user
+	 * gesture (mark-done, sort date, notifications, propagation, stopwatch):
+	 * additionally a no-op on a read-only device, so the flag is honoured in one
+	 * place instead of at every call site.
+	 */
+	async automaticWriteFrontmatter(filePath: string, mutate: (fm: Frontmatter) => void): Promise<void> {
+		if (this.isReadOnly) return;
+		await this.writeFrontmatter(filePath, mutate);
+	}
+
+	async markFileAsDone(filePath: string): Promise<void> {
 		try {
-			await this.enqueueFrontmatterWrite(file, (fm: Frontmatter) => {
+			await this.automaticWriteFrontmatter(filePath, (fm: Frontmatter) => {
 				fm[this.settings.statusProperty] = this.settings.doneValue;
 			});
 		} catch (error) {
@@ -569,7 +599,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 
 		this.zettelIdRenamesInFlight.add(file.path);
 		try {
-			await ensureFileHasZettelId(this.app, file, this.settings);
+			await ensureFileHasZettelId(this, file, this.settings);
 		} catch (error) {
 			console.error(`[EventFileRepository] Error auto-assigning ZettelID to ${file.path}:`, error);
 		} finally {
@@ -599,8 +629,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 	 * which throw instead.
 	 */
 	private enqueueFrontmatterWrite(file: TFile, fn: (fm: Frontmatter) => void): Promise<void> {
-		const path = file.path;
-		const prev = this.fmLocks.get(path) ?? Promise.resolve();
+		const prev = this.fmLocks.get(file) ?? Promise.resolve();
 		// A rejected `prev` would skip `.then` for every downstream write, silently
 		// no-opping the rest of the queue. The lock map holds a rejection-proof
 		// `chain`; callers still observe rejections via `result`.
@@ -610,8 +639,11 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 				// Synchronous check first: awaiting an already-ready table would add a
 				// microtask the race tests pin against.
 				if (!this.table.isReady) await this.table.waitUntilReady();
-				const current = this.app.vault.getAbstractFileByPath(path);
+				// `file.path` is the note's current path even if it was renamed while
+				// queued; a note that no longer resolves was deleted meanwhile.
+				const current = this.app.vault.getAbstractFileByPath(file.path);
 				if (!(current instanceof TFile)) return;
+				if (!this.wouldChangeFrontmatter(current, fn)) return;
 				try {
 					// Inline (not withOrderedFrontmatter) to keep the queue's promise depth
 					// unchanged — the race tests pin the exact dequeue timing.
@@ -627,10 +659,36 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 		const chain: Promise<void> = result
 			.catch(() => {})
 			.finally(() => {
-				if (this.fmLocks.get(path) === chain) this.fmLocks.delete(path);
+				if (this.fmLocks.get(file) === chain) this.fmLocks.delete(file);
 			});
-		this.fmLocks.set(path, chain);
+		this.fmLocks.set(file, chain);
 		return result;
+	}
+
+	/**
+	 * The idempotence guard: a queued write that would leave the note byte-for-
+	 * byte as it is (same keys, same values, same order) is dropped. The value
+	 * may already be there because another device wrote it and the file synced
+	 * in between, or because two callers queued the same normalisation; either
+	 * way a rewrite would only bump the mtime and hand the sync tool a no-op
+	 * change. Decided against the metadata cache; without a cache entry the
+	 * write proceeds.
+	 */
+	private wouldChangeFrontmatter(file: TFile, fn: (fm: Frontmatter) => void): boolean {
+		const cached = this.app.metadataCache.getFileCache(file)?.frontmatter;
+		if (!cached) return true;
+		const before: Frontmatter = {};
+		for (const key of Object.keys(cached)) {
+			if (key !== "position") before[key] = cached[key];
+		}
+		const after: Frontmatter = { ...before };
+		fn(after);
+		enforceEventPropertyOrder(after, this.settings);
+		const beforeKeys = Object.keys(before);
+		const afterKeys = Object.keys(after);
+		if (beforeKeys.length !== afterKeys.length) return true;
+		if (beforeKeys.some((key, i) => key !== afterKeys[i])) return true;
+		return !deepEqualJsonLike(before, after);
 	}
 
 	protected createTable(settings: SingleCalendarConfig): EventTable {

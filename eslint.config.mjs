@@ -152,11 +152,25 @@ export default defineConfig([
 			"src/core/event-store/**/*.ts",
 			"src/core/recurring-event-manager.ts",
 			"src/core/notification-manager.ts",
+			"src/core/minimized-modal-manager.ts",
+			"src/core/category-tracker.ts",
+			"src/core/name-series-tracker.ts",
+			"src/core/parser.ts",
+			"src/utils/events/**/*.ts",
 		],
 		ignores: ["src/core/integrations/ics-export.ts"],
 		rules: {
 			"no-restricted-syntax": [
 				"error",
+				{
+					// `withOrderedFrontmatter` / `withFrontmatter` order the keys but skip
+					// the repository queue: no readiness deferral, no per-note
+					// serialization, no read-only guard, no idempotence check — see
+					// [[decision-deterministic-automatic-writes-across-synced-devices]].
+					selector: "CallExpression[callee.name=/^(withOrderedFrontmatter|withFrontmatter)$/]",
+					message:
+						"Direct frontmatter writes are banned here: use fileRepository.automaticWriteFrontmatter (automatic paths) or writeFrontmatter (user gestures), which queue per note, wait for readiness and skip no-op rewrites.",
+				},
 				{
 					selector:
 						"MemberExpression[object.property.name='vault'][property.name=/^(create|modify|delete|rename|copy)$/]",

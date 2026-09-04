@@ -47,6 +47,8 @@ Disable for specific events by omitting the property, setting to empty, or using
 
 System notification appears with event title and time. Modal opens showing timing info, event details, properties, and action buttons (Open Event, Snooze, Dismiss). `Already Notified` property is automatically set to `true` in frontmatter.
 
+With the vault open on several devices, each device fires its own notification at the reminder time and writes the same `Already Notified` flag; the note converges, and a device whose copy already carries the flag writes nothing. See [Multiple devices and sync](../advanced/multi-device-sync.md#reminders-on-several-devices).
+
 ![Notification Modal](/img/notification_modal.png)
 
 *Rich notification modal with event details, snooze functionality, and quick actions*

@@ -94,7 +94,7 @@ export class IndexerRegistry {
 			const fileRepository = new EventFileRepository(this.app, settingsStore, this.syncStore);
 			const recurringEventManager = new RecurringEventManager(this.app, settingsStore, fileRepository, this.syncStore);
 			const notificationManager = new NotificationManager(this.app, settingsStore, fileRepository, this.syncStore);
-			const parser = new Parser(this.app, settingsStore, mainSettingsStore, calendarId);
+			const parser = new Parser(settingsStore, mainSettingsStore, calendarId, fileRepository);
 			const eventStore = new EventStore(fileRepository, parser, recurringEventManager, settingsStore);
 			const categoryTracker = new CategoryTracker(this.app, fileRepository, eventStore, settingsStore);
 			const nameSeriesTracker = new NameSeriesTracker(this.app, fileRepository, eventStore, settingsStore);

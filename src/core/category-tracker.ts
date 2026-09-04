@@ -85,14 +85,13 @@ export class CategoryTracker extends VaultTableView<Frontmatter> {
 			getExcludedProps: () => getExcludedProps(this.settings, this.settings.excludedCategorySeriesProps),
 			getModalTitle: (groupKey) => `Category series: ${groupKey}`,
 			showModal: showFrontmatterPropagationModal,
-			applyChanges: (a, targetPath, sourceFm, diff) =>
+			applyChanges: (_app, targetPath, sourceFm, diff) =>
 				applyFrontmatterChangesToInstance(
-					a,
+					repo,
 					targetPath,
 					sourceFm,
 					diff,
-					getExcludedProps(this.settings, this.settings.excludedCategorySeriesProps),
-					this.settings
+					getExcludedProps(this.settings, this.settings.excludedCategorySeriesProps)
 				),
 			resolveTargets: (filePath, groupKey) => this.getFilePathsWithCategory(groupKey).filter((fp) => fp !== filePath),
 		});

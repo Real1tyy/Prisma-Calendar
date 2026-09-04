@@ -191,7 +191,7 @@ export class ConvertFileToEventCommand implements Command {
 
 		const settings = this.bundle.settingsStore.currentSettings;
 		const hadZettelId = !!extractZettelId(file.basename);
-		const ensured = await ensureFileHasZettelId(this.app, file, settings);
+		const ensured = await ensureFileHasZettelId(this.bundle.fileRepository, file, settings);
 		file = ensured.file;
 
 		if (!hadZettelId) {
@@ -242,7 +242,7 @@ export class AddZettelIdCommand implements Command {
 		if (!this.originalFrontmatter) this.originalFrontmatter = await backupFrontmatter(this.app, file);
 
 		const settings = this.bundle.settingsStore.currentSettings;
-		const result = await ensureFileHasZettelId(this.app, file, settings);
+		const result = await ensureFileHasZettelId(this.bundle.fileRepository, file, settings);
 
 		if (result.file.path !== this.originalFilePath) {
 			this.renamedFilePath = result.file.path;

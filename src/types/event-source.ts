@@ -44,5 +44,19 @@ export interface CalendarEventSource {
 	 */
 	trashByPath(filePath: string): Promise<boolean>;
 	renameByPath(filePath: string, newPath: string): Promise<void>;
+	/**
+	 * The only sanctioned way to edit a note's frontmatter: queued per note,
+	 * held until the table is ready, written in the deterministic property
+	 * order, dropped when it would not change the file. Automatic writers use
+	 * the `automatic` variant, which is also a no-op on a read-only device.
+	 * See [[decision-deterministic-automatic-writes-across-synced-devices]].
+	 */
+	writeFrontmatter(filePath: string, mutate: (fm: Frontmatter) => void): Promise<void>;
+	automaticWriteFrontmatter(filePath: string, mutate: (fm: Frontmatter) => void): Promise<void>;
+	/** True on a device the user set to read-only: automatic writers perform nothing. */
+	readonly isReadOnly: boolean;
 	resync(): void;
 }
+
+/** The slice of {@link CalendarEventSource} an automatic writer needs. */
+export type AutomaticFrontmatterWriter = Pick<CalendarEventSource, "automaticWriteFrontmatter">;

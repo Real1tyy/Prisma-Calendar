@@ -44,7 +44,7 @@ import {
 	type TimePropagationDiff,
 } from "../utils/events/frontmatter";
 import { hashRRuleIdToZettelFormat, removeZettelId } from "../utils/events/zettel-id";
-import { enforceEventPropertyOrder, withOrderedFrontmatter } from "../utils/frontmatter/ordering";
+import { enforceEventPropertyOrder } from "../utils/frontmatter/ordering";
 import { batchedPromiseAll, deleteFilesByPaths, getFileAndFrontmatter, getFileByPathOrThrow } from "../utils/obsidian";
 import type { CategoryTracker } from "./category-tracker";
 import type { EventStore } from "./event-store";
@@ -316,12 +316,11 @@ export class RecurringEventManager extends DebouncedNotifier {
 			this.getPhysicalInstancesList(data.physicalInstances),
 			(instance) =>
 				applyFrontmatterChangesToInstance(
-					this.app,
+					this.eventSource,
 					instance.filePath,
 					recurringEvent.frontmatter,
 					frontmatterDiff,
-					excludedProps,
-					this.settings
+					excludedProps
 				),
 			this.settings.fileConcurrencyLimit
 		);
@@ -404,8 +403,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 			if (applicableChanges.length === 0) return;
 
-			const file = getFileByPathOrThrow(this.app, instance.filePath);
-			await withOrderedFrontmatter(this.app, file, this.settings, (fm) => {
+			await this.eventSource.automaticWriteFrontmatter(instance.filePath, (fm) => {
 				for (const { prop, newTimePart } of applicableChanges) {
 					fm[prop] = replaceISOTime(fm[prop] as string, newTimePart);
 				}
@@ -652,17 +650,10 @@ export class RecurringEventManager extends DebouncedNotifier {
 	): Promise<void> {
 		await batchedPromiseAll(
 			Array.from(physicalInstances.values()),
-			async (instance) => {
-				const file = this.app.vault.getAbstractFileByPath(instance.filePath);
-				if (!(file instanceof TFile)) {
-					return;
-				}
-				await withOrderedFrontmatter(this.app, file, this.settings, (fm) => {
-					if (fm[this.settings.rruleIdProp] !== newRRuleId) {
-						fm[this.settings.rruleIdProp] = newRRuleId;
-					}
-				});
-			},
+			(instance) =>
+				this.eventSource.automaticWriteFrontmatter(instance.filePath, (fm) => {
+					fm[this.settings.rruleIdProp] = newRRuleId;
+				}),
 			this.settings.fileConcurrencyLimit
 		);
 	}

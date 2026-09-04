@@ -230,7 +230,7 @@ export class CloneEventCommand extends CreatedFileCommand {
 		let src = getTFileOrThrow(this.app, this.sourceFilePath);
 		const settings = this.bundle.settingsStore.currentSettings;
 
-		const sourceResult = await ensureFileHasZettelId(this.app, src, settings);
+		const sourceResult = await ensureFileHasZettelId(this.bundle.fileRepository, src, settings);
 		src = sourceResult.file;
 
 		const { fullPath, frontmatter, body } = await prepareFileCopy(this.app, src, settings);

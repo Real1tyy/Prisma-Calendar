@@ -58,6 +58,9 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 		if (this.destroyed) {
 			return { ...defaultResult, success: false, errors: ["Sync service destroyed"] };
 		}
+		// A read-only device performs no automatic writes; a sync is nothing but
+		// automatic writes, so it does not even fetch.
+		if (this.bundle.fileRepository.isReadOnly) return defaultResult;
 
 		if (!this.subscription.enabled) {
 			return {

@@ -1,6 +1,5 @@
 import {
 	ensureISOSuffix,
-	parseAsLocalDate,
 	parseIntoList,
 	serializeFrontmatterValue,
 	toSafeString,
@@ -19,6 +18,7 @@ import {
 } from "../../types/event-frontmatter-schema";
 import type { EventMetadata } from "../../types/event-metadata";
 import { buildMetadata } from "../../types/event-schemas";
+import type { AutomaticFrontmatterWriter } from "../../types/event-source";
 import {
 	DEDICATED_UI_PROP_KEYS,
 	NOTIFICATION_DEDICATED_UI_PROP_KEYS,
@@ -26,8 +26,8 @@ import {
 	SYSTEM_PROP_KEYS,
 } from "../../types/settings";
 import { stripZ } from "../dates/iso";
-import { withOrderedFrontmatter } from "../frontmatter/ordering";
-import { getFileAndFrontmatter, getFileByPathOrThrow } from "../obsidian";
+import { computeSortDateValue } from "../frontmatter/basics";
+import { getFileAndFrontmatter } from "../obsidian";
 
 export function parseEventMetadata(frontmatter: Frontmatter, settings: SingleCalendarConfig): EventMetadata {
 	const parsed = createEventFrontmatterSchema(settings).parse(frontmatter);
@@ -77,74 +77,13 @@ export const isAllDayEvent = (allDayValue: unknown): boolean => {
  * 2. Prevent generation of future instances
  * 3. Cause all instances to appear as "done" since they inherit from the source
  */
-export const shouldEventBeMarkedAsDone = (frontmatter: Frontmatter, settings: SingleCalendarConfig): boolean => {
-	if (!settings.markPastInstancesAsDone) return false;
-	if (frontmatter[settings.rruleProp]) return false;
-	if (frontmatter[settings.statusProperty] === settings.doneValue) return false;
-	return isEventPastFromFrontmatter(frontmatter, settings);
-};
-
-/**
- * Parses a frontmatter value as a local-time Date. Prisma writes local datetimes with
- * a `.000Z` suffix for sortability — they must not be interpreted as UTC when compared
- * against `new Date()` (local now). Returns null if the value is missing or unparseable.
- */
-const frontmatterValueAsLocalDate = (value: unknown): Date | null => {
-	const raw = toSafeString(value);
-	return raw ? parseAsLocalDate(raw) : null;
-};
-
-/**
- * Returns true when the event represented by the given frontmatter is entirely in the past.
- * All-day events use end-of-day on the Date property; timed events use the End property.
- */
-export const isEventPastFromFrontmatter = (frontmatter: Frontmatter, settings: SingleCalendarConfig): boolean => {
-	const isAllDay = isAllDayEvent(frontmatter[settings.allDayProp]);
-	const date = frontmatterValueAsLocalDate(frontmatter[isAllDay ? settings.dateProp : settings.endProp]);
-	if (!date) return false;
-	if (isAllDay) date.setHours(23, 59, 59, 999);
-	return date < new Date();
-};
-
-const normalizesTimedEvents = (mode: string): boolean =>
-	["startDate", "endDate", "allStartDate", "allEndDate"].includes(mode);
-
-const normalizesAllDayEvents = (mode: string): boolean => ["allDayOnly", "allStartDate", "allEndDate"].includes(mode);
-
-/**
- * Computes the normalized sort date value for an event.
- * Returns the target property name and the expected value, or undefined if sorting doesn't apply.
- */
-export const computeSortDateValue = (
-	settings: SingleCalendarConfig,
-	start: string,
-	end?: string,
-	allDay?: boolean
-): { targetProp: string; value: string } | undefined => {
-	const mode = settings.sortingStrategy;
-	if (mode === "none") return undefined;
-
-	const targetProp = settings.sortDateProp;
-	if (!targetProp) return undefined;
-
-	if (allDay) {
-		if (!normalizesAllDayEvents(mode)) return undefined;
-		const dateOnly = start.split("T")[0];
-		return { targetProp, value: `${dateOnly}T00:00:00` };
-	}
-
-	if (!normalizesTimedEvents(mode)) return undefined;
-
-	const value = mode === "startDate" || mode === "allStartDate" ? stripZ(start) : stripZ(end || start);
-	return { targetProp, value };
-};
-
 /**
  * Applies sort date normalization to a file on disk if the value differs from expected.
- * Skips the write when the file already has the correct value.
+ * Skips the write when the file already has the correct value. An automatic write:
+ * queued, held until the index is ready, and a no-op on a read-only device.
  */
 export const applyDateNormalizationToFile = async (
-	app: App,
+	writer: AutomaticFrontmatterWriter,
 	filePath: string,
 	frontmatter: Frontmatter,
 	settings: SingleCalendarConfig,
@@ -157,8 +96,7 @@ export const applyDateNormalizationToFile = async (
 	if (!result) {
 		if (!settings.sortDateProp || !(settings.sortDateProp in frontmatter)) return;
 		try {
-			const file = getFileByPathOrThrow(app, filePath);
-			await withOrderedFrontmatter(app, file, settings, (fm: Frontmatter) =>
+			await writer.automaticWriteFrontmatter(filePath, (fm: Frontmatter) =>
 				Reflect.deleteProperty(fm, settings.sortDateProp)
 			);
 		} catch (error) {
@@ -171,8 +109,7 @@ export const applyDateNormalizationToFile = async (
 	if ((toSafeString(frontmatter[targetProp]) ?? "") === value) return;
 
 	try {
-		const file = getFileByPathOrThrow(app, filePath);
-		await withOrderedFrontmatter(app, file, settings, (fm: Frontmatter) => {
+		await writer.automaticWriteFrontmatter(filePath, (fm: Frontmatter) => {
 			fm[targetProp] = value;
 		});
 	} catch (error) {
@@ -362,17 +299,14 @@ export const filterExcludedPropsFromDiff = (diff: FrontmatterDiff, excludedProps
  * filtering out excluded properties based on settings.
  */
 export const applyFrontmatterChangesToInstance = async (
-	app: App,
+	writer: AutomaticFrontmatterWriter,
 	filePath: string,
 	sourceFrontmatter: Frontmatter,
 	diff: FrontmatterDiff,
-	excludedProps: Set<string>,
-	settings: SingleCalendarConfig
+	excludedProps: Set<string>
 ): Promise<void> => {
 	try {
-		const file = getFileByPathOrThrow(app, filePath);
-
-		await withOrderedFrontmatter(app, file, settings, (fm) => {
+		await writer.automaticWriteFrontmatter(filePath, (fm) => {
 			for (const change of diff.added) {
 				if (!excludedProps.has(change.key)) {
 					fm[change.key] = sourceFrontmatter[change.key];

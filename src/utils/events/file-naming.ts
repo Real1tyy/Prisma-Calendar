@@ -1,8 +1,8 @@
 import { generateZettelId, getUniqueFilePathFromFull, isFolderNote } from "@real1ty/obsidian-plugins";
 import type { App, TFile } from "obsidian";
 
+import type { CalendarEventSource } from "../../types/event-source";
 import type { SingleCalendarConfig } from "../../types/settings";
-import { withOrderedFrontmatter } from "../frontmatter/ordering";
 import { extractZettelId, hasTimestamp, removeZettelId } from "./zettel-id";
 
 /**
@@ -86,7 +86,7 @@ export const computeMovePath = (app: App, file: TFile, targetDirectory: string):
  * Returns the ZettelID and the potentially updated file path.
  */
 export const ensureFileHasZettelId = async (
-	app: App,
+	repo: ZettelIdWriter,
 	file: TFile,
 	settings: SingleCalendarConfig
 ): Promise<{ zettelId: string; file: TFile }> => {
@@ -95,7 +95,7 @@ export const ensureFileHasZettelId = async (
 
 	if (existingZettelId) {
 		if (zettelIdProp) {
-			await withOrderedFrontmatter(app, file, settings, (fm) => {
+			await repo.writeFrontmatter(file.path, (fm) => {
 				if (!fm[zettelIdProp]) {
 					fm[zettelIdProp] = existingZettelId;
 				}
@@ -109,15 +109,21 @@ export const ensureFileHasZettelId = async (
 
 	const baseNameWithoutZettel = file.basename;
 	const directory = file.parent?.path || "";
-	const { fullPath, zettelId } = generateUniqueEventPath(app, directory, baseNameWithoutZettel);
+	const { fullPath, zettelId } = generateUniqueEventPath(repo.app, directory, baseNameWithoutZettel);
 
-	await app.fileManager.renameFile(file, fullPath);
+	// Both writes go through the repository: the rename refuses while the index
+	// is not ready, and the frontmatter write queues behind any write already
+	// pending on this note (the TFile stays the same object through the rename).
+	await repo.renameByPath(file.path, fullPath);
 
 	if (zettelIdProp) {
-		await withOrderedFrontmatter(app, file, settings, (fm) => {
+		await repo.writeFrontmatter(file.path, (fm) => {
 			fm[zettelIdProp] = zettelId;
 		});
 	}
 
 	return { zettelId, file };
 };
+
+/** The repository surface a ZettelID assignment needs: the gated rename and the queued frontmatter write. */
+export type ZettelIdWriter = Pick<CalendarEventSource, "renameByPath" | "writeFrontmatter"> & { readonly app: App };
