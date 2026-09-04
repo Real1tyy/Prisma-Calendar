@@ -33,6 +33,7 @@ import {
 	openICSAddModal,
 	openICSEditModal,
 } from "../modals";
+import { HelpBox } from "./_help-box";
 import { PrismaSection } from "./_section";
 import { ProUpgradeBanner } from "./pro-upgrade-banner";
 
@@ -42,6 +43,50 @@ const IcsShape = ICSSubscriptionSettingsSchema.shape;
 
 const CALDAV_DOC_HREF = settingsDocUrl("/features/advanced/integrations#caldav-integration", "caldav_heading");
 const ICS_DOC_HREF = settingsDocUrl("/features/advanced/integrations#ics-url-subscriptions", "ics_heading");
+
+const MULTI_DEVICE_INTEGRATIONS_DOC_HREF = settingsDocUrl(
+	"/features/advanced/integrations#several-devices",
+	"integrations_multi_device"
+);
+
+/**
+ * Standing caveats for a vault open on several devices. Lists only what still
+ * depends on the device — never what already converges — so it shrinks as the
+ * planned changes land.
+ */
+const MultiDeviceIntegrationsHelp = memo(function MultiDeviceIntegrationsHelp() {
+	return (
+		<HelpBox label="Syncing from several devices" slug="integrations-multi-device">
+			<p>
+				Every device that has an account or subscription configured syncs it on its own. Nothing coordinates them, so:
+			</p>
+			<ul>
+				<li>
+					<strong>A new remote event can get one note per device.</strong> Each device names the note it creates with
+					its own clock; when two devices sync before the other's note arrives, both keep the same one and trash the
+					other — a note that appears and goes to the trash on the second device.
+				</li>
+				<li>
+					<strong>Sync-tokens are per device.</strong> They live in this device's local storage, so each device tracks
+					the server on its own and a device that has not synced for a long time refetches in full.
+				</li>
+				<li>
+					<strong>Synced notes record the time this device synced them.</strong> Sync tools that merge text resolve the
+					difference silently; tools that make conflicted copies (iCloud, Syncthing, Drive) can flag a note both devices
+					updated.
+				</li>
+			</ul>
+			<p>
+				The setup that avoids all three: sync each external calendar from <strong>one</strong> device and turn on{" "}
+				<strong>Read-only mode</strong> (General) on the others. A read-only device shows the synced notes but syncs and
+				trashes nothing.
+			</p>
+			<OutboundLink href={MULTI_DEVICE_INTEGRATIONS_DOC_HREF} className={cls("settings-docs-link")}>
+				Several devices — documentation
+			</OutboundLink>
+		</HelpBox>
+	);
+});
 
 const GoogleCalendarGuideLink = memo(function GoogleCalendarGuideLink({ section }: { section: "caldav" | "ics" }) {
 	return (
@@ -118,6 +163,8 @@ const IntegrationsSection = memo(function IntegrationsSection({ settingsStore, a
 					Documentation
 				</OutboundLink>
 			</div>
+
+			<MultiDeviceIntegrationsHelp />
 
 			<PrismaSection store={settingsStore} shape={{ exportFolder: S.exportFolder }} />
 

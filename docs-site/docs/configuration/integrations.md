@@ -20,6 +20,10 @@ Configure CalDAV accounts for one-way read-only sync from external calendar serv
 
 Subscribe to external calendars via public ICS URLs for automatic periodic syncing. See the [ICS Subscriptions](../features/advanced/integrations#ics-url-subscriptions) documentation, or follow the [Connect Google Calendar](../features/advanced/integrations/google-calendar) guide for the most common setup.
 
+## Several Devices
+
+Sync each external calendar from one device and turn on **Read-only mode** (Settings → General) on the others; every device that has an account configured syncs it independently. The **Syncing from several devices** box at the top of the tab summarises what to expect; the full picture is under [Integrations → Several devices](../features/advanced/integrations#several-devices) and [Multiple devices and sync](../features/advanced/multi-device-sync).
+
 ## Holidays
 
 - **Enable holidays**: display public holidays on the calendar as virtual read-only events

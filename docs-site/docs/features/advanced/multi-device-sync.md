@@ -30,7 +30,24 @@ Every automatic write goes through one queue per note: it waits until Obsidian h
 
 ## Limiting writes to one device
 
-If you prefer that only one device generates instances, syncs external calendars, and marks events done, turn on **Read-only mode** under **Settings → General** on every other device. A read-only device shows and lets you edit events normally, but performs no automatic writes of its own: no recurring instances, no marking done, no **Sort Date** or **Calendar Title** normalisation, no CalDAV/ICS sync, no series propagation, no time-tracker progress saves, no reminder flags. Edits you make by hand are written as usual.
+If you prefer that only one device generates instances, syncs external calendars, and marks events done, turn on **Read-only mode** under **Settings → General** on every other device. A read-only device shows and lets you edit events normally, but performs no automatic writes of its own: no recurring instances, no marking done, no **Sort Date** or **Calendar Title** normalisation, no automatic ZettelID assignment, no CalDAV/ICS sync, no series propagation, no time-tracker progress saves, no reminder flags. Edits you make by hand are written as usual.
+
+The flag lives in `sync.json`, next to the plugin settings, and is meant to stay on the device where you set it — most sync tools leave it alone; git users add it to `.gitignore`.
+
+## What to be aware of
+
+Everything above holds for the notes Prisma writes on its own. A few situations still depend on timing or on the device, and are worth knowing about:
+
+- **Auto-assigned ZettelIDs come from the device clock.** With **Auto-assign ZettelID** on, each device renames an un-IDed note the moment it indexes it. If two devices index the same new note before the other's rename has synced, the note ends up with two names, one per device, and the duplicate stays. Create notes on one device, or turn auto-assign on (and Read-only mode off) on one device only. Deriving the id from the note itself is planned.
+- **Notes created by CalDAV and ICS sync are named with the device clock.** Every device that has the account configured syncs it on its own, so a new remote event can get a note on each device before the duplicate cleanup keeps one and trashes the other — a note that appears and goes to the trash on the second device. Sync each external calendar from one device and keep the others read-only. Names derived from the remote event's id are planned.
+- **Synced notes carry a `lastSyncedAt` time** that differs per device. A sync tool that merges text (LiveSync, Obsidian Sync, git) resolves it; one that makes conflicted copies (iCloud, Syncthing, Drive) can flag a synced note that two devices updated. Dropping the value is planned; until then, the single-syncing-device setup above avoids it.
+- **Prisma waits for Obsidian's index, not for the sync tool.** A device coming back online starts generating instances and marking events done from the notes it has, before the sync tool has delivered the latest changes. The results converge once they arrive — identical files merge, a changed recurrence rule regenerates its instances — but you may see a short burst of activity. A start that also waits for the sync tool is planned; sync tools that sync on launch (LiveSync with *Sync on start*, Obsidian Sync) keep the window short.
+- **Editing a series while another device is online.** A change to a recurring source propagates to its instances on the device where you made it; the other device receives the changed files and, finding the values already equal, writes nothing. Changing the same series on two devices at the same time is a user conflict like any other note edit.
+- **The time tracker runs on one device.** Its progress is saved into the event's end time from the device where you started it. Another device that has the vault open and **Mark past instances as done** enabled may mark the tracked event done once that saved end time passes; unmark it from the event menu if it does.
+- **Reminders fire on every device** that has the vault open — see below.
+- **Different timezones.** Event times are stored as wall-clock strings without a zone, so a 09:00 event shows at 09:00 on every device, and an all-day date never shifts. A device that travels between zones keeps every event at its wall-clock time.
+
+These lists shrink as the planned changes land; the changelog announces each one.
 
 ## Reminders on several devices
 

@@ -54,7 +54,9 @@ You can configure Prisma to automatically add ZettelIDs to files in the calendar
 - **Calendar events only** — timed and all-day events
 - **All events** — including untracked events
 
-When active, files like `My Event.md` are renamed to `My Event-20260216120000.md` as they are indexed. Folder notes (notes with the same name as their parent folder, e.g., `tasks/tasks.md`) are automatically skipped to preserve the folder structure.
+When active, files like `My Event.md` are renamed to `My Event-20260216120000.md` as they are indexed. Folder notes (notes with the same name as their parent folder, e.g., `tasks/tasks.md`) are automatically skipped to preserve the folder structure. A device in **Read-only mode** does not assign ids.
+
+The id is the device's clock at the moment of the rename. With the vault open on several devices, keep auto-assign to one device — two devices that both index the same new note before the other's rename has synced give it two different names. See [Multiple devices and sync](../advanced/multi-device-sync#what-to-be-aware-of).
 
 ### ZettelID Property
 

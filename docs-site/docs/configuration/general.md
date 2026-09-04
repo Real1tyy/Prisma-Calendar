@@ -70,17 +70,18 @@ Prisma Calendar can quietly check GitHub once a day for newer releases. When a n
 **Access:**
 - Toggle in Settings → General → "Read-only mode"
 
-**When enabled:**
-- Notifications will still appear, but the "Already Notified" property will NOT be written to files
-- Recurring event instances will NOT be automatically generated
-- Past events will NOT be automatically marked as done on startup
-- Events created in the past will NOT have "Already Notified" automatically set
+**When enabled**, the device performs none of Prisma's automatic writes:
+- No recurring event instances are generated, and no duplicate instance or synced note is trashed
+- Past events are not marked as done
+- Notifications still appear, but the "Already Notified" property is not written
+- **Sort Date** and **Calendar Title** are not normalised
+- ZettelIDs are not auto-assigned
+- CalDAV accounts and ICS subscriptions do not sync
+- Series changes are not propagated
+- The time tracker does not save its progress into the event
 
 **When disabled (default):**
 - All automatic file modifications work normally
-- Notifications mark events as notified
-- Recurring events generate physical instances automatically
-- Past events are marked as done if the setting is enabled
 
 **Manual actions still work:**
 - Propagating frontmatter from the context menu (user-triggered)
@@ -88,7 +89,7 @@ Prisma Calendar can quietly check GitHub once a day for newer releases. When a n
 - Any other user-initiated file operations
 
 **Use cases:**
-- Preventing sync conflicts when using multiple devices with Git
+- Nominating one writing device in a synced vault — every other device read-only — so external calendars are synced, ids assigned and instances generated in one place. See [Multiple devices and sync](../features/advanced/multi-device-sync#limiting-writes-to-one-device)
 - Full control over when files are modified
 - Avoiding automatic writes during vault migrations or backups
 - Testing or debugging without file modifications

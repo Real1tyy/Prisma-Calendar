@@ -2,6 +2,7 @@ import { buildUtmUrl } from "@real1ty/obsidian-plugins";
 import {
 	Dropdown,
 	GeneralSection,
+	OutboundLink,
 	SettingHeading,
 	SettingItem,
 	showWhatsNewReactModal,
@@ -22,6 +23,7 @@ import {
 	SingleCalendarConfigSchema,
 	type CustomCalendarSettings,
 } from "../../types/settings";
+import { HelpBox } from "./_help-box";
 import { PRISMA_SETTINGS_TEST_ID_PREFIX, PrismaSection } from "./_section";
 import { PRISMA_HELP_CENTER } from "./help-content";
 import { ProUpgradeBanner } from "./pro-upgrade-banner";
@@ -122,6 +124,7 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 		>
 			{calendarSection("Planning system", PLANNING_FIELDS)}
 			<ReadOnlyField plugin={plugin} />
+			<MultiDeviceHelp />
 			{calendarSection("Interface", INTERFACE_FIELDS)}
 			{mainSection("Updates", ["checkForReleaseUpdates"])}
 			{calendarSection("Event defaults", EVENT_DEFAULTS_FIELDS)}
@@ -145,11 +148,60 @@ const ReadOnlyField = memo(function ReadOnlyField({ plugin }: { plugin: CustomCa
 	return (
 		<SettingItem
 			name="Read-only mode"
-			description="Prevent automatic file modifications. When enabled, the plugin will not automatically write to files (notifications, recurring event generation). Manual actions like propagation will still work. Stored in sync.json to prevent syncing across devices."
+			description="This device performs none of Prisma's automatic writes: no recurring instances, marking done, Sort Date or Calendar Title normalisation, ZettelID assignment, CalDAV/ICS sync, series propagation, time-tracker saves or reminder flags. Everything you do by hand still works. Stored in sync.json so the flag stays on this device."
 			testId={tid("settings-field-read-only")}
 		>
 			<Toggle value={readOnly} onChange={handleChange} testId={tid("settings-control-read-only")} />
 		</SettingItem>
+	);
+});
+
+const MULTI_DEVICE_DOC_HREF = settingsDocUrl("/features/advanced/multi-device-sync", "general_multi_device");
+
+/**
+ * Standing explanation for a vault open on several devices. Lists only what
+ * still depends on the device or on timing — never what already converges — so
+ * it shrinks as the planned changes land.
+ */
+const MultiDeviceHelp = memo(function MultiDeviceHelp() {
+	return (
+		<HelpBox label="Using several devices" slug="multi-device">
+			<p>
+				Prisma does not coordinate devices. Everything it writes on its own — recurring instances, marking events done,
+				Sort Date, Calendar Title, duplicate cleanup — is computed from the notes and these settings, so every device
+				produces the same files and your sync tool merges them silently. Two things make that work:
+			</p>
+			<ul>
+				<li>
+					<strong>Sync the plugin settings</strong> (<code>data.json</code>) along with your notes. Devices with
+					different property names, property order or done values produce different files.
+				</li>
+				<li>
+					<strong>Nominate one writing device</strong> when you want no automatic activity elsewhere: turn on Read-only
+					mode on every other device. External calendars, auto-assigned ZettelIDs and generated instances then come from
+					one place.
+				</li>
+			</ul>
+			<p>Still device-dependent, and worth a single writing device:</p>
+			<ul>
+				<li>
+					<strong>Auto-assigned ZettelIDs</strong> take the device's clock; two devices that index the same new note
+					before the other's rename has synced give it two names.
+				</li>
+				<li>
+					<strong>CalDAV and ICS sync</strong> on every device that has the account configured; a new remote event can
+					briefly get a note per device before the duplicate is cleaned up.
+				</li>
+				<li>
+					<strong>Reminders</strong> fire on every device that has the vault open; the <strong>time tracker</strong>{" "}
+					runs on the device where you started it, and another device may mark the tracked event done once its saved end
+					time passes.
+				</li>
+			</ul>
+			<OutboundLink href={MULTI_DEVICE_DOC_HREF} className={cls("settings-docs-link")}>
+				Multiple devices and sync — documentation
+			</OutboundLink>
+		</HelpBox>
 	);
 });
 
