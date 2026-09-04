@@ -34,7 +34,7 @@ See the [Quick Start guide](/quickstart) for detailed instructions on opening yo
 <details>
 <summary>Does Prisma Calendar collect any data from my vault?</summary>
 
-**No.** Prisma Calendar does not include passive client-side telemetry or analytics. No vault content, file names, or note content is transmitted. Your calendar data stays local.
+**No.** Prisma Calendar does not include any client-side telemetry or analytics. No vault content, file names, note content, or personal data from your Obsidian vault is ever transmitted. Your data is 100% yours and stays local.
 
 Diagnostics you choose to share (a log excerpt, a debug report, a bug report) are redacted first and never sent without your explicit action — see [Privacy & diagnostics](./privacy).
 
@@ -43,7 +43,7 @@ Diagnostics you choose to share (a log excerpt, a debug report, a bug report) ar
 <details>
 <summary>What about server-side telemetry?</summary>
 
-Prisma contacts the server for Pro license verification and when you explicitly submit an in-app rating. License verification sends:
+Server-side telemetry is collected **exclusively** during license verification requests for Pro (advanced) features. When the plugin contacts the license server, only the following data is transmitted:
 
 - License key
 - Plugin version
@@ -52,7 +52,9 @@ Prisma contacts the server for Pro license verification and when you explicitly 
 - Device identifier (a locally generated unique ID)
 - Device name
 
-This data is used for license validation, activation seat management (up to 5 devices per license), compatibility monitoring, and abuse prevention. The optional **General → Review** action sends only the fields listed in [Rate & Review](./configuration/general.md#rate--review); nothing is sent unless you press **Submit**.
+This data is used solely for license validation, activation seat management (up to 5 devices per license), compatibility monitoring, abuse prevention, and product improvement. **If you only use the free features, no license telemetry is collected at all.**
+
+Separately, the optional **General → Review** action sends only the fields listed in [Rate & Review](./configuration/general.md#rate--review). Nothing is sent unless you press **Submit**.
 
 </details>
 
