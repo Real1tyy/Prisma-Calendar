@@ -1,6 +1,6 @@
 import { Subject, type Observable } from "rxjs";
 
-import { scrubSecrets } from "./redact";
+import { redactText, scrubSecrets } from "./redact";
 import { RingBuffer } from "./ring-buffer";
 import { stringifyLogData } from "./serialize";
 import { LOG_LEVEL_SEVERITY, type LogChange, type LogEntry, type LogFilter, type LogLevel } from "./types";
@@ -131,7 +131,7 @@ export class LogService {
 				ts: this.now(),
 				level,
 				scope,
-				message,
+				message: redactText(message, { fullDetail: true }),
 				// Never let a credential into the buffer — see [[decision-observability-privacy-posture]].
 				...(data === undefined ? {} : { data: scrubSecrets(data) }),
 			};

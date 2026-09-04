@@ -14,7 +14,9 @@ import type { LogEntry } from "./types";
  *    stable 6-hex hash so structure and identity survive — the same note maps to
  *    the same token across entries, which is what makes a redacted log still
  *    debuggable — while the user's folder and note names do not. Segments under
- *    `.obsidian/` are plugin configuration, not content, and stay verbatim.
+ *    `.obsidian` itself remains recognizable as a structural marker, but every
+ *    descendant is hashed because plugin data and custom filenames can still be
+ *    private.
  * 3. **Frontmatter values are elided** (default mode) — a `frontmatter` /
  *    `properties` object keeps its keys and each value becomes a type descriptor
  *    (`[string]`, `[array:3]`). Plugins name additional keys via `sensitiveKeys`.
@@ -67,7 +69,7 @@ const SECRET_WORDS = new Set([
 	"jwt",
 	"auth",
 ]);
-const SECRET_WORD_PAIRS = new Set(["apikey", "licensekey", "privatekey", "sessionid"]);
+const SECRET_WORD_PAIRS = new Set(["accesskey", "apikey", "licensekey", "privatekey", "sessionid"]);
 const REFERENCE_TAILS = new Set([
 	"name",
 	"names",
@@ -107,18 +109,36 @@ const FRONTMATTER_KEY = /^(?:frontmatter|front_matter|properties)$/i;
 const NOTE_EXTENSION = /\.(?:md|canvas|base)$/i;
 const FILE_EXTENSION = /\.[A-Za-z0-9]{1,8}$/;
 const ABSOLUTE_PATH = /^(?:[A-Za-z]:[\\/]|[\\/]|~[\\/])/;
-const HOME_PREFIX = /^(?:\/home\/[^/]+|\/Users\/[^/]+|[A-Za-z]:\/Users\/[^/]+)(?=\/|$)/;
+const HOME_PREFIX = /^(?:\/home\/[^/]+|\/Users\/[^/]+|[A-Za-z]:\/Users\/[^/]+)(?=\/|$)/i;
 
 const MAX_DEPTH = 24;
 
 /** FNV-1a 32-bit, rendered as 6 hex chars — stable, cheap, and collision-tolerant for "same note?" correlation. */
 function stableHash(input: string): string {
+	// macOS commonly presents decomposed filenames while Windows generally uses
+	// composed Unicode. Hash the canonical spelling so the same visible segment
+	// keeps the same diagnostic token across platforms.
+	input = input.normalize("NFC");
 	let hash = 0x811c9dc5;
 	for (let i = 0; i < input.length; i++) {
 		hash ^= input.charCodeAt(i);
 		hash = Math.imul(hash, 0x01000193) >>> 0;
 	}
 	return hash.toString(16).padStart(8, "0").slice(0, 6);
+}
+
+function normalizePath(path: string): string {
+	return path.normalize("NFC").replace(/\\/g, "/");
+}
+
+function isWithinRoot(path: string, root: string): boolean {
+	// Windows and the default macOS filesystem are case-insensitive. Redaction
+	// must not depend on the casing a caller or stack trace happened to use. A
+	// false-positive collapse on a case-sensitive volume only redacts more data;
+	// a false negative could disclose the vault path.
+	const foldedPath = path.toLowerCase();
+	const foldedRoot = root.toLowerCase();
+	return foldedPath === foldedRoot || foldedPath.startsWith(`${foldedRoot}/`);
 }
 
 function wordsOf(key: string): string[] {
@@ -166,15 +186,10 @@ function hashSegment(segment: string): string {
 }
 
 function hashSegments(relative: string): string {
-	let underObsidianConfig = false;
 	return relative
 		.split("/")
 		.map((segment) => {
-			if (underObsidianConfig) return segment;
-			if (segment === ".obsidian") {
-				underObsidianConfig = true;
-				return segment;
-			}
+			if (segment === ".obsidian") return segment;
 			return hashSegment(segment);
 		})
 		.join("/");
@@ -187,13 +202,13 @@ function hashSegments(relative: string): string {
  * vault-relative and hashed in place.
  */
 export function abbreviatePath(path: string, vaultPath?: string): string {
-	const normalized = path.replace(/\\/g, "/");
+	const normalized = normalizePath(path);
 	// Already collapsed by an earlier pass over surrounding text — keep the marker.
 	const marker = PATH_MARKER.exec(normalized);
 	if (marker) return `${marker[0]}${hashSegments(normalized.slice(marker[0].length))}`;
 	if (vaultPath) {
-		const root = vaultPath.replace(/\\/g, "/").replace(/\/+$/, "");
-		if (root && (normalized === root || normalized.startsWith(`${root}/`))) {
+		const root = normalizePath(vaultPath).replace(/\/+$/, "");
+		if (root && isWithinRoot(normalized, root)) {
 			const rest = normalized.slice(root.length).replace(/^\/+/, "");
 			return `vault://${hashSegments(rest)}`;
 		}
@@ -203,6 +218,7 @@ export function abbreviatePath(path: string, vaultPath?: string): string {
 		const rest = normalized.slice(home[0].length).replace(/^\/+/, "");
 		return `home://${hashSegments(rest)}`;
 	}
+	if (normalized.startsWith("//")) return `unc://${hashSegments(normalized.slice(2))}`;
 	const drive = /^[A-Za-z]:\//.exec(normalized);
 	if (drive) return `${drive[0]}${hashSegments(normalized.slice(drive[0].length))}`;
 	if (normalized.startsWith("/")) return `/${hashSegments(normalized.slice(1))}`;
@@ -220,6 +236,9 @@ function looksLikePath(value: string): boolean {
 // sentence, not a header, and must survive.
 const BEARER_IN_TEXT = /\b(Bearer|Basic)\s+[A-Za-z0-9\-._~+/]{8,}=*/g;
 const JWT_IN_TEXT = /\beyJ[A-Za-z0-9_-]{4,}\.[A-Za-z0-9_-]{4,}\.[A-Za-z0-9_-]{4,}/g;
+const CREDENTIAL_SHAPE_IN_TEXT =
+	/\b(?:sk-[A-Za-z0-9_-]{12,}|(?:sk|rk)_(?:live|test)_[A-Za-z0-9_-]{12,}|lic_[A-Za-z0-9_-]{12,}|gh[pousr]_[A-Za-z0-9_]{12,}|github_pat_[A-Za-z0-9_]{12,}|glpat-[A-Za-z0-9_-]{12,}|npm_[A-Za-z0-9]{24,}|xox[baprs]-[A-Za-z0-9-]{12,}|(?:AKIA|ASIA)[A-Z0-9]{16}|AIza[A-Za-z0-9_-]{30,})\b/g;
+const PRIVATE_KEY_IN_TEXT = /-----BEGIN ((?:RSA |EC |OPENSSH )?PRIVATE KEY)-----[\s\S]*?-----END \1-----/g;
 const URL_USERINFO_IN_TEXT = /(:\/\/)[^\s/@]+:[^\s/@]+@/g;
 const AUTHORIZATION_IN_TEXT = /\b(authorization)(\s*[:=]\s*)(?:(Bearer|Basic)\s+)?("[^"]*"|'[^']*'|[^\s,;)}\]]+)/gi;
 const KEY_VALUE_IN_TEXT =
@@ -238,8 +257,12 @@ const NOTE_REF_IN_TEXT = new RegExp(
 	`(?<![\\w/{])(?:${PATH_CHAR}*\\/(?:${PATH_CHAR}|\\s(?=${PATH_CHAR}*[/.]))*?|${PATH_CHAR}+)\\.(?:md|canvas|base)\\b(?:#[^\\s\\]|)]+)?`,
 	"gi"
 );
+const MARKED_PATH_IN_TEXT = new RegExp(
+	`\\b(?:vault|home|unc):\\/\\/(?:${PATH_CHAR}|\\s(?=${PATH_CHAR}*[/.]))*?\\.[A-Za-z0-9]{1,8}\\b(?![\\\\/])(?::\\d+(?::\\d+)?)?(?:#[^\\s\\]|)]+)?`,
+	"gi"
+);
 const WIKILINK_IN_TEXT = /\[\[([^\]|#]+)(#[^\]|]+)?(\|[^\]]*)?\]\]/g;
-const PATH_MARKER = /^(?:vault|home):\/\//;
+const PATH_MARKER = /^(?:vault|home|unc):\/\//;
 
 function escapeRegExp(text: string): string {
 	return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -253,14 +276,17 @@ function escapeRegExp(text: string): string {
  */
 function collapseVaultRoot(text: string, vaultPath: string | undefined): string {
 	if (!vaultPath) return text;
-	const root = vaultPath.replace(/\\/g, "/").replace(/\/+$/, "");
+	const root = normalizePath(vaultPath).replace(/\/+$/, "");
 	if (!root) return text;
-	const variants = [root, root.replace(/\//g, "\\")].map(escapeRegExp).join("|");
-	return text.replace(new RegExp(`(?:${variants})(?=[\\\\/]|$|[^\\w])[\\\\/]?`, "g"), "vault://");
+	// Match either separator at every boundary, including mixed-separator stack
+	// traces. Case-folding is deliberately privacy-biased; see isWithinRoot().
+	const rootPattern = escapeRegExp(root).replace(/\//g, "[\\\\/]+");
+	return text.normalize("NFC").replace(new RegExp(`(?:${rootPattern})(?=[\\\\/]|$|[^\\w])[\\\\/]*`, "gi"), "vault://");
 }
 
 function stripSecretsFromText(text: string): string {
 	return text
+		.replace(PRIVATE_KEY_IN_TEXT, REDACTED_SECRET)
 		.replace(URL_USERINFO_IN_TEXT, `$1${REDACTED_SECRET}@`)
 		.replace(JWT_IN_TEXT, REDACTED_SECRET)
 		.replace(
@@ -269,11 +295,17 @@ function stripSecretsFromText(text: string): string {
 				`${key}${separator}${scheme ? `${scheme} ` : ""}${REDACTED_SECRET}`
 		)
 		.replace(BEARER_IN_TEXT, `$1 ${REDACTED_SECRET}`)
-		.replace(KEY_VALUE_IN_TEXT, `$1$2${REDACTED_SECRET}`);
+		.replace(KEY_VALUE_IN_TEXT, `$1$2${REDACTED_SECRET}`)
+		.replace(CREDENTIAL_SHAPE_IN_TEXT, REDACTED_SECRET);
 }
 
 function abbreviatePathsInText(text: string, vaultPath: string | undefined): string {
 	return collapseVaultRoot(text, vaultPath)
+		.replace(MARKED_PATH_IN_TEXT, (match) => {
+			const location = /:\d+(?::\d+)?$/.exec(match)?.[0] ?? "";
+			const path = location ? match.slice(0, -location.length) : match;
+			return `${abbreviatePath(path, vaultPath)}${location}`;
+		})
 		.replace(WIKILINK_IN_TEXT, (_match, target: string, heading: string | undefined, alias: string | undefined) => {
 			const headingPart = heading ? `#{${stableHash(heading.slice(1))}}` : "";
 			const aliasPart = alias ? `|{${stableHash(alias.slice(1))}}` : "";
@@ -424,21 +456,85 @@ export function serializeForExport(value: unknown, options: RedactOptions = {}):
 }
 
 /**
- * Emission-time guard used by `LogService` on every append: a top-level key
- * that names a secret is replaced before the entry enters the buffer, so even
- * the live viewer and a local file sink never hold one. Deliberately shallow —
- * the buffer holds `data` by reference and must not pay a deep clone per
- * append; nested leaks are the static guard's job
- * (`scripts/guards/guard_no_secret_logging.py`) and `redact()` catches them at
- * export regardless. Returns the same reference when nothing matches.
+ * Emission-time guard used by `LogService` on every append. It traverses
+ * JSON-like data for secret keys and credential-shaped string values, but only
+ * clones when it finds one; clean log payloads keep the buffer's by-reference
+ * fast path. Cycles and shared references are preserved in the scrubbed clone.
  */
 export function scrubSecrets<T>(data: T): T {
-	if (!isPlainObject(data)) return data;
-	let copy: Record<string, unknown> | undefined;
-	for (const key of Object.keys(data)) {
-		if (!isSecretKey(key)) continue;
-		copy ??= { ...data };
-		copy[key] = REDACTED_SECRET;
-	}
-	return (copy ?? data) as T;
+	const seen = new WeakSet<object>();
+	const containsSecret = (value: unknown): boolean => {
+		if (typeof value === "string") return stripSecretsFromText(value) !== value;
+		if (typeof value !== "object" || value === null) return false;
+		if (seen.has(value)) return false;
+		seen.add(value);
+		if (value instanceof Error) {
+			return (
+				containsSecret(value.message) ||
+				containsSecret(value.stack) ||
+				Object.entries(value).some(([key, child]) => isSecretKey(key) || containsSecret(child))
+			);
+		}
+		if (Array.isArray(value)) return value.some(containsSecret);
+		if (value instanceof Map) {
+			return Array.from(value, ([key, child]) =>
+				typeof key === "string" && isSecretKey(key) ? true : containsSecret(key) || containsSecret(child)
+			).some(Boolean);
+		}
+		if (value instanceof Set) return Array.from(value).some(containsSecret);
+		if (!isPlainObject(value)) return false;
+		return Object.entries(value).some(([key, child]) => isSecretKey(key) || containsSecret(child));
+	};
+
+	if (!containsSecret(data)) return data;
+
+	const clones = new WeakMap<object, unknown>();
+	const cloneAndScrub = (value: unknown): unknown => {
+		if (typeof value === "string") return stripSecretsFromText(value);
+		if (typeof value !== "object" || value === null) return value;
+		const existing = clones.get(value);
+		if (existing !== undefined) return existing;
+		if (value instanceof Error) {
+			const copy = new Error(stripSecretsFromText(value.message));
+			clones.set(value, copy);
+			copy.name = value.name;
+			if (value.stack !== undefined) copy.stack = stripSecretsFromText(value.stack);
+			for (const [key, child] of Object.entries(value)) {
+				(copy as unknown as Record<string, unknown>)[key] = isSecretKey(key) ? REDACTED_SECRET : cloneAndScrub(child);
+			}
+			return copy;
+		}
+		if (Array.isArray(value)) {
+			const copy: unknown[] = [];
+			clones.set(value, copy);
+			for (const child of value) copy.push(cloneAndScrub(child));
+			return copy;
+		}
+		if (value instanceof Map) {
+			const copy = new Map<unknown, unknown>();
+			clones.set(value, copy);
+			for (const [key, child] of value) {
+				copy.set(
+					cloneAndScrub(key),
+					typeof key === "string" && isSecretKey(key) ? REDACTED_SECRET : cloneAndScrub(child)
+				);
+			}
+			return copy;
+		}
+		if (value instanceof Set) {
+			const copy = new Set<unknown>();
+			clones.set(value, copy);
+			for (const child of value) copy.add(cloneAndScrub(child));
+			return copy;
+		}
+		if (!isPlainObject(value)) return value;
+		const copy: Record<string, unknown> = {};
+		clones.set(value, copy);
+		for (const [key, child] of Object.entries(value)) {
+			copy[key] = isSecretKey(key) ? REDACTED_SECRET : cloneAndScrub(child);
+		}
+		return copy;
+	};
+
+	return cloneAndScrub(data) as T;
 }
