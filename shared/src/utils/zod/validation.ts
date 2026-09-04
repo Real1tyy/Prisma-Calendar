@@ -49,10 +49,16 @@ const parseTime = (s: string) => parseTimeString(s);
 
 /**
  * Parses an ISO date string to start-of-day DateTime in the given timezone.
- * Defaults to local timezone when no zone is specified.
+ *
+ * Without an explicit zone the value's *own* offset is kept (`setZone`), the
+ * same way `parseDateTimeString` treats timed values: a `Date` holding
+ * `2026-09-03T23:00:00.000Z` is the 3rd on every device. Converting to the
+ * device zone first made the calendar day depend on where the vault was
+ * opened — a UTC+2 device wrote `Sort Date` for the 4th, a UTC−5 device for
+ * the 3rd, and the two rewrote the note at each other forever.
  */
 export function parseISODateStart(s: string, zone?: string): DateTime | undefined {
-	const dt = DateTime.fromISO(s, zone ? { zone } : undefined);
+	const dt = DateTime.fromISO(s, zone ? { zone } : { setZone: true });
 	return dt.isValid ? dt.startOf("day") : undefined;
 }
 

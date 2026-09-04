@@ -101,6 +101,7 @@ const sidebars: SidebarsConfig = {
 							link: { type: "doc", id: "features/advanced/integrations" },
 							items: ["features/advanced/integrations/google-calendar"],
 						},
+						"features/advanced/multi-device-sync",
 						"features/advanced/hotkeys",
 						"features/advanced/prerequisite-connections",
 						{

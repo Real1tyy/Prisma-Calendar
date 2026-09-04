@@ -174,6 +174,8 @@ This applies to all import paths: manual ICS import, ICS URL subscriptions, and 
 
 Both CalDAV accounts and ICS URL subscriptions decide what to create by comparing the remote calendar against the events they already track in your vault. That tracking list is rebuilt every time Prisma indexes the vault, so a sync **waits for indexing to finish** before it plans anything — otherwise it would create a duplicate note for every event it already had. Indexing counts a note only once Obsidian itself has cached it: on a slow startup, where Obsidian is still working through a large vault, Prisma waits until Obsidian has no note left to parse before scanning, and gives up only after a long stretch with no progress. Startup, auto-sync, and manual syncs therefore all see the complete tracking list, and nothing Prisma does on its own — syncing, generating recurring instances, marking past events done, cleaning up duplicate notes — writes to your vault before that point. A note Obsidian itself cannot parse is skipped with a console warning naming it.
 
+When the same vault is open on several devices, each device syncs the remote calendar independently; if two devices end up with two notes for one event, they both keep the same one. See [Multiple devices and sync](./multi-device-sync.md).
+
 ## CalDAV Integration
 
 ### Overview

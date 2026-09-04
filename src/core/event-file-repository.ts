@@ -22,7 +22,7 @@ import { parseRRuleFromFrontmatter } from "../utils/dates/recurring";
 import { ensureFileHasZettelId } from "../utils/events/file-naming";
 import { parseEventMetadata, shouldEventBeMarkedAsDone } from "../utils/events/frontmatter";
 import { cleanupTitle } from "../utils/events/naming";
-import { generateUniqueRruleId, hasTimestamp } from "../utils/events/zettel-id";
+import { deriveRRuleId, hasTimestamp } from "../utils/events/zettel-id";
 import { enforceEventPropertyOrder, getOrderedPropertyNames } from "../utils/frontmatter/ordering";
 import { createEventSchema } from "./event-schema";
 
@@ -368,7 +368,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 		// Always add recurring events even if skipped - this allows navigation
 		// to source from physical instances and viewing recurring event lists.
 		// The RecurringEventManager will check skip property and not generate new instances.
-		const recurring = await this.tryParseRecurring(row, oldFrontmatter);
+		const recurring = await this.tryParseRecurring(row);
 		if (recurring) {
 			this.eventsSubject.next({
 				type: "recurring-event-found",
@@ -448,26 +448,17 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 		});
 	}
 
-	private async tryParseRecurring(
-		row: VaultRow<Frontmatter>,
-		oldFrontmatter?: Frontmatter
-	): Promise<NodeRecurringEvent | null> {
+	private async tryParseRecurring(row: VaultRow<Frontmatter>): Promise<NodeRecurringEvent | null> {
 		const frontmatter = row.data;
 		const rrules = parseRRuleFromFrontmatter(frontmatter, this.settings);
 		if (!rrules) return null;
 
 		let rRuleId = toSafeString(frontmatter[this.settings.rruleIdProp]);
 		const frontmatterCopy = { ...frontmatter };
-		const previousRRuleId = toSafeString(oldFrontmatter?.[this.settings.rruleIdProp]);
-
-		// Guard against accidental ID churn: recurring source rRuleId is immutable once set.
-		// If a file suddenly reports a different id, keep the previous one and revert the file.
-		if (rRuleId && previousRRuleId && rRuleId !== previousRRuleId) {
-			rRuleId = previousRRuleId;
-			if (!this.syncStore?.data.readOnly) {
-				this.queueRRuleIdWrite(row, rRuleId);
-			}
-		}
+		// An id that changed on disk is adopted as-is (RecurringEventManager migrates
+		// the instances). Writing the previous id back looked like a safety net but
+		// was anti-convergent: after a sync conflict picked the other device's id,
+		// each device "restored" its own and the note ping-ponged forever.
 
 		if (!rRuleId) {
 			// vault.on("modify") fires BEFORE the metadata cache updates, so the rRuleId
@@ -488,7 +479,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 				// Without a stable ID, instances can't be deduplicated across reloads.
 				return null;
 			} else {
-				rRuleId = generateUniqueRruleId();
+				rRuleId = deriveRRuleId(row.file.path);
 				this.queueRRuleIdWrite(row, rRuleId);
 			}
 		}

@@ -8,8 +8,8 @@ import {
 	FrontmatterPropagationDebouncer,
 	getISOTimePart,
 	getObsidianLinkPath,
-	getUniqueFilePathFromFull,
 	perf,
+	pickCanonicalDuplicate,
 	rebuildPhysicalInstanceFilename,
 	replaceISOTime,
 	sanitizeForFilename,
@@ -435,9 +435,18 @@ export class RecurringEventManager extends DebouncedNotifier {
 				if (dateKey) {
 					const existing = recurringData.physicalInstances.get(dateKey);
 					if (existing && existing.filePath !== filePath) {
-						// First file wins — trash the newcomer (matches ICS/CalDAV convention)
-						this.trashDuplicateInstance(filePath, rruleId, dateKey);
-						return;
+						// The survivor is a function of the two paths, not of which one this
+						// device saw first — so every device trashes the same twin. First-seen
+						// made each device keep its own copy and trash the other's, and the two
+						// trashes replicated into no instance at all.
+						const loser =
+							pickCanonicalDuplicate([existing.filePath, filePath]) === filePath ? existing.filePath : filePath;
+						if (loser === filePath) {
+							this.trashDuplicateInstance(filePath, rruleId, dateKey);
+							return;
+						}
+						this.instanceFileToRRuleId.delete(existing.filePath);
+						this.trashDuplicateInstance(existing.filePath, rruleId, dateKey);
 					}
 
 					recurringData.physicalInstances.set(dateKey, {
@@ -807,9 +816,10 @@ export class RecurringEventManager extends DebouncedNotifier {
 			markInstanceStatusIfPast(instanceFrontmatter, this.settings, instanceStart, instanceEnd);
 			enforceEventPropertyOrder(instanceFrontmatter, this.settings);
 
-			const uniquePath = getUniqueFilePathFromFull(this.app, filePath);
-
-			const file = await createFileAtPathAtomic(this.app, uniquePath, {
+			// The path is the instance's identity across devices. If another device's
+			// copy landed here since the check above, that file *is* the instance —
+			// createFileAtPathAtomic returns it; a collision suffix would mint a twin.
+			const file = await createFileAtPathAtomic(this.app, filePath, {
 				...(content ? { content } : {}),
 				frontmatter: instanceFrontmatter,
 				...(this.settings.templatePath ? { templatePath: this.settings.templatePath } : {}),

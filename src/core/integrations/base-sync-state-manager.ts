@@ -1,3 +1,4 @@
+import { pickCanonicalDuplicate } from "@real1ty/obsidian-plugins";
 import type { App } from "obsidian";
 import { firstValueFrom, type BehaviorSubject, type Observable, type Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
@@ -117,8 +118,16 @@ export abstract class BaseSyncStateManager<TMetadata extends { uid: string }> {
 	protected trackEvent(filePath: string, metadata: TMetadata): void {
 		const existing = this.byUid.get(metadata.uid);
 		if (existing && existing.filePath !== filePath) {
-			this.trashDuplicate(filePath, metadata.uid);
-			return;
+			// The survivor is a function of the two paths, never of which one this
+			// device indexed first — so two devices holding the same pair trash the
+			// same twin. First-seen made each device trash the other's copy, and the
+			// two trashes replicated into no note at all for that UID.
+			const survivor = pickCanonicalDuplicate([existing.filePath, filePath]);
+			if (survivor === existing.filePath) {
+				this.trashDuplicate(filePath, metadata.uid);
+				return;
+			}
+			this.trashDuplicate(existing.filePath, metadata.uid);
 		}
 		this.byUid.set(metadata.uid, { filePath, metadata });
 	}

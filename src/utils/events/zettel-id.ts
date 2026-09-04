@@ -1,5 +1,3 @@
-import { nanoid } from "nanoid";
-
 // Optional trailing `.md` lets callers pass a full file path
 // (`Events/Foo-20250101000000.md`) or a bare basename/title — the ID anchor is
 // the 14 digits, not end-of-string.
@@ -39,8 +37,44 @@ export const hasTimestamp = (baseName: string): boolean => {
 	return ZETTEL_ID_PATTERN.test(baseName);
 };
 
-export const generateUniqueRruleId = (): string => {
-	return `${Date.now()}-${nanoid(5)}`;
+/**
+ * The identity of a recurring series, derived from its source note so that
+ * every device that indexes the same note mints the same id. A wall-clock or
+ * random id was minted independently on each synced device, and the two ids
+ * produced two full sets of physical instances plus a conflict on the source
+ * note itself. See [[decision-deterministic-automatic-writes-across-synced-devices]].
+ *
+ * The source's own ZettelID is the natural key when its name carries one;
+ * otherwise a 14-digit hash of the path — seven decimal digits from each of
+ * two independent 32-bit hashes, so a collision between two sources is
+ * ~1e-14 per pair rather than the ~1e-9 of a single hash. The id is written
+ * to the note once and is immutable from then on, so a later rename never
+ * re-keys the series.
+ */
+export const deriveRRuleId = (sourcePath: string): string => {
+	const basename = sourcePath.replace(/\.md$/, "").split("/").pop() ?? sourcePath;
+	const zettelId = extractZettelId(basename);
+	if (zettelId) return zettelId;
+	const high = fnv1a32(sourcePath) % 10_000_000;
+	const low = djb2x32(sourcePath) % 10_000_000;
+	return `${String(high).padStart(7, "0")}${String(low).padStart(7, "0")}`;
+};
+
+const fnv1a32 = (input: string): number => {
+	let hash = 0x811c9dc5;
+	for (let i = 0; i < input.length; i++) {
+		hash ^= input.charCodeAt(i);
+		hash = Math.imul(hash, 0x01000193) >>> 0;
+	}
+	return hash >>> 0;
+};
+
+const djb2x32 = (input: string): number => {
+	let hash = 5381;
+	for (let i = 0; i < input.length; i++) {
+		hash = (Math.imul(hash, 33) ^ input.charCodeAt(i)) >>> 0;
+	}
+	return hash >>> 0;
 };
 
 /**
