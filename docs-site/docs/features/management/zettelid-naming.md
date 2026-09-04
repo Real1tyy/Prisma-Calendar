@@ -28,6 +28,8 @@ Create unlimited events with identical display names while maintaining unique fi
 
 Prisma Calendar uses **timestamp-based unique identifiers (ZettelIDs)** that are automatically appended to filenames but stripped from the calendar display.
 
+Events created by CalDAV sync, ICS subscriptions, and manual ICS imports use a stable 14-digit value derived from the remote UID by default. It occupies the same filename slot and works with the same display and sorting rules, but it is not a creation timestamp. Choose **Creation time** under **Settings → Integrations → Synced note naming** if your filename workflow requires timestamp-based ZettelIDs. Existing synced notes keep their current names.
+
 **Display**: `Team Meeting` (everywhere in the calendar UI)
 
 **Storage**: `Team Meeting-20250106143022.md` (file system and vault browser)

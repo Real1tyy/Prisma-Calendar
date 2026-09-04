@@ -6,14 +6,14 @@ import {
 } from "@real1ty/obsidian-plugins";
 import ICAL from "ical.js";
 import { DateTime } from "luxon";
-import type { App, TFile } from "obsidian";
+import { TFile, type App } from "obsidian";
 
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
 import type { RecurrenceType } from "../../types/recurring";
 import { generateUniqueEventPath } from "../../utils/events/file-naming";
 import { assignListToFrontmatter, setEventBasics } from "../../utils/events/frontmatter";
 import { autoAssignCategories } from "../../utils/events/matching";
-import { extractZettelId, removeZettelId } from "../../utils/events/zettel-id";
+import { deriveSyncedNoteId, extractZettelId, removeZettelId } from "../../utils/events/zettel-id";
 import { enforceEventPropertyOrder } from "../../utils/frontmatter/ordering";
 import type { CalendarBundle } from "../calendar-bundle";
 
@@ -430,6 +430,68 @@ function resolveImportCategoryContext(bundle: CalendarBundle): ImportCategoryCon
 	};
 }
 
+function uidFromMetadata(value: unknown): string | null {
+	if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+	const uid = (value as Record<string, unknown>)["uid"];
+	return typeof uid === "string" && uid.length > 0 ? uid : null;
+}
+
+function trackedUidFromFrontmatter(
+	frontmatter: Frontmatter | undefined,
+	settings: SingleCalendarConfig
+): string | null {
+	if (!frontmatter) return null;
+	for (const property of [settings.caldavProp, settings.icsSubscriptionProp, settings.icsImportProp]) {
+		const uid = uidFromMetadata(frontmatter[property]);
+		if (uid) return uid;
+	}
+	return null;
+}
+
+/** Finds a one-shot import that a later ICS subscription can adopt. */
+export function findImportedEventPathByUid(bundle: CalendarBundle, uid: string): string | null {
+	for (const event of bundle.eventStore.getAllEvents()) {
+		if (uidFromMetadata(event.metadata.icsImport) === uid) return event.ref.filePath;
+	}
+	return null;
+}
+
+function collectTrackedIntegrationUids(bundle: CalendarBundle): Set<string> {
+	const uids = new Set<string>();
+	for (const event of bundle.eventStore.getAllEvents()) {
+		for (const metadata of [event.metadata.caldav, event.metadata.icsSubscription, event.metadata.icsImport]) {
+			const uid = uidFromMetadata(metadata);
+			if (uid) uids.add(uid);
+		}
+	}
+	return uids;
+}
+
+function deterministicFilename(
+	app: App,
+	targetDirectory: string,
+	baseName: string,
+	uid: string,
+	settings: SingleCalendarConfig
+): { filename: string; zettelId: string } {
+	const basePath = targetDirectory ? `${targetDirectory.replace(/\/+$/, "")}/` : "";
+	const initialId = deriveSyncedNoteId(uid);
+
+	for (let offset = 0; offset < 1_000; offset++) {
+		const zettelId = String((Number(initialId) + offset) % 100_000_000_000_000).padStart(14, "0");
+		const filename = `${baseName}-${zettelId}`;
+		const filePath = `${basePath}${filename}.md`;
+		const occupant = app.vault.getAbstractFileByPath(filePath);
+		if (!occupant) return { filename, zettelId };
+		if (occupant instanceof TFile) {
+			const frontmatter = app.metadataCache.getFileCache(occupant)?.frontmatter;
+			if (trackedUidFromFrontmatter(frontmatter, settings) === uid) return { filename, zettelId };
+		}
+	}
+
+	throw new Error(`Unable to find a deterministic filename for imported event UID "${uid}"`);
+}
+
 export async function createEventNoteFromImportedEvent(
 	app: App,
 	bundle: CalendarBundle,
@@ -447,8 +509,12 @@ export async function createEventNoteFromImportedEvent(
 
 	const originalBasename = extractBasenameFromOriginalPath(event.originalFilePath);
 	const existingZettelId = originalBasename ? extractZettelId(originalBasename) : null;
+	const calendarSettings = bundle.settingsStore.currentSettings;
 
-	if (existingZettelId && originalBasename) {
+	if (calendarSettings.syncedNoteNaming === "uid") {
+		const baseName = sanitizeForFilename(event.title, { style: "preserve" });
+		({ filename, zettelId } = deterministicFilename(app, targetDirectory, baseName, event.uid, calendarSettings));
+	} else if (existingZettelId && originalBasename) {
 		const titleWithoutZettel = removeZettelId(originalBasename);
 		filename = `${titleWithoutZettel}-${existingZettelId}`;
 		zettelId = existingZettelId;
@@ -459,7 +525,6 @@ export async function createEventNoteFromImportedEvent(
 		zettelId = generated.zettelId;
 	}
 
-	const calendarSettings = bundle.settingsStore.currentSettings;
 	const frontmatter = buildFrontmatterFromImportedEvent(
 		event,
 		calendarSettings,
@@ -498,8 +563,12 @@ export async function importEventsToCalendar(
 ): Promise<{ successCount: number; errorCount: number; skippedCount: number }> {
 	const settings = bundle.settingsStore.currentSettings;
 
-	const existingEventIds = new Set(bundle.eventStore.getAllEvents().map((e) => e.id));
-	const newEvents = events.filter((e) => !existingEventIds.has(e.uid));
+	const existingEventIds = collectTrackedIntegrationUids(bundle);
+	const newEvents = events.filter((event) => {
+		if (existingEventIds.has(event.uid)) return false;
+		existingEventIds.add(event.uid);
+		return true;
+	});
 	const skippedCount = events.length - newEvents.length;
 
 	if (newEvents.length === 0) {
@@ -515,6 +584,7 @@ export async function importEventsToCalendar(
 			await createEventNoteFromImportedEvent(app, bundle, event, {
 				targetDirectory: settings.directory,
 				timezone,
+				additionalFrontmatter: { [settings.icsImportProp]: { uid: event.uid } },
 			});
 			successCount++;
 			onProgress?.(i + 1, newEvents.length, event.title);

@@ -176,11 +176,11 @@ Both CalDAV accounts and ICS URL subscriptions decide what to create by comparin
 
 ### Several devices
 
-Every device that has an account or subscription configured syncs it on its own — there is no coordination between devices, and the sync-token that tracks incremental changes is per device (see [Where the sync-token lives](#where-the-sync-token-lives)). The metadata written into a synced note comes only from the remote event and the account, so two devices updating the same note write identical bytes. One consequence to plan for:
+Every device that has an account or subscription configured syncs it on its own — there is no coordination between devices, and the sync-token that tracks incremental changes is per device (see [Where the sync-token lives](#where-the-sync-token-lives)). Prisma derives each new note name from the remote event UID, so every device names the note the same way and sync never sees two copies. The default **Remote event UID** naming mode is under **Settings → Integrations**; choose **Creation time** there if filename timestamps are part of your workflow.
 
-- **A new remote event can get one note per device.** Each device names the note it creates with its own clock, so two devices that both sync before the other's note arrives create two notes for one event. Both devices then keep the same one — the canonical name — and trash the other, which you see as a note appearing and going to the trash on the second device. Names derived from the remote event's id are planned.
+To sync each external calendar from only **one** device, turn on **Read-only mode** (Settings → General) on the others. A read-only device does not sync at all — it only shows the notes the syncing device produces, and it never trashes anything. Everything else on the [Multiple devices and sync](./multi-device-sync.md) page applies to synced notes as well.
 
-The setup that avoids it: sync each external calendar from **one** device, and turn on **Read-only mode** (Settings → General) on the others. A read-only device does not sync at all — it only shows the notes the syncing device produces, and it never trashes anything. Everything else on the [Multiple devices and sync](./multi-device-sync.md) page applies to synced notes as well.
+Manual ICS imports record each event's UID. Importing the same file again skips those events, and a later ICS URL subscription with the same UIDs adopts the existing notes. Notes created before UID-based naming keep their current names and remain tracked.
 
 A synced note remembers which account or subscription created it. If that id no longer exists on the device you are syncing from — the plugin settings have not synced yet, or you removed and re-added the account — the current account adopts the note on its next sync and keeps updating and deleting it as usual. A note that belongs to *another* account still configured on the device is left to that account.
 

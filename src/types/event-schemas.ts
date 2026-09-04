@@ -84,6 +84,7 @@ export function buildMetadata(parsed: ParsedEventFrontmatter): EventMetadata {
 		generatePastEvents: parsed.generatePastEvents,
 		caldav: parsed.caldav,
 		icsSubscription: parsed.icsSubscription,
+		icsImport: parsed.icsImport,
 	};
 }
 

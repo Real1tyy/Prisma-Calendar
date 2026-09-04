@@ -22,7 +22,7 @@ Subscribe to external calendars via public ICS URLs for automatic periodic synci
 
 ## Several Devices
 
-Sync each external calendar from one device and turn on **Read-only mode** (Settings → General) on the others; every device that has an account configured syncs it independently. The **Syncing from several devices** box at the top of the tab summarises what to expect; the full picture is under [Integrations → Several devices](../features/advanced/integrations#several-devices) and [Multiple devices and sync](../features/advanced/multi-device-sync).
+Every device that has an account configured syncs it independently. UID-based note naming lets those devices create the same path; use **Read-only mode** (Settings → General) on the others only when you want one device to perform all automatic writes. The **Syncing from several devices** box at the top of the tab summarises what to expect; the full picture is under [Integrations → Several devices](../features/advanced/integrations#several-devices) and [Multiple devices and sync](../features/advanced/multi-device-sync).
 
 ## Holidays
 

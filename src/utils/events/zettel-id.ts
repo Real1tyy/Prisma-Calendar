@@ -60,6 +60,17 @@ export const deriveRRuleId = (sourcePath: string): string => {
 	return `${String(high).padStart(7, "0")}${String(low).padStart(7, "0")}`;
 };
 
+/**
+ * Stable filename id for an event owned by an external calendar UID.
+ * The two independent seven-digit halves keep Prisma's 14-digit filename
+ * shape while making every device choose the same path for the same UID.
+ */
+export const deriveSyncedNoteId = (uid: string): string => {
+	const high = fnv1a32(uid) % 10_000_000;
+	const low = djb2x32(uid) % 10_000_000;
+	return `${String(high).padStart(7, "0")}${String(low).padStart(7, "0")}`;
+};
+
 const fnv1a32 = (input: string): number => {
 	let hash = 0x811c9dc5;
 	for (let i = 0; i < input.length; i++) {

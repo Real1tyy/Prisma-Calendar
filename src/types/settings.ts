@@ -327,6 +327,18 @@ const PropsSettingsSchema = z
 			.catch("ICSSubscription")
 			.meta({ title: "ICS subscription property" })
 			.describe("Frontmatter property name for ICS subscription metadata on synced events"),
+		icsImportProp: z
+			.string()
+			.catch("ICSImport")
+			.meta({ title: "ICS import property" })
+			.describe("Frontmatter property name for the UID recorded by one-time ICS imports"),
+		syncedNoteNaming: z
+			.enum(["uid", "zettel"])
+			.catch("uid" as const)
+			.meta({ title: "Synced note naming", enumLabels: { uid: "Remote event UID", zettel: "Creation time" } })
+			.describe(
+				"Choose stable UID-derived names so every device creates the same path, or creation-time ZettelIDs for compatibility"
+			),
 		iconProp: z
 			.string()
 			.catch("Icon")

@@ -168,8 +168,9 @@ const MultiDeviceHelp = memo(function MultiDeviceHelp() {
 		<HelpBox label="Using several devices" slug="multi-device">
 			<p>
 				Prisma does not coordinate devices. Everything it writes on its own — recurring instances, marking events done,
-				Sort Date, Calendar Title, duplicate cleanup — is computed from the notes and these settings, so every device
-				produces the same files and your sync tool merges them silently. Two things make that work:
+				Sort Date, Calendar Title, synced calendar notes, duplicate cleanup — is computed from the notes and these
+				settings, so every device produces the same files and your sync tool merges them silently. Two things make that
+				work:
 			</p>
 			<ul>
 				<li>
@@ -178,8 +179,7 @@ const MultiDeviceHelp = memo(function MultiDeviceHelp() {
 				</li>
 				<li>
 					<strong>Nominate one writing device</strong> when you want no automatic activity elsewhere: turn on Read-only
-					mode on every other device. External calendars, auto-assigned ZettelIDs and generated instances then come from
-					one place.
+					mode on every other device. Automatic writes then come from one place.
 				</li>
 			</ul>
 			<p>Still device-dependent, and worth a single writing device:</p>
@@ -187,10 +187,6 @@ const MultiDeviceHelp = memo(function MultiDeviceHelp() {
 				<li>
 					<strong>Auto-assigned ZettelIDs</strong> take the device's clock; two devices that index the same new note
 					before the other's rename has synced give it two names.
-				</li>
-				<li>
-					<strong>CalDAV and ICS sync</strong> on every device that has the account configured; a new remote event can
-					briefly get a note per device before the duplicate is cleaned up.
 				</li>
 				<li>
 					<strong>Reminders</strong> fire on every device that has the vault open; the <strong>time tracker</strong>{" "}

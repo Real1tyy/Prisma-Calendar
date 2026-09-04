@@ -4,7 +4,7 @@ import { requestUrl } from "obsidian";
 import type { ICSSubscription } from "../../../types/integrations";
 import type { CustomCalendarSettings } from "../../../types/settings";
 import { BaseSyncService, yieldToMainThread, type BaseSyncServiceOptions } from "../base-sync-service";
-import { parseICSContent, type ImportedEvent } from "../ics-import";
+import { findImportedEventPathByUid, parseICSContent, type ImportedEvent } from "../ics-import";
 import { computeIcsSubscriptionSyncPlan } from "./sync-planner";
 import type { ICSSubscriptionSyncStateManager } from "./sync-state-manager";
 import type { ICSSubscriptionSyncMetadata, ICSSubscriptionSyncResult } from "./types";
@@ -113,6 +113,10 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 				remoteEvents: parsed.events,
 				trackedBySubscription: this.syncStateManager.getAllForSubscription(this.subscription.id),
 				findByUidGlobal: (uid) => this.syncStateManager.findByUidGlobal(uid),
+				findImportedByUid: (uid) => {
+					const filePath = findImportedEventPathByUid(this.bundle, uid);
+					return filePath ? { filePath } : null;
+				},
 				knownSubscriptionIds: this.mainSettingsStore.currentSettings.icsSubscriptions.subscriptions.map((s) => s.id),
 			});
 

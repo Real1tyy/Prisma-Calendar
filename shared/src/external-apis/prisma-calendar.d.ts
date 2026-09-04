@@ -598,6 +598,7 @@ export type PrismaCalendarGetSettingsOutput = {
 	 * Frontmatter property name for event icon override (emoji or text, takes precedence over integration and recurring icons)
 	 */
 	iconProp: string;
+	icsImportProp: ICSImportProperty;
 	icsSubscriptionProp: ICSSubscriptionProperty;
 	id: string;
 	/**
@@ -789,6 +790,7 @@ export type PrismaCalendarGetSettingsOutput = {
 	 * Keep day/date headers visible at the top when scrolling down in weekly and daily views
 	 */
 	stickyDayHeaders: boolean;
+	syncedNoteNaming: SyncedNoteNaming;
 	/**
 	 * Path to Templater template file for new events (optional, requires Templater plugin)
 	 */
@@ -982,6 +984,10 @@ export type DayEndHour = number;
  */
 export type DayStartHour = number;
 /**
+ * Frontmatter property name for the UID recorded by one-time ICS imports
+ */
+export type ICSImportProperty = string;
+/**
  * Frontmatter property name for ICS subscription metadata on synced events
  */
 export type ICSSubscriptionProperty = string;
@@ -1063,6 +1069,10 @@ export type SortingNormalizationStrategy =
 	| "allDayOnly"
 	| "allStartDate"
 	| "allEndDate";
+/**
+ * Choose stable UID-derived names so every device creates the same path, or creation-time ZettelIDs for compatibility
+ */
+export type SyncedNoteNaming = "uid" | "zettel";
 /**
  * Control how timed event start times appear in week and day views
  */
@@ -1338,6 +1348,10 @@ export type PrismaCalendarToggleSkipOutput = boolean;
  */
 
 /**
+ * Frontmatter property name for the UID recorded by one-time ICS imports
+ */
+
+/**
  * Frontmatter property name for ICS subscription metadata on synced events
  */
 
@@ -1411,6 +1425,10 @@ export type PrismaCalendarToggleSkipOutput = boolean;
 
 /**
  * Write a normalized datetime to a dedicated sort property so external tools (Bases, Dataview) can sort all event types by a single field. Timed events use the full datetime. All-day events get T00:00:00 appended for consistent cross-type sorting. The value is written to the sort date property configured below.
+ */
+
+/**
+ * Choose stable UID-derived names so every device creates the same path, or creation-time ZettelIDs for compatibility
  */
 
 /**
@@ -1783,6 +1801,7 @@ export interface PrismaCalendarUpdateSettingsInput {
 		 * Frontmatter property name for event icon override (emoji or text, takes precedence over integration and recurring icons)
 		 */
 		iconProp?: string;
+		icsImportProp?: ICSImportProperty;
 		icsSubscriptionProp?: ICSSubscriptionProperty;
 		id?: string;
 		/**
@@ -1974,6 +1993,7 @@ export interface PrismaCalendarUpdateSettingsInput {
 		 * Keep day/date headers visible at the top when scrolling down in weekly and daily views
 		 */
 		stickyDayHeaders?: boolean;
+		syncedNoteNaming?: SyncedNoteNaming;
 		/**
 		 * Path to Templater template file for new events (optional, requires Templater plugin)
 		 */

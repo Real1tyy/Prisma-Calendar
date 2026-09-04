@@ -58,23 +58,18 @@ const MultiDeviceIntegrationsHelp = memo(function MultiDeviceIntegrationsHelp() 
 	return (
 		<HelpBox label="Syncing from several devices" slug="integrations-multi-device">
 			<p>
-				Every device that has an account or subscription configured syncs it on its own. Nothing coordinates them, so:
+				Every device that has an account or subscription configured syncs it on its own. New events use the remote UID
+				to get the same note name on every device. One detail remains device-specific:
 			</p>
 			<ul>
-				<li>
-					<strong>A new remote event can get one note per device.</strong> Each device names the note it creates with
-					its own clock; when two devices sync before the other's note arrives, both keep the same one and trash the
-					other — a note that appears and goes to the trash on the second device.
-				</li>
 				<li>
 					<strong>Sync-tokens are per device.</strong> They live in this device's local storage, so each device tracks
 					the server on its own and a device that has not synced for a long time refetches in full.
 				</li>
 			</ul>
 			<p>
-				The setup that avoids both: sync each external calendar from <strong>one</strong> device and turn on{" "}
-				<strong>Read-only mode</strong> (General) on the others. A read-only device shows the synced notes but syncs and
-				trashes nothing.
+				To sync external calendars from only <strong>one</strong> device, turn on <strong>Read-only mode</strong>{" "}
+				(General) on the others. A read-only device shows the synced notes but syncs and trashes nothing.
 			</p>
 			<OutboundLink href={MULTI_DEVICE_INTEGRATIONS_DOC_HREF} className={cls("settings-docs-link")}>
 				Several devices — documentation
@@ -161,7 +156,10 @@ const IntegrationsSection = memo(function IntegrationsSection({ settingsStore, a
 
 			<MultiDeviceIntegrationsHelp />
 
-			<PrismaSection store={settingsStore} shape={{ exportFolder: S.exportFolder }} />
+			<PrismaSection
+				store={settingsStore}
+				shape={{ exportFolder: S.exportFolder, syncedNoteNaming: S.syncedNoteNaming }}
+			/>
 
 			<div className={cls("settings-integrations-buttons")}>
 				<button type="button" className={cls("settings-integration-button")} onClick={handleExport}>

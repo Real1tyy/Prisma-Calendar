@@ -14,7 +14,9 @@
 						"type": "string"
 					}
 				},
-				"required": ["key"],
+				"required": [
+					"key"
+				],
 				"type": "object"
 			},
 			"output": null,
@@ -68,11 +70,17 @@
 						"type": "string"
 					},
 					"mode": {
-						"enum": ["query", "manipulation", "planning"],
+						"enum": [
+							"query",
+							"manipulation",
+							"planning"
+						],
 						"type": "string"
 					}
 				},
-				"required": ["message"],
+				"required": [
+					"message"
+				],
 				"type": "object"
 			},
 			"output": {
@@ -95,11 +103,19 @@
 								"type": "number"
 							}
 						},
-						"required": ["succeeded", "failed", "total"],
+						"required": [
+							"succeeded",
+							"failed",
+							"total"
+						],
 						"type": "object"
 					},
 					"mode": {
-						"enum": ["query", "manipulation", "planning"],
+						"enum": [
+							"query",
+							"manipulation",
+							"planning"
+						],
 						"type": "string"
 					},
 					"operations": {
@@ -143,7 +159,12 @@
 											"type": "string"
 										}
 									},
-									"required": ["title", "start", "end", "type"],
+									"required": [
+										"title",
+										"start",
+										"end",
+										"type"
+									],
 									"type": "object"
 								},
 								{
@@ -188,7 +209,10 @@
 											"type": "string"
 										}
 									},
-									"required": ["type", "filePath"],
+									"required": [
+										"type",
+										"filePath"
+									],
 									"type": "object"
 								},
 								{
@@ -203,7 +227,10 @@
 											"type": "string"
 										}
 									},
-									"required": ["type", "filePath"],
+									"required": [
+										"type",
+										"filePath"
+									],
 									"type": "object"
 								}
 							]
@@ -223,7 +250,9 @@
 						"type": "array"
 					}
 				},
-				"required": ["success"],
+				"required": [
+					"success"
+				],
 				"type": "object"
 			},
 			"http": {
@@ -248,7 +277,9 @@
 						"type": "array"
 					}
 				},
-				"required": ["filePaths"],
+				"required": [
+					"filePaths"
+				],
 				"type": "object"
 			},
 			"output": {
@@ -277,7 +308,9 @@
 						"type": "array"
 					}
 				},
-				"required": ["filePaths"],
+				"required": [
+					"filePaths"
+				],
 				"type": "object"
 			},
 			"output": {
@@ -306,7 +339,9 @@
 						"type": "array"
 					}
 				},
-				"required": ["filePaths"],
+				"required": [
+					"filePaths"
+				],
 				"type": "object"
 			},
 			"output": {
@@ -335,7 +370,9 @@
 						"type": "array"
 					}
 				},
-				"required": ["filePaths"],
+				"required": [
+					"filePaths"
+				],
 				"type": "object"
 			},
 			"output": {
@@ -364,7 +401,9 @@
 						"type": "number"
 					}
 				},
-				"required": ["filePath"],
+				"required": [
+					"filePath"
+				],
 				"type": "object"
 			},
 			"output": {
@@ -437,7 +476,9 @@
 						"type": "string"
 					}
 				},
-				"required": ["filePath"],
+				"required": [
+					"filePath"
+				],
 				"type": "object"
 			},
 			"output": {
@@ -500,7 +541,9 @@
 						"type": "string"
 					}
 				},
-				"required": ["title"],
+				"required": [
+					"title"
+				],
 				"type": "object"
 			},
 			"output": {
@@ -533,7 +576,9 @@
 						"type": "string"
 					}
 				},
-				"required": ["title"],
+				"required": [
+					"title"
+				],
 				"type": "object"
 			},
 			"output": {
@@ -566,7 +611,9 @@
 						"type": "string"
 					}
 				},
-				"required": ["filePath"],
+				"required": [
+					"filePath"
+				],
 				"type": "object"
 			},
 			"output": {
@@ -654,7 +701,9 @@
 						"type": "string"
 					}
 				},
-				"required": ["filePath"],
+				"required": [
+					"filePath"
+				],
 				"type": "object"
 			},
 			"output": {
@@ -736,14 +785,25 @@
 							"type": "string"
 						},
 						"type": {
-							"enum": ["timed", "allDay", "untracked"],
+							"enum": [
+								"timed",
+								"allDay",
+								"untracked"
+							],
 							"type": "string"
 						},
 						"virtualKind": {
 							"type": "string"
 						}
 					},
-					"required": ["filePath", "title", "type", "allDay", "virtualKind", "skipped"],
+					"required": [
+						"filePath",
+						"title",
+						"type",
+						"allDay",
+						"virtualKind",
+						"skipped"
+					],
 					"type": "object"
 				},
 				"type": "array"
@@ -791,7 +851,14 @@
 								"type": "number"
 							}
 						},
-						"required": ["calendarId", "name", "directory", "enabled", "eventCount", "untrackedEventCount"],
+						"required": [
+							"calendarId",
+							"name",
+							"directory",
+							"enabled",
+							"eventCount",
+							"untrackedEventCount"
+						],
 						"type": "object"
 					},
 					{
@@ -829,7 +896,10 @@
 							"type": "string"
 						}
 					},
-					"required": ["name", "color"],
+					"required": [
+						"name",
+						"color"
+					],
 					"type": "object"
 				},
 				"type": "array"
@@ -853,7 +923,9 @@
 						"type": "string"
 					}
 				},
-				"required": ["filePath"],
+				"required": [
+					"filePath"
+				],
 				"type": "object"
 			},
 			"output": {
@@ -914,14 +986,25 @@
 								"type": "string"
 							},
 							"type": {
-								"enum": ["timed", "allDay", "untracked"],
+								"enum": [
+									"timed",
+									"allDay",
+									"untracked"
+								],
 								"type": "string"
 							},
 							"virtualKind": {
 								"type": "string"
 							}
 						},
-						"required": ["filePath", "title", "type", "allDay", "virtualKind", "skipped"],
+						"required": [
+							"filePath",
+							"title",
+							"type",
+							"allDay",
+							"virtualKind",
+							"skipped"
+						],
 						"type": "object"
 					},
 					{
@@ -951,7 +1034,10 @@
 						"type": "string"
 					}
 				},
-				"required": ["start", "end"],
+				"required": [
+					"start",
+					"end"
+				],
 				"type": "object"
 			},
 			"output": {
@@ -1011,14 +1097,25 @@
 							"type": "string"
 						},
 						"type": {
-							"enum": ["timed", "allDay", "untracked"],
+							"enum": [
+								"timed",
+								"allDay",
+								"untracked"
+							],
 							"type": "string"
 						},
 						"virtualKind": {
 							"type": "string"
 						}
 					},
-					"required": ["filePath", "title", "type", "allDay", "virtualKind", "skipped"],
+					"required": [
+						"filePath",
+						"title",
+						"type",
+						"allDay",
+						"virtualKind",
+						"skipped"
+					],
 					"type": "object"
 				},
 				"type": "array"
@@ -1223,7 +1320,11 @@
 							"autoAssignZettelId": {
 								"default": "disabled",
 								"description": "Automatically add a Zettel ID timestamp to filenames of events in the planning system directory that don't have one. Files are renamed from 'My Event.md' to 'My Event-20260216120000.md'.",
-								"enum": ["disabled", "calendarEvents", "allEvents"],
+								"enum": [
+									"disabled",
+									"calendarEvents",
+									"allEvents"
+								],
 								"enumLabels": {
 									"allEvents": "All events",
 									"calendarEvents": "Calendar events only",
@@ -1233,7 +1334,9 @@
 								"type": "string"
 							},
 							"basesViewProperties": {
-								"default": ["Category"],
+								"default": [
+									"Category"
+								],
 								"description": "Comma-separated list of frontmatter properties to include as columns in Bases views. These properties will appear after the default columns (file name, date, status).",
 								"items": {
 									"type": "string"
@@ -1245,7 +1348,11 @@
 							"basesViewType": {
 								"default": "cards",
 								"description": "Choose the default view type for Bases views (category events, interval views). Cards view displays events as visual cards, table view as a sortable table, and list view as a simple list.",
-								"enum": ["table", "cards", "list"],
+								"enum": [
+									"table",
+									"cards",
+									"list"
+								],
 								"enumLabels": {
 									"cards": "Cards (Recommended)",
 									"list": "List",
@@ -1331,7 +1438,11 @@
 											"type": "string"
 										}
 									},
-									"required": ["id", "eventName", "categories"],
+									"required": [
+										"id",
+										"eventName",
+										"categories"
+									],
 									"type": "object"
 								},
 								"type": "array"
@@ -1344,7 +1455,14 @@
 							"colorMode": {
 								"default": "1",
 								"description": "Controls how many color rule matches are applied to each event. Off: no coloring. 1: single color (default). 2-5: split the event width into equal segments, each colored by a successive matching rule.",
-								"enum": ["1", "2", "3", "4", "5", "off"],
+								"enum": [
+									"1",
+									"2",
+									"3",
+									"4",
+									"5",
+									"off"
+								],
 								"enumLabels": {
 									"1": "Color events",
 									"2": "Color events with two colors",
@@ -1375,7 +1493,12 @@
 											"type": "string"
 										}
 									},
-									"required": ["id", "expression", "color", "enabled"],
+									"required": [
+										"id",
+										"expression",
+										"color",
+										"enabled"
+									],
 									"type": "object"
 								},
 								"type": "array"
@@ -1555,7 +1678,10 @@
 								"default": {
 									"cells": [],
 									"columns": 2,
-									"columnSizes": [0.5, 0.5],
+									"columnSizes": [
+										0.5,
+										0.5
+									],
 									"rows": 1
 								}
 							},
@@ -1575,7 +1701,11 @@
 							"dayCellColoring": {
 								"default": "off",
 								"description": "Controls the background coloring of day cells. Off: default calendar appearance. Uniform: applies a single gradient color to all day cells. Month boundary: alternates two gradient colors by even/odd month, making month transitions clearly visible.",
-								"enum": ["off", "uniform", "boundary"],
+								"enum": [
+									"off",
+									"uniform",
+									"boundary"
+								],
 								"enumLabels": {
 									"boundary": "Month boundary",
 									"off": "Off",
@@ -1592,7 +1722,10 @@
 							"defaultAggregationMode": {
 								"default": "name",
 								"description": "Default grouping mode for statistics modals: group by event name or by category",
-								"enum": ["name", "category"],
+								"enum": [
+									"name",
+									"category"
+								],
 								"enumLabels": {
 									"category": "Category",
 									"name": "Event Name"
@@ -1627,7 +1760,13 @@
 							"defaultMobileView": {
 								"default": "timeGridWeek",
 								"description": "The calendar view to show when opening on mobile devices (screen width ≤ 768px)",
-								"enum": ["multiMonthYear", "dayGridMonth", "timeGridWeek", "timeGridDay", "listWeek"],
+								"enum": [
+									"multiMonthYear",
+									"dayGridMonth",
+									"timeGridWeek",
+									"timeGridDay",
+									"listWeek"
+								],
 								"enumLabels": {
 									"dayGridMonth": "Month",
 									"listWeek": "Week (List)",
@@ -1651,7 +1790,13 @@
 							"defaultView": {
 								"default": "timeGridWeek",
 								"description": "The calendar view to show when opening",
-								"enum": ["multiMonthYear", "dayGridMonth", "timeGridWeek", "timeGridDay", "listWeek"],
+								"enum": [
+									"multiMonthYear",
+									"dayGridMonth",
+									"timeGridWeek",
+									"timeGridDay",
+									"listWeek"
+								],
 								"enumLabels": {
 									"dayGridMonth": "Month",
 									"listWeek": "Week (List)",
@@ -1665,7 +1810,10 @@
 							"density": {
 								"default": "comfortable",
 								"description": "How compact to make the calendar display",
-								"enum": ["comfortable", "compact"],
+								"enum": [
+									"comfortable",
+									"compact"
+								],
 								"enumLabels": {
 									"comfortable": "Comfortable",
 									"compact": "Compact"
@@ -1701,7 +1849,10 @@
 								"default": {
 									"cells": [],
 									"columns": 2,
-									"columnSizes": [0.5, 0.5],
+									"columnSizes": [
+										0.5,
+										0.5
+									],
 									"rows": 1
 								}
 							},
@@ -1821,7 +1972,11 @@
 											"type": "integer"
 										}
 									},
-									"required": ["id", "name", "createdAt"],
+									"required": [
+										"id",
+										"name",
+										"createdAt"
+									],
 									"type": "object"
 								},
 								"type": "array"
@@ -1922,7 +2077,10 @@
 											"type": "string"
 										}
 									},
-									"required": ["name", "expression"],
+									"required": [
+										"name",
+										"expression"
+									],
 									"type": "object"
 								},
 								"type": "array"
@@ -1934,7 +2092,9 @@
 								"type": "integer"
 							},
 							"frontmatterDisplayProperties": {
-								"default": ["Category"],
+								"default": [
+									"Category"
+								],
 								"description": "Comma-separated list of frontmatter property names to display in timed events (events with start and end times). Properties are shown in weekly and daily views, but hidden in monthly view to save space.",
 								"items": {
 									"type": "string"
@@ -1943,7 +2103,9 @@
 								"type": "array"
 							},
 							"frontmatterDisplayPropertiesAllDay": {
-								"default": ["Category"],
+								"default": [
+									"Category"
+								],
 								"description": "Comma-separated list of frontmatter property names to display in all-day events. Properties are shown in weekly and daily views, but hidden in monthly view to save space.",
 								"items": {
 									"type": "string"
@@ -1952,7 +2114,9 @@
 								"type": "array"
 							},
 							"frontmatterDisplayPropertiesHeatmap": {
-								"default": ["Category"],
+								"default": [
+									"Category"
+								],
 								"description": "Comma-separated list of frontmatter property names to display in the heatmap day detail panel when inspecting events. Properties appear below each event title with links rendered interactively.",
 								"items": {
 									"type": "string"
@@ -1961,7 +2125,9 @@
 								"type": "array"
 							},
 							"frontmatterDisplayPropertiesUntracked": {
-								"default": ["Category"],
+								"default": [
+									"Category"
+								],
 								"description": "Comma-separated list of frontmatter property names to display in untracked events (events without dates). These appear in the untracked events sidebar.",
 								"items": {
 									"type": "string"
@@ -2059,7 +2225,10 @@
 								"default": {
 									"cells": [],
 									"columns": 2,
-									"columnSizes": [0.5, 0.5],
+									"columnSizes": [
+										0.5,
+										0.5
+									],
 									"rows": 1
 								}
 							},
@@ -2078,7 +2247,9 @@
 								"default": {
 									"country": "US",
 									"enabled": false,
-									"types": ["public"]
+									"types": [
+										"public"
+									]
 								},
 								"properties": {
 									"country": {
@@ -2099,15 +2270,27 @@
 										"type": "string"
 									},
 									"types": {
-										"default": ["public"],
+										"default": [
+											"public"
+										],
 										"items": {
-											"enum": ["public", "bank", "school", "observance", "optional"],
+											"enum": [
+												"public",
+												"bank",
+												"school",
+												"observance",
+												"optional"
+											],
 											"type": "string"
 										},
 										"type": "array"
 									}
 								},
-								"required": ["enabled", "country", "types"],
+								"required": [
+									"enabled",
+									"country",
+									"types"
+								],
 								"type": "object"
 							},
 							"hourEnd": {
@@ -2129,6 +2312,12 @@
 							"iconProp": {
 								"default": "Icon",
 								"description": "Frontmatter property name for event icon override (emoji or text, takes precedence over integration and recurring icons)",
+								"type": "string"
+							},
+							"icsImportProp": {
+								"default": "ICSImport",
+								"description": "Frontmatter property name for the UID recorded by one-time ICS imports",
+								"title": "ICS import property",
 								"type": "string"
 							},
 							"icsSubscriptionProp": {
@@ -2258,7 +2447,12 @@
 							"monthEventTimeDisplay": {
 								"default": "normal",
 								"description": "Control how timed event start times appear in month and year views",
-								"enum": ["normal", "small", "hidden", "auto"],
+								"enum": [
+									"normal",
+									"small",
+									"hidden",
+									"auto"
+								],
 								"enumLabels": {
 									"auto": "Auto",
 									"hidden": "Hidden",
@@ -2272,7 +2466,10 @@
 								"default": {
 									"cells": [],
 									"columns": 2,
-									"columnSizes": [0.5, 0.5],
+									"columnSizes": [
+										0.5,
+										0.5
+									],
 									"rows": 1
 								}
 							},
@@ -2532,7 +2729,14 @@
 							"sortingStrategy": {
 								"default": "none",
 								"description": "Write a normalized datetime to a dedicated sort property so external tools (Bases, Dataview) can sort all event types by a single field. Timed events use the full datetime. All-day events get T00:00:00 appended for consistent cross-type sorting. The value is written to the sort date property configured below.",
-								"enum": ["none", "startDate", "endDate", "allDayOnly", "allStartDate", "allEndDate"],
+								"enum": [
+									"none",
+									"startDate",
+									"endDate",
+									"allDayOnly",
+									"allStartDate",
+									"allEndDate"
+								],
 								"enumLabels": {
 									"allDayOnly": "All-day events only",
 									"allEndDate": "All events — end datetime",
@@ -2574,6 +2778,20 @@
 								"description": "Keep day/date headers visible at the top when scrolling down in weekly and daily views",
 								"type": "boolean"
 							},
+							"syncedNoteNaming": {
+								"default": "uid",
+								"description": "Choose stable UID-derived names so every device creates the same path, or creation-time ZettelIDs for compatibility",
+								"enum": [
+									"uid",
+									"zettel"
+								],
+								"enumLabels": {
+									"uid": "Remote event UID",
+									"zettel": "Creation time"
+								},
+								"title": "Synced note naming",
+								"type": "string"
+							},
 							"templatePath": {
 								"description": "Path to Templater template file for new events (optional, requires Templater plugin)",
 								"placeholder": "e.g., Templates/event-template.md",
@@ -2587,7 +2805,12 @@
 							"timeGridEventTimeDisplay": {
 								"default": "normal",
 								"description": "Control how timed event start times appear in week and day views",
-								"enum": ["normal", "small", "hidden", "auto"],
+								"enum": [
+									"normal",
+									"small",
+									"hidden",
+									"auto"
+								],
 								"enumLabels": {
 									"auto": "Auto",
 									"hidden": "Hidden",
@@ -2655,7 +2878,18 @@
 								"type": "string"
 							},
 							"zoomLevels": {
-								"default": [1, 2, 3, 5, 10, 15, 20, 30, 45, 60],
+								"default": [
+									1,
+									2,
+									3,
+									5,
+									10,
+									15,
+									20,
+									30,
+									45,
+									60
+								],
 								"description": "Available zoom levels for Ctrl+scroll zooming. Enter comma-separated values (1-60 minutes each)",
 								"items": {
 									"maximum": 60,
@@ -2712,6 +2946,8 @@
 							"generatePastEventsProp",
 							"caldavProp",
 							"icsSubscriptionProp",
+							"icsImportProp",
+							"syncedNoteNaming",
 							"iconProp",
 							"prerequisiteProp",
 							"propertyOrder",
@@ -2833,11 +3069,18 @@
 						"type": "string"
 					},
 					"interval": {
-						"enum": ["day", "week", "month"],
+						"enum": [
+							"day",
+							"week",
+							"month"
+						],
 						"type": "string"
 					},
 					"mode": {
-						"enum": ["name", "category"],
+						"enum": [
+							"name",
+							"category"
+						],
 						"type": "string"
 					}
 				},
@@ -2878,17 +3121,31 @@
 											"type": "string"
 										}
 									},
-									"required": ["name", "duration", "durationFormatted", "percentage", "count", "isRecurring"],
+									"required": [
+										"name",
+										"duration",
+										"durationFormatted",
+										"percentage",
+										"count",
+										"isRecurring"
+									],
 									"type": "object"
 								},
 								"type": "array"
 							},
 							"interval": {
-								"enum": ["day", "week", "month"],
+								"enum": [
+									"day",
+									"week",
+									"month"
+								],
 								"type": "string"
 							},
 							"mode": {
-								"enum": ["name", "category"],
+								"enum": [
+									"name",
+									"category"
+								],
 								"type": "string"
 							},
 							"periodEnd": {
@@ -3013,14 +3270,25 @@
 							"type": "string"
 						},
 						"type": {
-							"enum": ["timed", "allDay", "untracked"],
+							"enum": [
+								"timed",
+								"allDay",
+								"untracked"
+							],
 							"type": "string"
 						},
 						"virtualKind": {
 							"type": "string"
 						}
 					},
-					"required": ["filePath", "title", "type", "allDay", "virtualKind", "skipped"],
+					"required": [
+						"filePath",
+						"title",
+						"type",
+						"allDay",
+						"virtualKind",
+						"skipped"
+					],
 					"type": "object"
 				},
 				"type": "array"
@@ -3071,7 +3339,14 @@
 							"type": "number"
 						}
 					},
-					"required": ["calendarId", "name", "directory", "enabled", "eventCount", "untrackedEventCount"],
+					"required": [
+						"calendarId",
+						"name",
+						"directory",
+						"enabled",
+						"eventCount",
+						"untrackedEventCount"
+					],
 					"type": "object"
 				},
 				"type": "array"
@@ -3095,7 +3370,9 @@
 						"type": "string"
 					}
 				},
-				"required": ["virtualEventId"],
+				"required": [
+					"virtualEventId"
+				],
 				"type": "object"
 			},
 			"output": {
@@ -3121,7 +3398,9 @@
 						"type": "string"
 					}
 				},
-				"required": ["filePath"],
+				"required": [
+					"filePath"
+				],
 				"type": "object"
 			},
 			"output": {
@@ -3147,7 +3426,9 @@
 						"type": "string"
 					}
 				},
-				"required": ["filePath"],
+				"required": [
+					"filePath"
+				],
 				"type": "object"
 			},
 			"output": {
@@ -3173,7 +3454,9 @@
 						"type": "string"
 					}
 				},
-				"required": ["filePath"],
+				"required": [
+					"filePath"
+				],
 				"type": "object"
 			},
 			"output": {
@@ -3202,7 +3485,10 @@
 						"type": "number"
 					}
 				},
-				"required": ["filePath", "offsetMs"],
+				"required": [
+					"filePath",
+					"offsetMs"
+				],
 				"type": "object"
 			},
 			"output": {
@@ -3231,7 +3517,10 @@
 						"type": "string"
 					}
 				},
-				"required": ["filePath", "targetCalendarId"],
+				"required": [
+					"filePath",
+					"targetCalendarId"
+				],
 				"type": "object"
 			},
 			"output": {
@@ -3248,7 +3537,9 @@
 						"type": "boolean"
 					}
 				},
-				"required": ["success"],
+				"required": [
+					"success"
+				],
 				"type": "object"
 			},
 			"http": {
@@ -3364,7 +3655,9 @@
 						"type": "string"
 					}
 				},
-				"required": ["filePath"],
+				"required": [
+					"filePath"
+				],
 				"type": "object"
 			},
 			"output": {
@@ -3565,7 +3858,11 @@
 							"autoAssignZettelId": {
 								"default": "disabled",
 								"description": "Automatically add a Zettel ID timestamp to filenames of events in the planning system directory that don't have one. Files are renamed from 'My Event.md' to 'My Event-20260216120000.md'.",
-								"enum": ["disabled", "calendarEvents", "allEvents"],
+								"enum": [
+									"disabled",
+									"calendarEvents",
+									"allEvents"
+								],
 								"enumLabels": {
 									"allEvents": "All events",
 									"calendarEvents": "Calendar events only",
@@ -3575,7 +3872,9 @@
 								"type": "string"
 							},
 							"basesViewProperties": {
-								"default": ["Category"],
+								"default": [
+									"Category"
+								],
 								"description": "Comma-separated list of frontmatter properties to include as columns in Bases views. These properties will appear after the default columns (file name, date, status).",
 								"items": {
 									"type": "string"
@@ -3587,7 +3886,11 @@
 							"basesViewType": {
 								"default": "cards",
 								"description": "Choose the default view type for Bases views (category events, interval views). Cards view displays events as visual cards, table view as a sortable table, and list view as a simple list.",
-								"enum": ["table", "cards", "list"],
+								"enum": [
+									"table",
+									"cards",
+									"list"
+								],
 								"enumLabels": {
 									"cards": "Cards (Recommended)",
 									"list": "List",
@@ -3673,7 +3976,11 @@
 											"type": "string"
 										}
 									},
-									"required": ["id", "eventName", "categories"],
+									"required": [
+										"id",
+										"eventName",
+										"categories"
+									],
 									"type": "object"
 								},
 								"type": "array"
@@ -3686,7 +3993,14 @@
 							"colorMode": {
 								"default": "1",
 								"description": "Controls how many color rule matches are applied to each event. Off: no coloring. 1: single color (default). 2-5: split the event width into equal segments, each colored by a successive matching rule.",
-								"enum": ["1", "2", "3", "4", "5", "off"],
+								"enum": [
+									"1",
+									"2",
+									"3",
+									"4",
+									"5",
+									"off"
+								],
 								"enumLabels": {
 									"1": "Color events",
 									"2": "Color events with two colors",
@@ -3717,7 +4031,12 @@
 											"type": "string"
 										}
 									},
-									"required": ["id", "expression", "color", "enabled"],
+									"required": [
+										"id",
+										"expression",
+										"color",
+										"enabled"
+									],
 									"type": "object"
 								},
 								"type": "array"
@@ -3897,7 +4216,10 @@
 								"default": {
 									"cells": [],
 									"columns": 2,
-									"columnSizes": [0.5, 0.5],
+									"columnSizes": [
+										0.5,
+										0.5
+									],
 									"rows": 1
 								}
 							},
@@ -3917,7 +4239,11 @@
 							"dayCellColoring": {
 								"default": "off",
 								"description": "Controls the background coloring of day cells. Off: default calendar appearance. Uniform: applies a single gradient color to all day cells. Month boundary: alternates two gradient colors by even/odd month, making month transitions clearly visible.",
-								"enum": ["off", "uniform", "boundary"],
+								"enum": [
+									"off",
+									"uniform",
+									"boundary"
+								],
 								"enumLabels": {
 									"boundary": "Month boundary",
 									"off": "Off",
@@ -3934,7 +4260,10 @@
 							"defaultAggregationMode": {
 								"default": "name",
 								"description": "Default grouping mode for statistics modals: group by event name or by category",
-								"enum": ["name", "category"],
+								"enum": [
+									"name",
+									"category"
+								],
 								"enumLabels": {
 									"category": "Category",
 									"name": "Event Name"
@@ -3969,7 +4298,13 @@
 							"defaultMobileView": {
 								"default": "timeGridWeek",
 								"description": "The calendar view to show when opening on mobile devices (screen width ≤ 768px)",
-								"enum": ["multiMonthYear", "dayGridMonth", "timeGridWeek", "timeGridDay", "listWeek"],
+								"enum": [
+									"multiMonthYear",
+									"dayGridMonth",
+									"timeGridWeek",
+									"timeGridDay",
+									"listWeek"
+								],
 								"enumLabels": {
 									"dayGridMonth": "Month",
 									"listWeek": "Week (List)",
@@ -3993,7 +4328,13 @@
 							"defaultView": {
 								"default": "timeGridWeek",
 								"description": "The calendar view to show when opening",
-								"enum": ["multiMonthYear", "dayGridMonth", "timeGridWeek", "timeGridDay", "listWeek"],
+								"enum": [
+									"multiMonthYear",
+									"dayGridMonth",
+									"timeGridWeek",
+									"timeGridDay",
+									"listWeek"
+								],
 								"enumLabels": {
 									"dayGridMonth": "Month",
 									"listWeek": "Week (List)",
@@ -4007,7 +4348,10 @@
 							"density": {
 								"default": "comfortable",
 								"description": "How compact to make the calendar display",
-								"enum": ["comfortable", "compact"],
+								"enum": [
+									"comfortable",
+									"compact"
+								],
 								"enumLabels": {
 									"comfortable": "Comfortable",
 									"compact": "Compact"
@@ -4043,7 +4387,10 @@
 								"default": {
 									"cells": [],
 									"columns": 2,
-									"columnSizes": [0.5, 0.5],
+									"columnSizes": [
+										0.5,
+										0.5
+									],
 									"rows": 1
 								}
 							},
@@ -4163,7 +4510,11 @@
 											"type": "integer"
 										}
 									},
-									"required": ["id", "name", "createdAt"],
+									"required": [
+										"id",
+										"name",
+										"createdAt"
+									],
 									"type": "object"
 								},
 								"type": "array"
@@ -4264,7 +4615,10 @@
 											"type": "string"
 										}
 									},
-									"required": ["name", "expression"],
+									"required": [
+										"name",
+										"expression"
+									],
 									"type": "object"
 								},
 								"type": "array"
@@ -4276,7 +4630,9 @@
 								"type": "integer"
 							},
 							"frontmatterDisplayProperties": {
-								"default": ["Category"],
+								"default": [
+									"Category"
+								],
 								"description": "Comma-separated list of frontmatter property names to display in timed events (events with start and end times). Properties are shown in weekly and daily views, but hidden in monthly view to save space.",
 								"items": {
 									"type": "string"
@@ -4285,7 +4641,9 @@
 								"type": "array"
 							},
 							"frontmatterDisplayPropertiesAllDay": {
-								"default": ["Category"],
+								"default": [
+									"Category"
+								],
 								"description": "Comma-separated list of frontmatter property names to display in all-day events. Properties are shown in weekly and daily views, but hidden in monthly view to save space.",
 								"items": {
 									"type": "string"
@@ -4294,7 +4652,9 @@
 								"type": "array"
 							},
 							"frontmatterDisplayPropertiesHeatmap": {
-								"default": ["Category"],
+								"default": [
+									"Category"
+								],
 								"description": "Comma-separated list of frontmatter property names to display in the heatmap day detail panel when inspecting events. Properties appear below each event title with links rendered interactively.",
 								"items": {
 									"type": "string"
@@ -4303,7 +4663,9 @@
 								"type": "array"
 							},
 							"frontmatterDisplayPropertiesUntracked": {
-								"default": ["Category"],
+								"default": [
+									"Category"
+								],
 								"description": "Comma-separated list of frontmatter property names to display in untracked events (events without dates). These appear in the untracked events sidebar.",
 								"items": {
 									"type": "string"
@@ -4401,7 +4763,10 @@
 								"default": {
 									"cells": [],
 									"columns": 2,
-									"columnSizes": [0.5, 0.5],
+									"columnSizes": [
+										0.5,
+										0.5
+									],
 									"rows": 1
 								}
 							},
@@ -4420,7 +4785,9 @@
 								"default": {
 									"country": "US",
 									"enabled": false,
-									"types": ["public"]
+									"types": [
+										"public"
+									]
 								},
 								"properties": {
 									"country": {
@@ -4441,15 +4808,27 @@
 										"type": "string"
 									},
 									"types": {
-										"default": ["public"],
+										"default": [
+											"public"
+										],
 										"items": {
-											"enum": ["public", "bank", "school", "observance", "optional"],
+											"enum": [
+												"public",
+												"bank",
+												"school",
+												"observance",
+												"optional"
+											],
 											"type": "string"
 										},
 										"type": "array"
 									}
 								},
-								"required": ["enabled", "country", "types"],
+								"required": [
+									"enabled",
+									"country",
+									"types"
+								],
 								"type": "object"
 							},
 							"hourEnd": {
@@ -4471,6 +4850,12 @@
 							"iconProp": {
 								"default": "Icon",
 								"description": "Frontmatter property name for event icon override (emoji or text, takes precedence over integration and recurring icons)",
+								"type": "string"
+							},
+							"icsImportProp": {
+								"default": "ICSImport",
+								"description": "Frontmatter property name for the UID recorded by one-time ICS imports",
+								"title": "ICS import property",
 								"type": "string"
 							},
 							"icsSubscriptionProp": {
@@ -4600,7 +4985,12 @@
 							"monthEventTimeDisplay": {
 								"default": "normal",
 								"description": "Control how timed event start times appear in month and year views",
-								"enum": ["normal", "small", "hidden", "auto"],
+								"enum": [
+									"normal",
+									"small",
+									"hidden",
+									"auto"
+								],
 								"enumLabels": {
 									"auto": "Auto",
 									"hidden": "Hidden",
@@ -4614,7 +5004,10 @@
 								"default": {
 									"cells": [],
 									"columns": 2,
-									"columnSizes": [0.5, 0.5],
+									"columnSizes": [
+										0.5,
+										0.5
+									],
 									"rows": 1
 								}
 							},
@@ -4874,7 +5267,14 @@
 							"sortingStrategy": {
 								"default": "none",
 								"description": "Write a normalized datetime to a dedicated sort property so external tools (Bases, Dataview) can sort all event types by a single field. Timed events use the full datetime. All-day events get T00:00:00 appended for consistent cross-type sorting. The value is written to the sort date property configured below.",
-								"enum": ["none", "startDate", "endDate", "allDayOnly", "allStartDate", "allEndDate"],
+								"enum": [
+									"none",
+									"startDate",
+									"endDate",
+									"allDayOnly",
+									"allStartDate",
+									"allEndDate"
+								],
 								"enumLabels": {
 									"allDayOnly": "All-day events only",
 									"allEndDate": "All events — end datetime",
@@ -4916,6 +5316,20 @@
 								"description": "Keep day/date headers visible at the top when scrolling down in weekly and daily views",
 								"type": "boolean"
 							},
+							"syncedNoteNaming": {
+								"default": "uid",
+								"description": "Choose stable UID-derived names so every device creates the same path, or creation-time ZettelIDs for compatibility",
+								"enum": [
+									"uid",
+									"zettel"
+								],
+								"enumLabels": {
+									"uid": "Remote event UID",
+									"zettel": "Creation time"
+								},
+								"title": "Synced note naming",
+								"type": "string"
+							},
 							"templatePath": {
 								"description": "Path to Templater template file for new events (optional, requires Templater plugin)",
 								"placeholder": "e.g., Templates/event-template.md",
@@ -4929,7 +5343,12 @@
 							"timeGridEventTimeDisplay": {
 								"default": "normal",
 								"description": "Control how timed event start times appear in week and day views",
-								"enum": ["normal", "small", "hidden", "auto"],
+								"enum": [
+									"normal",
+									"small",
+									"hidden",
+									"auto"
+								],
 								"enumLabels": {
 									"auto": "Auto",
 									"hidden": "Hidden",
@@ -4997,7 +5416,18 @@
 								"type": "string"
 							},
 							"zoomLevels": {
-								"default": [1, 2, 3, 5, 10, 15, 20, 30, 45, 60],
+								"default": [
+									1,
+									2,
+									3,
+									5,
+									10,
+									15,
+									20,
+									30,
+									45,
+									60
+								],
 								"description": "Available zoom levels for Ctrl+scroll zooming. Enter comma-separated values (1-60 minutes each)",
 								"items": {
 									"maximum": 60,
@@ -5012,7 +5442,9 @@
 						"type": "object"
 					}
 				},
-				"required": ["settings"],
+				"required": [
+					"settings"
+				],
 				"type": "object"
 			},
 			"output": {

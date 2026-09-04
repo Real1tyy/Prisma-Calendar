@@ -35,6 +35,7 @@ export const EventMetadataSchema = z.object({
 	generatePastEvents: strictBooleanOptional.optional(),
 	caldav: z.unknown().optional(),
 	icsSubscription: z.unknown().optional(),
+	icsImport: z.unknown().optional(),
 });
 
 export type EventMetadata = z.infer<typeof EventMetadataSchema>;
@@ -77,6 +78,7 @@ export const METADATA_FIELD_MAP = defineMetadataFieldMap([
 	{ metadataKey: "generatePastEvents", settingsProp: "generatePastEventsProp" },
 	{ metadataKey: "caldav", settingsProp: "caldavProp" },
 	{ metadataKey: "icsSubscription", settingsProp: "icsSubscriptionProp" },
+	{ metadataKey: "icsImport", settingsProp: "icsImportProp" },
 ]);
 
 // ─── Compile-Time Assertions ─────────────────────────────────────────
@@ -262,6 +264,13 @@ export const PROP_CLASSIFICATIONS: readonly PropClassification[] = [
 		notificationDedicatedUI: false,
 	},
 	{
+		settingsProp: "icsImportProp",
+		system: true,
+		dedicatedUI: false,
+		notificationSystem: false,
+		notificationDedicatedUI: false,
+	},
+	{
 		settingsProp: "statusProperty",
 		system: true,
 		dedicatedUI: true,
@@ -360,5 +369,6 @@ export const DEFAULT_PROPERTY_ORDER: readonly SettingsPropKey[] = [
 	"alreadyNotifiedProp",
 	"caldavProp",
 	"icsSubscriptionProp",
+	"icsImportProp",
 	"zettelIdProp",
 ];

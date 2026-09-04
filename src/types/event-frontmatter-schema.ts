@@ -73,6 +73,7 @@ const EventFrontmatterShape = {
 	generatePastEvents: strictBooleanOptional.optional(),
 	caldav: z.unknown().optional(),
 	icsSubscription: z.unknown().optional(),
+	icsImport: z.unknown().optional(),
 } as const;
 
 /**

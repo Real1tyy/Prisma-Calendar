@@ -12,7 +12,7 @@ export type SyncPlanAction =
 	 * fresh id). Applied as an update, which rewrites the metadata under the
 	 * current subscription — otherwise the note stays silently orphaned forever.
 	 */
-	| { kind: "adopt"; uid: string; filePath: string; event: ImportedEvent; previousSubscriptionId: string }
+	| { kind: "adopt"; uid: string; filePath: string; event: ImportedEvent; previousSubscriptionId?: string }
 	| { kind: "skip-unchanged"; uid: string; filePath: string }
 	| { kind: "skip-missing-uid"; title: string }
 	| { kind: "skip-foreign-uid"; uid: string; ownedBy: string }
@@ -36,6 +36,8 @@ export interface PlanInputs {
 	remoteEvents: ImportedEvent[];
 	trackedBySubscription: TrackedRef[];
 	findByUidGlobal: (uid: string) => TrackedRef | null;
+	/** Resolve a note created by the one-shot ICS importer. */
+	findImportedByUid?: (uid: string) => { filePath: string } | null;
 	/**
 	 * Every subscription id currently configured on this device. A note tracked
 	 * under an id not in this list is orphaned and adopted instead of skipped as
@@ -62,7 +64,14 @@ export interface PlanInputs {
  * NOT in the remote payload is marked for delete.
  */
 export function computeIcsSubscriptionSyncPlan(inputs: PlanInputs): SyncPlan {
-	const { subscriptionId, remoteEvents, trackedBySubscription, findByUidGlobal, knownSubscriptionIds } = inputs;
+	const {
+		subscriptionId,
+		remoteEvents,
+		trackedBySubscription,
+		findByUidGlobal,
+		findImportedByUid,
+		knownSubscriptionIds,
+	} = inputs;
 	const actions: SyncPlanAction[] = [];
 	const remoteUids = new Set<string>();
 	// O(1) lookup for tracked events by UID, since we'll be doing 1+ lookups per remote event.
@@ -101,6 +110,12 @@ export function computeIcsSubscriptionSyncPlan(inputs: PlanInputs): SyncPlan {
 				continue;
 			}
 			actions.push({ kind: "skip-foreign-uid", uid, ownedBy: foreign.metadata.subscriptionId });
+			continue;
+		}
+
+		const imported = findImportedByUid?.(uid);
+		if (imported) {
+			actions.push({ kind: "adopt", uid, filePath: imported.filePath, event });
 			continue;
 		}
 
