@@ -8,6 +8,7 @@ import type CustomCalendarPlugin from "../../main";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { enforceEventPropertyOrder, withOrderedFrontmatter } from "../../utils/frontmatter/ordering";
 import { batchedPromiseAll } from "../../utils/obsidian";
+import { log } from "../logging";
 
 const MAX_LISTED_DEVIATIONS = 20;
 
@@ -60,7 +61,7 @@ export async function applyPropertyOrder(
 					updated++;
 				} catch (error) {
 					failed++;
-					console.error(`[PropertyOrder] Failed to normalize ${filePath}:`, error);
+					log.error("api", "Failed to normalize property order", { filePath, error });
 				}
 			}
 			done++;

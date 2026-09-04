@@ -7,6 +7,7 @@ import {
 	type CalDAVCalendarSyncState,
 } from "../../../types/integrations";
 import type { CustomCalendarSettings } from "../../../types/settings";
+import { log } from "../../logging";
 import { BaseSyncService, yieldToMainThread, type BaseSyncServiceOptions } from "../base-sync-service";
 import { parseICSContent } from "../ics-import";
 import { CalDAVClientService, type CalDAVFetchedEvent } from "./client";
@@ -134,9 +135,10 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 			if (!storedToken || !isSyncTokenInvalidated(error)) {
 				throw error;
 			}
-			console.warn(
-				`[CalDAV][${this.calendar.displayName}] Sync token invalidated by server — falling back to full resync.`
-			);
+			log.warn("sync.caldav", "Sync token invalidated by server, falling back to a full resync", {
+				calendar: this.calendar.displayName,
+				accountId: this.account.id,
+			});
 			this.saveCalendarSyncState({ syncToken: undefined });
 			const result = await this.client.syncCalendar(this.buildStoredCalendar(undefined));
 			return { ...result, usedFullResync: true };
@@ -240,7 +242,12 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 								? action.objectHref
 								: action.kind;
 					const errorMsg = `Failed to sync event ${label}: ${describeError(error)}`;
-					console.error(`[CalDAV Sync] ${errorMsg}`);
+					log.error("sync.caldav", "Failed to apply a sync action", {
+						calendar: this.calendar.displayName,
+						action: action.kind,
+						label,
+						error,
+					});
 					result.errors.push(errorMsg);
 				}
 			}
@@ -258,11 +265,26 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 				});
 			}
 
+			log.info("sync.caldav", "Sync finished", {
+				calendar: this.calendar.displayName,
+				accountId: this.account.id,
+				fullResync: usedFullResync,
+				remote: remoteEvents.length,
+				tombstones: tombstonedObjectHrefs.length,
+				created: result.created,
+				updated: result.updated,
+				deleted: result.deleted,
+				errors: result.errors.length,
+			});
 			this.showSyncNotification(result);
 		} catch (error) {
 			result.success = false;
 			const errorMsg = describeError(error);
-			console.error(`[CalDAV] Sync failed:`, errorMsg);
+			log.error("sync.caldav", "Sync failed", {
+				calendar: this.calendar.displayName,
+				accountId: this.account.id,
+				error,
+			});
 			result.errors.push(errorMsg);
 			this.showSyncErrorNotification(errorMsg);
 		}

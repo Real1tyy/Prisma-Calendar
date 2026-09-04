@@ -1,5 +1,7 @@
 import type { Plugin } from "obsidian";
 
+import { log } from "../../core/logging";
+
 interface LegacyCalendar {
 	excludedRecurringPropagatedProps?: unknown;
 	excludedRecurringInstanceProps?: unknown;
@@ -26,7 +28,7 @@ export async function migrateSharedExcludedProps(plugin: Plugin): Promise<void> 
 	const data = raw as LegacyData;
 	if (!Array.isArray(data.calendars)) return;
 
-	let changed = false;
+	let migrated = 0;
 	for (const cal of data.calendars) {
 		const shared = cal.excludedRecurringPropagatedProps;
 		if (!shared) continue;
@@ -35,8 +37,12 @@ export async function migrateSharedExcludedProps(plugin: Plugin): Promise<void> 
 		if (!cal.excludedNameSeriesProps) cal.excludedNameSeriesProps = shared;
 		if (!cal.excludedCategorySeriesProps) cal.excludedCategorySeriesProps = shared;
 		delete cal.excludedRecurringPropagatedProps;
-		changed = true;
+		migrated++;
 	}
 
-	if (changed) await plugin.saveData(data);
+	if (migrated === 0) return;
+	await plugin.saveData(data);
+	log.info("settings", "Migrated excludedRecurringPropagatedProps into the three per-type fields", {
+		calendars: migrated,
+	});
 }

@@ -16,6 +16,7 @@ import { autoAssignCategories } from "../../utils/events/matching";
 import { deriveSyncedNoteId, extractZettelId, removeZettelId } from "../../utils/events/zettel-id";
 import { enforceEventPropertyOrder } from "../../utils/frontmatter/ordering";
 import type { CalendarBundle } from "../calendar-bundle";
+import { log } from "../logging";
 
 const MINUTES_PER_DAY = 24 * 60;
 
@@ -174,7 +175,7 @@ function readLastModified(vevent: ICAL.Component): number | undefined {
 		if (!lastModifiedTime) return undefined;
 		return icalTimeToDate(lastModifiedTime).getTime();
 	} catch (error) {
-		console.warn("[ICSImport] Skipping malformed LAST-MODIFIED:", error);
+		log.warn("import", "Skipping malformed LAST-MODIFIED", { error });
 		return undefined;
 	}
 }
@@ -272,12 +273,7 @@ export function parseICSContent(icsContent: string): ICSImportResult {
 				const err = error instanceof Error ? error : new Error(String(error));
 				const summary = safeReadString(vevent, "summary");
 				const uid = safeReadString(vevent, "uid");
-				console.warn(
-					`[ICSImport] Skipping malformed VEVENT #${i + 1}` +
-						(summary ? ` (summary="${summary}")` : "") +
-						(uid ? ` (uid=${uid})` : ""),
-					err
-				);
+				log.warn("import", "Skipping malformed VEVENT", { index: i + 1, summary, uid, error: err });
 				skipped.push({ index: i + 1, uid, summary, error: err });
 			}
 		}
@@ -589,11 +585,17 @@ export async function importEventsToCalendar(
 			successCount++;
 			onProgress?.(i + 1, newEvents.length, event.title);
 		} catch (error) {
-			console.error(`[ICSImport] Failed to import event "${event.title}":`, error);
+			log.error("import", "Failed to import event", { title: event.title, uid: event.uid, error });
 			errorCount++;
 			onProgress?.(i + 1, newEvents.length, event.title);
 		}
 	}
 
+	log.info("import", "ICS import finished", {
+		calendarId: bundle.calendarId,
+		imported: successCount,
+		failed: errorCount,
+		alreadyPresent: skippedCount,
+	});
 	return { successCount, errorCount, skippedCount };
 }

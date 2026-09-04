@@ -27,6 +27,7 @@ import { enforceEventPropertyOrder, getOrderedPropertyNames } from "../utils/fro
 import { shouldEventBeMarkedAsDone } from "../utils/frontmatter/predicates";
 import type { DeviceRoleStore } from "./device-role-store";
 import { createEventSchema } from "./event-schema";
+import { log } from "./logging";
 
 export { PARSE_AFFECTING_KEYS, parseAffectingSettingsChanged };
 
@@ -106,14 +107,19 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 				newSettings.indexSubdirectories !== prevSettings.indexSubdirectories
 			) {
 				this.indexingCompleteSubject.next(false);
+				log.info("indexing", "Re-indexing after a directory settings change", {
+					directory: newSettings.directory,
+					indexSubdirectories: newSettings.indexSubdirectories,
+				});
 				this.table.destroy();
 				this.table = this.createTable(newSettings);
 				this.wireTableEvents();
-				this.table
-					.start()
-					.catch((error: unknown) =>
-						console.error("[EventFileRepository] table.start() failed after settings change:", error)
-					);
+				this.table.start().catch((error: unknown) => {
+					log.error("indexing", "Table start failed after a settings change", {
+						directory: newSettings.directory,
+						error,
+					});
+				});
 			} else if (parseAffectingSettingsChanged(prevSettings, newSettings)) {
 				this.reemitAllRows();
 			}
@@ -181,7 +187,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 				fm[this.settings.statusProperty] = this.settings.doneValue;
 			});
 		} catch (error) {
-			console.error(`[EventFileRepository] Error marking event as done: ${filePath}`, error);
+			log.error("indexing", "Failed to mark event as done", { filePath, error });
 		}
 	}
 
@@ -300,6 +306,10 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 	// ─── Lifecycle ───────────────────────────────────────────────
 
 	async start(): Promise<void> {
+		log.info("indexing", "Starting the event table scan", {
+			directory: this.settings.directory,
+			indexSubdirectories: this.settings.indexSubdirectories,
+		});
 		this.wireTableEvents();
 		await this.table.start();
 	}
@@ -333,9 +343,9 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 	 */
 	private reemitAllRows(): void {
 		for (const row of this.table.toArray()) {
-			void this.emitFileEvents(row, undefined, undefined).catch((error: unknown) =>
-				console.error(`[EventFileRepository] Error re-emitting ${row.filePath} after settings change:`, error)
-			);
+			void this.emitFileEvents(row, undefined, undefined).catch((error: unknown) => {
+				log.error("indexing", "Failed to re-emit a row after a settings change", { filePath: row.filePath, error });
+			});
 		}
 	}
 
@@ -357,6 +367,11 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 			if (ready) {
 				if (!this.tableReady) {
 					this.tableReady = true;
+					log.info("indexing", "Initial scan complete", {
+						directory: this.settings.directory,
+						rows: this.table.toArray().length,
+						deferredBackgroundUpdates: this.deferredBackgroundFiles.size,
+					});
 					this.drainDeferredBackgroundUpdates();
 				}
 				this.indexingCompleteSubject.next(true);
@@ -474,7 +489,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 		void this.enqueueFrontmatterWrite(row.file, (fm: Frontmatter) => {
 			fm[this.settings.rruleIdProp] = rRuleId;
 		}).catch((error: unknown) => {
-			console.error(`[EventFileRepository] Error writing rRuleId to ${row.filePath}:`, error);
+			log.error("indexing", "Failed to write the recurring series id", { filePath: row.filePath, error });
 		});
 	}
 
@@ -536,10 +551,10 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 		// Auto-assign ZettelID: fire-and-forget. The rename triggers a new
 		// event cycle with the updated path, so we don't need to await or update state here.
 		void this.autoAssignZettelId(file, isUntracked).catch((error: unknown) => {
-			console.error(`[EventFileRepository] Error auto-assigning ZettelID for ${file.path}:`, error);
+			log.error("indexing", "Auto-assigning a ZettelID failed", { filePath: file.path, error });
 		});
 		void this.applyBackgroundFrontmatterUpdates(file, frontmatter, isUntracked).catch((error: unknown) => {
-			console.error(`[EventFileRepository] Error applying background updates for ${file.path}:`, error);
+			log.error("indexing", "Background frontmatter update failed", { filePath: file.path, error });
 		});
 	}
 
@@ -601,7 +616,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 		try {
 			await ensureFileHasZettelId(this, file, this.settings);
 		} catch (error) {
-			console.error(`[EventFileRepository] Error auto-assigning ZettelID to ${file.path}:`, error);
+			log.error("indexing", "Failed to rename the note with a ZettelID", { filePath: file.path, error });
 		} finally {
 			this.zettelIdRenamesInFlight.delete(file.path);
 		}

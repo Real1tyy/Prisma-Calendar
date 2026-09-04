@@ -9,6 +9,7 @@ import { DateTime, type DurationLike } from "luxon";
 import { TFile, type App } from "obsidian";
 
 import { INTERNAL_FRONTMATTER_PROPERTIES } from "../../constants";
+import { log } from "../../core/logging";
 import type { CalendarEvent, Frontmatter, SingleCalendarConfig } from "../../types";
 import {
 	AllDayEventFrontmatterSchema,
@@ -100,7 +101,7 @@ export const applyDateNormalizationToFile = async (
 				Reflect.deleteProperty(fm, settings.sortDateProp)
 			);
 		} catch (error) {
-			console.error(`[CalendarEvents] Error clearing sort date on file ${filePath}:`, error);
+			log.error("parser", "Failed to clear the sort date", { filePath, error });
 		}
 		return;
 	}
@@ -113,7 +114,7 @@ export const applyDateNormalizationToFile = async (
 			fm[targetProp] = value;
 		});
 	} catch (error) {
-		console.error(`[CalendarEvents] Error writing sort date to file ${filePath}:`, error);
+		log.error("parser", "Failed to write the sort date", { filePath, error });
 	}
 };
 
@@ -326,7 +327,7 @@ export const applyFrontmatterChangesToInstance = async (
 			}
 		});
 	} catch (error) {
-		console.error(`[CalendarEvents] Error applying frontmatter changes to instance ${filePath}:`, error);
+		log.error("recurring", "Failed to apply frontmatter changes to an instance", { filePath, error });
 	}
 };
 

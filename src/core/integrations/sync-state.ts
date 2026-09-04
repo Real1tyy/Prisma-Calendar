@@ -1,3 +1,5 @@
+import { log } from "../logging";
+
 interface Destroyable {
 	destroy(): void;
 }
@@ -23,7 +25,7 @@ export class SyncState<TService extends Destroyable> {
 
 		const existingSync = this.syncPromises.get(id);
 		if (existingSync) {
-			console.debug(`[${this.logPrefix}] Sync already in progress for ${id}, reusing promise`);
+			log.debug("sync", "Sync already in progress, reusing the running one", { integration: this.logPrefix, id });
 			return existingSync;
 		}
 

@@ -7,6 +7,7 @@ import type { z } from "zod";
 import type { Frontmatter } from "../../types";
 import type { CalendarEventSource, IndexerEvent } from "../../types/event-source";
 import type { SingleCalendarConfig } from "../../types/settings";
+import { log } from "../logging";
 
 export interface TrackedSyncEvent<TMetadata> {
 	filePath: string;
@@ -140,11 +141,17 @@ export abstract class BaseSyncStateManager<TMetadata extends { uid: string }> {
 			this.pendingDuplicateTrash.set(filePath, uid);
 			return;
 		}
-		console.warn(
-			`[Prisma] Self-healing: trashing duplicate ${this.getIntegrationLabel()} event (UID: ${uid}): ${filePath}`
-		);
+		log.warn("sync", "Self-healing: trashing duplicate synced event", {
+			integration: this.getIntegrationLabel(),
+			uid,
+			filePath,
+		});
 		void this.eventSource.trashByPath(filePath).catch((error: unknown) => {
-			console.error(`[Prisma] Failed to trash duplicate ${filePath}:`, error);
+			log.error("sync", "Failed to trash duplicate synced event", {
+				integration: this.getIntegrationLabel(),
+				filePath,
+				error,
+			});
 		});
 	}
 

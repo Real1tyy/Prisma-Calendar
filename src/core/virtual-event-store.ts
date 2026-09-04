@@ -8,6 +8,7 @@ import { VIRTUAL_EVENTS_CODE_FENCE } from "../constants";
 import { VirtualEventDataSchema, type VirtualEventData } from "../types/calendar";
 import type { EventSaveData } from "../types/event-boundaries";
 import type { SingleCalendarConfig } from "../types/settings";
+import { log } from "./logging";
 
 // Wait for the user to stop typing the directory in settings before binding
 // (and creating) the virtual events file. Without this, every intermediate
@@ -72,7 +73,7 @@ export class VirtualEventStore {
 							}
 							this.binding = b;
 						})
-						.catch((error: unknown) => console.error("[VirtualEventStore] rebind failed:", error));
+						.catch((error: unknown) => log.error("indexing", "Virtual event store rebind failed", { error }));
 				} else {
 					void this.initialize();
 				}

@@ -108,6 +108,7 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 				},
 			}}
 			changelog={{ onView: handleViewChangelog }}
+			logging={{ store: plugin.settingsStore }}
 			settingsTransfer={{
 				store: plugin.settingsStore,
 				defaults: plugin.settingsStore.getDefaults(),

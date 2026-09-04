@@ -39,6 +39,7 @@ import { CalDAVSyncStateManager } from "./integrations/caldav/sync-state-manager
 import { ICSSubscriptionSyncService } from "./integrations/ics-subscription/sync";
 import { ICSSubscriptionSyncStateManager } from "./integrations/ics-subscription/sync-state-manager";
 import { SyncState } from "./integrations/sync-state";
+import { log } from "./logging";
 import type { NameSeriesTracker } from "./name-series-tracker";
 import { createNavigationHistory, type NavigationEntry } from "./navigation-history-manager";
 import type { NotificationManager } from "./notification-manager";
@@ -497,7 +498,7 @@ export class CalendarBundle {
 			new Notice(successMessage);
 			return command;
 		} catch (error) {
-			console.error(`[CalendarBundle] ${errorMessage}:`, error);
+			log.error("commands", errorMessage, { calendarId: this.calendarId, error });
 			new Notice(errorMessage);
 			return null;
 		}
@@ -663,7 +664,7 @@ export class CalendarBundle {
 			new Notice("Event updated successfully");
 			return finalFilePath;
 		} catch (error) {
-			console.error("[CalendarBundle] Failed to update event:", error);
+			log.error("commands", "Failed to update event", { calendarId: this.calendarId, error });
 			new Notice("Failed to update event");
 			return null;
 		}
@@ -735,9 +736,7 @@ export class CalendarBundle {
 		const account = caldavSettings.accounts.find((a) => a.id === accountId && a.calendarId === this.calendarId);
 
 		if (!account) {
-			console.error(
-				`[CalDAV][${this.calendarId}] Account not found for accountId: ${accountId}, calendarId: ${this.calendarId}`
-			);
+			log.error("sync.caldav", "Account not found for this calendar", { accountId, calendarId: this.calendarId });
 			new Notice("Account not found for this calendar");
 			return;
 		}
@@ -798,9 +797,10 @@ export class CalendarBundle {
 		);
 
 		if (!subscription) {
-			console.error(
-				`[ICS Subscription][${this.calendarId}] Subscription not found for id: ${subscriptionId}, calendarId: ${this.calendarId}`
-			);
+			log.error("sync.ics", "Subscription not found for this calendar", {
+				subscriptionId,
+				calendarId: this.calendarId,
+			});
 			new Notice("Subscription not found for this calendar");
 			return;
 		}

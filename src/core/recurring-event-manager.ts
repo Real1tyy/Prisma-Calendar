@@ -48,6 +48,7 @@ import { batchedPromiseAll, deleteFilesByPaths, getFileAndFrontmatter, getFileBy
 import type { CategoryTracker } from "./category-tracker";
 import type { DeviceRoleStore } from "./device-role-store";
 import type { EventStore } from "./event-store";
+import { log } from "./logging";
 
 const DATE_FORMAT = "yyyy-MM-dd";
 
@@ -233,13 +234,16 @@ export class RecurringEventManager extends DebouncedNotifier {
 		try {
 			const file = this.app.vault.getAbstractFileByPath(instance.filePath);
 			if (!(file instanceof TFile)) {
-				console.warn(`[RecurringEvents] Physical instance file not found: ${instance.filePath}`);
+				log.warn("recurring", "Physical instance file not found for rename", { filePath: instance.filePath, rruleId });
 				return;
 			}
 
 			const newBasename = rebuildPhysicalInstanceFilename(file.basename, newTitle);
 			if (!newBasename) {
-				console.warn(`[RecurringEvents] Could not rebuild filename for physical instance: ${file.basename}`);
+				log.warn("recurring", "Could not rebuild filename for physical instance", {
+					basename: file.basename,
+					rruleId,
+				});
 				return;
 			}
 
@@ -251,7 +255,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 			this.instanceFileToRRuleId.delete(oldPath);
 			this.instanceFileToRRuleId.set(newPath, rruleId);
 		} catch (error) {
-			console.error(`[RecurringEvents] Error renaming physical instance ${instance.filePath}:`, error);
+			log.error("recurring", "Failed to rename physical instance", { filePath: instance.filePath, rruleId, error });
 		}
 	}
 
@@ -412,7 +416,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 				}
 			});
 		} catch (error) {
-			console.error(`[RecurringEvents] Error applying time change to instance ${instance.filePath}:`, error);
+			log.error("recurring", "Failed to apply time change to instance", { filePath: instance.filePath, error });
 		}
 	}
 
@@ -534,11 +538,9 @@ export class RecurringEventManager extends DebouncedNotifier {
 			this.pendingDuplicateInstanceTrash.set(filePath, { rruleId, dateKey });
 			return;
 		}
-		console.warn(
-			`[Prisma] Self-healing: trashing duplicate recurring instance (rruleId: ${rruleId}, date: ${dateKey}): ${filePath}`
-		);
+		log.warn("recurring", "Self-healing: trashing duplicate recurring instance", { rruleId, dateKey, filePath });
 		void this.eventSource.trashByPath(filePath).catch((error: unknown) => {
-			console.error(`[RecurringEvents] Failed to trash duplicate instance ${filePath}:`, error);
+			log.error("recurring", "Failed to trash duplicate instance", { filePath, rruleId, error });
 		});
 	}
 
@@ -553,13 +555,17 @@ export class RecurringEventManager extends DebouncedNotifier {
 	}
 
 	private async processAllRecurringEvents(): Promise<void> {
+		log.debug("recurring", "Processing every recurring series", { series: this.recurringEventsMap.size });
 		await Promise.all(
 			Array.from(this.recurringEventsMap.entries()).map(async ([rruleId, data]) => {
 				try {
 					await this.ensurePhysicalInstancesWithLock(rruleId);
 				} catch (error) {
-					const eventTitle = data.recurringEvent?.title || "Unknown Event";
-					console.error(`[RecurringEvents] ❌ Failed to process recurring event ${eventTitle} (${rruleId}):`, error);
+					log.error("recurring", "Failed to process recurring series", {
+						title: data.recurringEvent?.title ?? "Unknown Event",
+						rruleId,
+						error,
+					});
 				}
 			})
 		);
@@ -710,6 +716,12 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 			const instancesToCreate = targetInstanceCount - currentCount;
 			let nextDate = this.getNextOccurrenceFromTime(recurringEvent, futureInstances, now.startOf("day"));
+			log.debug("recurring", "Topping up future instances", {
+				title: recurringEvent.title,
+				rruleId: recurringEvent.rRuleId,
+				existing: currentCount,
+				target: targetInstanceCount,
+			});
 
 			for (let i = 0; i < instancesToCreate; i++) {
 				if (!isOccurrenceWithinUntil(nextDate, recurringEvent.rrules.until)) {
@@ -725,10 +737,11 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 			this.scheduleRefresh();
 		} catch (error) {
-			console.error(
-				`[RecurringEvents] ❌ Failed to ensure physical instances for ${data.recurringEvent.title}:`,
-				error
-			);
+			log.error("recurring", "Failed to ensure physical instances", {
+				title: data.recurringEvent.title,
+				rruleId: data.recurringEvent.rRuleId,
+				error,
+			});
 		}
 	}
 

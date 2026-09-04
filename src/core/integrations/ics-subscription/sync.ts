@@ -3,6 +3,7 @@ import { requestUrl } from "obsidian";
 
 import type { ICSSubscription } from "../../../types/integrations";
 import type { CustomCalendarSettings } from "../../../types/settings";
+import { log } from "../../logging";
 import { BaseSyncService, yieldToMainThread, type BaseSyncServiceOptions } from "../base-sync-service";
 import { findImportedEventPathByUid, parseICSContent, type ImportedEvent } from "../ics-import";
 import { computeIcsSubscriptionSyncPlan } from "./sync-planner";
@@ -102,10 +103,11 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 			}
 
 			if (parsed.skipped.length > 0) {
-				console.warn(
-					`[ICSSubscription] ${this.subscription.name}: skipped ${parsed.skipped.length} malformed event(s)`,
-					parsed.skipped
-				);
+				log.warn("sync.ics", "Skipped malformed events in the subscription feed", {
+					subscription: this.subscription.name,
+					skipped: parsed.skipped.length,
+					details: parsed.skipped,
+				});
 			}
 
 			const plan = computeIcsSubscriptionSyncPlan({
@@ -149,16 +151,29 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 					const label =
 						"event" in action ? action.event.title : action.kind === "delete" ? action.filePath : action.kind;
 					const errorMsg = `Failed to sync "${label}": ${describeError(error)}`;
-					console.error(`[ICS Subscription] ${errorMsg}`);
+					log.error("sync.ics", "Failed to apply a sync action", {
+						subscription: this.subscription.name,
+						action: action.kind,
+						label,
+						error,
+					});
 					result.errors.push(errorMsg);
 				}
 			}
 
+			log.info("sync.ics", "Sync finished", {
+				subscription: this.subscription.name,
+				remote: parsed.events.length,
+				created: result.created,
+				updated: result.updated,
+				deleted: result.deleted,
+				errors: result.errors.length,
+			});
 			this.showSyncNotification(result);
 		} catch (error) {
 			result.success = false;
 			const errorMsg = describeError(error);
-			console.error(`[ICS Subscription] Sync failed:`, errorMsg);
+			log.error("sync.ics", "Sync failed", { subscription: this.subscription.name, error });
 			result.errors.push(errorMsg);
 			this.showSyncErrorNotification(errorMsg);
 		}

@@ -10,6 +10,7 @@ import { isAllDayEvent, isTimedEvent, type CalendarEvent } from "../../types/cal
 import type { SingleCalendarConfig } from "../../types/settings";
 import { appendZ } from "../../utils/dates/iso";
 import { extractZettelId, PHYSICAL_INSTANCE_PATTERN, removeZettelId } from "../../utils/events/zettel-id";
+import { log } from "../logging";
 
 interface NotificationSettings {
 	minutesBeforeProp?: string | undefined;
@@ -450,7 +451,7 @@ export async function exportCalendarAsICS(app: App, options: ExportOptions): Pro
 
 		if (!result.success || !result.content) {
 			new Notice(`Failed to generate ICS: ${result.error?.message || "Unknown error"}`);
-			console.error("[ICSExport] ICS export error:", result.error);
+			log.error("export", "ICS generation failed", { calendar: calendarName, error: result.error });
 			return;
 		}
 
@@ -463,9 +464,10 @@ export async function exportCalendarAsICS(app: App, options: ExportOptions): Pro
 		}
 
 		await app.vault.create(filePath, result.content);
+		log.info("export", "ICS export written", { calendar: calendarName, events: events.length, filePath });
 		new Notice(`Exported ${events.length} events to ${filePath}`);
 	} catch (error) {
-		console.error("[ICSExport] ICS export failed:", error);
+		log.error("export", "ICS export failed", { calendar: calendarName, error });
 		new Notice("Failed to export calendar. See console for details.");
 	}
 }

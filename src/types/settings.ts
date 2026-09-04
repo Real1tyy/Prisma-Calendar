@@ -1,4 +1,9 @@
-import { ColorSchema, normalizeDirectoryPath, type SettingsStore } from "@real1ty/obsidian-plugins";
+import {
+	ColorSchema,
+	LoggingSettingsSchema,
+	normalizeDirectoryPath,
+	type SettingsStore,
+} from "@real1ty/obsidian-plugins";
 import {
 	ContextMenuStateSchema,
 	gridStateField,
@@ -1006,6 +1011,9 @@ export const CustomCalendarSettingsSchema = z
 		ai: AISettingsSchema.catch(AISettingsSchema.parse({})),
 		caldav: CalDAVSettingsSchema.catch(CalDAVSettingsSchema.parse({})),
 		icsSubscriptions: ICSSubscriptionSettingsSchema.catch(ICSSubscriptionSettingsSchema.parse({})),
+		// Universal — every plugin carries it under this key so the shared General
+		// section can bind to it. See [[spec-logging-config-sinks-and-instrumentation]].
+		logging: LoggingSettingsSchema.catch(LoggingSettingsSchema.parse({})),
 	})
 	.strip();
 

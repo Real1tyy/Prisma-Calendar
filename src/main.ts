@@ -1,5 +1,6 @@
 import {
 	createMonotonicSequencer,
+	deepEqualJsonLike,
 	describeError,
 	ensureDirectory,
 	normalizeDirectory,
@@ -33,6 +34,7 @@ import { scanVaultForDirectorySuggestions } from "./core/directory-suggestions";
 import { exportCalendarAsICS } from "./core/integrations/ics-export";
 import { importEventsToCalendar } from "./core/integrations/ics-import";
 import { createLicenseManager, type LicenseManager } from "./core/license";
+import { createPrismaLogging, log, type PrismaLogging } from "./core/logging";
 import { installPrismaPerfBridge } from "./core/perf-bridge";
 import { buildWhatsNewConfig } from "./core/whats-new-config";
 import { openCalendarSelectModal, openDeviceRoleModal, openFirstLaunchModal, openICSImportModal } from "./react/modals";
@@ -50,6 +52,7 @@ export default class CustomCalendarPlugin extends Plugin {
 	calendarBundles: CalendarBundle[] = [];
 	apiManager!: PrismaCalendarApiManager;
 	licenseManager!: LicenseManager;
+	logging!: PrismaLogging;
 	releaseCheckService!: ReleaseCheckService;
 	settingsSessionState = { tab: "general", scrollTop: { current: 0 } };
 	// Shared across every calendar's CommandManager so undo/redo can resolve the
@@ -63,13 +66,38 @@ export default class CustomCalendarPlugin extends Plugin {
 	}
 
 	override async onload() {
+		// Logging comes up first so everything below — migrations included — can
+		// log; sinks follow the settings once they have loaded.
+		this.logging = createPrismaLogging(this);
+		log.bind(this.logging.service);
+
 		setIconPickerImplementation(showReactIconPicker);
 		const isFirstLaunch = (await this.loadData()) === null;
 		await migrateSharedExcludedProps(this);
 		this.settingsStore = new SettingsStore(this, CustomCalendarSettingsSchema);
 		await this.settingsStore.loadSettings();
+		this.settingsStore.watch(
+			(settings) => settings.logging,
+			(logging) => this.logging.controller.apply(logging),
+			{ immediate: true, compare: deepEqualJsonLike }
+		);
+		log.info("plugin", "Plugin loading", {
+			version: this.manifest.version,
+			firstLaunch: isFirstLaunch,
+			calendars: this.settingsStore.currentSettings.calendars.length,
+		});
 
 		this.licenseManager = createLicenseManager(this.app, this.settingsStore, this.manifest.version);
+		const licenseStatusSubscription = this.licenseManager.status$.subscribe((status) => {
+			// High-level state only — never the key or the cached token.
+			log.info("license", "License status changed", {
+				state: status.state,
+				activations: `${status.activationsCurrent}/${status.activationsLimit}`,
+				entitlementStatus: status.entitlementStatus,
+				...(status.errorMessage !== null ? { error: status.errorMessage } : {}),
+			});
+		});
+		this.register(() => licenseStatusSubscription.unsubscribe());
 		this.releaseCheckService = new ReleaseCheckService({
 			owner: "Real1tyy",
 			repo: "Prisma-Calendar",
@@ -132,9 +160,11 @@ export default class CustomCalendarPlugin extends Plugin {
 			});
 			void this.licenseManager.initialize();
 		});
+		log.info("plugin", "Plugin loaded", { bundles: this.calendarBundles.length });
 	}
 
 	override onunload(): void {
+		log.info("plugin", "Plugin unloading");
 		MinimizedModalManager.clear();
 
 		this.licenseManager.dispose();
@@ -148,6 +178,13 @@ export default class CustomCalendarPlugin extends Plugin {
 		const registry = IndexerRegistry.getInstance(this.app);
 		registry.destroy();
 		this.apiManager.destroy();
+
+		// Last, so every teardown above could still log. The controller flushes
+		// the file sink asynchronously; destroying the service only completes
+		// the change stream and never blocks that flush.
+		void this.logging.controller.dispose();
+		log.unbind();
+		this.logging.service.destroy();
 	}
 
 	async ensureCalendarViewFocus(leaf: WorkspaceLeaf): Promise<void> {
@@ -225,7 +262,7 @@ export default class CustomCalendarPlugin extends Plugin {
 				calendars: [defaultCalendar],
 			}));
 
-			console.debug("Created default calendar as none existed");
+			log.info("settings", "Created the default calendar because none existed");
 		}
 	}
 

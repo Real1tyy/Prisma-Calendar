@@ -140,6 +140,21 @@ Break: 60  # 1 hour lunch break
 - Track actual meeting time excluding breaks
 - Accurate time tracking for billing purposes
 
+## Logging
+
+Prisma keeps a structured log of its own work — indexing, date parsing, recurring instances, CalDAV/ICS sync, settings migrations, license checks — in memory while Obsidian runs. The **Logging** section controls how much is kept and where else it goes. The defaults cost nothing: nothing is written to disk, and only warnings and errors reach the developer console.
+
+- **Minimum level**: the lowest level kept in the in-app log — **Debug**, **Info** (default), **Warnings**, or **Errors only**. Lower it to Debug while reproducing a problem, then raise it back; Debug is chatty.
+- **Mirror to developer console**: also print entries to Obsidian's developer console (`Ctrl/Cmd+Shift+I`). Enabled by default.
+- **Console level**: the lowest level mirrored to the console (default: Warnings), independent of the minimum level above.
+- **Write log files**: write entries as one JSON object per line to `.obsidian/plugins/prisma-calendar/logs/current.jsonl` inside your vault, so they survive a restart and can be attached to a bug report. Off by default — the file can contain note paths and property values, and if your sync tool syncs the `.obsidian` folder it travels with it.
+- **Show advanced options** reveals the file limits:
+  - **Rotate after (KB)**: when `current.jsonl` grows past this size (default 512 KB) it is renamed to a dated file such as `20260610-120000-123.jsonl` and a fresh `current.jsonl` starts.
+  - **Keep rotated files**: how many dated files to keep (default 5). The oldest are deleted automatically.
+  - **Delete rotated files after (days)**: dated files older than this (default 14 days) are deleted automatically, even when under the count limit.
+
+Changes take effect immediately — no reload. Rotation and cleanup run when a file rotates and each time the plugin loads; the current file is never deleted by cleanup. If the log file cannot be written (a read-only vault, for example), file logging switches itself off and records why in the in-app log.
+
 ## Settings Transfer
 
 At the bottom of the General tab, the **Settings transfer** row provides three buttons:

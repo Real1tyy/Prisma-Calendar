@@ -7,6 +7,7 @@ import type { AutomaticFrontmatterWriter, RawEventSource } from "../types/event-
 import type { PrismaCalendarSettingsStore, SingleCalendarConfig } from "../types/index";
 import { findConflictForCalendar } from "../utils/calendar/conflicts";
 import { applyDateNormalizationToFile } from "../utils/events/frontmatter";
+import { log } from "./logging";
 
 export class Parser {
 	private settings: SingleCalendarConfig;
@@ -40,8 +41,16 @@ export class Parser {
 	}
 
 	private recomputeNormalizationConflict(): void {
-		this.hasNormalizationConflict =
-			findConflictForCalendar(this.calendarId, this.mainSettingsStore.currentSettings.calendars) !== null;
+		const conflict = findConflictForCalendar(this.calendarId, this.mainSettingsStore.currentSettings.calendars);
+		const hadConflict = this.hasNormalizationConflict;
+		this.hasNormalizationConflict = conflict !== null;
+		if (this.hasNormalizationConflict && !hadConflict) {
+			log.warn("parser", "Sort-date normalization suspended: another calendar in the same directory disagrees", {
+				calendarId: this.calendarId,
+			});
+		} else if (!this.hasNormalizationConflict && hadConflict) {
+			log.info("parser", "Sort-date normalization resumed", { calendarId: this.calendarId });
+		}
 	}
 
 	destroy(): void {
@@ -59,7 +68,12 @@ export class Parser {
 			this.settings
 		);
 		const event = this.schema.parse(input);
-		if (!event) return null;
+		if (!event) {
+			// Debug, not warn: notes without a usable date are routine (untracked
+			// notes share the directory), and this runs on every parse.
+			log.debug("parser", "Note has no parsable event date", { filePath: source.filePath });
+			return null;
+		}
 
 		// Side effect: normalize sort date on disk.
 		// TODO(refactor): extract into the side-effects manager when the table-level

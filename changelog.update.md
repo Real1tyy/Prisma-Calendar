@@ -1,0 +1,3 @@
+### Added
+
+- **Logging settings**: a new **Logging** section in the General tab controls what Prisma records about its own work. Pick the minimum level to keep (lower it to Debug while reproducing a problem), choose whether entries are mirrored to the developer console and from which level, and optionally write rotated log files inside the plugin folder that survive a restart — with **Show advanced options** revealing the size at which the current file rotates and how many rotated files, and how many days, to keep before old ones are deleted automatically. File logging is off by default. See [General → Logging](./configuration/general.md#logging).
