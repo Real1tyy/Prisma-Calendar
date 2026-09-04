@@ -1,4 +1,3 @@
-export { DEFAULT_LOG_CAPACITY, DEFAULT_LOG_LEVEL, LogService, type LogServiceOptions } from "./log-service";
 export {
 	abbreviatePath,
 	isSecretKey,
@@ -11,6 +10,32 @@ export {
 	scrubSecrets,
 	serializeForExport,
 } from "./redact";
-export { stringifyLogData } from "./serialize";
-export { LOG_LEVEL_SEVERITY, LOG_LEVELS } from "./types";
-export type { LogChange, LogEntry, LogFilter, LogLevel } from "./types";
+export { ConsoleSink, DEFAULT_CONSOLE_MIRROR_LEVEL, type ConsoleLike, type ConsoleSinkOptions } from "./console-sink";
+export {
+	FileSink,
+	LOG_FILE_ACTIVE_NAME,
+	rotatedFileTime,
+	type FileSinkOptions,
+	type FlushScheduler,
+} from "./file-sink";
+export { createVaultLogFileSystem, type LogFileSystem } from "./log-file-system";
+export { LogService, type LogServiceOptions } from "./log-service";
+export {
+	LOGGING_SCOPE,
+	LoggingController,
+	type FileSinkFactory,
+	type FileSinkLike,
+	type LoggingControllerOptions,
+} from "./logging-controller";
+export { DEFAULT_LOG_CAPACITY, MemorySink } from "./memory-sink";
+export { PluginLog } from "./plugin-log";
+export { createLogJsonReplacer, formatLogLine, stringifyLogData } from "./serialize";
+export {
+	DEFAULT_LOG_LEVEL,
+	LOGGING_ADVANCED_FIELDS,
+	LOGGING_BASIC_FIELDS,
+	LoggingSettingsSchema,
+	type LoggingSettings,
+} from "./settings";
+export { isAtLeast, LOG_LEVEL_SEVERITY, LOG_LEVELS } from "./types";
+export type { LogChange, LogEntry, LogFilter, LogLevel, LogSink } from "./types";

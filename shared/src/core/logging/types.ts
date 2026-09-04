@@ -10,6 +10,10 @@ export const LOG_LEVEL_SEVERITY: Record<LogLevel, number> = {
 	error: 3,
 };
 
+export function isAtLeast(level: LogLevel, threshold: LogLevel): boolean {
+	return LOG_LEVEL_SEVERITY[level] >= LOG_LEVEL_SEVERITY[threshold];
+}
+
 export interface LogEntry {
 	/** Monotonic per service instance — survives eviction, so it is a stable row key. */
 	readonly seq: number;
@@ -37,3 +41,18 @@ export interface LogFilter {
 }
 
 export type LogChange = { readonly type: "append"; readonly entry: LogEntry } | { readonly type: "clear" };
+
+/**
+ * A destination `LogService` fans retained entries out to. The service's own
+ * threshold runs first; a sink applies any further gating of its own (the
+ * console sink mirrors only warn+ by default). `write` must never throw into
+ * the caller — the service guards it, but a sink that throws is a bug.
+ * See [[spec-logging-config-sinks-and-instrumentation]].
+ */
+export interface LogSink {
+	write(entry: LogEntry): void;
+	/** Push any buffered output to its destination. */
+	flush?(): Promise<void>;
+	/** Flush and release resources; the sink receives no writes afterwards. */
+	dispose?(): Promise<void> | void;
+}

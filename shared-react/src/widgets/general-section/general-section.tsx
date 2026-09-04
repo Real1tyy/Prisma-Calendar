@@ -3,12 +3,14 @@ import { memo, useCallback, type ReactNode } from "react";
 
 import { useApp } from "../../contexts/app-context";
 import { useCssPrefix } from "../../contexts/theme-context";
+import type { SettingsStorelike } from "../../hooks/settings/use-schema-field";
 import { showHelpCenterReactModal, type HelpCenterContent } from "../../modals/help-center-modal";
 import { OutboundLink } from "../../primitives/atoms/outbound-link";
 import { SettingCard, SettingHeading, SettingItem } from "../../primitives/layout/setting-item";
 import { SettingsTransferButtons, type SettingsTransferButtonsProps } from "../../settings/settings-transfer";
 import { testIdAttr } from "../../utils/test-id";
 import { LicenseSection } from "../license-section/license-section";
+import { LoggingSection } from "../logging-section/logging-section";
 import { ReviewAction } from "./review-action";
 
 // Every outbound link in the General surface is attributed to the same source +
@@ -104,9 +106,23 @@ export interface GeneralLicenseConfig extends ToggleableConfig {
 }
 
 /**
- * A universal sub-section registered by another spec (logging, doctor, …) so it
- * can plug into the General surface without editing this component. Rendered in
- * array order between the plugin's own `children` and the settings-transfer row.
+ * The Logging sub-section's wiring. Deliberately no `enabled` flag: logging is
+ * universal, so the only thing a plugin supplies is where its `LoggingSettings`
+ * live. See [[spec-logging-config-sinks-and-instrumentation]].
+ */
+export interface GeneralLoggingConfig {
+	/** The plugin's root settings store carrying a `logging` key (or `pathPrefix`). */
+	store: SettingsStorelike;
+	/** Dotted key of the `LoggingSettings` inside the store. Default: `"logging"`. */
+	pathPrefix?: string | undefined;
+	/** Trailing content inside the Logging section (privacy disclaimer, "view logs" button). */
+	children?: ReactNode;
+}
+
+/**
+ * A universal sub-section registered by another spec (doctor, …) so it can plug
+ * into the General surface without editing this component. Rendered in array
+ * order between the plugin's own `children` and the Logging section.
  */
 export interface GeneralSubSection {
 	/** Stable id used as the React key (and for host-side dedup/ordering). */
@@ -139,7 +155,12 @@ export interface GeneralSectionProps<T extends Record<string, unknown> = Record<
 	settingsTransfer?: GeneralSettingsTransferConfig<T> | undefined;
 	/** License card. Opt-in — only renders when `enabled: true`. */
 	license?: GeneralLicenseConfig | undefined;
-	/** Universal sub-sections registered by other specs (logging, doctor). */
+	/**
+	 * Logging section wiring. Universal — every plugin passes its store; there is
+	 * no flag to turn the section off, only the option not to wire it at all.
+	 */
+	logging?: GeneralLoggingConfig | undefined;
+	/** Universal sub-sections registered by other specs (doctor). */
 	extraSections?: GeneralSubSection[] | undefined;
 	/**
 	 * Extra cross-cutting action rows, rendered under the universal Review row
@@ -310,6 +331,7 @@ function GeneralSectionInner<T extends Record<string, unknown>>({
 	changelog,
 	settingsTransfer,
 	license,
+	logging,
 	extraSections,
 	actions,
 	children,
@@ -337,6 +359,12 @@ function GeneralSectionInner<T extends Record<string, unknown>>({
 			{extraSections?.map((section) => (
 				<div key={section.id}>{section.node}</div>
 			))}
+
+			{logging !== undefined && (
+				<LoggingSection store={logging.store} pathPrefix={logging.pathPrefix} testIdPrefix={testIdPrefix}>
+					{logging.children}
+				</LoggingSection>
+			)}
 
 			{isOn(settingsTransfer, true) && settingsTransfer !== undefined && (
 				<>

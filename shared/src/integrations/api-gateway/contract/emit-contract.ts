@@ -102,10 +102,15 @@ export function emitContract(options: {
 }
 
 /**
- * Serialises a contract to its canonical on-disk JSON form. Tab indentation +
- * trailing newline matches the repo Prettier config (`useTabs: true`) so a
- * post-emit Prettier pass is a no-op and committed artifacts round-trip
- * without diff churn.
+ * Serialises a contract to its canonical on-disk JSON form: tab-indented, one
+ * trailing newline, keys in the order `emitContract` fixed them. Deterministic,
+ * so re-emitting an unchanged contract produces byte-identical output.
+ *
+ * It is NOT Prettier's formatting, and cannot be: `JSON.stringify` puts every
+ * array element on its own line and Prettier collapses the short ones, so the
+ * two can never agree. `api-contract.json` is therefore Prettier-ignored and
+ * registered as generated output — the drift check reviews it structurally, by
+ * parsing, not byte-wise ([[decision-external-apis-shared-emission]]).
  */
 export function serializeContract(contract: PluginApiContract): string {
 	return `${JSON.stringify(contract, null, "\t")}\n`;

@@ -3,6 +3,7 @@ export type {
 	GeneralHelpCenterConfig,
 	GeneralHelpConfig,
 	GeneralLicenseConfig,
+	GeneralLoggingConfig,
 	GeneralSectionProps,
 	GeneralSettingsTransferConfig,
 	GeneralSubSection,

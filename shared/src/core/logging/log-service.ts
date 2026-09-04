@@ -1,19 +1,16 @@
 import { Subject, type Observable } from "rxjs";
 
+import { MemorySink } from "./memory-sink";
 import { redactText, scrubSecrets } from "./redact";
-import { RingBuffer } from "./ring-buffer";
-import { stringifyLogData } from "./serialize";
-import { LOG_LEVEL_SEVERITY, type LogChange, type LogEntry, type LogFilter, type LogLevel } from "./types";
-
-export const DEFAULT_LOG_CAPACITY = 2000;
-export const DEFAULT_LOG_LEVEL: LogLevel = "info";
-
-/**
- * How much of a serialized `data` payload free-text search reads. `query` is a
- * needle-in-the-haystack aid, not a full-text index — without a bound, one
- * caller logging a huge object makes every subsequent query pay for it.
- */
-const MAX_SEARCHABLE_DATA_CHARS = 2000;
+import { DEFAULT_LOG_LEVEL } from "./settings";
+import {
+	LOG_LEVEL_SEVERITY,
+	type LogChange,
+	type LogEntry,
+	type LogFilter,
+	type LogLevel,
+	type LogSink,
+} from "./types";
 
 export interface LogServiceOptions {
 	/**
@@ -26,72 +23,34 @@ export interface LogServiceOptions {
 	level?: LogLevel;
 }
 
-interface BufferedEntry {
-	readonly entry: LogEntry;
-	/** Serialized `data`, memoized on the first query that needs it — never on append. */
-	searchText?: string;
-}
-
-function normalizeCapacity(capacity: number | undefined): number {
-	// Capacity reaches us from settings eventually; a nonsense value should fall
-	// back to the default rather than throw during plugin startup.
-	if (capacity === undefined || !Number.isFinite(capacity)) return DEFAULT_LOG_CAPACITY;
-	return Math.max(1, Math.floor(capacity));
-}
-
-function toSet<T extends string>(value: T | readonly T[]): ReadonlySet<T> {
-	return new Set(typeof value === "string" ? [value] : value);
-}
-
-function searchTextOf(buffered: BufferedEntry): string {
-	buffered.searchText ??= stringifyLogData(buffered.entry.data).slice(0, MAX_SEARCHABLE_DATA_CHARS);
-	return buffered.searchText;
-}
-
-function matches(buffered: BufferedEntry, filter: LogFilter): boolean {
-	const { entry } = buffered;
-
-	if (filter.level !== undefined && !toSet(filter.level).has(entry.level)) return false;
-	if (filter.minLevel !== undefined && LOG_LEVEL_SEVERITY[entry.level] < LOG_LEVEL_SEVERITY[filter.minLevel]) {
-		return false;
-	}
-	if (filter.scope !== undefined && !toSet(filter.scope).has(entry.scope)) return false;
-	if (filter.since !== undefined && entry.ts < filter.since) return false;
-	if (filter.until !== undefined && entry.ts > filter.until) return false;
-
-	if (filter.query) {
-		const needle = filter.query.toLowerCase();
-		const haystack = `${entry.message}\n${searchTextOf(buffered)}`.toLowerCase();
-		if (!haystack.includes(needle)) return false;
-	}
-
-	return true;
-}
-
 /**
- * Leveled, structured, in-memory log buffer — one instance per plugin.
+ * Leveled, structured log service — one instance per plugin.
  *
  * The write side is the whole codebase (`log.warn("indexer", …)` in place of
- * `console.warn`); the read side is the logs viewer, Doctor, and debug export.
- * Entries are held by reference and never serialized on append, so logging an
- * object costs a push. See [[spec-in-memory-log-service]].
+ * `console.warn`); the read side is the logs viewer, Doctor, and debug export,
+ * all served from the always-present `MemorySink`. Every entry that clears the
+ * threshold is also fanned out to the registered sinks (console mirror, file).
+ * See [[spec-in-memory-log-service]] and [[spec-logging-config-sinks-and-instrumentation]].
  */
 export class LogService {
-	private readonly buffer: RingBuffer<BufferedEntry>;
+	readonly memory: MemorySink;
+	private readonly sinks: LogSink[] = [];
 	private readonly now: () => number;
 	private readonly changes = new Subject<LogChange>();
 	private level: LogLevel;
 	private seq = 0;
 
-	readonly capacity: number;
 	/** Emits per retained append and per `clear`, so consumers update without polling. */
 	readonly changes$: Observable<LogChange> = this.changes.asObservable();
 
 	constructor(options: LogServiceOptions) {
 		this.now = options.now;
-		this.capacity = normalizeCapacity(options.capacity);
+		this.memory = new MemorySink(options.capacity);
 		this.level = options.level ?? DEFAULT_LOG_LEVEL;
-		this.buffer = new RingBuffer<BufferedEntry>(this.capacity);
+	}
+
+	get capacity(): number {
+		return this.memory.capacity;
 	}
 
 	getLevel(): LogLevel {
@@ -103,7 +62,22 @@ export class LogService {
 	}
 
 	get size(): number {
-		return this.buffer.length;
+		return this.memory.size;
+	}
+
+	/** Register a sink; returns its unregister. Registering the same sink twice is a no-op. */
+	addSink(sink: LogSink): () => void {
+		if (!this.sinks.includes(sink)) this.sinks.push(sink);
+		return () => this.removeSink(sink);
+	}
+
+	removeSink(sink: LogSink): void {
+		const index = this.sinks.indexOf(sink);
+		if (index !== -1) this.sinks.splice(index, 1);
+	}
+
+	get sinkCount(): number {
+		return this.sinks.length;
 	}
 
 	debug(scope: string, message: string, data?: unknown): void {
@@ -135,7 +109,15 @@ export class LogService {
 				// Never let a credential into the buffer — see [[decision-observability-privacy-posture]].
 				...(data === undefined ? {} : { data: scrubSecrets(data) }),
 			};
-			this.buffer.push({ entry });
+			this.memory.write(entry);
+			for (const sink of this.sinks) {
+				try {
+					sink.write(entry);
+				} catch {
+					// One broken sink must not starve the others, and there is no
+					// safe place to report it from inside the write path.
+				}
+			}
 			this.changes.next({ type: "append", entry });
 		} catch {
 			// A logging failure must never break the feature being logged, and the
@@ -146,24 +128,21 @@ export class LogService {
 
 	/** Full buffer, oldest-first. A fresh array each call — later appends can't mutate it. */
 	snapshot(): LogEntry[] {
-		return this.buffer.toArray().map((buffered) => buffered.entry);
+		return this.memory.snapshot();
 	}
 
 	entries(filter?: LogFilter): LogEntry[] {
-		if (!filter) return this.snapshot();
-		return this.buffer
-			.toArray()
-			.filter((buffered) => matches(buffered, filter))
-			.map((buffered) => buffered.entry);
+		return this.memory.entries(filter);
 	}
 
 	clear(): void {
-		this.buffer.clear();
+		this.memory.clear();
 		this.changes.next({ type: "clear" });
 	}
 
 	/** Complete the change stream on plugin unload so subscribers tear down. */
 	destroy(): void {
+		this.sinks.length = 0;
 		this.changes.complete();
 	}
 }
