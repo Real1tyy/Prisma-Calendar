@@ -162,10 +162,28 @@ export class FileSink implements LogSink {
 		if (this.disabled) return;
 		try {
 			if (!(await this.fs.exists(this.dir))) await this.fs.mkdir(this.dir);
+			await this.adoptLegacyActiveFile();
 			this.activeSize = (await this.fs.stat(this.activePath))?.size ?? 0;
 			await this.prune();
 		} catch (error) {
 			this.fail(error);
+		}
+	}
+
+	/**
+	 * Rotate away a `current.jsonl` written before file names carried a device
+	 * id — nothing appends to it any more, and as an active-file name pruning
+	 * would never consider it, so it would sit in the folder forever. Losing
+	 * the race to another device on a synced vault is not a failure: the file
+	 * is already gone, which is the outcome we wanted.
+	 */
+	private async adoptLegacyActiveFile(): Promise<void> {
+		const legacy = `${this.dir}/${LOG_FILE_ACTIVE_NAME}`;
+		if (this.device === "" || !(await this.fs.exists(legacy))) return;
+		try {
+			await this.fs.rename(legacy, await this.freeRotatedPath());
+		} catch {
+			return;
 		}
 	}
 
@@ -207,6 +225,13 @@ export class FileSink implements LogSink {
 	}
 
 	private async rotate(): Promise<void> {
+		await this.fs.rename(this.activePath, await this.freeRotatedPath());
+		this.activeSize = 0;
+		await this.prune();
+	}
+
+	/** A rotated name for right now that nothing occupies yet. */
+	private async freeRotatedPath(): Promise<string> {
 		const stamp = rotatedStamp(this.now());
 		const stem = this.device === "" ? stamp : `${stamp}-${this.device}`;
 		let target = `${this.dir}/${stem}.jsonl`;
@@ -215,9 +240,7 @@ export class FileSink implements LogSink {
 		for (let suffix = 1; await this.fs.exists(target); suffix++) {
 			target = `${this.dir}/${stem}-${suffix}.jsonl`;
 		}
-		await this.fs.rename(this.activePath, target);
-		this.activeSize = 0;
-		await this.prune();
+		return target;
 	}
 
 	private async prune(): Promise<void> {
