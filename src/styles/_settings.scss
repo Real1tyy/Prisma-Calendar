@@ -108,6 +108,13 @@
 	}
 }
 
+.prisma-device-role-setting-control {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
 // Color example list items
 .prisma-color-example {
 	&-item {

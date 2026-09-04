@@ -9,7 +9,7 @@
 - **Show ribbon icon**: display calendar icon in the left sidebar to open calendar (enabled by default)
 - **Enable keyboard navigation**: enable arrow key navigation for calendar intervals. Automatically disabled when search or expression filter inputs are focused (enabled by default)
 - **Auto-assign Zettel ID**: automatically add a Zettel ID timestamp (`-YYYYMMDDHHmmss`) to filenames of events in the calendar directory that don't have one. Three modes: **Disabled** (default), **Calendar events only** (timed and all-day events), or **All events** (including untracked). When active, files are renamed as they are indexed — for example, `My Event.md` becomes `My Event-20260216120000.md`.
-- **Read-only mode**: prevent automatic file modifications (see [Read-only Mode](#read-only-mode) below)
+- **Device role**: choose Writer or Reader behavior for automatic file modifications (see [Device Role](#device-role) below)
 
 ## License
 
@@ -58,9 +58,9 @@ Prisma Calendar can quietly check GitHub once a day for newer releases. When a n
 - Settings → General → "Check for updates" — enabled by default.
 - Turning it off skips the check entirely. The badge disappears immediately. Re-enabling triggers a fresh check on the next plugin load.
 
-## Read-only Mode
+## Device Role
 
-**Read-only mode** prevents the plugin from automatically writing to files without user interaction.
+**Reader mode** prevents the plugin from automatically writing to files without user interaction.
 
 **Storage Location:**
 - The device role is stored in the browser's local storage, outside the vault
@@ -68,9 +68,9 @@ Prisma Calendar can quietly check GitHub once a day for newer releases. When a n
 - An unresolved role behaves as Reader, prompts again next startup, and shows a warning here
 
 **Access:**
-- Toggle in Settings → General → "Read-only mode"
+- Select **Settings → General → Device role → Configure device role** to reopen the same Writer/Reader chooser used during onboarding
 
-**When enabled**, the device performs none of Prisma's automatic writes:
+**When Reader is selected**, the device performs none of Prisma's automatic writes:
 - No recurring event instances are generated, and no duplicate instance or synced note is trashed
 - Past events are not marked as done
 - Notifications still appear, but the "Already Notified" property is not written
@@ -80,7 +80,7 @@ Prisma Calendar can quietly check GitHub once a day for newer releases. When a n
 - Series changes are not propagated
 - The time tracker does not save its progress into the event
 
-**When disabled (Writer):**
+**When Writer is selected:**
 - All automatic file modifications work normally
 
 **Manual actions still work:**

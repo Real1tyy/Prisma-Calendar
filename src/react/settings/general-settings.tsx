@@ -7,7 +7,6 @@ import {
 	SettingHeading,
 	SettingItem,
 	showWhatsNewReactModal,
-	Toggle,
 	useSchemaField,
 	useSettingsFields,
 } from "@real1ty/obsidian-plugins-react";
@@ -25,6 +24,7 @@ import { HelpBox } from "./_help-box";
 import { PRISMA_SETTINGS_TEST_ID_PREFIX, PrismaSection } from "./_section";
 import { PRISMA_HELP_CENTER } from "./help-content";
 import { ProUpgradeBanner } from "./pro-upgrade-banner";
+import { openDeviceRoleModal } from "../modals";
 
 const SHAPE = SingleCalendarConfigSchema.shape;
 const MAIN_SHAPE = CustomCalendarSettingsSchema.shape;
@@ -115,8 +115,8 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 				modalClass: cls("settings-transfer-modal"),
 			}}
 		>
-			{calendarSection("Planning system", PLANNING_FIELDS)}
 			<ReadOnlyField plugin={plugin} />
+			{calendarSection("Planning system", PLANNING_FIELDS)}
 			<MultiDeviceHelp />
 			{calendarSection("Interface", INTERFACE_FIELDS)}
 			{mainSection("Updates", ["checkForReleaseUpdates"])}
@@ -131,33 +131,53 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 const ReadOnlyField = memo(function ReadOnlyField({ plugin }: { plugin: CustomCalendarPlugin }) {
 	const [readOnly, setReadOnly] = useState(plugin.deviceRoleStore.data.readOnly);
 	const [hasSelectedRole, setHasSelectedRole] = useState(plugin.deviceRoleStore.hasSelectedRole);
-	const handleChange = useCallback(
-		(value: boolean) => {
-			setReadOnly(value);
-			setHasSelectedRole(true);
-			void plugin.deviceRoleStore.updateData({ readOnly: value });
-		},
-		[plugin]
-	);
+	const chooseRole = useCallback(async () => {
+		const role = await openDeviceRoleModal(plugin.app);
+		if (!role) return;
+
+		plugin.deviceRoleStore.select(role);
+		setReadOnly(role === "reader");
+		setHasSelectedRole(true);
+	}, [plugin]);
+	const currentRole = hasSelectedRole ? (readOnly ? "Reader" : "Writer") : "Not configured (safe Reader)";
 
 	return (
 		<>
 			{!hasSelectedRole && (
-				<div className={cls("settings-warning-box")} data-testid={tid("settings-device-role-warning")}>
-					<p>
-						<strong>Choose this device's role.</strong> Prisma is using safe Reader mode until you explicitly choose.
-					</p>
-					<Button testId={tid("settings-confirm-reader")} onClick={() => handleChange(true)}>
-						Keep Reader
-					</Button>
+				<div
+					role="alert"
+					className={cls("device-role-warning-banner")}
+					data-testid={tid("settings-device-role-warning")}
+				>
+					<span aria-hidden="true" className={cls("normalization-conflict-icon")}>
+						⚠
+					</span>
+					<div className={cls("normalization-conflict-content")}>
+						<div className={cls("normalization-conflict-title")}>Choose this device's role</div>
+						<div className={cls("normalization-conflict-body")}>
+							Prisma is using safe Reader mode until you explicitly choose.
+						</div>
+						<Button
+							testId={tid("settings-configure-device-role-warning")}
+							className={cls("device-role-warning-action")}
+							onClick={() => void chooseRole()}
+						>
+							Choose device role
+						</Button>
+					</div>
 				</div>
 			)}
 			<SettingItem
-				name="Read-only mode"
+				name="Device role"
 				description="Reader devices perform none of Prisma's automatic writes: no recurring instances, marking done, Sort Date or Calendar Title normalisation, ZettelID assignment, CalDAV/ICS sync, series propagation, time-tracker saves or reminder flags. Manual actions still work. This choice stays in this browser's local storage and never syncs with the vault."
 				testId={tid("settings-field-read-only")}
 			>
-				<Toggle value={readOnly} onChange={handleChange} testId={tid("settings-control-read-only")} />
+				<div className={cls("device-role-setting-control")}>
+					<span>{currentRole}</span>
+					<Button testId={tid("settings-configure-device-role")} onClick={() => void chooseRole()}>
+						Configure device role
+					</Button>
+				</div>
 			</SettingItem>
 		</>
 	);
@@ -174,9 +194,9 @@ const MultiDeviceHelp = memo(function MultiDeviceHelp() {
 	return (
 		<HelpBox label="Using several devices" slug="multi-device">
 			<p>
-				Prisma cannot prevent every conflict when devices have the same vault open concurrently. Current automatic writes,
-				including recurring-event and integration IDs, are designed to converge. Different settings, versions, or
-				non-deterministic templates can still produce conflicts. Use these safeguards:
+				Prisma cannot prevent every conflict when devices have the same vault open concurrently. Current automatic
+				writes, including recurring-event and integration IDs, are designed to converge. Different settings, versions,
+				or non-deterministic templates can still produce conflicts. Use these safeguards:
 			</p>
 			<ul>
 				<li>

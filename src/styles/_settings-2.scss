@@ -333,7 +333,8 @@
 	color: var(--text-muted);
 }
 
-.prisma-normalization-conflict-banner {
+.prisma-normalization-conflict-banner,
+.prisma-device-role-warning-banner {
 	display: flex;
 	align-items: flex-start;
 	gap: 12px;
@@ -378,4 +379,9 @@
 	color: var(--text-muted);
 	font-size: var(--font-ui-small, 13px);
 	line-height: 1.5;
+}
+
+.prisma-device-role-warning-action {
+	align-self: flex-start;
+	margin-top: 4px;
 }

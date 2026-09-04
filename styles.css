@@ -1665,6 +1665,13 @@ button[class*=prisma-]:focus-visible {
   color: var(--text-error);
 }
 
+.prisma-device-role-setting-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .prisma-color-example-item {
   display: flex;
   align-items: center;
@@ -2704,7 +2711,8 @@ button[class*=prisma-]:focus-visible {
   color: var(--text-muted);
 }
 
-.prisma-normalization-conflict-banner {
+.prisma-normalization-conflict-banner,
+.prisma-device-role-warning-banner {
   display: flex;
   align-items: flex-start;
   gap: 12px;
@@ -2749,6 +2757,11 @@ button[class*=prisma-]:focus-visible {
   color: var(--text-muted);
   font-size: var(--font-ui-small, 13px);
   line-height: 1.5;
+}
+
+.prisma-device-role-warning-action {
+  align-self: flex-start;
+  margin-top: 4px;
 }
 
 .prisma-event-preview-modal .modal {
