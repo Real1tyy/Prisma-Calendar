@@ -1,3 +1,0 @@
-### Added
-
-- **First-launch import and device roles**: Restore settings from a JSON file or pasted JSON during setup, then choose Writer or Reader for each device before automatic sync starts. Writer is the normal choice for a single device, your primary device (the one you use most), or devices not used simultaneously; change concurrent devices to Reader only if conflicts appear. The top-level **Device role** control in General Settings reopens the same chooser later. Unresolved devices remain Readers and show a warning until configured. The chooser links directly to [Multiple devices and sync](./features/advanced/multi-device-sync.md); see also [Quick Start](./quickstart.md).
