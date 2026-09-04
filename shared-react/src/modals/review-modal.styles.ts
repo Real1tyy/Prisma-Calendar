@@ -26,14 +26,14 @@ export function buildReviewStyles(p: string): string {
 	gap: 0;
 	margin-bottom: 1rem;
 }
-.${p}review-star-half {
+.${p}review-modal button.${p}review-star-half {
 	appearance: none;
 	align-items: center;
-	background: transparent !important;
-	border: 0 !important;
-	border-radius: 0 !important;
-	box-shadow: none !important;
-	color: #c89b2b !important;
+	background: transparent;
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
+	color: #c89b2b;
 	cursor: pointer;
 	display: inline-flex;
 	filter: none;
@@ -41,10 +41,10 @@ export function buildReviewStyles(p: string): string {
 	height: 2.35rem;
 	justify-content: flex-start;
 	line-height: 1;
-	min-width: 0 !important;
+	min-width: 0;
 	opacity: 0.62;
 	overflow: hidden;
-	padding: 0 !important;
+	padding: 0;
 	width: 1.075rem;
 	transition: color 0.12s ease, filter 0.12s ease, opacity 0.12s ease;
 }
@@ -59,20 +59,20 @@ export function buildReviewStyles(p: string): string {
 .${p}review-star-right span {
 	transform: translateX(-1.075rem);
 }
-.${p}review-star-half:hover {
-	background: transparent !important;
-	color: #ffd54a !important;
+.${p}review-modal button.${p}review-star-half:hover {
+	background: transparent;
+	color: #ffd54a;
 	filter: drop-shadow(0 0 0.22rem rgba(255, 193, 7, 0.58));
 	opacity: 1;
 }
-.${p}review-star-filled {
-	color: #ffc107 !important;
+.${p}review-modal button.${p}review-star-half.${p}review-star-filled {
+	color: #ffc107;
 	filter: drop-shadow(0 0 0.16rem rgba(255, 193, 7, 0.42));
 	opacity: 1;
 }
-.${p}review-star-half:focus-visible {
-	background: transparent !important;
-	border-radius: 3px !important;
+.${p}review-modal button.${p}review-star-half:focus-visible {
+	background: transparent;
+	border-radius: 3px;
 	outline: 2px solid #ffc107;
 	outline-offset: 2px;
 }
