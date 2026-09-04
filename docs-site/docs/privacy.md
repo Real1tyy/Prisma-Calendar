@@ -41,14 +41,14 @@ token does not reveal the original name.
 
 ```json
 {
-  "message": "Could not index C:\\Users\\Ana\\Documents\\Project Atlas\\Clients\\Northwind\\Roadmap 2026.md#Launch plan",
-  "filePath": "C:\\Users\\Ana\\Documents\\Project Atlas\\Clients\\Northwind\\Roadmap 2026.md",
+  "message": "Could not index C:\\Users\\Bob\\Documents\\Project Atlas\\Clients\\Northwind\\Roadmap 2026.md#Launch plan",
+  "filePath": "C:\\Users\\Bob\\Documents\\Project Atlas\\Clients\\Northwind\\Roadmap 2026.md",
   "frontmatter": {
     "Client": "Northwind",
-    "Attendees": ["Ana", "Marek"],
+    "Attendees": ["Bob", "Marek"],
     "Budget": 48000
   },
-  "configPath": "C:\\Users\\Ana\\Documents\\Project Atlas\\.obsidian\\plugins\\prisma-calendar\\profiles\\client-work.json",
+  "configPath": "C:\\Users\\Bob\\Documents\\Project Atlas\\.obsidian\\plugins\\prisma-calendar\\profiles\\client-work.json",
   "request": {
     "Authorization": "Bearer example-access-token-that-is-never-shared",
     "apiKey": "sk_live_example-key-that-is-never-shared"

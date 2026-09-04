@@ -19,7 +19,7 @@ export const PRIVACY_DISCLAIMER_COPY = {
 		"Logs are high-level and about the plugin's behaviour. Paths and note names are abbreviated and secrets are never included. Nothing is sent without your explicit action — you can review exactly what's attached.",
 	linkLabel: "What is collected and how it is redacted",
 	exampleLabel: "See a redaction example",
-	exampleBefore: "Private: C:\\Users\\Ana\\Project Atlas\\Clients\\Northwind\\Roadmap.md",
+	exampleBefore: "Private: C:\\Users\\Bob\\Project Atlas\\Clients\\Northwind\\Roadmap.md",
 	exampleAfter: "Shared: vault://{91ad3e}/{6f802b}/{c4e59a}.md",
 	exampleDescription:
 		"Folder and note names become stable tokens; property values are replaced by their type; secrets are removed. Open the privacy page for a complete before-and-after bundle.",
