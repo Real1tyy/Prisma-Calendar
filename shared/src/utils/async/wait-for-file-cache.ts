@@ -43,12 +43,18 @@ export function waitForFileCache(
 			if (settled) return;
 			settled = true;
 			metadataCache.offref(ref);
+			metadataCache.offref(deletedRef);
 			window.clearTimeout(timer);
 			resolve(metadataCache.getFileCache(file));
 		};
 
 		const ref = metadataCache.on("changed", (changed: TFile) => {
 			if (changed.path === file.path) finish();
+		});
+		// A file deleted while we wait will never be indexed; settle now (with the
+		// null the cache holds for it) instead of sitting out the timeout.
+		const deletedRef = metadataCache.on("deleted", (deleted: TFile) => {
+			if (deleted.path === file.path) finish();
 		});
 		const timer = window.setTimeout(finish, timeoutMs);
 

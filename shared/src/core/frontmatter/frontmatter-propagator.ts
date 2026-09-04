@@ -5,10 +5,13 @@ import { applyFrontmatterChanges } from "./frontmatter-propagation";
 import { FrontmatterPropagationDebouncer } from "./frontmatter-propagation-debouncer";
 
 const PROPAGATION_CLEANUP_DELAY_MS = 2000;
+const DEFAULT_PROPAGATION_CONCURRENCY = 5;
 
 export interface FrontmatterPropagatorConfig {
 	/** Debounce interval in milliseconds */
 	debounceMs: number;
+	/** How many target files are written at once (default 5). */
+	concurrency?: number;
 	/** Prefix for debounce keys (e.g., "category" → "category:Work") */
 	debounceKeyPrefix: string;
 	/** Whether auto-propagation is enabled */
@@ -112,9 +115,16 @@ export class FrontmatterPropagator {
 		}
 
 		const apply = this.config.applyChanges ?? applyFrontmatterChanges;
+		const concurrency = Math.max(1, this.config.concurrency ?? DEFAULT_PROPAGATION_CONCURRENCY);
 
 		try {
-			await Promise.all(targetFilePaths.map((fp) => apply(this.app, fp, sourceFrontmatter, diff)));
+			// Bounded fan-out: a series of hundreds of notes must not open hundreds
+			// of concurrent frontmatter writes against the vault at once.
+			for (let i = 0; i < targetFilePaths.length; i += concurrency) {
+				await Promise.all(
+					targetFilePaths.slice(i, i + concurrency).map((fp) => apply(this.app, fp, sourceFrontmatter, diff))
+				);
+			}
 		} finally {
 			// Delay cleanup to account for indexer processing latency
 			window.setTimeout(() => {

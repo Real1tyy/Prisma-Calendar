@@ -135,6 +135,12 @@ export class VaultTable<
 	 * never wait on each other. Entries are dropped once a chain drains.
 	 */
 	private readonly rowWriteChains = new Map<string, Promise<unknown>>();
+	/**
+	 * Bumped on every delete of a path. A row build that started before the
+	 * delete (its `cachedRead` still pending) compares generations after the
+	 * await and drops itself instead of resurrecting the deleted row.
+	 */
+	private readonly deletionGeneration = new Map<string, number>();
 
 	private readonly eventsSubject = new Subject<VaultTableEvent<TData>>();
 	private readonly readySubject = new BehaviorSubject<boolean>(false);
@@ -387,7 +393,12 @@ export class VaultTable<
 		this.rowByFileName.clear();
 		this.rows = [];
 		this.rowsDirty = false;
+		this.deletionGeneration.clear();
 		this.eventsSubject.complete();
+		// Close the write gate before completing: a completed BehaviorSubject keeps
+		// its last value, and a write issued after destroy must refuse, not reach
+		// the vault through a table that no longer mirrors it.
+		this.readySubject.next(false);
 		this.readySubject.complete();
 	}
 
@@ -853,7 +864,12 @@ export class VaultTable<
 		const source = event.source;
 		if (!source) return;
 		const file = source.file;
+		const generation = this.deletionGeneration.get(filePath) ?? 0;
 		const fullContent = await this.app.vault.cachedRead(file);
+		// A delete (or rename away) that landed during the read wins: inserting
+		// now would resurrect a row for a file that is gone, and the row-created
+		// it emits would follow the row-deleted the consumer already handled.
+		if ((this.deletionGeneration.get(filePath) ?? 0) !== generation) return;
 		const content = extractContentAfterFrontmatter(fullContent);
 		const mtime = source.mtime;
 		const raw = source.frontmatter;
@@ -893,6 +909,7 @@ export class VaultTable<
 
 	private handleFileDeleted(filePath: string, isRename?: boolean): void {
 		this.persistentCache?.delete(filePath);
+		this.deletionGeneration.set(filePath, (this.deletionGeneration.get(filePath) ?? 0) + 1);
 
 		const existing = this.rowByFileName.get(this.toRowKey(filePath));
 		if (!existing) return;
