@@ -113,6 +113,7 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 				remoteEvents: parsed.events,
 				trackedBySubscription: this.syncStateManager.getAllForSubscription(this.subscription.id),
 				findByUidGlobal: (uid) => this.syncStateManager.findByUidGlobal(uid),
+				knownSubscriptionIds: this.mainSettingsStore.currentSettings.icsSubscriptions.subscriptions.map((s) => s.id),
 			});
 
 			let processedCount = 0;
@@ -124,7 +125,7 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 					if (action.kind === "create") {
 						await this.createNoteFromEvent(action.event, action.uid);
 						result.created++;
-					} else if (action.kind === "update") {
+					} else if (action.kind === "update" || action.kind === "adopt") {
 						const wasUpdated = await this.updateNoteFromEvent(action.filePath, action.event, action.uid);
 						if (wasUpdated) result.updated++;
 					} else if (action.kind === "delete") {
@@ -134,7 +135,7 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 						}
 					}
 					// skip-* actions are intentional no-ops.
-					if (action.kind === "create" || action.kind === "update") {
+					if (action.kind === "create" || action.kind === "update" || action.kind === "adopt") {
 						processedCount++;
 						if (processedCount % 3 === 0) {
 							await yieldToMainThread();

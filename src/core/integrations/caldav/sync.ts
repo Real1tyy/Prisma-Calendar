@@ -204,6 +204,7 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 				findByUid: (uid) => this.syncStateManager.findByUid(this.account.id, this.calendar.url, uid),
 				findByUidGlobal: (uid) => this.syncStateManager.findByUidGlobal(uid),
 				findByObjectHref: (href) => this.syncStateManager.findByObjectHref(this.account.id, this.calendar.url, href),
+				knownAccountIds: this.mainSettingsStore.currentSettings.caldav.accounts.map((a) => a.id),
 			});
 
 			let processedCount = 0;
@@ -215,7 +216,7 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 					if (action.kind === "create") {
 						await this.createNoteFromEvent(action.event);
 						result.created++;
-					} else if (action.kind === "update") {
+					} else if (action.kind === "update" || action.kind === "adopt") {
 						const wasUpdated = await this.updateNoteFromEvent(action.filePath, action.event);
 						if (wasUpdated) result.updated++;
 					} else if (action.kind === "delete") {
@@ -233,7 +234,7 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 					}
 				} catch (error) {
 					const label =
-						action.kind === "create" || action.kind === "update"
+						action.kind === "create" || action.kind === "update" || action.kind === "adopt"
 							? action.event.url
 							: action.kind === "delete"
 								? action.objectHref

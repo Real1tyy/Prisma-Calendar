@@ -133,6 +133,9 @@ export abstract class BaseSyncStateManager<TMetadata extends { uid: string }> {
 	}
 
 	private trashDuplicate(filePath: string, uid: string): void {
+		// Trashing is an automatic write; a read-only device leaves the twin for
+		// a writing device to reconcile (every device picks the same survivor).
+		if (this.eventSource.isReadOnly) return;
 		if (!this.indexHydrated) {
 			this.pendingDuplicateTrash.set(filePath, uid);
 			return;

@@ -6,6 +6,13 @@ export type TrackedRef = { filePath: string; metadata: ICSSubscriptionSyncMetada
 export type SyncPlanAction =
 	| { kind: "create"; uid: string; event: ImportedEvent }
 	| { kind: "update"; uid: string; filePath: string; event: ImportedEvent }
+	/**
+	 * A note tracked under a subscription id that no longer exists in settings
+	 * (settings not synced to this device, or the subscription re-added with a
+	 * fresh id). Applied as an update, which rewrites the metadata under the
+	 * current subscription — otherwise the note stays silently orphaned forever.
+	 */
+	| { kind: "adopt"; uid: string; filePath: string; event: ImportedEvent; previousSubscriptionId: string }
 	| { kind: "skip-unchanged"; uid: string; filePath: string }
 	| { kind: "skip-missing-uid"; title: string }
 	| { kind: "skip-foreign-uid"; uid: string; ownedBy: string }
@@ -15,6 +22,7 @@ export interface SyncPlan {
 	actions: SyncPlanAction[];
 	summary: {
 		create: number;
+		/** Includes adoptions — they are applied as updates. */
 		update: number;
 		delete: number;
 		skipUnchanged: number;
@@ -28,6 +36,12 @@ export interface PlanInputs {
 	remoteEvents: ImportedEvent[];
 	trackedBySubscription: TrackedRef[];
 	findByUidGlobal: (uid: string) => TrackedRef | null;
+	/**
+	 * Every subscription id currently configured on this device. A note tracked
+	 * under an id not in this list is orphaned and adopted instead of skipped as
+	 * foreign. Omit to treat every other id as a live foreign owner.
+	 */
+	knownSubscriptionIds?: readonly string[];
 }
 
 /**
@@ -48,7 +62,7 @@ export interface PlanInputs {
  * NOT in the remote payload is marked for delete.
  */
 export function computeIcsSubscriptionSyncPlan(inputs: PlanInputs): SyncPlan {
-	const { subscriptionId, remoteEvents, trackedBySubscription, findByUidGlobal } = inputs;
+	const { subscriptionId, remoteEvents, trackedBySubscription, findByUidGlobal, knownSubscriptionIds } = inputs;
 	const actions: SyncPlanAction[] = [];
 	const remoteUids = new Set<string>();
 	// O(1) lookup for tracked events by UID, since we'll be doing 1+ lookups per remote event.
@@ -74,6 +88,18 @@ export function computeIcsSubscriptionSyncPlan(inputs: PlanInputs): SyncPlan {
 
 		const foreign = findByUidGlobal(uid);
 		if (foreign && foreign.metadata.subscriptionId !== subscriptionId) {
+			const orphaned =
+				knownSubscriptionIds !== undefined && !knownSubscriptionIds.includes(foreign.metadata.subscriptionId);
+			if (orphaned) {
+				actions.push({
+					kind: "adopt",
+					uid,
+					filePath: foreign.filePath,
+					event,
+					previousSubscriptionId: foreign.metadata.subscriptionId,
+				});
+				continue;
+			}
 			actions.push({ kind: "skip-foreign-uid", uid, ownedBy: foreign.metadata.subscriptionId });
 			continue;
 		}
@@ -97,7 +123,8 @@ export function computeIcsSubscriptionSyncPlan(inputs: PlanInputs): SyncPlan {
 	};
 	for (const action of actions) {
 		if (action.kind === "create") summary.create++;
-		else if (action.kind === "update") summary.update++;
+		// An adoption is applied as an update and counted as one.
+		else if (action.kind === "update" || action.kind === "adopt") summary.update++;
 		else if (action.kind === "delete") summary.delete++;
 		else if (action.kind === "skip-unchanged") summary.skipUnchanged++;
 		else if (action.kind === "skip-missing-uid") summary.skipMissingUid++;

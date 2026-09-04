@@ -214,6 +214,9 @@ export class RecurringEventManager extends DebouncedNotifier {
 	}
 
 	private async handleRecurringEventRenamed(recurringEvent: NodeRecurringEvent): Promise<void> {
+		// Renaming the instances is an automatic write; read-only devices leave it
+		// to a writing device (the renames sync in like any other change).
+		if (this.syncStore?.data.readOnly) return;
 		const data = this.recurringEventsMap.get(recurringEvent.rRuleId);
 		if (!data || data.physicalInstances.size === 0) {
 			return;
@@ -526,6 +529,8 @@ export class RecurringEventManager extends DebouncedNotifier {
 	 * re-checked against the map before it is trashed.
 	 */
 	private trashDuplicateInstance(filePath: string, rruleId: string, dateKey: string): void {
+		// An automatic write: a read-only device leaves the twin for a writing device.
+		if (this.syncStore?.data.readOnly) return;
 		if (!this.indexingComplete) {
 			this.pendingDuplicateInstanceTrash.set(filePath, { rruleId, dateKey });
 			return;

@@ -6,6 +6,13 @@ export type TrackedRef = { filePath: string; metadata: CalDAVSyncMetadata };
 export type SyncPlanAction =
 	| { kind: "create"; uid: string; event: CalDAVFetchedEvent }
 	| { kind: "update"; uid: string; filePath: string; event: CalDAVFetchedEvent }
+	/**
+	 * A note tracked under an account id that no longer exists in settings
+	 * (settings not synced to this device, or the account re-added and given
+	 * a fresh id). Applied as an update, which rewrites the metadata under the
+	 * current account — otherwise the note stays silently orphaned forever.
+	 */
+	| { kind: "adopt"; uid: string; filePath: string; event: CalDAVFetchedEvent; previousAccountId: string }
 	| { kind: "delete"; uid: string; filePath: string; objectHref: string }
 	| { kind: "skip-unchanged"; uid: string; filePath: string }
 	| { kind: "skip-missing-uid"; url: string }
@@ -16,6 +23,7 @@ export interface SyncPlan {
 	actions: SyncPlanAction[];
 	summary: {
 		create: number;
+		/** Includes adoptions — they are applied as updates. */
 		update: number;
 		delete: number;
 		skipUnchanged: number;
@@ -28,6 +36,13 @@ export interface SyncPlan {
 export interface PlanInputs {
 	accountId: string;
 	calendarHref: string;
+	/**
+	 * Every CalDAV account id currently configured on this device. A note whose
+	 * tracked account id is not in this list is orphaned (its account was
+	 * removed, or settings never synced here) and is adopted instead of being
+	 * skipped as foreign. Omit to treat every other id as a live foreign owner.
+	 */
+	knownAccountIds?: readonly string[];
 	/**
 	 * Events the server reports as created or updated in this sync window.
 	 * On a full sync (no prior token) this is the complete calendar; on an
@@ -93,7 +108,14 @@ export interface PlanInputs {
  * paginated/time-windowed REPORT is not a delete signal.
  */
 export function computeCaldavSyncPlan(inputs: PlanInputs): SyncPlan {
-	const { remoteEvents, tombstonedObjectHrefs = [], findByUid, findByUidGlobal, findByObjectHref } = inputs;
+	const {
+		remoteEvents,
+		tombstonedObjectHrefs = [],
+		findByUid,
+		findByUidGlobal,
+		findByObjectHref,
+		knownAccountIds,
+	} = inputs;
 	const actions: SyncPlanAction[] = [];
 
 	for (const event of remoteEvents) {
@@ -115,6 +137,17 @@ export function computeCaldavSyncPlan(inputs: PlanInputs): SyncPlan {
 
 		const foreign = findByUidGlobal(uid);
 		if (foreign) {
+			const orphaned = knownAccountIds !== undefined && !knownAccountIds.includes(foreign.metadata.accountId);
+			if (orphaned) {
+				actions.push({
+					kind: "adopt",
+					uid,
+					filePath: foreign.filePath,
+					event,
+					previousAccountId: foreign.metadata.accountId,
+				});
+				continue;
+			}
 			actions.push({
 				kind: "skip-foreign-uid",
 				uid,
@@ -154,7 +187,8 @@ export function computeCaldavSyncPlan(inputs: PlanInputs): SyncPlan {
 	};
 	for (const action of actions) {
 		if (action.kind === "create") summary.create++;
-		else if (action.kind === "update") summary.update++;
+		// An adoption is applied as an update and counted as one.
+		else if (action.kind === "update" || action.kind === "adopt") summary.update++;
 		else if (action.kind === "delete") summary.delete++;
 		else if (action.kind === "skip-unchanged") summary.skipUnchanged++;
 		else if (action.kind === "skip-missing-uid") summary.skipMissingUid++;
