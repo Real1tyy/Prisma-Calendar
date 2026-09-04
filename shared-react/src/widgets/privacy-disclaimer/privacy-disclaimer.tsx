@@ -18,6 +18,11 @@ export const PRIVACY_DISCLAIMER_COPY = {
 	summary:
 		"Logs are high-level and about the plugin's behaviour. Paths and note names are abbreviated and secrets are never included. Nothing is sent without your explicit action — you can review exactly what's attached.",
 	linkLabel: "What is collected and how it is redacted",
+	exampleLabel: "See a redaction example",
+	exampleBefore: "Private: C:\\Users\\Ana\\Project Atlas\\Clients\\Northwind\\Roadmap.md",
+	exampleAfter: "Shared: vault://{91ad3e}/{6f802b}/{c4e59a}.md",
+	exampleDescription:
+		"Folder and note names become stable tokens; property values are replaced by their type; secrets are removed. Open the privacy page for a complete before-and-after bundle.",
 	fullDetailLabel: "Include full detail",
 	fullDetailDescription:
 		"Keeps real paths, note names and property values so a trusted helper can follow along. Secrets are still removed. Share full detail only with someone you trust.",
@@ -60,6 +65,15 @@ export const PrivacyDisclaimer = memo(function PrivacyDisclaimer({
 					{`${PRIVACY_DISCLAIMER_COPY.linkLabel} ↗`}
 				</OutboundLink>
 			</p>
+			<details className={cls("example")}>
+				<summary>{PRIVACY_DISCLAIMER_COPY.exampleLabel}</summary>
+				<p>
+					<code>{PRIVACY_DISCLAIMER_COPY.exampleBefore}</code>
+					<br />
+					<code>{PRIVACY_DISCLAIMER_COPY.exampleAfter}</code>
+				</p>
+				<p>{PRIVACY_DISCLAIMER_COPY.exampleDescription}</p>
+			</details>
 			{fullDetail !== undefined && onFullDetailChange !== undefined && (
 				<SettingItem
 					name={PRIVACY_DISCLAIMER_COPY.fullDetailLabel}

@@ -27,11 +27,66 @@ Diagnostics are high-level and about the plugin's own behaviour: which feature r
 | Property (frontmatter) values | The property **name** and the **type** of its value, e.g. `Attendees: [array:2]`. The value itself is removed. |
 | License keys, API keys, tokens, passwords, authorization headers | **Always removed**, in every mode. There is no setting that includes them. |
 
-Files under `.obsidian/` — plugin configuration, not notes — are left readable so a configuration problem can be diagnosed.
+The `.obsidian` folder marker may remain visible because it explains that a problem involved plugin
+configuration. Its descendants — plugin names, profiles, and custom filenames — are tokenized too.
+
+## A complete redaction example
+
+This is an illustrative debug record before and after default redaction. The names and credential
+below are made up. The short tokens in the redacted version are examples too: on your device, the
+same real folder, note, or heading always receives the same token in a diagnostic bundle, but the
+token does not reveal the original name.
+
+**Before sharing — this stays on your device:**
+
+```json
+{
+  "message": "Could not index C:\\Users\\Ana\\Documents\\Project Atlas\\Clients\\Northwind\\Roadmap 2026.md#Launch plan",
+  "filePath": "C:\\Users\\Ana\\Documents\\Project Atlas\\Clients\\Northwind\\Roadmap 2026.md",
+  "frontmatter": {
+    "Client": "Northwind",
+    "Attendees": ["Ana", "Marek"],
+    "Budget": 48000
+  },
+  "configPath": "C:\\Users\\Ana\\Documents\\Project Atlas\\.obsidian\\plugins\\prisma-calendar\\profiles\\client-work.json",
+  "request": {
+    "Authorization": "Bearer example-access-token-that-is-never-shared",
+    "apiKey": "sk_live_example-key-that-is-never-shared"
+  }
+}
+```
+
+**What a default diagnostic contains instead:**
+
+```json
+{
+  "message": "Could not index vault://{91ad3e}/{6f802b}/{c4e59a}.md#{7b31c0}",
+  "filePath": "vault://{91ad3e}/{6f802b}/{c4e59a}.md",
+  "frontmatter": {
+    "Client": "[string]",
+    "Attendees": "[array:2]",
+    "Budget": "[number]"
+  },
+  "configPath": "vault://.obsidian/{4d2e71}/{0b843c}/{e29af5}.json",
+  "request": {
+    "Authorization": "[redacted:secret]",
+    "apiKey": "[redacted:secret]"
+  }
+}
+```
+
+In other words: the support recipient can see that an index operation failed, that the note is three
+folders deep, that it is a Markdown file with a heading, which property names and value types were
+involved, and that plugin configuration was touched. They cannot see your Windows or macOS account
+name, vault location, folder names, note title, heading, property values, configuration profile, or
+credentials. The same rules apply to Windows drive paths, macOS volume paths, and network shares.
 
 ## Including full detail
 
-Anywhere diagnostics can be shared, an **Include full detail** switch is available. Turning it on keeps real folder and note names, the vault's location, and property values, so someone you trust can follow along with your actual setup. Secrets are still removed. The switch restates what it exposes, and it is off by default.
+Anywhere diagnostics can be shared, an **Include full detail** switch is available. Turning it on
+keeps real folder and note names, the vault's location, and property values, so someone you trust can
+follow along with your actual setup. Secrets are still removed. The switch restates what it exposes,
+and it is off by default. Review the exact attachment before you copy or send it.
 
 ## What redaction cannot do
 
