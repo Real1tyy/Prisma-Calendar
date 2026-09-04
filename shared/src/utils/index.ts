@@ -13,6 +13,7 @@ export * from "./generate";
 export * from "./list-utils";
 export * from "./notice";
 export * from "./obsidian-compat";
+export * from "./platform";
 export * from "./security";
 export * from "./string";
 export * from "./styles";

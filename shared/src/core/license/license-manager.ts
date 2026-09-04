@@ -1,8 +1,10 @@
 import { errors, importSPKI, jwtVerify } from "jose";
-import { apiVersion, Platform, requestUrl, type App } from "obsidian";
+import { apiVersion, requestUrl, type App } from "obsidian";
 import { BehaviorSubject, type Observable } from "rxjs";
 
 import type { NoticeLink } from "../../utils/notice";
+import { getDeviceName, getPlatformId } from "../../utils/platform";
+import { getOrCreateStoredId } from "../submission/client-id";
 import {
 	LicenseStatusSchema,
 	type CachedLicenseData,
@@ -86,7 +88,7 @@ export class LicenseManager {
 	}
 
 	async initialize(): Promise<void> {
-		this.deviceId = this.getOrCreateDeviceId();
+		this.deviceId = getOrCreateStoredId(this.app, this.config.deviceIdStorageKey);
 		await this.loadCachedToken();
 		await this.refreshLicense();
 		this.startHeartbeat();
@@ -167,10 +169,10 @@ export class LicenseManager {
 				body: JSON.stringify({
 					licenseKey,
 					deviceId: this.deviceId,
-					deviceName: this.getDeviceName(),
+					deviceName: getDeviceName(),
 					pluginVersion: this.pluginVersion,
-					obsidianVersion: this.getObsidianVersion(),
-					platform: this.getPlatform(),
+					obsidianVersion: apiVersion,
+					platform: getPlatformId(),
 				}),
 				throw: false,
 			});
@@ -365,17 +367,12 @@ export class LicenseManager {
 		this.setLicenseActive(state === "valid");
 	}
 
-	private getOrCreateDeviceId(): string {
-		// `loadLocalStorage` is typed `any` by Obsidian — narrow before trusting it.
-		const stored: unknown = this.app.loadLocalStorage(this.config.deviceIdStorageKey);
-		if (typeof stored === "string" && stored) return stored;
-
-		const id = crypto.randomUUID();
-		this.app.saveLocalStorage(this.config.deviceIdStorageKey, id);
-		return id;
-	}
-
-	private getLicenseKey(): Promise<string | null> {
+	/**
+	 * The configured license key, or `null` when none is set. Public because a
+	 * submission attributes itself to the customer who sent it
+	 * ([[spec-in-app-rating-and-review]]) — it must not be surfaced in the UI.
+	 */
+	getLicenseKey(): Promise<string | null> {
 		const secretName = this.getLicenseKeySecretName();
 		if (!secretName) return Promise.resolve(null);
 		return Promise.resolve(this.app.secretStorage.getSecret(secretName));
@@ -437,24 +434,5 @@ export class LicenseManager {
 		} catch {
 			return null;
 		}
-	}
-
-	private getDeviceName(): string {
-		if (Platform.isDesktopApp) return `${Platform.isMacOS ? "macOS" : Platform.isWin ? "Windows" : "Linux"} Desktop`;
-		if (Platform.isMobileApp) return Platform.isIosApp ? "iOS" : "Android";
-		return "Unknown";
-	}
-
-	private getPlatform(): string {
-		if (Platform.isMacOS) return "macos";
-		if (Platform.isWin) return "windows";
-		if (Platform.isLinux) return "linux";
-		if (Platform.isIosApp) return "ios";
-		if (Platform.isAndroidApp) return "android";
-		return "unknown";
-	}
-
-	private getObsidianVersion(): string {
-		return apiVersion;
 	}
 }

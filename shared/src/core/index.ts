@@ -12,4 +12,5 @@ export * from "./logging";
 export * from "./release-check";
 export * from "./settings";
 export * from "./storage";
+export * from "./submission";
 export * from "./vault-table";

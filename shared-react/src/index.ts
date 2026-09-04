@@ -148,6 +148,8 @@ export type { HelpCenterConfig, HelpCenterContent } from "./modals/help-center-m
 export { HelpCenterView, showHelpCenterReactModal } from "./modals/help-center-modal";
 export type { OpenRenameOptions, RenameModalProps, RenameModalResult } from "./modals/rename-modal";
 export { openRenameModal, RenameModalContent } from "./modals/rename-modal";
+export type { ReviewModalProps, ShowReviewModalConfig } from "./modals/review-modal";
+export { ReviewModalContent, showReviewReactModal } from "./modals/review-modal";
 export type { WhatsNewModalConfig } from "./modals/whats-new-modal";
 export { DEFAULT_WHATS_NEW_LINKS, showWhatsNewReactModal } from "./modals/whats-new-modal";
 
