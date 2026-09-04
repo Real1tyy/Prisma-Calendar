@@ -169,7 +169,7 @@ const ReadOnlyField = memo(function ReadOnlyField({ plugin }: { plugin: CustomCa
 			)}
 			<SettingItem
 				name="Device role"
-				description="Reader devices perform none of Prisma's automatic writes: no recurring instances, marking done, Sort Date or Calendar Title normalisation, ZettelID assignment, CalDAV/ICS sync, series propagation, time-tracker saves or reminder flags. Manual actions still work. This choice stays in this browser's local storage and never syncs with the vault."
+				description="Choose Writer for a single device, or on every device when this vault is not open simultaneously. Reader devices perform none of Prisma's automatic writes: no recurring instances, marking done, Sort Date or Calendar Title normalisation, ZettelID assignment, CalDAV/ICS sync, series propagation, time-tracker saves or reminder flags. Manual actions still work. If concurrent use produces conflicts, make the other devices Readers. This choice stays in this browser's local storage and never syncs with the vault."
 				testId={tid("settings-field-read-only")}
 			>
 				<div className={cls("device-role-setting-control")}>
@@ -194,9 +194,9 @@ const MultiDeviceHelp = memo(function MultiDeviceHelp() {
 	return (
 		<HelpBox label="Using several devices" slug="multi-device">
 			<p>
-				Prisma cannot prevent every conflict when devices have the same vault open concurrently. Current automatic
-				writes, including recurring-event and integration IDs, are designed to converge. Different settings, versions,
-				or non-deterministic templates can still produce conflicts. Use these safeguards:
+				Current automatic writes, including recurring-event and integration IDs, are designed to converge. Use Writer if
+				you have one device, or on every device when you do not open this vault simultaneously. Concurrent use can still
+				conflict when settings, versions, or templates differ. Use these safeguards if that happens:
 			</p>
 			<ul>
 				<li>
@@ -204,8 +204,8 @@ const MultiDeviceHelp = memo(function MultiDeviceHelp() {
 					different property names, property order or done values produce different files.
 				</li>
 				<li>
-					<strong>Nominate one Writer</strong> — usually the device where you create most things — and use Reader mode
-					on other devices that may be open at the same time.
+					<strong>If conflicts appear, nominate one Writer</strong> — usually the device where you create most things — and
+					use Reader mode on other devices that may be open at the same time.
 				</li>
 			</ul>
 			<p>

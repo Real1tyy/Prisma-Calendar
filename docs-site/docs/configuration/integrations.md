@@ -22,7 +22,7 @@ Subscribe to external calendars via public ICS URLs for automatic periodic synci
 
 ## Several Devices
 
-Every Writer device that has an account configured syncs it independently. UID-based note naming lets current Prisma versions converge on the same path; choose **Reader** (Read-only mode under Settings → General) on other concurrently open devices when you want one device to perform all automatic writes. The **Syncing from several devices** box at the top of the tab summarises what to expect; the full picture is under [Integrations → Several devices](../features/advanced/integrations#several-devices) and [Multiple devices and sync](../features/advanced/multi-device-sync).
+Every Writer device that has an account configured syncs it independently. UID-based note naming lets current Prisma versions converge on the same path. Use Writer on a single device, or on every device when the vault is not open simultaneously. If concurrent use produces conflicts, choose **Reader** (Device role under Settings → General) on the other devices so one primary Writer performs automatic writes. The **Syncing from several devices** box at the top of the tab summarises what to expect; the full picture is under [Integrations → Several devices](../features/advanced/integrations#several-devices) and [Multiple devices and sync](../features/advanced/multi-device-sync).
 
 ## Holidays
 

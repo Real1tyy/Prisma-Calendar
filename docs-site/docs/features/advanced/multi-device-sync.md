@@ -31,11 +31,11 @@ Every automatic write goes through one queue per note: it waits until Obsidian h
 
 ## Limiting writes to one device
 
-On first setup Prisma asks whether the device is a **Writer** or **Reader**. Nominate one Writer—usually the device where you create most things—and use Reader mode on other devices that may be open concurrently. A Reader shows and lets you edit events normally, but performs no automatic writes of its own: no recurring instances, no marking done, no **Sort Date** or **Calendar Title** normalisation, no automatic ZettelID assignment, no CalDAV/ICS sync, no series propagation, no time-tracker progress saves, no reminder flags. Edits you make by hand are written as usual.
+On first setup Prisma asks whether the device is a **Writer** or **Reader**. Choose Writer for a single device. You can also use Writer on every device when the vault is not open simultaneously. If concurrent use produces conflicts, keep one primary Writer—usually the device where you create most things—and use Reader mode on the other devices. A Reader shows and lets you edit events normally, but performs no automatic writes of its own: no recurring instances, no marking done, no **Sort Date** or **Calendar Title** normalisation, no automatic ZettelID assignment, no CalDAV/ICS sync, no series propagation, no time-tracker progress saves, no reminder flags. Edits you make by hand are written as usual.
 
 The choice lives in browser-local storage, never in the vault. Closing the prompt leaves the choice unresolved and uses safe Reader behavior for that session; Prisma asks again next startup and shows a warning under **Settings → General**.
 
-Current Prisma versions derive recurring-series and integration-event identities from synchronized inputs, so equivalent automatic writes converge. A single Writer remains useful because Prisma cannot prevent every conflict: different plugin versions or settings, templates that insert the current time or random values, and concurrent manual edits can still produce different files. Avoiding simultaneous use substantially reduces those risks.
+Current Prisma versions derive recurring-series and integration-event identities from synchronized inputs, so equivalent automatic writes converge. Conflicts can still occur when plugin versions or settings differ, templates insert the current time or random values, or notes are edited concurrently. Avoiding simultaneous use substantially reduces those risks; if you see them during concurrent use, change the other devices to Reader.
 
 ## What to be aware of
 
