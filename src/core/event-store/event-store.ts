@@ -422,9 +422,11 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 
 		const now = DateTime.now();
 		const nowIso = now.toISO({ suppressMilliseconds: true, includeOffset: false });
-		// All-day events are past only after the end of that day (23:59:59),
-		// matching the indexer's markPastEventAsDone logic
-		const endOfTodayIso = now.endOf("day").toISO({ suppressMilliseconds: true, includeOffset: false });
+		// An all-day event's `start` is midnight of its day, so it is past once
+		// its day is over — i.e. it started before today's midnight. Comparing
+		// against the *end* of today marked today's all-day events done at 00:00,
+		// disagreeing with the indexer path (`isEventPastFromFrontmatter`).
+		const startOfTodayIso = now.startOf("day").toISO({ suppressMilliseconds: true, includeOffset: false });
 		const doneValue = this.settings.doneValue;
 		const minimizedFilePath = MinimizedModalManager.getState()?.filePath ?? null;
 
@@ -435,7 +437,7 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 			// Skip events actively being tracked by the stopwatch
 			if (event.ref.filePath === minimizedFilePath) continue;
 
-			const isPast = isTimedEvent(event) ? event.end < nowIso : event.start < endOfTodayIso;
+			const isPast = isTimedEvent(event) ? event.end < nowIso : event.start < startOfTodayIso;
 			if (!isPast) continue;
 
 			void this.eventSource.markFileAsDone(event.ref.filePath);
