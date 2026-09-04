@@ -76,10 +76,12 @@ token does not reveal the original name.
 ```
 
 In other words: the support recipient can see that an index operation failed, that the note is three
-folders deep, that it is a Markdown file with a heading, which property names and value types were
-involved, and that plugin configuration was touched. They cannot see your Windows or macOS account
-name, vault location, folder names, note title, heading, property values, configuration profile, or
-credentials. The same rules apply to Windows drive paths, macOS volume paths, and network shares.
+folders deep, that it is a Markdown file with a heading, and which property names and value types
+were involved. They can also see only the structural `.obsidian` marker, which says that a plugin
+configuration path was involved; its plugin name, profile, filename, and values are all tokenized.
+They cannot see your Windows or macOS account name, vault location, folder names, note title,
+heading, property values, configuration profile, or credentials. The same rules apply to Windows
+drive paths, macOS volume paths, and network shares.
 
 ## Including full detail
 
