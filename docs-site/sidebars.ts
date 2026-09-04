@@ -146,6 +146,7 @@ const sidebars: SidebarsConfig = {
 		},
 		"faq",
 		"troubleshooting",
+		"privacy",
 		"contributing",
 		"support",
 		"changelog",

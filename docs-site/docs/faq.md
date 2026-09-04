@@ -36,6 +36,8 @@ See the [Quick Start guide](/quickstart) for detailed instructions on opening yo
 
 **No.** Prisma Calendar does not include any client-side telemetry or analytics. No vault content, file names, note content, or personal data from your Obsidian vault is ever transmitted. Your data is 100% yours and stays local.
 
+Diagnostics you choose to share (a log excerpt, a debug report, a bug report) are redacted first and never sent without your explicit action — see [Privacy & diagnostics](./privacy).
+
 </details>
 
 <details>

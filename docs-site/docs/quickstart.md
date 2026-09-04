@@ -2,6 +2,8 @@
 
 👉 [Install the plugin](installation) → follow this guide → start using Prisma Calendar in minutes.
 
+Prisma is local-first. If you want to understand what diagnostics contain before you ever need support, read [Privacy & diagnostics](./privacy).
+
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <iframe
     width="100%"

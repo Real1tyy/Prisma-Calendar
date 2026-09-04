@@ -185,3 +185,5 @@ This ensures the template is applied atomically when Prisma creates the event fi
 ## Still stuck?
 
 If none of the above fixes your issue, I'm happy to help — [open a GitHub issue](https://github.com/Real1tyy/Prisma-Calendar/issues/new/choose) with steps to reproduce, or [send me your feedback](https://matejvavroproductivity.com/feedback?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=troubleshooting&utm_content=feedback).
+
+Any diagnostics you attach are redacted before you share them and never leave your device on their own — see [Privacy & diagnostics](./privacy) for exactly what they contain.
