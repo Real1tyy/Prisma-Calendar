@@ -318,7 +318,7 @@ I regularly publish update videos, and every change is documented in the [change
 
 <br/>
 
-Prisma is 100% local-first. Your notes stay in your vault — nothing is uploaded, synced to my servers, or shared with anyone. There is zero client-side telemetry. The only server communication is Pro license verification, and if you use the free version, no data leaves your machine at all.
+Prisma is local-first. Your notes stay in your vault — no vault content, file names, or note content is uploaded or synced to my servers. There is no passive client-side telemetry. Server communication is limited to Pro license verification and ratings you explicitly submit through **General → Review**.
 
 </details>
 
@@ -409,7 +409,7 @@ Prisma Calendar is developed by [Matej Vavro](https://matejvavroproductivity.com
 
 ## Privacy & Telemetry
 
-Prisma Calendar **does not include any client-side telemetry or analytics** — no vault content, file names, or personal data is ever transmitted. The only server communication happens during Pro license verification, which sends basic device and version info for activation seat management. **If you only use the free features, no data is collected at all.**
+Prisma Calendar **does not include passive client-side telemetry or analytics** — no vault content, file names, or note content is transmitted. Server communication is limited to Pro license verification, which sends basic device and version information for activation seat management, and ratings you explicitly submit through **General → Review**. See [Rate & Review](./configuration/general.md#rate--review) for the exact submission fields and license-key choice.
 
 [Privacy Policy](https://matejvavroproductivity.com/privacy/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=intro&utm_content=privacy) · [Terms of Service](https://matejvavroproductivity.com/terms/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=intro&utm_content=terms) · [Legal Notice](https://matejvavroproductivity.com/legal/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=intro&utm_content=legal)
 

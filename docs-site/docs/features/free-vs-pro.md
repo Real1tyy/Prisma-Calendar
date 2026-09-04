@@ -113,10 +113,10 @@ Your license covers up to 5 devices. Each vault counts as one device. To free a 
 
 ### Does Prisma Calendar collect any data from my vault?
 
-**No.** Prisma Calendar does not include any client-side telemetry or analytics. No vault content, file names, note content, or personal data from your Obsidian vault is ever transmitted. Your data is 100% yours and stays local.
+**No.** Prisma Calendar does not include passive client-side telemetry or analytics. No vault content, file names, or note content is transmitted. Your calendar data stays local.
 
 ### What data is collected for Pro license verification?
 
-Server-side telemetry is collected **exclusively** during license verification requests. When the plugin contacts the license server, only the following data is transmitted: license key, plugin version, Obsidian version, operating system/platform, device identifier (a locally generated unique ID), and device name. This data is used solely for license validation, activation seat management (up to 5 devices), compatibility monitoring, and abuse prevention. **If you only use the free features, no telemetry data is collected at all.**
+License verification transmits the license key, plugin version, Obsidian version, operating system/platform, device identifier (a locally generated unique ID), and device name. This data is used for license validation, activation seat management (up to 5 devices), compatibility monitoring, and abuse prevention. Separately, the optional **General → Review** action sends only the fields listed in [Rate & Review](../configuration/general.md#rate--review); nothing is sent unless you press **Submit**.
 
 For full details, see the [Privacy Policy](https://matejvavroproductivity.com/privacy/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=content&utm_content=free-vs-pro-privacy), [Terms of Service](https://matejvavroproductivity.com/terms/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=content&utm_content=free-vs-pro-terms), and [Legal Notice](https://matejvavroproductivity.com/legal/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=content&utm_content=free-vs-pro-legal).

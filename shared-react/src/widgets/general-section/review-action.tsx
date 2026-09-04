@@ -31,6 +31,18 @@ interface ReviewActionProps {
 	buttonTestId?: string | undefined;
 }
 
+async function getAttributableLicenseKey(licenseManager: LicenseManager | undefined): Promise<string | null> {
+	if (licenseManager?.isPro !== true) return null;
+	try {
+		return (await licenseManager.getLicenseKey()) || null;
+	} catch {
+		// Secret storage must never be able to block the universal Review flow.
+		// A failed read degrades to an anonymous submission without exposing the
+		// secret name, key, or storage error.
+		return null;
+	}
+}
+
 /**
  * The universal "leave a rating" row on the General surface. Deliberately
  * button-initiated with no timed prompt — a nag would cost more goodwill than
@@ -51,8 +63,7 @@ export const ReviewAction = memo(function ReviewAction({
 		async (submission: ReviewSubmission, includeLicenseKey: boolean): Promise<SubmissionResult> => {
 			// Re-check entitlement and the secret at send time. If either changed
 			// while the modal was open, the key stays on the device.
-			const licenseKey =
-				includeLicenseKey && licenseManager?.isPro === true ? await licenseManager.getLicenseKey() : null;
+			const licenseKey = includeLicenseKey ? await getAttributableLicenseKey(licenseManager) : null;
 			const context: SubmissionContext = {
 				pluginId: slug,
 				pluginVersion,
@@ -69,7 +80,7 @@ export const ReviewAction = memo(function ReviewAction({
 	const openReview = useCallback(async () => {
 		// Reading the secret is asynchronous. The opt-in only appears when both
 		// the verified entitlement and an entered key exist.
-		const licenseKey = licenseManager?.isPro === true ? await licenseManager.getLicenseKey() : null;
+		const licenseKey = await getAttributableLicenseKey(licenseManager);
 		showReviewReactModal(app, {
 			cssPrefix,
 			pluginDisplayName,
