@@ -204,8 +204,8 @@ const MultiDeviceHelp = memo(function MultiDeviceHelp() {
 					different property names, property order or done values produce different files.
 				</li>
 				<li>
-					<strong>If conflicts appear, nominate one Writer</strong> — usually the device where you create most things — and
-					use Reader mode on other devices that may be open at the same time.
+					<strong>If conflicts appear, nominate one Writer</strong> — usually the device where you create most things —
+					and use Reader mode on other devices that may be open at the same time.
 				</li>
 			</ul>
 			<p>

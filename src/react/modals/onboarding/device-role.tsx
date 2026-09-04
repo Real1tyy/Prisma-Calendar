@@ -15,8 +15,8 @@ export const DeviceRoleController = memo(function DeviceRoleController({ onSelec
 			<h2>Choose this device's role</h2>
 			<p>
 				Choose Writer if this is your only device. You can also use Writer on every device when you do not keep the same
-				vault open simultaneously. If concurrent use causes conflicts, keep one primary Writer and make the other devices
-				Readers.
+				vault open simultaneously. If concurrent use causes conflicts, keep one primary Writer and make the other
+				devices Readers.
 			</p>
 			<div className={cls("first-launch-mode-grid")}>
 				<section className={cls("first-launch-mode-card")}>
