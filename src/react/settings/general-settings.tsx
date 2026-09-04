@@ -174,7 +174,7 @@ const MultiDeviceHelp = memo(function MultiDeviceHelp() {
 	return (
 		<HelpBox label="Using several devices" slug="multi-device">
 			<p>
-				Prisma does not coordinate devices that have the same vault open concurrently. Current automatic writes,
+				Prisma cannot prevent every conflict when devices have the same vault open concurrently. Current automatic writes,
 				including recurring-event and integration IDs, are designed to converge. Different settings, versions, or
 				non-deterministic templates can still produce conflicts. Use these safeguards:
 			</p>

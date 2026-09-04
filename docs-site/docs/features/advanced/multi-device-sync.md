@@ -35,7 +35,7 @@ On first setup Prisma asks whether the device is a **Writer** or **Reader**. Nom
 
 The choice lives in browser-local storage, never in the vault. Closing the prompt leaves the choice unresolved and uses safe Reader behavior for that session; Prisma asks again next startup and shows a warning under **Settings → General**.
 
-Current Prisma versions derive recurring-series and integration-event identities from synchronized inputs, so equivalent automatic writes converge. A single Writer remains useful because devices cannot coordinate: different plugin versions or settings, templates that insert the current time or random values, and concurrent manual edits can still produce different files. Avoiding simultaneous use substantially reduces those risks.
+Current Prisma versions derive recurring-series and integration-event identities from synchronized inputs, so equivalent automatic writes converge. A single Writer remains useful because Prisma cannot prevent every conflict: different plugin versions or settings, templates that insert the current time or random values, and concurrent manual edits can still produce different files. Avoiding simultaneous use substantially reduces those risks.
 
 ## What to be aware of
 
