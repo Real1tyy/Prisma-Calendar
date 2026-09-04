@@ -117,6 +117,51 @@ export class CreateRowCommand<TData> implements CommandWithResult<VaultRow<TData
 	}
 }
 
+/**
+ * Decides create-or-update at execution time, not at enqueue time. The
+ * command manager runs commands one at a time, so the existence check and
+ * the write it chooses are one atomic step: two concurrent upserts of an
+ * absent row become one create followed by one update, never two creates
+ * with the second rejected.
+ */
+export class UpsertRowCommand<TData> extends SnapshotRowCommand<TData> {
+	private created = false;
+
+	constructor(
+		private readonly insert: InsertVaultRow<TData>,
+		ops: VaultTableOps<TData>
+	) {
+		super(insert.fileName, ops);
+	}
+
+	protected async doExecute(): Promise<void> {
+		if (this.snapshot) {
+			this.result = await this.ops.update(this.key, this.insert.data);
+			return;
+		}
+		this.result = await this.ops.create(this.insert);
+		this.created = true;
+	}
+
+	override async undo(): Promise<void> {
+		if (this.created) {
+			await this.ops.delete(this.key);
+			this.created = false;
+			return;
+		}
+		await super.undo();
+	}
+
+	override canUndo(): boolean {
+		return this.created ? this.ops.has(this.key) : super.canUndo();
+	}
+
+	// Reports what it actually did, so the undo label names the write being reverted.
+	getType(): string {
+		return this.created ? "vault-table:create" : "vault-table:update";
+	}
+}
+
 export class UpdateRowCommand<TData> extends SnapshotRowCommand<TData> {
 	constructor(
 		key: string,

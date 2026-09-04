@@ -42,6 +42,7 @@ import {
 	ReplaceRowCommand,
 	UpdateContentRowCommand,
 	UpdateRowCommand,
+	UpsertRowCommand,
 	type CommandWithResult,
 	type VaultTableOps,
 } from "./vault-table-commands";
@@ -434,11 +435,8 @@ export class VaultTable<
 	}
 
 	async upsert(insert: InsertVaultRow<TData>): Promise<VaultRow<TData>> {
-		const existing = this.rowByFileName.get(insert.fileName);
-		if (existing) {
-			return this.update(insert.fileName, insert.data);
-		}
-		return this.create(insert);
+		this.assertWritable("upsert");
+		return this.executeWithHistory(new UpsertRowCommand(insert, this.ops), () => this.doUpsert(insert));
 	}
 
 	async delete(key: string): Promise<void> {
@@ -530,6 +528,14 @@ export class VaultTable<
 
 	private doDelete(key: string): Promise<void> {
 		return this.serializeRowWrite(key, () => this.deleteRow(key));
+	}
+
+	// The existence check runs inside the row's serialized section, so two
+	// concurrent upserts of an absent row are one create then one update.
+	private doUpsert(insert: InsertVaultRow<TData>): Promise<VaultRow<TData>> {
+		return this.serializeRowWrite(insert.fileName, () =>
+			this.rowByFileName.has(insert.fileName) ? this.updateRow(insert.fileName, insert.data) : this.createRow(insert)
+		);
 	}
 
 	private doRestoreFile(filePath: string, rawContent: string, data: TData, bodyContent: string): Promise<void> {
