@@ -1,7 +1,5 @@
 # Quick Start
 
-import DemoVideo from "@site/src/components/DemoVideo";
-
 👉 [Install the plugin](installation) → follow this guide → start using Prisma Calendar in minutes.
 
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
@@ -121,8 +119,6 @@ Once setup is complete, open your calendar in two ways:
 - **Command palette** — press `Ctrl/Cmd + P`, type `Prisma Calendar: Open`, and select your planning system.
 
 **Tip:** assign a hotkey via Settings → Hotkeys → search "Prisma Calendar: Open" for instant access.
-
-<DemoVideo id="calendar-overview" caption="Open the calendar, create an event, and switch views" />
 
 ---
 
