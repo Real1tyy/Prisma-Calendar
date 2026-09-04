@@ -14,8 +14,8 @@ export const DeviceRoleController = memo(function DeviceRoleController({ onSelec
 		<div className={cls("device-role-content")}>
 			<h2>Choose this device's role</h2>
 			<p>
-				Prisma cannot prevent every conflict when devices have the same vault open at the same time. If you use a file-sync
-				tool, choose one primary Writer and make concurrently open devices Readers.
+				Prisma cannot prevent every conflict when devices have the same vault open at the same time. If you use a
+				file-sync tool, choose one primary Writer and make concurrently open devices Readers.
 			</p>
 			<div className={cls("first-launch-mode-grid")}>
 				<section className={cls("first-launch-mode-card")}>

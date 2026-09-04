@@ -20,11 +20,11 @@ import { buildWhatsNewConfig } from "../../core/whats-new-config";
 import type CustomCalendarPlugin from "../../main";
 import { CustomCalendarSettingsSchema, SingleCalendarConfigSchema } from "../../types/settings";
 import { PRISMA_NON_TRANSFERABLE_SETTINGS, PRISMA_SETTINGS_TRANSFER_FILENAME } from "../../utils/settings-transfer";
+import { openDeviceRoleModal } from "../modals";
 import { HelpBox } from "./_help-box";
 import { PRISMA_SETTINGS_TEST_ID_PREFIX, PrismaSection } from "./_section";
 import { PRISMA_HELP_CENTER } from "./help-content";
 import { ProUpgradeBanner } from "./pro-upgrade-banner";
-import { openDeviceRoleModal } from "../modals";
 
 const SHAPE = SingleCalendarConfigSchema.shape;
 const MAIN_SHAPE = CustomCalendarSettingsSchema.shape;
