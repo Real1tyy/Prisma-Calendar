@@ -8783,6 +8783,11 @@ div.vis-tooltip {
   margin-top: 0.4rem;
 }
 
+.prisma-device-role-docs-link {
+  display: inline-block;
+  margin-top: 0.5rem;
+}
+
 .prisma-device-role-footnote {
   color: var(--text-muted);
   font-size: var(--font-ui-small);

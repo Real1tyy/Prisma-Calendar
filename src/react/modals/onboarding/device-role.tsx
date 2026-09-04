@@ -1,8 +1,8 @@
-import { Button, openReactModal } from "@real1ty/obsidian-plugins-react";
+import { Button, openReactModal, OutboundLink } from "@real1ty/obsidian-plugins-react";
 import type { App } from "obsidian";
 import { memo } from "react";
 
-import { cls, CSS_PREFIX, tid } from "../../../constants";
+import { cls, CSS_PREFIX, docsUrl, tid } from "../../../constants";
 import type { DeviceRole } from "../../../core/device-role-store";
 
 export interface DeviceRoleControllerProps {
@@ -45,6 +45,9 @@ export const DeviceRoleController = memo(function DeviceRoleController({ onSelec
 					occur when devices use different settings or versions, templates insert device-specific values, or the same
 					note is edited concurrently. The risk is substantially reduced when the vault is not open on several devices.
 				</p>
+				<OutboundLink href={docsUrl("/features/advanced/multi-device-sync")} className={cls("device-role-docs-link")}>
+					Multiple devices and sync
+				</OutboundLink>
 			</div>
 			<p className={cls("device-role-footnote")}>
 				You can change this later in Settings → General. Closing this window keeps Prisma in safe Reader mode and asks
