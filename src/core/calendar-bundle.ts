@@ -153,6 +153,10 @@ export class CalendarBundle {
 
 		this.subscriptions.push(
 			this.mainSettingsStore.settings$.subscribe(() => {
+				// Bundle construction happens before first-launch device-role onboarding so
+				// Obsidian can restore registered views. Do not arm automatic sync until
+				// initialize() runs after that role prompt resolves.
+				if (this.initPromise === null) return;
 				this.startCalDAVAutoSync();
 				this.startICSAutoSync();
 			}),
