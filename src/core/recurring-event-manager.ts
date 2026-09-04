@@ -442,12 +442,11 @@ export class RecurringEventManager extends DebouncedNotifier {
 						// trashes replicated into no instance at all.
 						const loser =
 							pickCanonicalDuplicate([existing.filePath, filePath]) === filePath ? existing.filePath : filePath;
-						if (loser === filePath) {
-							this.trashDuplicateInstance(filePath, rruleId, dateKey);
-							return;
-						}
+						this.trashDuplicateInstance(loser, rruleId, dateKey);
+						// A losing newcomer was never registered, so there is nothing to
+						// unregister; a losing incumbent gives up its slot to the newcomer.
+						if (loser === filePath) return;
 						this.instanceFileToRRuleId.delete(existing.filePath);
-						this.trashDuplicateInstance(existing.filePath, rruleId, dateKey);
 					}
 
 					recurringData.physicalInstances.set(dateKey, {
