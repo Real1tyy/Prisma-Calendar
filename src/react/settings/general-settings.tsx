@@ -78,6 +78,8 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 	return (
 		<GeneralSection
 			slug="prisma-calendar"
+			pluginDisplayName="Prisma"
+			pluginVersion={plugin.manifest.version}
 			testIdPrefix={PRISMA_SETTINGS_TEST_ID_PREFIX}
 			license={{
 				enabled: true,
@@ -93,7 +95,6 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 				},
 			}}
 			help={{
-				pluginDisplayName: "Prisma",
 				documentationUrl: docsUrl(""),
 				faqUrl: docsUrl("/faq"),
 				troubleshootingUrl: docsUrl("/troubleshooting"),

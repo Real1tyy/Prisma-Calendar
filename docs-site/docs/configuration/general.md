@@ -169,3 +169,13 @@ The FAQ and troubleshooting tabs render the **actual documentation pages, bundle
 ### Changelog viewer
 
 Click **View changelog** to open the full changelog as a scrollable modal. Entries load in batches — click **Load more** to see older versions. The same modal appears automatically after each plugin update showing only the new changes.
+
+## Rate & Review
+
+Click **Review** to rate Prisma from inside Obsidian. Pick one to five stars, optionally add a few words, and hit **Submit** — the rating goes straight to me and shapes what gets built next.
+
+The button is the only way this ever comes up: Prisma never interrupts you with a rating prompt.
+
+**What gets sent:** your star rating, your written note if you left one, the plugin version, your Obsidian version, your platform (macOS, Windows, Linux, iOS, Android), a random id stored in this vault so duplicate submissions can be collapsed, and — if you have one — your license key, so that feedback from a licensed user can be recognised and followed up. Nothing else: no note or calendar content, no vault name, no name, no email. On the free tier no license key is sent, because there isn't one.
+
+If the submission can't reach the server — you're offline, or it's having a bad day — the modal says so and keeps everything you typed, so **Try again** resends it as-is.

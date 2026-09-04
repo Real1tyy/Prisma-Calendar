@@ -9,6 +9,7 @@ import { SettingCard, SettingHeading, SettingItem } from "../../primitives/layou
 import { SettingsTransferButtons, type SettingsTransferButtonsProps } from "../../settings/settings-transfer";
 import { testIdAttr } from "../../utils/test-id";
 import { LicenseSection } from "../license-section/license-section";
+import { ReviewAction } from "./review-action";
 
 // Every outbound link in the General surface is attributed to the same source +
 // medium so the only thing a consumer (or sub-section) varies is the per-link
@@ -28,8 +29,6 @@ interface ToggleableConfig {
 }
 
 export interface GeneralHelpConfig extends ToggleableConfig {
-	/** Short plugin name woven into the intro copy, e.g. `"Prisma"`. */
-	pluginDisplayName: string;
 	/** Documentation home URL (no UTM — the section appends it). */
 	documentationUrl: string;
 	/** Optional FAQ page URL. */
@@ -119,6 +118,10 @@ export interface GeneralSubSection {
 export interface GeneralSectionProps<T extends Record<string, unknown> = Record<string, unknown>> {
 	/** Plugin slug — drives `utm_campaign` for every outbound link. */
 	slug: PluginSlug;
+	/** Short plugin name woven into the help copy and the review prompt, e.g. `"Prisma"`. */
+	pluginDisplayName: string;
+	/** The plugin's `manifest.version`, stamped onto a submitted rating. */
+	pluginVersion: string;
 	/**
 	 * Stamped onto each sub-section's testid (`${testIdPrefix}help`,
 	 * `${testIdPrefix}changelog-btn`, …) and threaded into the settings-transfer
@@ -139,9 +142,8 @@ export interface GeneralSectionProps<T extends Record<string, unknown> = Record<
 	/** Universal sub-sections registered by other specs (logging, doctor). */
 	extraSections?: GeneralSubSection[] | undefined;
 	/**
-	 * Stable slot for cross-cutting action buttons (rating, feedback). The
-	 * container always renders so future specs can fill it without restructuring
-	 * this component.
+	 * Extra cross-cutting action rows, rendered under the universal Review row
+	 * that always occupies this container.
 	 */
 	actions?: ReactNode;
 	/** Plugin-specific sub-sections composed between license and the bottom rows. */
@@ -164,11 +166,13 @@ function stripToggle<T extends Record<string, unknown>>(
 function HelpAndSupport({
 	config,
 	slug,
+	pluginDisplayName,
 	testId,
 	buttonTestId,
 }: {
 	config: GeneralHelpConfig;
 	slug: PluginSlug;
+	pluginDisplayName: string;
 	testId?: string | undefined;
 	buttonTestId?: string | undefined;
 }): ReactNode {
@@ -187,7 +191,7 @@ function HelpAndSupport({
 		};
 		showHelpCenterReactModal(app, {
 			cssPrefix,
-			pluginName: config.pluginDisplayName,
+			pluginName: pluginDisplayName,
 			slug,
 			links: {
 				documentation: config.documentationUrl,
@@ -196,14 +200,14 @@ function HelpAndSupport({
 			},
 			...content,
 		});
-	}, [app, cssPrefix, config, slug, helpCenter]);
+	}, [app, cssPrefix, config, pluginDisplayName, slug, helpCenter]);
 
 	return (
 		<>
 			<SettingHeading name="Help & support" />
 			<SettingCard testId={testId}>
 				<p>
-					{`Thanks for trying ${config.pluginDisplayName}. I hope it helps you stay productive and organized inside Obsidian.`}
+					{`Thanks for trying ${pluginDisplayName}. I hope it helps you stay productive and organized inside Obsidian.`}
 				</p>
 				<p>
 					Have a question? The{" "}
@@ -291,13 +295,16 @@ function ChangelogRow({
  * The consistent "General" settings surface every plugin mounts. Sub-sections
  * are independently toggleable via discrete, typed config objects; the universal
  * three (help, changelog, settings transfer) render by default while the license
- * card is opt-in. Plugin-specific sub-sections compose via `children`; future
- * cross-cutting buttons mount in the `actions` slot; other specs register extra
+ * card is opt-in. Plugin-specific sub-sections compose via `children`; the
+ * universal Review row and any further cross-cutting buttons mount in the
+ * `actions` container; other specs register extra
  * universal sub-sections via `extraSections`. Every outbound link is attributed
  * through `buildUtmUrl` internally so no consumer hand-builds a UTM string.
  */
 function GeneralSectionInner<T extends Record<string, unknown>>({
 	slug,
+	pluginDisplayName,
+	pluginVersion,
 	testIdPrefix,
 	help,
 	changelog,
@@ -342,14 +349,30 @@ function GeneralSectionInner<T extends Record<string, unknown>>({
 			)}
 
 			{isOn(help, true) && help !== undefined && (
-				<HelpAndSupport config={help} slug={slug} testId={tid("help")} buttonTestId={tid("help-center-btn")} />
+				<HelpAndSupport
+					config={help}
+					slug={slug}
+					pluginDisplayName={pluginDisplayName}
+					testId={tid("help")}
+					buttonTestId={tid("help-center-btn")}
+				/>
 			)}
 
 			{isOn(changelog, true) && changelog !== undefined && (
 				<ChangelogRow config={changelog} fieldTestId={tid("field-changelog")} buttonTestId={tid("changelog-btn")} />
 			)}
 
-			<div {...testIdAttr(tid("general-actions"))}>{actions}</div>
+			<div {...testIdAttr(tid("general-actions"))}>
+				<ReviewAction
+					slug={slug}
+					pluginDisplayName={pluginDisplayName}
+					pluginVersion={pluginVersion}
+					licenseManager={license?.licenseManager}
+					fieldTestId={tid("field-review")}
+					buttonTestId={tid("review-btn")}
+				/>
+				{actions}
+			</div>
 		</>
 	);
 }
