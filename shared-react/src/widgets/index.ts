@@ -5,6 +5,7 @@ export * from "./manager-list";
 export * from "./modal-form";
 export * from "./mount-imperative";
 export * from "./pie-chart";
+export * from "./privacy-disclaimer";
 export * from "./property-order-table";
 export * from "./property-row";
 export * from "./update-badge";

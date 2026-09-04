@@ -1,5 +1,6 @@
 import { Subject, type Observable } from "rxjs";
 
+import { scrubSecrets } from "./redact";
 import { RingBuffer } from "./ring-buffer";
 import { stringifyLogData } from "./serialize";
 import { LOG_LEVEL_SEVERITY, type LogChange, type LogEntry, type LogFilter, type LogLevel } from "./types";
@@ -131,7 +132,8 @@ export class LogService {
 				level,
 				scope,
 				message,
-				...(data === undefined ? {} : { data }),
+				// Never let a credential into the buffer — see [[decision-observability-privacy-posture]].
+				...(data === undefined ? {} : { data: scrubSecrets(data) }),
 			};
 			this.buffer.push({ entry });
 			this.changes.next({ type: "append", entry });
