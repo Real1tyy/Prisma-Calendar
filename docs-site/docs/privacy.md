@@ -16,6 +16,18 @@ Only two things ever contact a server on their own, and both are documented wher
 
 Everything else — a log excerpt, a debug report, a bug report — leaves your device **only when you copy or send it yourself**. Nothing is sent automatically, and you can read exactly what is attached before it goes anywhere.
 
+## What a feedback report contains
+
+**Settings → General → Send feedback** posts a report only when you click Submit. It contains exactly this, and nothing else:
+
+| Always | Only if you choose it |
+| --- | --- |
+| The kind of report (bug, feature, question, feedback) and the description you typed | The redacted diagnostic bundle, when **Include debug info** is ticked — recent warnings and errors plus the last fifteen minutes of activity |
+| The plugin version, your Obsidian version, and your platform (`windows`, `macos`, `linux`, `android`, `ios`) | Screenshots you attach, up to three |
+| An anonymous, vault-local id so a duplicate submission can be collapsed | |
+
+Your **license key is never attached to a report**, even on a Pro install — unlike a rating, a report is anonymous. Neither are your name, email, vault name, note contents, or settings. Expand **Review what's attached** in the modal to read the bundle before you send it.
+
 ## What diagnostics contain
 
 Diagnostics are high-level and about the plugin's own behaviour: which feature ran, what it decided, and any error it hit. They are not a copy of your notes. Before you see or share them, they are **anonymized and redacted**:

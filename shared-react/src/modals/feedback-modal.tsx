@@ -87,6 +87,7 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 	const [type, setType] = useState<FeedbackType>("bug");
 	const [text, setText] = useState("");
 	const [includeDebug, setIncludeDebug] = useState(true);
+	const [fullDetail, setFullDetail] = useState(false);
 	const [screenshots, setScreenshots] = useState<AttachedScreenshot[]>([]);
 	const [phase, setPhase] = useState<Phase>("form");
 	const [error, setError] = useState<string | null>(null);
@@ -166,6 +167,7 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 				text,
 				...(bundle !== null ? { debugBundle: bundle } : {}),
 				screenshots,
+				fullDetail,
 			})
 		);
 
@@ -178,7 +180,7 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 		// the user nothing, so "Try again" resubmits exactly what they assembled.
 		setPhase("form");
 		setError(result.message);
-	}, [bundle, screenshots, submit, text, type]);
+	}, [bundle, fullDetail, screenshots, submit, text, type]);
 
 	if (phase === "sent") {
 		return (
@@ -239,7 +241,7 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 				<details data-testid={tid("bundle-details")}>
 					<summary className={cls("attach-hint")}>Review what's attached</summary>
 					<pre className={cls("bundle-preview")} data-testid={tid("bundle-preview")}>
-						{serializeForExport(bundle)}
+						{serializeForExport(bundle, { fullDetail })}
 					</pre>
 				</details>
 			)}
@@ -286,7 +288,16 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 				</p>
 			)}
 
-			{privacyUrl !== undefined && <PrivacyDisclaimer docsUrl={privacyUrl} variant="inline" testId={tid("privacy")} />}
+			{privacyUrl !== undefined && (
+				<PrivacyDisclaimer
+					docsUrl={privacyUrl}
+					variant="inline"
+					// The switch only makes sense next to something that is actually
+					// attached — with the bundle off there is nothing to detail.
+					{...(bundle !== null ? { fullDetail, onFullDetailChange: setFullDetail } : {})}
+					testId={tid("privacy")}
+				/>
+			)}
 
 			{error !== null && (
 				<p className={cls("error")} role="alert" data-testid={tid("error")}>

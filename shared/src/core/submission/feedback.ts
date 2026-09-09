@@ -57,6 +57,8 @@ export interface FeedbackDraft {
 	text: string;
 	debugBundle?: DebugBundle | undefined;
 	screenshots?: readonly ScreenshotAttachment[] | undefined;
+	/** The user's explicit "share real names with someone I trust" choice. Secrets go either way. */
+	fullDetail?: boolean | undefined;
 }
 
 /**
@@ -68,7 +70,13 @@ export interface FeedbackDraft {
  * loses anything credential-shaped, and a screenshot arrives stripped of the
  * file name it was attached under. See [[decision-observability-privacy-posture]].
  */
-export function buildFeedbackSubmission({ type, text, debugBundle, screenshots }: FeedbackDraft): FeedbackSubmission {
+export function buildFeedbackSubmission({
+	type,
+	text,
+	debugBundle,
+	screenshots,
+	fullDetail = false,
+}: FeedbackDraft): FeedbackSubmission {
 	const trimmed = text.trim().slice(0, FEEDBACK_MAX_TEXT_CHARS);
 	return {
 		type,
@@ -76,7 +84,7 @@ export function buildFeedbackSubmission({ type, text, debugBundle, screenshots }
 		// (secrets) is not optional and applies anyway.
 		text: redactText(trimmed, { fullDetail: true }),
 		// `redact` preserves JSON-ish structure, so the bundle keeps its shape.
-		...(debugBundle !== undefined ? { debugBundle: redact(debugBundle) as DebugBundle } : {}),
+		...(debugBundle !== undefined ? { debugBundle: redact(debugBundle, { fullDetail }) as DebugBundle } : {}),
 		...(screenshots !== undefined && screenshots.length > 0
 			? {
 					screenshots: screenshots.map(({ mimeType, dataBase64, byteSize }) => ({
