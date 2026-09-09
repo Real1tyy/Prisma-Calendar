@@ -19,6 +19,7 @@ import { showReactModal } from "../show-react-modal";
 import { cx } from "../utils/cx";
 import { PrivacyDisclaimer } from "../widgets/privacy-disclaimer/privacy-disclaimer";
 import { buildFeedbackStyles } from "./feedback-modal.styles";
+import { ImageLightbox } from "./image-lightbox";
 
 const TYPE_LABELS: Record<FeedbackType, string> = {
 	bug: "Bug report",
@@ -27,9 +28,16 @@ const TYPE_LABELS: Record<FeedbackType, string> = {
 };
 
 const TYPE_PLACEHOLDERS: Record<FeedbackType, string> = {
-	bug: "What did you do, what happened, and what did you expect instead?",
-	feature: "What would you like to be able to do, and what would it let you get done?",
-	general: "What's on your mind?",
+	bug: "What were you doing, what happened, and what did you expect instead? Steps that reproduce it help most.",
+	feature: "What would you like to be able to do — and what would it let you get done?",
+	general: "What's working, what isn't, what would you change?",
+};
+
+/** One line under the title, telling the user what this form is for at all. */
+const TYPE_INTROS: Record<FeedbackType, string> = {
+	bug: "Tell me what went wrong. Reports go straight to me, with the context needed to track it down.",
+	feature: "Tell me what's missing. Requests shape what gets built next.",
+	general: "Tell me what you think. Every message is read.",
 };
 
 /** `form` collects, `sending` is in flight, `sent` is terminal — and terminal is what blocks a double submit. */
@@ -53,6 +61,10 @@ export interface FeedbackModalProps {
 
 /** Two pastes of the same clipboard image are indistinguishable, so the render key is minted, not derived. */
 type AttachedScreenshot = ScreenshotAttachment & { id: string };
+
+function dataUrlOf(shot: ScreenshotAttachment): string {
+	return `data:${shot.mimeType};base64,${shot.dataBase64}`;
+}
 
 /** Strips the `data:<mime>;base64,` prefix a `FileReader` result carries. */
 function base64Of(dataUrl: string): string {
@@ -91,6 +103,7 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 	const [includeLicenseKey, setIncludeLicenseKey] = useState(licenseAttributionAvailable);
 	const [fullDetail, setFullDetail] = useState(false);
 	const [screenshots, setScreenshots] = useState<AttachedScreenshot[]>([]);
+	const [preview, setPreview] = useState<AttachedScreenshot | null>(null);
 	const [phase, setPhase] = useState<Phase>("form");
 	const [error, setError] = useState<string | null>(null);
 	const [attachError, setAttachError] = useState<string | null>(null);
@@ -154,8 +167,13 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 
 	const removeScreenshot = useCallback((id: string) => {
 		setScreenshots((current) => current.filter((shot) => shot.id !== id));
+		// Removing the image being previewed would leave the lightbox showing
+		// something that is no longer attached.
+		setPreview((current) => (current?.id === id ? null : current));
 		setAttachError(null);
 	}, []);
+
+	const closePreview = useCallback(() => setPreview(null), []);
 
 	const handleSubmit = useCallback(async () => {
 		if (text.trim() === "" || inFlightRef.current) return;
@@ -189,9 +207,9 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 		return (
 			<div data-testid={tid("modal")}>
 				<div className={cls("thanks")} data-testid={tid("thanks")}>
-					<div className={cls("thanks-title")}>Thank you!</div>
+					<div className={cls("thanks-title")}>Sent — thank you</div>
 					<div className={cls("thanks-body")}>
-						{`It's on its way. Every report genuinely shapes what gets built into ${pluginDisplayName} next.`}
+						{`This is read by the person who builds ${pluginDisplayName}, and it shapes what gets worked on next. There is no reply to this form, so if you need an answer, ask on GitHub.`}
 					</div>
 					<Button variant="primary" onClick={onClose} testId={tid("close")}>
 						Close
@@ -203,6 +221,10 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 
 	return (
 		<div data-testid={tid("modal")} onPaste={handlePaste}>
+			<p className={cls("intro")} data-testid={tid("intro")}>
+				{TYPE_INTROS[type]}
+			</p>
+
 			<div role="radiogroup" aria-label="What kind of feedback" className={cls("types")} data-testid={tid("types")}>
 				{FEEDBACK_TYPES.map((value) => (
 					<button
@@ -236,7 +258,10 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 						onChange={(event) => setIncludeDebug(event.target.checked)}
 						data-testid={tid("include-debug")}
 					/>
-					<span>Include debug info — recent warnings, errors and the last few minutes of activity</span>
+					<span>
+						Include debug info — recent warnings, errors and the last few minutes of activity. This is what makes a bug
+						report actionable.
+					</span>
 				</label>
 			)}
 
@@ -254,7 +279,7 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 
 			{bundle !== null && (
 				<details data-testid={tid("bundle-details")}>
-					<summary className={cls("attach-hint")}>Review what's attached</summary>
+					<summary className={cls("disclosure")}>Review exactly what will be attached</summary>
 					<pre className={cls("bundle-preview")} data-testid={tid("bundle-preview")}>
 						{serializeForExport(bundle, { fullDetail })}
 					</pre>
@@ -265,7 +290,15 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 				<div className={cls("attachments")} data-testid={tid("attachments")}>
 					{screenshots.map((shot, index) => (
 						<div key={shot.id} className={cls("thumb")} data-testid={tid(`thumb-${index}`)}>
-							<img src={`data:${shot.mimeType};base64,${shot.dataBase64}`} alt={shot.name} />
+							<button
+								type="button"
+								className={cls("thumb-open")}
+								aria-label={`Preview ${shot.name}`}
+								onClick={() => setPreview(shot)}
+								data-testid={tid(`thumb-open-${index}`)}
+							>
+								<img src={dataUrlOf(shot)} alt={shot.name} />
+							</button>
 							<button
 								type="button"
 								className={cls("thumb-remove")}
@@ -284,7 +317,9 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 				<Button onClick={() => fileInputRef.current?.click()} testId={tid("attach")}>
 					Add screenshot
 				</Button>
-				<span className={cls("attach-hint")}>{`or paste one — up to ${FEEDBACK_MAX_SCREENSHOTS}`}</span>
+				<span
+					className={cls("attach-hint")}
+				>{`or paste an image from your clipboard — up to ${FEEDBACK_MAX_SCREENSHOTS}`}</span>
 				<input
 					ref={fileInputRef}
 					type="file"
@@ -319,6 +354,8 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 					{error}
 				</p>
 			)}
+
+			{preview !== null && <ImageLightbox src={dataUrlOf(preview)} label={preview.name} onClose={closePreview} />}
 
 			<div className={cls("actions")}>
 				<Button onClick={onClose} testId={tid("cancel")}>

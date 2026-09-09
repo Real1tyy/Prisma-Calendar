@@ -9,6 +9,8 @@ export type { FeedbackModalProps, ShowFeedbackModalConfig } from "./feedback-mod
 export { FeedbackModalContent, showFeedbackReactModal } from "./feedback-modal";
 export type { OpenFeedbackOptions } from "./open-feedback-modal";
 export { openFeedbackModal } from "./open-feedback-modal";
+export type { ImageLightboxProps } from "./image-lightbox";
+export { ImageLightbox } from "./image-lightbox";
 export type { ShowReactIconPickerOptions } from "./icon-picker-modal";
 export { showReactIconPicker } from "./icon-picker-modal";
 export type { ProgressModalConfig, ProgressModalHandle } from "./progress-modal";
