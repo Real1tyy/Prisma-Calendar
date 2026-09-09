@@ -11,6 +11,14 @@ export {
 	serializeForExport,
 } from "./redact";
 export { ConsoleSink, DEFAULT_CONSOLE_MIRROR_LEVEL, type ConsoleLike, type ConsoleSinkOptions } from "./console-sink";
+export {
+	buildDebugBundle,
+	DEBUG_BUNDLE_MAX_ENTRIES,
+	DEBUG_BUNDLE_WINDOW_MS,
+	type DebugBundle,
+	type DebugBundleInput,
+	type DebugEnvironment,
+} from "./debug-bundle";
 export { DEVICE_ID_LENGTH, resolveDeviceLogId, type DeviceLogIdOptions } from "./device-id";
 export {
 	FileSink,

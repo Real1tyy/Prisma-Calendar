@@ -1,3 +1,5 @@
+import type { DebugBundle } from "../logging/debug-bundle";
+
 export const SUBMISSION_API_BASE_URL = "https://api.matejvavroproductivity.com";
 
 /**
@@ -8,6 +10,7 @@ export const SUBMISSION_API_BASE_URL = "https://api.matejvavroproductivity.com";
  */
 export const SUBMISSION_ENDPOINTS = {
 	review: "/api/review",
+	feedback: "/api/feedback",
 } as const;
 
 export type SubmissionKind = keyof typeof SUBMISSION_ENDPOINTS;
@@ -20,8 +23,42 @@ export interface ReviewSubmission {
 	text?: string;
 }
 
+/**
+ * The four things a user can send. One route with a discriminator rather than
+ * four routes: the payload shape is identical and the server's triage is a
+ * column, not an endpoint ([[spec-in-app-feedback-and-bug-reports]]).
+ */
+export const FEEDBACK_TYPES = ["bug", "feature", "question", "general"] as const;
+
+export type FeedbackType = (typeof FEEDBACK_TYPES)[number];
+
+/** What the modal holds while the user is still deciding — the name labels the thumbnail. */
+export interface ScreenshotAttachment {
+	name: string;
+	mimeType: string;
+	/** Base64 image bytes, without the `data:` URL prefix. */
+	dataBase64: string;
+	byteSize: number;
+}
+
+/**
+ * What actually ships. The file name is dropped rather than redacted: it can be
+ * a full vault path or a note title, it tells us nothing the image doesn't, and
+ * a field that never leaves cannot leak.
+ */
+export type FeedbackScreenshot = Omit<ScreenshotAttachment, "name">;
+
+export interface FeedbackSubmission {
+	type: FeedbackType;
+	text: string;
+	/** Attached only when the user leaves "Include debug info" on. */
+	debugBundle?: DebugBundle;
+	screenshots?: FeedbackScreenshot[];
+}
+
 export interface SubmissionPayloads {
 	review: ReviewSubmission;
+	feedback: FeedbackSubmission;
 }
 
 /**

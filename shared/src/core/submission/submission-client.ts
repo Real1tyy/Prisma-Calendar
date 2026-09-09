@@ -34,6 +34,7 @@ const NETWORK_MESSAGE = "Couldn't reach the server. Check your connection and tr
  */
 const SUBMISSION_PAYLOAD_FIELDS: { readonly [K in SubmissionKind]: readonly (keyof SubmissionPayloads[K])[] } = {
 	review: ["rating", "text"],
+	feedback: ["type", "text", "debugBundle", "screenshots"],
 };
 
 const SUBMISSION_CONTEXT_FIELDS = [

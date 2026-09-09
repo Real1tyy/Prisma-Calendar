@@ -21,9 +21,11 @@ tools/wt-cli/
 # dist-info/*.json it has no business rewriting.
 **/.venv/
 
-# Harness + editor state under .claude/ (settings, the agenticd manifest, session data).
-# Machine-written JSON, byte-synced or tool-owned — not ours to restyle.
+# Harness + editor state under .claude/ (settings, session data) and .agentic/ (the
+# byte-synced manifest, telemetry, gate logs). Machine-written JSON, byte-synced or
+# tool-owned — not ours to restyle.
 .claude/
+.agentic/
 
 # Showrunner recording output (mp4 + poster + manifest.json), regenerated per run.
 tools/showrunner/out/
