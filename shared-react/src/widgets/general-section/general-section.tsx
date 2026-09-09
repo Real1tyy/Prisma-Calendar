@@ -421,6 +421,7 @@ function GeneralSectionInner<T extends Record<string, unknown>>({
 							: undefined
 					}
 					logService={logging?.service}
+					licenseManager={license?.licenseManager}
 					fieldTestId={tid("field-feedback")}
 					buttonTestId={tid("feedback-btn")}
 				/>

@@ -7,6 +7,8 @@ export type {
 export { FrontmatterPropagationModalContent, openFrontmatterPropagationModal } from "./frontmatter-propagation-modal";
 export type { FeedbackModalProps, ShowFeedbackModalConfig } from "./feedback-modal";
 export { FeedbackModalContent, showFeedbackReactModal } from "./feedback-modal";
+export type { OpenFeedbackOptions } from "./open-feedback-modal";
+export { openFeedbackModal } from "./open-feedback-modal";
 export type { ShowReactIconPickerOptions } from "./icon-picker-modal";
 export { showReactIconPicker } from "./icon-picker-modal";
 export type { ProgressModalConfig, ProgressModalHandle } from "./progress-modal";

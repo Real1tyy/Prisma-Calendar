@@ -140,6 +140,10 @@ export {
 	FrontmatterPropagationModalContent,
 	openFrontmatterPropagationModal,
 } from "./modals/frontmatter-propagation-modal";
+export type { FeedbackModalProps, ShowFeedbackModalConfig } from "./modals/feedback-modal";
+export { FeedbackModalContent, showFeedbackReactModal } from "./modals/feedback-modal";
+export type { OpenFeedbackOptions } from "./modals/open-feedback-modal";
+export { openFeedbackModal } from "./modals/open-feedback-modal";
 export type { ShowReactIconPickerOptions } from "./modals/icon-picker-modal";
 export { showReactIconPicker } from "./modals/icon-picker-modal";
 export type { ProgressModalConfig, ProgressModalHandle } from "./modals/progress-modal";

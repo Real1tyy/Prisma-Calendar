@@ -1,22 +1,9 @@
-import {
-	buildDebugBundle,
-	getOrCreateAnonymousClientId,
-	getPlatformId,
-	SubmissionClient,
-	type DebugBundle,
-	type DebugEnvironment,
-	type FeedbackSubmission,
-	type LogService,
-	type PluginSlug,
-	type SubmissionContext,
-	type SubmissionResult,
-} from "@real1ty/obsidian-plugins";
-import { apiVersion } from "obsidian";
-import { memo, useCallback, useMemo } from "react";
+import type { LicenseManager, LogService, PluginSlug } from "@real1ty/obsidian-plugins";
+import { memo, useCallback } from "react";
 
 import { useApp } from "../../contexts/app-context";
 import { useCssPrefix } from "../../contexts/theme-context";
-import { showFeedbackReactModal } from "../../modals/feedback-modal";
+import { openFeedbackModal } from "../../modals/open-feedback-modal";
 import { SettingItem } from "../../primitives/layout/setting-item";
 import { testIdAttr } from "../../utils/test-id";
 
@@ -28,6 +15,12 @@ interface FeedbackActionProps {
 	privacyUrl?: string | undefined;
 	/** The plugin's log buffer. Absent means there is no debug context to offer. */
 	logService?: LogService | undefined;
+	/**
+	 * Present whenever the plugin configures licensing — regardless of whether
+	 * the License card itself is shown. A licensed report can carry the key so
+	 * it can be attributed to the customer who sent it.
+	 */
+	licenseManager?: LicenseManager | undefined;
 	fieldTestId?: string | undefined;
 	buttonTestId?: string | undefined;
 }
@@ -36,9 +29,9 @@ interface FeedbackActionProps {
  * The universal "send feedback" row on the General surface — bug reports,
  * feature requests and general notes, all through one route.
  *
- * Deliberately anonymous: unlike a review, a report carries no license key, so
- * the payload is the description, the environment, and whatever the user chose
- * to attach ([[spec-in-app-feedback-and-bug-reports]]).
+ * Deliberately thin: the wiring lives in `openFeedbackModal` so this row and the
+ * plugin's hotkey-bindable command open exactly the same modal
+ * ([[spec-in-app-feedback-and-bug-reports]]).
  */
 export const FeedbackAction = memo(function FeedbackAction({
 	slug,
@@ -46,40 +39,25 @@ export const FeedbackAction = memo(function FeedbackAction({
 	pluginVersion,
 	privacyUrl,
 	logService,
+	licenseManager,
 	fieldTestId,
 	buttonTestId,
 }: FeedbackActionProps) {
 	const app = useApp();
 	const cssPrefix = useCssPrefix();
 
-	const environment: DebugEnvironment = useMemo(
-		() => ({ pluginId: slug, pluginVersion, obsidianVersion: apiVersion, platform: getPlatformId() }),
-		[slug, pluginVersion]
-	);
-
-	const captureDebugBundle = useCallback((): DebugBundle => {
-		// A user gesture, so reading the wall clock here is correct — the bundle
-		// is a snapshot of "now", not an automatic write.
-		return buildDebugBundle({ entries: logService?.snapshot() ?? [], environment, now: Date.now() });
-	}, [environment, logService]);
-
-	const submit = useCallback(
-		async (submission: FeedbackSubmission): Promise<SubmissionResult> => {
-			const context: SubmissionContext = { ...environment, clientId: getOrCreateAnonymousClientId(app) };
-			return new SubmissionClient(context).submit("feedback", submission);
-		},
-		[app, environment]
-	);
-
 	const openFeedback = useCallback(() => {
-		showFeedbackReactModal(app, {
-			cssPrefix,
+		void openFeedbackModal({
+			app,
+			slug,
 			pluginDisplayName,
+			pluginVersion,
+			cssPrefix,
 			privacyUrl,
-			...(logService !== undefined ? { captureDebugBundle } : {}),
-			submit,
+			logService,
+			licenseManager,
 		});
-	}, [app, captureDebugBundle, cssPrefix, logService, pluginDisplayName, privacyUrl, submit]);
+	}, [app, cssPrefix, licenseManager, logService, pluginDisplayName, pluginVersion, privacyUrl, slug]);
 
 	return (
 		<SettingItem

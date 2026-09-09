@@ -15,6 +15,7 @@ import { useApp } from "../../contexts/app-context";
 import { useCssPrefix } from "../../contexts/theme-context";
 import { showReviewReactModal } from "../../modals/review-modal";
 import { SettingItem } from "../../primitives/layout/setting-item";
+import { getAttributableLicenseKey } from "../../utils/license-attribution";
 import { testIdAttr } from "../../utils/test-id";
 
 interface ReviewActionProps {
@@ -29,18 +30,6 @@ interface ReviewActionProps {
 	licenseManager?: LicenseManager | undefined;
 	fieldTestId?: string | undefined;
 	buttonTestId?: string | undefined;
-}
-
-async function getAttributableLicenseKey(licenseManager: LicenseManager | undefined): Promise<string | null> {
-	if (licenseManager?.isPro !== true) return null;
-	try {
-		return (await licenseManager.getLicenseKey()) || null;
-	} catch {
-		// Secret storage must never be able to block the universal Review flow.
-		// A failed read degrades to an anonymous submission without exposing the
-		// secret name, key, or storage error.
-		return null;
-	}
 }
 
 /**

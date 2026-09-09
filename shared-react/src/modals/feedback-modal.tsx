@@ -44,8 +44,10 @@ export interface FeedbackModalProps {
 	 * then there is nothing to attach and the checkbox does not render.
 	 */
 	captureDebugBundle?: (() => DebugBundle) | undefined;
+	/** Whether this verified Pro install can attach its license key. */
+	licenseAttributionAvailable?: boolean | undefined;
 	/** Posts the assembled payload. Returns a typed result — it never throws. */
-	submit: (submission: FeedbackSubmission) => Promise<SubmissionResult>;
+	submit: (submission: FeedbackSubmission, includeLicenseKey: boolean) => Promise<SubmissionResult>;
 	onClose: () => void;
 }
 
@@ -78,6 +80,7 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 	pluginDisplayName,
 	privacyUrl,
 	captureDebugBundle,
+	licenseAttributionAvailable = false,
 	submit,
 	onClose,
 }: FeedbackModalProps) {
@@ -85,6 +88,7 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 	const [type, setType] = useState<FeedbackType>("bug");
 	const [text, setText] = useState("");
 	const [includeDebug, setIncludeDebug] = useState(true);
+	const [includeLicenseKey, setIncludeLicenseKey] = useState(licenseAttributionAvailable);
 	const [fullDetail, setFullDetail] = useState(false);
 	const [screenshots, setScreenshots] = useState<AttachedScreenshot[]>([]);
 	const [phase, setPhase] = useState<Phase>("form");
@@ -166,7 +170,8 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 				...(bundle !== null ? { debugBundle: bundle } : {}),
 				screenshots,
 				fullDetail,
-			})
+			}),
+			licenseAttributionAvailable && includeLicenseKey
 		);
 
 		inFlightRef.current = false;
@@ -178,7 +183,7 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 		// the user nothing, so "Try again" resubmits exactly what they assembled.
 		setPhase("form");
 		setError(result.message);
-	}, [bundle, fullDetail, screenshots, submit, text, type]);
+	}, [bundle, fullDetail, includeLicenseKey, licenseAttributionAvailable, screenshots, submit, text, type]);
 
 	if (phase === "sent") {
 		return (
@@ -232,6 +237,18 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 						data-testid={tid("include-debug")}
 					/>
 					<span>Include debug info — recent warnings, errors and the last few minutes of activity</span>
+				</label>
+			)}
+
+			{licenseAttributionAvailable && (
+				<label className={cls("option")}>
+					<input
+						type="checkbox"
+						checked={includeLicenseKey}
+						onChange={(event) => setIncludeLicenseKey(event.target.checked)}
+						data-testid={tid("include-license")}
+					/>
+					<span>Include my license key so this report can be linked to my Pro account</span>
 				</label>
 			)}
 
@@ -326,7 +343,8 @@ export interface ShowFeedbackModalConfig {
 	pluginDisplayName: string;
 	privacyUrl?: string | undefined;
 	captureDebugBundle?: (() => DebugBundle) | undefined;
-	submit: (submission: FeedbackSubmission) => Promise<SubmissionResult>;
+	licenseAttributionAvailable?: boolean | undefined;
+	submit: (submission: FeedbackSubmission, includeLicenseKey: boolean) => Promise<SubmissionResult>;
 }
 
 export function showFeedbackReactModal(app: App, config: ShowFeedbackModalConfig): void {
@@ -341,6 +359,7 @@ export function showFeedbackReactModal(app: App, config: ShowFeedbackModalConfig
 				pluginDisplayName={config.pluginDisplayName}
 				privacyUrl={config.privacyUrl}
 				captureDebugBundle={config.captureDebugBundle}
+				licenseAttributionAvailable={config.licenseAttributionAvailable}
 				submit={config.submit}
 				onClose={close}
 			/>
