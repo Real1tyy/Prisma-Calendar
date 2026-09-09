@@ -52,7 +52,12 @@ Open **Settings → Prisma Calendar → General** and click **Send feedback**. P
 
 There is also a **Prisma Calendar: Send feedback** command. Run it from the command palette, or assign it a hotkey under **Settings → Hotkeys**, to open the same form without leaving what you were doing — useful when the problem is on screen right now.
 
-Submissions are one-way, so this is the wrong place for a question you need answered: nothing comes back to the plugin. **Looking for an answer?** The [FAQ](./faq), [troubleshooting guide](./troubleshooting), and the in-app **Open help center** button next to this one are where questions are answered.
+Submissions are one-way, so this is the wrong place for a question you need answered: nothing comes back to the plugin.
+
+**Looking for an answer?** Start with the [FAQ](./faq), the [troubleshooting guide](./troubleshooting), or the in-app **Open help center** button next to this one. If none of them covers it, ask on GitHub, where I can reply and the answer stays visible for the next person with the same question:
+
+- **[GitHub Discussions](https://github.com/Real1tyy/Prisma-Calendar/discussions)** — for questions, setup help, and "how do I…" — the best place to ask.
+- **[GitHub Issues](https://github.com/Real1tyy/Prisma-Calendar/issues)** — for a bug or a feature request you want tracked. Search first; someone may have reported it already.
 
 **Reporting a bug.** A bug report arrives with **Include debug info** already ticked. That attaches the recent warnings and errors plus the last few minutes of the plugin's activity — the context needed to identify the cause without having to reproduce the problem first. Expand **Review what's attached** to read the exact bundle before you send it, or untick the box to send none of it. Everything in it is redacted — see [Privacy & diagnostics](./privacy) for what that means and what stays on your device.
 
@@ -62,7 +67,7 @@ If the send fails — you are offline, or the server is unreachable — the mess
 
 ### Other ways to reach me
 
-[Reach out through the feedback page](https://matejvavroproductivity.com/feedback?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=support&utm_content=feedback), or open an issue on GitHub.
+[Reach out through the feedback page](https://matejvavroproductivity.com/feedback?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=support&utm_content=feedback), start a [GitHub discussion](https://github.com/Real1tyy/Prisma-Calendar/discussions), or [open an issue](https://github.com/Real1tyy/Prisma-Calendar/issues/new/choose).
 
 ---
 
