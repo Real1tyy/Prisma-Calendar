@@ -44,11 +44,13 @@ If you'd like to support the development with a one-time or recurring donation, 
 
 ## Questions or Feedback?
 
-Have a question, hit a bug, or have an idea to make Prisma better? I'd love to hear from you. I read every message.
+Hit a bug, or have an idea to make Prisma better? I'd love to hear from you. I read every message.
 
 ### Send it from inside Obsidian
 
-Open **Settings → Prisma Calendar → General** and click **Send feedback**. Pick what you're sending — bug report, feature request, question, or general feedback — describe it, and hit Submit.
+Open **Settings → Prisma Calendar → General** and click **Send feedback**. Pick what you're sending — bug report, feature request, or general feedback — describe it, and hit Submit.
+
+Submissions are one-way, so this is the wrong place for a question you need answered: nothing comes back to the plugin. **Looking for an answer?** The [FAQ](./faq), [troubleshooting guide](./troubleshooting), and the in-app **Open help center** button next to this one are where questions are answered.
 
 **Reporting a bug.** A bug report arrives with **Include debug info** already ticked. That attaches the recent warnings and errors plus the last few minutes of the plugin's activity, which is usually the difference between a fix and a round of "can you try this?" emails. Expand **Review what's attached** to read the exact bundle before you send it, or untick the box to send none of it. Everything in it is redacted — see [Privacy & diagnostics](./privacy) for what that means and what stays on your device.
 

@@ -34,7 +34,7 @@ interface FeedbackActionProps {
 
 /**
  * The universal "send feedback" row on the General surface — bug reports,
- * feature requests, questions and general notes, all through one route.
+ * feature requests and general notes, all through one route.
  *
  * Deliberately anonymous: unlike a review, a report carries no license key, so
  * the payload is the description, the environment, and whatever the user chose
@@ -83,8 +83,8 @@ export const FeedbackAction = memo(function FeedbackAction({
 
 	return (
 		<SettingItem
-			name="Something broken, missing, or unclear?"
-			description="Report a bug, request a feature, or ask a question without leaving Obsidian. Bug reports can carry the diagnostic context that makes them fixable."
+			name="Something broken, or something missing?"
+			description="Report a bug or request a feature without leaving Obsidian. Bug reports can carry the diagnostic context that makes them fixable."
 			testId={fieldTestId}
 		>
 			<button type="button" onClick={openFeedback} {...testIdAttr(buttonTestId)}>

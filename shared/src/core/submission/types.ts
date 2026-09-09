@@ -24,11 +24,15 @@ export interface ReviewSubmission {
 }
 
 /**
- * The four things a user can send. One route with a discriminator rather than
- * four routes: the payload shape is identical and the server's triage is a
- * column, not an endpoint ([[spec-in-app-feedback-and-bug-reports]]).
+ * What a user can send. Deliberately not "question": submission is one-way, so
+ * a type that asks for an answer promises a reply we have no channel to send.
+ * Questions are routed to the docs and the Help Center instead.
+ *
+ * One route with a discriminator rather than three routes — the payload shape
+ * is identical and the server's triage is a column, not an endpoint
+ * ([[spec-in-app-feedback-and-bug-reports]]).
  */
-export const FEEDBACK_TYPES = ["bug", "feature", "question", "general"] as const;
+export const FEEDBACK_TYPES = ["bug", "feature", "general"] as const;
 
 export type FeedbackType = (typeof FEEDBACK_TYPES)[number];
 

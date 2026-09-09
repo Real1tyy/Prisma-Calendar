@@ -22,7 +22,7 @@ Everything else — a log excerpt, a debug report, a bug report — leaves your 
 
 | Always | Only if you choose it |
 | --- | --- |
-| The kind of report (bug, feature, question, feedback) and the description you typed | The redacted diagnostic bundle, when **Include debug info** is ticked — recent warnings and errors plus the last fifteen minutes of activity |
+| The kind of report (bug, feature, feedback) and the description you typed | The redacted diagnostic bundle, when **Include debug info** is ticked — recent warnings and errors plus the last fifteen minutes of activity |
 | The plugin version, your Obsidian version, and your platform (`windows`, `macos`, `linux`, `android`, `ios`) | Screenshots you attach, up to three |
 | An anonymous, vault-local id so a duplicate submission can be collapsed | |
 

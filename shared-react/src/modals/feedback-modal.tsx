@@ -23,14 +23,12 @@ import { buildFeedbackStyles } from "./feedback-modal.styles";
 const TYPE_LABELS: Record<FeedbackType, string> = {
 	bug: "Bug report",
 	feature: "Feature request",
-	question: "Question",
 	general: "Feedback",
 };
 
 const TYPE_PLACEHOLDERS: Record<FeedbackType, string> = {
 	bug: "What did you do, what happened, and what did you expect instead?",
 	feature: "What would you like to be able to do, and what would it let you get done?",
-	question: "What are you trying to figure out?",
 	general: "What's on your mind?",
 };
 
