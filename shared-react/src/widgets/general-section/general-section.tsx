@@ -1,4 +1,4 @@
-import { buildUtmUrl, type LicenseManager, type PluginSlug } from "@real1ty/obsidian-plugins";
+import { buildUtmUrl, type LicenseManager, type LogService, type PluginSlug } from "@real1ty/obsidian-plugins";
 import { memo, useCallback, type ReactNode } from "react";
 
 import { useApp } from "../../contexts/app-context";
@@ -11,6 +11,7 @@ import { SettingsTransferButtons, type SettingsTransferButtonsProps } from "../.
 import { testIdAttr } from "../../utils/test-id";
 import { LicenseSection } from "../license-section/license-section";
 import { LoggingSection } from "../logging-section/logging-section";
+import { FeedbackAction } from "./feedback-action";
 import { ReviewAction } from "./review-action";
 
 // Every outbound link in the General surface is attributed to the same source +
@@ -113,6 +114,11 @@ export interface GeneralLicenseConfig extends ToggleableConfig {
 export interface GeneralLoggingConfig {
 	/** The plugin's root settings store carrying a `logging` key (or `pathPrefix`). */
 	store: SettingsStorelike;
+	/**
+	 * The live `LogService`. Supplying it is what lets a bug report attach debug
+	 * context; without it the Feedback modal still works, minus the checkbox.
+	 */
+	service?: LogService | undefined;
 	/** Dotted key of the `LoggingSettings` inside the store. Default: `"logging"`. */
 	pathPrefix?: string | undefined;
 	/** Trailing content inside the Logging section (privacy disclaimer, "view logs" button). */
@@ -160,6 +166,11 @@ export interface GeneralSectionProps<T extends Record<string, unknown> = Record<
 	 * no flag to turn the section off, only the option not to wire it at all.
 	 */
 	logging?: GeneralLoggingConfig | undefined;
+	/**
+	 * The plugin's privacy page (no UTM — the section appends it). Shown as the
+	 * shared disclaimer on every surface that can send something off the device.
+	 */
+	privacyUrl?: string | undefined;
 	/** Universal sub-sections registered by other specs (doctor). */
 	extraSections?: GeneralSubSection[] | undefined;
 	/**
@@ -332,6 +343,7 @@ function GeneralSectionInner<T extends Record<string, unknown>>({
 	settingsTransfer,
 	license,
 	logging,
+	privacyUrl,
 	extraSections,
 	actions,
 	children,
@@ -398,6 +410,19 @@ function GeneralSectionInner<T extends Record<string, unknown>>({
 					licenseManager={license?.licenseManager}
 					fieldTestId={tid("field-review")}
 					buttonTestId={tid("review-btn")}
+				/>
+				<FeedbackAction
+					slug={slug}
+					pluginDisplayName={pluginDisplayName}
+					pluginVersion={pluginVersion}
+					privacyUrl={
+						privacyUrl !== undefined
+							? buildUtmUrl(privacyUrl, slug, GENERAL_UTM_SOURCE, GENERAL_UTM_MEDIUM, "feedback_privacy")
+							: undefined
+					}
+					logService={logging?.service}
+					fieldTestId={tid("field-feedback")}
+					buttonTestId={tid("feedback-btn")}
 				/>
 				{actions}
 			</div>

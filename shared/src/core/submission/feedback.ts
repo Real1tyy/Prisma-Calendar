@@ -17,18 +17,19 @@ function megabytes(bytes: number): string {
 	return `${(bytes / 1_000_000).toFixed(1)} MB`;
 }
 
-export type ScreenshotAcceptance =
-	| { readonly ok: true; readonly screenshots: ScreenshotAttachment[] }
+export type ScreenshotAcceptance<T extends ScreenshotAttachment> =
+	| { readonly ok: true; readonly screenshots: T[] }
 	| { readonly ok: false; readonly message: string };
 
 /**
  * Decides whether one more image fits, returning the new list or the sentence
- * to show the user. Pure so the modal owns no cap arithmetic of its own.
+ * to show the user. Pure so the modal owns no cap arithmetic of its own, and
+ * generic so a caller can carry its own render key on each attachment.
  */
-export function acceptScreenshot(
-	attached: readonly ScreenshotAttachment[],
-	candidate: ScreenshotAttachment
-): ScreenshotAcceptance {
+export function acceptScreenshot<T extends ScreenshotAttachment>(
+	attached: readonly T[],
+	candidate: T
+): ScreenshotAcceptance<T> {
 	if (!candidate.mimeType.startsWith("image/")) {
 		return { ok: false, message: `${candidate.name} isn't an image — only screenshots can be attached.` };
 	}
