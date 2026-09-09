@@ -95,6 +95,7 @@ export const COMMAND_KEYS = [
 	"OPEN_VIRTUAL_EVENTS_FILE",
 	"NORMALIZE_PROPERTY_ORDER",
 	"START_TUTORIAL",
+	"SEND_FEEDBACK",
 ] as const;
 
 export type CommandKey = (typeof COMMAND_KEYS)[number];

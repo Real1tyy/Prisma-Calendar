@@ -5,6 +5,7 @@ import { AI_CHAT_VIEW_TYPE } from "./components/ai-chat-view";
 import type { CalendarComponent } from "./components/calendar-view";
 import { COMMAND_IDS } from "./constants";
 import { MinimizedModalManager } from "./core";
+import { openPrismaFeedback } from "./core/api/feedback";
 import {
 	addZettelIdToActiveNote,
 	duplicateCurrentEvent,
@@ -325,6 +326,10 @@ export function registerPrismaCalendarCommands(plugin: CustomCalendarPlugin): vo
 	addMinimizedModalCommand(COMMAND_IDS.ASSIGN_CATEGORIES_MINIMIZED_MODAL, "Assign categories to minimized event", () =>
 		MinimizedModalManager.assignCategories(plugin.app, plugin.calendarBundles)
 	);
+
+	// Reachable without opening Settings, so a user who just hit the bug can bind
+	// a hotkey and report it while the broken state is still on screen.
+	addApiCommand(COMMAND_IDS.SEND_FEEDBACK, "Send feedback", () => openPrismaFeedback(plugin));
 
 	plugin.addCommand({
 		id: COMMAND_IDS.OPEN_AI_CHAT,

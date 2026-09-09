@@ -50,13 +50,15 @@ Hit a bug, or have an idea to make Prisma better? I'd love to hear from you. I r
 
 Open **Settings → Prisma Calendar → General** and click **Send feedback**. Pick what you're sending — bug report, feature request, or general feedback — describe it, and hit Submit.
 
+There is also a **Prisma Calendar: Send feedback** command. Run it from the command palette, or assign it a hotkey under **Settings → Hotkeys**, to open the same form without leaving what you were doing — useful when the problem is on screen right now.
+
 Submissions are one-way, so this is the wrong place for a question you need answered: nothing comes back to the plugin. **Looking for an answer?** The [FAQ](./faq), [troubleshooting guide](./troubleshooting), and the in-app **Open help center** button next to this one are where questions are answered.
 
-**Reporting a bug.** A bug report arrives with **Include debug info** already ticked. That attaches the recent warnings and errors plus the last few minutes of the plugin's activity, which is usually the difference between a fix and a round of "can you try this?" emails. Expand **Review what's attached** to read the exact bundle before you send it, or untick the box to send none of it. Everything in it is redacted — see [Privacy & diagnostics](./privacy) for what that means and what stays on your device.
+**Reporting a bug.** A bug report arrives with **Include debug info** already ticked. That attaches the recent warnings and errors plus the last few minutes of the plugin's activity — the context needed to identify the cause without having to reproduce the problem first. Expand **Review what's attached** to read the exact bundle before you send it, or untick the box to send none of it. Everything in it is redacted — see [Privacy & diagnostics](./privacy) for what that means and what stays on your device.
 
 **Adding a screenshot.** Click **Add screenshot** to pick an image, or take a screen grab and paste it straight into the modal. Attachments appear as thumbnails you can remove, up to three per report. A screenshot is not redacted, so check what's on screen before you attach it.
 
-If the send fails — you're offline, or the server is having a moment — the error is retryable and your text and attachments are still there.
+If the send fails — you are offline, or the server is unreachable — the message says so and the report can be sent again. Your text and attachments are kept.
 
 ### Other ways to reach me
 

@@ -24,9 +24,11 @@ Everything else — a log excerpt, a debug report, a bug report — leaves your 
 | --- | --- |
 | The kind of report (bug, feature, feedback) and the description you typed | The redacted diagnostic bundle, when **Include debug info** is ticked — recent warnings and errors plus the last fifteen minutes of activity |
 | The plugin version, your Obsidian version, and your platform (`windows`, `macos`, `linux`, `android`, `ios`) | Screenshots you attach, up to three |
-| An anonymous, vault-local id so a duplicate submission can be collapsed | |
+| An anonymous, vault-local id so a duplicate submission can be collapsed | Your license key, on an activated Pro install — see below |
 
-Your **license key is never attached to a report**, even on a Pro install — unlike a rating, a report is anonymous. Neither are your name, email, vault name, note contents, or settings. Expand **Review what's attached** in the modal to read the bundle before you send it.
+**On a Pro install, your license key is attached by default** so the report can be linked to your account and answered against your subscription. The modal shows a checkbox saying so; clear it before submitting and the key stays on your device. On the free tier there is no key and no checkbox.
+
+Nothing else identifying is sent: not your name, email, vault name, note contents, or settings. Expand **Review what's attached** in the modal to read the bundle before you send it.
 
 ## What diagnostics contain
 
