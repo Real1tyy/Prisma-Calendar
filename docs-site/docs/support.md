@@ -77,7 +77,7 @@ Submissions are one-way, so this is the wrong place for a question you need answ
 - **Prisma Calendar: Add a screenshot to the minimized report** raises the same capture bar for a report you've already put down.
 - **Take a screenshot & report a bug** does the right thing whatever is on screen: with no report open it grabs the window immediately and hands you a report to describe it; with a report open or put down it raises the capture bar instead.
 
-The report is never in its own screenshot: it is put away before the shutter fires. Capture is a desktop feature; on mobile, attach an image instead.
+The report is never in its own screenshot: it is put away before the shutter fires, and the whole flow runs in the main Obsidian window — so a report started from Settings comes back in front of the app, not behind the settings window. Capture is a desktop feature; on mobile, attach an image instead.
 
 If the send fails — you are offline, or the server is unreachable — the message says so and the report can be sent again. Your text and attachments are kept.
 

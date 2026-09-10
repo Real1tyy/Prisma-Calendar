@@ -3,6 +3,7 @@ import {
 	createScreenCapture,
 	createWindowCapture,
 	FEEDBACK_MAX_SCREENSHOT_BYTES,
+	focusAppWindow,
 	getElectronWindow,
 	getOrCreateAnonymousClientId,
 	getPlatformId,
@@ -141,6 +142,7 @@ export function createFeedbackSession({
 		showModal,
 		showCaptureBar: ({ onCapture, onCancel }) => showCaptureBar({ cssPrefix, onCapture, onCancel }),
 		capture: buildScreenCapture(),
+		focusApp: focusAppWindow,
 		notify: (message) => {
 			new Notice(message);
 		},
