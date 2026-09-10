@@ -10,7 +10,10 @@ export const SUBMISSION_API_BASE_URL = "https://api.matejvavroproductivity.com";
  */
 export const SUBMISSION_ENDPOINTS = {
 	review: "/api/review",
-	feedback: "/api/feedback",
+	// `/api/feedback` is the website's own proxy; the plugin route the worker
+	// serves is `/api/feedback/plugin`. Posting to the proxy from here silently
+	// files reports through the wrong door, so the suffix is load-bearing.
+	feedback: "/api/feedback/plugin",
 } as const;
 
 export type SubmissionKind = keyof typeof SUBMISSION_ENDPOINTS;
