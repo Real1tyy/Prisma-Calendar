@@ -460,12 +460,17 @@ export const FeedbackWindowActions = memo(function FeedbackWindowActions({
 	// Styled as one of the shell's window controls, named as the feedback form's.
 	const { cls } = useScoped("preserved-form");
 	const { tid } = useScoped("feedback");
-	const { state, finish } = form;
+	const { state, finish, close } = form;
 
+	// Closes *this* modal rather than leaving it to a handle the host took when it
+	// opened one: a restored report is re-opened by the shell, so any handle the
+	// host still holds points at the modal that was already closed — and the
+	// report would sit there in the middle of its own screenshot.
 	const startCapture = useCallback(() => {
 		finish();
+		close();
 		onCapture(state);
-	}, [finish, onCapture, state]);
+	}, [close, finish, onCapture, state]);
 
 	useEffect(() => registerActiveFeedbackReport({ requestCapture: startCapture }), [startCapture]);
 

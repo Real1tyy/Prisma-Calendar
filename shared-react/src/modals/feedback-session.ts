@@ -3,7 +3,6 @@ import { acceptScreenshot, type ScreenCapture } from "@real1ty/obsidian-plugins"
 import { getActiveFeedbackReport } from "./active-feedback-report";
 import type { AttachedScreenshot, FeedbackFormState } from "./feedback-modal";
 import { MinimizedModals } from "./minimized-modal-slot";
-import type { PreservedFormHandle } from "./preserved-form";
 
 /** The one label under which a report occupies the shared minimized slot. */
 export const MINIMIZED_FEEDBACK_LABEL = "Feedback report";
@@ -12,7 +11,7 @@ export interface ShowFeedbackModal {
 	(props: {
 		initialState: Partial<FeedbackFormState>;
 		onCapture: ((state: FeedbackFormState) => void) | undefined;
-	}): Promise<PreservedFormHandle>;
+	}): Promise<void>;
 }
 
 export interface ShowCaptureBar {
@@ -93,15 +92,17 @@ export class FeedbackSession {
 	// Leaving, restoring and clearing are the shell's job, not this session's
 	// ([[knowledge-preserved-form-state]]) — what is left here is the capture
 	// loop, which is the only thing that puts the report down deliberately.
+	//
+	// The form takes itself off the screen before calling this: the session holds
+	// no handle on it, because a restored report is re-opened by the shell and any
+	// handle from the original open would be stale.
 	private async show(initialState: Partial<FeedbackFormState>): Promise<void> {
-		let handle: PreservedFormHandle | null = null;
-		handle = await this.deps.showModal({
+		await this.deps.showModal({
 			initialState,
 			onCapture:
 				this.deps.capture === null
 					? undefined
 					: (state) => {
-							handle?.close();
 							this.minimize(state);
 							this.beginCapture();
 						},

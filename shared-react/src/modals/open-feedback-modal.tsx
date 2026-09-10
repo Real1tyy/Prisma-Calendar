@@ -100,14 +100,14 @@ export function createFeedbackSession({
 	const showModal = async (props: {
 		initialState: Partial<FeedbackFormState>;
 		onCapture: ((state: FeedbackFormState) => void) | undefined;
-	}) => {
+	}): Promise<void> => {
 		const licenseKey = await getAttributableLicenseKey(licenseManager);
 		const attribution = licenseKey !== null;
 		const onCapture = props.onCapture;
 
 		// Everything about leaving, restoring and clearing comes from the shell —
 		// this wiring only says what the report *is* ([[knowledge-preserved-form-state]]).
-		return openPreservedFormModal<FeedbackFormState>(
+		openPreservedFormModal<FeedbackFormState>(
 			{
 				app,
 				cssPrefix,
