@@ -1,3 +1,0 @@
-### Added
-
-- Report a bug with pictures of it: new **Report a bug** and **Take a screenshot & report a bug** commands (both hotkey-bindable, and available as **Send Feedback** / **Take Screenshot & Send Feedback** toolbar actions) sit beside **Send feedback**, and the report gets out of the way of the thing it's asking about — press the camera beside the close button, go to the broken view, hit Enter to photograph the Obsidian window, and the report returns with the picture attached and everything you typed intact. Repeat for up to three pictures. Leaving the report — Escape, a click outside, the close button — always keeps it; opening feedback again brings it back, and **Clear** is the one control that throws it away.
