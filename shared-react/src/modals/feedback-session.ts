@@ -1,5 +1,6 @@
 import { acceptScreenshot, type ScreenCapture } from "@real1ty/obsidian-plugins";
 
+import { getActiveFeedbackReport } from "./active-feedback-report";
 import type { AttachedScreenshot, FeedbackFormState, FeedbackModalHandle } from "./feedback-modal";
 import { MinimizedModals } from "./minimized-modal-slot";
 
@@ -57,21 +58,36 @@ export class FeedbackSession {
 	 * The one-shot command: capture first, *then* build a report around the
 	 * image, so what is attached is the screen the user was looking at when they
 	 * hit the hotkey — not the modal that would otherwise be covering it.
+	 *
+	 * With a report already on screen there is nothing to be one-shot about: that
+	 * form is in front of the bug, so the command drives its minimize-and-capture
+	 * path instead of photographing it and starting a second report.
 	 */
 	async captureAndOpen(): Promise<void> {
+		const onScreen = getActiveFeedbackReport();
+		if (onScreen !== null) {
+			onScreen.requestCapture();
+			return;
+		}
+		if (minimizedFeedback() !== null) {
+			await this.captureIntoMinimized();
+			return;
+		}
 		const captured = await this.captureInto({ type: "bug", includeDebug: true, screenshots: [], attachError: null });
 		await this.open(captured);
 	}
 
-	/** The capture command, active only while a report is minimized. */
+	/**
+	 * The capture command, active only while a report is minimized. Raises the
+	 * bar rather than shooting on the spot: the user pressed a hotkey, they have
+	 * not necessarily arrived at the view they mean to show yet.
+	 */
 	async captureIntoMinimized(): Promise<void> {
-		const state = minimizedFeedback();
-		if (state === null) {
+		if (minimizedFeedback() === null) {
 			this.deps.notify("No minimized report to add a screenshot to.");
 			return;
 		}
-		MinimizedModals.clear();
-		await this.show(await this.captureInto(state));
+		this.beginCapture();
 	}
 
 	private async show(initialState: Partial<FeedbackFormState>): Promise<void> {
@@ -109,9 +125,17 @@ export class FeedbackSession {
 	 */
 	private beginCapture(): void {
 		this.deps.showCaptureBar({
-			onCapture: () => void this.captureIntoMinimized(),
+			onCapture: () => void this.captureNow(),
 			onCancel: () => MinimizedModals.restore(),
 		});
+	}
+
+	/** The shutter: capture, fold the image into the parked report, bring it back. */
+	private async captureNow(): Promise<void> {
+		const state = minimizedFeedback();
+		if (state === null) return;
+		MinimizedModals.clear();
+		await this.show(await this.captureInto(state));
 	}
 
 	/** Captures and folds the image into the report, or leaves it untouched and says why. */

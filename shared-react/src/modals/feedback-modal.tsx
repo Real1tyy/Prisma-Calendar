@@ -11,13 +11,15 @@ import {
 	type SubmissionResult,
 } from "@real1ty/obsidian-plugins";
 import type { App } from "obsidian";
-import { memo, useCallback, useMemo, useRef, useState, type ChangeEvent, type ClipboardEvent } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type ClipboardEvent } from "react";
 
 import { useScopedStyles } from "../hooks/styles/use-styles";
 import { Button } from "../primitives/atoms/button";
+import { ObsidianIcon } from "../primitives/atoms/obsidian-icon";
 import { showReactModal } from "../show-react-modal";
 import { cx } from "../utils/cx";
 import { PrivacyDisclaimer } from "../widgets/privacy-disclaimer/privacy-disclaimer";
+import { registerActiveFeedbackReport } from "./active-feedback-report";
 import { buildFeedbackStyles } from "./feedback-modal.styles";
 import { ImageLightbox } from "./image-lightbox";
 
@@ -214,6 +216,13 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 	const minimize = useCallback(() => onMinimize?.(snapshot()), [onMinimize, snapshot]);
 	const startCapture = useCallback(() => onCapture?.(snapshot()), [onCapture, snapshot]);
 
+	// A capture command fired while this form is on screen must drive *this*
+	// form's minimize-then-capture path — otherwise it photographs the form.
+	useEffect(
+		() => registerActiveFeedbackReport({ requestCapture: startCapture, requestMinimize: minimize }),
+		[minimize, startCapture]
+	);
+
 	const handleSubmit = useCallback(async () => {
 		if (text.trim() === "" || inFlightRef.current) return;
 		inFlightRef.current = true;
@@ -267,23 +276,25 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 							type="button"
 							className={cls("window-action")}
 							aria-label="Take a screenshot"
-							title="Minimize and take a screenshot of Obsidian"
+							title="Take a screenshot (minimizes this form so it stays out of the picture)"
 							onClick={startCapture}
 							data-testid={tid("screenshot")}
 						>
-							📷
+							<ObsidianIcon icon="camera" />
 						</button>
 					)}
 					{onMinimize !== undefined && (
+						// The same affordance the event and batch modals use — a `−`
+						// that puts the form down without losing a word of it.
 						<button
 							type="button"
 							className={cls("window-action")}
 							aria-label="Minimize"
-							title="Minimize — the report keeps everything you have written"
+							title="Minimize modal (preserves everything you have written)"
 							onClick={minimize}
 							data-testid={tid("minimize")}
 						>
-							⤓
+							−
 						</button>
 					)}
 				</div>
