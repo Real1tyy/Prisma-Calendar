@@ -48,7 +48,7 @@ Hit a bug, or have an idea to make Prisma better? I'd love to hear from you. I r
 
 ### Send it from inside Obsidian
 
-Open **Settings → Prisma Calendar → General** and click **Send feedback**. Pick what you're sending — bug report, feature request, or general feedback — describe it, and hit Submit.
+Open **Settings → Prisma Calendar → General** and click **Send feedback**. It opens on general feedback; switch to **Bug report** or **Feature request** at the top of the form, describe it, and hit Submit.
 
 Three commands open the same form without leaving what you're doing — run them from the command palette, or give each a hotkey under **Settings → Hotkeys**:
 

@@ -53,6 +53,7 @@ export function registerFeedbackCommands(plugin: CustomCalendarPlugin): void {
 		});
 	};
 
+	// Same words, same place as the General-section button — see `openFeedbackModal`.
 	addCommand(COMMAND_IDS.SEND_FEEDBACK, "Send feedback", () => {
 		void prismaFeedbackSession(plugin).open({ type: "general", includeDebug: false });
 	});

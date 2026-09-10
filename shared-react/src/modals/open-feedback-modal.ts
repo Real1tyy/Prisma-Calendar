@@ -125,7 +125,12 @@ function buildScreenCapture(): ScreenCapture | null {
 	return createScreenCapture(createWindowCapture(getElectronWindow, { maxBytes: FEEDBACK_MAX_SCREENSHOT_BYTES }));
 }
 
-/** Opens a fresh report. The commands and the General-section button share this entry. */
+/**
+ * Opens "Send feedback" — the General-section button and the command of the same
+ * name land in the same place, on the general type. A bug report is its own
+ * entry point (`Report a bug`), so the words on the button now mean one thing
+ * wherever they are clicked; the user can still switch type in the form.
+ */
 export async function openFeedbackModal(options: OpenFeedbackOptions): Promise<void> {
-	await createFeedbackSession(options).open();
+	await createFeedbackSession(options).open({ type: "general", includeDebug: false });
 }
