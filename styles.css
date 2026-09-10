@@ -2785,9 +2785,6 @@ button[class*=prisma-]:focus-visible {
   border-bottom: 2px solid var(--background-modifier-border);
   background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background-secondary-alt) 100%);
   border-radius: 12px 12px 0 0;
-  position: sticky;
-  top: 0;
-  z-index: 10;
   gap: 16px;
 }
 .prisma-event-preview-header h2 {
