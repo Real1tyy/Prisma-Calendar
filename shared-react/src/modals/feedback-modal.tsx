@@ -106,7 +106,7 @@ function readImage(file: File): Promise<AttachedScreenshot> {
 				id: crypto.randomUUID(),
 				name: file.name,
 				mimeType: file.type,
-				dataBase64: base64Of(String(reader.result ?? "")),
+				dataBase64: base64Of(typeof reader.result === "string" ? reader.result : ""),
 				byteSize: file.size,
 			});
 		reader.readAsDataURL(file);
@@ -207,7 +207,7 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 
 	const handlePaste = useCallback(
 		(event: ClipboardEvent<HTMLDivElement>) => {
-			const files = Array.from(event.clipboardData?.files ?? []);
+			const files = Array.from(event.clipboardData.files);
 			if (files.length === 0) return;
 			event.preventDefault();
 			void attach(files);

@@ -164,7 +164,7 @@ function describeError(error: unknown): string {
 }
 
 function delay(ms: number): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, ms));
+	return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
 /**
@@ -173,16 +173,16 @@ function delay(ms: number): Promise<void> {
  * the user already retried is a duplicate the server dedups on `clientId`.
  */
 async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | typeof TIMED_OUT> {
-	let timer: ReturnType<typeof setTimeout> | undefined;
+	let timer: number | undefined;
 	try {
 		return await Promise.race([
 			promise,
 			new Promise<typeof TIMED_OUT>((resolve) => {
-				timer = setTimeout(() => resolve(TIMED_OUT), ms);
+				timer = window.setTimeout(() => resolve(TIMED_OUT), ms);
 			}),
 		]);
 	} finally {
-		if (timer !== undefined) clearTimeout(timer);
+		if (timer !== undefined) window.clearTimeout(timer);
 	}
 }
 
@@ -255,6 +255,6 @@ export class SubmissionClient {
 	 */
 	private online(): boolean {
 		if (this.options.isOnline !== undefined) return this.options.isOnline();
-		return typeof navigator === "undefined" || navigator.onLine !== false;
+		return typeof navigator === "undefined" || navigator.onLine;
 	}
 }

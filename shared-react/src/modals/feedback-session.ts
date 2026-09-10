@@ -72,7 +72,7 @@ export class FeedbackSession {
 			return;
 		}
 		if (minimizedFeedback() !== null) {
-			await this.captureIntoMinimized();
+			this.captureIntoMinimized();
 			return;
 		}
 		const captured = await this.captureInto({ type: "bug", includeDebug: true, screenshots: [], attachError: null });
@@ -84,7 +84,7 @@ export class FeedbackSession {
 	 * bar rather than shooting on the spot: the user pressed a hotkey, they have
 	 * not necessarily arrived at the view they mean to show yet.
 	 */
-	async captureIntoMinimized(): Promise<void> {
+	captureIntoMinimized(): void {
 		if (minimizedFeedback() === null) {
 			this.deps.notify("No minimized report to add a screenshot to.");
 			return;

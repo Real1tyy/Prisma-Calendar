@@ -68,7 +68,7 @@ export function parseRotatedLogName(path: string): RotatedLogFile | null {
 			Number(second),
 			Number(millisecond)
 		),
-		device: device ?? null,
+		device,
 	};
 }
 
@@ -194,7 +194,9 @@ export class FileSink implements LogSink {
 		this.pending = [];
 		try {
 			await this.start();
-			if (this.disabled) return;
+			// Through the getter: `start()` can disable the sink, but TypeScript keeps
+			// the narrowing from the guard above and would read this as always-false.
+			if (this.isDisabled) return;
 			await this.fs.append(this.activePath, chunk);
 			this.activeSize += this.encoder.encode(chunk).length;
 			if (this.activeSize > this.maxBytes) await this.rotate();

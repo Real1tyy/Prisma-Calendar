@@ -71,6 +71,6 @@ export function registerFeedbackCommands(plugin: CustomCalendarPlugin): void {
 	addReportCommand(COMMAND_IDS.RESTORE_FEEDBACK_REPORT, "Restore minimized report", () => MinimizedModals.restore());
 
 	addReportCommand(COMMAND_IDS.CAPTURE_INTO_FEEDBACK_REPORT, "Add a screenshot to the minimized report", () => {
-		void prismaFeedbackSession(plugin).captureIntoMinimized();
+		prismaFeedbackSession(plugin).captureIntoMinimized();
 	});
 }

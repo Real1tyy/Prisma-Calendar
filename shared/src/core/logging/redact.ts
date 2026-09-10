@@ -151,9 +151,11 @@ function wordsOf(key: string): string[] {
 
 export function isSecretKey(key: string): boolean {
 	const words = wordsOf(key);
+	// A key of pure separators (`___`) words to nothing; indexing it would be
+	// `undefined` at runtime even though the element type says otherwise.
+	if (words.length === 0) return false;
 	const first = words[0];
 	const last = words[words.length - 1];
-	if (first === undefined || last === undefined) return false;
 	if (words.length > 1 && (BOOLEAN_HEADS.has(first) || REFERENCE_TAILS.has(last))) return false;
 	if (words.some((word) => SECRET_WORDS.has(word))) return true;
 	return words.some((word, i) => i > 0 && SECRET_WORD_PAIRS.has(`${words[i - 1] ?? ""}${word}`));
@@ -161,8 +163,8 @@ export function isSecretKey(key: string): boolean {
 
 function isPathKey(key: string): boolean {
 	const words = wordsOf(key);
-	const last = words[words.length - 1];
-	return last !== undefined && PATH_TAILS.has(last);
+	if (words.length === 0) return false;
+	return PATH_TAILS.has(words[words.length - 1]);
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -185,14 +187,11 @@ function hashSegment(segment: string): string {
 	return `{${stableHash(stem)}}${extension}`;
 }
 
+// The config folder survives without being named here: a dot-only segment is all
+// "extension" and no stem, so `hashSegment` already returns it verbatim. Naming it
+// would also hardcode `.obsidian`, which the user is free to rename.
 function hashSegments(relative: string): string {
-	return relative
-		.split("/")
-		.map((segment) => {
-			if (segment === ".obsidian") return segment;
-			return hashSegment(segment);
-		})
-		.join("/");
+	return relative.split("/").map(hashSegment).join("/");
 }
 
 /**
@@ -451,7 +450,9 @@ export function redactLogEntries(entries: readonly LogEntry[], options: RedactOp
  * inherits.
  */
 export function serializeForExport(value: unknown, options: RedactOptions = {}): string {
-	const json: string | undefined = JSON.stringify(redact(value, options), null, 2);
+	// TypeScript types this overload as `string`, but `JSON.stringify` really does
+	// return undefined for an undefined/function/symbol root — which a caller can pass.
+	const json = JSON.stringify(redact(value, options), null, 2) as string | undefined;
 	return json ?? "";
 }
 
@@ -462,7 +463,7 @@ export function serializeForExport(value: unknown, options: RedactOptions = {}):
  * fast path. Cycles and shared references are preserved in the scrubbed clone.
  */
 export function scrubSecrets<T>(data: T): T {
-	const seen = new WeakSet<object>();
+	const seen = new WeakSet();
 	const containsSecret = (value: unknown): boolean => {
 		if (typeof value === "string") return stripSecretsFromText(value) !== value;
 		if (typeof value !== "object" || value === null) return false;

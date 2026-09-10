@@ -317,6 +317,7 @@ export const EventForm = memo(function EventForm({
 		contentSectionRef.current?.querySelector<HTMLTextAreaElement>("textarea")?.focus();
 	}, []);
 	const jumpToTop = useCallback(() => {
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- jsdom leaves Element.scrollTo undefined, so the guard is load-bearing under RTL even though the DOM type says otherwise
 		bodyRef.current?.scrollTo?.({ top: 0, behavior: "smooth" });
 		titleInputRef.current?.focus();
 	}, [titleInputRef]);

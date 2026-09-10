@@ -68,7 +68,11 @@ export function PreservedFormShell<State>({ config, seed, close, onDismiss }: Sh
 	// The unmount handler runs once, long after this render's closures are stale,
 	// so it reads the form through a ref rather than capturing it.
 	const latest = useRef(state);
-	latest.current = state;
+	// Mirrored in an effect, not during render: the cleanup below runs after the
+	// last commit, so the last committed state is exactly what it needs to see.
+	useEffect(() => {
+		latest.current = state;
+	}, [state]);
 	// Deliberately a second ref: `latest` is rewritten on every render, so a flag
 	// stored beside it would be undone by the next one.
 	const handled = useRef(false);
@@ -96,6 +100,7 @@ export function PreservedFormShell<State>({ config, seed, close, onDismiss }: Sh
 	return (
 		<>
 			<div className={cls("window-actions")} data-testid={tid("window-actions")}>
+				{/* eslint-disable-next-line react-hooks/refs -- `api` carries `finish`, which writes the `handled` ref; consumers only ever call it from an event handler, and the rule cannot see that through the render callback */}
 				{config.windowActions?.(api)}
 				{/* The only control that discards. Everything else keeps the form. */}
 				<button
@@ -109,6 +114,7 @@ export function PreservedFormShell<State>({ config, seed, close, onDismiss }: Sh
 					Clear
 				</button>
 			</div>
+			{/* eslint-disable-next-line react-hooks/refs -- same as above: `finish` is an event-handler callback, never invoked during render */}
 			{config.render(api)}
 		</>
 	);
@@ -186,6 +192,7 @@ export function hasPreservedForm(label: string): boolean {
 	return MinimizedModals.label() === label;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- the caller names the state type it parked, exactly as `MinimizedModals.get` does; the single slot is untyped at rest, so this is a checked-by-convention read, not a relationship the signature could express
 export function preservedFormState<State>(label: string): State | null {
 	const entry = MinimizedModals.get<State>();
 	return entry?.label === label ? entry.state : null;

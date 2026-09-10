@@ -25,8 +25,8 @@ export function loadStringRecords<Key extends string>(
 }
 
 /** Copy non-empty string-record fields into a persisted state object and return whether any were written. */
-export function writeNonEmptyStringRecords<State extends object, Key extends string>(
-	state: State,
+export function writeNonEmptyStringRecords<Key extends string>(
+	state: object,
 	records: StringRecordFields<Key>,
 	keys: readonly Key[]
 ): boolean {
@@ -53,8 +53,8 @@ export function loadStringRecordMaps<Key extends string>(
 }
 
 /** Serialize non-empty string-record maps into a persisted state object. */
-export function writeNonEmptyStringRecordMaps<State extends object, Key extends string>(
-	state: State,
+export function writeNonEmptyStringRecordMaps<Key extends string>(
+	state: object,
 	maps: Readonly<Record<Key, ReadonlyMap<string, string>>>,
 	keys: readonly Key[]
 ): boolean {
