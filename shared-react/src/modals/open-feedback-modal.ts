@@ -92,7 +92,7 @@ export function createFeedbackSession({
 	// while a report is minimized, and the checkbox must reflect what is true now.
 	const showModal = async (props: {
 		initialState: Partial<FeedbackFormState>;
-		onMinimize: (state: FeedbackFormState) => void;
+		onDismiss: (state: FeedbackFormState) => void;
 		onCapture: ((state: FeedbackFormState) => void) | undefined;
 	}) => {
 		const licenseKey = await getAttributableLicenseKey(licenseManager);
@@ -104,7 +104,7 @@ export function createFeedbackSession({
 			...(logService !== undefined ? { captureDebugBundle } : {}),
 			submit,
 			initialState: props.initialState,
-			onMinimize: props.onMinimize,
+			onDismiss: props.onDismiss,
 			onCapture: props.onCapture,
 		});
 	};

@@ -10,7 +10,7 @@ export const MINIMIZED_FEEDBACK_LABEL = "Feedback report";
 export interface ShowFeedbackModal {
 	(props: {
 		initialState: Partial<FeedbackFormState>;
-		onMinimize: (state: FeedbackFormState) => void;
+		onDismiss: (state: FeedbackFormState) => void;
 		onCapture: ((state: FeedbackFormState) => void) | undefined;
 	}): Promise<FeedbackModalHandle>;
 }
@@ -94,10 +94,14 @@ export class FeedbackSession {
 		let handle: FeedbackModalHandle | null = null;
 		handle = await this.deps.showModal({
 			initialState,
-			onMinimize: (state) => {
-				handle?.close();
+			// The form has already left the screen by the time this runs — Escape, a
+			// click outside, the close button, they all land here. An empty report is
+			// dropped rather than parked: there is nothing to come back to, and a
+			// notice about it would be noise.
+			onDismiss: (state) => {
+				if (isEmpty(state)) return;
 				this.minimize(state);
-				this.deps.notify("Report minimized — restore it from the command palette when you're ready.");
+				this.deps.notify("Report kept — restore it from the command palette when you're ready.");
 			},
 			onCapture:
 				this.deps.capture === null
@@ -162,6 +166,11 @@ export class FeedbackSession {
 /** Whether the minimized slot is holding a report, which is what gates the capture/restore commands. */
 export function hasMinimizedFeedback(): boolean {
 	return MinimizedModals.label() === MINIMIZED_FEEDBACK_LABEL;
+}
+
+/** Nothing written and nothing attached — the type selector alone is not a report. */
+function isEmpty(state: FeedbackFormState): boolean {
+	return state.text.trim() === "" && state.screenshots.length === 0;
 }
 
 function minimizedFeedback(): FeedbackFormState | null {

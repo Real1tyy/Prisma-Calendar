@@ -67,11 +67,13 @@ Submissions are one-way, so this is the wrong place for a question you need answ
 
 **Adding a screenshot.** Click **Add screenshot** to pick an image, or take a screen grab and paste it straight into the modal. Attachments appear as thumbnails you can remove, up to three per report. A screenshot is not redacted, so check what's on screen before you attach it.
 
+**Leaving keeps the report.** Escape, a click outside, the close button — all of them put the report down rather than throw it away, with everything you typed and attached still in it. **Prisma Calendar: Restore minimized report** brings it back (bind it to a hotkey if you use it often). The one control that discards a report is **Clear**, next to the close button.
+
 **Photographing the problem from inside the report.** The report sits on top of the thing it's asking about, so it gets out of the way:
 
-- **📷** minimizes the report and leaves a capture bar at the bottom of the window. Navigate to the view you want to show, then press **Enter** (or click **Capture**) to photograph the whole Obsidian window; **Esc** cancels. The report comes back with the picture attached and everything you had typed still there. Repeat for a second view, up to three pictures.
-- **−** minimizes the report without capturing, exactly like the event modal. **Prisma Calendar: Restore minimized report** brings it back, and **Prisma Calendar: Add a screenshot to the minimized report** raises the capture bar again so you can add a second view — both bindable to a hotkey.
-- **Take a screenshot & report a bug** does the right thing whatever is on screen: with no report open it grabs the window immediately and hands you a report to describe it; with a report open or minimized it puts the form away and raises the capture bar instead.
+- The **camera**, beside the close button, puts the report down and leaves a capture bar at the bottom of the window. Navigate to the view you want to show, then press **Enter** (or click **Capture**) to photograph the whole Obsidian window; **Esc** cancels. The report comes back with the picture attached and everything you had typed still there. Repeat for a second view, up to three pictures.
+- **Prisma Calendar: Add a screenshot to the minimized report** raises the same capture bar for a report you've already put down.
+- **Take a screenshot & report a bug** does the right thing whatever is on screen: with no report open it grabs the window immediately and hands you a report to describe it; with a report open or put down it raises the capture bar instead.
 
 The report is never in its own screenshot: it is put away before the shutter fires. Capture is a desktop feature; on mobile, attach an image instead.
 

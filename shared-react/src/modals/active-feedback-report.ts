@@ -9,9 +9,8 @@
  * ([[spec-feedback-commands-and-screenshot-capture]] R9).
  */
 export interface ActiveFeedbackReport {
-	/** Minimizes and raises the capture bar — the modal's own 📷 path, driven from outside. */
+	/** Puts the report away and raises the capture bar — the form's own camera path, driven from outside. */
 	requestCapture: () => void;
-	requestMinimize: () => void;
 }
 
 let active: ActiveFeedbackReport | null = null;

@@ -19,19 +19,28 @@ export function buildFeedbackStyles(p: string): string {
 .${p}feedback-modal .modal-content {
 	font-size: var(--font-ui-medium);
 }
-.${p}feedback-window-actions {
+/*
+ * Lifted out of the content flow into the modal's own title row, immediately
+ * left of Obsidian's close button — these act on the window, not on the form.
+ * The right offset is the close button's width plus its inset.
+ */
+.${p}feedback-modal .${p}feedback-window-actions {
+	align-items: center;
 	display: flex;
 	gap: 0.25rem;
-	justify-content: flex-end;
-	margin: -0.5rem 0 0.25rem;
+	position: absolute;
+	right: 2.9rem;
+	top: 0.55rem;
 }
 .${p}feedback-modal button.${p}feedback-window-action {
+	align-items: center;
 	background: transparent;
 	box-shadow: none;
 	color: var(--text-muted);
-	font-size: var(--font-ui-medium);
+	display: flex;
+	font-size: var(--font-ui-smaller);
 	line-height: 1;
-	padding: 0.3rem 0.45rem;
+	padding: 0.3rem 0.5rem;
 }
 .${p}feedback-modal button.${p}feedback-window-action:hover {
 	background: var(--background-modifier-hover);

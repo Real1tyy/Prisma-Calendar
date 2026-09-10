@@ -60,8 +60,12 @@ export interface FeedbackModalProps {
 	submit: (submission: FeedbackSubmission, includeLicenseKey: boolean) => Promise<SubmissionResult>;
 	/** Seeds a restored report, or one the screenshot command pre-loaded. */
 	initialState?: Partial<FeedbackFormState> | undefined;
-	/** Collapses the report, handing its state to the host. Omitted ⇒ no minimize control. */
-	onMinimize?: ((state: FeedbackFormState) => void) | undefined;
+	/**
+	 * The form left the screen with something in it — Escape, a click outside, the
+	 * close button, all the same. Leaving never costs the user their words; the
+	 * only way to throw a report away is to say so, with Clear.
+	 */
+	onDismiss?: ((state: FeedbackFormState) => void) | undefined;
 	/**
 	 * Minimizes and starts the screenshot flow. Omitted where capture is
 	 * unavailable — mobile — so the control never advertises what can't happen.
@@ -123,7 +127,7 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 	licenseAttributionAvailable = false,
 	submit,
 	initialState,
-	onMinimize,
+	onDismiss,
 	onCapture,
 	onClose,
 }: FeedbackModalProps) {
@@ -213,15 +217,51 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 		[attachError, fullDetail, includeDebug, includeLicenseKey, screenshots, text, type]
 	);
 
-	const minimize = useCallback(() => onMinimize?.(snapshot()), [onMinimize, snapshot]);
-	const startCapture = useCallback(() => onCapture?.(snapshot()), [onCapture, snapshot]);
+	// The unmount handler runs once, long after this render's closures are stale,
+	// so it reads the report through a ref rather than capturing it.
+	const handOver = useRef<(() => void) | null>(null);
+	handOver.current = onDismiss === undefined ? null : () => onDismiss(snapshot());
+
+	// Deliberately not folded into `handOver`: that one is rewritten on every
+	// render, so a flag stored there would be undone by the next one.
+	const handledRef = useRef(false);
+
+	/** Whatever put the report away has already dealt with its state. */
+	const handled = useCallback(() => {
+		handledRef.current = true;
+	}, []);
+
+	const startCapture = useCallback(() => {
+		if (onCapture === undefined) return;
+		const state = snapshot();
+		handled();
+		onCapture(state);
+	}, [handled, onCapture, snapshot]);
+
+	// Escape, a click outside, the close button — every one of them ends here,
+	// which is what makes "leaving never costs you your words" true rather than a
+	// property of the particular control the user happened to press.
+	useEffect(
+		() => () => {
+			if (!handledRef.current) handOver.current?.();
+		},
+		[]
+	);
+
+	const clear = useCallback(() => {
+		setType("bug");
+		setText("");
+		setIncludeDebug(true);
+		setFullDetail(false);
+		setScreenshots([]);
+		setPreview(null);
+		setAttachError(null);
+		setError(null);
+	}, []);
 
 	// A capture command fired while this form is on screen must drive *this*
-	// form's minimize-then-capture path — otherwise it photographs the form.
-	useEffect(
-		() => registerActiveFeedbackReport({ requestCapture: startCapture, requestMinimize: minimize }),
-		[minimize, startCapture]
-	);
+	// form's put-it-away-then-capture path — otherwise it photographs the form.
+	useEffect(() => registerActiveFeedbackReport({ requestCapture: startCapture }), [startCapture]);
 
 	const handleSubmit = useCallback(async () => {
 		if (text.trim() === "" || inFlightRef.current) return;
@@ -242,6 +282,8 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 
 		inFlightRef.current = false;
 		if (result.ok) {
+			// It has been sent — there is nothing left to keep for the user.
+			handled();
 			setPhase("sent");
 			return;
 		}
@@ -249,7 +291,7 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 		// the user nothing, so "Try again" resubmits exactly what they assembled.
 		setPhase("form");
 		setError(result.message);
-	}, [bundle, fullDetail, includeLicenseKey, licenseAttributionAvailable, screenshots, submit, text, type]);
+	}, [bundle, fullDetail, handled, includeLicenseKey, licenseAttributionAvailable, screenshots, submit, text, type]);
 
 	if (phase === "sent") {
 		return (
@@ -269,36 +311,33 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 
 	return (
 		<div data-testid={tid("modal")} onPaste={handlePaste}>
-			{(onMinimize !== undefined || onCapture !== undefined) && (
-				<div className={cls("window-actions")} data-testid={tid("window-actions")}>
-					{onCapture !== undefined && (
-						<button
-							type="button"
-							className={cls("window-action")}
-							aria-label="Take a screenshot"
-							title="Take a screenshot (minimizes this form so it stays out of the picture)"
-							onClick={startCapture}
-							data-testid={tid("screenshot")}
-						>
-							<ObsidianIcon icon="camera" />
-						</button>
-					)}
-					{onMinimize !== undefined && (
-						// The same affordance the event and batch modals use — a `−`
-						// that puts the form down without losing a word of it.
-						<button
-							type="button"
-							className={cls("window-action")}
-							aria-label="Minimize"
-							title="Minimize modal (preserves everything you have written)"
-							onClick={minimize}
-							data-testid={tid("minimize")}
-						>
-							−
-						</button>
-					)}
-				</div>
-			)}
+			{/* Sits in the modal's own title row, immediately left of the close button:
+			    these act on the window, not on the form, so they belong with the X. */}
+			<div className={cls("window-actions")} data-testid={tid("window-actions")}>
+				{onCapture !== undefined && (
+					<button
+						type="button"
+						className={cls("window-action")}
+						aria-label="Take a screenshot"
+						title="Take a screenshot (puts this form away so it stays out of the picture)"
+						onClick={startCapture}
+						data-testid={tid("screenshot")}
+					>
+						<ObsidianIcon icon="camera" />
+					</button>
+				)}
+				{/* The only way to throw a report away. Closing never does — see `onDismiss`. */}
+				<button
+					type="button"
+					className={cls("window-action")}
+					aria-label="Clear"
+					title="Clear this report — everything else keeps it"
+					onClick={clear}
+					data-testid={tid("clear")}
+				>
+					Clear
+				</button>
+			</div>
 
 			<p className={cls("intro")} data-testid={tid("intro")}>
 				{TYPE_INTROS[type]}
@@ -440,8 +479,9 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 			{preview !== null && <ImageLightbox src={dataUrlOf(preview)} label={preview.name} onClose={closePreview} />}
 
 			<div className={cls("actions")}>
+				{/* Not "Cancel": this keeps the report, exactly like Escape and the X. */}
 				<Button onClick={onClose} testId={tid("cancel")}>
-					Cancel
+					Close
 				</Button>
 				<Button
 					variant="primary"
@@ -465,7 +505,7 @@ export interface ShowFeedbackModalConfig {
 	licenseAttributionAvailable?: boolean | undefined;
 	submit: (submission: FeedbackSubmission, includeLicenseKey: boolean) => Promise<SubmissionResult>;
 	initialState?: Partial<FeedbackFormState> | undefined;
-	onMinimize?: ((state: FeedbackFormState) => void) | undefined;
+	onDismiss?: ((state: FeedbackFormState) => void) | undefined;
 	onCapture?: ((state: FeedbackFormState) => void) | undefined;
 }
 
@@ -476,6 +516,7 @@ export interface FeedbackModalHandle {
 
 export function showFeedbackReactModal(app: App, config: ShowFeedbackModalConfig): FeedbackModalHandle {
 	let close = (): void => {};
+	let closed = false;
 	showReactModal({
 		app,
 		cls: `${config.cssPrefix}feedback-modal`,
@@ -492,12 +533,20 @@ export function showFeedbackReactModal(app: App, config: ShowFeedbackModalConfig
 					licenseAttributionAvailable={config.licenseAttributionAvailable}
 					submit={config.submit}
 					initialState={config.initialState}
-					onMinimize={config.onMinimize}
+					onDismiss={config.onDismiss}
 					onCapture={config.onCapture}
 					onClose={closeModal}
 				/>
 			);
 		},
 	});
-	return { close: () => close() };
+	// Closing twice would unmount a root that is already gone: the user's own
+	// Escape and a programmatic close can race for the same modal.
+	return {
+		close: () => {
+			if (closed) return;
+			closed = true;
+			close();
+		},
+	};
 }
