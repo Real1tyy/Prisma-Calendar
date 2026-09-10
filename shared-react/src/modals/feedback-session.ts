@@ -147,11 +147,12 @@ export class FeedbackSession {
 		const state = minimizedFeedback();
 		if (state === null) return;
 		MinimizedModals.clear();
-		const captured = await this.captureInto(state);
-		// Re-asserted after the capture: the shot itself can hand focus around, and
-		// the report must come back in front of the user, not behind a window.
+		// Focused *before* the capture, not after: bringing a window forward is an
+		// OS round-trip, and Obsidian builds a modal against whichever window is
+		// active at that moment. Asking first gives the focus the whole capture to
+		// land, so the report that follows is built against the app's window.
 		this.deps.focusApp?.();
-		await this.show(captured);
+		await this.show(await this.captureInto(state));
 	}
 
 	/** Captures and folds the image into the report, or leaves it untouched and says why. */
