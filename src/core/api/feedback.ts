@@ -17,7 +17,6 @@ function prismaFeedbackSession(plugin: CustomCalendarPlugin) {
 	return createFeedbackSession({
 		app: plugin.app,
 		slug: PRISMA_CALENDAR_PLUGIN_ID,
-		pluginDisplayName: "Prisma",
 		pluginVersion: plugin.manifest.version,
 		cssPrefix: CSS_PREFIX,
 		privacyUrl: buildUtmUrl(docsUrl("/privacy"), PRISMA_CALENDAR_PLUGIN_ID, "plugin", "command", "feedback_privacy"),

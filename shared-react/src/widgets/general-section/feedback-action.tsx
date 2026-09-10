@@ -9,7 +9,6 @@ import { testIdAttr } from "../../utils/test-id";
 
 interface FeedbackActionProps {
 	slug: PluginSlug;
-	pluginDisplayName: string;
 	pluginVersion: string;
 	/** UTM-tracked privacy page, threaded through to the modal's disclaimer. */
 	privacyUrl?: string | undefined;
@@ -35,7 +34,6 @@ interface FeedbackActionProps {
  */
 export const FeedbackAction = memo(function FeedbackAction({
 	slug,
-	pluginDisplayName,
 	pluginVersion,
 	privacyUrl,
 	logService,
@@ -50,14 +48,13 @@ export const FeedbackAction = memo(function FeedbackAction({
 		void openFeedbackModal({
 			app,
 			slug,
-			pluginDisplayName,
 			pluginVersion,
 			cssPrefix,
 			privacyUrl,
 			logService,
 			licenseManager,
 		});
-	}, [app, cssPrefix, licenseManager, logService, pluginDisplayName, pluginVersion, privacyUrl, slug]);
+	}, [app, cssPrefix, licenseManager, logService, pluginVersion, privacyUrl, slug]);
 
 	return (
 		<SettingItem

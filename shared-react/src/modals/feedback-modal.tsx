@@ -47,7 +47,6 @@ const TYPE_INTROS: Record<FeedbackType, string> = {
 type Phase = "form" | "sending" | "sent";
 
 export interface FeedbackModalProps {
-	pluginDisplayName: string;
 	/** UTM-tracked privacy page. Omitted when the plugin publishes none, which hides the disclaimer. */
 	privacyUrl?: string | undefined;
 	/**
@@ -114,7 +113,6 @@ function readImage(file: File): Promise<AttachedScreenshot> {
 }
 
 export const FeedbackModalContent = memo(function FeedbackModalContent({
-	pluginDisplayName,
 	privacyUrl,
 	captureDebugBundle,
 	licenseAttributionAvailable = false,
@@ -263,9 +261,14 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 		return (
 			<div data-testid={tid("modal")}>
 				<div className={cls("thanks")} data-testid={tid("thanks")}>
-					<div className={cls("thanks-title")}>Sent — thank you</div>
+					<div className={cls("thanks-title")}>Thank you</div>
+					{/* First person on purpose: one maintainer reads these, and saying so
+					    plainly is worth more than describing the arrangement in the third
+					    person. Same voice as TYPE_INTROS above. */}
 					<div className={cls("thanks-body")}>
-						{`This is read by the person who builds ${pluginDisplayName}, and it shapes what gets worked on next. There is no reply to this form, so if you need an answer, ask on GitHub.`}
+						{
+							"I read every single one of these, and it shapes what gets worked on next. There is no reply to this form, so if you need an answer, please ask on GitHub. Thank you once again."
+						}
 					</div>
 					<Button variant="primary" onClick={onClose} testId={tid("close")}>
 						Close

@@ -413,7 +413,6 @@ function GeneralSectionInner<T extends Record<string, unknown>>({
 				/>
 				<FeedbackAction
 					slug={slug}
-					pluginDisplayName={pluginDisplayName}
 					pluginVersion={pluginVersion}
 					privacyUrl={
 						privacyUrl !== undefined

@@ -76,10 +76,16 @@ export function PreservedFormShell<State>({ config, seed, close, onDismiss }: Sh
 	// Deliberately a second ref: `latest` is rewritten on every render, so a flag
 	// stored beside it would be undone by the next one.
 	const handled = useRef(false);
+	// The same fact as `handled`, but as state, because the window row has to
+	// re-render when it changes. A ref alone would leave Clear and the form's own
+	// actions on screen after a successful submit — controls over a form that no
+	// longer exists.
+	const [finished, setFinished] = useState(false);
 
 	const patch = useCallback((partial: Partial<State>) => setState((current) => ({ ...current, ...partial })), []);
 	const finish = useCallback(() => {
 		handled.current = true;
+		setFinished(true);
 	}, []);
 	const blank = config.blank;
 	const clear = useCallback(() => setState(blank()), [blank]);
@@ -99,21 +105,28 @@ export function PreservedFormShell<State>({ config, seed, close, onDismiss }: Sh
 
 	return (
 		<>
-			<div className={cls("window-actions")} data-testid={tid("window-actions")}>
-				{/* eslint-disable-next-line react-hooks/refs -- `api` carries `finish`, which writes the `handled` ref; consumers only ever call it from an event handler, and the rule cannot see that through the render callback */}
-				{config.windowActions?.(api)}
-				{/* The only control that discards. Everything else keeps the form. */}
-				<button
-					type="button"
-					className={cls("window-action")}
-					aria-label="Clear"
-					title="Clear this form — every other way out keeps it"
-					onClick={clear}
-					data-testid={tid("clear")}
-				>
-					Clear
-				</button>
-			</div>
+			{/* Every control in this row acts on a form the user is still filling in.
+			    Once it is finished — submitted, or handed to a flow that took it over —
+			    there is nothing left to clear and nothing left to act on, so the row
+			    goes rather than sitting above a confirmation it cannot affect. The
+			    close button is the shell's own and stays. */}
+			{!finished && (
+				<div className={cls("window-actions")} data-testid={tid("window-actions")}>
+					{/* eslint-disable-next-line react-hooks/refs -- `api` carries `finish`, which writes the `handled` ref; consumers only ever call it from an event handler, and the rule cannot see that through the render callback */}
+					{config.windowActions?.(api)}
+					{/* The only control that discards. Everything else keeps the form. */}
+					<button
+						type="button"
+						className={cls("window-action")}
+						aria-label="Clear"
+						title="Clear this form — every other way out keeps it"
+						onClick={clear}
+						data-testid={tid("clear")}
+					>
+						Clear
+					</button>
+				</div>
+			)}
 			{/* eslint-disable-next-line react-hooks/refs -- same as above: `finish` is an event-handler callback, never invoked during render */}
 			{config.render(api)}
 		</>

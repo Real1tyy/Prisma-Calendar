@@ -34,7 +34,6 @@ import { openPreservedFormModal } from "./preserved-form";
 export interface OpenFeedbackOptions {
 	app: App;
 	slug: PluginSlug;
-	pluginDisplayName: string;
 	pluginVersion: string;
 	/** Trailing-dash CSS prefix, e.g. `"prisma-"`. */
 	cssPrefix: string;
@@ -64,7 +63,6 @@ export interface OpenFeedbackOptions {
 export function createFeedbackSession({
 	app,
 	slug,
-	pluginDisplayName,
 	pluginVersion,
 	cssPrefix,
 	privacyUrl,
@@ -124,7 +122,6 @@ export function createFeedbackSession({
 					: {}),
 				render: (form) => (
 					<FeedbackModalContent
-						pluginDisplayName={pluginDisplayName}
 						privacyUrl={privacyUrl}
 						licenseAttributionAvailable={attribution}
 						{...(logService !== undefined ? { captureDebugBundle } : {})}
