@@ -73,6 +73,16 @@ export function parseRotatedLogName(path: string): RotatedLogFile | null {
 }
 
 /**
+ * Hand-rolled rather than `/\/+$/`: that pattern's unanchored `+` run retries
+ * from every slash, so a long run of them costs O(n²) (CodeQL js/polynomial-redos).
+ */
+function stripTrailingSlashes(value: string): string {
+	let end = value.length;
+	while (end > 0 && value[end - 1] === "/") end--;
+	return end === value.length ? value : value.slice(0, end);
+}
+
+/**
  * The device segment used in file names: lower-case alphanumerics, padded or
  * truncated to a fixed width so the name stays unambiguous to parse.
  */
@@ -130,7 +140,7 @@ export class FileSink implements LogSink {
 	constructor(options: FileSinkOptions) {
 		this.fs = options.fs;
 		this.now = options.now;
-		this.dir = options.dir.replace(/\/+$/, "");
+		this.dir = stripTrailingSlashes(options.dir);
 		this.device = deviceSegment(options.deviceId);
 		this.activePath = `${this.dir}/${ACTIVE_STEM}-${this.device}.jsonl`;
 		this.maxBytes = Math.max(1, options.maxFileSizeKb) * 1024;

@@ -131,6 +131,16 @@ function normalizePath(path: string): string {
 	return path.normalize("NFC").replace(/\\/g, "/");
 }
 
+/**
+ * Hand-rolled rather than `/\/+$/`: that pattern's unanchored `+` run retries
+ * from every slash, so a long run of them costs O(n²) (CodeQL js/polynomial-redos).
+ */
+function stripTrailingSlashes(value: string): string {
+	let end = value.length;
+	while (end > 0 && value[end - 1] === "/") end--;
+	return end === value.length ? value : value.slice(0, end);
+}
+
 function isWithinRoot(path: string, root: string): boolean {
 	// Windows and the default macOS filesystem are case-insensitive. Redaction
 	// must not depend on the casing a caller or stack trace happened to use. A
@@ -206,7 +216,7 @@ export function abbreviatePath(path: string, vaultPath?: string): string {
 	const marker = PATH_MARKER.exec(normalized);
 	if (marker) return `${marker[0]}${hashSegments(normalized.slice(marker[0].length))}`;
 	if (vaultPath) {
-		const root = normalizePath(vaultPath).replace(/\/+$/, "");
+		const root = stripTrailingSlashes(normalizePath(vaultPath));
 		if (root && isWithinRoot(normalized, root)) {
 			const rest = normalized.slice(root.length).replace(/^\/+/, "");
 			return `vault://${hashSegments(rest)}`;
@@ -237,7 +247,7 @@ const BEARER_IN_TEXT = /\b(Bearer|Basic)\s+[A-Za-z0-9\-._~+/]{8,}=*/g;
 const JWT_IN_TEXT = /\beyJ[A-Za-z0-9_-]{4,}\.[A-Za-z0-9_-]{4,}\.[A-Za-z0-9_-]{4,}/g;
 const CREDENTIAL_SHAPE_IN_TEXT =
 	/\b(?:sk-[A-Za-z0-9_-]{12,}|(?:sk|rk)_(?:live|test)_[A-Za-z0-9_-]{12,}|lic_[A-Za-z0-9_-]{12,}|gh[pousr]_[A-Za-z0-9_]{12,}|github_pat_[A-Za-z0-9_]{12,}|glpat-[A-Za-z0-9_-]{12,}|npm_[A-Za-z0-9]{24,}|xox[baprs]-[A-Za-z0-9-]{12,}|(?:AKIA|ASIA)[A-Z0-9]{16}|AIza[A-Za-z0-9_-]{30,})\b/g;
-const PRIVATE_KEY_IN_TEXT = /-----BEGIN ((?:RSA |EC |OPENSSH )?PRIVATE KEY)-----[\s\S]*?-----END \1-----/g;
+const PRIVATE_KEY_BEGIN_IN_TEXT = /-----BEGIN ((?:RSA |EC |OPENSSH )?PRIVATE KEY)-----/g;
 const URL_USERINFO_IN_TEXT = /(:\/\/)[^\s/@]+:[^\s/@]+@/g;
 const AUTHORIZATION_IN_TEXT = /\b(authorization)(\s*[:=]\s*)(?:(Bearer|Basic)\s+)?("[^"]*"|'[^']*'|[^\s,;)}\]]+)/gi;
 const KEY_VALUE_IN_TEXT =
@@ -275,7 +285,7 @@ function escapeRegExp(text: string): string {
  */
 function collapseVaultRoot(text: string, vaultPath: string | undefined): string {
 	if (!vaultPath) return text;
-	const root = normalizePath(vaultPath).replace(/\/+$/, "");
+	const root = stripTrailingSlashes(normalizePath(vaultPath));
 	if (!root) return text;
 	// Match either separator at every boundary, including mixed-separator stack
 	// traces. Case-folding is deliberately privacy-biased; see isWithinRoot().
@@ -283,9 +293,45 @@ function collapseVaultRoot(text: string, vaultPath: string | undefined): string 
 	return text.normalize("NFC").replace(new RegExp(`(?:${rootPattern})(?=[\\\\/]|$|[^\\w])[\\\\/]*`, "gi"), "vault://");
 }
 
+/**
+ * Replace every complete PEM private-key block, pairing each BEGIN header with
+ * the first END marker of its own key type.
+ *
+ * A forward scan rather than one `-----BEGIN …-----[\s\S]*?-----END \1-----`
+ * regex: that form restarts its lazy scan at every BEGIN header, so text
+ * carrying many unterminated headers costs O(n²) (CodeQL js/polynomial-redos).
+ * Here each header consumes the string once, and a key type whose END marker is
+ * absent is searched for only once — no later header can find it either.
+ */
+function redactPrivateKeys(text: string): string {
+	PRIVATE_KEY_BEGIN_IN_TEXT.lastIndex = 0;
+	const unterminated = new Set<string>();
+	let out = "";
+	let copied = 0;
+	let begin: RegExpExecArray | null;
+
+	while ((begin = PRIVATE_KEY_BEGIN_IN_TEXT.exec(text)) !== null) {
+		const endMarker = `-----END ${begin[1]}-----`;
+		if (unterminated.has(endMarker)) continue;
+
+		const endAt = text.indexOf(endMarker, begin.index + begin[0].length);
+		if (endAt === -1) {
+			unterminated.add(endMarker);
+			continue;
+		}
+
+		const stop = endAt + endMarker.length;
+		out += text.slice(copied, begin.index) + REDACTED_SECRET;
+		copied = stop;
+		PRIVATE_KEY_BEGIN_IN_TEXT.lastIndex = stop;
+	}
+
+	// `copied` only advances past a replacement, so zero means nothing matched.
+	return copied === 0 ? text : out + text.slice(copied);
+}
+
 function stripSecretsFromText(text: string): string {
-	return text
-		.replace(PRIVATE_KEY_IN_TEXT, REDACTED_SECRET)
+	return redactPrivateKeys(text)
 		.replace(URL_USERINFO_IN_TEXT, `$1${REDACTED_SECRET}@`)
 		.replace(JWT_IN_TEXT, REDACTED_SECRET)
 		.replace(
