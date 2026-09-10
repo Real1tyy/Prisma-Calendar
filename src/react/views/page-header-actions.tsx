@@ -144,6 +144,15 @@ const ACTION_SPECS: readonly ActionSpec[] = [
 		icon: "tag",
 	},
 	{ id: "open-ai-chat", commandId: FULL_COMMAND_IDS.OPEN_AI_CHAT, label: "Open AI Chat", icon: "bot" },
+
+	// ─── Feedback ────────────────────────────────────────────────
+	{ id: "send-feedback", commandId: FULL_COMMAND_IDS.SEND_FEEDBACK, label: "Send Feedback", icon: "message-square" },
+	{
+		id: "screenshot-feedback",
+		commandId: FULL_COMMAND_IDS.SCREENSHOT_AND_REPORT_A_BUG,
+		label: "Take Screenshot & Send Feedback",
+		icon: "camera",
+	},
 ];
 
 export const DEFAULT_ACTION_IDS = new Set([

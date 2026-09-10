@@ -67,7 +67,9 @@ Submissions are one-way, so this is the wrong place for a question you need answ
 
 **Adding a screenshot.** Click **Add screenshot** to pick an image, or take a screen grab and paste it straight into the modal. Attachments appear as thumbnails you can remove, up to three per report. A screenshot is not redacted, so check what's on screen before you attach it.
 
-**Leaving keeps the report.** Escape, a click outside, the close button — all of them put the report down rather than throw it away, with everything you typed and attached still in it. **Prisma Calendar: Restore minimized report** brings it back (bind it to a hotkey if you use it often). The one control that discards a report is **Clear**, next to the close button.
+**Leaving keeps the report.** Escape, a click outside, the close button — all of them put the report down rather than throw it away, with everything you typed and attached still in it. Opening feedback again brings that report back, as does **Prisma Calendar: Restore minimized report** (bind it to a hotkey if you use it often). The one control that discards a report is **Clear**, next to the close button.
+
+**From the toolbar.** **Send Feedback** and **Take Screenshot & Send Feedback** are also page-header actions — add either to a calendar's toolbar from the header's action manager to report what you're looking at without leaving the view.
 
 **Photographing the problem from inside the report.** The report sits on top of the thing it's asking about, so it gets out of the way:
 

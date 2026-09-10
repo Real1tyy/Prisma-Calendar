@@ -46,10 +46,13 @@ export class FeedbackSession {
 	}
 
 	async open(initialState: Partial<FeedbackFormState> = {}): Promise<void> {
-		// Opening a fresh report abandons a minimized one rather than stacking a
-		// second: one report at a time is the whole model, and the user asking for
-		// a new one has said which they mean.
-		MinimizedModals.clear();
+		// A report the user walked away from is still theirs: asking for feedback
+		// again brings it back rather than replacing it with an empty form and
+		// throwing away what they had written. Clear is how you start over.
+		if (hasMinimizedFeedback()) {
+			MinimizedModals.restore();
+			return;
+		}
 		await this.show(initialState);
 	}
 

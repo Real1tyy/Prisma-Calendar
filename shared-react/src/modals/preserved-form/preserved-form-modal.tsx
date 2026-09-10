@@ -131,10 +131,13 @@ export function openPreservedFormModal<State>(
 	config: PreservedFormModalConfig<State>,
 	seed?: State
 ): PreservedFormHandle {
-	// A form re-opened from scratch replaces whatever was parked under its label:
-	// one form of a kind at a time, and the user asking for a new one has said
-	// which they mean.
-	if (seed === undefined && hasPreservedForm(config.label)) MinimizedModals.clear();
+	// Opening a form of a kind that is already parked surfaces the parked one
+	// rather than replacing it: the user asking for the form again is asking for
+	// what they were writing, and Clear is how they say otherwise. An explicit
+	// seed means the caller already knows which report this is (a restore, a
+	// capture round-trip) and decides for itself.
+	const parked = seed === undefined ? preservedFormState<State>(config.label) : null;
+	if (parked !== null) MinimizedModals.clear();
 
 	const onDismiss = (state: State): void => {
 		if (config.isEmpty(state)) return;
@@ -157,7 +160,12 @@ export function openPreservedFormModal<State>(
 		render: (closeModal) => {
 			close = closeModal;
 			return (
-				<PreservedFormShell config={config} seed={seed ?? config.blank()} close={closeModal} onDismiss={onDismiss} />
+				<PreservedFormShell
+					config={config}
+					seed={seed ?? parked ?? config.blank()}
+					close={closeModal}
+					onDismiss={onDismiss}
+				/>
 			);
 		},
 	});
