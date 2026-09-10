@@ -13,6 +13,7 @@ import {
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type ClipboardEvent } from "react";
 
 import { useScoped } from "../contexts/theme-context";
+import { useFocusOnMount } from "../hooks/focus";
 import { useScopedStyles } from "../hooks/styles/use-styles";
 import { Button } from "../primitives/atoms/button";
 import { ObsidianIcon } from "../primitives/atoms/obsidian-icon";
@@ -145,9 +146,19 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 	const [phase, setPhase] = useState<Phase>("form");
 	const [error, setError] = useState<string | null>(null);
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
+	const textRef = useRef<HTMLTextAreaElement | null>(null);
+
 	// Guards a second click landing in the same tick as the first, before the
 	// `sending` phase has re-rendered the disabled button.
 	const inFlightRef = useRef(false);
+
+	// The description is the only thing the user must supply, so the report opens
+	// with the cursor in it. `autoFocus` is not enough: a report re-opened from a
+	// command or from the capture bar arrives while Obsidian is still activating
+	// the leaf behind it, and that activation takes the focus back a beat later —
+	// so this keeps re-claiming it briefly, and stands down the moment the user
+	// clicks or types anywhere.
+	useFocusOnMount(textRef, { retryMs: 500 });
 
 	// Captured once per toggle rather than at send time, so what the user reviews
 	// below the checkbox is byte-for-byte what leaves the device.
@@ -287,9 +298,7 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 			</div>
 
 			<textarea
-				// The description is the only thing the user must supply — after a
-				// capture round-trip especially, they should be able to just type.
-				autoFocus
+				ref={textRef}
 				className={cls("text")}
 				aria-label="Description"
 				placeholder={TYPE_PLACEHOLDERS[type]}
