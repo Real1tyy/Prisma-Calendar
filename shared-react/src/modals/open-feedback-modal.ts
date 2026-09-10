@@ -1,5 +1,9 @@
 import {
 	buildDebugBundle,
+	createScreenCapture,
+	createWindowCapture,
+	FEEDBACK_MAX_SCREENSHOT_BYTES,
+	getElectronWindow,
 	getOrCreateAnonymousClientId,
 	getPlatformId,
 	SubmissionClient,
@@ -9,13 +13,16 @@ import {
 	type LicenseManager,
 	type LogService,
 	type PluginSlug,
+	type ScreenCapture,
 	type SubmissionContext,
 	type SubmissionResult,
 } from "@real1ty/obsidian-plugins";
-import { apiVersion, type App } from "obsidian";
+import { apiVersion, Notice, type App } from "obsidian";
 
 import { getAttributableLicenseKey } from "../utils/license-attribution";
-import { showFeedbackReactModal } from "./feedback-modal";
+import { showCaptureBar } from "./capture-bar";
+import { showFeedbackReactModal, type FeedbackFormState } from "./feedback-modal";
+import { FeedbackSession } from "./feedback-session";
 
 export interface OpenFeedbackOptions {
 	app: App;
@@ -33,19 +40,21 @@ export interface OpenFeedbackOptions {
 }
 
 /**
- * Opens the feedback modal, fully wired: debug bundle from the plugin's own log
+ * Builds the feedback flow, fully wired: debug bundle from the plugin's own log
  * buffer, license attribution for a verified Pro install, submission through the
- * shared client.
+ * shared client, and — on desktop — window capture behind the minimize/capture
+ * loop.
  *
  * Lives apart from the settings row because there are two entry points into the
  * same flow — the General section's button and a command the user can bind a
  * hotkey to — and the wiring must not differ between them
  * ([[spec-in-app-feedback-and-bug-reports]]).
  *
- * Async because the license key is read from secret storage before the modal
- * opens; it decides whether the attribution checkbox is offered at all.
+ * The session is cheap and holds no state of its own — the minimized report
+ * lives in the shared slot — so a command can build one per invocation and
+ * still find the report the last one minimized.
  */
-export async function openFeedbackModal({
+export function createFeedbackSession({
 	app,
 	slug,
 	pluginDisplayName,
@@ -54,7 +63,7 @@ export async function openFeedbackModal({
 	privacyUrl,
 	logService,
 	licenseManager,
-}: OpenFeedbackOptions): Promise<void> {
+}: OpenFeedbackOptions): FeedbackSession {
 	const environment: DebugEnvironment = {
 		pluginId: slug,
 		pluginVersion,
@@ -79,14 +88,44 @@ export async function openFeedbackModal({
 		return new SubmissionClient(context).submit("feedback", submission);
 	};
 
-	const licenseKey = await getAttributableLicenseKey(licenseManager);
+	// Read once per modal open rather than per session: entitlement can change
+	// while a report is minimized, and the checkbox must reflect what is true now.
+	const showModal = async (props: {
+		initialState: Partial<FeedbackFormState>;
+		onMinimize: (state: FeedbackFormState) => void;
+		onCapture: ((state: FeedbackFormState) => void) | undefined;
+	}) => {
+		const licenseKey = await getAttributableLicenseKey(licenseManager);
+		return showFeedbackReactModal(app, {
+			cssPrefix,
+			pluginDisplayName,
+			privacyUrl,
+			licenseAttributionAvailable: licenseKey !== null,
+			...(logService !== undefined ? { captureDebugBundle } : {}),
+			submit,
+			initialState: props.initialState,
+			onMinimize: props.onMinimize,
+			onCapture: props.onCapture,
+		});
+	};
 
-	showFeedbackReactModal(app, {
-		cssPrefix,
-		pluginDisplayName,
-		privacyUrl,
-		licenseAttributionAvailable: licenseKey !== null,
-		...(logService !== undefined ? { captureDebugBundle } : {}),
-		submit,
+	return new FeedbackSession({
+		showModal,
+		showCaptureBar: ({ onCapture, onCancel }) => showCaptureBar({ cssPrefix, onCapture, onCancel }),
+		capture: buildScreenCapture(),
+		notify: (message) => {
+			new Notice(message);
+		},
 	});
+}
+
+/** Null on mobile and in every non-Electron runtime, which is what hides the capture affordances. */
+function buildScreenCapture(): ScreenCapture | null {
+	if (getElectronWindow() === null) return null;
+	return createScreenCapture(createWindowCapture(getElectronWindow, { maxBytes: FEEDBACK_MAX_SCREENSHOT_BYTES }));
+}
+
+/** Opens a fresh report. The commands and the General-section button share this entry. */
+export async function openFeedbackModal(options: OpenFeedbackOptions): Promise<void> {
+	await createFeedbackSession(options).open();
 }

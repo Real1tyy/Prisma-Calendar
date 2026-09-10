@@ -56,11 +56,37 @@ export interface FeedbackModalProps {
 	licenseAttributionAvailable?: boolean | undefined;
 	/** Posts the assembled payload. Returns a typed result — it never throws. */
 	submit: (submission: FeedbackSubmission, includeLicenseKey: boolean) => Promise<SubmissionResult>;
+	/** Seeds a restored report, or one the screenshot command pre-loaded. */
+	initialState?: Partial<FeedbackFormState> | undefined;
+	/** Collapses the report, handing its state to the host. Omitted ⇒ no minimize control. */
+	onMinimize?: ((state: FeedbackFormState) => void) | undefined;
+	/**
+	 * Minimizes and starts the screenshot flow. Omitted where capture is
+	 * unavailable — mobile — so the control never advertises what can't happen.
+	 */
+	onCapture?: ((state: FeedbackFormState) => void) | undefined;
 	onClose: () => void;
 }
 
 /** Two pastes of the same clipboard image are indistinguishable, so the render key is minted, not derived. */
-type AttachedScreenshot = ScreenshotAttachment & { id: string };
+export type AttachedScreenshot = ScreenshotAttachment & { id: string };
+
+/**
+ * Everything the user has entered, in one object — because minimize has to hand
+ * the whole report to the host and get it back intact, and a field that lives
+ * only as a local `useState` is a field that silently doesn't survive
+ * ([[spec-feedback-commands-and-screenshot-capture]] R7).
+ */
+export interface FeedbackFormState {
+	type: FeedbackType;
+	text: string;
+	includeDebug: boolean;
+	includeLicenseKey: boolean;
+	fullDetail: boolean;
+	screenshots: AttachedScreenshot[];
+	/** A rejected attachment survives minimize, so the user still learns why it isn't there. */
+	attachError: string | null;
+}
 
 function dataUrlOf(shot: ScreenshotAttachment): string {
 	return `data:${shot.mimeType};base64,${shot.dataBase64}`;
@@ -94,19 +120,24 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 	captureDebugBundle,
 	licenseAttributionAvailable = false,
 	submit,
+	initialState,
+	onMinimize,
+	onCapture,
 	onClose,
 }: FeedbackModalProps) {
 	const { cls, tid } = useScopedStyles("feedback", buildFeedbackStyles);
-	const [type, setType] = useState<FeedbackType>("bug");
-	const [text, setText] = useState("");
-	const [includeDebug, setIncludeDebug] = useState(true);
-	const [includeLicenseKey, setIncludeLicenseKey] = useState(licenseAttributionAvailable);
-	const [fullDetail, setFullDetail] = useState(false);
-	const [screenshots, setScreenshots] = useState<AttachedScreenshot[]>([]);
+	const [type, setType] = useState<FeedbackType>(initialState?.type ?? "bug");
+	const [text, setText] = useState(initialState?.text ?? "");
+	const [includeDebug, setIncludeDebug] = useState(initialState?.includeDebug ?? true);
+	const [includeLicenseKey, setIncludeLicenseKey] = useState(
+		initialState?.includeLicenseKey ?? licenseAttributionAvailable
+	);
+	const [fullDetail, setFullDetail] = useState(initialState?.fullDetail ?? false);
+	const [screenshots, setScreenshots] = useState<AttachedScreenshot[]>(initialState?.screenshots ?? []);
 	const [preview, setPreview] = useState<AttachedScreenshot | null>(null);
 	const [phase, setPhase] = useState<Phase>("form");
 	const [error, setError] = useState<string | null>(null);
-	const [attachError, setAttachError] = useState<string | null>(null);
+	const [attachError, setAttachError] = useState<string | null>(initialState?.attachError ?? null);
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
 	// Guards a second click landing in the same tick as the first, before the
 	// `sending` phase has re-rendered the disabled button.
@@ -175,6 +206,14 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 
 	const closePreview = useCallback(() => setPreview(null), []);
 
+	const snapshot = useCallback(
+		(): FeedbackFormState => ({ type, text, includeDebug, includeLicenseKey, fullDetail, screenshots, attachError }),
+		[attachError, fullDetail, includeDebug, includeLicenseKey, screenshots, text, type]
+	);
+
+	const minimize = useCallback(() => onMinimize?.(snapshot()), [onMinimize, snapshot]);
+	const startCapture = useCallback(() => onCapture?.(snapshot()), [onCapture, snapshot]);
+
 	const handleSubmit = useCallback(async () => {
 		if (text.trim() === "" || inFlightRef.current) return;
 		inFlightRef.current = true;
@@ -221,6 +260,35 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 
 	return (
 		<div data-testid={tid("modal")} onPaste={handlePaste}>
+			{(onMinimize !== undefined || onCapture !== undefined) && (
+				<div className={cls("window-actions")} data-testid={tid("window-actions")}>
+					{onCapture !== undefined && (
+						<button
+							type="button"
+							className={cls("window-action")}
+							aria-label="Take a screenshot"
+							title="Minimize and take a screenshot of Obsidian"
+							onClick={startCapture}
+							data-testid={tid("screenshot")}
+						>
+							📷
+						</button>
+					)}
+					{onMinimize !== undefined && (
+						<button
+							type="button"
+							className={cls("window-action")}
+							aria-label="Minimize"
+							title="Minimize — the report keeps everything you have written"
+							onClick={minimize}
+							data-testid={tid("minimize")}
+						>
+							⤓
+						</button>
+					)}
+				</div>
+			)}
+
 			<p className={cls("intro")} data-testid={tid("intro")}>
 				{TYPE_INTROS[type]}
 			</p>
@@ -242,6 +310,9 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 			</div>
 
 			<textarea
+				// The description is the only thing the user must supply — after a
+				// capture round-trip especially, they should be able to just type.
+				autoFocus
 				className={cls("text")}
 				aria-label="Description"
 				placeholder={TYPE_PLACEHOLDERS[type]}
@@ -382,24 +453,40 @@ export interface ShowFeedbackModalConfig {
 	captureDebugBundle?: (() => DebugBundle) | undefined;
 	licenseAttributionAvailable?: boolean | undefined;
 	submit: (submission: FeedbackSubmission, includeLicenseKey: boolean) => Promise<SubmissionResult>;
+	initialState?: Partial<FeedbackFormState> | undefined;
+	onMinimize?: ((state: FeedbackFormState) => void) | undefined;
+	onCapture?: ((state: FeedbackFormState) => void) | undefined;
 }
 
-export function showFeedbackReactModal(app: App, config: ShowFeedbackModalConfig): void {
+/** Lets the host close the report from outside — which is what minimizing is. */
+export interface FeedbackModalHandle {
+	close: () => void;
+}
+
+export function showFeedbackReactModal(app: App, config: ShowFeedbackModalConfig): FeedbackModalHandle {
+	let close = (): void => {};
 	showReactModal({
 		app,
 		cls: `${config.cssPrefix}feedback-modal`,
 		cssPrefix: config.cssPrefix,
 		testIdPrefix: config.cssPrefix,
 		title: "Send feedback",
-		render: (close) => (
-			<FeedbackModalContent
-				pluginDisplayName={config.pluginDisplayName}
-				privacyUrl={config.privacyUrl}
-				captureDebugBundle={config.captureDebugBundle}
-				licenseAttributionAvailable={config.licenseAttributionAvailable}
-				submit={config.submit}
-				onClose={close}
-			/>
-		),
+		render: (closeModal) => {
+			close = closeModal;
+			return (
+				<FeedbackModalContent
+					pluginDisplayName={config.pluginDisplayName}
+					privacyUrl={config.privacyUrl}
+					captureDebugBundle={config.captureDebugBundle}
+					licenseAttributionAvailable={config.licenseAttributionAvailable}
+					submit={config.submit}
+					initialState={config.initialState}
+					onMinimize={config.onMinimize}
+					onCapture={config.onCapture}
+					onClose={closeModal}
+				/>
+			);
+		},
 	});
+	return { close: () => close() };
 }

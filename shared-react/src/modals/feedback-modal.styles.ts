@@ -19,6 +19,24 @@ export function buildFeedbackStyles(p: string): string {
 .${p}feedback-modal .modal-content {
 	font-size: var(--font-ui-medium);
 }
+.${p}feedback-window-actions {
+	display: flex;
+	gap: 0.25rem;
+	justify-content: flex-end;
+	margin: -0.5rem 0 0.25rem;
+}
+.${p}feedback-modal button.${p}feedback-window-action {
+	background: transparent;
+	box-shadow: none;
+	color: var(--text-muted);
+	font-size: var(--font-ui-medium);
+	line-height: 1;
+	padding: 0.3rem 0.45rem;
+}
+.${p}feedback-modal button.${p}feedback-window-action:hover {
+	background: var(--background-modifier-hover);
+	color: var(--text-normal);
+}
 .${p}feedback-intro {
 	color: var(--text-muted);
 	font-size: var(--font-ui-small);

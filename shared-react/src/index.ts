@@ -140,10 +140,22 @@ export {
 	FrontmatterPropagationModalContent,
 	openFrontmatterPropagationModal,
 } from "./modals/frontmatter-propagation-modal";
-export type { FeedbackModalProps, ShowFeedbackModalConfig } from "./modals/feedback-modal";
+export type {
+	AttachedScreenshot,
+	FeedbackFormState,
+	FeedbackModalHandle,
+	FeedbackModalProps,
+	ShowFeedbackModalConfig,
+} from "./modals/feedback-modal";
 export { FeedbackModalContent, showFeedbackReactModal } from "./modals/feedback-modal";
+export type { FeedbackSessionDeps } from "./modals/feedback-session";
+export { FeedbackSession, hasMinimizedFeedback, MINIMIZED_FEEDBACK_LABEL } from "./modals/feedback-session";
 export type { OpenFeedbackOptions } from "./modals/open-feedback-modal";
-export { openFeedbackModal } from "./modals/open-feedback-modal";
+export { createFeedbackSession, openFeedbackModal } from "./modals/open-feedback-modal";
+export type { CaptureBarHandle, CaptureBarProps, ShowCaptureBarOptions } from "./modals/capture-bar";
+export { CaptureBar, showCaptureBar } from "./modals/capture-bar";
+export type { MinimizedModal } from "./modals/minimized-modal-slot";
+export { MinimizedModals } from "./modals/minimized-modal-slot";
 export type { ImageLightboxProps } from "./modals/image-lightbox";
 export { ImageLightbox } from "./modals/image-lightbox";
 export type { ShowReactIconPickerOptions } from "./modals/icon-picker-modal";
