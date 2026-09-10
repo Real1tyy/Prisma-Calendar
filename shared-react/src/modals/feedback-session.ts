@@ -24,12 +24,6 @@ export interface FeedbackSessionDeps {
 	/** Null where the platform can't capture — mobile — which hides every capture affordance. */
 	capture: ScreenCapture | null;
 	notify: (message: string) => void;
-	/**
-	 * Brings the app's own window forward. A report opened from the settings
-	 * window belongs to that window, so without this the capture bar and the
-	 * returning report end up behind it.
-	 */
-	focusApp?: (() => void) | undefined;
 	newId?: (() => string) | undefined;
 }
 
@@ -132,10 +126,6 @@ export class FeedbackSession {
 	 * except the bar — which takes itself out before the shutter fires.
 	 */
 	private beginCapture(): void {
-		// The whole flow from here belongs to the app's window: it is the app the
-		// user is about to photograph, and a bar behind the settings window is a
-		// bar that does not exist as far as they are concerned.
-		this.deps.focusApp?.();
 		this.deps.showCaptureBar({
 			onCapture: () => void this.captureNow(),
 			onCancel: () => MinimizedModals.restore(),
@@ -147,11 +137,6 @@ export class FeedbackSession {
 		const state = minimizedFeedback();
 		if (state === null) return;
 		MinimizedModals.clear();
-		// Focused *before* the capture, not after: bringing a window forward is an
-		// OS round-trip, and Obsidian builds a modal against whichever window is
-		// active at that moment. Asking first gives the focus the whole capture to
-		// land, so the report that follows is built against the app's window.
-		this.deps.focusApp?.();
 		await this.show(await this.captureInto(state));
 	}
 

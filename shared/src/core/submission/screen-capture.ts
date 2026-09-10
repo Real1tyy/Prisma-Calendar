@@ -15,8 +15,6 @@ export interface NativeImageLike {
 
 export interface CaptureWindowLike {
 	webContents: { capturePage(): Promise<NativeImageLike> };
-	/** Brings the window forward. Absent on the fakes that only exercise capture. */
-	focus?: () => void;
 }
 
 /** Bytes plus the metadata the attachment needs. What a mechanism returns. */
@@ -120,19 +118,4 @@ export function getElectronWindow(): CaptureWindowLike | null {
 	} catch {
 		return null;
 	}
-}
-
-/**
- * Brings the main Obsidian window forward.
- *
- * Obsidian 1.13 opens Settings in a window of its own, and a modal opened from
- * there belongs to *that* window — so a capture flow started from the settings
- * page would put its bar and its returning report behind the settings window,
- * where the user never sees them. The capture is of the app, so the flow belongs
- * to the app's window ([[spec-feedback-commands-and-screenshot-capture]]).
- *
- * A no-op wherever there is no Electron window to focus.
- */
-export function focusAppWindow(): void {
-	getElectronWindow()?.focus?.();
 }
