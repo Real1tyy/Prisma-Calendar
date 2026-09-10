@@ -72,11 +72,10 @@ function waitForParsingIdle(internals: MetadataCacheInternals, resolve: () => vo
 
 	let lastCount = internals.inProgressTaskCount;
 	let lastProgressAt = Date.now();
-	// Diagnostic breadcrumb: a "stuck on the indexing overlay" report is only
-	// actionable if the console shows which gate was waiting and on what.
-	console.info(
-		`[waitForCacheReady] Obsidian is still indexing (${lastCount} parse task(s) in flight); waiting for it to finish before the plugin starts.`
-	);
+	// Only the stall below is reported: waiting for indexing is the normal path
+	// on every launch of a large vault, and Obsidian's review bans logging it
+	// ([[decision-obsidian-eslint-release-gate]]). The give-up case stays — that
+	// is the one a "stuck on the indexing overlay" report needs.
 	const poll = window.setInterval(() => {
 		if (isParsingIdle(internals)) {
 			window.clearInterval(poll);

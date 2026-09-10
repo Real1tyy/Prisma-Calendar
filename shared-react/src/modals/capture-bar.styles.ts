@@ -21,6 +21,9 @@ export function buildCaptureBarStyles(p: string): string {
 	transform: translateX(-50%);
 	z-index: var(--layer-notice, 100);
 }
+.${p}capture-bar-root.${p}capture-bar-hidden {
+	visibility: hidden;
+}
 .${p}capture-bar-hint {
 	color: var(--text-muted);
 	font-size: var(--font-ui-small);

@@ -110,7 +110,7 @@ interface ElectronRemoteLike {
  * as "hide the capture affordance" rather than as an error.
  */
 export function getElectronWindow(): CaptureWindowLike | null {
-	const load = (globalThis as { require?: (id: string) => unknown }).require;
+	const load = (window as unknown as { require?: (id: string) => unknown }).require;
 	if (typeof load !== "function") return null;
 	try {
 		const electron = load("electron") as ElectronRemoteLike | undefined;

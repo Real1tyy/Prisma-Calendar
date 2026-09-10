@@ -35,9 +35,9 @@ export const CaptureBar = memo(function CaptureBar({ onCapture, onCancel, afterP
 		if (firedRef.current) return;
 		firedRef.current = true;
 		const bar = barRef.current;
-		if (bar !== null) bar.style.visibility = "hidden";
+		if (bar !== null) bar.classList.add(cls("hidden"));
 		afterPaint(onCapture);
-	}, [afterPaint, onCapture]);
+	}, [afterPaint, cls, onCapture]);
 
 	useEffect(() => {
 		captureRef.current?.focus();
@@ -72,7 +72,7 @@ export const CaptureBar = memo(function CaptureBar({ onCapture, onCancel, afterP
 
 /** One frame to apply the style, a second to be sure it has been presented. */
 function doubleRaf(run: () => void): void {
-	requestAnimationFrame(() => requestAnimationFrame(run));
+	window.requestAnimationFrame(() => window.requestAnimationFrame(run));
 }
 
 export interface ShowCaptureBarOptions {
@@ -98,9 +98,7 @@ export function showCaptureBar({
 	onCapture,
 	onCancel,
 }: ShowCaptureBarOptions): CaptureBarHandle {
-	const host = ownerDocument.createElement("div");
-	host.className = `${cssPrefix}capture-bar-host`;
-	ownerDocument.body.appendChild(host);
+	const host = ownerDocument.body.createDiv({ cls: `${cssPrefix}capture-bar-host` });
 	const root = createRoot(host);
 
 	let closed = false;
@@ -109,7 +107,7 @@ export function showCaptureBar({
 		closed = true;
 		// Unmount is deferred: React refuses to unmount a root synchronously from
 		// inside the render it is committing.
-		setTimeout(() => {
+		window.setTimeout(() => {
 			root.unmount();
 			host.remove();
 		}, 0);
