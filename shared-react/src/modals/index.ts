@@ -5,19 +5,14 @@ export type {
 	OpenFrontmatterPropagationOptions,
 } from "./frontmatter-propagation-modal";
 export { FrontmatterPropagationModalContent, openFrontmatterPropagationModal } from "./frontmatter-propagation-modal";
-export type {
-	AttachedScreenshot,
-	FeedbackFormState,
-	FeedbackModalHandle,
-	FeedbackModalProps,
-	ShowFeedbackModalConfig,
-} from "./feedback-modal";
-export { FeedbackModalContent, showFeedbackReactModal } from "./feedback-modal";
+export type { AttachedScreenshot, FeedbackFormState, FeedbackModalProps } from "./feedback-modal";
+export { blankFeedbackForm, FeedbackModalContent, FeedbackWindowActions, isFeedbackFormEmpty } from "./feedback-modal";
 export type { FeedbackSessionDeps } from "./feedback-session";
 export { FeedbackSession, hasMinimizedFeedback, MINIMIZED_FEEDBACK_LABEL } from "./feedback-session";
 export type { OpenFeedbackOptions } from "./open-feedback-modal";
 export { createFeedbackSession, openFeedbackModal } from "./open-feedback-modal";
 export type { CaptureBarHandle, CaptureBarProps, ShowCaptureBarOptions } from "./capture-bar";
+export * from "./preserved-form";
 export { CaptureBar, showCaptureBar } from "./capture-bar";
 export type { MinimizedModal } from "./minimized-modal-slot";
 export { MinimizedModals } from "./minimized-modal-slot";

@@ -10,18 +10,18 @@ import {
 	type ScreenshotAttachment,
 	type SubmissionResult,
 } from "@real1ty/obsidian-plugins";
-import type { App } from "obsidian";
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type ClipboardEvent } from "react";
 
+import { useScoped } from "../contexts/theme-context";
 import { useScopedStyles } from "../hooks/styles/use-styles";
 import { Button } from "../primitives/atoms/button";
 import { ObsidianIcon } from "../primitives/atoms/obsidian-icon";
-import { showReactModal } from "../show-react-modal";
 import { cx } from "../utils/cx";
 import { PrivacyDisclaimer } from "../widgets/privacy-disclaimer/privacy-disclaimer";
 import { registerActiveFeedbackReport } from "./active-feedback-report";
 import { buildFeedbackStyles } from "./feedback-modal.styles";
 import { ImageLightbox } from "./image-lightbox";
+import type { PreservedFormApi } from "./preserved-form";
 
 const TYPE_LABELS: Record<FeedbackType, string> = {
 	bug: "Bug report",
@@ -58,20 +58,12 @@ export interface FeedbackModalProps {
 	licenseAttributionAvailable?: boolean | undefined;
 	/** Posts the assembled payload. Returns a typed result — it never throws. */
 	submit: (submission: FeedbackSubmission, includeLicenseKey: boolean) => Promise<SubmissionResult>;
-	/** Seeds a restored report, or one the screenshot command pre-loaded. */
-	initialState?: Partial<FeedbackFormState> | undefined;
 	/**
-	 * The form left the screen with something in it — Escape, a click outside, the
-	 * close button, all the same. Leaving never costs the user their words; the
-	 * only way to throw a report away is to say so, with Clear.
+	 * The report itself, owned by the preserved-form shell: this component holds
+	 * no draft state of its own, which is what makes leaving lossless without it
+	 * knowing anything about how it was left ([[knowledge-preserved-form-state]]).
 	 */
-	onDismiss?: ((state: FeedbackFormState) => void) | undefined;
-	/**
-	 * Minimizes and starts the screenshot flow. Omitted where capture is
-	 * unavailable — mobile — so the control never advertises what can't happen.
-	 */
-	onCapture?: ((state: FeedbackFormState) => void) | undefined;
-	onClose: () => void;
+	form: PreservedFormApi<FeedbackFormState>;
 }
 
 /** Two pastes of the same clipboard image are indistinguishable, so the render key is minted, not derived. */
@@ -126,24 +118,32 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 	captureDebugBundle,
 	licenseAttributionAvailable = false,
 	submit,
-	initialState,
-	onDismiss,
-	onCapture,
-	onClose,
+	form,
 }: FeedbackModalProps) {
 	const { cls, tid } = useScopedStyles("feedback", buildFeedbackStyles);
-	const [type, setType] = useState<FeedbackType>(initialState?.type ?? "bug");
-	const [text, setText] = useState(initialState?.text ?? "");
-	const [includeDebug, setIncludeDebug] = useState(initialState?.includeDebug ?? true);
-	const [includeLicenseKey, setIncludeLicenseKey] = useState(
-		initialState?.includeLicenseKey ?? licenseAttributionAvailable
+	const { patch, setState, finish, close: onClose } = form;
+	const { type, text, includeDebug, includeLicenseKey, fullDetail, screenshots, attachError } = form.state;
+
+	// Named setters over the shell's one state object, so the form reads the same
+	// as it would with its own `useState` — the difference is only in who owns it.
+	const setText = useCallback((next: string) => patch({ text: next }), [patch]);
+	const setIncludeDebug = useCallback((next: boolean) => patch({ includeDebug: next }), [patch]);
+	const setIncludeLicenseKey = useCallback((next: boolean) => patch({ includeLicenseKey: next }), [patch]);
+	const setFullDetail = useCallback((next: boolean) => patch({ fullDetail: next }), [patch]);
+	const setAttachError = useCallback((next: string | null) => patch({ attachError: next }), [patch]);
+	const setScreenshots = useCallback(
+		(next: AttachedScreenshot[] | ((current: AttachedScreenshot[]) => AttachedScreenshot[])) =>
+			setState((current) => ({
+				...current,
+				screenshots: typeof next === "function" ? next(current.screenshots) : next,
+			})),
+		[setState]
 	);
-	const [fullDetail, setFullDetail] = useState(initialState?.fullDetail ?? false);
-	const [screenshots, setScreenshots] = useState<AttachedScreenshot[]>(initialState?.screenshots ?? []);
+
+	// Ephemeral: none of it is worth carrying across a close.
 	const [preview, setPreview] = useState<AttachedScreenshot | null>(null);
 	const [phase, setPhase] = useState<Phase>("form");
 	const [error, setError] = useState<string | null>(null);
-	const [attachError, setAttachError] = useState<string | null>(initialState?.attachError ?? null);
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
 	// Guards a second click landing in the same tick as the first, before the
 	// `sending` phase has re-rendered the disabled button.
@@ -156,12 +156,14 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 		[includeDebug, captureDebugBundle]
 	);
 
-	const chooseType = useCallback((next: FeedbackType) => {
-		setType(next);
-		// Debug context is what turns "it's broken" into something actionable, so
-		// a bug report opts in by default and everything else opts in by hand.
-		setIncludeDebug(next === "bug");
-	}, []);
+	const chooseType = useCallback(
+		(next: FeedbackType) => {
+			// Debug context is what turns "it's broken" into something actionable, so
+			// a bug report opts in by default and everything else opts in by hand.
+			patch({ type: next, includeDebug: next === "bug" });
+		},
+		[patch]
+	);
 
 	const attach = useCallback(
 		async (files: readonly File[]) => {
@@ -180,7 +182,7 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 			setScreenshots(next);
 			setAttachError(rejected);
 		},
-		[screenshots]
+		[screenshots, setAttachError, setScreenshots]
 	);
 
 	const handleFileInput = useCallback(
@@ -202,66 +204,18 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 		[attach]
 	);
 
-	const removeScreenshot = useCallback((id: string) => {
-		setScreenshots((current) => current.filter((shot) => shot.id !== id));
-		// Removing the image being previewed would leave the lightbox showing
-		// something that is no longer attached.
-		setPreview((current) => (current?.id === id ? null : current));
-		setAttachError(null);
-	}, []);
+	const removeScreenshot = useCallback(
+		(id: string) => {
+			setScreenshots((current) => current.filter((shot) => shot.id !== id));
+			// Removing the image being previewed would leave the lightbox showing
+			// something that is no longer attached.
+			setPreview((current) => (current?.id === id ? null : current));
+			setAttachError(null);
+		},
+		[setAttachError, setScreenshots]
+	);
 
 	const closePreview = useCallback(() => setPreview(null), []);
-
-	const snapshot = useCallback(
-		(): FeedbackFormState => ({ type, text, includeDebug, includeLicenseKey, fullDetail, screenshots, attachError }),
-		[attachError, fullDetail, includeDebug, includeLicenseKey, screenshots, text, type]
-	);
-
-	// The unmount handler runs once, long after this render's closures are stale,
-	// so it reads the report through a ref rather than capturing it.
-	const handOver = useRef<(() => void) | null>(null);
-	handOver.current = onDismiss === undefined ? null : () => onDismiss(snapshot());
-
-	// Deliberately not folded into `handOver`: that one is rewritten on every
-	// render, so a flag stored there would be undone by the next one.
-	const handledRef = useRef(false);
-
-	/** Whatever put the report away has already dealt with its state. */
-	const handled = useCallback(() => {
-		handledRef.current = true;
-	}, []);
-
-	const startCapture = useCallback(() => {
-		if (onCapture === undefined) return;
-		const state = snapshot();
-		handled();
-		onCapture(state);
-	}, [handled, onCapture, snapshot]);
-
-	// Escape, a click outside, the close button — every one of them ends here,
-	// which is what makes "leaving never costs you your words" true rather than a
-	// property of the particular control the user happened to press.
-	useEffect(
-		() => () => {
-			if (!handledRef.current) handOver.current?.();
-		},
-		[]
-	);
-
-	const clear = useCallback(() => {
-		setType("bug");
-		setText("");
-		setIncludeDebug(true);
-		setFullDetail(false);
-		setScreenshots([]);
-		setPreview(null);
-		setAttachError(null);
-		setError(null);
-	}, []);
-
-	// A capture command fired while this form is on screen must drive *this*
-	// form's put-it-away-then-capture path — otherwise it photographs the form.
-	useEffect(() => registerActiveFeedbackReport({ requestCapture: startCapture }), [startCapture]);
 
 	const handleSubmit = useCallback(async () => {
 		if (text.trim() === "" || inFlightRef.current) return;
@@ -282,8 +236,9 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 
 		inFlightRef.current = false;
 		if (result.ok) {
-			// It has been sent — there is nothing left to keep for the user.
-			handled();
+			// It has been sent — there is nothing left to keep for the user, so the
+			// shell must not preserve it on the way out.
+			finish();
 			setPhase("sent");
 			return;
 		}
@@ -291,7 +246,7 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 		// the user nothing, so "Try again" resubmits exactly what they assembled.
 		setPhase("form");
 		setError(result.message);
-	}, [bundle, fullDetail, handled, includeLicenseKey, licenseAttributionAvailable, screenshots, submit, text, type]);
+	}, [bundle, finish, fullDetail, includeLicenseKey, licenseAttributionAvailable, screenshots, submit, text, type]);
 
 	if (phase === "sent") {
 		return (
@@ -311,34 +266,6 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 
 	return (
 		<div data-testid={tid("modal")} onPaste={handlePaste}>
-			{/* Sits in the modal's own title row, immediately left of the close button:
-			    these act on the window, not on the form, so they belong with the X. */}
-			<div className={cls("window-actions")} data-testid={tid("window-actions")}>
-				{onCapture !== undefined && (
-					<button
-						type="button"
-						className={cls("window-action")}
-						aria-label="Take a screenshot"
-						title="Take a screenshot (puts this form away so it stays out of the picture)"
-						onClick={startCapture}
-						data-testid={tid("screenshot")}
-					>
-						<ObsidianIcon icon="camera" />
-					</button>
-				)}
-				{/* The only way to throw a report away. Closing never does — see `onDismiss`. */}
-				<button
-					type="button"
-					className={cls("window-action")}
-					aria-label="Clear"
-					title="Clear this report — everything else keeps it"
-					onClick={clear}
-					data-testid={tid("clear")}
-				>
-					Clear
-				</button>
-			</div>
-
 			<p className={cls("intro")} data-testid={tid("intro")}>
 				{TYPE_INTROS[type]}
 			</p>
@@ -496,57 +423,62 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 	);
 });
 
-export interface ShowFeedbackModalConfig {
-	/** Trailing-dash CSS prefix, e.g. `"prisma-"` — drives the modal class + styles. */
-	cssPrefix: string;
-	pluginDisplayName: string;
-	privacyUrl?: string | undefined;
-	captureDebugBundle?: (() => DebugBundle) | undefined;
-	licenseAttributionAvailable?: boolean | undefined;
-	submit: (submission: FeedbackSubmission, includeLicenseKey: boolean) => Promise<SubmissionResult>;
-	initialState?: Partial<FeedbackFormState> | undefined;
-	onDismiss?: ((state: FeedbackFormState) => void) | undefined;
-	onCapture?: ((state: FeedbackFormState) => void) | undefined;
-}
-
-/** Lets the host close the report from outside — which is what minimizing is. */
-export interface FeedbackModalHandle {
-	close: () => void;
-}
-
-export function showFeedbackReactModal(app: App, config: ShowFeedbackModalConfig): FeedbackModalHandle {
-	let close = (): void => {};
-	let closed = false;
-	showReactModal({
-		app,
-		cls: `${config.cssPrefix}feedback-modal`,
-		cssPrefix: config.cssPrefix,
-		testIdPrefix: config.cssPrefix,
-		title: "Send feedback",
-		render: (closeModal) => {
-			close = closeModal;
-			return (
-				<FeedbackModalContent
-					pluginDisplayName={config.pluginDisplayName}
-					privacyUrl={config.privacyUrl}
-					captureDebugBundle={config.captureDebugBundle}
-					licenseAttributionAvailable={config.licenseAttributionAvailable}
-					submit={config.submit}
-					initialState={config.initialState}
-					onDismiss={config.onDismiss}
-					onCapture={config.onCapture}
-					onClose={closeModal}
-				/>
-			);
-		},
-	});
-	// Closing twice would unmount a root that is already gone: the user's own
-	// Escape and a programmatic close can race for the same modal.
+/** A pristine report. Also what Clear resets to. */
+export function blankFeedbackForm(licenseAttributionAvailable = false): FeedbackFormState {
 	return {
-		close: () => {
-			if (closed) return;
-			closed = true;
-			close();
-		},
+		type: "bug",
+		text: "",
+		includeDebug: true,
+		includeLicenseKey: licenseAttributionAvailable,
+		fullDetail: false,
+		screenshots: [],
+		attachError: null,
 	};
 }
+
+/** A report with nothing in it is nothing to come back to. */
+export function isFeedbackFormEmpty(state: FeedbackFormState): boolean {
+	return state.text.trim() === "" && state.screenshots.length === 0;
+}
+
+export interface FeedbackWindowActionsProps {
+	form: PreservedFormApi<FeedbackFormState>;
+	/** Puts the report away and starts the screenshot flow. Omitted where capture is unavailable. */
+	onCapture: (state: FeedbackFormState) => void;
+}
+
+/**
+ * The camera, rendered by the shell into the modal's title row beside Clear and
+ * the close button. It also registers the report as the one on screen, so a
+ * capture command drives *this* form's put-it-away-then-capture path instead of
+ * photographing it.
+ */
+export const FeedbackWindowActions = memo(function FeedbackWindowActions({
+	form,
+	onCapture,
+}: FeedbackWindowActionsProps) {
+	// Styled as one of the shell's window controls, named as the feedback form's.
+	const { cls } = useScoped("preserved-form");
+	const { tid } = useScoped("feedback");
+	const { state, finish } = form;
+
+	const startCapture = useCallback(() => {
+		finish();
+		onCapture(state);
+	}, [finish, onCapture, state]);
+
+	useEffect(() => registerActiveFeedbackReport({ requestCapture: startCapture }), [startCapture]);
+
+	return (
+		<button
+			type="button"
+			className={cls("window-action")}
+			aria-label="Take a screenshot"
+			title="Take a screenshot (puts this form away so it stays out of the picture)"
+			onClick={startCapture}
+			data-testid={tid("screenshot")}
+		>
+			<ObsidianIcon icon="camera" />
+		</button>
+	);
+});

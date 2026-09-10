@@ -21,8 +21,15 @@ import { apiVersion, Notice, type App } from "obsidian";
 
 import { getAttributableLicenseKey } from "../utils/license-attribution";
 import { showCaptureBar } from "./capture-bar";
-import { showFeedbackReactModal, type FeedbackFormState } from "./feedback-modal";
-import { FeedbackSession } from "./feedback-session";
+import {
+	blankFeedbackForm,
+	FeedbackModalContent,
+	FeedbackWindowActions,
+	isFeedbackFormEmpty,
+	type FeedbackFormState,
+} from "./feedback-modal";
+import { FeedbackSession, MINIMIZED_FEEDBACK_LABEL } from "./feedback-session";
+import { openPreservedFormModal } from "./preserved-form";
 
 export interface OpenFeedbackOptions {
 	app: App;
@@ -89,24 +96,45 @@ export function createFeedbackSession({
 	};
 
 	// Read once per modal open rather than per session: entitlement can change
-	// while a report is minimized, and the checkbox must reflect what is true now.
+	// while a report is parked, and the checkbox must reflect what is true now.
 	const showModal = async (props: {
 		initialState: Partial<FeedbackFormState>;
-		onDismiss: (state: FeedbackFormState) => void;
 		onCapture: ((state: FeedbackFormState) => void) | undefined;
 	}) => {
 		const licenseKey = await getAttributableLicenseKey(licenseManager);
-		return showFeedbackReactModal(app, {
-			cssPrefix,
-			pluginDisplayName,
-			privacyUrl,
-			licenseAttributionAvailable: licenseKey !== null,
-			...(logService !== undefined ? { captureDebugBundle } : {}),
-			submit,
-			initialState: props.initialState,
-			onDismiss: props.onDismiss,
-			onCapture: props.onCapture,
-		});
+		const attribution = licenseKey !== null;
+		const onCapture = props.onCapture;
+
+		// Everything about leaving, restoring and clearing comes from the shell —
+		// this wiring only says what the report *is* ([[knowledge-preserved-form-state]]).
+		return openPreservedFormModal<FeedbackFormState>(
+			{
+				app,
+				cssPrefix,
+				name: "feedback",
+				title: "Send feedback",
+				label: MINIMIZED_FEEDBACK_LABEL,
+				blank: () => blankFeedbackForm(attribution),
+				isEmpty: isFeedbackFormEmpty,
+				onPreserved: () => {
+					new Notice("Report kept — restore it from the command palette when you're ready.");
+				},
+				...(onCapture !== undefined
+					? { windowActions: (form) => <FeedbackWindowActions form={form} onCapture={onCapture} /> }
+					: {}),
+				render: (form) => (
+					<FeedbackModalContent
+						pluginDisplayName={pluginDisplayName}
+						privacyUrl={privacyUrl}
+						licenseAttributionAvailable={attribution}
+						{...(logService !== undefined ? { captureDebugBundle } : {})}
+						submit={submit}
+						form={form}
+					/>
+				),
+			},
+			{ ...blankFeedbackForm(attribution), ...props.initialState }
+		);
 	};
 
 	return new FeedbackSession({

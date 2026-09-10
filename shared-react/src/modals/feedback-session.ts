@@ -1,8 +1,9 @@
 import { acceptScreenshot, type ScreenCapture } from "@real1ty/obsidian-plugins";
 
 import { getActiveFeedbackReport } from "./active-feedback-report";
-import type { AttachedScreenshot, FeedbackFormState, FeedbackModalHandle } from "./feedback-modal";
+import type { AttachedScreenshot, FeedbackFormState } from "./feedback-modal";
 import { MinimizedModals } from "./minimized-modal-slot";
+import type { PreservedFormHandle } from "./preserved-form";
 
 /** The one label under which a report occupies the shared minimized slot. */
 export const MINIMIZED_FEEDBACK_LABEL = "Feedback report";
@@ -10,9 +11,8 @@ export const MINIMIZED_FEEDBACK_LABEL = "Feedback report";
 export interface ShowFeedbackModal {
 	(props: {
 		initialState: Partial<FeedbackFormState>;
-		onDismiss: (state: FeedbackFormState) => void;
 		onCapture: ((state: FeedbackFormState) => void) | undefined;
-	}): Promise<FeedbackModalHandle>;
+	}): Promise<PreservedFormHandle>;
 }
 
 export interface ShowCaptureBar {
@@ -90,19 +90,13 @@ export class FeedbackSession {
 		this.beginCapture();
 	}
 
+	// Leaving, restoring and clearing are the shell's job, not this session's
+	// ([[knowledge-preserved-form-state]]) — what is left here is the capture
+	// loop, which is the only thing that puts the report down deliberately.
 	private async show(initialState: Partial<FeedbackFormState>): Promise<void> {
-		let handle: FeedbackModalHandle | null = null;
+		let handle: PreservedFormHandle | null = null;
 		handle = await this.deps.showModal({
 			initialState,
-			// The form has already left the screen by the time this runs — Escape, a
-			// click outside, the close button, they all land here. An empty report is
-			// dropped rather than parked: there is nothing to come back to, and a
-			// notice about it would be noise.
-			onDismiss: (state) => {
-				if (isEmpty(state)) return;
-				this.minimize(state);
-				this.deps.notify("Report kept — restore it from the command palette when you're ready.");
-			},
 			onCapture:
 				this.deps.capture === null
 					? undefined
@@ -166,11 +160,6 @@ export class FeedbackSession {
 /** Whether the minimized slot is holding a report, which is what gates the capture/restore commands. */
 export function hasMinimizedFeedback(): boolean {
 	return MinimizedModals.label() === MINIMIZED_FEEDBACK_LABEL;
-}
-
-/** Nothing written and nothing attached — the type selector alone is not a report. */
-function isEmpty(state: FeedbackFormState): boolean {
-	return state.text.trim() === "" && state.screenshots.length === 0;
 }
 
 function minimizedFeedback(): FeedbackFormState | null {
