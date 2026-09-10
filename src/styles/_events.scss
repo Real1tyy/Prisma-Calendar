@@ -177,12 +177,16 @@
 	font-size: 0.8em;
 }
 
-.fc-timegrid-event:has(.prisma-fc-event-time-auto-timegrid) {
+// The `prisma-fc-event-time-auto-*` class lands on the FullCalendar event root itself
+// (`eventClassNames`, see calendar-event-renderer.ts) rather than being detected here via
+// `:has()` — a `:has()` ancestor match forces FullCalendar's whole event subtree to
+// re-invalidate on every render; a compound class selector doesn't.
+.fc-timegrid-event.prisma-fc-event-time-auto-timegrid {
 	container-name: prisma-event-time-grid;
 	container-type: size;
 }
 
-.fc-daygrid-event:has(.prisma-fc-event-time-auto-month) {
+.fc-daygrid-event.prisma-fc-event-time-auto-month {
 	container-name: prisma-event-time-month;
 	container-type: inline-size;
 }

@@ -27,7 +27,12 @@ import { parseFCExtendedProps } from "../../utils/frontmatter/extended-props";
 import { emitHover } from "../../utils/obsidian";
 import { shouldUseMobileLayout } from "../../utils/responsive";
 import type { BatchSelectionManager } from "../batch-selection-manager";
-import { applyEventMountStyling, attachLazyNotePreview, renderEventTime } from "../calendar-event-renderer";
+import {
+	applyEventMountStyling,
+	attachLazyNotePreview,
+	getEventTimeAutoRootClass,
+	renderEventTime,
+} from "../calendar-event-renderer";
 import type { CalendarHost } from "../calendar-host";
 import { handleMoreLinkClick } from "../calendar-more-popover";
 import type { EventContextMenu } from "../event-context-menu";
@@ -133,7 +138,6 @@ export function buildSharedEventContent(
 		const headerEl = container.createDiv({ cls: cls("fc-event-header") });
 
 		renderEventTime(headerEl, arg, settings, {
-			containerEl: container,
 			isMobile: shouldUseMobileLayout({ isPlatformMobile: Platform.isMobile, width: window.innerWidth }),
 		});
 
@@ -240,10 +244,21 @@ export function buildSharedEventDidMount(
 export function buildSharedEventClassNames(
 	deps: SharedCalendarDeps,
 	getCachedTimestamps: () => { now: Date; todayStart: Date }
-): (arg: { event: CalendarEventData }) => string[] {
+): (arg: { event: CalendarEventData; view: { type: string } }) => string[] {
 	return (arg) => {
+		const settings = deps.bundle.settingsStore.currentSettings;
+		const classes: string[] = [];
+
+		const autoRootClass = getEventTimeAutoRootClass(settings, {
+			allDay: arg.event.allDay,
+			hasStart: Boolean(arg.event.start),
+			isMobile: shouldUseMobileLayout({ isPlatformMobile: Platform.isMobile, width: window.innerWidth }),
+			viewType: arg.view.type,
+		});
+		if (autoRootClass) classes.push(autoRootClass);
+
 		const eventEnd = arg.event.end || arg.event.start;
-		if (!eventEnd) return [];
+		if (!eventEnd) return classes;
 
 		const { now, todayStart } = getCachedTimestamps();
 		const isAllDay = arg.event.allDay;
@@ -256,12 +271,12 @@ export function buildSharedEventClassNames(
 			isPast = eventEnd < now;
 		}
 
-		if (!isPast) return [];
+		if (!isPast) return classes;
 
-		const contrast = deps.bundle.settingsStore.currentSettings.pastEventContrast;
-		if (contrast === 0) return [cls("past-event-hidden")];
-		if (contrast < 100) return [cls("past-event-faded")];
-		return [];
+		const contrast = settings.pastEventContrast;
+		if (contrast === 0) classes.push(cls("past-event-hidden"));
+		else if (contrast < 100) classes.push(cls("past-event-faded"));
+		return classes;
 	};
 }
 

@@ -35,7 +35,6 @@ interface EventTimeDisplayContext {
 }
 
 interface EventTimeRenderContext {
-	containerEl: HTMLElement;
 	isMobile: boolean;
 }
 
@@ -66,6 +65,21 @@ export function getEventTimeDisplayDecision(
 	return "render";
 }
 
+/**
+ * The root class an "auto" event's FullCalendar event element (`.fc-timegrid-event` /
+ * `.fc-daygrid-event`) needs so the `@container` query in `_events.scss` can shrink its
+ * time label — computed here (not `:has()` in CSS) so a container-query ancestor is
+ * plain class matching, never a whole-subtree invalidation.
+ */
+export function getEventTimeAutoRootClass(
+	settings: Pick<SingleCalendarConfig, "timeGridEventTimeDisplay" | "monthEventTimeDisplay">,
+	context: EventTimeDisplayContext
+): string | null {
+	const decision = getEventTimeDisplayDecision(settings, context);
+	if (decision !== "render-auto") return null;
+	return cls(isTimeGridView(context.viewType) ? "fc-event-time-auto-timegrid" : "fc-event-time-auto-month");
+}
+
 export function renderEventTime(
 	headerEl: HTMLElement,
 	arg: EventContentArg,
@@ -86,9 +100,6 @@ export function renderEventTime(
 	}
 	if (decision === "render-auto") {
 		timeEl.addClass(cls("fc-event-time-auto"));
-		context.containerEl.addClass(
-			cls(isTimeGridView(arg.view.type) ? "fc-event-time-auto-timegrid" : "fc-event-time-auto-month")
-		);
 	}
 }
 
@@ -136,7 +147,7 @@ export function renderEventContent(arg: EventContentArg, context: EventRenderCon
 
 	const headerEl = container.createDiv({ cls: cls("fc-event-header") });
 
-	renderEventTime(headerEl, arg, settings, { containerEl: container, isMobile });
+	renderEventTime(headerEl, arg, settings, { isMobile });
 
 	const titleEl = headerEl.createDiv({ cls: cls("fc-event-title-custom") });
 	let title = cleanupTitle(event.title);

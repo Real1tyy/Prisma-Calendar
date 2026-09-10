@@ -97,6 +97,7 @@ import {
 	applyEventMountStyling,
 	attachLazyNotePreview,
 	buildColorDotsContainer,
+	getEventTimeAutoRootClass,
 	renderEventContent,
 	type EventRenderContext,
 } from "./calendar-event-renderer";
@@ -764,9 +765,23 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 	// ─── Calendar Event Handlers ────────────────────────────────
 
-	private computeEventClassNames(arg: { event: { end: Date | null; start: Date | null; allDay: boolean } }): string[] {
+	private computeEventClassNames(arg: {
+		event: { end: Date | null; start: Date | null; allDay: boolean };
+		view: { type: string };
+	}): string[] {
+		const classes: string[] = [];
+
+		const settings = this.bundle.settingsStore.currentSettings;
+		const autoRootClass = getEventTimeAutoRootClass(settings, {
+			allDay: arg.event.allDay,
+			hasStart: Boolean(arg.event.start),
+			isMobile: this.isMobileView(),
+			viewType: arg.view.type,
+		});
+		if (autoRootClass) classes.push(autoRootClass);
+
 		const eventEnd = arg.event.end || arg.event.start;
-		if (!eventEnd) return [];
+		if (!eventEnd) return classes;
 
 		const isAllDay = arg.event.allDay;
 		let isPast: boolean;
@@ -779,9 +794,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			isPast = eventEnd < this.cachedNow;
 		}
 
-		const classes: string[] = [];
 		if (isPast) {
-			const contrast = this.bundle.settingsStore.currentSettings.pastEventContrast;
+			const contrast = settings.pastEventContrast;
 			if (contrast === 0) {
 				classes.push(cls("past-event-hidden"));
 			} else if (contrast < 100) {

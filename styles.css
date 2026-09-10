@@ -343,12 +343,12 @@ button[class*=prisma-]:focus-visible {
   font-size: 0.8em;
 }
 
-.fc-timegrid-event:has(.prisma-fc-event-time-auto-timegrid) {
+.fc-timegrid-event.prisma-fc-event-time-auto-timegrid {
   container-name: prisma-event-time-grid;
   container-type: size;
 }
 
-.fc-daygrid-event:has(.prisma-fc-event-time-auto-month) {
+.fc-daygrid-event.prisma-fc-event-time-auto-month {
   container-name: prisma-event-time-month;
   container-type: inline-size;
 }
