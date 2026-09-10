@@ -98,6 +98,13 @@ export interface SubmissionError {
 	readonly status: number | null;
 	/** User-facing sentence, safe to render straight into the modal. */
 	readonly message: string;
+	/**
+	 * The server's own account of the refusal, condensed from the response body
+	 * and already folded into {@link message}. Separate so a caller can log or
+	 * assert on it without parsing the sentence. Absent when the body was empty
+	 * or unreadable.
+	 */
+	readonly detail?: string;
 }
 
 export type SubmissionResult = SubmissionSuccess | SubmissionError;
@@ -111,6 +118,12 @@ export interface SubmissionRequest {
 
 export interface SubmissionResponse {
 	status: number;
+	/**
+	 * Raw response body. Carried for the failure path only: a 4xx from our API
+	 * names the field it rejected, and dropping it leaves the user staring at a
+	 * bare status code with nothing to act on.
+	 */
+	body?: string;
 }
 
 /** Injectable HTTP seam — defaults to Obsidian's `requestUrl` (no CORS, works on mobile). */

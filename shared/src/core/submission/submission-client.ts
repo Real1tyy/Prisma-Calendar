@@ -48,6 +48,9 @@ const SUBMISSION_CONTEXT_FIELDS = [
 
 const TIMED_OUT = Symbol("submission-timed-out");
 
+/** Long enough for a Zod issue list, short enough that the modal stays readable. */
+const SERVER_DETAIL_MAX_CHARS = 200;
+
 export function buildSubmissionBody<K extends SubmissionKind>(
 	kind: K,
 	payload: SubmissionPayloads[K],
@@ -82,11 +85,69 @@ function resolveBaseUrl(explicit: string | undefined): string {
 
 const defaultTransport: SubmissionTransport = async (request) => {
 	const response = await requestUrl({ ...request, throw: false });
-	return { status: response.status };
+	return { status: response.status, ...readBody(response) };
 };
 
-function fail(failure: SubmissionFailure, status: number | null, message: string): SubmissionError {
-	return { ok: false, failure, status, message };
+/**
+ * `text` is a getter that decodes the body on access and throws on anything it
+ * cannot read. A body we failed to read is a missing explanation, never a
+ * failed submission — so the throw is swallowed and the status stands alone.
+ */
+function readBody(response: { text?: string }): { body?: string } {
+	try {
+		const text = response.text;
+		return typeof text === "string" ? { body: text } : {};
+	} catch {
+		return {};
+	}
+}
+
+/**
+ * Condense the server's refusal into one sentence-worth of explanation.
+ *
+ * Our API answers a rejected submission two ways — Hono's `zValidator` emits
+ * `{ error: { issues: [...] } }`, everything else emits `{ error: "…" }` — and a
+ * body that is neither is still better shown than dropped. This is what turns
+ * "HTTP 400" into "message: Required", which is the difference between a user
+ * filing a useful report and having nothing to say.
+ */
+export function describeServerDetail(body: string | undefined): string | undefined {
+	const trimmed = body?.trim();
+	if (!trimmed) return undefined;
+	const detail = (parseServerDetail(trimmed) ?? trimmed).replace(/\s+/g, " ").trim();
+	if (!detail) return undefined;
+	return detail.length > SERVER_DETAIL_MAX_CHARS ? `${detail.slice(0, SERVER_DETAIL_MAX_CHARS)}…` : detail;
+}
+
+function parseServerDetail(body: string): string | undefined {
+	let parsed: unknown;
+	try {
+		parsed = JSON.parse(body);
+	} catch {
+		return undefined;
+	}
+	if (typeof parsed !== "object" || parsed === null) return undefined;
+	const { error, message } = parsed as { error?: unknown; message?: unknown };
+	if (typeof error === "string") return error;
+	if (typeof message === "string") return message;
+	return describeIssues(error);
+}
+
+function describeIssues(error: unknown): string | undefined {
+	if (typeof error !== "object" || error === null) return undefined;
+	const { issues } = error as { issues?: unknown };
+	if (!Array.isArray(issues) || issues.length === 0) return undefined;
+	return issues
+		.map((issue) => {
+			const { path, message } = (issue ?? {}) as { path?: unknown; message?: unknown };
+			const where = Array.isArray(path) && path.length > 0 ? path.join(".") : "body";
+			return typeof message === "string" ? `${where}: ${message}` : where;
+		})
+		.join("; ");
+}
+
+function fail(failure: SubmissionFailure, status: number | null, message: string, detail?: string): SubmissionError {
+	return { ok: false, failure, status, message, ...(detail !== undefined ? { detail } : {}) };
 }
 
 function isRetryable(error: SubmissionError): boolean {
@@ -175,10 +236,13 @@ export class SubmissionClient {
 			const response = await withTimeout(transport(request), this.options.timeoutMs ?? DEFAULT_TIMEOUT_MS);
 			if (response === TIMED_OUT) return fail("timeout", null, TIMEOUT_MESSAGE);
 			if (response.status >= 200 && response.status < 300) return { ok: true, status: response.status };
+			const detail = describeServerDetail(response.body);
+			const because = detail === undefined ? "" : ` — ${detail}`;
 			return fail(
 				"server",
 				response.status,
-				`The server couldn't accept this (HTTP ${response.status}). Please try again.`
+				`The server couldn't accept this (HTTP ${response.status})${because}. Please try again.`,
+				detail
 			);
 		} catch (error) {
 			return fail("network", null, describeError(error));
