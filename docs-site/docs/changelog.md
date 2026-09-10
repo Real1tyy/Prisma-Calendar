@@ -8,6 +8,8 @@ All notable changes to this project will be documented here.
 
 ## Unreleased
 
+> **TLDR:** Report a bug — with a screenshot of it — rate Prisma, and open a Help Center, all without leaving Obsidian. Event modals gain a full **Note content** field, timed events get Normal/Small/Hidden/Auto time display modes per view, and tabs, header actions and context-menu items take independent icon, text and background colors. Prisma's own housekeeping now waits for Obsidian to finish indexing and reaches the same decisions on every synced device, with a Writer/Reader device role you pick at first launch and a new Logging section for when something needs diagnosing.
+
 ### Added
 - **In-app Help Center**: **General → Help & support** now has an **Open help center** button that opens a tabbed modal embedding the FAQ and Troubleshooting documentation pages (bundled with the plugin, so they're always current) plus one-click links to the docs, GitHub issues and feedback. See [General → Help Center](./configuration/general.md#help-center).
 - **Independent icon, text, and background colors**: tabs (including subgroup tabs), header actions, and context-menu items now have separate, resettable color controls, and your choices preview in the manager exactly as they render. Icon color tints the glyph, text color tints the label, and background color fills the surface behind it — each manager offers only the controls its own surface can paint, so header actions, which render as icon-only buttons, take icon and background color. See [Tabbed Views → Tab Icons and colors](./features/views/tabbed-views.md#tab-icons-and-colors).
