@@ -1,45 +1,41 @@
 import { DebouncedNotifier } from "@real1ty/obsidian-plugins";
 import type { Subscription } from "rxjs";
-import { filter } from "rxjs/operators";
 
-import type { CalendarEventSource, IndexerEvent, RawEventSource } from "../../types/event-source";
+import type { RawEventSource } from "../../types/event-source";
+import type { EventSourceEvent, EventSourceView } from "../event-source-view";
 
+/**
+ * A cache derived from one scope of the event table. The view decides
+ * membership, so a row that stops matching the scope arrives here as a removal
+ * — the same signal a deleted note produces, because both mean "this path is no
+ * longer one of mine".
+ */
 export abstract class IndexedCacheStore<TTemplate> extends DebouncedNotifier {
 	protected cache = new Map<string, TTemplate>();
 	private subscription: Subscription | null = null;
 
-	constructor(
-		protected eventSource: CalendarEventSource,
-		private watchedTypes: ReadonlySet<IndexerEvent["type"]>
-	) {
+	constructor(protected readonly sourceView: EventSourceView) {
 		super();
-		this.subscription = this.eventSource.events$
-			.pipe(filter((event: IndexerEvent) => this.watchedTypes.has(event.type)))
-			.subscribe((event: IndexerEvent) => {
-				this.handleIndexerEvent(event);
-			});
+		this.subscription = this.sourceView.sources$.subscribe((event: EventSourceEvent) => {
+			this.handleSourceEvent(event);
+		});
 	}
 
 	protected abstract buildTemplate(source: RawEventSource): TTemplate | null;
 
-	protected handleIndexerEvent(event: IndexerEvent): void {
-		switch (event.type) {
-			case "file-deleted":
-				this.invalidate(event.filePath);
-				break;
-			default:
-				if (event.source) {
-					this.processFileChange(event.source);
-				}
-				break;
+	protected handleSourceEvent(event: EventSourceEvent): void {
+		if (event.type === "source-removed") {
+			this.invalidate(event.filePath);
+			return;
 		}
+		this.processFileChange(event.source);
 	}
 
 	protected processFileChange(source: RawEventSource): void {
-		// Always rebuild when a file-changed event arrives. VaultTable already
-		// dedupes on structural frontmatter equality, so any event that reaches
-		// us reflects a real content change — even if mtime happens to match
-		// (e.g. processFrontMatter during bulk category renames).
+		// Always rebuild when a row event arrives. VaultTable already dedupes on
+		// structural frontmatter equality, so any event that reaches us reflects a
+		// real content change — even if mtime happens to match (e.g.
+		// processFrontMatter during bulk category renames).
 		const template = this.buildTemplate(source);
 
 		if (template) {

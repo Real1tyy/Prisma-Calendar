@@ -27,6 +27,7 @@ import { enforceEventPropertyOrder, getOrderedPropertyNames } from "../utils/fro
 import { shouldEventBeMarkedAsDone } from "../utils/frontmatter/predicates";
 import type { DeviceRoleStore } from "./device-role-store";
 import { createEventSchema } from "./event-schema";
+import { EventSourceView } from "./event-source-view";
 import { log } from "./logging";
 
 export { PARSE_AFFECTING_KEYS, parseAffectingSettingsChanged };
@@ -89,6 +90,19 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 	public readonly events$: Observable<IndexerEvent>;
 	public readonly indexingComplete$: Observable<boolean>;
 
+	/**
+	 * The vault boundary every downstream cache reads from. Each is a scoped
+	 * `VaultTableView` over the same table, so consumers inherit `ready$` instead
+	 * of tracking indexing completion themselves ([[decision-vaulttable-write-gate]]).
+	 * Owned here because this class owns the table's lifecycle: a directory change
+	 * rebuilds the table, and the views have to be rebound onto the replacement.
+	 */
+	public readonly trackedEvents: EventSourceView;
+	public readonly untrackedEvents: EventSourceView;
+	public readonly recurringSources: EventSourceView;
+	public readonly physicalInstances: EventSourceView;
+	private readonly views: EventSourceView[];
+
 	constructor(
 		readonly app: App,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>,
@@ -98,6 +112,12 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 		this.table = this.createTable(this.settings);
 		this.events$ = this.eventsSubject.asObservable();
 		this.indexingComplete$ = this.indexingCompleteSubject.asObservable();
+
+		this.trackedEvents = new EventSourceView(this.table, "tracked", settingsStore);
+		this.untrackedEvents = new EventSourceView(this.table, "untracked", settingsStore);
+		this.recurringSources = new EventSourceView(this.table, "recurringSource", settingsStore);
+		this.physicalInstances = new EventSourceView(this.table, "physicalInstance", settingsStore);
+		this.views = [this.trackedEvents, this.untrackedEvents, this.recurringSources, this.physicalInstances];
 
 		this.settingsSub = settingsStore.subscribe((newSettings) => {
 			const prevSettings = this.settings;
@@ -113,6 +133,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 				});
 				this.table.destroy();
 				this.table = this.createTable(newSettings);
+				this.rebindViews();
 				this.wireTableEvents();
 				this.table.start().catch((error: unknown) => {
 					log.error("indexing", "Table start failed after a settings change", {
@@ -351,9 +372,18 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 		this.detachSettingsSubscription();
 		this.tableSub?.unsubscribe();
 		this.tableSub = null;
+		for (const view of this.views) view.destroy();
 		this.table.destroy();
 		this.eventsSubject.complete();
 		this.indexingCompleteSubject.complete();
+	}
+
+	/**
+	 * Points every view at the table that replaced the one just destroyed. A
+	 * subclass that injects its own table (the test double) calls this too.
+	 */
+	protected rebindViews(): void {
+		for (const view of this.views) view.rebind(this.table);
 	}
 
 	/**

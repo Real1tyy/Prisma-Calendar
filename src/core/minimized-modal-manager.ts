@@ -11,13 +11,13 @@ import { deriveEditFormState, openEventEditModal } from "../react/modals/event/e
 import type { StopwatchSnapshot } from "../react/views/stopwatch";
 import type { Frontmatter } from "../types";
 import type { UpdateEventData } from "../types/event-boundaries";
-import type { IndexerEvent } from "../types/event-source";
 import type { EventPreset, SingleCalendarConfig } from "../types/settings";
 import { getEventName } from "../utils/events/naming";
 import { formatDateTimeForInput } from "../utils/format";
 import { getCategoriesFromFilePath } from "../utils/obsidian";
 import type { CalendarBundle } from "./calendar-bundle";
 import { assignCategories } from "./commands/frontmatter-update-command";
+import type { EventSourceEvent } from "./event-source-view";
 
 /**
  * Base form data shared between presets and modal state.
@@ -206,13 +206,14 @@ class MinimizedModalManagerClass {
 	private subscribeToFileChanges(bundle: CalendarBundle): void {
 		this.unsubscribeFromFileChanges();
 
-		this.indexerSubscription = bundle.fileRepository.events$.subscribe((event: IndexerEvent) => {
+		this.indexerSubscription = bundle.fileRepository.trackedEvents.sources$.subscribe((event: EventSourceEvent) => {
 			if (!this.savedState || !this.savedState.filePath) {
 				return;
 			}
 
 			// Only update if the event matches our minimized modal's file
-			const isOurFile = event.filePath === this.savedState.filePath || event.oldPath === this.savedState.filePath;
+			const oldPath = event.type === "source-changed" ? event.oldPath : undefined;
+			const isOurFile = event.filePath === this.savedState.filePath || oldPath === this.savedState.filePath;
 			if (!isOurFile) {
 				return;
 			}
@@ -225,31 +226,35 @@ class MinimizedModalManagerClass {
 				return;
 			}
 
-			if (event.type === "file-deleted" && !event.isRename) {
-				this.clear();
-				new Notice("Minimized event was deleted");
+			if (event.type === "source-removed") {
+				// `reason` is load-bearing: clearing a live stopwatch and telling the
+				// user their event was deleted is only true when the note is actually
+				// gone. A row that merely dropped out of the tracked scope (its Start
+				// Date was cleared mid-edit) still exists, so leave the modal alone.
+				if (event.reason === "deleted" && !event.isRename) {
+					this.clear();
+					new Notice("Minimized event was deleted");
+				}
 				return;
 			}
 
-			if (event.type === "file-changed" && event.source) {
-				const settings = bundle.settingsStore.currentSettings;
-				const frontmatter = event.source.frontmatter;
-				const metadata = event.source.metadata;
+			const settings = bundle.settingsStore.currentSettings;
+			const frontmatter = event.source.frontmatter;
+			const metadata = event.source.metadata;
 
-				// Refresh form data from the file; stopwatch state stays intact.
-				this.patchState({
-					filePath: event.filePath,
-					originalFrontmatter: frontmatter,
-					title: getEventName(settings.titleProp, frontmatter, event.filePath, settings.calendarTitleProp),
-					categories: metadata.categories?.join(", "),
-					location: metadata.location,
-					participants: metadata.participants?.join(", "),
-					date: frontmatter[settings.dateProp] as string | undefined,
-					startDate: frontmatter[settings.startProp] as string | undefined,
-					endDate: frontmatter[settings.endProp] as string | undefined,
-					allDay: event.source.isAllDay,
-				});
-			}
+			// Refresh form data from the file; stopwatch state stays intact.
+			this.patchState({
+				filePath: event.filePath,
+				originalFrontmatter: frontmatter,
+				title: getEventName(settings.titleProp, frontmatter, event.filePath, settings.calendarTitleProp),
+				categories: metadata.categories?.join(", "),
+				location: metadata.location,
+				participants: metadata.participants?.join(", "),
+				date: frontmatter[settings.dateProp] as string | undefined,
+				startDate: frontmatter[settings.startProp] as string | undefined,
+				endDate: frontmatter[settings.endProp] as string | undefined,
+				allDay: event.source.isAllDay,
+			});
 		});
 	}
 

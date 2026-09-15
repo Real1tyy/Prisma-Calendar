@@ -97,15 +97,30 @@ export class IndexerRegistry {
 				fileRepository,
 				this.deviceRoleStore
 			);
-			const notificationManager = new NotificationManager(this.app, settingsStore, fileRepository);
+			const notificationManager = new NotificationManager(
+				this.app,
+				settingsStore,
+				fileRepository,
+				fileRepository.trackedEvents
+			);
 			const parser = new Parser(settingsStore, mainSettingsStore, calendarId, fileRepository);
-			const eventStore = new EventStore(fileRepository, parser, recurringEventManager, settingsStore);
+			const eventStore = new EventStore(
+				fileRepository,
+				fileRepository.trackedEvents,
+				parser,
+				recurringEventManager,
+				settingsStore
+			);
 			const categoryTracker = new CategoryTracker(this.app, fileRepository, eventStore, settingsStore);
 			const nameSeriesTracker = new NameSeriesTracker(this.app, fileRepository, eventStore, settingsStore);
 			const prerequisiteTracker = new PrerequisiteTracker(this.app, fileRepository, eventStore, settingsStore);
 			recurringEventManager.setEventStore(eventStore);
 			recurringEventManager.setCategoryTracker(categoryTracker);
-			const untrackedEventStore = new UntrackedEventStore(fileRepository, settingsStore);
+			const untrackedEventStore = new UntrackedEventStore(
+				fileRepository,
+				fileRepository.untrackedEvents,
+				settingsStore
+			);
 
 			entry = {
 				fileRepository,

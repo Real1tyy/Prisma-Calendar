@@ -6,10 +6,11 @@ import { showNotificationModal } from "../components/modals";
 import { MAX_PAST_NOTIFICATION_THRESHOLD, NOTIFICATION_CHECK_INTERVAL_MS } from "../constants";
 import type { Frontmatter } from "../types";
 import type { EventMetadata } from "../types/event-metadata";
-import type { CalendarEventSource, IndexerEvent } from "../types/event-source";
+import type { CalendarEventSource } from "../types/event-source";
 import type { SingleCalendarConfig } from "../types/settings";
 import { getEventName } from "../utils/events/naming";
 import { getFileByPathOrThrow, openFileInNewTab } from "../utils/obsidian";
+import type { EventSourceEvent, EventSourceView } from "./event-source-view";
 
 interface NotificationEntry {
 	eventId: string;
@@ -32,7 +33,7 @@ interface NotificationEntry {
 export class NotificationManager {
 	private settings: SingleCalendarConfig;
 	private settingsSubscription: Subscription | null = null;
-	private indexerSubscription: Subscription | null = null;
+	private sourceSubscription: Subscription | null = null;
 	private checkInterval: number | null = null;
 
 	// Sorted array of notification entries (sorted by notifyAt time)
@@ -48,7 +49,8 @@ export class NotificationManager {
 	constructor(
 		private app: App,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>,
-		private eventSource: CalendarEventSource
+		private eventSource: CalendarEventSource,
+		private sourceView: EventSourceView
 	) {
 		this.settings = settingsStore.value;
 
@@ -65,9 +67,8 @@ export class NotificationManager {
 			await this.requestNotificationPermission();
 		}
 
-		// Listen to indexer events
-		this.indexerSubscription = this.eventSource.events$.subscribe((event) => {
-			this.handleIndexerEvent(event);
+		this.sourceSubscription = this.sourceView.sources$.subscribe((event: EventSourceEvent) => {
+			this.handleSourceEvent(event);
 		});
 
 		// Start periodic check (every minute)
@@ -88,36 +89,33 @@ export class NotificationManager {
 		this.settingsSubscription?.unsubscribe();
 		this.settingsSubscription = null;
 
-		this.indexerSubscription?.unsubscribe();
-		this.indexerSubscription = null;
+		this.sourceSubscription?.unsubscribe();
+		this.sourceSubscription = null;
 
 		this.stopPeriodicCheck();
 		this.notificationQueue = [];
 		this.alreadyFired.clear();
 	}
 
-	// ─── Indexer Event Handling ───────────────────────────────────
+	// ─── Row Event Handling ───────────────────────────────────────
 
-	private handleIndexerEvent(event: IndexerEvent): void {
+	/**
+	 * A row leaving the tracked view drops its notification whether the note was
+	 * deleted or merely lost its date — a reminder for an event that no longer
+	 * has a start time has nothing left to fire against.
+	 */
+	private handleSourceEvent(event: EventSourceEvent): void {
 		if (!this.settings.enableNotifications) {
 			return;
 		}
 
-		switch (event.type) {
-			case "file-changed":
-				if (event.source) {
-					this.processEventSource(
-						event.source.filePath,
-						event.source.frontmatter,
-						event.source.isAllDay,
-						event.source.metadata
-					);
-				}
-				break;
-			case "file-deleted":
-				this.removeNotification(event.filePath);
-				break;
+		if (event.type === "source-removed") {
+			this.removeNotification(event.filePath);
+			return;
 		}
+
+		const { source } = event;
+		this.processEventSource(source.filePath, source.frontmatter, source.isAllDay, source.metadata);
 	}
 
 	private processEventSource(

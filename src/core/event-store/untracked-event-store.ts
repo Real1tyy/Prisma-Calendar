@@ -1,9 +1,10 @@
 import type { BehaviorSubject, Subscription } from "rxjs";
 
 import { eventDefaults, type UntrackedEvent } from "../../types/calendar";
-import type { CalendarEventSource, IndexerEvent, RawEventSource } from "../../types/event-source";
+import type { CalendarEventSource, RawEventSource } from "../../types/event-source";
 import type { Frontmatter, SingleCalendarConfig } from "../../types/index";
 import { UntrackedFilterEvaluator } from "../../utils/filters/untracked-evaluator";
+import type { EventSourceView } from "../event-source-view";
 import { IndexedCacheStore } from "./indexed-cache-store";
 
 export class UntrackedEventStore extends IndexedCacheStore<UntrackedEvent> {
@@ -11,8 +12,12 @@ export class UntrackedEventStore extends IndexedCacheStore<UntrackedEvent> {
 	private filterEvaluator: UntrackedFilterEvaluator;
 	private lastFilterExpressions: string[] = [];
 
-	constructor(eventSource: CalendarEventSource, settingsStore: BehaviorSubject<SingleCalendarConfig>) {
-		super(eventSource, new Set(["untracked-file-changed", "file-changed", "file-deleted"]));
+	constructor(
+		private eventSource: CalendarEventSource,
+		sourceView: EventSourceView,
+		settingsStore: BehaviorSubject<SingleCalendarConfig>
+	) {
+		super(sourceView);
 		this.filterEvaluator = new UntrackedFilterEvaluator(settingsStore);
 		this.lastFilterExpressions = settingsStore.value.untrackedFilterExpressions;
 
@@ -26,24 +31,6 @@ export class UntrackedEventStore extends IndexedCacheStore<UntrackedEvent> {
 				this.eventSource.resync();
 			}
 		});
-	}
-
-	protected override handleIndexerEvent(event: IndexerEvent): void {
-		switch (event.type) {
-			case "untracked-file-changed":
-				if (event.source) {
-					this.processFileChange(event.source);
-				}
-				break;
-			case "file-changed":
-				if (this.cache.has(event.filePath)) {
-					this.invalidate(event.filePath);
-				}
-				break;
-			case "file-deleted":
-				this.invalidate(event.filePath);
-				break;
-		}
 	}
 
 	protected override buildTemplate(source: RawEventSource): UntrackedEvent | null {

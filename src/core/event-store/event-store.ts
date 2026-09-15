@@ -13,10 +13,11 @@ import {
 	type TimedEvent,
 	type VirtualEventData,
 } from "../../types/calendar";
-import type { CalendarEventSource, IndexerEvent, RawEventSource } from "../../types/event-source";
+import type { CalendarEventSource, RawEventSource } from "../../types/event-source";
 import type { ISO } from "../../types/index";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { stripZ } from "../../utils/dates/iso";
+import type { EventSourceView } from "../event-source-view";
 import type { HolidayStore } from "../holidays";
 import { MinimizedModalManager } from "../minimized-modal-manager";
 import type { Parser } from "../parser";
@@ -33,7 +34,7 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	private static readonly SEP = "\0";
 	private static readonly MAX = "\uffff";
 
-	private indexingCompleteSubscription: Subscription | null = null;
+	private readySubscription: Subscription | null = null;
 	private settingsSubscription: Subscription | null = null;
 	private settings: SingleCalendarConfig;
 	private markDoneScanInterval: number | null = null;
@@ -52,12 +53,13 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	// ─── Lifecycle ────────────────────────────────────────────────
 
 	constructor(
-		eventSource: CalendarEventSource,
+		private eventSource: CalendarEventSource,
+		sourceView: EventSourceView,
 		private parser: Parser,
 		private recurringEventManager: RecurringEventManager,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>
 	) {
-		super(eventSource, new Set(["file-changed", "untracked-file-changed", "file-deleted"]));
+		super(sourceView);
 
 		this.settings = settingsStore.value;
 
@@ -74,8 +76,12 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 			}
 		});
 
-		this.indexingCompleteSubscription = this.eventSource.indexingComplete$.subscribe((isComplete) => {
-			if (isComplete) {
+		// Readiness comes from the view, which mirrors the table's — the store no
+		// longer tracks indexing completion itself. The mark-done scan is an
+		// automatic writer, so it may not start until the table says the index is
+		// a complete picture of the vault ([[decision-vaulttable-write-gate]]).
+		this.readySubscription = this.sourceView.ready$.subscribe((isReady: boolean) => {
+			if (isReady) {
 				this.flushPendingRefresh();
 				if (this.settings.markPastInstancesAsDone) {
 					this.startMarkDonePeriodicScan();
@@ -90,8 +96,8 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 
 	override destroy(): void {
 		this.stopMarkDonePeriodicScan();
-		this.indexingCompleteSubscription?.unsubscribe();
-		this.indexingCompleteSubscription = null;
+		this.readySubscription?.unsubscribe();
+		this.readySubscription = null;
 		this.settingsSubscription?.unsubscribe();
 		this.settingsSubscription = null;
 		this.virtualEventSubscription?.unsubscribe();
@@ -120,22 +126,6 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 
 	protected buildTemplate(source: RawEventSource): CalendarEvent | null {
 		return this.parser.parseEventSource(source);
-	}
-
-	protected override handleIndexerEvent(event: IndexerEvent): void {
-		switch (event.type) {
-			case "file-changed":
-				if (event.source) {
-					this.processFileChange(event.source);
-				}
-				break;
-			case "untracked-file-changed":
-				this.invalidate(event.filePath);
-				break;
-			case "file-deleted":
-				this.invalidate(event.filePath);
-				break;
-		}
 	}
 
 	protected override onAfterUpsert(event: CalendarEvent): void {
