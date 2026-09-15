@@ -127,7 +127,7 @@ export interface GeneralLoggingConfig {
 	service?: LogService | undefined;
 	/** Dotted key of the `LoggingSettings` inside the store. Default: `"logging"`. */
 	pathPrefix?: string | undefined;
-	/** Trailing content inside the Logging section (privacy disclaimer, "view logs" button). */
+	/** Content at the top of the Logging section, under its heading (a "view logs" button). */
 	children?: ReactNode;
 }
 

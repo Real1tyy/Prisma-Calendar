@@ -19,7 +19,11 @@ export interface LoggingSectionProps {
 	 * `${testIdPrefix}field-<key>` and its control `${testIdPrefix}control-<key>`.
 	 */
 	testIdPrefix?: string | undefined;
-	/** Trailing content — the place a privacy disclaimer or a "view logs" button mounts. */
+	/**
+	 * Rendered directly under the heading, above the fields — the place a "view
+	 * logs" button mounts, so the way to *read* the logs is the first thing in
+	 * the section rather than buried below the tuning.
+	 */
 	children?: ReactNode;
 }
 
@@ -46,6 +50,7 @@ export const LoggingSection = memo(function LoggingSection({
 	return (
 		<>
 			<SettingHeading name="Logging" testId={tid("heading-logging")} />
+			{children}
 			<SchemaSection
 				store={store}
 				shape={LoggingSettingsSchema.shape}
@@ -69,7 +74,6 @@ export const LoggingSection = memo(function LoggingSection({
 					{...(testIdPrefix !== undefined ? { testIdPrefix } : {})}
 				/>
 			)}
-			{children}
 		</>
 	);
 });
