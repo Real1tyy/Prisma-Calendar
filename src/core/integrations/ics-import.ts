@@ -538,7 +538,7 @@ export async function createEventNoteFromImportedEvent(
 
 	enforceEventPropertyOrder(frontmatter, calendarSettings);
 
-	return await bundle.templateService.createFileAtomic({
+	const file = await bundle.templateService.createFileAtomic({
 		title: event.title,
 		targetDirectory,
 		filename,
@@ -546,6 +546,8 @@ export async function createEventNoteFromImportedEvent(
 		frontmatter,
 		...(calendarSettings.templatePath ? { templatePath: calendarSettings.templatePath, useTemplater: true } : {}),
 	});
+	await bundle.fileRepository.ingestFile(file);
+	return file;
 }
 
 type ImportProgressCallback = (current: number, total: number, eventTitle?: string) => void;

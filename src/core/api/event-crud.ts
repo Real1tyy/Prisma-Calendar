@@ -132,8 +132,8 @@ export async function moveEventToCalendar(
 
 			const command = new MoveEventToCalendarCommand(
 				plugin.app,
-				sourceBundle.settingsStore.currentSettings,
-				target.settingsStore.currentSettings,
+				{ settings: sourceBundle.settingsStore.currentSettings, repository: sourceBundle.fileRepository },
+				{ settings: target.settingsStore.currentSettings, repository: target.fileRepository },
 				input.filePath
 			);
 			await sourceBundle.commandManager.executeCommand(command);

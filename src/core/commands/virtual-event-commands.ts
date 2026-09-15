@@ -102,7 +102,8 @@ export class ConvertToVirtualCommand implements Command {
 			await this.bundle.virtualEventStore.remove(this.createdVirtualId);
 		}
 		if (this.originalFileContent !== null) {
-			await this.app.vault.create(this.filePath, this.originalFileContent);
+			const restored = await this.app.vault.create(this.filePath, this.originalFileContent);
+			await this.bundle.fileRepository.ingestFile(restored);
 		}
 	}
 

@@ -191,9 +191,31 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 		}
 	}
 
+	/** True while the table's scan runs; a {@link resync} in this window joins it. */
+	get isScanning(): boolean {
+		return this.table.isScanning;
+	}
+
 	resync(): void {
+		if (this.table.isScanning) return;
 		this.indexingCompleteSubject.next(false);
 		this.table.resync();
+	}
+
+	/**
+	 * See {@link VaultTable.ingestFile}. Never throws: the note is already on
+	 * disk, so a failed read must not report the create as failed — Obsidian's
+	 * metadata cache still indexes it, only later.
+	 */
+	async ingestFile(file: TFile): Promise<void> {
+		try {
+			await this.table.ingestFile(file);
+		} catch (error) {
+			log.warn("indexing", "Could not index a created note directly; waiting for Obsidian's indexer", {
+				filePath: file.path,
+				error,
+			});
+		}
 	}
 
 	/** The underlying VaultTable — use for creating VaultTableViews or direct access */
@@ -298,8 +320,10 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 		const file = this.app.vault.getAbstractFileByPath(currentPath);
 		if (file instanceof TFile) {
 			await this.app.vault.modify(file, snapshot.content);
+			await this.ingestFile(file);
 		} else {
-			await this.app.vault.create(snapshot.filePath, snapshot.content);
+			const restored = await this.app.vault.create(snapshot.filePath, snapshot.content);
+			await this.ingestFile(restored);
 		}
 	}
 

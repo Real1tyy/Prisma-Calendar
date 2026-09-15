@@ -1,4 +1,5 @@
 import type { FrontmatterDiff } from "@real1ty/obsidian-plugins";
+import type { TFile } from "obsidian";
 import type { Observable } from "rxjs";
 
 import type { EventMetadata } from "./event-metadata";
@@ -56,6 +57,13 @@ export interface CalendarEventSource {
 	/** True on a device the user set to read-only: automatic writers perform nothing. */
 	readonly isReadOnly: boolean;
 	resync(): void;
+	/**
+	 * Indexes a note the caller just wrote around the table from its bytes on
+	 * disk, so it is on the calendar before Obsidian's metadata cache — one
+	 * parse queue shared by every plugin — gets to it. Never throws: the note
+	 * is on disk either way, and the cache still indexes it, only later.
+	 */
+	ingestFile(file: TFile): Promise<void>;
 }
 
 /** The slice of {@link CalendarEventSource} an automatic writer needs. */

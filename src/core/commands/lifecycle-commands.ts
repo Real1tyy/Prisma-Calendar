@@ -122,6 +122,7 @@ export class CreateEventCommand extends CreatedFileCommand {
 		});
 
 		this.createdFilePath = file.path;
+		await this.bundle.fileRepository.ingestFile(file);
 	}
 
 	getType() {
@@ -163,6 +164,12 @@ export class DeleteEventCommand implements Command {
 	}
 }
 
+/** One side of a move: the calendar's settings and the repository that indexes its directory. */
+export interface MoveEndpoint {
+	settings: SingleCalendarConfig;
+	repository: Pick<EventFileRepository, "ingestFile">;
+}
+
 export class MoveEventToCalendarCommand implements Command {
 	private originalFrontmatter: Frontmatter | null = null;
 	private originalFilePath: string;
@@ -170,8 +177,8 @@ export class MoveEventToCalendarCommand implements Command {
 
 	constructor(
 		private app: App,
-		private fromSettings: SingleCalendarConfig,
-		private toSettings: SingleCalendarConfig,
+		private from: MoveEndpoint,
+		private to: MoveEndpoint,
 		filePath: string
 	) {
 		this.originalFilePath = filePath;
@@ -181,14 +188,17 @@ export class MoveEventToCalendarCommand implements Command {
 		const file = getTFileOrThrow(this.app, this.originalFilePath);
 		this.originalFrontmatter ??= await backupFrontmatter(this.app, file);
 
-		await ensureDirectory(this.app, this.toSettings.directory);
-		const targetPath = computeMovePath(this.app, file, this.toSettings.directory);
+		await ensureDirectory(this.app, this.to.settings.directory);
+		const targetPath = computeMovePath(this.app, file, this.to.settings.directory);
 		await this.app.fileManager.renameFile(file, targetPath);
 		this.newFilePath = targetPath;
 
 		const movedFile = getTFileOrThrow(this.app, targetPath);
-		const translated = translateFrontmatterToCalendar(this.originalFrontmatter, this.fromSettings, this.toSettings);
+		const translated = translateFrontmatterToCalendar(this.originalFrontmatter, this.from.settings, this.to.settings);
 		await restoreFrontmatter(this.app, movedFile, translated);
+		// The rename reaches the target table at once, but with the untranslated
+		// frontmatter until Obsidian re-parses the note — index the final bytes now.
+		await this.to.repository.ingestFile(movedFile);
 	}
 
 	async undo(): Promise<void> {
@@ -198,6 +208,7 @@ export class MoveEventToCalendarCommand implements Command {
 		await restoreFrontmatter(this.app, movedFile, this.originalFrontmatter);
 		await this.app.fileManager.renameFile(movedFile, this.originalFilePath);
 		this.newFilePath = null;
+		await this.from.repository.ingestFile(getTFileOrThrow(this.app, this.originalFilePath));
 	}
 
 	getType(): string {
@@ -242,6 +253,7 @@ export class CloneEventCommand extends CreatedFileCommand {
 		const uniquePath = getUniqueFilePathFromFull(this.app, fullPath);
 		const file = await createFileAtPath(this.app, uniquePath, body, frontmatter);
 		this.createdFilePath = file.path;
+		await this.bundle.fileRepository.ingestFile(file);
 	}
 
 	getType() {

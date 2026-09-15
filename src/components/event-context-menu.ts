@@ -756,8 +756,8 @@ export class EventContextMenu {
 				() =>
 					new MoveEventToCalendarCommand(
 						this.app,
-						this.bundle.settingsStore.currentSettings,
-						target.settingsStore.currentSettings,
+						{ settings: this.bundle.settingsStore.currentSettings, repository: this.bundle.fileRepository },
+						{ settings: target.settingsStore.currentSettings, repository: target.fileRepository },
 						filePath
 					),
 				{

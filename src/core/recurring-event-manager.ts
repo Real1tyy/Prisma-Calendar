@@ -833,8 +833,11 @@ export class RecurringEventManager extends DebouncedNotifier {
 				...(this.settings.templatePath ? { templatePath: this.settings.templatePath } : {}),
 			});
 
+			// Index the instance from disk now rather than waiting for Obsidian's
+			// metadata cache: under another plugin's load that lags by minutes, and
+			// an instance the user cannot see reads as "generation stopped".
+			await this.eventSource.ingestFile(file);
 			// Don't notify here - let the batch operation handle notification
-			// Individual file creations will be picked up by the indexer
 			return file.path;
 		});
 	}

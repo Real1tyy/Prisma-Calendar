@@ -306,7 +306,7 @@ The **Open Current Note in Calendar** command provides quick navigation from any
 
 ### Refresh Calendar
 
--   **Function**: Manually triggers a full resync and refreshes all calendar events
+-   **Function**: Manually triggers a full resync and refreshes all calendar events. Running it again while a resync is still in progress joins that resync instead of starting another.
 -   **Use Cases**:
     -   Force refresh when events appear out of sync
     -   Update calendar after bulk file operations outside Obsidian

@@ -458,6 +458,9 @@ export class CalendarBundle {
 	}
 
 	refreshCalendar(): void {
+		// A refresh while a rescan is running joins it — clearing here would throw
+		// away the rows that rescan already rebuilt, with nothing restarting it.
+		if (this.fileRepository.isScanning) return;
 		// Clear caches before resync so the rebuild sees empty state — otherwise
 		// queries during the resync would read stale templates before the new
 		// indexer events land.
