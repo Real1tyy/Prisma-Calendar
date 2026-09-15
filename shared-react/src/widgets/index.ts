@@ -1,3 +1,4 @@
+export * from "./doctor";
 export * from "./general-section";
 export * from "./icon-picker";
 export * from "./license-section";

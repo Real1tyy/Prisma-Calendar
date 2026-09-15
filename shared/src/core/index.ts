@@ -1,6 +1,7 @@
 export * from "./commands";
 export * from "./customizable-ui-state";
 export * from "./data-access";
+export * from "./diagnostics";
 export * from "./evaluator";
 export * from "./event-statistics";
 export * from "./file";

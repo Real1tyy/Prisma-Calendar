@@ -19,6 +19,7 @@ export {
 	type DebugBundleInput,
 	type DebugEnvironment,
 } from "./debug-bundle";
+export { describeDebugEnvironment } from "./debug-environment";
 export { DEVICE_ID_LENGTH, resolveDeviceLogId, type DeviceLogIdOptions } from "./device-id";
 export {
 	FileSink,

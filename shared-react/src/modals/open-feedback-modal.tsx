@@ -2,10 +2,10 @@ import {
 	buildDebugBundle,
 	createScreenCapture,
 	createWindowCapture,
+	describeDebugEnvironment,
 	FEEDBACK_MAX_SCREENSHOT_BYTES,
 	getElectronWindow,
 	getOrCreateAnonymousClientId,
-	getPlatformId,
 	SubmissionClient,
 	type DebugBundle,
 	type DebugEnvironment,
@@ -17,7 +17,7 @@ import {
 	type SubmissionContext,
 	type SubmissionResult,
 } from "@real1ty/obsidian-plugins";
-import { apiVersion, Notice, type App } from "obsidian";
+import { Notice, type App } from "obsidian";
 
 import { getAttributableLicenseKey } from "../utils/license-attribution";
 import { showCaptureBar } from "./capture-bar";
@@ -69,12 +69,7 @@ export function createFeedbackSession({
 	logService,
 	licenseManager,
 }: OpenFeedbackOptions): FeedbackSession {
-	const environment: DebugEnvironment = {
-		pluginId: slug,
-		pluginVersion,
-		obsidianVersion: apiVersion,
-		platform: getPlatformId(),
-	};
+	const environment: DebugEnvironment = describeDebugEnvironment(slug, pluginVersion);
 
 	// A user gesture, so reading the wall clock here is correct — the bundle is a
 	// snapshot of "now", not an automatic write.
