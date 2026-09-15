@@ -248,7 +248,12 @@ const JWT_IN_TEXT = /\beyJ[A-Za-z0-9_-]{4,}\.[A-Za-z0-9_-]{4,}\.[A-Za-z0-9_-]{4,
 const CREDENTIAL_SHAPE_IN_TEXT =
 	/\b(?:sk-[A-Za-z0-9_-]{12,}|(?:sk|rk)_(?:live|test)_[A-Za-z0-9_-]{12,}|lic_[A-Za-z0-9_-]{12,}|gh[pousr]_[A-Za-z0-9_]{12,}|github_pat_[A-Za-z0-9_]{12,}|glpat-[A-Za-z0-9_-]{12,}|npm_[A-Za-z0-9]{24,}|xox[baprs]-[A-Za-z0-9-]{12,}|(?:AKIA|ASIA)[A-Z0-9]{16}|AIza[A-Za-z0-9_-]{30,})\b/g;
 const PRIVATE_KEY_BEGIN_IN_TEXT = /-----BEGIN ((?:RSA |EC |OPENSSH )?PRIVATE KEY)-----/g;
-const URL_USERINFO_IN_TEXT = /(:\/\/)[^\s/@]+:[^\s/@]+@/g;
+// The user half excludes `:` so the separator can only be the first one. Letting
+// both halves span `:` made every `:` a second place the split could go, so an
+// unterminated `://a:b:c:…` run cost O(n²) (CodeQL js/polynomial-redos). The set of
+// matched strings is unchanged — a URL's userinfo always splits at its first colon,
+// and the password half still spans the rest.
+const URL_USERINFO_IN_TEXT = /(:\/\/)[^\s/@:]+:[^\s/@]+@/g;
 const AUTHORIZATION_IN_TEXT = /\b(authorization)(\s*[:=]\s*)(?:(Bearer|Basic)\s+)?("[^"]*"|'[^']*'|[^\s,;)}\]]+)/gi;
 const KEY_VALUE_IN_TEXT =
 	/\b(token|secret|password|passwd|api[_-]?key|license[_-]?key|access[_-]?token|refresh[_-]?token|client[_-]?secret)\b(\s*[:=]\s*)(?!\[redacted)("[^"]*"|'[^']*'|[^\s,;)}\]]+)/gi;

@@ -1,4 +1,4 @@
-import { stringify as stringifyYAML } from "yaml";
+import { parse as parseYAML, stringify as stringifyYAML } from "yaml";
 
 /**
  * Creates file content with YAML frontmatter and body content.
@@ -43,27 +43,31 @@ export function createFileContentWithFrontmatter(frontmatter: Record<string, unk
 }
 
 /**
- * Parses file content to extract frontmatter and body separately.
- * Returns both the frontmatter object and the body content.
- *
- * @param fileContent - Complete file content including frontmatter
- * @returns Object with frontmatter and body
+ * Splits file content into its parsed frontmatter and its body. A YAML block
+ * that is not a mapping, or does not parse, yields empty frontmatter.
  */
 export function parseFileContent(fileContent: string): {
 	frontmatter: Record<string, unknown>;
 	body: string;
 } {
-	const frontmatterRegex = /^---\n([\s\S]*?)\n---\n?([\s\S]*)$/;
+	const frontmatterRegex = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)([\s\S]*)$/;
 	const match = fileContent.match(frontmatterRegex);
 
 	if (!match) {
-		// No frontmatter found
 		return { frontmatter: {}, body: fileContent };
 	}
 
-	const [, , body] = match;
+	const [, yamlBlock, body] = match;
+	return { frontmatter: parseFrontmatterBlock(yamlBlock), body: body.trim() };
+}
 
-	// For this use case, we just need to split the file
-	// The frontmatter will be properly parsed when we read it back with Obsidian's APIs
-	return { frontmatter: {}, body: body.trim() };
+function parseFrontmatterBlock(yamlBlock: string): Record<string, unknown> {
+	try {
+		const parsed: unknown = parseYAML(yamlBlock);
+		return parsed !== null && typeof parsed === "object" && !Array.isArray(parsed)
+			? (parsed as Record<string, unknown>)
+			: {};
+	} catch {
+		return {};
+	}
 }

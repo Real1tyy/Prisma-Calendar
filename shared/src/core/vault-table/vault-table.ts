@@ -16,7 +16,7 @@ import {
 import { ensureDirectory, extractContentAfterFrontmatter, withFrontmatter } from "../file/file-utils";
 import { createFileAtPathAtomic, guardFromTemplater } from "../file/templater";
 import { correctFrontmatter, deleteInvalidFile } from "../frontmatter/frontmatter-repair";
-import { createFileContentWithFrontmatter } from "../frontmatter/frontmatter-serialization";
+import { createFileContentWithFrontmatter, parseFileContent } from "../frontmatter/frontmatter-serialization";
 import { enforcePropertyOrder } from "../frontmatter/property-order";
 import { Indexer, type IndexerConfig, type IndexerEvent } from "../indexer";
 import type { SerializableSchema } from "./create-mapped-schema";
@@ -112,6 +112,7 @@ export class VaultTable<
 	private readonly indexerConfigStore: BehaviorSubject<IndexerConfig>;
 	private indexerSub: Subscription | null = null;
 	private readySub: Subscription | null = null;
+	private scanInFlight = false;
 
 	private readonly rowByFileName = new Map<string, VaultRow<TData>>();
 	private rows: VaultRow<TData>[] = [];
@@ -263,6 +264,7 @@ export class VaultTable<
 			void this.signalReadyWhenAsyncWorkSettles();
 		});
 
+		this.scanInFlight = true;
 		await this.indexer.start();
 		// `start()` resolves only once the table is a complete view of the vault —
 		// Obsidian's cache drained, every in-scope file scanned, every async
@@ -287,6 +289,8 @@ export class VaultTable<
 	 */
 	private async signalReadyWhenAsyncWorkSettles(): Promise<void> {
 		await this.asyncWork.waitUntilSettled();
+		// Cleared before `ready$` fires: a ready subscriber may resync on the spot.
+		this.scanInFlight = false;
 		this.readySubject.next(true);
 	}
 
@@ -323,6 +327,11 @@ export class VaultTable<
 		return this.readySubject.value;
 	}
 
+	/** True from `start()` or `resync()` until that scan settles; a `resync()` meanwhile joins it. */
+	get isScanning(): boolean {
+		return this.scanInFlight;
+	}
+
 	/**
 	 * The write gate. Every mutating entry point calls this first, so a write
 	 * issued while the table is still a partial view of the vault fails loudly
@@ -342,10 +351,19 @@ export class VaultTable<
 		this.indexerSub = null;
 		this.readySub?.unsubscribe();
 		this.readySub = null;
+		this.scanInFlight = false;
 		this.indexer.stop();
 	}
 
+	/**
+	 * Rebuilds every row from a fresh scan. A call while a scan is still running
+	 * joins it: that scan already took the file list, and the live pipeline
+	 * carries anything written since, so a second one would only rebuild every
+	 * row again — the cost a burst of refresh clicks used to multiply.
+	 */
 	resync(): void {
+		if (this.scanInFlight) return;
+		this.scanInFlight = true;
 		for (const cache of this.childCacheByPath.values()) {
 			for (const table of cache.values()) table.destroy();
 		}
@@ -357,11 +375,12 @@ export class VaultTable<
 		this.readySubject.next(false);
 
 		this.readySub?.unsubscribe();
+		// Subscribe only once the indexer has closed `indexingComplete$`: before
+		// that, the previous scan's `true` replays and reopens the gate at once.
+		this.indexer.resync();
 		this.readySub = this.indexer.indexingComplete$.pipe(filter(Boolean), take(1)).subscribe(() => {
 			void this.signalReadyWhenAsyncWorkSettles();
 		});
-
-		this.indexer.resync();
 	}
 
 	/**
@@ -832,13 +851,45 @@ export class VaultTable<
 
 		if (!event.source) return;
 
-		const filePath = event.filePath;
-		const id = this.toRowKey(filePath);
-		const mtime = event.source.mtime;
-
-		const parsed = this.resolveParsedData(filePath, mtime, event.source.frontmatter);
+		const parsed = this.resolveParsedData(event.filePath, event.source.mtime, event.source.frontmatter);
 		if (parsed === null) return;
 
+		void this.upsertParsedRow(event, event.source.mtime, parsed);
+	}
+
+	/**
+	 * Indexes a note the caller just wrote around the table — a copy, a
+	 * template-backed create — from its bytes on disk instead of Obsidian's
+	 * metadata cache. That cache parses on one queue shared by every plugin, so
+	 * under another plugin's batch work a new note can stay invisible for
+	 * minutes while edits to existing rows, which the table applies eagerly,
+	 * keep landing. The cache's own `changed` later finds the row unchanged.
+	 *
+	 * Frontmatter that does not validate is left to the cache path rather than
+	 * the invalid strategy: a file read mid-write must never be corrected or
+	 * deleted on the strength of that read.
+	 */
+	async ingestFile(file: TFile): Promise<void> {
+		if (!this.indexerConfigStore.value.includeFile?.(file.path)) return;
+
+		const fullContent = await this.app.vault.read(file);
+		const { frontmatter } = parseFileContent(fullContent);
+		// No frontmatter is no row on the indexer path either (`buildEvent`).
+		if (Object.keys(frontmatter).length === 0) return;
+		const result = this.schema.safeParse(frontmatter);
+		if (!result.success) return;
+
+		const event: IndexerEvent = {
+			type: "file-changed",
+			filePath: file.path,
+			source: { file, filePath: file.path, mtime: file.stat.mtime, frontmatter, folder: file.parent?.path ?? "" },
+		};
+		await this.upsertParsedRow(event, file.stat.mtime, result.data, fullContent);
+	}
+
+	private upsertParsedRow(event: IndexerEvent, mtime: number, parsed: TData, fullContent?: string): Promise<void> {
+		const filePath = event.filePath;
+		const id = this.toRowKey(filePath);
 		const existingRow = this.rowByFileName.get(id);
 
 		// Suppress indexer events for self-initiated CRUD writes — they
@@ -857,21 +908,29 @@ export class VaultTable<
 		// - Deletes: row was eagerly removed → indexer finds nothing to emit
 		// - The dedup here prevents double-emission from the indexer path.
 		if (existingRow && existingRow.mtime === mtime && deepEqualJsonLike(existingRow.data, parsed)) {
-			return;
+			return Promise.resolve();
 		}
 
 		// Tracked rather than `void`-discarded so the initial-scan ready signal
 		// waits for the build (and the row-created event it emits) before flipping.
+		const build = this.buildAndUpsertRow(id, filePath, parsed, event, fullContent);
 		// eslint-disable-next-line @typescript-eslint/no-floating-promises -- barrier owns the promise
-		this.asyncWork.track(this.buildAndUpsertRow(id, filePath, parsed, event));
+		this.asyncWork.track(build);
+		return build;
 	}
 
-	private async buildAndUpsertRow(id: string, filePath: string, data: TData, event: IndexerEvent): Promise<void> {
+	private async buildAndUpsertRow(
+		id: string,
+		filePath: string,
+		data: TData,
+		event: IndexerEvent,
+		knownContent?: string
+	): Promise<void> {
 		const source = event.source;
 		if (!source) return;
 		const file = source.file;
 		const generation = this.deletionGeneration.get(filePath) ?? 0;
-		const fullContent = await this.app.vault.cachedRead(file);
+		const fullContent = knownContent ?? (await this.app.vault.cachedRead(file));
 		// A delete (or rename away) that landed during the read wins: inserting
 		// now would resurrect a row for a file that is gone, and the row-created
 		// it emits would follow the row-deleted the consumer already handled.
@@ -889,7 +948,11 @@ export class VaultTable<
 			this.removeRow(oldRow.id);
 			this.insertRow(newRow);
 			const contentChanged = oldRow.content !== content;
-			if (event.frontmatterDiff || contentChanged) {
+			// `dataChanged` covers a row the indexer never diffed against — one
+			// ingested from disk, or created by the table's own CRUD — whose parse
+			// Obsidian's cache then disagrees with; consumers must see the cache's view.
+			const dataChanged = !deepEqualJsonLike(oldRow.data, data);
+			if (event.frontmatterDiff || contentChanged || dataChanged) {
 				this.eventsSubject.next({
 					type: "row-updated",
 					id,
