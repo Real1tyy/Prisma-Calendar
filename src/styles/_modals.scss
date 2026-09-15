@@ -676,6 +676,9 @@
 	}
 
 	&-empty {
+		// The General tab's next section heading sits directly below this box, and a
+		// heading carries no top spacing of its own after a non-setting block.
+		margin-bottom: 24px;
 		padding: 16px;
 		text-align: center;
 		color: var(--text-muted);

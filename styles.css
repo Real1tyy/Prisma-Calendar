@@ -3322,6 +3322,7 @@ button[class*=prisma-]:focus-visible {
   border-color: var(--text-error);
 }
 .prisma-event-preset-empty {
+  margin-bottom: 24px;
   padding: 16px;
   text-align: center;
   color: var(--text-muted);
