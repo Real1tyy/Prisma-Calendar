@@ -35,6 +35,12 @@ export function registerPrismaLogsView(plugin: CustomCalendarPlugin): PrismaLogs
 		files: createLogFileSource(fs, logDirectory(plugin)),
 		privacyUrl: settingsDocUrl("/privacy", "logs_privacy"),
 		filenamePrefix: "prisma-logs",
+		pageHeader: {
+			loadState: () => plugin.settingsStore.currentSettings.logsPageHeaderState,
+			saveState: (state) => {
+				void plugin.settingsStore.updateSettings((settings) => ({ ...settings, logsPageHeaderState: state }));
+			},
+		},
 		onSave: async (content, filename) => {
 			if (!plugin.app.vault.getFolderByPath(EXPORT_FOLDER)) {
 				await plugin.app.vault.createFolder(EXPORT_FOLDER);

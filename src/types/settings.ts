@@ -980,6 +980,7 @@ export const CustomCalendarSettingsSchema = z
 	.object({
 		licenseKeySecretName: z.string().catch(""),
 		version: z.string().catch("1.1.0"),
+		logsPageHeaderState: PageHeaderStateSchema.optional().catch(undefined), // Persisted Logs view header button state
 		tutorialCompleted: z.boolean().catch(false),
 		checkForReleaseUpdates: z
 			.boolean()

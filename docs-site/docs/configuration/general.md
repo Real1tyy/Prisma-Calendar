@@ -177,7 +177,7 @@ New entries appear as they happen. Scroll down to read something and the view ho
 **Narrowing the table.** The controls above the table combine, so each one you add narrows what is left:
 
 - **Level chips** — click **debug**, **info**, **warn** or **error** to keep only those. With none picked, every level shows.
-- **Scope** — the part of the plugin an entry came from (`indexer`, `recurring`, `sync`, …). The dropdown lists only the scopes actually present.
+- **Scope chips** — the part of the plugin an entry came from (`indexer`, `recurring`, `sync`, …). Only scopes actually present get a chip. Pick one to keep only its entries, or several to keep entries from any of them. With none picked, every scope shows.
 - **From** / **To** — a start and end time, in your local clock.
 - **Search** — matches the message and the structured details, so a note name, an error code or a property name all find their entries.
 
@@ -185,7 +185,7 @@ The counter reads `247 entries · 12 shown`, so you always know how much the fil
 
 **Earlier sessions.** With **Write log files** on, a **Source** dropdown appears listing this device's log files, newest first. Pick one to read history from before Obsidian was last restarted; **Load older entries** fetches the next page.
 
-**Sending logs to us.** **Copy filtered** puts exactly the rows you narrowed to on the clipboard, **Copy all** takes the whole table, and each row has its own **Copy**. **Save to file** writes them into a `Prisma Logs` folder in your vault as a `.json` file you can attach to a GitHub issue — tick some rows first and it saves only those.
+**Sending logs to us.** The buttons in the view's header act on the table: **Copy filtered** puts exactly the rows you narrowed to on the clipboard, **Copy all** takes the whole table, **Save to file** writes the shown rows into a `Prisma Logs` folder in your vault as a `.json` file you can attach to a GitHub issue — tick some rows first and it saves only those — and **Clear buffer** empties this session's log. Each row also has its own **Copy**. Like every Prisma header, the gear button lets you reorder, rename or hide these buttons, and your arrangement is remembered.
 
 Everything that leaves the view is redacted the same way as every other Prisma export: folder and note names become stable tokens, property values are replaced by their type, and secrets are removed. **Include full detail** in the privacy notice at the top keeps real paths and values for someone you trust; secrets are removed either way. The [privacy page](../privacy.md) shows a full before-and-after.
 
