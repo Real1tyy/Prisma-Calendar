@@ -1,4 +1,4 @@
-import { mergeSorted, perf } from "@real1ty/obsidian-plugins";
+import { mergeSorted, perf, pollIntervalMsForEnv } from "@real1ty/obsidian-plugins";
 import { DateTime } from "luxon";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import BTree from "sorted-btree";
@@ -397,7 +397,10 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 
 	private startMarkDonePeriodicScan(): void {
 		this.stopMarkDonePeriodicScan();
-		this.markDoneScanInterval = window.setInterval(() => this.scanPastEventsForMarkDone(), MARK_DONE_SCAN_INTERVAL_MS);
+		this.markDoneScanInterval = window.setInterval(
+			() => this.scanPastEventsForMarkDone(),
+			pollIntervalMsForEnv(MARK_DONE_SCAN_INTERVAL_MS)
+		);
 	}
 
 	private stopMarkDonePeriodicScan(): void {

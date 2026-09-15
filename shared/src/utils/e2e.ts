@@ -22,3 +22,14 @@ export function isE2E(): boolean {
 export function debounceMsForEnv(productionMs: number): number {
 	return isE2E() ? 0 : productionMs;
 }
+
+const E2E_POLL_INTERVAL_MS = 1000;
+
+/**
+ * Shrinks a periodic job's interval under E2E so a spec can observe it within a
+ * polling timeout. Unlike a debounce this must stay above zero — a zero-delay
+ * `setInterval` would spin the renderer.
+ */
+export function pollIntervalMsForEnv(productionMs: number): number {
+	return isE2E() ? Math.min(productionMs, E2E_POLL_INTERVAL_MS) : productionMs;
+}
