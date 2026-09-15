@@ -35,7 +35,7 @@ ${v}-chip[data-kind="level"] { font-family: var(--font-monospace); text-transfor
 ${levelColors(`${v}-chip`)}
 ${v}-chip[data-kind="level"][aria-pressed="true"] { color: var(--log-color); border-color: var(--log-color); background: var(--log-tint); }
 
-${v}-range { position: relative; height: 18px; margin: 0 6px; }
+${v}-range { position: relative; flex: 1 1 200px; min-width: 160px; height: 18px; margin: 0 6px; }
 ${v}-range::before {
 	content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 4px; transform: translateY(-50%);
 	border-radius: 2px; background: var(--background-modifier-border);

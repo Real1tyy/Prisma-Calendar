@@ -1,5 +1,6 @@
 export function buildDoctorStyles(p: string): string {
 	return `
+.modal.${p}doctor-modal { width: calc(var(--dialog-width) * 1.3); max-width: 95vw; }
 .${p}doctor { display: flex; flex-direction: column; gap: 12px; }
 .${p}doctor-summary {
 	display: flex; align-items: center; gap: 8px;

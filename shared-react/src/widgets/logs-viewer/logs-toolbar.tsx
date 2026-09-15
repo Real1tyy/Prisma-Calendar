@@ -220,10 +220,10 @@ export const LogsToolbar = memo(function LogsToolbar({
 						testId={tid("to")}
 					/>
 				</label>
+				{bounds && bounds.max > bounds.min && fromTs !== undefined && toTs !== undefined && (
+					<TimeRangeSlider bounds={bounds} start={fromTs} end={toTs} onChange={setRange} cls={cls} tid={tid} />
+				)}
 			</div>
-			{bounds && bounds.max > bounds.min && fromTs !== undefined && toTs !== undefined && (
-				<TimeRangeSlider bounds={bounds} start={fromTs} end={toTs} onChange={setRange} cls={cls} tid={tid} />
-			)}
 		</div>
 	);
 });
