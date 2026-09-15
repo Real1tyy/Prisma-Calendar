@@ -100,6 +100,7 @@ export const COMMAND_KEYS = [
 	"SCREENSHOT_AND_REPORT_A_BUG",
 	"RESTORE_FEEDBACK_REPORT",
 	"CAPTURE_INTO_FEEDBACK_REPORT",
+	"OPEN_DOCTOR",
 ] as const;
 
 export type CommandKey = (typeof COMMAND_KEYS)[number];

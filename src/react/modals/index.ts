@@ -52,3 +52,6 @@ export type {
 export { FirstLaunchController, openFirstLaunchModal } from "./onboarding/first-launch";
 export type { ProWelcomeControllerProps } from "./onboarding/pro-welcome";
 export { ProWelcomeController, showProWelcomeModal } from "./onboarding/pro-welcome";
+
+// Doctor
+export { openPrismaDoctor } from "./doctor/doctor-modal";

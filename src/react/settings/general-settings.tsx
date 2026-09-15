@@ -1,6 +1,7 @@
 import { buildUtmUrl } from "@real1ty/obsidian-plugins";
 import {
 	Button,
+	DoctorSection,
 	Dropdown,
 	GeneralSection,
 	OutboundLink,
@@ -10,7 +11,7 @@ import {
 	useSchemaField,
 	useSettingsFields,
 } from "@real1ty/obsidian-plugins-react";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 
 import { cls, docsUrl, settingsDocUrl, tid } from "../../constants";
 import { LICENSE_SECRET_ID } from "../../core/api/license-activation";
@@ -20,7 +21,7 @@ import { buildWhatsNewConfig } from "../../core/whats-new-config";
 import type CustomCalendarPlugin from "../../main";
 import { CustomCalendarSettingsSchema, SingleCalendarConfigSchema } from "../../types/settings";
 import { PRISMA_NON_TRANSFERABLE_SETTINGS, PRISMA_SETTINGS_TRANSFER_FILENAME } from "../../utils/settings-transfer";
-import { openDeviceRoleModal } from "../modals";
+import { openDeviceRoleModal, openPrismaDoctor } from "../modals";
 import { HelpBox } from "./_help-box";
 import { PRISMA_SETTINGS_TEST_ID_PREFIX, PrismaSection } from "./_section";
 import { PRISMA_HELP_CENTER } from "./help-content";
@@ -61,6 +62,17 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 			return Promise.resolve();
 		},
 		[setLicenseKeySecretName]
+	);
+
+	const handleOpenDoctor = useCallback(() => openPrismaDoctor(plugin), [plugin]);
+	const extraSections = useMemo(
+		() => [
+			{
+				id: "doctor",
+				node: <DoctorSection onOpen={handleOpenDoctor} testIdPrefix={PRISMA_SETTINGS_TEST_ID_PREFIX} />,
+			},
+		],
+		[handleOpenDoctor]
 	);
 
 	const handleViewChangelog = useCallback(() => {
@@ -110,6 +122,7 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 			changelog={{ onView: handleViewChangelog }}
 			logging={{ store: plugin.settingsStore, service: plugin.logging.service }}
 			privacyUrl={docsUrl("/privacy")}
+			extraSections={extraSections}
 			settingsTransfer={{
 				store: plugin.settingsStore,
 				defaults: plugin.settingsStore.getDefaults(),

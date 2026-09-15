@@ -19,6 +19,7 @@ import { redo, undo } from "./core/api/read-operations";
 import { PRO_FEATURES } from "./core/license";
 import { getProGateUrls } from "./core/pro-feature-previews";
 import type CustomCalendarPlugin from "./main";
+import { openPrismaDoctor } from "./react/modals/doctor/doctor-modal";
 import { openFilteredEventsModal, openGlobalSearchModal } from "./react/modals/event-list";
 import { openEventsModal } from "./react/modals/event-list/events-modal-content";
 
@@ -330,6 +331,12 @@ export function registerPrismaCalendarCommands(plugin: CustomCalendarPlugin): vo
 	// Reachable without opening Settings, so a user who just hit the bug can bind
 	// a hotkey and report it while the broken state is still on screen.
 	registerFeedbackCommands(plugin);
+
+	plugin.addCommand({
+		id: COMMAND_IDS.OPEN_DOCTOR,
+		name: "Open Doctor",
+		callback: () => openPrismaDoctor(plugin),
+	});
 
 	plugin.addCommand({
 		id: COMMAND_IDS.OPEN_AI_CHAT,
