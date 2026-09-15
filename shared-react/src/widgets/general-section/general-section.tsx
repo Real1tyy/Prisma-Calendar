@@ -5,7 +5,7 @@ import {
 	type LogService,
 	type PluginSlug,
 } from "@real1ty/obsidian-plugins";
-import { memo, useCallback, type ReactNode } from "react";
+import { Fragment, memo, useCallback, type ReactNode } from "react";
 
 import { useApp } from "../../contexts/app-context";
 import { useCssPrefix } from "../../contexts/theme-context";
@@ -381,8 +381,9 @@ function GeneralSectionInner<T extends Record<string, unknown>>({
 
 			{children}
 
+			{/* Fragments, not wrapper divs: a heading that is its wrapper's first child loses Obsidian's section spacing. */}
 			{extraSections?.map((section) => (
-				<div key={section.id}>{section.node}</div>
+				<Fragment key={section.id}>{section.node}</Fragment>
 			))}
 
 			{logging !== undefined && (

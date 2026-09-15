@@ -33,7 +33,7 @@ export interface LogFilter {
 	level?: LogLevel | readonly LogLevel[];
 	minLevel?: LogLevel;
 	scope?: string | readonly string[];
-	/** Case-insensitive substring over the message and the serialized `data`. */
+	/** Case-insensitive substring over the message, the scope and the serialized `data`. */
 	query?: string;
 	/** Inclusive `ts` bounds. */
 	since?: number;

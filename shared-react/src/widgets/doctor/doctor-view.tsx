@@ -7,6 +7,7 @@ import { useScopedStyles } from "../../hooks/styles/use-styles";
 import { Button } from "../../primitives/atoms/button";
 import { testIdAttr } from "../../utils/test-id";
 import { PrivacyDisclaimer } from "../privacy-disclaimer/privacy-disclaimer";
+import { DoctorLogsSection, type DoctorLogsConfig } from "./doctor-logs-section";
 import { buildDoctorStyles } from "./doctor-view.styles";
 
 /** The glyph and screen-reader word for each verdict. */
@@ -40,6 +41,8 @@ export interface DoctorConfig {
 	privacyDocsUrl: string;
 	/** Writes the bundle into the vault and resolves with the path written. */
 	saveDebugFile: (text: string) => Promise<string>;
+	/** The plugin's log stream, shown in a collapsed Logs section under the checks. Omit and the section is not offered. */
+	logs?: DoctorLogsConfig | undefined;
 }
 
 /**
@@ -135,6 +138,8 @@ export const DoctorView = memo(function DoctorView({ config, onCreateBugReport }
 					checks.map((check) => <CheckRow key={check.id} check={check} cls={cls} tid={tid} onFixed={refresh} />)
 				)}
 			</div>
+
+			{config.logs !== undefined && <DoctorLogsSection logs={config.logs} cls={cls} tid={tid} />}
 		</div>
 	);
 });

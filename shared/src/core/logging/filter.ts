@@ -33,7 +33,8 @@ export function matchesLogFilter(entry: LogEntry, filter: LogFilter, searchText?
 
 	if (filter.query) {
 		const needle = filter.query.toLowerCase();
-		const haystack = `${entry.message}\n${searchText ? searchText() : logSearchText(entry)}`.toLowerCase();
+		const haystack =
+			`${entry.message}\n${entry.scope}\n${searchText ? searchText() : logSearchText(entry)}`.toLowerCase();
 		if (!haystack.includes(needle)) return false;
 	}
 

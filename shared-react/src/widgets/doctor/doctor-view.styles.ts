@@ -25,5 +25,14 @@ export function buildDoctorStyles(p: string): string {
 .${p}doctor-check-detail { color: var(--text-muted); font-size: var(--font-ui-small); overflow-wrap: anywhere; }
 .${p}doctor-check-fix { flex: 0 0 auto; }
 .${p}doctor-empty { color: var(--text-muted); font-size: var(--font-ui-small); }
+.${p}doctor-logs { display: flex; flex-direction: column; gap: 8px; padding-top: 10px; border-top: 1px solid var(--background-modifier-border); }
+.${p}doctor-logs-toggle {
+	display: flex; align-items: center; gap: 8px; width: 100%; height: auto; padding: 6px 4px;
+	background: none; box-shadow: none; border: 0; cursor: pointer; text-align: left;
+}
+.${p}doctor-logs-toggle:hover { background: var(--background-modifier-hover); }
+.${p}doctor-logs-caret { display: flex; color: var(--text-muted); }
+.${p}doctor-logs-heading { font-weight: var(--font-semibold); }
+.${p}doctor-logs-hint { color: var(--text-muted); font-size: var(--font-ui-smaller); }
 `;
 }

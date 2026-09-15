@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, type Ref } from "react";
 
 import { useDebouncedCommit } from "../../hooks/interaction/use-debounced-commit";
 import { testIdAttr } from "../../utils/test-id";
@@ -10,9 +10,18 @@ interface TextInputProps {
 	/** Override the default 300ms commit delay. Pass `0` to commit synchronously. */
 	debounceMs?: number;
 	testId?: string | undefined;
+	/** For callers that move focus into the field, e.g. a Ctrl/Cmd+F shortcut. */
+	inputRef?: Ref<HTMLInputElement> | undefined;
 }
 
-export const TextInput = memo(function TextInput({ value, placeholder, onChange, debounceMs, testId }: TextInputProps) {
+export const TextInput = memo(function TextInput({
+	value,
+	placeholder,
+	onChange,
+	debounceMs,
+	testId,
+	inputRef,
+}: TextInputProps) {
 	const { draft, setDraft, flush } = useDebouncedCommit<string>({
 		value,
 		onCommit: onChange,
@@ -20,6 +29,7 @@ export const TextInput = memo(function TextInput({ value, placeholder, onChange,
 	});
 	return (
 		<input
+			ref={inputRef}
 			type="text"
 			className="setting-input"
 			placeholder={placeholder}

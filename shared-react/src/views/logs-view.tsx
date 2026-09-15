@@ -1,5 +1,5 @@
 import type { LeafPlacement } from "@real1ty/obsidian-plugins";
-import type { Plugin, WorkspaceLeaf } from "obsidian";
+import { Scope, type Plugin, type WorkspaceLeaf } from "obsidian";
 
 import { createPageHeader } from "../page-header/create-page-header";
 import type { HeaderActionDefinition, PageHeaderState } from "../page-header/types";
@@ -10,6 +10,7 @@ import { LogsViewer, type LogsViewerHandle, type LogsViewerProps } from "../widg
 export const LOGS_HEADER_ACTION_IDS = {
 	reportBug: "logs-report-bug",
 	copyFiltered: "logs-copy-filtered",
+	copySelected: "logs-copy-selected",
 	copyAll: "logs-copy-all",
 	save: "logs-save",
 	clear: "logs-clear",
@@ -45,6 +46,12 @@ export function buildLogsHeaderActions(
 			onAction: () => getHandle()?.copyFiltered(),
 		},
 		{
+			id: LOGS_HEADER_ACTION_IDS.copySelected,
+			label: "Copy selected",
+			icon: "list-checks",
+			onAction: () => getHandle()?.copySelected(),
+		},
+		{
 			id: LOGS_HEADER_ACTION_IDS.copyAll,
 			label: "Copy all",
 			icon: "copy",
@@ -65,13 +72,27 @@ export function buildLogsHeaderActions(
 	];
 }
 
+/**
+ * The leaf's own keys. `Mod+F` has to live on the view's `Scope`: Obsidian's
+ * workspace keymap handles it before the event reaches the React tree, so a
+ * React `onKeyDown` never sees it inside a leaf. Returning `false` stops the
+ * key there. `Mod+A` stays in React, where the search field keeps its own
+ * select-all.
+ */
+export function registerLogsViewKeys(scope: Pick<Scope, "register">, getHandle: () => LogsViewerHandle | null): void {
+	scope.register(["Mod"], "f", () => {
+		getHandle()?.focusSearch();
+		return false;
+	});
+}
+
 export interface LogsViewPageHeaderConfig {
 	/** Read when a leaf opens, so a customisation made in another leaf is picked up. */
 	loadState: () => PageHeaderState | undefined;
 	saveState: (state: PageHeaderState) => void;
 }
 
-export interface LogsViewConfig extends LogsViewerProps, LogsHeaderActionOptions {
+export interface LogsViewConfig extends Omit<LogsViewerProps, "variant">, LogsHeaderActionOptions {
 	/** Unique per plugin, e.g. `prisma-logs-view`. */
 	viewType: string;
 	/** Leaf title. Default `"Logs"`. */
@@ -106,7 +127,11 @@ export function registerLogsView(
 		cssPrefix,
 		...(testIdPrefix !== undefined ? { testIdPrefix } : {}),
 		render: (ref) => <LogsViewer {...viewerProps} ref={ref} />,
-		onMount: (leaf) => {
+		onMount: (leaf, view) => {
+			const scope = new Scope(plugin.app.scope);
+			registerLogsViewKeys(scope, () => registered.getHandle(leaf));
+			view.scope = scope;
+
 			const savedState = pageHeader?.loadState();
 			const header = createPageHeader({
 				actions: buildLogsHeaderActions(() => registered.getHandle(leaf), { onReportBug }),

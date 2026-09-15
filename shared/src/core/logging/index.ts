@@ -53,6 +53,7 @@ export {
 	type LoggingControllerOptions,
 } from "./logging-controller";
 export { DEFAULT_LOG_CAPACITY, MemorySink } from "./memory-sink";
+export { OTLP_SEVERITY_NUMBER, toOtlpLogRecord, type OtlpLogRecord, type OtlpSeverityText } from "./otlp";
 export { PluginLog } from "./plugin-log";
 export {
 	createLogJsonReplacer,
