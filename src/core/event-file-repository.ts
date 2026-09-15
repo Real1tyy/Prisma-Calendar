@@ -123,7 +123,14 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 		this.recurringEvents$ = this.recurringSubject.asObservable();
 		this.indexingComplete$ = this.indexingCompleteSubject.asObservable();
 
-		const viewOptions = { canMintSeriesId: () => !this.isReadOnly };
+		// The same resolution `tryParseRecurring` performs, minus its bounded wait for
+		// the cache: an id the metadata cache already holds is adopted, otherwise the
+		// path-derived id it will mint — and none on a read-only device, which mints nothing.
+		const viewOptions = {
+			resolvePendingSeriesId: (row: VaultRow<Frontmatter>): string | undefined =>
+				toSafeString(this.app.metadataCache.getFileCache(row.file)?.frontmatter?.[this.settings.rruleIdProp]) ??
+				(this.isReadOnly ? undefined : deriveRRuleId(row.file.path)),
+		};
 		this.trackedEvents = new EventSourceView(this.table, "tracked", settingsStore, viewOptions);
 		this.untrackedEvents = new EventSourceView(this.table, "untracked", settingsStore, viewOptions);
 		this.recurringSources = new EventSourceView(this.table, "recurringSource", settingsStore, viewOptions);

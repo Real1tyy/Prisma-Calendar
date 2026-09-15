@@ -25,12 +25,12 @@ export type EventSourceRows = Pick<EventSourceView, "sources$" | "ready$">;
 
 export interface EventSourceViewOptions {
 	/**
-	 * Whether this device writes a missing series id. The repository mints one for
-	 * a recurring note that has none and queues the write; while it is queued the
-	 * projection carries the same derived id. A read-only device writes nothing,
-	 * so it projects nothing. Defaults to true.
+	 * The series id a recurring note without one is about to carry, or undefined
+	 * when it will carry none. Mirrors the repository's own resolution so the
+	 * projection and the id it hands the recurring manager agree before the row
+	 * catches up. Defaults to the path-derived id.
 	 */
-	canMintSeriesId?: () => boolean;
+	resolvePendingSeriesId?: (row: VaultRow<Frontmatter>) => string | undefined;
 }
 
 /**
@@ -70,26 +70,32 @@ function matchesScope(data: Frontmatter, settings: SingleCalendarConfig, scope: 
 	}
 }
 
+const derivedSeriesId = (row: VaultRow<Frontmatter>): string => deriveRRuleId(row.filePath);
+
 /**
- * The frontmatter a recurring note will carry once the repository's queued
- * series-id write lands: the id is `deriveRRuleId` of the note's path, the same
- * pure function the repository uses, so the projection and the disk agree. The
+ * The frontmatter a recurring note that has no series id yet will carry: the
+ * id the repository adopts from the metadata cache or mints and queues. The
  * row itself is never touched.
  */
-function withPendingSeriesId(row: VaultRow<Frontmatter>, settings: SingleCalendarConfig, mint: boolean): Frontmatter {
+function withPendingSeriesId(
+	row: VaultRow<Frontmatter>,
+	settings: SingleCalendarConfig,
+	resolvePendingSeriesId: (row: VaultRow<Frontmatter>) => string | undefined
+): Frontmatter {
 	const data = row.data;
-	if (!mint || data[settings.rruleIdProp] || !data[settings.rruleProp]) return data;
+	if (data[settings.rruleIdProp] || !data[settings.rruleProp]) return data;
 	if (parseRRuleFromFrontmatter(data, settings) === null) return data;
-	return { ...data, [settings.rruleIdProp]: deriveRRuleId(row.filePath) };
+	const seriesId = resolvePendingSeriesId(row);
+	return seriesId === undefined ? data : { ...data, [settings.rruleIdProp]: seriesId };
 }
 
 /** Projects a row into the parsed shape every event consumer works in. */
 function buildRawEventSource(
 	row: VaultRow<Frontmatter>,
 	settings: SingleCalendarConfig,
-	mintSeriesId: boolean
+	resolvePendingSeriesId: (row: VaultRow<Frontmatter>) => string | undefined
 ): RawEventSource {
-	const frontmatter = withPendingSeriesId(row, settings, mintSeriesId);
+	const frontmatter = withPendingSeriesId(row, settings, resolvePendingSeriesId);
 	const allDayProp = frontmatter[settings.allDayProp];
 	return {
 		filePath: row.filePath,
@@ -119,7 +125,7 @@ export class EventSourceView extends VaultTableView<Frontmatter> {
 	private viewSub: Subscription | null = null;
 	private sourceTable: VaultTable<Frontmatter>;
 	private readonly sourcesSubject = new Subject<EventSourceEvent>();
-	private readonly canMintSeriesId: () => boolean;
+	private readonly resolvePendingSeriesId: (row: VaultRow<Frontmatter>) => string | undefined;
 
 	public readonly sources$: Observable<EventSourceEvent>;
 
@@ -134,7 +140,7 @@ export class EventSourceView extends VaultTableView<Frontmatter> {
 
 		this.settings = settings;
 		this.sourceTable = table;
-		this.canMintSeriesId = options.canMintSeriesId ?? (() => true);
+		this.resolvePendingSeriesId = options.resolvePendingSeriesId ?? derivedSeriesId;
 		this.sources$ = this.sourcesSubject.asObservable();
 
 		this.viewSub = this.events$.subscribe((event) => {
@@ -167,7 +173,7 @@ export class EventSourceView extends VaultTableView<Frontmatter> {
 	}
 
 	private project(row: VaultRow<Frontmatter>): RawEventSource {
-		return buildRawEventSource(row, this.settings, this.canMintSeriesId());
+		return buildRawEventSource(row, this.settings, this.resolvePendingSeriesId);
 	}
 
 	private reparse(): void {
