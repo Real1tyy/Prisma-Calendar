@@ -3,6 +3,7 @@ import type { BehaviorSubject } from "rxjs";
 
 import type { CalendarEventSource } from "../../../types/event-source";
 import type { SingleCalendarConfig } from "../../../types/settings";
+import type { EventSourceRows } from "../../event-source-view";
 import { BaseSyncStateManager, type TrackedSyncEvent } from "../base-sync-state-manager";
 import { ICSSubscriptionSyncMetadataSchema, type ICSSubscriptionSyncMetadata } from "./types";
 
@@ -17,8 +18,13 @@ type TrackedICSSubscriptionEvent = TrackedSyncEvent<ICSSubscriptionSyncMetadata>
  * in lockstep.
  */
 export class ICSSubscriptionSyncStateManager extends BaseSyncStateManager<ICSSubscriptionSyncMetadata> {
-	constructor(app: App, eventSource: CalendarEventSource, settings$: BehaviorSubject<SingleCalendarConfig>) {
-		super(app, eventSource, settings$, (s) => s.icsSubscriptionProp, ICSSubscriptionSyncMetadataSchema);
+	constructor(
+		app: App,
+		eventSource: CalendarEventSource,
+		sourceView: EventSourceRows,
+		settings$: BehaviorSubject<SingleCalendarConfig>
+	) {
+		super(app, eventSource, sourceView, settings$, (s) => s.icsSubscriptionProp, ICSSubscriptionSyncMetadataSchema);
 	}
 
 	findByUid(subscriptionId: string, uid: string): TrackedICSSubscriptionEvent | null {

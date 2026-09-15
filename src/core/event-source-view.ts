@@ -19,6 +19,9 @@ export type EventSourceEvent =
 	| { type: "source-changed"; filePath: string; source: RawEventSource; oldPath?: string }
 	| { type: "source-removed"; filePath: string; reason: "deleted" | "filtered"; isRename?: boolean };
 
+/** The slice of a view a row consumer needs — what tests stub and services depend on. */
+export type EventSourceRows = Pick<EventSourceView, "sources$" | "ready$">;
+
 function isTracked(data: Frontmatter, settings: SingleCalendarConfig): boolean {
 	return Boolean(data[settings.startProp] || data[settings.dateProp]);
 }

@@ -3,6 +3,7 @@ import type { BehaviorSubject } from "rxjs";
 
 import type { CalendarEventSource } from "../../../types/event-source";
 import type { SingleCalendarConfig } from "../../../types/settings";
+import type { EventSourceRows } from "../../event-source-view";
 import { BaseSyncStateManager, type TrackedSyncEvent } from "../base-sync-state-manager";
 import { CalDAVSyncMetadataSchema, type CalDAVSyncMetadata } from "./types";
 
@@ -18,8 +19,13 @@ type TrackedCalDAVEvent = TrackedSyncEvent<CalDAVSyncMetadata>;
  * indexes that would need to stay in sync on every track / untrack / rename.
  */
 export class CalDAVSyncStateManager extends BaseSyncStateManager<CalDAVSyncMetadata> {
-	constructor(app: App, eventSource: CalendarEventSource, settings$: BehaviorSubject<SingleCalendarConfig>) {
-		super(app, eventSource, settings$, (s) => s.caldavProp, CalDAVSyncMetadataSchema);
+	constructor(
+		app: App,
+		eventSource: CalendarEventSource,
+		sourceView: EventSourceRows,
+		settings$: BehaviorSubject<SingleCalendarConfig>
+	) {
+		super(app, eventSource, sourceView, settings$, (s) => s.caldavProp, CalDAVSyncMetadataSchema);
 	}
 
 	findByUid(accountId: string, calendarHref: string, uid: string): TrackedCalDAVEvent | null {

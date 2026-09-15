@@ -15,7 +15,7 @@ import { TFile, type App } from "obsidian";
 import { BehaviorSubject, Subject, type Observable, type Subscription } from "rxjs";
 
 import type { Frontmatter, SingleCalendarConfig } from "../types";
-import type { CalendarEventSource, IndexerEvent, RawEventSource } from "../types/event-source";
+import type { CalendarEventSource, RecurringEventFound } from "../types/event-source";
 import type { NodeRecurringEvent } from "../types/recurring";
 import { PARSE_AFFECTING_KEYS, parseAffectingSettingsChanged } from "../utils/calendar/settings";
 import { parseRRuleFromFrontmatter } from "../utils/dates/recurring";
@@ -66,7 +66,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 	private tableSub: Subscription | null = null;
 
 	private settings: SingleCalendarConfig;
-	private readonly eventsSubject = new Subject<IndexerEvent>();
+	private readonly recurringSubject = new Subject<RecurringEventFound>();
 	private readonly indexingCompleteSubject = new BehaviorSubject<boolean>(false);
 
 	/**
@@ -87,7 +87,12 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 	private tableReady = false;
 	private deferredBackgroundFiles = new Set<string>();
 
-	public readonly events$: Observable<IndexerEvent>;
+	/**
+	 * The single side channel left beside the views: resolving a recurring
+	 * source's series id may mint one and queue its write, so it runs here, after
+	 * the row, rather than as a view predicate. See {@link RecurringEventFound}.
+	 */
+	public readonly recurringEvents$: Observable<RecurringEventFound>;
 	public readonly indexingComplete$: Observable<boolean>;
 
 	/**
@@ -110,7 +115,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 	) {
 		this.settings = settingsStore.value;
 		this.table = this.createTable(this.settings);
-		this.events$ = this.eventsSubject.asObservable();
+		this.recurringEvents$ = this.recurringSubject.asObservable();
 		this.indexingComplete$ = this.indexingCompleteSubject.asObservable();
 
 		this.trackedEvents = new EventSourceView(this.table, "tracked", settingsStore);
@@ -374,7 +379,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 		this.tableSub = null;
 		for (const view of this.views) view.destroy();
 		this.table.destroy();
-		this.eventsSubject.complete();
+		this.recurringSubject.complete();
 		this.indexingCompleteSubject.complete();
 	}
 
@@ -397,7 +402,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 	 */
 	private reemitAllRows(): void {
 		for (const row of this.table.toArray()) {
-			void this.emitFileEvents(row, undefined, undefined).catch((error: unknown) => {
+			void this.processRow(row, undefined, undefined).catch((error: unknown) => {
 				log.error("indexing", "Failed to re-emit a row after a settings change", { filePath: row.filePath, error });
 			});
 		}
@@ -436,96 +441,44 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 	private async handleTableEvent(event: VaultTableEvent<Frontmatter>): Promise<void> {
 		switch (event.type) {
 			case "row-created": {
-				await this.emitFileEvents(event.row, undefined, undefined, event.oldPath);
+				await this.processRow(event.row, undefined, undefined);
 				break;
 			}
 			case "row-updated": {
-				await this.emitFileEvents(event.newRow, event.oldRow.data, event.diff, event.oldPath);
-				break;
-			}
-			case "row-deleted": {
-				this.eventsSubject.next({
-					type: "file-deleted",
-					filePath: event.filePath,
-					oldFrontmatter: event.oldRow.data,
-					...(event.isRename !== undefined ? { isRename: event.isRename } : {}),
-				});
+				await this.processRow(event.newRow, event.oldRow.data, event.diff);
 				break;
 			}
 		}
 	}
 
-	private async emitFileEvents(
+	/**
+	 * The per-row work that is not a projection: recurring detection (which may
+	 * mint and queue a series id) and the background normalisation writes. Row
+	 * projection itself belongs to the views.
+	 */
+	private async processRow(
 		row: VaultRow<Frontmatter>,
 		oldFrontmatter: Frontmatter | undefined,
-		frontmatterDiff: FrontmatterDiff | undefined,
-		oldPath?: string
+		frontmatterDiff: FrontmatterDiff | undefined
 	): Promise<void> {
-		let frontmatter = row.data;
-		const settings = this.settings;
-
 		// Always add recurring events even if skipped - this allows navigation
 		// to source from physical instances and viewing recurring event lists.
 		// The RecurringEventManager will check skip property and not generate new instances.
 		const recurring = await this.tryParseRecurring(row);
 		if (recurring) {
-			this.eventsSubject.next({
-				type: "recurring-event-found",
+			this.recurringSubject.next({
 				filePath: row.filePath,
 				recurringEvent: recurring,
 				...(oldFrontmatter ? { oldFrontmatter } : {}),
 				...(frontmatterDiff ? { frontmatterDiff } : {}),
 			});
-
-			// CRITICAL: Update frontmatter object with rRuleId from the recurring event
-			// tryParseRecurring returns a NodeRecurringEvent with the rRuleId (either existing or newly generated)
-			// We update the frontmatter object directly to ensure file-changed events have the correct data
-			if (!frontmatter[settings.rruleIdProp]) {
-				frontmatter = {
-					...frontmatter,
-					[settings.rruleIdProp]: recurring.rRuleId,
-				};
-			}
 		}
 
-		// Always emit file-changed events for files with start property OR date property OR neither (untracked)
-		// Let EventStore/Parser handle filtering - this ensures cached events
-		// get invalidated when properties change and no longer pass filters
-		// This allows recurring source files to ALSO appear as regular events on the calendar
-		const hasTimedEvent = frontmatter[settings.startProp];
-		const hasAllDayEvent = frontmatter[settings.dateProp];
-		const hasDateOrTime = hasTimedEvent || hasAllDayEvent;
-		const isUntracked = !hasDateOrTime;
-
-		if (hasDateOrTime || isUntracked) {
-			if (this.tableReady) {
-				this.runBackgroundUpdates(row.file, frontmatter, isUntracked);
-			} else {
-				this.deferredBackgroundFiles.add(row.filePath);
-			}
-
-			const allDayProp = frontmatter[settings.allDayProp];
-			const isAllDay = allDayProp === true || allDayProp === "true";
-			const metadata = parseEventMetadata(frontmatter, settings);
-
-			const source: RawEventSource = {
-				filePath: row.filePath,
-				mtime: row.mtime,
-				frontmatter,
-				folder: row.file.parent?.path || "",
-				isAllDay,
-				isUntracked,
-				metadata,
-			};
-
-			this.eventsSubject.next({
-				type: isUntracked ? "untracked-file-changed" : "file-changed",
-				filePath: row.filePath,
-				source,
-				...(oldFrontmatter ? { oldFrontmatter } : {}),
-				...(frontmatterDiff ? { frontmatterDiff } : {}),
-				...(oldPath !== undefined ? { oldPath } : {}),
-			});
+		if (this.tableReady) {
+			const isUntracked = !row.data[this.settings.startProp] && !row.data[this.settings.dateProp];
+			this.runBackgroundUpdates(row.file, row.data, isUntracked);
+		} else {
+			this.deferredBackgroundFiles.add(row.filePath);
 		}
 	}
 

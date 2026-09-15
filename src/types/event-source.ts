@@ -16,17 +16,17 @@ export interface RawEventSource {
 	metadata: EventMetadata;
 }
 
-type IndexerEventType = "file-changed" | "file-deleted" | "recurring-event-found" | "untracked-file-changed";
-
-export interface IndexerEvent {
-	type: IndexerEventType;
+/**
+ * A note whose frontmatter parses as a recurrence rule, with its series id
+ * resolved. The one input that is still a stream rather than a view: resolving
+ * the id can mint one and queue its write, which no pure row predicate can do.
+ * Everything else reads rows from an `EventSourceView`.
+ */
+export interface RecurringEventFound {
 	filePath: string;
-	oldPath?: string;
-	source?: RawEventSource;
-	recurringEvent?: NodeRecurringEvent;
+	recurringEvent: NodeRecurringEvent;
 	oldFrontmatter?: Frontmatter;
 	frontmatterDiff?: FrontmatterDiff;
-	isRename?: boolean;
 }
 
 /**
@@ -34,8 +34,7 @@ export interface IndexerEvent {
  * Implemented by EventFileRepository (VaultTable-backed).
  */
 export interface CalendarEventSource {
-	readonly events$: Observable<IndexerEvent>;
-	readonly indexingComplete$: Observable<boolean>;
+	readonly recurringEvents$: Observable<RecurringEventFound>;
 	markFileAsDone(filePath: string): Promise<void>;
 	/**
 	 * The only sanctioned way for an automatic writer to trash or rename a

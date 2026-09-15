@@ -24,7 +24,7 @@ import type { BehaviorSubject, Subscription } from "rxjs";
 import { PROPAGATION_DEBOUNCE_MS } from "../constants";
 import { eventDefaults, type CalendarEvent, type Frontmatter } from "../types";
 import type { EventMetadata } from "../types/event-metadata";
-import type { CalendarEventSource, IndexerEvent } from "../types/event-source";
+import type { CalendarEventSource, RecurringEventFound } from "../types/event-source";
 import type { NodeRecurringEvent, RecurringEventSeries } from "../types/recurring";
 import type { SingleCalendarConfig } from "../types/settings";
 import { stripZ, toInternalISO } from "../utils/dates/iso";
@@ -47,6 +47,7 @@ import { enforceEventPropertyOrder } from "../utils/frontmatter/ordering";
 import { batchedPromiseAll, deleteFilesByPaths, getFileAndFrontmatter, getFileByPathOrThrow } from "../utils/obsidian";
 import type { CategoryTracker } from "./category-tracker";
 import type { DeviceRoleStore } from "./device-role-store";
+import type { EventSourceEvent, EventSourceRows } from "./event-source-view";
 import type { EventStore } from "./event-store";
 import { log } from "./logging";
 
@@ -97,14 +98,24 @@ interface ParsedTimeChange {
 	oldTimePart: string;
 	newTimePart: string;
 }
+
+/**
+ * What the manager reads: the recurring side channel, plus the two views its
+ * maps are derived from. Readiness comes from the recurring-sources view, so the
+ * manager never tracks indexing completion itself.
+ */
+export interface RecurringEventSource extends CalendarEventSource {
+	readonly recurringSources: EventSourceRows;
+	readonly physicalInstances: EventSourceRows;
+}
+
 export class RecurringEventManager extends DebouncedNotifier {
 	private settings: SingleCalendarConfig;
 	private recurringEventsMap: Map<string, RecurringEventData> = new Map();
-	private subscription: Subscription | null = null;
-	private settingsSubscription: Subscription | null = null;
-	private indexingCompleteSubscription: Subscription | null = null;
-	private indexingComplete = false;
-	/** Duplicate physical instances seen before indexing completed — see trashDuplicateInstance. */
+	private subscriptions: Subscription[] = [];
+	/** Mirrors the recurring-sources view's `ready$` — nothing may be generated or trashed before it. */
+	private ready = false;
+	/** Duplicate physical instances seen before the view was ready — see trashDuplicateInstance. */
 	private readonly pendingDuplicateInstanceTrash = new Map<string, { rruleId: string; dateKey: string }>();
 	private creationLocks: Map<string, Promise<string | null>> = new Map();
 	private sourceFileToRRuleId: Map<string, string> = new Map();
@@ -120,7 +131,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 	constructor(
 		private app: App,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>,
-		private eventSource: CalendarEventSource,
+		private eventSource: RecurringEventSource,
 		private deviceRoleStore: Pick<DeviceRoleStore, "data"> | null
 	) {
 		super();
@@ -134,28 +145,36 @@ export class RecurringEventManager extends DebouncedNotifier {
 				),
 		});
 
-		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
-			this.settings = newSettings;
-		});
-		this.indexingCompleteSubscription = this.eventSource.indexingComplete$.subscribe((isComplete) => {
-			this.indexingComplete = isComplete;
-			if (isComplete) {
-				this.flushPendingDuplicateInstanceTrash();
-				void this.processAllRecurringEvents();
-			}
-		});
-		this.subscription = this.eventSource.events$.subscribe((event: IndexerEvent) => {
-			void this.handleIndexerEvent(event);
-		});
+		this.subscriptions.push(
+			settingsStore.subscribe((newSettings) => {
+				this.settings = newSettings;
+			}),
+			// Subscribed before the row streams, so a view that is already ready
+			// (a manager built late) is known ready before its replayed rows arrive.
+			eventSource.recurringSources.ready$.subscribe((isReady: boolean) => {
+				this.ready = isReady;
+				if (isReady) {
+					this.flushPendingDuplicateInstanceTrash();
+					void this.processAllRecurringEvents();
+				}
+			}),
+			eventSource.physicalInstances.sources$.subscribe((event: EventSourceEvent) => {
+				this.handlePhysicalInstanceEvent(event);
+			}),
+			eventSource.recurringSources.sources$.subscribe((event: EventSourceEvent) => {
+				// A source that merely stopped parsing as recurring keeps its series, as
+				// it always has; only a note that is really gone drops it.
+				if (event.type === "source-removed" && event.reason === "deleted") this.handleFileDeleted(event);
+			}),
+			eventSource.recurringEvents$.subscribe((event: RecurringEventFound) => {
+				void this.handleRecurringEventFound(event);
+			})
+		);
 	}
 
 	override destroy(): void {
-		this.subscription?.unsubscribe();
-		this.subscription = null;
-		this.settingsSubscription?.unsubscribe();
-		this.settingsSubscription = null;
-		this.indexingCompleteSubscription?.unsubscribe();
-		this.indexingCompleteSubscription = null;
+		for (const subscription of this.subscriptions) subscription.unsubscribe();
+		this.subscriptions = [];
 		this.propagationDebouncer.destroy();
 		super.destroy();
 		this.recurringEventsMap.clear();
@@ -178,33 +197,31 @@ export class RecurringEventManager extends DebouncedNotifier {
 		// Keep locks intact to prevent race conditions during resync
 	}
 
-	// ─── Indexer Event Handling ───────────────────────────────────
+	// ─── Row Event Handling ───────────────────────────────────────
 
-	private async handleIndexerEvent(event: IndexerEvent): Promise<void> {
-		switch (event.type) {
-			case "recurring-event-found":
-				if (event.recurringEvent) {
-					this.addRecurringEvent(event.recurringEvent, event.oldFrontmatter);
-					if (this.indexingComplete) {
-						if (event.oldPath) {
-							// Rename: rename physical instances BEFORE ensuring count,
-							// so ensurePhysicalInstances sees the correct (renamed) files
-							// and doesn't create duplicates.
-							await this.handleRecurringEventRenamedWithLock(event.recurringEvent);
-						}
-						await this.ensurePhysicalInstancesWithLock(event.recurringEvent.rRuleId);
-						this.handleFrontmatterPropagation(event.recurringEvent, event.frontmatterDiff, event.oldFrontmatter);
-					}
-				}
-				break;
-			case "file-changed":
-				if (event.source) {
-					this.handleFileChanged(event.filePath, event.source.metadata);
-				}
-				break;
-			case "file-deleted":
-				this.handleFileDeleted(event);
-				break;
+	private async handleRecurringEventFound(event: RecurringEventFound & { oldPath?: string }): Promise<void> {
+		this.addRecurringEvent(event.recurringEvent, event.oldFrontmatter);
+		if (!this.ready) return;
+		if (event.oldPath) {
+			// Rename: rename physical instances BEFORE ensuring count,
+			// so ensurePhysicalInstances sees the correct (renamed) files
+			// and doesn't create duplicates.
+			await this.handleRecurringEventRenamedWithLock(event.recurringEvent);
+		}
+		await this.ensurePhysicalInstancesWithLock(event.recurringEvent.rRuleId);
+		this.handleFrontmatterPropagation(event.recurringEvent, event.frontmatterDiff, event.oldFrontmatter);
+	}
+
+	/**
+	 * Instance bookkeeping off the physical-instances view. A row that only left
+	 * the scope (lost its date or series id) keeps its slot, matching how the
+	 * tracked stream behaved; the slot frees when the note is really deleted.
+	 */
+	private handlePhysicalInstanceEvent(event: EventSourceEvent): void {
+		if (event.type === "source-changed") {
+			this.handleFileChanged(event.filePath, event.source.metadata);
+		} else if (event.reason === "deleted") {
+			this.handleFileDeleted(event);
 		}
 	}
 
@@ -484,7 +501,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		return sourceFile?.path || null;
 	}
 
-	private handleFileDeleted(event: IndexerEvent): void {
+	private handleFileDeleted(event: { filePath: string; isRename?: boolean }): void {
 		const sourceFileRruleId = this.sourceFileToRRuleId.get(event.filePath);
 
 		if (sourceFileRruleId) {
@@ -534,7 +551,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 	private trashDuplicateInstance(filePath: string, rruleId: string, dateKey: string): void {
 		// An automatic write: a read-only device leaves the twin for a writing device.
 		if (this.deviceRoleStore?.data.readOnly) return;
-		if (!this.indexingComplete) {
+		if (!this.ready) {
 			this.pendingDuplicateInstanceTrash.set(filePath, { rruleId, dateKey });
 			return;
 		}

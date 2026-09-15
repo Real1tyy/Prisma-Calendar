@@ -5,8 +5,9 @@ import { filter } from "rxjs/operators";
 import type { z } from "zod";
 
 import type { Frontmatter } from "../../types";
-import type { CalendarEventSource, IndexerEvent } from "../../types/event-source";
+import type { CalendarEventSource } from "../../types/event-source";
 import type { SingleCalendarConfig } from "../../types/settings";
+import type { EventSourceEvent, EventSourceRows } from "../event-source-view";
 import { log } from "../logging";
 
 export interface TrackedSyncEvent<TMetadata> {
@@ -15,10 +16,10 @@ export interface TrackedSyncEvent<TMetadata> {
 }
 
 export abstract class BaseSyncStateManager<TMetadata extends { uid: string }> {
-	private indexerSubscription: Subscription | null = null;
+	private sourceSubscription: Subscription | null = null;
 	private settingsSubscription: Subscription | null = null;
-	private indexingCompleteSubscription: Subscription | null = null;
-	private readonly indexingComplete$: Observable<boolean>;
+	private readySubscription: Subscription | null = null;
+	private readonly ready$: Observable<boolean>;
 	private indexHydrated = false;
 	/**
 	 * Duplicate-UID files spotted while the index was still hydrating. Trashing
@@ -33,6 +34,7 @@ export abstract class BaseSyncStateManager<TMetadata extends { uid: string }> {
 	constructor(
 		protected app: App,
 		private readonly eventSource: CalendarEventSource,
+		sourceView: EventSourceRows,
 		settings$: BehaviorSubject<SingleCalendarConfig>,
 		getPropFromSettings: (settings: SingleCalendarConfig) => string,
 		private schema: z.ZodType<TMetadata>
@@ -43,47 +45,45 @@ export abstract class BaseSyncStateManager<TMetadata extends { uid: string }> {
 			this.frontmatterProp = getPropFromSettings(settings);
 		});
 
-		this.indexerSubscription = eventSource.events$
-			.pipe(filter((event: IndexerEvent) => event.type === "file-changed" || event.type === "file-deleted"))
-			.subscribe((event: IndexerEvent) => {
-				this.handleIndexerEvent(event);
-			});
+		this.sourceSubscription = sourceView.sources$.subscribe((event: EventSourceEvent) => {
+			this.handleSourceEvent(event);
+		});
 
-		this.indexingComplete$ = eventSource.indexingComplete$;
-		this.indexingCompleteSubscription = eventSource.indexingComplete$.subscribe((complete) => {
-			this.indexHydrated = complete;
-			if (complete) this.flushPendingDuplicateTrash();
+		this.ready$ = sourceView.ready$;
+		this.readySubscription = sourceView.ready$.subscribe((ready: boolean) => {
+			this.indexHydrated = ready;
+			if (ready) this.flushPendingDuplicateTrash();
 		});
 	}
 
 	destroy(): void {
-		this.indexerSubscription?.unsubscribe();
-		this.indexerSubscription = null;
+		this.sourceSubscription?.unsubscribe();
+		this.sourceSubscription = null;
 		this.settingsSubscription?.unsubscribe();
 		this.settingsSubscription = null;
-		this.indexingCompleteSubscription?.unsubscribe();
-		this.indexingCompleteSubscription = null;
+		this.readySubscription?.unsubscribe();
+		this.readySubscription = null;
 		this.clearState();
 	}
 
 	/**
 	 * Resolves once the indexer has finished its scan and fed every tracked file
 	 * into `byUid`. Sync services MUST await this before computing a plan: the
-	 * tracked-state map is hydrated reactively off `events$`, so a sync that runs
+	 * tracked-state map is hydrated reactively off the tracked-events view, so a sync that runs
 	 * before the scan drains sees an empty map and re-creates every
 	 * already-synced event as a duplicate (then self-heals by trashing the
 	 * collisions). Gating the sync itself — not just the startup caller — makes
 	 * every entry point safe: cold start, the auto-sync interval (armed at
 	 * construction), a manual trigger, and a sync that lands mid-`resync()`
-	 * (where `indexingComplete$` has flipped back to `false`) all wait here.
+	 * (where `ready$` has flipped back to `false`) all wait here.
 	 *
-	 * Already-hydrated is the hot path: `indexingComplete$` holds `true`, so this
+	 * Already-hydrated is the hot path: `ready$` holds `true`, so this
 	 * returns synchronously with no real wait.
 	 */
 	async whenHydrated(): Promise<void> {
 		if (this.indexHydrated) return;
 		try {
-			await firstValueFrom(this.indexingComplete$.pipe(filter((complete) => complete)));
+			await firstValueFrom(this.ready$.pipe(filter((ready) => ready)));
 		} catch {
 			// The source completed (manager destroyed) before hydration. The
 			// caller's own destroyed-guard handles the rest — never hang the sync.
@@ -98,7 +98,7 @@ export abstract class BaseSyncStateManager<TMetadata extends { uid: string }> {
 	 * Synchronous prime for the tracked-state map. Sync services call this
 	 * immediately after writing a file so the next sync can see it without
 	 * waiting for the reactive indexer pipeline. Without this, a second sync
-	 * triggered before `eventSource.events$` has drained races with an empty
+	 * triggered before the view has delivered the write races with an empty
 	 * state map and spuriously re-creates / fails to delete tracked events.
 	 */
 	registerTracked(filePath: string, metadata: TMetadata): void {
@@ -180,17 +180,14 @@ export abstract class BaseSyncStateManager<TMetadata extends { uid: string }> {
 		this.byUid.clear();
 	}
 
-	private handleIndexerEvent(event: IndexerEvent): void {
-		switch (event.type) {
-			case "file-changed":
-				if (event.source) {
-					this.processFileChange(event.filePath, event.source.frontmatter);
-				}
-				break;
-			case "file-deleted":
-				this.untrackByPath(event.filePath);
-				break;
+	private handleSourceEvent(event: EventSourceEvent): void {
+		if (event.type === "source-changed") {
+			this.processFileChange(event.filePath, event.source.frontmatter);
+			return;
 		}
+		// A synced note that only lost its date is still on disk carrying its UID;
+		// untracking it would make the next sync create a second copy.
+		if (event.reason === "deleted") this.untrackByPath(event.filePath);
 	}
 
 	private processFileChange(filePath: string, frontmatter: Frontmatter): void {
