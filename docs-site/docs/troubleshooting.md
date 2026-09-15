@@ -2,6 +2,31 @@
 
 Use this checklist to diagnose common issues. If your problem isn't listed here, please [open a GitHub issue](https://github.com/Real1tyy/Prisma-Calendar/issues/new/choose).
 
+## 🩺 Start with the Doctor
+
+When something feels off, open the **Doctor** first — it answers "is it me or the plugin?" in a few seconds. Open the command palette (`Ctrl/Cmd+P`) and run **Prisma Calendar: Open Doctor**, or press **Open Doctor** under **Settings → General → Doctor**.
+
+Each row is one health check with a plain-language explanation:
+
+| Check | What it tells you |
+| --- | --- |
+| **Indexing** | How many notes Prisma read and how many of them reached the calendar. It flags notes it could not read — usually a date property that isn't a recognised date, or one that isn't mapped — and offers a **Reindex** button. |
+| **Settings** | Whether your settings loaded and migrated cleanly. |
+| **License** | Your current license state, in the same words the License section uses. |
+| **Recent errors and warnings** | Anything that went wrong in the last 15 minutes, grouped by the part of the plugin that reported it. |
+
+A green row means that check found nothing wrong. A yellow row is worth reading; a red row is something Prisma could not do.
+
+### Copy debug
+
+The **Copy debug** button at the top gathers everything useful about the problem into one block of text and puts it on your clipboard, ready to paste into a GitHub issue. **Save debug to file** writes the same text into your export folder instead, so you can attach it.
+
+The bundle contains your Prisma and Obsidian versions and platform, the health checks above, every warning and error recorded this session, and all activity from the last 15 minutes.
+
+Folder and note names are abbreviated, property values are replaced by their type, and secrets are never included. Nothing is sent anywhere — copying and saving are the only things these buttons do. **Include full detail** keeps real paths and property values for someone you trust; secrets stay out either way. See [Privacy & diagnostics](./privacy) for a complete before-and-after example.
+
+---
+
 ## ⚡ Performance
 
 <details>

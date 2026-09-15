@@ -168,6 +168,14 @@ The trailing `a1b2c3d4` is a short random id, generated the first time this devi
 
 That is what keeps file logging safe on a vault whose `.obsidian` folder is synced: two devices with file logging on write to two different files, so the sync tool has nothing to merge and produces no conflict copies. Cleanup is scoped the same way — a device deletes only files it wrote, so the logs your laptop collected are still there when you open the vault on it next week, whatever your desktop has been doing in the meantime.
 
+## Doctor
+
+The **Doctor** row opens Prisma's health page — the fastest way to tell whether something is actually wrong. Each check reports **healthy**, a **warning**, or a **problem** with a one-line explanation, and offers a fix button where one applies (a failing or incomplete index offers **Reindex**).
+
+The same page is available from the command palette as **Prisma Calendar: Open Doctor**.
+
+**Copy debug** puts a redacted summary of your versions, the health checks, and recent plugin activity on the clipboard for a bug report; **Save debug to file** writes it into your export folder instead. Nothing is sent anywhere. See [Troubleshooting → Start with the Doctor](../troubleshooting#-start-with-the-doctor) for what each check means and [Privacy & diagnostics](../privacy) for what the bundle contains.
+
 ## Settings Transfer
 
 At the bottom of the General tab, the **Settings transfer** row provides three buttons:
