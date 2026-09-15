@@ -3,6 +3,7 @@ import { showDoctorReactModal } from "@real1ty/obsidian-plugins-react";
 import { CSS_PREFIX, settingsDocUrl } from "../../../constants";
 import { openPrismaBugReport } from "../../../core/api/feedback";
 import { buildPrismaDebugText, createPrismaHealthChecks, savePrismaDebugFile } from "../../../core/diagnostics";
+import { prismaLogsViewerProps } from "../../../core/logs-view";
 import type CustomCalendarPlugin from "../../../main";
 
 const PRIVACY_DOCS_URL = settingsDocUrl("/privacy", "doctor_privacy");
@@ -21,6 +22,7 @@ export function openPrismaDoctor(plugin: CustomCalendarPlugin): void {
 		runChecks: () => registry.run(),
 		buildDebugText: (fullDetail) => buildPrismaDebugText(plugin, registry.run(), fullDetail),
 		saveDebugFile: (text) => savePrismaDebugFile(plugin, text),
+		logs: prismaLogsViewerProps(plugin),
 		// The report re-runs the checks itself rather than being handed this
 		// registry's rows: the two surfaces are opened seconds apart, and a report
 		// that quietly carries a stale diagnosis is worse than one that has none.

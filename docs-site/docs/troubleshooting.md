@@ -17,6 +17,8 @@ Each row is one health check with a plain-language explanation:
 
 A green row means that check found nothing wrong. A yellow row is worth reading; a red row is something Prisma could not do.
 
+To see what lies behind a yellow or red row, expand **Logs** at the bottom of the Doctor and search for the check's area (for example `indexing`). For a full-window view, use **Prisma Calendar: Open logs** — see [Reading the logs](./configuration/general#reading-the-logs).
+
 ### Create bug report
 
 The fastest way to get the problem to me: **Create bug report** closes the Doctor and opens the report form with these same findings already attached, alongside your recent logs. Both attachments are separate tickboxes you can review and clear before sending — see [Privacy & diagnostics](./privacy) for exactly what each one contains.

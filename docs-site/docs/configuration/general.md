@@ -170,32 +170,38 @@ That is what keeps file logging safe on a vault whose `.obsidian` folder is sync
 
 ### Reading the logs
 
-**Open logs** in the Logging section — or the **Prisma Calendar: Open logs** command — opens the Logs view: a table of everything Prisma recorded, newest first, with the timestamp, level, scope and message on each row. Click a message to unfold the structured details behind it. The view stays open while you work, so you can reproduce a problem and watch what the plugin does about it.
+**Open logs** in the Logging section — or the **Prisma Calendar: Open logs** command, which you can bind to a hotkey — opens the Logs view: a developer's view of what Prisma is doing, newest first. It reads the in-memory log of this session, or a log file from an earlier one. The view stays open while you work, so you can reproduce a problem and watch what the plugin does about it.
 
-New entries appear as they happen. Scroll down to read something and the view holds back whatever arrives in the meantime, counting it in a **N new entries** button at the top; press it (or scroll back up) to catch up.
+Each line shows the local time (hover it for the date), a colored severity badge — **DEBUG**, **INFO**, **WARN**, **ERROR** — the scope, and the message. When the entry carries structured data, it follows the message as one line of JSON, cut off where the row runs out of space; the message itself always gets room first. Click a line to open the full record: timestamp, severity, scope, the whole message, and each piece of data as its own key and value. Warnings and errors are tinted so they stand out while you scroll.
+
+New entries appear as they happen. Scroll down to read something and the view holds back whatever arrives in the meantime, counting it in a **N new entries** button; press it (or scroll back up) to catch up.
 
 **Narrowing the table.** The controls above the table combine, so each one you add narrows what is left:
 
-- **Level chips** — click **debug**, **info**, **warn** or **error** to keep only those. With none picked, every level shows.
-- **Scope chips** — the part of the plugin an entry came from (`indexer`, `recurring`, `sync`, …). Only scopes actually present get a chip. Pick one to keep only its entries, or several to keep entries from any of them. With none picked, every scope shows.
-- **From** / **To** — a start and end time, in your local clock.
-- **Search** — matches the message and the structured details, so a note name, an error code or a property name all find their entries.
+- **Levels** — click **debug**, **info**, **warn** or **error** to keep only those. With none picked, every level shows. Each level keeps its color on the chip and on every line.
+- **Scope** — on the same row, the part of the plugin an entry came from (`indexing`, `recurring`, `sync`, …). Only scopes actually present get a chip. Pick one to keep only its entries, or several to keep entries from any of them.
+- **Search** — matches the message, the scope and the structured data, so a note name, an error code or a property name all find their entries. Matches are highlighted.
+- **From** / **To** — start filled in with the oldest and newest entry's time, in your local clock. Type a narrower time, or drag the two handles of the slider underneath.
 
 The counter reads `247 entries · 12 shown`, so you always know how much the filters are hiding. **Reset filters** clears them all.
 
-**Earlier sessions.** With **Write log files** on, a **Source** dropdown appears listing this device's log files, newest first. Pick one to read history from before Obsidian was last restarted; **Load older entries** fetches the next page.
+**Keyboard.** The search box has focus as soon as the view opens, so you can start typing. `Ctrl/Cmd+F` jumps back to it from anywhere in the view. `Ctrl/Cmd+A` selects every shown line, and pressing it again clears the selection.
+
+**Earlier sessions.** When log files exist on this device, a **Source** dropdown lists them next to the search, newest first. Pick one to read history from before Obsidian was last restarted; **Load older entries** fetches the next page.
 
 **Sending logs to me.** The quickest way is **Report a bug** in the view's header: it opens the bug report with your recent logs and health checks already attached, so you only describe what went wrong. Nothing reaches me until you submit it.
 
-The other header buttons act on the table: **Copy filtered** puts exactly the rows you narrowed to on the clipboard, **Copy all** takes the whole table, **Save to file** writes the shown rows into a `Prisma Logs` folder in your vault as a `.json` file you can attach to a GitHub issue — tick some rows first and it saves only those — and **Clear buffer** empties this session's log. Each row also has its own **Copy**. Like every Prisma header, the gear button lets you reorder, rename or hide these buttons, and your arrangement is remembered.
+The other header buttons act on the table: **Copy filtered** puts exactly the rows you narrowed to on the clipboard, **Copy selected** takes only the lines you ticked, **Copy all** takes the whole table, **Save to file** writes the shown rows into a `Prisma Logs` folder in your vault as a `.json` file you can attach to a GitHub issue — tick some rows first and it saves only those — and **Clear buffer** empties this session's log. With lines ticked, **Copy selected** and **Clear selection** also sit next to the counter. Each line has its own copy button. Like every Prisma header, the gear button lets you reorder, rename or hide these buttons, and your arrangement is remembered.
 
-Everything that leaves the view is redacted the same way as every other Prisma export: folder and note names become stable tokens, property values are replaced by their type, and secrets are removed. **Include full detail** in the privacy notice at the top keeps real paths and values for someone you trust; secrets are removed either way. The [privacy page](../privacy.md) shows a full before-and-after.
+What you copy or save has paths abbreviated and secrets removed, the same as every other Prisma export — see the [privacy page](../privacy.md).
 
 ## Doctor
 
 **Open Doctor** runs Prisma's diagnostics — a set of health checks over indexing, settings and your license — and is the fastest way to tell whether something is actually wrong. Each check reports **healthy**, a **warning**, or a **problem** with a one-line explanation, and offers a fix button where one applies (a failing or incomplete index offers **Reindex**).
 
 The same page is available from the command palette as **Prisma Calendar: Open doctor**.
+
+Below the checks, a collapsed **Logs** section holds the evidence behind them. Expand it to read the same log as the [Logs view](#reading-the-logs) — same colors, filters, search and keyboard shortcuts — without leaving the Doctor. Expanding it does not re-run the checks.
 
 **Create bug report** carries the findings straight into the report form. **Copy debug** puts a redacted summary of your versions, the health checks, and recent plugin activity on the clipboard instead; **Save debug to file** writes it into your export folder. Nothing is sent anywhere until you submit a report yourself. See [Troubleshooting → Start with the Doctor](../troubleshooting#start-with-the-doctor) for what each check means and [Privacy & diagnostics](../privacy) for what a report contains.
 
