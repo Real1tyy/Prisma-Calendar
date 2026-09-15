@@ -185,7 +185,9 @@ The counter reads `247 entries · 12 shown`, so you always know how much the fil
 
 **Earlier sessions.** With **Write log files** on, a **Source** dropdown appears listing this device's log files, newest first. Pick one to read history from before Obsidian was last restarted; **Load older entries** fetches the next page.
 
-**Sending logs to us.** The buttons in the view's header act on the table: **Copy filtered** puts exactly the rows you narrowed to on the clipboard, **Copy all** takes the whole table, **Save to file** writes the shown rows into a `Prisma Logs` folder in your vault as a `.json` file you can attach to a GitHub issue — tick some rows first and it saves only those — and **Clear buffer** empties this session's log. Each row also has its own **Copy**. Like every Prisma header, the gear button lets you reorder, rename or hide these buttons, and your arrangement is remembered.
+**Sending logs to me.** The quickest way is **Report a bug** in the view's header: it opens the same bug report form as the Doctor's **Create bug report**, with your recent logs and health checks already attached, so you only describe what went wrong. Nothing reaches me until you submit it.
+
+The other header buttons act on the table: **Copy filtered** puts exactly the rows you narrowed to on the clipboard, **Copy all** takes the whole table, **Save to file** writes the shown rows into a `Prisma Logs` folder in your vault as a `.json` file you can attach to a GitHub issue — tick some rows first and it saves only those — and **Clear buffer** empties this session's log. Each row also has its own **Copy**. Like every Prisma header, the gear button lets you reorder, rename or hide these buttons, and your arrangement is remembered.
 
 Everything that leaves the view is redacted the same way as every other Prisma export: folder and note names become stable tokens, property values are replaced by their type, and secrets are removed. **Include full detail** in the privacy notice at the top keeps real paths and values for someone you trust; secrets are removed either way. The [privacy page](../privacy.md) shows a full before-and-after.
 

@@ -4,6 +4,7 @@ import { normalizePath, type WorkspaceLeaf } from "obsidian";
 
 import { CSS_PREFIX, settingsDocUrl, tid } from "../constants";
 import type CustomCalendarPlugin from "../main";
+import { openPrismaBugReport } from "./api/feedback";
 import { logDirectory } from "./logging";
 
 export const PRISMA_LOGS_VIEW_TYPE = "prisma-logs-view";
@@ -35,6 +36,8 @@ export function registerPrismaLogsView(plugin: CustomCalendarPlugin): PrismaLogs
 		files: createLogFileSource(fs, logDirectory(plugin)),
 		privacyUrl: settingsDocUrl("/privacy", "logs_privacy"),
 		filenamePrefix: "prisma-logs",
+		// One path with the Doctor's "Create bug report", so the bundled context cannot drift.
+		onReportBug: () => openPrismaBugReport(plugin),
 		pageHeader: {
 			loadState: () => plugin.settingsStore.currentSettings.logsPageHeaderState,
 			saveState: (state) => {
