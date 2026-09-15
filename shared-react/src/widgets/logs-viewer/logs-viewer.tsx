@@ -11,6 +11,7 @@ import { Notice } from "obsidian";
 import {
 	memo,
 	useCallback,
+	useContext,
 	useEffect,
 	useImperativeHandle,
 	useMemo,
@@ -21,6 +22,7 @@ import {
 	type UIEvent,
 } from "react";
 
+import { AppContext } from "../../contexts/app-context";
 import { useScopedStyles } from "../../hooks/styles/use-styles";
 import { Button } from "../../primitives/atoms/button";
 import { testIdAttr } from "../../utils/test-id";
@@ -32,6 +34,11 @@ import {
 	observedScopes,
 	type LogViewFilters,
 } from "./filters";
+import {
+	openLogExportPrivacyModal,
+	type ChooseLogExportDetail,
+	type LogExportRequest,
+} from "./log-export-privacy-modal";
 import { LogRow } from "./log-row";
 import { BUFFER_SOURCE, LogsToolbar } from "./logs-toolbar";
 import { buildLogsViewerStyles } from "./logs-viewer.styles";
@@ -87,6 +94,10 @@ export interface LogsViewerProps {
 	/** Base name of a saved export, before the timestamp. Default `logs`. */
 	filenamePrefix?: string | undefined;
 	variant?: LogsViewerVariant | undefined;
+	/** The plugin's privacy page (already UTM-tracked), linked from the export privacy choice. */
+	privacyUrl: string;
+	/** Asks redacted-or-full-detail before every copy and save. Defaults to the shared privacy modal; injected under test. */
+	chooseExportDetail?: ChooseLogExportDetail | undefined;
 }
 
 function toggleIn(set: ReadonlySet<number>, value: number): Set<number> {
@@ -121,9 +132,12 @@ export const LogsViewer = memo(function LogsViewer({
 	format = "json",
 	filenamePrefix,
 	variant = "page",
+	privacyUrl,
+	chooseExportDetail,
 	ref,
 }: LogsViewerProps & { ref?: Ref<LogsViewerHandle> | undefined }) {
-	const { cls, tid } = useScopedStyles("logs-viewer", buildLogsViewerStyles);
+	const { cls, tid, cssPrefix } = useScopedStyles("logs-viewer", buildLogsViewerStyles);
+	const app = useContext(AppContext);
 	const listRef = useRef<VirtualListHandle>(null);
 	const searchRef = useRef<HTMLInputElement>(null);
 
@@ -206,8 +220,8 @@ export const LogsViewer = memo(function LogsViewer({
 	const bounds = useMemo(() => logTimeBounds(entries), [entries]);
 	const selectedEntries = useMemo(() => shown.filter((entry) => selected.has(entry.seq)), [shown, selected]);
 
-	// Exports are redacted the same way as every other plugin export; the
-	// on-screen table shows the buffer as recorded.
+	// The on-screen table shows the buffer as recorded; what leaves it is
+	// redacted unless the user picks full detail in the privacy choice.
 	const exportOptions = useMemo(
 		() => ({
 			format,
@@ -217,21 +231,36 @@ export const LogsViewer = memo(function LogsViewer({
 		[format, vaultPath, sensitiveKeys]
 	);
 
+	const chooseDetail = useCallback(
+		(request: LogExportRequest): Promise<boolean | null> => {
+			if (chooseExportDetail) return chooseExportDetail(request);
+			// Every real mount sits under an AppContext; without one there is no modal to
+			// ask through, and redacted is the only safe answer.
+			if (!app) return Promise.resolve(false);
+			return openLogExportPrivacyModal(app, { docsUrl: privacyUrl, cssPrefix, request });
+		},
+		[chooseExportDetail, app, privacyUrl, cssPrefix]
+	);
+
 	const copy = useCallback(
 		(list: readonly LogEntry[], label: string) => {
 			if (list.length === 0) {
 				new Notice("Nothing to copy.");
 				return;
 			}
-			void navigator.clipboard
-				.writeText(formatLogEntriesForExport(list, exportOptions))
-				.then(() => {
+			void (async () => {
+				const fullDetail = await chooseDetail({ action: "copy", count: list.length });
+				if (fullDetail === null) return;
+				try {
+					await navigator.clipboard.writeText(formatLogEntriesForExport(list, { ...exportOptions, fullDetail }));
 					const hint = list.length > LARGE_COPY_ENTRIES ? " — for a payload this large prefer Save to file" : "";
 					new Notice(`Copied ${list.length} ${label}${hint}.`);
-				})
-				.catch(() => new Notice("Failed to copy."));
+				} catch {
+					new Notice("Failed to copy.");
+				}
+			})();
 		},
-		[exportOptions]
+		[chooseDetail, exportOptions]
 	);
 
 	const copyAll = useCallback(() => copy(entries, "entries"), [copy, entries]);
@@ -247,11 +276,18 @@ export const LogsViewer = memo(function LogsViewer({
 			new Notice("Nothing to save.");
 			return;
 		}
-		const filename = buildLogExportFilename(Date.now(), format, filenamePrefix);
-		void onSave(formatLogEntriesForExport(list, exportOptions), filename)
-			.then((path) => new Notice(`Saved ${list.length} entries to ${path}`))
-			.catch(() => new Notice("Failed to save the log export."));
-	}, [selectedEntries, shown, format, filenamePrefix, onSave, exportOptions]);
+		void (async () => {
+			const fullDetail = await chooseDetail({ action: "save", count: list.length });
+			if (fullDetail === null) return;
+			const filename = buildLogExportFilename(Date.now(), format, filenamePrefix);
+			try {
+				const path = await onSave(formatLogEntriesForExport(list, { ...exportOptions, fullDetail }), filename);
+				new Notice(`Saved ${list.length} entries to ${path}`);
+			} catch {
+				new Notice("Failed to save the log export.");
+			}
+		})();
+	}, [selectedEntries, shown, chooseDetail, format, filenamePrefix, onSave, exportOptions]);
 
 	const clear = useCallback(() => {
 		service.clear();
