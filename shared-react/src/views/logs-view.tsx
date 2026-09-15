@@ -8,19 +8,36 @@ import { LogsViewer, type LogsViewerHandle, type LogsViewerProps } from "../widg
 
 /** Header action ids. Prefixed so they never collide with another leaf's header in the same window. */
 export const LOGS_HEADER_ACTION_IDS = {
+	reportBug: "logs-report-bug",
 	copyFiltered: "logs-copy-filtered",
 	copyAll: "logs-copy-all",
 	save: "logs-save",
 	clear: "logs-clear",
 } as const;
 
+export interface LogsHeaderActionOptions {
+	/**
+	 * Opens the plugin's bug report with the logs already attached — the same
+	 * path as the Doctor's "Create bug report". Omit and the action is not offered.
+	 */
+	onReportBug?: (() => void) | undefined;
+}
+
 /**
  * The Logs leaf's page-header actions, each forwarding to the viewer mounted in
  * that leaf. `getHandle` is read per click, not captured: the viewer's handle
  * is only set once React has committed, after the header is already applied.
  */
-export function buildLogsHeaderActions(getHandle: () => LogsViewerHandle | null): HeaderActionDefinition[] {
+export function buildLogsHeaderActions(
+	getHandle: () => LogsViewerHandle | null,
+	options: LogsHeaderActionOptions = {}
+): HeaderActionDefinition[] {
+	const { onReportBug } = options;
 	return [
+		// First, because a user reading the logs for a problem is one step from reporting it.
+		...(onReportBug
+			? [{ id: LOGS_HEADER_ACTION_IDS.reportBug, label: "Report a bug", icon: "bug", onAction: () => onReportBug() }]
+			: []),
 		{
 			id: LOGS_HEADER_ACTION_IDS.copyFiltered,
 			label: "Copy filtered",
@@ -54,7 +71,7 @@ export interface LogsViewPageHeaderConfig {
 	saveState: (state: PageHeaderState) => void;
 }
 
-export interface LogsViewConfig extends LogsViewerProps {
+export interface LogsViewConfig extends LogsViewerProps, LogsHeaderActionOptions {
 	/** Unique per plugin, e.g. `prisma-logs-view`. */
 	viewType: string;
 	/** Leaf title. Default `"Logs"`. */
@@ -71,8 +88,8 @@ export interface LogsViewConfig extends LogsViewerProps {
  * keep it open *while* reproducing the problem being logged — a modal would
  * have to be dismissed to touch anything else.
  *
- * Copy, save and clear live in the leaf's page header like every other plugin
- * leaf, so users can reorder, rename and hide them with the same manager.
+ * Report, copy, save and clear live in the leaf's page header like every other
+ * plugin leaf, so users can reorder, rename and hide them with the same manager.
  * Opt-in per plugin: call this at load and point a command (and the Logging
  * settings section) at the returned `activate`. See [[spec-logs-viewer-view]].
  */
@@ -80,7 +97,7 @@ export function registerLogsView(
 	plugin: Plugin,
 	config: LogsViewConfig
 ): { activate: (placement?: LeafPlacement) => Promise<WorkspaceLeaf | null> } {
-	const { viewType, displayText, icon, cssPrefix = "", testIdPrefix, pageHeader, ...viewerProps } = config;
+	const { viewType, displayText, icon, cssPrefix = "", testIdPrefix, pageHeader, onReportBug, ...viewerProps } = config;
 
 	const registered = registerReactView<LogsViewerHandle>(plugin, {
 		viewType,
@@ -92,7 +109,7 @@ export function registerLogsView(
 		onMount: (leaf) => {
 			const savedState = pageHeader?.loadState();
 			const header = createPageHeader({
-				actions: buildLogsHeaderActions(() => registered.getHandle(leaf)),
+				actions: buildLogsHeaderActions(() => registered.getHandle(leaf), { onReportBug }),
 				cssPrefix,
 				app: plugin.app,
 				editable: true,

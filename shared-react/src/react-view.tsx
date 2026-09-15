@@ -26,7 +26,7 @@ export interface ReactViewConfig<THandle extends ReactViewHandle = ReactViewHand
 	 * leaf chrome React does not own (a page header in the view's action bar).
 	 * The returned cleanup runs when the leaf closes.
 	 */
-	onMount?: (leaf: WorkspaceLeaf, view: ItemView) => (() => void) | void;
+	onMount?: (leaf: WorkspaceLeaf, view: ItemView) => (() => void) | undefined;
 }
 
 export function registerReactView<THandle extends ReactViewHandle = ReactViewHandle>(
