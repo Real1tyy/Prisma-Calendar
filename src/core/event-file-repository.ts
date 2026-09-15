@@ -28,7 +28,7 @@ import { enforceEventPropertyOrder, getOrderedPropertyNames } from "../utils/fro
 import { shouldEventBeMarkedAsDone } from "../utils/frontmatter/predicates";
 import type { DeviceRoleStore } from "./device-role-store";
 import { createEventSchema } from "./event-schema";
-import { EventSourceView } from "./event-source-view";
+import { allEventSources, EventSourceView, type EventSourceRows } from "./event-source-view";
 import { log } from "./logging";
 
 export { PARSE_AFFECTING_KEYS, parseAffectingSettingsChanged };
@@ -107,6 +107,8 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 	public readonly untrackedEvents: EventSourceView;
 	public readonly recurringSources: EventSourceView;
 	public readonly physicalInstances: EventSourceView;
+	/** Every note, for consumers whose identity for a note is not its date (sync state, the stopwatch). */
+	public readonly allEvents: EventSourceRows;
 	private readonly views: EventSourceView[];
 	/** Views built elsewhere over this table — rebound on a rebuild, destroyed by their owner. */
 	private readonly attachedViews: VaultTableView<Frontmatter>[] = [];
@@ -121,11 +123,13 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 		this.recurringEvents$ = this.recurringSubject.asObservable();
 		this.indexingComplete$ = this.indexingCompleteSubject.asObservable();
 
-		this.trackedEvents = new EventSourceView(this.table, "tracked", settingsStore);
-		this.untrackedEvents = new EventSourceView(this.table, "untracked", settingsStore);
-		this.recurringSources = new EventSourceView(this.table, "recurringSource", settingsStore);
-		this.physicalInstances = new EventSourceView(this.table, "physicalInstance", settingsStore);
+		const viewOptions = { canMintSeriesId: () => !this.isReadOnly };
+		this.trackedEvents = new EventSourceView(this.table, "tracked", settingsStore, viewOptions);
+		this.untrackedEvents = new EventSourceView(this.table, "untracked", settingsStore, viewOptions);
+		this.recurringSources = new EventSourceView(this.table, "recurringSource", settingsStore, viewOptions);
+		this.physicalInstances = new EventSourceView(this.table, "physicalInstance", settingsStore, viewOptions);
 		this.views = [this.trackedEvents, this.untrackedEvents, this.recurringSources, this.physicalInstances];
+		this.allEvents = allEventSources(this.trackedEvents, this.untrackedEvents);
 
 		this.settingsSub = settingsStore.subscribe((newSettings) => {
 			const prevSettings = this.settings;

@@ -1,5 +1,5 @@
 import { VaultTableView, type VaultRow, type VaultTable, type VaultTableEvent } from "@real1ty/obsidian-plugins";
-import { Subject, type BehaviorSubject, type Observable, type Subscription } from "rxjs";
+import { filter, merge, Subject, type BehaviorSubject, type Observable, type Subscription } from "rxjs";
 
 import type { Frontmatter } from "../types";
 import type { RawEventSource } from "../types/event-source";
@@ -7,6 +7,7 @@ import type { SingleCalendarConfig } from "../types/settings";
 import { parseAffectingSettingsChanged } from "../utils/calendar/settings";
 import { parseRRuleFromFrontmatter } from "../utils/dates/recurring";
 import { parseEventMetadata } from "../utils/events/frontmatter";
+import { deriveRRuleId } from "../utils/events/zettel-id";
 
 /**
  * Which slice of the event table a view watches. Each scope is a pure predicate
@@ -21,6 +22,31 @@ export type EventSourceEvent =
 
 /** The slice of a view a row consumer needs — what tests stub and services depend on. */
 export type EventSourceRows = Pick<EventSourceView, "sources$" | "ready$">;
+
+export interface EventSourceViewOptions {
+	/**
+	 * Whether this device writes a missing series id. The repository mints one for
+	 * a recurring note that has none and queues the write; while it is queued the
+	 * projection carries the same derived id. A read-only device writes nothing,
+	 * so it projects nothing. Defaults to true.
+	 */
+	canMintSeriesId?: () => boolean;
+}
+
+/**
+ * Every note in the table, as the union of the tracked and untracked scopes.
+ * A note crossing between them leaves one scope as `filtered` and enters the
+ * other as a change, so only real deletions are forwarded as removals — the
+ * view for a consumer whose identity for a note is not its date.
+ */
+export function allEventSources(tracked: EventSourceRows, untracked: EventSourceRows): EventSourceRows {
+	return {
+		sources$: merge(tracked.sources$, untracked.sources$).pipe(
+			filter((event) => event.type === "source-changed" || event.reason === "deleted")
+		),
+		ready$: tracked.ready$,
+	};
+}
 
 function isTracked(data: Frontmatter, settings: SingleCalendarConfig): boolean {
 	return Boolean(data[settings.startProp] || data[settings.dateProp]);
@@ -44,17 +70,35 @@ function matchesScope(data: Frontmatter, settings: SingleCalendarConfig, scope: 
 	}
 }
 
+/**
+ * The frontmatter a recurring note will carry once the repository's queued
+ * series-id write lands: the id is `deriveRRuleId` of the note's path, the same
+ * pure function the repository uses, so the projection and the disk agree. The
+ * row itself is never touched.
+ */
+function withPendingSeriesId(row: VaultRow<Frontmatter>, settings: SingleCalendarConfig, mint: boolean): Frontmatter {
+	const data = row.data;
+	if (!mint || data[settings.rruleIdProp] || !data[settings.rruleProp]) return data;
+	if (parseRRuleFromFrontmatter(data, settings) === null) return data;
+	return { ...data, [settings.rruleIdProp]: deriveRRuleId(row.filePath) };
+}
+
 /** Projects a row into the parsed shape every event consumer works in. */
-export function buildRawEventSource(row: VaultRow<Frontmatter>, settings: SingleCalendarConfig): RawEventSource {
-	const allDayProp = row.data[settings.allDayProp];
+function buildRawEventSource(
+	row: VaultRow<Frontmatter>,
+	settings: SingleCalendarConfig,
+	mintSeriesId: boolean
+): RawEventSource {
+	const frontmatter = withPendingSeriesId(row, settings, mintSeriesId);
+	const allDayProp = frontmatter[settings.allDayProp];
 	return {
 		filePath: row.filePath,
 		mtime: row.mtime,
-		frontmatter: row.data,
+		frontmatter,
 		folder: row.file.parent?.path || "",
 		isAllDay: allDayProp === true || allDayProp === "true",
-		isUntracked: !isTracked(row.data, settings),
-		metadata: parseEventMetadata(row.data, settings),
+		isUntracked: !isTracked(frontmatter, settings),
+		metadata: parseEventMetadata(frontmatter, settings),
 	};
 }
 
@@ -75,19 +119,22 @@ export class EventSourceView extends VaultTableView<Frontmatter> {
 	private viewSub: Subscription | null = null;
 	private sourceTable: VaultTable<Frontmatter>;
 	private readonly sourcesSubject = new Subject<EventSourceEvent>();
+	private readonly canMintSeriesId: () => boolean;
 
 	public readonly sources$: Observable<EventSourceEvent>;
 
 	constructor(
 		table: VaultTable<Frontmatter>,
 		private readonly scope: EventSourceScope,
-		settingsStore: BehaviorSubject<SingleCalendarConfig>
+		settingsStore: BehaviorSubject<SingleCalendarConfig>,
+		options: EventSourceViewOptions = {}
 	) {
 		const settings = settingsStore.value;
 		super(table, { filter: (row) => matchesScope(row.data, settings, scope) });
 
 		this.settings = settings;
 		this.sourceTable = table;
+		this.canMintSeriesId = options.canMintSeriesId ?? (() => true);
 		this.sources$ = this.sourcesSubject.asObservable();
 
 		this.viewSub = this.events$.subscribe((event) => {
@@ -119,6 +166,10 @@ export class EventSourceView extends VaultTableView<Frontmatter> {
 		super.destroy();
 	}
 
+	private project(row: VaultRow<Frontmatter>): RawEventSource {
+		return buildRawEventSource(row, this.settings, this.canMintSeriesId());
+	}
+
 	private reparse(): void {
 		const known = new Set(this.toArray().map((row) => row.id));
 		this.updateFilter((row) => matchesScope(row.data, this.settings, this.scope));
@@ -129,7 +180,7 @@ export class EventSourceView extends VaultTableView<Frontmatter> {
 			this.sourcesSubject.next({
 				type: "source-changed",
 				filePath: row.filePath,
-				source: buildRawEventSource(row, this.settings),
+				source: this.project(row),
 			});
 		}
 	}
@@ -140,14 +191,14 @@ export class EventSourceView extends VaultTableView<Frontmatter> {
 				return {
 					type: "source-changed",
 					filePath: event.filePath,
-					source: buildRawEventSource(event.row, this.settings),
+					source: this.project(event.row),
 					...(event.oldPath !== undefined ? { oldPath: event.oldPath } : {}),
 				};
 			case "row-updated":
 				return {
 					type: "source-changed",
 					filePath: event.filePath,
-					source: buildRawEventSource(event.newRow, this.settings),
+					source: this.project(event.newRow),
 					...(event.oldPath !== undefined ? { oldPath: event.oldPath } : {}),
 				};
 			case "row-deleted":

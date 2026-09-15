@@ -69,7 +69,7 @@ export abstract class BaseSyncStateManager<TMetadata extends { uid: string }> {
 	/**
 	 * Resolves once the indexer has finished its scan and fed every tracked file
 	 * into `byUid`. Sync services MUST await this before computing a plan: the
-	 * tracked-state map is hydrated reactively off the tracked-events view, so a sync that runs
+	 * tracked-state map is hydrated reactively off every note in the table, so a sync that runs
 	 * before the scan drains sees an empty map and re-creates every
 	 * already-synced event as a duplicate (then self-heals by trashing the
 	 * collisions). Gating the sync itself — not just the startup caller — makes
@@ -180,13 +180,16 @@ export abstract class BaseSyncStateManager<TMetadata extends { uid: string }> {
 		this.byUid.clear();
 	}
 
+	/**
+	 * Reads every note, not just dated ones: a synced note is identified by its
+	 * UID, so one whose date was cleared must stay tracked (or the next sync
+	 * re-creates it) and its later deletion must still untrack it.
+	 */
 	private handleSourceEvent(event: EventSourceEvent): void {
 		if (event.type === "source-changed") {
 			this.processFileChange(event.filePath, event.source.frontmatter);
 			return;
 		}
-		// A synced note that only lost its date is still on disk carrying its UID;
-		// untracking it would make the next sync create a second copy.
 		if (event.reason === "deleted") this.untrackByPath(event.filePath);
 	}
 

@@ -137,13 +137,13 @@ export class CalendarBundle {
 		this.caldavSyncStateManager = new CalDAVSyncStateManager(
 			this.app,
 			this.fileRepository,
-			this.fileRepository.trackedEvents,
+			this.fileRepository.allEvents,
 			this.settingsStore.settings$
 		);
 		this.icsSubscriptionSyncStateManager = new ICSSubscriptionSyncStateManager(
 			this.app,
 			this.fileRepository,
-			this.fileRepository.trackedEvents,
+			this.fileRepository.allEvents,
 			this.settingsStore.settings$
 		);
 		this.viewStateManager = new CalendarViewStateManager();

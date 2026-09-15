@@ -162,9 +162,10 @@ export class RecurringEventManager extends DebouncedNotifier {
 				this.handlePhysicalInstanceEvent(event);
 			}),
 			eventSource.recurringSources.sources$.subscribe((event: EventSourceEvent) => {
-				// A source that merely stopped parsing as recurring keeps its series, as
-				// it always has; only a note that is really gone drops it.
-				if (event.type === "source-removed" && event.reason === "deleted") this.handleFileDeleted(event);
+				// Any exit drops the series, deleted or no longer parsing as recurring:
+				// that is the state a reload rebuilds, and a view never reports the
+				// later deletion of a note that already left it.
+				if (event.type === "source-removed") this.handleFileDeleted(event);
 			}),
 			eventSource.recurringEvents$.subscribe((event: RecurringEventFound) => {
 				void this.handleRecurringEventFound(event);
@@ -213,14 +214,14 @@ export class RecurringEventManager extends DebouncedNotifier {
 	}
 
 	/**
-	 * Instance bookkeeping off the physical-instances view. A row that only left
-	 * the scope (lost its date or series id) keeps its slot, matching how the
-	 * tracked stream behaved; the slot frees when the note is really deleted.
+	 * Instance bookkeeping off the physical-instances view. A slot is held exactly
+	 * while its note is in the view, so leaving it — deleted, or no longer dated
+	 * or carrying the series id — frees the slot, as a reload would.
 	 */
 	private handlePhysicalInstanceEvent(event: EventSourceEvent): void {
 		if (event.type === "source-changed") {
 			this.handleFileChanged(event.filePath, event.source.metadata);
-		} else if (event.reason === "deleted") {
+		} else {
 			this.handleFileDeleted(event);
 		}
 	}

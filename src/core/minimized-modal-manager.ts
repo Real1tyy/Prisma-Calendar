@@ -206,7 +206,10 @@ class MinimizedModalManagerClass {
 	private subscribeToFileChanges(bundle: CalendarBundle): void {
 		this.unsubscribeFromFileChanges();
 
-		this.indexerSubscription = bundle.fileRepository.trackedEvents.sources$.subscribe((event: EventSourceEvent) => {
+		// Every note, not just dated ones: the session belongs to the note, so a
+		// note whose Start Date was cleared keeps it and its later deletion still
+		// clears it. `allEvents` forwards only real deletions as removals.
+		this.indexerSubscription = bundle.fileRepository.allEvents.sources$.subscribe((event: EventSourceEvent) => {
 			if (!this.savedState || !this.savedState.filePath) {
 				return;
 			}
@@ -227,16 +230,16 @@ class MinimizedModalManagerClass {
 			}
 
 			if (event.type === "source-removed") {
-				// `reason` is load-bearing: clearing a live stopwatch and telling the
-				// user their event was deleted is only true when the note is actually
-				// gone. A row that merely dropped out of the tracked scope (its Start
-				// Date was cleared mid-edit) still exists, so leave the modal alone.
-				if (event.reason === "deleted" && !event.isRename) {
+				if (!event.isRename) {
 					this.clear();
 					new Notice("Minimized event was deleted");
 				}
 				return;
 			}
+
+			// A dateless note has no times to restore; refreshing the snapshot from it
+			// would blank the form a restore reads while the note is mid-edit.
+			if (event.source.isUntracked) return;
 
 			const settings = bundle.settingsStore.currentSettings;
 			const frontmatter = event.source.frontmatter;
