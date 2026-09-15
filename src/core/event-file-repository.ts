@@ -10,6 +10,7 @@ import {
 	type FrontmatterRepo,
 	type VaultRow,
 	type VaultTableEvent,
+	type VaultTableView,
 } from "@real1ty/obsidian-plugins";
 import { TFile, type App } from "obsidian";
 import { BehaviorSubject, Subject, type Observable, type Subscription } from "rxjs";
@@ -107,6 +108,8 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 	public readonly recurringSources: EventSourceView;
 	public readonly physicalInstances: EventSourceView;
 	private readonly views: EventSourceView[];
+	/** Views built elsewhere over this table — rebound on a rebuild, destroyed by their owner. */
+	private readonly attachedViews: VaultTableView<Frontmatter>[] = [];
 
 	constructor(
 		readonly app: App,
@@ -388,7 +391,16 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 	 * subclass that injects its own table (the test double) calls this too.
 	 */
 	protected rebindViews(): void {
-		for (const view of this.views) view.rebind(this.table);
+		for (const view of [...this.views, ...this.attachedViews]) view.rebind(this.table);
+	}
+
+	/**
+	 * Keeps a view someone else built over {@link getTable} following the table
+	 * across a directory change. Without it the view listens to the destroyed
+	 * table and silently stops updating until a reload.
+	 */
+	attachView(view: VaultTableView<Frontmatter>): void {
+		this.attachedViews.push(view);
 	}
 
 	/**
@@ -441,11 +453,11 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 	private async handleTableEvent(event: VaultTableEvent<Frontmatter>): Promise<void> {
 		switch (event.type) {
 			case "row-created": {
-				await this.processRow(event.row, undefined, undefined);
+				await this.processRow(event.row, undefined, undefined, event.oldPath);
 				break;
 			}
 			case "row-updated": {
-				await this.processRow(event.newRow, event.oldRow.data, event.diff);
+				await this.processRow(event.newRow, event.oldRow.data, event.diff, event.oldPath);
 				break;
 			}
 		}
@@ -459,7 +471,8 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 	private async processRow(
 		row: VaultRow<Frontmatter>,
 		oldFrontmatter: Frontmatter | undefined,
-		frontmatterDiff: FrontmatterDiff | undefined
+		frontmatterDiff: FrontmatterDiff | undefined,
+		oldPath?: string
 	): Promise<void> {
 		// Always add recurring events even if skipped - this allows navigation
 		// to source from physical instances and viewing recurring event lists.
@@ -471,6 +484,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 				recurringEvent: recurring,
 				...(oldFrontmatter ? { oldFrontmatter } : {}),
 				...(frontmatterDiff ? { frontmatterDiff } : {}),
+				...(oldPath !== undefined ? { oldPath } : {}),
 			});
 		}
 

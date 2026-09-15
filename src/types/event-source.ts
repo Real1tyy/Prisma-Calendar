@@ -27,6 +27,8 @@ export interface RecurringEventFound {
 	recurringEvent: NodeRecurringEvent;
 	oldFrontmatter?: Frontmatter;
 	frontmatterDiff?: FrontmatterDiff;
+	/** Set when the note arrived here by rename, so the series' instances follow the new title. */
+	oldPath?: string;
 }
 
 /**

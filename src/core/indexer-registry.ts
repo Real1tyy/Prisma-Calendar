@@ -116,6 +116,9 @@ export class IndexerRegistry {
 			const prerequisiteTracker = new PrerequisiteTracker(this.app, fileRepository, eventStore, settingsStore);
 			recurringEventManager.setEventStore(eventStore);
 			recurringEventManager.setCategoryTracker(categoryTracker);
+			for (const tracker of [categoryTracker, nameSeriesTracker, prerequisiteTracker]) {
+				fileRepository.attachView(tracker);
+			}
 			const untrackedEventStore = new UntrackedEventStore(
 				fileRepository,
 				fileRepository.untrackedEvents,

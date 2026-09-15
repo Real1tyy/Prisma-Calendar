@@ -199,7 +199,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 	// ─── Row Event Handling ───────────────────────────────────────
 
-	private async handleRecurringEventFound(event: RecurringEventFound & { oldPath?: string }): Promise<void> {
+	private async handleRecurringEventFound(event: RecurringEventFound): Promise<void> {
 		this.addRecurringEvent(event.recurringEvent, event.oldFrontmatter);
 		if (!this.ready) return;
 		if (event.oldPath) {
@@ -267,6 +267,9 @@ export class RecurringEventManager extends DebouncedNotifier {
 			const oldPath = instance.filePath;
 			const folderPath = file.parent?.path ? `${file.parent.path}/` : "";
 			const newPath = `${folderPath}${newBasename}.md`;
+			// A source rename that kept the title (a move, a ZettelID being assigned)
+			// leaves every instance name valid; renaming onto itself would only fail.
+			if (newPath === file.path) return;
 			await this.eventSource.renameByPath(file.path, newPath);
 			instance.filePath = newPath;
 			this.instanceFileToRRuleId.delete(oldPath);
