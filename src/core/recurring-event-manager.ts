@@ -515,7 +515,13 @@ export class RecurringEventManager extends DebouncedNotifier {
 				// event for the new path will re-associate the data and rename instances.
 				this.sourceFileToRRuleId.delete(event.filePath);
 			} else {
-				this.recurringEventsMap.delete(sourceFileRruleId);
+				// The instances on disk outlive their source and stay registered under a
+				// null source — the state a reload rebuilds from them. Forgetting them
+				// here left recurrence turned back on shadowing each with a virtual
+				// occurrence, and a series that has no instances has nothing to keep.
+				const data = this.recurringEventsMap.get(sourceFileRruleId);
+				if (data && data.physicalInstances.size > 0) data.recurringEvent = null;
+				else this.recurringEventsMap.delete(sourceFileRruleId);
 				this.sourceFileToRRuleId.delete(event.filePath);
 			}
 			this.scheduleRefresh();
