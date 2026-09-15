@@ -9,6 +9,8 @@ export interface VirtualListProps<T> {
 	overscan?: number;
 	className?: string;
 	style?: CSSProperties;
+	/** Scroll events on the outer container — for consumers that key behaviour off scroll position. */
+	onScroll?: (event: React.UIEvent<HTMLDivElement>) => void;
 }
 
 export interface VirtualListHandle {
@@ -17,7 +19,7 @@ export interface VirtualListHandle {
 }
 
 function VirtualListInner<T>(
-	{ items, estimateSize, renderItem, getKey, overscan = 8, className, style }: VirtualListProps<T>,
+	{ items, estimateSize, renderItem, getKey, overscan = 8, className, style, onScroll }: VirtualListProps<T>,
 	ref: React.ForwardedRef<VirtualListHandle>
 ) {
 	const scrollRef = useRef<HTMLDivElement>(null);
@@ -49,7 +51,7 @@ function VirtualListInner<T>(
 	const virtualItems = virtualizer.getVirtualItems();
 
 	return (
-		<div ref={scrollRef} className={className} style={{ overflow: "auto", ...style }}>
+		<div ref={scrollRef} className={className} style={{ overflow: "auto", ...style }} onScroll={onScroll}>
 			<div style={{ height: virtualizer.getTotalSize(), width: "100%", position: "relative" }}>
 				{virtualItems.map((virtualRow) => (
 					<div

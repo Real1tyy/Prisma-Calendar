@@ -12,6 +12,8 @@ const MS_PER_DAY = 86_400_000;
  * most four digits, so the two can never be read for each other.
  */
 const ROTATED_NAME = /^(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})-(\d{3})-([0-9a-z]{8})(?:-(\d{1,4}))?\.jsonl$/;
+/** `current-<device>.jsonl` — the file the sink is appending to right now. */
+const ACTIVE_NAME = new RegExp(`^${ACTIVE_STEM}-([0-9a-z]{${DEVICE_ID_LENGTH}})\\.jsonl$`);
 
 /** `(callback, delayMs) → cancel`. Injected so tests drive flushes by hand. */
 export type FlushScheduler = (callback: () => void, delayMs: number) => () => void;
@@ -70,6 +72,12 @@ export function parseRotatedLogName(path: string): RotatedLogFile | null {
 		),
 		device,
 	};
+}
+
+/** Reads an active file's name, or `null` for anything that is not one. */
+export function parseActiveLogName(path: string): { device: string } | null {
+	const match = ACTIVE_NAME.exec(basename(path));
+	return match ? { device: match[1] } : null;
 }
 
 /**

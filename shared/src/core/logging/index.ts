@@ -23,11 +23,26 @@ export { describeDebugEnvironment } from "./debug-environment";
 export { DEVICE_ID_LENGTH, resolveDeviceLogId, type DeviceLogIdOptions } from "./device-id";
 export {
 	FileSink,
+	parseActiveLogName,
 	parseRotatedLogName,
 	type FileSinkOptions,
 	type FlushScheduler,
 	type RotatedLogFile,
 } from "./file-sink";
+export { filterLogEntries, logSearchText, matchesLogFilter, MAX_SEARCHABLE_DATA_CHARS } from "./filter";
+export {
+	buildLogExportFilename,
+	formatLogEntriesForExport,
+	type LogExportFormat,
+	type LogExportOptions,
+} from "./log-export";
+export {
+	createLogFileSource,
+	parseLogFileLine,
+	type LogFileInfo,
+	type LogFilePage,
+	type LogFileSource,
+} from "./log-file-reader";
 export { createVaultLogFileSystem, type LogFileSystem } from "./log-file-system";
 export { LogService, type LogServiceOptions } from "./log-service";
 export {
@@ -39,7 +54,13 @@ export {
 } from "./logging-controller";
 export { DEFAULT_LOG_CAPACITY, MemorySink } from "./memory-sink";
 export { PluginLog } from "./plugin-log";
-export { createLogJsonReplacer, formatLogLine, stringifyLogData } from "./serialize";
+export {
+	createLogJsonReplacer,
+	formatLogLine,
+	stringifyLogData,
+	toLogExportRecord,
+	type LogExportRecord,
+} from "./serialize";
 export {
 	DEFAULT_LOG_LEVEL,
 	LOGGING_ADVANCED_FIELDS,

@@ -1,15 +1,8 @@
+import { logSearchText, matchesLogFilter } from "./filter";
 import { RingBuffer } from "./ring-buffer";
-import { stringifyLogData } from "./serialize";
-import { LOG_LEVEL_SEVERITY, type LogEntry, type LogFilter, type LogSink } from "./types";
+import type { LogEntry, LogFilter, LogSink } from "./types";
 
 export const DEFAULT_LOG_CAPACITY = 2000;
-
-/**
- * How much of a serialized `data` payload free-text search reads. `query` is a
- * needle-in-the-haystack aid, not a full-text index — without a bound, one
- * caller logging a huge object makes every subsequent query pay for it.
- */
-const MAX_SEARCHABLE_DATA_CHARS = 2000;
 
 interface BufferedEntry {
 	readonly entry: LogEntry;
@@ -24,33 +17,9 @@ function normalizeCapacity(capacity: number | undefined): number {
 	return Math.max(1, Math.floor(capacity));
 }
 
-function toSet<T extends string>(value: T | readonly T[]): ReadonlySet<T> {
-	return new Set(typeof value === "string" ? [value] : value);
-}
-
 function searchTextOf(buffered: BufferedEntry): string {
-	buffered.searchText ??= stringifyLogData(buffered.entry.data).slice(0, MAX_SEARCHABLE_DATA_CHARS);
+	buffered.searchText ??= logSearchText(buffered.entry);
 	return buffered.searchText;
-}
-
-function matches(buffered: BufferedEntry, filter: LogFilter): boolean {
-	const { entry } = buffered;
-
-	if (filter.level !== undefined && !toSet(filter.level).has(entry.level)) return false;
-	if (filter.minLevel !== undefined && LOG_LEVEL_SEVERITY[entry.level] < LOG_LEVEL_SEVERITY[filter.minLevel]) {
-		return false;
-	}
-	if (filter.scope !== undefined && !toSet(filter.scope).has(entry.scope)) return false;
-	if (filter.since !== undefined && entry.ts < filter.since) return false;
-	if (filter.until !== undefined && entry.ts > filter.until) return false;
-
-	if (filter.query) {
-		const needle = filter.query.toLowerCase();
-		const haystack = `${entry.message}\n${searchTextOf(buffered)}`.toLowerCase();
-		if (!haystack.includes(needle)) return false;
-	}
-
-	return true;
 }
 
 /**
@@ -85,7 +54,7 @@ export class MemorySink implements LogSink {
 		if (!filter) return this.snapshot();
 		return this.buffer
 			.toArray()
-			.filter((buffered) => matches(buffered, filter))
+			.filter((buffered) => matchesLogFilter(buffered.entry, filter, () => searchTextOf(buffered)))
 			.map((buffered) => buffered.entry);
 	}
 

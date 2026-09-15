@@ -3,6 +3,7 @@ export * from "./general-section";
 export * from "./icon-picker";
 export * from "./license-section";
 export * from "./logging-section";
+export * from "./logs-viewer";
 export * from "./manager-list";
 export * from "./modal-form";
 export * from "./mount-imperative";

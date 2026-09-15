@@ -51,13 +51,22 @@ export function stringifyLogData(value: unknown): string {
 }
 
 /**
- * One JSON object per line for the file sink. `time` duplicates `ts` as ISO so
- * the file reads without a converter; a `data` that defeats even the replacer
- * (a throwing getter or `toJSON`) is carried as its best-effort string so the
- * line itself stays valid JSON.
+ * The wire shape of a log entry outside the process — one line in a log file,
+ * one element of a copied or saved export. `time` duplicates `ts` as ISO so a
+ * file reads without a converter; `seq` is dropped because it is only
+ * meaningful inside the service instance that minted it.
  */
-export function formatLogLine(entry: LogEntry): string {
-	const record = {
+export interface LogExportRecord {
+	ts: number;
+	time: string;
+	level: LogEntry["level"];
+	scope: string;
+	message: string;
+	data?: unknown;
+}
+
+export function toLogExportRecord(entry: LogEntry): LogExportRecord {
+	return {
 		ts: entry.ts,
 		time: new Date(entry.ts).toISOString(),
 		level: entry.level,
@@ -65,6 +74,15 @@ export function formatLogLine(entry: LogEntry): string {
 		message: entry.message,
 		...(entry.data === undefined ? {} : { data: entry.data }),
 	};
+}
+
+/**
+ * One JSON object per line for the file sink. A `data` that defeats even the
+ * replacer (a throwing getter or `toJSON`) is carried as its best-effort
+ * string so the line itself stays valid JSON.
+ */
+export function formatLogLine(entry: LogEntry): string {
+	const record = toLogExportRecord(entry);
 	try {
 		return `${JSON.stringify(record, createLogJsonReplacer())}\n`;
 	} catch {

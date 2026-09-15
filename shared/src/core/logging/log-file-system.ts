@@ -8,6 +8,11 @@ import type { DataAdapter } from "obsidian";
 export interface LogFileSystem {
 	exists(path: string): Promise<boolean>;
 	mkdir(path: string): Promise<void>;
+	/**
+	 * Whole-file text. Obsidian's `DataAdapter` exposes no streaming read, so
+	 * the reader bounds *parsing* rather than IO — see `log-file-reader`.
+	 */
+	read(path: string): Promise<string>;
 	append(path: string, data: string): Promise<void>;
 	/** `null` when the path does not exist. */
 	stat(path: string): Promise<{ size: number; mtime: number } | null>;
@@ -21,6 +26,7 @@ export function createVaultLogFileSystem(adapter: DataAdapter): LogFileSystem {
 	return {
 		exists: (path) => adapter.exists(path),
 		mkdir: (path) => adapter.mkdir(path),
+		read: (path) => adapter.read(path),
 		append: (path, data) => adapter.append(path, data),
 		stat: async (path) => {
 			const stat = await adapter.stat(path);
