@@ -2,7 +2,7 @@ import { createLogFileSource, createVaultLogFileSystem, type LeafPlacement } fro
 import { registerLogsView, type LogsViewerProps } from "@real1ty/obsidian-plugins-react";
 import { normalizePath, type WorkspaceLeaf } from "obsidian";
 
-import { CSS_PREFIX, tid } from "../constants";
+import { CSS_PREFIX, settingsDocUrl, tid } from "../constants";
 import type CustomCalendarPlugin from "../main";
 import { openPrismaBugReport } from "./api/feedback";
 import { logDirectory } from "./logging";
@@ -31,6 +31,7 @@ export function prismaLogsViewerProps(plugin: CustomCalendarPlugin): LogsViewerP
 		service: plugin.logging.service,
 		files: createLogFileSource(fs, logDirectory(plugin)),
 		filenamePrefix: "prisma-logs",
+		privacyUrl: settingsDocUrl("/privacy", "logs_privacy"),
 		onSave: async (content, filename) => {
 			if (!plugin.app.vault.getFolderByPath(EXPORT_FOLDER)) {
 				await plugin.app.vault.createFolder(EXPORT_FOLDER);

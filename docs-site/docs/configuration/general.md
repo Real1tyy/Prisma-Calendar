@@ -193,7 +193,7 @@ The counter reads `247 entries · 12 shown`, so you always know how much the fil
 
 The other header buttons act on the table: **Copy filtered** puts exactly the rows you narrowed to on the clipboard, **Copy selected** takes only the lines you ticked, **Copy all** takes the whole table, **Save to file** writes the shown rows into a `Prisma Logs` folder in your vault as a `.json` file you can attach to a GitHub issue — tick some rows first and it saves only those — and **Clear buffer** empties this session's log. With lines ticked, **Copy selected** and **Clear selection** also sit next to the counter. Each line has its own copy button. Like every Prisma header, the gear button lets you reorder, rename or hide these buttons, and your arrangement is remembered.
 
-What you copy or save has paths abbreviated and secrets removed, the same as every other Prisma export — see the [privacy page](../privacy.md).
+**Redacted or full detail.** Every copy and save first asks how the logs should leave the view. The prompt explains what redaction does, with a before-and-after example and a link to the [privacy page](../privacy.md). **Copy redacted** / **Save redacted** turns folder and note names into stable tokens and property values into their type — the safe choice for a public GitHub issue. **With full detail** keeps real paths, note names and property values for someone you trust. Secrets are removed either way, and closing the prompt copies or saves nothing.
 
 ## Doctor
 
