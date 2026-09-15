@@ -6,6 +6,13 @@ All notable changes to this project will be documented here.
 
 ---
 
+## Unreleased
+
+### Fixed
+- **New events appear immediately, even when Obsidian is busy**: an event you created, duplicated, imported, moved to another planning system, restored with undo, or that a recurring event generated could stay off the calendar for minutes — until a manual refresh — while another plugin or a sync tool kept Obsidian's indexer busy. Pressing **Refresh** repeatedly no longer stacks full rescans that could freeze the calendar; a refresh while one is running joins it.
+
+---
+
 ## 2.24.0 - 9/10/2026
 
 > **TLDR:** Report a bug — with a screenshot of it — rate Prisma, and open a Help Center, all without leaving Obsidian. Event modals gain a full **Note content** field, timed events get Normal/Small/Hidden/Auto time display modes per view, and tabs, header actions and context-menu items take independent icon, text and background colors. Prisma's own housekeeping now waits for Obsidian to finish indexing and reaches the same decisions on every synced device, with a Writer/Reader device role you pick at first launch and a new Logging section for when something needs diagnosing.
