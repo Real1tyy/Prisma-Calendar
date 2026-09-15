@@ -1,3 +1,4 @@
+import type { HealthReportRow } from "../diagnostics/health";
 import type { DebugBundle } from "../logging/debug-bundle";
 
 export const SUBMISSION_API_BASE_URL = "https://api.matejvavroproductivity.com";
@@ -58,7 +59,15 @@ export type FeedbackScreenshot = Omit<ScreenshotAttachment, "name">;
 export interface FeedbackSubmission {
 	type: FeedbackType;
 	text: string;
-	/** Attached only when the user leaves "Include debug info" on. */
+	/**
+	 * The Doctor's verdict — which checks pass, warn or fail, in one line each.
+	 * Attached only when the user leaves "Include a health check" on. Separate
+	 * from `debugBundle` because they answer different questions: this is what
+	 * the plugin thinks is wrong, that is the raw evidence
+	 * ([[spec-doctor-health-and-quick-debug-export]]).
+	 */
+	health?: HealthReportRow[];
+	/** Attached only when the user leaves "Include recent logs" on. */
 	debugBundle?: DebugBundle;
 	screenshots?: FeedbackScreenshot[];
 }

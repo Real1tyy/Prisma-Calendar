@@ -33,6 +33,22 @@ export interface HealthCheck {
 /** Produces this check's current verdict(s), or `null` when it does not apply. */
 export type HealthCheckProvider = () => HealthCheck | readonly HealthCheck[] | null;
 
+/**
+ * A check as it travels off the page — to the clipboard, or attached to a bug
+ * report. The `fix` callback is dropped, which is what makes the row plain
+ * data rather than a live handle into the running plugin.
+ */
+export interface HealthReportRow {
+	id: string;
+	label: string;
+	status: HealthStatus;
+	detail: string;
+}
+
+export function toHealthReportRows(checks: readonly HealthCheck[]): HealthReportRow[] {
+	return checks.map(({ id, label, status, detail }) => ({ id, label, status, detail }));
+}
+
 export interface HealthSummary {
 	ok: number;
 	warn: number;

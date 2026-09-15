@@ -7,6 +7,7 @@ import {
 	type DebugBundle,
 	type FeedbackSubmission,
 	type FeedbackType,
+	type HealthReportRow,
 	type ScreenshotAttachment,
 	type SubmissionResult,
 } from "@real1ty/obsidian-plugins";
@@ -50,6 +51,11 @@ export interface FeedbackModalProps {
 	/** UTM-tracked privacy page. Omitted when the plugin publishes none, which hides the disclaimer. */
 	privacyUrl?: string | undefined;
 	/**
+	 * Snapshots the Doctor's verdict. Omitted when the plugin registers no health
+	 * checks — then there is nothing to attach and the checkbox does not render.
+	 */
+	captureHealth?: (() => readonly HealthReportRow[]) | undefined;
+	/**
 	 * Snapshots the debug context. Omitted when the plugin wired no log service —
 	 * then there is nothing to attach and the checkbox does not render.
 	 */
@@ -78,6 +84,8 @@ export type AttachedScreenshot = ScreenshotAttachment & { id: string };
 export interface FeedbackFormState {
 	type: FeedbackType;
 	text: string;
+	/** The Doctor's verdict. Independent of `includeDebug` — one is the diagnosis, the other the evidence. */
+	includeHealth: boolean;
 	includeDebug: boolean;
 	includeLicenseKey: boolean;
 	fullDetail: boolean;
@@ -114,6 +122,7 @@ function readImage(file: File): Promise<AttachedScreenshot> {
 
 export const FeedbackModalContent = memo(function FeedbackModalContent({
 	privacyUrl,
+	captureHealth,
 	captureDebugBundle,
 	licenseAttributionAvailable = false,
 	submit,
@@ -121,11 +130,13 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 }: FeedbackModalProps) {
 	const { cls, tid } = useScopedStyles("feedback", buildFeedbackStyles);
 	const { patch, setState, finish, close: onClose } = form;
-	const { type, text, includeDebug, includeLicenseKey, fullDetail, screenshots, attachError } = form.state;
+	const { type, text, includeHealth, includeDebug, includeLicenseKey, fullDetail, screenshots, attachError } =
+		form.state;
 
 	// Named setters over the shell's one state object, so the form reads the same
 	// as it would with its own `useState` — the difference is only in who owns it.
 	const setText = useCallback((next: string) => patch({ text: next }), [patch]);
+	const setIncludeHealth = useCallback((next: boolean) => patch({ includeHealth: next }), [patch]);
 	const setIncludeDebug = useCallback((next: boolean) => patch({ includeDebug: next }), [patch]);
 	const setIncludeLicenseKey = useCallback((next: boolean) => patch({ includeLicenseKey: next }), [patch]);
 	const setFullDetail = useCallback((next: boolean) => patch({ fullDetail: next }), [patch]);
@@ -164,12 +175,19 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 		() => (includeDebug && captureDebugBundle !== undefined ? captureDebugBundle() : null),
 		[includeDebug, captureDebugBundle]
 	);
+	const health = useMemo(
+		() => (includeHealth && captureHealth !== undefined ? captureHealth() : null),
+		[includeHealth, captureHealth]
+	);
 
 	const chooseType = useCallback(
 		(next: FeedbackType) => {
-			// Debug context is what turns "it's broken" into something actionable, so
-			// a bug report opts in by default and everything else opts in by hand.
-			patch({ type: next, includeDebug: next === "bug" });
+			// Diagnostic context is what turns "it's broken" into something actionable,
+			// so a bug report opts into both by default and everything else opts in by
+			// hand. They are separate switches because they answer different questions:
+			// the health check is what the plugin thinks is wrong, the logs are the raw
+			// evidence, and a user who will share one may not want to share the other.
+			patch({ type: next, includeHealth: next === "bug", includeDebug: next === "bug" });
 		},
 		[patch]
 	);
@@ -236,6 +254,7 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 			buildFeedbackSubmission({
 				type,
 				text,
+				...(health !== null ? { health } : {}),
 				...(bundle !== null ? { debugBundle: bundle } : {}),
 				screenshots,
 				fullDetail,
@@ -255,7 +274,18 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 		// the user nothing, so "Try again" resubmits exactly what they assembled.
 		setPhase("form");
 		setError(result.message);
-	}, [bundle, finish, fullDetail, includeLicenseKey, licenseAttributionAvailable, screenshots, submit, text, type]);
+	}, [
+		bundle,
+		finish,
+		fullDetail,
+		health,
+		includeLicenseKey,
+		licenseAttributionAvailable,
+		screenshots,
+		submit,
+		text,
+		type,
+	]);
 
 	if (phase === "sent") {
 		return (
@@ -310,6 +340,21 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 				data-testid={tid("text")}
 			/>
 
+			{captureHealth !== undefined && (
+				<label className={cls("option")}>
+					<input
+						type="checkbox"
+						checked={includeHealth}
+						onChange={(event) => setIncludeHealth(event.target.checked)}
+						data-testid={tid("include-health")}
+					/>
+					<span>
+						Include a health check — what the Doctor reports about this install right now: whether indexing, settings
+						and your license are healthy, one line each.
+					</span>
+				</label>
+			)}
+
 			{captureDebugBundle !== undefined && (
 				<label className={cls("option")}>
 					<input
@@ -319,8 +364,8 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 						data-testid={tid("include-debug")}
 					/>
 					<span>
-						Include debug info — recent warnings, errors and the last few minutes of activity. This is what makes a bug
-						report actionable.
+						Include recent logs — the warnings and errors on record, and the last few minutes of activity. This is the
+						evidence behind the health check.
 					</span>
 				</label>
 			)}
@@ -337,11 +382,14 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 				</label>
 			)}
 
-			{bundle !== null && (
+			{(bundle !== null || health !== null) && (
 				<details data-testid={tid("bundle-details")}>
 					<summary className={cls("disclosure")}>Review exactly what will be attached</summary>
 					<pre className={cls("bundle-preview")} data-testid={tid("bundle-preview")}>
-						{serializeForExport(bundle, { fullDetail })}
+						{serializeForExport(
+							{ ...(health !== null ? { health } : {}), ...(bundle !== null ? { debugBundle: bundle } : {}) },
+							{ fullDetail }
+						)}
 					</pre>
 				</details>
 			)}
@@ -403,8 +451,8 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 					docsUrl={privacyUrl}
 					variant="inline"
 					// The switch only makes sense next to something that is actually
-					// attached — with the bundle off there is nothing to detail.
-					{...(bundle !== null ? { fullDetail, onFullDetailChange: setFullDetail } : {})}
+					// attached — with both off there is nothing to detail.
+					{...(bundle !== null || health !== null ? { fullDetail, onFullDetailChange: setFullDetail } : {})}
 					testId={tid("privacy")}
 				/>
 			)}
@@ -440,6 +488,7 @@ export function blankFeedbackForm(licenseAttributionAvailable = false): Feedback
 	return {
 		type: "bug",
 		text: "",
+		includeHealth: true,
 		includeDebug: true,
 		includeLicenseKey: licenseAttributionAvailable,
 		fullDetail: false,

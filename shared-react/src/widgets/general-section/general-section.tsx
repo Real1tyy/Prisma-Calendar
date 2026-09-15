@@ -1,4 +1,10 @@
-import { buildUtmUrl, type LicenseManager, type LogService, type PluginSlug } from "@real1ty/obsidian-plugins";
+import {
+	buildUtmUrl,
+	type HealthCheck,
+	type LicenseManager,
+	type LogService,
+	type PluginSlug,
+} from "@real1ty/obsidian-plugins";
 import { memo, useCallback, type ReactNode } from "react";
 
 import { useApp } from "../../contexts/app-context";
@@ -171,6 +177,12 @@ export interface GeneralSectionProps<T extends Record<string, unknown> = Record<
 	 * shared disclaimer on every surface that can send something off the device.
 	 */
 	privacyUrl?: string | undefined;
+	/**
+	 * Runs the plugin's Doctor checks. Supplied by a plugin that registers any,
+	 * so a bug report can attach the health verdict beside the logs — the two are
+	 * separate opt-ins in the form ([[spec-doctor-health-and-quick-debug-export]]).
+	 */
+	runHealthChecks?: (() => readonly HealthCheck[]) | undefined;
 	/** Universal sub-sections registered by other specs (doctor). */
 	extraSections?: GeneralSubSection[] | undefined;
 	/**
@@ -344,6 +356,7 @@ function GeneralSectionInner<T extends Record<string, unknown>>({
 	license,
 	logging,
 	privacyUrl,
+	runHealthChecks,
 	extraSections,
 	actions,
 	children,
@@ -420,6 +433,7 @@ function GeneralSectionInner<T extends Record<string, unknown>>({
 							: undefined
 					}
 					logService={logging?.service}
+					runHealthChecks={runHealthChecks}
 					licenseManager={license?.licenseManager}
 					fieldTestId={tid("field-feedback")}
 					buttonTestId={tid("feedback-btn")}

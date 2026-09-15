@@ -8,14 +8,32 @@ export interface ShowDoctorModalConfig extends DoctorConfig {
 	cssPrefix: string;
 	/** Modal title. Defaults to `"Doctor"`. */
 	title?: string | undefined;
+	/**
+	 * Opens the plugin's bug-report form. Omitted ⇒ no button. The Doctor closes
+	 * itself first: the report carries the same context, so leaving a stale
+	 * diagnosis stacked behind the form would only invite the user to re-read it.
+	 */
+	onCreateBugReport?: (() => void) | undefined;
 }
 
 export function showDoctorReactModal(app: App, config: ShowDoctorModalConfig): void {
-	const { cssPrefix, title, ...doctor } = config;
+	const { cssPrefix, title, onCreateBugReport, ...doctor } = config;
 	showShelledModal(app, {
 		cssPrefix,
 		name: "doctor",
 		title: title ?? DOCTOR_COPY.title,
-		render: () => <DoctorView config={doctor} />,
+		render: (close) => (
+			<DoctorView
+				config={doctor}
+				{...(onCreateBugReport !== undefined
+					? {
+							onCreateBugReport: () => {
+								close();
+								onCreateBugReport();
+							},
+						}
+					: {})}
+			/>
+		),
 	});
 }

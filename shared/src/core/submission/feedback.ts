@@ -1,3 +1,4 @@
+import type { HealthReportRow } from "../diagnostics/health";
 import type { DebugBundle } from "../logging/debug-bundle";
 import { redact, redactText } from "../logging/redact";
 import type { FeedbackSubmission, FeedbackType, ScreenshotAttachment } from "./types";
@@ -55,6 +56,8 @@ export function acceptScreenshot<T extends ScreenshotAttachment>(
 export interface FeedbackDraft {
 	type: FeedbackType;
 	text: string;
+	/** The Doctor's rows. Independent of `debugBundle` — the user opts into each separately. */
+	health?: readonly HealthReportRow[] | undefined;
 	debugBundle?: DebugBundle | undefined;
 	screenshots?: readonly ScreenshotAttachment[] | undefined;
 	/** The user's explicit "share real names with someone I trust" choice. Secrets go either way. */
@@ -73,6 +76,7 @@ export interface FeedbackDraft {
 export function buildFeedbackSubmission({
 	type,
 	text,
+	health,
 	debugBundle,
 	screenshots,
 	fullDetail = false,
@@ -83,6 +87,11 @@ export function buildFeedbackSubmission({
 		// The user wrote this deliberately, so paths and note names stay; rule 1
 		// (secrets) is not optional and applies anyway.
 		text: redactText(trimmed, { fullDetail: true }),
+		// A check's `detail` is a sentence we wrote, but it interpolates live state
+		// — a directory name, a licence message — so it goes through the same gate.
+		...(health !== undefined && health.length > 0
+			? { health: redact(health, { fullDetail }) as HealthReportRow[] }
+			: {}),
 		// `redact` preserves JSON-ish structure, so the bundle keeps its shape.
 		...(debugBundle !== undefined ? { debugBundle: redact(debugBundle, { fullDetail }) as DebugBundle } : {}),
 		...(screenshots !== undefined && screenshots.length > 0

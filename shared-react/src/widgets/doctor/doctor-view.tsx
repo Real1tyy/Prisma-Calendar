@@ -19,6 +19,7 @@ export const DOCTOR_COPY = {
 	copyLabel: "Copy debug",
 	saveLabel: "Save debug to file",
 	refreshLabel: "Re-run checks",
+	bugReportLabel: "Create bug report",
 	copySuccess: "Debug bundle copied to the clipboard",
 	copyFailure: "Could not copy the debug bundle",
 	saveFailure: "Could not save the debug bundle",
@@ -47,7 +48,16 @@ export interface DoctorConfig {
  * counterpart is the Logs viewer — this page aggregates, that one lists.
  * See [[spec-doctor-health-and-quick-debug-export]].
  */
-export const DoctorView = memo(function DoctorView({ config }: { config: DoctorConfig }) {
+export interface DoctorViewProps {
+	config: DoctorConfig;
+	/**
+	 * Opens the bug-report form with this same context already attached. Omitted
+	 * when the plugin wires no feedback flow, and then the button does not render.
+	 */
+	onCreateBugReport?: (() => void) | undefined;
+}
+
+export const DoctorView = memo(function DoctorView({ config, onCreateBugReport }: DoctorViewProps) {
 	const { cls, tid } = useScopedStyles("doctor", buildDoctorStyles);
 	const [checks, setChecks] = useState<readonly HealthCheck[]>(() => config.runChecks());
 	const [fullDetail, setFullDetail] = useState(false);
@@ -91,7 +101,16 @@ export const DoctorView = memo(function DoctorView({ config }: { config: DoctorC
 			</div>
 
 			<div className={cls("actions")}>
-				<Button variant="primary" onClick={handleCopy} testId={tid("copy")}>
+				{onCreateBugReport !== undefined && (
+					<Button variant="primary" onClick={onCreateBugReport} testId={tid("bug-report")}>
+						{DOCTOR_COPY.bugReportLabel}
+					</Button>
+				)}
+				<Button
+					variant={onCreateBugReport === undefined ? "primary" : "default"}
+					onClick={handleCopy}
+					testId={tid("copy")}
+				>
 					{DOCTOR_COPY.copyLabel}
 				</Button>
 				<Button onClick={handleSave} testId={tid("save")}>

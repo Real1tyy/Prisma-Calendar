@@ -1,16 +1,8 @@
 import type { DebugBundle } from "../logging/debug-bundle";
 import { serializeForExport, type RedactOptions } from "../logging/redact";
-import { summarizeHealth, type HealthCheck, type HealthStatus } from "./health";
+import { summarizeHealth, toHealthReportRows, type HealthCheck, type HealthReportRow } from "./health";
 
 const MINUTE_MS = 60_000;
-
-/** A health check as it travels in a report — the `fix` callback stripped, so the row is plain data. */
-export interface HealthReportRow {
-	id: string;
-	label: string;
-	status: HealthStatus;
-	detail: string;
-}
 
 /**
  * What the Doctor puts on the clipboard: the plugin's own verdict on itself,
@@ -24,10 +16,6 @@ export interface HealthReportRow {
 export interface DoctorReport {
 	health: HealthReportRow[];
 	debug: DebugBundle;
-}
-
-export function toHealthReportRows(checks: readonly HealthCheck[]): HealthReportRow[] {
-	return checks.map(({ id, label, status, detail }) => ({ id, label, status, detail }));
 }
 
 export function buildDoctorReport(checks: readonly HealthCheck[], debug: DebugBundle): DoctorReport {

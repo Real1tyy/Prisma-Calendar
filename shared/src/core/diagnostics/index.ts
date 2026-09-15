@@ -13,15 +13,10 @@ export {
 	type HealthCheckFix,
 	type HealthCheckProvider,
 	HealthCheckRegistry,
+	type HealthReportRow,
 	type HealthStatus,
 	type HealthSummary,
 	summarizeHealth,
-} from "./health";
-export {
-	buildDoctorReport,
-	type DoctorReport,
-	formatDoctorReport,
-	type FormatDoctorReportOptions,
-	type HealthReportRow,
 	toHealthReportRows,
-} from "./report";
+} from "./health";
+export { buildDoctorReport, type DoctorReport, formatDoctorReport, type FormatDoctorReportOptions } from "./report";

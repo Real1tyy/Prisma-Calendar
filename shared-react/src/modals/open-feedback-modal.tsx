@@ -7,9 +7,12 @@ import {
 	getElectronWindow,
 	getOrCreateAnonymousClientId,
 	SubmissionClient,
+	toHealthReportRows,
 	type DebugBundle,
 	type DebugEnvironment,
 	type FeedbackSubmission,
+	type HealthCheck,
+	type HealthReportRow,
 	type LicenseManager,
 	type LogService,
 	type PluginSlug,
@@ -41,6 +44,13 @@ export interface OpenFeedbackOptions {
 	privacyUrl?: string | undefined;
 	/** The plugin's log buffer. Omitted ⇒ no debug context to offer, so no checkbox. */
 	logService?: LogService | undefined;
+	/**
+	 * Runs the plugin's health checks. Omitted ⇒ nothing for the Doctor checkbox
+	 * to attach, so it does not render. Called only when the box is ticked, so an
+	 * expensive check costs nothing on a feature request
+	 * ([[spec-doctor-health-and-quick-debug-export]]).
+	 */
+	runHealthChecks?: (() => readonly HealthCheck[]) | undefined;
 	/** Present whenever the plugin configures licensing, so a Pro report can be attributed. */
 	licenseManager?: LicenseManager | undefined;
 }
@@ -67,6 +77,7 @@ export function createFeedbackSession({
 	cssPrefix,
 	privacyUrl,
 	logService,
+	runHealthChecks,
 	licenseManager,
 }: OpenFeedbackOptions): FeedbackSession {
 	const environment: DebugEnvironment = describeDebugEnvironment(slug, pluginVersion);
@@ -75,6 +86,8 @@ export function createFeedbackSession({
 	// snapshot of "now", not an automatic write.
 	const captureDebugBundle = (): DebugBundle =>
 		buildDebugBundle({ entries: logService?.snapshot() ?? [], environment, now: Date.now() });
+
+	const captureHealth = (): readonly HealthReportRow[] => toHealthReportRows(runHealthChecks?.() ?? []);
 
 	const submit = async (submission: FeedbackSubmission, includeLicenseKey: boolean): Promise<SubmissionResult> => {
 		// Re-check entitlement and the secret at send time. If either changed
@@ -119,6 +132,7 @@ export function createFeedbackSession({
 					<FeedbackModalContent
 						privacyUrl={privacyUrl}
 						licenseAttributionAvailable={attribution}
+						{...(runHealthChecks !== undefined ? { captureHealth } : {})}
 						{...(logService !== undefined ? { captureDebugBundle } : {})}
 						submit={submit}
 						form={form}
@@ -152,5 +166,5 @@ function buildScreenCapture(): ScreenCapture | null {
  * wherever they are clicked; the user can still switch type in the form.
  */
 export async function openFeedbackModal(options: OpenFeedbackOptions): Promise<void> {
-	await createFeedbackSession(options).open({ type: "general", includeDebug: false });
+	await createFeedbackSession(options).open({ type: "general", includeHealth: false, includeDebug: false });
 }

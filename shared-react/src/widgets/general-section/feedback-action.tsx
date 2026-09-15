@@ -1,4 +1,4 @@
-import type { LicenseManager, LogService, PluginSlug } from "@real1ty/obsidian-plugins";
+import type { HealthCheck, LicenseManager, LogService, PluginSlug } from "@real1ty/obsidian-plugins";
 import { memo, useCallback } from "react";
 
 import { useApp } from "../../contexts/app-context";
@@ -14,6 +14,8 @@ interface FeedbackActionProps {
 	privacyUrl?: string | undefined;
 	/** The plugin's log buffer. Absent means there is no debug context to offer. */
 	logService?: LogService | undefined;
+	/** Runs the plugin's health checks. Absent means the report offers no health attachment. */
+	runHealthChecks?: (() => readonly HealthCheck[]) | undefined;
 	/**
 	 * Present whenever the plugin configures licensing — regardless of whether
 	 * the License card itself is shown. A licensed report can carry the key so
@@ -37,6 +39,7 @@ export const FeedbackAction = memo(function FeedbackAction({
 	pluginVersion,
 	privacyUrl,
 	logService,
+	runHealthChecks,
 	licenseManager,
 	fieldTestId,
 	buttonTestId,
@@ -52,9 +55,10 @@ export const FeedbackAction = memo(function FeedbackAction({
 			cssPrefix,
 			privacyUrl,
 			logService,
+			runHealthChecks,
 			licenseManager,
 		});
-	}, [app, cssPrefix, licenseManager, logService, pluginVersion, privacyUrl, slug]);
+	}, [app, cssPrefix, licenseManager, logService, pluginVersion, privacyUrl, runHealthChecks, slug]);
 
 	return (
 		<SettingItem
