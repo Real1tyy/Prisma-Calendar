@@ -181,7 +181,7 @@ New entries appear as they happen. Scroll down to read something and the view ho
 - **Levels** — click **debug**, **info**, **warn** or **error** to keep only those. With none picked, every level shows. Each level keeps its color on the chip and on every line.
 - **Scope** — on the same row, the part of the plugin an entry came from (`indexing`, `recurring`, `sync`, …). Only scopes actually present get a chip. Pick one to keep only its entries, or several to keep entries from any of them.
 - **Search** — matches the message, the scope and the structured data, so a note name, an error code or a property name all find their entries. Matches are highlighted.
-- **From** / **To** — start filled in with the oldest and newest entry's time, in your local clock. Type a narrower time, or drag the two handles of the slider underneath.
+- **From** / **To** — start filled in with the oldest and newest entry's time, in your local clock. Type a narrower time, or drag the two handles of the slider beside them.
 
 The counter reads `247 entries · 12 shown`, so you always know how much the filters are hiding. **Reset filters** clears them all.
 
