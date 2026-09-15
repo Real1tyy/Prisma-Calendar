@@ -174,7 +174,7 @@ The **Doctor** row opens Prisma's health page — the fastest way to tell whethe
 
 The same page is available from the command palette as **Prisma Calendar: Open Doctor**.
 
-**Copy debug** puts a redacted summary of your versions, the health checks, and recent plugin activity on the clipboard for a bug report; **Save debug to file** writes it into your export folder instead. Nothing is sent anywhere. See [Troubleshooting → Start with the Doctor](../troubleshooting#-start-with-the-doctor) for what each check means and [Privacy & diagnostics](../privacy) for what the bundle contains.
+**Create bug report** carries the findings straight into the report form. **Copy debug** puts a redacted summary of your versions, the health checks, and recent plugin activity on the clipboard instead; **Save debug to file** writes it into your export folder. Nothing is sent anywhere until you submit a report yourself. See [Troubleshooting → Start with the Doctor](../troubleshooting#start-with-the-doctor) for what each check means and [Privacy & diagnostics](../privacy) for what a report contains.
 
 ## Settings Transfer
 

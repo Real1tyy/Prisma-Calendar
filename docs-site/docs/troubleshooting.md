@@ -2,7 +2,7 @@
 
 Use this checklist to diagnose common issues. If your problem isn't listed here, please [open a GitHub issue](https://github.com/Real1tyy/Prisma-Calendar/issues/new/choose).
 
-## 🩺 Start with the Doctor
+## Start with the Doctor
 
 When something feels off, open the **Doctor** first — it answers "is it me or the plugin?" in a few seconds. Open the command palette (`Ctrl/Cmd+P`) and run **Prisma Calendar: Open Doctor**, or press **Open Doctor** under **Settings → General → Doctor**.
 
@@ -17,9 +17,13 @@ Each row is one health check with a plain-language explanation:
 
 A green row means that check found nothing wrong. A yellow row is worth reading; a red row is something Prisma could not do.
 
+### Create bug report
+
+The fastest way to get the problem to me: **Create bug report** closes the Doctor and opens the report form with these same findings already attached, alongside your recent logs. Both attachments are separate tickboxes you can review and clear before sending — see [Privacy & diagnostics](./privacy) for exactly what each one contains.
+
 ### Copy debug
 
-The **Copy debug** button at the top gathers everything useful about the problem into one block of text and puts it on your clipboard, ready to paste into a GitHub issue. **Save debug to file** writes the same text into your export folder instead, so you can attach it.
+Prefer to file it on GitHub yourself? The **Copy debug** button gathers everything useful about the problem into one block of text and puts it on your clipboard, ready to paste into an issue. **Save debug to file** writes the same text into your export folder instead, so you can attach it.
 
 The bundle contains your Prisma and Obsidian versions and platform, the health checks above, every warning and error recorded this session, and all activity from the last 15 minutes.
 

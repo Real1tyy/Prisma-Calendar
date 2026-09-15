@@ -118,13 +118,17 @@ function buildIndexingCheck(plugin: CustomCalendarPlugin): HealthCheck | null {
 	}
 
 	if (onCalendar === 0) {
-		const directories = plugin.calendarBundles
-			.map((bundle) => bundle.settingsStore.currentSettings.directory || "your vault")
-			.join(", ");
+		// The folder is deliberately not named. A check's `detail` can be attached
+		// to a bug report, and free-text redaction is heuristic — a bare folder
+		// name ("Clients") has no path shape to recognise, so it would travel
+		// verbatim. The user already knows which folder they configured; naming it
+		// helps them not at all and leaks it to us
+		// ([[decision-observability-privacy-posture]] — paths go in structured
+		// fields, messages stay structural).
 		return {
 			...base,
 			status: "warn",
-			detail: `No events are on the calendar yet. ${plural(tally.total, "note")} were indexed from ${directories} — check the folder and the date properties in Settings.`,
+			detail: `No events are on the calendar yet, though ${plural(tally.total, "note")} were indexed — check the folder and the date properties in Settings → Planning system.`,
 		};
 	}
 

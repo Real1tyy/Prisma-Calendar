@@ -3,6 +3,7 @@ import { createFeedbackSession, hasMinimizedFeedback, MinimizedModals } from "@r
 
 import { COMMAND_IDS, CSS_PREFIX, docsUrl, PRISMA_CALENDAR_PLUGIN_ID } from "../../constants";
 import type CustomCalendarPlugin from "../../main";
+import { createPrismaHealthChecks } from "../diagnostics";
 
 /**
  * Builds the feedback flow from outside the settings tab — the command palette,
@@ -21,8 +22,19 @@ function prismaFeedbackSession(plugin: CustomCalendarPlugin) {
 		cssPrefix: CSS_PREFIX,
 		privacyUrl: buildUtmUrl(docsUrl("/privacy"), PRISMA_CALENDAR_PLUGIN_ID, "plugin", "command", "feedback_privacy"),
 		logService: plugin.logging.service,
+		runHealthChecks: () => createPrismaHealthChecks(plugin).run(),
 		licenseManager: plugin.licenseManager,
 	});
+}
+
+/**
+ * Opens a bug report with both kinds of diagnostic context already attached.
+ * Exported so the Doctor's "Create bug report" and the `Report a bug` command
+ * are one path rather than two that can drift apart
+ * ([[spec-doctor-health-and-quick-debug-export]]).
+ */
+export function openPrismaBugReport(plugin: CustomCalendarPlugin): void {
+	void prismaFeedbackSession(plugin).open({ type: "bug", includeHealth: true, includeDebug: true });
 }
 
 /**
@@ -54,12 +66,10 @@ export function registerFeedbackCommands(plugin: CustomCalendarPlugin): void {
 
 	// Same words, same place as the General-section button — see `openFeedbackModal`.
 	addCommand(COMMAND_IDS.SEND_FEEDBACK, "Send feedback", () => {
-		void prismaFeedbackSession(plugin).open({ type: "general", includeDebug: false });
+		void prismaFeedbackSession(plugin).open({ type: "general", includeHealth: false, includeDebug: false });
 	});
 
-	addCommand(COMMAND_IDS.REPORT_A_BUG, "Report a bug", () => {
-		void prismaFeedbackSession(plugin).open({ type: "bug", includeDebug: true });
-	});
+	addCommand(COMMAND_IDS.REPORT_A_BUG, "Report a bug", () => openPrismaBugReport(plugin));
 
 	// The whole point is that the screen is grabbed before anything of ours is
 	// drawn over it, so this is one command rather than "open, then capture".

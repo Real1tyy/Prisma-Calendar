@@ -15,6 +15,7 @@ import { memo, useCallback, useMemo, useState } from "react";
 
 import { cls, docsUrl, settingsDocUrl, tid } from "../../constants";
 import { LICENSE_SECRET_ID } from "../../core/api/license-activation";
+import { createPrismaHealthChecks } from "../../core/diagnostics";
 import { ACCOUNT_URL, FREE_MAX_EVENT_PRESETS } from "../../core/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import { buildWhatsNewConfig } from "../../core/whats-new-config";
@@ -65,6 +66,10 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 	);
 
 	const handleOpenDoctor = useCallback(() => openPrismaDoctor(plugin), [plugin]);
+	// Re-run per report rather than captured here: the settings tab can sit open
+	// for a long time, and a stale verdict attached to a bug report is worse than
+	// none.
+	const runHealthChecks = useCallback(() => createPrismaHealthChecks(plugin).run(), [plugin]);
 	const extraSections = useMemo(
 		() => [
 			{
@@ -122,6 +127,7 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 			changelog={{ onView: handleViewChangelog }}
 			logging={{ store: plugin.settingsStore, service: plugin.logging.service }}
 			privacyUrl={docsUrl("/privacy")}
+			runHealthChecks={runHealthChecks}
 			extraSections={extraSections}
 			settingsTransfer={{
 				store: plugin.settingsStore,
