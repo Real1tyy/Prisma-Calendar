@@ -35,6 +35,7 @@ import { exportCalendarAsICS } from "./core/integrations/ics-export";
 import { importEventsToCalendar } from "./core/integrations/ics-import";
 import { createLicenseManager, type LicenseManager } from "./core/license";
 import { createPrismaLogging, log, type PrismaLogging } from "./core/logging";
+import { registerPrismaLogsView, type PrismaLogsView } from "./core/logs-view";
 import { installPrismaPerfBridge } from "./core/perf-bridge";
 import { buildWhatsNewConfig } from "./core/whats-new-config";
 import { openCalendarSelectModal, openDeviceRoleModal, openFirstLaunchModal, openICSImportModal } from "./react/modals";
@@ -53,6 +54,7 @@ export default class CustomCalendarPlugin extends Plugin {
 	apiManager!: PrismaCalendarApiManager;
 	licenseManager!: LicenseManager;
 	logging!: PrismaLogging;
+	logsView!: PrismaLogsView;
 	releaseCheckService!: ReleaseCheckService;
 	settingsSessionState = { tab: "general", scrollTop: { current: 0 } };
 	// Shared across every calendar's CommandManager so undo/redo can resolve the
@@ -131,6 +133,7 @@ export default class CustomCalendarPlugin extends Plugin {
 		this.addSettingTab(new CustomCalendarSettingsTab(this.app, this));
 
 		this.registerAIChatView();
+		this.logsView = registerPrismaLogsView(this);
 		registerPrismaCalendarCommands(this);
 
 		const licenseSubscription = this.licenseManager.isPro$.subscribe((isPro) => {

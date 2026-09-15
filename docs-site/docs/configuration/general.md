@@ -168,6 +168,27 @@ The trailing `a1b2c3d4` is a short random id, generated the first time this devi
 
 That is what keeps file logging safe on a vault whose `.obsidian` folder is synced: two devices with file logging on write to two different files, so the sync tool has nothing to merge and produces no conflict copies. Cleanup is scoped the same way — a device deletes only files it wrote, so the logs your laptop collected are still there when you open the vault on it next week, whatever your desktop has been doing in the meantime.
 
+### Reading the logs
+
+**Open logs** in the Logging section — or the **Prisma Calendar: Open logs** command — opens the Logs view: a table of everything Prisma recorded, newest first, with the timestamp, level, scope and message on each row. Click a message to unfold the structured details behind it. The view stays open while you work, so you can reproduce a problem and watch what the plugin does about it.
+
+New entries appear as they happen. Scroll down to read something and the view holds back whatever arrives in the meantime, counting it in a **N new entries** button at the top; press it (or scroll back up) to catch up.
+
+**Narrowing the table.** The controls above the table combine, so each one you add narrows what is left:
+
+- **Level chips** — click **debug**, **info**, **warn** or **error** to keep only those. With none picked, every level shows.
+- **Scope** — the part of the plugin an entry came from (`indexer`, `recurring`, `sync`, …). The dropdown lists only the scopes actually present.
+- **From** / **To** — a start and end time, in your local clock.
+- **Search** — matches the message and the structured details, so a note name, an error code or a property name all find their entries.
+
+The counter reads `247 entries · 12 shown`, so you always know how much the filters are hiding. **Reset filters** clears them all.
+
+**Earlier sessions.** With **Write log files** on, a **Source** dropdown appears listing this device's log files, newest first. Pick one to read history from before Obsidian was last restarted; **Load older entries** fetches the next page.
+
+**Sending logs to us.** **Copy filtered** puts exactly the rows you narrowed to on the clipboard, **Copy all** takes the whole table, and each row has its own **Copy**. **Save to file** writes them into a `Prisma Logs` folder in your vault as a `.json` file you can attach to a GitHub issue — tick some rows first and it saves only those.
+
+Everything that leaves the view is redacted the same way as every other Prisma export: folder and note names become stable tokens, property values are replaced by their type, and secrets are removed. **Include full detail** in the privacy notice at the top keeps real paths and values for someone you trust; secrets are removed either way. The [privacy page](../privacy.md) shows a full before-and-after.
+
 ## Doctor
 
 **Open Doctor** runs Prisma's diagnostics — a set of health checks over indexing, settings and your license — and is the fastest way to tell whether something is actually wrong. Each check reports **healthy**, a **warning**, or a **problem** with a one-line explanation, and offers a fix button where one applies (a failing or incomplete index offers **Reindex**).

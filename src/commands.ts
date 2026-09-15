@@ -349,4 +349,12 @@ export function registerPrismaCalendarCommands(plugin: CustomCalendarPlugin): vo
 			});
 		},
 	});
+
+	plugin.addCommand({
+		id: COMMAND_IDS.OPEN_LOGS,
+		name: "Open logs",
+		callback: () => {
+			void plugin.logsView.activate();
+		},
+	});
 }

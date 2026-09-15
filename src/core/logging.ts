@@ -36,7 +36,8 @@ export interface PrismaLoggingOptions {
 
 type LoggingHost = Pick<Plugin, "app" | "manifest">;
 
-function logDirectory(plugin: LoggingHost): string {
+/** Where the file sink writes and the logs viewer reads back from. */
+export function logDirectory(plugin: LoggingHost): string {
 	const pluginDir = plugin.manifest.dir ?? `${plugin.app.vault.configDir}/plugins/${plugin.manifest.id}`;
 	return `${pluginDir}/${LOG_DIR_NAME}`;
 }

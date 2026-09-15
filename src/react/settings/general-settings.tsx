@@ -125,7 +125,11 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 				},
 			}}
 			changelog={{ onView: handleViewChangelog }}
-			logging={{ store: plugin.settingsStore, service: plugin.logging.service }}
+			logging={{
+				store: plugin.settingsStore,
+				service: plugin.logging.service,
+				children: <ViewLogsRow plugin={plugin} />,
+			}}
 			privacyUrl={docsUrl("/privacy")}
 			runHealthChecks={runHealthChecks}
 			extraSections={extraSections}
@@ -147,6 +151,27 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 			{calendarSection("Statistics", ["showDecimalHours", "defaultAggregationMode"])}
 			<EventPresetsSection settingsStore={settingsStore} plugin={plugin} />
 		</GeneralSection>
+	);
+});
+
+/**
+ * The Logging section's way into the Logs view. Sits directly under the level
+ * and file-logging fields the user just changed, so "turn on Debug and look"
+ * is one screen rather than a hunt through the command palette.
+ */
+const ViewLogsRow = memo(function ViewLogsRow({ plugin }: { plugin: CustomCalendarPlugin }) {
+	const openLogs = useCallback(() => void plugin.logsView.activate(), [plugin]);
+
+	return (
+		<SettingItem
+			name="View logs"
+			description="Browse, filter and export what the plugin recorded this session — and earlier sessions when log files are on."
+			testId={tid("settings-field-view-logs")}
+		>
+			<Button testId={tid("settings-view-logs")} onClick={openLogs}>
+				Open logs
+			</Button>
+		</SettingItem>
 	);
 });
 
