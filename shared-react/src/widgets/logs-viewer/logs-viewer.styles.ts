@@ -6,18 +6,18 @@ export function buildLogsViewerStyles(p: string): string {
 .${p}logs-viewer-field { display: flex; align-items: center; gap: 4px; color: var(--text-muted); font-size: var(--font-ui-smaller); }
 .${p}logs-viewer-field-grow { flex: 1 1 200px; }
 .${p}logs-viewer-field-grow input { width: 100%; }
-.${p}logs-viewer-counts { color: var(--text-muted); font-size: var(--font-ui-smaller); margin-right: auto; }
-.${p}logs-viewer-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.${p}logs-viewer-counts { color: var(--text-muted); font-size: var(--font-ui-smaller); }
 
-.${p}logs-viewer-levels { display: flex; gap: 4px; }
-.${p}logs-viewer-level-chip {
+.${p}logs-viewer-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.${p}logs-viewer-chip {
 	padding: 2px 8px; border-radius: var(--radius-s); cursor: pointer;
 	border: 1px solid var(--background-modifier-border); background: var(--background-secondary);
-	color: var(--text-muted); font-size: var(--font-ui-smaller); text-transform: uppercase;
+	color: var(--text-muted); font-size: var(--font-ui-smaller);
 }
-.${p}logs-viewer-level-chip[aria-pressed="true"] { color: var(--text-normal); border-color: var(--interactive-accent); }
-.${p}logs-viewer-level-chip[data-level="warn"][aria-pressed="true"] { color: var(--text-warning); }
-.${p}logs-viewer-level-chip[data-level="error"][aria-pressed="true"] { color: var(--text-error); }
+.${p}logs-viewer-chip[data-kind="level"] { text-transform: uppercase; }
+.${p}logs-viewer-chip[aria-pressed="true"] { color: var(--text-normal); border-color: var(--interactive-accent); }
+.${p}logs-viewer-chip[data-kind="level"][data-value="warn"][aria-pressed="true"] { color: var(--text-warning); }
+.${p}logs-viewer-chip[data-kind="level"][data-value="error"][aria-pressed="true"] { color: var(--text-error); }
 
 .${p}logs-viewer-pending {
 	align-self: flex-start; padding: 2px 10px; border-radius: var(--radius-s); cursor: pointer;

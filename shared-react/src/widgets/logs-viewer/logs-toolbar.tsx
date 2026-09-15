@@ -7,7 +7,7 @@ import { DatetimeLocalInput } from "../../primitives/controls/datetime-local-inp
 import { Dropdown } from "../../primitives/controls/dropdown";
 import { TextInput } from "../../primitives/controls/text-input";
 import { testIdAttr } from "../../utils/test-id";
-import { formatLogDate, type LogViewFilters } from "./filters";
+import { EMPTY_LOG_VIEW_FILTERS, formatLogDate, type LogViewFilters } from "./filters";
 
 /** Source id of the live in-memory buffer; every other value is a log file's path. */
 export const BUFFER_SOURCE = "";
@@ -22,10 +22,6 @@ export interface LogsToolbarProps extends Pick<ScopedTheme, "cls" | "tid"> {
 	total: number;
 	shown: number;
 	selected: number;
-	onCopyAll: () => void;
-	onCopyFiltered: () => void;
-	onSave: () => void;
-	onClear: (() => void) | undefined;
 }
 
 function fileLabel(file: LogFileInfo): string {
@@ -34,39 +30,55 @@ function fileLabel(file: LogFileInfo): string {
 	return `${when} · ${kb} KB`;
 }
 
-const LevelChips = memo(function LevelChips({
-	levels,
+interface ToggleChipsProps<T extends string> extends Pick<ScopedTheme, "cls" | "tid"> {
+	label: string;
+	/** Test-id segment between the viewer scope and the value: `level` → `…-level-warn`. */
+	kind: string;
+	values: readonly T[];
+	selected: readonly T[];
+	onChange: (selected: readonly T[]) => void;
+}
+
+/**
+ * A multi-select as a row of toggles. No selection means no restriction, so
+ * every chip reads as pressed until the user narrows — the same convention for
+ * levels and scopes.
+ */
+function ToggleChipsInner<T extends string>({
+	label,
+	kind,
+	values,
+	selected,
 	onChange,
 	cls,
 	tid,
-}: Pick<ScopedTheme, "cls" | "tid"> & {
-	levels: readonly LogLevel[];
-	onChange: (levels: readonly LogLevel[]) => void;
-}) {
+}: ToggleChipsProps<T>) {
 	const toggle = useCallback(
-		(level: LogLevel) => onChange(levels.includes(level) ? levels.filter((l) => l !== level) : [...levels, level]),
-		[levels, onChange]
+		(value: T) => onChange(selected.includes(value) ? selected.filter((v) => v !== value) : [...selected, value]),
+		[selected, onChange]
 	);
 
 	return (
-		<div className={cls("levels")} role="group" aria-label="Filter by level">
-			{LOG_LEVELS.map((level) => (
+		<div className={cls("chips")} role="group" aria-label={label}>
+			{values.map((value) => (
 				<button
-					key={level}
+					key={value}
 					type="button"
-					className={cls("level-chip")}
-					data-level={level}
-					// No selection means no restriction, so every chip reads as active.
-					aria-pressed={levels.length === 0 || levels.includes(level)}
-					onClick={() => toggle(level)}
-					{...testIdAttr(tid("level", level))}
+					className={cls("chip")}
+					data-kind={kind}
+					data-value={value}
+					aria-pressed={selected.length === 0 || selected.includes(value)}
+					onClick={() => toggle(value)}
+					{...testIdAttr(tid(kind, value))}
 				>
-					{level}
+					{value}
 				</button>
 			))}
 		</div>
 	);
-});
+}
+
+const ToggleChips = memo(ToggleChipsInner) as typeof ToggleChipsInner;
 
 export const LogsToolbar = memo(function LogsToolbar({
 	source,
@@ -78,10 +90,6 @@ export const LogsToolbar = memo(function LogsToolbar({
 	total,
 	shown,
 	selected,
-	onCopyAll,
-	onCopyFiltered,
-	onSave,
-	onClear,
 	cls,
 	tid,
 }: LogsToolbarProps) {
@@ -90,17 +98,18 @@ export const LogsToolbar = memo(function LogsToolbar({
 		[filters, onFiltersChange]
 	);
 	const setLevels = useCallback((levels: readonly LogLevel[]) => patch({ levels }), [patch]);
-	const setScope = useCallback((scope: string) => patch({ scope }), [patch]);
+	const setScopes = useCallback((next: readonly string[]) => patch({ scopes: next }), [patch]);
 	const setQuery = useCallback((query: string) => patch({ query }), [patch]);
 	const setFrom = useCallback((from: string) => patch({ from }), [patch]);
 	const setTo = useCallback((to: string) => patch({ to }), [patch]);
-	const reset = useCallback(
-		() => onFiltersChange({ levels: [], scope: "", from: "", to: "", query: "" }),
-		[onFiltersChange]
-	);
+	const reset = useCallback(() => onFiltersChange(EMPTY_LOG_VIEW_FILTERS), [onFiltersChange]);
 
 	const sourceOptions: Record<string, string> = { [BUFFER_SOURCE]: "This session (in memory)" };
 	for (const file of files) sourceOptions[file.path] = fileLabel(file);
+
+	// A picked scope stays offered after a source switch drops it from the
+	// entries — otherwise it would keep filtering with no chip left to unpick.
+	const scopeChoices = [...new Set([...scopes, ...filters.scopes])].sort();
 
 	return (
 		<div className={cls("toolbar")} {...testIdAttr(tid("toolbar"))}>
@@ -111,17 +120,31 @@ export const LogsToolbar = memo(function LogsToolbar({
 						<Dropdown value={source} options={sourceOptions} onChange={onSourceChange} testId={tid("source")} />
 					</label>
 				)}
-				<LevelChips levels={filters.levels} onChange={setLevels} cls={cls} tid={tid} />
-				<label className={cls("field")}>
-					{"Scope"}
-					<Dropdown
-						value={filters.scope}
-						options={{ "": "All scopes", ...Object.fromEntries(scopes.map((scope) => [scope, scope])) }}
-						onChange={setScope}
-						testId={tid("scope")}
-					/>
-				</label>
+				<ToggleChips
+					label="Filter by level"
+					kind="level"
+					values={LOG_LEVELS}
+					selected={filters.levels}
+					onChange={setLevels}
+					cls={cls}
+					tid={tid}
+				/>
 			</div>
+
+			{scopeChoices.length > 0 && (
+				<div className={cls("toolbar-row")}>
+					<span className={cls("field")}>{"Scope"}</span>
+					<ToggleChips
+						label="Filter by scope"
+						kind="scope"
+						values={scopeChoices}
+						selected={filters.scopes}
+						onChange={setScopes}
+						cls={cls}
+						tid={tid}
+					/>
+				</div>
+			)}
 
 			<div className={cls("toolbar-row")}>
 				<label className={cls("field", "grow")}>
@@ -147,27 +170,9 @@ export const LogsToolbar = memo(function LogsToolbar({
 				</Button>
 			</div>
 
-			<div className={cls("toolbar-row")}>
-				<span className={cls("counts")} {...testIdAttr(tid("counts"))}>
-					{`${total} entries · ${shown} shown${selected > 0 ? ` · ${selected} selected` : ""}`}
-				</span>
-				<div className={cls("actions")}>
-					<Button onClick={onCopyAll} testId={tid("copy-all")}>
-						Copy all
-					</Button>
-					<Button onClick={onCopyFiltered} testId={tid("copy-filtered")}>
-						Copy filtered
-					</Button>
-					<Button onClick={onSave} variant="primary" testId={tid("save")}>
-						{selected > 0 ? `Save ${selected} selected` : "Save to file"}
-					</Button>
-					{onClear && (
-						<Button onClick={onClear} variant="warning" testId={tid("clear")}>
-							Clear buffer
-						</Button>
-					)}
-				</div>
-			</div>
+			<span className={cls("counts")} {...testIdAttr(tid("counts"))}>
+				{`${total} entries · ${shown} shown${selected > 0 ? ` · ${selected} selected` : ""}`}
+			</span>
 		</div>
 	);
 });

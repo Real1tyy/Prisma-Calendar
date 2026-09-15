@@ -8,7 +8,17 @@ import {
 	type LogService,
 } from "@real1ty/obsidian-plugins";
 import { Notice } from "obsidian";
-import { memo, useCallback, useEffect, useMemo, useRef, useState, type UIEvent } from "react";
+import {
+	memo,
+	useCallback,
+	useEffect,
+	useImperativeHandle,
+	useMemo,
+	useRef,
+	useState,
+	type Ref,
+	type UIEvent,
+} from "react";
 
 import { useScopedStyles } from "../../hooks/styles/use-styles";
 import { Button } from "../../primitives/atoms/button";
@@ -28,6 +38,19 @@ const ROW_HEIGHT_PX = 30;
 const FOLLOW_THRESHOLD_PX = 8;
 /** Past this many entries a clipboard payload is unwieldy; point at "Save to file" instead. */
 const LARGE_COPY_ENTRIES = 2000;
+
+/**
+ * The viewer's actions, for chrome React does not own — the leaf's page header.
+ * A type alias rather than an interface so it satisfies `ReactViewHandle`'s
+ * index signature.
+ */
+export type LogsViewerHandle = {
+	copyAll: () => void;
+	copyFiltered: () => void;
+	/** Saves the selected rows, or every shown row when nothing is selected. */
+	save: () => void;
+	clear: () => void;
+};
 
 export interface LogsViewerProps {
 	/** The live buffer. Always the default source. */
@@ -75,7 +98,8 @@ export const LogsViewer = memo(function LogsViewer({
 	sensitiveKeys,
 	format = "json",
 	filenamePrefix,
-}: LogsViewerProps) {
+	ref,
+}: LogsViewerProps & { ref?: Ref<LogsViewerHandle> | undefined }) {
 	const { cls, tid } = useScopedStyles("logs-viewer", buildLogsViewerStyles);
 	const listRef = useRef<VirtualListHandle>(null);
 
@@ -200,6 +224,8 @@ export const LogsViewer = memo(function LogsViewer({
 		setSelected(new Set());
 	}, [service]);
 
+	useImperativeHandle(ref, () => ({ copyAll, copyFiltered, save, clear }), [copyAll, copyFiltered, save, clear]);
+
 	const toggleExpanded = useCallback((seq: number) => setExpanded((current) => toggleIn(current, seq)), []);
 	const toggleSelected = useCallback((seq: number) => setSelected((current) => toggleIn(current, seq)), []);
 
@@ -258,10 +284,6 @@ export const LogsViewer = memo(function LogsViewer({
 				total={entries.length}
 				shown={shown.length}
 				selected={selected.size}
-				onCopyAll={copyAll}
-				onCopyFiltered={copyFiltered}
-				onSave={save}
-				onClear={live ? clear : undefined}
 				cls={cls}
 				tid={tid}
 			/>

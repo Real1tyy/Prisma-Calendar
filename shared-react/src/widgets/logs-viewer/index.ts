@@ -11,5 +11,5 @@ export {
 } from "./filters";
 export { LogRow, type LogRowProps } from "./log-row";
 export { BUFFER_SOURCE, LogsToolbar, type LogsToolbarProps } from "./logs-toolbar";
-export { LogsViewer, type LogsViewerProps } from "./logs-viewer";
+export { LogsViewer, type LogsViewerHandle, type LogsViewerProps } from "./logs-viewer";
 export { useLogBuffer, type LogBufferState } from "./use-log-buffer";

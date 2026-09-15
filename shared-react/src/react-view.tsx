@@ -21,6 +21,12 @@ export interface ReactViewConfig<THandle extends ReactViewHandle = ReactViewHand
 	/** TestId prefix shared by the view subtree. */
 	testIdPrefix?: string;
 	render: (ref: RefCallback<THandle>) => ReactNode;
+	/**
+	 * Runs once per opened leaf, after the React tree is mounted — the place for
+	 * leaf chrome React does not own (a page header in the view's action bar).
+	 * The returned cleanup runs when the leaf closes.
+	 */
+	onMount?: (leaf: WorkspaceLeaf, view: ItemView) => (() => void) | void;
 }
 
 export function registerReactView<THandle extends ReactViewHandle = ReactViewHandle>(
@@ -34,6 +40,7 @@ export function registerReactView<THandle extends ReactViewHandle = ReactViewHan
 
 	class ReactView extends ItemView {
 		private root: Root | null = null;
+		private unmountChrome: (() => void) | null = null;
 
 		getViewType(): string {
 			return config.viewType;
@@ -70,10 +77,13 @@ export function registerReactView<THandle extends ReactViewHandle = ReactViewHan
 					</AppContext>
 				</StrictMode>
 			);
+			this.unmountChrome = config.onMount?.(this.leaf, this) ?? null;
 			return Promise.resolve();
 		}
 
 		override onClose(): Promise<void> {
+			this.unmountChrome?.();
+			this.unmountChrome = null;
 			handleMap.delete(this.leaf);
 			this.root?.unmount();
 			this.root = null;

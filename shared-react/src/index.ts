@@ -226,8 +226,8 @@ export type {
 	PageBannerProps,
 } from "./views/page-banner";
 export { ActionBar, BackButton, PageBanner } from "./views/page-banner";
-export type { LogsViewConfig } from "./views/logs-view";
-export { registerLogsView } from "./views/logs-view";
+export type { LogsViewConfig, LogsViewPageHeaderConfig } from "./views/logs-view";
+export { buildLogsHeaderActions, LOGS_HEADER_ACTION_IDS, registerLogsView } from "./views/logs-view";
 export type { PersistedTabbedContainerState, TabCommandUpdater } from "./views/tabbed-container";
 export {
 	type GroupTabDefinition,

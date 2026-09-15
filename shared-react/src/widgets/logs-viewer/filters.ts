@@ -4,15 +4,15 @@ import { filterLogEntries, type LogEntry, type LogFilter, type LogLevel } from "
 export interface LogViewFilters {
 	/** Empty means every level — the chips start unpressed and unrestricted. */
 	levels: readonly LogLevel[];
-	/** Empty means every scope. */
-	scope: string;
+	/** Empty means every scope; several means any of them ("indexer" or "sync"). */
+	scopes: readonly string[];
 	/** `datetime-local` values, read as local wall-clock. Empty means unbounded. */
 	from: string;
 	to: string;
 	query: string;
 }
 
-export const EMPTY_LOG_VIEW_FILTERS: LogViewFilters = { levels: [], scope: "", from: "", to: "", query: "" };
+export const EMPTY_LOG_VIEW_FILTERS: LogViewFilters = { levels: [], scopes: [], from: "", to: "", query: "" };
 
 /**
  * `datetime-local` carries no offset, and JS reads an offsetless date-time as
@@ -30,7 +30,7 @@ export function toLogFilter(filters: LogViewFilters): LogFilter {
 	const until = parseLocalDateTime(filters.to);
 	return {
 		...(filters.levels.length > 0 ? { level: filters.levels } : {}),
-		...(filters.scope !== "" ? { scope: filters.scope } : {}),
+		...(filters.scopes.length > 0 ? { scope: filters.scopes } : {}),
 		...(filters.query !== "" ? { query: filters.query } : {}),
 		...(since === undefined ? {} : { since }),
 		...(until === undefined ? {} : { until }),
