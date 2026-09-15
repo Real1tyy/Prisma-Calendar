@@ -170,7 +170,7 @@ That is what keeps file logging safe on a vault whose `.obsidian` folder is sync
 
 ## Doctor
 
-The **Doctor** row opens Prisma's health page — the fastest way to tell whether something is actually wrong. Each check reports **healthy**, a **warning**, or a **problem** with a one-line explanation, and offers a fix button where one applies (a failing or incomplete index offers **Reindex**).
+**Open Doctor** runs Prisma's diagnostics — a set of health checks over indexing, settings and your license — and is the fastest way to tell whether something is actually wrong. Each check reports **healthy**, a **warning**, or a **problem** with a one-line explanation, and offers a fix button where one applies (a failing or incomplete index offers **Reindex**).
 
 The same page is available from the command palette as **Prisma Calendar: Open Doctor**.
 

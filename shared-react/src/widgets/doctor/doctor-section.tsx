@@ -7,7 +7,7 @@ export const DOCTOR_SECTION_COPY = {
 	heading: "Doctor",
 	name: "Plugin health",
 	description:
-		"Check whether anything is wrong and copy a debug bundle to paste into a bug report. Nothing is sent anywhere.",
+		"Run diagnostics: health checks for indexing, settings and your license, with a one-click bug report or debug bundle when something is wrong. Nothing is sent unless you submit a report.",
 	buttonLabel: "Open Doctor",
 } as const;
 
