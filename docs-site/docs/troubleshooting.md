@@ -4,7 +4,7 @@ Use this checklist to diagnose common issues. If your problem isn't listed here,
 
 ## Start with the Doctor
 
-When something feels off, open the **Doctor** first — it answers "is it me or the plugin?" in a few seconds. Open the command palette (`Ctrl/Cmd+P`) and run **Prisma Calendar: Open Doctor**, or press **Open Doctor** under **Settings → General → Doctor**.
+When something feels off, open the **Doctor** first — it answers "is it me or the plugin?" in a few seconds. Open the command palette (`Ctrl/Cmd+P`) and run **Prisma Calendar: Open doctor**, or press **Open Doctor** under **Settings → General → Doctor**.
 
 Each row is one health check with a plain-language explanation:
 

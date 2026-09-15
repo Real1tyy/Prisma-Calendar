@@ -172,7 +172,7 @@ That is what keeps file logging safe on a vault whose `.obsidian` folder is sync
 
 **Open Doctor** runs Prisma's diagnostics — a set of health checks over indexing, settings and your license — and is the fastest way to tell whether something is actually wrong. Each check reports **healthy**, a **warning**, or a **problem** with a one-line explanation, and offers a fix button where one applies (a failing or incomplete index offers **Reindex**).
 
-The same page is available from the command palette as **Prisma Calendar: Open Doctor**.
+The same page is available from the command palette as **Prisma Calendar: Open doctor**.
 
 **Create bug report** carries the findings straight into the report form. **Copy debug** puts a redacted summary of your versions, the health checks, and recent plugin activity on the clipboard instead; **Save debug to file** writes it into your export folder. Nothing is sent anywhere until you submit a report yourself. See [Troubleshooting → Start with the Doctor](../troubleshooting#start-with-the-doctor) for what each check means and [Privacy & diagnostics](../privacy) for what a report contains.
 

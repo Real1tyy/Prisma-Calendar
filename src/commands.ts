@@ -334,7 +334,7 @@ export function registerPrismaCalendarCommands(plugin: CustomCalendarPlugin): vo
 
 	plugin.addCommand({
 		id: COMMAND_IDS.OPEN_DOCTOR,
-		name: "Open Doctor",
+		name: "Open doctor",
 		callback: () => openPrismaDoctor(plugin),
 	});
 
