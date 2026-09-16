@@ -23,25 +23,34 @@ export function OperationHistoryContent({ manager, calendarName }: OperationHist
 
 	const rows = useMemo(() => (newestFirst ? [...entries].reverse() : [...entries]), [entries, newestFirst]);
 
+	// The manager serializes replays anyway, but a second click lands while the
+	// first is still in flight and reads the row's pre-flip state — reporting
+	// "Could not undo" for what was really just an impatient double-click.
+	const [busy, setBusy] = useState(false);
+	const run = useCallback(<T,>(work: Promise<T>, report: (result: T) => void) => {
+		setBusy(true);
+		void work.then(report).finally(() => setBusy(false));
+	}, []);
+
 	const toggle = useCallback(
 		(entry: HistoryEntry) => {
-			void (entry.applied ? manager.undoEntry(entry.id) : manager.redoEntry(entry.id)).then((ok) => {
+			run(entry.applied ? manager.undoEntry(entry.id) : manager.redoEntry(entry.id), (ok) => {
 				if (!ok) new Notice(`Could not ${entry.applied ? "undo" : "redo"}: ${entry.description}`);
 			});
 		},
-		[manager]
+		[manager, run]
 	);
 
 	const span = useCallback(
 		(entry: HistoryEntry) => {
-			void (entry.applied ? manager.revertTo(entry.id) : manager.restoreTo(entry.id)).then((count) => {
+			run(entry.applied ? manager.revertTo(entry.id) : manager.restoreTo(entry.id), (count) => {
 				const verb = entry.applied ? "Reverted" : "Restored";
 				new Notice(
 					count === 0 ? `Nothing to ${entry.applied ? "revert" : "restore"}` : `${verb} ${count} operation(s)`
 				);
 			});
 		},
-		[manager]
+		[manager, run]
 	);
 
 	const clear = useCallback(() => {
@@ -86,7 +95,7 @@ export function OperationHistoryContent({ manager, calendarName }: OperationHist
 					estimateSize={ROW_HEIGHT}
 					getKey={(entry) => entry.id}
 					className={cls("history-modal-list")}
-					renderItem={(entry) => <HistoryEntryRow entry={entry} onToggle={toggle} onSpan={span} />}
+					renderItem={(entry) => <HistoryEntryRow entry={entry} busy={busy} onToggle={toggle} onSpan={span} />}
 				/>
 			)}
 		</div>

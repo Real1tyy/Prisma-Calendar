@@ -276,17 +276,20 @@ export default class CustomCalendarPlugin extends Plugin {
 		await bundle.initialize();
 	}
 
-	removeCalendarBundle(calendarId: string): Promise<void> {
+	async removeCalendarBundle(calendarId: string): Promise<void> {
 		const idx = this.calendarBundles.findIndex((b) => b.calendarId === calendarId);
-		if (idx === -1) return Promise.resolve();
+		if (idx === -1) return;
 		const bundle = this.calendarBundles[idx];
 
 		this.app.workspace.detachLeavesOfType(bundle.viewType);
 		this.registeredViewTypes.delete(bundle.viewType);
 
+		// `destroy()` deliberately preserves the persisted operation log (an
+		// unload must not erase it) — but a *deleted* calendar has nothing left
+		// to describe, so drop its log rather than orphan the storage entry.
+		await bundle.commandManager.clearHistory();
 		bundle.destroy();
 		this.calendarBundles.splice(idx, 1);
-		return Promise.resolve();
 	}
 
 	prepareForBundleRefresh(): void {

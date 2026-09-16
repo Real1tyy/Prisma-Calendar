@@ -6,13 +6,15 @@ import { cls, tid } from "../../../constants";
 
 export interface HistoryEntryRowProps {
 	entry: HistoryEntry;
+	/** A replay is in flight somewhere in the list; every row's actions are inert. */
+	busy: boolean;
 	onToggle: (entry: HistoryEntry) => void;
 	onSpan: (entry: HistoryEntry) => void;
 }
 
 const RESTORED_HINT = "Recorded in a previous session — the operation can no longer be replayed.";
 
-export const HistoryEntryRow = memo(function HistoryEntryRow({ entry, onToggle, onSpan }: HistoryEntryRowProps) {
+export const HistoryEntryRow = memo(function HistoryEntryRow({ entry, busy, onToggle, onSpan }: HistoryEntryRowProps) {
 	const handleToggle = useCallback(() => onToggle(entry), [onToggle, entry]);
 	const handleSpan = useCallback(() => onSpan(entry), [onSpan, entry]);
 
@@ -51,7 +53,7 @@ export const HistoryEntryRow = memo(function HistoryEntryRow({ entry, onToggle, 
 			<div className={cls("history-entry-actions")}>
 				<button
 					type="button"
-					disabled={!entry.replayable}
+					disabled={busy || !entry.replayable}
 					title={entry.replayable ? undefined : RESTORED_HINT}
 					data-testid={tid("history-entry-toggle", entry.id)}
 					onClick={handleToggle}
@@ -61,7 +63,7 @@ export const HistoryEntryRow = memo(function HistoryEntryRow({ entry, onToggle, 
 				{/* Span actions stay live on a non-replayable row: they operate on
 				    everything from here to the end of the log, skipping the members
 				    that can no longer be replayed. */}
-				<button type="button" data-testid={tid("history-entry-span", entry.id)} onClick={handleSpan}>
+				<button type="button" disabled={busy} data-testid={tid("history-entry-span", entry.id)} onClick={handleSpan}>
 					{entry.applied ? "Revert to here" : "Restore to here"}
 				</button>
 			</div>
