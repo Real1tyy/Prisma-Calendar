@@ -201,7 +201,7 @@ export const LogsToolbar = memo(function LogsToolbar({
 				{actions}
 			</div>
 
-			<div className={cls("toolbar-row", "time")}>
+			<div className={`${cls("toolbar-row")} ${cls("time-row")}`} {...testIdAttr(tid("time-row"))}>
 				<label className={cls("field")}>
 					{"From"}
 					<DatetimeLocalInput

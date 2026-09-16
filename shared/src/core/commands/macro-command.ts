@@ -122,6 +122,10 @@ export class MacroCommand implements Command {
 		return "MacroCommand";
 	}
 
+	describe(): string {
+		return `Batch: ${this.commands.length} operation${this.commands.length === 1 ? "" : "s"}`;
+	}
+
 	async canUndo(): Promise<boolean> {
 		if (this.executedCommands.length === 0) {
 			return false;

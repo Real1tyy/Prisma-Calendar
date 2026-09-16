@@ -161,7 +161,7 @@ const LogRecordDetails = memo(function LogRecordDetails({ entry, cls, tid }: Log
 				<dd className={cls("record-body")}>{record.body}</dd>
 			</dl>
 			{attributes.length > 0 && (
-				<dl className={cls("record", "attributes")} {...testIdAttr(tid("row-attributes"))}>
+				<dl className={`${cls("record")} ${cls("record-attributes")}`} {...testIdAttr(tid("row-attributes"))}>
 					{attributes.map(([key, value]) => (
 						<div key={key} className={cls("attribute")} {...testIdAttr(tid("row-attribute", key))}>
 							<dt>{key}</dt>
