@@ -1,14 +1,19 @@
+import { parseIntoList } from "@real1ty/obsidian-plugins";
 import { Notice, TFile, type App, type MenuItem } from "obsidian";
 
-import { CONTEXT_MENU_BUTTON_LABELS } from "../context-menu-items";
+import { CONTEXT_MENU_BUTTON_LABELS, FILE_MENU_ACTION_LABELS } from "../context-menu-items";
 import type CustomCalendarPlugin from "../main";
+import { openCategoryAssignModal } from "../react/modals";
+import { openEventSeriesModal } from "../react/modals/event-list";
 import { openEventEditModal } from "../react/modals/event/event-edit-modal";
 import { toEventModalData } from "../react/modals/event/shared-modal-helpers";
 import type { CalendarEvent } from "../types/calendar";
 import { isPathInCalendarDirectory } from "../utils/calendar/directory";
 import { parseCustomDoneProperty } from "../utils/events/frontmatter";
+import { getEventName } from "../utils/events/naming";
+import { getCategoriesFromFilePath } from "../utils/obsidian";
 import type { CalendarBundle } from "./calendar-bundle";
-import { markAsDone, markAsUndone, toggleSkip } from "./commands";
+import { assignCategories, markAsDone, markAsUndone, toggleSkip } from "./commands";
 import { MinimizedModalManager } from "./minimized-modal-manager";
 
 /**
@@ -19,7 +24,15 @@ import { MinimizedModalManager } from "./minimized-modal-manager";
 const FILE_MENU_SECTION = "prisma-calendar";
 
 /** Kept in lockstep with `FileMenuItemKey` in `e2e/fixtures/testids.ts`. */
-export type FileMenuItemId = "editEvent" | "triggerStopwatch" | "markDone" | "skipEvent";
+export type FileMenuItemId =
+	| "editEvent"
+	| "triggerStopwatch"
+	| "markDone"
+	| "skipEvent"
+	| "viewEventGroups"
+	| "assignCategories"
+	| "assignPrerequisites"
+	| "navigateToCalendar";
 
 /**
  * The two entry points Obsidian routes through the same `file-menu` event,
@@ -118,6 +131,16 @@ export function buildFileMenuItems(
 
 	const items: FileMenuItemDescriptor[] = [
 		{
+			id: "navigateToCalendar",
+			label: FILE_MENU_ACTION_LABELS.navigateToCalendar,
+			icon: "calendar-search",
+			// Opens the calendar, moves it to the event's week and flashes the
+			// event — the same trip "Open current note in calendar" makes, but
+			// starting from the event we already resolved rather than re-reading
+			// the note's frontmatter.
+			onSelect: () => bundle.navigateToEvent(event.start, event.id),
+		},
+		{
 			id: "editEvent",
 			label: CONTEXT_MENU_BUTTON_LABELS.editEvent,
 			icon: "pencil",
@@ -155,10 +178,72 @@ export function buildFileMenuItems(
 					success: "Event skip toggled",
 					error: "Failed to toggle skip event",
 				}),
+		},
+		{
+			id: "viewEventGroups",
+			label: CONTEXT_MENU_BUTTON_LABELS.viewEventGroups,
+			icon: "list",
+			onSelect: () => openEventGroups(app, bundle, event),
+		},
+		{
+			id: "assignCategories",
+			label: CONTEXT_MENU_BUTTON_LABELS.assignCategories,
+			icon: "tag",
+			onSelect: () => assignCategoriesTo(app, bundle, filePath),
 		}
 	);
 
+	// Prerequisite assignment hands the *calendar* a selection mode, so it is
+	// only offered when that calendar's view is actually mounted — the same
+	// condition `addCalendarViewCommand` puts on its command palette entries.
+	// Offering it with no calendar open would enter a mode the user cannot see.
+	if (bundle.viewRef.calendarComponent) {
+		items.push({
+			id: "assignPrerequisites",
+			label: CONTEXT_MENU_BUTTON_LABELS.assignPrerequisites,
+			icon: "git-branch",
+			onSelect: () => bundle.viewRef.calendarComponent?.enterPrerequisiteSelectionMode(filePath),
+		});
+	}
+
 	return items.filter((item) => visible.has(item.id));
+}
+
+/**
+ * Open the event-series modal for the event's own groups. Mirrors the
+ * in-calendar `showEventSeries`, but reads the event store's record instead of
+ * FullCalendar's `extendedProps` — the two carry the same frontmatter.
+ */
+function openEventGroups(app: App, bundle: CalendarBundle, event: CalendarEvent): void {
+	const settings = bundle.settingsStore.currentSettings;
+	const nameKey =
+		getEventName(settings.titleProp, event.meta, event.ref.filePath, settings.calendarTitleProp)?.toLowerCase() ?? null;
+	const categories = settings.categoryProp ? parseIntoList(event.meta[settings.categoryProp]) : [];
+
+	openEventSeriesModal(
+		app,
+		bundle,
+		nameKey,
+		event.metadata.rruleId ?? null,
+		categories.length > 0 ? categories : null,
+		null
+	);
+}
+
+async function assignCategoriesTo(app: App, bundle: CalendarBundle, filePath: string): Promise<void> {
+	const settings = bundle.settingsStore.currentSettings;
+	const selected = await openCategoryAssignModal(
+		app,
+		bundle.categoryTracker.getCategoriesWithColors(),
+		settings.defaultNodeColor,
+		getCategoriesFromFilePath(app, filePath, settings.categoryProp)
+	);
+	if (!selected) return;
+
+	await runEventCommand(bundle, () => assignCategories(bundle, filePath, selected), {
+		success: "Categories updated",
+		error: "Failed to assign categories",
+	});
 }
 
 async function runEventCommand(

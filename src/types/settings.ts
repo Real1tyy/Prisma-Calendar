@@ -19,7 +19,11 @@ import {
 	DEFAULT_CATEGORY_PROP,
 	DEFAULT_TOOLBAR_BUTTONS,
 } from "../constants";
-import { DEFAULT_CONTEXT_MENU_ITEMS, DEFAULT_FILE_MENU_ACTIONS } from "../context-menu-items";
+import {
+	DEFAULT_CONTEXT_MENU_ITEMS,
+	DEFAULT_FILE_MENU_EXPLORER_ACTIONS,
+	DEFAULT_FILE_MENU_HEADER_ACTIONS,
+} from "../context-menu-items";
 import {
 	computeDedicatedUIPropKeys,
 	computeNotificationDedicatedUIPropKeys,
@@ -763,8 +767,8 @@ const CalendarSettingsSchema = z
 		// Which Prisma actions appear in Obsidian's own file menu, per surface —
 		// the two entry points fire the same `file-menu` event and are told apart
 		// by its `source` argument. Empty list = nothing added on that surface.
-		fileMenuExplorerActions: z.array(FileMenuActionSchema).catch([...DEFAULT_FILE_MENU_ACTIONS]),
-		fileMenuHeaderActions: z.array(FileMenuActionSchema).catch([...DEFAULT_FILE_MENU_ACTIONS]),
+		fileMenuExplorerActions: z.array(FileMenuActionSchema).catch([...DEFAULT_FILE_MENU_EXPLORER_ACTIONS]),
+		fileMenuHeaderActions: z.array(FileMenuActionSchema).catch([...DEFAULT_FILE_MENU_HEADER_ACTIONS]),
 		showSourceRecurringMarker: z
 			.boolean()
 			.catch(true)

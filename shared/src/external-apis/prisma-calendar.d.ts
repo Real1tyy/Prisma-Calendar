@@ -526,8 +526,26 @@ export type PrismaCalendarGetSettingsOutput = {
 	 */
 	exportFolder: string;
 	fileConcurrencyLimit: FileOperationConcurrencyLimit;
-	fileMenuExplorerActions: ("editEvent" | "triggerStopwatch" | "markDone" | "skipEvent")[];
-	fileMenuHeaderActions: ("editEvent" | "triggerStopwatch" | "markDone" | "skipEvent")[];
+	fileMenuExplorerActions: (
+		| "editEvent"
+		| "triggerStopwatch"
+		| "markDone"
+		| "skipEvent"
+		| "viewEventGroups"
+		| "assignCategories"
+		| "assignPrerequisites"
+		| "navigateToCalendar"
+	)[];
+	fileMenuHeaderActions: (
+		| "editEvent"
+		| "triggerStopwatch"
+		| "markDone"
+		| "skipEvent"
+		| "viewEventGroups"
+		| "assignCategories"
+		| "assignPrerequisites"
+		| "navigateToCalendar"
+	)[];
 	/**
 	 * JavaScript expressions to filter events (one per line). Changes apply when you click outside or press Ctrl/Cmd+Enter. Note: Expect a brief lag when applying changes as it triggers full re-indexing.
 	 */
@@ -1740,8 +1758,26 @@ export interface PrismaCalendarUpdateSettingsInput {
 		 */
 		exportFolder?: string;
 		fileConcurrencyLimit?: FileOperationConcurrencyLimit;
-		fileMenuExplorerActions?: ("editEvent" | "triggerStopwatch" | "markDone" | "skipEvent")[];
-		fileMenuHeaderActions?: ("editEvent" | "triggerStopwatch" | "markDone" | "skipEvent")[];
+		fileMenuExplorerActions?: (
+			| "editEvent"
+			| "triggerStopwatch"
+			| "markDone"
+			| "skipEvent"
+			| "viewEventGroups"
+			| "assignCategories"
+			| "assignPrerequisites"
+			| "navigateToCalendar"
+		)[];
+		fileMenuHeaderActions?: (
+			| "editEvent"
+			| "triggerStopwatch"
+			| "markDone"
+			| "skipEvent"
+			| "viewEventGroups"
+			| "assignCategories"
+			| "assignPrerequisites"
+			| "navigateToCalendar"
+		)[];
 		/**
 		 * JavaScript expressions to filter events (one per line). Changes apply when you click outside or press Ctrl/Cmd+Enter. Note: Expect a brief lag when applying changes as it triggers full re-indexing.
 		 */

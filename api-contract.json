@@ -2062,14 +2062,20 @@
 									"editEvent",
 									"triggerStopwatch",
 									"markDone",
-									"skipEvent"
+									"skipEvent",
+									"viewEventGroups",
+									"navigateToCalendar"
 								],
 								"items": {
 									"enum": [
 										"editEvent",
 										"triggerStopwatch",
 										"markDone",
-										"skipEvent"
+										"skipEvent",
+										"viewEventGroups",
+										"assignCategories",
+										"assignPrerequisites",
+										"navigateToCalendar"
 									],
 									"type": "string"
 								},
@@ -2079,15 +2085,19 @@
 								"default": [
 									"editEvent",
 									"triggerStopwatch",
-									"markDone",
-									"skipEvent"
+									"viewEventGroups",
+									"navigateToCalendar"
 								],
 								"items": {
 									"enum": [
 										"editEvent",
 										"triggerStopwatch",
 										"markDone",
-										"skipEvent"
+										"skipEvent",
+										"viewEventGroups",
+										"assignCategories",
+										"assignPrerequisites",
+										"navigateToCalendar"
 									],
 									"type": "string"
 								},
@@ -4645,14 +4655,20 @@
 									"editEvent",
 									"triggerStopwatch",
 									"markDone",
-									"skipEvent"
+									"skipEvent",
+									"viewEventGroups",
+									"navigateToCalendar"
 								],
 								"items": {
 									"enum": [
 										"editEvent",
 										"triggerStopwatch",
 										"markDone",
-										"skipEvent"
+										"skipEvent",
+										"viewEventGroups",
+										"assignCategories",
+										"assignPrerequisites",
+										"navigateToCalendar"
 									],
 									"type": "string"
 								},
@@ -4662,15 +4678,19 @@
 								"default": [
 									"editEvent",
 									"triggerStopwatch",
-									"markDone",
-									"skipEvent"
+									"viewEventGroups",
+									"navigateToCalendar"
 								],
 								"items": {
 									"enum": [
 										"editEvent",
 										"triggerStopwatch",
 										"markDone",
-										"skipEvent"
+										"skipEvent",
+										"viewEventGroups",
+										"assignCategories",
+										"assignPrerequisites",
+										"navigateToCalendar"
 									],
 									"type": "string"
 								},

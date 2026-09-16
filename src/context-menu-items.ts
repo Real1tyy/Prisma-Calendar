@@ -53,12 +53,38 @@ export const FILE_MENU_ACTION_LABELS = {
 	triggerStopwatch: "Trigger stopwatch",
 	markDone: "Mark as done / undone",
 	skipEvent: "Skip / unskip event",
+	viewEventGroups: "View event groups",
+	assignCategories: "Assign categories",
+	assignPrerequisites: "Assign prerequisites",
+	navigateToCalendar: "Open in calendar",
 } as const;
 
 export const FILE_MENU_ACTION_IDS = Object.keys(FILE_MENU_ACTION_LABELS) as (keyof typeof FILE_MENU_ACTION_LABELS)[];
 
-/** Both surfaces show every action until the user trims them. */
-export const DEFAULT_FILE_MENU_ACTIONS = [...FILE_MENU_ACTION_IDS];
+type FileMenuAction = keyof typeof FILE_MENU_ACTION_LABELS;
+
+const hiddenBy = (...hidden: readonly FileMenuAction[]): FileMenuAction[] =>
+	FILE_MENU_ACTION_IDS.filter((id) => !hidden.includes(id));
+
+// The assignment pair opens a picker (categories) or hands the calendar a
+// selection mode (prerequisites) — deliberate, occasional operations rather than
+// the per-event verbs above. They ship hidden on both surfaces, one toggle away.
+
+/** Right-clicking in the file explorer: everything except the assignment pair. */
+export const DEFAULT_FILE_MENU_EXPLORER_ACTIONS = hiddenBy("assignCategories", "assignPrerequisites");
+
+/**
+ * A note's tab / ⋮ menu is a *navigation* surface — you are already looking at
+ * the note, so the useful moves are opening it in the calendar, editing it, or
+ * timing it. The state-mutating pair (mark done, skip) ships hidden here to keep
+ * that menu short; both remain one toggle away.
+ */
+export const DEFAULT_FILE_MENU_HEADER_ACTIONS = hiddenBy(
+	"assignCategories",
+	"assignPrerequisites",
+	"markDone",
+	"skipEvent"
+);
 
 // Trimmed first-run defaults — these power-user / niche items stay registered
 // and re-enableable in "Manage menu items…", but ship hidden so new users see

@@ -98,12 +98,16 @@ Items marked **hidden by default** stay registered and are re-enableable from **
 
 ## File Menu Actions
 
-Prisma adds its event actions — **Edit event**, **Trigger stopwatch**, **Mark as done/undone**, **Skip/unskip** — to Obsidian's own right-click menu for notes it tracks as events. The two places that menu opens from are configured independently:
+Prisma adds its event actions — **Edit event**, **Trigger stopwatch**, **Mark as done/undone**, **Skip/unskip**, **View event groups**, **Assign categories**, **Assign prerequisites** — to Obsidian's own right-click menu for notes it tracks as events. The two places that menu opens from are configured independently:
 
 - **File explorer menu**: right-clicking the note in the file explorer or a sidebar tree.
 - **Note header menu**: the note's tab, and the **⋮ More options** menu in its header.
 
-Each section lists the four actions with a toggle apiece, all enabled by default. Uncheck the ones you don't want on that surface, or clear a section entirely to add nothing there. Changes apply immediately.
+Each section lists every action with a toggle apiece. Uncheck the ones you don't want on that surface, or clear a section entirely to add nothing there. Changes apply immediately.
+
+The two start with different sets. The file explorer gets everything except the assignment pair; the note header gets the navigational actions — **Open in calendar**, **Edit event**, **Trigger stopwatch**, **View event groups** — and starts with **Mark as done** and **Skip event** switched off, since you are already reading the note rather than triaging a list.
+
+**Assign categories** and **Assign prerequisites** start switched off on both surfaces — they open a picker or start a selection rather than acting on the event directly. **Assign prerequisites** additionally only appears while that planning system's calendar is open, since the selection happens in the calendar.
 
 The **Trigger stopwatch** entry also depends on **Show time tracker in event modal** (General settings), and the master **Show event actions in the file menu** toggle removes both surfaces at once. See [File Menu Actions](../features/management/file-menu-actions.md).
 
