@@ -1,0 +1,127 @@
+// Operation history modal — virtualized log of the command stack.
+.prisma-history-modal-shell {
+	.modal-content {
+		// The virtualizer needs a bounded scroll parent to measure against;
+		// without it the list grows to the full 100-row height and the modal
+		// scrolls instead, defeating virtualization.
+		max-height: 70vh;
+	}
+}
+
+.prisma-history-modal {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	min-height: 0;
+
+	&-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		flex-wrap: wrap;
+	}
+
+	&-summary {
+		color: var(--text-muted);
+		font-size: 0.9em;
+	}
+
+	&-controls {
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	&-list {
+		max-height: 55vh;
+		min-height: 8rem;
+	}
+
+	&-empty {
+		padding: 2rem 1rem;
+		text-align: center;
+		color: var(--text-muted);
+	}
+}
+
+.prisma-history-entry {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.5rem 0.6rem;
+	border-bottom: 1px solid var(--background-modifier-border);
+
+	&-info {
+		flex: 1;
+		min-width: 0;
+	}
+
+	&-description {
+		font-weight: 500;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	&-meta {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-top: 0.15rem;
+		font-size: 0.8em;
+		color: var(--text-muted);
+	}
+
+	// The meta row is flex; without this a relative time ("3 minutes ago")
+	// wraps mid-phrase as soon as the description crowds it.
+	&-time {
+		white-space: nowrap;
+	}
+
+	&-type {
+		font-family: var(--font-monospace);
+		opacity: 0.75;
+	}
+
+	&-restored {
+		padding: 0 0.35rem;
+		border-radius: 3px;
+		background: var(--background-modifier-border);
+	}
+
+	&-state {
+		flex-shrink: 0;
+		padding: 0.1rem 0.45rem;
+		border-radius: 10px;
+		font-size: 0.75em;
+		text-transform: uppercase;
+		letter-spacing: 0.03em;
+	}
+
+	&-actions {
+		display: flex;
+		flex-shrink: 0;
+		gap: 0.4rem;
+	}
+
+	&-applied &-state {
+		background: var(--background-modifier-success);
+		color: var(--text-on-accent);
+	}
+
+	&-undone &-state {
+		background: var(--background-modifier-border);
+		color: var(--text-muted);
+	}
+
+	// An undone operation is still on record, just not in effect — mute it
+	// rather than hiding it, so the timeline stays readable top to bottom.
+	&-undone &-description {
+		color: var(--text-muted);
+		text-decoration: line-through;
+	}
+
+	&[data-replayable="false"] {
+		opacity: 0.7;
+	}
+}

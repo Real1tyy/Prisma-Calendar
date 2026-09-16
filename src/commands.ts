@@ -22,6 +22,7 @@ import type CustomCalendarPlugin from "./main";
 import { openPrismaDoctor } from "./react/modals/doctor/doctor-modal";
 import { openFilteredEventsModal, openGlobalSearchModal } from "./react/modals/event-list";
 import { openEventsModal } from "./react/modals/event-list/events-modal-content";
+import { openOperationHistoryModal } from "./react/modals/history";
 
 // Onboarding tour disabled for now — kept in the codebase but not wired up.
 // import { startPrismaTour } from "./react/onboarding/prisma-tour";
@@ -124,6 +125,7 @@ export function registerPrismaCalendarCommands(plugin: CustomCalendarPlugin): vo
 			if (!success) new Notice("Nothing to redo");
 		});
 	});
+	addApiCommand(COMMAND_IDS.SHOW_HISTORY, "Show operation history", () => openOperationHistoryModal(plugin));
 
 	// Onboarding tour disabled for now — command intentionally not registered.
 	// addApiCommand(COMMAND_IDS.START_TUTORIAL, "Start onboarding tutorial", () => startPrismaTour(plugin));

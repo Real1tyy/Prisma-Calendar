@@ -9218,6 +9218,107 @@ div.vis-tooltip {
   letter-spacing: 0.02em;
 }
 
+.prisma-history-modal-shell .modal-content {
+  max-height: 70vh;
+}
+
+.prisma-history-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 0;
+}
+.prisma-history-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.prisma-history-modal-summary {
+  color: var(--text-muted);
+  font-size: 0.9em;
+}
+.prisma-history-modal-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+.prisma-history-modal-list {
+  max-height: 55vh;
+  min-height: 8rem;
+}
+.prisma-history-modal-empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.prisma-history-entry {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+.prisma-history-entry-info {
+  flex: 1;
+  min-width: 0;
+}
+.prisma-history-entry-description {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.prisma-history-entry-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.15rem;
+  font-size: 0.8em;
+  color: var(--text-muted);
+}
+.prisma-history-entry-time {
+  white-space: nowrap;
+}
+.prisma-history-entry-type {
+  font-family: var(--font-monospace);
+  opacity: 0.75;
+}
+.prisma-history-entry-restored {
+  padding: 0 0.35rem;
+  border-radius: 3px;
+  background: var(--background-modifier-border);
+}
+.prisma-history-entry-state {
+  flex-shrink: 0;
+  padding: 0.1rem 0.45rem;
+  border-radius: 10px;
+  font-size: 0.75em;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.prisma-history-entry-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.4rem;
+}
+.prisma-history-entry-applied .prisma-history-entry-state {
+  background: var(--background-modifier-success);
+  color: var(--text-on-accent);
+}
+.prisma-history-entry-undone .prisma-history-entry-state {
+  background: var(--background-modifier-border);
+  color: var(--text-muted);
+}
+.prisma-history-entry-undone .prisma-history-entry-description {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+.prisma-history-entry[data-replayable=false] {
+  opacity: 0.7;
+}
+
 .prisma-allday-event-fields {
   /* intentional stub */
 }

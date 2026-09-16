@@ -38,6 +38,9 @@ export type { ConfigureCalendarResult } from "./calendar/configure-calendar-moda
 export { ConfigureCalendarController, openConfigureCalendarModal } from "./calendar/configure-calendar-modal";
 export { openGoToDateModal } from "./calendar/go-to-date-modal";
 
+// History modals
+export { openOperationHistoryModal, OperationHistoryContent } from "./history";
+
 // Onboarding modals
 export type { DeviceRoleControllerProps } from "./onboarding/device-role";
 export { DeviceRoleController, openDeviceRoleModal } from "./onboarding/device-role";

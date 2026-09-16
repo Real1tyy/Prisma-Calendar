@@ -49,6 +49,14 @@ import type { RecurringEventManager } from "./recurring-event-manager";
 import { CalendarSettingsStore } from "./settings-store";
 import { VirtualEventStore } from "./virtual-event-store";
 
+/**
+ * `localStorage` namespace for the per-calendar operation log. Device-local
+ * (not `data.json`) because the history is a per-device record of what *this*
+ * machine did — replicating it across devices would interleave two unrelated
+ * timelines.
+ */
+const COMMAND_HISTORY_NAMESPACE = "prisma-calendar:state:command-history";
+
 export interface CalendarBundleInfo {
 	calendarId: string;
 	name: string;
@@ -148,7 +156,13 @@ export class CalendarBundle {
 		);
 		this.viewStateManager = new CalendarViewStateManager();
 		this.navigationHistory = createNavigationHistory();
-		this.commandManager = new CommandManager({ sequencer: this.plugin.commandSequencer });
+		this.commandManager = new CommandManager({
+			sequencer: this.plugin.commandSequencer,
+			// Scoped per calendar so two planning systems never share an
+			// operation log — the Operation history modal reads whichever
+			// calendar the user last acted in.
+			persistence: { namespace: COMMAND_HISTORY_NAMESPACE, scope: this.calendarId },
+		});
 		this.holidayStore = new HolidayStore(this.app, this.settingsStore.currentSettings.holidays as HolidayConfig);
 		this.virtualEventStore = new VirtualEventStore(this.app, this.settingsStore.settings$);
 		this.eventStore.setHolidayStore(this.holidayStore);
@@ -324,7 +338,9 @@ export class CalendarBundle {
 		this.holidayStore.clear();
 		this.virtualEventStore.destroy();
 
-		void this.commandManager.clearHistory();
+		// dispose(), never clearHistory() — unloading the plugin must flush the
+		// operation log, not erase it.
+		this.commandManager.dispose();
 		// Release shared infrastructure through registry (will only destroy if no other calendars are using it)
 		this.indexerRegistry.releaseIndexer(this.calendarId, this.directory);
 		// Don't destroy fileRepository/parser/eventStore/recurringEventManager directly - the registry handles that

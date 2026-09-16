@@ -123,6 +123,7 @@ const ACTION_SPECS: readonly ActionSpec[] = [
 	{ id: "refresh", commandId: FULL_COMMAND_IDS.REFRESH_CALENDAR, label: "Refresh", icon: "refresh-cw" },
 	{ id: "undo", commandId: FULL_COMMAND_IDS.UNDO, label: "Undo", icon: "undo-2" },
 	{ id: "redo", commandId: FULL_COMMAND_IDS.REDO, label: "Redo", icon: "redo-2" },
+	{ id: "history", commandId: FULL_COMMAND_IDS.SHOW_HISTORY, label: "Operation History", icon: "history" },
 
 	// ─── Integrations ────────────────────────────────────────────
 	{ id: "export-ics", commandId: FULL_COMMAND_IDS.EXPORT_CALENDAR_ICS, label: "Export as .ics", icon: "download" },
@@ -159,6 +160,7 @@ export const DEFAULT_ACTION_IDS = new Set([
 	"create-event-stopwatch",
 	"undo",
 	"redo",
+	"history",
 	"navigate-back",
 	"navigate-forward",
 	"open-ai-chat",

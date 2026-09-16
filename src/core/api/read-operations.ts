@@ -82,6 +82,15 @@ function resolveHistoryBundle(
 	});
 }
 
+/**
+ * The calendar whose operation log the history UI should show — same
+ * most-recently-mutated rule as undo/redo, but without requiring anything to be
+ * undoable, so an all-undone (or restored-only) log is still inspectable.
+ */
+export function resolveActiveHistoryBundle(plugin: CustomCalendarPlugin): CalendarBundle | null {
+	return resolveHistoryBundle(plugin, () => true);
+}
+
 export async function undo(plugin: CustomCalendarPlugin): Promise<boolean> {
 	const bundle = resolveHistoryBundle(plugin, (b) => b.commandManager.canUndo());
 	if (!bundle) return false;
