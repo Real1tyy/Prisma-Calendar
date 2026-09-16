@@ -48,6 +48,7 @@ const DEFAULT_MAX_HISTORY_SIZE = 100;
 export class CommandManager {
 	private readonly log: HistoryLog;
 	private readonly persistence: HistoryPersistence | null;
+	private restorePending = false;
 	private showNotices: boolean;
 	private readonly sequencer: Sequencer;
 	private activityOrder = 0;
@@ -72,8 +73,12 @@ export class CommandManager {
 		this.sequencer = options.sequencer ?? createMonotonicSequencer();
 
 		this.persistence = options.persistence ? new HistoryPersistence(options.persistence) : null;
-		const stored = this.persistence?.load();
-		if (stored) this.log.restore(stored);
+		// NOT loaded here. A CommandManager is constructed on its plugin's boot
+		// path, and `localStorage` is synchronous — putting a read there makes an
+		// operation log capable of slowing, or failing, plugin load itself. No
+		// audit trail is worth that, so the read is deferred to the first time
+		// anyone actually looks at the history.
+		this.restorePending = this.persistence !== null;
 	}
 
 	private notify(message: string): void {
@@ -107,9 +112,36 @@ export class CommandManager {
 
 	// ─── History log ─────────────────────────────────────────────
 
-	/** Recorded operations, oldest → newest. Entries are copies; mutating them is a no-op. */
+	/**
+	 * Recorded operations, oldest → newest. Entries are copies; mutating them is
+	 * a no-op.
+	 *
+	 * Also a restore point, for the case where nothing has been recorded yet —
+	 * opening the history without having done anything must still show the
+	 * previous session. Every other query filters to *replayable* entries, and a
+	 * restored entry never is, so none of them needs to pay for storage.
+	 */
 	getHistory(): readonly HistoryEntry[] {
+		this.restoreOnce();
 		return this.log.view();
+	}
+
+	/**
+	 * Read the persisted log back in, at most once.
+	 *
+	 * Deliberately not done in the constructor: that runs on the plugin's boot
+	 * path, and `localStorage` is synchronous, so a read there lets the operation
+	 * log slow — or break — plugin load itself. Instead it happens at the first
+	 * moment it can actually matter: someone reads the history, or we are about
+	 * to persist (see {@link changed}).
+	 */
+	private restoreOnce(): void {
+		if (!this.restorePending) return;
+		// Cleared first: a store that fails to read should be given up on, not
+		// retried on every render.
+		this.restorePending = false;
+		const stored = this.persistence?.load();
+		if (stored) this.log.restore(stored);
 	}
 
 	/** Subscribe to history mutations (push / undo / redo / clear). Returns an unsubscribe. */
@@ -119,6 +151,11 @@ export class CommandManager {
 	}
 
 	private changed(): void {
+		// Before the first write, never after. Persisting without having read
+		// first would drop the previous session's entries; reading *after* a
+		// write would restore this session's own log on top of itself and
+		// duplicate every row.
+		this.restoreOnce();
 		for (const listener of this.listeners) listener();
 		this.persistence?.schedule(() => this.log.snapshot());
 	}
@@ -295,6 +332,9 @@ export class CommandManager {
 	/** Erase the log — in memory *and* on disk. A user-facing "clear", not a teardown. */
 	clearHistory(): Promise<void> {
 		return this.queue.enqueue(() => {
+			// Drop the pending restore too, or the log the user just cleared would
+			// reappear the next time anything triggered a lazy read.
+			this.restorePending = false;
 			this.log.clear();
 			// Notify directly rather than through `changed()`: this must not
 			// schedule a write of the log it is erasing. `clear()` also discards

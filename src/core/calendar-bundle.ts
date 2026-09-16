@@ -161,7 +161,14 @@ export class CalendarBundle {
 			// Scoped per calendar so two planning systems never share an
 			// operation log — the Operation history modal reads whichever
 			// calendar the user last acted in.
-			persistence: { namespace: COMMAND_HISTORY_NAMESPACE, scope: this.calendarId },
+			persistence: {
+				namespace: COMMAND_HISTORY_NAMESPACE,
+				// Vault-scoped, not just calendar-scoped: every vault on the machine
+				// shares one `app://obsidian.md` localStorage origin, so a bare
+				// calendar id would make two vaults that both have a "default"
+				// calendar read and overwrite each other's operation log.
+				scope: `${this.app.vault.getName()}:${this.calendarId}`,
+			},
 		});
 		this.holidayStore = new HolidayStore(this.app, this.settingsStore.currentSettings.holidays as HolidayConfig);
 		this.virtualEventStore = new VirtualEventStore(this.app, this.settingsStore.settings$);

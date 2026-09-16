@@ -177,13 +177,24 @@ export class HistoryLog {
 		};
 	}
 
-	/** Adopt a persisted log. Restored entries carry no command, so none can be replayed. */
+	/**
+	 * Adopt a persisted log. Restored entries carry no command, so none can be
+	 * replayed.
+	 *
+	 * Restoration is lazy (see `CommandManager.getHistory`), so this may run
+	 * *after* the session has already recorded operations. Those are strictly
+	 * newer, so the restored ones go in front — and they are re-keyed, because a
+	 * fresh session issues ids from zero and would otherwise collide. Nothing
+	 * depends on a restored id matching what was stored: they are never
+	 * individually replayable, and the id only has to be unique within the log.
+	 */
 	restore(persisted: PersistedHistory): void {
-		this.entries = persisted.entries.slice(-this.maxSize).map((entry) => ({
+		const restored: HistoryRecord[] = persisted.entries.slice(-this.maxSize).map((entry, index) => ({
 			command: null,
-			meta: { ...entry, replayable: false },
+			meta: { ...entry, id: `r${index}`, replayable: false },
 		}));
-		this.nextId = persisted.nextId;
+		this.entries = [...restored, ...this.entries].slice(-this.maxSize);
+		this.nextId = Math.max(this.nextId, persisted.nextId);
 	}
 
 	private actionable(record: HistoryRecord, direction: ReplayDirection): boolean {

@@ -42,9 +42,17 @@ export class HistoryPersistence {
 		this.debounceMs = options.debounceMs ?? DEFAULT_DEBOUNCE_MS;
 	}
 
-	/** The stored log, or `null` when absent or schema-incompatible. */
+	/** The stored log, or `null` when absent, unreadable or schema-incompatible. */
 	load(): PersistedHistory | null {
-		return this.kv.get(this.scope);
+		try {
+			return this.kv.get(this.scope);
+		} catch (error) {
+			// Symmetrical with `write()` — a store that refuses to be read (locked
+			// down, corrupt, quota-wedged) costs the user their audit trail, never
+			// the operation they were performing.
+			console.warn("[CommandManager] Failed to read persisted history", error);
+			return null;
+		}
 	}
 
 	/**

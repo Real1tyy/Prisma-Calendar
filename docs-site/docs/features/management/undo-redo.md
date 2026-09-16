@@ -64,7 +64,7 @@ The history log is saved on your device, so reopening Obsidian shows you what yo
 
 That limit is deliberate. Undoing an edit means restoring the snapshot taken when it happened — and a snapshot from a previous session describes a vault that has since changed, possibly by your own hand or by sync from another device. Replaying it would silently overwrite everything you did in between. So history from earlier sessions is a record you can read, not a button you can press. **Revert to here** and **Restore to here** still work across such a row; they simply skip the entries that can't be replayed.
 
-The log lives on the device, not in the vault, so it doesn't sync between machines — each device keeps its own record of what it did. Deleting a planning system discards its log too; the record only outlives a restart, not the calendar it describes.
+The log lives on the device, not in the vault, so it doesn't sync between machines — each device keeps its own record of what it did. Each vault keeps its own log too, so opening a second vault shows you that vault's history, not this one's. Deleting a planning system discards its log; the record only outlives a restart, not the calendar it describes.
 
 ## What You Can Undo and Redo
 
