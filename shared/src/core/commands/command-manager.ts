@@ -82,7 +82,7 @@ export class CommandManager {
 	private readonly kv: LocalKV<PersistedHistory> | null = null;
 	private readonly persistScope: string = "";
 	private readonly persistDebounceMs: number = DEFAULT_PERSIST_DEBOUNCE_MS;
-	private persistTimer: ReturnType<typeof setTimeout> | null = null;
+	private persistTimer: number | null = null;
 	// Every history-mutating method routes through this queue so a second
 	// invocation arriving while the first is still in flight (palette callbacks
 	// are registered with `void cmd().then(...)` — Obsidian ignores the return
@@ -430,8 +430,8 @@ export class CommandManager {
 		// Trailing debounce: a 200-file batch pushes 200 entries in a tick, and
 		// serializing the whole log on each would be the jank source this
 		// feature is most likely to introduce.
-		if (this.persistTimer !== null) clearTimeout(this.persistTimer);
-		this.persistTimer = setTimeout(() => {
+		if (this.persistTimer !== null) window.clearTimeout(this.persistTimer);
+		this.persistTimer = window.setTimeout(() => {
 			this.persistTimer = null;
 			this.writeNow();
 		}, this.persistDebounceMs);
@@ -439,7 +439,7 @@ export class CommandManager {
 
 	private cancelPendingPersist(): void {
 		if (this.persistTimer === null) return;
-		clearTimeout(this.persistTimer);
+		window.clearTimeout(this.persistTimer);
 		this.persistTimer = null;
 	}
 
