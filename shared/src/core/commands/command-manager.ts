@@ -1,27 +1,11 @@
 import { Notice } from "obsidian";
 
 import { PromiseQueue } from "../../utils/async/promise-queue";
-import { LocalKV, type KVBackend } from "../storage/local-kv";
 import type { Command } from "./command";
-import {
-	humanizeCommandType,
-	MAX_DESCRIPTION_LENGTH,
-	PersistedHistorySchema,
-	type HistoryEntry,
-	type PersistedHistory,
-} from "./history-entry";
+import type { HistoryEntry } from "./history-entry";
+import { HistoryLog, REDO, UNDO, type HistoryRecord, type ReplayDirection } from "./history-log";
+import { HistoryPersistence, type HistoryPersistenceOptions } from "./history-persistence";
 import { createMonotonicSequencer, type Sequencer } from "./sequencer";
-
-export interface HistoryPersistenceOptions {
-	/** `LocalKV` namespace — convention `"<plugin-id>:<feature>:<purpose>"`. */
-	namespace: string;
-	/** Key within the namespace; one history log per scope (e.g. a calendar id). */
-	scope: string;
-	/** Back-end override; omit in production (falls through to `window.localStorage`). */
-	backend?: KVBackend;
-	/** Trailing-debounce window for writes. */
-	debounceMs?: number;
-}
 
 export interface CommandManagerOptions {
 	maxHistorySize?: number;
@@ -42,47 +26,32 @@ export interface CommandManagerOptions {
 }
 
 const DEFAULT_MAX_HISTORY_SIZE = 100;
-const DEFAULT_PERSIST_DEBOUNCE_MS = 250;
-
-interface HistoryRecord {
-	meta: {
-		id: string;
-		type: string;
-		description: string;
-		timestamp: number;
-		applied: boolean;
-		replayable: boolean;
-	};
-	/** `null` ⇒ restored from storage; the live command didn't survive the session. */
-	command: Command | null;
-}
 
 /**
- * Undo/redo over a linear log of {@link HistoryEntry} records.
+ * Undo/redo over a {@link HistoryLog}.
  *
- * The history is a list with a per-entry `applied` flag rather than a single
- * cursor, which is what makes *selective* undo possible: undoing the 20th-last
- * operation flips that one entry and leaves the other nineteen applied.
- * Sequential `undo()`/`redo()` are defined on top of the flags (newest applied /
- * oldest undone), so a pure push/undo/redo sequence behaves exactly like the
- * cursor model it replaced.
+ * This class owns *orchestration* — serialization, notices, activity ordering,
+ * and driving the persistence seam. The log owns the entries and every
+ * traversal over them; {@link HistoryPersistence} owns durability.
  *
- * One deliberate departure: a new command no longer truncates undone entries.
- * They stay in the log and stay individually redoable — the point of selective
- * replay. See [[spec-operation-history-modal-with-selective-undo-redo-and-persisted-history-log]].
+ * Undo and redo are one implementation parameterised by {@link ReplayDirection},
+ * so `undo`/`redo`, `undoEntry`/`redoEntry` and `revertTo`/`restoreTo` are each
+ * a single algorithm rather than a mirrored pair. Sequential `undo()`/`redo()`
+ * resolve to "newest applied" / "oldest undone", which degrades exactly to the
+ * cursor model this replaced.
+ *
+ * One deliberate departure from that model: a new command no longer truncates
+ * undone entries. They stay in the log and stay individually redoable — the
+ * point of selective replay. See
+ * [[spec-operation-history-modal-with-selective-undo-redo-and-persisted-history-log]].
  */
 export class CommandManager {
-	private entries: HistoryRecord[] = [];
-	private nextId = 0;
+	private readonly log: HistoryLog;
+	private readonly persistence: HistoryPersistence | null;
 	private showNotices: boolean;
-	private readonly maxHistorySize: number;
 	private readonly sequencer: Sequencer;
 	private activityOrder = 0;
 	private readonly listeners = new Set<() => void>();
-	private readonly kv: LocalKV<PersistedHistory> | null = null;
-	private readonly persistScope: string = "";
-	private readonly persistDebounceMs: number = DEFAULT_PERSIST_DEBOUNCE_MS;
-	private persistTimer: number | null = null;
 	// Every history-mutating method routes through this queue so a second
 	// invocation arriving while the first is still in flight (palette callbacks
 	// are registered with `void cmd().then(...)` — Obsidian ignores the return
@@ -98,21 +67,13 @@ export class CommandManager {
 	private readonly queue = new PromiseQueue();
 
 	constructor(options: CommandManagerOptions = {}) {
-		this.maxHistorySize = options.maxHistorySize ?? DEFAULT_MAX_HISTORY_SIZE;
+		this.log = new HistoryLog(options.maxHistorySize ?? DEFAULT_MAX_HISTORY_SIZE);
 		this.showNotices = options.showNotices ?? false;
 		this.sequencer = options.sequencer ?? createMonotonicSequencer();
 
-		if (options.persistence) {
-			const { namespace, scope, backend, debounceMs } = options.persistence;
-			this.kv = new LocalKV<PersistedHistory>({
-				namespace,
-				schema: PersistedHistorySchema,
-				...(backend ? { backend } : {}),
-			});
-			this.persistScope = scope;
-			this.persistDebounceMs = debounceMs ?? DEFAULT_PERSIST_DEBOUNCE_MS;
-			this.hydrate();
-		}
+		this.persistence = options.persistence ? new HistoryPersistence(options.persistence) : null;
+		const stored = this.persistence?.load();
+		if (stored) this.log.restore(stored);
 	}
 
 	private notify(message: string): void {
@@ -148,7 +109,7 @@ export class CommandManager {
 
 	/** Recorded operations, oldest → newest. Entries are copies; mutating them is a no-op. */
 	getHistory(): readonly HistoryEntry[] {
-		return this.entries.map((record) => ({ ...record.meta }));
+		return this.log.view();
 	}
 
 	/** Subscribe to history mutations (push / undo / redo / clear). Returns an unsubscribe. */
@@ -159,46 +120,7 @@ export class CommandManager {
 
 	private changed(): void {
 		for (const listener of this.listeners) listener();
-		this.schedulePersist();
-	}
-
-	private describe(command: Command): string {
-		const raw = command.describe?.() ?? humanizeCommandType(command.getType());
-		return raw.length > MAX_DESCRIPTION_LENGTH ? `${raw.slice(0, MAX_DESCRIPTION_LENGTH - 1)}…` : raw;
-	}
-
-	private record(command: Command): void {
-		this.entries.push({
-			command,
-			meta: {
-				id: String(this.nextId++),
-				type: command.getType(),
-				description: this.describe(command),
-				timestamp: Date.now(),
-				applied: true,
-				replayable: true,
-			},
-		});
-		if (this.entries.length > this.maxHistorySize) {
-			this.entries.splice(0, this.entries.length - this.maxHistorySize);
-		}
-		this.markActivity();
-		this.changed();
-	}
-
-	private findUndoable(): HistoryRecord | null {
-		for (let i = this.entries.length - 1; i >= 0; i--) {
-			const record = this.entries[i];
-			if (record.meta.applied && record.meta.replayable) return record;
-		}
-		return null;
-	}
-
-	private findRedoable(): HistoryRecord | null {
-		for (const record of this.entries) {
-			if (!record.meta.applied && record.meta.replayable) return record;
-		}
-		return null;
+		this.persistence?.schedule(() => this.log.snapshot());
 	}
 
 	// ─── Execution ───────────────────────────────────────────────
@@ -224,46 +146,30 @@ export class CommandManager {
 		});
 	}
 
+	private record(command: Command): void {
+		this.log.record(command);
+		this.markActivity();
+		this.changed();
+	}
+
 	// ─── Undo / redo ─────────────────────────────────────────────
 
 	undo(): Promise<boolean> {
-		return this.queue.enqueue(async () => {
-			const record = this.findUndoable();
-			if (!record) {
-				this.notify("Nothing to undo");
-				return false;
-			}
-			return await this.applyUndo(record);
-		});
+		return this.step(UNDO);
 	}
 
 	redo(): Promise<boolean> {
-		return this.queue.enqueue(async () => {
-			const record = this.findRedoable();
-			if (!record) {
-				this.notify("Nothing to redo");
-				return false;
-			}
-			return await this.applyRedo(record);
-		});
+		return this.step(REDO);
 	}
 
 	/** Undo one entry by id, leaving every other entry's applied state untouched. */
 	undoEntry(id: string): Promise<boolean> {
-		return this.queue.enqueue(async () => {
-			const record = this.entries.find((entry) => entry.meta.id === id);
-			if (!record || !record.meta.applied) return false;
-			return await this.applyUndo(record);
-		});
+		return this.stepEntry(id, UNDO);
 	}
 
 	/** Re-execute one undone entry by id, leaving every other entry alone. */
 	redoEntry(id: string): Promise<boolean> {
-		return this.queue.enqueue(async () => {
-			const record = this.entries.find((entry) => entry.meta.id === id);
-			if (!record || record.meta.applied) return false;
-			return await this.applyRedo(record);
-		});
+		return this.stepEntry(id, REDO);
 	}
 
 	/**
@@ -272,19 +178,7 @@ export class CommandManager {
 	 * applied. Returns how many were undone.
 	 */
 	revertTo(id: string): Promise<number> {
-		return this.queue.enqueue(async () => {
-			const target = this.entries.findIndex((entry) => entry.meta.id === id);
-			if (target < 0) return 0;
-
-			let undone = 0;
-			for (let i = this.entries.length - 1; i >= target; i--) {
-				const record = this.entries[i];
-				if (!record.meta.applied) continue;
-				if (await this.applyUndo(record, { silent: true })) undone++;
-			}
-			this.notify(undone === 0 ? "Nothing to revert" : `Reverted ${undone} operation(s)`);
-			return undone;
-		});
+		return this.stepSpan(id, UNDO);
 	}
 
 	/**
@@ -293,67 +187,76 @@ export class CommandManager {
 	 * were re-applied.
 	 */
 	restoreTo(id: string): Promise<number> {
-		return this.queue.enqueue(async () => {
-			const target = this.entries.findIndex((entry) => entry.meta.id === id);
-			if (target < 0) return 0;
+		return this.stepSpan(id, REDO);
+	}
 
-			let restored = 0;
-			for (let i = 0; i <= target; i++) {
-				const record = this.entries[i];
-				if (record.meta.applied) continue;
-				if (await this.applyRedo(record, { silent: true })) restored++;
+	private step(direction: ReplayDirection): Promise<boolean> {
+		return this.queue.enqueue(async () => {
+			const record = this.log.next(direction);
+			if (!record) {
+				this.notify(`Nothing to ${direction.verb}`);
+				return false;
 			}
-			this.notify(restored === 0 ? "Nothing to restore" : `Restored ${restored} operation(s)`);
-			return restored;
+			return await this.replay(record, direction);
 		});
 	}
 
-	private async applyUndo(record: HistoryRecord, options?: { silent?: boolean }): Promise<boolean> {
+	private stepEntry(id: string, direction: ReplayDirection): Promise<boolean> {
+		return this.queue.enqueue(async () => {
+			const record = this.log.byId(id);
+			if (!record || record.meta.applied !== direction.actsOn) return false;
+			return await this.replay(record, direction);
+		});
+	}
+
+	private stepSpan(id: string, direction: ReplayDirection): Promise<number> {
+		return this.queue.enqueue(async () => {
+			const records = this.log.span(id, direction);
+			if (!records) return 0;
+
+			let done = 0;
+			for (const record of records) {
+				if (await this.replay(record, direction, { silent: true })) done++;
+			}
+			this.notify(done === 0 ? `Nothing to ${direction.spanVerb}` : `${direction.spanPast} ${done} operation(s)`);
+			return done;
+		});
+	}
+
+	/**
+	 * Run one entry in one direction. `silent` suppresses the per-entry notice so
+	 * a span reports a single aggregate instead of one Notice per operation.
+	 */
+	private async replay(
+		record: HistoryRecord,
+		direction: ReplayDirection,
+		options?: { silent?: boolean }
+	): Promise<boolean> {
 		const { command, meta } = record;
 		if (!command || !meta.replayable) return false;
 
 		try {
-			if (command.canUndo && !(await command.canUndo())) {
-				console.warn(`Cannot undo command: ${meta.type} - referenced resources no longer exist`);
-				if (!options?.silent) this.notify("Cannot undo: state has changed");
-				meta.replayable = false;
+			if (!(await direction.canRun(command))) {
+				console.warn(`Cannot ${direction.verb} command: ${meta.type} - referenced resources no longer exist`);
+				if (!options?.silent) this.notify(`Cannot ${direction.verb}: state has changed`);
+				this.log.markBroken(record);
 				this.changed();
 				return false;
 			}
 
-			await command.undo();
-			meta.applied = false;
+			await direction.run(command);
+			this.log.markReplayed(record, direction);
 			this.markActivity();
-			if (!options?.silent) this.notify(`Undid: ${meta.description}`);
+			if (!options?.silent) this.notify(`${direction.past}: ${meta.description}`);
 			this.changed();
 			return true;
 		} catch (error) {
-			console.error(`Failed to undo command: ${meta.type}`, error);
-			if (!options?.silent) this.notify(`Failed to undo: ${meta.description}`);
+			console.error(`Failed to ${direction.verb} command: ${meta.type}`, error);
+			if (!options?.silent) this.notify(`Failed to ${direction.verb}: ${meta.description}`);
 			// Keep the entry as a record of what happened, but stop offering a
-			// replay: the command threw mid-undo, so the state it was tracking
+			// replay: the command threw mid-flight, so the state it was tracking
 			// is no longer one we can reason about.
-			meta.replayable = false;
-			this.changed();
-			return false;
-		}
-	}
-
-	private async applyRedo(record: HistoryRecord, options?: { silent?: boolean }): Promise<boolean> {
-		const { command, meta } = record;
-		if (!command || !meta.replayable) return false;
-
-		try {
-			await command.execute();
-			meta.applied = true;
-			this.markActivity();
-			if (!options?.silent) this.notify(`Redid: ${meta.description}`);
-			this.changed();
-			return true;
-		} catch (error) {
-			console.error(`Failed to redo command: ${meta.type}`, error);
-			if (!options?.silent) this.notify(`Failed to redo: ${meta.description}`);
-			meta.replayable = false;
+			this.log.markBroken(record);
 			this.changed();
 			return false;
 		}
@@ -362,29 +265,29 @@ export class CommandManager {
 	// ─── Queries ─────────────────────────────────────────────────
 
 	canUndo(): boolean {
-		return this.findUndoable() !== null;
+		return this.log.next(UNDO) !== null;
 	}
 
 	canRedo(): boolean {
-		return this.findRedoable() !== null;
+		return this.log.next(REDO) !== null;
 	}
 
 	/** Entries that could still be undone — restored/broken entries don't count. */
 	getUndoStackSize(): number {
-		return this.entries.filter((e) => e.meta.applied && e.meta.replayable).length;
+		return this.log.count(UNDO);
 	}
 
 	/** Entries that could still be redone — restored/broken entries don't count. */
 	getRedoStackSize(): number {
-		return this.entries.filter((e) => !e.meta.applied && e.meta.replayable).length;
+		return this.log.count(REDO);
 	}
 
 	peekUndo(): string | null {
-		return this.findUndoable()?.meta.type ?? null;
+		return this.log.next(UNDO)?.meta.type ?? null;
 	}
 
 	peekRedo(): string | null {
-		return this.findRedoable()?.meta.type ?? null;
+		return this.log.next(REDO)?.meta.type ?? null;
 	}
 
 	// ─── Lifecycle ───────────────────────────────────────────────
@@ -392,11 +295,12 @@ export class CommandManager {
 	/** Erase the log — in memory *and* on disk. A user-facing "clear", not a teardown. */
 	clearHistory(): Promise<void> {
 		return this.queue.enqueue(() => {
-			this.entries = [];
-			this.nextId = 0;
-			this.cancelPendingPersist();
-			this.kv?.delete(this.persistScope);
+			this.log.clear();
+			// Notify directly rather than through `changed()`: this must not
+			// schedule a write of the log it is erasing. `clear()` also discards
+			// any write already queued by an earlier mutation.
 			for (const listener of this.listeners) listener();
+			this.persistence?.clear();
 			return Promise.resolve();
 		});
 	}
@@ -409,64 +313,11 @@ export class CommandManager {
 	dispose(): void {
 		this.flushPersistence();
 		this.listeners.clear();
-		this.entries = [];
-	}
-
-	// ─── Persistence ─────────────────────────────────────────────
-
-	private hydrate(): void {
-		const stored = this.kv?.get(this.persistScope);
-		if (!stored) return;
-
-		this.entries = stored.entries.slice(-this.maxHistorySize).map((entry) => ({
-			command: null,
-			meta: { ...entry, replayable: false },
-		}));
-		this.nextId = stored.nextId;
-	}
-
-	private schedulePersist(): void {
-		if (!this.kv) return;
-		// Trailing debounce: a 200-file batch pushes 200 entries in a tick, and
-		// serializing the whole log on each would be the jank source this
-		// feature is most likely to introduce.
-		if (this.persistTimer !== null) window.clearTimeout(this.persistTimer);
-		this.persistTimer = window.setTimeout(() => {
-			this.persistTimer = null;
-			this.writeNow();
-		}, this.persistDebounceMs);
-	}
-
-	private cancelPendingPersist(): void {
-		if (this.persistTimer === null) return;
-		window.clearTimeout(this.persistTimer);
-		this.persistTimer = null;
+		this.log.clear();
 	}
 
 	/** Write any pending debounced history immediately. */
 	flushPersistence(): void {
-		if (this.persistTimer === null) return;
-		this.cancelPendingPersist();
-		this.writeNow();
-	}
-
-	private writeNow(): void {
-		if (!this.kv) return;
-		try {
-			this.kv.set(this.persistScope, {
-				nextId: this.nextId,
-				entries: this.entries.map(({ meta }) => ({
-					id: meta.id,
-					type: meta.type,
-					description: meta.description,
-					timestamp: meta.timestamp,
-					applied: meta.applied,
-				})),
-			});
-		} catch (error) {
-			// A full quota or a locked-down private-browsing store must never
-			// take down the command that triggered the write.
-			console.warn("[CommandManager] Failed to persist history", error);
-		}
+		this.persistence?.flush();
 	}
 }

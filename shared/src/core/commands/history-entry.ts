@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import type { Command } from "./command";
+
 /**
  * A single recorded operation in a {@link import("./command-manager").CommandManager}'s
  * history — the user-visible unit the operation-history UI lists, and the unit
@@ -47,6 +49,12 @@ export function humanizeCommandType(type: string): string {
 		.map((word) => (word.length > 1 && word === word.toUpperCase() ? word : word.toLowerCase()));
 	const [first, ...rest] = words;
 	return [first.charAt(0).toUpperCase() + first.slice(1), ...rest].join(" ");
+}
+
+/** The log's label for a command: its own `describe()`, else the humanized type, capped. */
+export function describeCommand(command: Command): string {
+	const raw = command.describe?.() ?? humanizeCommandType(command.getType());
+	return raw.length > MAX_DESCRIPTION_LENGTH ? `${raw.slice(0, MAX_DESCRIPTION_LENGTH - 1)}…` : raw;
 }
 
 /**
