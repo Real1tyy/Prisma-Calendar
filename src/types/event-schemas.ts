@@ -1,4 +1,5 @@
 import {
+	anchorWallClock,
 	classifyDateLikeString,
 	extractDisplayName,
 	getFilenameFromPath,
@@ -94,9 +95,13 @@ function buildTimedEvent(input: EventSchemaInput, settings: SingleCalendarConfig
 	if (!start) return null;
 
 	const startIso = toInternalISO(start);
+	// A derived end is a *stored* value (the sort date's end strategies write
+	// it), so the arithmetic runs on the wall clock rather than in whatever zone
+	// the start was anchored in — adding an hour across a spring-forward
+	// boundary otherwise skips one on the transitioning device only.
 	const endIso = parsed.end
 		? toInternalISO(parsed.end)
-		: toInternalISO(start.plus({ minutes: settings.defaultDurationMinutes }));
+		: toInternalISO(anchorWallClock(start).plus({ minutes: settings.defaultDurationMinutes }));
 
 	const metadata = buildMetadata(parsed);
 	return {
@@ -126,7 +131,7 @@ function buildAllDayEvent(input: EventSchemaInput): AllDayEvent | null {
 		ref: { filePath: input.filePath },
 		title: makeTitle(parsed, input.filePath),
 		type: "allDay",
-		start: toInternalISO(anchor.startOf("day")),
+		start: toInternalISO(anchorWallClock(anchor).startOf("day")),
 		allDay: true,
 		skipped: metadata.skip ?? false,
 		metadata,

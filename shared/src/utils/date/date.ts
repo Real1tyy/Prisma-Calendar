@@ -113,6 +113,21 @@ export const formatDuration = (minutes: number): string => {
 };
 
 /**
+ * How every stored datetime is read: keep the value's own offset when it has
+ * one (`setZone`), and anchor it in UTC when it has none (`zone`).
+ *
+ * The `zone` half is what makes an automatic write converge. A frontmatter
+ * value with no offset has no zone of its own, so luxon would otherwise anchor
+ * it in the *device's* — and a device zone has DST. Ask it for a wall clock its
+ * zone skips (02:30 on a spring-forward morning) and luxon advances the hour,
+ * so a UTC−8 device derives `03:30` from the same note a UTC+2 device derives
+ * `02:30` from. UTC has no transitions, so the digits survive the round trip
+ * everywhere. Nothing writes the anchor back — every serializer here emits the
+ * digits without an offset ([[decision-deterministic-automatic-writes-across-synced-devices]]).
+ */
+export const WALL_CLOCK_PARSE_OPTS = { setZone: true, zone: "utc" } as const;
+
+/**
  * Parse time string from datetime value - returns DateTime object
  * Rejects plain HH:mm format, requires full datetime
  */
@@ -127,9 +142,9 @@ export const parseTimeString = (value: string | null): DateTime | undefined => {
 	}
 
 	// Try ISO format first (most common) - EXACT same logic as recurring events
-	let dt = DateTime.fromISO(v, { setZone: true }); // ISO: with/without seconds, Z/offset, T
-	if (!dt.isValid) dt = DateTime.fromSQL(v, { setZone: true }); // "YYYY-MM-DD HH:mm[:ss]" etc.
-	if (!dt.isValid) dt = DateTime.fromFormat(v, "yyyy-MM-dd HH:mm", { setZone: true });
+	let dt = DateTime.fromISO(v, WALL_CLOCK_PARSE_OPTS); // ISO: with/without seconds, Z/offset, T
+	if (!dt.isValid) dt = DateTime.fromSQL(v, WALL_CLOCK_PARSE_OPTS); // "YYYY-MM-DD HH:mm[:ss]" etc.
+	if (!dt.isValid) dt = DateTime.fromFormat(v, "yyyy-MM-dd HH:mm", WALL_CLOCK_PARSE_OPTS);
 
 	return dt.isValid ? dt : undefined;
 };
@@ -148,19 +163,19 @@ export const parseDateTimeString = (value: string | null): DateTime | undefined 
 	let dt: DateTime;
 
 	// 1. Try ISO format first (most common)
-	dt = DateTime.fromISO(v, { setZone: true });
+	dt = DateTime.fromISO(v, WALL_CLOCK_PARSE_OPTS);
 	if (dt.isValid) return dt;
 
 	// 2. Try SQL format (YYYY-MM-DD HH:mm:ss)
-	dt = DateTime.fromSQL(v, { setZone: true });
+	dt = DateTime.fromSQL(v, WALL_CLOCK_PARSE_OPTS);
 	if (dt.isValid) return dt;
 
 	// 3. Try common format with space (YYYY-MM-DD HH:mm)
-	dt = DateTime.fromFormat(v, "yyyy-MM-dd HH:mm", { setZone: true });
+	dt = DateTime.fromFormat(v, "yyyy-MM-dd HH:mm", WALL_CLOCK_PARSE_OPTS);
 	if (dt.isValid) return dt;
 
 	// 4. Try date-only format (YYYY-MM-DD) - treat as start of day
-	dt = DateTime.fromFormat(v, "yyyy-MM-dd", { setZone: true });
+	dt = DateTime.fromFormat(v, "yyyy-MM-dd", WALL_CLOCK_PARSE_OPTS);
 	if (dt.isValid) return dt;
 
 	return undefined;
@@ -263,8 +278,27 @@ export function calculateEndTime(startTime: string, durationMinutes: number): st
 	return `${String(endHours).padStart(2, "0")}:${String(finalMinutes).padStart(2, "0")}:00.000Z`;
 }
 
+/**
+ * The same wall-clock digits, re-anchored to a zone that has no DST.
+ *
+ * A value stored without an offset has no zone of its own, so luxon anchors it
+ * in the *device's* — and then every derivation from it inherits that zone's
+ * transitions. `.set({hour: 2})` and `.plus({minutes: 60})` across a
+ * spring-forward boundary ask for a wall clock the local zone does not have, so
+ * luxon silently advances the hour: a UTC−8 device writes `03:30` where a UTC+2
+ * device writes `02:30`, and the two rewrite the note at each other forever.
+ *
+ * Re-anchor before deriving anything that gets *stored*. This introduces no
+ * offset into the value — the digits are untouched and every serializer here
+ * writes them without one ([[decision-deterministic-automatic-writes-across-synced-devices]]).
+ * Comparisons against "now" keep their own anchor; only derivation moves.
+ */
+export function anchorWallClock(dateTime: DateTime): DateTime {
+	return dateTime.setZone("utc", { keepLocalTime: true });
+}
+
 export function applySourceTimeToInstanceDate(instanceDate: DateTime, sourceDateTime: DateTime): DateTime {
-	return instanceDate.set({
+	return anchorWallClock(instanceDate).set({
 		hour: sourceDateTime.hour,
 		minute: sourceDateTime.minute,
 		second: sourceDateTime.second,

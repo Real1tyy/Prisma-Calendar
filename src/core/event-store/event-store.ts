@@ -1,4 +1,4 @@
-import { mergeSorted, perf, pollIntervalMsForEnv } from "@real1ty/obsidian-plugins";
+import { mergeSorted, perf, pollIntervalMsForEnv, WALL_CLOCK_PARSE_OPTS } from "@real1ty/obsidian-plugins";
 import { DateTime } from "luxon";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import BTree from "sorted-btree";
@@ -144,8 +144,12 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	async getEvents(query: EventQuery): Promise<CalendarEvent[]> {
 		return perf.measureAsync("eventStore.getEvents", async () => {
 			const physical = this.queryNonSkippedPhysical(query);
-			const queryStart = DateTime.fromISO(stripZ(query.start));
-			const queryEnd = DateTime.fromISO(stripZ(query.end));
+			// The bounds are wall-clock digits (the view's own range), and so are
+			// the occurrence and holiday dates they are compared against — parse
+			// them on the same anchor or the comparison is off by the device's
+			// offset at the edges of the rendered window.
+			const queryStart = DateTime.fromISO(stripZ(query.start), WALL_CLOCK_PARSE_OPTS);
+			const queryEnd = DateTime.fromISO(stripZ(query.end), WALL_CLOCK_PARSE_OPTS);
 			const virtualEvents = this.recurringEventManager.generateAllVirtualInstances(queryStart, queryEnd);
 
 			let holidays: CalendarEvent[] = [];

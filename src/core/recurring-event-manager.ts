@@ -1,4 +1,5 @@
 import {
+	anchorWallClock,
 	applySourceTimeToInstanceDate,
 	createFileAtPathAtomic,
 	createFileLink,
@@ -52,6 +53,15 @@ import type { EventStore } from "./event-store";
 import { log } from "./logging";
 
 const DATE_FORMAT = "yyyy-MM-dd";
+
+/**
+ * The calendar day a DateTime falls on, for comparing an occurrence against the
+ * device's today. Occurrence dates are anchored on the wall clock so their
+ * digits converge across devices, while `DateTime.now()` is anchored locally —
+ * comparing the two as *instants* would silently shift the boundary by the
+ * device's offset. Days are what both sides actually mean.
+ */
+const isoDay = (dateTime: DateTime): string => dateTime.toISODate() ?? "";
 
 /**
  * Returns the first valid recurrence date, skipping the source day if it matches.
@@ -361,9 +371,9 @@ export class RecurringEventManager extends DebouncedNotifier {
 		const data = this.recurringEventsMap.get(recurringEvent.rRuleId);
 		if (!data || data.physicalInstances.size === 0) return;
 
-		const today = DateTime.now().startOf("day");
+		const today = isoDay(DateTime.now());
 		const futureInstances = this.getPhysicalInstancesList(data.physicalInstances).filter(
-			(instance) => instance.instanceDate >= today
+			(instance) => isoDay(instance.instanceDate) >= today
 		);
 
 		if (futureInstances.length === 0) return;
@@ -723,7 +733,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 			const generatePastEvents = recurringEvent.metadata.generatePastEvents;
 			const futureInstances = this.getPhysicalInstancesList(physicalInstances).filter(
 				(instance) =>
-					instance.instanceDate >= now.startOf("day") &&
+					isoDay(instance.instanceDate) >= isoDay(now) &&
 					isOccurrenceWithinUntil(instance.instanceDate, recurringEvent.rrules.until)
 			);
 
@@ -742,7 +752,13 @@ export class RecurringEventManager extends DebouncedNotifier {
 			}
 
 			const instancesToCreate = targetInstanceCount - currentCount;
-			let nextDate = this.getNextOccurrenceFromTime(recurringEvent, futureInstances, now.startOf("day"));
+			// Today's midnight on the occurrences' own anchor, so "strictly after
+			// today" is decided by the day, not by the device's offset.
+			let nextDate = this.getNextOccurrenceFromTime(
+				recurringEvent,
+				futureInstances,
+				anchorWallClock(now).startOf("day")
+			);
 			log.debug("recurring", "Topping up future instances", {
 				title: recurringEvent.title,
 				rruleId: recurringEvent.rRuleId,
@@ -797,7 +813,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 	): Promise<void> {
 		let currentDate = getInitialOccurrenceDate(recurringEvent.rrules);
 
-		while (currentDate <= now.startOf("day") && isOccurrenceWithinUntil(currentDate, recurringEvent.rrules.until)) {
+		while (isoDay(currentDate) <= isoDay(now) && isOccurrenceWithinUntil(currentDate, recurringEvent.rrules.until)) {
 			await this.createInstanceIfMissing(recurringEvent, physicalInstances, currentDate);
 			currentDate = getNextOccurrence(currentDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
 		}
@@ -1016,12 +1032,19 @@ export class RecurringEventManager extends DebouncedNotifier {
 		const sourceStart = getStartDateTime(rrules);
 		const sourceEnd = rrules.allDay ? null : rrules.endTime;
 
+		// `zone: "utc"` — the calendar day is the whole value for an all-day
+		// series, and a device zone can lack the midnight it starts at
+		// (America/Santiago springs forward at 24:00), which would move the
+		// derived digits on that one device.
 		const normalizedInstanceDate = rrules.allDay
-			? DateTime.fromObject({
-					year: instanceDate.year,
-					month: instanceDate.month,
-					day: instanceDate.day,
-				})
+			? DateTime.fromObject(
+					{
+						year: instanceDate.year,
+						month: instanceDate.month,
+						day: instanceDate.day,
+					},
+					{ zone: "utc" }
+				)
 			: instanceDate;
 
 		const instanceStart = applySourceTimeToInstanceDate(normalizedInstanceDate, sourceStart);
@@ -1206,8 +1229,15 @@ export function markInstanceStatusIfPast(
 ): void {
 	if (!settings.markPastInstancesAsDone || !settings.statusProperty) return;
 
+	// "Past" is the instance's wall clock against the device's — the same test
+	// `scanPastEventsForMarkDone` and `isEventPastFromFrontmatter` already make,
+	// and the only one that survives instance times being anchored off the
+	// device zone. Comparing instants asked whether the instance was over in
+	// *its own* anchor, which is not the zone the user's day runs on.
 	const now = DateTime.now();
-	const isPast = instanceEnd ? instanceEnd < now : instanceStart.endOf("day") < now;
+	const isPast = instanceEnd
+		? toInternalISO(instanceEnd) < toInternalISO(now)
+		: (instanceStart.toISODate() ?? "") < (now.toISODate() ?? "");
 
 	if (isPast && frontmatter[settings.statusProperty] !== settings.doneValue) {
 		frontmatter[settings.statusProperty] = settings.doneValue;

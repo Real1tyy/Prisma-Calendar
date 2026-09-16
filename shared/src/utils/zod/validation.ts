@@ -1,7 +1,7 @@
 import { DateTime } from "luxon";
 import { z } from "zod";
 
-import { parseDateTimeString, parseTimeString, toSafeString } from "../date/date";
+import { parseDateTimeString, parseTimeString, toSafeString, WALL_CLOCK_PARSE_OPTS } from "../date/date";
 import { parseIntoList } from "../list-utils";
 
 export type ISO = string;
@@ -56,9 +56,18 @@ const parseTime = (s: string) => parseTimeString(s);
  * device zone first made the calendar day depend on where the vault was
  * opened — a UTC+2 device wrote `Sort Date` for the 4th, a UTC−5 device for
  * the 3rd, and the two rewrote the note at each other forever.
+ *
+ * A date-only value carries no offset at all, so it falls to
+ * `WALL_CLOCK_PARSE_OPTS`' UTC anchor rather than the device zone — otherwise
+ * the day's *start* becomes zone-dependent too. `America/Santiago` springs
+ * forward at 24:00, so 2026-09-06 has no 00:00 there and luxon reports
+ * start-of-day as 01:00.
+ *
+ * An explicit `zone` is a deliberate, synced conversion (the CalDAV/ICS
+ * account timezone) and is left alone.
  */
 export function parseISODateStart(s: string, zone?: string): DateTime | undefined {
-	const dt = DateTime.fromISO(s, zone ? { zone } : { setZone: true });
+	const dt = DateTime.fromISO(s, zone ? { zone } : WALL_CLOCK_PARSE_OPTS);
 	return dt.isValid ? dt.startOf("day") : undefined;
 }
 

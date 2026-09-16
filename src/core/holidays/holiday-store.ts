@@ -1,3 +1,4 @@
+import { WALL_CLOCK_PARSE_OPTS } from "@real1ty/obsidian-plugins";
 import { DateTime } from "luxon";
 import type { App } from "obsidian";
 
@@ -79,7 +80,10 @@ export class HolidayStore {
 
 		return allHolidays
 			.filter((h) => {
-				const holidayDate = DateTime.fromISO(h.date);
+				// Same anchor as the range bounds (`EventStore.getEvents`) — a
+				// holiday is a bare calendar date, so parsing it in the device
+				// zone would shift it against bounds that are wall-clock digits.
+				const holidayDate = DateTime.fromISO(h.date, WALL_CLOCK_PARSE_OPTS);
 				return holidayDate >= start && holidayDate < end;
 			})
 			.map((h) => this.holidayToCalendarEvent(h));
