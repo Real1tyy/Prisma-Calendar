@@ -1,7 +1,7 @@
 import { extractContentAfterFrontmatter } from "@real1ty/obsidian-plugins";
 import { TextareaInput } from "@real1ty/obsidian-plugins-react";
 import { TFile, type App } from "obsidian";
-import { memo, useEffect, useRef, useState, type RefObject } from "react";
+import { memo, useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
 import { useController, type UseFormReturn } from "react-hook-form";
 
 import type { EventFormState } from "../../../components/modals/event/event-form-state";
@@ -34,9 +34,16 @@ export const NoteContentSection = memo(function NoteContentSection({
 	const dirtyRef = useRef(contentDirty);
 	const loadingRef = useRef(true);
 	const [conflicted, setConflicted] = useState(false);
+	const markContentDirty = () => {
+		dirtyRef.current = true;
+		onContentDirty();
+	};
 
-	useEffect(() => {
-		dirtyRef.current = contentDirty;
+	// Dirty is a latch for the modal's lifetime (the parent only ever sets it to
+	// true): once the user has typed, an external write must never replace the
+	// draft, so the ref is never lowered back to false.
+	useLayoutEffect(() => {
+		if (contentDirty) dirtyRef.current = true;
 	}, [contentDirty]);
 
 	useEffect(() => {
@@ -81,14 +88,26 @@ export const NoteContentSection = memo(function NoteContentSection({
 	}, [app, filePath, form, onConflictChange]);
 
 	return (
-		<div ref={containerRef} className="prisma-note-content-section" data-testid="prisma-event-field-content">
+		<div
+			ref={containerRef}
+			className="prisma-note-content-section"
+			data-testid="prisma-event-field-content"
+			// Latch the ref on the keystroke itself: the committed change is
+			// debounced, and an external write arriving before it commits would
+			// otherwise still see a clean field and replace the draft. Only the ref
+			// is touched here — notifying the parent would re-render mid-edit and
+			// resync the textarea's draft back to the not-yet-committed value.
+			onInputCapture={() => {
+				dirtyRef.current = true;
+			}}
+		>
 			<h3 className="prisma-note-content-heading" data-testid="prisma-event-field-content-label">
 				Note content
 			</h3>
 			<TextareaInput
 				value={field.value}
 				onChange={(content) => {
-					onContentDirty();
+					markContentDirty();
 					field.onChange(content);
 				}}
 				rows={8}
