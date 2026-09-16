@@ -11,6 +11,7 @@ import type { App, TFile } from "obsidian";
 
 import type { EventDateTime, Frontmatter, SingleCalendarConfig } from "../../types";
 import { ensureFileHasZettelId } from "../../utils/events/file-naming";
+import { extractCleanDisplayName } from "../../utils/events/naming";
 import { extractZettelId, rebuildPhysicalInstanceWithNewDate } from "../../utils/events/zettel-id";
 import { setEventBasics } from "../../utils/frontmatter/basics";
 import { withOrderedFrontmatter } from "../../utils/frontmatter/ordering";
@@ -68,6 +69,10 @@ export class EditEventCommand implements Command {
 
 	getType() {
 		return "edit-event";
+	}
+
+	describe(): string {
+		return `Edit event: ${this.newEventData.title}`;
 	}
 
 	canUndo(): boolean {
@@ -164,6 +169,10 @@ export class UpdateEventCommand implements Command {
 
 	getType(): string {
 		return "update-event-time";
+	}
+
+	describe(): string {
+		return `Update event time: ${extractCleanDisplayName(this.originalFilePath)}`;
 	}
 
 	canUndo(): boolean {

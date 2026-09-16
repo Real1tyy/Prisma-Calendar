@@ -32,13 +32,17 @@ export interface FrontmatterRepo<TData = unknown, TSnapshot = unknown> {
  */
 export class FrontmatterUpdateCommand<TData = unknown, TSnapshot = unknown> implements Command {
 	private snapshot: TSnapshot | null = null;
+	readonly describe?: () => string;
 
 	constructor(
 		private repo: FrontmatterRepo<TData, TSnapshot>,
 		private filePath: string,
 		private updater: (fm: TData) => void,
-		private type: string
-	) {}
+		private type: string,
+		description?: string
+	) {
+		if (description) this.describe = () => description;
+	}
 
 	async execute(): Promise<void> {
 		if (this.snapshot === null) this.snapshot = await this.repo.snapshotByPath(this.filePath);

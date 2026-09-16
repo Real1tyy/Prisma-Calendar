@@ -45,7 +45,7 @@ Open it from the clock-rewind button in the calendar toolbar, or run `Prisma Cal
 
 Every recorded operation, one row each, newest at the top — flip to oldest-first with the sort button. Each row shows:
 
--   **What happened** — "Edit event", "Mark as done", "Batch: 12 operations".
+-   **What happened** — the action and the affected event, such as "Edit event: Team Meeting", "Delete event: Workout", or "Batch: 12 operations". A rename names both the old and new title.
 -   **When** — a relative time ("3 minutes ago"); hover for the exact timestamp.
 -   **Applied** or **Undone** — whether the operation is currently in effect.
 

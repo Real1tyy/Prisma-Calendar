@@ -14,6 +14,7 @@ import { getFrontMatterInfo, parseYaml, TFile, type App } from "obsidian";
 
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
 import { computeMovePath, ensureFileHasZettelId, generateUniqueEventPath } from "../../utils/events/file-naming";
+import { extractCleanDisplayName } from "../../utils/events/naming";
 import { removeZettelId } from "../../utils/events/zettel-id";
 import { applyStartEndOffsets } from "../../utils/frontmatter/basics";
 import { enforceEventPropertyOrder } from "../../utils/frontmatter/ordering";
@@ -128,6 +129,10 @@ export class CreateEventCommand extends CreatedFileCommand {
 	getType() {
 		return "create-event";
 	}
+
+	describe(): string {
+		return `Create event: ${this.eventData.title}`;
+	}
 }
 
 export class DeleteEventCommand implements Command {
@@ -157,6 +162,10 @@ export class DeleteEventCommand implements Command {
 
 	getType() {
 		return "delete-event";
+	}
+
+	describe(): string {
+		return `Delete event: ${extractCleanDisplayName(this.filePath)}`;
 	}
 
 	canUndo(): boolean {
@@ -215,6 +224,10 @@ export class MoveEventToCalendarCommand implements Command {
 		return "move-event-to-calendar";
 	}
 
+	describe(): string {
+		return `Move event: ${extractCleanDisplayName(this.originalFilePath)}`;
+	}
+
 	canUndo(): boolean {
 		return this.originalFrontmatter !== null && this.newFilePath !== null;
 	}
@@ -258,5 +271,9 @@ export class CloneEventCommand extends CreatedFileCommand {
 
 	getType() {
 		return "clone-event";
+	}
+
+	describe(): string {
+		return `Clone event: ${extractCleanDisplayName(this.sourceFilePath)}`;
 	}
 }

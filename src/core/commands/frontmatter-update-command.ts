@@ -8,10 +8,15 @@ import {
 import type { DurationLike } from "luxon";
 
 import type { Frontmatter } from "../../types";
+import { extractCleanDisplayName } from "../../utils/events/naming";
 import { applyStartEndOffsets } from "../../utils/frontmatter/basics";
 import { assignListToFrontmatter, parseCustomDoneProperty } from "../../utils/frontmatter/props";
 import type { CalendarBundle } from "../calendar-bundle";
 import type { FrontmatterSnapshot } from "../event-file-repository";
+
+function describeEventAction(action: string, filePath: string): string {
+	return `${action}: ${extractCleanDisplayName(filePath)}`;
+}
 
 /**
  * Prisma-pinned alias of the shared {@link SharedFrontmatterUpdateCommand}.
@@ -36,7 +41,8 @@ export function markAsDone(bundle: CalendarBundle, filePath: string): Frontmatte
 				fm[settings.statusProperty] = settings.doneValue;
 			}
 		},
-		"mark-as-done"
+		"mark-as-done",
+		describeEventAction("Mark as done", filePath)
 	);
 }
 
@@ -58,7 +64,8 @@ export function markAsUndone(bundle: CalendarBundle, filePath: string): Frontmat
 				fm[settings.statusProperty] = settings.notDoneValue;
 			}
 		},
-		"mark-as-undone"
+		"mark-as-undone",
+		describeEventAction("Mark as undone", filePath)
 	);
 }
 
@@ -74,7 +81,8 @@ export function toggleSkip(bundle: CalendarBundle, filePath: string): Frontmatte
 				fm[settings.skipProp] = true;
 			}
 		},
-		"toggle-skip"
+		"toggle-skip",
+		describeEventAction("Toggle skip", filePath)
 	);
 }
 
@@ -88,7 +96,8 @@ export function assignCategories(
 		bundle.fileRepository,
 		filePath,
 		(fm) => assignListToFrontmatter(fm, settings.categoryProp, categories),
-		"assign-categories"
+		"assign-categories",
+		describeEventAction("Assign categories", filePath)
 	);
 }
 
@@ -102,7 +111,8 @@ export function assignPrerequisites(
 		bundle.fileRepository,
 		filePath,
 		(fm) => assignListToFrontmatter(fm, settings.prerequisiteProp, prerequisites),
-		"assign-prerequisites"
+		"assign-prerequisites",
+		describeEventAction("Assign prerequisites", filePath)
 	);
 }
 
@@ -132,7 +142,8 @@ export function moveEvent(
 		bundle.fileRepository,
 		filePath,
 		(fm) => applyStartEndOffsets(fm, settings, startOffset, endOffset),
-		"move-event"
+		"move-event",
+		describeEventAction("Move event", filePath)
 	);
 }
 
@@ -146,7 +157,8 @@ export function fillTime(
 		bundle.fileRepository,
 		filePath,
 		(fm) => (fm[propertyName] = ensureISOSuffix(newTimeValue)),
-		"fill-time"
+		"fill-time",
+		describeEventAction("Fill time", filePath)
 	);
 }
 
@@ -168,6 +180,7 @@ export function updateFrontmatter(
 				}
 			}
 		},
-		"update-frontmatter"
+		"update-frontmatter",
+		describeEventAction("Update event properties", filePath)
 	);
 }

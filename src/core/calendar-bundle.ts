@@ -682,7 +682,11 @@ export class CalendarBundle {
 						}
 						if (zettelIdCommand) await zettelIdCommand.undo();
 					},
-					getType: () => "edit-with-rename",
+					getType: () => (pathBeforeTitleRename ? "edit-with-rename" : "edit-event"),
+					describe: () =>
+						pathBeforeTitleRename
+							? `Rename event: ${removeZettelId(pathBeforeTitleRename.split("/").pop()?.replace(/\.md$/, "") ?? "")} → ${eventData.title}`
+							: `Edit event: ${eventData.title}`,
 					canUndo: () => true,
 				});
 			} else {
