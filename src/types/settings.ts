@@ -110,6 +110,13 @@ const GeneralSettingsSchema = z
 			.boolean()
 			.catch(true)
 			.describe("Display an icon in the left sidebar to quickly open this planning system"),
+		showFileMenuActions: z
+			.boolean()
+			.catch(true)
+			.describe(
+				"Add Prisma actions (edit, time tracker, mark done, skip) to Obsidian's own right-click menu for notes that are events in this planning system. Notes that aren't events are never touched."
+			)
+			.meta({ title: "Show event actions in the file menu" }),
 		locale: z
 			.enum(LOCALE_KEYS)
 			.catch("en")

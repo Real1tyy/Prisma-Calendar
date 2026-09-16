@@ -2656,6 +2656,12 @@
 								"title": "Show overflow color dots",
 								"type": "boolean"
 							},
+							"showFileMenuActions": {
+								"default": true,
+								"description": "Add Prisma actions (edit, time tracker, mark done, skip) to Obsidian's own right-click menu for notes that are events in this planning system. Notes that aren't events are never touched.",
+								"title": "Show event actions in the file menu",
+								"type": "boolean"
+							},
 							"showPhysicalRecurringMarker": {
 								"default": true,
 								"description": "Display a marker indicator on physical recurring instance events (actual instances created from source).",
@@ -2907,6 +2913,7 @@
 							"showDurationField",
 							"showStopwatch",
 							"showRibbonIcon",
+							"showFileMenuActions",
 							"locale",
 							"markPastInstancesAsDone",
 							"virtualEventsFileName",
@@ -5192,6 +5199,12 @@
 								"default": true,
 								"description": "Show color dots in the bottom-right corner of events for matched color rules that were not applied as the event background. Displays overflow colors that exceed the color mode limit, or all matched colors when coloring is disabled.",
 								"title": "Show overflow color dots",
+								"type": "boolean"
+							},
+							"showFileMenuActions": {
+								"default": true,
+								"description": "Add Prisma actions (edit, time tracker, mark done, skip) to Obsidian's own right-click menu for notes that are events in this planning system. Notes that aren't events are never touched.",
+								"title": "Show event actions in the file menu",
 								"type": "boolean"
 							},
 							"showPhysicalRecurringMarker": {

@@ -37,7 +37,9 @@ import {
 	openMoveToCalendarModal,
 } from "../react/modals";
 import { openEventSeriesModal } from "../react/modals/event-list";
+import type { EventModalData } from "../react/modals/event/event-create-modal";
 import { openEventEditModal } from "../react/modals/event/event-edit-modal";
+import { toEventModalData } from "../react/modals/event/shared-modal-helpers";
 import { isTimedEvent } from "../types";
 import { isTimeUnitAllowedForAllDay, type CalendarEvent, type EventKind } from "../types/calendar";
 import { getEventKind, isRecurringEventKind } from "../utils/events/classification";
@@ -599,7 +601,7 @@ export class EventContextMenu {
 		emitHover(this.app, containerEl, targetEl, syntheticEvent, filePath, this.bundle.calendarId);
 	}
 
-	openEditModal(event: CalendarEventInfo): void {
+	openEditModal(event: EventModalData): void {
 		openEventEditModal(this.app, this.bundle, event);
 	}
 
@@ -619,16 +621,7 @@ export class EventContextMenu {
 
 	private editSourceEvent(event: CalendarEventInfo): void {
 		this.withSourceEvent(event, (sourceEvent) => {
-			this.openEditModal({
-				title: sourceEvent.title,
-				start: sourceEvent.start,
-				...(isTimedEvent(sourceEvent) ? { end: sourceEvent.end } : {}),
-				allDay: sourceEvent.allDay,
-				extendedProps: {
-					filePath: sourceEvent.ref.filePath,
-					frontmatterDisplayData: sourceEvent.meta,
-				},
-			});
+			this.openEditModal(toEventModalData(sourceEvent));
 		});
 	}
 

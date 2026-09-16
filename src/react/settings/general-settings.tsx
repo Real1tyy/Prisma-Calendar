@@ -38,7 +38,13 @@ const PRO_PITCH =
 	"unlocks external synchronization, advanced visualizations, Bases integration for embedding views directly inside notes, and other power-user capabilities built for serious planning inside Obsidian.";
 
 const PLANNING_FIELDS = ["directory", "templatePath", "indexSubdirectories"];
-const INTERFACE_FIELDS = ["locale", "showRibbonIcon", "enableKeyboardNavigation", "autoAssignZettelId"];
+const INTERFACE_FIELDS = [
+	"locale",
+	"showRibbonIcon",
+	"showFileMenuActions",
+	"enableKeyboardNavigation",
+	"autoAssignZettelId",
+];
 const EVENT_DEFAULTS_FIELDS = [
 	"defaultDurationMinutes",
 	"showDurationField",

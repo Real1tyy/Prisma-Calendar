@@ -6,6 +6,7 @@ import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { FREE_MAX_EVENT_PRESETS } from "../../../core/license";
 import { MinimizedModalManager, type MinimizedModalState } from "../../../core/minimized-modal-manager";
 import type { Frontmatter } from "../../../types";
+import { isTimedEvent, type CalendarEvent } from "../../../types/calendar";
 import type { EventPreset } from "../../../types/settings";
 import type { EventFormValues } from "../../event-form/event-form";
 import type { EventModalData } from "./event-create-modal";
@@ -101,6 +102,26 @@ export function openSavePresetFlow(
 		void bundle.settingsStore.updateSettings((s) => ({ ...s, eventPresets: updatedPresets }));
 		new Notice(overridePresetId ? `Preset "${presetName}" updated!` : `Preset "${presetName}" saved!`);
 	});
+}
+
+/**
+ * Project an indexed event-store record into the `EventModalData` shape the
+ * edit modal and stopwatch session expect. The handlers were originally written
+ * against FullCalendar's event objects, so anything reaching them from the
+ * event store (source-event editing, the native file menu) goes through here
+ * rather than re-deriving the mapping at each call site.
+ */
+export function toEventModalData(event: CalendarEvent): EventModalData {
+	return {
+		title: event.title,
+		start: event.start,
+		...(isTimedEvent(event) ? { end: event.end } : {}),
+		allDay: event.allDay,
+		extendedProps: {
+			filePath: event.ref.filePath,
+			frontmatterDisplayData: event.meta,
+		},
+	};
 }
 
 export function setExtendedPropSafe(eventData: EventModalData, name: string, value: unknown): void {

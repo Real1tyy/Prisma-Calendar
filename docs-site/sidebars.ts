@@ -83,6 +83,7 @@ const sidebars: SidebarsConfig = {
 						"features/management/global-events-management",
 						"features/management/batch-operations",
 						"features/management/undo-redo",
+						"features/management/file-menu-actions",
 						"features/management/time-tracker",
 						"features/management/notifications",
 						"features/management/zettelid-naming",

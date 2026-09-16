@@ -729,6 +729,7 @@ export type PrismaCalendarGetSettingsOutput = {
 	showDurationField: boolean;
 	showDurationInTitle: ShowDurationInEventTitle;
 	showEventColorDots: ShowOverflowColorDots;
+	showFileMenuActions: ShowEventActionsInTheFileMenu;
 	/**
 	 * Display a marker indicator on physical recurring instance events (actual instances created from source).
 	 */
@@ -1043,6 +1044,10 @@ export type ShowDurationInEventTitle = boolean;
  * Show color dots in the bottom-right corner of events for matched color rules that were not applied as the event background. Displays overflow colors that exceed the color mode limit, or all matched colors when coloring is disabled.
  */
 export type ShowOverflowColorDots = boolean;
+/**
+ * Add Prisma actions (edit, time tracker, mark done, skip) to Obsidian's own right-click menu for notes that are events in this planning system. Notes that aren't events are never touched.
+ */
+export type ShowEventActionsInTheFileMenu = boolean;
 /**
  * Display a stopwatch in the event creation/edit modal for precise time tracking. Start fills the start date, stop fills the end date, and break time is tracked automatically.
  */
@@ -1405,6 +1410,10 @@ export type PrismaCalendarToggleSkipOutput = boolean;
 
 /**
  * Show color dots in the bottom-right corner of events for matched color rules that were not applied as the event background. Displays overflow colors that exceed the color mode limit, or all matched colors when coloring is disabled.
+ */
+
+/**
+ * Add Prisma actions (edit, time tracker, mark done, skip) to Obsidian's own right-click menu for notes that are events in this planning system. Notes that aren't events are never touched.
  */
 
 /**
@@ -1932,6 +1941,7 @@ export interface PrismaCalendarUpdateSettingsInput {
 		showDurationField?: boolean;
 		showDurationInTitle?: ShowDurationInEventTitle;
 		showEventColorDots?: ShowOverflowColorDots;
+		showFileMenuActions?: ShowEventActionsInTheFileMenu;
 		/**
 		 * Display a marker indicator on physical recurring instance events (actual instances created from source).
 		 */

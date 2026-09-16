@@ -31,6 +31,7 @@ import {
 	PrismaCalendarApiManager,
 } from "./core";
 import { scanVaultForDirectorySuggestions } from "./core/directory-suggestions";
+import { registerFileMenuActions } from "./core/file-menu";
 import { exportCalendarAsICS } from "./core/integrations/ics-export";
 import { importEventsToCalendar } from "./core/integrations/ics-import";
 import { createLicenseManager, type LicenseManager } from "./core/license";
@@ -135,6 +136,7 @@ export default class CustomCalendarPlugin extends Plugin {
 		this.registerAIChatView();
 		this.logsView = registerPrismaLogsView(this);
 		registerPrismaCalendarCommands(this);
+		registerFileMenuActions(this);
 
 		const licenseSubscription = this.licenseManager.isPro$.subscribe((isPro) => {
 			if (isPro) {
