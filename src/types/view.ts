@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { TOOLBAR_BUTTON_IDS } from "../constants";
-import { CONTEXT_MENU_ITEM_IDS, type CONTEXT_MENU_BUTTON_LABELS } from "../context-menu-items";
+import { CONTEXT_MENU_ITEM_IDS, FILE_MENU_ACTION_IDS, type CONTEXT_MENU_BUTTON_LABELS } from "../context-menu-items";
 import { WEEKDAY_OPTIONS, WEEKDAY_TO_NUMBER, type Weekday } from "./recurring";
 
 export const CALENDAR_VIEW_OPTIONS = {
@@ -84,3 +84,5 @@ export type ContextMenuItem = keyof typeof CONTEXT_MENU_BUTTON_LABELS;
 export const ContextMenuItemSchema = z.enum(CONTEXT_MENU_ITEM_IDS);
 
 export const ToolbarButtonSchema = z.enum(TOOLBAR_BUTTON_IDS);
+
+export const FileMenuActionSchema = z.enum(FILE_MENU_ACTION_IDS);

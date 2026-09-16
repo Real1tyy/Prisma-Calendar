@@ -5,6 +5,7 @@ import type CustomCalendarPlugin from "../../main";
 import { openUntrackedEventCreateModal } from "../../react/modals";
 import { openEventCreateModal } from "../../react/modals/event/event-create-modal";
 import { openEventEditModal } from "../../react/modals/event/event-edit-modal";
+import { isPathInCalendarDirectory } from "../../utils/calendar/directory";
 import { isAllDayFrontmatterValue } from "../../utils/frontmatter/predicates";
 import { openFileInNewTab } from "../../utils/obsidian";
 import type { CalendarBundle } from "../calendar-bundle";
@@ -68,7 +69,7 @@ export async function triggerCurrentEventStopwatch(
 			new Notice("Enable time tracker in settings to use this action");
 			return false;
 		}
-		if (settings.directory && !activeFile.path.startsWith(settings.directory)) {
+		if (!isPathInCalendarDirectory(activeFile.path, settings.directory)) {
 			new Notice("Active note is outside the selected planning system directory");
 			return false;
 		}
@@ -175,7 +176,7 @@ export async function openCreateEventModal(
 export async function openEditActiveNoteModal(plugin: CustomCalendarPlugin, calendarId?: string): Promise<boolean> {
 	return withActiveFileBundle(plugin, calendarId, (bundle, activeFile) => {
 		const settings = bundle.settingsStore.currentSettings;
-		if (settings.directory && !activeFile.path.startsWith(settings.directory)) {
+		if (!isPathInCalendarDirectory(activeFile.path, settings.directory)) {
 			new Notice("Active note is outside the selected planning system directory");
 			return false;
 		}

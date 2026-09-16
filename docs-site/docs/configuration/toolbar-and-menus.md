@@ -96,6 +96,17 @@ If you previously configured context menu visibility via the settings tab (prior
 
 Items marked **hidden by default** stay registered and are re-enableable from **Manage menu items...** — the trimmed first-run set just keeps the right-click menu focused for new users. Items that don't apply to a specific event type (e.g., recurring-specific actions on non-recurring events) are automatically hidden regardless of configuration.
 
+## File Menu Actions
+
+Prisma adds its event actions — **Edit event**, **Trigger stopwatch**, **Mark as done/undone**, **Skip/unskip** — to Obsidian's own right-click menu for notes it tracks as events. The two places that menu opens from are configured independently:
+
+- **File explorer menu**: right-clicking the note in the file explorer or a sidebar tree.
+- **Note header menu**: the note's tab, and the **⋮ More options** menu in its header.
+
+Each section lists the four actions with a toggle apiece, all enabled by default. Uncheck the ones you don't want on that surface, or clear a section entirely to add nothing there. Changes apply immediately.
+
+The **Trigger stopwatch** entry also depends on **Show time tracker in event modal** (General settings), and the master **Show event actions in the file menu** toggle removes both surfaces at once. See [File Menu Actions](../features/management/file-menu-actions.md).
+
 ## Performance
 
 - **Enable name series tracking**: track name-based event series (groups events sharing the same title). Used for name series propagation and series views. Disable to reduce memory usage in large vaults (enabled by default).

@@ -43,6 +43,23 @@ export const CONTEXT_MENU_ITEM_IDS = Object.keys(
 	CONTEXT_MENU_BUTTON_LABELS
 ) as (keyof typeof CONTEXT_MENU_BUTTON_LABELS)[];
 
+// ─── Native file-menu actions ────────────────────────────────────────────
+// The actions Prisma injects into Obsidian's own right-click menu. These are
+// the *settings* labels — stable names for the toggle rows — while the menu
+// itself renders state-dependent titles ("Mark as undone", "Unskip event").
+
+export const FILE_MENU_ACTION_LABELS = {
+	editEvent: "Edit event",
+	triggerStopwatch: "Trigger stopwatch",
+	markDone: "Mark as done / undone",
+	skipEvent: "Skip / unskip event",
+} as const;
+
+export const FILE_MENU_ACTION_IDS = Object.keys(FILE_MENU_ACTION_LABELS) as (keyof typeof FILE_MENU_ACTION_LABELS)[];
+
+/** Both surfaces show every action until the user trims them. */
+export const DEFAULT_FILE_MENU_ACTIONS = [...FILE_MENU_ACTION_IDS];
+
 // Trimmed first-run defaults — these power-user / niche items stay registered
 // and re-enableable in "Manage menu items…", but ship hidden so new users see
 // a leaner right-click menu. Triage rationale for each:

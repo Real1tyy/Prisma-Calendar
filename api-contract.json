@@ -2057,6 +2057,42 @@
 								"title": "File operation concurrency limit",
 								"type": "integer"
 							},
+							"fileMenuExplorerActions": {
+								"default": [
+									"editEvent",
+									"triggerStopwatch",
+									"markDone",
+									"skipEvent"
+								],
+								"items": {
+									"enum": [
+										"editEvent",
+										"triggerStopwatch",
+										"markDone",
+										"skipEvent"
+									],
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"fileMenuHeaderActions": {
+								"default": [
+									"editEvent",
+									"triggerStopwatch",
+									"markDone",
+									"skipEvent"
+								],
+								"items": {
+									"enum": [
+										"editEvent",
+										"triggerStopwatch",
+										"markDone",
+										"skipEvent"
+									],
+									"type": "string"
+								},
+								"type": "array"
+							},
 							"filterExpressions": {
 								"default": [],
 								"description": "JavaScript expressions to filter events (one per line). Changes apply when you click outside or press Ctrl/Cmd+Enter. Note: Expect a brief lag when applying changes as it triggers full re-indexing.",
@@ -3010,6 +3046,8 @@
 							"titleAutocomplete",
 							"categoryAssignmentPresets",
 							"contextMenuItems",
+							"fileMenuExplorerActions",
+							"fileMenuHeaderActions",
 							"showSourceRecurringMarker",
 							"showPhysicalRecurringMarker",
 							"sourceRecurringMarker",
@@ -4601,6 +4639,42 @@
 								"minimum": 1,
 								"title": "File operation concurrency limit",
 								"type": "integer"
+							},
+							"fileMenuExplorerActions": {
+								"default": [
+									"editEvent",
+									"triggerStopwatch",
+									"markDone",
+									"skipEvent"
+								],
+								"items": {
+									"enum": [
+										"editEvent",
+										"triggerStopwatch",
+										"markDone",
+										"skipEvent"
+									],
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"fileMenuHeaderActions": {
+								"default": [
+									"editEvent",
+									"triggerStopwatch",
+									"markDone",
+									"skipEvent"
+								],
+								"items": {
+									"enum": [
+										"editEvent",
+										"triggerStopwatch",
+										"markDone",
+										"skipEvent"
+									],
+									"type": "string"
+								},
+								"type": "array"
 							},
 							"filterExpressions": {
 								"default": [],

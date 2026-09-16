@@ -19,7 +19,7 @@ import {
 	DEFAULT_CATEGORY_PROP,
 	DEFAULT_TOOLBAR_BUTTONS,
 } from "../constants";
-import { DEFAULT_CONTEXT_MENU_ITEMS } from "../context-menu-items";
+import { DEFAULT_CONTEXT_MENU_ITEMS, DEFAULT_FILE_MENU_ACTIONS } from "../context-menu-items";
 import {
 	computeDedicatedUIPropKeys,
 	computeNotificationDedicatedUIPropKeys,
@@ -35,6 +35,7 @@ import {
 	ContextMenuItemSchema,
 	DAY_CELL_COLORING_OPTIONS,
 	DENSITY_OPTIONS,
+	FileMenuActionSchema,
 	LOCALE_KEYS,
 	LOCALE_OPTIONS,
 	TEXT_CONTRAST_MODE_OPTIONS,
@@ -759,6 +760,11 @@ const CalendarSettingsSchema = z
 		contextMenuItems: z.array(ContextMenuItemSchema).catch([...DEFAULT_CONTEXT_MENU_ITEMS]), // Legacy: simple list of enabled item IDs (kept for backward compatibility)
 		contextMenuState: ContextMenuStateSchema.optional().catch(undefined), // Persisted context menu state (order, renames, icons, colors)
 		ganttContextMenuState: ContextMenuStateSchema.optional().catch(undefined), // Persisted gantt bar context menu state
+		// Which Prisma actions appear in Obsidian's own file menu, per surface —
+		// the two entry points fire the same `file-menu` event and are told apart
+		// by its `source` argument. Empty list = nothing added on that surface.
+		fileMenuExplorerActions: z.array(FileMenuActionSchema).catch([...DEFAULT_FILE_MENU_ACTIONS]),
+		fileMenuHeaderActions: z.array(FileMenuActionSchema).catch([...DEFAULT_FILE_MENU_ACTIONS]),
 		showSourceRecurringMarker: z
 			.boolean()
 			.catch(true)

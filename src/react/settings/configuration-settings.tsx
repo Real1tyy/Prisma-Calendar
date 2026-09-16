@@ -9,6 +9,7 @@ import {
 	TOOLBAR_BUTTON_IDS,
 	TOOLBAR_BUTTON_LABELS,
 } from "../../constants";
+import { FILE_MENU_ACTION_IDS, FILE_MENU_ACTION_LABELS } from "../../context-menu-items";
 import type { CalendarSettingsStore, ToolbarButtonsKey } from "../../core/settings-store";
 
 interface ConfigurationSettingsProps {
@@ -35,6 +36,86 @@ export const ConfigurationSettingsReact = memo(function ConfigurationSettingsRea
 				configKey="mobileToolbarButtons"
 			/>
 			<BatchSelectionSection settingsStore={settingsStore} />
+			<FileMenuSection
+				settingsStore={settingsStore}
+				heading="File explorer menu"
+				description="Choose which Prisma actions appear when you right-click one of this planning system's notes in the file explorer. Uncheck every action to add nothing there."
+				configKey="fileMenuExplorerActions"
+			/>
+			<FileMenuSection
+				settingsStore={settingsStore}
+				heading="Note header menu"
+				description="Choose which Prisma actions appear in a note's tab and its ⋮ More options menu. Uncheck every action to add nothing there."
+				configKey="fileMenuHeaderActions"
+			/>
+		</>
+	);
+});
+
+type FileMenuActionsKey = "fileMenuExplorerActions" | "fileMenuHeaderActions";
+
+interface FileMenuSectionProps {
+	settingsStore: CalendarSettingsStore;
+	heading: string;
+	description: string;
+	configKey: FileMenuActionsKey;
+}
+
+/**
+ * Both surfaces are driven by Obsidian's single `file-menu` event, told apart by
+ * its `source` — so they are two independent lists rather than one shared list
+ * with a per-surface override.
+ */
+const FileMenuSection = memo(function FileMenuSection({
+	settingsStore,
+	heading,
+	description,
+	configKey,
+}: FileMenuSectionProps) {
+	const [actions, setActions] = useSchemaField(settingsStore, configKey);
+	const enabled = useMemo(() => new Set(actions), [actions]);
+
+	const handleToggle = useCallback(
+		(actionId: string, value: boolean) => {
+			setActions((current) =>
+				value
+					? FILE_MENU_ACTION_IDS.filter((id) => current.includes(id) || id === actionId)
+					: current.filter((id) => id !== actionId)
+			);
+		},
+		[setActions]
+	);
+
+	return (
+		<>
+			<SettingHeading name={heading} />
+			<div className="setting-item">
+				<div className="setting-item-info">
+					<div className="setting-item-name">{heading}</div>
+					<div className="setting-item-description">{description}</div>
+				</div>
+				<div className="setting-item-control" />
+			</div>
+			<div className={cls("batch-buttons-container")}>
+				{FILE_MENU_ACTION_IDS.map((actionId) => (
+					<div
+						key={actionId}
+						className="setting-item prisma-batch-button-setting"
+						data-testid={tid("settings-field", configKey, actionId)}
+					>
+						<div className="setting-item-info">
+							<div className="setting-item-name">{FILE_MENU_ACTION_LABELS[actionId]}</div>
+						</div>
+						<div className="setting-item-control">
+							<Toggle
+								value={enabled.has(actionId)}
+								onChange={(v) => handleToggle(actionId, v)}
+								testId={tid("settings-control", configKey, actionId)}
+							/>
+						</div>
+					</div>
+				))}
+			</div>
 		</>
 	);
 });

@@ -34,12 +34,30 @@ are never touched.
 If two planning systems' folders overlap or nest, the note is attributed to the
 **first** calendar in your settings list whose folder contains it.
 
+## Choosing which actions appear
+
+The two places this menu opens from are configured separately, under
+**Settings → Configuration**:
+
+| Section | Covers |
+| --- | --- |
+| **File explorer menu** | Right-clicking the note in the file explorer or a sidebar tree |
+| **Note header menu** | The note's tab, and the **⋮ More options** menu in its header |
+
+Each section lists the four actions with a toggle apiece, all on by default.
+Uncheck the ones you don't want on that surface — so the file explorer can keep
+the full set while a note's header offers only **Mark as done**, or vice versa.
+Clearing every toggle in a section means Prisma adds nothing there.
+
+Changes apply immediately; there is no need to reopen anything.
+
 ## Turning it off
 
 **Settings → General → Interface → Show event actions in the file menu**
 
-The toggle is per planning system and on by default. Switch it off and Prisma
-adds nothing to the native menu for that calendar's events.
+This is the master switch, per planning system and on by default. Switch it off
+and Prisma adds nothing to either surface for that calendar's events, whatever
+the per-surface sections say.
 
 The **Trigger stopwatch** entry additionally follows
 [Show time tracker in event modal](./time-tracker.md) — turn the time tracker off

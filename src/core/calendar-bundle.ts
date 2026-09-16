@@ -14,6 +14,7 @@ import type CustomCalendarPlugin from "../main";
 import { registerPrismaReactView, type PrismaViewRef } from "../react/views/register-prisma-view";
 import type { PrismaCalendarSettingsStore } from "../types";
 import type { CreateEventData, UpdateEventData } from "../types/event-boundaries";
+import { isPathInCalendarDirectory } from "../utils/calendar/directory";
 import { generateUniqueEventPath } from "../utils/events/file-naming";
 import { extractZettelId, removeZettelId } from "../utils/events/zettel-id";
 import { CalendarViewStateManager } from "./calendar-view-state-manager";
@@ -433,7 +434,7 @@ export class CalendarBundle {
 	async openFileInCalendar(file: TFile): Promise<boolean> {
 		const settings = this.settingsStore.currentSettings;
 
-		if (!file.path.startsWith(settings.directory)) {
+		if (!isPathInCalendarDirectory(file.path, settings.directory)) {
 			return false;
 		}
 
