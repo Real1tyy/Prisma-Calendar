@@ -2,8 +2,7 @@ import { Notice } from "obsidian";
 
 import { PromiseQueue } from "../../utils/async/promise-queue";
 import type { Command } from "./command";
-import type { HistoryEntry } from "./history-entry";
-import { HistoryLog, REDO, UNDO, type HistoryRecord, type ReplayDirection } from "./history-log";
+import { describeCommand, type HistoryEntry, type PersistedHistory } from "./history-entry";
 import { HistoryPersistence, type HistoryPersistenceOptions } from "./history-persistence";
 import { createMonotonicSequencer, type Sequencer } from "./sequencer";
 
@@ -28,25 +27,92 @@ export interface CommandManagerOptions {
 const DEFAULT_MAX_HISTORY_SIZE = 100;
 
 /**
- * Undo/redo over a {@link HistoryLog}.
+ * Undo and redo are the same traversal in opposite directions. Everything that
+ * differs between them lives here, so each algorithm — pick the next candidate,
+ * act on one entry, act on a span — is written once. There are only ever the two
+ * instances below.
+ */
+interface ReplayDirection {
+	/** The `applied` state an entry must be in for this direction to act on it. */
+	readonly actsOn: boolean;
+	/** Which end of the log to start from when picking a candidate or walking a span. */
+	readonly scan: "newest-first" | "oldest-first";
+	run(command: Command): Promise<void>;
+	/**
+	 * Pre-flight check. Undo consults the command's own `canUndo()` — a command
+	 * whose referenced file is gone reports false. Redo has no equivalent.
+	 */
+	canRun(command: Command): boolean | Promise<boolean>;
+	/** Lowercase verb for log lines and single-entry notices ("undo" / "redo"). */
+	readonly verb: string;
+	/** Past tense for the success notice ("Undid" / "Redid"). */
+	readonly past: string;
+	/** Lowercase verb for the span operation ("revert" / "restore"). */
+	readonly spanVerb: string;
+	/** Past tense for the span notice ("Reverted" / "Restored"). */
+	readonly spanPast: string;
+}
+
+const UNDO: ReplayDirection = {
+	actsOn: true,
+	scan: "newest-first",
+	run: (command) => command.undo(),
+	canRun: (command) => command.canUndo?.() ?? true,
+	verb: "undo",
+	past: "Undid",
+	spanVerb: "revert",
+	spanPast: "Reverted",
+};
+
+const REDO: ReplayDirection = {
+	actsOn: false,
+	scan: "oldest-first",
+	run: (command) => command.execute(),
+	canRun: () => true,
+	verb: "redo",
+	past: "Redid",
+	spanVerb: "restore",
+	spanPast: "Restored",
+};
+
+/** A log entry paired with the live command that can replay it. */
+interface HistoryRecord {
+	readonly meta: {
+		readonly id: string;
+		readonly type: string;
+		readonly description: string;
+		readonly timestamp: number;
+		applied: boolean;
+		replayable: boolean;
+	};
+	/** `null` ⇒ restored from storage; the live command didn't survive the session. */
+	readonly command: Command | null;
+}
+
+/**
+ * Undo/redo over a linear log of recorded operations.
  *
- * This class owns *orchestration* — serialization, notices, activity ordering,
- * and driving the persistence seam. The log owns the entries and every
- * traversal over them; {@link HistoryPersistence} owns durability.
- *
- * Undo and redo are one implementation parameterised by {@link ReplayDirection},
- * so `undo`/`redo`, `undoEntry`/`redoEntry` and `revertTo`/`restoreTo` are each
- * a single algorithm rather than a mirrored pair. Sequential `undo()`/`redo()`
- * resolve to "newest applied" / "oldest undone", which degrades exactly to the
- * cursor model this replaced.
+ * The log is a list with a per-entry `applied` flag rather than a single cursor,
+ * which is what makes *selective* undo possible: flipping the 20th-last entry
+ * leaves the other nineteen applied. Undo and redo are one implementation
+ * parameterised by {@link ReplayDirection}, so `undo`/`redo`,
+ * `undoEntry`/`redoEntry` and `revertTo`/`restoreTo` are each a single algorithm
+ * rather than a mirrored pair. Sequential `undo()`/`redo()` resolve to "newest
+ * applied" / "oldest undone", which degrades exactly to the cursor model this
+ * replaced.
  *
  * One deliberate departure from that model: a new command no longer truncates
  * undone entries. They stay in the log and stay individually redoable — the
  * point of selective replay. See
  * [[spec-operation-history-modal-with-selective-undo-redo-and-persisted-history-log]].
+ *
+ * Durability is the one genuinely separate concern, and lives behind
+ * {@link HistoryPersistence}.
  */
 export class CommandManager {
-	private readonly log: HistoryLog;
+	private entries: HistoryRecord[] = [];
+	private nextId = 0;
+	private readonly maxHistorySize: number;
 	private readonly persistence: HistoryPersistence | null;
 	private restorePending = false;
 	private showNotices: boolean;
@@ -68,7 +134,7 @@ export class CommandManager {
 	private readonly queue = new PromiseQueue();
 
 	constructor(options: CommandManagerOptions = {}) {
-		this.log = new HistoryLog(options.maxHistorySize ?? DEFAULT_MAX_HISTORY_SIZE);
+		this.maxHistorySize = options.maxHistorySize ?? DEFAULT_MAX_HISTORY_SIZE;
 		this.showNotices = options.showNotices ?? false;
 		this.sequencer = options.sequencer ?? createMonotonicSequencer();
 
@@ -76,8 +142,7 @@ export class CommandManager {
 		// NOT loaded here. A CommandManager is constructed on its plugin's boot
 		// path, and `localStorage` is synchronous — putting a read there makes an
 		// operation log capable of slowing, or failing, plugin load itself. No
-		// audit trail is worth that, so the read is deferred to the first time
-		// anyone actually looks at the history.
+		// audit trail is worth that, so the read is deferred (see restoreOnce).
 		this.restorePending = this.persistence !== null;
 	}
 
@@ -123,25 +188,7 @@ export class CommandManager {
 	 */
 	getHistory(): readonly HistoryEntry[] {
 		this.restoreOnce();
-		return this.log.view();
-	}
-
-	/**
-	 * Read the persisted log back in, at most once.
-	 *
-	 * Deliberately not done in the constructor: that runs on the plugin's boot
-	 * path, and `localStorage` is synchronous, so a read there lets the operation
-	 * log slow — or break — plugin load itself. Instead it happens at the first
-	 * moment it can actually matter: someone reads the history, or we are about
-	 * to persist (see {@link changed}).
-	 */
-	private restoreOnce(): void {
-		if (!this.restorePending) return;
-		// Cleared first: a store that fails to read should be given up on, not
-		// retried on every render.
-		this.restorePending = false;
-		const stored = this.persistence?.load();
-		if (stored) this.log.restore(stored);
+		return this.entries.map((record) => ({ ...record.meta }));
 	}
 
 	/** Subscribe to history mutations (push / undo / redo / clear). Returns an unsubscribe. */
@@ -157,7 +204,7 @@ export class CommandManager {
 		// duplicate every row.
 		this.restoreOnce();
 		for (const listener of this.listeners) listener();
-		this.persistence?.schedule(() => this.log.snapshot());
+		this.persistence?.schedule(() => this.snapshot());
 	}
 
 	// ─── Execution ───────────────────────────────────────────────
@@ -183,8 +230,22 @@ export class CommandManager {
 		});
 	}
 
+	/** Append a freshly-executed command, evicting the oldest entries past the cap. */
 	private record(command: Command): void {
-		this.log.record(command);
+		this.entries.push({
+			command,
+			meta: {
+				id: String(this.nextId++),
+				type: command.getType(),
+				description: describeCommand(command),
+				timestamp: Date.now(),
+				applied: true,
+				replayable: true,
+			},
+		});
+		if (this.entries.length > this.maxHistorySize) {
+			this.entries.splice(0, this.entries.length - this.maxHistorySize);
+		}
 		this.markActivity();
 		this.changed();
 	}
@@ -229,7 +290,7 @@ export class CommandManager {
 
 	private step(direction: ReplayDirection): Promise<boolean> {
 		return this.queue.enqueue(async () => {
-			const record = this.log.next(direction);
+			const record = this.next(direction);
 			if (!record) {
 				this.notify(`Nothing to ${direction.verb}`);
 				return false;
@@ -240,7 +301,7 @@ export class CommandManager {
 
 	private stepEntry(id: string, direction: ReplayDirection): Promise<boolean> {
 		return this.queue.enqueue(async () => {
-			const record = this.log.byId(id);
+			const record = this.entries.find((entry) => entry.meta.id === id);
 			if (!record || record.meta.applied !== direction.actsOn) return false;
 			return await this.replay(record, direction);
 		});
@@ -248,7 +309,7 @@ export class CommandManager {
 
 	private stepSpan(id: string, direction: ReplayDirection): Promise<number> {
 		return this.queue.enqueue(async () => {
-			const records = this.log.span(id, direction);
+			const records = this.span(id, direction);
 			if (!records) return 0;
 
 			let done = 0;
@@ -276,13 +337,16 @@ export class CommandManager {
 			if (!(await direction.canRun(command))) {
 				console.warn(`Cannot ${direction.verb} command: ${meta.type} - referenced resources no longer exist`);
 				if (!options?.silent) this.notify(`Cannot ${direction.verb}: state has changed`);
-				this.log.markBroken(record);
+				// Retire it from replay but keep it in the log: in a UI whose whole
+				// point is "here is what you did", deleting the row is worse than
+				// showing it as un-replayable.
+				meta.replayable = false;
 				this.changed();
 				return false;
 			}
 
 			await direction.run(command);
-			this.log.markReplayed(record, direction);
+			meta.applied = !direction.actsOn;
 			this.markActivity();
 			if (!options?.silent) this.notify(`${direction.past}: ${meta.description}`);
 			this.changed();
@@ -290,41 +354,141 @@ export class CommandManager {
 		} catch (error) {
 			console.error(`Failed to ${direction.verb} command: ${meta.type}`, error);
 			if (!options?.silent) this.notify(`Failed to ${direction.verb}: ${meta.description}`);
-			// Keep the entry as a record of what happened, but stop offering a
-			// replay: the command threw mid-flight, so the state it was tracking
-			// is no longer one we can reason about.
-			this.log.markBroken(record);
+			// Same reasoning as above: the command threw mid-flight, so the state it
+			// was tracking is no longer one we can reason about.
+			meta.replayable = false;
 			this.changed();
 			return false;
+		}
+	}
+
+	// ─── Traversal ───────────────────────────────────────────────
+
+	private actionable(record: HistoryRecord, direction: ReplayDirection): boolean {
+		return record.meta.applied === direction.actsOn && record.meta.replayable;
+	}
+
+	/**
+	 * The entry this direction's sequential undo()/redo() would act on: the first
+	 * actionable one in scan order. Called on every `canUndo()`, so it walks by
+	 * index and exits early rather than materializing an ordering.
+	 */
+	private next(direction: ReplayDirection): HistoryRecord | null {
+		// Skipping non-replayable entries is what stops a single broken entry
+		// wedging sequential undo against everything older than it.
+		for (const record of this.inScanOrder(direction, this.entries.length)) {
+			if (this.actionable(record, direction)) return record;
+		}
+		return null;
+	}
+
+	/**
+	 * Every entry this direction can act on, from its scan end through `id`
+	 * inclusive, in scan order — so a revert unwinds newest-first and a restore
+	 * re-applies oldest-first. `null` when `id` isn't in the log.
+	 *
+	 * Materialized rather than lazy: the caller mutates each entry's `applied` as
+	 * it goes, and a live view would then re-filter mid-walk.
+	 */
+	private span(id: string, direction: ReplayDirection): HistoryRecord[] | null {
+		const target = this.entries.findIndex((record) => record.meta.id === id);
+		if (target < 0) return null;
+
+		const distance = direction.scan === "newest-first" ? this.entries.length - target : target + 1;
+		const inRange: HistoryRecord[] = [];
+		for (const record of this.inScanOrder(direction, distance)) {
+			if (record.meta.applied === direction.actsOn) inRange.push(record);
+		}
+		return inRange;
+	}
+
+	/** The first `distance` entries in this direction's scan order, lazily. */
+	private *inScanOrder(direction: ReplayDirection, distance: number): Generator<HistoryRecord> {
+		const backwards = direction.scan === "newest-first";
+		const start = backwards ? this.entries.length - 1 : 0;
+		const step = backwards ? -1 : 1;
+		for (let taken = 0, i = start; taken < distance && i >= 0 && i < this.entries.length; taken++, i += step) {
+			yield this.entries[i];
 		}
 	}
 
 	// ─── Queries ─────────────────────────────────────────────────
 
 	canUndo(): boolean {
-		return this.log.next(UNDO) !== null;
+		return this.next(UNDO) !== null;
 	}
 
 	canRedo(): boolean {
-		return this.log.next(REDO) !== null;
+		return this.next(REDO) !== null;
 	}
 
 	/** Entries that could still be undone — restored/broken entries don't count. */
 	getUndoStackSize(): number {
-		return this.log.count(UNDO);
+		return this.entries.filter((record) => this.actionable(record, UNDO)).length;
 	}
 
 	/** Entries that could still be redone — restored/broken entries don't count. */
 	getRedoStackSize(): number {
-		return this.log.count(REDO);
+		return this.entries.filter((record) => this.actionable(record, REDO)).length;
 	}
 
 	peekUndo(): string | null {
-		return this.log.next(UNDO)?.meta.type ?? null;
+		return this.next(UNDO)?.meta.type ?? null;
 	}
 
 	peekRedo(): string | null {
-		return this.log.next(REDO)?.meta.type ?? null;
+		return this.next(REDO)?.meta.type ?? null;
+	}
+
+	// ─── Persistence ─────────────────────────────────────────────
+
+	private snapshot(): PersistedHistory {
+		return {
+			nextId: this.nextId,
+			entries: this.entries.map(({ meta }) => ({
+				id: meta.id,
+				type: meta.type,
+				description: meta.description,
+				timestamp: meta.timestamp,
+				applied: meta.applied,
+			})),
+		};
+	}
+
+	/**
+	 * Read the persisted log back in, at most once.
+	 *
+	 * Deliberately not done in the constructor: that runs on the plugin's boot
+	 * path, and `localStorage` is synchronous, so a read there lets the operation
+	 * log slow — or break — plugin load itself. Instead it happens at the first
+	 * moment it can actually matter: someone reads the history, or we are about
+	 * to persist (see {@link changed}).
+	 *
+	 * Restored entries carry no command, so none can be replayed. Because this is
+	 * lazy it may run *after* the session recorded operations; those are strictly
+	 * newer, so the restored ones go in front — and are re-keyed, since a fresh
+	 * session issues ids from zero and would otherwise collide. Nothing depends on
+	 * a restored id matching what was stored: it only has to be unique in the log.
+	 */
+	private restoreOnce(): void {
+		if (!this.restorePending) return;
+		// Cleared first: a store that fails to read should be given up on, not
+		// retried on every render.
+		this.restorePending = false;
+		const stored = this.persistence?.load();
+		if (!stored) return;
+
+		const restored: HistoryRecord[] = stored.entries.slice(-this.maxHistorySize).map((entry, index) => ({
+			command: null,
+			meta: { ...entry, id: `r${index}`, replayable: false },
+		}));
+		this.entries = [...restored, ...this.entries].slice(-this.maxHistorySize);
+		this.nextId = Math.max(this.nextId, stored.nextId);
+	}
+
+	/** Write any pending debounced history immediately. */
+	flushPersistence(): void {
+		this.persistence?.flush();
 	}
 
 	// ─── Lifecycle ───────────────────────────────────────────────
@@ -335,7 +499,8 @@ export class CommandManager {
 			// Drop the pending restore too, or the log the user just cleared would
 			// reappear the next time anything triggered a lazy read.
 			this.restorePending = false;
-			this.log.clear();
+			this.entries = [];
+			this.nextId = 0;
 			// Notify directly rather than through `changed()`: this must not
 			// schedule a write of the log it is erasing. `clear()` also discards
 			// any write already queued by an earlier mutation.
@@ -353,11 +518,6 @@ export class CommandManager {
 	dispose(): void {
 		this.flushPersistence();
 		this.listeners.clear();
-		this.log.clear();
-	}
-
-	/** Write any pending debounced history immediately. */
-	flushPersistence(): void {
-		this.persistence?.flush();
+		this.entries = [];
 	}
 }

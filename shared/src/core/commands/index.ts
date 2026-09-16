@@ -9,7 +9,6 @@ export {
 	type HistoryEntry,
 	type PersistedHistory,
 } from "./history-entry";
-export { HistoryLog, REDO, UNDO, type HistoryRecord, type ReplayDirection } from "./history-log";
 export { HistoryPersistence, type HistoryPersistenceOptions } from "./history-persistence";
 export { batchCommand, MacroCommand, type MacroCommandOptions } from "./macro-command";
 export { createMonotonicSequencer, type Sequencer } from "./sequencer";
