@@ -1237,7 +1237,7 @@ export function markInstanceStatusIfPast(
 	const now = DateTime.now();
 	const isPast = instanceEnd
 		? toInternalISO(instanceEnd) < toInternalISO(now)
-		: (instanceStart.toISODate() ?? "") < (now.toISODate() ?? "");
+		: (instanceStart.toISODate() ?? "") < now.toISODate();
 
 	if (isPast && frontmatter[settings.statusProperty] !== settings.doneValue) {
 		frontmatter[settings.statusProperty] = settings.doneValue;
