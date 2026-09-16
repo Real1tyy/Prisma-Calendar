@@ -226,20 +226,3 @@ export function* iterateOccurrencesInRange(
 		}
 	}
 }
-
-/**
- * Calculates a DateTime for a specific date with optional time
- */
-export function calculateInstanceDateTime(instanceDate: DateTime, timeString?: string): DateTime {
-	if (!timeString) {
-		return instanceDate.startOf("day");
-	}
-
-	const [hours, minutes] = timeString.split(":").map(Number);
-	return instanceDate.set({
-		hour: hours,
-		minute: minutes,
-		second: 0,
-		millisecond: 0,
-	});
-}
