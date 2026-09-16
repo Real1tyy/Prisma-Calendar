@@ -23,6 +23,7 @@ All notable changes to this project will be documented here.
 - A CalDAV or ICS event whose date you remove stays linked to its calendar, so the next sync doesn't create a second copy of it.
 - Removing the recurrence from a note stops its repeating occurrences on the calendar straight away, instead of after a reload; adding it back picks up the instances already on disk.
 - The event modal's **Note content** field keeps your draft when the note changes on disk in the same moment you start typing — it shows the conflict notice instead of replacing what you had written.
+- **Daylight saving no longer shifts event times**: on the morning a device's clocks change, recurring instances, derived end times and **Sort Date** keep the same values on every device.
 
 ---
 
