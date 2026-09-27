@@ -7,7 +7,7 @@ allowBuilds:
   classic-level: true
   better-sqlite3: true
   dtrace-provider: true
-  lefthook: true
+  lefthook: false
   protobufjs: true
   re2: true
   core-js: false

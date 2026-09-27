@@ -34,7 +34,7 @@
 	},
 	"author": "Real1tyy",
 	"license": "AGPL-3.0",
-	"packageManager": "pnpm@11.2.2",
+	"packageManager": "pnpm@11.27.1",
 	"devDependencies": {
 		"@babel/preset-typescript": "^7.28.5",
 		"@codemirror/autocomplete": "^6.20.2",
