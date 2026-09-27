@@ -3356,8 +3356,12 @@ packages:
     resolution:
       integrity: sha512-+UEDpNsYSHhhSW/OQcNl6+oODYx20EP6TykSD45if0MqAAZMYD+3DU64w9wP3fBjQswvq5BgK99w3rw6ing69g==
     peerDependencies:
+      '@types/react': '*'
       react: ^19.2.5
       react-dom: ^19.2.5
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
   react@19.2.5:
     resolution:
       integrity: sha512-llUJLzz1zTUBrskt2pwZgLq59AemifIftw4aB7JxOqf1HY2FDaGDxgwpAPVzHU1kdWabH7FauP4i1oEeer2WCA==
@@ -5568,8 +5572,8 @@ snapshots:
       scroll: 3.0.1
       scrollparent: 2.1.0
       use-sync-external-store: 1.6.0(react@19.2.5)
-    transitivePeerDependencies:
-    - '@types/react'
+    optionalDependencies:
+      '@types/react': 19.2.14
   react@19.2.5: {}
   readdirp@4.1.2: {}
   readdirp@5.0.0: {}
