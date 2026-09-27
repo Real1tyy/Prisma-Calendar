@@ -107,11 +107,13 @@ export const HelpCenterView = memo(function HelpCenterView({ config }: { config:
 
 	return (
 		<div data-testid={tid("modal")}>
-			<div className={cls("tabs")}>
+			<div className={cls("tabs")} role="tablist" aria-label="Help center sections">
 				{tabs.map((tab) => (
 					<button
 						key={tab.id}
 						type="button"
+						role="tab"
+						aria-selected={active === tab.id}
 						className={`${cls("tab")}${active === tab.id ? ` ${cls("tab-active")}` : ""}`}
 						onClick={() => setActive(tab.id)}
 						data-testid={tid(`tab-${tab.id}`)}
