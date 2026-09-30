@@ -226,6 +226,7 @@ export async function renderTemplateContent(
 		const templateFile = app.vault.getFileByPath(normalizePath(templatePath));
 		if (!templateFile) {
 			console.error(`[renderTemplateContent] Template not found: ${templatePath}`);
+			new Notice(`Template "${templatePath}" was not found. The note was created without it.`);
 			return null;
 		}
 
@@ -241,6 +242,10 @@ export async function renderTemplateContent(
 		return mergeTemplateContent(processedContent, overrides ?? {});
 	} catch (error) {
 		console.error("[renderTemplateContent] Error rendering template:", error);
+		// Callers fall back to a template-less note, so without this the failure
+		// is invisible to anyone not watching the developer console.
+		const reason = error instanceof Error ? error.message : String(error);
+		new Notice(`Template "${templatePath}" failed to run, so the note was created without it: ${reason}`, 10000);
 		return null;
 	}
 }

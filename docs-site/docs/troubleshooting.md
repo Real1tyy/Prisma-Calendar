@@ -164,6 +164,17 @@ After changing the property type, Bases will sort events chronologically. See th
 </details>
 
 <details>
+<summary>"Template failed to run" notice when creating an event</summary>
+
+**Problem**: Creating an event shows a notice saying your template failed to run. The event is created, but without the template's content.
+
+**Root Cause**: Your template threw an error while rendering. The notice includes the error message. The most common cause is template code that reads the event's properties (`tp.frontmatter["Start Date"]`, for example) — when a new event is created, the template runs before those properties exist, so they come back empty. See [Templater Integration → Supported Templater Functions](./features/advanced/templater.md#supported-templater-functions).
+
+**Solution**: Remove or guard the code that depends on the event's own properties, then create the event again. A template that works when applied to an existing event can still fail at creation time for this reason.
+
+</details>
+
+<details>
 <summary>Templates not applying to Prisma-created events</summary>
 
 **Problem**: Templater folder templates work for manually created notes, but not for events created through Prisma Calendar.
