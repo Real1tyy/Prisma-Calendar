@@ -1,4 +1,4 @@
-import { buildUtmUrl } from "@real1ty/obsidian-plugins";
+import { buildUtmUrl, FULL_CHANGELOG_FROM_VERSION } from "@real1ty/obsidian-plugins";
 import {
 	Button,
 	DoctorSection,
@@ -7,6 +7,7 @@ import {
 	OutboundLink,
 	SettingHeading,
 	SettingItem,
+	showUnreleasedChangelogModal,
 	showWhatsNewReactModal,
 	useSchemaField,
 	useSettingsFields,
@@ -88,7 +89,11 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 
 	const handleViewChangelog = useCallback(() => {
 		const config = buildWhatsNewConfig(plugin.changelogContent, "settings");
-		showWhatsNewReactModal(plugin.app, plugin, config, "0.0.0", plugin.manifest.version);
+		showWhatsNewReactModal(plugin.app, plugin, config, FULL_CHANGELOG_FROM_VERSION, plugin.manifest.version);
+	}, [plugin]);
+
+	const handleViewUnreleased = useCallback(() => {
+		showUnreleasedChangelogModal(plugin.app, buildWhatsNewConfig(plugin.changelogContent, "settings_unreleased"));
 	}, [plugin]);
 
 	const calendarSection = (heading: string, fields: string[]) => (
@@ -130,7 +135,7 @@ export const GeneralSettingsReact = memo(function GeneralSettingsReact({
 					pitch: PRO_PITCH,
 				},
 			}}
-			changelog={{ onView: handleViewChangelog }}
+			changelog={{ onView: handleViewChangelog, onViewUnreleased: handleViewUnreleased }}
 			logging={{
 				store: plugin.settingsStore,
 				service: plugin.logging.service,

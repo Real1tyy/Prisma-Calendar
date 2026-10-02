@@ -15,6 +15,7 @@ export function buildWhatsNewConfig(changelogContent: string, utmSection: string
 	return {
 		cssPrefix: "prisma-",
 		pluginName: "Prisma Calendar",
+		slug: "prisma-calendar",
 		changelogContent,
 		links: {
 			github: GITHUB_URL,

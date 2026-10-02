@@ -233,7 +233,15 @@ The FAQ and troubleshooting tabs render the **actual documentation pages, bundle
 
 ### Changelog viewer
 
-Click **View changelog** to open the full changelog as a scrollable modal. Entries load in batches — click **Load more** to see older versions. The same modal appears automatically after each plugin update showing only the new changes.
+Click **View changelog** to read the changelog one version at a time, starting with the newest release. The version sits in the middle of the modal between two arrows: **‹** moves to the newer version and **›** to the older one. To jump straight to a version, click the version box, type part of its number (`2.1`, say) and pick it from the list, or press **Enter** to take the highlighted match.
+
+When a version has a release walkthrough video, a **Release video** heading at the top of that version shows its thumbnail. Click the thumbnail to play it in the modal, or **Watch on YouTube** to open it in your browser. Click the heading to collapse the video; it stays collapsed as you move between versions until you open it again or close the modal. Videos are looked up online as you navigate, so a video published after a release still appears. Offline, versions simply show without one.
+
+The same modal opens automatically after each plugin update. It covers only the versions you haven't seen, and it starts at the oldest of them: if you update from 2.11 to 2.14, it opens on 2.12 and you step forward to 2.13 and 2.14.
+
+### Unreleased changes
+
+Click **View unreleased** (under **View changelog**) to see the features and fixes that have landed and will ship in the next release. It reads the **Unreleased** section of the [online changelog](../changelog.md) each time you open it, so it's always current. If nothing is waiting, it says so. It needs an internet connection; offline, it shows a message with a **Try again** button.
 
 ## Rate & Review
 
