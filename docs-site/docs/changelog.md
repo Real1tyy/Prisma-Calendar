@@ -27,6 +27,7 @@ All notable changes to this project will be documented here.
 - **Daylight saving no longer shifts event times**: on the morning a device's clocks change, recurring instances, derived end times and **Sort Date** keep the same values on every device.
 - **A planning system no longer claims folders that merely share its name**: with a planning system rooted at `Tasks`, notes in a sibling folder like `TasksArchive` or `Tasks-old` were treated as belonging to it — **Open current note in calendar** and **Edit active note** acted on them instead of reporting them as outside the folder. Folder matching now stops at the folder boundary, so only notes genuinely inside the configured folder (at any depth) count. See [Folder Scanning](./features/calendar/folder-scanning.md).
 - **Template errors are no longer silent**: when your event template fails to run or can't be found, a notice now tells you which template and why, instead of quietly creating the event without it.
+- **`webcal://` links in ICS URL subscriptions**: subscription links that start with `webcal://` or `webcals://` — what Apple Calendar, iCloud and Outlook hand out when you share a calendar — failed both **Test URL** and every sync. Paste them as-is; Prisma fetches them over `https://`. See [Integrations → ICS URL Subscriptions](./features/advanced/integrations.md#adding-a-subscription).
 
 ---
 
