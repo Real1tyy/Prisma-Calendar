@@ -46,7 +46,7 @@ See [Free vs Pro](../features/free-vs-pro.md) for details on what Pro includes a
 
 ## Check for Updates
 
-Prisma Calendar can quietly check GitHub once a day for newer releases. When a newer version is available, an **Update available** pill appears in the settings header next to the current version — click it to open the release notes on GitHub and grab the update from inside Obsidian.
+Prisma Calendar can quietly check GitHub once a day for newer releases. When a newer version is available, an **Update available** pill appears in the settings header next to the current version — click it to open that version on the [changelog](../changelog.md) page, with its notes and release video, then grab the update from inside Obsidian.
 
 **Behavior:**
 - The check runs at most once every 24 hours per device, started shortly after Obsidian finishes loading the plugin.
@@ -233,7 +233,7 @@ The FAQ and troubleshooting tabs render the **actual documentation pages, bundle
 
 ### Changelog viewer
 
-Click **View changelog** to read the changelog one version at a time, starting with the newest release. The version sits in the middle of the modal between two arrows: **‹** moves to the newer version and **›** to the older one. To jump straight to a version, click the version box, type part of its number (`2.1`, say) and pick it from the list, or press **Enter** to take the highlighted match.
+Click **View changelog** to read the changelog one version at a time, starting with the newest release. The version sits in the middle of the modal between two arrows: **‹** moves to the newer version and **›** to the older one — or press the **←** and **→** keys. To jump straight to a version, click the version box, type part of its number (`2.1`, say) and pick it from the list, or press **Enter** to take the highlighted match. The **↑** and **↓** buttons at the right of the version bar jump to the top or bottom of a long version.
 
 When a version has a release walkthrough video, a **Release video** heading at the top of that version shows its thumbnail. Click the thumbnail to play it in the modal, or **Watch on YouTube** to open it in your browser. Click the heading to collapse the video; it stays collapsed as you move between versions until you open it again or close the modal. Videos are looked up online as you navigate, so a video published after a release still appears. Offline, versions simply show without one.
 

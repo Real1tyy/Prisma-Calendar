@@ -12,7 +12,7 @@ import {
 import { Notice } from "obsidian";
 import { memo, useCallback, useMemo, useState } from "react";
 
-import { cls, CSS_PREFIX, tid } from "../../constants";
+import { cls, CSS_PREFIX, settingsDocUrl, tid } from "../../constants";
 import { FREE_MAX_CALENDARS } from "../../core/license";
 import { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
@@ -171,7 +171,11 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 						</div>
 						<div className={cls("settings-hero-controls")}>
 							{checkForReleaseUpdates && (
-								<UpdateAvailableBadge service={plugin.releaseCheckService} testId="prisma-settings-update-badge" />
+								<UpdateAvailableBadge
+									service={plugin.releaseCheckService}
+									changelogUrl={settingsDocUrl("/changelog", "update_badge")}
+									testId="prisma-settings-update-badge"
+								/>
 							)}
 							<Copyable text={version} className={cls("settings-hero-version")} successMessage={`Copied ${version}`}>
 								v{version}

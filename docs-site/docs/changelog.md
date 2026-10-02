@@ -161,8 +161,6 @@ All notable changes to this project will be documented here.
 ## 2.17.0 - 5/19/2026
 
 > **TLDR:** Prisma Calendar is now in the official Obsidian Community Plugin Store — install with one click from inside Obsidian. Click any pie-chart legend entry on the stats views to filter that category out and rescale the chart, table, and totals to 100% over what remains. Every Manage X modal (header actions, tab manager, context menu, dashboard layout) now has a **Reset to defaults** button with a confirmation prompt, and the event modal gets keyboard shortcuts for **Assign categories** (⌘⇧C) and **Assign prerequisites** (⌘⇧P) — plus a sturdier title autocomplete flow.
->
-> 📺 [Watch the 2.17 & 2.16 update video](https://youtu.be/Bwz9thJGiXc) — a walkthrough of all the major changes in action.
 
 ### Added
 - **Available in the Obsidian Community Plugin Store**: Prisma Calendar is now listed in Obsidian's built-in plugin browser. [Add to Obsidian](obsidian://show-plugin?id=prisma-calendar) or search "Prisma Calendar" under **Settings → Community plugins → Browse**.
@@ -182,8 +180,6 @@ All notable changes to this project will be documented here.
 ## 2.16.0 - 5/11/2026
 
 > **TLDR:** Right-click any event to **Move to planning system…** — the note relocates and its frontmatter is translated to the destination's schema. **Categories now count untracked events** with full statistics, and **category rename / delete are undoable**. Icons get a **visual picker** with live previews, plus per-tab icon and color editing. Settings now show an **Update available** badge when a newer release ships, and remember your active tab and scroll position between opens.
->
-> 📺 [Watch the 2.17 & 2.16 update video](https://youtu.be/Bwz9thJGiXc) — a walkthrough of all the major changes in action.
 
 ### Added
 - **Move event to another planning system**: Right-click an event and choose **Move to planning system…** to send it to another calendar. The note is moved into the destination's directory and its frontmatter is translated to the destination's property schema (e.g., `Start Date` → `Begin`, `Category` → `Topic`). Custom user keys are preserved. Also exposed via `PrismaCalendar.moveEventToCalendar` API. See [Multiple Planning Systems → Moving an event between planning systems](./features/calendar/multiple-calendars.md#moving-an-event-between-planning-systems).
@@ -218,8 +214,6 @@ All notable changes to this project will be documented here.
 ## 2.15.0 - 4/29/2026
 
 > **TLDR:** New [Quick Start Video](https://youtu.be/dziQK9UQhvE) covering installation, setup, and core workflows from scratch. Smarter onboarding with datetime/date property detection, prefill buttons, and a new **Configure current** button for re-running property detection on any planning system. Planning systems are now fully isolated — creating, deleting, or reconfiguring one never disrupts others, and multiple systems can share the same directory with different property mappings.
->
-> 📺 [Watch the 2.15 & 2.14 update video](https://youtu.be/QBB6QmY-n8Y) — a walkthrough of all the major changes in action.
 
 ### Added
 - **Quick Start Video**: New [Quick Start guide video](https://youtu.be/dziQK9UQhvE) walks through everything from installation to setup to daily use — creating events, editing, categories, recurring events, statistics, and multiple planning systems. Highly recommended for both new and existing users to better understand how Prisma works and get the most out of it. See [Quick Start](./quickstart.md).
@@ -254,8 +248,6 @@ Prisma is under active, full-time development. If you have ideas for improving t
 ## 2.14.0 - 4/21/2026
 
 > **TLDR:** New **Settings transfer** and **Year view**. **Multi-color gradients and color dots** now work across Gantt, Timeline, Heatmap, and event series modals — not just the calendar. Export your plugin config as JSON and re-import it on another vault. **CalDAV subscriptions** now pick up server-side deletions. **Title property** wins over **Calendar Title** everywhere.
->
-> 📺 [Watch the 2.15 & 2.14 update video](https://youtu.be/QBB6QmY-n8Y) — a walkthrough of all the major changes in action.
 
 ### Added
 - **Settings transfer (import / export / reset)**: New **Settings transfer** row at the bottom of **General** — export your plugin settings as JSON (only fields you changed from defaults are included), re-import them on another vault, or reset every setting to its default with one click (protected by a confirmation dialog). Local-only keys (license secret reference) are never touched. See [General Settings → Settings Transfer](./configuration/general.md#settings-transfer).
@@ -278,8 +270,6 @@ Prisma is under active, full-time development. If you have ideas for improving t
 ## 2.13.0 - 4/18/2026
 
 > **TLDR:** New **Monthly + Stats** tab — a month-locked calendar paired with live monthly stats. New **Heatmap Monthly + Stats** showing heatmap motnhly with stats.
->
-> 📺 [Watch the 2.13 update video](https://youtu.be/Hkws3JWPbck) — a walkthrough of all the major changes in action.
 
 ### Added
 - **Event title validation**: The create/edit event modal now blocks saves when the title contains filename-illegal characters (`/`, `\`, `:`, `*`, `?`, `"`, `<`, `>`, `|`). A notice explains which character(s) to remove and the modal stays open so you don't lose your work. See [Title Autocomplete](./features/events/title-autocomplete.md#filename-illegal-characters).
@@ -308,8 +298,6 @@ Prisma is under active, full-time development. If you have ideas for improving t
 ## 2.12.0 - 4/1/2026
 
 > **TLDR:** Manual virtual events — create calendar time blocks without vault files. Batch Make Virtual and Make Real actions to transform notes back and forth. Start tracking directly from the untracked events dropdown. Weekdays and Weekends recurrence presets. Browser-style back/forward navigation. Settings cleanup — removed useless toggles, split excluded props per propagation type, dedicated Performance section.
->
-> 📺 [Watch the 2.12 update video](https://youtu.be/-qOsV4OCphk) — a walkthrough of all the major changes in action. These update videos will be a regular thing going forward.
 
 ### Added
 - **Manual Virtual Events**: Create calendar events without backing vault files for lightweight time blocking and planning. Toggle the Virtual pill in the create/edit modal header, or right-click any event to convert between virtual and physical. All virtual event operations (create, delete, convert) are fully undoable. Use the "Open virtual events file" command to navigate to the storage file. Thanks to [@cweekly](https://github.com/cweekly) for the [idea](https://github.com/Real1tyy/Prisma-Calendar/issues/67). See [Virtual Events](./features/events/virtual-events.md#manual-virtual-events).
