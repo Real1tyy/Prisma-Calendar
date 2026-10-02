@@ -1,11 +1,5 @@
-import {
-	buildUtmUrl,
-	isYouTubePlaceholder,
-	youTubeThumbnailUrls,
-	type PluginSlug,
-	type ReleaseVideo,
-} from "@real1ty/obsidian-plugins";
-import { memo, useState } from "react";
+import { buildUtmUrl, type PluginSlug, type ReleaseVideo } from "@real1ty/obsidian-plugins";
+import { memo } from "react";
 
 import { useScoped } from "../contexts/theme-context";
 import { OutboundLink } from "../primitives/atoms/outbound-link";
@@ -19,10 +13,10 @@ interface ReleaseVideoPanelProps {
 }
 
 /**
- * The thumbnail stands in for the player until it is clicked: nothing loads
- * from YouTube beyond one image until the reader asks for the video, and when
- * the embedded player refuses to play inside Obsidian the "Watch on YouTube"
- * link is still one click away.
+ * YouTube's own player, embedded directly and never autoplayed. Chromium only
+ * lets an embedded video play with sound after a click *inside* the player; a
+ * thumbnail of ours that mounted the player with `autoplay=1` started it muted.
+ * "Watch on YouTube" stays one click away should the embed refuse to play.
  */
 export const ReleaseVideoPanel = memo(function ReleaseVideoPanel({
 	video,
@@ -32,10 +26,6 @@ export const ReleaseVideoPanel = memo(function ReleaseVideoPanel({
 	onToggle,
 }: ReleaseVideoPanelProps) {
 	const { cls, tid } = useScoped("whats-new");
-	const [playing, setPlaying] = useState(false);
-	const thumbnails = youTubeThumbnailUrls(video.youtubeId);
-	const [thumbnail, setThumbnail] = useState(0);
-	const stepDownThumbnail = () => setThumbnail((i) => Math.min(i + 1, thumbnails.length - 1));
 	const watchUrl = buildUtmUrl(video.videoUrl, slug, "plugin", "changelog", "release_video");
 
 	return (
@@ -57,36 +47,14 @@ export const ReleaseVideoPanel = memo(function ReleaseVideoPanel({
 			</div>
 			{!collapsed && (
 				<div className={cls("video-frame")} data-testid={tid("video-body")}>
-					{playing ? (
-						<iframe
-							src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}?autoplay=1`}
-							title={`Release video for v${version}`}
-							allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-							referrerPolicy="strict-origin-when-cross-origin"
-							data-testid={tid("video-player")}
-						/>
-					) : (
-						<button
-							type="button"
-							className={cls("video-thumbnail")}
-							onClick={() => setPlaying(true)}
-							aria-label={`Play the release video for v${version}`}
-							data-testid={tid("video-thumbnail")}
-						>
-							<img
-								src={thumbnails[thumbnail]}
-								alt=""
-								onLoad={(e) => {
-									if (isYouTubePlaceholder(e.currentTarget.naturalWidth)) stepDownThumbnail();
-								}}
-								onError={stepDownThumbnail}
-								data-testid={tid("video-thumbnail-image")}
-							/>
-							<span className={cls("video-play")} aria-hidden="true">
-								▶
-							</span>
-						</button>
-					)}
+					<iframe
+						src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}`}
+						title={`Release video for v${version}`}
+						allow="encrypted-media; picture-in-picture; fullscreen"
+						allowFullScreen
+						referrerPolicy="strict-origin-when-cross-origin"
+						data-testid={tid("video-player")}
+					/>
 				</div>
 			)}
 		</div>

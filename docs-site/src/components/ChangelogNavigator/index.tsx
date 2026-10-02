@@ -7,7 +7,6 @@ import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, 
 
 import { fetchReleaseVideos, type ReleaseVideo } from "./release-video";
 import { pluginSlugFromSiteUrl } from "./site";
-import { isYouTubePlaceholder, youTubeThumbnailUrls } from "./youtube";
 import {
 	applySectionFilter,
 	CHANGELOG_VERSION_PARAM,
@@ -85,10 +84,8 @@ function ReleaseVideoPanel({
 	collapsed: boolean;
 	onToggle: () => void;
 }) {
-	const [playing, setPlaying] = useState(false);
-	const thumbnails = youTubeThumbnailUrls(video.youtubeId);
-	const [thumbnail, setThumbnail] = useState(0);
-	const stepDownThumbnail = () => setThumbnail((i) => Math.min(i + 1, thumbnails.length - 1));
+	// YouTube's own player, never autoplayed: a browser only plays an embedded
+	// video with sound after a click inside the player itself.
 	return (
 		<div className={styles.video}>
 			<div className={styles.videoHeader}>
@@ -101,35 +98,14 @@ function ReleaseVideoPanel({
 			</div>
 			{!collapsed && (
 				<div className={styles.videoFrame}>
-					{playing ? (
-						<iframe
-							src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}?autoplay=1`}
-							title={`Release video for v${version}`}
-							allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-							allowFullScreen
-							referrerPolicy="strict-origin-when-cross-origin"
-						/>
-					) : (
-						<button
-							type="button"
-							className={styles.videoThumbnail}
-							onClick={() => setPlaying(true)}
-							aria-label={`Play the release video for v${version}`}
-						>
-							<img
-								src={thumbnails[thumbnail]}
-								alt=""
-								loading="lazy"
-								onLoad={(e) => {
-									if (isYouTubePlaceholder(e.currentTarget.naturalWidth)) stepDownThumbnail();
-								}}
-								onError={stepDownThumbnail}
-							/>
-							<span className={styles.videoPlay} aria-hidden="true">
-								▶
-							</span>
-						</button>
-					)}
+					<iframe
+						src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}`}
+						title={`Release video for v${version}`}
+						allow="encrypted-media; picture-in-picture; fullscreen"
+						allowFullScreen
+						loading="lazy"
+						referrerPolicy="strict-origin-when-cross-origin"
+					/>
 				</div>
 			)}
 		</div>

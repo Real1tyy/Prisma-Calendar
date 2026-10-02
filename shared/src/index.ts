@@ -8,7 +8,7 @@ export * from "./utils";
 export * from "./integrations";
 // Logic shared with the docs sites (synced into them — so no barrel file inside).
 export { CHANGELOG_VERSION_PARAM, changelogSectionUrl, UNRELEASED_KEY } from "./docs-site/changelog-sections";
-export { isYouTubePlaceholder, parseYouTubeVideoId, youTubeThumbnailUrls } from "./docs-site/youtube";
+export { parseYouTubeVideoId } from "./docs-site/youtube";
 // Performance instrumentation (runtime; the tracker is a no-op until enabled).
 export { installPerfBridge, PERF_BRIDGE_GLOBAL_KEY, perf } from "./perf";
 export type {

@@ -7,22 +7,6 @@ const YOUTUBE_ID = /^[\w-]{11}$/;
 const YOUTUBE_HOSTS = new Set(["youtube.com", "m.youtube.com", "youtube-nocookie.com"]);
 const YOUTUBE_PATH_PREFIXES = ["/embed/", "/shorts/", "/live/"];
 
-/**
- * Thumbnail URLs sharpest first. `maxresdefault` (1280×720) only exists when
- * the video was uploaded in HD. Otherwise YouTube answers with a 120×90 grey
- * placeholder rather than an error, so a caller steps down the list when the
- * loaded image is that small (see {@link isYouTubePlaceholder}).
- */
-export function youTubeThumbnailUrls(youtubeId: string): string[] {
-	return ["maxresdefault", "sddefault", "hqdefault"].map((size) => `https://i.ytimg.com/vi/${youtubeId}/${size}.jpg`);
-}
-
-const PLACEHOLDER_MAX_WIDTH = 120;
-
-export function isYouTubePlaceholder(naturalWidth: number): boolean {
-	return naturalWidth <= PLACEHOLDER_MAX_WIDTH;
-}
-
 export function parseYouTubeVideoId(url: string): string | null {
 	let parsed: URL;
 	try {

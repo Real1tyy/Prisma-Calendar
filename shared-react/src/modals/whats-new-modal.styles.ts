@@ -1,7 +1,7 @@
 export function buildWhatsNewStyles(p: string): string {
 	return `
 .modal-container.mod-dim .modal.${p}whats-new-modal {
-	max-width: 960px;
+	max-width: 1100px;
 	width: 92%;
 	height: 88vh;
 }
@@ -312,54 +312,23 @@ export function buildWhatsNewStyles(p: string): string {
 	font-size: var(--font-ui-small);
 }
 /* Width follows the modal, but never so wide that a 16:9 frame outgrows about
-   half the window's height; the whole video then fits with the notes below. */
+   60% of the window's height; the whole video then fits with the notes below. */
 .${p}whats-new-video-frame {
 	margin: 0.6rem auto 0;
 	position: relative;
 	aspect-ratio: 16 / 9;
-	width: min(100%, calc(48vh * 16 / 9));
+	width: min(100%, calc(60vh * 16 / 9));
 }
 .${p}whats-new-content strong.${p}whats-new-tldr {
 	color: var(--text-accent);
 }
-.${p}whats-new-video-frame iframe,
-.${p}whats-new-video-thumbnail {
+.${p}whats-new-video-frame iframe {
 	position: absolute;
 	inset: 0;
 	width: 100%;
 	height: 100%;
 	border: none;
 	border-radius: 6px;
-}
-.${p}whats-new-video-thumbnail {
-	padding: 0;
-	overflow: hidden;
-	cursor: pointer;
-	background: #000;
-}
-.${p}whats-new-video-thumbnail img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	display: block;
-}
-.${p}whats-new-video-play {
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-	width: 3.5rem;
-	height: 3.5rem;
-	border-radius: 50%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-size: 1.4rem;
-	color: #fff;
-	background: rgb(0 0 0 / 65%);
-}
-.${p}whats-new-video-thumbnail:hover .${p}whats-new-video-play {
-	background: var(--interactive-accent);
 }
 .${p}whats-new-status {
 	text-align: center;
