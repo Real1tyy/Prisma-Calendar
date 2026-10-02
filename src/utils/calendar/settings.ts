@@ -127,6 +127,7 @@ export function getCalendarRenderingKey(settings: SingleCalendarConfig): string 
 		settings.showDurationInTitle,
 		settings.timeGridEventTimeDisplay,
 		settings.monthEventTimeDisplay,
+		settings.eventTextAlignment,
 		settings.showSourceRecurringMarker,
 		settings.showPhysicalRecurringMarker,
 		settings.sourceRecurringMarker,

@@ -85,14 +85,14 @@ export function renderEventTime(
 	arg: EventContentArg,
 	settings: SingleCalendarConfig,
 	context: EventTimeRenderContext
-): void {
+): boolean {
 	const decision = getEventTimeDisplayDecision(settings, {
 		allDay: arg.event.allDay,
 		hasStart: Boolean(arg.event.start),
 		isMobile: context.isMobile,
 		viewType: arg.view.type,
 	});
-	if (decision === "omit") return;
+	if (decision === "omit") return false;
 
 	const timeEl = headerEl.createDiv({ cls: cls("fc-event-time"), text: arg.timeText });
 	if (decision === "render-small") {
@@ -101,6 +101,7 @@ export function renderEventTime(
 	if (decision === "render-auto") {
 		timeEl.addClass(cls("fc-event-time-auto"));
 	}
+	return true;
 }
 
 export function renderEventContent(arg: EventContentArg, context: EventRenderContext): { domNodes: HTMLElement[] } {
@@ -108,7 +109,12 @@ export function renderEventContent(arg: EventContentArg, context: EventRenderCon
 	const { settings, isMobile, calendarIconCache } = context;
 	const isMonthView = arg.view.type === "dayGridMonth" || arg.view.type === "multiMonthYear";
 
-	const container = createDiv({ cls: cls("fc-event-content-wrapper") });
+	const container = createDiv({
+		cls:
+			settings.eventTextAlignment === "left"
+				? cls("fc-event-content-wrapper")
+				: cls("fc-event-content-wrapper", `fc-event-text-align-${settings.eventTextAlignment}`),
+	});
 
 	// Stamp the file path on this freshly-rendered content node so the
 	// connection renderer can resolve arrow endpoints against an attribute that
@@ -147,9 +153,11 @@ export function renderEventContent(arg: EventContentArg, context: EventRenderCon
 
 	const headerEl = container.createDiv({ cls: cls("fc-event-header") });
 
-	renderEventTime(headerEl, arg, settings, { isMobile });
+	const hasRenderedTime = renderEventTime(headerEl, arg, settings, { isMobile });
 
-	const titleEl = headerEl.createDiv({ cls: cls("fc-event-title-custom") });
+	const titleEl = headerEl.createDiv({
+		cls: hasRenderedTime ? cls("fc-event-title-custom") : cls("fc-event-title-custom", "fc-event-title-no-time"),
+	});
 	let title = cleanupTitle(event.title);
 
 	if (settings.showDurationInTitle && !event.allDay && event.start && event.end) {

@@ -515,6 +515,7 @@ export type PrismaCalendarGetSettingsOutput = {
 		title?: string;
 		updatedAt?: number;
 	}[];
+	eventTextAlignment: EventTextAlignment;
 	eventTextColor: DefaultEventTextColor;
 	eventTextColorAlt: AlternativeEventTextColor;
 	eventTextContrastMode: TextContrastSensitivity;
@@ -944,6 +945,10 @@ export type EventStackLimit = number;
  */
 export type AllowEventOverlap = boolean;
 /**
+ * Align event text within calendar event tiles
+ */
+export type EventTextAlignment = "left" | "center" | "right";
+/**
  * Preferred event text color (default: white)
  */
 export type DefaultEventTextColor = string;
@@ -1318,6 +1323,10 @@ export type PrismaCalendarToggleSkipOutput = boolean;
 
 /**
  * Allow events with overlapping times to render on top of each other. When disabled, overlapping events render side-by-side in columns (like Google Calendar). Applies to all views.
+ */
+
+/**
+ * Align event text within calendar event tiles
  */
 
 /**
@@ -1747,6 +1756,7 @@ export interface PrismaCalendarUpdateSettingsInput {
 			title?: string;
 			updatedAt?: number;
 		}[];
+		eventTextAlignment?: EventTextAlignment;
 		eventTextColor?: DefaultEventTextColor;
 		eventTextColorAlt?: AlternativeEventTextColor;
 		eventTextContrastMode?: TextContrastSensitivity;

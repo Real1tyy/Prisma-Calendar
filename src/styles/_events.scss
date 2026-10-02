@@ -153,6 +153,26 @@
 	width: 100%;
 }
 
+.prisma-fc-event-text-align-center {
+	.prisma-fc-event-header {
+		text-align: center;
+	}
+
+	.prisma-fc-event-props {
+		justify-content: center;
+	}
+}
+
+.prisma-fc-event-text-align-right {
+	.prisma-fc-event-header {
+		text-align: right;
+	}
+
+	.prisma-fc-event-props {
+		justify-content: flex-end;
+	}
+}
+
 // Time as a pill — same weight as title but visually distinct
 .prisma-fc-event-time {
 	margin: 0 6px 0 0;
@@ -220,6 +240,23 @@
 		content: "•";
 		opacity: 0.7;
 		margin-right: 6px;
+	}
+
+	&.prisma-fc-event-title-no-time::before {
+		display: none;
+	}
+}
+
+// Auto mode hides the adjacent label via a container query, so suppress its separator there too.
+@container prisma-event-time-grid (max-height: 30px) {
+	.prisma-fc-event-time-auto + .prisma-fc-event-title-custom::before {
+		display: none;
+	}
+}
+
+@container prisma-event-time-month (max-width: 90px) {
+	.prisma-fc-event-time-auto + .prisma-fc-event-title-custom::before {
+		display: none;
 	}
 }
 

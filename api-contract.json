@@ -1981,6 +1981,22 @@
 								},
 								"type": "array"
 							},
+							"eventTextAlignment": {
+								"default": "left",
+								"description": "Align event text within calendar event tiles",
+								"enum": [
+									"left",
+									"center",
+									"right"
+								],
+								"enumLabels": {
+									"center": "Center",
+									"left": "Left",
+									"right": "Right"
+								},
+								"title": "Event text alignment",
+								"type": "string"
+							},
 							"eventTextColor": {
 								"default": "#ffffff",
 								"description": "Preferred event text color (default: white)",
@@ -3065,6 +3081,7 @@
 							"showDurationInTitle",
 							"timeGridEventTimeDisplay",
 							"monthEventTimeDisplay",
+							"eventTextAlignment",
 							"dayCellColoring",
 							"monthEvenColor",
 							"monthOddColor",
@@ -4573,6 +4590,22 @@
 									"type": "object"
 								},
 								"type": "array"
+							},
+							"eventTextAlignment": {
+								"default": "left",
+								"description": "Align event text within calendar event tiles",
+								"enum": [
+									"left",
+									"center",
+									"right"
+								],
+								"enumLabels": {
+									"center": "Center",
+									"left": "Left",
+									"right": "Right"
+								},
+								"title": "Event text alignment",
+								"type": "string"
 							},
 							"eventTextColor": {
 								"default": "#ffffff",

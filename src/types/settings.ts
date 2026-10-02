@@ -808,6 +808,14 @@ const CalendarSettingsSchema = z
 				title: "Event time in month views",
 				enumLabels: { normal: "Normal", small: "Small", hidden: "Hidden", auto: "Auto" },
 			}),
+		eventTextAlignment: z
+			.enum(["left", "center", "right"])
+			.catch("left")
+			.describe("Align event text within calendar event tiles")
+			.meta({
+				title: "Event text alignment",
+				enumLabels: { left: "Left", center: "Center", right: "Right" },
+			}),
 		dayCellColoring: z
 			.enum(["off", "uniform", "boundary"])
 			.catch("off" as const)

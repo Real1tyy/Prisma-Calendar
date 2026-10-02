@@ -320,6 +320,20 @@ button[class*=prisma-]:focus-visible {
   width: 100%;
 }
 
+.prisma-fc-event-text-align-center .prisma-fc-event-header {
+  text-align: center;
+}
+.prisma-fc-event-text-align-center .prisma-fc-event-props {
+  justify-content: center;
+}
+
+.prisma-fc-event-text-align-right .prisma-fc-event-header {
+  text-align: right;
+}
+.prisma-fc-event-text-align-right .prisma-fc-event-props {
+  justify-content: flex-end;
+}
+
 .prisma-fc-event-time {
   margin: 0 6px 0 0;
   padding: 2px 6px;
@@ -379,7 +393,20 @@ button[class*=prisma-]:focus-visible {
   opacity: 0.7;
   margin-right: 6px;
 }
+.prisma-fc-event-title-custom.prisma-fc-event-title-no-time::before {
+  display: none;
+}
 
+@container prisma-event-time-grid (max-height: 30px) {
+  .prisma-fc-event-time-auto + .prisma-fc-event-title-custom::before {
+    display: none;
+  }
+}
+@container prisma-event-time-month (max-width: 90px) {
+  .prisma-fc-event-time-auto + .prisma-fc-event-title-custom::before {
+    display: none;
+  }
+}
 .prisma-fc-event-props {
   display: flex;
   flex-wrap: wrap;
