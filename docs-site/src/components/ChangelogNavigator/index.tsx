@@ -34,6 +34,25 @@ function matches(option: Option, query: string): boolean {
 	return needle === "" || option.label.toLowerCase().includes(needle);
 }
 
+function isTextEntry(target: EventTarget | null): boolean {
+	const el = target as Partial<HTMLElement> | null;
+	if (el === null || typeof el.tagName !== "string") return false;
+	return el.isContentEditable === true || el.tagName === "INPUT" || el.tagName === "TEXTAREA";
+}
+
+/**
+ * After switching version, bring the picker back into view if the reader had
+ * scrolled past it — below Docusaurus's fixed navbar, not under it. Stays put
+ * when it is already visible, so arrow-key browsing doesn't jolt the page.
+ */
+function bringIntoView(el: HTMLElement | null): void {
+	if (el === null) return;
+	const navbarHeight = document.querySelector<HTMLElement>(".navbar")?.offsetHeight ?? 0;
+	const top = el.getBoundingClientRect().top - navbarHeight;
+	if (top >= 0) return;
+	window.scrollTo({ top: window.scrollY + top - 16 });
+}
+
 /** Hide the table-of-contents entries of the sections the filter hid. */
 function syncTableOfContents(sectionIds: ReadonlySet<string>, hiddenIds: ReadonlySet<string>): void {
 	for (const anchor of Array.from(document.querySelectorAll<HTMLAnchorElement>(".table-of-contents a[href^='#']"))) {
@@ -163,10 +182,25 @@ export default function ChangelogNavigator({ contentRef }: { contentRef: RefObje
 			else params.set(CHANGELOG_VERSION_PARAM, key);
 			const search = params.toString();
 			history.push({ pathname: location.pathname, search: search ? `?${search}` : "" });
-			contentRef.current?.scrollIntoView({ block: "start" });
+			bringIntoView(contentRef.current);
 		},
 		[history, location.pathname, location.search, contentRef]
 	);
+
+	// ← / → do what the ‹ / › buttons do, as in the plugins' changelog modal —
+	// except while typing, where the arrows move the caret.
+	useEffect(() => {
+		const onKeyDown = (e: globalThis.KeyboardEvent) => {
+			if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || isTextEntry(e.target)) return;
+			const step = e.key === "ArrowLeft" ? -1 : e.key === "ArrowRight" ? 1 : 0;
+			const target = options[index + step];
+			if (step === 0 || target === undefined) return;
+			e.preventDefault();
+			select(target.key);
+		};
+		document.addEventListener("keydown", onKeyDown);
+		return () => document.removeEventListener("keydown", onKeyDown);
+	}, [options, index, select]);
 
 	const filtered = query === null ? [] : options.filter((o) => matches(o, query));
 	const choose = (option: Option | undefined) => {

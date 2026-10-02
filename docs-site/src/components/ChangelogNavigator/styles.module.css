@@ -1,15 +1,12 @@
 /* Canonical copy lives in tools/docs-theme/docs-site/ at the monorepo root and is synced
    into each plugin's docs-site/src by `mise run sync-docs-site-theme`. Edit it there. */
 
+/* Scrolls with the page: a sticky bar floated over the notes as they scrolled
+   underneath it. The divider below separates it from the changelog. */
 .navigator {
-	position: sticky;
-	top: calc(var(--ifm-navbar-height) + 0.5rem);
-	z-index: 5;
 	margin-bottom: 1.5rem;
-	padding: 0.75rem 1rem;
-	border: 1px solid var(--ifm-color-emphasis-300);
-	border-radius: var(--ifm-global-radius);
-	background: var(--ifm-background-surface-color);
+	padding-bottom: 1rem;
+	border-bottom: 1px solid var(--ifm-color-emphasis-300);
 }
 
 .bar {
