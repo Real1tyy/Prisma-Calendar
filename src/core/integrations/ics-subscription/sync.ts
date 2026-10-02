@@ -1,11 +1,11 @@
 import { describeError } from "@real1ty/obsidian-plugins";
-import { requestUrl } from "obsidian";
 
 import type { ICSSubscription } from "../../../types/integrations";
 import type { CustomCalendarSettings } from "../../../types/settings";
 import { log } from "../../logging";
 import { BaseSyncService, yieldToMainThread, type BaseSyncServiceOptions } from "../base-sync-service";
 import { findImportedEventPathByUid, parseICSContent, type ImportedEvent } from "../ics-import";
+import { fetchIcsFeed } from "./fetch";
 import { computeIcsSubscriptionSyncPlan } from "./sync-planner";
 import type { ICSSubscriptionSyncStateManager } from "./sync-state-manager";
 import type { ICSSubscriptionSyncMetadata, ICSSubscriptionSyncResult } from "./types";
@@ -90,12 +90,7 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 				throw new Error("ICS URL secret is not set or empty");
 			}
 
-			const response = await requestUrl({
-				url,
-				method: "GET",
-			});
-
-			const icsContent = response.text;
+			const icsContent = await fetchIcsFeed(url);
 			const parsed = parseICSContent(icsContent);
 
 			if (!parsed.success) {

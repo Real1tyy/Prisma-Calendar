@@ -354,7 +354,7 @@ ICS subscription URLs (which often contain embedded auth tokens) are stored in O
 
 #### Adding a Subscription
 
-1. Create a secret in **Obsidian Settings → General → Manage secrets** containing the full ICS URL
+1. Create a secret in **Obsidian Settings → General → Manage secrets** containing the full ICS URL. Paste the link exactly as your calendar gives it — `https://` and `webcal://` links both work (Apple Calendar, iCloud and Outlook share `webcal://` links; Prisma fetches them over `https://`)
 2. Open **Prisma Calendar Settings → Integrations → ICS URL Subscriptions**
 3. Click **"Add subscription"**
 4. Configure subscription details:

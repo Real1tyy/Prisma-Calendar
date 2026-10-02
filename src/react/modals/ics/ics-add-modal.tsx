@@ -1,6 +1,6 @@
 import { ModalForm, openReactModal, SchemaForm, useZodForm } from "@real1ty/obsidian-plugins-react";
 import { nanoid } from "nanoid";
-import { Notice, requestUrl, type App } from "obsidian";
+import { Notice, type App } from "obsidian";
 import { useCallback } from "react";
 import { z } from "zod";
 
@@ -10,6 +10,7 @@ import {
 } from "../../../components/settings/integration-shared";
 import { cls, tid } from "../../../constants";
 import { parseICSContent } from "../../../core/integrations/ics-import";
+import { fetchIcsFeed } from "../../../core/integrations/ics-subscription/fetch";
 import { useConnectionTest } from "../../../react/hooks/use-connection-test";
 import type { PrismaCalendarSettingsStore } from "../../../types";
 import type { ICSSubscription } from "../../../types/integrations";
@@ -41,8 +42,7 @@ function ICSAddForm({ app, settingsStore, calendarId, onSubmit, onCancel }: ICSA
 				return { success: false };
 			}
 
-			const response = await requestUrl({ url, method: "GET" });
-			const parsed = parseICSContent(response.text);
+			const parsed = parseICSContent(await fetchIcsFeed(url));
 
 			if (parsed.success) {
 				return { success: true, data: parsed.events.length };
