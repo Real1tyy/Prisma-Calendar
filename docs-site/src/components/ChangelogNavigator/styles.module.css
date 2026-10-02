@@ -1,6 +1,7 @@
 /* Canonical copy lives in tools/docs-theme/docs-site/ at the monorepo root and is synced
-   into every */
-docs-site/src by `mise run sync-docs-site-theme`. Edit it there. */ .navigator {
+   into each plugin's docs-site/src by `mise run sync-docs-site-theme`. Edit it there. */
+
+.navigator {
 	position: sticky;
 	top: calc(var(--ifm-navbar-height) + 0.5rem);
 	z-index: 5;
