@@ -971,7 +971,7 @@ export type TextContrastSensitivity =
 	| "balanced"
 	| "maximum";
 /**
- * Choose whether event title separator dots are always hidden or only hidden with their time label
+ * Choose whether event title separator dots are always hidden, always visible, or hidden with their time label
  */
 export type EventTitleSeparator = "always-hidden" | "always-visible" | "when-time-hidden";
 /**
@@ -1347,7 +1347,7 @@ export type PrismaCalendarToggleSkipOutput = boolean;
  */
 
 /**
- * Choose whether event title separator dots are always hidden or only hidden with their time label
+ * Choose whether event title separator dots are always hidden, always visible, or hidden with their time label
  */
 
 /**

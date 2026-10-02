@@ -2040,8 +2040,8 @@
 								"type": "string"
 							},
 							"eventTitleSeparatorDisplay": {
-								"default": "when-time-hidden",
-								"description": "Choose whether event title separator dots are always hidden or only hidden with their time label",
+								"default": "always-visible",
+								"description": "Choose whether event title separator dots are always hidden, always visible, or hidden with their time label",
 								"enum": [
 									"always-hidden",
 									"always-visible",
@@ -4667,8 +4667,8 @@
 								"type": "string"
 							},
 							"eventTitleSeparatorDisplay": {
-								"default": "when-time-hidden",
-								"description": "Choose whether event title separator dots are always hidden or only hidden with their time label",
+								"default": "always-visible",
+								"description": "Choose whether event title separator dots are always hidden, always visible, or hidden with their time label",
 								"enum": [
 									"always-hidden",
 									"always-visible",

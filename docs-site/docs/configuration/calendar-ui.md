@@ -28,7 +28,7 @@ These settings control the calendar's view modes, time display, visual appearanc
 - **Event time in week/day views**: choose whether timed event start times are normal size, small, hidden, or automatically hidden when the rendered time-grid tile is too short (default: Normal)
 - **Event time in month views**: choose whether timed event start times are normal size, small, hidden, or automatically hidden when the rendered month or year tile is too narrow (default: Normal). Month view continues to hide times on mobile.
 - **Event text alignment**: align event titles, times, and displayed properties left, center, or right within calendar tiles (default: Left).
-- **Event title separator**: choose whether the dot before an event title is always hidden, always visible, or hidden only with its time label, including all-day, mobile-month, and Auto-hidden events (default: Hide with hidden time).
+- **Event title separator**: choose whether the dot before an event title is always hidden, always visible, or hidden only with its time label, including all-day, mobile-month, and Auto-hidden events (default: Always visible).
 - **Default event text color**: preferred event text color (default: white)
 - **Alternative event text color**: fallback used when the default isn't readable enough on the event's background (default: black)
 - **Text contrast sensitivity**: how eagerly the alternative kicks in — a nine-step ladder from Always primary (never switch) through half-step contrast floors (1.5:1 up to 4.5:1; default: Moderate, 2.5:1) to Maximum contrast (always the stronger of the two). See [Calendar View → Event Text Coloring](../features/calendar/calendar-view#event-text-coloring) for details.
