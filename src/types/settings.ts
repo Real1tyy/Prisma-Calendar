@@ -816,6 +816,11 @@ const CalendarSettingsSchema = z
 				title: "Event text alignment",
 				enumLabels: { left: "Left", center: "Center", right: "Right" },
 			}),
+		hideTitleSeparatorWhenTimeHidden: z
+			.boolean()
+			.catch(true)
+			.describe("Hide the title separator dot when an event time label is hidden")
+			.meta({ title: "Hide title separator with hidden time" }),
 		dayCellColoring: z
 			.enum(["off", "uniform", "boundary"])
 			.catch("off" as const)

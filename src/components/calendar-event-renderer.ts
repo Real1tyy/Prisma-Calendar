@@ -109,12 +109,11 @@ export function renderEventContent(arg: EventContentArg, context: EventRenderCon
 	const { settings, isMobile, calendarIconCache } = context;
 	const isMonthView = arg.view.type === "dayGridMonth" || arg.view.type === "multiMonthYear";
 
-	const container = createDiv({
-		cls:
-			settings.eventTextAlignment === "left"
-				? cls("fc-event-content-wrapper")
-				: cls("fc-event-content-wrapper", `fc-event-text-align-${settings.eventTextAlignment}`),
-	});
+	const contentClasses = ["fc-event-content-wrapper"];
+	if (settings.eventTextAlignment !== "left") {
+		contentClasses.push(`fc-event-text-align-${settings.eventTextAlignment}`);
+	}
+	const container = createDiv({ cls: cls(...contentClasses) });
 
 	// Stamp the file path on this freshly-rendered content node so the
 	// connection renderer can resolve arrow endpoints against an attribute that
@@ -156,7 +155,10 @@ export function renderEventContent(arg: EventContentArg, context: EventRenderCon
 	const hasRenderedTime = renderEventTime(headerEl, arg, settings, { isMobile });
 
 	const titleEl = headerEl.createDiv({
-		cls: hasRenderedTime ? cls("fc-event-title-custom") : cls("fc-event-title-custom", "fc-event-title-no-time"),
+		cls:
+			hasRenderedTime || !settings.hideTitleSeparatorWhenTimeHidden
+				? cls("fc-event-title-custom")
+				: cls("fc-event-title-custom", "fc-event-title-no-time"),
 	});
 	let title = cleanupTitle(event.title);
 

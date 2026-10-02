@@ -398,12 +398,12 @@ button[class*=prisma-]:focus-visible {
 }
 
 @container prisma-event-time-grid (max-height: 30px) {
-  .prisma-fc-event-time-auto + .prisma-fc-event-title-custom::before {
+  .prisma-fc-event-hide-title-separator-with-time .prisma-fc-event-time-auto + .prisma-fc-event-title-custom::before {
     display: none;
   }
 }
 @container prisma-event-time-month (max-width: 90px) {
-  .prisma-fc-event-time-auto + .prisma-fc-event-title-custom::before {
+  .prisma-fc-event-hide-title-separator-with-time .prisma-fc-event-time-auto + .prisma-fc-event-title-custom::before {
     display: none;
   }
 }

@@ -597,6 +597,7 @@ export type PrismaCalendarGetSettingsOutput = {
 	heatmapMonthlyStatsGridState: {
 		[k: string]: unknown;
 	};
+	hideTitleSeparatorWhenTimeHidden: HideTitleSeparatorWithHiddenTime;
 	/**
 	 * Hide Saturday and Sunday in calendar views
 	 */
@@ -1002,6 +1003,10 @@ export type DisplayPropertiesHeatmap = string[];
  */
 export type DisplayPropertiesUntrackedEvents = string[];
 /**
+ * Hide the title separator dot when an event time label is hidden
+ */
+export type HideTitleSeparatorWithHiddenTime = boolean;
+/**
  * Last hour to show in time grid views
  */
 export type DayEndHour = number;
@@ -1371,6 +1376,10 @@ export type PrismaCalendarToggleSkipOutput = boolean;
 
 /**
  * Comma-separated list of frontmatter property names to display in untracked events (events without dates). These appear in the untracked events sidebar.
+ */
+
+/**
+ * Hide the title separator dot when an event time label is hidden
  */
 
 /**
@@ -1838,6 +1847,7 @@ export interface PrismaCalendarUpdateSettingsInput {
 		heatmapMonthlyStatsGridState?: {
 			[k: string]: unknown;
 		};
+		hideTitleSeparatorWhenTimeHidden?: HideTitleSeparatorWithHiddenTime;
 		/**
 		 * Hide Saturday and Sunday in calendar views
 		 */

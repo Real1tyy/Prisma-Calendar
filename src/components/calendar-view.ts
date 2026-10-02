@@ -772,6 +772,9 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const classes: string[] = [];
 
 		const settings = this.bundle.settingsStore.currentSettings;
+		if (settings.hideTitleSeparatorWhenTimeHidden) {
+			classes.push(cls("fc-event-hide-title-separator-with-time"));
+		}
 		const autoRootClass = getEventTimeAutoRootClass(settings, {
 			allDay: arg.event.allDay,
 			hasStart: Boolean(arg.event.start),

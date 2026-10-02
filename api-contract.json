@@ -2294,6 +2294,12 @@
 									"rows": 1
 								}
 							},
+							"hideTitleSeparatorWhenTimeHidden": {
+								"default": true,
+								"description": "Hide the title separator dot when an event time label is hidden",
+								"title": "Hide title separator with hidden time",
+								"type": "boolean"
+							},
 							"hideWeekends": {
 								"default": false,
 								"description": "Hide Saturday and Sunday in calendar views",
@@ -3082,6 +3088,7 @@
 							"timeGridEventTimeDisplay",
 							"monthEventTimeDisplay",
 							"eventTextAlignment",
+							"hideTitleSeparatorWhenTimeHidden",
 							"dayCellColoring",
 							"monthEvenColor",
 							"monthOddColor",
@@ -4903,6 +4910,12 @@
 									],
 									"rows": 1
 								}
+							},
+							"hideTitleSeparatorWhenTimeHidden": {
+								"default": true,
+								"description": "Hide the title separator dot when an event time label is hidden",
+								"title": "Hide title separator with hidden time",
+								"type": "boolean"
 							},
 							"hideWeekends": {
 								"default": false,
