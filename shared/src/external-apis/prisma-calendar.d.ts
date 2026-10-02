@@ -973,7 +973,7 @@ export type TextContrastSensitivity =
 /**
  * Choose whether event title separator dots are always hidden or only hidden with their time label
  */
-export type EventTitleSeparator = "always-hidden" | "when-time-hidden";
+export type EventTitleSeparator = "always-hidden" | "always-visible" | "when-time-hidden";
 /**
  * Comma-separated list of frontmatter property names to exclude when propagating changes across category series members.
  */

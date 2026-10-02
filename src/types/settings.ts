@@ -817,12 +817,16 @@ const CalendarSettingsSchema = z
 				enumLabels: { left: "Left", center: "Center", right: "Right" },
 			}),
 		eventTitleSeparatorDisplay: z
-			.enum(["always-hidden", "when-time-hidden"])
+			.enum(["always-hidden", "always-visible", "when-time-hidden"])
 			.catch("when-time-hidden")
 			.describe("Choose whether event title separator dots are always hidden or only hidden with their time label")
 			.meta({
 				title: "Event title separator",
-				enumLabels: { "always-hidden": "Always hidden", "when-time-hidden": "Hide with hidden time" },
+				enumLabels: {
+					"always-hidden": "Always hidden",
+					"always-visible": "Always visible",
+					"when-time-hidden": "Hide with hidden time",
+				},
 			}),
 		dayCellColoring: z
 			.enum(["off", "uniform", "boundary"])
