@@ -6,7 +6,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## Unreleased
+## 2.25.0 - 10/2/2026
 
 > **TLDR:** Diagnose problems without the developer console: a new **Doctor** page checks Prisma's health with one-click fixes, a **Logs view** lets you filter, search and export the plugin's log, and bug reports attach both. An **Operation history** lets you undo or redo any single past action, event actions now appear in Obsidian's own file menu, and the changelog shows one version at a time with release videos. New events show up immediately even while Obsidian is busy indexing, and event times no longer shift on daylight-saving mornings.
 
