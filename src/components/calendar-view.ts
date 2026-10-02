@@ -772,7 +772,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const classes: string[] = [];
 
 		const settings = this.bundle.settingsStore.currentSettings;
-		if (settings.hideTitleSeparatorWhenTimeHidden) {
+		if (settings.eventTitleSeparatorDisplay === "when-time-hidden") {
 			classes.push(cls("fc-event-hide-title-separator-with-time"));
 		}
 		const autoRootClass = getEventTimeAutoRootClass(settings, {

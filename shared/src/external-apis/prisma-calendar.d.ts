@@ -519,6 +519,7 @@ export type PrismaCalendarGetSettingsOutput = {
 	eventTextColor: DefaultEventTextColor;
 	eventTextColorAlt: AlternativeEventTextColor;
 	eventTextContrastMode: TextContrastSensitivity;
+	eventTitleSeparatorDisplay: EventTitleSeparator;
 	excludedCategorySeriesProps: ExcludedProperties;
 	excludedNameSeriesProps: ExcludedProperties1;
 	excludedRecurringInstanceProps: ExcludedProperties2;
@@ -597,7 +598,6 @@ export type PrismaCalendarGetSettingsOutput = {
 	heatmapMonthlyStatsGridState: {
 		[k: string]: unknown;
 	};
-	hideTitleSeparatorWhenTimeHidden: HideTitleSeparatorWithHiddenTime;
 	/**
 	 * Hide Saturday and Sunday in calendar views
 	 */
@@ -971,6 +971,10 @@ export type TextContrastSensitivity =
 	| "balanced"
 	| "maximum";
 /**
+ * Choose whether event title separator dots are always hidden or only hidden with their time label
+ */
+export type EventTitleSeparator = "always-hidden" | "when-time-hidden";
+/**
  * Comma-separated list of frontmatter property names to exclude when propagating changes across category series members.
  */
 export type ExcludedProperties = string;
@@ -1002,10 +1006,6 @@ export type DisplayPropertiesHeatmap = string[];
  * Comma-separated list of frontmatter property names to display in untracked events (events without dates). These appear in the untracked events sidebar.
  */
 export type DisplayPropertiesUntrackedEvents = string[];
-/**
- * Hide the title separator dot when an event time label is hidden
- */
-export type HideTitleSeparatorWithHiddenTime = boolean;
 /**
  * Last hour to show in time grid views
  */
@@ -1347,6 +1347,10 @@ export type PrismaCalendarToggleSkipOutput = boolean;
  */
 
 /**
+ * Choose whether event title separator dots are always hidden or only hidden with their time label
+ */
+
+/**
  * Comma-separated list of frontmatter property names to exclude when propagating changes across category series members.
  */
 
@@ -1376,10 +1380,6 @@ export type PrismaCalendarToggleSkipOutput = boolean;
 
 /**
  * Comma-separated list of frontmatter property names to display in untracked events (events without dates). These appear in the untracked events sidebar.
- */
-
-/**
- * Hide the title separator dot when an event time label is hidden
  */
 
 /**
@@ -1769,6 +1769,7 @@ export interface PrismaCalendarUpdateSettingsInput {
 		eventTextColor?: DefaultEventTextColor;
 		eventTextColorAlt?: AlternativeEventTextColor;
 		eventTextContrastMode?: TextContrastSensitivity;
+		eventTitleSeparatorDisplay?: EventTitleSeparator;
 		excludedCategorySeriesProps?: ExcludedProperties;
 		excludedNameSeriesProps?: ExcludedProperties1;
 		excludedRecurringInstanceProps?: ExcludedProperties2;
@@ -1847,7 +1848,6 @@ export interface PrismaCalendarUpdateSettingsInput {
 		heatmapMonthlyStatsGridState?: {
 			[k: string]: unknown;
 		};
-		hideTitleSeparatorWhenTimeHidden?: HideTitleSeparatorWithHiddenTime;
 		/**
 		 * Hide Saturday and Sunday in calendar views
 		 */

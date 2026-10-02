@@ -2039,6 +2039,20 @@
 								"title": "Text contrast sensitivity",
 								"type": "string"
 							},
+							"eventTitleSeparatorDisplay": {
+								"default": "when-time-hidden",
+								"description": "Choose whether event title separator dots are always hidden or only hidden with their time label",
+								"enum": [
+									"always-hidden",
+									"when-time-hidden"
+								],
+								"enumLabels": {
+									"always-hidden": "Always hidden",
+									"when-time-hidden": "Hide with hidden time"
+								},
+								"title": "Event title separator",
+								"type": "string"
+							},
 							"excludedCategorySeriesProps": {
 								"default": "",
 								"description": "Comma-separated list of frontmatter property names to exclude when propagating changes across category series members.",
@@ -2293,12 +2307,6 @@
 									],
 									"rows": 1
 								}
-							},
-							"hideTitleSeparatorWhenTimeHidden": {
-								"default": true,
-								"description": "Hide the title separator dot when an event time label is hidden",
-								"title": "Hide title separator with hidden time",
-								"type": "boolean"
 							},
 							"hideWeekends": {
 								"default": false,
@@ -3088,7 +3096,7 @@
 							"timeGridEventTimeDisplay",
 							"monthEventTimeDisplay",
 							"eventTextAlignment",
-							"hideTitleSeparatorWhenTimeHidden",
+							"eventTitleSeparatorDisplay",
 							"dayCellColoring",
 							"monthEvenColor",
 							"monthOddColor",
@@ -4656,6 +4664,20 @@
 								"title": "Text contrast sensitivity",
 								"type": "string"
 							},
+							"eventTitleSeparatorDisplay": {
+								"default": "when-time-hidden",
+								"description": "Choose whether event title separator dots are always hidden or only hidden with their time label",
+								"enum": [
+									"always-hidden",
+									"when-time-hidden"
+								],
+								"enumLabels": {
+									"always-hidden": "Always hidden",
+									"when-time-hidden": "Hide with hidden time"
+								},
+								"title": "Event title separator",
+								"type": "string"
+							},
 							"excludedCategorySeriesProps": {
 								"default": "",
 								"description": "Comma-separated list of frontmatter property names to exclude when propagating changes across category series members.",
@@ -4910,12 +4932,6 @@
 									],
 									"rows": 1
 								}
-							},
-							"hideTitleSeparatorWhenTimeHidden": {
-								"default": true,
-								"description": "Hide the title separator dot when an event time label is hidden",
-								"title": "Hide title separator with hidden time",
-								"type": "boolean"
 							},
 							"hideWeekends": {
 								"default": false,

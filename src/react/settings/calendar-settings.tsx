@@ -19,7 +19,7 @@ const APPEARANCE_FIELDS = [
 	"timeGridEventTimeDisplay",
 	"monthEventTimeDisplay",
 	"eventTextAlignment",
-	"hideTitleSeparatorWhenTimeHidden",
+	"eventTitleSeparatorDisplay",
 	"highlightUpcomingEvent",
 	"nowIndicator",
 	"thickerHourLines",

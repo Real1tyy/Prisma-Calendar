@@ -153,12 +153,14 @@ export function renderEventContent(arg: EventContentArg, context: EventRenderCon
 	const headerEl = container.createDiv({ cls: cls("fc-event-header") });
 
 	const hasRenderedTime = renderEventTime(headerEl, arg, settings, { isMobile });
+	const hideTitleSeparator =
+		settings.eventTitleSeparatorDisplay === "always-hidden" ||
+		(!hasRenderedTime && settings.eventTitleSeparatorDisplay === "when-time-hidden");
 
 	const titleEl = headerEl.createDiv({
-		cls:
-			hasRenderedTime || !settings.hideTitleSeparatorWhenTimeHidden
-				? cls("fc-event-title-custom")
-				: cls("fc-event-title-custom", "fc-event-title-no-time"),
+		cls: hideTitleSeparator
+			? cls("fc-event-title-custom", "fc-event-title-separator-hidden")
+			: cls("fc-event-title-custom"),
 	});
 	let title = cleanupTitle(event.title);
 

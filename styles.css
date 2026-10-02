@@ -393,7 +393,7 @@ button[class*=prisma-]:focus-visible {
   opacity: 0.7;
   margin-right: 6px;
 }
-.prisma-fc-event-title-custom.prisma-fc-event-title-no-time::before {
+.prisma-fc-event-title-custom.prisma-fc-event-title-separator-hidden::before {
   display: none;
 }
 
