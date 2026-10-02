@@ -311,6 +311,9 @@ export function buildWhatsNewStyles(p: string): string {
 .${p}whats-new-video-link {
 	font-size: var(--font-ui-small);
 }
+.${p}whats-new-video-title {
+	padding-right: 0.5rem;
+}
 /* Width follows the modal, but never so wide that a 16:9 frame outgrows about
    60% of the window's height; the whole video then fits with the notes below. */
 .${p}whats-new-video-frame {
