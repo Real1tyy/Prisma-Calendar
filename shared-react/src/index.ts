@@ -168,6 +168,7 @@ export type { OpenRenameOptions, RenameModalProps, RenameModalResult } from "./m
 export { openRenameModal, RenameModalContent } from "./modals/rename-modal";
 export type { ReviewModalProps, ShowReviewModalConfig } from "./modals/review-modal";
 export { ReviewModalContent, showReviewReactModal } from "./modals/review-modal";
+export { showUnreleasedChangelogModal } from "./modals/unreleased-changelog-modal";
 export type { WhatsNewModalConfig } from "./modals/whats-new-modal";
 export { DEFAULT_WHATS_NEW_LINKS, showWhatsNewReactModal } from "./modals/whats-new-modal";
 

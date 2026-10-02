@@ -11,6 +11,7 @@ export * from "./indexer";
 export * from "./license";
 export * from "./logging";
 export * from "./release-check";
+export * from "./release-info";
 export * from "./settings";
 export * from "./storage";
 export * from "./submission";

@@ -88,6 +88,11 @@ export interface GeneralChangelogConfig extends ToggleableConfig {
 	name?: string;
 	/** Row description. */
 	description?: string;
+	/**
+	 * Opens the live Unreleased section (see `showUnreleasedChangelogModal`).
+	 * When set, a "View unreleased" row renders under the changelog row.
+	 */
+	onViewUnreleased?: () => void;
 }
 
 export type GeneralSettingsTransferConfig<T extends Record<string, unknown>> = ToggleableConfig &
@@ -313,25 +318,36 @@ function HelpAndSupport({
 	);
 }
 
-function ChangelogRow({
+function ChangelogRows({
 	config,
-	fieldTestId,
-	buttonTestId,
+	tid,
 }: {
 	config: GeneralChangelogConfig;
-	fieldTestId?: string | undefined;
-	buttonTestId?: string | undefined;
+	tid: (suffix: string) => string | undefined;
 }): ReactNode {
 	return (
-		<SettingItem
-			name={config.name ?? "Changelog"}
-			description={config.description ?? "Browse the full changelog with every update since the first release"}
-			testId={fieldTestId}
-		>
-			<button type="button" onClick={config.onView} {...testIdAttr(buttonTestId)}>
-				{config.buttonLabel ?? "View changelog"}
-			</button>
-		</SettingItem>
+		<>
+			<SettingItem
+				name={config.name ?? "Changelog"}
+				description={config.description ?? "Browse the full changelog with every update since the first release"}
+				testId={tid("field-changelog")}
+			>
+				<button type="button" onClick={config.onView} {...testIdAttr(tid("changelog-btn"))}>
+					{config.buttonLabel ?? "View changelog"}
+				</button>
+			</SettingItem>
+			{config.onViewUnreleased !== undefined && (
+				<SettingItem
+					name="Unreleased"
+					description="See the features and fixes that have landed and will ship in the next release"
+					testId={tid("field-unreleased")}
+				>
+					<button type="button" onClick={config.onViewUnreleased} {...testIdAttr(tid("unreleased-btn"))}>
+						View unreleased
+					</button>
+				</SettingItem>
+			)}
+		</>
 	);
 }
 
@@ -412,9 +428,7 @@ function GeneralSectionInner<T extends Record<string, unknown>>({
 				/>
 			)}
 
-			{isOn(changelog, true) && changelog !== undefined && (
-				<ChangelogRow config={changelog} fieldTestId={tid("field-changelog")} buttonTestId={tid("changelog-btn")} />
-			)}
+			{isOn(changelog, true) && changelog !== undefined && <ChangelogRows config={changelog} tid={tid} />}
 
 			<div {...testIdAttr(tid("general-actions"))}>
 				<ReviewAction

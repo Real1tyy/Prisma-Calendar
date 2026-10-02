@@ -1,8 +1,13 @@
 import {
-	formatChangelogSections,
+	createReleaseVideoLookup,
+	formatChangelogBody,
+	FULL_CHANGELOG_FROM_VERSION,
 	getChangelogSince,
+	initialVersionIndex,
 	resolveRelativeDocLinks,
-	type VersionSection,
+	type PluginSlug,
+	type ReleaseVideo,
+	type ReleaseVideoLookup,
 } from "@real1ty/obsidian-plugins";
 import { Component, MarkdownRenderer, type App, type Plugin } from "obsidian";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -13,8 +18,8 @@ import { showReactModal } from "../show-react-modal";
 import { makeExternalLinksClickable } from "../utils/external-links";
 import { openExternal } from "../utils/open-external";
 import { buildWhatsNewStyles } from "./whats-new-modal.styles";
-
-const LINES_PER_PAGE = 15;
+import { ReleaseVideoPanel } from "./whats-new-release-video";
+import { VersionNavigator } from "./whats-new-version-navigator";
 
 export const DEFAULT_WHATS_NEW_LINKS = {
 	TOOLS: "https://matejvavroproductivity.com/tools/",
@@ -25,9 +30,12 @@ export interface WhatsNewModalConfig {
 	/** Trailing-dash convention, e.g. `"prisma-"`. Drives the modal class, theme provider, and stylesheet selectors. */
 	cssPrefix: string;
 	pluginName: string;
+	/** Keys the per-version release-video lookup and the video link's UTM. */
+	slug: PluginSlug;
 	changelogContent: string;
 	links: {
 		support: string;
+		/** The published changelog page — also where "View unreleased" reads the live Unreleased section. */
 		changelog: string;
 		documentation: string;
 		github: string;
@@ -47,23 +55,13 @@ interface WhatsNewContentProps {
 	fromVersion: string;
 	toVersion: string;
 	close: () => void;
+	/** Test seam; production builds one per modal from `config.slug`. */
+	releaseVideoLookup?: ReleaseVideoLookup;
 }
 
-function countNonEmptyLines(content: string): number {
-	return content.split("\n").filter((line) => line.trim().length > 0).length;
-}
-
-function computeNextBatch(sections: VersionSection[], renderedCount: number): VersionSection[] {
-	let linesAccum = 0;
-	let end = renderedCount;
-	while (end < sections.length) {
-		const sectionLines = countNonEmptyLines(sections[end].content);
-		if (linesAccum > 0 && linesAccum + sectionLines > LINES_PER_PAGE) break;
-		linesAccum += sectionLines;
-		end++;
-	}
-	if (end === renderedCount && end < sections.length) end++;
-	return sections.slice(renderedCount, end);
+interface LoadedVideo {
+	version: string;
+	video: ReleaseVideo | null;
 }
 
 function FooterButton({ label, href }: { label: string; href: string }) {
@@ -80,12 +78,16 @@ export const WhatsNewContent = memo(function WhatsNewContent({
 	fromVersion,
 	toVersion,
 	close: _close,
+	releaseVideoLookup,
 }: WhatsNewContentProps) {
 	const app = useApp();
+	const contentRef = useRef<HTMLDivElement>(null);
 	const changelogRef = useRef<HTMLDivElement>(null);
 	const [supportCollapsed, setSupportCollapsed] = useState(false);
-	const [renderedCount, setRenderedCount] = useState(0);
-	const renderingRef = useRef(false);
+	// Lives for the modal, not the version: collapsing the video once keeps it
+	// out of the way while the reader steps through releases.
+	const [videoCollapsed, setVideoCollapsed] = useState(false);
+	const [loadedVideo, setLoadedVideo] = useState<LoadedVideo | null>(null);
 	const { cls, tid } = useScopedStyles("whats-new", buildWhatsNewStyles);
 
 	// Scoped Obsidian Component owns the lifecycle of MarkdownRenderer outputs
@@ -103,53 +105,55 @@ export const WhatsNewContent = memo(function WhatsNewContent({
 		};
 	}, []);
 
-	const isFullChangelog = fromVersion === "0.0.0";
+	const isFullChangelog = fromVersion === FULL_CHANGELOG_FROM_VERSION;
 	const changelogSections = useMemo(
 		() => getChangelogSince(config.changelogContent, fromVersion, toVersion),
 		[config.changelogContent, fromVersion, toVersion]
 	);
-	const remaining = changelogSections.length - renderedCount;
+	const [versionIndex, setVersionIndex] = useState(() => initialVersionIndex(changelogSections.length, fromVersion));
+	const currentSection = changelogSections[versionIndex];
+	const currentVersion = currentSection?.version;
 	const toolsUrl = config.links.tools ?? DEFAULT_WHATS_NEW_LINKS.TOOLS;
 	const youtubeUrl = config.links.youtube ?? DEFAULT_WHATS_NEW_LINKS.YOUTUBE;
 
-	const renderBatch = useCallback(
-		async (el: HTMLElement, sections: VersionSection[]) => {
-			if (renderingRef.current) return;
-
-			const component = renderComponentRef.current;
-			if (!component) return;
-
-			renderingRef.current = true;
-			try {
-				const batch = computeNextBatch(sections, renderedCount);
-				if (batch.length === 0) return;
-
-				const batchMarkdown = resolveRelativeDocLinks(formatChangelogSections(batch), config.links.documentation);
-
-				const batchContainer = el.createDiv();
-
-				await MarkdownRenderer.render(app, batchMarkdown, batchContainer, "/", component);
-				makeExternalLinksClickable(batchContainer);
-
-				setRenderedCount((current) => current + batch.length);
-			} finally {
-				renderingRef.current = false;
-			}
-		},
-		[app, renderedCount, config.links.documentation]
+	const lookupVideo = useMemo(
+		() => releaseVideoLookup ?? createReleaseVideoLookup(config.slug),
+		[releaseVideoLookup, config.slug]
 	);
 
 	useEffect(() => {
-		if (!changelogRef.current || changelogSections.length === 0 || renderedCount > 0) return;
-		void renderBatch(changelogRef.current, changelogSections);
-	}, [changelogSections, renderBatch, renderedCount]);
+		if (currentVersion === undefined) return;
+		let live = true;
+		void lookupVideo(currentVersion).then((video) => {
+			if (live) setLoadedVideo({ version: currentVersion, video });
+		});
+		return () => {
+			live = false;
+		};
+	}, [lookupVideo, currentVersion]);
 
-	const handleLoadMore = useCallback(() => {
-		if (!changelogRef.current) return;
-		void renderBatch(changelogRef.current, changelogSections);
-	}, [renderBatch, changelogSections]);
+	useEffect(() => {
+		const el = changelogRef.current;
+		const parent = renderComponentRef.current;
+		if (!el || !parent || currentSection === undefined) return;
+
+		// One child Component per shown version, so stepping away tears down
+		// whatever the previous version's render registered.
+		const child = new Component();
+		parent.addChild(child);
+		el.empty();
+		const target = el.createDiv();
+		const markdown = resolveRelativeDocLinks(formatChangelogBody(currentSection), config.links.documentation);
+		void MarkdownRenderer.render(app, markdown, target, "/", child).then(() => makeExternalLinksClickable(target));
+		if (contentRef.current) contentRef.current.scrollTop = 0;
+		return () => {
+			parent.removeChild(child);
+		};
+	}, [app, currentSection, config.links.documentation]);
 
 	const toggleSupport = useCallback(() => setSupportCollapsed((prev) => !prev), []);
+	const toggleVideo = useCallback(() => setVideoCollapsed((prev) => !prev), []);
+	const currentVideo = loadedVideo !== null && loadedVideo.version === currentVersion ? loadedVideo.video : null;
 
 	const headingText = config.supportSection ? config.supportSection.heading : "Support the development of this plugin";
 
@@ -205,14 +209,22 @@ export const WhatsNewContent = memo(function WhatsNewContent({
 			{changelogSections.length === 0 ? (
 				<p className={cls("empty")}>No significant changes found in this update.</p>
 			) : (
-				<div className={cls("content")}>
-					<div ref={changelogRef} />
-					{remaining > 0 && renderedCount > 0 && (
-						<button type="button" className={cls("load-more")} onClick={handleLoadMore}>
-							Load more ({remaining} versions remaining)
-						</button>
-					)}
-				</div>
+				<>
+					<VersionNavigator sections={changelogSections} index={versionIndex} onSelect={setVersionIndex} />
+					<div className={cls("content")} ref={contentRef} data-testid={tid("content")}>
+						{currentVideo !== null && currentVersion !== undefined && (
+							<ReleaseVideoPanel
+								key={currentVersion}
+								video={currentVideo}
+								version={currentVersion}
+								slug={config.slug}
+								collapsed={videoCollapsed}
+								onToggle={toggleVideo}
+							/>
+						)}
+						<div ref={changelogRef} data-testid={tid("version-body")} />
+					</div>
+				</>
 			)}
 
 			<div className={cls("sticky-footer")}>
@@ -236,7 +248,7 @@ export function showWhatsNewReactModal(
 	fromVersion: string,
 	toVersion: string
 ): void {
-	const isFullChangelog = fromVersion === "0.0.0";
+	const isFullChangelog = fromVersion === FULL_CHANGELOG_FROM_VERSION;
 	showReactModal({
 		app,
 		cls: `${config.cssPrefix}whats-new-modal`,

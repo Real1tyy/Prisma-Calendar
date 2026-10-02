@@ -26,5 +26,6 @@ export type { OpenRenameOptions, RenameModalProps, RenameModalResult } from "./r
 export { openRenameModal, RenameModalContent } from "./rename-modal";
 export type { ReviewModalProps, ShowReviewModalConfig } from "./review-modal";
 export { ReviewModalContent, showReviewReactModal } from "./review-modal";
+export { showUnreleasedChangelogModal } from "./unreleased-changelog-modal";
 export type { WhatsNewModalConfig } from "./whats-new-modal";
 export { DEFAULT_WHATS_NEW_LINKS, showWhatsNewReactModal } from "./whats-new-modal";

@@ -104,29 +104,31 @@ export function convertDocusaurusAdmonitions(content: string): string {
 	);
 }
 
-export function formatChangelogSections(sections: VersionSection[]): string {
-	if (sections.length === 0) {
-		return "No changes found.";
-	}
+/** One version's content as Obsidian-renderable markdown, without its version heading. */
+export function formatChangelogBody(section: VersionSection): string {
+	return convertDocusaurusAdmonitions(section.content)
+		.replace(/`=([^`]+)`/g, "`\\=$1`")
+		.replace(/^---$/gm, "")
+		.trim();
+}
 
-	return sections
-		.map((section) => {
-			const content = convertDocusaurusAdmonitions(section.content)
-				.replace(/`=([^`]+)`/g, "`\\=$1`")
-				.replace(/^---$/gm, "")
-				.trim();
-			return `## ${section.version}\n\n${content}`;
-		})
-		.join("\n\n");
+/**
+ * Stamp a docs-site URL with the documentation link's UTM attribution, tagging
+ * `utm_content` with the target page so each changelog link is told apart.
+ */
+export function withDocsUtm(target: URL, documentationBaseUrl: string): URL {
+	const resolved = new URL(target.toString());
+	for (const [key, value] of new URL(documentationBaseUrl).searchParams) {
+		if (key.startsWith("utm_")) resolved.searchParams.set(key, value);
+	}
+	const lastSegment = resolved.pathname.split("/").filter(Boolean).pop() ?? "changelog_link";
+	resolved.searchParams.set("utm_content", lastSegment.replace(/-/g, "_"));
+	return resolved;
 }
 
 export function resolveRelativeDocLinks(markdown: string, documentationBaseUrl: string): string {
 	const baseUrl = new URL(documentationBaseUrl);
 	const cleanBase = `${baseUrl.origin}${baseUrl.pathname}`.replace(/\/$/, "");
-	const utmParams = new URLSearchParams();
-	for (const [key, value] of baseUrl.searchParams) {
-		if (key.startsWith("utm_")) utmParams.set(key, value);
-	}
 
 	return markdown.replace(/(?<!!)\[([^\]]+)\]\((\.[^)]+)\)/g, (_match, text: string, rawPath: string) => {
 		const cleaned = rawPath.replace(/^\.\//, "").replace(/\.md(?=#|$)/, "");
@@ -134,15 +136,30 @@ export function resolveRelativeDocLinks(markdown: string, documentationBaseUrl: 
 		const hashIndex = path.indexOf("#");
 		const pathPart = hashIndex >= 0 ? path.slice(0, hashIndex) : path;
 		const fragment = hashIndex >= 0 ? path.slice(hashIndex + 1) : undefined;
-		const resolved = new URL(`${cleanBase}${pathPart}`);
-		for (const [key, value] of utmParams) {
-			resolved.searchParams.set(key, value);
-		}
-		const lastSegment = pathPart.split("/").filter(Boolean).pop() ?? "changelog_link";
-		resolved.searchParams.set("utm_content", lastSegment.replace(/-/g, "_"));
+		const resolved = withDocsUtm(new URL(`${cleanBase}${pathPart}`), documentationBaseUrl);
 		if (fragment) resolved.hash = fragment;
 		return `[${text}](${resolved.toString()})`;
 	});
+}
+
+/** `fromVersion` the settings "View changelog" button passes to show every release. */
+export const FULL_CHANGELOG_FROM_VERSION = "0.0.0";
+
+/**
+ * Where the one-version-at-a-time view opens, given newest-first sections: the
+ * full changelog starts at the newest release; an update starts at the oldest
+ * version the user hasn't seen, so they read forward in the order it shipped.
+ */
+export function initialVersionIndex(sectionCount: number, fromVersion: string): number {
+	if (sectionCount === 0) return 0;
+	return fromVersion === FULL_CHANGELOG_FROM_VERSION ? 0 : sectionCount - 1;
+}
+
+/** Versions whose number contains the typed query; a leading `v` is ignored. */
+export function filterVersions(sections: readonly VersionSection[], query: string): VersionSection[] {
+	const needle = query.trim().replace(/^v/i, "");
+	if (needle === "") return [...sections];
+	return sections.filter((section) => section.version.includes(needle));
 }
 
 export type { VersionSection };

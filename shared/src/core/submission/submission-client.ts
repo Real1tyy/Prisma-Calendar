@@ -1,8 +1,7 @@
 import { requestUrl } from "obsidian";
 
-import { isE2E } from "../../utils/e2e";
+import { resolveApiBaseUrl } from "./api-base-url";
 import {
-	SUBMISSION_API_BASE_URL,
 	SUBMISSION_ENDPOINTS,
 	type SubmissionClientOptions,
 	type SubmissionContext,
@@ -66,21 +65,6 @@ export function buildSubmissionBody<K extends SubmissionKind>(
 		if (value !== undefined) body[field as string] = value;
 	}
 	return body;
-}
-
-/**
- * Base URL resolution. The E2E override lets a spec point the client at a
- * loopback stub server — `requestUrl` is served by Electron's main process, so
- * Playwright route interception can't reach it. Inert outside the harness,
- * exactly like the license manager's `__setProForTesting` seam.
- */
-function resolveBaseUrl(explicit: string | undefined): string {
-	if (explicit !== undefined) return explicit;
-	if (isE2E()) {
-		const override: unknown = (window as unknown as { __submissionApiBaseUrl?: unknown }).__submissionApiBaseUrl;
-		if (typeof override === "string" && override) return override;
-	}
-	return SUBMISSION_API_BASE_URL;
 }
 
 const defaultTransport: SubmissionTransport = async (request) => {
@@ -212,7 +196,7 @@ export class SubmissionClient {
 		if (!this.online()) return fail("offline", null, OFFLINE_MESSAGE);
 
 		const request: SubmissionRequest = {
-			url: new URL(SUBMISSION_ENDPOINTS[kind], resolveBaseUrl(this.options.baseUrl)).toString(),
+			url: new URL(SUBMISSION_ENDPOINTS[kind], resolveApiBaseUrl(this.options.baseUrl)).toString(),
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(buildSubmissionBody(kind, payload, this.context)),
