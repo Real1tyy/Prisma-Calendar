@@ -9,7 +9,6 @@ import {
 	type PluginSlug,
 	type ReleaseVideo,
 	type ReleaseVideoLookup,
-	type VersionSection,
 } from "@real1ty/obsidian-plugins";
 import { Component, MarkdownRenderer, type App, type Plugin } from "obsidian";
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
@@ -160,7 +159,7 @@ export const WhatsNewContent = memo(function WhatsNewContent({
 	);
 	const [versionIndex, setVersionIndex] = useState(() => initialVersionIndex(changelogSections.length, fromVersion));
 	// Empty when the update range holds no versions.
-	const currentSection: VersionSection | undefined = changelogSections[versionIndex];
+	const currentSection = changelogSections.at(versionIndex);
 	const currentVersion = currentSection?.version;
 	const toolsUrl = config.links.tools ?? DEFAULT_WHATS_NEW_LINKS.TOOLS;
 	const youtubeUrl = config.links.youtube ?? DEFAULT_WHATS_NEW_LINKS.YOUTUBE;

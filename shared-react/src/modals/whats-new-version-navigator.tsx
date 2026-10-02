@@ -23,7 +23,7 @@ export const VersionNavigator = memo(function VersionNavigator({ sections, index
 
 	const isOpen = query !== null;
 	const matches = useMemo(() => (isOpen ? filterVersions(sections, query) : []), [isOpen, query, sections]);
-	const current: VersionSection | undefined = sections[index];
+	const current = sections.at(index);
 
 	const close = useCallback(() => {
 		setQuery(null);
@@ -54,7 +54,7 @@ export const VersionNavigator = memo(function VersionNavigator({ sections, index
 				setHighlight((h) => Math.max(h - 1, 0));
 			} else if (e.key === "Enter") {
 				e.preventDefault();
-				const match: VersionSection | undefined = matches[highlight];
+				const match = matches.at(highlight);
 				if (match !== undefined) select(match.version);
 				e.currentTarget.blur();
 			}
