@@ -50,7 +50,7 @@ export const ReleaseVideoPanel = memo(function ReleaseVideoPanel({
 					<iframe
 						src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}`}
 						title={`Release video for v${version}`}
-						allow="encrypted-media; picture-in-picture; fullscreen"
+						allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
 						allowFullScreen
 						referrerPolicy="strict-origin-when-cross-origin"
 						data-testid={tid("video-player")}

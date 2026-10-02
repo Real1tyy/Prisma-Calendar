@@ -84,8 +84,8 @@ function ReleaseVideoPanel({
 	collapsed: boolean;
 	onToggle: () => void;
 }) {
-	// YouTube's own player, never autoplayed: a browser only plays an embedded
-	// video with sound after a click inside the player itself.
+	// YouTube only begins playback after the reader clicks its own control, but
+	// the player still needs the cross-origin autoplay permission for audio.
 	return (
 		<div className={styles.video}>
 			<div className={styles.videoHeader}>
@@ -101,7 +101,7 @@ function ReleaseVideoPanel({
 					<iframe
 						src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}`}
 						title={`Release video for v${version}`}
-						allow="encrypted-media; picture-in-picture; fullscreen"
+						allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
 						allowFullScreen
 						loading="lazy"
 						referrerPolicy="strict-origin-when-cross-origin"
