@@ -103,6 +103,13 @@ function animateScrollTo(el: HTMLElement, target: number): void {
 	view.requestAnimationFrame(step);
 }
 
+/** The changelog's `> **TLDR:** …` lead-in, picked out so the stylesheet can colour just that word. */
+function markTldr(root: HTMLElement, className: string): void {
+	for (const strong of Array.from(root.querySelectorAll("strong"))) {
+		if (strong.textContent.trim().replace(/:$/, "") === "TLDR") strong.classList.add(className);
+	}
+}
+
 interface LoadedVideo {
 	version: string;
 	video: ReleaseVideo | null;
@@ -136,6 +143,7 @@ export const WhatsNewContent = memo(function WhatsNewContent({
 	const [videoCollapsed, setVideoCollapsed] = useState(false);
 	const [loadedVideo, setLoadedVideo] = useState<LoadedVideo | null>(null);
 	const { cls, tid } = useScopedStyles("whats-new", buildWhatsNewStyles);
+	const tldrClass = cls("tldr");
 
 	// Scoped Obsidian Component owns the lifecycle of MarkdownRenderer outputs
 	// (live preview workers, embedded views, link-event listeners). Tied to the
@@ -192,12 +200,15 @@ export const WhatsNewContent = memo(function WhatsNewContent({
 		el.empty();
 		const target = el.createDiv();
 		const markdown = resolveRelativeDocLinks(formatChangelogBody(currentSection), config.links.documentation);
-		void MarkdownRenderer.render(app, markdown, target, "/", child).then(() => makeExternalLinksClickable(target));
+		void MarkdownRenderer.render(app, markdown, target, "/", child).then(() => {
+			makeExternalLinksClickable(target);
+			markTldr(target, tldrClass);
+		});
 		if (contentRef.current) contentRef.current.scrollTop = 0;
 		return () => {
 			parent.removeChild(child);
 		};
-	}, [app, currentSection, config.links.documentation]);
+	}, [app, currentSection, config.links.documentation, tldrClass]);
 
 	const sectionCount = changelogSections.length;
 	useEffect(() => {

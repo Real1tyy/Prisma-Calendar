@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, 
 
 import { fetchReleaseVideos, type ReleaseVideo } from "./release-video";
 import { pluginSlugFromSiteUrl } from "./site";
+import { isYouTubePlaceholder, youTubeThumbnailUrls } from "./youtube";
 import {
 	applySectionFilter,
 	CHANGELOG_VERSION_PARAM,
@@ -85,6 +86,9 @@ function ReleaseVideoPanel({
 	onToggle: () => void;
 }) {
 	const [playing, setPlaying] = useState(false);
+	const thumbnails = youTubeThumbnailUrls(video.youtubeId);
+	const [thumbnail, setThumbnail] = useState(0);
+	const stepDownThumbnail = () => setThumbnail((i) => Math.min(i + 1, thumbnails.length - 1));
 	return (
 		<div className={styles.video}>
 			<div className={styles.videoHeader}>
@@ -112,7 +116,15 @@ function ReleaseVideoPanel({
 							onClick={() => setPlaying(true)}
 							aria-label={`Play the release video for v${version}`}
 						>
-							<img src={`https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg`} alt="" loading="lazy" />
+							<img
+								src={thumbnails[thumbnail]}
+								alt=""
+								loading="lazy"
+								onLoad={(e) => {
+									if (isYouTubePlaceholder(e.currentTarget.naturalWidth)) stepDownThumbnail();
+								}}
+								onError={stepDownThumbnail}
+							/>
 							<span className={styles.videoPlay} aria-hidden="true">
 								▶
 							</span>

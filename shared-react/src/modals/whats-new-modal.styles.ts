@@ -1,9 +1,9 @@
 export function buildWhatsNewStyles(p: string): string {
 	return `
 .modal-container.mod-dim .modal.${p}whats-new-modal {
-	max-width: 750px;
-	width: 90%;
-	height: 80vh;
+	max-width: 960px;
+	width: 92%;
+	height: 88vh;
 }
 .${p}whats-new-modal .modal-title {
 	text-align: center;
@@ -311,11 +311,16 @@ export function buildWhatsNewStyles(p: string): string {
 .${p}whats-new-video-link {
 	font-size: var(--font-ui-small);
 }
+/* Width follows the modal, but never so wide that a 16:9 frame outgrows about
+   half the window's height; the whole video then fits with the notes below. */
 .${p}whats-new-video-frame {
-	margin-top: 0.6rem;
+	margin: 0.6rem auto 0;
 	position: relative;
 	aspect-ratio: 16 / 9;
-	width: 100%;
+	width: min(100%, calc(48vh * 16 / 9));
+}
+.${p}whats-new-content strong.${p}whats-new-tldr {
+	color: var(--text-accent);
 }
 .${p}whats-new-video-frame iframe,
 .${p}whats-new-video-thumbnail {

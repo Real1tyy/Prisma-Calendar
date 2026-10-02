@@ -1,4 +1,10 @@
-import { buildUtmUrl, type PluginSlug, type ReleaseVideo } from "@real1ty/obsidian-plugins";
+import {
+	buildUtmUrl,
+	isYouTubePlaceholder,
+	youTubeThumbnailUrls,
+	type PluginSlug,
+	type ReleaseVideo,
+} from "@real1ty/obsidian-plugins";
 import { memo, useState } from "react";
 
 import { useScoped } from "../contexts/theme-context";
@@ -27,6 +33,9 @@ export const ReleaseVideoPanel = memo(function ReleaseVideoPanel({
 }: ReleaseVideoPanelProps) {
 	const { cls, tid } = useScoped("whats-new");
 	const [playing, setPlaying] = useState(false);
+	const thumbnails = youTubeThumbnailUrls(video.youtubeId);
+	const [thumbnail, setThumbnail] = useState(0);
+	const stepDownThumbnail = () => setThumbnail((i) => Math.min(i + 1, thumbnails.length - 1));
 	const watchUrl = buildUtmUrl(video.videoUrl, slug, "plugin", "changelog", "release_video");
 
 	return (
@@ -64,7 +73,15 @@ export const ReleaseVideoPanel = memo(function ReleaseVideoPanel({
 							aria-label={`Play the release video for v${version}`}
 							data-testid={tid("video-thumbnail")}
 						>
-							<img src={`https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg`} alt="" />
+							<img
+								src={thumbnails[thumbnail]}
+								alt=""
+								onLoad={(e) => {
+									if (isYouTubePlaceholder(e.currentTarget.naturalWidth)) stepDownThumbnail();
+								}}
+								onError={stepDownThumbnail}
+								data-testid={tid("video-thumbnail-image")}
+							/>
 							<span className={cls("video-play")} aria-hidden="true">
 								▶
 							</span>
