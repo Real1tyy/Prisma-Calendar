@@ -9,10 +9,13 @@ Prisma Calendar is local-first. Your notes, file names, and settings stay in you
 
 ## What leaves your device, and when
 
-Only two things ever contact a server on their own, and both are documented where you configure them:
+Only three things ever contact a server on their own, and each is documented where you meet it:
 
 - **License verification** for Pro features — see [License & activation](./configuration/license) and the [privacy FAQ](./faq#-privacy--telemetry) for the exact fields sent.
 - **The update check** — a single anonymous request to GitHub Releases, described under [General settings](./configuration/general).
+- **Release videos in the changelog** — while the changelog is open (it opens by itself after an update), each version you view asks my server whether it has a release video. The request carries only the plugin's name and that version number, with no id and nothing from your vault. See [Changelog viewer](./configuration/general#changelog-viewer).
+
+**View unreleased** reads the public changelog page on this site, and only when you click it.
 
 Everything else — a log excerpt, a debug report, a bug report — leaves your device **only when you copy or send it yourself**. Nothing is sent automatically, and you can read exactly what is attached before it goes anywhere.
 

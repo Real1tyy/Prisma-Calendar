@@ -56,6 +56,8 @@ This data is used solely for license validation, activation seat management (up 
 
 Separately, the optional **General → Review** action sends only the fields listed in [Rate & Review](./configuration/general.md#rate--review). Nothing is sent unless you press **Submit**.
 
+While the changelog is open, each version you view asks my server whether it has a release video. That request carries only the plugin's name and the version number: no id, no license key and nothing from your vault. See [Privacy & diagnostics](./privacy).
+
 </details>
 
 <details>
