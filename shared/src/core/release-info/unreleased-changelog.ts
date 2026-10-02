@@ -1,3 +1,4 @@
+import { UNRELEASED_KEY } from "../../docs-site/changelog-sections";
 import { isE2E } from "../../utils/e2e";
 import { withDocsUtm } from "../../utils/string/changelog-parser";
 import { defaultReleaseInfoTransport, type ReleaseInfoTransport } from "./release-video";
@@ -16,7 +17,8 @@ export interface UnreleasedChangelogOptions {
 	transport?: ReleaseInfoTransport;
 }
 
-const UNRELEASED_ID = "unreleased";
+const UNRELEASED_ID = UNRELEASED_KEY;
+const ZERO_WIDTH_SPACE = String.fromCharCode(0x200b);
 const OFFLINE_MESSAGE = "Couldn't load the changelog. Check your connection and try again.";
 const UNREADABLE_MESSAGE = "Couldn't read the published changelog. Open it in your browser instead.";
 
@@ -24,7 +26,9 @@ function isUnreleasedHeading(heading: Element): boolean {
 	if (heading.id === UNRELEASED_ID) return true;
 	// Docusaurus appends a zero-width hash-link to every heading, so compare the
 	// visible word rather than the whole text.
-	return heading.textContent?.replace(/[​#]/g, "").trim().toLowerCase() === UNRELEASED_ID;
+	return (
+		heading.textContent.replaceAll(ZERO_WIDTH_SPACE, "").replaceAll("#", "").trim().toLowerCase() === UNRELEASED_ID
+	);
 }
 
 function resolveLinks(root: Element, pageUrl: string, documentationUrl: string): void {
@@ -67,7 +71,7 @@ export function extractUnreleasedHtml(pageHtml: string, pageUrl: string, documen
 	while (container.lastElementChild?.tagName === "HR") container.lastElementChild.remove();
 
 	resolveLinks(container, pageUrl, documentationUrl);
-	return container.textContent?.trim() ? container.innerHTML : "";
+	return container.textContent.trim() ? container.innerHTML : "";
 }
 
 /**

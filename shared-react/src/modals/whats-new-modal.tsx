@@ -1,4 +1,5 @@
 import {
+	changelogSectionUrl,
 	createReleaseVideoLookup,
 	formatChangelogBody,
 	FULL_CHANGELOG_FROM_VERSION,
@@ -8,12 +9,15 @@ import {
 	type PluginSlug,
 	type ReleaseVideo,
 	type ReleaseVideoLookup,
+	type VersionSection,
 } from "@real1ty/obsidian-plugins";
 import { Component, MarkdownRenderer, type App, type Plugin } from "obsidian";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 
 import { useApp } from "../contexts/app-context";
+import { useOwnerDocument } from "../contexts/theme-context";
 import { useScopedStyles } from "../hooks/styles/use-styles";
+import { OutboundLink } from "../primitives/atoms/outbound-link";
 import { showReactModal } from "../show-react-modal";
 import { makeExternalLinksClickable } from "../utils/external-links";
 import { openExternal } from "../utils/open-external";
@@ -59,6 +63,47 @@ interface WhatsNewContentProps {
 	releaseVideoLookup?: ReleaseVideoLookup;
 }
 
+function stopPropagation(e: MouseEvent): void {
+	e.stopPropagation();
+}
+
+/**
+ * Typing in the version search (or any field) owns the arrow keys. Duck-typed
+ * because `instanceof HTMLElement` fails for elements in a pop-out window.
+ */
+function isTextEntry(target: EventTarget | null): boolean {
+	const el = target as Partial<HTMLElement> | null;
+	if (el === null || typeof el.tagName !== "string") return false;
+	return el.isContentEditable === true || el.tagName === "INPUT" || el.tagName === "TEXTAREA";
+}
+
+/**
+ * Native `scroll-behavior: smooth` takes roughly 450 ms and exposes no speed
+ * control; this eases over a third of that so ↑ / ↓ feel instant but still
+ * show where they went. Uses the element's own window so it runs in pop-outs.
+ */
+const SCROLL_DURATION_MS = 150;
+
+function animateScrollTo(el: HTMLElement, target: number): void {
+	const view = el.ownerDocument.defaultView;
+	const start = el.scrollTop;
+	const distance = target - start;
+	if (view === null || typeof view.requestAnimationFrame !== "function" || distance === 0) {
+		el.scrollTop = target;
+		return;
+	}
+	const startedAt = view.performance.now();
+	// Read the clock here rather than trusting the frame timestamp, whose origin
+	// differs between environments.
+	const step = () => {
+		const elapsed = view.performance.now() - startedAt;
+		const progress = Math.min(Math.max(elapsed / SCROLL_DURATION_MS, 0), 1);
+		el.scrollTop = start + distance * (1 - (1 - progress) ** 3);
+		if (progress < 1) view.requestAnimationFrame(step);
+	};
+	view.requestAnimationFrame(step);
+}
+
 interface LoadedVideo {
 	version: string;
 	video: ReleaseVideo | null;
@@ -83,7 +128,10 @@ export const WhatsNewContent = memo(function WhatsNewContent({
 	const app = useApp();
 	const contentRef = useRef<HTMLDivElement>(null);
 	const changelogRef = useRef<HTMLDivElement>(null);
-	const [supportCollapsed, setSupportCollapsed] = useState(false);
+	// Collapsed by default so the changelog, not the pitch, fills the modal;
+	// the heading itself stays a link to the call to action.
+	const [supportCollapsed, setSupportCollapsed] = useState(true);
+	const ownerDocument = useOwnerDocument();
 	// Lives for the modal, not the version: collapsing the video once keeps it
 	// out of the way while the reader steps through releases.
 	const [videoCollapsed, setVideoCollapsed] = useState(false);
@@ -111,7 +159,8 @@ export const WhatsNewContent = memo(function WhatsNewContent({
 		[config.changelogContent, fromVersion, toVersion]
 	);
 	const [versionIndex, setVersionIndex] = useState(() => initialVersionIndex(changelogSections.length, fromVersion));
-	const currentSection = changelogSections[versionIndex];
+	// Empty when the update range holds no versions.
+	const currentSection: VersionSection | undefined = changelogSections[versionIndex];
 	const currentVersion = currentSection?.version;
 	const toolsUrl = config.links.tools ?? DEFAULT_WHATS_NEW_LINKS.TOOLS;
 	const youtubeUrl = config.links.youtube ?? DEFAULT_WHATS_NEW_LINKS.YOUTUBE;
@@ -151,11 +200,33 @@ export const WhatsNewContent = memo(function WhatsNewContent({
 		};
 	}, [app, currentSection, config.links.documentation]);
 
+	const sectionCount = changelogSections.length;
+	useEffect(() => {
+		const onKeyDown = (e: KeyboardEvent) => {
+			if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || isTextEntry(e.target)) return;
+			const step = e.key === "ArrowLeft" ? -1 : e.key === "ArrowRight" ? 1 : 0;
+			if (step === 0 || sectionCount === 0) return;
+			e.preventDefault();
+			setVersionIndex((i) => Math.min(Math.max(i + step, 0), sectionCount - 1));
+		};
+		ownerDocument.addEventListener("keydown", onKeyDown);
+		return () => ownerDocument.removeEventListener("keydown", onKeyDown);
+	}, [ownerDocument, sectionCount]);
+
+	const scrollToTop = useCallback(() => {
+		if (contentRef.current) animateScrollTo(contentRef.current, 0);
+	}, []);
+	const scrollToBottom = useCallback(() => {
+		const el = contentRef.current;
+		if (el) animateScrollTo(el, el.scrollHeight - el.clientHeight);
+	}, []);
+
 	const toggleSupport = useCallback(() => setSupportCollapsed((prev) => !prev), []);
 	const toggleVideo = useCallback(() => setVideoCollapsed((prev) => !prev), []);
 	const currentVideo = loadedVideo !== null && loadedVideo.version === currentVersion ? loadedVideo.video : null;
 
 	const headingText = config.supportSection ? config.supportSection.heading : "Support the development of this plugin";
+	const headingHref = config.supportSection?.cta?.href ?? config.links.support;
 
 	return (
 		<div data-testid={tid("modal")}>
@@ -170,8 +241,20 @@ export const WhatsNewContent = memo(function WhatsNewContent({
 					role="button"
 					tabIndex={0}
 				>
-					<h3>{headingText}</h3>
-					<span className={cls("support-chevron")}>{supportCollapsed ? "▶" : "▼"}</span>
+					<h3>
+						{/* The heading doubles as the CTA so a collapsed banner still leads somewhere. */}
+						<OutboundLink
+							href={headingHref}
+							className={cls("support-link")}
+							testId={tid("support-link")}
+							onClick={stopPropagation}
+						>
+							{headingText}
+						</OutboundLink>
+					</h3>
+					<span className={cls("support-chevron")} data-testid={tid("support-chevron")}>
+						{supportCollapsed ? "▶" : "▼"}
+					</span>
 				</div>
 				<div
 					className={`${cls("support-body")}${supportCollapsed ? ` ${cls("support-collapsed")}` : ""}`}
@@ -210,7 +293,29 @@ export const WhatsNewContent = memo(function WhatsNewContent({
 				<p className={cls("empty")}>No significant changes found in this update.</p>
 			) : (
 				<>
-					<VersionNavigator sections={changelogSections} index={versionIndex} onSelect={setVersionIndex} />
+					<div className={cls("version-header")}>
+						<VersionNavigator sections={changelogSections} index={versionIndex} onSelect={setVersionIndex} />
+						<div className={cls("scroll-buttons")}>
+							<button
+								type="button"
+								onClick={scrollToTop}
+								aria-label="Scroll to top"
+								title="Scroll to top"
+								data-testid={tid("scroll-top")}
+							>
+								↑
+							</button>
+							<button
+								type="button"
+								onClick={scrollToBottom}
+								aria-label="Scroll to bottom"
+								title="Scroll to bottom"
+								data-testid={tid("scroll-bottom")}
+							>
+								↓
+							</button>
+						</div>
+					</div>
 					<div className={cls("content")} ref={contentRef} data-testid={tid("content")}>
 						{currentVideo !== null && currentVersion !== undefined && (
 							<ReleaseVideoPanel
@@ -231,7 +336,14 @@ export const WhatsNewContent = memo(function WhatsNewContent({
 				<div className={cls("buttons")}>
 					{config.links.productPage && <FooterButton label="Product Page" href={config.links.productPage} />}
 					<FooterButton label="GitHub" href={config.links.github} />
-					<FooterButton label="Changelog" href={config.links.changelog} />
+					<FooterButton
+						label="Changelog"
+						href={
+							currentVersion !== undefined
+								? changelogSectionUrl(config.links.changelog, currentVersion)
+								: config.links.changelog
+						}
+					/>
 					<FooterButton label="Documentation" href={config.links.documentation} />
 					<FooterButton label="Other Plugins" href={toolsUrl} />
 					<FooterButton label="YouTube" href={youtubeUrl} />

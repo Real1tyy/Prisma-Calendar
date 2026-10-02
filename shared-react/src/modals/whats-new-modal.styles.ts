@@ -184,13 +184,40 @@ export function buildWhatsNewStyles(p: string): string {
 	padding: 2rem;
 	font-style: italic;
 }
-.${p}whats-new-nav {
+.${p}whats-new-version-header {
 	flex-shrink: 0;
+	position: relative;
+	margin: 1rem 0 0.75rem;
+	padding-bottom: 0.75rem;
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+.${p}whats-new-nav {
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	gap: 0.75rem;
-	margin: 1rem 0 0.5rem;
+}
+.${p}whats-new-scroll-buttons {
+	position: absolute;
+	top: 0;
+	right: 0;
+	display: flex;
+	gap: 0.35rem;
+}
+.${p}whats-new-scroll-buttons button {
+	padding: 0.25rem 0.6rem;
+	font-size: 0.95rem;
+	line-height: 1;
+}
+@media (max-width: 480px) {
+	.${p}whats-new-scroll-buttons {
+		position: static;
+		justify-content: center;
+		margin-top: 0.5rem;
+	}
+}
+.${p}whats-new-support-header h3 a.${p}whats-new-support-link {
+	color: inherit;
 }
 .${p}whats-new-nav-arrow {
 	font-size: 1.3rem;

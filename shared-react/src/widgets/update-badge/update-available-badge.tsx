@@ -1,4 +1,4 @@
-import type { ReleaseCheckService } from "@real1ty/obsidian-plugins";
+import { changelogSectionUrl, type ReleaseCheckService } from "@real1ty/obsidian-plugins";
 import { memo, useCallback } from "react";
 
 import { useScopedCls } from "../../contexts/theme-context";
@@ -12,6 +12,12 @@ export interface UpdateAvailableBadgeProps {
 	 * returned by GitHub. Pass `null` to render a non-clickable pill.
 	 */
 	hrefOverride?: string | null;
+	/**
+	 * The plugin's published changelog page. When set, the badge opens the new
+	 * version's own section (`?version=X.Y.Z`) — notes plus its release video —
+	 * rather than the GitHub release. `hrefOverride` still wins.
+	 */
+	changelogUrl?: string;
 	/** Optional label override. Defaults to "Update available". */
 	label?: string;
 	/** Optional test id for E2E assertions. */
@@ -21,6 +27,7 @@ export interface UpdateAvailableBadgeProps {
 export const UpdateAvailableBadge = memo(function UpdateAvailableBadge({
 	service,
 	hrefOverride,
+	changelogUrl,
 	label = "Update available",
 	testId,
 }: UpdateAvailableBadgeProps) {
@@ -29,10 +36,11 @@ export const UpdateAvailableBadge = memo(function UpdateAvailableBadge({
 
 	const handleClick = useCallback(() => {
 		if (!notice) return;
-		const url = hrefOverride ?? notice.url;
+		const releaseNotes = changelogUrl !== undefined ? changelogSectionUrl(changelogUrl, notice.version) : notice.url;
+		const url = hrefOverride ?? releaseNotes;
 		if (!url) return;
 		openExternal(url);
-	}, [notice, hrefOverride]);
+	}, [notice, hrefOverride, changelogUrl]);
 
 	if (!notice) return null;
 

@@ -1,4 +1,9 @@
-import { fetchUnreleasedChangelog, type UnreleasedChangelog } from "@real1ty/obsidian-plugins";
+import {
+	changelogSectionUrl,
+	fetchUnreleasedChangelog,
+	UNRELEASED_KEY,
+	type UnreleasedChangelog,
+} from "@real1ty/obsidian-plugins";
 import { sanitizeHTMLToDom, type App } from "obsidian";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
@@ -51,7 +56,10 @@ export const UnreleasedChangelogContent = memo(function UnreleasedChangelogConte
 	}, [state]);
 
 	const retry = useCallback(() => setAttempt((n) => n + 1), []);
-	const openChangelog = useCallback(() => openExternal(config.links.changelog), [config.links.changelog]);
+	const openChangelog = useCallback(
+		() => openExternal(changelogSectionUrl(config.links.changelog, UNRELEASED_KEY)),
+		[config.links.changelog]
+	);
 
 	return (
 		<div data-testid={tid("unreleased")}>
@@ -82,7 +90,7 @@ export const UnreleasedChangelogContent = memo(function UnreleasedChangelogConte
 			<div className={cls("sticky-footer")}>
 				<div className={cls("buttons")}>
 					<button type="button" onClick={openChangelog} data-testid={tid("unreleased-open-changelog")}>
-						Open the full changelog
+						Open it on the website
 					</button>
 				</div>
 			</div>

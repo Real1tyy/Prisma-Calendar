@@ -1,4 +1,4 @@
-import { memo, type CSSProperties, type ReactNode } from "react";
+import { memo, type CSSProperties, type MouseEventHandler, type ReactNode } from "react";
 
 import { testIdAttr } from "../../utils/test-id";
 
@@ -11,6 +11,8 @@ export interface OutboundLinkProps {
 	testId?: string | undefined;
 	/** Accessible label when the visible content is an icon/glyph only. */
 	ariaLabel?: string | undefined;
+	/** Runs before navigation — e.g. to stop the click reaching a clickable parent. */
+	onClick?: MouseEventHandler<HTMLAnchorElement> | undefined;
 }
 
 /**
@@ -26,6 +28,7 @@ export const OutboundLink = memo(function OutboundLink({
 	style,
 	testId,
 	ariaLabel,
+	onClick,
 }: OutboundLinkProps) {
 	return (
 		<a
@@ -35,6 +38,7 @@ export const OutboundLink = memo(function OutboundLink({
 			target="_blank"
 			rel="noopener noreferrer"
 			aria-label={ariaLabel}
+			onClick={onClick}
 			{...testIdAttr(testId)}
 		>
 			{children}
