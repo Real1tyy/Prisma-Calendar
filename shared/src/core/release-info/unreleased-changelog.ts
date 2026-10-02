@@ -62,11 +62,16 @@ export function extractUnreleasedHtml(pageHtml: string, pageUrl: string, documen
 	const heading = headings.find(isUnreleasedHeading);
 	if (heading === undefined) return "";
 
-	const container = doc.createElement("div");
+	const section: Element[] = [];
 	for (let node = heading.nextElementSibling; node !== null; node = node.nextElementSibling) {
 		if (node.tagName === "H2" || node.tagName === "H1") break;
-		container.appendChild(node.cloneNode(true));
+		section.push(node);
 	}
+	// The parsed page is a throwaway, so its own body becomes the container.
+	// Obsidian's review bans createElement("div"), and its createDiv() only
+	// exists on the window's document, not on a DOMParser one.
+	const container = doc.body;
+	container.replaceChildren(...section);
 	for (const hashLink of Array.from(container.querySelectorAll("a.hash-link"))) hashLink.remove();
 	while (container.lastElementChild?.tagName === "HR") container.lastElementChild.remove();
 
