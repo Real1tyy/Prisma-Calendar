@@ -49,6 +49,8 @@ import {
 import { VaultTableQuery } from "./vault-table-query";
 import type { SortField } from "./zod-filter-sort";
 
+const FRONTMATTER_BLOCK = /^---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$)/;
+
 type ResolveChildRelations<T extends VaultTableDefMap> = {
 	[K in keyof T]: T[K] extends VaultTableDef<infer D, infer S, infer C> ? VaultTable<D, S, C> : never;
 };
@@ -669,9 +671,20 @@ export class VaultTable<
 
 	private async updateRowContent(key: string, content: string): Promise<VaultRow<TData>> {
 		const existing = this.require(key);
-		const serialized = this.serialize(existing.data);
-		this.applyPropertyOrder(serialized);
-		const fileContent = createFileContentWithFrontmatter(serialized, content);
+		// The on-disk frontmatter block is kept verbatim: a mapped schema only
+		// serializes the keys it owns, so rebuilding the block from row data
+		// would drop every key another plugin or the user put there.
+		const raw = await this.app.vault.read(existing.file);
+		const frontmatterBlock = FRONTMATTER_BLOCK.exec(raw)?.[0];
+		let fileContent: string;
+		if (frontmatterBlock === undefined) {
+			const serialized = this.serialize(existing.data);
+			this.applyPropertyOrder(serialized);
+			fileContent = createFileContentWithFrontmatter(serialized, content);
+		} else {
+			const block = frontmatterBlock.endsWith("\n") ? frontmatterBlock : `${frontmatterBlock}\n`;
+			fileContent = `${block}${content.replace(/^\n+/, "")}`;
+		}
 		await this.app.vault.modify(existing.file, fileContent);
 
 		const newRow = this.buildRow(
