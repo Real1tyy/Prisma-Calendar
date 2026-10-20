@@ -16,7 +16,11 @@ import {
 import { ensureDirectory, extractContentAfterFrontmatter, withFrontmatter } from "../file/file-utils";
 import { createFileAtPathAtomic, guardFromTemplater } from "../file/templater";
 import { correctFrontmatter, deleteInvalidFile } from "../frontmatter/frontmatter-repair";
-import { createFileContentWithFrontmatter, parseFileContent } from "../frontmatter/frontmatter-serialization";
+import {
+	bodyAfterFrontmatter,
+	createFileContentWithFrontmatter,
+	parseFileContent,
+} from "../frontmatter/frontmatter-serialization";
 import { enforcePropertyOrder } from "../frontmatter/property-order";
 import { Indexer, type IndexerConfig, type IndexerEvent } from "../indexer";
 import type { SerializableSchema } from "./create-mapped-schema";
@@ -683,7 +687,7 @@ export class VaultTable<
 			fileContent = createFileContentWithFrontmatter(serialized, content);
 		} else {
 			const block = frontmatterBlock.endsWith("\n") ? frontmatterBlock : `${frontmatterBlock}\n`;
-			fileContent = `${block}${content.replace(/^\n+/, "")}`;
+			fileContent = `${block}${bodyAfterFrontmatter(content)}`;
 		}
 		await this.app.vault.modify(existing.file, fileContent);
 

@@ -8,6 +8,7 @@ export type PluginSlug =
 	| "people-manager"
 	| "page-header-manager"
 	| "core-finance"
+	| "core-nutrition"
 	| "reality-custom";
 
 export function buildUtmUrl(url: string, slug: PluginSlug, source: string, medium: string, content: string): string {

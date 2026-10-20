@@ -45,6 +45,7 @@ export {
 	type UseDebouncedCommitOptions,
 } from "./hooks/interaction";
 export {
+	isTypingTarget,
 	useArrowDown,
 	useArrowKey,
 	type UseArrowKeyOptions,

@@ -15,6 +15,7 @@ import { createPortal } from "react-dom";
 import { AppContext } from "../../contexts/app-context";
 import { useDomEvent } from "../../hooks/dom/use-dom-event";
 import { useMediaQuery } from "../../hooks/dom/use-media-query";
+import { isTypingTarget } from "../../hooks/keyboard/is-typing-target";
 import { useInjectedStyles } from "../../hooks/styles/use-styles";
 import { ObsidianIcon } from "../../primitives/atoms/obsidian-icon";
 import { MOBILE_MEDIA_QUERY } from "../../responsive";
@@ -77,7 +78,7 @@ export const TabbedContainer = memo(function TabbedContainer({
 	});
 
 	useDomEvent(typeof activeDocument !== "undefined" ? activeDocument : null, "keydown", (e) => {
-		if (!isActiveRef.current) return;
+		if (!isActiveRef.current || isTypingTarget(e.target)) return;
 		const handler = activeTab?.keyHandlers?.[e.key];
 		if (handler) {
 			handler(e);

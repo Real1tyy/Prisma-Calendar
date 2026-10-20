@@ -1,5 +1,18 @@
 import { parse as parseYAML, stringify as stringifyYAML } from "yaml";
 
+const LEADING_FENCE = /^(```|~~~)/;
+
+/**
+ * Normalizes a body for the line right after a frontmatter block: leading
+ * newlines go, except a single blank line before a code fence. Obsidian opens a
+ * note whose fence sits directly under the frontmatter with the cursor inside
+ * the block, so it shows raw source instead of the rendered block.
+ */
+export function bodyAfterFrontmatter(content: string): string {
+	const trimmed = content.replace(/^\n+/, "");
+	return LEADING_FENCE.test(trimmed) ? `\n${trimmed}` : trimmed;
+}
+
 /**
  * Creates file content with YAML frontmatter and body content.
  * This is the atomic file creation format that prevents race conditions.
@@ -33,7 +46,7 @@ export function createFileContentWithFrontmatter(frontmatter: Record<string, unk
 		return content;
 	}
 
-	const trimmedContent = content.replace(/^\n+/, "");
+	const trimmedContent = bodyAfterFrontmatter(content);
 
 	if (trimmedContent) {
 		return `---\n${yaml}\n---\n${trimmedContent}`;

@@ -1,3 +1,4 @@
+export { isTypingTarget } from "./is-typing-target";
 export {
 	useArrowDown,
 	useArrowKey,
