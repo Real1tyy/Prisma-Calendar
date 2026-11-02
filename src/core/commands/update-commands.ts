@@ -106,7 +106,7 @@ export class UpdateEventCommand implements Command {
 		let endTime = this.newDateTime.end;
 		if (!endTime && !this.newDateTime.allDay) {
 			const startDate = new Date(this.newDateTime.start);
-			startDate.setHours(startDate.getHours() + 1);
+			startDate.setMinutes(startDate.getMinutes() + settings.defaultDurationMinutes);
 			endTime = toLocalISOString(startDate);
 		}
 
