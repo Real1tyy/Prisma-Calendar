@@ -8,6 +8,9 @@ All notable changes to this project will be documented here.
 
 ## Unreleased
 
+### Added
+- Added **Week view create gutter (%)** and **Day view create gutter (%)** settings: the empty space on the right of each day column, where you click to create an event beside ones already filling the slot. Week defaults to 3.5% and Day to 1.5%; each takes any percentage (decimals included), and 0 turns it off.
+
 ### Fixed
 - Dragging an all-day event into the time grid gives it your configured **Default duration** instead of always one hour. See [General → Parsing](./configuration/general.md#parsing).
 - **Undo and redo are more reliable**: Redo always re-applies the step you just undid, and once you make a new change there is nothing left for Redo to bring back, so an older edit can never overwrite a newer one. Undo then reverses exactly what is in your note. The steps Redo can no longer reach aren't lost: they stay in Operation history, where you can re-apply any of them from its row. See [Undo/Redo → How undo and redo pick a step](./features/management/undo-redo.md#how-undo-and-redo-pick-a-step).
