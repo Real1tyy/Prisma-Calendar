@@ -1715,7 +1715,7 @@
 								"type": "string"
 							},
 							"dayCreateGutter": {
-								"default": 2,
+								"default": 1.5,
 								"description": "Percentage of the Day view column kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable.",
 								"maximum": 50,
 								"minimum": 0,
@@ -2965,7 +2965,7 @@
 								"type": "string"
 							},
 							"weekCreateGutter": {
-								"default": 4,
+								"default": 3.5,
 								"description": "Percentage of each Week view day column kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable.",
 								"maximum": 50,
 								"minimum": 0,
@@ -4362,7 +4362,7 @@
 								"type": "string"
 							},
 							"dayCreateGutter": {
-								"default": 2,
+								"default": 1.5,
 								"description": "Percentage of the Day view column kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable.",
 								"maximum": 50,
 								"minimum": 0,
@@ -5612,7 +5612,7 @@
 								"type": "string"
 							},
 							"weekCreateGutter": {
-								"default": 4,
+								"default": 3.5,
 								"description": "Percentage of each Week view day column kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable.",
 								"maximum": 50,
 								"minimum": 0,

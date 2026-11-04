@@ -137,6 +137,6 @@
 }
 
 .prisma-calendar-container {
-	@include create-gutter(".fc-timeGridWeek-view", "--week-create-gutter", 4%);
-	@include create-gutter(".fc-timeGridDay-view", "--day-create-gutter", 2%);
+	@include create-gutter(".fc-timeGridWeek-view", "--week-create-gutter", 3.5%);
+	@include create-gutter(".fc-timeGridDay-view", "--day-create-gutter", 1.5%);
 }

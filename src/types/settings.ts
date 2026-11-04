@@ -683,12 +683,12 @@ const CalendarSettingsSchema = z
 			)
 			.meta({ title: "Allow slot event overlap" }),
 		weekCreateGutter: createGutterSchema(
-			4,
+			3.5,
 			"Week view",
 			"Percentage of each Week view day column kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable."
 		),
 		dayCreateGutter: createGutterSchema(
-			2,
+			1.5,
 			"Day view",
 			"Percentage of the Day view column kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable."
 		),

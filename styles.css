@@ -868,16 +868,16 @@ button[class*=prisma-]:focus-visible {
 }
 
 .prisma-calendar-container.fc-direction-ltr .fc-timeGridWeek-view .fc-timegrid-col-events {
-  margin-right: var(--week-create-gutter, 4%);
+  margin-right: var(--week-create-gutter, 3.5%);
 }
 .prisma-calendar-container.fc-direction-rtl .fc-timeGridWeek-view .fc-timegrid-col-events {
-  margin-left: var(--week-create-gutter, 4%);
+  margin-left: var(--week-create-gutter, 3.5%);
 }
 .prisma-calendar-container.fc-direction-ltr .fc-timeGridDay-view .fc-timegrid-col-events {
-  margin-right: var(--day-create-gutter, 2%);
+  margin-right: var(--day-create-gutter, 1.5%);
 }
 .prisma-calendar-container.fc-direction-rtl .fc-timeGridDay-view .fc-timegrid-col-events {
-  margin-left: var(--day-create-gutter, 2%);
+  margin-left: var(--day-create-gutter, 1.5%);
 }
 
 @media (width <= 768px) {
