@@ -30,7 +30,7 @@
 		"@types/node": "^25.9.0",
 		"@vitejs/plugin-react": "^6.0.2",
 		"@vitest/coverage-v8": "^4.1.8",
-		"@vitest/spy": "^4.1.8",
+		"@vitest/spy": "^4.1.12",
 		"babel-plugin-react-compiler": "^1.0.0",
 		"chart.js": "^4.5.1",
 		"fake-indexeddb": "^6.0.0",
@@ -41,10 +41,10 @@
 		"prettier": "^3.4.2",
 		"tsx": "^4.21.0",
 		"typescript": "^5.9.3",
-		"vite": "^8.0.13",
+		"vite": "^8.2.4",
 		"vite-plugin-babel": "^1.7.3",
 		"vite-tsconfig-paths": "^5.1.2",
-		"vitest": "^4.1.8"
+		"vitest": "^4.1.12"
 	},
 	"scripts": {
 		"typecheck": "tsc -noEmit",

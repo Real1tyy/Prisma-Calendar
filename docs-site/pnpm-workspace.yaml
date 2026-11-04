@@ -14,19 +14,20 @@ overrides:
   "@babel/plugin-transform-modules-systemjs@>=7.12.0 <=7.29.3": "7.29.4"
   "ajv@<6.14.0": "6.14.0"
   "ajv@>=7.0.0-alpha.0 <8.18.0": "8.18.0"
-  "body-parser@<1.20.6": "1.20.6"
+  "body-parser@<1.20.9": "1.20.9"
   "brace-expansion@<1.1.21": "1.1.21"
   "browserslist@<4.28.7": "4.28.7"
-  "fast-uri@<3.1.8": "3.1.8"
-  "follow-redirects@<=1.15.11": "1.16.0"
+  "compression@<1.8.2": "1.8.2"
+  "fast-uri@<3.1.9": "3.1.9"
+  "follow-redirects@<1.16.2": "1.16.2"
   "http-cache-semantics@<=4.2.0": "4.3.0"
   "http-proxy-middleware@>=0.16.0 <2.0.10": "2.0.10"
   "image-size@<2.0.3": "2.0.4"
-  "joi@<17.13.7": "17.13.8"
+  "joi@<17.13.9": "17.13.9"
   "colord@<2.9.4": "2.9.4"
   "js-yaml@<3.15.2": "3.15.2"
   "js-yaml@>=4.0.0 <4.3.2": "4.3.2"
-  "launch-editor@<=2.14.0": "2.14.1"
+  "launch-editor@<=2.14.1": "2.14.2"
   "lodash@<=4.17.23": "4.18.1"
   "mdast-util-to-hast@>=13.0.0 <13.2.1": "13.2.1"
   "minimatch@<3.1.4": "3.1.4"
@@ -35,14 +36,23 @@ overrides:
   "path-to-regexp@<0.1.13": "0.1.13"
   "picomatch@<2.3.2": "2.3.2"
   "postcss@<8.5.18": "8.5.24"
-  # Two release lines, two floors: 6.1.3 and 7.1.3 each carry the recursion fix.
-  "postcss-selector-parser@<6.1.3": "6.1.3"
-  "postcss-selector-parser@>=7.0.0 <7.1.3": "7.1.3"
-  "qs@<6.16.0": "6.16.0"
+  # Two release lines, two floors: 6.1.5 and 7.1.6 each carry the recursion fix.
+  "postcss-selector-parser@<6.1.5": "6.1.5"
+  "postcss-selector-parser@>=7.0.0 <7.1.6": "7.1.7"
+  "proxy-addr@<2.0.8": "2.0.8"
+  "qs@<6.16.1": "6.16.2"
   "serialize-javascript@<7.0.5": "7.0.5"
-  "shell-quote@<=1.8.4": "1.10.0"
+  "shell-quote@<1.11.0": "1.12.0"
+  "source-map-js@<1.2.2": "1.2.2"
   "svgo@>=3.0.0 <3.3.5": "3.3.5"
-  "undici@>=7.0.0 <7.29.1": "7.29.1"
+  # A deliberate cross-major pin, the kind [[decision-deps-audit-fix-within-major-cap]]
+  # keeps: the CRITICAL GHSA-5gmw-xhrv-c9v3 / GHSA-85c8-ppgw-ccpr fixes exist only in
+  # 2.1.1/2.1.2, and @docusaurus/core (3.10.2, the newest) still declares ^1.0.2.
+  # tinypool 2.0's one breaking change is dropping Node 18; the default export and
+  # every option Docusaurus' SSG pool passes are unchanged, and it is loaded only via
+  # `import()` for sites with 100+ pages per thread. Retire it when Docusaurus moves.
+  "tinypool@<2.1.2": "2.1.2"
+  "undici@>=7.0.0 <7.30.1": "7.30.1"
   "webpack@>=5.49.0 <=5.104.0": "5.104.1"
   "webpack-dev-server@<=5.2.5": "5.2.6"
   "websocket-driver@<0.7.5": "0.7.5"
@@ -61,29 +71,35 @@ overrides:
 # Revisit if uuid backports a bounds check to 8.x, or if sockjs ships a release
 # that moves off uuid@8.
 
-# braces@3.0.3 (GHSA-vfj7-8cjw-p6xm, HIGH) has no floor because none exists to
-# write: 3.0.3 is the newest braces and the advisory names no patched version. It
-# is carried in .config/deps-audit-waivers.toml with the parent-side evidence.
+# minimatch@3.1.4 (GHSA-g3hv-75wg-m249, MODERATE) is NOT lifted: the only fix is
+# minimatch 11, and serve-handler (6.1.7, the newest) still declares 3.1.5 exactly.
+# It reaches only the local `docusaurus serve` preview, never built output.
 
 # A security floor must not wait out pnpm's new-release quarantine — these
 # versions are pinned *because* they are the fix.
 minimumReleaseAgeExclude:
   - "@babel/core@7.29.7"
-  - body-parser@1.20.6
+  - body-parser@1.20.9
   - brace-expansion@1.1.21
   - browserslist@4.28.7
-  - fast-uri@3.1.8
+  - compression@1.8.2
+  - fast-uri@3.1.9
+  - follow-redirects@1.16.2
   - http-cache-semantics@4.3.0
   - http-proxy-middleware@2.0.10
   - image-size@2.0.4
-  - joi@17.13.8
+  - joi@17.13.9
   - js-yaml@3.15.2
   - js-yaml@4.3.2
-  - launch-editor@2.14.1
+  - launch-editor@2.14.2
   - nanoid@3.3.18
   - postcss@8.5.24
-  - postcss-selector-parser@6.1.3
-  - postcss-selector-parser@7.1.3
-  - qs@6.16.0
-  - undici@7.29.1
+  - postcss-selector-parser@6.1.5
+  - postcss-selector-parser@7.1.7
+  - proxy-addr@2.0.8
+  - qs@6.16.2
+  - shell-quote@1.12.0
+  - source-map-js@1.2.2
+  - tinypool@2.1.2
+  - undici@7.30.1
   - webpack-dev-server@5.2.6
