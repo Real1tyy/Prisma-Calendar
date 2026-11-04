@@ -1,4 +1,4 @@
-import { Calendar, type EventClickArg, type EventMountArg } from "@fullcalendar/core";
+import { Calendar, type EventMountArg } from "@fullcalendar/core";
 import allLocales from "@fullcalendar/core/locales-all";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin, { type DropArg } from "@fullcalendar/interaction";
@@ -76,7 +76,6 @@ import {
 	type VerticalEdgeScrollDirection,
 } from "../utils/calendar/edge-scroll";
 import { getCalendarRenderingKey } from "../utils/calendar/settings";
-import { getWeekViewEventEdgeCreateDate } from "../utils/calendar/week-view-event-creation-edge";
 import { stripZ } from "../utils/dates/iso";
 import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
 import {
@@ -423,7 +422,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 					if (isBatchSelectable(info.event)) {
 						this.batchSelectionManager.handleEventClick(info.event.id);
 					}
-				} else if (!this.tryCreateFromWeekViewEdge(info)) {
+				} else {
 					this.handleEventClick(info, info.el);
 				}
 			},
@@ -666,9 +665,9 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		container.style.setProperty("--month-even-color", settings.monthEvenColor);
 		container.style.setProperty("--month-odd-color", settings.monthOddColor);
 		container.style.setProperty("--all-day-event-height", `${settings.allDayEventHeight}px`);
-		const createEdge = settings.weekViewEventCreationEdgeArea;
-		toggleCls(container, "week-create-edge", createEdge !== "off");
-		container.style.setProperty("--week-create-edge-width", createEdge === "off" ? "0%" : `${createEdge}%`);
+		const gutter = settings.weekViewCreateGutter;
+		toggleCls(container, "week-create-gutter", gutter !== "default");
+		container.style.setProperty("--week-create-gutter", gutter === "default" ? "" : gutter);
 	}
 
 	private initializeToolbarComponents(toolbarButtons: string[]): void {
@@ -1742,28 +1741,6 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const filePath = getFilePath(event);
 		if (filePath) this.bundle.eventStore.invalidate(filePath);
 		new Notice("This event no longer exists — removing it from the calendar.");
-		return true;
-	}
-
-	// Runs only on the plain-click path: in batch or prerequisite selection mode a
-	// click picks the event, so the edge must never turn it into a creation.
-	private tryCreateFromWeekViewEdge(info: EventClickArg): boolean {
-		const settings = this.bundle.settingsStore.currentSettings;
-		const edgeCreateDate = getWeekViewEventEdgeCreateDate({
-			viewType: info.view.type,
-			edgeArea: settings.weekViewEventCreationEdgeArea,
-			eventStart: info.event.start,
-			eventEnd: info.event.end,
-			allDay: info.event.allDay,
-			eventRect: info.el.getBoundingClientRect(),
-			clientX: info.jsEvent.clientX,
-			clientY: info.jsEvent.clientY,
-			snapDurationMinutes: settings.snapDurationMinutes,
-		});
-		if (!edgeCreateDate) return false;
-		info.jsEvent.preventDefault();
-		info.jsEvent.stopPropagation();
-		this.handleDateClick({ date: edgeCreateDate, allDay: false });
 		return true;
 	}
 

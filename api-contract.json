@@ -2955,26 +2955,26 @@
 								"description": "File name for the virtual events storage file (without .md extension)",
 								"type": "string"
 							},
-							"weekViewEventCreationEdgeArea": {
-								"default": "off",
-								"description": "Right edge of timed week-view events that creates a new event instead of opening the existing one",
+							"weekViewCreateGutter": {
+								"default": "default",
+								"description": "Empty space kept free on the right of each Week view day column, beside its events. Click it to create a new event at that time, even when events already fill the slot.",
 								"enum": [
-									"5",
-									"10",
-									"15",
-									"20",
-									"25",
-									"off"
+									"default",
+									"5%",
+									"10%",
+									"15%",
+									"20%",
+									"25%"
 								],
 								"enumLabels": {
-									"5": "Extra small (5%)",
-									"10": "Small (10%)",
-									"15": "Medium (15%)",
-									"20": "Large (20%)",
-									"25": "Extra large (25%)",
-									"off": "Off"
+									"10%": "Medium (10%)",
+									"15%": "Large (15%)",
+									"20%": "Extra large (20%)",
+									"25%": "Maximum (25%)",
+									"5%": "Small (5%)",
+									"default": "Default (2.5%)"
 								},
-								"title": "Week-view create edge",
+								"title": "Week view create gutter",
 								"type": "string"
 							},
 							"zettelIdProp": {
@@ -3091,7 +3091,7 @@
 							"pastEventContrast",
 							"eventOverlap",
 							"slotEventOverlap",
-							"weekViewEventCreationEdgeArea",
+							"weekViewCreateGutter",
 							"eventMaxStack",
 							"desktopMaxEventsPerDay",
 							"mobileMaxEventsPerDay",
@@ -5605,26 +5605,26 @@
 								"description": "File name for the virtual events storage file (without .md extension)",
 								"type": "string"
 							},
-							"weekViewEventCreationEdgeArea": {
-								"default": "off",
-								"description": "Right edge of timed week-view events that creates a new event instead of opening the existing one",
+							"weekViewCreateGutter": {
+								"default": "default",
+								"description": "Empty space kept free on the right of each Week view day column, beside its events. Click it to create a new event at that time, even when events already fill the slot.",
 								"enum": [
-									"5",
-									"10",
-									"15",
-									"20",
-									"25",
-									"off"
+									"default",
+									"5%",
+									"10%",
+									"15%",
+									"20%",
+									"25%"
 								],
 								"enumLabels": {
-									"5": "Extra small (5%)",
-									"10": "Small (10%)",
-									"15": "Medium (15%)",
-									"20": "Large (20%)",
-									"25": "Extra large (25%)",
-									"off": "Off"
+									"10%": "Medium (10%)",
+									"15%": "Large (15%)",
+									"20%": "Extra large (20%)",
+									"25%": "Maximum (25%)",
+									"5%": "Small (5%)",
+									"default": "Default (2.5%)"
 								},
-								"title": "Week-view create edge",
+								"title": "Week view create gutter",
 								"type": "string"
 							},
 							"zettelIdProp": {

@@ -867,30 +867,11 @@ button[class*=prisma-]:focus-visible {
   background-color: var(--background-secondary);
 }
 
-.prisma-calendar-container.prisma-week-create-edge .fc-timeGridWeek-view .fc-timegrid-event:not(.fc-event-mirror, .fc-event-selected)::after {
-  content: "+";
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: var(--week-create-edge-width);
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  overflow: hidden;
-  padding-top: 2px;
-  font-size: var(--font-ui-smaller);
-  font-weight: var(--font-bold);
-  line-height: 1;
-  color: rgba(255, 255, 255, 0.7);
-  background: rgba(0, 0, 0, 0.18);
-  border-left: 1px dashed rgba(255, 255, 255, 0.55);
-  cursor: copy;
-  transition: background-color 0.15s ease;
+.prisma-calendar-container.prisma-week-create-gutter.fc-direction-ltr .fc-timeGridWeek-view .fc-timegrid-col-events {
+  margin-right: var(--week-create-gutter);
 }
-.prisma-calendar-container.prisma-week-create-edge .fc-timeGridWeek-view .fc-timegrid-event:not(.fc-event-mirror, .fc-event-selected):hover::after {
-  background: rgba(0, 0, 0, 0.32);
-  color: rgba(255, 255, 255, 0.95);
+.prisma-calendar-container.prisma-week-create-gutter.fc-direction-rtl .fc-timeGridWeek-view .fc-timegrid-col-events {
+  margin-left: var(--week-create-gutter);
 }
 
 @media (width <= 768px) {

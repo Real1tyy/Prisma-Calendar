@@ -21,13 +21,18 @@ export const DENSITY_OPTIONS: Record<string, string> = {
 	compact: "Compact",
 };
 
-export const WEEK_VIEW_EVENT_CREATION_EDGE_AREA_OPTIONS: Record<string, string> = {
-	off: "Off",
-	"5": "Extra small (5%)",
-	"10": "Small (10%)",
-	"15": "Medium (15%)",
-	"20": "Large (20%)",
-	"25": "Extra large (25%)",
+// Non-default values are CSS percentages applied verbatim as the column's right
+// margin; "default" leaves FullCalendar's own 2.5% gutter in place.
+export const WEEK_VIEW_CREATE_GUTTER_VALUES = ["default", "5%", "10%", "15%", "20%", "25%"] as const;
+export type WeekViewCreateGutter = (typeof WEEK_VIEW_CREATE_GUTTER_VALUES)[number];
+
+export const WEEK_VIEW_CREATE_GUTTER_OPTIONS: Record<WeekViewCreateGutter, string> = {
+	default: "Default (2.5%)",
+	"5%": "Small (5%)",
+	"10%": "Medium (10%)",
+	"15%": "Large (15%)",
+	"20%": "Extra large (20%)",
+	"25%": "Maximum (25%)",
 };
 
 export const DAY_CELL_COLORING_OPTIONS: Record<string, string> = {

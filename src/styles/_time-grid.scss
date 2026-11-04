@@ -119,35 +119,18 @@
 	}
 }
 
-// Week-view create edge: the right strip of each timed event creates a new event
-// instead of opening this one. The click geometry lives in
-// `utils/calendar/week-view-event-creation-edge.ts`; this only paints the strip so
-// it is visible and follows the setting live, via the container class + width var.
-.prisma-calendar-container.prisma-week-create-edge .fc-timeGridWeek-view {
-	.fc-timegrid-event:not(.fc-event-mirror, .fc-event-selected)::after {
-		content: "+";
-		position: absolute;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		width: var(--week-create-edge-width);
-		display: flex;
-		align-items: flex-start;
-		justify-content: center;
-		overflow: hidden;
-		padding-top: 2px;
-		font-size: var(--font-ui-smaller);
-		font-weight: var(--font-bold);
-		line-height: 1;
-		color: rgb(255 255 255 / 70%);
-		background: rgb(0 0 0 / 18%);
-		border-left: 1px dashed rgb(255 255 255 / 55%);
-		cursor: copy;
-		transition: background-color 0.15s ease;
+// Week view create gutter. FullCalendar keeps 2.5% of each time-grid column free
+// beside its events (`.fc-timegrid-col-events` end margin); a click there is a
+// plain empty-slot click, so it creates an event even when the slot is full. This
+// widens that gutter to the calendar's setting. Events lay out in percentages of
+// the remaining box, so the change applies live without a re-render.
+// FullCalendar mounts on the container itself, so its direction class is a compound.
+.prisma-calendar-container.prisma-week-create-gutter {
+	&.fc-direction-ltr .fc-timeGridWeek-view .fc-timegrid-col-events {
+		margin-right: var(--week-create-gutter);
 	}
 
-	.fc-timegrid-event:not(.fc-event-mirror, .fc-event-selected):hover::after {
-		background: rgb(0 0 0 / 32%);
-		color: rgb(255 255 255 / 95%);
+	&.fc-direction-rtl .fc-timeGridWeek-view .fc-timegrid-col-events {
+		margin-left: var(--week-create-gutter);
 	}
 }

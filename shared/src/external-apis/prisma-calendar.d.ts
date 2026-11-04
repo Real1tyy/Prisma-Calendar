@@ -850,7 +850,7 @@ export type PrismaCalendarGetSettingsOutput = {
 	 * File name for the virtual events storage file (without .md extension)
 	 */
 	virtualEventsFileName: string;
-	weekViewEventCreationEdgeArea: WeekViewCreateEdge;
+	weekViewCreateGutter: WeekViewCreateGutter;
 	zettelIdProp?: ZettelIDProperty;
 	zoomLevels: ZoomLevelsMinutes;
 } | null;
@@ -1114,9 +1114,9 @@ export type SyncedNoteNaming = "uid" | "zettel";
  */
 export type EventTimeInWeekDayViews = "normal" | "small" | "hidden" | "auto";
 /**
- * Right edge of timed week-view events that creates a new event instead of opening the existing one
+ * Empty space kept free on the right of each Week view day column, beside its events. Click it to create a new event at that time, even when events already fill the slot.
  */
-export type WeekViewCreateEdge = "5" | "10" | "15" | "20" | "25" | "off";
+export type WeekViewCreateGutter = "default" | "5%" | "10%" | "15%" | "20%" | "25%";
 /**
  * Frontmatter property name for auto-generated ZettelID (optional, generates timestamp-based ID on creation/cloning)
  */
@@ -1488,7 +1488,7 @@ export type PrismaCalendarToggleSkipOutput = boolean;
  */
 
 /**
- * Right edge of timed week-view events that creates a new event instead of opening the existing one
+ * Empty space kept free on the right of each Week view day column, beside its events. Click it to create a new event at that time, even when events already fill the slot.
  */
 
 /**
@@ -2109,7 +2109,7 @@ export interface PrismaCalendarUpdateSettingsInput {
 		 * File name for the virtual events storage file (without .md extension)
 		 */
 		virtualEventsFileName?: string;
-		weekViewEventCreationEdgeArea?: WeekViewCreateEdge;
+		weekViewCreateGutter?: WeekViewCreateGutter;
 		zettelIdProp?: ZettelIDProperty;
 		zoomLevels?: ZoomLevelsMinutes;
 	};

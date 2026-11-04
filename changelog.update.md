@@ -1,3 +1,3 @@
 ### Added
 
-- Added an optional, visible right-edge creation strip on timed Week view events, with five selectable widths, so you can create an event that overlaps an existing one without opening it.
+- Added a **Week view create gutter** setting that widens the empty space on the right of each Week view day column, up to 25%, so you can click beside existing events to create an overlapping one.
