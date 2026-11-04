@@ -35,6 +35,31 @@ Simply use Obsidian's hotkeys for undo and redo.
 
 ![Undo/Redo Commands](/img/undo_redo.png)
 
+## How Undo and Redo Pick a Step
+
+Think of your history as a stack of sticky notes, one for each thing you did. Every note is either **on** (the change is in your note) or **off** (you undid it).
+
+-   **Undo** turns the newest *on* note off.
+-   **Redo** turns back on the note you *just* undid.
+-   **Doing something new** leaves Redo with nothing to bring back. The notes you undid before that stay in [Operation history](#operation-history), but Redo skips them.
+
+### An example
+
+You have an event, **Workout**, that ends at **8:00**.
+
+| You do | Workout ends at | What Redo would bring back |
+|---|---|---|
+| Change the end to **9:00** | 9:00 | nothing |
+| Press **Undo** | 8:00 | the 9:00 change |
+| Change the end to **10:00** | 10:00 | nothing (you did something new) |
+| Press **Undo** | 8:00 | the 10:00 change |
+| Press **Redo** | **10:00** | nothing |
+| Press **Redo** again | 10:00 | nothing, so you see "Nothing to redo" |
+
+Redo brings back **10:00**, the change you just undid. It never jumps back to the 9:00 change you set aside before making a new one, so it can't overwrite your newer edit.
+
+The 9:00 change isn't gone. It sits in Operation history marked **Undone**. If you want it back, click **Redo** on its row there, so you choose exactly what comes back.
+
 ## Operation History
 
 Undo and redo walk the stack one step at a time. The **Operation history** modal shows you the whole stack at once, so you can reach any operation directly.
