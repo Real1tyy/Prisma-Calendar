@@ -1,4 +1,11 @@
 // Operation history modal — virtualized log of the command stack.
+// Same sizing as the shared What's New modal: rows carry a title, badge and two
+// action buttons, so Obsidian's default modal width truncates the titles.
+.modal-container.mod-dim .modal.prisma-history-modal-shell {
+	max-width: 1100px;
+	width: 92%;
+}
+
 .prisma-history-modal-shell {
 	.modal-content {
 		// The virtualizer needs a bounded scroll parent to measure against;
