@@ -21,6 +21,15 @@ export const DENSITY_OPTIONS: Record<string, string> = {
 	compact: "Compact",
 };
 
+export const WEEK_VIEW_EVENT_CREATION_EDGE_AREA_OPTIONS: Record<string, string> = {
+	off: "Off",
+	"5": "Extra small (5%)",
+	"10": "Small (10%)",
+	"15": "Medium (15%)",
+	"20": "Large (20%)",
+	"25": "Extra large (25%)",
+};
+
 export const DAY_CELL_COLORING_OPTIONS: Record<string, string> = {
 	off: "Off",
 	uniform: "Uniform",

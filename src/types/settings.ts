@@ -44,6 +44,7 @@ import {
 	LOCALE_OPTIONS,
 	TEXT_CONTRAST_MODE_OPTIONS,
 	ToolbarButtonSchema,
+	WEEK_VIEW_EVENT_CREATION_EDGE_AREA_OPTIONS,
 } from "./view";
 
 // Use library's HolidayType definition
@@ -671,6 +672,11 @@ const CalendarSettingsSchema = z
 				"In week/day time-grid views, allow events that share the exact same time-slot boundaries to render on top of each other. When disabled, events with identical start/end times are placed in separate columns within the slot. Has no effect when event overlap is disabled."
 			)
 			.meta({ title: "Allow slot event overlap" }),
+		weekViewEventCreationEdgeArea: z
+			.enum(["off", "5", "10", "15", "20", "25"])
+			.catch("off")
+			.describe("Right edge of timed week-view events that creates a new event instead of opening the existing one")
+			.meta({ title: "Week-view create edge", enumLabels: WEEK_VIEW_EVENT_CREATION_EDGE_AREA_OPTIONS }),
 		eventMaxStack: z
 			.number()
 			.int()

@@ -850,6 +850,7 @@ export type PrismaCalendarGetSettingsOutput = {
 	 * File name for the virtual events storage file (without .md extension)
 	 */
 	virtualEventsFileName: string;
+	weekViewEventCreationEdgeArea: WeekViewCreateEdge;
 	zettelIdProp?: ZettelIDProperty;
 	zoomLevels: ZoomLevelsMinutes;
 } | null;
@@ -1112,6 +1113,10 @@ export type SyncedNoteNaming = "uid" | "zettel";
  * Control how timed event start times appear in week and day views
  */
 export type EventTimeInWeekDayViews = "normal" | "small" | "hidden" | "auto";
+/**
+ * Right edge of timed week-view events that creates a new event instead of opening the existing one
+ */
+export type WeekViewCreateEdge = "5" | "10" | "15" | "20" | "25" | "off";
 /**
  * Frontmatter property name for auto-generated ZettelID (optional, generates timestamp-based ID on creation/cloning)
  */
@@ -1480,6 +1485,10 @@ export type PrismaCalendarToggleSkipOutput = boolean;
 
 /**
  * Control how timed event start times appear in week and day views
+ */
+
+/**
+ * Right edge of timed week-view events that creates a new event instead of opening the existing one
  */
 
 /**
@@ -2100,6 +2109,7 @@ export interface PrismaCalendarUpdateSettingsInput {
 		 * File name for the virtual events storage file (without .md extension)
 		 */
 		virtualEventsFileName?: string;
+		weekViewEventCreationEdgeArea?: WeekViewCreateEdge;
 		zettelIdProp?: ZettelIDProperty;
 		zoomLevels?: ZoomLevelsMinutes;
 	};

@@ -76,6 +76,7 @@ import {
 	type VerticalEdgeScrollDirection,
 } from "../utils/calendar/edge-scroll";
 import { getCalendarRenderingKey } from "../utils/calendar/settings";
+import { getWeekViewEventEdgeCreateDate } from "../utils/calendar/week-view-event-creation-edge";
 import { stripZ } from "../utils/dates/iso";
 import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
 import {
@@ -414,6 +415,23 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			},
 
 			eventClick: (info) => {
+				const edgeCreateDate = getWeekViewEventEdgeCreateDate({
+					viewType: info.view.type,
+					edgeArea: this.bundle.settingsStore.currentSettings.weekViewEventCreationEdgeArea,
+					eventStart: info.event.start,
+					eventEnd: info.event.end,
+					allDay: info.event.allDay,
+					eventRect: info.el.getBoundingClientRect(),
+					clientX: info.jsEvent.clientX,
+					clientY: info.jsEvent.clientY,
+					snapDurationMinutes: this.bundle.settingsStore.currentSettings.snapDurationMinutes,
+				});
+				if (edgeCreateDate) {
+					info.jsEvent.preventDefault();
+					info.jsEvent.stopPropagation();
+					this.handleDateClick({ date: edgeCreateDate, allDay: false });
+					return;
+				}
 				if (this.prerequisiteSelectionManager?.isInSelectionMode()) {
 					if (isFileBackedEvent(info.event)) {
 						this.prerequisiteSelectionManager.handleEventClick(info.event.id);

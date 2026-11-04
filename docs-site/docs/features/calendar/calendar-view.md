@@ -65,6 +65,8 @@ The jump keeps whatever view you're in: from Week view you land on the target da
 
 The Create Event and Edit Event modals include a **Note content** field for the Markdown body of file-backed events. It supports agendas, meeting notes, links, and other note text. While the modal is open, the field listens for changes to its backing note: an untouched field updates automatically; after you type, Prisma retains your draft and surfaces a conflict notice if the file changes. Saving a conflict asks before replacing the note body. The content field expands to fit its text without an inner scrollbar; the modal retains its usual height and scrolls its event fields. The event header, Title field, and divider remain visible while scrolling; select the header's down-arrow button, or press `Ctrl/Cmd+Shift+N`, to scroll to and focus the content field. The up-arrow beside **Cancel** returns to event details. Virtual events do not include the field because they have no backing note.
 
+When an existing timed event fills the slot you want, set **Week-view create edge** in **Settings → Calendar → Event overlap**. It reserves the selected right-edge width of week-view events for creation: click that strip to open a new event at the clicked time, or leave it **Off** (the default) to keep every event click opening the existing event. The strip applies only to timed events in Week view.
+
 ### Zoom Level
 
 | Button | Action |

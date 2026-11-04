@@ -2955,6 +2955,28 @@
 								"description": "File name for the virtual events storage file (without .md extension)",
 								"type": "string"
 							},
+							"weekViewEventCreationEdgeArea": {
+								"default": "off",
+								"description": "Right edge of timed week-view events that creates a new event instead of opening the existing one",
+								"enum": [
+									"5",
+									"10",
+									"15",
+									"20",
+									"25",
+									"off"
+								],
+								"enumLabels": {
+									"5": "Extra small (5%)",
+									"10": "Small (10%)",
+									"15": "Medium (15%)",
+									"20": "Large (20%)",
+									"25": "Extra large (25%)",
+									"off": "Off"
+								},
+								"title": "Week-view create edge",
+								"type": "string"
+							},
 							"zettelIdProp": {
 								"description": "Frontmatter property name for auto-generated ZettelID (optional, generates timestamp-based ID on creation/cloning)",
 								"placeholder": "ZettelID",
@@ -3069,6 +3091,7 @@
 							"pastEventContrast",
 							"eventOverlap",
 							"slotEventOverlap",
+							"weekViewEventCreationEdgeArea",
 							"eventMaxStack",
 							"desktopMaxEventsPerDay",
 							"mobileMaxEventsPerDay",
@@ -5580,6 +5603,28 @@
 							"virtualEventsFileName": {
 								"default": "Virtual Events",
 								"description": "File name for the virtual events storage file (without .md extension)",
+								"type": "string"
+							},
+							"weekViewEventCreationEdgeArea": {
+								"default": "off",
+								"description": "Right edge of timed week-view events that creates a new event instead of opening the existing one",
+								"enum": [
+									"5",
+									"10",
+									"15",
+									"20",
+									"25",
+									"off"
+								],
+								"enumLabels": {
+									"5": "Extra small (5%)",
+									"10": "Small (10%)",
+									"15": "Medium (15%)",
+									"20": "Large (20%)",
+									"25": "Extra large (25%)",
+									"off": "Off"
+								},
+								"title": "Week-view create edge",
 								"type": "string"
 							},
 							"zettelIdProp": {
