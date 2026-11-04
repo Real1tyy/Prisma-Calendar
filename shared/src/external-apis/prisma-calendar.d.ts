@@ -439,6 +439,7 @@ export type PrismaCalendarGetSettingsOutput = {
 	 */
 	dateProp: string;
 	dayCellColoring: DayCellColoring;
+	dayCreateGutter: DayViewCreateGutter;
 	/**
 	 * Frontmatter property name for per-event notification days (all-day events)
 	 */
@@ -822,7 +823,6 @@ export type PrismaCalendarGetSettingsOutput = {
 	 * Make full-hour lines (12:00, 13:00, etc.) thicker in day and week views for better visual contrast
 	 */
 	thickerHourLines: boolean;
-	timeGridCreateGutter: CreateGutter;
 	timeGridEventTimeDisplay: EventTimeInWeekDayViews;
 	/**
 	 * Show inline type-ahead suggestions when typing event titles in the create/edit modal. Suggests categories, event presets, and frequently used event names.
@@ -851,6 +851,7 @@ export type PrismaCalendarGetSettingsOutput = {
 	 * File name for the virtual events storage file (without .md extension)
 	 */
 	virtualEventsFileName: string;
+	weekCreateGutter: WeekViewCreateGutter;
 	zettelIdProp?: ZettelIDProperty;
 	zoomLevels: ZoomLevelsMinutes;
 } | null;
@@ -902,6 +903,10 @@ export type LineThickness = number;
  * Controls the background coloring of day cells. Off: default calendar appearance. Uniform: applies a single gradient color to all day cells. Month boundary: alternates two gradient colors by even/odd month, making month transitions clearly visible.
  */
 export type DayCellColoring = "off" | "uniform" | "boundary";
+/**
+ * Percentage of the Day view column kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable.
+ */
+export type DayViewCreateGutter = number;
 /**
  * Default grouping mode for statistics modals: group by event name or by category
  */
@@ -1110,13 +1115,13 @@ export type SortingNormalizationStrategy =
  */
 export type SyncedNoteNaming = "uid" | "zettel";
 /**
- * Percentage of each day column in Week and Day view kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable.
- */
-export type CreateGutter = number;
-/**
  * Control how timed event start times appear in week and day views
  */
 export type EventTimeInWeekDayViews = "normal" | "small" | "hidden" | "auto";
+/**
+ * Percentage of each Week view day column kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable.
+ */
+export type WeekViewCreateGutter = number;
 /**
  * Frontmatter property name for auto-generated ZettelID (optional, generates timestamp-based ID on creation/cloning)
  */
@@ -1289,6 +1294,10 @@ export type PrismaCalendarToggleSkipOutput = boolean;
 
 /**
  * Controls the background coloring of day cells. Off: default calendar appearance. Uniform: applies a single gradient color to all day cells. Month boundary: alternates two gradient colors by even/odd month, making month transitions clearly visible.
+ */
+
+/**
+ * Percentage of the Day view column kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable.
  */
 
 /**
@@ -1484,11 +1493,11 @@ export type PrismaCalendarToggleSkipOutput = boolean;
  */
 
 /**
- * Percentage of each day column in Week and Day view kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable.
+ * Control how timed event start times appear in week and day views
  */
 
 /**
- * Control how timed event start times appear in week and day views
+ * Percentage of each Week view day column kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable.
  */
 
 /**
@@ -1698,6 +1707,7 @@ export interface PrismaCalendarUpdateSettingsInput {
 		 */
 		dateProp?: string;
 		dayCellColoring?: DayCellColoring;
+		dayCreateGutter?: DayViewCreateGutter;
 		/**
 		 * Frontmatter property name for per-event notification days (all-day events)
 		 */
@@ -2081,7 +2091,6 @@ export interface PrismaCalendarUpdateSettingsInput {
 		 * Make full-hour lines (12:00, 13:00, etc.) thicker in day and week views for better visual contrast
 		 */
 		thickerHourLines?: boolean;
-		timeGridCreateGutter?: CreateGutter;
 		timeGridEventTimeDisplay?: EventTimeInWeekDayViews;
 		/**
 		 * Show inline type-ahead suggestions when typing event titles in the create/edit modal. Suggests categories, event presets, and frequently used event names.
@@ -2110,6 +2119,7 @@ export interface PrismaCalendarUpdateSettingsInput {
 		 * File name for the virtual events storage file (without .md extension)
 		 */
 		virtualEventsFileName?: string;
+		weekCreateGutter?: WeekViewCreateGutter;
 		zettelIdProp?: ZettelIDProperty;
 		zoomLevels?: ZoomLevelsMinutes;
 	};

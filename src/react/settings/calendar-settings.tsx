@@ -40,7 +40,8 @@ const TIME_GRID_FIELDS = [
 const OVERLAP_FIELDS = [
 	"eventOverlap",
 	"slotEventOverlap",
-	"timeGridCreateGutter",
+	"weekCreateGutter",
+	"dayCreateGutter",
 	"eventMaxStack",
 	"desktopMaxEventsPerDay",
 	"mobileMaxEventsPerDay",
@@ -50,7 +51,8 @@ const OVERLAP_FIELDS = [
 const STEP_OVERRIDES = {
 	allDayEventHeight: { step: 5 },
 	dragEdgeScrollDelayMs: { step: 50 },
-	timeGridCreateGutter: { step: 0.1 },
+	weekCreateGutter: { step: 0.1 },
+	dayCreateGutter: { step: 0.1 },
 };
 
 export const CalendarSettingsReact = memo(function CalendarSettingsReact({ settingsStore }: CalendarSettingsProps) {

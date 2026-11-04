@@ -119,19 +119,24 @@
 	}
 }
 
-// Create gutter (Week + Day). FullCalendar leaves 2.5% of each time-grid column
-// free beside its events (`.fc-timegrid-col-events` end margin); a click there is
-// a plain empty-slot click, so it creates an event even when the slot is full.
-// This replaces that margin with the calendar's percentage (0 removes it). Events
-// lay out in percentages of the remaining box, so changes apply live without a
-// re-render. FullCalendar mounts on the container itself, so its direction class
-// is a compound, not an ancestor.
-.prisma-calendar-container {
-	&.fc-direction-ltr .fc-timegrid-col-events {
-		margin-right: var(--time-grid-create-gutter, 4%);
+// Create gutter, set separately for Week and Day view. FullCalendar leaves 2.5% of
+// each time-grid column free beside its events (`.fc-timegrid-col-events` end
+// margin); a click there is a plain empty-slot click, so it creates an event even
+// when the slot is full. This replaces that margin with the calendar's percentage
+// (0 removes it). Events lay out in percentages of the remaining box, so changes
+// apply live without a re-render. FullCalendar mounts on the container itself, so
+// its direction class is a compound, not an ancestor.
+@mixin create-gutter($view, $var, $fallback) {
+	&.fc-direction-ltr #{$view} .fc-timegrid-col-events {
+		margin-right: var(#{$var}, #{$fallback});
 	}
 
-	&.fc-direction-rtl .fc-timegrid-col-events {
-		margin-left: var(--time-grid-create-gutter, 4%);
+	&.fc-direction-rtl #{$view} .fc-timegrid-col-events {
+		margin-left: var(#{$var}, #{$fallback});
 	}
+}
+
+.prisma-calendar-container {
+	@include create-gutter(".fc-timeGridWeek-view", "--week-create-gutter", 4%);
+	@include create-gutter(".fc-timeGridDay-view", "--day-create-gutter", 2%);
 }

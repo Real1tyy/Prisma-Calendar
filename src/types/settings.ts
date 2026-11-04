@@ -492,6 +492,17 @@ const CategoryAssignmentPresetSchema = z
 
 const BatchActionButtonSchema = z.enum(BATCH_BUTTON_IDS);
 
+// A typed number input, not the slider a bounded number would auto-render as:
+// users enter precise percentages such as 4.1.
+const createGutterSchema = (fallback: number, view: string, description: string) =>
+	z
+		.number()
+		.min(0)
+		.max(50)
+		.catch(fallback)
+		.describe(description)
+		.meta({ title: `${view} create gutter (%)`, widget: "number" });
+
 const CalendarSettingsSchema = z
 	.object({
 		futureInstancesCount: z
@@ -671,15 +682,16 @@ const CalendarSettingsSchema = z
 				"In week/day time-grid views, allow events that share the exact same time-slot boundaries to render on top of each other. When disabled, events with identical start/end times are placed in separate columns within the slot. Has no effect when event overlap is disabled."
 			)
 			.meta({ title: "Allow slot event overlap" }),
-		timeGridCreateGutter: z
-			.number()
-			.min(0)
-			.max(50)
-			.catch(4)
-			.describe(
-				"Percentage of each day column in Week and Day view kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable."
-			)
-			.meta({ title: "Create gutter (%)", widget: "number" }),
+		weekCreateGutter: createGutterSchema(
+			4,
+			"Week view",
+			"Percentage of each Week view day column kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable."
+		),
+		dayCreateGutter: createGutterSchema(
+			2,
+			"Day view",
+			"Percentage of the Day view column kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable."
+		),
 		eventMaxStack: z
 			.number()
 			.int()

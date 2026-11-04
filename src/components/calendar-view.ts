@@ -665,7 +665,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		container.style.setProperty("--month-even-color", settings.monthEvenColor);
 		container.style.setProperty("--month-odd-color", settings.monthOddColor);
 		container.style.setProperty("--all-day-event-height", `${settings.allDayEventHeight}px`);
-		container.style.setProperty("--time-grid-create-gutter", `${settings.timeGridCreateGutter}%`);
+		container.style.setProperty("--week-create-gutter", `${settings.weekCreateGutter}%`);
+		container.style.setProperty("--day-create-gutter", `${settings.dayCreateGutter}%`);
 	}
 
 	private initializeToolbarComponents(toolbarButtons: string[]): void {

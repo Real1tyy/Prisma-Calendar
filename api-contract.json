@@ -1714,6 +1714,15 @@
 								"title": "Day cell coloring",
 								"type": "string"
 							},
+							"dayCreateGutter": {
+								"default": 2,
+								"description": "Percentage of the Day view column kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable.",
+								"maximum": 50,
+								"minimum": 0,
+								"title": "Day view create gutter (%)",
+								"type": "number",
+								"widget": "number"
+							},
 							"daysBeforeProp": {
 								"default": "Days Before",
 								"description": "Frontmatter property name for per-event notification days (all-day events)",
@@ -2886,15 +2895,6 @@
 								"description": "Make full-hour lines (12:00, 13:00, etc.) thicker in day and week views for better visual contrast",
 								"type": "boolean"
 							},
-							"timeGridCreateGutter": {
-								"default": 4,
-								"description": "Percentage of each day column in Week and Day view kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable.",
-								"maximum": 50,
-								"minimum": 0,
-								"title": "Create gutter (%)",
-								"type": "number",
-								"widget": "number"
-							},
 							"timeGridEventTimeDisplay": {
 								"default": "normal",
 								"description": "Control how timed event start times appear in week and day views",
@@ -2963,6 +2963,15 @@
 								"default": "Virtual Events",
 								"description": "File name for the virtual events storage file (without .md extension)",
 								"type": "string"
+							},
+							"weekCreateGutter": {
+								"default": 4,
+								"description": "Percentage of each Week view day column kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable.",
+								"maximum": 50,
+								"minimum": 0,
+								"title": "Week view create gutter (%)",
+								"type": "number",
+								"widget": "number"
 							},
 							"zettelIdProp": {
 								"description": "Frontmatter property name for auto-generated ZettelID (optional, generates timestamp-based ID on creation/cloning)",
@@ -3078,7 +3087,8 @@
 							"pastEventContrast",
 							"eventOverlap",
 							"slotEventOverlap",
-							"timeGridCreateGutter",
+							"weekCreateGutter",
+							"dayCreateGutter",
 							"eventMaxStack",
 							"desktopMaxEventsPerDay",
 							"mobileMaxEventsPerDay",
@@ -4351,6 +4361,15 @@
 								"title": "Day cell coloring",
 								"type": "string"
 							},
+							"dayCreateGutter": {
+								"default": 2,
+								"description": "Percentage of the Day view column kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable.",
+								"maximum": 50,
+								"minimum": 0,
+								"title": "Day view create gutter (%)",
+								"type": "number",
+								"widget": "number"
+							},
 							"daysBeforeProp": {
 								"default": "Days Before",
 								"description": "Frontmatter property name for per-event notification days (all-day events)",
@@ -5523,15 +5542,6 @@
 								"description": "Make full-hour lines (12:00, 13:00, etc.) thicker in day and week views for better visual contrast",
 								"type": "boolean"
 							},
-							"timeGridCreateGutter": {
-								"default": 4,
-								"description": "Percentage of each day column in Week and Day view kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable.",
-								"maximum": 50,
-								"minimum": 0,
-								"title": "Create gutter (%)",
-								"type": "number",
-								"widget": "number"
-							},
 							"timeGridEventTimeDisplay": {
 								"default": "normal",
 								"description": "Control how timed event start times appear in week and day views",
@@ -5600,6 +5610,15 @@
 								"default": "Virtual Events",
 								"description": "File name for the virtual events storage file (without .md extension)",
 								"type": "string"
+							},
+							"weekCreateGutter": {
+								"default": 4,
+								"description": "Percentage of each Week view day column kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable.",
+								"maximum": 50,
+								"minimum": 0,
+								"title": "Week view create gutter (%)",
+								"type": "number",
+								"widget": "number"
 							},
 							"zettelIdProp": {
 								"description": "Frontmatter property name for auto-generated ZettelID (optional, generates timestamp-based ID on creation/cloning)",
