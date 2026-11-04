@@ -84,6 +84,13 @@ interface HistoryRecord {
 		readonly timestamp: number;
 		applied: boolean;
 		replayable: boolean;
+		/**
+		 * Undone since the newest recorded command, so sequential `redo()` may
+		 * reach it. A new command clears it on every undone entry — the old
+		 * cursor's truncation, applied to the hotkey path only. Their snapshots
+		 * predate that command, so a Ctrl+Y re-running one would clobber it.
+		 */
+		onRedoBranch: boolean;
 	};
 	/** `null` ⇒ restored from storage; the live command didn't survive the session. */
 	readonly command: Command | null;
@@ -98,13 +105,14 @@ interface HistoryRecord {
  * parameterised by {@link ReplayDirection}, so `undo`/`redo`,
  * `undoEntry`/`redoEntry` and `revertTo`/`restoreTo` are each a single algorithm
  * rather than a mirrored pair. Sequential `undo()`/`redo()` resolve to "newest
- * applied" / "oldest undone", which degrades exactly to the cursor model this
- * replaced.
+ * applied" / "oldest undone *on the redo branch*", which is exactly the
+ * truncating cursor model this replaced: a new command still ends the redo
+ * branch for the hotkeys.
  *
- * One deliberate departure from that model: a new command no longer truncates
- * undone entries. They stay in the log and stay individually redoable — the
- * point of selective replay. See
- * [[spec-operation-history-modal-with-selective-undo-redo-and-persisted-history-log]].
+ * What changed is that truncation no longer deletes. The undone entries stay in
+ * the log and stay individually redoable by id — the point of selective replay.
+ * See [[spec-operation-history-modal-with-selective-undo-redo-and-persisted-history-log]]
+ * and [[review-cover-memento-history-switching-logic]].
  *
  * Durability is the one genuinely separate concern, and lives behind
  * {@link HistoryPersistence}.
@@ -230,9 +238,12 @@ export class CommandManager {
 		});
 	}
 
-	/** Append a freshly-executed command, evicting the oldest entries past the cap. */
+	/**
+	 * Append a freshly-executed command, ending the redo branch and evicting the
+	 * oldest entries past the cap.
+	 */
 	private record(command: Command): void {
-		this.entries.push({
+		const record: HistoryRecord = {
 			command,
 			meta: {
 				id: String(this.nextId++),
@@ -241,8 +252,11 @@ export class CommandManager {
 				timestamp: Date.now(),
 				applied: true,
 				replayable: true,
+				onRedoBranch: false,
 			},
-		});
+		};
+		for (const { meta } of this.entries) meta.onRedoBranch = false;
+		this.entries.push(record);
 		if (this.entries.length > this.maxHistorySize) {
 			this.entries.splice(0, this.entries.length - this.maxHistorySize);
 		}
@@ -347,6 +361,8 @@ export class CommandManager {
 
 			await direction.run(command);
 			meta.applied = !direction.actsOn;
+			// Undone now, so after the newest command: back on the redo branch.
+			meta.onRedoBranch = !meta.applied;
 			this.markActivity();
 			if (!options?.silent) this.notify(`${direction.past}: ${meta.description}`);
 			this.changed();
@@ -369,15 +385,23 @@ export class CommandManager {
 	}
 
 	/**
+	 * What the hotkeys may reach: actionable, and — for redo — still on the redo
+	 * branch. Entries a newer command retired stay reachable by id only.
+	 */
+	private sequential(record: HistoryRecord, direction: ReplayDirection): boolean {
+		return this.actionable(record, direction) && (direction.actsOn || record.meta.onRedoBranch);
+	}
+
+	/**
 	 * The entry this direction's sequential undo()/redo() would act on: the first
-	 * actionable one in scan order. Called on every `canUndo()`, so it walks by
-	 * index and exits early rather than materializing an ordering.
+	 * sequentially reachable one in scan order. Called on every `canUndo()`, so it
+	 * walks by index and exits early rather than materializing an ordering.
 	 */
 	private next(direction: ReplayDirection): HistoryRecord | null {
 		// Skipping non-replayable entries is what stops a single broken entry
 		// wedging sequential undo against everything older than it.
 		for (const record of this.inScanOrder(direction, this.entries.length)) {
-			if (this.actionable(record, direction)) return record;
+			if (this.sequential(record, direction)) return record;
 		}
 		return null;
 	}
@@ -422,14 +446,17 @@ export class CommandManager {
 		return this.next(REDO) !== null;
 	}
 
-	/** Entries that could still be undone — restored/broken entries don't count. */
+	/** How many sequential undo() calls would succeed — restored/broken entries don't count. */
 	getUndoStackSize(): number {
-		return this.entries.filter((record) => this.actionable(record, UNDO)).length;
+		return this.entries.filter((record) => this.sequential(record, UNDO)).length;
 	}
 
-	/** Entries that could still be redone — restored/broken entries don't count. */
+	/**
+	 * How many sequential redo() calls would succeed — entries off the redo branch,
+	 * restored or broken don't count.
+	 */
 	getRedoStackSize(): number {
-		return this.entries.filter((record) => this.actionable(record, REDO)).length;
+		return this.entries.filter((record) => this.sequential(record, REDO)).length;
 	}
 
 	peekUndo(): string | null {
@@ -480,7 +507,7 @@ export class CommandManager {
 
 		const restored: HistoryRecord[] = stored.entries.slice(-this.maxHistorySize).map((entry, index) => ({
 			command: null,
-			meta: { ...entry, id: `r${index}`, replayable: false },
+			meta: { ...entry, id: `r${index}`, replayable: false, onRedoBranch: false },
 		}));
 		this.entries = [...restored, ...this.entries].slice(-this.maxHistorySize);
 		this.nextId = Math.max(this.nextId, stored.nextId);

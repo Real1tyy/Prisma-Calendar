@@ -154,11 +154,14 @@ export function buildWhatsNewStyles(p: string): string {
 }
 .${p}whats-new-content ul { padding-left: 1.5rem; }
 .${p}whats-new-content li { margin-bottom: 0.5rem; line-height: 1.6; }
+/* Themes such as Obsidianite paint bold as gradient text with a transparent
+   fill, which inherits into a code span inside bold and leaves an empty box. */
 .${p}whats-new-content code {
 	background: var(--code-background);
 	padding: 0.2em 0.4em;
 	border-radius: 3px;
 	font-size: 0.9em;
+	-webkit-text-fill-color: currentColor;
 }
 .${p}whats-new-modal .${p}whats-new-content code {
 	color: var(--code-normal, var(--text-normal));
