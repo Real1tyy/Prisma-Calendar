@@ -43,8 +43,6 @@ import {
 	LOCALE_KEYS,
 	LOCALE_OPTIONS,
 	TEXT_CONTRAST_MODE_OPTIONS,
-	TIME_GRID_CREATE_GUTTER_OPTIONS,
-	TIME_GRID_CREATE_GUTTER_VALUES,
 	ToolbarButtonSchema,
 } from "./view";
 
@@ -674,12 +672,14 @@ const CalendarSettingsSchema = z
 			)
 			.meta({ title: "Allow slot event overlap" }),
 		timeGridCreateGutter: z
-			.enum(TIME_GRID_CREATE_GUTTER_VALUES)
-			.catch("default")
+			.number()
+			.min(0)
+			.max(50)
+			.catch(4)
 			.describe(
-				"Empty space kept free on the right of each day column in Week and Day view, beside its events. Click it to create a new event at that time, even when events already fill the slot."
+				"Percentage of each day column in Week and Day view kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable."
 			)
-			.meta({ title: "Create gutter", enumLabels: TIME_GRID_CREATE_GUTTER_OPTIONS }),
+			.meta({ title: "Create gutter (%)", widget: "number" }),
 		eventMaxStack: z
 			.number()
 			.int()

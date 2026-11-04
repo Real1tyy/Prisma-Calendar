@@ -1110,9 +1110,9 @@ export type SortingNormalizationStrategy =
  */
 export type SyncedNoteNaming = "uid" | "zettel";
 /**
- * Empty space kept free on the right of each day column in Week and Day view, beside its events. Click it to create a new event at that time, even when events already fill the slot.
+ * Percentage of each day column in Week and Day view kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable.
  */
-export type CreateGutter = "default" | "5%" | "10%" | "15%" | "20%" | "25%";
+export type CreateGutter = number;
 /**
  * Control how timed event start times appear in week and day views
  */
@@ -1484,7 +1484,7 @@ export type PrismaCalendarToggleSkipOutput = boolean;
  */
 
 /**
- * Empty space kept free on the right of each day column in Week and Day view, beside its events. Click it to create a new event at that time, even when events already fill the slot.
+ * Percentage of each day column in Week and Day view kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable.
  */
 
 /**

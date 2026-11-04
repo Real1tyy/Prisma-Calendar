@@ -2887,26 +2887,13 @@
 								"type": "boolean"
 							},
 							"timeGridCreateGutter": {
-								"default": "default",
-								"description": "Empty space kept free on the right of each day column in Week and Day view, beside its events. Click it to create a new event at that time, even when events already fill the slot.",
-								"enum": [
-									"default",
-									"5%",
-									"10%",
-									"15%",
-									"20%",
-									"25%"
-								],
-								"enumLabels": {
-									"10%": "Medium (10%)",
-									"15%": "Large (15%)",
-									"20%": "Extra large (20%)",
-									"25%": "Maximum (25%)",
-									"5%": "Small (5%)",
-									"default": "Default (2.5%)"
-								},
-								"title": "Create gutter",
-								"type": "string"
+								"default": 4,
+								"description": "Percentage of each day column in Week and Day view kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable.",
+								"maximum": 50,
+								"minimum": 0,
+								"title": "Create gutter (%)",
+								"type": "number",
+								"widget": "number"
 							},
 							"timeGridEventTimeDisplay": {
 								"default": "normal",
@@ -5537,26 +5524,13 @@
 								"type": "boolean"
 							},
 							"timeGridCreateGutter": {
-								"default": "default",
-								"description": "Empty space kept free on the right of each day column in Week and Day view, beside its events. Click it to create a new event at that time, even when events already fill the slot.",
-								"enum": [
-									"default",
-									"5%",
-									"10%",
-									"15%",
-									"20%",
-									"25%"
-								],
-								"enumLabels": {
-									"10%": "Medium (10%)",
-									"15%": "Large (15%)",
-									"20%": "Extra large (20%)",
-									"25%": "Maximum (25%)",
-									"5%": "Small (5%)",
-									"default": "Default (2.5%)"
-								},
-								"title": "Create gutter",
-								"type": "string"
+								"default": 4,
+								"description": "Percentage of each day column in Week and Day view kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable.",
+								"maximum": 50,
+								"minimum": 0,
+								"title": "Create gutter (%)",
+								"type": "number",
+								"widget": "number"
 							},
 							"timeGridEventTimeDisplay": {
 								"default": "normal",

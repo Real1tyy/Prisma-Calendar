@@ -21,20 +21,6 @@ export const DENSITY_OPTIONS: Record<string, string> = {
 	compact: "Compact",
 };
 
-// Non-default values are CSS percentages applied verbatim as the column's right
-// margin; "default" leaves FullCalendar's own 2.5% gutter in place.
-export const TIME_GRID_CREATE_GUTTER_VALUES = ["default", "5%", "10%", "15%", "20%", "25%"] as const;
-export type TimeGridCreateGutter = (typeof TIME_GRID_CREATE_GUTTER_VALUES)[number];
-
-export const TIME_GRID_CREATE_GUTTER_OPTIONS: Record<TimeGridCreateGutter, string> = {
-	default: "Default (2.5%)",
-	"5%": "Small (5%)",
-	"10%": "Medium (10%)",
-	"15%": "Large (15%)",
-	"20%": "Extra large (20%)",
-	"25%": "Maximum (25%)",
-};
-
 export const DAY_CELL_COLORING_OPTIONS: Record<string, string> = {
 	off: "Off",
 	uniform: "Uniform",
