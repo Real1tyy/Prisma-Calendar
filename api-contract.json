@@ -2886,6 +2886,28 @@
 								"description": "Make full-hour lines (12:00, 13:00, etc.) thicker in day and week views for better visual contrast",
 								"type": "boolean"
 							},
+							"timeGridCreateGutter": {
+								"default": "default",
+								"description": "Empty space kept free on the right of each day column in Week and Day view, beside its events. Click it to create a new event at that time, even when events already fill the slot.",
+								"enum": [
+									"default",
+									"5%",
+									"10%",
+									"15%",
+									"20%",
+									"25%"
+								],
+								"enumLabels": {
+									"10%": "Medium (10%)",
+									"15%": "Large (15%)",
+									"20%": "Extra large (20%)",
+									"25%": "Maximum (25%)",
+									"5%": "Small (5%)",
+									"default": "Default (2.5%)"
+								},
+								"title": "Create gutter",
+								"type": "string"
+							},
 							"timeGridEventTimeDisplay": {
 								"default": "normal",
 								"description": "Control how timed event start times appear in week and day views",
@@ -2953,28 +2975,6 @@
 							"virtualEventsFileName": {
 								"default": "Virtual Events",
 								"description": "File name for the virtual events storage file (without .md extension)",
-								"type": "string"
-							},
-							"weekViewCreateGutter": {
-								"default": "default",
-								"description": "Empty space kept free on the right of each Week view day column, beside its events. Click it to create a new event at that time, even when events already fill the slot.",
-								"enum": [
-									"default",
-									"5%",
-									"10%",
-									"15%",
-									"20%",
-									"25%"
-								],
-								"enumLabels": {
-									"10%": "Medium (10%)",
-									"15%": "Large (15%)",
-									"20%": "Extra large (20%)",
-									"25%": "Maximum (25%)",
-									"5%": "Small (5%)",
-									"default": "Default (2.5%)"
-								},
-								"title": "Week view create gutter",
 								"type": "string"
 							},
 							"zettelIdProp": {
@@ -3091,7 +3091,7 @@
 							"pastEventContrast",
 							"eventOverlap",
 							"slotEventOverlap",
-							"weekViewCreateGutter",
+							"timeGridCreateGutter",
 							"eventMaxStack",
 							"desktopMaxEventsPerDay",
 							"mobileMaxEventsPerDay",
@@ -5536,6 +5536,28 @@
 								"description": "Make full-hour lines (12:00, 13:00, etc.) thicker in day and week views for better visual contrast",
 								"type": "boolean"
 							},
+							"timeGridCreateGutter": {
+								"default": "default",
+								"description": "Empty space kept free on the right of each day column in Week and Day view, beside its events. Click it to create a new event at that time, even when events already fill the slot.",
+								"enum": [
+									"default",
+									"5%",
+									"10%",
+									"15%",
+									"20%",
+									"25%"
+								],
+								"enumLabels": {
+									"10%": "Medium (10%)",
+									"15%": "Large (15%)",
+									"20%": "Extra large (20%)",
+									"25%": "Maximum (25%)",
+									"5%": "Small (5%)",
+									"default": "Default (2.5%)"
+								},
+								"title": "Create gutter",
+								"type": "string"
+							},
 							"timeGridEventTimeDisplay": {
 								"default": "normal",
 								"description": "Control how timed event start times appear in week and day views",
@@ -5603,28 +5625,6 @@
 							"virtualEventsFileName": {
 								"default": "Virtual Events",
 								"description": "File name for the virtual events storage file (without .md extension)",
-								"type": "string"
-							},
-							"weekViewCreateGutter": {
-								"default": "default",
-								"description": "Empty space kept free on the right of each Week view day column, beside its events. Click it to create a new event at that time, even when events already fill the slot.",
-								"enum": [
-									"default",
-									"5%",
-									"10%",
-									"15%",
-									"20%",
-									"25%"
-								],
-								"enumLabels": {
-									"10%": "Medium (10%)",
-									"15%": "Large (15%)",
-									"20%": "Extra large (20%)",
-									"25%": "Maximum (25%)",
-									"5%": "Small (5%)",
-									"default": "Default (2.5%)"
-								},
-								"title": "Week view create gutter",
 								"type": "string"
 							},
 							"zettelIdProp": {

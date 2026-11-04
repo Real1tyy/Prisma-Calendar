@@ -822,6 +822,7 @@ export type PrismaCalendarGetSettingsOutput = {
 	 * Make full-hour lines (12:00, 13:00, etc.) thicker in day and week views for better visual contrast
 	 */
 	thickerHourLines: boolean;
+	timeGridCreateGutter: CreateGutter;
 	timeGridEventTimeDisplay: EventTimeInWeekDayViews;
 	/**
 	 * Show inline type-ahead suggestions when typing event titles in the create/edit modal. Suggests categories, event presets, and frequently used event names.
@@ -850,7 +851,6 @@ export type PrismaCalendarGetSettingsOutput = {
 	 * File name for the virtual events storage file (without .md extension)
 	 */
 	virtualEventsFileName: string;
-	weekViewCreateGutter: WeekViewCreateGutter;
 	zettelIdProp?: ZettelIDProperty;
 	zoomLevels: ZoomLevelsMinutes;
 } | null;
@@ -1110,13 +1110,13 @@ export type SortingNormalizationStrategy =
  */
 export type SyncedNoteNaming = "uid" | "zettel";
 /**
+ * Empty space kept free on the right of each day column in Week and Day view, beside its events. Click it to create a new event at that time, even when events already fill the slot.
+ */
+export type CreateGutter = "default" | "5%" | "10%" | "15%" | "20%" | "25%";
+/**
  * Control how timed event start times appear in week and day views
  */
 export type EventTimeInWeekDayViews = "normal" | "small" | "hidden" | "auto";
-/**
- * Empty space kept free on the right of each Week view day column, beside its events. Click it to create a new event at that time, even when events already fill the slot.
- */
-export type WeekViewCreateGutter = "default" | "5%" | "10%" | "15%" | "20%" | "25%";
 /**
  * Frontmatter property name for auto-generated ZettelID (optional, generates timestamp-based ID on creation/cloning)
  */
@@ -1484,11 +1484,11 @@ export type PrismaCalendarToggleSkipOutput = boolean;
  */
 
 /**
- * Control how timed event start times appear in week and day views
+ * Empty space kept free on the right of each day column in Week and Day view, beside its events. Click it to create a new event at that time, even when events already fill the slot.
  */
 
 /**
- * Empty space kept free on the right of each Week view day column, beside its events. Click it to create a new event at that time, even when events already fill the slot.
+ * Control how timed event start times appear in week and day views
  */
 
 /**
@@ -2081,6 +2081,7 @@ export interface PrismaCalendarUpdateSettingsInput {
 		 * Make full-hour lines (12:00, 13:00, etc.) thicker in day and week views for better visual contrast
 		 */
 		thickerHourLines?: boolean;
+		timeGridCreateGutter?: CreateGutter;
 		timeGridEventTimeDisplay?: EventTimeInWeekDayViews;
 		/**
 		 * Show inline type-ahead suggestions when typing event titles in the create/edit modal. Suggests categories, event presets, and frequently used event names.
@@ -2109,7 +2110,6 @@ export interface PrismaCalendarUpdateSettingsInput {
 		 * File name for the virtual events storage file (without .md extension)
 		 */
 		virtualEventsFileName?: string;
-		weekViewCreateGutter?: WeekViewCreateGutter;
 		zettelIdProp?: ZettelIDProperty;
 		zoomLevels?: ZoomLevelsMinutes;
 	};

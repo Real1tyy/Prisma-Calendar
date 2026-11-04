@@ -43,9 +43,9 @@ import {
 	LOCALE_KEYS,
 	LOCALE_OPTIONS,
 	TEXT_CONTRAST_MODE_OPTIONS,
+	TIME_GRID_CREATE_GUTTER_OPTIONS,
+	TIME_GRID_CREATE_GUTTER_VALUES,
 	ToolbarButtonSchema,
-	WEEK_VIEW_CREATE_GUTTER_OPTIONS,
-	WEEK_VIEW_CREATE_GUTTER_VALUES,
 } from "./view";
 
 // Use library's HolidayType definition
@@ -673,13 +673,13 @@ const CalendarSettingsSchema = z
 				"In week/day time-grid views, allow events that share the exact same time-slot boundaries to render on top of each other. When disabled, events with identical start/end times are placed in separate columns within the slot. Has no effect when event overlap is disabled."
 			)
 			.meta({ title: "Allow slot event overlap" }),
-		weekViewCreateGutter: z
-			.enum(WEEK_VIEW_CREATE_GUTTER_VALUES)
+		timeGridCreateGutter: z
+			.enum(TIME_GRID_CREATE_GUTTER_VALUES)
 			.catch("default")
 			.describe(
-				"Empty space kept free on the right of each Week view day column, beside its events. Click it to create a new event at that time, even when events already fill the slot."
+				"Empty space kept free on the right of each day column in Week and Day view, beside its events. Click it to create a new event at that time, even when events already fill the slot."
 			)
-			.meta({ title: "Week view create gutter", enumLabels: WEEK_VIEW_CREATE_GUTTER_OPTIONS }),
+			.meta({ title: "Create gutter", enumLabels: TIME_GRID_CREATE_GUTTER_OPTIONS }),
 		eventMaxStack: z
 			.number()
 			.int()

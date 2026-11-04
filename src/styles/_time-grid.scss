@@ -119,18 +119,18 @@
 	}
 }
 
-// Week view create gutter. FullCalendar keeps 2.5% of each time-grid column free
+// Create gutter (Week + Day). FullCalendar keeps 2.5% of each time-grid column free
 // beside its events (`.fc-timegrid-col-events` end margin); a click there is a
 // plain empty-slot click, so it creates an event even when the slot is full. This
 // widens that gutter to the calendar's setting. Events lay out in percentages of
 // the remaining box, so the change applies live without a re-render.
 // FullCalendar mounts on the container itself, so its direction class is a compound.
-.prisma-calendar-container.prisma-week-create-gutter {
-	&.fc-direction-ltr .fc-timeGridWeek-view .fc-timegrid-col-events {
-		margin-right: var(--week-create-gutter);
+.prisma-calendar-container.prisma-time-grid-create-gutter {
+	&.fc-direction-ltr .fc-timegrid-col-events {
+		margin-right: var(--time-grid-create-gutter);
 	}
 
-	&.fc-direction-rtl .fc-timeGridWeek-view .fc-timegrid-col-events {
-		margin-left: var(--week-create-gutter);
+	&.fc-direction-rtl .fc-timegrid-col-events {
+		margin-left: var(--time-grid-create-gutter);
 	}
 }

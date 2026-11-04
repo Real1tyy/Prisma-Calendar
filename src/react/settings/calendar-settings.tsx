@@ -40,7 +40,7 @@ const TIME_GRID_FIELDS = [
 const OVERLAP_FIELDS = [
 	"eventOverlap",
 	"slotEventOverlap",
-	"weekViewCreateGutter",
+	"timeGridCreateGutter",
 	"eventMaxStack",
 	"desktopMaxEventsPerDay",
 	"mobileMaxEventsPerDay",
