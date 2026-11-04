@@ -24,7 +24,7 @@ Each planning system has its own independent history. This means:
 
 -   Actions in one planning system don't affect another's undo history.
 -   The system remembers your last 100 actions for each planning system. Beyond that, the oldest entry drops off.
--   Undoing something doesn't throw away the ability to redo it later — an undone operation stays in the log and can be re-applied even after you've done other things. See [Operation history](#operation-history).
+-   Redo re-applies what you just undid. Once you do something new, the redo hotkey has nothing left to redo, as in most apps — but the undone operations aren't thrown away: they stay in the log, and you can still re-apply any of them from [Operation history](#operation-history).
 
 ## How to Use
 
