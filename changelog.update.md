@@ -1,3 +1,3 @@
 ### Added
 
-- Added an optional right-edge creation strip for timed Week view events, with five selectable widths for creating overlapping events without opening an existing one.
+- Added an optional, visible right-edge creation strip on timed Week view events, with five selectable widths, so you can create an event that overlaps an existing one without opening it.
