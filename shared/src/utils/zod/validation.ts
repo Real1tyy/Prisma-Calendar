@@ -71,8 +71,12 @@ export function parseISODateStart(s: string, zone?: string): DateTime | undefine
 	return dt.isValid ? dt.startOf("day") : undefined;
 }
 
+// The `.optional()` after each `z.unknown()` below is load-bearing: since zod 4.6 an
+// unknown key is no longer optional on input, so an absent frontmatter key would fail
+// the whole object with "expected nonoptional" instead of parsing to undefined.
 export const titleTransform = z
 	.unknown()
+	.optional()
 	.transform((value) => {
 		if (typeof value === "string" && value.trim()) {
 			return value.trim();
@@ -102,12 +106,14 @@ export const booleanTransform = z.preprocess((value) => {
 /** Trimmed string → undefined if empty */
 export const optionalTrimmedString = z
 	.unknown()
+	.optional()
 	.transform((v) => (typeof v === "string" && v.trim() ? v.trim() : undefined))
 	.pipe(z.string().optional());
 
 /** Unknown → string[] via parseIntoList, undefined if empty */
 export const optionalListTransform = z
 	.unknown()
+	.optional()
 	.transform((v) => {
 		if (!v) return undefined;
 		const list = parseIntoList(v);
@@ -118,6 +124,7 @@ export const optionalListTransform = z
 /** Unknown → positive number, undefined otherwise */
 export const optionalPositiveNumber = z
 	.unknown()
+	.optional()
 	.transform((v) => {
 		if (v == null) return undefined;
 		const n = Number(v);
@@ -128,6 +135,7 @@ export const optionalPositiveNumber = z
 /** Unknown → non-negative integer, undefined otherwise */
 export const optionalNonNegativeInt = z
 	.unknown()
+	.optional()
 	.transform((v) => {
 		if (v == null) return undefined;
 		const n = Number.parseInt(toSafeString(v) ?? "", 10);
@@ -138,6 +146,7 @@ export const optionalNonNegativeInt = z
 /** Unknown → number (any valid finite number), undefined otherwise */
 export const optionalNumber = z
 	.unknown()
+	.optional()
 	.transform((v) => {
 		if (v == null) return undefined;
 		const n = Number(v);
@@ -148,6 +157,7 @@ export const optionalNumber = z
 /** Unknown → true if boolean true or string "true" */
 export const strictBooleanTransform = z
 	.unknown()
+	.optional()
 	.transform((v) => v === true || v === "true")
 	.pipe(z.boolean());
 

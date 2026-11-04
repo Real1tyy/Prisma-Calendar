@@ -27,7 +27,26 @@ export interface JSONSchemaObject {
 // ─── Schema → JSON Schema Conversion ───────────────────────────
 
 export function schemaToJSONSchema(schema: $ZodType): JSONSchemaObject {
-	return toJSONSchema(schema, { unrepresentable: "any" }) as JSONSchemaObject;
+	const json = toJSONSchema(schema, { unrepresentable: "any" });
+	expandTypeUnions(json);
+	return json as JSONSchemaObject;
+}
+
+// zod >=4.6 compacts `anyOf: [{type: "a"}, {type: "b"}]` into `type: ["a", "b"]`. The two
+// are equivalent JSON Schema, but every consumer here reads a union as `anyOf`, so the
+// compacted form is expanded back rather than taught to each of them.
+function expandTypeUnions(node: unknown): void {
+	if (!node || typeof node !== "object") return;
+	if (Array.isArray(node)) {
+		for (const child of node) expandTypeUnions(child);
+		return;
+	}
+	const record = node as { type?: unknown; anyOf?: unknown };
+	if (Array.isArray(record.type)) {
+		record.anyOf = record.type.map((type: unknown) => ({ type }));
+		delete record.type;
+	}
+	for (const value of Object.values(record)) expandTypeUnions(value);
 }
 
 // ─── Field Type Resolution ─────────────────────────────────────

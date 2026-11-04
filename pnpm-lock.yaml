@@ -101,6 +101,7 @@ overrides:
   vitest@>=2.1.0 <4.1.12: '>=4.1.12 <5'
   '@vitest/mocker@>=2.1.0 <4.1.12': '>=4.1.12 <5'
   colord@<2.9.4: '>=2.9.4 <3'
+  zod@<4.6.6: '>=4.6.6 <5'
   '@codemirror/state': ^6.6.0
   '@codemirror/view': ^6.43.0
   typescript: ^5.9.3
@@ -129,7 +130,7 @@ importers:
         version: 6.1.20(@fullcalendar/core@6.1.20)
       '@hookform/resolvers':
         specifier: ^5.2.2
-        version: 5.2.2(react-hook-form@7.73.1(react@19.2.5))(zod@4.3.6)
+        version: 5.2.2(react-hook-form@7.73.1(react@19.2.5))(zod@4.6.7)
       '@jsep-plugin/new':
         specifier: ^1.0.4
         version: 1.0.4(jsep@1.4.0)
@@ -209,8 +210,8 @@ importers:
         specifier: '>=2.8.3'
         version: 2.9.0
       zod:
-        specifier: ~4.3.6
-        version: 4.3.6
+        specifier: ~4.6.7
+        version: 4.6.7
     devDependencies:
       '@babel/preset-typescript':
         specifier: ^7.28.5
@@ -359,8 +360,8 @@ importers:
         specifier: '>=2.8.3'
         version: 2.9.0
       zod:
-        specifier: ~4.3.6
-        version: 4.3.6
+        specifier: ~4.6.7
+        version: 4.6.7
     devDependencies:
       '@babel/preset-typescript':
         specifier: ^7.28.5
@@ -476,8 +477,8 @@ importers:
         specifier: ^2.8.1
         version: 2.8.1
       zod:
-        specifier: ~4.3.6
-        version: 4.3.6
+        specifier: ~4.6.7
+        version: 4.6.7
     devDependencies:
       '@testing-library/dom':
         specifier: ^10.4.0
@@ -1175,7 +1176,7 @@ packages:
       integrity: sha512-A/IxlMLShx3KjV/HeTcTfaMxdwy690+L/ZADoeaTltLx+CVuzkeVIPuybK3jrRfw7YZnmdKsVVHAlEPIAEUNlA==
     peerDependencies:
       react-hook-form: ^7.55.0
-      zod: '*'
+      zod: '>=4.6.6 <5'
     peerDependenciesMeta:
       zod:
         optional: true
@@ -3990,9 +3991,9 @@ packages:
     engines:
       node: '>= 14.6'
     hasBin: true
-  zod@4.3.6:
+  zod@4.6.7:
     resolution:
-      integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==
+      integrity: sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg==
 snapshots:
   7z-wasm@1.2.0:
     dependencies:
@@ -4411,12 +4412,12 @@ snapshots:
   '@gilbarbara/types@0.2.2':
     dependencies:
       type-fest: 4.41.0
-  '@hookform/resolvers@5.2.2(react-hook-form@7.73.1(react@19.2.5))(zod@4.3.6)':
+  '@hookform/resolvers@5.2.2(react-hook-form@7.73.1(react@19.2.5))(zod@4.6.7)':
     dependencies:
       '@standard-schema/utils': 0.3.0
       react-hook-form: 7.73.1(react@19.2.5)
     optionalDependencies:
-      zod: 4.3.6
+      zod: 4.6.7
   '@ianvs/prettier-plugin-sort-imports@4.7.1(prettier@3.8.1)(supports-color@10.2.2)':
     dependencies:
       '@babel/generator': 7.29.7
@@ -5304,7 +5305,7 @@ snapshots:
       tinyglobby: 0.2.16
       unbash: 3.0.0
       yaml: 2.9.0
-      zod: 4.3.6
+      zod: 4.6.7
     transitivePeerDependencies:
     - '@emnapi/core'
     - '@emnapi/runtime'
@@ -6053,4 +6054,4 @@ snapshots:
   yallist@3.1.1: {}
   yaml@2.9.0: {}
   yaml@2.9.1: {}
-  zod@4.3.6: {}
+  zod@4.6.7: {}
