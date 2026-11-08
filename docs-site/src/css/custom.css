@@ -66,9 +66,9 @@ article details a {
 /* Navbar: keep the brand title and every item on one line. Docusaurus shrinks the
    brand first (truncating "Prisma Calendar") and wraps two-word labels; instead,
    the desktop bar sheds its least essential links as the window narrows —
-   Features, then YouTube Playlist, then GitHub — and only then tightens.
-   Breakpoints follow the measured bar: ~1740px with every item, minus ~88px
-   (Features), ~163px (YouTube Playlist) and ~94px (GitHub).
+   Features, then YouTube Playlist, then GitHub, tightening spacing as it goes,
+   and Other Plugins last, just above the 996px mobile collapse. Breakpoints were
+   checked against rendered captures at each width.
    Scoped to `.navbar__item` and ≥997px: the same className lands on the mobile
    menu's entry, which must keep every link. */
 .navbar__brand {
@@ -82,6 +82,12 @@ article details a {
 	transform: translateY(-1px);
 }
 
+/* Docusaurus fades a linked footer logo to 50% until hover, which reads as a
+   washed-out brand mark; the logo shows at full strength like the navbar's. */
+.footer a:has(> img.footer__logo) {
+	opacity: 1;
+}
+
 .navbar__title {
 	overflow: visible;
 	white-space: nowrap;
@@ -91,25 +97,25 @@ article details a {
 	white-space: nowrap;
 }
 
-@media (min-width: 997px) and (max-width: 1779px) {
+@media (min-width: 997px) and (max-width: 1869px) {
 	.navbar__item.navbar-item--drop-1 {
 		display: none;
 	}
 }
 
-@media (min-width: 997px) and (max-width: 1689px) {
+@media (min-width: 997px) and (max-width: 1779px) {
 	.navbar__item.navbar-item--drop-2 {
 		display: none;
 	}
 }
 
-@media (min-width: 997px) and (max-width: 1529px) {
+@media (min-width: 997px) and (max-width: 1619px) {
 	.navbar__item.navbar-item--drop-3 {
 		display: none;
 	}
 }
 
-@media (min-width: 997px) and (max-width: 1429px) {
+@media (min-width: 997px) and (max-width: 1519px) {
 	.navbar {
 		--ifm-navbar-item-padding-horizontal: 0.5rem;
 	}
@@ -121,5 +127,26 @@ article details a {
 
 	.navbar__search-input {
 		width: 10rem;
+	}
+}
+
+@media (min-width: 997px) and (max-width: 1119px) {
+	.navbar__item.navbar-item--drop-4 {
+		display: none;
+	}
+}
+
+@media (min-width: 997px) and (max-width: 1279px) {
+	.navbar {
+		--ifm-navbar-item-padding-horizontal: 0.3rem;
+	}
+
+	.navbar__item,
+	.navbar__title {
+		font-size: 0.82rem;
+	}
+
+	.navbar__search-input {
+		width: 6.5rem;
 	}
 }

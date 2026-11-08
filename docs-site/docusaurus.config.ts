@@ -134,6 +134,7 @@ const config: Config = {
 					href: "https://matejvavroproductivity.com/tools/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=navbar&utm_content=other_plugins",
 					label: "Other Plugins",
 					position: "right",
+					className: "navbar-item--drop-4",
 				},
 				{
 					href: "https://github.com/Real1tyy/Prisma-Calendar",
