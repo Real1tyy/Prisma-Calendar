@@ -94,6 +94,12 @@ const config: Config = {
 					position: "left",
 				},
 				{
+					to: "/features/overview",
+					label: "Features",
+					position: "left",
+					className: "navbar-item--drop-1",
+				},
+				{
 					to: "/features/free-vs-pro",
 					label: "Free vs Pro",
 					position: "left",
@@ -117,6 +123,7 @@ const config: Config = {
 					href: "https://www.youtube.com/playlist?list=PLMVJknbUasLCULubO4MdCDvg9MyXu3kG4&utm_campaign=prisma_calendar&utm_source=docs&utm_medium=navbar&utm_content=youtube_playlist",
 					label: "YouTube Playlist",
 					position: "right",
+					className: "navbar-item--drop-2",
 				},
 				{
 					href: "https://matejvavroproductivity.com/tools/prisma-calendar/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=navbar&utm_content=website",
@@ -132,6 +139,7 @@ const config: Config = {
 					href: "https://github.com/Real1tyy/Prisma-Calendar",
 					label: "GitHub",
 					position: "right",
+					className: "navbar-item--drop-3",
 				},
 				{
 					href: "https://matejvavroproductivity.com/feedback?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=navbar&utm_content=feedback",

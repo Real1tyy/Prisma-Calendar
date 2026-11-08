@@ -64,8 +64,13 @@ article details a {
 }
 
 /* Navbar: keep the brand title and every item on one line. Docusaurus shrinks the
-   brand first (truncating "Prisma Calendar") and wraps two-word labels, so the
-   desktop bar is tightened instead, down to where it collapses at 996px. */
+   brand first (truncating "Prisma Calendar") and wraps two-word labels; instead,
+   the desktop bar sheds its least essential links as the window narrows —
+   Features, then YouTube Playlist, then GitHub — and only then tightens.
+   Breakpoints follow the measured bar: ~1740px with every item, minus ~88px
+   (Features), ~163px (YouTube Playlist) and ~94px (GitHub).
+   Scoped to `.navbar__item` and ≥997px: the same className lands on the mobile
+   menu's entry, which must keep every link. */
 .navbar__brand {
 	flex-shrink: 0;
 }
@@ -79,7 +84,25 @@ article details a {
 	white-space: nowrap;
 }
 
-@media (min-width: 997px) and (max-width: 1599px) {
+@media (min-width: 997px) and (max-width: 1779px) {
+	.navbar__item.navbar-item--drop-1 {
+		display: none;
+	}
+}
+
+@media (min-width: 997px) and (max-width: 1689px) {
+	.navbar__item.navbar-item--drop-2 {
+		display: none;
+	}
+}
+
+@media (min-width: 997px) and (max-width: 1529px) {
+	.navbar__item.navbar-item--drop-3 {
+		display: none;
+	}
+}
+
+@media (min-width: 997px) and (max-width: 1429px) {
 	.navbar {
 		--ifm-navbar-item-padding-horizontal: 0.5rem;
 	}
