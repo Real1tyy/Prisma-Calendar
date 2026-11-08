@@ -29,6 +29,11 @@ export function buildWelcomeShellStyles(p: string): string {
 	padding-top: 0.5rem;
 }
 
+/* A logo that renders nothing (e.g. an image that failed to load) leaves no gap. */
+.${p}welcome-logo:empty {
+	display: none;
+}
+
 .${p}welcome-logo > * {
 	width: 64px;
 	height: 64px;

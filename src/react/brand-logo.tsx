@@ -20,6 +20,9 @@ interface PrismaLogoProps {
 
 export const PrismaLogo = memo(function PrismaLogo({ className }: PrismaLogoProps) {
 	const [enlarged, setEnlarged] = useState(false);
+	// Electron paints a broken-image frame even for alt="", so a logo the docs site
+	// cannot serve (offline, or before the brand kit is deployed) hides outright.
+	const [failed, setFailed] = useState(false);
 	const close = useCallback(() => setEnlarged(false), []);
 	// Nullable on purpose: the RTL suite and the preview tool render this component
 	// with no Obsidian app around it, and the keymap guard below is the only thing
@@ -41,6 +44,8 @@ export const PrismaLogo = memo(function PrismaLogo({ className }: PrismaLogoProp
 		return () => app.keymap.popScope(scope);
 	}, [enlarged, app, close]);
 
+	if (failed) return null;
+
 	return (
 		<>
 			<button
@@ -51,9 +56,8 @@ export const PrismaLogo = memo(function PrismaLogo({ className }: PrismaLogoProp
 				title={LABEL}
 				onClick={() => setEnlarged(true)}
 			>
-				{/* alt="" — the button carries the name; offline, an empty alt also keeps
-				    a failed load from painting a broken-image glyph in the header. */}
-				<img src={PRISMA_LOGO_SRC} alt="" />
+				{/* alt="" — the button carries the accessible name. */}
+				<img src={PRISMA_LOGO_SRC} alt="" onError={() => setFailed(true)} />
 			</button>
 			{enlarged && <ImageLightbox src={PRISMA_LOGO_SRC} label={LABEL} onClose={close} />}
 		</>
