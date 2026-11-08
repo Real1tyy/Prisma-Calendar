@@ -9,3 +9,4 @@
 
 ### Fixed
 - The **Export calendar** modal opens with **Exclude skipped events** switched on and **UTC** selected, matching what the export actually used — the toggle used to look off and the timezone blank.
+- Recurring events that fall on the first day of the visible range (Monday in week view, the first cell in month view) show up in time zones ahead of UTC, instead of being pushed one full interval later. See [Virtual Events](./features/events/virtual-events.md).

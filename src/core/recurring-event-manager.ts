@@ -15,6 +15,7 @@ import {
 	replaceISOTime,
 	sanitizeForFilename,
 	showFrontmatterPropagationModal,
+	WALL_CLOCK_PARSE_OPTS,
 	withLock,
 	type FrontmatterDiff,
 } from "@real1ty/obsidian-plugins";
@@ -455,7 +456,10 @@ export class RecurringEventManager extends DebouncedNotifier {
 		const { rruleId, instanceDate, source } = metadata;
 
 		if (rruleId && instanceDate) {
-			const parsedInstanceDate = DateTime.fromISO(stripZ(instanceDate));
+			// Same zone as the query range and the source's start: a device-zone parse
+			// here puts a range-start occurrence hours before rangeStart, and the
+			// fast-forward then skips it by a whole interval.
+			const parsedInstanceDate = DateTime.fromISO(stripZ(instanceDate), WALL_CLOCK_PARSE_OPTS);
 			if (parsedInstanceDate.isValid) {
 				let recurringData = this.recurringEventsMap.get(rruleId);
 
