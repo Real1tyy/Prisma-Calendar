@@ -1,7 +1,7 @@
+import { buildPropertyMapping, sanitizeExpression } from "@real1ty/obsidian-plugins";
 import jsep from "jsep";
 
 import type { Frontmatter } from "../../types";
-import { buildPropertyMapping, sanitizeExpression } from "./expressions";
 
 export function matchesSearch(searchValue: string, data: { title?: string; meta?: Frontmatter }): boolean {
 	if (!searchValue) return true;

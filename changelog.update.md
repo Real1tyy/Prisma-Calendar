@@ -1,2 +1,2 @@
 ### Fixed
-- Color rules that compare a property to a text value (for example `Status === "Done"`) keep matching when another note in your vault has a property with that same name, instead of every event falling back to the default color.
+- Color rules and filter expressions that compare a property to a text value (for example `Status === "Done"`) keep matching when another note in your vault has a property with that same name, instead of every event falling back to the default color or dropping out of the filter. Filter expressions name a property exactly as it is written in your frontmatter (`Start Date`, not `Start_Date`), the same as color rules.

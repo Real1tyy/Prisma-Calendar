@@ -82,36 +82,36 @@ export function extractExpressionIdentifiers(expression: string): string[] {
 	return Array.from(identifiers);
 }
 
-// Quoted string literals, honouring backslash escapes. Capturing so `split` keeps them.
-const STRING_LITERAL_REGEX = /("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)/;
+// Quoted string literals, honouring backslash escapes.
+const STRING_LITERAL_SOURCE = /"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`/.source;
 
 /**
  * Replaces property names in an expression with their sanitized versions.
- * Sorts by length descending to replace longer property names first and avoid partial matches.
  *
  * String literals are never rewritten: the mapping accumulates frontmatter keys from every
  * note an evaluator has seen, so a key equal to a rule's compared value (`Status === "Done"`
  * plus some note with a `Done` key) would otherwise corrupt the value and the rule would
  * silently stop matching.
+ *
+ * One left-to-right scan, keys tried before literals: a key containing a quote (`Bob's Date`)
+ * is consumed whole instead of opening a literal, and a key sitting inside a literal is never
+ * reached because the literal is consumed first. Longest keys lead the alternation so
+ * `Start Date` wins over `Start`.
  */
 export function sanitizeExpression(expression: string, propertyMapping: Map<string, string>): string {
-	// Sort by length descending to replace longer property names first
-	const replacements = Array.from(propertyMapping.entries())
-		.filter(([original, sanitizedName]) => original !== sanitizedName)
-		.sort(([a], [b]) => b.length - a.length)
-		.map(([original, sanitizedName]) => {
-			const escaped = original.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-			// Use a regex that matches the property name not preceded or followed by word characters
-			// This allows matching properties with special characters like "My-Property"
-			return [new RegExp(`(?<!\\w)${escaped}(?!\\w)`, "g"), sanitizedName] as const;
-		});
+	const replacements = new Map(
+		Array.from(propertyMapping).filter(([original, sanitizedName]) => original !== sanitizedName)
+	);
+	if (replacements.size === 0) return expression;
 
-	return expression
-		.split(STRING_LITERAL_REGEX)
-		.map((segment, index) => {
-			// `split` with a capturing group puts the captured literals at odd indices
-			if (index % 2 === 1) return segment;
-			return replacements.reduce((acc, [regex, sanitizedName]) => acc.replace(regex, sanitizedName), segment);
-		})
-		.join("");
+	const keyAlternation = Array.from(replacements.keys())
+		.sort((a, b) => b.length - a.length)
+		.map((key) => key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+		.join("|");
+	// Lookarounds instead of `\b` so keys with special characters like "My-Property" still match
+	const tokenRegex = new RegExp(`(?<!\\w)(${keyAlternation})(?!\\w)|${STRING_LITERAL_SOURCE}`, "g");
+
+	return expression.replace(tokenRegex, (match, key: string | undefined) =>
+		key === undefined ? match : (replacements.get(key) ?? match)
+	);
 }
