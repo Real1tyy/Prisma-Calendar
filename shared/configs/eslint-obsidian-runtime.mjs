@@ -73,25 +73,30 @@ export function obsidianRuntimeConfig({ files = ["src/**/*.{ts,tsx}"], manifestP
 	}
 	const manifest = readManifest(manifestPath);
 	const publishedPlugin = manifest.minAppVersion !== "0.0.0";
-	const minimumAppVersion = publishedPlugin
-		? manifest.minAppVersion
-		: readPluginManifests(new URL("../", manifestPath))
-				.map(({ manifest }) => manifest.minAppVersion)
-				.sort((left, right) => left.localeCompare(right, "en", { numeric: true }))[0];
+	const consumers = publishedPlugin
+		? [manifest]
+		: readPluginManifests(new URL("../", manifestPath)).map(({ manifest }) => manifest);
+	const minimumAppVersion = consumers
+		.map(({ minAppVersion }) => minAppVersion)
+		.sort((left, right) => left.localeCompare(right, "en", { numeric: true }))[0];
 	const runtimeRules = { ...rules };
-	runtimeRules["obsidianmd/no-unsupported-api"] = [
-		"error",
-		{
-			minAppVersion: publishedPlugin ? manifest.minAppVersion : minimumAppVersion,
-		},
-	];
-	for (const [rule, option, value] of [
-		["obsidianmd/commands/no-plugin-id-in-command-id", "pluginId", manifest?.id],
-		["obsidianmd/commands/no-plugin-name-in-command-name", "pluginName", manifest?.name],
-	]) {
-		if (publishedPlugin) runtimeRules[rule] = ["error", { [option]: value }];
-		else delete runtimeRules[rule];
+	for (const [name, setting] of Object.entries(runtimeRules)) {
+		if (!name.startsWith("obsidianmd/")) continue;
+		const properties = obsidianmd.rules[name.slice("obsidianmd/".length)].meta.schema?.[0]?.properties;
+		if (!properties) continue;
+		if (!publishedPlugin && name.startsWith("obsidianmd/commands/") && (properties.pluginId || properties.pluginName)) {
+			delete runtimeRules[name];
+			continue;
+		}
+		const options = { ...setting[1] };
+		if (properties.minAppVersion) options.minAppVersion = minimumAppVersion;
+		if (properties.pluginId) options.pluginId = manifest.id;
+		if (properties.pluginName) options.pluginName = publishedPlugin ? manifest.name : "";
+		if (properties.isDesktopOnly)
+			options.isDesktopOnly = consumers.every(({ isDesktopOnly }) => isDesktopOnly === true);
+		if (Object.keys(options).length) runtimeRules[name] = ["error", options];
 	}
+
 	return {
 		name: `obsidian-runtime/${publishedPlugin ? manifest.id : "shared"}`,
 		files,
