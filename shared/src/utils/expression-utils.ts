@@ -82,27 +82,36 @@ export function extractExpressionIdentifiers(expression: string): string[] {
 	return Array.from(identifiers);
 }
 
+// Quoted string literals, honouring backslash escapes. Capturing so `split` keeps them.
+const STRING_LITERAL_REGEX = /("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)/;
+
 /**
  * Replaces property names in an expression with their sanitized versions.
  * Sorts by length descending to replace longer property names first and avoid partial matches.
+ *
+ * String literals are never rewritten: the mapping accumulates frontmatter keys from every
+ * note an evaluator has seen, so a key equal to a rule's compared value (`Status === "Done"`
+ * plus some note with a `Done` key) would otherwise corrupt the value and the rule would
+ * silently stop matching.
  */
 export function sanitizeExpression(expression: string, propertyMapping: Map<string, string>): string {
-	let sanitized = expression;
-
 	// Sort by length descending to replace longer property names first
-	const sortedEntries = Array.from(propertyMapping.entries()).sort(([a], [b]) => b.length - a.length);
-
-	for (const [original, sanitizedName] of sortedEntries) {
-		if (original !== sanitizedName) {
+	const replacements = Array.from(propertyMapping.entries())
+		.filter(([original, sanitizedName]) => original !== sanitizedName)
+		.sort(([a], [b]) => b.length - a.length)
+		.map(([original, sanitizedName]) => {
 			const escaped = original.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
 			// Use a regex that matches the property name not preceded or followed by word characters
 			// This allows matching properties with special characters like "My-Property"
-			const regex = new RegExp(`(?<!\\w)${escaped}(?!\\w)`, "g");
+			return [new RegExp(`(?<!\\w)${escaped}(?!\\w)`, "g"), sanitizedName] as const;
+		});
 
-			sanitized = sanitized.replace(regex, sanitizedName);
-		}
-	}
-
-	return sanitized;
+	return expression
+		.split(STRING_LITERAL_REGEX)
+		.map((segment, index) => {
+			// `split` with a capturing group puts the captured literals at odd indices
+			if (index % 2 === 1) return segment;
+			return replacements.reduce((acc, [regex, sanitizedName]) => acc.replace(regex, sanitizedName), segment);
+		})
+		.join("");
 }
