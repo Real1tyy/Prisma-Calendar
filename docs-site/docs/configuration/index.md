@@ -31,6 +31,12 @@ Everything on the page answers to the query — not only the individual settings
 
 Settings remember your position across close/reopen cycles — the active tab and scroll position are restored so you pick up exactly where you left off. State is kept in memory for the current session and resets on plugin reload.
 
+## Settings Header
+
+The row above the section tabs carries the Prisma mark, the version badge, and — when an update is waiting — an update badge. The mark is the brand icon you also see in the browser tab on this site; it is decorative, so nothing happens when you click it.
+
+The version badge is clickable: it copies the installed version to your clipboard, which is the fastest way to include it when you send me a bug report.
+
 ## Calendar Management
 
 - Add, clone, or delete calendars from Settings → Prisma Calendar

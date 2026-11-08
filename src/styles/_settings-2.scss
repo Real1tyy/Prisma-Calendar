@@ -160,6 +160,15 @@
 	flex-shrink: 0;
 }
 
+.prisma-settings-hero-logo {
+	width: 22px;
+	height: 22px;
+	flex-shrink: 0;
+	// Sits a touch apart from the interactive cluster (badge / version / chevron) so it
+	// reads as a mark rather than a fourth control.
+	margin-right: 4px;
+}
+
 .prisma-settings-hero-version {
 	font-size: var(--font-ui-small);
 	color: var(--text-faint);

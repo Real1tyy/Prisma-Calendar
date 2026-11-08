@@ -1,0 +1,44 @@
+import { memo } from "react";
+
+import { cls, tid } from "../../constants";
+
+// The brand mark ships as vector rather than as the raster in the docs-site's
+// `static/brand/`: an Obsidian plugin bundles to one `main.js`, so a PNG could only
+// travel as a data URI — 366 KB added to every load, for a mark that renders in under
+// a kilobyte here and stays crisp at any DPI.
+// Namespaced so the gradient cannot collide with another plugin's defs in the shared
+// settings DOM, where every plugin's tab lives under the same document.
+const GRADIENT_ID = "prisma-logo-gradient";
+
+export const PrismaLogo = memo(function PrismaLogo() {
+	return (
+		// Decorative: the pitch line beside it already names Prisma, so announcing the
+		// mark again would only repeat it.
+		<svg
+			className={cls("settings-hero-logo")}
+			data-testid={tid("settings-hero-logo")}
+			viewBox="0 0 64 64"
+			xmlns="http://www.w3.org/2000/svg"
+			aria-hidden="true"
+			focusable="false"
+		>
+			<defs>
+				<linearGradient id={GRADIENT_ID} x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0%" stopColor="#ef6a8e" />
+					<stop offset="50%" stopColor="#9b53c4" />
+					<stop offset="100%" stopColor="#5b46e0" />
+				</linearGradient>
+			</defs>
+
+			<rect x="2" y="10" width="60" height="52" rx="13" fill={`url(#${GRADIENT_ID})`} />
+
+			{/* Binder rings, drawn over the card's top edge. */}
+			<rect x="15" y="2" width="10" height="18" rx="5" fill="none" stroke="#fff" strokeWidth="4" />
+			<rect x="39" y="2" width="10" height="18" rx="5" fill="none" stroke="#fff" strokeWidth="4" />
+
+			{/* The "P": a stem plus a stroked bowl, so the counter stays a true hole. */}
+			<rect x="20" y="22" width="8" height="34" rx="1" fill="#fff" />
+			<path d="M24 26 H36 a8 8 0 0 1 0 16 H24" fill="none" stroke="#fff" strokeWidth="8" />
+		</svg>
+	);
+});
