@@ -11,7 +11,7 @@ export interface WelcomeModalFooterLink {
 }
 
 export interface WelcomeModalShellProps {
-	/** The plugin's brand mark, rendered above the title. Each plugin owns its own. */
+	/** The plugin's brand mark, inline after the title at its height. Each plugin owns its own. */
 	logo?: ReactNode | undefined;
 	title?: string | undefined;
 	tagline?: ReactNode | undefined;
@@ -42,8 +42,12 @@ export function WelcomeModalShell({
 
 	return (
 		<div className={cls("root")}>
-			{logo ? <div className={cls("logo")}>{logo}</div> : null}
-			{title ? <h2 className={cls("title")}>{title}</h2> : null}
+			{logo || title ? (
+				<div className={cls("heading")}>
+					{title ? <h2 className={cls("title")}>{title}</h2> : null}
+					{logo ? <div className={cls("logo")}>{logo}</div> : null}
+				</div>
+			) : null}
 			{tagline ? <div className={cls("tagline")}>{tagline}</div> : null}
 			{tagline ? <hr className={cls("divider")} /> : null}
 

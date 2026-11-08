@@ -23,9 +23,13 @@ export function buildWelcomeShellStyles(p: string): string {
 	animation: ${p}welcome-fade-in 400ms ease-out both;
 }
 
-.${p}welcome-logo {
+/* Title and brand mark share one centred row, like a wordmark lockup. The mark comes
+   after the title; reversing the row puts it before. */
+.${p}welcome-heading {
 	display: flex;
+	align-items: center;
 	justify-content: center;
+	gap: 0.6rem;
 	padding-top: 0.5rem;
 }
 
@@ -34,15 +38,15 @@ export function buildWelcomeShellStyles(p: string): string {
 	display: none;
 }
 
+/* Sized to the title's line box (2rem × 1.15), so the mark reads as part of the line. */
 .${p}welcome-logo > * {
-	width: 64px;
-	height: 64px;
-	filter: drop-shadow(0 6px 18px color-mix(in srgb, var(--interactive-accent) 30%, transparent));
+	width: 2.4rem;
+	height: 2.4rem;
+	filter: drop-shadow(0 4px 12px color-mix(in srgb, var(--interactive-accent) 30%, transparent));
 }
 
 .${p}welcome-title {
 	margin: 0;
-	padding-top: 0.25rem;
 	font-size: 2rem;
 	text-align: center;
 	font-weight: 800;
