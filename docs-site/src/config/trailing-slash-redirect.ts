@@ -12,10 +12,13 @@
 //
 // Every site serves at baseUrl "/", so "/" is the only legitimate path ending in
 // a slash; a site served under a subpath would loop here on its home page.
+//
+// Leading slashes/backslashes collapse to one: `//evil.example/` must not become the
+// protocol-relative `//evil.example`, which would redirect off the site.
 
 export const TRAILING_SLASH_REDIRECT_SCRIPT =
 	'(function(){var l=window.location,p=l.pathname;if(p.length<2||p.charAt(p.length-1)!=="/")return;' +
-	'l.replace((p.replace(/\\/+$/,"")||"/")+l.search+l.hash);})();';
+	'l.replace("/"+p.replace(/^[\\/\\\\]+/,"").replace(/\\/+$/,"")+l.search+l.hash);})();';
 
 export const trailingSlashRedirectHeadTag = {
 	tagName: "script",
