@@ -20,8 +20,11 @@ async function openCache(): Promise<Cache | null> {
 
 async function fetchAndStore(url: string, cache: Cache | null): Promise<Blob | null> {
 	const controller = new AbortController();
-	const timeout = setTimeout(() => controller.abort(), 5000);
+	const timeout = window.setTimeout(() => controller.abort(), 5000);
 	try {
+		// These public images support browser CORS. requestUrl cannot accept an
+		// AbortSignal, so a stalled native request could outlive the startup limit.
+		// eslint-disable-next-line no-restricted-globals
 		const response = await fetch(url, { signal: controller.signal });
 		// Electron can expose a readable CORS image with status 0. Unlike an opaque
 		// failure, it still has nonempty, typed image bytes; validate those below.
@@ -35,7 +38,7 @@ async function fetchAndStore(url: string, cache: Cache | null): Promise<Blob | n
 	} catch {
 		return null;
 	} finally {
-		clearTimeout(timeout);
+		window.clearTimeout(timeout);
 	}
 }
 

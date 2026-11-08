@@ -72,6 +72,7 @@ export default defineConfig([
 			},
 		},
 		rules: {
+			"no-restricted-globals": ["error", "fetch"],
 			"@typescript-eslint/no-unused-vars": [
 				"warn",
 				{
