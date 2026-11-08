@@ -5,6 +5,7 @@ import { memo } from "react";
 
 import { cls, CSS_PREFIX, docsUrl, tid } from "../../../constants";
 import { ACCOUNT_URL } from "../../../core/license";
+import { PrismaLogo } from "../../brand-logo";
 
 const proUtm = (url: string, content: string) =>
 	buildUtmUrl(url, "prisma-calendar", "plugin", "pro_welcome_modal", content);
@@ -45,6 +46,7 @@ export interface ProWelcomeControllerProps {
 export const ProWelcomeController = memo(function ProWelcomeController({ onSubmit }: ProWelcomeControllerProps) {
 	return (
 		<WelcomeModalShell
+			logo={<PrismaLogo />}
 			title="Welcome to Prisma Pro"
 			tagline={TAGLINE}
 			videoEmbedUrl="https://www.youtube.com/embed/PLACEHOLDER_PRO_VIDEO_ID"

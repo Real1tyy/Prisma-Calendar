@@ -182,6 +182,9 @@
 		display: block;
 		width: 100%;
 		height: 100%;
+		// The brand raster is 723×792, not square — contain it rather than stretch it
+		// into the square boxes every placement sets.
+		object-fit: contain;
 	}
 }
 

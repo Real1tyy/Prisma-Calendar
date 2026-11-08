@@ -2610,6 +2610,7 @@ button[class*=prisma-]:focus-visible {
   display: block;
   width: 100%;
   height: 100%;
+  object-fit: contain;
 }
 
 .prisma-settings-hero-logo {
