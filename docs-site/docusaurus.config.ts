@@ -7,7 +7,7 @@ import { themes as prismThemes } from "prism-react-renderer";
 const config: Config = {
 	title: "Prisma Calendar",
 	tagline: "A feature-rich, fully configurable calendar for Obsidian.",
-	favicon: "img/prisma_logo.png",
+	favicon: "brand/prisma_logo.png",
 
 	// Set the production url of your site here
 	url: "https://prisma-calendar.matejvavroproductivity.com",
@@ -75,8 +75,8 @@ const config: Config = {
 
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Docusaurus preset ThemeConfig type is unresolvable in this tsconfig context
 	themeConfig: {
-		// Replace with your project's social card
-		image: "img/prisma_logo.png",
+		// Social card: the wordmark lockup, not the bare icon — a link unfurl is wide.
+		image: "brand/Prisma_banner.png",
 		colorMode: {
 			defaultMode: "dark",
 			respectPrefersColorScheme: true,
@@ -85,7 +85,7 @@ const config: Config = {
 			title: "Prisma Calendar",
 			logo: {
 				alt: "Prisma Calendar Logo",
-				src: "img/prisma_logo.png",
+				src: "brand/prisma_logo.png",
 				href: "/",
 			},
 			items: [
