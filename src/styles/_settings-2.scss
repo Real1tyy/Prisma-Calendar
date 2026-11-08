@@ -167,12 +167,12 @@
 }
 
 .prisma-settings-hero-logo {
-	width: 22px;
-	height: 22px;
+	width: 34px;
+	height: 34px;
 	flex-shrink: 0;
-	// Sits a touch apart from the interactive cluster (badge / version / chevron) so it
-	// reads as a mark rather than a fourth control.
-	margin-right: 4px;
+	// Last in the row and the tallest thing in it, so the mark anchors the header's
+	// top-right corner instead of reading as a fourth control in the cluster.
+	margin-left: 8px;
 }
 
 .prisma-settings-hero-version {

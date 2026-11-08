@@ -171,7 +171,6 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 							<span> turns any note with a date into a flexible planning system inside Obsidian.</span>
 						</div>
 						<div className={cls("settings-hero-controls")}>
-							<PrismaLogo className={cls("settings-hero-logo")} />
 							{checkForReleaseUpdates && (
 								<UpdateAvailableBadge
 									service={plugin.releaseCheckService}
@@ -192,6 +191,7 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 							>
 								<ObsidianIcon icon={managementCollapsed ? "chevron-right" : "chevron-down"} />
 							</button>
+							<PrismaLogo className={cls("settings-hero-logo")} />
 						</div>
 					</div>
 				</div>
