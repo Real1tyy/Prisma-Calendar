@@ -43,8 +43,7 @@ const config: Config = {
 					sidebarPath: "./sidebars.ts",
 					// Please change this to your repo.
 					// Remove this to remove the "edit this page" links.
-					editUrl:
-						"https://github.com/Real1tyy/Prisma-Calendar/edit/main/docs-site/",
+					editUrl: "https://github.com/Real1tyy/Prisma-Calendar/edit/main/docs-site/",
 					showLastUpdateAuthor: true,
 					showLastUpdateTime: true,
 				},
@@ -92,11 +91,6 @@ const config: Config = {
 				{
 					to: "/quickstart",
 					label: "Quick Start",
-					position: "left",
-				},
-				{
-					to: "/features/overview",
-					label: "Features",
 					position: "left",
 				},
 				{
@@ -271,9 +265,7 @@ const config: Config = {
 			darkTheme: prismThemes.dracula,
 			additionalLanguages: ["bash", "json", "typescript"],
 		},
-		metadata: [
-			{ name: "algolia-site-verification", content: "6D4AC65541FD3B7E" },
-		],
+		metadata: [{ name: "algolia-site-verification", content: "6D4AC65541FD3B7E" }],
 		// Disable search until properly configured
 		// algolia: {
 		//   appId: 'YOUR_APP_ID',

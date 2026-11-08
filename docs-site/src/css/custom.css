@@ -62,3 +62,34 @@ article details a {
 [data-theme="light"] article details a {
 	color: #e0d0ff;
 }
+
+/* Navbar: keep the brand title and every item on one line. Docusaurus shrinks the
+   brand first (truncating "Prisma Calendar") and wraps two-word labels, so the
+   desktop bar is tightened instead, down to where it collapses at 996px. */
+.navbar__brand {
+	flex-shrink: 0;
+}
+
+.navbar__title {
+	overflow: visible;
+	white-space: nowrap;
+}
+
+.navbar__item {
+	white-space: nowrap;
+}
+
+@media (min-width: 997px) and (max-width: 1599px) {
+	.navbar {
+		--ifm-navbar-item-padding-horizontal: 0.5rem;
+	}
+
+	.navbar__item,
+	.navbar__title {
+		font-size: 0.9rem;
+	}
+
+	.navbar__search-input {
+		width: 10rem;
+	}
+}
