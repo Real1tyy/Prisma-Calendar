@@ -17,7 +17,7 @@
 
 ## Initial Setup
 
-The first time you open Prisma, a **Welcome** modal walks you through setup. It opens with the Prisma mark above its title — the same icon you see in the browser tab on this site and at the top right of the settings header. Choose **which folder** Prisma should watch and **which frontmatter properties** hold your dates, or click **Import settings** to upload a Prisma JSON file or paste JSON from another setup. Imported settings are applied before Prisma starts indexing.
+The first time you open Prisma, a **Welcome** modal walks you through setup. Choose **which folder** Prisma should watch and **which frontmatter properties** hold your dates, or click **Import settings** to upload a Prisma JSON file or paste JSON from another setup. Imported settings are applied before Prisma starts indexing.
 
 Prisma never forces a schema. It reads the notes you point it to look at and turns the ones with date properties into events — nothing is moved, rewritten, or migrated. The modal offers two starting points:
 
