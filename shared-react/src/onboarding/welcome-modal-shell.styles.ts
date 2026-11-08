@@ -23,6 +23,18 @@ export function buildWelcomeShellStyles(p: string): string {
 	animation: ${p}welcome-fade-in 400ms ease-out both;
 }
 
+.${p}welcome-logo {
+	display: flex;
+	justify-content: center;
+	padding-top: 0.5rem;
+}
+
+.${p}welcome-logo > * {
+	width: 64px;
+	height: 64px;
+	filter: drop-shadow(0 6px 18px color-mix(in srgb, var(--interactive-accent) 30%, transparent));
+}
+
 .${p}welcome-title {
 	margin: 0;
 	padding-top: 0.25rem;

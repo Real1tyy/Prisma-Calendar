@@ -160,6 +160,12 @@
 	flex-shrink: 0;
 }
 
+// The brand mark's base class carries no size — each placement supplies its own, so the
+// mark can sit at 22px in this header and at 64px in the welcome modal.
+.prisma-logo {
+	display: block;
+}
+
 .prisma-settings-hero-logo {
 	width: 22px;
 	height: 22px;

@@ -11,6 +11,8 @@ export interface WelcomeModalFooterLink {
 }
 
 export interface WelcomeModalShellProps {
+	/** The plugin's brand mark, rendered above the title. Each plugin owns its own. */
+	logo?: ReactNode | undefined;
 	title?: string | undefined;
 	tagline?: ReactNode | undefined;
 	videoEmbedUrl?: string | undefined;
@@ -26,6 +28,7 @@ function slugify(label: string): string {
 }
 
 export function WelcomeModalShell({
+	logo,
 	title,
 	tagline,
 	videoEmbedUrl,
@@ -39,6 +42,7 @@ export function WelcomeModalShell({
 
 	return (
 		<div className={cls("root")}>
+			{logo ? <div className={cls("logo")}>{logo}</div> : null}
 			{title ? <h2 className={cls("title")}>{title}</h2> : null}
 			{tagline ? <div className={cls("tagline")}>{tagline}</div> : null}
 			{tagline ? <hr className={cls("divider")} /> : null}

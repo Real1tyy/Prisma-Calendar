@@ -21,9 +21,9 @@ import {
 	duplicateCalendarConfig,
 	generateUniqueCalendarId,
 } from "../../utils/calendar/settings";
+import { PrismaLogo } from "../brand-logo";
 import { openConfigureCalendarModal } from "../modals/calendar/configure-calendar-modal";
 import { IndexingStatsInfo } from "./indexing-stats-info";
-import { PrismaLogo } from "./prisma-logo";
 import { SingleCalendarSettingsReact } from "./single-calendar-settings-react";
 
 const GITHUB_REPO_URL = "https://github.com/Real1tyy/Prisma-Calendar";
@@ -171,7 +171,7 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 							<span> turns any note with a date into a flexible planning system inside Obsidian.</span>
 						</div>
 						<div className={cls("settings-hero-controls")}>
-							<PrismaLogo />
+							<PrismaLogo className={cls("settings-hero-logo")} />
 							{checkForReleaseUpdates && (
 								<UpdateAvailableBadge
 									service={plugin.releaseCheckService}

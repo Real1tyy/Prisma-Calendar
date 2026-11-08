@@ -16,6 +16,7 @@ import { cls, CSS_PREFIX, docsUrl, tid } from "../../../constants";
 import type { DirectorySuggestion } from "../../../core/directory-suggestions";
 import type { CustomCalendarSettings, PrismaCalendarSettingsStore } from "../../../types/settings";
 import { PRISMA_NON_TRANSFERABLE_SETTINGS, PRISMA_SETTINGS_TRANSFER_FILENAME } from "../../../utils/settings-transfer";
+import { PrismaLogo } from "../../brand-logo";
 import { computePrefill, Field, PropertyFields, SuggestionList } from "../calendar/property-config";
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
@@ -234,6 +235,7 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 
 	return (
 		<WelcomeModalShell
+			logo={<PrismaLogo />}
 			title="Welcome to Prisma Calendar"
 			tagline={TAGLINE}
 			videoEmbedUrl="https://www.youtube.com/embed/dziQK9UQhvE"

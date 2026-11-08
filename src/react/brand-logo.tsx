@@ -1,6 +1,6 @@
 import { memo } from "react";
 
-import { cls, tid } from "../../constants";
+import { cls, tid } from "../constants";
 
 // The brand mark ships as vector rather than as the raster in the docs-site's
 // `static/brand/`: an Obsidian plugin bundles to one `main.js`, so a PNG could only
@@ -10,13 +10,18 @@ import { cls, tid } from "../../constants";
 // settings DOM, where every plugin's tab lives under the same document.
 const GRADIENT_ID = "prisma-logo-gradient";
 
-export const PrismaLogo = memo(function PrismaLogo() {
+interface PrismaLogoProps {
+	/** Placement class supplying the size — the base class sets none. */
+	className?: string | undefined;
+}
+
+export const PrismaLogo = memo(function PrismaLogo({ className }: PrismaLogoProps) {
 	return (
-		// Decorative: the pitch line beside it already names Prisma, so announcing the
-		// mark again would only repeat it.
+		// Decorative everywhere it is used: each surface already names Prisma in the copy
+		// beside it, so announcing the mark again would only repeat it.
 		<svg
-			className={cls("settings-hero-logo")}
-			data-testid={tid("settings-hero-logo")}
+			className={className ? `${cls("logo")} ${className}` : cls("logo")}
+			data-testid={tid("logo")}
 			viewBox="0 0 64 64"
 			xmlns="http://www.w3.org/2000/svg"
 			aria-hidden="true"

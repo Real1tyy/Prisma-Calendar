@@ -2593,6 +2593,10 @@ button[class*=prisma-]:focus-visible {
   flex-shrink: 0;
 }
 
+.prisma-logo {
+  display: block;
+}
+
 .prisma-settings-hero-logo {
   width: 22px;
   height: 22px;
