@@ -71,8 +71,13 @@ article details a {
    checked against rendered captures at each width.
    Scoped to `.navbar__item` and ≥997px: the same className lands on the mobile
    menu's entry, which must keep every link. */
+/* The brand is a wordmark, not a nav link: it is set larger than the links and a
+   divider separates it from them. Its size holds in the tightened bands below. */
 .navbar__brand {
 	flex-shrink: 0;
+	padding-right: 1rem;
+	margin-right: 0.75rem;
+	border-right: 1px solid var(--ifm-toc-border-color);
 }
 
 /* The brand PNG has ring tabs above its card, so at Infima's 2rem the card sits
@@ -91,37 +96,45 @@ article details a {
 .navbar__title {
 	overflow: visible;
 	white-space: nowrap;
+	font-size: 1.25rem;
+}
+
+/* The mobile bar has no divider: the brand sits alone beside the menu toggle. */
+@media (max-width: 996px) {
+	.navbar__brand {
+		padding-right: 0;
+		border-right: none;
+	}
 }
 
 .navbar__item {
 	white-space: nowrap;
 }
 
-@media (min-width: 997px) and (max-width: 1869px) {
+@media (min-width: 997px) and (max-width: 1919px) {
 	.navbar__item.navbar-item--drop-1 {
 		display: none;
 	}
 }
 
-@media (min-width: 997px) and (max-width: 1779px) {
+@media (min-width: 997px) and (max-width: 1829px) {
 	.navbar__item.navbar-item--drop-2 {
 		display: none;
 	}
 }
 
-@media (min-width: 997px) and (max-width: 1619px) {
+@media (min-width: 997px) and (max-width: 1669px) {
 	.navbar__item.navbar-item--drop-3 {
 		display: none;
 	}
 }
 
-@media (min-width: 997px) and (max-width: 1519px) {
+@media (min-width: 997px) and (max-width: 1569px) {
 	.navbar {
 		--ifm-navbar-item-padding-horizontal: 0.5rem;
 	}
 
-	.navbar__item,
-	.navbar__title {
+	.navbar__item {
 		font-size: 0.9rem;
 	}
 
@@ -130,23 +143,37 @@ article details a {
 	}
 }
 
-@media (min-width: 997px) and (max-width: 1119px) {
+@media (min-width: 997px) and (max-width: 1219px) {
 	.navbar__item.navbar-item--drop-4 {
 		display: none;
 	}
 }
 
-@media (min-width: 997px) and (max-width: 1279px) {
+@media (min-width: 997px) and (max-width: 1379px) {
 	.navbar {
 		--ifm-navbar-item-padding-horizontal: 0.3rem;
 	}
 
-	.navbar__item,
-	.navbar__title {
+	.navbar__item {
 		font-size: 0.82rem;
 	}
 
 	.navbar__search-input {
 		width: 6.5rem;
+	}
+}
+
+@media (min-width: 997px) and (max-width: 1099px) {
+	.navbar__brand {
+		padding-right: 0.75rem;
+		margin-right: 0.5rem;
+	}
+
+	.navbar__title {
+		font-size: 1.05rem;
+	}
+
+	.navbar__search-input {
+		width: 4.5rem;
 	}
 }
