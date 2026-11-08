@@ -2593,7 +2593,7 @@ button[class*=prisma-]:focus-visible {
   flex-shrink: 0;
 }
 
-.prisma-logo {
+button.prisma-logo {
   display: block;
   padding: 0;
   border: none;
@@ -2603,10 +2603,12 @@ button[class*=prisma-]:focus-visible {
   line-height: 0;
   transition: transform 0.15s ease;
 }
-.prisma-logo:hover {
+button.prisma-logo:hover {
+  background: none;
+  box-shadow: none;
   transform: scale(1.06);
 }
-.prisma-logo img {
+button.prisma-logo img {
   display: block;
   width: 100%;
   height: 100%;
