@@ -1,4 +1,5 @@
-import { showModal } from "@real1ty/obsidian-plugins";
+import { showReactModal } from "@real1ty/obsidian-plugins-react";
+import { createElement } from "react";
 
 import {
 	showEventSeriesBasesViewModal,
@@ -6,12 +7,12 @@ import {
 	showTimelineModal,
 	type EventSeriesBasesViewConfig,
 } from "../../../components/modals";
-import { renderProUpgradeBanner } from "../../../components/settings/pro-upgrade-banner";
-import { cls } from "../../../constants";
+import { cls, CSS_PREFIX } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { PRO_FEATURES } from "../../../core/license";
 import type { CalendarEvent } from "../../../types/calendar";
 import { removeZettelId } from "../../../utils/events/zettel-id";
+import { ProUpgradeBanner } from "../../settings/pro-upgrade-banner";
 
 export interface EventSeriesBasesFooterActions {
 	openTimeline: () => void;
@@ -26,20 +27,17 @@ type SeriesViewPayload = {
 };
 
 function showHeatmapProGate(bundle: CalendarBundle): void {
-	let unmount: (() => void) | undefined;
-	showModal({
+	showReactModal({
 		app: bundle.plugin.app,
 		cls: cls("heatmap-pro-gate-modal"),
-		cleanup: () => unmount?.(),
-		render: (el) => {
-			unmount = renderProUpgradeBanner(
-				el,
-				bundle.plugin.app,
-				PRO_FEATURES.HEATMAP,
-				"Visualize your events over time with an interactive heatmap. See patterns, streaks, and activity density at a glance.",
-				"HEATMAP"
-			);
-		},
+		cssPrefix: CSS_PREFIX,
+		render: () =>
+			createElement(ProUpgradeBanner, {
+				featureName: PRO_FEATURES.HEATMAP,
+				description:
+					"Visualize your events over time with an interactive heatmap. See patterns, streaks, and activity density at a glance.",
+				previewKey: "HEATMAP",
+			}),
 	});
 }
 

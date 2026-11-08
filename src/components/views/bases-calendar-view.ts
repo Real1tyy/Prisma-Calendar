@@ -18,7 +18,7 @@ import { getCommonCategories } from "../../utils/events/frontmatter";
 import { BatchSelectionManager } from "../batch-selection-manager";
 import type { CalendarHost } from "../calendar-host";
 import { EventContextMenu } from "../event-context-menu";
-import { renderProUpgradeBanner } from "../settings/pro-upgrade-banner";
+import { clearProUpgradeBanner, renderProUpgradeBanner } from "../settings/pro-upgrade-banner";
 import { UntrackedEventsDropdown } from "../untracked-events-dropdown";
 import {
 	applyContainerStyles,
@@ -77,7 +77,6 @@ class PrismaBasesView extends BasesView {
 	private hasNavigatedInitially = false;
 	private currentViewType: string | null = null;
 	private currentBundleId: string | null = null;
-	private unmountProGate: (() => void) | null = null;
 	private isProSub: Subscription | null = null;
 
 	constructor(
@@ -115,8 +114,6 @@ class PrismaBasesView extends BasesView {
 	}
 
 	override onunload(): void {
-		this.unmountProGate?.();
-		this.unmountProGate = null;
 		this.isProSub?.unsubscribe();
 		this.isProSub = null;
 		this.destroyCalendar();
@@ -147,8 +144,7 @@ class PrismaBasesView extends BasesView {
 	}
 
 	onDataUpdated(): void {
-		this.unmountProGate?.();
-		this.unmountProGate = null;
+		clearProUpgradeBanner(this.containerEl);
 		// Obsidian's types claim this.data is always set, but in practice it may be
 		// undefined before the first animation frame. Narrow defensively.
 		if (this.queryData) {
@@ -157,13 +153,12 @@ class PrismaBasesView extends BasesView {
 
 		if (!this.plugin.licenseManager.isPro) {
 			this.containerEl.empty();
-			this.unmountProGate = renderProUpgradeBanner(
-				this.containerEl,
-				this.app,
-				PRO_FEATURES.BASES_VIEW,
-				"Query and display your events using Obsidian Bases, allowing you to embed your calendar right alonside your personal notes.",
-				"BASES_VIEW"
-			);
+			renderProUpgradeBanner(this, this.app, this.containerEl, {
+				featureName: PRO_FEATURES.BASES_VIEW,
+				description:
+					"Query and display your events using Obsidian Bases, allowing you to embed your calendar right alonside your personal notes.",
+				previewKey: "BASES_VIEW",
+			});
 			return;
 		}
 

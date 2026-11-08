@@ -20,7 +20,7 @@ import type { CalendarBundle } from "../core/calendar-bundle";
 import { PRO_FEATURES } from "../core/license";
 import type CustomCalendarPlugin from "../main";
 import { AI_DEFAULTS, type AIMode, type AIOperation } from "../types/ai";
-import { renderProUpgradeBanner } from "./settings/pro-upgrade-banner";
+import { clearProUpgradeBanner, renderProUpgradeBanner } from "./settings/pro-upgrade-banner";
 
 interface RetryResult<T> {
 	response: T;
@@ -105,20 +105,17 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 		return "bot";
 	}
 
-	private unmountProGate: (() => void) | null = null;
-
 	override async mount(): Promise<void> {
 		const container = this.containerEl.children[1] as HTMLElement;
 
 		if (!this.plugin.isProEnabled) {
 			container.empty();
-			this.unmountProGate = renderProUpgradeBanner(
-				container,
-				this.app,
-				PRO_FEATURES.AI_CHAT,
-				"AI chat with Claude and GPT, including query, manipulation, and planning modes. Leverage AI to automate events creations, updates and deletions.",
-				"AI_CHAT"
-			);
+			renderProUpgradeBanner(this, this.app, container, {
+				featureName: PRO_FEATURES.AI_CHAT,
+				description:
+					"AI chat with Claude and GPT, including query, manipulation, and planning modes. Leverage AI to automate events creations, updates and deletions.",
+				previewKey: "AI_CHAT",
+			});
 
 			const sub = this.plugin.licenseManager.isPro$.pipe(skip(1), distinctUntilChanged()).subscribe((isPro) => {
 				if (isPro) {
@@ -134,8 +131,7 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 	}
 
 	private async mountProContent(container: HTMLElement): Promise<void> {
-		this.unmountProGate?.();
-		this.unmountProGate = null;
+		clearProUpgradeBanner(container);
 		this.markdownComponent.load();
 		await this.chatManager.initialize();
 
@@ -155,8 +151,6 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 	}
 
 	override async unmount(): Promise<void> {
-		this.unmountProGate?.();
-		this.unmountProGate = null;
 		this.markdownComponent.unload();
 		await this.chatManager.saveCurrentThread();
 	}
