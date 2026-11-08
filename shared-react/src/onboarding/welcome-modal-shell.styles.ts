@@ -23,8 +23,7 @@ export function buildWelcomeShellStyles(p: string): string {
 	animation: ${p}welcome-fade-in 400ms ease-out both;
 }
 
-/* Title and brand mark share one centred row, like a wordmark lockup. The mark comes
-   after the title; reversing the row puts it before. */
+/* Brand mark and title share one centred row, mark first, like a wordmark lockup. */
 .${p}welcome-heading {
 	display: flex;
 	align-items: center;
