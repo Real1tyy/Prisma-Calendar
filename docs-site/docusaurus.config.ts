@@ -2,6 +2,8 @@ import type * as Preset from "@docusaurus/preset-classic";
 import type { Config } from "@docusaurus/types";
 import { themes as prismThemes } from "prism-react-renderer";
 
+import { trailingSlashRedirectHeadTag } from "./src/config/trailing-slash-redirect";
+
 // Docusaurus config for Prisma Calendar docs
 
 const config: Config = {
@@ -22,6 +24,7 @@ const config: Config = {
 	onBrokenLinks: "throw",
 	onBrokenMarkdownLinks: "warn",
 	trailingSlash: false,
+	headTags: [trailingSlashRedirectHeadTag],
 
 	// Even if you don't use internationalization, you can use this field to set
 	// useful metadata like html lang. For example, if your site is Chinese, you
