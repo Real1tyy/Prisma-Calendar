@@ -1,5 +1,6 @@
 import { buildUtmUrl } from "@real1ty/obsidian-plugins";
-import { memo, useCallback } from "react";
+import { PreviewableImage } from "@real1ty/obsidian-plugins-react";
+import { memo } from "react";
 
 import { cls, docsUrl, tid } from "../../constants";
 import { PRO_PURCHASE_URL } from "../../core/license";
@@ -28,20 +29,16 @@ export const ProUpgradeBanner = memo(function ProUpgradeBanner({
 	const docUrl = previewKey ? getFeatureDocUrl(previewKey) : null;
 	const learnMoreUrl = buildUtmUrl(FREE_VS_PRO_URL, "prisma-calendar", "plugin", "pro_gate", "learn_more");
 
-	const handleImageClick = useCallback(() => {
-		if (previewSrc) openImageLightbox(previewSrc, featureName);
-	}, [previewSrc, featureName]);
-
 	return (
 		<div className={cls("pro-upgrade-banner")} {...(previewKey ? { "data-testid": tid("pro-gate", previewKey) } : {})}>
 			{previewSrc && (
-				<div className={cls("pro-upgrade-preview")} onClick={handleImageClick}>
-					<img
-						className={cls("pro-upgrade-preview-img")}
+				<div className={cls("pro-upgrade-preview")}>
+					<PreviewableImage
 						src={previewSrc}
-						alt={`${featureName} preview`}
+						label={`${featureName} preview`}
+						imageClassName={cls("pro-upgrade-preview-img")}
+						testId={tid("pro-upgrade-preview")}
 						loading="lazy"
-						draggable={false}
 					/>
 				</div>
 			)}
@@ -67,25 +64,3 @@ export const ProUpgradeBanner = memo(function ProUpgradeBanner({
 		</div>
 	);
 });
-
-function openImageLightbox(src: string, alt: string): void {
-	const overlay = createDiv({ cls: cls("pro-lightbox-overlay") });
-
-	const img = overlay.createEl("img", { cls: cls("pro-lightbox-img") });
-	img.src = src;
-	img.alt = alt;
-	img.draggable = false;
-
-	const close = (): void => overlay.remove();
-	overlay.addEventListener("click", (e) => {
-		if (e.target === overlay) close();
-	});
-	const handler = (e: KeyboardEvent): void => {
-		if (e.key === "Escape") {
-			close();
-			activeDocument.removeEventListener("keydown", handler);
-		}
-	};
-	activeDocument.addEventListener("keydown", handler);
-	activeDocument.body.appendChild(overlay);
-}

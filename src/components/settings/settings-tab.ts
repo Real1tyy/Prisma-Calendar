@@ -3,6 +3,7 @@ import { PluginSettingTab, type App } from "obsidian";
 import { createElement } from "react";
 
 import { CSS_PREFIX } from "../../constants";
+import { PRISMA_LOGO_ICON } from "../../core/brand-icon";
 import type CustomCalendarPlugin from "../../main";
 import { SettingsRoot } from "../../react/settings/settings-root";
 
@@ -13,6 +14,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 	constructor(app: App, plugin: CustomCalendarPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
+		this.icon = PRISMA_LOGO_ICON;
 
 		this.plugin.licenseManager.status$.subscribe(() => {
 			if (this.containerEl.isShown()) {

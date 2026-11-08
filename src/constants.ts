@@ -9,6 +9,12 @@ export const DOCS_BASE_URL = "https://prisma-calendar.matejvavroproductivity.com
 /** Build a docs-site URL from a leading-slash path, e.g. `docsUrl("/features/free-vs-pro")`. */
 export const docsUrl = (path = ""): string => `${DOCS_BASE_URL}${path}`;
 
+// The real brand raster — the same `docs-site/static/brand/prisma_logo.png` the docs
+// site, the README and showrunner's release cards use — served from the deployed docs
+// site rather than inlined: base64 would add ~476 KB to a main.js already near Obsidian
+// Sync Standard's 5 MB cap. The Pro feature previews are served the same way.
+export const PRISMA_LOGO_SRC = `${DOCS_BASE_URL}/brand/prisma_logo.png`;
+
 /**
  * Build a UTM-tracked docs-site link for a Settings-tab affordance. Binds the
  * plugin slug + `plugin`/`settings` UTM so callers pass only the doc `path` and

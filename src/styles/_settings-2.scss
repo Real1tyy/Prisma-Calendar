@@ -161,26 +161,14 @@
 }
 
 // The brand mark's base class carries no size — each placement supplies its own, so the
-// mark can sit at 34px in this header and at 64px in the welcome modal.
-// It is a <button> (clicking enlarges it), so the button's own chrome is stripped back
-// to nothing and the image fills whatever box the placement class sets.
-// `button.` is load-bearing: Obsidian's `button:not(.clickable-icon)` carries the same
-// specificity as a bare class plus its own background, border and shadow, and a bare
-// `.prisma-logo` lost to it — a grey rounded square showed behind the logo. Matching
-// specificity lets this sheet, which loads after app.css, win.
-button.prisma-logo {
+// mark can sit at 34px in this header and at 64px in the welcome modal. The image fills
+// whatever box the placement class sets; a role="button" avoids Obsidian's button chrome.
+.prisma-logo {
 	display: block;
-	padding: 0;
-	border: none;
-	background: none;
-	box-shadow: none;
-	cursor: zoom-in;
 	line-height: 0;
 	transition: transform 0.15s ease;
 
 	&:hover {
-		background: none;
-		box-shadow: none;
 		transform: scale(1.06);
 	}
 

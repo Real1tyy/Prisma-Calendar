@@ -105,13 +105,16 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 		return "bot";
 	}
 
+	private unmountProGate: (() => void) | null = null;
+
 	override async mount(): Promise<void> {
 		const container = this.containerEl.children[1] as HTMLElement;
 
 		if (!this.plugin.isProEnabled) {
 			container.empty();
-			renderProUpgradeBanner(
+			this.unmountProGate = renderProUpgradeBanner(
 				container,
+				this.app,
 				PRO_FEATURES.AI_CHAT,
 				"AI chat with Claude and GPT, including query, manipulation, and planning modes. Leverage AI to automate events creations, updates and deletions.",
 				"AI_CHAT"
@@ -131,6 +134,8 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 	}
 
 	private async mountProContent(container: HTMLElement): Promise<void> {
+		this.unmountProGate?.();
+		this.unmountProGate = null;
 		this.markdownComponent.load();
 		await this.chatManager.initialize();
 
@@ -150,6 +155,8 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 	}
 
 	override async unmount(): Promise<void> {
+		this.unmountProGate?.();
+		this.unmountProGate = null;
 		this.markdownComponent.unload();
 		await this.chatManager.saveCurrentThread();
 	}

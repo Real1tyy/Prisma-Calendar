@@ -18,6 +18,8 @@ export type { MinimizedModal } from "./minimized-modal-slot";
 export { MinimizedModals } from "./minimized-modal-slot";
 export type { ImageLightboxProps } from "./image-lightbox";
 export { ImageLightbox } from "./image-lightbox";
+export type { PreviewableImageProps } from "./previewable-image";
+export { PreviewableImage } from "./previewable-image";
 export type { ShowReactIconPickerOptions } from "./icon-picker-modal";
 export { showReactIconPicker } from "./icon-picker-modal";
 export type { ProgressModalConfig, ProgressModalHandle } from "./progress-modal";

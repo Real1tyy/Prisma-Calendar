@@ -1,6 +1,8 @@
-import { memo, useCallback, useEffect, useRef } from "react";
+import { Scope } from "obsidian";
+import { memo, useCallback, useContext, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 
+import { AppContext } from "../contexts/app-context";
 import { useOwnerDocument } from "../contexts/theme-context";
 import { useScopedStyles } from "../hooks/styles/use-styles";
 import { buildImageLightboxStyles } from "./image-lightbox.styles";
@@ -46,6 +48,22 @@ export const ImageLightbox = memo(function ImageLightbox({ src, label, onClose }
 		ownerDocument.addEventListener("keydown", onKeyDown, true);
 		return () => ownerDocument.removeEventListener("keydown", onKeyDown, true);
 	}, [onClose, ownerDocument]);
+
+	// The DOM guard above is not enough everywhere: Obsidian's Settings window closes on
+	// Escape through its KEYMAP, which runs ahead of it, so one Escape took the whole
+	// settings screen down with the preview. A pushed scope sits ahead of that handler.
+	// Nullable: the RTL suites and the preview tool render without an Obsidian app.
+	const app = useContext(AppContext);
+	useEffect(() => {
+		if (app === null) return;
+		const scope = new Scope(app.scope);
+		scope.register([], "Escape", () => {
+			onClose();
+			return false;
+		});
+		app.keymap.pushScope(scope);
+		return () => app.keymap.popScope(scope);
+	}, [app, onClose]);
 
 	// A backdrop click closes; a click that started on the image itself does not.
 	const handleBackdropClick = useCallback(

@@ -1,3 +1,4 @@
+export { loadCachedImage, REMOTE_IMAGE_CACHE, useCachedImageSrc } from "./use-cached-image";
 export { useDomEvent } from "./use-dom-event";
 export { useMediaQuery } from "./use-media-query";
 export { type Emitterlike, useObsidianEvent } from "./use-obsidian-event";

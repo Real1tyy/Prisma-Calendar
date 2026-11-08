@@ -26,12 +26,15 @@ type SeriesViewPayload = {
 };
 
 function showHeatmapProGate(bundle: CalendarBundle): void {
+	let unmount: (() => void) | undefined;
 	showModal({
 		app: bundle.plugin.app,
 		cls: cls("heatmap-pro-gate-modal"),
+		cleanup: () => unmount?.(),
 		render: (el) => {
-			renderProUpgradeBanner(
+			unmount = renderProUpgradeBanner(
 				el,
+				bundle.plugin.app,
 				PRO_FEATURES.HEATMAP,
 				"Visualize your events over time with an interactive heatmap. See patterns, streaks, and activity density at a glance.",
 				"HEATMAP"

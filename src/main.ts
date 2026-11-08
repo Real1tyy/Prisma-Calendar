@@ -30,6 +30,7 @@ import {
 	MinimizedModalManager,
 	PrismaCalendarApiManager,
 } from "./core";
+import { registerPrismaLogoIcon } from "./core/brand-icon";
 import { scanVaultForDirectorySuggestions } from "./core/directory-suggestions";
 import { registerFileMenuActions } from "./core/file-menu";
 import { exportCalendarAsICS } from "./core/integrations/ics-export";
@@ -131,6 +132,7 @@ export default class CustomCalendarPlugin extends Plugin {
 			installPrismaPerfBridge(this);
 		}
 
+		this.register(registerPrismaLogoIcon());
 		this.addSettingTab(new CustomCalendarSettingsTab(this.app, this));
 
 		this.registerAIChatView();

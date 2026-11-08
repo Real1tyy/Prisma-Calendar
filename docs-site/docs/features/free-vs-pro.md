@@ -32,6 +32,12 @@ Everything you need for a powerful, production-ready planning experience ships f
 - **ZettelID naming**, Templater integration, and mobile support
 - **60+ hotkeys** — keyboard shortcuts for navigation, batch operations, and quick actions
 
+## Feature previews
+
+Click a feature screenshot to enlarge it. Press **Escape**, click **✕**, or click the
+backdrop to close the preview. After a screenshot loads successfully, your browser keeps
+a local copy for offline viewing, unless browser storage is cleared or unavailable.
+
 ## What's Pro
 
 Pro unlocks these additional capabilities on top of everything in the free tier:
