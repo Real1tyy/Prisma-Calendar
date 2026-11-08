@@ -10,12 +10,19 @@ All notable changes to this project will be documented here.
 
 ### Added
 - Added **Week view create gutter (%)** and **Day view create gutter (%)** settings: the empty space on the right of each day column, where you click to create an event beside ones already filling the slot. Week defaults to 3.5% and Day to 1.5%; each takes any percentage (decimals included), and 0 turns it off.
+- **Filter what you import, export and sync**: exporting or importing an `.ics` file, and every CalDAV account and ICS subscription, now takes a **Filter expression** — the same JavaScript-style rule the calendar's expression filter uses, e.g. `Category.includes('Work')` — plus a **Filter preset** dropdown that fills it from the calendar's saved presets. Only matching events are exported or imported, and the import preview shows how many of the file's events match. On a sync the filter is saved with the account or subscription: events that don't match are never created, and a previously synced note that stops matching is removed on the next sync. An invalid expression is reported instead of filtering everything out, and a sync with one changes nothing. See [Filtering imports, exports and syncs](./features/advanced/integrations.md#filtering-imports-exports-and-syncs).
+
+### Improved
+- The Prisma logo now appears in the app — beside the title of the welcome screen you see on first launch, in the top-right corner of the settings header, and beside "Prisma Calendar" in the settings sidebar — the same logo the docs site uses.
+- **Image previews**: the logo and Pro feature screenshots stay available offline after loading once, and share the same full-screen preview controls. See [Free vs Pro](./docs-site/docs/features/free-vs-pro.md#feature-previews).
 
 ### Fixed
 - Dragging an all-day event into the time grid gives it your configured **Default duration** instead of always one hour. See [General → Parsing](./configuration/general.md#parsing).
 - **Undo and redo are more reliable**: Redo always re-applies the step you just undid, and once you make a new change there is nothing left for Redo to bring back, so an older edit can never overwrite a newer one. Undo then reverses exactly what is in your note. The steps Redo can no longer reach aren't lost: they stay in Operation history, where you can re-apply any of them from its row. See [Undo/Redo → How undo and redo pick a step](./features/management/undo-redo.md#how-undo-and-redo-pick-a-step).
 - **Operation history is wider**: the history window is wider and still fits narrow windows, so event names are no longer cut off next to the Undo and Revert buttons.
 - Color rules and filter expressions that compare a property to a text value (for example `Status === "Done"`) keep matching when another note in your vault has a property with that same name, instead of every event falling back to the default color or dropping out of the filter. Rules on properties named in Chinese, Japanese or other non-Latin scripts read the property you named, not another one in the same note. Filter expressions name a property exactly as it is written in your frontmatter (`Start Date`, not `Start_Date`), the same as color rules.
+- The **Export calendar** modal opens with **Exclude skipped events** switched on and **UTC** selected, matching what the export actually used — the toggle used to look off and the timezone blank.
+- **Recurring event previews on the first day of a view**: the upcoming occurrences of a recurring event, shown beyond the notes it has already created, appear on the first day of the week or month you're looking at — for example Monday in week view. Before, in time zones ahead of UTC (most of Europe, Asia and Australia), that day was left empty: a daily event was missing on Mondays, and a weekly or bi-weekly event moved one or two weeks later. Your event notes were never affected. See [Virtual Events](./features/events/virtual-events.md).
 
 ---
 
