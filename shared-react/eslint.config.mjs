@@ -1,6 +1,7 @@
 // Lint config. Production `src/**` runs typescript-eslint `strictTypeChecked`
 // at ERROR; tests and the rest stay on the baseline below.
 import js from "@eslint/js";
+import { obsidianRuntimeConfig } from "@real1ty/obsidian-plugins/eslint-runtime";
 import eslintConfigPrettier from "eslint-config-prettier";
 import obsidianmd from "eslint-plugin-obsidianmd";
 import reactHooks from "eslint-plugin-react-hooks";
@@ -72,7 +73,6 @@ export default defineConfig([
 			},
 		},
 		rules: {
-			"no-restricted-globals": ["error", "fetch"],
 			"@typescript-eslint/no-unused-vars": [
 				"warn",
 				{
@@ -201,4 +201,5 @@ export default defineConfig([
 			"obsidianmd/prefer-window-timers": "off",
 		},
 	},
+	obsidianRuntimeConfig({ manifestPath: new URL("./manifest.json", import.meta.url) }),
 ]);

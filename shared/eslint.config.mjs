@@ -8,6 +8,8 @@ import { defineConfig } from "eslint/config";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
+import { obsidianRuntimeConfig } from "./configs/eslint-obsidian-runtime.mjs";
+
 const STRICT_SRC = ["src/**/*.ts", "src/**/*.tsx"];
 const STRICT_SRC_IGNORES = [
 	"src/**/*.test.ts",
@@ -199,4 +201,5 @@ export default defineConfig([
 			"obsidianmd/prefer-window-timers": "off",
 		},
 	},
+	obsidianRuntimeConfig({ manifestPath: new URL("./manifest.json", import.meta.url) }),
 ]);
