@@ -101,6 +101,33 @@ const EventPreviewList = memo(function EventPreviewList({
 	);
 });
 
+interface FilteredImport {
+	events: ImportedEvent[];
+	error: string | null;
+}
+
+function findBundle(calendars: CalendarBundle[], calendarId: string): CalendarBundle | undefined {
+	return calendars.find((b) => b.calendarId === calendarId);
+}
+
+// Kept outside the component, and fed ids rather than a looked-up bundle:
+// React Compiler cannot preserve a memo whose body contains try/catch, nor one
+// that depends on an object it considers mutable later in the render.
+function previewFilteredImport(
+	events: ImportedEvent[],
+	bundle: CalendarBundle | undefined,
+	filterExpression: string,
+	timezone: string
+): FilteredImport {
+	if (!bundle) return { events, error: null };
+	try {
+		const settings = bundle.settingsStore.currentSettings;
+		return { events: filterImportedEvents(events, filterExpression, settings, timezone), error: null };
+	} catch (error) {
+		return { events: [], error: describeError(error) };
+	}
+}
+
 function ICSImportForm({ calendars, onSubmit, onCancel }: ICSImportFormProps) {
 	const [parsedEvents, setParsedEvents] = useState<ImportedEvent[]>([]);
 	const [skippedEvents, setSkippedEvents] = useState<SkippedEvent[]>([]);
@@ -122,18 +149,12 @@ function ICSImportForm({ calendars, onSubmit, onCancel }: ICSImportFormProps) {
 		control: form.control,
 		name: ["calendar", "timezone", "filterExpression"],
 	});
-	const selectedBundle = calendars.find((b) => b.calendarId === calendarId);
-	const filterPresets = selectedBundle?.settingsStore.currentSettings.filterPresets ?? NO_PRESETS;
+	const filterPresets = findBundle(calendars, calendarId)?.settingsStore.currentSettings.filterPresets ?? NO_PRESETS;
 
-	const filtered = useMemo((): { events: ImportedEvent[]; error: string | null } => {
-		if (!selectedBundle) return { events: parsedEvents, error: null };
-		try {
-			const settings = selectedBundle.settingsStore.currentSettings;
-			return { events: filterImportedEvents(parsedEvents, filterExpression, settings, timezone), error: null };
-		} catch (error) {
-			return { events: [], error: describeError(error) };
-		}
-	}, [parsedEvents, selectedBundle, filterExpression, timezone]);
+	const filtered = useMemo(
+		() => previewFilteredImport(parsedEvents, findBundle(calendars, calendarId), filterExpression, timezone),
+		[parsedEvents, calendars, calendarId, filterExpression, timezone]
+	);
 	const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
@@ -162,13 +183,14 @@ function ICSImportForm({ calendars, onSubmit, onCancel }: ICSImportFormProps) {
 
 	const handleSubmit = useCallback(() => {
 		void form.handleSubmit((values) => {
-			if (!selectedBundle || filtered.events.length === 0) {
+			const bundle = findBundle(calendars, values.calendar);
+			if (!bundle || filtered.events.length === 0) {
 				new Notice("Please select a file and calendar");
 				return;
 			}
-			onSubmit({ bundle: selectedBundle, events: filtered.events, timezone: values.timezone });
+			onSubmit({ bundle, events: filtered.events, timezone: values.timezone });
 		})();
-	}, [form, selectedBundle, filtered.events, onSubmit]);
+	}, [form, calendars, filtered.events, onSubmit]);
 
 	const canSubmit = filtered.events.length > 0 && !parseError && !filtered.error;
 
