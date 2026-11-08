@@ -431,6 +431,7 @@ export function createImportedEventFilter(
 	settings: SingleCalendarConfig,
 	timezone: string
 ): (event: ImportedEvent) => boolean {
+	if (!expression.trim()) return () => true;
 	const matches = compileFrontmatterFilter(expression);
 	return (event) => matches(buildFrontmatterFromImportedEvent(event, settings, timezone, null));
 }
@@ -441,7 +442,6 @@ export function filterImportedEvents(
 	settings: SingleCalendarConfig,
 	timezone: string
 ): ImportedEvent[] {
-	if (!expression.trim()) return events;
 	return events.filter(createImportedEventFilter(expression, settings, timezone));
 }
 
