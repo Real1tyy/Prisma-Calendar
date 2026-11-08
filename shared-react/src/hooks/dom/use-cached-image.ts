@@ -19,8 +19,10 @@ async function openCache(): Promise<Cache | null> {
 }
 
 async function fetchAndStore(url: string, cache: Cache | null): Promise<Blob | null> {
+	const controller = new AbortController();
+	const timeout = setTimeout(() => controller.abort(), 5000);
 	try {
-		const response = await fetch(url);
+		const response = await fetch(url, { signal: controller.signal });
 		// Electron can expose a readable CORS image with status 0. Unlike an opaque
 		// failure, it still has nonempty, typed image bytes; validate those below.
 		if (!response.ok && response.status !== 0) return null;
@@ -32,6 +34,8 @@ async function fetchAndStore(url: string, cache: Cache | null): Promise<Blob | n
 		return blob;
 	} catch {
 		return null;
+	} finally {
+		clearTimeout(timeout);
 	}
 }
 

@@ -132,7 +132,7 @@ export default class CustomCalendarPlugin extends Plugin {
 			installPrismaPerfBridge(this);
 		}
 
-		this.register(registerPrismaLogoIcon());
+		this.register(await registerPrismaLogoIcon());
 		this.addSettingTab(new CustomCalendarSettingsTab(this.app, this));
 
 		this.registerAIChatView();

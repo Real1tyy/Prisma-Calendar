@@ -182,6 +182,16 @@
 	}
 }
 
+// Obsidian hides the icon of every community-plugin row in the settings sidebar
+// (`.vertical-tab-header-group-items[data-section="community-plugins"] … { display: none }`).
+// Scoped to Prisma's own row, by its plugin id, the logo registered as the tab's icon
+// shows beside "Prisma Calendar"; no other plugin's row is touched.
+.vertical-tab-header-group-items[data-section="community-plugins"]
+	.vertical-tab-nav-item[data-setting-id="prisma-calendar"]
+	.vertical-tab-nav-item-icon {
+	display: flex;
+}
+
 .prisma-settings-hero-logo {
 	width: 34px;
 	height: 34px;

@@ -12,20 +12,15 @@ export function brandIconSvg(href: string): string {
 }
 
 /**
- * Register only cached/fetched bytes: a remote SVG image would start a second network
- * request even when the shared cache already has an offline copy.
+ * Obsidian copies the registered SVG when it creates the settings sidebar row.
+ * Finish registration before adding the tab, or that row keeps an empty placeholder.
+ * Cached bytes avoid a network wait; cold requests have the shared loader's timeout.
  */
-export function registerPrismaLogoIcon(): () => void {
-	addIcon(PRISMA_LOGO_ICON, "<g/>");
-	let objectUrl: string | null = null;
-	let disposed = false;
-	void loadCachedImage(PRISMA_LOGO_SRC).then((blob) => {
-		if (!blob || disposed) return;
-		objectUrl = URL.createObjectURL(blob);
-		addIcon(PRISMA_LOGO_ICON, brandIconSvg(objectUrl));
-	});
+export async function registerPrismaLogoIcon(): Promise<() => void> {
+	const blob = await loadCachedImage(PRISMA_LOGO_SRC);
+	const objectUrl = blob ? URL.createObjectURL(blob) : null;
+	addIcon(PRISMA_LOGO_ICON, objectUrl ? brandIconSvg(objectUrl) : "<g/>");
 	return () => {
-		disposed = true;
 		if (objectUrl) URL.revokeObjectURL(objectUrl);
 	};
 }

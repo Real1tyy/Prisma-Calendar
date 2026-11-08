@@ -2608,6 +2608,10 @@ button[class*=prisma-]:focus-visible {
   object-fit: contain;
 }
 
+.vertical-tab-header-group-items[data-section=community-plugins] .vertical-tab-nav-item[data-setting-id=prisma-calendar] .vertical-tab-nav-item-icon {
+  display: flex;
+}
+
 .prisma-settings-hero-logo {
   width: 34px;
   height: 34px;
