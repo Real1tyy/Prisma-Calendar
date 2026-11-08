@@ -13,11 +13,11 @@ import { cls, tid } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { CalDAVClientService } from "../../../core/integrations/caldav";
 import type CustomCalendarPlugin from "../../../main";
-import { useCalendarFilterPresets, useFilterPresetFill } from "../../../react/hooks/use-filter-preset-fill";
 import type { PrismaCalendarSettingsStore } from "../../../types";
 import type { CalDAVAccount, CalDAVCalendarInfo } from "../../../types/integrations";
 import { friendlyCalendarName, getCalendarById } from "../../../utils/calendar/settings";
 import { openCalendarIntegrationDeleteEventsModal } from "../event/delete-confirmation-modal";
+import { filterPresetFieldOverride, useCalendarFilterPresets } from "../filter-preset-field";
 import { CalendarCheckboxes } from "./calendar-checkboxes";
 
 const CalDAVEditSchema = z.object(CalDAVEditFormShape);
@@ -54,7 +54,7 @@ function CalDAVEditForm({ app, settingsStore, plugin, calendarId, account, onSub
 			filterExpression: account.filterExpression,
 		},
 	});
-	const filterPresetOptions = useFilterPresetFill(form, useCalendarFilterPresets(settingsStore, calendarId));
+	const filterPresets = useCalendarFilterPresets(settingsStore, calendarId);
 
 	const handleRefresh = useCallback(async () => {
 		setRefreshing(true);
@@ -117,7 +117,9 @@ function CalDAVEditForm({ app, settingsStore, plugin, calendarId, account, onSub
 			<SchemaForm
 				form={form}
 				schema={CalDAVEditSchema}
-				fieldOverrides={{ filterPreset: { options: filterPresetOptions } }}
+				fieldOverrides={{
+					filterPreset: filterPresetFieldOverride(filterPresets, tid("caldav-edit-control-filterPreset")),
+				}}
 				testIdPrefix={tid("caldav-edit-")}
 			/>
 

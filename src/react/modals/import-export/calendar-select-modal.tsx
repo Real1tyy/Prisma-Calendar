@@ -8,8 +8,8 @@ import { EventFilterFormFields, TIMEZONE_LABELS } from "../../../components/sett
 import { cls, tid } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { selectEventsForExport, type ExportOptions } from "../../../core/integrations/ics-export";
-import { useFilterPresetFill } from "../../../react/hooks/use-filter-preset-fill";
 import type { FilterPreset } from "../../../types/settings";
+import { filterPresetFieldOverride } from "../filter-preset-field";
 
 const CalendarSelectSchema = z.object({
 	calendar: z.string().min(1).default("").meta({ title: "Calendar" }),
@@ -20,7 +20,7 @@ const CalendarSelectSchema = z.object({
 
 type CalendarSelectValues = z.infer<typeof CalendarSelectSchema>;
 
-// Stable identity so the preset-fill hook's options memo doesn't churn.
+// Stable identity so the preset dropdown's options memo doesn't churn.
 const NO_PRESETS: FilterPreset[] = [];
 
 interface CalendarSelectFormProps {
@@ -49,10 +49,7 @@ function CalendarSelectForm({ calendars, onSubmit, onCancel }: CalendarSelectFor
 	});
 
 	const selectedBundle = calendars.find((b) => b.calendarId === calendarId);
-	const filterPresetOptions = useFilterPresetFill(
-		form,
-		selectedBundle?.settingsStore.currentSettings.filterPresets ?? NO_PRESETS
-	);
+	const filterPresets = selectedBundle?.settingsStore.currentSettings.filterPresets ?? NO_PRESETS;
 
 	const counts = useMemo(
 		() => new Map(calendars.map((b) => [b.calendarId, countExportable(b, excludeSkipped, filterExpression)])),
@@ -90,7 +87,7 @@ function CalendarSelectForm({ calendars, onSubmit, onCancel }: CalendarSelectFor
 				fieldOverrides={{
 					calendar: { options: calendarOptions },
 					timezone: { options: TIMEZONE_LABELS },
-					filterPreset: { options: filterPresetOptions },
+					filterPreset: filterPresetFieldOverride(filterPresets, tid("ics-export-control-filterPreset")),
 				}}
 				testIdPrefix={tid("ics-export-")}
 			/>

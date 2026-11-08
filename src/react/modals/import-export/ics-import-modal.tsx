@@ -15,8 +15,8 @@ import {
 	type ImportedEvent,
 	type SkippedEvent,
 } from "../../../core/integrations/ics-import";
-import { useFilterPresetFill } from "../../../react/hooks/use-filter-preset-fill";
 import type { FilterPreset } from "../../../types/settings";
+import { filterPresetFieldOverride } from "../filter-preset-field";
 
 const ImportOptionsSchema = z.object({
 	calendar: z.string().min(1).default(""),
@@ -24,7 +24,7 @@ const ImportOptionsSchema = z.object({
 	...EventFilterFormFields,
 });
 
-// Stable identity so the preset-fill hook's options memo doesn't churn.
+// Stable identity so the preset dropdown's options memo doesn't churn.
 const NO_PRESETS: FilterPreset[] = [];
 
 const MAX_PREVIEW_EVENTS = 10;
@@ -123,10 +123,7 @@ function ICSImportForm({ calendars, onSubmit, onCancel }: ICSImportFormProps) {
 		name: ["calendar", "timezone", "filterExpression"],
 	});
 	const selectedBundle = calendars.find((b) => b.calendarId === calendarId);
-	const filterPresetOptions = useFilterPresetFill(
-		form,
-		selectedBundle?.settingsStore.currentSettings.filterPresets ?? NO_PRESETS
-	);
+	const filterPresets = selectedBundle?.settingsStore.currentSettings.filterPresets ?? NO_PRESETS;
 
 	const filtered = useMemo((): { events: ImportedEvent[]; error: string | null } => {
 		if (!selectedBundle) return { events: parsedEvents, error: null };
@@ -203,7 +200,7 @@ function ICSImportForm({ calendars, onSubmit, onCancel }: ICSImportFormProps) {
 					fieldOverrides={{
 						calendar: { label: "Import to calendar", options: calendarOptions },
 						timezone: { label: "Timezone", options: TIMEZONE_LABELS },
-						filterPreset: { options: filterPresetOptions },
+						filterPreset: filterPresetFieldOverride(filterPresets, tid("ics-import-control-filterPreset")),
 					}}
 					testIdPrefix={tid("ics-import-")}
 				/>

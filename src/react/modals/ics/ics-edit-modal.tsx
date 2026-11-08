@@ -8,9 +8,9 @@ import {
 	type ICSSubscriptionEditFormValues,
 } from "../../../components/settings/integration-shared";
 import { cls, tid } from "../../../constants";
-import { useCalendarFilterPresets, useFilterPresetFill } from "../../../react/hooks/use-filter-preset-fill";
 import type { PrismaCalendarSettingsStore } from "../../../types";
 import type { ICSSubscription } from "../../../types/integrations";
+import { filterPresetFieldOverride, useCalendarFilterPresets } from "../filter-preset-field";
 
 const ICSEditSchema = z.object(ICSSubscriptionEditFormShape);
 
@@ -34,10 +34,7 @@ function ICSEditForm({ settingsStore, subscription, onSubmit, onCancel }: ICSEdi
 			filterExpression: subscription.filterExpression,
 		},
 	});
-	const filterPresetOptions = useFilterPresetFill(
-		form,
-		useCalendarFilterPresets(settingsStore, subscription.calendarId)
-	);
+	const filterPresets = useCalendarFilterPresets(settingsStore, subscription.calendarId);
 
 	const handleSubmit = useCallback(() => {
 		void form.handleSubmit(async (values: ICSSubscriptionEditFormValues) => {
@@ -71,7 +68,9 @@ function ICSEditForm({ settingsStore, subscription, onSubmit, onCancel }: ICSEdi
 			<SchemaForm
 				form={form}
 				schema={ICSEditSchema}
-				fieldOverrides={{ filterPreset: { options: filterPresetOptions } }}
+				fieldOverrides={{
+					filterPreset: filterPresetFieldOverride(filterPresets, tid("ics-edit-control-filterPreset")),
+				}}
 				testIdPrefix={tid("ics-edit-")}
 			/>
 		</ModalForm>
