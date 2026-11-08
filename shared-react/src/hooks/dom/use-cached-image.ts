@@ -1,3 +1,4 @@
+import { requestUrl } from "obsidian";
 import { useEffect, useState } from "react";
 
 /**
@@ -19,17 +20,24 @@ async function openCache(): Promise<Cache | null> {
 }
 
 async function fetchAndStore(url: string, cache: Cache | null): Promise<Blob | null> {
-	const controller = new AbortController();
-	const timeout = window.setTimeout(() => controller.abort(), 5000);
+	let timeout: number | undefined;
 	try {
-		// These public images support browser CORS. requestUrl cannot accept an
-		// AbortSignal, so a stalled native request could outlive the startup limit.
-		// eslint-disable-next-line no-restricted-globals
-		const response = await fetch(url, { signal: controller.signal });
-		// Electron can expose a readable CORS image with status 0. Unlike an opaque
-		// failure, it still has nonempty, typed image bytes; validate those below.
-		if (!response.ok && response.status !== 0) return null;
-		const blob = await response.blob();
+		// Native Obsidian requests bypass renderer routes; the e2e fixture provides
+		// a loopback server, while cache keys remain the original public URLs.
+		const base = (window as Window & { __remoteImageBaseUrl?: string }).__remoteImageBaseUrl;
+		const request = requestUrl({ url: base ? `${base}/${encodeURIComponent(url)}` : url, throw: false });
+		// requestUrl has no abort API. Stop waiting without allowing a late response
+		// to overwrite the cache after startup has already fallen back.
+		const response = await Promise.race([
+			request,
+			new Promise<null>((resolve) => {
+				timeout = window.setTimeout(() => resolve(null), 5000);
+			}),
+		]);
+		if (!response || response.status < 200 || response.status >= 300) return null;
+		const contentType =
+			Object.entries(response.headers).find(([key]) => key.toLowerCase() === "content-type")?.[1] ?? "";
+		const blob = new Blob([response.arrayBuffer], { type: contentType });
 		if (blob.size === 0 || !blob.type.startsWith("image/")) return null;
 		if (cache) {
 			await cache.put(url, new Response(blob, { headers: { "content-type": blob.type } })).catch(() => undefined);
@@ -38,7 +46,7 @@ async function fetchAndStore(url: string, cache: Cache | null): Promise<Blob | n
 	} catch {
 		return null;
 	} finally {
-		window.clearTimeout(timeout);
+		if (timeout !== undefined) window.clearTimeout(timeout);
 	}
 }
 
@@ -66,7 +74,7 @@ export function loadCachedImage(url: string): Promise<Blob | null> {
 
 /**
  * Resolves a remote image URL to something an `<img>` can show: an object URL for the
- * cached bytes, or — when neither the cache nor `fetch` produced any (no Cache Storage,
+ * cached bytes, or — when neither the cache nor the request produced any (no Cache Storage,
  * a refused request) — the URL itself, so the `<img>` makes the final call and its
  * `onError` decides whether the image is really unavailable. `null` while loading.
  */
