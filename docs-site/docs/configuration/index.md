@@ -33,7 +33,7 @@ Settings remember your position across close/reopen cycles — the active tab an
 
 ## Settings Header
 
-The row above the section tabs carries the Prisma mark, the version badge, and — when an update is waiting — an update badge. The mark is the brand icon you also see in the browser tab on this site and above the title of the Welcome modal; it is decorative, so nothing happens when you click it.
+The row above the section tabs carries the version badge, the collapse toggle, and — when an update is waiting — an update badge, with the Prisma mark anchoring the top-right corner. The mark is the brand icon you also see in the browser tab on this site and above the title of the Welcome modal; it is decorative, so nothing happens when you click it.
 
 The version badge is clickable: it copies the installed version to your clipboard, which is the fastest way to include it when you send me a bug report.
 
