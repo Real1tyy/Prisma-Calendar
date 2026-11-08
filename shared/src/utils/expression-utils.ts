@@ -11,12 +11,26 @@ export function sanitizePropertyName(name: string): string {
 /**
  * Builds a mapping of original property names to sanitized versions
  * suitable for use as JavaScript function parameters.
+ *
+ * Sanitizing is lossy (every non-ASCII character becomes `_`, so `状态` and `备注` are both
+ * `prop___`), and two keys sharing a name would make the evaluation scope hand one key's value
+ * to the other. A later key that collides gets a `$n` suffix; `$` is a valid identifier
+ * character that `sanitizePropertyName` never emits, so a suffixed name cannot clash with a
+ * natural one.
  */
 export function buildPropertyMapping(properties: string[]): Map<string, string> {
 	const mapping = new Map<string, string>();
+	const taken = new Set<string>();
 
 	for (const prop of properties) {
-		mapping.set(prop, sanitizePropertyName(prop));
+		if (mapping.has(prop)) continue;
+		const base = sanitizePropertyName(prop);
+		let name = base;
+		for (let n = 2; taken.has(name); n++) {
+			name = `${base}$${n}`;
+		}
+		taken.add(name);
+		mapping.set(prop, name);
 	}
 
 	return mapping;
