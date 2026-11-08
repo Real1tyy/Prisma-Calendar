@@ -12,6 +12,24 @@ export const TIMEZONE_LABELS: Record<string, string> = Object.fromEntries(
 const syncIntervalField = (defaultMinutes: number) =>
 	z.number().min(1).max(1440).default(defaultMinutes).describe("How often to automatically sync (1-1440 minutes)");
 
+/**
+ * `filterPreset` is a picker only — choosing one copies its expression into
+ * `filterExpression`, which is the value that is stored and evaluated.
+ */
+export const EventFilterFormFields = {
+	filterPreset: z
+		.string()
+		.default("")
+		.describe("Fill the filter expression from one of this calendar's filter presets"),
+	filterExpression: z
+		.string()
+		.default("")
+		.describe(
+			"Only events whose properties match this expression are included — same syntax as the calendar's expression filter. Leave empty to include everything."
+		)
+		.meta({ placeholder: "Category.includes('Work')" }),
+};
+
 const SharedIntegrationFields = {
 	name: z.string().min(1).default("").describe("Display name").meta({ placeholder: "My calendar" }),
 	syncIntervalMinutes: syncIntervalField(CALDAV_DEFAULTS.SYNC_INTERVAL_MINUTES),
@@ -42,11 +60,13 @@ export const CalDAVAddFormShape = {
 	passwordSecretName: zSecret
 		.default("")
 		.describe("Select a secret from SecretStorage. Use an app-specific password for cloud providers."),
+	...EventFilterFormFields,
 };
 
 export const CalDAVEditFormShape = {
 	...SharedIntegrationFields,
 	enabled: z.boolean().default(true).describe("Enable or disable syncing for this account"),
+	...EventFilterFormFields,
 };
 
 export type CalDAVAddFormValues = z.infer<z.ZodObject<typeof CalDAVAddFormShape>>;
@@ -58,12 +78,14 @@ export const ICSSubscriptionAddFormShape = {
 	...SharedIntegrationFields,
 	syncIntervalMinutes: syncIntervalField(ICS_SUBSCRIPTION_DEFAULTS.SYNC_INTERVAL_MINUTES),
 	urlSecretName: zSecret.default("").describe("Select a secret from SecretStorage containing the ICS calendar URL"),
+	...EventFilterFormFields,
 };
 
 export const ICSSubscriptionEditFormShape = {
 	...SharedIntegrationFields,
 	syncIntervalMinutes: syncIntervalField(ICS_SUBSCRIPTION_DEFAULTS.SYNC_INTERVAL_MINUTES),
 	enabled: z.boolean().default(true).describe("Enable or disable syncing for this subscription"),
+	...EventFilterFormFields,
 };
 
 export type ICSSubscriptionAddFormValues = z.infer<z.ZodObject<typeof ICSSubscriptionAddFormShape>>;

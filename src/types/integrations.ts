@@ -36,6 +36,8 @@ export const CalDAVAccountSchema = z
 		lastSyncTime: z.number().int().optional(),
 		createdAt: z.number().int().positive(),
 		icon: z.string().optional(),
+		/** Same syntax as the calendar view's expression filter; empty keeps every remote event. */
+		filterExpression: z.string().catch(""),
 	})
 	.loose();
 
@@ -97,6 +99,8 @@ export const CalDAVCalendarSyncStateSchema = z
 	.object({
 		syncToken: z.string().optional(),
 		lastSuccessfulSyncAt: z.number().int().optional(),
+		/** Filter the last clean apply ran under — a change forces a full refetch. */
+		filterExpression: z.string().optional(),
 	})
 	.loose();
 
@@ -138,6 +142,8 @@ export const ICSSubscriptionSchema = z
 		lastSyncTime: z.number().int().optional(),
 		createdAt: z.number().int().positive(),
 		icon: z.string().optional(),
+		/** Same syntax as the calendar view's expression filter; empty keeps every remote event. */
+		filterExpression: z.string().catch(""),
 	})
 	.loose();
 

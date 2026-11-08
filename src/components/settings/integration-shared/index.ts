@@ -3,6 +3,7 @@ export {
 	CalDAVAddFormShape,
 	type CalDAVAddFormValues,
 	CalDAVEditFormShape,
+	EventFilterFormFields,
 	type CalDAVEditFormValues,
 	ICSSubscriptionAddFormShape,
 	type ICSSubscriptionAddFormValues,

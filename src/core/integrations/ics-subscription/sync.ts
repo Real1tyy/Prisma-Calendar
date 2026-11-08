@@ -4,7 +4,12 @@ import type { ICSSubscription } from "../../../types/integrations";
 import type { CustomCalendarSettings } from "../../../types/settings";
 import { log } from "../../logging";
 import { BaseSyncService, yieldToMainThread, type BaseSyncServiceOptions } from "../base-sync-service";
-import { findImportedEventPathByUid, parseICSContent, type ImportedEvent } from "../ics-import";
+import {
+	createImportedEventFilter,
+	findImportedEventPathByUid,
+	parseICSContent,
+	type ImportedEvent,
+} from "../ics-import";
 import { fetchIcsFeed } from "./fetch";
 import { computeIcsSubscriptionSyncPlan } from "./sync-planner";
 import type { ICSSubscriptionSyncStateManager } from "./sync-state-manager";
@@ -115,6 +120,13 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 					return filePath ? { filePath } : null;
 				},
 				knownSubscriptionIds: this.mainSettingsStore.currentSettings.icsSubscriptions.subscriptions.map((s) => s.id),
+				// An invalid expression throws out of the planner, so the sync fails
+				// before any action runs instead of deleting every synced note.
+				isIncluded: createImportedEventFilter(
+					this.subscription.filterExpression,
+					this.bundle.settingsStore.currentSettings,
+					this.subscription.timezone
+				),
 			});
 
 			let processedCount = 0;
@@ -159,6 +171,7 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 			log.info("sync.ics", "Sync finished", {
 				subscription: this.subscription.name,
 				remote: parsed.events.length,
+				filtered: plan.summary.skipFiltered,
 				created: result.created,
 				updated: result.updated,
 				deleted: result.deleted,

@@ -10,6 +10,7 @@ import { isAllDayEvent, isTimedEvent, type CalendarEvent } from "../../types/cal
 import type { SingleCalendarConfig } from "../../types/settings";
 import { appendZ } from "../../utils/dates/iso";
 import { extractZettelId, PHYSICAL_INSTANCE_PATTERN, removeZettelId } from "../../utils/events/zettel-id";
+import { compileFrontmatterFilter, InvalidFilterExpressionError } from "../../utils/filters/logic";
 import { log } from "../logging";
 
 interface NotificationSettings {
@@ -393,19 +394,37 @@ export interface ExportOptions {
 	bundle: ExportBundle;
 	timezone: string;
 	excludeSkipped: boolean;
+	filterExpression: string;
+}
+
+export interface ExportSelection {
+	excludeSkipped: boolean;
+	filterExpression: string;
+}
+
+/**
+ * Narrows by each note's frontmatter, the same input the calendar view's
+ * expression filter sees. Throws `InvalidFilterExpressionError`.
+ */
+export function selectEventsForExport(events: CalendarEvent[], selection: ExportSelection): CalendarEvent[] {
+	const matches = compileFrontmatterFilter(selection.filterExpression);
+	return events.filter((e) => !(selection.excludeSkipped && e.skipped) && matches(e.meta));
 }
 
 export async function exportCalendarAsICS(app: App, options: ExportOptions): Promise<void> {
-	const { bundle, timezone, excludeSkipped } = options;
+	const { bundle, timezone } = options;
 	const settings = bundle.settingsStore.currentSettings;
 	const calendarName = settings.name;
 	const vaultName = app.vault.getName();
 
 	try {
-		let events = bundle.eventStore.getAllEvents();
-
-		if (excludeSkipped) {
-			events = events.filter((e) => !e.skipped);
+		let events: CalendarEvent[];
+		try {
+			events = selectEventsForExport(bundle.eventStore.getAllEvents(), options);
+		} catch (error) {
+			if (!(error instanceof InvalidFilterExpressionError)) throw error;
+			new Notice(error.message);
+			return;
 		}
 
 		if (events.length === 0) {

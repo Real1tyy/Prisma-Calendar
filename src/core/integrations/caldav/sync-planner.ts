@@ -17,7 +17,8 @@ export type SyncPlanAction =
 	| { kind: "skip-unchanged"; uid: string; filePath: string }
 	| { kind: "skip-missing-uid"; url: string }
 	| { kind: "skip-tombstone-untracked"; objectHref: string }
-	| { kind: "skip-foreign-uid"; uid: string; ownedBy: { accountId: string; calendarHref: string } };
+	| { kind: "skip-foreign-uid"; uid: string; ownedBy: { accountId: string; calendarHref: string } }
+	| { kind: "skip-filtered"; uid: string };
 
 export interface SyncPlan {
 	actions: SyncPlanAction[];
@@ -25,11 +26,13 @@ export interface SyncPlan {
 		create: number;
 		/** Includes adoptions — they are applied as updates. */
 		update: number;
+		/** Includes tracked events the filter now excludes. */
 		delete: number;
 		skipUnchanged: number;
 		skipMissingUid: number;
 		skipTombstoneUntracked: number;
 		skipForeignUid: number;
+		skipFiltered: number;
 	};
 }
 
@@ -76,6 +79,8 @@ export interface PlanInputs {
 	 * for a note the user already removed locally — safe to ignore).
 	 */
 	findByObjectHref: (objectHref: string) => TrackedRef | null;
+	/** The account's filter expression; omit to keep every remote event. */
+	isIncluded?: (event: CalDAVFetchedEvent) => boolean;
 }
 
 /**
@@ -90,12 +95,15 @@ export interface PlanInputs {
  * Rules (in priority order per remote event):
  *   1. Missing uid          → skip-missing-uid (CalDAV objects normally have
  *                             a UID; missing uid means malformed server data)
- *   2. Tracked by us (same
+ *   2. Excluded by filter   → delete if tracked by us (the server still has it,
+ *                             so no tombstone will ever remove the note),
+ *                             else skip-filtered
+ *   3. Tracked by us (same
  *      account + calendar)  → update IF etag differs, else skip-unchanged
- *   3. Tracked globally but
+ *   4. Tracked globally but
  *      not by us            → skip-foreign-uid (avoid duplicate notes when
  *                             another account/calendar owns the same UID)
- *   4. Otherwise            → create
+ *   5. Otherwise            → create
  *
  * For each href in `tombstonedObjectHrefs` (RFC 6578 incremental deletions —
  * authoritative, server-driven):
@@ -103,9 +111,10 @@ export interface PlanInputs {
  *   • Not tracked           → skip-tombstone-untracked (stale tombstone or
  *                             the user already removed the note locally)
  *
- * Deletions are ONLY emitted when the caller supplies tombstones. A full
- * refetch with no tombstones never produces deletes — absence from a
- * paginated/time-windowed REPORT is not a delete signal.
+ * Server-driven deletions are ONLY emitted when the caller supplies
+ * tombstones. A full refetch with no tombstones never deletes an event it did
+ * not see — absence from a paginated/time-windowed REPORT is not a delete
+ * signal; only a present-but-excluded event is.
  */
 export function computeCaldavSyncPlan(inputs: PlanInputs): SyncPlan {
 	const {
@@ -115,6 +124,7 @@ export function computeCaldavSyncPlan(inputs: PlanInputs): SyncPlan {
 		findByUidGlobal,
 		findByObjectHref,
 		knownAccountIds,
+		isIncluded = () => true,
 	} = inputs;
 	const actions: SyncPlanAction[] = [];
 
@@ -122,6 +132,16 @@ export function computeCaldavSyncPlan(inputs: PlanInputs): SyncPlan {
 		const uid = event.uid ?? "";
 		if (!uid) {
 			actions.push({ kind: "skip-missing-uid", url: event.url });
+			continue;
+		}
+
+		if (!isIncluded(event)) {
+			const tracked = findByUid(uid);
+			if (tracked) {
+				actions.push({ kind: "delete", uid, filePath: tracked.filePath, objectHref: event.url });
+			} else {
+				actions.push({ kind: "skip-filtered", uid });
+			}
 			continue;
 		}
 
@@ -184,6 +204,7 @@ export function computeCaldavSyncPlan(inputs: PlanInputs): SyncPlan {
 		skipMissingUid: 0,
 		skipTombstoneUntracked: 0,
 		skipForeignUid: 0,
+		skipFiltered: 0,
 	};
 	for (const action of actions) {
 		if (action.kind === "create") summary.create++;
@@ -193,6 +214,7 @@ export function computeCaldavSyncPlan(inputs: PlanInputs): SyncPlan {
 		else if (action.kind === "skip-unchanged") summary.skipUnchanged++;
 		else if (action.kind === "skip-missing-uid") summary.skipMissingUid++;
 		else if (action.kind === "skip-tombstone-untracked") summary.skipTombstoneUntracked++;
+		else if (action.kind === "skip-filtered") summary.skipFiltered++;
 		else summary.skipForeignUid++;
 	}
 

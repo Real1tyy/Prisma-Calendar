@@ -182,16 +182,91 @@ export function evaluateExpression(expression: string, scope: Map<string, unknow
 	return Boolean(evaluateNode(ast, scope));
 }
 
-export function createExpressionMatcher(getExpression: () => string): ExpressionMatcher {
+interface ExpressionEvaluator {
+	/** Throws on a syntax error or a disallowed construct. */
+	evaluate: (expression: string, frontmatter: Frontmatter) => boolean;
+	reset: () => void;
+}
+
+function createExpressionEvaluator(): ExpressionEvaluator {
 	let cachedAst: jsep.Expression | null = null;
 	let cachedExpression: string | null = null;
 	let propertyMapping = new Map<string, string>();
-	let lastWarnedExpression: string | null = null;
 
-	function invalidate(): void {
+	function reset(): void {
 		cachedAst = null;
 		cachedExpression = null;
 		propertyMapping.clear();
+	}
+
+	function evaluate(expression: string, frontmatter: Frontmatter): boolean {
+		const currentKeys = new Set(Object.keys(frontmatter));
+		const existingKeys = new Set(propertyMapping.keys());
+		const hasNewKeys = [...currentKeys].some((key) => !existingKeys.has(key));
+
+		if (hasNewKeys) {
+			const allKeys = new Set([...existingKeys, ...currentKeys]);
+			propertyMapping = buildPropertyMapping(Array.from(allKeys));
+			cachedAst = null;
+			cachedExpression = null;
+		}
+
+		if (!cachedAst || cachedExpression !== expression) {
+			const sanitized = sanitizeExpression(expression, propertyMapping);
+			cachedAst = jsep(sanitized);
+			cachedExpression = expression;
+		}
+
+		const scope = new Map<string, unknown>();
+		for (const [originalKey, sanitizedName] of propertyMapping) {
+			scope.set(sanitizedName, frontmatter[originalKey] ?? undefined);
+		}
+
+		return Boolean(evaluateNode(cachedAst, scope));
+	}
+
+	return { evaluate, reset };
+}
+
+export class InvalidFilterExpressionError extends Error {
+	constructor(
+		readonly expression: string,
+		cause: unknown
+	) {
+		super(`Invalid filter expression "${expression}": ${cause instanceof Error ? cause.message : String(cause)}`);
+		this.name = "InvalidFilterExpressionError";
+	}
+}
+
+export type FrontmatterPredicate = (frontmatter: Frontmatter) => boolean;
+
+/**
+ * The calendar view's expression filter for code that moves events in or out
+ * of the vault (import, export, sync). Unlike `createExpressionMatcher`, an
+ * invalid expression throws instead of matching nothing — for a sync, "match
+ * nothing" would trash every synced note. See
+ * [[spec-filter-imports-exports-and-sync-with-frontmatter-filter-expressions]].
+ */
+export function compileFrontmatterFilter(expression: string): FrontmatterPredicate {
+	const trimmed = expression.trim();
+	if (!trimmed) return () => true;
+
+	const evaluator = createExpressionEvaluator();
+	return (frontmatter) => {
+		try {
+			return evaluator.evaluate(trimmed, frontmatter);
+		} catch (error) {
+			throw new InvalidFilterExpressionError(trimmed, error);
+		}
+	};
+}
+
+export function createExpressionMatcher(getExpression: () => string): ExpressionMatcher {
+	const evaluator = createExpressionEvaluator();
+	let lastWarnedExpression: string | null = null;
+
+	function invalidate(): void {
+		evaluator.reset();
 		lastWarnedExpression = null;
 	}
 
@@ -200,29 +275,7 @@ export function createExpressionMatcher(getExpression: () => string): Expression
 		if (!expression) return true;
 
 		try {
-			const currentKeys = new Set(Object.keys(frontmatter));
-			const existingKeys = new Set(propertyMapping.keys());
-			const hasNewKeys = [...currentKeys].some((key) => !existingKeys.has(key));
-
-			if (hasNewKeys) {
-				const allKeys = new Set([...existingKeys, ...currentKeys]);
-				propertyMapping = buildPropertyMapping(Array.from(allKeys));
-				cachedAst = null;
-				cachedExpression = null;
-			}
-
-			if (!cachedAst || cachedExpression !== expression) {
-				const sanitized = sanitizeExpression(expression, propertyMapping);
-				cachedAst = jsep(sanitized);
-				cachedExpression = expression;
-			}
-
-			const scope = new Map<string, unknown>();
-			for (const [originalKey, sanitizedName] of propertyMapping) {
-				scope.set(sanitizedName, frontmatter[originalKey] ?? undefined);
-			}
-
-			return Boolean(evaluateNode(cachedAst, scope));
+			return evaluator.evaluate(expression, frontmatter);
 		} catch (error) {
 			if (error instanceof ReferenceError) {
 				return expression.includes("!==") || expression.includes("!=");

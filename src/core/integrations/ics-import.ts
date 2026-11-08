@@ -14,6 +14,7 @@ import { generateUniqueEventPath } from "../../utils/events/file-naming";
 import { assignListToFrontmatter, setEventBasics } from "../../utils/events/frontmatter";
 import { autoAssignCategories } from "../../utils/events/matching";
 import { deriveSyncedNoteId, extractZettelId, removeZettelId } from "../../utils/events/zettel-id";
+import { compileFrontmatterFilter } from "../../utils/filters/logic";
 import { enforceEventPropertyOrder } from "../../utils/frontmatter/ordering";
 import type { CalendarBundle } from "../calendar-bundle";
 import { log } from "../logging";
@@ -417,6 +418,31 @@ export function buildFrontmatterFromImportedEvent(
 	}
 
 	return fm;
+}
+
+/**
+ * Decides an imported event by the frontmatter it would be written with —
+ * without auto-assigned categories, which depend on this device's category
+ * index; a sync must reach the same verdict on every device.
+ * Throws `InvalidFilterExpressionError` on an invalid expression.
+ */
+export function createImportedEventFilter(
+	expression: string,
+	settings: SingleCalendarConfig,
+	timezone: string
+): (event: ImportedEvent) => boolean {
+	const matches = compileFrontmatterFilter(expression);
+	return (event) => matches(buildFrontmatterFromImportedEvent(event, settings, timezone, null));
+}
+
+export function filterImportedEvents(
+	events: ImportedEvent[],
+	expression: string,
+	settings: SingleCalendarConfig,
+	timezone: string
+): ImportedEvent[] {
+	if (!expression.trim()) return events;
+	return events.filter(createImportedEventFilter(expression, settings, timezone));
 }
 
 function resolveImportCategoryContext(bundle: CalendarBundle): ImportCategoryContext {

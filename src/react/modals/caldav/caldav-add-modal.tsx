@@ -8,6 +8,7 @@ import { CalDAVAddFormShape, type CalDAVAddFormValues } from "../../../component
 import { cls, tid } from "../../../constants";
 import { CalDAVClientService } from "../../../core/integrations/caldav";
 import { useConnectionTest } from "../../../react/hooks/use-connection-test";
+import { useCalendarFilterPresets, useFilterPresetFill } from "../../../react/hooks/use-filter-preset-fill";
 import type { PrismaCalendarSettingsStore } from "../../../types";
 import {
 	CALDAV_PRESETS,
@@ -33,6 +34,7 @@ function CalDAVAddForm({ app, settingsStore, calendarId, onSubmit, onCancel }: C
 	const [selectedCalendars, setSelectedCalendars] = useState<string[]>([]);
 
 	const form = useZodForm({ schema: CalDAVAddSchema });
+	const filterPresetOptions = useFilterPresetFill(form, useCalendarFilterPresets(settingsStore, calendarId));
 
 	const { testPassed, testing, runTest } = useConnectionTest(
 		useCallback(async () => {
@@ -54,6 +56,7 @@ function CalDAVAddForm({ app, settingsStore, calendarId, onSubmit, onCancel }: C
 				syncIntervalMinutes: values.syncIntervalMinutes,
 				timezone: values.timezone,
 				createdAt: Date.now(),
+				filterExpression: "",
 			});
 
 			if (result.success && result.calendars) {
@@ -113,6 +116,7 @@ function CalDAVAddForm({ app, settingsStore, calendarId, onSubmit, onCancel }: C
 				timezone: values.timezone,
 				createdAt: Date.now(),
 				icon: values.icon || undefined,
+				filterExpression: values.filterExpression.trim(),
 			};
 
 			await settingsStore.updateSettings((s) => ({
@@ -149,6 +153,7 @@ function CalDAVAddForm({ app, settingsStore, calendarId, onSubmit, onCancel }: C
 				schema={CalDAVAddSchema}
 				fieldOverrides={{
 					passwordSecretName: { label: "Password / app password" },
+					filterPreset: { options: filterPresetOptions },
 				}}
 				testIdPrefix={tid("caldav-add-")}
 			/>

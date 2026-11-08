@@ -2,22 +2,30 @@ import { describeError } from "@real1ty/obsidian-plugins";
 import { ModalForm, openReactModal, SchemaForm, useZodForm } from "@real1ty/obsidian-plugins-react";
 import { Notice, type App } from "obsidian";
 import React, { memo, useCallback, useMemo, useRef, useState } from "react";
+import { useWatch } from "react-hook-form";
 import { z } from "zod";
 
-import { TIMEZONE_LABELS } from "../../../components/settings/integration-shared";
+import { EventFilterFormFields, TIMEZONE_LABELS } from "../../../components/settings/integration-shared";
 import { cls, tid } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import {
+	filterImportedEvents,
 	parseICSContent,
 	type ICSImportResult,
 	type ImportedEvent,
 	type SkippedEvent,
 } from "../../../core/integrations/ics-import";
+import { useFilterPresetFill } from "../../../react/hooks/use-filter-preset-fill";
+import type { FilterPreset } from "../../../types/settings";
 
 const ImportOptionsSchema = z.object({
 	calendar: z.string().min(1).default(""),
 	timezone: z.string().min(1).default("UTC"),
+	...EventFilterFormFields,
 });
+
+// Stable identity so the preset-fill hook's options memo doesn't churn.
+const NO_PRESETS: FilterPreset[] = [];
 
 const MAX_PREVIEW_EVENTS = 10;
 
@@ -60,13 +68,23 @@ const SkippedEventsWarning = memo(function SkippedEventsWarning({ skipped }: { s
 	);
 });
 
-const EventPreviewList = memo(function EventPreviewList({ events }: { events: ImportedEvent[] }) {
+const EventPreviewList = memo(function EventPreviewList({
+	events,
+	totalCount,
+}: {
+	events: ImportedEvent[];
+	totalCount: number;
+}) {
 	const visible = events.slice(0, MAX_PREVIEW_EVENTS);
 	const remaining = events.length - visible.length;
 
 	return (
 		<div className={cls("ics-import-preview")} data-testid={tid("ics-import-preview")}>
-			<h4>Found {events.length} events:</h4>
+			<h4 data-testid={tid("ics-import-match-count")}>
+				{events.length === totalCount
+					? `Found ${totalCount} events:`
+					: `${events.length} of ${totalCount} events match the filter:`}
+			</h4>
 			<ul className={cls("ics-import-event-list")}>
 				{visible.map((event) => (
 					<li key={event.uid}>
@@ -92,13 +110,33 @@ function ICSImportForm({ calendars, onSubmit, onCancel }: ICSImportFormProps) {
 
 	const form = useZodForm({
 		schema: ImportOptionsSchema,
-		defaultValues: { calendar: calendars[0]?.calendarId ?? "" },
+		defaultValues: { ...ImportOptionsSchema.parse({}), calendar: calendars[0]?.calendarId ?? "" },
 	});
 
 	const calendarOptions = useMemo(
 		() => Object.fromEntries(calendars.map((b) => [b.calendarId, b.settingsStore.currentSettings.name])),
 		[calendars]
 	);
+
+	const [calendarId, timezone, filterExpression] = useWatch({
+		control: form.control,
+		name: ["calendar", "timezone", "filterExpression"],
+	});
+	const selectedBundle = calendars.find((b) => b.calendarId === calendarId);
+	const filterPresetOptions = useFilterPresetFill(
+		form,
+		selectedBundle?.settingsStore.currentSettings.filterPresets ?? NO_PRESETS
+	);
+
+	const filtered = useMemo((): { events: ImportedEvent[]; error: string | null } => {
+		if (!selectedBundle) return { events: parsedEvents, error: null };
+		try {
+			const settings = selectedBundle.settingsStore.currentSettings;
+			return { events: filterImportedEvents(parsedEvents, filterExpression, settings, timezone), error: null };
+		} catch (error) {
+			return { events: [], error: describeError(error) };
+		}
+	}, [parsedEvents, selectedBundle, filterExpression, timezone]);
 	const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
@@ -127,16 +165,15 @@ function ICSImportForm({ calendars, onSubmit, onCancel }: ICSImportFormProps) {
 
 	const handleSubmit = useCallback(() => {
 		void form.handleSubmit((values) => {
-			const selectedBundle = calendars.find((b) => b.calendarId === values.calendar);
-			if (!selectedBundle || parsedEvents.length === 0) {
+			if (!selectedBundle || filtered.events.length === 0) {
 				new Notice("Please select a file and calendar");
 				return;
 			}
-			onSubmit({ bundle: selectedBundle, events: parsedEvents, timezone: values.timezone });
+			onSubmit({ bundle: selectedBundle, events: filtered.events, timezone: values.timezone });
 		})();
-	}, [form, calendars, parsedEvents, onSubmit]);
+	}, [form, selectedBundle, filtered.events, onSubmit]);
 
-	const canSubmit = parsedEvents.length > 0 && !parseError;
+	const canSubmit = filtered.events.length > 0 && !parseError && !filtered.error;
 
 	return (
 		<ModalForm
@@ -166,6 +203,7 @@ function ICSImportForm({ calendars, onSubmit, onCancel }: ICSImportFormProps) {
 					fieldOverrides={{
 						calendar: { label: "Import to calendar", options: calendarOptions },
 						timezone: { label: "Timezone", options: TIMEZONE_LABELS },
+						filterPreset: { options: filterPresetOptions },
 					}}
 					testIdPrefix={tid("ics-import-")}
 				/>
@@ -181,7 +219,16 @@ function ICSImportForm({ calendars, onSubmit, onCancel }: ICSImportFormProps) {
 					</div>
 				)}
 				{skippedEvents.length > 0 && <SkippedEventsWarning skipped={skippedEvents} />}
-				{parsedEvents.length > 0 && <EventPreviewList events={parsedEvents} />}
+				{filtered.error && (
+					<div className={cls("ics-import-preview")}>
+						<p className={cls("ics-import-error")} data-testid={tid("ics-import-filter-error")}>
+							{filtered.error}
+						</p>
+					</div>
+				)}
+				{parsedEvents.length > 0 && !filtered.error && (
+					<EventPreviewList events={filtered.events} totalCount={parsedEvents.length} />
+				)}
 				{fileSelected && parsedEvents.length === 0 && !parseError && (
 					<div className={cls("ics-import-preview")}>
 						<p>No events found in file</p>

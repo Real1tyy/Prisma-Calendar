@@ -15,6 +15,7 @@ export type SyncPlanAction =
 	| { kind: "adopt"; uid: string; filePath: string; event: ImportedEvent; previousSubscriptionId?: string }
 	| { kind: "skip-unchanged"; uid: string; filePath: string }
 	| { kind: "skip-missing-uid"; title: string }
+	| { kind: "skip-filtered"; uid: string }
 	| { kind: "skip-foreign-uid"; uid: string; ownedBy: string }
 	| { kind: "delete"; uid: string; filePath: string };
 
@@ -28,6 +29,7 @@ export interface SyncPlan {
 		skipUnchanged: number;
 		skipMissingUid: number;
 		skipForeignUid: number;
+		skipFiltered: number;
 	};
 }
 
@@ -38,6 +40,8 @@ export interface PlanInputs {
 	findByUidGlobal: (uid: string) => TrackedRef | null;
 	/** Resolve a note created by the one-shot ICS importer. */
 	findImportedByUid?: (uid: string) => { filePath: string } | null;
+	/** The subscription's filter expression; omit to keep every remote event. */
+	isIncluded?: (event: ImportedEvent) => boolean;
 	/**
 	 * Every subscription id currently configured on this device. A note tracked
 	 * under an id not in this list is orphaned and adopted instead of skipped as
@@ -58,10 +62,14 @@ export interface PlanInputs {
  *   1. Missing uid         → skip-missing-uid (ICS without a UID is unroutable)
  *   2. Tracked by us       → update IF lastModified differs, else skip-unchanged
  *   3. Tracked by another  → skip-foreign-uid (avoid duplicate notes across subs)
- *   4. Otherwise           → create
+ *   2. Excluded by filter  → skip-filtered (and, being absent from the kept
+ *                            set, a tracked note for it is deleted below)
+ *   3. Tracked by us       → update IF lastModified differs, else skip-unchanged
+ *   4. Tracked by another  → skip-foreign-uid (avoid duplicate notes across subs)
+ *   5. Otherwise           → create
  *
  * After processing all remote events, any locally-tracked event whose uid is
- * NOT in the remote payload is marked for delete.
+ * NOT in the kept remote payload is marked for delete.
  */
 export function computeIcsSubscriptionSyncPlan(inputs: PlanInputs): SyncPlan {
 	const {
@@ -71,6 +79,7 @@ export function computeIcsSubscriptionSyncPlan(inputs: PlanInputs): SyncPlan {
 		findByUidGlobal,
 		findImportedByUid,
 		knownSubscriptionIds,
+		isIncluded = () => true,
 	} = inputs;
 	const actions: SyncPlanAction[] = [];
 	const remoteUids = new Set<string>();
@@ -81,6 +90,10 @@ export function computeIcsSubscriptionSyncPlan(inputs: PlanInputs): SyncPlan {
 		const uid = event.uid;
 		if (!uid) {
 			actions.push({ kind: "skip-missing-uid", title: event.title });
+			continue;
+		}
+		if (!isIncluded(event)) {
+			actions.push({ kind: "skip-filtered", uid });
 			continue;
 		}
 		remoteUids.add(uid);
@@ -135,6 +148,7 @@ export function computeIcsSubscriptionSyncPlan(inputs: PlanInputs): SyncPlan {
 		skipUnchanged: 0,
 		skipMissingUid: 0,
 		skipForeignUid: 0,
+		skipFiltered: 0,
 	};
 	for (const action of actions) {
 		if (action.kind === "create") summary.create++;
@@ -143,6 +157,7 @@ export function computeIcsSubscriptionSyncPlan(inputs: PlanInputs): SyncPlan {
 		else if (action.kind === "delete") summary.delete++;
 		else if (action.kind === "skip-unchanged") summary.skipUnchanged++;
 		else if (action.kind === "skip-missing-uid") summary.skipMissingUid++;
+		else if (action.kind === "skip-filtered") summary.skipFiltered++;
 		else summary.skipForeignUid++;
 	}
 

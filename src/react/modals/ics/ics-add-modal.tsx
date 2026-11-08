@@ -12,6 +12,7 @@ import { cls, tid } from "../../../constants";
 import { parseICSContent } from "../../../core/integrations/ics-import";
 import { fetchIcsFeed } from "../../../core/integrations/ics-subscription/fetch";
 import { useConnectionTest } from "../../../react/hooks/use-connection-test";
+import { useCalendarFilterPresets, useFilterPresetFill } from "../../../react/hooks/use-filter-preset-fill";
 import type { PrismaCalendarSettingsStore } from "../../../types";
 import type { ICSSubscription } from "../../../types/integrations";
 
@@ -27,6 +28,7 @@ interface ICSAddFormProps {
 
 function ICSAddForm({ app, settingsStore, calendarId, onSubmit, onCancel }: ICSAddFormProps) {
 	const form = useZodForm({ schema: ICSAddSchema });
+	const filterPresetOptions = useFilterPresetFill(form, useCalendarFilterPresets(settingsStore, calendarId));
 
 	const { testPassed, testing, runTest } = useConnectionTest(
 		useCallback(async () => {
@@ -73,6 +75,7 @@ function ICSAddForm({ app, settingsStore, calendarId, onSubmit, onCancel }: ICSA
 				timezone: values.timezone,
 				createdAt: Date.now(),
 				icon: values.icon || undefined,
+				filterExpression: values.filterExpression.trim(),
 			};
 
 			await settingsStore.updateSettings((s) => ({
@@ -95,6 +98,7 @@ function ICSAddForm({ app, settingsStore, calendarId, onSubmit, onCancel }: ICSA
 				schema={ICSAddSchema}
 				fieldOverrides={{
 					urlSecretName: { label: "ICS URL" },
+					filterPreset: { options: filterPresetOptions },
 				}}
 				testIdPrefix={tid("ics-add-")}
 			/>

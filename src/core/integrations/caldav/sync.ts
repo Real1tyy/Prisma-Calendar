@@ -9,7 +9,7 @@ import {
 import type { CustomCalendarSettings } from "../../../types/settings";
 import { log } from "../../logging";
 import { BaseSyncService, yieldToMainThread, type BaseSyncServiceOptions } from "../base-sync-service";
-import { parseICSContent } from "../ics-import";
+import { createImportedEventFilter, parseICSContent } from "../ics-import";
 import { CalDAVClientService, type CalDAVFetchedEvent } from "./client";
 import { computeCaldavSyncPlan } from "./sync-planner";
 import type { CalDAVSyncStateManager } from "./sync-state-manager";
@@ -111,8 +111,9 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 	 * Initial sync (no token, no tracked objects): tsdav's smartCollectionSync
 	 * returns empty results when it has nothing to diff against, so we fall
 	 * through to a full fetchCalendarObjects and treat everything as "created".
+	 * A changed filter expression takes the same full-fetch path.
 	 */
-	private async runSyncWithTokenFallback(): Promise<{
+	private async runSyncWithTokenFallback(filterExpression: string): Promise<{
 		created: CalDAVFetchedEvent[];
 		updated: CalDAVFetchedEvent[];
 		deleted: string[];
@@ -122,8 +123,11 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 		const storedState = this.getCalendarSyncState();
 		const storedToken = storedState.syncToken;
 		const trackedObjects = this.syncStateManager.getAllForCalendar(this.account.id, this.calendar.url);
+		// A token delta only carries events that changed on the server, so a new
+		// filter would never reach the unchanged ones — refetch everything once.
+		const filterChanged = (storedState.filterExpression ?? "") !== filterExpression;
 
-		if (!storedToken && trackedObjects.length === 0) {
+		if ((!storedToken && trackedObjects.length === 0) || filterChanged) {
 			const allEvents = await this.client.fetchCalendarEvents({ calendar: this.calendar });
 			return { created: allEvents, updated: [], deleted: [], usedFullResync: true };
 		}
@@ -185,7 +189,11 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 		const result: CalDAVSyncResult = { ...defaultResult };
 
 		try {
-			const { created, updated, deleted, newSyncToken, usedFullResync } = await this.runSyncWithTokenFallback();
+			// Captured before the fetch: a settings edit landing mid-sync must not be
+			// recorded as applied when this pass ran under the old expression.
+			const filterExpression = this.account.filterExpression;
+			const { created, updated, deleted, newSyncToken, usedFullResync } =
+				await this.runSyncWithTokenFallback(filterExpression);
 
 			// tsdav's `smartCollectionSync` returns created + updated as
 			// separate buckets. The planner runs the full own-scope/foreign-scope
@@ -207,6 +215,9 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 				findByUidGlobal: (uid) => this.syncStateManager.findByUidGlobal(uid),
 				findByObjectHref: (href) => this.syncStateManager.findByObjectHref(this.account.id, this.calendar.url, href),
 				knownAccountIds: this.mainSettingsStore.currentSettings.caldav.accounts.map((a) => a.id),
+				// An invalid expression throws out of the planner, so the sync fails
+				// before any action runs instead of deleting every synced note.
+				isIncluded: this.createEventFilter(filterExpression),
 			});
 
 			let processedCount = 0;
@@ -262,6 +273,7 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 				this.saveCalendarSyncState({
 					syncToken: newSyncToken,
 					lastSuccessfulSyncAt: Date.now(),
+					filterExpression,
 				});
 			}
 
@@ -271,6 +283,7 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 				fullResync: usedFullResync,
 				remote: remoteEvents.length,
 				tombstones: tombstonedObjectHrefs.length,
+				filtered: plan.summary.skipFiltered,
 				created: result.created,
 				updated: result.updated,
 				deleted: result.deleted,
@@ -290,6 +303,24 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 		}
 
 		return result;
+	}
+
+	/**
+	 * Unparseable data counts as included so the create/update path reports the
+	 * parse error, exactly as it did before filters existed.
+	 */
+	private createEventFilter(filterExpression: string): (event: CalDAVFetchedEvent) => boolean {
+		if (!filterExpression.trim()) return () => true;
+		const matches = createImportedEventFilter(
+			filterExpression,
+			this.bundle.settingsStore.currentSettings,
+			this.account.timezone
+		);
+		return (event) => {
+			const parsed = parseICSContent(event.data);
+			const importedEvent = parsed.success ? parsed.events[0] : undefined;
+			return importedEvent ? matches(importedEvent) : true;
+		};
 	}
 
 	private async createNoteFromEvent(event: CalDAVFetchedEvent): Promise<void> {

@@ -13,6 +13,7 @@ import { cls, tid } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { CalDAVClientService } from "../../../core/integrations/caldav";
 import type CustomCalendarPlugin from "../../../main";
+import { useCalendarFilterPresets, useFilterPresetFill } from "../../../react/hooks/use-filter-preset-fill";
 import type { PrismaCalendarSettingsStore } from "../../../types";
 import type { CalDAVAccount, CalDAVCalendarInfo } from "../../../types/integrations";
 import { friendlyCalendarName, getCalendarById } from "../../../utils/calendar/settings";
@@ -49,8 +50,11 @@ function CalDAVEditForm({ app, settingsStore, plugin, calendarId, account, onSub
 			syncIntervalMinutes: account.syncIntervalMinutes,
 			timezone: account.timezone,
 			icon: account.icon ?? "",
+			filterPreset: "",
+			filterExpression: account.filterExpression,
 		},
 	});
+	const filterPresetOptions = useFilterPresetFill(form, useCalendarFilterPresets(settingsStore, calendarId));
 
 	const handleRefresh = useCallback(async () => {
 		setRefreshing(true);
@@ -96,6 +100,7 @@ function CalDAVEditForm({ app, settingsStore, plugin, calendarId, account, onSub
 									timezone: values.timezone,
 									selectedCalendars,
 									icon: values.icon || undefined,
+									filterExpression: values.filterExpression.trim(),
 								}
 							: a
 					),
@@ -109,7 +114,12 @@ function CalDAVEditForm({ app, settingsStore, plugin, calendarId, account, onSub
 
 	return (
 		<ModalForm onSubmit={handleSubmit} onCancel={onCancel}>
-			<SchemaForm form={form} schema={CalDAVEditSchema} testIdPrefix={tid("caldav-edit-")} />
+			<SchemaForm
+				form={form}
+				schema={CalDAVEditSchema}
+				fieldOverrides={{ filterPreset: { options: filterPresetOptions } }}
+				testIdPrefix={tid("caldav-edit-")}
+			/>
 
 			<button
 				type="button"

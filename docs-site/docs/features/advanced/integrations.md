@@ -63,6 +63,7 @@ Follow the dedicated step-by-step [Connect Google Calendar](./integrations/googl
    - **Calendar**: Choose which calendar to export
    - **Timezone**: Select timezone for exported events
    - **Exclude skipped events**: Toggle to include/exclude [skipped events](../events/event-skipping)
+   - **Filter preset** / **Filter expression**: Export only the events that match — see [Filtering imports, exports and syncs](#filtering-imports-exports-and-syncs)
 
 ![Export Modal](/img/integrations_export.png)
 
@@ -111,7 +112,8 @@ Each event includes:
 3. Select the ICS file to import
 4. Choose destination calendar
 5. Select timezone for conversion
-6. Click "Import" to create notes
+6. Optionally pick a **Filter preset** or type a **Filter expression** — the preview shows how many of the file's events match, and only those are imported (see [Filtering imports, exports and syncs](#filtering-imports-exports-and-syncs))
+7. Click "Import" to create notes
 
 ![Import Modal](/img/integrations_import.png)
 
@@ -169,6 +171,36 @@ This applies to all import paths: manual ICS import, ICS URL subscriptions, and 
 **Import**: ICS event times are converted from the source timezone to your selected timezone and stored in frontmatter as local datetime strings.
 
 **Available zones**: The timezone dropdown (used for ICS export/import and CalDAV account setup) covers a zone for every standard UTC offset from UTC−12 through UTC+14, including the half-hour and 45-minute offsets (e.g. UTC+3:30 Tehran, UTC+5:45 Kathmandu, UTC+12:45 Chatham). Each entry is a real IANA zone, so daylight-saving transitions are applied correctly — the `(UTC±N)` shown in each label is the zone's standard-time offset. `UTC` stays pinned at the top as the neutral default.
+
+## Filtering Imports, Exports and Syncs
+
+Every way events move in or out of your vault — **Export calendar as ICS**, **Import ICS file**, [CalDAV accounts](#caldav-integration) and [ICS URL subscriptions](#ics-url-subscriptions) — takes an optional **filter expression**. It uses exactly the same syntax and rules as the calendar's [expression filter](../organization/filtering#2-expression-filter-advanced-property-filter), so a rule you already use in a view works here unchanged:
+
+```javascript
+Category.includes('Work') && Status !== 'Cancelled'
+```
+
+Each of those modals has two fields:
+
+- **Filter preset** — lists the target calendar's [filter presets](../organization/filtering#3-filter-presets-quick-access). Picking one copies its expression into the field below. Editing the preset later does not change what you saved here.
+- **Filter expression** — the rule that decides what is kept. Leave it empty to keep everything.
+
+What the expression is evaluated against:
+
+| Where | Evaluated against |
+|-------|-------------------|
+| **Export** | Each note's frontmatter, the same as in the calendar view |
+| **Import, CalDAV, ICS subscriptions** | The frontmatter the event is written with — the feed's title, times, `CATEGORIES`, `LOCATION`, participants and reminders mapped onto your calendar's property names |
+
+For imports and syncs, categories that [auto-assignment](../organization/categories) would add are **not** visible to the filter — it sees only what the feed itself publishes, so every device reaches the same decision.
+
+**On a sync**, the filter is saved with the account or subscription and applied every time:
+
+- A remote event that does not match is never created.
+- A note that was synced earlier and no longer matches — because the event changed, or because you narrowed the filter — is removed, exactly as if the event had been deleted on the server. Widening the filter brings the missing events in on the next sync.
+- Changing a CalDAV account's filter makes its next sync re-read the whole calendar once instead of only the changes since the last sync, so events that did not change on the server are re-checked too.
+
+**An invalid expression never filters everything out.** Export and import show the error and write nothing, and a sync fails with the error in its notification without creating, updating or removing any note. Fix the expression and sync again.
 
 ## Syncing and Vault Indexing
 

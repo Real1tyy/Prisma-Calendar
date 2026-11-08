@@ -135,6 +135,8 @@ The preset dropdown works on its own — you don't need to also enable the **Exp
 4. Enter the expression (e.g., `Priority === 'High' && Status !== 'Done'`)
 5. Access from the ▼ dropdown in the calendar toolbar
 
+Presets are also offered when you export or import an `.ics` file and when you add or edit a CalDAV account or ICS subscription, so the same rule decides what moves in and out of your vault — see [Filtering imports, exports and syncs](../advanced/integrations#filtering-imports-exports-and-syncs).
+
 ## Highlight Events Without Categories
 
 The **"Highlight events without categories"** command temporarily highlights all events missing category assignments, making it easy to identify which events need category assignment.
