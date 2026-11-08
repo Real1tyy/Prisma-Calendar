@@ -34,6 +34,7 @@ Settings remember your position across close/reopen cycles — the active tab an
 ## Settings Header
 
 The row above the section tabs carries the Prisma mark, the version badge, the collapse toggle, and — when an update is waiting — an update badge.
+
 The version badge is clickable: it copies the installed version to your clipboard, which is the fastest way to include it when you send me a bug report.
 
 ## Calendar Management
