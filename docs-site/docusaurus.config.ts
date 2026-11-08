@@ -264,6 +264,12 @@ const config: Config = {
 					],
 				},
 			],
+			logo: {
+				alt: "Prisma Calendar",
+				src: "brand/prisma_logo.png",
+				href: "/",
+				height: 48,
+			},
 			copyright: `© ${new Date().getFullYear()} Prisma Calendar`,
 		},
 		prism: {

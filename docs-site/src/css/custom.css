@@ -75,6 +75,13 @@ article details a {
 	flex-shrink: 0;
 }
 
+/* The brand PNG has ring tabs above its card, so at Infima's 2rem the card sits
+   below the title's centre line; a smaller, slightly lifted mark lines up with it. */
+.navbar__logo {
+	height: 1.5rem;
+	transform: translateY(-1px);
+}
+
 .navbar__title {
 	overflow: visible;
 	white-space: nowrap;
