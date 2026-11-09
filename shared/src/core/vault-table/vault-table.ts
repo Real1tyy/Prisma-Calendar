@@ -13,7 +13,7 @@ import {
 	isFileInConfiguredDirectory,
 	toDisplayLink,
 } from "../file/file";
-import { ensureDirectory, extractContentAfterFrontmatter, withFrontmatter } from "../file/file-utils";
+import { ensureDirectory, extractContentAfterFrontmatter } from "../file/file-utils";
 import { createFileAtPathAtomic, guardFromTemplater } from "../file/templater";
 import { correctFrontmatter, deleteInvalidFile } from "../frontmatter/frontmatter-repair";
 import {
@@ -24,6 +24,7 @@ import {
 import { enforcePropertyOrder } from "../frontmatter/property-order";
 import { Indexer, type IndexerConfig, type IndexerEvent } from "../indexer";
 import type { SerializableSchema } from "./create-mapped-schema";
+import { FrontmatterIntegrityGuard } from "./frontmatter-integrity-guard";
 import { PersistentTableCache, type IdbFactory, type PersistenceConfig, type PersistentEntry } from "./persistence";
 import { ReadableTableMixin } from "./readable-table";
 import {
@@ -118,6 +119,9 @@ export class VaultTable<
 	private readonly indexerConfigStore: BehaviorSubject<IndexerConfig>;
 	private indexerSub: Subscription | null = null;
 	private readySub: Subscription | null = null;
+	private integritySubs: Subscription[] = [];
+	/** Unreadable notes the indexer met before `ready$` — repaired once the table may write. */
+	private readonly pendingIntegrityRepairs = new Map<string, TFile>();
 	private scanInFlight = false;
 
 	private readonly rowByFileName = new Map<string, VaultRow<TData>>();
@@ -163,6 +167,8 @@ export class VaultTable<
 
 	public readonly events$: Observable<VaultTableEvent<TData>>;
 	public readonly ready$: Observable<boolean>;
+	/** Duplicate-key repair for this table's notes, with its events and counters. See [[decision-vaulttable-frontmatter-integrity]]. */
+	public readonly integrity: FrontmatterIntegrityGuard;
 
 	constructor(config: VaultTableConfig<TData, TSchema, TChildren>) {
 		super();
@@ -206,6 +212,7 @@ export class VaultTable<
 		});
 
 		this.indexer = new Indexer(this.app, this.indexerConfigStore);
+		this.integrity = new FrontmatterIntegrityGuard(this.app, { propertyOrder: () => this.propertyOrder?.() });
 
 		this.persistenceConfig = config.persistence;
 		this.persistenceIdbFactory = config.persistenceIdbFactory;
@@ -261,6 +268,7 @@ export class VaultTable<
 		this.indexerSub = this.indexer.events$.subscribe((event) => {
 			this.handleIndexerEvent(event);
 		});
+		this.subscribeIntegrityRepairs();
 
 		// Fire once when the initial scan completes: free the hydration snapshot
 		// (never needed after scan — every later event either misses by mtime or
@@ -339,6 +347,31 @@ export class VaultTable<
 	}
 
 	/**
+	 * Index-path repair of duplicate-key notes. An automatic write, so it never
+	 * runs before `ready$` ([[decision-vaulttable-write-gate]]): notes met during
+	 * the scan are parked and repaired once the table is ready. The repair is a
+	 * pure function of the note's bytes, so devices that each repair the same
+	 * note converge ([[decision-deterministic-automatic-writes-across-synced-devices]]).
+	 * The rewrite fires Obsidian's `changed`, which indexes the note as a normal row.
+	 */
+	private subscribeIntegrityRepairs(): void {
+		this.integritySubs.push(
+			this.indexer.unreadableFrontmatter$.subscribe((file) => {
+				if (this.readySubject.value) {
+					void this.integrity.repairFile(file, "index");
+				} else {
+					this.pendingIntegrityRepairs.set(file.path, file);
+				}
+			}),
+			this.readySubject.pipe(filter(Boolean)).subscribe(() => {
+				const parked = Array.from(this.pendingIntegrityRepairs.values());
+				this.pendingIntegrityRepairs.clear();
+				for (const file of parked) void this.integrity.repairFile(file, "index");
+			})
+		);
+	}
+
+	/**
 	 * The write gate. Every mutating entry point calls this first, so a write
 	 * issued while the table is still a partial view of the vault fails loudly
 	 * instead of persisting a decision made on incomplete data — the failure
@@ -355,6 +388,8 @@ export class VaultTable<
 	stop(): void {
 		this.indexerSub?.unsubscribe();
 		this.indexerSub = null;
+		for (const sub of this.integritySubs.splice(0)) sub.unsubscribe();
+		this.pendingIntegrityRepairs.clear();
 		this.readySub?.unsubscribe();
 		this.readySub = null;
 		this.scanInFlight = false;
@@ -402,6 +437,7 @@ export class VaultTable<
 
 	destroy(): void {
 		this.stop();
+		this.integrity.dispose();
 		this.persistentCache?.close();
 		this.persistentCache = null;
 		this.finalizeDestroy();
@@ -602,7 +638,7 @@ export class VaultTable<
 		// Clear existing frontmatter and write the replacement — unlike doUpdate
 		// which merges, this removes properties that exist in the old data but
 		// not in the new data (e.g., when an updater deletes a property)
-		await withFrontmatter(this.app, existing.file, (fm) => {
+		await this.integrity.processFrontMatter(existing.file, (fm) => {
 			for (const key of Object.keys(fm)) {
 				if (!(key in serialized)) {
 					Reflect.deleteProperty(fm, key);
@@ -643,7 +679,7 @@ export class VaultTable<
 		const validated = this.schema.parse(merged) as TData;
 		const serialized = this.serialize(validated);
 
-		await withFrontmatter(this.app, existing.file, (fm) => {
+		await this.integrity.processFrontMatter(existing.file, (fm) => {
 			Object.assign(fm, serialized);
 			this.applyPropertyOrder(fm);
 		});
@@ -1048,7 +1084,14 @@ export class VaultTable<
 				break;
 			}
 			case "correct": {
-				void correctFrontmatter(this.app, this.schema, filePath, raw, this.propertyOrder?.());
+				void correctFrontmatter(
+					this.app,
+					(file, update) => this.integrity.processFrontMatter(file, update),
+					this.schema,
+					filePath,
+					raw,
+					this.propertyOrder?.()
+				);
 				break;
 			}
 			case "delete": {
@@ -1119,10 +1162,12 @@ export class VaultTable<
 		this.applyPropertyOrder(frontmatter);
 
 		if (this.templatePath) {
+			const propertyOrder = this.propertyOrder?.();
 			return createFileAtPathAtomic(this.app, filePath, {
 				content,
 				frontmatter,
 				templatePath: this.templatePath,
+				...(propertyOrder ? { propertyOrder } : {}),
 			});
 		}
 

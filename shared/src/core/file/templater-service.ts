@@ -95,7 +95,8 @@ export class TemplaterService {
 	 * Falls back to manual creation if Templater is unavailable or rendering fails.
 	 */
 	async createFileAtomic(options: FileCreationOptions): Promise<TFile> {
-		const { title, targetDirectory, filename, content, frontmatter, templatePath, useTemplater } = options;
+		const { title, targetDirectory, filename, content, frontmatter, templatePath, propertyOrder, useTemplater } =
+			options;
 
 		const finalFilename = filename || title;
 		const baseName = finalFilename.replace(/\.md$/, "");
@@ -106,6 +107,7 @@ export class TemplaterService {
 				...(content !== undefined ? { content } : {}),
 				...(frontmatter !== undefined ? { frontmatter } : {}),
 				...(templatePath !== undefined ? { templatePath } : {}),
+				...(propertyOrder !== undefined ? { propertyOrder } : {}),
 			});
 		}
 

@@ -2,6 +2,7 @@ import { normalizePath, Notice, TFile, type App } from "obsidian";
 import { parse as parseYAML } from "yaml";
 
 import { createFileContentWithFrontmatter } from "../frontmatter/frontmatter-serialization";
+import { enforcePropertyOrder } from "../frontmatter/property-order";
 import { ensureDirectory, waitForFileReady } from "./file-utils";
 
 const TEMPLATER_ID = "templater-obsidian";
@@ -83,6 +84,8 @@ export interface FileCreationOptions {
 	content?: string;
 	frontmatter?: Record<string, unknown>;
 	templatePath?: string;
+	/** Owned property names in canonical order, applied to the merged template frontmatter. */
+	propertyOrder?: readonly string[];
 	useTemplater?: boolean;
 }
 
@@ -150,7 +153,11 @@ export function guardFromTemplater(app: App, filePath: string, releaseDelayMs = 
  * Always strips PENDING_WRITE_SENTINEL_FM_KEY from the result — the template may
  * have inherited it from the target file's frontmatter via tp.file.frontmatter.
  */
-function mergeTemplateContent(processedContent: string, overrides: Record<string, unknown>): string {
+function mergeTemplateContent(
+	processedContent: string,
+	overrides: Record<string, unknown>,
+	propertyOrder?: readonly string[]
+): string {
 	const fmMatch = processedContent.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
 	if (!fmMatch) {
 		if (Object.keys(overrides).length === 0) {
@@ -165,6 +172,9 @@ function mergeTemplateContent(processedContent: string, overrides: Record<string
 
 	// Strip the sentinel key so it never ends up in the final written content
 	const { [PENDING_WRITE_SENTINEL_FM_KEY]: _drop, ...mergedFm } = { ...templateFm, ...overrides };
+	// Ordered here, on the merged block, so the note is born in its final shape and
+	// needs no follow-up rewrite to move keys. See [[decision-vaulttable-frontmatter-integrity]].
+	if (propertyOrder && propertyOrder.length > 0) enforcePropertyOrder(mergedFm, propertyOrder);
 
 	return createFileContentWithFrontmatter(mergedFm, body);
 }
@@ -215,7 +225,8 @@ export async function renderTemplateContent(
 	app: App,
 	templatePath: string,
 	targetFile: TFile,
-	overrides?: Record<string, unknown>
+	overrides?: Record<string, unknown>,
+	propertyOrder?: readonly string[]
 ): Promise<string | null> {
 	try {
 		const plugin = getTemplaterPlugin(app);
@@ -239,7 +250,7 @@ export async function renderTemplateContent(
 
 		// Always merge (even with no overrides) so the sentinel key is stripped
 		// from content if the template inherited it from the target file's frontmatter.
-		return mergeTemplateContent(processedContent, overrides ?? {});
+		return mergeTemplateContent(processedContent, overrides ?? {}, propertyOrder);
 	} catch (error) {
 		console.error("[renderTemplateContent] Error rendering template:", error);
 		// Callers fall back to a template-less note, so without this the failure
@@ -302,9 +313,11 @@ export async function createFileAtPathAtomic(
 		content?: string;
 		frontmatter?: Record<string, unknown>;
 		templatePath?: string;
+		/** Owned property names in canonical order, applied to the merged template frontmatter. */
+		propertyOrder?: readonly string[];
 	}
 ): Promise<TFile> {
-	const { content, frontmatter, templatePath } = options;
+	const { content, frontmatter, templatePath, propertyOrder } = options;
 
 	if (!shouldUseTemplate(app, templatePath)) {
 		return createFileAtPath(app, filePath, content, frontmatter);
@@ -332,7 +345,7 @@ export async function createFileAtPathAtomic(
 	}
 
 	try {
-		const renderedContent = await renderTemplateContent(app, templatePath, sentinelFile, frontmatter);
+		const renderedContent = await renderTemplateContent(app, templatePath, sentinelFile, frontmatter, propertyOrder);
 
 		if (renderedContent !== null) {
 			const finalContent = content?.trim() ? appendBodyToRenderedContent(renderedContent, content) : renderedContent;

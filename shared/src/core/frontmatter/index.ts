@@ -1,6 +1,7 @@
 export * from "./category-operations";
 export * from "./frontmatter";
 export * from "./frontmatter-diff";
+export * from "./frontmatter-integrity";
 export * from "./frontmatter-propagation";
 export * from "./frontmatter-propagation-debouncer";
 export * from "./frontmatter-propagator";

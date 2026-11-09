@@ -14,6 +14,19 @@ export function bodyAfterFrontmatter(content: string): string {
 }
 
 /**
+ * The YAML lines between the fences, without them. Every writer that builds a
+ * frontmatter block from an object goes through here so they emit the same bytes.
+ */
+export function stringifyFrontmatterYaml(frontmatter: Record<string, unknown>): string {
+	return stringifyYAML(frontmatter, {
+		indent: 2,
+		lineWidth: 0,
+		defaultStringType: "PLAIN",
+		nullStr: "",
+	}).trim();
+}
+
+/**
  * Creates file content with YAML frontmatter and body content.
  * This is the atomic file creation format that prevents race conditions.
  *
@@ -28,18 +41,7 @@ export function createFileContentWithFrontmatter(frontmatter: Record<string, unk
 		return content;
 	}
 
-	// Use the yaml library to stringify frontmatter
-	// This handles all edge cases: special characters, multiline strings, arrays, nested objects, etc.
-	const yaml = stringifyYAML(frontmatter, {
-		// Use 2-space indentation (Obsidian standard)
-		indent: 2,
-		// Don't add document markers (--- at the end)
-		lineWidth: 0,
-		// Minimize unnecessary quotes
-		defaultStringType: "PLAIN",
-		// Handle null values explicitly
-		nullStr: "",
-	}).trim();
+	const yaml = stringifyFrontmatterYaml(frontmatter);
 
 	if (!yaml) {
 		// Empty frontmatter after stringification

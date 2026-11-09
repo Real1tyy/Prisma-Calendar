@@ -151,6 +151,7 @@ export class Indexer {
 	private vault: Vault;
 	private metadataCache: MetadataCache;
 	private scanEventsSubject = new Subject<IndexerEvent>();
+	private unreadableFrontmatterSubject = new Subject<TFile>();
 	private indexingCompleteSubject = new RxBehaviorSubject<boolean>(false);
 	private frontmatterCache: Map<string, IndexerFrontmatter> = new Map();
 	private effectiveExcludedProps: Set<string> = new Set();
@@ -166,6 +167,12 @@ export class Indexer {
 	private pendingCacheResolvedRef: EventRef | null = null;
 
 	public readonly events$: Observable<IndexerEvent>;
+	/**
+	 * In-scope files that have a frontmatter block Obsidian could not parse (its
+	 * cache carries the block position but no map). The indexer emits no row event
+	 * for them; the VaultTable decides whether the block is repairable.
+	 */
+	public readonly unreadableFrontmatter$: Observable<TFile>;
 	public readonly indexingComplete$: Observable<boolean>;
 
 	get descendantFiles(): ReadonlyArray<TFile> {
@@ -191,6 +198,7 @@ export class Indexer {
 		});
 
 		this.events$ = this.scanEventsSubject.asObservable();
+		this.unreadableFrontmatter$ = this.unreadableFrontmatterSubject.asObservable();
 		this.indexingComplete$ = this.indexingCompleteSubject.asObservable();
 	}
 
@@ -617,7 +625,13 @@ export class Indexer {
 	 */
 	private buildEvent(file: TFile, oldPath?: string): IndexerEvent | null {
 		const cache = this.metadataCache.getFileCache(file);
-		if (!cache || !cache.frontmatter) return null;
+		if (!cache) return null;
+		if (!cache.frontmatter) {
+			if (cache.frontmatterPosition || cache.sections?.[0]?.type === "yaml") {
+				this.unreadableFrontmatterSubject.next(file);
+			}
+			return null;
+		}
 
 		const { frontmatter } = cache;
 		const oldFrontmatter = this.frontmatterCache.get(file.path);

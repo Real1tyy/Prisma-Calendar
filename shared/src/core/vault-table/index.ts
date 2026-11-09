@@ -1,4 +1,5 @@
 export * from "./create-mapped-schema";
+export * from "./frontmatter-integrity-guard";
 export * from "./live-query";
 export * from "./note-decorator";
 export * from "./persistence";
