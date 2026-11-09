@@ -69,13 +69,19 @@ Prisma Calendar is designed to handle large vaults without issues. If you're exp
 <details>
 <summary>A property appears twice in an event's frontmatter</summary>
 
-**Problem**: An event's frontmatter lists the same property twice — for example `Calendar Title` once with a link and once empty. Obsidian cannot read frontmatter like that, so the note shows "Invalid properties" and edits to it fail.
+**Problem**: An event's frontmatter lists the same property twice — for example `Calendar Title` once with a link and once empty, or `Sort Date` written twice. Obsidian rejects frontmatter like that: the Properties panel shows it as invalid, the note drops out of Bases and property search, and any plugin that edits its properties fails (in Prisma, actions such as **Fill end time from next event** report an error).
 
-**Root Cause**: Two versions of the note were merged as plain text — by a sync tool, or by Obsidian reloading a note that changed on disk while it was open.
+**Root Cause**: Two versions of the note were merged as plain text. This happens when two writers touch the same note within moments of each other — a sync tool merging edits from two devices, or Obsidian reloading a note that changed on disk while you had it open.
 
-**Solution**: Nothing to do. Prisma repairs the note as soon as it sees it: each repeated property keeps its last non-empty value, and the properties return to your configured order. The rest of the note is left untouched. Every device produces the same repair, so syncing it back causes no conflict. A device set to read-only leaves the note alone.
+**Solution**: Nothing to do. Prisma repairs the note as soon as it sees it:
 
-When a property had two *different* values, the earlier one is replaced. The Doctor's **Frontmatter integrity** row turns yellow, and the logs (search `indexing.integrity`) name the note and the property, so you can recover the old value from your file history or sync history if you need it.
+- Each repeated property keeps its last non-empty value, at the position of its first copy.
+- Properties return to your configured order; the note's body is untouched.
+- Every device makes the identical repair, so syncing it back causes no conflict. A device set to read-only leaves the note for a writable one.
+
+When the copies held two *different* values, the earlier one is replaced. The Doctor's **Frontmatter integrity** row turns yellow, and the logs (search `indexing.integrity`) name the note and the property, so you can recover the old value from file history or sync history.
+
+**Preventing it**: let sync finish before editing the same event on a second device, and set your template in Prisma's **Template path** rather than relying on Templater's folder template — Prisma then writes each new event once, complete (see [Templater Integration → How It Works](./features/advanced/templater.md#how-it-works)).
 
 </details>
 
@@ -193,14 +199,14 @@ After changing the property type, Bases will sort events chronologically. See th
 
 **Problem**: Templater folder templates work for manually created notes, but not for events created through Prisma Calendar.
 
-**Root Cause**: Prisma creates files programmatically, which can bypass Templater's folder trigger or cause race conditions.
+**Root Cause**: Prisma holds Templater's folder template off for the files it creates. If both ran, Templater would rewrite the note a moment after Prisma wrote it, and two writers racing over a new note is how frontmatter ends up with properties missing or listed twice.
 
 **Solution**: Configure templates in BOTH places:
 
-1. **Templater Settings**: Set up your folder template as usual
-2. **Prisma Calendar Settings**: Go to `General` → `Template path` and set the same template file
+1. **Templater Settings**: Set up your folder template as usual — it keeps applying to notes you create by hand.
+2. **Prisma Calendar Settings**: Go to `General` → `Template path` and set the same template file.
 
-This ensures the template is applied atomically when Prisma creates the event file.
+Prisma then renders the template itself and writes each event once, complete. See [Templater Integration → How It Works](./features/advanced/templater.md#how-it-works).
 
 </details>
 

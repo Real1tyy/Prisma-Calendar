@@ -27,6 +27,8 @@ Apply a Templater template to every event note created through Prisma Calendar.
 
 When you create an event (from the calendar UI, a command, or an ICS/CalDAV import), Prisma Calendar renders your template using Templater's engine, merges the event's frontmatter properties on top of whatever the template produces, and writes the final file in a single operation. Your event data always wins over any default values defined in the template.
 
+That single write is the finished note: the template body, your event's properties, its calendar title link, and every property in your configured order. Nothing rewrites the note a moment later. This matters because a second write right after creation can collide with another writer — Templater's own folder template, Obsidian reloading the open note, or a sync tool — and two versions merged as text can leave a property listed twice. While Prisma writes the note, Templater's folder template is held off for that file, so the template never runs twice.
+
 ## Template Path — Exclusive to Prisma Settings
 
 Prisma Calendar uses **only** the template path configured in its own settings. Templater's built-in folder-template assignment (where you configure Templater to auto-apply a template to all new files in a specific folder) is **not used** and is actively bypassed for files created by Prisma.
