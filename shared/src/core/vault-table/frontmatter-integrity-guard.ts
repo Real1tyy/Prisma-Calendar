@@ -85,10 +85,23 @@ export class FrontmatterIntegrityGuard {
 	async processFrontMatter(file: TFile, update: (frontmatter: Record<string, unknown>) => void): Promise<void> {
 		try {
 			await this.app.fileManager.processFrontMatter(file, update);
-			return;
 		} catch (error) {
-			if (!isDuplicateFrontmatterKeyError(error)) throw error;
+			await this.recoverWrite(file, update, error);
 		}
+	}
+
+	/**
+	 * The failure half of {@link processFrontMatter}, for a caller that must keep
+	 * its own inline `processFrontMatter` call (a write queue whose dequeue timing
+	 * is pinned): rethrows `error` unless it is a duplicate key, in which case the
+	 * note is repaired and `update` retried once.
+	 */
+	async recoverWrite(
+		file: TFile,
+		update: (frontmatter: Record<string, unknown>) => void,
+		error: unknown
+	): Promise<void> {
+		if (!isDuplicateFrontmatterKeyError(error)) throw error;
 		const repaired = await this.repairFile(file, "write");
 		if (!repaired) {
 			throw new Error(`Frontmatter of ${file.path} has duplicate keys that could not be repaired`);

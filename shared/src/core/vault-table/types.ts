@@ -118,6 +118,13 @@ export type VaultTableConfig<
 	 * A thunk so it can track live settings. See [[decision-deterministic-property-ordering]].
 	 */
 	propertyOrder?: () => readonly string[];
+	/**
+	 * Whether the table may repair a duplicate-key note it finds while indexing —
+	 * an automatic write, so a read-only device answers `false`. A repair one of
+	 * the table's own writes triggers is unaffected: that write is happening anyway.
+	 * Defaults to always. See [[decision-vaulttable-frontmatter-integrity]].
+	 */
+	automaticRepair?: () => boolean;
 };
 
 /**

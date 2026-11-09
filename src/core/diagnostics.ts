@@ -13,6 +13,11 @@ import type { App } from "obsidian";
 
 import { DEFAULT_EXPORT_FOLDER, PRISMA_CALENDAR_PLUGIN_ID } from "../constants";
 import type CustomCalendarPlugin from "../main";
+import {
+	addIntegrityStats,
+	buildFrontmatterIntegrityCheck,
+	EMPTY_INTEGRITY_STATS,
+} from "./frontmatter-integrity-reporting";
 import type { IndexingTally } from "./indexing-stats";
 
 /** Display name the debug bundle's header is titled with. */
@@ -149,6 +154,13 @@ export function createPrismaHealthChecks(plugin: CustomCalendarPlugin): HealthCh
 	const entries = () => plugin.logging.service.snapshot();
 
 	registry.register("indexing", () => buildIndexingCheck(plugin));
+	registry.register("frontmatter-integrity", () =>
+		buildFrontmatterIntegrityCheck(
+			plugin.calendarBundles.reduce((total, bundle) => addIntegrityStats(total, bundle.fileRepository.integrityStats), {
+				...EMPTY_INTEGRITY_STATS,
+			})
+		)
+	);
 	registry.register("settings", () =>
 		buildScopeIssuesCheck({
 			id: "settings",

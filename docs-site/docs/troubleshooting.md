@@ -11,6 +11,7 @@ Each row is one health check with a plain-language explanation:
 | Check | What it tells you |
 | --- | --- |
 | **Indexing** | How many notes Prisma read and how many of them reached the calendar. It flags notes it could not read — usually a date property that isn't a recognised date, or one that isn't mapped — and offers a **Reindex** button. |
+| **Frontmatter integrity** | Notes in your planning system that had the same property listed twice, which Prisma repaired. Yellow when a repair replaced a conflicting value; red when a note could not be repaired. |
 | **Settings** | Whether your settings loaded and migrated cleanly. |
 | **License** | Your current license state, in the same words the License section uses. |
 | **Recent errors and warnings** | Anything that went wrong in the last 15 minutes, grouped by the part of the plugin that reported it. |
@@ -62,6 +63,19 @@ Prisma Calendar is designed to handle large vaults without issues. If you're exp
 - Filters aren't excluding your note (Rules → Event Filtering)
 - Frontmatter keys match your Properties Settings (e.g., `Start` vs `start`)
 - **Try refreshing**: Open command palette (Ctrl/Cmd+P) and run "Refresh calendar" to force a full resync
+
+</details>
+
+<details>
+<summary>A property appears twice in an event's frontmatter</summary>
+
+**Problem**: An event's frontmatter lists the same property twice — for example `Calendar Title` once with a link and once empty. Obsidian cannot read frontmatter like that, so the note shows "Invalid properties" and edits to it fail.
+
+**Root Cause**: Two versions of the note were merged as plain text — by a sync tool, or by Obsidian reloading a note that changed on disk while it was open.
+
+**Solution**: Nothing to do. Prisma repairs the note as soon as it sees it: each repeated property keeps its last non-empty value, and the properties return to your configured order. The rest of the note is left untouched. Every device produces the same repair, so syncing it back causes no conflict. A device set to read-only leaves the note alone.
+
+When a property had two *different* values, the earlier one is replaced. The Doctor's **Frontmatter integrity** row turns yellow, and the logs (search `indexing.integrity`) name the note and the property, so you can recover the old value from your file history or sync history if you need it.
 
 </details>
 

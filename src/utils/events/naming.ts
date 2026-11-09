@@ -1,4 +1,4 @@
-import { extractDisplayName, toSafeString } from "@real1ty/obsidian-plugins";
+import { extractDisplayName, removeMarkdownExtension, toSafeString } from "@real1ty/obsidian-plugins";
 
 import { removeZettelId } from "./zettel-id";
 
@@ -17,6 +17,16 @@ export const removeInstanceDate = (text: string): string => {
  */
 export const cleanupTitle = (text: string): string => {
 	return removeInstanceDate(removeZettelId(text));
+};
+
+/**
+ * The calendar-title link an event note carries to itself: the vault path
+ * without `.md`, aliased to the cleaned display title. Written at creation and
+ * kept current by the background update, so both must build it identically.
+ */
+export const buildCalendarTitleLink = (filePath: string): string => {
+	const basename = filePath.slice(filePath.lastIndexOf("/") + 1).replace(/\.md$/, "");
+	return `[[${removeMarkdownExtension(filePath)}|${cleanupTitle(basename)}]]`;
 };
 
 /**

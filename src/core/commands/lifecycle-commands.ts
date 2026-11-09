@@ -14,10 +14,10 @@ import { getFrontMatterInfo, parseYaml, TFile, type App } from "obsidian";
 
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
 import { computeMovePath, ensureFileHasZettelId, generateUniqueEventPath } from "../../utils/events/file-naming";
-import { extractCleanDisplayName } from "../../utils/events/naming";
+import { buildCalendarTitleLink, extractCleanDisplayName } from "../../utils/events/naming";
 import { removeZettelId } from "../../utils/events/zettel-id";
 import { applyStartEndOffsets } from "../../utils/frontmatter/basics";
-import { enforceEventPropertyOrder } from "../../utils/frontmatter/ordering";
+import { enforceEventPropertyOrder, getOrderedPropertyNames } from "../../utils/frontmatter/ordering";
 import { removeNonCloneableProperties } from "../../utils/frontmatter/props";
 import { translateFrontmatterToCalendar } from "../../utils/frontmatter/translate-calendar";
 import type { CalendarBundle } from "../calendar-bundle";
@@ -102,13 +102,19 @@ export class CreateEventCommand extends CreatedFileCommand {
 
 		const title = this.eventData.title;
 		const sanitizedTitle = sanitizeForFilename(title, { style: "preserve" });
-		const { filename, zettelId } = generateUniqueEventPath(this.app, this.targetDirectory, sanitizedTitle);
+		const { filename, fullPath, zettelId } = generateUniqueEventPath(this.app, this.targetDirectory, sanitizedTitle);
 
 		const settings = this.bundle.settingsStore.currentSettings;
 		const frontmatter = { ...this.eventData.preservedFrontmatter };
 
 		if (settings.zettelIdProp) {
 			frontmatter[settings.zettelIdProp] = zettelId;
+		}
+		// Written now so the background update finds nothing to add: a note
+		// rewritten right after creation is what an editor or sync merge can
+		// turn into a duplicated property. See [[decision-vaulttable-frontmatter-integrity]].
+		if (settings.calendarTitleProp) {
+			frontmatter[settings.calendarTitleProp] = buildCalendarTitleLink(fullPath);
 		}
 
 		enforceEventPropertyOrder(frontmatter, settings);
@@ -118,6 +124,7 @@ export class CreateEventCommand extends CreatedFileCommand {
 			targetDirectory: this.targetDirectory,
 			filename,
 			frontmatter,
+			propertyOrder: getOrderedPropertyNames(settings),
 			...(this.eventData.content !== undefined ? { content: this.eventData.content } : {}),
 			...(settings.templatePath ? { templatePath: settings.templatePath, useTemplater: true } : {}),
 		});

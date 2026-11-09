@@ -112,6 +112,7 @@ export class VaultTable<
 	private readonly childDefs: TChildren | undefined;
 	private readonly emitCrudEvents: boolean;
 	private readonly propertyOrder: (() => readonly string[]) | undefined;
+	private readonly automaticRepair: () => boolean;
 	private templatePath: string | undefined;
 	private parentLink: { property: string; displayLink: string } | undefined;
 
@@ -184,6 +185,7 @@ export class VaultTable<
 		this.childDefs = config.children;
 		this.emitCrudEvents = config.emitCrudEvents ?? false;
 		this.propertyOrder = config.propertyOrder;
+		this.automaticRepair = config.automaticRepair ?? (() => true);
 		this.templatePath = config.templatePath;
 
 		this.commandManager = this.buildCommandManager(config.history);
@@ -358,7 +360,7 @@ export class VaultTable<
 		this.integritySubs.push(
 			this.indexer.unreadableFrontmatter$.subscribe((file) => {
 				if (this.readySubject.value) {
-					void this.integrity.repairFile(file, "index");
+					this.repairOnIndex(file);
 				} else {
 					this.pendingIntegrityRepairs.set(file.path, file);
 				}
@@ -366,9 +368,14 @@ export class VaultTable<
 			this.readySubject.pipe(filter(Boolean)).subscribe(() => {
 				const parked = Array.from(this.pendingIntegrityRepairs.values());
 				this.pendingIntegrityRepairs.clear();
-				for (const file of parked) void this.integrity.repairFile(file, "index");
+				for (const file of parked) this.repairOnIndex(file);
 			})
 		);
+	}
+
+	private repairOnIndex(file: TFile): void {
+		if (!this.automaticRepair()) return;
+		void this.integrity.repairFile(file, "index");
 	}
 
 	/**

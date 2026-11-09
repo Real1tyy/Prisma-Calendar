@@ -1,0 +1,3 @@
+### Fixed
+
+- **Notes with a property listed twice**: when a sync tool or an editor reload left an event with the same property twice (for example two `Calendar Title` lines), the event dropped off the calendar and every edit to it failed — "Fill end time from next event" included. Prisma now repairs such a note on its own, keeping each property's last non-empty value in your configured order, and new events created from a template are written in their final shape in one go. The Doctor's new **Frontmatter integrity** row and the logs show every repair. See [Troubleshooting → Events](./troubleshooting.md).

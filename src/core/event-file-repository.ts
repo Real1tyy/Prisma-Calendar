@@ -1,12 +1,13 @@
 import {
 	deepEqualJsonLike,
+	isDuplicateFrontmatterKeyError,
 	isFolderNote,
-	removeMarkdownExtension,
 	replaceContentAfterFrontmatter,
 	toSafeString,
 	VaultTable,
 	waitForFileCache,
 	type FrontmatterDiff,
+	type FrontmatterIntegrityStats,
 	type FrontmatterRepo,
 	type VaultRow,
 	type VaultTableEvent,
@@ -22,13 +23,18 @@ import { PARSE_AFFECTING_KEYS, parseAffectingSettingsChanged } from "../utils/ca
 import { parseRRuleFromFrontmatter } from "../utils/dates/recurring";
 import { ensureFileHasZettelId } from "../utils/events/file-naming";
 import { parseEventMetadata } from "../utils/events/frontmatter";
-import { cleanupTitle } from "../utils/events/naming";
+import { buildCalendarTitleLink } from "../utils/events/naming";
 import { deriveRRuleId, hasTimestamp } from "../utils/events/zettel-id";
 import { enforceEventPropertyOrder, getOrderedPropertyNames } from "../utils/frontmatter/ordering";
 import { shouldEventBeMarkedAsDone } from "../utils/frontmatter/predicates";
 import type { DeviceRoleStore } from "./device-role-store";
 import { createEventSchema } from "./event-schema";
 import { allEventSources, EventSourceView, type EventSourceRows } from "./event-source-view";
+import {
+	addIntegrityStats,
+	EMPTY_INTEGRITY_STATS,
+	logFrontmatterIntegrityEvent,
+} from "./frontmatter-integrity-reporting";
 import { log } from "./logging";
 
 export { PARSE_AFFECTING_KEYS, parseAffectingSettingsChanged };
@@ -65,6 +71,9 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 	private table: EventTable;
 	private settingsSub: Subscription | null = null;
 	private tableSub: Subscription | null = null;
+	private integritySub: Subscription | null = null;
+	/** Counters of tables a directory change retired, so the session total survives a rebuild. */
+	private retiredIntegrityStats: FrontmatterIntegrityStats = { ...EMPTY_INTEGRITY_STATS };
 
 	private settings: SingleCalendarConfig;
 	private readonly recurringSubject = new Subject<RecurringEventFound>();
@@ -150,6 +159,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 					directory: newSettings.directory,
 					indexSubdirectories: newSettings.indexSubdirectories,
 				});
+				this.retiredIntegrityStats = addIntegrityStats(this.retiredIntegrityStats, this.table.integrity.stats);
 				this.table.destroy();
 				this.table = this.createTable(newSettings);
 				this.rebindViews();
@@ -391,10 +401,17 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 		this.detachSettingsSubscription();
 		this.tableSub?.unsubscribe();
 		this.tableSub = null;
+		this.integritySub?.unsubscribe();
+		this.integritySub = null;
 		for (const view of this.views) view.destroy();
 		this.table.destroy();
 		this.recurringSubject.complete();
 		this.indexingCompleteSubject.complete();
+	}
+
+	/** Duplicate-key repairs across every table this repository has run this session. */
+	get integrityStats(): FrontmatterIntegrityStats {
+		return addIntegrityStats(this.retiredIntegrityStats, this.table.integrity.stats);
 	}
 
 	/**
@@ -444,6 +461,9 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 		// would run their post-indexing work against a partial map of file state and
 		// fabricate duplicate physical recurring instances.
 		this.tableSub = this.table.subscribeAsync((event) => this.handleTableEvent(event));
+
+		this.integritySub?.unsubscribe();
+		this.integritySub = this.table.integrity.events$.subscribe(logFrontmatterIntegrityEvent);
 
 		this.table.ready$.subscribe((ready) => {
 			if (ready) {
@@ -612,9 +632,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 		const settings = this.settings;
 		const { calendarTitleProp, sortDateProp, statusProperty, doneValue } = settings;
 
-		const pathWithoutExt = removeMarkdownExtension(file.path);
-		const displayName = cleanupTitle(file.basename);
-		const titleLink = `[[${pathWithoutExt}|${displayName}]]`;
+		const titleLink = buildCalendarTitleLink(file.path);
 		const needsTitleUpdate = !!calendarTitleProp && frontmatter[calendarTitleProp] !== titleLink;
 		const needsSortDateCleanup = isUntracked && !!sortDateProp && sortDateProp in frontmatter;
 		const needsMarkAsDone = !isUntracked && shouldEventBeMarkedAsDone(frontmatter, settings);
@@ -691,16 +709,20 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 				const current = this.app.vault.getAbstractFileByPath(file.path);
 				if (!(current instanceof TFile)) return;
 				if (!this.wouldChangeFrontmatter(current, fn)) return;
+				const update = (fm: Frontmatter): void => {
+					fn(fm);
+					enforceEventPropertyOrder(fm, this.settings);
+				};
 				try {
-					// Inline (not withOrderedFrontmatter) to keep the queue's promise depth
-					// unchanged — the race tests pin the exact dequeue timing.
-					await this.app.fileManager.processFrontMatter(current, (fm: Frontmatter) => {
-						fn(fm);
-						enforceEventPropertyOrder(fm, this.settings);
-					});
+					// Inline (not withOrderedFrontmatter, nor the integrity guard's wrapper)
+					// to keep the queue's promise depth unchanged — the race tests pin the
+					// exact dequeue timing. Only a failure goes through the guard.
+					await this.app.fileManager.processFrontMatter(current, update);
 				} catch (err: unknown) {
 					if (err instanceof Error && err.message.includes("ENOENT")) return;
-					throw err;
+					// A duplicated property is repaired and the write retried; anything else rethrows.
+					if (!isDuplicateFrontmatterKeyError(err)) throw err;
+					await this.table.integrity.recoverWrite(current, update, err);
 				}
 			});
 		const chain: Promise<void> = result
@@ -748,6 +770,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 			emitCrudEvents: true,
 			recursive: settings.indexSubdirectories,
 			propertyOrder: () => getOrderedPropertyNames(this.settings),
+			automaticRepair: () => !this.isReadOnly,
 			persistence: {
 				namespace: PRISMA_CACHE_NAMESPACE,
 				schemaVersion: PRISMA_CACHE_SCHEMA_VERSION,
