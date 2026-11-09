@@ -1,6 +1,6 @@
 ### Improved
 
-- **Debug entries are always in the logs**: Prisma keeps every debug entry in memory from the moment it loads, so the detail behind a problem is already there when you open the logs — no need to turn anything on and reproduce it first. The Logs window hides debug lines until you press the **debug** chip, and **Reset filters** hides them again. Debug has its own share of memory, so it never pushes out a warning or an error. The **Minimum level** setting is now **File level** and only decides what goes into the log file (Info by default); your earlier choice carries over. See [General → Logging](./configuration/general.md#logging).
+- **Debug entries are always in the logs**: Prisma keeps every debug entry in memory from the moment it loads, so the detail behind a problem is already there when you open the logs — no need to turn anything on and reproduce it first. The Logs window hides debug lines until you press the **debug** chip, and **Reset filters** hides them again. Debug has its own share of memory, so it never pushes out a warning or an error. The **Minimum level** setting is replaced by **File level**, which only decides what goes into the log file and starts at Info. See [General → Logging](./configuration/general.md#logging).
 
 ### Fixed
 

@@ -77,21 +77,3 @@ export type LoggingSettings = z.infer<typeof LoggingSettingsSchema>;
 /** The primary fields a user reaches for; the rest are rotation/retention tuning behind "advanced". */
 export const LOGGING_BASIC_FIELDS = ["consoleMirror", "consoleMirrorLevel", "fileLogging", "fileLevel"] as const;
 export const LOGGING_ADVANCED_FIELDS = ["maxFileSizeKb", "maxFiles", "maxAgeDays"] as const;
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === "object" && value !== null;
-}
-
-/**
- * Persisted settings carried `minLevel`, a threshold for memory and every sink.
- * Memory now keeps every level, so the one choice left for the user to have
- * made is what reached the file. Runs on the raw `logging` object before the
- * schema parse, which would otherwise drop the old key. Returns whether it
- * changed anything, so the caller saves only then.
- */
-export function migrateLegacyLoggingLevel(logging: unknown): boolean {
-	if (!isRecord(logging) || !("minLevel" in logging)) return false;
-	if (!("fileLevel" in logging)) logging["fileLevel"] = logging["minLevel"];
-	delete logging["minLevel"];
-	return true;
-}

@@ -67,7 +67,6 @@ export {
 	LOGGING_ADVANCED_FIELDS,
 	LOGGING_BASIC_FIELDS,
 	LoggingSettingsSchema,
-	migrateLegacyLoggingLevel,
 	type LoggingSettings,
 } from "./settings";
 export { isAtLeast, LOG_LEVEL_SEVERITY, LOG_LEVELS } from "./types";

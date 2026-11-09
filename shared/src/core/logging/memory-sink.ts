@@ -4,8 +4,12 @@ import type { LogEntry, LogFilter, LogSink } from "./types";
 
 /** Capacity of the info-and-above tier. */
 export const DEFAULT_LOG_CAPACITY = 2000;
-/** Capacity of the debug tier, held apart so a debug burst never evicts a warning. */
-export const DEFAULT_DEBUG_LOG_CAPACITY = 2000;
+/**
+ * Capacity of the debug tier, held apart so a debug burst never evicts a warning.
+ * Larger than the main tier: debug is the chattiest level and the most useful one
+ * after the fact. Entries are held by reference, so the cost is their data objects.
+ */
+export const DEFAULT_DEBUG_LOG_CAPACITY = 10_000;
 
 interface BufferedEntry {
 	readonly entry: LogEntry;
