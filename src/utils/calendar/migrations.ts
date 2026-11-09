@@ -1,3 +1,4 @@
+import { migrateLegacyLoggingLevel } from "@real1ty/obsidian-plugins";
 import type { Plugin } from "obsidian";
 
 import { log } from "../../core/logging";
@@ -42,8 +43,18 @@ function migrateSharedExcludedProps(data: RawSettings): boolean {
 	return true;
 }
 
+/**
+ * The old memory-and-sinks `logging.minLevel` becomes `logging.fileLevel`
+ * ([[decision-debug-logs-are-always-retained-in-memory-and-hidden-by-default]]).
+ */
+function migrateLoggingFileLevel(data: RawSettings): boolean {
+	if (!migrateLegacyLoggingLevel(data["logging"])) return false;
+	log.info("settings", "Moved the logging level to the file level", { logging: data["logging"] });
+	return true;
+}
+
 /** In the order they were introduced — a later step may rely on an earlier one's shape. */
-const SETTINGS_MIGRATIONS: readonly SettingsMigration[] = [migrateSharedExcludedProps];
+const SETTINGS_MIGRATIONS: readonly SettingsMigration[] = [migrateSharedExcludedProps, migrateLoggingFileLevel];
 
 /**
  * Runs every stored-settings migration on the raw JSON before the Zod parse,
