@@ -17,9 +17,12 @@ import type { LogEntry } from "./types";
  *    `.obsidian` itself remains recognizable as a structural marker, but every
  *    descendant is hashed because plugin data and custom filenames can still be
  *    private.
- * 3. **Frontmatter values are elided** (default mode) — a `frontmatter` /
+ * 3. **Note content is elided** (default mode) — a `frontmatter` /
  *    `properties` object keeps its keys and each value becomes a type descriptor
- *    (`[string]`, `[array:3]`). Plugins name additional keys via `sensitiveKeys`.
+ *    (`[string]`, `[array:3]`); note text under a `content` / `body` / `excerpt` /
+ *    `noteContent` key becomes its type too. Plugins name additional keys via
+ *    `sensitiveKeys`. Local logs keep all of it — this is what makes that safe to
+ *    share ([[decision-logging-full-local-detail-redacted-on-export]]).
  *
  * `fullDetail: true` relaxes rules 2 and 3 for a trusted hand-off. Rule 1 is not
  * an option, on purpose: the cost of a leaked license token is unbounded, the
@@ -105,6 +108,8 @@ const PATH_TAILS = new Set([
 	"directories",
 ]);
 const FRONTMATTER_KEY = /^(?:frontmatter|front_matter|properties)$/i;
+/** Keys under which log data carries note text; elided like frontmatter values. */
+const NOTE_CONTENT_KEY = /^(?:content|body|excerpt|note_?content)$/i;
 
 const NOTE_EXTENSION = /\.(?:md|canvas|base)$/i;
 const FILE_EXTENSION = /\.[A-Za-z0-9]{1,8}$/;
@@ -433,7 +438,9 @@ function redactObject(value: object, key: string | undefined, walk: Walk, depth:
 
 function redactValue(value: unknown, key: string | undefined, walk: Walk, depth: number): unknown {
 	if (key !== undefined && isSecretKey(key)) return REDACTED_SECRET;
-	if (key !== undefined && !walk.options.fullDetail && walk.sensitive.has(key)) return typeDescriptor(value);
+	if (key !== undefined && !walk.options.fullDetail && (walk.sensitive.has(key) || NOTE_CONTENT_KEY.test(key))) {
+		return typeDescriptor(value);
+	}
 
 	switch (typeof value) {
 		case "string":

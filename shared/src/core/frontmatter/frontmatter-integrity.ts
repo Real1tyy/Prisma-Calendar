@@ -18,6 +18,8 @@ const FRONTMATTER_BLOCK = /^---(\r?\n)([\s\S]*?)\r?\n---[^\S\r\n]*(?=\r?\n|$)/;
 export interface DuplicateKeyReport {
 	key: string;
 	occurrences: number;
+	/** The value the repair kept: the last non-empty copy, or empty when every copy was empty. */
+	keptValue: unknown;
 	/** Non-empty values that lost to a later non-empty one — real data the repair discarded. */
 	droppedValues: unknown[];
 }
@@ -81,7 +83,12 @@ function collapse(pairs: ParsedPairs["pairs"]): { frontmatter: Frontmatter; dupl
 			frontmatter[key] = values.some((value) => value === "") ? "" : (values[values.length - 1] ?? null);
 		}
 		if (values.length > 1) {
-			duplicates.push({ key, occurrences: values.length, droppedValues: nonEmpty.slice(0, -1) });
+			duplicates.push({
+				key,
+				occurrences: values.length,
+				keptValue: frontmatter[key],
+				droppedValues: nonEmpty.slice(0, -1),
+			});
 		}
 	}
 	return { frontmatter, duplicates };

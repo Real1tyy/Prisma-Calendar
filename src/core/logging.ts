@@ -17,7 +17,7 @@ const DEVICE_ID_NAMESPACE = "prisma-calendar:logging";
  * The plugin-wide logger every module writes to: `log.warn("recurring", …)`
  * in place of `console.warn`. Bound to the plugin's `LogService` in `onload`
  * and unbound in `onunload`; a no-op in between sessions and under unit tests.
- * Scope vocabulary: [[decision-logging-convention-levels-scopes-and-the-service-over-console]].
+ * Scope vocabulary: [[decision-logging-full-local-detail-redacted-on-export]].
  */
 export const log = new PluginLog();
 

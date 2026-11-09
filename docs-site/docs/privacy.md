@@ -38,13 +38,16 @@ Nothing else identifying is sent: not your name, email, vault name, note content
 
 ## What diagnostics contain
 
-Diagnostics are high-level and about the plugin's own behaviour: which feature ran, what it decided, and any error it hit. They are not a copy of your notes. Before you see or share them, they are **anonymized and redacted**:
+Diagnostics are about the plugin's own behaviour: which feature ran, what it decided, and any error it hit. On your device the logs are **detailed** so a problem can be traced: they can include note paths and the property values involved — for example the value a repair replaced. They stay on your device; the log file is off unless you turn it on.
+
+Whenever you copy, save, or send diagnostics, they are **anonymized and redacted** first:
 
 | What | What you share instead |
 | --- | --- |
 | Folder and note names, including inside links | A short stable token per name, e.g. `vault://{3f2a1c}/{a1b2c3}.md`. Folder depth and the file extension stay, so structure is visible without the names. The same note always gets the same token, so a repeated problem with one note is still recognisable. |
 | Your home directory and the vault's location on disk | Replaced by `vault://` or `home://`. |
 | Property (frontmatter) values | The property **name** and the **type** of its value, e.g. `Attendees: [array:2]`. The value itself is removed. |
+| Note text included in a log entry | Its type only, e.g. `[string]`. |
 | License keys, API keys, tokens, passwords, authorization headers | **Always removed**, in every mode. There is no setting that includes them. |
 
 The `.obsidian` folder marker may remain visible because it explains that a problem involved plugin

@@ -79,7 +79,7 @@ Prisma Calendar is designed to handle large vaults without issues. If you're exp
 - Properties return to your configured order; the note's body is untouched.
 - Every device makes the identical repair, so syncing it back causes no conflict. A device set to read-only leaves the note for a writable one.
 
-When the copies held two *different* values, the earlier one is replaced. The Doctor's **Frontmatter integrity** row turns yellow, and the logs (search `indexing.integrity`) name the note and the property, so you can recover the old value from file history or sync history.
+When the copies held two *different* values, the earlier one is replaced. The Doctor's **Frontmatter integrity** row turns yellow, and the logs (search `indexing.integrity`) record the note, the property, the value kept and the value replaced, so you can restore the old one if you need it.
 
 **Preventing it**: let sync finish before editing the same event on a second device, and set your template in Prisma's **Template path** rather than relying on Templater's folder template — Prisma then writes each new event once, complete (see [Templater Integration → How It Works](./features/advanced/templater.md#how-it-works)).
 

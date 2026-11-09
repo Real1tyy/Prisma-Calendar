@@ -31,9 +31,10 @@ export function addIntegrityStats(
 }
 
 /**
- * A repair is self-healing, so `warn` ([[decision-logging-convention-levels-scopes-and-the-service-over-console]]).
- * The discarded values are note content and never logged — the keys that lost
- * one are, so the user knows which property to check in file history.
+ * A repair is self-healing, so `warn`. The local log keeps every kept and
+ * discarded value so the user can see exactly what changed; they sit under
+ * `properties`, which a default export reduces to types
+ * ([[decision-logging-full-local-detail-redacted-on-export]]).
  */
 export function logFrontmatterIntegrityEvent(event: FrontmatterIntegrityEvent): void {
 	if (event.type === "repair-failed") {
@@ -54,10 +55,15 @@ export function logFrontmatterIntegrityEvent(event: FrontmatterIntegrityEvent): 
 		{
 			filePath: event.filePath,
 			trigger: event.trigger,
-			duplicateKeys: event.duplicates.map((report) => report.key).join(", "),
-			duplicateKeyCount: event.duplicates.length,
+			duplicateKeys: event.duplicates.map((report) => report.key),
 			droppedValueCount: event.droppedValueCount,
-			discardedValueKeys: discarded.join(", "),
+			discardedValueKeys: discarded,
+			properties: Object.fromEntries(
+				event.duplicates.map((report) => [
+					report.key,
+					{ occurrences: report.occurrences, kept: report.keptValue, discarded: report.droppedValues },
+				])
+			),
 		}
 	);
 }
