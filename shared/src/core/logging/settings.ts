@@ -3,7 +3,8 @@ import { z } from "zod";
 import { DEFAULT_CONSOLE_MIRROR_LEVEL } from "./console-sink";
 import { LOG_LEVELS } from "./types";
 
-export const DEFAULT_LOG_LEVEL = "info" as const;
+/** What the log file receives by default — debug stays in memory unless the user asks for it on disk. */
+export const DEFAULT_FILE_LOG_LEVEL = "info" as const;
 
 const LEVEL_LABELS: Record<(typeof LOG_LEVELS)[number], string> = {
 	debug: "Debug (everything)",
@@ -16,16 +17,11 @@ const LEVEL_LABELS: Record<(typeof LOG_LEVELS)[number], string> = {
  * The universal Logging settings every plugin carries under a `logging` key.
  * Defaults are the privacy-preserving ones: nothing touches disk and the
  * console only sees warnings, so a user who never opens the section pays
- * nothing. See [[spec-logging-config-sinks-and-instrumentation]].
+ * nothing. Memory keeps every level regardless, so there is no setting for it
+ * ([[decision-debug-logs-are-always-retained-in-memory-and-hidden-by-default]]).
+ * See [[spec-logging-config-sinks-and-instrumentation]].
  */
 export const LoggingSettingsSchema = z.object({
-	minLevel: z
-		.enum(LOG_LEVELS)
-		.catch(DEFAULT_LOG_LEVEL)
-		.describe(
-			"Lowest level kept in the in-app log. Lower it to Debug while reproducing a problem, then raise it back — Debug is chatty."
-		)
-		.meta({ title: "Minimum level", enumLabels: LEVEL_LABELS }),
 	consoleMirror: z
 		.boolean()
 		.catch(true)
@@ -43,6 +39,13 @@ export const LoggingSettingsSchema = z.object({
 			"Write entries to a log file inside the plugin folder so they survive a restart. Off by default — the file can contain note paths and property values."
 		)
 		.meta({ title: "Write log files" }),
+	fileLevel: z
+		.enum(LOG_LEVELS)
+		.catch(DEFAULT_FILE_LOG_LEVEL)
+		.describe(
+			"Lowest level written to the log file. Debug entries are always kept in memory and shown in the logs window on request; pick Debug here only to keep them across restarts."
+		)
+		.meta({ title: "File level", enumLabels: LEVEL_LABELS }),
 	maxFileSizeKb: z
 		.number()
 		.int()
@@ -72,5 +75,23 @@ export const LoggingSettingsSchema = z.object({
 export type LoggingSettings = z.infer<typeof LoggingSettingsSchema>;
 
 /** The primary fields a user reaches for; the rest are rotation/retention tuning behind "advanced". */
-export const LOGGING_BASIC_FIELDS = ["minLevel", "consoleMirror", "consoleMirrorLevel", "fileLogging"] as const;
+export const LOGGING_BASIC_FIELDS = ["consoleMirror", "consoleMirrorLevel", "fileLogging", "fileLevel"] as const;
 export const LOGGING_ADVANCED_FIELDS = ["maxFileSizeKb", "maxFiles", "maxAgeDays"] as const;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null;
+}
+
+/**
+ * Persisted settings carried `minLevel`, a threshold for memory and every sink.
+ * Memory now keeps every level, so the one choice left for the user to have
+ * made is what reached the file. Runs on the raw `logging` object before the
+ * schema parse, which would otherwise drop the old key. Returns whether it
+ * changed anything, so the caller saves only then.
+ */
+export function migrateLegacyLoggingLevel(logging: unknown): boolean {
+	if (!isRecord(logging) || !("minLevel" in logging)) return false;
+	if (!("fileLevel" in logging)) logging["fileLevel"] = logging["minLevel"];
+	delete logging["minLevel"];
+	return true;
+}

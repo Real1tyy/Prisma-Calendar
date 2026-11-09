@@ -1,3 +1,4 @@
+import { migrateLegacyLoggingLevel } from "@real1ty/obsidian-plugins";
 import type { Plugin } from "obsidian";
 
 import { log } from "../../core/logging";
@@ -45,4 +46,16 @@ export async function migrateSharedExcludedProps(plugin: Plugin): Promise<void> 
 	log.info("settings", "Migrated excludedRecurringPropagatedProps into the three per-type fields", {
 		calendars: migrated,
 	});
+}
+
+/**
+ * Moves the old memory-and-sinks `logging.minLevel` into `logging.fileLevel`
+ * ([[decision-debug-logs-are-always-retained-in-memory-and-hidden-by-default]]).
+ * Runs on raw JSON before Zod parsing, which would otherwise drop the old key.
+ */
+export async function migrateLoggingFileLevel(plugin: Pick<Plugin, "loadData" | "saveData">): Promise<void> {
+	const raw: unknown = await plugin.loadData();
+	if (!isObject(raw) || !migrateLegacyLoggingLevel(raw["logging"])) return;
+	await plugin.saveData(raw);
+	log.info("settings", "Moved the logging level to the file level", { logging: raw["logging"] });
 }

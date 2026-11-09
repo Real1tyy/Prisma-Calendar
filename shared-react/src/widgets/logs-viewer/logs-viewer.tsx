@@ -29,7 +29,7 @@ import { testIdAttr } from "../../utils/test-id";
 import { VirtualList, type VirtualListHandle } from "../../virtual/virtual-list";
 import {
 	applyLogViewFilters,
-	EMPTY_LOG_VIEW_FILTERS,
+	DEFAULT_LOG_VIEW_FILTERS,
 	logTimeBounds,
 	observedScopes,
 	type LogViewFilters,
@@ -142,7 +142,7 @@ export const LogsViewer = memo(function LogsViewer({
 	const searchRef = useRef<HTMLInputElement>(null);
 
 	const [source, setSource] = useState(BUFFER_SOURCE);
-	const [filters, setFilters] = useState<LogViewFilters>(EMPTY_LOG_VIEW_FILTERS);
+	const [filters, setFilters] = useState<LogViewFilters>(DEFAULT_LOG_VIEW_FILTERS);
 	const [expanded, setExpanded] = useState<ReadonlySet<number>>(new Set());
 	const [selected, setSelected] = useState<ReadonlySet<number>>(new Set());
 	const [atTop, setAtTop] = useState(true);

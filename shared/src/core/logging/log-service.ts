@@ -2,15 +2,7 @@ import { Subject, type Observable } from "rxjs";
 
 import { MemorySink } from "./memory-sink";
 import { redactText, scrubSecrets } from "./redact";
-import { DEFAULT_LOG_LEVEL } from "./settings";
-import {
-	LOG_LEVEL_SEVERITY,
-	type LogChange,
-	type LogEntry,
-	type LogFilter,
-	type LogLevel,
-	type LogSink,
-} from "./types";
+import type { LogChange, LogEntry, LogFilter, LogLevel, LogSink } from "./types";
 
 export interface LogServiceOptions {
 	/**
@@ -19,8 +11,10 @@ export interface LogServiceOptions {
 	 * at their boundary.
 	 */
 	now: () => number;
+	/** Capacity of the info-and-above tier. */
 	capacity?: number;
-	level?: LogLevel;
+	/** Capacity of the debug tier. */
+	debugCapacity?: number;
 }
 
 /**
@@ -28,37 +22,34 @@ export interface LogServiceOptions {
  *
  * The write side is the whole codebase (`log.warn("indexer", …)` in place of
  * `console.warn`); the read side is the logs viewer, Doctor, and debug export,
- * all served from the always-present `MemorySink`. Every entry that clears the
- * threshold is also fanned out to the registered sinks (console mirror, file).
- * See [[spec-in-memory-log-service]] and [[spec-logging-config-sinks-and-instrumentation]].
+ * all served from the always-present `MemorySink`. Every entry, `debug`
+ * included, is kept in memory and fanned out to the registered sinks (console
+ * mirror, file); each sink applies its own level. There is no service-wide
+ * threshold: the detail that explains a problem must already be in memory when
+ * the problem happens
+ * ([[decision-debug-logs-are-always-retained-in-memory-and-hidden-by-default]]).
  */
 export class LogService {
 	readonly memory: MemorySink;
 	private readonly sinks: LogSink[] = [];
 	private readonly now: () => number;
 	private readonly changes = new Subject<LogChange>();
-	private level: LogLevel;
 	private seq = 0;
 
-	/** Emits per retained append and per `clear`, so consumers update without polling. */
+	/** Emits per append and per `clear`, so consumers update without polling. */
 	readonly changes$: Observable<LogChange> = this.changes.asObservable();
 
 	constructor(options: LogServiceOptions) {
 		this.now = options.now;
-		this.memory = new MemorySink(options.capacity);
-		this.level = options.level ?? DEFAULT_LOG_LEVEL;
+		this.memory = new MemorySink({ capacity: options.capacity, debugCapacity: options.debugCapacity });
 	}
 
 	get capacity(): number {
 		return this.memory.capacity;
 	}
 
-	getLevel(): LogLevel {
-		return this.level;
-	}
-
-	setLevel(level: LogLevel): void {
-		this.level = level;
+	get debugCapacity(): number {
+		return this.memory.debugCapacity;
 	}
 
 	get size(): number {
@@ -98,8 +89,6 @@ export class LogService {
 
 	log(level: LogLevel, scope: string, message: string, data?: unknown): void {
 		try {
-			if (LOG_LEVEL_SEVERITY[level] < LOG_LEVEL_SEVERITY[this.level]) return;
-
 			const entry: LogEntry = {
 				seq: this.seq++,
 				ts: this.now(),

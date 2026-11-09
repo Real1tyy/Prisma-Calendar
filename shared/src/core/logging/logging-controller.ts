@@ -1,8 +1,8 @@
 import { describeError } from "../../utils/errors";
 import { ConsoleSink } from "./console-sink";
 import type { LogService } from "./log-service";
-import type { LoggingSettings } from "./settings";
-import type { LogSink } from "./types";
+import { DEFAULT_FILE_LOG_LEVEL, type LoggingSettings } from "./settings";
+import { isAtLeast, type LogLevel, type LogSink } from "./types";
 
 /** What the controller needs from a file sink — `FileSink` in production, a fake under test. */
 export interface FileSinkLike extends LogSink {
@@ -33,7 +33,7 @@ function fileConfigChanged(previous: LoggingSettings | null, next: LoggingSettin
 }
 
 /**
- * Reconciles a `LogService`'s threshold and sinks with a `LoggingSettings`
+ * Reconciles a `LogService`'s sinks and their levels with a `LoggingSettings`
  * snapshot, so a settings change re-configures logging live without a
  * reload. The plugin owns the settings watch and the file sink factory (that
  * is where the vault adapter and the plugin directory live); the controller
@@ -49,6 +49,7 @@ export class LoggingController {
 	/** Every replaced sink's flush, chained so `dispose` can wait for all of them. */
 	private pendingTeardown: Promise<void> = Promise.resolve();
 	private applied: LoggingSettings | null = null;
+	private currentFileLevel: LogLevel = DEFAULT_FILE_LOG_LEVEL;
 
 	constructor(options: LoggingControllerOptions) {
 		this.service = options.service;
@@ -60,12 +61,16 @@ export class LoggingController {
 		return this.fileSink !== null;
 	}
 
+	get fileLevel(): LogLevel {
+		return this.currentFileLevel;
+	}
+
 	get hasConsoleSink(): boolean {
 		return this.removeConsoleSink !== null;
 	}
 
 	apply(settings: LoggingSettings): void {
-		this.service.setLevel(settings.minLevel);
+		this.currentFileLevel = settings.fileLevel;
 		this.consoleSink.setMinLevel(settings.consoleMirrorLevel);
 
 		if (settings.consoleMirror && this.removeConsoleSink === null) {
@@ -94,7 +99,13 @@ export class LoggingController {
 	private startFileSink(settings: LoggingSettings): void {
 		const sink = this.createFileSink(settings, (error) => this.disableFileSink(sink, error));
 		this.fileSink = sink;
-		this.removeFileSink = this.service.addSink(sink);
+		// Gated here rather than inside the sink so a level change applies live
+		// without rotating or re-opening the file.
+		this.removeFileSink = this.service.addSink({
+			write: (entry) => {
+				if (isAtLeast(entry.level, this.currentFileLevel)) sink.write(entry);
+			},
+		});
 		this.service.info(LOGGING_SCOPE, "File logging enabled", {
 			maxFileSizeKb: settings.maxFileSizeKb,
 			maxFiles: settings.maxFiles,

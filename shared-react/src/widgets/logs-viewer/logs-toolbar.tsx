@@ -9,7 +9,7 @@ import { TextInput } from "../../primitives/controls/text-input";
 import { testIdAttr } from "../../utils/test-id";
 import {
 	boundToFilterValue,
-	EMPTY_LOG_VIEW_FILTERS,
+	DEFAULT_LOG_VIEW_FILTERS,
 	formatLocalDateTimeInput,
 	formatLogDate,
 	parseLocalDateTime,
@@ -115,7 +115,7 @@ export const LogsToolbar = memo(function LogsToolbar({
 	const setLevels = useCallback((levels: readonly LogLevel[]) => patch({ levels }), [patch]);
 	const setScopes = useCallback((next: readonly string[]) => patch({ scopes: next }), [patch]);
 	const setQuery = useCallback((query: string) => patch({ query }), [patch]);
-	const reset = useCallback(() => onFiltersChange(EMPTY_LOG_VIEW_FILTERS), [onFiltersChange]);
+	const reset = useCallback(() => onFiltersChange(DEFAULT_LOG_VIEW_FILTERS), [onFiltersChange]);
 
 	// A bound typed back to the edge of the range reads as "unbounded" again.
 	const setFrom = useCallback(

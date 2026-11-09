@@ -52,7 +52,7 @@ export {
 	type FileSinkLike,
 	type LoggingControllerOptions,
 } from "./logging-controller";
-export { DEFAULT_LOG_CAPACITY, MemorySink } from "./memory-sink";
+export { DEFAULT_DEBUG_LOG_CAPACITY, DEFAULT_LOG_CAPACITY, MemorySink, type MemorySinkOptions } from "./memory-sink";
 export { OTLP_SEVERITY_NUMBER, toOtlpLogRecord, type OtlpLogRecord, type OtlpSeverityText } from "./otlp";
 export { PluginLog } from "./plugin-log";
 export {
@@ -63,10 +63,11 @@ export {
 	type LogExportRecord,
 } from "./serialize";
 export {
-	DEFAULT_LOG_LEVEL,
+	DEFAULT_FILE_LOG_LEVEL,
 	LOGGING_ADVANCED_FIELDS,
 	LOGGING_BASIC_FIELDS,
 	LoggingSettingsSchema,
+	migrateLegacyLoggingLevel,
 	type LoggingSettings,
 } from "./settings";
 export { isAtLeast, LOG_LEVEL_SEVERITY, LOG_LEVELS } from "./types";

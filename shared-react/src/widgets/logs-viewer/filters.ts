@@ -2,7 +2,7 @@ import { filterLogEntries, type LogEntry, type LogFilter, type LogLevel } from "
 
 /** What the toolbar holds. Every field is a string or a list so it round-trips through inputs. */
 export interface LogViewFilters {
-	/** Empty means every level — the chips start unpressed and unrestricted. */
+	/** Empty means every level. The viewer starts from {@link DEFAULT_LOG_VIEW_FILTERS}, which leaves debug out. */
 	levels: readonly LogLevel[];
 	/** Empty means every scope; several means any of them ("indexer" or "sync"). */
 	scopes: readonly string[];
@@ -12,7 +12,18 @@ export interface LogViewFilters {
 	query: string;
 }
 
-export const EMPTY_LOG_VIEW_FILTERS: LogViewFilters = { levels: [], scopes: [], from: "", to: "", query: "" };
+/**
+ * What the viewer opens with and **Reset filters** returns to: every level but
+ * debug. Debug is always in memory, one chip-press away, but the first screen
+ * stays readable ([[decision-debug-logs-are-always-retained-in-memory-and-hidden-by-default]]).
+ */
+export const DEFAULT_LOG_VIEW_FILTERS: LogViewFilters = {
+	levels: ["info", "warn", "error"],
+	scopes: [],
+	from: "",
+	to: "",
+	query: "",
+};
 
 /**
  * `datetime-local` carries no offset, and JS reads an offsetless date-time as

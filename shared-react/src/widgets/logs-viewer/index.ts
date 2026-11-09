@@ -1,7 +1,7 @@
 export {
 	applyLogViewFilters,
 	boundToFilterValue,
-	EMPTY_LOG_VIEW_FILTERS,
+	DEFAULT_LOG_VIEW_FILTERS,
 	formatLocalDateTimeInput,
 	formatLogDate,
 	formatLogTime,

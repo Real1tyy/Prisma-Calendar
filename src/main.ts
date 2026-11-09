@@ -45,7 +45,7 @@ import { openCalendarSelectModal, openDeviceRoleModal, openFirstLaunchModal, ope
 // import { startPrismaTour } from "./react/onboarding/prisma-tour";
 import { CustomCalendarSettingsSchema, type PrismaCalendarSettingsStore } from "./types";
 import { type CalDAVAccount, type ICSSubscription } from "./types/integrations";
-import { migrateSharedExcludedProps } from "./utils/calendar/migrations";
+import { migrateLoggingFileLevel, migrateSharedExcludedProps } from "./utils/calendar/migrations";
 import { createDefaultCalendarConfig } from "./utils/calendar/settings";
 
 export default class CustomCalendarPlugin extends Plugin {
@@ -78,6 +78,7 @@ export default class CustomCalendarPlugin extends Plugin {
 		setIconPickerImplementation(showReactIconPicker);
 		const isFirstLaunch = (await this.loadData()) === null;
 		await migrateSharedExcludedProps(this);
+		await migrateLoggingFileLevel(this);
 		this.settingsStore = new SettingsStore(this, CustomCalendarSettingsSchema);
 		await this.settingsStore.loadSettings();
 		this.settingsStore.watch(

@@ -142,12 +142,12 @@ Break: 60  # 1 hour lunch break
 
 ## Logging
 
-Prisma keeps a structured log of its own work — indexing, date parsing, recurring instances, CalDAV/ICS sync, settings migrations, license checks — in memory while Obsidian runs. The **Logging** section controls how much is kept and where else it goes. The defaults cost nothing: nothing is written to disk, and only warnings and errors reach the developer console.
+Prisma keeps a structured log of its own work — indexing, date parsing, recurring instances, CalDAV/ICS sync, settings migrations, license checks — in memory while Obsidian runs. Every level is kept, **Debug** included, so the detail behind a problem is already there when you go looking — you never have to turn it on and reproduce the problem first. Debug has its own share of memory, so it never pushes out a warning or an error. The **Logging** section controls where else entries go. The defaults cost nothing: nothing is written to disk, and only warnings and errors reach the developer console.
 
-- **Minimum level**: the lowest level kept in the in-app log — **Debug**, **Info** (default), **Warnings**, or **Errors only**. Lower it to Debug while reproducing a problem, then raise it back; Debug is chatty.
 - **Mirror to developer console**: also print entries to Obsidian's developer console (`Ctrl/Cmd+Shift+I`). Enabled by default.
-- **Console level**: the lowest level mirrored to the console (default: Warnings), independent of the minimum level above.
+- **Console level**: the lowest level mirrored to the console (default: Warnings).
 - **Write log files**: write entries as one JSON object per line into `.obsidian/plugins/prisma-calendar/logs/` inside your vault, so they survive a restart and can be attached to a bug report. Off by default — the files can contain note paths and property values, and if your sync tool syncs the `.obsidian` folder they travel with it.
+- **File level**: the lowest level written to the log file — **Debug**, **Info** (default), **Warnings**, or **Errors only**. Pick Debug only when you want debug entries to survive a restart; they are in memory and in the Logs view either way.
 - **Show advanced options** reveals the file limits:
   - **Rotate after (KB)**: when the current file grows past this size (default 512 KB) it is renamed to a dated file and a fresh current file starts.
   - **Keep rotated files**: how many dated files to keep (default 5). The oldest are deleted automatically.
@@ -178,12 +178,12 @@ New entries appear as they happen. Scroll down to read something and the view ho
 
 **Narrowing the table.** The controls above the table combine, so each one you add narrows what is left:
 
-- **Levels** — click **debug**, **info**, **warn** or **error** to keep only those. With none picked, every level shows. Each level keeps its color on the chip and on every line.
+- **Levels** — **info**, **warn** and **error** start pressed and **debug** does not, so debug lines stay out of the way until you need them. Press **debug** to show them, or release a level to hide it. With none pressed, every level shows. Each level keeps its color on the chip and on every line.
 - **Scope** — on the same row, the part of the plugin an entry came from (`indexing`, `recurring`, `sync`, …). Only scopes actually present get a chip. Pick one to keep only its entries, or several to keep entries from any of them.
 - **Search** — matches the message, the scope and the structured data, so a note name, an error code or a property name all find their entries. Matches are highlighted.
 - **From** / **To** — start filled in with the oldest and newest entry's time, in your local clock. Type a narrower time, or drag the two handles of the slider beside them.
 
-The counter reads `247 entries · 12 shown`, so you always know how much the filters are hiding. **Reset filters** clears them all.
+The counter reads `247 entries · 12 shown`, so you always know how much the filters are hiding — hidden debug lines included. **Reset filters** clears them all and hides debug again.
 
 **Keyboard.** The search box has focus as soon as the view opens, so you can start typing. `Ctrl/Cmd+F` jumps back to it from anywhere in the view. `Ctrl/Cmd+A` selects every shown line, and pressing it again clears the selection.
 
