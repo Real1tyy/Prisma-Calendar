@@ -10,27 +10,22 @@ interface LegacyCalendar {
 	excludedCategorySeriesProps?: unknown;
 }
 
-interface LegacyData {
-	calendars?: LegacyCalendar[];
-}
+type RawSettings = Record<string, unknown>;
+
+/** One step over the raw stored settings; returns whether it changed anything. */
+type SettingsMigration = (data: RawSettings) => boolean;
 
 function isObject(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null;
 }
 
-/**
- * Migrates the shared `excludedRecurringPropagatedProps` setting into three per-type fields.
- * Runs on raw JSON before Zod parsing so the old field is still accessible.
- */
-export async function migrateSharedExcludedProps(plugin: Plugin): Promise<void> {
-	const raw: unknown = await plugin.loadData();
-	if (!isObject(raw)) return;
-
-	const data = raw as LegacyData;
-	if (!Array.isArray(data.calendars)) return;
+/** The shared `excludedRecurringPropagatedProps` setting becomes three per-type fields. */
+function migrateSharedExcludedProps(data: RawSettings): boolean {
+	const calendars = data["calendars"];
+	if (!Array.isArray(calendars)) return false;
 
 	let migrated = 0;
-	for (const cal of data.calendars) {
+	for (const cal of calendars as LegacyCalendar[]) {
 		const shared = cal.excludedRecurringPropagatedProps;
 		if (!shared) continue;
 
@@ -41,21 +36,38 @@ export async function migrateSharedExcludedProps(plugin: Plugin): Promise<void> 
 		migrated++;
 	}
 
-	if (migrated === 0) return;
-	await plugin.saveData(data);
+	if (migrated === 0) return false;
 	log.info("settings", "Migrated excludedRecurringPropagatedProps into the three per-type fields", {
 		calendars: migrated,
 	});
+	return true;
 }
 
 /**
- * Moves the old memory-and-sinks `logging.minLevel` into `logging.fileLevel`
+ * The old memory-and-sinks `logging.minLevel` becomes `logging.fileLevel`
  * ([[decision-debug-logs-are-always-retained-in-memory-and-hidden-by-default]]).
- * Runs on raw JSON before Zod parsing, which would otherwise drop the old key.
  */
-export async function migrateLoggingFileLevel(plugin: Pick<Plugin, "loadData" | "saveData">): Promise<void> {
+function migrateLoggingFileLevel(data: RawSettings): boolean {
+	if (!migrateLegacyLoggingLevel(data["logging"])) return false;
+	log.info("settings", "Moved the logging level to the file level", { logging: data["logging"] });
+	return true;
+}
+
+/** In the order they were introduced — a later step may rely on an earlier one's shape. */
+const SETTINGS_MIGRATIONS: readonly SettingsMigration[] = [migrateSharedExcludedProps, migrateLoggingFileLevel];
+
+/**
+ * Runs every stored-settings migration on the raw JSON before the Zod parse,
+ * which would otherwise drop the old keys. Loads once and saves once, only when
+ * some step changed something.
+ */
+export async function migrateSettings(plugin: Pick<Plugin, "loadData" | "saveData">): Promise<void> {
 	const raw: unknown = await plugin.loadData();
-	if (!isObject(raw) || !migrateLegacyLoggingLevel(raw["logging"])) return;
-	await plugin.saveData(raw);
-	log.info("settings", "Moved the logging level to the file level", { logging: raw["logging"] });
+	if (!isObject(raw)) return;
+
+	let changed = false;
+	for (const migrate of SETTINGS_MIGRATIONS) {
+		if (migrate(raw)) changed = true;
+	}
+	if (changed) await plugin.saveData(raw);
 }
