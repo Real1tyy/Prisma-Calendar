@@ -256,11 +256,11 @@ Enable "Generate Past Events" on a recurring event to backfill physical instance
 ### Virtual Events
 Beyond generation horizon, read-only [virtual events](./virtual-events) show complete pattern without creating files.
 
-### Duplicating Physical Recurring Instances
+### Duplicating Recurring Events
 
-Right-click physical instance → "Duplicate"
+Right-click a recurring source or a physical instance → "Duplicate"
 
-Duplicate copies the event's frontmatter and body into a new standalone event, stripping recurrence properties (RRuleID, Source, Instance Date). The duplicate gets a new [ZettelID](../management/zettelid-naming) and is completely independent from the recurring series — it won't be affected by instance count limits.
+Duplicate copies the event's frontmatter and body into a new standalone, one-off event and strips every recurrence property (RRule, RRuleSpec, RRuleUntil, RRuleID, Source, Instance Date, Future Instances Count, Generate Past Events). The duplicate gets a new [ZettelID](../management/zettelid-naming) and is completely independent from the recurring series — it never starts a series of its own and isn't affected by instance count limits. The same applies to batch duplicate, cloning to another week and "Duplicate remaining week days". To start a new series from an existing one, create a new event and give it its own recurrence.
 
 ### Editing Physical Recurring Events
 

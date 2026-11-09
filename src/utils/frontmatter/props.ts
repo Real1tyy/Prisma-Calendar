@@ -8,6 +8,7 @@ import {
 	NOTIFICATION_SYSTEM_PROP_KEYS,
 	SYSTEM_PROP_KEYS,
 } from "../../types/settings";
+import { RECURRENCE_FIELDS } from "../calendar/settings";
 
 /**
  * Parses a custom done property DSL expression.
@@ -133,13 +134,15 @@ export const assignListToFrontmatter = (fm: Frontmatter, prop: string, items: st
 };
 
 /**
- * Removes properties from frontmatter that should not be cloned/duplicated.
- * These include recurring event metadata and notification status that are specific
- * to the original event and should not carry over to clones.
+ * A copy is always a one-off event. Keeping `RRule` without the original's
+ * `RRuleID` would mint a second series from the copy's ZettelID, and keeping
+ * the `RRuleID` would collide with the original series (one source per id), so
+ * every recurrence field goes — plus the notification flag, which belongs to
+ * the original occurrence.
  */
 export const removeNonCloneableProperties = (frontmatter: Frontmatter, settings: SingleCalendarConfig): void => {
-	Reflect.deleteProperty(frontmatter, settings.rruleIdProp);
-	Reflect.deleteProperty(frontmatter, settings.instanceDateProp);
-	Reflect.deleteProperty(frontmatter, settings.sourceProp);
+	for (const field of RECURRENCE_FIELDS) {
+		Reflect.deleteProperty(frontmatter, settings[field]);
+	}
 	Reflect.deleteProperty(frontmatter, settings.alreadyNotifiedProp);
 };

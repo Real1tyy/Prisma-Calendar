@@ -450,18 +450,6 @@ export const assignListToFrontmatter = (fm: Frontmatter, prop: string, items: st
 	}
 };
 
-/**
- * Removes properties from frontmatter that should not be cloned/duplicated.
- * These include recurring event metadata and notification status that are specific
- * to the original event and should not carry over to clones.
- */
-export const removeNonCloneableProperties = (frontmatter: Frontmatter, settings: SingleCalendarConfig): void => {
-	Reflect.deleteProperty(frontmatter, settings.rruleIdProp);
-	Reflect.deleteProperty(frontmatter, settings.instanceDateProp);
-	Reflect.deleteProperty(frontmatter, settings.sourceProp);
-	Reflect.deleteProperty(frontmatter, settings.alreadyNotifiedProp);
-};
-
 export interface TimePropagationDiff {
 	startChange?: { oldValue: string; newValue: string } | undefined;
 	endChange?: { oldValue: string; newValue: string } | undefined;
