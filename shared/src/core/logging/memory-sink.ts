@@ -30,11 +30,9 @@ function mergeBySeq(a: readonly BufferedEntry[], b: readonly BufferedEntry[]): B
 	const merged: BufferedEntry[] = [];
 	let i = 0;
 	let j = 0;
-	for (;;) {
+	while (i < a.length && j < b.length) {
 		const left = a[i];
 		const right = b[j];
-		if (left === undefined) return right === undefined ? merged : merged.concat(b.slice(j));
-		if (right === undefined) return merged.concat(a.slice(i));
 		if (left.entry.seq <= right.entry.seq) {
 			merged.push(left);
 			i++;
@@ -43,6 +41,7 @@ function mergeBySeq(a: readonly BufferedEntry[], b: readonly BufferedEntry[]): B
 			j++;
 		}
 	}
+	return merged.concat(a.slice(i), b.slice(j));
 }
 
 export interface MemorySinkOptions {
