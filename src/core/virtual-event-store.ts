@@ -7,7 +7,6 @@ import { v4 as uuidv4 } from "uuid";
 import { VIRTUAL_EVENTS_CODE_FENCE } from "../constants";
 import { VirtualEventDataSchema, type VirtualEventData } from "../types/calendar";
 import type { EventSaveData } from "../types/event-boundaries";
-import type { IntegrationDeletionTombstone } from "../types/integrations";
 import type { SingleCalendarConfig } from "../types/settings";
 import { allDayEnd } from "../utils/dates/all-day";
 import { log } from "./logging";
@@ -40,7 +39,6 @@ export class VirtualEventStore {
 			assertWritable: () => void;
 			whenReady?: () => Promise<void>;
 			isReadOnly?: () => boolean;
-			legacyDeletions?: () => readonly IntegrationDeletionTombstone[];
 		} = { assertWritable: () => {} }
 	) {
 		const settings = settingsStore.value;
@@ -186,7 +184,6 @@ export class VirtualEventStore {
 		if (this.destroyed || this.dataOptions.isReadOnly?.()) return;
 		return getPrismaDataFile(this.app, this.directory).ensure(
 			normalizePath(`${this.directory}/${this.fileName}.md`),
-			this.dataOptions.legacyDeletions?.() ?? [],
 			this.dataOptions.assertWritable
 		);
 	}

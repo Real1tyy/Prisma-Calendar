@@ -181,7 +181,6 @@ export class CalendarBundle {
 			assertWritable: () => this.fileRepository.assertWritable("Prisma data migration"),
 			whenReady: () => this.fileRepository.waitUntilReady(),
 			isReadOnly: () => this.fileRepository.isReadOnly,
-			legacyDeletions: () => this.mainSettingsStore.currentSettings.integrationDeletionTombstones ?? [],
 		});
 		this.eventStore.setHolidayStore(this.holidayStore);
 		this.eventStore.setVirtualEventStore(this.virtualEventStore);

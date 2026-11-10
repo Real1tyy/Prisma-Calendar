@@ -22,6 +22,7 @@ Anything you do yourself — editing a note on two devices at once — is the sy
 ## What to sync
 
 - **Your notes** — of course.
+- **Prisma.md data files** (`{calendar-folder}/Prisma.md`). Stores manual virtual events and integration deletion history. Because it is a normal Markdown note in your vault, any vault sync tool (including Obsidian Sync) synchronizes it automatically without extra configuration. See [The Prisma.md data file](../events/virtual-events.md#storage).
 - **Prisma's settings** (`.obsidian/plugins/prisma-calendar/data.json`). The property order, the done value, the recurring-instance count and the property names are inputs to every automatic write; devices with different settings produce different files. Most sync tools sync plugin settings by default; LiveSync needs *Sync hidden files* / plugin settings sync turned on.
 - Do **not** sync per-device state. Prisma keeps CalDAV sync tokens and the Writer/Reader choice in the browser's local storage, where each device can differ safely.
 

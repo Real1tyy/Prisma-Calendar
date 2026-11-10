@@ -70,11 +70,7 @@ export class PrismaDataFile {
 			.flatMap(([, record]) => (record.deleted ? [record.identity] : []));
 	}
 
-	async ensure(
-		legacyPath: string | undefined,
-		legacyDeletions: readonly IntegrationDeletionTombstone[],
-		gate: WriteGate
-	): Promise<void> {
+	async ensure(legacyPath: string | undefined, gate: WriteGate): Promise<void> {
 		await this.serial(async () => {
 			gate();
 			const file = await this.resolveOrCreate();
@@ -90,10 +86,6 @@ export class PrismaDataFile {
 			await this.edit(file, (current) => {
 				migration.alreadyComplete ||= marker !== "" && current.includes(marker);
 				this.mergeRecords(current);
-				for (const identity of legacyDeletions) {
-					const key = integrationDeletionKey(identity);
-					if (!this.records.has(key)) this.records.set(key, { identity, deleted: true, revision: 0 });
-				}
 				const existingRaw = blockRaw(current, VIRTUAL_EVENTS_CODE_FENCE);
 				const existing = existingRaw === null ? [] : VirtualEventsFileSchema.parse(JSON.parse(existingRaw));
 				const byId = new Map(existing.map((event) => [event.id, event]));
