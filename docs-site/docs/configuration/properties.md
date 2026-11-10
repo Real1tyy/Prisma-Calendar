@@ -130,7 +130,7 @@ End Day: 2026-01-08
 
 For consistency and readability I recommend switching to `Start Day`, so every all-day note reads as `Start Day` / `End Day` next to the timed `Start Date` / `End Date`. Nothing forces the switch. To make it:
 
-1. **Rename the property in your notes.** In Obsidian's **All properties** view (core Properties plugin), right-click `Date`, choose **Rename**, and enter `Start Day`. Obsidian rewrites every note that uses it. Rename only if `Date` is not used by other plugins or queries for something else.
+1. **Rename the property in your notes.** In every event note in the calendar's folder, change the frontmatter key `Date:` to `Start Day:` — the value stays as it is. Use a find-and-replace across the folder or a small script; Prisma does not rename notes for you. Rename only notes where `Date` is the all-day date, not where another plugin or query uses it for something else.
 2. **Point the calendar at it.** Open the calendar's **Properties** settings and set **Start day property** to `Start Day`.
 3. **Update your own queries.** Bases views, Dataview queries or templates that read `Date` for all-day events should read `Start Day`.
 
