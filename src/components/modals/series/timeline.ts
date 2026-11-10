@@ -197,7 +197,7 @@ export function renderTimelineInto(
 		const previewEvent: PreviewEventData = {
 			title: event.title,
 			start: new Date(event.start),
-			end: event.type === "timed" && event.end ? new Date(event.end) : null,
+			end: new Date(event.end),
 			allDay: event.type === "allDay",
 			extendedProps: { filePath: event.ref.filePath },
 		};
@@ -252,8 +252,13 @@ export function renderTimelineInto(
 		}
 
 		if (event.type === "allDay") {
-			const end = new Date(startDate);
-			end.setHours(startDate.getHours() + ALL_DAY_DISPLAY_HOURS);
+			const nextDay = new Date(startDate);
+			nextDay.setDate(nextDay.getDate() + 1);
+			let end = new Date(event.end);
+			if (end <= nextDay) {
+				end = new Date(startDate);
+				end.setHours(startDate.getHours() + ALL_DAY_DISPLAY_HOURS);
+			}
 			return { ...base, end, type: "range" as const };
 		}
 

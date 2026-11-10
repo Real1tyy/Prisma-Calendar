@@ -186,6 +186,8 @@ project: Q4 Planning
 
 **See Also**: [Untracked Events documentation](../features/events/untracked-events.md) for details on the untracked events dropdown
 
+The event API also accepts and returns the exclusive all-day `end`. Converting a note to a virtual event preserves the same span.
+
 ## How Prisma decides event type
 
 Event type is resolved in two steps. The `All Day` property is checked first; if it is absent, the type is inferred from the value type of the date properties.

@@ -41,7 +41,7 @@ function getTaskTimestamps(event: CalendarEvent): { startMs: number; endMs: numb
 	const startMs = startDate.getTime();
 
 	if (event.type === "allDay") {
-		return { startMs, endMs: startMs + MS_PER_DAY };
+		return { startMs, endMs: new Date(event.end).getTime() };
 	}
 
 	const endMs = new Date(event.end).getTime();

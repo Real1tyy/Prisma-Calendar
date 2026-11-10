@@ -19,11 +19,16 @@ import { cleanupTitle } from "./events/naming";
 import { extractPropertyText, getDisplayProperties } from "./frontmatter/display";
 import { getInternalProperties } from "./frontmatter/props";
 
+export function lastAllDayDate(end: Date): Date {
+	const last = new Date(end);
+	last.setDate(last.getDate() - 1);
+	return last;
+}
+
 export function formatAllDayDateRange(start: Date, end: Date | null, formatDate: (date: Date) => string): string {
 	const first = formatDate(start);
 	if (!end) return first;
-	const last = new Date(end);
-	last.setDate(last.getDate() - 1);
+	const last = lastAllDayDate(end);
 	return last > start ? `${first} – ${formatDate(last)}` : first;
 }
 

@@ -300,6 +300,7 @@ export function serializeEvent(event: ParsedEvent): PrismaEventOutput {
 		output.end = event.end;
 	} else if (event.type === "allDay") {
 		output.start = event.start;
+		output.end = event.end;
 	}
 
 	if (event.color) output.color = event.color;

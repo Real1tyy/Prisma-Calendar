@@ -9,7 +9,6 @@ import { UpdateEventCommand } from "../../core/commands";
 import { openEventCreateModal } from "../../react/modals/event/event-create-modal";
 import {
 	isAnyVirtual,
-	isTimedEvent,
 	type CalendarEvent,
 	type CalendarEventData,
 	type EventDateTime,
@@ -288,7 +287,7 @@ export function mapEventToPrismaInput(
 	const allColors = resolveAllEventColors(event.meta, bundle, colorEvaluator);
 	const eventColor = allColors[0] ?? bundle.settingsStore.currentSettings.defaultNodeColor;
 	const start = stripZ(event.start);
-	const end = isTimedEvent(event) ? stripZ(event.end) : undefined;
+	const end = stripZ(event.end);
 
 	const classNames = ["regular-event"];
 	if (isAnyVirtual(event.virtualKind)) {

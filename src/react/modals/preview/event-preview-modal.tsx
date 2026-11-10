@@ -8,7 +8,12 @@ import { cls, CSS_PREFIX, tid } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { Frontmatter } from "../../../types";
 import { removeZettelId } from "../../../utils/events/zettel-id";
-import { categorizeProperties, formatDateOnlyDisplay, formatDateTimeDisplay } from "../../../utils/format";
+import {
+	categorizeProperties,
+	formatDateOnlyDisplay,
+	formatDateTimeDisplay,
+	lastAllDayDate,
+} from "../../../utils/format";
 
 export interface PreviewEventData {
 	title: string;
@@ -83,7 +88,8 @@ export function EventPreviewContent({ app, bundle, event, onClose }: EventPrevie
 		onClose();
 	};
 
-	const showEnd = Boolean(event.end);
+	const displayEnd = event.allDay && event.end ? lastAllDayDate(event.end) : event.end;
+	const showEnd = Boolean(displayEnd && (!event.allDay || (event.start && displayEnd > event.start)));
 	let durationLabel: string | null = null;
 	if (event.start && event.end && !event.allDay) {
 		const startDate = intoDate(event.start);
@@ -112,7 +118,9 @@ export function EventPreviewContent({ app, bundle, event, onClose }: EventPrevie
 					{showEnd && (
 						<div className={cls("event-preview-time-item")}>
 							<div className={cls("event-preview-label")}>End</div>
-							<div className={cls("event-preview-value")}>{formatPreviewDateTime(event.end ?? null, event.allDay)}</div>
+							<div className={cls("event-preview-value")}>
+								{formatPreviewDateTime(displayEnd ?? null, event.allDay)}
+							</div>
 						</div>
 					)}
 					{durationLabel !== null && (

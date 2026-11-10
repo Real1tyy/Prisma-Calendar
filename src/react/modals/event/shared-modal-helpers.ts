@@ -6,7 +6,7 @@ import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { FREE_MAX_EVENT_PRESETS } from "../../../core/license";
 import { MinimizedModalManager, type MinimizedModalState } from "../../../core/minimized-modal-manager";
 import type { Frontmatter } from "../../../types";
-import { isTimedEvent, type CalendarEvent } from "../../../types/calendar";
+import { type CalendarEvent } from "../../../types/calendar";
 import type { EventPreset } from "../../../types/settings";
 import type { EventFormValues } from "../../event-form/event-form";
 import type { EventModalData } from "./event-create-modal";
@@ -115,7 +115,7 @@ export function toEventModalData(event: CalendarEvent): EventModalData {
 	return {
 		title: event.title,
 		start: event.start,
-		...(isTimedEvent(event) ? { end: event.end } : {}),
+		end: event.end,
 		allDay: event.allDay,
 		extendedProps: {
 			filePath: event.ref.filePath,

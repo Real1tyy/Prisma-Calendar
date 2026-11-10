@@ -2,7 +2,7 @@ import { getTFileOrThrow, type Command } from "@real1ty/obsidian-plugins";
 import { TFile, type App } from "obsidian";
 
 import type { VirtualEventData } from "../../types/calendar";
-import { stripZ } from "../../utils/dates/iso";
+import { buildEventSchemaInput, createEventSchema } from "../../types/event-schemas";
 import { getFileAndFrontmatter } from "../../utils/obsidian";
 import type { CalendarBundle } from "../calendar-bundle";
 
@@ -79,11 +79,11 @@ export class ConvertToVirtualCommand implements Command {
 		const { frontmatter } = getFileAndFrontmatter(this.app, this.filePath);
 		const settings = this.bundle.settingsStore.currentSettings;
 
-		const allDay = frontmatter[settings.allDayProp] === true;
-		const start = allDay
-			? stripZ(frontmatter[settings.dateProp] as string) || ""
-			: stripZ(frontmatter[settings.startProp] as string) || "";
-		const end = allDay ? null : stripZ(frontmatter[settings.endProp] as string) || null;
+		const event = createEventSchema(settings).parse(
+			buildEventSchemaInput({ filePath: this.filePath, folder: file.parent?.path ?? "", frontmatter }, settings)
+		);
+		if (!event) throw new Error("Cannot convert an event without a usable date");
+		const { start, end, allDay } = event;
 
 		const result = await this.bundle.virtualEventStore.add({
 			title: (settings.titleProp ? (frontmatter[settings.titleProp] as string) : undefined) ?? file.basename,
