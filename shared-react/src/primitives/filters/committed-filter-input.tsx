@@ -18,12 +18,12 @@ export interface CommittedFilterInputHandle {
  * Props for `CommittedFilterInput`. Derived from `FilterInputProps` so we
  * never drift from the shared input's surface — strip out the controlled
  * fields (`value` / `onChange`) which this wrapper owns, the imperative
- * `inputRef` (replaced by `handleRef`), and the input-only `autoFocus` /
+ * `inputRef` (replaced by `handleRef`), and the input-only `focusOnMount` /
  * `onEscape` which aren't part of this primitive's contract.
  */
 export type CommittedFilterInputProps = Omit<
 	FilterInputProps,
-	"value" | "onChange" | "inputRef" | "autoFocus" | "onEscape"
+	"value" | "onChange" | "inputRef" | "focusOnMount" | "onEscape"
 > & {
 	initialValue?: string | undefined;
 	onCommit: (value: string) => void;

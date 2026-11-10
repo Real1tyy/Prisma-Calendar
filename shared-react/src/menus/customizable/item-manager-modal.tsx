@@ -139,6 +139,7 @@ export const ItemManagerContent = memo(function ItemManagerContent({ app, store 
 					onChange={setQuery}
 					placeholder="Search items..."
 					className={`${cssPrefix}modal-search-input`}
+					focusOnMount="desktop"
 				/>
 			</div>
 

@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type Ref } from "react";
 
-import { shouldAutoFocus } from "../../hooks/focus/use-focus";
+import { shouldAutoFocus, type AutoFocusPolicy } from "../../hooks/focus/use-focus";
 
 const DEFAULT_DEBOUNCE_MS = 150;
 
@@ -27,7 +27,8 @@ export interface FilterInputProps {
 	placeholder?: string | undefined;
 	className?: string | undefined;
 	debounceMs?: number | undefined;
-	autoFocus?: boolean | undefined;
+	/** Focus the input on mount under this device policy; omit to never focus it. */
+	focusOnMount?: AutoFocusPolicy | undefined;
 	testId?: string | undefined;
 	onEscape?: (() => void) | undefined;
 	/**
@@ -49,7 +50,7 @@ export const FilterInput = memo(function FilterInput({
 	placeholder = "Filter...",
 	className,
 	debounceMs = DEFAULT_DEBOUNCE_MS,
-	autoFocus = false,
+	focusOnMount,
 	testId,
 	onEscape,
 	flushOnBlur = false,
@@ -134,7 +135,7 @@ export const FilterInput = memo(function FilterInput({
 			onChange={handleChange}
 			onKeyDown={handleKeyDown}
 			onBlur={handleBlur}
-			autoFocus={autoFocus && shouldAutoFocus("desktop")}
+			autoFocus={focusOnMount !== undefined && shouldAutoFocus(focusOnMount)}
 			data-testid={testId}
 		/>
 	);
