@@ -39,6 +39,7 @@ import { createLicenseManager, type LicenseManager } from "./core/license";
 import { createPrismaLogging, log, type PrismaLogging } from "./core/logging";
 import { registerPrismaLogsView, type PrismaLogsView } from "./core/logs-view";
 import { installPrismaPerfBridge } from "./core/perf-bridge";
+import { transformLegacyVirtualEventsFiles } from "./core/virtual-event-migration";
 import { buildWhatsNewConfig } from "./core/whats-new-config";
 import { openCalendarSelectModal, openDeviceRoleModal, openFirstLaunchModal, openICSImportModal } from "./react/modals";
 // Onboarding tour disabled for now — kept in the codebase but not wired up.
@@ -253,6 +254,7 @@ export default class CustomCalendarPlugin extends Plugin {
 	}
 
 	async ensureCalendarBundlesReady(): Promise<void> {
+		await transformLegacyVirtualEventsFiles(this.app, this.settingsStore.currentSettings.calendars);
 		for (const bundle of this.calendarBundles) {
 			await bundle.initialize();
 		}

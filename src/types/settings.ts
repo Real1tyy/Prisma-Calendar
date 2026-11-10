@@ -142,7 +142,7 @@ const GeneralSettingsSchema = z
 		virtualEventsFileName: z
 			.string()
 			.catch("Virtual Events")
-			.describe("Legacy virtual events file name to migrate into Prisma.md (without .md extension)"),
+			.describe("File name for the virtual events storage file (without .md extension)"),
 		eventPresets: z.array(EventPresetSchema).catch([]),
 		defaultPresetId: z.string().optional(),
 		exportFolder: z.string().catch("Prisma-Exports").describe("Folder where exported .ics files are saved"),

@@ -8,7 +8,6 @@ import {
 } from "../../../types/integrations";
 import type { CustomCalendarSettings } from "../../../types/settings";
 import { log } from "../../logging";
-import { getPrismaDataFile } from "../../prisma-data-file";
 import { BaseSyncService, yieldToMainThread, type BaseSyncServiceOptions } from "../base-sync-service";
 import { createImportedEventFilter, parseICSContent } from "../ics-import";
 import { CalDAVClientService, type CalDAVFetchedEvent } from "./client";
@@ -207,8 +206,7 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 			// subsequent response carries authoritative RFC 6578 tombstones.
 			const tombstonedObjectHrefs = usedFullResync ? [] : deleted;
 
-			const deletionData = getPrismaDataFile(this.app, this.bundle.settingsStore.currentSettings.directory);
-			await deletionData.refresh(() => this.bundle.fileRepository.assertWritable("read integration deletion history"));
+			const userDeletedEvents = this.bundle.integrationDeletionStore?.getDeletedEvents?.() ?? [];
 			const plan = computeCaldavSyncPlan({
 				accountId: this.account.id,
 				calendarHref: this.calendar.url,
@@ -221,7 +219,7 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 				// An invalid expression throws out of the planner, so the sync fails
 				// before any action runs instead of deleting every synced note.
 				isIncluded: this.createEventFilter(filterExpression),
-				userDeletedEvents: deletionData.getDeletedEvents(),
+				userDeletedEvents,
 			});
 
 			let processedCount = 0;

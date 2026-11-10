@@ -77,10 +77,11 @@ class IntegrationBatchDeleteCommand extends MacroCommand {
 
 	private async persist(identities: readonly IntegrationDeletionTombstone[], deleted: boolean): Promise<void> {
 		if (identities.length === 0) return;
-		const data = this.bundle.prismaDataFile;
-		await data.setDeleted(identities, deleted, () =>
-			this.bundle.fileRepository.assertWritable("batch deletion history")
-		);
+		if (deleted) {
+			await this.bundle.integrationDeletionStore.addBatch(identities);
+		} else {
+			await this.bundle.integrationDeletionStore.removeBatch(identities);
+		}
 	}
 }
 

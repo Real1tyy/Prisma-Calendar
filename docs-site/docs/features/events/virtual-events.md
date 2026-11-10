@@ -100,7 +100,7 @@ Reader devices (configured with Read-only mode under **Settings → General**) r
 
 #### Automatic migration
 
-On a writer device, existing `Virtual Events.md` files migrate automatically to `Prisma.md` once vault indexing completes. Event IDs and properties remain intact. The original file retains any custom surrounding text and receives a link pointing to `Prisma.md`.
+On a writer device, an existing `Virtual Events.md` file migrates to `Prisma.md` on startup. If `Prisma.md` does not yet exist, the file is renamed directly, keeping all surrounding text. If `Prisma.md` already exists, virtual events merge into its code block.
 
 #### Changing folders
 

@@ -3,7 +3,6 @@ import { describeError } from "@real1ty/obsidian-plugins";
 import type { ICSSubscription } from "../../../types/integrations";
 import type { CustomCalendarSettings } from "../../../types/settings";
 import { log } from "../../logging";
-import { getPrismaDataFile } from "../../prisma-data-file";
 import { BaseSyncService, yieldToMainThread, type BaseSyncServiceOptions } from "../base-sync-service";
 import {
 	createImportedEventFilter,
@@ -111,8 +110,6 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 				});
 			}
 
-			const deletionData = getPrismaDataFile(this.app, this.bundle.settingsStore.currentSettings.directory);
-			await deletionData.refresh(() => this.bundle.fileRepository.assertWritable("read integration deletion history"));
 			const plan = computeIcsSubscriptionSyncPlan({
 				subscriptionId: this.subscription.id,
 				remoteEvents: parsed.events,
@@ -130,7 +127,7 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 					this.bundle.settingsStore.currentSettings,
 					this.subscription.timezone
 				),
-				userDeletedEvents: deletionData.getDeletedEvents(),
+				userDeletedEvents: this.bundle.integrationDeletionStore?.getDeletedEvents?.() ?? [],
 			});
 
 			let processedCount = 0;

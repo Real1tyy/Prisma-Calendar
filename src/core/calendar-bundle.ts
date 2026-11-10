@@ -37,6 +37,7 @@ import { IndexerRegistry } from "./indexer-registry";
 import { formatFirstIndexNotice, tallyIndexedRows, type IndexingTally } from "./indexing-stats";
 import { CalDAVSyncService } from "./integrations/caldav/sync";
 import { CalDAVSyncStateManager } from "./integrations/caldav/sync-state-manager";
+import { IntegrationDeletionStore } from "./integrations/deleted-event-tombstones";
 import { ICSSubscriptionSyncService } from "./integrations/ics-subscription/sync";
 import { ICSSubscriptionSyncStateManager } from "./integrations/ics-subscription/sync-state-manager";
 import { SyncState } from "./integrations/sync-state";
@@ -46,7 +47,6 @@ import { createNavigationHistory, type NavigationEntry } from "./navigation-hist
 import type { NotificationManager } from "./notification-manager";
 import type { Parser } from "./parser";
 import type { PrerequisiteTracker } from "./prerequisite-tracker";
-import { getPrismaDataFile, type PrismaDataFile } from "./prisma-data-file";
 import type { RecurringEventManager } from "./recurring-event-manager";
 import { CalendarSettingsStore } from "./settings-store";
 import { VirtualEventStore } from "./virtual-event-store";
@@ -88,11 +88,9 @@ export class CalendarBundle {
 	public readonly icsSubscriptionSyncStateManager: ICSSubscriptionSyncStateManager;
 	public readonly holidayStore: HolidayStore;
 	public readonly virtualEventStore: VirtualEventStore;
+	public readonly integrationDeletionStore: IntegrationDeletionStore;
 	public readonly viewType: string;
 	private readonly firstIndexNoticeStore = new FirstIndexNoticeStore();
-	get prismaDataFile(): PrismaDataFile {
-		return getPrismaDataFile(this.app, this.settingsStore.currentSettings.directory);
-	}
 
 	private app: App;
 	private directory: string;
@@ -177,11 +175,8 @@ export class CalendarBundle {
 			},
 		});
 		this.holidayStore = new HolidayStore(this.app, this.settingsStore.currentSettings.holidays as HolidayConfig);
-		this.virtualEventStore = new VirtualEventStore(this.app, this.settingsStore.settings$, {
-			assertWritable: () => this.fileRepository.assertWritable("Prisma data migration"),
-			whenReady: () => this.fileRepository.waitUntilReady(),
-			isReadOnly: () => this.fileRepository.isReadOnly,
-		});
+		this.virtualEventStore = new VirtualEventStore(this.app, this.settingsStore.settings$);
+		this.integrationDeletionStore = new IntegrationDeletionStore(this.app, this.settingsStore.settings$);
 		this.eventStore.setHolidayStore(this.holidayStore);
 		this.eventStore.setVirtualEventStore(this.virtualEventStore);
 
@@ -250,6 +245,7 @@ export class CalendarBundle {
 		await this.notificationManager.start();
 		await this.fileRepository.start();
 		await this.virtualEventStore.initialize();
+		await this.integrationDeletionStore.initialize();
 		await firstValueFrom(this.fileRepository.indexingComplete$.pipe(filter((complete) => complete)));
 
 		if (this.destroyed) return;
@@ -354,6 +350,7 @@ export class CalendarBundle {
 		this.icsSubscriptionSyncStateManager.destroy();
 		this.holidayStore.clear();
 		this.virtualEventStore.destroy();
+		this.integrationDeletionStore.destroy();
 
 		// dispose(), never clearHistory() — unloading the plugin must flush the
 		// operation log, not erase it.

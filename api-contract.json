@@ -2958,7 +2958,7 @@
 							},
 							"virtualEventsFileName": {
 								"default": "Virtual Events",
-								"description": "Legacy virtual events file name to migrate into Prisma.md (without .md extension)",
+								"description": "File name for the virtual events storage file (without .md extension)",
 								"type": "string"
 							},
 							"weekCreateGutter": {
@@ -5615,7 +5615,7 @@
 							},
 							"virtualEventsFileName": {
 								"default": "Virtual Events",
-								"description": "Legacy virtual events file name to migrate into Prisma.md (without .md extension)",
+								"description": "File name for the virtual events storage file (without .md extension)",
 								"type": "string"
 							},
 							"weekCreateGutter": {

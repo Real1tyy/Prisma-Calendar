@@ -166,6 +166,7 @@ export const DEFAULT_CONNECTION_ARROW_SIZE = 12;
 export const CONNECTION_PATH_ATTR = "data-conn-event-path";
 export const DEFAULT_EXPORT_FOLDER = "Prisma-Exports";
 export const VIRTUAL_EVENTS_CODE_FENCE = "prisma-virtual-events";
+export const DELETED_EVENTS_CODE_FENCE = "prisma-deleted-events";
 export const BASE_NAME = "calendar";
 
 export const INTERNAL_FRONTMATTER_PROPERTIES = [

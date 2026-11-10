@@ -118,6 +118,8 @@ export class CodeBlockRepository<T> extends ReadableTableMixin<T, DataRow<T>> {
 
 		if (!file && createIfMissing) {
 			file = await this.file.createBackingFile(app, filePath);
+		} else if (file && createIfMissing) {
+			await this.file.ensureBlock(app, file);
 		}
 
 		if (file) {
