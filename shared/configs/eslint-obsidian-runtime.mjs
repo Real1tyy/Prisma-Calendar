@@ -48,6 +48,20 @@ const rules = Object.fromEntries(
 		.map(([name, setting]) => [name, ["error", ...(Array.isArray(setting) ? setting.slice(1) : [])]])
 );
 
+// Our own conventions, not Obsidian review rules — riding here so every plugin and
+// mirror picks them up without a per-plugin config edit.
+const HOUSE_RULES = {
+	"no-restricted-syntax": [
+		"error",
+		{
+			// [[decision-mobile-ui-conventions]]: focusing on open raises the phone keyboard.
+			selector: "JSXAttribute[name.name='autoFocus']:not(:has(CallExpression[callee.name='shouldAutoFocus']))",
+			message:
+				"Gate autoFocus on shouldAutoFocus() from @real1ty/obsidian-plugins-react — opening a surface must not raise the keyboard on a phone.",
+		},
+	],
+};
+
 const readManifest = (path) => JSON.parse(readFileSync(path, "utf8"));
 
 export function readPluginManifests(workspace) {
@@ -102,6 +116,6 @@ export function obsidianRuntimeConfig({ files = ["src/**/*.{ts,tsx}"], manifestP
 		files,
 		ignores: ["**/testing/**", "**/tests/**", "**/*.test.*", "**/*.spec.*", "**/*.d.ts"],
 		plugins,
-		rules: runtimeRules,
+		rules: { ...runtimeRules, ...HOUSE_RULES },
 	};
 }

@@ -2,6 +2,7 @@ import {
 	memo,
 	useCallback,
 	useEffect,
+	useLayoutEffect,
 	useMemo,
 	useRef,
 	useState,
@@ -16,6 +17,8 @@ import { AppContext } from "../../contexts/app-context";
 import { useDomEvent } from "../../hooks/dom/use-dom-event";
 import { isTypingTarget } from "../../hooks/keyboard/is-typing-target";
 import { useInjectedStyles } from "../../hooks/styles/use-styles";
+import { ContextMenu } from "../../menus/context-menu";
+import type { ContextMenuItemDef } from "../../menus/types";
 import { ObsidianIcon } from "../../primitives/atoms/obsidian-icon";
 import { appearanceStyle, type Appearance } from "../../utils/appearance";
 import { cx } from "../../utils/cx";
@@ -187,10 +190,10 @@ export const TabbedContainer = memo(function TabbedContainer({
 		/>
 	);
 
-	// On phones / narrow panes the portal host is Obsidian's fixed-height
-	// `.view-header`, which clips the tab bar if it needs more than one row. So at
-	// mobile width we skip the portal and render the bar inline in the content
-	// pane (where it can wrap freely and every tab stays reachable). Reactive, so
+	// On phones / narrow panes the `.view-header` portal host is shared with the
+	// title and page-header actions, leaving the bar a sliver. So at mobile width we
+	// skip the portal and render the bar inline in the content pane, where it gets
+	// the full pane width for its one row (overflow goes behind `⋯`). Reactive, so
 	// rotating or resizing across the breakpoint moves the bar to the right place.
 	// `isNarrow` comes from useMobileTabBarCollapse above — one media subscription
 	// answers both "portal or inline?" and "collapsible?".
@@ -296,6 +299,75 @@ interface TabBarProps {
 	canShowManager: boolean;
 }
 
+// Imperative markers, not React state: re-measuring on resize has to show every tab
+// to read its true position, and a render round-trip per step would flicker.
+const TAB_OVERFLOW_ATTR = "data-tab-overflow";
+const TAB_OVERFLOW_ACTIVE_ATTR = "data-tab-overflow-active";
+const TAB_ID_ATTR = "data-tab-id";
+
+/**
+ * Keep the tab bar to one row: hide trailing tabs until the row's last visible control
+ * (the overflow trigger, then Manage) fits inside the bar, and flag the bar so CSS
+ * reveals the trigger. Same position-based model as the page header's
+ * `usePackActionRow` — measuring real rects is right whatever the host flexbox does
+ * with the bar's width, where width arithmetic is not.
+ *
+ * The active tab is skipped so it can never be trimmed: hiding it would leave the
+ * user on a tab with no visible marker of where they are.
+ *
+ * `revision` must change whenever the tab set, a label, or the active tab changes,
+ * since each moves the fit.
+ */
+function usePackTabRow(barRef: RefObject<HTMLDivElement | null>, revision: string): void {
+	useLayoutEffect(() => {
+		const bar = barRef.current;
+		if (!bar) return;
+
+		const rightmostVisibleEdge = (): number => {
+			let right = Number.NEGATIVE_INFINITY;
+			for (const child of Array.from(bar.children)) {
+				const rect = child.getBoundingClientRect();
+				if (rect.width > 0) right = Math.max(right, rect.right);
+			}
+			return right;
+		};
+
+		const pack = (): void => {
+			const tabs = Array.from(bar.querySelectorAll<HTMLElement>(`:scope > [${TAB_ID_ATTR}]`));
+			for (const tab of tabs) tab.removeAttribute(TAB_OVERFLOW_ATTR);
+			bar.setAttribute(TAB_OVERFLOW_ACTIVE_ATTR, "false");
+
+			const barRect = bar.getBoundingClientRect();
+			if (barRect.width <= 0) return; // not laid out yet (jsdom, hidden pane)
+			const paddingRight = parseFloat(getComputedStyle(bar).paddingRight) || 0;
+			const limit = barRect.right - paddingRight + 0.5;
+			if (rightmostVisibleEdge() <= limit) return;
+
+			bar.setAttribute(TAB_OVERFLOW_ACTIVE_ATTR, "true");
+			for (let i = tabs.length - 1; i >= 0 && rightmostVisibleEdge() > limit; i--) {
+				if (tabs[i].getAttribute("aria-selected") === "true") continue;
+				tabs[i].setAttribute(TAB_OVERFLOW_ATTR, "true");
+			}
+		};
+
+		pack();
+		if (typeof ResizeObserver === "undefined" || typeof requestAnimationFrame === "undefined") return;
+		// Next-frame debounce: pack() mutates layout, and running it inside the observer
+		// callback trips "ResizeObserver loop" warnings.
+		let frame = 0;
+		const schedule = (): void => {
+			if (frame) window.cancelAnimationFrame(frame);
+			frame = window.requestAnimationFrame(pack);
+		};
+		const observer = new ResizeObserver(schedule);
+		observer.observe(bar);
+		return () => {
+			if (frame) window.cancelAnimationFrame(frame);
+			observer.disconnect();
+		};
+	}, [barRef, revision]);
+}
+
 const TabBar = memo(function TabBar({
 	ref,
 	leading,
@@ -315,6 +387,59 @@ const TabBar = memo(function TabBar({
 	groupStates,
 	canShowManager,
 }: TabBarProps) {
+	const overflowTriggerRef = useRef<HTMLButtonElement>(null);
+	const [overflowMenu, setOverflowMenu] = useState<{
+		items: ContextMenuItemDef[];
+		position: { x: number; y: number };
+	} | null>(null);
+
+	const fitRevision = `${visibleTabs.map((entry) => `${entry.id}:${getLabel(entry)}`).join("|")}::${currentIndex}`;
+	usePackTabRow(ref, fitRevision);
+
+	// Built from the DOM markers, the source of truth for what the fit actually hid
+	// at this width.
+	const openOverflowMenu = useCallback(() => {
+		const bar = ref.current;
+		if (!bar) return;
+		const hiddenIds = new Set(
+			Array.from(bar.querySelectorAll<HTMLElement>(`[${TAB_OVERFLOW_ATTR}="true"]`)).map((el) =>
+				el.getAttribute(TAB_ID_ATTR)
+			)
+		);
+		const items: ContextMenuItemDef[] = [];
+		for (const entry of visibleTabs) {
+			if (!hiddenIds.has(entry.id)) continue;
+			const label = getLabel(entry);
+			if (isGroupTab(entry)) {
+				// A group's own button only opens its dropdown; listing the children
+				// directly saves a second menu on a phone.
+				const children = groupStates.get(entry.id)?.visibleChildren ?? entry.children;
+				for (const child of children) {
+					items.push({
+						kind: "item",
+						id: `${entry.id}--${child.id}`,
+						label: `${label} › ${getChildLabel(entry.id, child)}`,
+						onSelect: () => onSelectGroupChild(entry.id, child.id),
+					});
+				}
+				continue;
+			}
+			const { icon } = getAppearance(entry);
+			items.push({
+				kind: "item",
+				id: entry.id,
+				label,
+				...(icon ? { icon } : {}),
+				onSelect: () => onSelectTab(entry.id),
+			});
+		}
+		if (items.length === 0) return;
+		const rect = overflowTriggerRef.current?.getBoundingClientRect();
+		setOverflowMenu({ items, position: rect ? { x: rect.right, y: rect.bottom + 4 } : { x: 0, y: 0 } });
+	}, [ref, visibleTabs, getLabel, getAppearance, getChildLabel, groupStates, onSelectTab, onSelectGroupChild]);
+
+	const closeOverflowMenu = useCallback(() => setOverflowMenu(null), []);
+
 	return (
 		<div ref={ref} className={`${cssPrefix}tab-bar`} role="tablist">
 			{leading}
@@ -350,6 +475,21 @@ const TabBar = memo(function TabBar({
 				);
 			})}
 
+			{/* Always mounted so the fit measurement is stable; CSS shows it only while
+			    the bar is flagged overflow-active. The sole path to trimmed tabs. */}
+			<button
+				ref={overflowTriggerRef}
+				type="button"
+				className={`${cssPrefix}tab ${cssPrefix}tab-bar-overflow`}
+				onClick={openOverflowMenu}
+				data-testid={`${cssPrefix}tab-bar-overflow`}
+				aria-label="More tabs"
+				aria-haspopup="menu"
+				aria-expanded={overflowMenu !== null}
+			>
+				<ObsidianIcon icon="more-horizontal" />
+			</button>
+
 			{editable && canShowManager && showSettingsButton && (
 				<button
 					type="button"
@@ -360,6 +500,16 @@ const TabBar = memo(function TabBar({
 				>
 					<ObsidianIcon icon="settings-2" />
 				</button>
+			)}
+
+			{overflowMenu && (
+				<ContextMenu
+					items={overflowMenu.items}
+					position={overflowMenu.position}
+					onDismiss={closeOverflowMenu}
+					testIdPrefix={cssPrefix}
+					align="right"
+				/>
 			)}
 		</div>
 	);

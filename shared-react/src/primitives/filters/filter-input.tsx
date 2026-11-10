@@ -1,5 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type Ref } from "react";
 
+import { shouldAutoFocus } from "../../hooks/focus/use-focus";
+
 const DEFAULT_DEBOUNCE_MS = 150;
 
 // ─── useFilteredItems hook ───
@@ -132,7 +134,7 @@ export const FilterInput = memo(function FilterInput({
 			onChange={handleChange}
 			onKeyDown={handleKeyDown}
 			onBlur={handleBlur}
-			autoFocus={autoFocus}
+			autoFocus={autoFocus && shouldAutoFocus()}
 			data-testid={testId}
 		/>
 	);

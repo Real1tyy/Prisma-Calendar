@@ -36,7 +36,7 @@ export { type Emitterlike, useObsidianEvent } from "./hooks/dom";
 export { useOutsideClick, type UseOutsideClickOptions } from "./hooks/dom";
 export { useScrollRestore } from "./hooks/dom";
 export { loadCachedImage, REMOTE_IMAGE_CACHE, useCachedImageSrc } from "./hooks/dom";
-export { useFocusOnMount, type UseFocusOnMountOptions } from "./hooks/focus";
+export { shouldAutoFocus, useFocusOnMount, type UseFocusOnMountOptions } from "./hooks/focus";
 export { type ActivatableProps, useActivatable } from "./hooks/interaction";
 export { useCopyToClipboard, type UseCopyToClipboardOptions } from "./hooks/interaction";
 export {

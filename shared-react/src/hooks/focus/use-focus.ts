@@ -1,4 +1,14 @@
+import { Platform } from "obsidian";
 import { useEffect, type RefObject } from "react";
+
+/**
+ * Whether opening a surface may move focus into an input. Never on a phone or
+ * tablet: focusing raises the on-screen keyboard over the very content the user
+ * opened. See [[decision-mobile-ui-conventions]].
+ */
+export function shouldAutoFocus(): boolean {
+	return !Platform.isMobile;
+}
 
 export interface UseFocusOnMountOptions {
 	/** Delay before calling `.focus()`, in ms. 0 = immediately when the effect runs. Defaults to 0. */
@@ -36,7 +46,7 @@ export function useFocusOnMount<T extends HTMLElement>(
 	const { delayMs = 0, enabled = true, retryMs = 0 } = options ?? {};
 
 	useEffect(() => {
-		if (!enabled) return;
+		if (!enabled || !shouldAutoFocus()) return;
 
 		let cancelled = false;
 		let userInterrupted = false;

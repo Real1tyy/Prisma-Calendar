@@ -20,25 +20,33 @@ export function buildTabbedContainerStyles(p: string): string {
 	margin: 0 4px;
 	border-radius: 8px;
 	background: var(--background-modifier-hover);
-	flex-shrink: 0;
-	/* Header context (the desktop portal host is Obsidian's fixed-height
-	   view-header, which clips extra rows): a narrow side-dock scrolls the strip
-	   horizontally rather than spilling tabs past the pane. A no-op when they fit. */
-	overflow-x: auto;
-	scrollbar-width: none;
-}
-.${p}tab-bar::-webkit-scrollbar {
-	display: none;
+	/* Always one row: the fit logic (usePackTabRow) trims what doesn't fit behind the
+	   overflow trigger, so the bar must be allowed to shrink below its content in
+	   the view-header portal and must never wrap or scroll. A scrolled-off tab is
+	   unreachable on touch; a hidden one is one tap away in the overflow menu. */
+	flex-wrap: nowrap;
+	flex-shrink: 1;
+	min-width: 0;
+	overflow: hidden;
 }
 .${p}tab-bar > * {
 	flex-shrink: 0;
 }
-/* Mobile: the bar renders inline in the content pane (see useTabBarPortal), which
-   can grow vertically — so it WRAPS onto multiple rows instead of scrolling,
-   keeping every tab tappable (touch can't reach a scrolled-off tab in a strip). */
+.${p}tab-bar [data-tab-overflow="true"] {
+	display: none;
+}
+/* Scoped under the bar so it outranks the later, equally specific .${p}tab rule,
+   which would otherwise re-show the trigger on a bar that fits. */
+.${p}tab-bar .${p}tab-bar-overflow {
+	display: none;
+	padding: 4px 8px;
+	color: var(--text-muted);
+}
+.${p}tab-bar[data-tab-overflow-active="true"] .${p}tab-bar-overflow {
+	display: inline-flex;
+}
+/* Inline (mobile) placement — see useTabBarPortal. */
 .${p}tabbed-container > .${p}tab-bar {
-	flex-wrap: wrap;
-	overflow-x: visible;
 	margin-top: 4px;
 }
 /* Collapsed: the bar is just the chip, so it shrinks to that chip's width instead

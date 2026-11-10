@@ -1,1 +1,1 @@
-export { useFocusOnIndex, useFocusOnMount, type UseFocusOnMountOptions } from "./use-focus";
+export { shouldAutoFocus, useFocusOnIndex, useFocusOnMount, type UseFocusOnMountOptions } from "./use-focus";
