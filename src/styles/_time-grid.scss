@@ -104,6 +104,16 @@
 		}
 	}
 
+	// All-day "only" mode: the time grid (and the divider above it) is removed,
+	// so the uncapped all-day strip is the whole view. FullCalendar has no option
+	// for this — its timed section is always rendered — hence the CSS.
+	&.prisma-all-day-only .fc-timegrid {
+		.fc-scrollgrid-section:has(.fc-timegrid-divider),
+		.fc-scrollgrid-section:has(.fc-timegrid-body) {
+			display: none;
+		}
+	}
+
 	// All-day events as columns in daily view — events sit side by side when there
 	// is enough horizontal space. Wraps to new rows when events don't fit.
 	// Uses auto basis so width is proportional to content, not forced equal.

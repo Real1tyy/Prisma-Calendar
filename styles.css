@@ -854,6 +854,10 @@ button[class*=prisma-]:focus-visible {
   max-height: none;
   overflow: visible;
 }
+.prisma-calendar-container.prisma-all-day-only .fc-timegrid .fc-scrollgrid-section:has(.fc-timegrid-divider),
+.prisma-calendar-container.prisma-all-day-only .fc-timegrid .fc-scrollgrid-section:has(.fc-timegrid-body) {
+  display: none;
+}
 .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-day-events {
   display: flex;
   flex-flow: row wrap;

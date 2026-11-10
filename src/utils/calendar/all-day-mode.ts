@@ -1,11 +1,12 @@
 /**
- * The all-day strip's three display modes and the FullCalendar options each one
+ * The all-day strip's display modes and the FullCalendar options each one
  * resolves to. Pure and session-scoped — nothing here reaches settings storage,
  * because the mode is deliberately forgotten when the view closes.
  * See [[knowledge-collapsible-mobile-chrome-tab-bar-and-calendar-header]].
  */
 
-export const ALL_DAY_MODES = ["default", "expanded", "hidden"] as const;
+/** Cycle order: each press shows more all-day, then nothing but all-day, then none. */
+export const ALL_DAY_MODES = ["default", "expanded", "only", "hidden"] as const;
 
 export type AllDayMode = (typeof ALL_DAY_MODES)[number];
 
@@ -14,6 +15,7 @@ export const DEFAULT_ALL_DAY_MODE: AllDayMode = "default";
 const ALL_DAY_MODE_LABELS: Record<AllDayMode, string> = {
 	default: "All-day",
 	expanded: "All-day: full",
+	only: "All-day: only",
 	hidden: "All-day: off",
 };
 
@@ -28,6 +30,8 @@ export interface AllDayOptions {
 	dayMaxEvents: number | false;
 	/** Drop the per-event height cap so a tall all-day stack renders in full. */
 	expanded: boolean;
+	/** Hide the time grid, so the all-day strip is the whole view. */
+	timedHidden: boolean;
 }
 
 export function nextAllDayMode(mode: AllDayMode): AllDayMode {
@@ -64,15 +68,22 @@ export function resolveAllDayOptions(
 	isMobile: boolean
 ): AllDayOptions {
 	const defaultMaxEvents = resolveDayMaxEvents(settings, isMobile);
-	const fallback: AllDayOptions = { allDaySlot: true, dayMaxEvents: defaultMaxEvents, expanded: false };
+	const fallback: AllDayOptions = {
+		allDaySlot: true,
+		dayMaxEvents: defaultMaxEvents,
+		expanded: false,
+		timedHidden: false,
+	};
 
 	if (!isAllDayCapableView(viewType)) return fallback;
 
 	switch (mode) {
 		case "expanded":
-			return { allDaySlot: true, dayMaxEvents: false, expanded: true };
+			return { allDaySlot: true, dayMaxEvents: false, expanded: true, timedHidden: false };
+		case "only":
+			return { allDaySlot: true, dayMaxEvents: false, expanded: true, timedHidden: true };
 		case "hidden":
-			return { allDaySlot: false, dayMaxEvents: defaultMaxEvents, expanded: false };
+			return { allDaySlot: false, dayMaxEvents: defaultMaxEvents, expanded: false, timedHidden: false };
 		default:
 			return fallback;
 	}

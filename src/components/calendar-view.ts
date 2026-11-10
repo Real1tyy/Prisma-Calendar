@@ -1337,6 +1337,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.calendar.setOption("allDaySlot", options.allDaySlot);
 		this.calendar.setOption("dayMaxEvents", options.dayMaxEvents);
 		this.container.classList.toggle(cls("all-day-expanded"), options.expanded);
+		this.container.classList.toggle(cls("all-day-only"), options.timedHidden);
 		// Same triggers (view change, breakpoint cross), so it rides here rather
 		// than growing a second set of call sites.
 		this.calendar.setOption("titleFormat", titleFormatFor(this.calendar.view.type, this.isMobileView()));

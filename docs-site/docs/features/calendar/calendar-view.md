@@ -100,12 +100,13 @@ See [Filtering](../organization/filtering) for full documentation on search, exp
 
 ### All-Day Display Modes
 
-In week and day views, the **All-day** toolbar button cycles the all-day strip through three modes. The button label shows the current one, and the mode lasts until you close the view.
+In week and day views, the **All-day** toolbar button cycles the all-day strip through four modes. The button label shows the current one, and the mode lasts until you close the view.
 
 | Label | All-day strip |
 |--------|--------|
 | **All-day** | The default — the strip caps at your events-per-day limit and the rest hide behind a **+N more** link. |
 | **All-day: full** | The strip stretches to fit every all-day event. No **+N more**, and tall events are no longer clipped. |
+| **All-day: only** | Only all-day events are shown: the full strip stays and the timed grid, with its timed events, is hidden. Handy for a week packed with deadlines, holidays and trips. |
 | **All-day: off** | The strip isn't shown at all, and the timed grid takes the full height. |
 
 The cap in the first mode comes from **Settings → Calendar → Desktop events per day** / **Mobile events per day**.
