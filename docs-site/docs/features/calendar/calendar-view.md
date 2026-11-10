@@ -281,7 +281,7 @@ Control how events display when they share the same time, and whether you can sc
   - **Enabled**: events cascade like cards, the way Google Calendar and Notion Calendar draw a busy afternoon. Later events are drawn on top, offset to the right, and the earliest event keeps the most width. Each covered event's text wraps inside the part that stays visible, so no title runs underneath another event.
 - **Overlapping event width**: with slot event overlap enabled, how much of the column the front-most event in each stack takes: 50%, 60%, two-thirds, 70%, three-quarters, or 80%. Wider gives that event more room and leaves a narrower visible strip for the events behind it (default: 50%)
 - **Allow event overlap**: whether you can drag or resize an event onto a time another event already occupies. When disabled, those drops are refused: the cursor shows a no-entry sign and the event springs back, so events can never be moved into a double booking. It does not change how events are drawn (default: enabled)
-- **Event stack limit**: Maximum events to stack before showing "+more" link (1–10, default: 1)
+- **Event stack limit**: Maximum events to stack before showing "+more" link (1–10, default: 4)
 - **Desktop max events per day**: Maximum events per day on desktop before "+more" (0–20, 0 = unlimited, default: 0)
 - **Mobile max events per day**: Maximum events per day on mobile before "+more" (0–20, 0 = unlimited, default: 4)
 
