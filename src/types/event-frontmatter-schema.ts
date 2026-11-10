@@ -45,7 +45,7 @@ const EventFrontmatterShape = {
 	// always succeeds; downstream event schemas decide validity based on presence.
 	start: optionalDateTimeTransform.catch(undefined),
 	end: optionalDateTimeTransform.catch(undefined),
-	date: optionalDateTransform.catch(undefined),
+	startDay: optionalDateTransform.catch(undefined),
 	endDay: optionalDateTransform.catch(undefined),
 	allDay: allDayTransform,
 	title: optionalTrimmedString,

@@ -8,6 +8,7 @@ import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { showEventPreviewModal, type PreviewEventData } from "../../../react/modals/preview/event-preview-modal";
 import type { CalendarEvent } from "../../../types/calendar";
 import type { SingleCalendarConfig } from "../../../types/settings";
+import { allDayEnd } from "../../../utils/dates/all-day";
 import { resolveAllEventColors, resolveTextColor } from "../../../utils/events/color";
 import { cleanupTitle } from "../../../utils/events/naming";
 import { buildEventTooltip } from "../../../utils/format";
@@ -197,7 +198,7 @@ export function renderTimelineInto(
 		const previewEvent: PreviewEventData = {
 			title: event.title,
 			start: new Date(event.start),
-			end: new Date(event.end),
+			end: event.end ? new Date(event.end) : null,
 			allDay: event.type === "allDay",
 			extendedProps: { filePath: event.ref.filePath },
 		};
@@ -254,7 +255,7 @@ export function renderTimelineInto(
 		if (event.type === "allDay") {
 			const nextDay = new Date(startDate);
 			nextDay.setDate(nextDay.getDate() + 1);
-			let end = new Date(event.end);
+			let end = new Date(allDayEnd(event.start, event.end));
 			if (end <= nextDay) {
 				end = new Date(startDate);
 				end.setHours(startDate.getHours() + ALL_DAY_DISPLAY_HOURS);

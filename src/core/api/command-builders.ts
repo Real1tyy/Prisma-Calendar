@@ -56,8 +56,8 @@ export function buildEditEventCommand(
 
 	const existingAllDay = frontmatter[settings.allDayProp] === true;
 	const existingStart = existingAllDay
-		? frontmatter[settings.dateProp]
-			? `${String(frontmatter[settings.dateProp])}T00:00:00`
+		? frontmatter[settings.startDayProp]
+			? `${String(frontmatter[settings.startDayProp])}T00:00:00`
 			: ""
 		: (frontmatter[settings.startProp] as string);
 	const existingEnd = frontmatter[settings.endProp] as string | undefined;

@@ -108,7 +108,7 @@ When the copies held two *different* values, the earlier one is replaced. The Do
 
 **Problem**: You duplicate a timed event, but the duplicate appears as an all-day event. Or you have events that show start/end times in frontmatter but display as all-day on the calendar.
 
-**Root Cause**: The `All Day` property is the **source of truth** for determining event type. Prisma ignores `Start`/`End` properties when `All Day: true` is set, and ignores the `Date` property when `All Day: false` (or unset).
+**Root Cause**: The `All Day` property is the **source of truth** for determining event type. Prisma ignores `Start`/`End` properties when `All Day: true` is set, and ignores the `Start Day` property when `All Day: false`.
 
 </details>
 
@@ -232,7 +232,7 @@ Prisma then renders the template itself and writes each event once, complete. Se
 <details>
 <summary>Inconsistent date properties for sorting</summary>
 
-**Problem**: Events have different property names (`Start Date` for timed events, `Date` for all-day events) and formats (`2025-02-10T14:00:00.000Z` vs `2025-02-10T14:00:00`), making it impossible to sort chronologically in other tools like Bases or Dataview.
+**Problem**: Events have different property names (`Start Date` for timed events, `Start Day` for all-day events) and formats (`2025-02-10T14:00:00.000Z` vs `2025-02-10T14:00:00`), making it impossible to sort chronologically in other tools like Bases or Dataview.
 
 **Root Cause**: Prisma uses different properties based on event type, and ISO format includes `.000Z` suffix.
 

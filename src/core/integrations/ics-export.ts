@@ -33,7 +33,7 @@ export interface ICSExportOptions {
 	excludeProps: {
 		startProp: string;
 		endProp: string;
-		dateProp: string;
+		startDayProp: string;
 		endDayProp: string;
 		allDayProp: string;
 		titleProp?: string | undefined;
@@ -196,9 +196,12 @@ function parsedEventToVEvent(
 	const dtstart = dateToICALTime(startDate, event.allDay, timezone);
 	vevent.addPropertyWithValue("dtstart", dtstart);
 
-	const endDate = new Date(appendZ(event.end));
-	const dtend = dateToICALTime(endDate, event.allDay, timezone);
-	vevent.addPropertyWithValue("dtend", dtend);
+	// A single-day all-day event has no end; RFC 5545 reads a DATE DTSTART without DTEND as one day.
+	if (event.end) {
+		const endDate = new Date(appendZ(event.end));
+		const dtend = dateToICALTime(endDate, event.allDay, timezone);
+		vevent.addPropertyWithValue("dtend", dtend);
+	}
 
 	const noteContent = options.noteContents.get(event.ref.filePath);
 	if (noteContent) {
@@ -241,7 +244,7 @@ function parsedEventToVEvent(
 			// Standard ICS field properties
 			options.excludeProps.startProp,
 			options.excludeProps.endProp,
-			options.excludeProps.dateProp,
+			options.excludeProps.startDayProp,
 			options.excludeProps.allDayProp,
 			options.categoryProp,
 			options.locationProp,
@@ -460,7 +463,7 @@ export async function exportCalendarAsICS(app: App, options: ExportOptions): Pro
 			excludeProps: {
 				startProp: settings.startProp,
 				endProp: settings.endProp,
-				dateProp: settings.dateProp,
+				startDayProp: settings.startDayProp,
 				endDayProp: settings.endDayProp,
 				allDayProp: settings.allDayProp,
 				titleProp: settings.titleProp,

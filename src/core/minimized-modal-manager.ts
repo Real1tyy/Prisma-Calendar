@@ -185,12 +185,12 @@ class MinimizedModalManagerClass {
 			fm[settings.endProp] = nowIso;
 		});
 
-		// Mirror the write into the snapshot: restore reads formState.end, not the
+		// Mirror the write into the snapshot: restore reads formState.endDate, not the
 		// top-level endDate the indexer refreshes, so update both. patchState
 		// no-ops if a clear() landed during the await.
 		this.patchState((prev) => ({
 			endDate: nowIso,
-			formState: { ...prev.formState, end: formatDateTimeForInput(now) },
+			formState: { ...prev.formState, endDate: formatDateTimeForInput(now) },
 		}));
 	}
 
@@ -253,7 +253,7 @@ class MinimizedModalManagerClass {
 				categories: metadata.categories?.join(", "),
 				location: metadata.location,
 				participants: metadata.participants?.join(", "),
-				date: frontmatter[settings.dateProp] as string | undefined,
+				date: frontmatter[settings.startDayProp] as string | undefined,
 				startDate: frontmatter[settings.startProp] as string | undefined,
 				endDate: frontmatter[settings.endProp] as string | undefined,
 				allDay: event.source.isAllDay,
@@ -294,9 +294,9 @@ class MinimizedModalManagerClass {
 		const formState: EventFormState = {
 			...derived.initialState,
 			allDay: false,
-			start: formatDateTimeForInput(now),
-			end: formatDateTimeForInput(end),
-			date: "",
+			startDate: formatDateTimeForInput(now),
+			endDate: formatDateTimeForInput(end),
+			startDay: "",
 		};
 
 		const stopwatch: StopwatchSnapshot = {
@@ -422,7 +422,7 @@ class MinimizedModalManagerClass {
 				: state.formState.breakMinutes;
 		const formState: EventFormState = {
 			...state.formState,
-			end: formatDateTimeForInput(now),
+			endDate: formatDateTimeForInput(now),
 			breakMinutes,
 		};
 
@@ -515,8 +515,8 @@ class MinimizedModalManagerClass {
 	private buildEventDataFromState(state: MinimizedModalState) {
 		return {
 			title: state.title ?? "",
-			start: state.startDate ?? (state.formState.start || null),
-			end: state.endDate ?? (state.formState.end || null),
+			start: state.startDate ?? (state.formState.startDate || null),
+			end: state.endDate ?? (state.formState.endDate || null),
 			allDay: state.allDay ?? false,
 			extendedProps: {
 				filePath: state.filePath,

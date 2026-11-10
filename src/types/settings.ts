@@ -178,11 +178,15 @@ const PropsSettingsSchema = z
 			.string()
 			.catch("End Date")
 			.describe("Frontmatter property name for event end date/time (for timed events)"),
-		dateProp: z.string().catch("Date").describe("Frontmatter property name for all-day events (date only, no time)"),
+		startDayProp: z
+			.string()
+			.catch("Start Day")
+			.describe("Frontmatter property for the first day of all-day events (date only, no time)")
+			.meta({ title: "Start day property" }),
 		endDayProp: z
 			.string()
 			.catch("End Day")
-			.describe("Frontmatter property for the exclusive end day of all-day events")
+			.describe("Frontmatter property for the exclusive end day of multi-day all-day events")
 			.meta({ title: "End day property" }),
 		allDayProp: z.string().catch("All Day").describe("Frontmatter property name for all-day flag"),
 		sortingStrategy: z
@@ -206,7 +210,7 @@ const PropsSettingsSchema = z
 			.string()
 			.catch("Sort Date")
 			.describe(
-				"Frontmatter property to write the normalized datetime to. This is a dedicated sorting property, separate from the Date property used by all-day events."
+				"Frontmatter property to write the normalized datetime to. This is a dedicated sorting property, separate from the Start Day property used by all-day events."
 			),
 		titleProp: z
 			.string()

@@ -32,10 +32,10 @@ export function buildEventSaveData(
 	let isUntracked = false;
 
 	if (formState.allDay) {
-		if (formState.date) {
-			start = `${formState.date}T00:00:00`;
+		if (formState.startDay) {
+			start = `${formState.startDay}T00:00:00`;
 			end = DateTime.fromISO(
-				formState.endDay && formState.endDay >= formState.date ? formState.endDay : formState.date,
+				formState.endDay && formState.endDay >= formState.startDay ? formState.endDay : formState.startDay,
 				WALL_CLOCK_PARSE_OPTS
 			)
 				.plus({ days: 1 })
@@ -43,9 +43,9 @@ export function buildEventSaveData(
 		} else {
 			isUntracked = true;
 		}
-	} else if (formState.start) {
-		start = ensureISOSuffix(formState.start);
-		end = formState.end ? ensureISOSuffix(formState.end) : null;
+	} else if (formState.startDate) {
+		start = ensureISOSuffix(formState.startDate);
+		end = formState.endDate ? ensureISOSuffix(formState.endDate) : null;
 	} else {
 		isUntracked = true;
 	}

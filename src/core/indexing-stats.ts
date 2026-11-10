@@ -64,9 +64,9 @@ function dropped(reasonCategory: DropReasonCategory, reason: string): RowClassif
  * the settings tally and the (future) Doctor without any I/O.
  */
 export function classifyRow(frontmatter: Frontmatter, settings: SingleCalendarConfig): RowClassification {
-	const { startProp, dateProp } = settings;
+	const { startProp, startDayProp } = settings;
 	const startVal = frontmatter[startProp];
-	const dateVal = frontmatter[dateProp];
+	const dateVal = frontmatter[startDayProp];
 
 	if (isPresent(startVal)) {
 		return parsesAsAnyDate(startVal)
@@ -82,7 +82,7 @@ export function classifyRow(frontmatter: Frontmatter, settings: SingleCalendarCo
 			? { kind: "allDay" }
 			: dropped(
 					"unparseable-date",
-					`\`${dateProp}: ${previewValue(dateVal)}\` isn't a recognised date format — expected YYYY-MM-DD.`
+					`\`${startDayProp}: ${previewValue(dateVal)}\` isn't a recognised date format — expected YYYY-MM-DD.`
 				);
 	}
 
@@ -92,7 +92,7 @@ export function classifyRow(frontmatter: Frontmatter, settings: SingleCalendarCo
 		([key, value]) =>
 			key !== key.trim() &&
 			(key.trim() === startProp ||
-				key.trim() === dateProp ||
+				key.trim() === startDayProp ||
 				(typeof value === "string" && classifyDateLikeString(value) !== null))
 	);
 	if (trailingSpaceKey) {
@@ -101,12 +101,12 @@ export function classifyRow(frontmatter: Frontmatter, settings: SingleCalendarCo
 
 	const unmappedDateKey = Object.entries(frontmatter).find(
 		([key, value]) =>
-			key !== startProp && key !== dateProp && typeof value === "string" && classifyDateLikeString(value) !== null
+			key !== startProp && key !== startDayProp && typeof value === "string" && classifyDateLikeString(value) !== null
 	);
 	if (unmappedDateKey) {
 		return dropped(
 			"unmapped-date-prop",
-			`No \`${startProp}\` or \`${dateProp}\` property found — your note uses \`${unmappedDateKey[0]}\`. Map it?`
+			`No \`${startProp}\` or \`${startDayProp}\` property found — your note uses \`${unmappedDateKey[0]}\`. Map it?`
 		);
 	}
 

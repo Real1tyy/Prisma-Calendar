@@ -10,7 +10,7 @@ import {
 import { v5 as uuidv5 } from "uuid";
 
 import { PRISMA_CALENDAR_NAMESPACE } from "../constants";
-import { allDayEnd } from "../utils/dates/all-day";
+import { allDaySpanEnd, optionalEnd } from "../utils/dates/all-day";
 import { toInternalISO } from "../utils/dates/iso";
 import { cleanupTitle } from "../utils/events/naming";
 import { eventDefaults, type AllDayEvent, type ParsedEvent, type TimedEvent, type UntrackedEvent } from "./calendar";
@@ -27,7 +27,7 @@ import type { Frontmatter, SingleCalendarConfig } from "./index";
 export interface TemporalKinds {
 	start: DateLikeKind | null;
 	end: DateLikeKind | null;
-	date: DateLikeKind | null;
+	startDay: DateLikeKind | null;
 	endDay: DateLikeKind | null;
 }
 
@@ -93,7 +93,7 @@ export function buildMetadata(parsed: ParsedEventFrontmatter): EventMetadata {
 
 function buildTimedEvent(input: EventSchemaInput, settings: SingleCalendarConfig): TimedEvent | null {
 	const { parsed } = input;
-	const start = parsed.start ?? parsed.date;
+	const start = parsed.start ?? parsed.startDay;
 	if (!start) return null;
 
 	const startIso = toInternalISO(start);
@@ -123,7 +123,7 @@ function buildTimedEvent(input: EventSchemaInput, settings: SingleCalendarConfig
 
 function buildAllDayEvent(input: EventSchemaInput): AllDayEvent | null {
 	const { parsed } = input;
-	const anchor = parsed.date ?? parsed.start;
+	const anchor = parsed.startDay ?? parsed.start;
 	if (!anchor) return null;
 
 	const metadata = buildMetadata(parsed);
@@ -134,7 +134,7 @@ function buildAllDayEvent(input: EventSchemaInput): AllDayEvent | null {
 		title: makeTitle(parsed, input.filePath),
 		type: "allDay",
 		start: toInternalISO(anchorWallClock(anchor).startOf("day")),
-		end: allDayEnd(toInternalISO(anchor), parsed.endDay ? toInternalISO(parsed.endDay) : undefined),
+		...optionalEnd(allDaySpanEnd(toInternalISO(anchor), parsed.endDay ? toInternalISO(parsed.endDay) : undefined)),
 		allDay: true,
 		skipped: metadata.skip ?? false,
 		metadata,
@@ -144,7 +144,7 @@ function buildAllDayEvent(input: EventSchemaInput): AllDayEvent | null {
 
 function buildUntrackedEvent(input: EventSchemaInput): UntrackedEvent | null {
 	const { parsed } = input;
-	if (parsed.start || parsed.date) return null;
+	if (parsed.start || parsed.startDay) return null;
 
 	const metadata = buildMetadata(parsed);
 	return {
@@ -169,11 +169,11 @@ type TemporalKind = "timed" | "allDay" | "untracked";
  *   1. `allDay === true` → all-day.
  *   2. `allDay === false` → timed if a start value is present, else untracked.
  *   3. start is `datetime` and end is absent-or-`datetime` → timed.
- *   4. dateProp holds a `date` → all-day.
+ *   4. startDayProp holds a `date` → all-day.
  *   5. otherwise → untracked.
  *
  * Rules 3–5 classify by the value *type* of each temporal role (from
- * `temporalKinds`): a datetime start drives a timed event, a date-only dateProp
+ * `temporalKinds`): a datetime start drives a timed event, a date-only startDayProp
  * drives an all-day event. See docs/specs/2026-05-30-permissive-temporal-type-detection.md.
  */
 export function resolveTemporalKind(input: EventSchemaInput): TemporalKind {
@@ -183,7 +183,7 @@ export function resolveTemporalKind(input: EventSchemaInput): TemporalKind {
 	if (parsed.allDay === false) return parsed.start ? "timed" : "untracked";
 
 	if (temporalKinds.start === "datetime" && temporalKinds.end !== "date") return "timed";
-	if (temporalKinds.date === "date" && parsed.date) return "allDay";
+	if (temporalKinds.startDay === "date" && parsed.startDay) return "allDay";
 	return "untracked";
 }
 
@@ -229,7 +229,7 @@ export function buildEventSchemaInput(
 		start: classifyDateLikeString(toSafeString(args.frontmatter[settings.startProp]) ?? ""),
 		end: classifyDateLikeString(toSafeString(args.frontmatter[settings.endProp]) ?? ""),
 		endDay: classifyDateLikeString(toSafeString(args.frontmatter[settings.endDayProp]) ?? ""),
-		date: classifyDateLikeString(toSafeString(args.frontmatter[settings.dateProp]) ?? ""),
+		startDay: classifyDateLikeString(toSafeString(args.frontmatter[settings.startDayProp]) ?? ""),
 	};
 	return {
 		filePath: args.filePath,

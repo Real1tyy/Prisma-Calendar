@@ -109,8 +109,8 @@ function buildActiveNoteEventData(
 	defaultEnd.setMinutes(defaultEnd.getMinutes() + settings.defaultDurationMinutes);
 
 	const startValue = allDay
-		? (frontmatter[settings.dateProp] as string | undefined)
-			? `${String(frontmatter[settings.dateProp])}T00:00:00`
+		? (frontmatter[settings.startDayProp] as string | undefined)
+			? `${String(frontmatter[settings.startDayProp])}T00:00:00`
 			: toLocalISOString(roundedStart)
 		: ((frontmatter[settings.startProp] as string | undefined) ?? toLocalISOString(roundedStart));
 	const endValue = allDay

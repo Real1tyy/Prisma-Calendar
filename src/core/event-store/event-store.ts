@@ -16,7 +16,7 @@ import {
 import type { CalendarEventSource, RawEventSource } from "../../types/event-source";
 import type { ISO } from "../../types/index";
 import type { SingleCalendarConfig } from "../../types/settings";
-import { allDayEnd } from "../../utils/dates/all-day";
+import { allDayEnd, allDaySpanEnd, optionalEnd } from "../../utils/dates/all-day";
 import { stripZ } from "../../utils/dates/iso";
 import type { EventSourceView } from "../event-source-view";
 import type { HolidayStore } from "../holidays";
@@ -301,8 +301,9 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 		});
 
 		const allDayLowKey = `${queryStartNorm}${EventStore.SEP}`;
-		allDayTree.forRange(allDayLowKey, EventStore.MAX, true, (_key, event) => {
-			if (this.normIso(event.start) < queryEndNorm && this.normIso(event.end) > queryStartNorm) visitor(event);
+		// The key's fixed-width prefix is the resolved exclusive end, so the scan never re-parses dates.
+		allDayTree.forRange(allDayLowKey, EventStore.MAX, true, (key, event) => {
+			if (this.normIso(event.start) < queryEndNorm && key.slice(0, 19) > queryStartNorm) visitor(event);
 		});
 	}
 
@@ -363,7 +364,7 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 				this.eventsByStartTime.set(startKey, event);
 			}
 		} else {
-			const dateKey = this.makeTreeKey(this.normIso(event.end), event.ref.filePath);
+			const dateKey = this.makeTreeKey(this.normIso(allDayEnd(event.start, event.end)), event.ref.filePath);
 			if (event.skipped) {
 				this.skippedAllDayByEndTime.set(dateKey, event);
 			} else {
@@ -383,7 +384,7 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 				this.eventsByStartTime.delete(startKey);
 			}
 		} else {
-			const dateKey = this.makeTreeKey(this.normIso(event.end), event.ref.filePath);
+			const dateKey = this.makeTreeKey(this.normIso(allDayEnd(event.start, event.end)), event.ref.filePath);
 			if (event.skipped) {
 				this.skippedAllDayByEndTime.delete(dateKey);
 			} else {
@@ -437,7 +438,9 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 			// Skip events actively being tracked by the stopwatch
 			if (event.ref.filePath === minimizedFilePath) continue;
 
-			const isPast = isTimedEvent(event) ? event.end < nowIso : event.end.slice(0, 19) <= startOfTodayIso;
+			const isPast = isTimedEvent(event)
+				? event.end < nowIso
+				: allDayEnd(event.start, event.end).slice(0, 19) <= startOfTodayIso;
 			if (!isPast) continue;
 
 			void this.eventSource.markFileAsDone(event.ref.filePath);
@@ -482,7 +485,7 @@ export function toCalendarEvent(data: VirtualEventData, virtualFilePath: string)
 				...base,
 				type: "allDay" as const,
 				start: data.start,
-				end: allDayEnd(data.start, data.end),
+				...optionalEnd(allDaySpanEnd(data.start, data.end)),
 				allDay: true as const,
 			}
 		: {

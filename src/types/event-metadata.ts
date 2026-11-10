@@ -129,7 +129,7 @@ export const PROP_CLASSIFICATIONS: readonly PropClassification[] = [
 		notificationDedicatedUI: false,
 	},
 	{
-		settingsProp: "dateProp",
+		settingsProp: "startDayProp",
 		system: true,
 		dedicatedUI: false,
 		notificationSystem: false,
@@ -348,7 +348,7 @@ export const PROP_CLASSIFICATIONS: readonly PropClassification[] = [
 // conflicting. Must cover exactly the PROP_CLASSIFICATIONS keys — enforced by
 // a unit test. See [[decision-deterministic-property-ordering]].
 export const DEFAULT_PROPERTY_ORDER: readonly SettingsPropKey[] = [
-	"dateProp",
+	"startDayProp",
 	"endDayProp",
 	"startProp",
 	"endProp",

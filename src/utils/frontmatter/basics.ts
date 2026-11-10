@@ -58,12 +58,12 @@ export const applyStartEndOffsets = (
 	startOffset?: DurationLike,
 	endOffset?: DurationLike
 ) => {
-	const { startProp, endProp, dateProp, endDayProp } = settings;
+	const { startProp, endProp, startDayProp, endDayProp } = settings;
 
 	if (
 		resolveTemporalKind(buildEventSchemaInput({ filePath: "", folder: "", frontmatter: fm }, settings)) === "allDay"
 	) {
-		const anchorProp = fm[dateProp] ? dateProp : startProp;
+		const anchorProp = fm[startDayProp] ? startDayProp : startProp;
 		if (fm[anchorProp]) fm[anchorProp] = shiftISO(fm[anchorProp], startOffset);
 		if (fm[endDayProp]) fm[endDayProp] = shiftISO(fm[endDayProp], startOffset);
 	} else {
@@ -83,7 +83,7 @@ export const setEventBasics = (
 		zettelId?: number | undefined;
 	}
 ) => {
-	const { titleProp, startProp, endProp, dateProp, endDayProp, allDayProp, zettelIdProp } = settings;
+	const { titleProp, startProp, endProp, startDayProp, endDayProp, allDayProp, zettelIdProp } = settings;
 
 	if (titleProp && data.title) fm[titleProp] = data.title;
 
@@ -92,7 +92,7 @@ export const setEventBasics = (
 	const dateOnly = data.start.split("T")[0];
 
 	if (data.allDay) {
-		fm[dateProp] = dateOnly;
+		fm[startDayProp] = dateOnly;
 		const endDay = allDayEnd(data.start, data.end).slice(0, 10);
 		if (endDay > allDayEnd(data.start).slice(0, 10)) fm[endDayProp] = endDay;
 		else Reflect.deleteProperty(fm, endDayProp);
@@ -102,7 +102,7 @@ export const setEventBasics = (
 		Reflect.deleteProperty(fm, endDayProp);
 		fm[startProp] = ensureISOSuffix(data.start);
 		if (data.end) fm[endProp] = ensureISOSuffix(data.end);
-		fm[dateProp] = "";
+		fm[startDayProp] = "";
 	}
 
 	const sortResult = computeSortDateValue(settings, data.start, data.end, data.allDay);
@@ -114,7 +114,7 @@ export const setEventBasics = (
 export const setUntrackedEventBasics = (fm: Frontmatter, settings: SingleCalendarConfig): void => {
 	fm[settings.startProp] = "";
 	fm[settings.endProp] = "";
-	fm[settings.dateProp] = "";
+	fm[settings.startDayProp] = "";
 	Reflect.deleteProperty(fm, settings.endDayProp);
 	fm[settings.allDayProp] = "";
 };

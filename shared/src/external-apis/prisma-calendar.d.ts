@@ -434,10 +434,6 @@ export type PrismaCalendarGetSettingsOutput = {
 	dashboardGridState: {
 		[k: string]: unknown;
 	};
-	/**
-	 * Frontmatter property name for all-day events (date only, no time)
-	 */
-	dateProp: string;
 	dayCellColoring: DayCellColoring;
 	dayCreateGutter: DayViewCreateGutter;
 	/**
@@ -787,7 +783,7 @@ export type PrismaCalendarGetSettingsOutput = {
 	snapDurationMinutes: number;
 	snoozeMinutes: SnoozeDurationMinutes;
 	/**
-	 * Frontmatter property to write the normalized datetime to. This is a dedicated sorting property, separate from the Date property used by all-day events.
+	 * Frontmatter property to write the normalized datetime to. This is a dedicated sorting property, separate from the Start Day property used by all-day events.
 	 */
 	sortDateProp: string;
 	sortingStrategy: SortingNormalizationStrategy;
@@ -799,6 +795,7 @@ export type PrismaCalendarGetSettingsOutput = {
 	 * Symbol/emoji to display on source recurring events in the top-right corner.
 	 */
 	sourceRecurringMarker: string;
+	startDayProp: StartDayProperty;
 	/**
 	 * Frontmatter property name for event start date/time
 	 */
@@ -945,7 +942,7 @@ export type DisplayDensity = "comfortable" | "compact";
  */
 export type DesktopEventsPerDay = number;
 /**
- * Frontmatter property for the exclusive end day of all-day events
+ * Frontmatter property for the exclusive end day of multi-day all-day events
  */
 export type EndDayProperty = string;
 /**
@@ -1115,6 +1112,10 @@ export type SortingNormalizationStrategy =
 	| "allDayOnly"
 	| "allStartDate"
 	| "allEndDate";
+/**
+ * Frontmatter property for the first day of all-day events (date only, no time)
+ */
+export type StartDayProperty = string;
 /**
  * Choose stable UID-derived names so every device creates the same path, or creation-time ZettelIDs for compatibility
  */
@@ -1342,7 +1343,7 @@ export type PrismaCalendarToggleSkipOutput = boolean;
  */
 
 /**
- * Frontmatter property for the exclusive end day of all-day events
+ * Frontmatter property for the exclusive end day of multi-day all-day events
  */
 
 /**
@@ -1495,6 +1496,10 @@ export type PrismaCalendarToggleSkipOutput = boolean;
 
 /**
  * Write a normalized datetime to a dedicated sort property so external tools (Bases, Dataview) can sort all event types by a single field. Timed events use the full datetime. All-day events get T00:00:00 appended for consistent cross-type sorting. The value is written to the sort date property configured below.
+ */
+
+/**
+ * Frontmatter property for the first day of all-day events (date only, no time)
  */
 
 /**
@@ -1711,10 +1716,6 @@ export interface PrismaCalendarUpdateSettingsInput {
 		dashboardGridState?: {
 			[k: string]: unknown;
 		};
-		/**
-		 * Frontmatter property name for all-day events (date only, no time)
-		 */
-		dateProp?: string;
 		dayCellColoring?: DayCellColoring;
 		dayCreateGutter?: DayViewCreateGutter;
 		/**
@@ -2064,7 +2065,7 @@ export interface PrismaCalendarUpdateSettingsInput {
 		snapDurationMinutes?: number;
 		snoozeMinutes?: SnoozeDurationMinutes;
 		/**
-		 * Frontmatter property to write the normalized datetime to. This is a dedicated sorting property, separate from the Date property used by all-day events.
+		 * Frontmatter property to write the normalized datetime to. This is a dedicated sorting property, separate from the Start Day property used by all-day events.
 		 */
 		sortDateProp?: string;
 		sortingStrategy?: SortingNormalizationStrategy;
@@ -2076,6 +2077,7 @@ export interface PrismaCalendarUpdateSettingsInput {
 		 * Symbol/emoji to display on source recurring events in the top-right corner.
 		 */
 		sourceRecurringMarker?: string;
+		startDayProp?: StartDayProperty;
 		/**
 		 * Frontmatter property name for event start date/time
 		 */

@@ -5,6 +5,7 @@ import type { DependencyGraph } from "../core/dependency-graph";
 import type { PrerequisiteTracker } from "../core/prerequisite-tracker";
 import type { CalendarEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/settings";
+import { allDayEnd } from "../utils/dates/all-day";
 import { resolveAllEventColors } from "../utils/events/color";
 
 export type {
@@ -41,7 +42,7 @@ function getTaskTimestamps(event: CalendarEvent): { startMs: number; endMs: numb
 	const startMs = startDate.getTime();
 
 	if (event.type === "allDay") {
-		return { startMs, endMs: new Date(event.end).getTime() };
+		return { startMs, endMs: new Date(allDayEnd(event.start, event.end)).getTime() };
 	}
 
 	const endMs = new Date(event.end).getTime();

@@ -1681,11 +1681,6 @@
 								},
 								"type": "object"
 							},
-							"dateProp": {
-								"default": "Date",
-								"description": "Frontmatter property name for all-day events (date only, no time)",
-								"type": "string"
-							},
 							"dayCellColoring": {
 								"default": "off",
 								"description": "Controls the background coloring of day cells. Off: default calendar appearance. Uniform: applies a single gradient color to all day cells. Month boundary: alternates two gradient colors by even/odd month, making month transitions clearly visible.",
@@ -1879,7 +1874,7 @@
 							},
 							"endDayProp": {
 								"default": "End Day",
-								"description": "Frontmatter property for the exclusive end day of all-day events",
+								"description": "Frontmatter property for the exclusive end day of multi-day all-day events",
 								"title": "End day property",
 								"type": "string"
 							},
@@ -2810,7 +2805,7 @@
 							},
 							"sortDateProp": {
 								"default": "Sort Date",
-								"description": "Frontmatter property to write the normalized datetime to. This is a dedicated sorting property, separate from the Date property used by all-day events.",
+								"description": "Frontmatter property to write the normalized datetime to. This is a dedicated sorting property, separate from the Start Day property used by all-day events.",
 								"type": "string"
 							},
 							"sortingStrategy": {
@@ -2843,6 +2838,12 @@
 							"sourceRecurringMarker": {
 								"default": "⦿",
 								"description": "Symbol/emoji to display on source recurring events in the top-right corner.",
+								"type": "string"
+							},
+							"startDayProp": {
+								"default": "Start Day",
+								"description": "Frontmatter property for the first day of all-day events (date only, no time)",
+								"title": "Start day property",
 								"type": "string"
 							},
 							"startProp": {
@@ -3014,7 +3015,7 @@
 							"indexSubdirectories",
 							"startProp",
 							"endProp",
-							"dateProp",
+							"startDayProp",
 							"endDayProp",
 							"allDayProp",
 							"sortingStrategy",
@@ -4335,11 +4336,6 @@
 								},
 								"type": "object"
 							},
-							"dateProp": {
-								"default": "Date",
-								"description": "Frontmatter property name for all-day events (date only, no time)",
-								"type": "string"
-							},
 							"dayCellColoring": {
 								"default": "off",
 								"description": "Controls the background coloring of day cells. Off: default calendar appearance. Uniform: applies a single gradient color to all day cells. Month boundary: alternates two gradient colors by even/odd month, making month transitions clearly visible.",
@@ -4533,7 +4529,7 @@
 							},
 							"endDayProp": {
 								"default": "End Day",
-								"description": "Frontmatter property for the exclusive end day of all-day events",
+								"description": "Frontmatter property for the exclusive end day of multi-day all-day events",
 								"title": "End day property",
 								"type": "string"
 							},
@@ -5464,7 +5460,7 @@
 							},
 							"sortDateProp": {
 								"default": "Sort Date",
-								"description": "Frontmatter property to write the normalized datetime to. This is a dedicated sorting property, separate from the Date property used by all-day events.",
+								"description": "Frontmatter property to write the normalized datetime to. This is a dedicated sorting property, separate from the Start Day property used by all-day events.",
 								"type": "string"
 							},
 							"sortingStrategy": {
@@ -5497,6 +5493,12 @@
 							"sourceRecurringMarker": {
 								"default": "⦿",
 								"description": "Symbol/emoji to display on source recurring events in the top-right corner.",
+								"type": "string"
+							},
+							"startDayProp": {
+								"default": "Start Day",
+								"description": "Frontmatter property for the first day of all-day events (date only, no time)",
+								"title": "Start day property",
 								"type": "string"
 							},
 							"startProp": {

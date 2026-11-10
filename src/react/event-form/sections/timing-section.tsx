@@ -15,9 +15,9 @@ interface TimingSectionProps {
 
 export const TimingSection = memo(function TimingSection({ form, showDurationField, onFill }: TimingSectionProps) {
 	const { field: allDayField } = useController({ control: form.control, name: "allDay" });
-	const { field: startField } = useController({ control: form.control, name: "start" });
-	const { field: endField } = useController({ control: form.control, name: "end" });
-	const { field: dateField } = useController({ control: form.control, name: "date" });
+	const { field: startDateField } = useController({ control: form.control, name: "startDate" });
+	const { field: endDateField } = useController({ control: form.control, name: "endDate" });
+	const { field: startDayField } = useController({ control: form.control, name: "startDay" });
 	const { field: endDayField } = useController({ control: form.control, name: "endDay" });
 
 	const isAllDay = useWatch({ control: form.control, name: "allDay" });
@@ -26,63 +26,65 @@ export const TimingSection = memo(function TimingSection({ form, showDurationFie
 		(checked: boolean) => {
 			allDayField.onChange(checked);
 			if (checked) {
-				if (startField.value) {
-					dateField.onChange(formatDateOnly(startField.value));
-					endDayField.onChange(formatDateOnly(endField.value || startField.value));
+				if (startDateField.value) {
+					startDayField.onChange(formatDateOnly(startDateField.value));
+					endDayField.onChange(formatDateOnly(endDateField.value || startDateField.value));
 				}
-			} else if (dateField.value) {
-				startField.onChange(`${dateField.value}T09:00`);
-				endField.onChange(
-					`${endDayField.value && endDayField.value >= dateField.value ? endDayField.value : dateField.value}T10:00`
+			} else if (startDayField.value) {
+				startDateField.onChange(`${startDayField.value}T09:00`);
+				endDateField.onChange(
+					`${endDayField.value && endDayField.value >= startDayField.value ? endDayField.value : startDayField.value}T10:00`
 				);
 			}
 		},
-		[allDayField, startField, endField, dateField, endDayField]
+		[allDayField, startDateField, endDateField, startDayField, endDayField]
 	);
 
 	const handleNow = useCallback(
 		(target: "start" | "end") => {
 			const now = formatDateTimeForInput(new Date());
 			if (target === "start") {
-				startField.onChange(now);
+				startDateField.onChange(now);
 			} else {
-				endField.onChange(now);
+				endDateField.onChange(now);
 			}
 		},
-		[startField, endField]
+		[startDateField, endDateField]
 	);
 
-	const handleStartChange = useCallback((value: string) => startField.onChange(value), [startField]);
+	const handleStartChange = useCallback((value: string) => startDateField.onChange(value), [startDateField]);
 
-	const handleEndChange = useCallback((value: string) => endField.onChange(value), [endField]);
+	const handleEndChange = useCallback((value: string) => endDateField.onChange(value), [endDateField]);
 
 	const handleDurationChange = useCallback(
 		(durationStr: string) => {
-			if (!startField.value || !durationStr) return;
+			if (!startDateField.value || !durationStr) return;
 			const durationMinutes = Number.parseInt(durationStr, 10);
 			if (Number.isNaN(durationMinutes) || durationMinutes < 0) return;
-			const startDate = new Date(startField.value);
+			const startDate = new Date(startDateField.value);
 			const endDate = new Date(startDate.getTime() + durationMinutes * 60 * 1000);
-			endField.onChange(formatDateTimeForInput(endDate));
+			endDateField.onChange(formatDateTimeForInput(endDate));
 		},
-		[startField, endField]
+		[startDateField, endDateField]
 	);
 
 	const handleFill = useCallback(
 		(direction: "previous" | "next") => {
 			const time = onFill?.(direction);
 			if (!time) return;
-			const target = direction === "previous" ? startField : endField;
+			const target = direction === "previous" ? startDateField : endDateField;
 			target.onChange(formatDateTimeForInput(time));
 		},
-		[onFill, startField, endField]
+		[onFill, startDateField, endDateField]
 	);
 
 	const fillPreviousCb = onFill ? () => handleFill("previous") : undefined;
 	const fillNextCb = onFill ? () => handleFill("next") : undefined;
 
 	const durationValue =
-		startField.value && endField.value ? calculateDurationMinutes(startField.value, endField.value).toString() : "";
+		startDateField.value && endDateField.value
+			? calculateDurationMinutes(startDateField.value, endDateField.value).toString()
+			: "";
 
 	return (
 		<>
@@ -99,7 +101,7 @@ export const TimingSection = memo(function TimingSection({ form, showDurationFie
 				<div className="prisma-timed-event-fields">
 					<DateTimeField
 						label="Start Date"
-						value={startField.value}
+						value={startDateField.value}
 						onChange={handleStartChange}
 						onNow={() => handleNow("start")}
 						onFill={fillPreviousCb}
@@ -110,7 +112,7 @@ export const TimingSection = memo(function TimingSection({ form, showDurationFie
 					/>
 					<DateTimeField
 						label="End Date"
-						value={endField.value}
+						value={endDateField.value}
 						onChange={handleEndChange}
 						onNow={() => handleNow("end")}
 						onFill={fillNextCb}
@@ -137,12 +139,12 @@ export const TimingSection = memo(function TimingSection({ form, showDurationFie
 
 			{isAllDay && (
 				<div className="prisma-allday-event-fields">
-					<PrismaSettingItem name="Date" testId="prisma-event-field-date">
+					<PrismaSettingItem name="Start day" testId="prisma-event-field-date">
 						<input
 							type="date"
 							className="prisma-setting-item-control"
-							value={dateField.value}
-							onChange={(e) => dateField.onChange(e.target.value)}
+							value={startDayField.value}
+							onChange={(e) => startDayField.onChange(e.target.value)}
 							data-testid="prisma-event-control-date"
 						/>
 					</PrismaSettingItem>
@@ -150,8 +152,8 @@ export const TimingSection = memo(function TimingSection({ form, showDurationFie
 						<input
 							type="date"
 							className="prisma-setting-item-control"
-							value={endDayField.value || dateField.value}
-							min={dateField.value}
+							value={endDayField.value || startDayField.value}
+							min={startDayField.value}
 							onChange={(e) => endDayField.onChange(e.target.value)}
 							data-testid="prisma-event-control-end-day"
 						/>

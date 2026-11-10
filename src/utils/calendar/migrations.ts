@@ -53,8 +53,41 @@ function migrateLoggingFileLevel(data: RawSettings): boolean {
 	return true;
 }
 
+/** The single-day all-day property this calendar was created with, before `Start Day` became the default. */
+const LEGACY_START_DAY_PROP = "Date";
+
+/**
+ * `dateProp` becomes `startDayProp`. Every stored calendar predates the rename,
+ * so one that never saved the key read the old `Date` default and keeps it —
+ * only calendars created after the rename get `Start Day`
+ * ([[decision-all-day-events-use-start-day-and-end-day]]).
+ */
+function migrateDatePropToStartDayProp(data: RawSettings): boolean {
+	const calendars = data["calendars"];
+	if (!Array.isArray(calendars)) return false;
+
+	let migrated = 0;
+	for (const cal of calendars as unknown[]) {
+		if (!isObject(cal) || typeof cal["startDayProp"] === "string") continue;
+		const legacy = cal["dateProp"];
+		cal["startDayProp"] = typeof legacy === "string" && legacy.trim() ? legacy : LEGACY_START_DAY_PROP;
+		delete cal["dateProp"];
+		migrated++;
+	}
+
+	if (migrated === 0) return false;
+	log.info("settings", "Renamed dateProp to startDayProp, keeping each calendar's property name", {
+		calendars: migrated,
+	});
+	return true;
+}
+
 /** In the order they were introduced — a later step may rely on an earlier one's shape. */
-const SETTINGS_MIGRATIONS: readonly SettingsMigration[] = [migrateSharedExcludedProps, migrateLoggingFileLevel];
+const SETTINGS_MIGRATIONS: readonly SettingsMigration[] = [
+	migrateSharedExcludedProps,
+	migrateLoggingFileLevel,
+	migrateDatePropToStartDayProp,
+];
 
 /**
  * Runs every stored-settings migration on the raw JSON before the Zod parse,

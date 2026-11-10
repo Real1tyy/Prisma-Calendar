@@ -103,7 +103,7 @@ export function PrefillButtons({
 export interface PrefillResult {
 	startProp: string;
 	endProp: string;
-	dateProp: string;
+	startDayProp: string;
 	endDayProp: string;
 }
 
@@ -115,9 +115,9 @@ export function computePrefill(suggestion: DirectorySuggestion): PrefillResult {
 	const startProp = startMatch ?? dt.at(0) ?? "";
 	const endProp = endMatch ?? dt.find((p) => p !== startProp) ?? dt.at(1) ?? "";
 	const endDayProp = suggestion.dateProps.find((p) => p.toLowerCase().includes("end")) ?? "";
-	const dateProp = suggestion.dateProps.find((p) => p !== endDayProp) ?? "";
+	const startDayProp = suggestion.dateProps.find((p) => p !== endDayProp) ?? "";
 
-	return { startProp, endProp, dateProp, endDayProp };
+	return { startProp, endProp, startDayProp, endDayProp };
 }
 
 // ─── Suggestion list ────────────────────────────────────────────────────────
@@ -204,13 +204,13 @@ export const SuggestionList = memo(function SuggestionList({
 export interface PropertyFieldsProps {
 	startProp: string;
 	endProp: string;
-	dateProp: string;
+	startDayProp: string;
 	endDayProp: string;
 	onStartPropChange: (value: string) => void;
 	onEndPropChange: (value: string) => void;
-	onDatePropChange: (value: string) => void;
+	onStartDayPropChange: (value: string) => void;
 	onEndDayPropChange: (value: string) => void;
-	placeholders: { startProp: string; endProp: string; dateProp: string; endDayProp: string };
+	placeholders: { startProp: string; endProp: string; startDayProp: string; endDayProp: string };
 	suggestion: DirectorySuggestion | null;
 	testIdPrefix: string;
 }
@@ -218,11 +218,11 @@ export interface PropertyFieldsProps {
 export const PropertyFields = memo(function PropertyFields({
 	startProp,
 	endProp,
-	dateProp,
+	startDayProp,
 	endDayProp,
 	onStartPropChange,
 	onEndPropChange,
-	onDatePropChange,
+	onStartDayPropChange,
 	onEndDayPropChange,
 	placeholders,
 	suggestion,
@@ -268,19 +268,19 @@ export const PropertyFields = memo(function PropertyFields({
 					) : null}
 				</div>
 			</Field>
-			<Field label="Date property" hint="Date value for all-day events.">
+			<Field label="Start day property" hint="First day of all-day events (date only).">
 				<div className={cls("first-launch-field-row")}>
 					<TextInput
-						value={dateProp}
-						placeholder={placeholders.dateProp}
-						onChange={onDatePropChange}
+						value={startDayProp}
+						placeholder={placeholders.startDayProp}
+						onChange={onStartDayPropChange}
 						debounceMs={0}
 						testId={tid("date-prop")}
 					/>
 					{suggestion ? (
 						<PrefillButtons
 							props={suggestion.dateProps}
-							onSelect={onDatePropChange}
+							onSelect={onStartDayPropChange}
 							testIdPrefix={tid("prefill-date")}
 						/>
 					) : null}

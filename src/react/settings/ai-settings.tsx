@@ -172,7 +172,7 @@ const PromptEditForm = memo(function PromptEditForm({ existing, onSave, onCancel
 			<label className={cls("filter-label")}>Content</label>
 			<textarea
 				className={cls("transform-editor")}
-				placeholder="e.g. All-day events use the Date property. Work events are in the Work category."
+				placeholder="e.g. All-day events use the Start Day property. Work events are in the Work category."
 				rows={4}
 				value={content}
 				onChange={(e) => setContent(e.target.value)}

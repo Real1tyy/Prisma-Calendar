@@ -29,7 +29,7 @@ export function formatEventSubtitle(event: CalendarEvent): string {
 
 	const startDate = new Date(event.start);
 	if (event.allDay) {
-		parts.push(formatAllDayDateRange(startDate, new Date(event.end), formatLocaleShortDate));
+		parts.push(formatAllDayDateRange(startDate, event.end ? new Date(event.end) : null, formatLocaleShortDate));
 	} else {
 		const dateStr = formatLocaleShortDate(startDate);
 		const startTimeStr = formatLocaleTimeHm(startDate);

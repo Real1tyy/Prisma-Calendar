@@ -49,7 +49,7 @@ export function allEventSources(tracked: EventSourceRows, untracked: EventSource
 }
 
 function isTracked(data: Frontmatter, settings: SingleCalendarConfig): boolean {
-	return Boolean(data[settings.startProp] || data[settings.dateProp]);
+	return Boolean(data[settings.startProp] || data[settings.startDayProp]);
 }
 
 function matchesScope(data: Frontmatter, settings: SingleCalendarConfig, scope: EventSourceScope): boolean {

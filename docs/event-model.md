@@ -10,9 +10,9 @@ Every note in the calendar directory is classified as one of:
 | -------------- | -------------------------------------- |
 | **Untracked**  | No start date property in frontmatter  |
 | **Timed**      | Has start date with a time component   |
-| **All-day**    | Date-only Date property (or `All Day: true`); optional exclusive End Day extends the span |
+| **All-day**    | Date-only Start Day property (`startDayProp`, or `All Day: true`); optional exclusive End Day extends the span |
 
-All-day events always have an exclusive `end` in memory. Missing or degenerate End Day defaults to start + one day without changing disk. The form and range labels display the inclusive last day.
+All-day events carry an exclusive `end` in memory only when End Day spans more than one day; a single-day event has no `end`, and readers resolve its boundary with `allDayEnd` (start + one day). The form and range labels display the inclusive last day ([[decision-all-day-events-use-start-day-and-end-day]]).
 
 Timed and all-day notes are "tracked" — they appear on the calendar and participate in indexing, stats, and recurrence.
 

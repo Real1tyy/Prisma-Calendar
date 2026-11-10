@@ -187,7 +187,7 @@ The **Open Current Note in Calendar** command provides quick navigation from any
 -   **Function**: Opens a lightweight modal that asks only for event name
 -   **Behavior**:
     -   Creates a Prisma note with ZettelID
-    -   Leaves `Start Date`, `End Date`, `Date`, and `All Day` empty
+    -   Leaves `Start Date`, `End Date`, `Start Day`, and `All Day` empty
     -   The note appears in Untracked Events until you add date/time values
 -   **Use Case**: Capture events quickly and schedule them later
 

@@ -287,7 +287,7 @@ export function mapEventToPrismaInput(
 	const allColors = resolveAllEventColors(event.meta, bundle, colorEvaluator);
 	const eventColor = allColors[0] ?? bundle.settingsStore.currentSettings.defaultNodeColor;
 	const start = stripZ(event.start);
-	const end = stripZ(event.end);
+	const end = event.end ? stripZ(event.end) : undefined;
 
 	const classNames = ["regular-event"];
 	if (isAnyVirtual(event.virtualKind)) {

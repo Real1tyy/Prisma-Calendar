@@ -1080,7 +1080,7 @@ export class EventContextMenu {
 			const propertyUpdates = new Map<string, string | null>([
 				[settings.startProp, null],
 				[settings.endProp, null],
-				[settings.dateProp, null],
+				[settings.startDayProp, null],
 				[settings.allDayProp, null],
 			]);
 			await this.runCommand(() => updateFrontmatter(this.bundle, filePath, propertyUpdates), {

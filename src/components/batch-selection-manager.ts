@@ -27,7 +27,7 @@ import {
 } from "../core/commands/batch-commands";
 import { openMoveByModal } from "../react/modals";
 import { isTimeUnitAllowedForAllDay, type CalendarEvent } from "../types/calendar";
-import { allDayEnd } from "../utils/dates/all-day";
+import { allDaySpanEnd, optionalEnd } from "../utils/dates/all-day";
 import { isBatchSelectable, isVirtualEvent } from "../utils/events/classification";
 import { parseFCExtendedProps } from "../utils/frontmatter/extended-props";
 
@@ -487,7 +487,7 @@ export class BatchSelectionManager {
 			? {
 					...baseEvent,
 					type: "allDay" as const,
-					end: allDayEnd(start, fcEvent.end ? toLocalISOString(fcEvent.end) : undefined),
+					...optionalEnd(allDaySpanEnd(start, fcEvent.end ? toLocalISOString(fcEvent.end) : undefined)),
 					allDay: true,
 				}
 			: {

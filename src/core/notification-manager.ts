@@ -370,8 +370,8 @@ export function calculateNotificationTime(
 	metadata: EventMetadata,
 	settings: SingleCalendarConfig
 ): { notifyAt: Date; startDate: Date } | null {
-	const dateProp = isAllDay ? settings.dateProp : settings.startProp;
-	const dateString = toSafeString(frontmatter[dateProp]);
+	const startDayProp = isAllDay ? settings.startDayProp : settings.startProp;
+	const dateString = toSafeString(frontmatter[startDayProp]);
 	if (!dateString) return null;
 
 	const startDate = parseAsLocalDate(dateString);

@@ -90,13 +90,13 @@ export function deriveEditFormState(
 		title: displayTitle,
 		allDay: eventData.allDay ?? false,
 		virtual: eventData.extendedProps?.["virtualKind"] === "manual",
-		start: eventData.start ? formatDateTimeForInput(eventData.start) : "",
-		end: eventData.end ? formatDateTimeForInput(eventData.end) : "",
+		startDate: eventData.start ? formatDateTimeForInput(eventData.start) : "",
+		endDate: eventData.end ? formatDateTimeForInput(eventData.end) : "",
 		endDay:
 			eventData.allDay && eventData.end
 				? (DateTime.fromISO(formatDateOnly(eventData.end)).minus({ days: 1 }).toISODate() ?? "")
 				: "",
-		date: eventData.allDay && eventData.start ? formatDateOnly(eventData.start) : "",
+		startDay: eventData.allDay && eventData.start ? formatDateOnly(eventData.start) : "",
 		categories,
 		participants,
 		prerequisites,

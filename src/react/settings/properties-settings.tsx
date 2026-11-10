@@ -166,7 +166,7 @@ ${settings.allDayProp}: false
 			<div>
 				<strong>All-day event example:</strong>
 				<pre className={cls("settings-info-box-example")}>{`---
-${settings.dateProp}: 2024-01-15
+${settings.startDayProp}: 2024-01-15
 ${settings.allDayProp}: true
 ---
 

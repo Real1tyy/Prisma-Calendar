@@ -54,11 +54,11 @@ status: In Progress
 Existing note body — links, tasks, anything. Untouched.
 ```
 
-An **all-day** note only needs the Date property you mapped:
+An **all-day** note only needs the Start Day property you mapped:
 
 ```yaml
 ---
-Date: 2025-12-20
+Start Day: 2025-12-20
 ---
 ```
 
@@ -70,7 +70,7 @@ Enable "Normalize date property for sorting" in Properties Settings to make exte
 
 **The Problem**: External tools can only sort by one field. Prisma uses separate properties for timed events and all-day events, making chronological sorting impossible.
 
-**The Solution**: Automatically copy the start or end time into a single `Date` property for timed events.
+**The Solution**: Automatically copy the start or end time into a single `Sort Date` property.
 
 ### Options
 

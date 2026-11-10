@@ -42,7 +42,7 @@ function toClassifiableString(value: unknown): string | null {
 export interface ScanPropNames {
 	startProp: string;
 	endProp: string;
-	dateProp: string;
+	startDayProp: string;
 	sortDateProp: string;
 	rruleProp: string;
 	rruleSpecProp: string;
@@ -89,7 +89,7 @@ interface RankingTables {
  * Defaults and configured names are unioned, never swapped: a vault that predates a rename still
  * holds notes under the old names, so both deserve to rank. The one asymmetry is the subtraction
  * — a name the user configured as their own start/end/date wins over the default managed list,
- * or configuring `dateProp: "Sort Date"` would silently drop the very property they picked.
+ * or configuring `startDayProp: "Sort Date"` would silently drop the very property they picked.
  */
 function buildRankingTables(propNames?: ScanPropNames): RankingTables {
 	const canonical: Record<DateLikeKind, Set<string>> = {
@@ -99,7 +99,7 @@ function buildRankingTables(propNames?: ScanPropNames): RankingTables {
 	const managed = new Set(DEFAULT_MANAGED_PROPS);
 
 	if (propNames) {
-		canonical.date.add(normalizeKey(propNames.dateProp));
+		canonical.date.add(normalizeKey(propNames.startDayProp));
 		canonical.datetime.add(normalizeKey(propNames.startProp));
 		canonical.datetime.add(normalizeKey(propNames.endProp));
 
@@ -114,7 +114,7 @@ function buildRankingTables(propNames?: ScanPropNames): RankingTables {
 			managed.add(normalizeKey(name));
 		}
 
-		for (const own of [propNames.dateProp, propNames.startProp, propNames.endProp]) {
+		for (const own of [propNames.startDayProp, propNames.startProp, propNames.endProp]) {
 			managed.delete(normalizeKey(own));
 		}
 	}

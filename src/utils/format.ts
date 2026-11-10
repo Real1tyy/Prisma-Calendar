@@ -35,7 +35,7 @@ export function formatAllDayDateRange(start: Date, end: Date | null, formatDate:
 export function formatEventTimeInfo(event: CalendarEvent): string {
 	const startTime = DateTime.fromISO(event.start);
 	if (isAllDayEvent(event)) {
-		return `All Day - ${formatAllDayDateRange(startTime.toJSDate(), DateTime.fromISO(event.end).toJSDate(), (date) => DateTime.fromJSDate(date).toFormat("MMM d, yyyy"))}`;
+		return `All Day - ${formatAllDayDateRange(startTime.toJSDate(), event.end ? DateTime.fromISO(event.end).toJSDate() : null, (date) => DateTime.fromJSDate(date).toFormat("MMM d, yyyy"))}`;
 	}
 	const endTime = isTimedEvent(event) ? DateTime.fromISO(event.end) : null;
 	if (endTime && endTime > startTime) {

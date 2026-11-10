@@ -71,17 +71,55 @@ Only Prisma's own properties are reordered; your keys keep their values and thei
 
 ## Core Event Properties
 
+Prisma uses two pairs of temporal properties, one per event type:
+
+| Event type | Start | End |
+|---|---|---|
+| **Timed** — date and time | `Start Date` (e.g. `2026-01-01T09:00`) | `End Date` (e.g. `2026-01-01T10:30`) |
+| **All-day** — date only | `Start Day` (e.g. `2026-01-01`) | `End Day` — only for events spanning several days |
+
 - **Start property** (required): default `Start Date`
 - **End property** (optional): default `End Date`
 - **All-day property** (optional): default `All Day`
-- **Date property** (optional): default `Date` (first day of an all-day event)
-- **End day property** (optional): default `End Day` (exclusive end of an all-day span)
+- **Start day property** (optional): default `Start Day` (the first day of an all-day event). Calendars created before `Start Day` became the default keep `Date` — see [Using Start Day instead of Date](#using-start-day-instead-of-date).
+- **End day property** (optional): default `End Day` (the exclusive end of a multi-day all-day event)
 - **Title property** (optional): default `Title` (falls back to file name when missing). See [Title property](#title-property) below for details.
 - **Skip property**: property name to skip/hide event from calendar (default: `Skip`)
 
+### Start Day and End Day
+
+A single-day all-day event needs only `Start Day`:
+
+```yaml
+---
+Start Day: 2026-01-01
+---
+```
+
+There is no `End Day` on a single-day event — without one, the event covers exactly its start day. Prisma never writes an `End Day` for a single day, and saving a same-day range in the form removes it.
+
 ### All-day spans: exclusive storage, inclusive display
 
-An all-day event covers its `Date` through the day **before** `End Day`:
+Add `End Day` to stretch an all-day event over several days. The event covers its `Start Day` through the day **before** `End Day`:
+
+```yaml
+---
+Start Day: 2026-01-01
+End Day: 2026-01-08
+---
+```
+
+This event covers January 1–7. `End Day` stores January 8 to match iCalendar, Google Calendar and FullCalendar, which all use an exclusive end. The event form and tooltips show January 7, the last covered day. Select January 1 and January 7 in the form to create this span.
+
+An `End Day` equal to or before `Start Day`, or one that is not a valid date, is treated as a single day.
+
+Drag the bar to move the entire span, or drag its right edge to change the last day. Undo restores the previous dates. Toggling **All day** preserves the first and last days. Heatmaps and statistics count the event on its start day. Recurring all-day events cover one day per occurrence.
+
+ICS export writes an end (`DTEND`) only for multi-day events; a single-day event is exported with just its start day, which every calendar app reads as one day. The event API returns an all-day `end` only for multi-day events, and converting a note to a virtual event preserves its span.
+
+### Using Start Day instead of Date
+
+Calendars created before `Start Day` became the default use `Date` for the first day of all-day events. Those calendars keep working unchanged: Prisma keeps reading and writing `Date`, and multi-day events pair it with `End Day`:
 
 ```yaml
 ---
@@ -90,11 +128,13 @@ End Day: 2026-01-08
 ---
 ```
 
-This event covers January 1–7. `End Day` stores January 8 to match iCalendar, Google Calendar and FullCalendar, which all use an exclusive end. The event form and tooltips show January 7, the last covered day. Select January 1 and January 7 in the form to create this span.
+For consistency and readability I recommend switching to `Start Day`, so every all-day note reads as `Start Day` / `End Day` next to the timed `Start Date` / `End Date`. Nothing forces the switch. To make it:
 
-Leave `End Day` absent for a single-day event. Saving a same-day range removes the property. An end equal to or before the start is treated as one day. Existing single-day notes need no migration.
+1. **Rename the property in your notes.** In Obsidian's **All properties** view (core Properties plugin), right-click `Date`, choose **Rename**, and enter `Start Day`. Obsidian rewrites every note that uses it. Rename only if `Date` is not used by other plugins or queries for something else.
+2. **Point the calendar at it.** Open the calendar's **Properties** settings and set **Start day property** to `Start Day`.
+3. **Update your own queries.** Bases views, Dataview queries or templates that read `Date` for all-day events should read `Start Day`.
 
-Drag the bar to move the entire span, or drag its right edge to change the last day. Undo restores the previous dates. Toggling **All day** preserves the first and last days. Heatmaps and statistics count the event on its start day. Recurring all-day events cover one day per occurrence.
+Do steps 1 and 2 together: between them, all-day notes whose property name does not match the setting do not appear on the calendar. Repeat step 2 for each calendar that indexes those notes, and on one device only for step 1 — sync carries the renamed notes to the others.
 
 ### Title property
 
@@ -106,12 +146,10 @@ If **Title property** is blank, the event's title is derived from the filename (
 
 Priority when resolving an event's display title: `Title property` (user-controlled) → `Calendar title property` (auto-computed back-link) → filename.
 
-The event API also accepts and returns the exclusive all-day `end`. Converting a note to a virtual event preserves the same span.
-
 ## Sorting Normalization
 
 - **Sorting normalization strategy**: write a normalized datetime to a dedicated sort property so external tools (Bases, Dataview) can sort all event types by a single field. See [Sorting Normalization for External Tools](#sorting-normalization-for-external-tools) below for full details.
-- **Sort date property**: frontmatter property to write the normalized datetime to. Separate from the Date property used by all-day events (default: `Sort Date`)
+- **Sort date property**: frontmatter property to write the normalized datetime to. Separate from the Start Day property used by all-day events (default: `Sort Date`)
 
 ## Identification & Tracking
 
@@ -194,11 +232,11 @@ Event type is resolved in two steps. The `All Day` property is checked first; if
 
 **1. The `All Day` property, when present, decides the type:**
 
-- `All Day: true` → all-day event. The date is taken from the Date property, or, if Date is empty, the date portion of the Start property.
+- `All Day: true` → all-day event. The day is taken from the Start Day property, or, if it is empty, the date portion of the Start property.
 
   ```yaml
   ---
-  Date: 2026-06-01
+  Start Day: 2026-06-01
   All Day: true
   ---
   ```
@@ -224,15 +262,15 @@ Event type is resolved in two steps. The `All Day` property is checked first; if
   ---
   ```
 
-- Otherwise, a **date-only** value (e.g. `2026-06-01`) in the Date property → **all-day event**. `End Day` optionally extends it over several days; it does not affect event type.
+- Otherwise, a **date-only** value (e.g. `2026-06-01`) in the Start Day property → **all-day event**. `End Day` optionally extends it over several days; it does not affect event type.
 
   ```yaml
   ---
-  Date: 2026-06-01
+  Start Day: 2026-06-01
   ---
   ```
 
-- Otherwise → **untracked** (the note is indexed but does not appear on the calendar). This includes a date-only value placed in the Start property with no Date value:
+- Otherwise → **untracked** (the note is indexed but does not appear on the calendar). This includes a date-only value placed in the Start property with no Start Day value:
 
   ```yaml
   ---
@@ -240,26 +278,26 @@ Event type is resolved in two steps. The `All Day` property is checked first; if
   ---
   ```
 
-A date-only value must go in the **Date property** to render. A date-only value in the **Start property** with no Date value is untracked — datetimes belong in Start, dates belong in Date.
+A date-only value must go in the **Start Day property** to render. A date-only value in the **Start property** with no Start Day value is untracked — datetimes belong in Start, dates belong in Start Day.
 
 ## Date and Time Properties on Save
 
-For all-day events, Prisma writes `Date` and sets `All Day: true`. `End Day` is present only for spans longer than one day. The timed `Start Date` and `End Date` properties are empty strings.
+For all-day events, Prisma writes `Start Day` and sets `All Day: true`. `End Day` is present only for events spanning more than one day. The timed `Start Date` and `End Date` properties are empty strings.
 
-For timed events, `Start Date` and `End Date` hold datetimes, `Date` is empty and `All Day` is false. `End Day` is absent. Your configured property names apply throughout.
+For timed events, `Start Date` and `End Date` hold datetimes, `Start Day` is empty and `All Day` is false. `End Day` is absent. Your configured property names apply throughout.
 
 ## Sorting Normalization for External Tools
 
 **Event type** is decided by the value you write, with the `All Day` property as an optional override (see [How Prisma decides event type](#how-prisma-decides-event-type) above):
-- `All Day: true` → forced all-day, uses the `Date` property
+- `All Day: true` → forced all-day, uses the `Start Day` property
 - `All Day: false` → forced timed, uses `Start`/`End`
-- unset → inferred from the value type (date-only `Date` → all-day; datetime `Start` → timed)
+- unset → inferred from the value type (date-only `Start Day` → all-day; datetime `Start` → timed)
 
 **Sorting normalization strategy:**
 
 When a sorting normalization strategy is enabled in Properties Settings, Prisma writes a normalized datetime to a dedicated `Sort Date` property. This allows external tools (Bases, Dataview, Obsidian search) to sort all event types — both timed and all-day — by a single field.
 
-The `Sort Date` property is separate from the `Date` property used by all-day events. This avoids conflicts between the all-day event date and the normalized sorting value.
+The `Sort Date` property is separate from the `Start Day` property used by all-day events. This avoids conflicts between the all-day event date and the normalized sorting value.
 
 **Normalization modes:**
 
@@ -268,9 +306,9 @@ The `Sort Date` property is separate from the `Date` property used by all-day ev
 | **None** (default) | — | — |
 | **Timed only — start** | Start datetime → Sort Date | — |
 | **Timed only — end** | End datetime → Sort Date | — |
-| **All-day only** | — | Date + `T00:00:00` → Sort Date |
-| **All events — start** (recommended) | Start datetime → Sort Date | Date + `T00:00:00` → Sort Date |
-| **All events — end** | End datetime → Sort Date | Date + `T00:00:00` → Sort Date |
+| **All-day only** | — | Start Day + `T00:00:00` → Sort Date |
+| **All events — start** (recommended) | Start datetime → Sort Date | Start Day + `T00:00:00` → Sort Date |
+| **All events — end** | End datetime → Sort Date | Start Day + `T00:00:00` → Sort Date |
 
 All datetime values are written without the `.000Z` suffix. All-day events get `T00:00:00` appended so they sort consistently alongside timed events.
 

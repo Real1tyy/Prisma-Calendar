@@ -85,7 +85,7 @@ function buildBarMenuItems(
 				showEventPreviewModal(app, bundle, {
 					title: ev.title,
 					start: new Date(ev.start),
-					end: new Date(ev.end),
+					end: ev.end ? new Date(ev.end) : null,
 					allDay: ev.allDay,
 					extendedProps: { filePath: ev.ref.filePath },
 				});
@@ -100,7 +100,7 @@ function buildBarMenuItems(
 				openEventEditModal(app, bundle, {
 					title: ev.title,
 					start: ev.start,
-					end: ev.end,
+					end: ev.end ?? null,
 					allDay: ev.allDay,
 					extendedProps: { filePath: ev.ref.filePath },
 				});
@@ -307,7 +307,7 @@ const GanttBody = memo(function GanttBody() {
 				showEventPreviewModal(app, bundle, {
 					title: event.title,
 					start: new Date(event.start),
-					end: new Date(event.end),
+					end: event.end ? new Date(event.end) : null,
 					allDay: event.allDay,
 					extendedProps: { filePath: event.ref.filePath },
 				});

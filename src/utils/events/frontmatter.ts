@@ -36,12 +36,12 @@ export function parseEventFrontmatter(
 	frontmatter: Frontmatter,
 	settings: SingleCalendarConfig
 ): { datetime: CalendarEventFrontmatter; metadata: EventMetadata } | null {
-	const { startProp, endProp, dateProp, allDayProp, titleProp } = settings;
+	const { startProp, endProp, startDayProp, allDayProp, titleProp } = settings;
 	const metadata = parseEventMetadata(frontmatter, settings);
 
 	if (isAllDayEvent(frontmatter[allDayProp])) {
 		const candidateData = {
-			date: frontmatter[dateProp],
+			date: frontmatter[startDayProp],
 			allDay: true as const,
 			title: titleProp ? frontmatter[titleProp] : undefined,
 		};
@@ -265,7 +265,7 @@ export const getBatchFrontmatterExcludedProps = (settings: SingleCalendarConfig)
 		[
 			settings.startProp,
 			settings.endProp,
-			settings.dateProp,
+			settings.startDayProp,
 			settings.sortDateProp,
 			settings.allDayProp,
 			settings.categoryProp,

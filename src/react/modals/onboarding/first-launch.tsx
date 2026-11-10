@@ -26,7 +26,7 @@ const FormSchema = z.object({
 	directory: z.string().min(1),
 	startProp: z.string(),
 	endProp: z.string(),
-	dateProp: z.string(),
+	startDayProp: z.string(),
 	endDayProp: z.string(),
 });
 
@@ -35,7 +35,7 @@ type FormValues = z.infer<typeof FormSchema>;
 // ─── Types (derived from schema) ─────────────────────────────────────────────
 
 export type FirstLaunchMode = FormValues["mode"];
-export type FirstLaunchInitialProps = Pick<FormValues, "startProp" | "endProp" | "dateProp" | "endDayProp">;
+export type FirstLaunchInitialProps = Pick<FormValues, "startProp" | "endProp" | "startDayProp" | "endDayProp">;
 export type FirstLaunchInitialState = Partial<FormValues>;
 export type FirstLaunchModalResult = FormValues & {
 	selectedSuggestion: DirectorySuggestion | null;
@@ -160,7 +160,7 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 			directory: initialState?.directory ?? "Tasks",
 			startProp: initialState?.startProp ?? initialProps.startProp,
 			endProp: initialState?.endProp ?? initialProps.endProp,
-			dateProp: initialState?.dateProp ?? initialProps.dateProp,
+			startDayProp: initialState?.startDayProp ?? initialProps.startDayProp,
 			endDayProp: initialState?.endDayProp ?? initialProps.endDayProp,
 		},
 	});
@@ -169,7 +169,7 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 	const currentDirectory = useWatch({ control, name: "directory" });
 	const currentStartProp = useWatch({ control, name: "startProp" });
 	const currentEndProp = useWatch({ control, name: "endProp" });
-	const currentDateProp = useWatch({ control, name: "dateProp" });
+	const currentStartDayProp = useWatch({ control, name: "startDayProp" });
 	const currentEndDayProp = useWatch({ control, name: "endDayProp" });
 	const welcomeTid = (suffix: string) => tid("welcome", suffix);
 	const matchedSuggestion = suggestions.find((s) => s.directory === currentDirectory.trim()) ?? null;
@@ -202,7 +202,7 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 			const prefill = computePrefill(suggestion);
 			setValue("startProp", prefill.startProp || initialProps.startProp);
 			setValue("endProp", prefill.endProp || initialProps.endProp);
-			setValue("dateProp", prefill.dateProp || initialProps.dateProp);
+			setValue("startDayProp", prefill.startDayProp || initialProps.startDayProp);
 			setValue("endDayProp", prefill.endDayProp || initialProps.endDayProp);
 		},
 		[setValue, initialProps]
@@ -217,7 +217,7 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 				directory: primary.directory,
 				startProp: primary.startProp,
 				endProp: primary.endProp,
-				dateProp: primary.dateProp,
+				startDayProp: primary.startDayProp,
 				endDayProp: primary.endDayProp,
 				selectedSuggestion: null,
 				importedSettings: true,
@@ -232,7 +232,7 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 			directory: values.directory.trim(),
 			startProp: values.startProp.trim() || initialProps.startProp,
 			endProp: values.endProp.trim() || initialProps.endProp,
-			dateProp: values.dateProp.trim() || initialProps.dateProp,
+			startDayProp: values.startDayProp.trim() || initialProps.startDayProp,
 			endDayProp: values.endDayProp.trim() || initialProps.endDayProp,
 			selectedSuggestion: matchedSuggestion,
 			importedSettings: false,
@@ -279,7 +279,7 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 						setValue("directory", "");
 						setValue("startProp", initialProps.startProp);
 						setValue("endProp", initialProps.endProp);
-						setValue("dateProp", initialProps.dateProp);
+						setValue("startDayProp", initialProps.startDayProp);
 						setValue("endDayProp", initialProps.endDayProp);
 					}}
 				/>
@@ -293,7 +293,7 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 						setValue("directory", "Tasks");
 						setValue("startProp", initialProps.startProp);
 						setValue("endProp", initialProps.endProp);
-						setValue("dateProp", initialProps.dateProp);
+						setValue("startDayProp", initialProps.startDayProp);
 						setValue("endDayProp", initialProps.endDayProp);
 					}}
 				/>
@@ -350,11 +350,11 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 				<PropertyFields
 					startProp={currentStartProp}
 					endProp={currentEndProp}
-					dateProp={currentDateProp}
+					startDayProp={currentStartDayProp}
 					endDayProp={currentEndDayProp}
 					onStartPropChange={(v) => setValue("startProp", v)}
 					onEndPropChange={(v) => setValue("endProp", v)}
-					onDatePropChange={(v) => setValue("dateProp", v)}
+					onStartDayPropChange={(v) => setValue("startDayProp", v)}
 					onEndDayPropChange={(v) => setValue("endDayProp", v)}
 					placeholders={initialProps}
 					suggestion={currentMode === "existing" ? matchedSuggestion : null}

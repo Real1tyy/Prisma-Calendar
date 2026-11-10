@@ -115,7 +115,7 @@ export function toEventModalData(event: CalendarEvent): EventModalData {
 	return {
 		title: event.title,
 		start: event.start,
-		end: event.end,
+		...(event.end ? { end: event.end } : {}),
 		allDay: event.allDay,
 		extendedProps: {
 			filePath: event.ref.filePath,

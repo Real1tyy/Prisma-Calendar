@@ -75,7 +75,7 @@ Drag any untracked event from the dropdown onto the calendar to assign it a date
 **All-day events:**
 1. Drag event from dropdown
 2. Drop on a day in month view
-3. Date property is set and All Day is set to true
+3. Start Day property is set and All Day is set to true
 
 ### Drag & Drop — From Calendar to Dropdown
 

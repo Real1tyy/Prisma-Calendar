@@ -57,8 +57,8 @@ export function useStopwatch({
 	// onContinueRequested sees what the user typed, not the value the modal
 	// opened with. See the regression test in
 	// tests/components/event-form/hooks/use-stopwatch.test.tsx.
-	const watchedStart = useWatch({ control: form.control, name: "start" });
-	const watchedEnd = useWatch({ control: form.control, name: "end" });
+	const watchedStart = useWatch({ control: form.control, name: "startDate" });
+	const watchedEnd = useWatch({ control: form.control, name: "endDate" });
 	const startRef = useRef<string>(watchedStart);
 	const endRef = useRef<string>(watchedEnd);
 	useEffect(() => {
@@ -91,7 +91,7 @@ export function useStopwatch({
 	useEffect(() => {
 		const id = window.setInterval(() => {
 			if (handleRef.current?.getState() !== "running") return;
-			form.setValue("end", formatDateTimeForInput(new Date()));
+			form.setValue("endDate", formatDateTimeForInput(new Date()));
 		}, END_TIME_SYNC_INTERVAL_MS);
 		return () => window.clearInterval(id);
 	}, [form]);
@@ -115,9 +115,9 @@ export function useStopwatch({
 	const onStart = useCallback(
 		(startTime: Date) => {
 			captureInitialBreakMinutes();
-			form.setValue("start", formatDateTimeForInput(startTime));
+			form.setValue("startDate", formatDateTimeForInput(startTime));
 			const endMs = startTime.getTime() + 5 * 60 * 1000;
-			form.setValue("end", formatDateTimeForInput(new Date(endMs)));
+			form.setValue("endDate", formatDateTimeForInput(new Date(endMs)));
 			// Stopwatch fires onStart before transitioning to "running" (see
 			// stopwatch.tsx start() — onStart, then beginTracking flips state).
 			// Defer the snapshot read so we capture post-transition state.
@@ -137,7 +137,7 @@ export function useStopwatch({
 		if (endValue) {
 			const endDate = parseAsLocalDate(endValue);
 			if (endDate && endDate.getTime() < Date.now()) {
-				form.setValue("end", formatDateTimeForInput(new Date()));
+				form.setValue("endDate", formatDateTimeForInput(new Date()));
 			}
 		}
 
@@ -158,7 +158,7 @@ export function useStopwatch({
 		if (endValue) {
 			const endDate = parseAsLocalDate(endValue);
 			if (endDate && endDate.getTime() < Date.now()) {
-				form.setValue("end", formatDateTimeForInput(new Date()));
+				form.setValue("endDate", formatDateTimeForInput(new Date()));
 			}
 		}
 
@@ -168,7 +168,7 @@ export function useStopwatch({
 
 	const onStop = useCallback(
 		(endTime: Date) => {
-			form.setValue("end", formatDateTimeForInput(endTime));
+			form.setValue("endDate", formatDateTimeForInput(endTime));
 			refreshSnapshot();
 		},
 		[form, refreshSnapshot]

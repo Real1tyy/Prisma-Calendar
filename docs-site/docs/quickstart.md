@@ -44,13 +44,14 @@ Choose **Use notes you already have** and Prisma scans your vault for folders th
 - **Datetime properties** — values with a time component (e.g. `2025-06-15T09:00`), used for timed events.
 - **Date properties** — date-only values (e.g. `2025-06-15`), used for all-day events.
 
-Click a folder to select it. Prisma makes its best guess at the mapping — a datetime property whose name contains "start" becomes your **Start property**, one containing "end" becomes your **End property**, and a date-only property becomes your **Date property**. The property names this planning system already uses — and Prisma's defaults (`Date`, `Start Date`, `End Date`) — are always offered first, even if some other dated property appears in more notes; properties Prisma writes itself (`RRuleUntil`, `Sort Date`, and the other recurrence fields) are never offered, and vault bookkeeping like `Created` or `Modified` is offered last. Every guess is editable: each field has inline **Use** buttons listing the detected properties, so you can fix the mapping in one click — or just type a name yourself.
+Click a folder to select it. Prisma makes its best guess at the mapping — a datetime property whose name contains "start" becomes your **Start property**, one containing "end" becomes your **End property**, and a date-only property becomes your **Start day property** (one containing "end" becomes your **End day property**). The property names this planning system already uses — and Prisma's defaults (`Start Date`, `End Date`, `Start Day`, `End Day`) — are always offered first, even if some other dated property appears in more notes; properties Prisma writes itself (`RRuleUntil`, `Sort Date`, and the other recurrence fields) are never offered, and vault bookkeeping like `Created` or `Modified` is offered last. Every guess is editable: each field has inline **Use** buttons listing the detected properties, so you can fix the mapping in one click — or just type a name yourself.
 
-You're mapping three things:
+You're mapping four things:
 
 - **Start property** — the datetime a timed event begins (e.g. your existing `start`, `due`, or `Start Date` field).
 - **End property** — the datetime a timed event ends.
-- **Date property** — the date-only field for all-day events.
+- **Start day property** — the date-only first day of all-day events.
+- **End day property** — the date-only exclusive end of multi-day all-day events.
 
 #### Example: adopting an existing meetings folder
 
@@ -83,7 +84,8 @@ Choose **Start with a clean setup** and Prisma pre-fills a dedicated folder (def
 | --- | --- |
 | Start property | `Start Date` |
 | End property | `End Date` |
-| Date property | `Date` |
+| Start day property | `Start Day` |
+| End day property | `End Day` |
 
 Rename the folder or the properties if you like, then finish. Prisma creates the folder and you're ready to go. From here on, every event you create through the UI becomes a new note in that folder, written with these property names.
 
@@ -103,7 +105,7 @@ An **all-day event** looks like this:
 
 ```yaml
 ---
-Date: 2025-06-20
+Start Day: 2025-06-20
 All Day: true
 ---
 

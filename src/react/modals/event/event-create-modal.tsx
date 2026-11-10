@@ -52,13 +52,13 @@ export function openEventCreateModal(
 		...createDefaultState(),
 		title: eventData.title || "",
 		allDay: eventData.allDay ?? false,
-		start: eventData.start ? toInputFormat(eventData.start) : "",
-		end: eventData.end ? toInputFormat(eventData.end) : "",
+		startDate: eventData.start ? toInputFormat(eventData.start) : "",
+		endDate: eventData.end ? toInputFormat(eventData.end) : "",
 		endDay:
 			eventData.allDay && eventData.end
 				? (DateTime.fromISO(formatDateOnly(eventData.end)).minus({ days: 1 }).toISODate() ?? "")
 				: "",
-		date: eventData.allDay && eventData.start ? toDateOnly(eventData.start) : "",
+		startDay: eventData.allDay && eventData.start ? toDateOnly(eventData.start) : "",
 	};
 
 	if (!options.restoreState && settings.defaultPresetId) {

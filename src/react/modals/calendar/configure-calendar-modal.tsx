@@ -16,7 +16,7 @@ export interface ConfigureCalendarResult {
 	directory: string;
 	startProp: string;
 	endProp: string;
-	dateProp: string;
+	startDayProp: string;
 	endDayProp: string;
 }
 
@@ -63,7 +63,7 @@ export const ConfigureCalendarController = memo(function ConfigureCalendarContro
 	const [directory, setDirectory] = useState(initialValues.directory);
 	const [startProp, setStartProp] = useState(initialValues.startProp);
 	const [endProp, setEndProp] = useState(initialValues.endProp);
-	const [dateProp, setDateProp] = useState(initialValues.dateProp);
+	const [startDayProp, setStartDayProp] = useState(initialValues.startDayProp);
 	const [endDayProp, setEndDayProp] = useState(initialValues.endDayProp);
 
 	const configureTid = (suffix: string) => tid("configure", suffix);
@@ -92,7 +92,7 @@ export const ConfigureCalendarController = memo(function ConfigureCalendarContro
 			const prefill = computePrefill(suggestion);
 			setStartProp(prefill.startProp || initialValues.startProp);
 			setEndProp(prefill.endProp || initialValues.endProp);
-			setDateProp(prefill.dateProp || initialValues.dateProp);
+			setStartDayProp(prefill.startDayProp || initialValues.startDayProp);
 			setEndDayProp(prefill.endDayProp || initialValues.endDayProp);
 		},
 		[initialValues]
@@ -103,7 +103,7 @@ export const ConfigureCalendarController = memo(function ConfigureCalendarContro
 			directory: directory.trim() || initialValues.directory,
 			startProp: startProp.trim() || initialValues.startProp,
 			endProp: endProp.trim() || initialValues.endProp,
-			dateProp: dateProp.trim() || initialValues.dateProp,
+			startDayProp: startDayProp.trim() || initialValues.startDayProp,
 			endDayProp: endDayProp.trim() || initialValues.endDayProp,
 		});
 	};
@@ -139,11 +139,11 @@ export const ConfigureCalendarController = memo(function ConfigureCalendarContro
 			<PropertyFields
 				startProp={startProp}
 				endProp={endProp}
-				dateProp={dateProp}
+				startDayProp={startDayProp}
 				endDayProp={endDayProp}
 				onStartPropChange={setStartProp}
 				onEndPropChange={setEndProp}
-				onDatePropChange={setDateProp}
+				onStartDayPropChange={setStartDayProp}
 				onEndDayPropChange={setEndDayProp}
 				placeholders={initialValues}
 				suggestion={matchedSuggestion}

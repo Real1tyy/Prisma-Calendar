@@ -38,7 +38,8 @@ export const TimedEventSchema = BaseEventSchema.extend({
 export const AllDayEventSchema = BaseEventSchema.extend({
 	type: z.literal("allDay"),
 	start: z.string(),
-	end: z.string(),
+	/** Exclusive end of a multi-day span; absent for a single-day event. */
+	end: z.string().optional(),
 	allDay: z.literal(true),
 	virtualKind: VirtualKindSchema.default("none"),
 	skipped: z.boolean(),

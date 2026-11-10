@@ -88,7 +88,7 @@ export class ConvertToVirtualCommand implements Command {
 		const result = await this.bundle.virtualEventStore.add({
 			title: (settings.titleProp ? (frontmatter[settings.titleProp] as string) : undefined) ?? file.basename,
 			start,
-			end,
+			end: end ?? null,
 			allDay,
 			properties: frontmatter,
 		});

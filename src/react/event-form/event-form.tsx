@@ -192,11 +192,11 @@ export const EventForm = memo(function EventForm({
 		// not what the user expects when clicking Save on a Clear'd form.
 		const isAllDay = form.getValues("allDay");
 		if (isAllDay) {
-			if (!form.getValues("date")) {
+			if (!form.getValues("startDay")) {
 				new Notice("Pick a date before saving.");
 				return;
 			}
-		} else if (!form.getValues("start")) {
+		} else if (!form.getValues("startDate")) {
 			new Notice("Pick a start time before saving.");
 			return;
 		}
@@ -288,7 +288,7 @@ export const EventForm = memo(function EventForm({
 
 	const fillFromAdjacent = useCallback(
 		(direction: "previous" | "next"): Date | null => {
-			const startVal = form.getValues("start");
+			const startVal = form.getValues("startDate");
 			const isAllDay = form.getValues("allDay");
 			const currentTimeISO = isAllDay || !startVal ? null : toLocalISOString(new Date(startVal));
 			const adjacent = findAdjacentEvent(bundle.eventStore, currentTimeISO, currentFilePath ?? null, direction);

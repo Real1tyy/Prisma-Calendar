@@ -39,7 +39,7 @@ For all-day events:
 ```yaml
 ---
 Title: Birthday
-Date: 2025-01-15
+Start Day: 2025-01-15
 Days Before: 1  # Notify 1 day before this all-day event
 ---
 ```
