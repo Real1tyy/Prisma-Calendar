@@ -224,7 +224,7 @@ Deleting a CalDAV or ICS subscription event from Prisma Calendar (via the calend
 
 Deletion history has no expiry. Undo keeps a newer restoration record so an older synced deletion does not suppress the restored event. Identical UIDs in another account, calendar or subscription remain independent. Batch deletion saves history together before removing the notes.
 
-See [The Prisma.md data file](../events/virtual-events.md#storage) for storage details, shared planning folders, and vault synchronization guidance.
+See [The Prisma.md Data File](./prisma-data-file.md) for storage details, shared planning folders, and vault synchronization guidance.
 
 ## CalDAV Integration
 

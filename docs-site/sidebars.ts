@@ -103,6 +103,7 @@ const sidebars: SidebarsConfig = {
 							items: ["features/advanced/integrations/google-calendar"],
 						},
 						"features/advanced/multi-device-sync",
+						"features/advanced/prisma-data-file",
 						"features/advanced/hotkeys",
 						"features/advanced/prerequisite-connections",
 						{

@@ -1,6 +1,6 @@
 ### Improved
 
-- **Planning data storage**: manual virtual events and integration deletion history share a dedicated `Prisma.md` Markdown file in each planning folder, with automatic migration from legacy virtual event files and safe concurrent updates across calendars pointing to the same folder. [The Prisma.md data file](./features/events/virtual-events#storage)
+- **Planning data storage**: manual virtual events and integration deletion history share a dedicated `Prisma.md` Markdown file in each planning folder, with automatic migration from legacy virtual event files and safe concurrent updates across calendars pointing to the same folder. [The Prisma.md data file](./features/advanced/prisma-data-file)
 
 ### Fixed
 

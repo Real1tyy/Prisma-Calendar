@@ -79,36 +79,9 @@ Toggle the **Virtual** pill in the modal header (next to the title). When active
 
 ### Storage: The Prisma.md data file {#storage}
 
-Each planning folder has a `Prisma.md` file that serves as its dedicated data store. It contains two managed JSON code fences:
+Manual virtual events are stored in the `prisma-virtual-events` code fence inside `Prisma.md` in your planning folder. Opening `Prisma.md` in Obsidian renders an interactive table of all virtual events in that folder.
 
-- `prisma-virtual-events`: Stores manual virtual events. When you open `Prisma.md` in Obsidian, Prisma renders an interactive table of all virtual events in that planning folder.
-- `prisma-deleted-events`: Stores [integration deletion history](../advanced/integrations.md#removing-a-synced-event-locally) so deleted CalDAV and ICS events stay deleted across future syncs.
-
-Each virtual event stores: title, start/end datetime, all-day flag, and frontmatter properties.
-
-#### Shared planning folders
-
-When multiple planning systems or calendars point to the same folder, they share `Prisma.md`. Prisma coordinates writes to the file so changes from different calendars do not overwrite each other.
-
-#### Synchronization
-
-Sync `Prisma.md` alongside your event notes with Obsidian Sync or your vault synchronization tool. Exclude neither the planning folder nor the `Prisma.md` file. Because `Prisma.md` is a standard Markdown note in your vault, you do not need any special plugin JSON-file sync setting or extra configuration. Keep the same integration configuration across devices.
-
-#### Reader devices
-
-Reader devices (configured with Read-only mode under **Settings → General**) receive `Prisma.md` through vault synchronization. They do not automatically create the file or run migration writes.
-
-#### Automatic migration
-
-On a writer device, an existing `Virtual Events.md` file migrates to `Prisma.md` on startup. If `Prisma.md` does not yet exist, the file is renamed directly, keeping all surrounding text. If `Prisma.md` already exists, virtual events merge into its code block.
-
-#### Changing folders
-
-When you change the calendar directory in settings, the plugin waits **3 seconds** after your last keystroke before creating `Prisma.md` at the new path. This prevents stray files from appearing at half-typed paths while you type.
-
-#### Concurrent edits and conflict resolution
-
-Let synchronization complete before editing from another device. If concurrent offline edits happen, resolve sync conflict copies through your synchronization tool without dropping either data section. Malformed JSON or duplicate managed blocks pause edits to that section until repaired.
+See [The Prisma.md Data File](../advanced/prisma-data-file.md) for full documentation on data storage, shared planning folders, synchronization, and migration.
 
 ### Converting Between Virtual and Physical
 
