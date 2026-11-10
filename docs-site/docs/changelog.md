@@ -6,7 +6,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## Unreleased
+## 2.26.0 - 11/10/2026
 
 > **TLDR:** Multi-day all-day events now pair Start Day and End Day so you can schedule vacations or conferences across several days and resize them on the grid. Mobile gets a major overhaul with a collapsible calendar header, single-row tab navigation and dedicated touch interactions, and week and day views gain four all-day display modes. You can now filter CalDAV, ICS subscriptions and calendar exports using expressions and saved presets.
 
