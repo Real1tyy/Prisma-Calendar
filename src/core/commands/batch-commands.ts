@@ -3,6 +3,7 @@ import type { DurationLike } from "luxon";
 import type { App } from "obsidian";
 
 import type { CalendarBundle } from "../calendar-bundle";
+import { createIntegrationDeletionLifecycle } from "../integrations/deleted-event-tombstones";
 import { deleteCategoryCommand, renameCategoryCommand } from "./category-commands";
 import {
 	assignCategories,
@@ -16,7 +17,15 @@ import { CloneEventCommand, DeleteEventCommand } from "./lifecycle-commands";
 import { ConvertToRealCommand, ConvertToVirtualCommand } from "./virtual-event-commands";
 
 export function createBatchDelete(bundle: CalendarBundle, filePaths: string[]): MacroCommand {
-	return batchCommand(filePaths, (fp) => new DeleteEventCommand(bundle.fileRepository, fp));
+	return batchCommand(
+		filePaths,
+		(fp) =>
+			new DeleteEventCommand(
+				bundle.fileRepository,
+				fp,
+				createIntegrationDeletionLifecycle(bundle.plugin.settingsStore, bundle.settingsStore.currentSettings)
+			)
+	);
 }
 
 export function createBatchDuplicate(app: App, bundle: CalendarBundle, filePaths: string[]): MacroCommand {

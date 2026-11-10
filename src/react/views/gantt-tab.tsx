@@ -38,6 +38,7 @@ import {
 	toggleSkip,
 } from "../../core/commands/frontmatter-update-command";
 import { CloneEventCommand, DeleteEventCommand } from "../../core/commands/lifecycle-commands";
+import { createIntegrationDeletionLifecycle } from "../../core/integrations/deleted-event-tombstones";
 import { PRO_FEATURES } from "../../core/license";
 import { openCategoryAssignModal } from "../../react/modals";
 import type { CalendarEvent } from "../../types/calendar";
@@ -172,7 +173,15 @@ function buildBarMenuItems(
 			label: "Delete event",
 			icon: "trash",
 			section: "danger",
-			onAction: act((ev) => runCmd(new DeleteEventCommand(bundle.fileRepository, ev.ref.filePath))),
+			onAction: act((ev) =>
+				runCmd(
+					new DeleteEventCommand(
+						bundle.fileRepository,
+						ev.ref.filePath,
+						createIntegrationDeletionLifecycle(bundle.plugin.settingsStore, bundle.settingsStore.currentSettings)
+					)
+				)
+			),
 		},
 	];
 }

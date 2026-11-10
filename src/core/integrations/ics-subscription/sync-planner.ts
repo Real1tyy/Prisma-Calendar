@@ -101,11 +101,11 @@ export function computeIcsSubscriptionSyncPlan(inputs: PlanInputs): SyncPlan {
 			actions.push({ kind: "skip-filtered", uid });
 			continue;
 		}
+		remoteUids.add(uid);
 		if (isIntegrationEventDeleted(userDeletedEvents, { kind: "ics-subscription", subscriptionId, uid })) {
 			actions.push({ kind: "skip-user-deleted", uid });
 			continue;
 		}
-		remoteUids.add(uid);
 
 		const ownTrack = ownTrackedByUid.get(uid);
 		if (ownTrack) {
