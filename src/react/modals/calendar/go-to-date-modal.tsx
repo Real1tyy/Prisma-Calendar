@@ -30,7 +30,7 @@ export function GoToDateForm({ initialDate, onSubmit, onCancel }: GoToDateFormPr
 					value={value}
 					onChange={(e) => setValue(e.target.value)}
 					data-testid={tid("go-to-date-value")}
-					autoFocus={shouldAutoFocus()}
+					autoFocus={shouldAutoFocus("desktop")}
 				/>
 			</SettingItem>
 		</ModalForm>

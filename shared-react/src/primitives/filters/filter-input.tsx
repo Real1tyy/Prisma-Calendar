@@ -134,7 +134,7 @@ export const FilterInput = memo(function FilterInput({
 			onChange={handleChange}
 			onKeyDown={handleKeyDown}
 			onBlur={handleBlur}
-			autoFocus={autoFocus && shouldAutoFocus()}
+			autoFocus={autoFocus && shouldAutoFocus("desktop")}
 			data-testid={testId}
 		/>
 	);

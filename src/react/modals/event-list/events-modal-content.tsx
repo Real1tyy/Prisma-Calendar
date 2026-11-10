@@ -154,7 +154,7 @@ function EventsModalContent({
 					data-testid={tid("events-modal-search")}
 					value={searchQuery}
 					onChange={(e) => setSearchQuery(e.target.value)}
-					autoFocus={shouldAutoFocus()}
+					autoFocus={shouldAutoFocus("desktop")}
 				/>
 				<select
 					className={cls("events-modal-sort-select")}

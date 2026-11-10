@@ -72,7 +72,7 @@ export function CategorySelectForm({ allCategories, onSelect, onCancel }: Catego
 						value={search}
 						onChange={(e) => setSearch(e.target.value)}
 						onKeyDown={handleKeyDown}
-						autoFocus={shouldAutoFocus()}
+						autoFocus={shouldAutoFocus("desktop")}
 						data-testid={tid("category-search")}
 					/>
 					<div className={cls("category-list")}>

@@ -57,7 +57,7 @@ const HOUSE_RULES = {
 			// [[decision-mobile-ui-conventions]]: focusing on open raises the phone keyboard.
 			selector: "JSXAttribute[name.name='autoFocus']:not(:has(CallExpression[callee.name='shouldAutoFocus']))",
 			message:
-				"Gate autoFocus on shouldAutoFocus() from @real1ty/obsidian-plugins-react — opening a surface must not raise the keyboard on a phone.",
+				'Gate autoFocus on shouldAutoFocus("always" | "desktop") from @real1ty/obsidian-plugins-react — decide whether opening this surface may raise a phone or tablet keyboard.',
 		},
 	],
 };

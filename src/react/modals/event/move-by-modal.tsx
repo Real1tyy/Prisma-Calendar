@@ -62,7 +62,7 @@ export function MoveByForm({ onSubmit, onCancel }: MoveByFormProps) {
 							className={cls("move-by-input")}
 							onChange={handleInputChange}
 							data-testid={tid("move-by-value")}
-							autoFocus={shouldAutoFocus()}
+							autoFocus={shouldAutoFocus("desktop")}
 						/>
 						<button
 							type="button"

@@ -167,7 +167,7 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 	// the leaf behind it, and that activation takes the focus back a beat later —
 	// so this keeps re-claiming it briefly, and stands down the moment the user
 	// clicks or types anywhere.
-	useFocusOnMount(textRef, { retryMs: 500 });
+	useFocusOnMount(textRef, { policy: "always", retryMs: 500 });
 
 	// Captured once per toggle rather than at send time, so what the user reviews
 	// below the checkbox is byte-for-byte what leaves the device.

@@ -5,7 +5,7 @@
 
 ### Improved
 
-- **Phone layout, everywhere**: the view tab bar now takes a single row at every width, showing as many tabs as fit and listing the rest behind **⋯** (Dashboard sub-views included); the tab you're on always stays visible. On a phone, the view header shows the capacity figure instead of the calendar's name when capacity tracking is on; the untracked-events menu opens as a full-height panel centred on the screen instead of half off its left edge; search boxes no longer open the keyboard the moment a menu or dialog opens; and the **Events** dialog fits the screen, with sideways-scrolling tabs, a type filter that stays inside its box, and each event as a card with its buttons underneath. See [Calendar View → Mobile layout](./features/calendar/calendar-view.md#mobile-layout).
+- **Phone layout, everywhere**: the view tab bar now takes a single row at every width, showing as many tabs as fit and listing the rest behind **⋯** (Dashboard sub-views included); the tab you're on always stays visible. On a phone, the view header shows the capacity figure instead of the calendar's name when capacity tracking is on; the untracked-events menu opens as a full-height panel centred on the screen instead of half off its left edge; search boxes on phones and tablets no longer open the keyboard the moment a menu or dialog opens (creating an event still puts the cursor in its title); and the **Events** dialog fits the screen, with sideways-scrolling tabs, a type filter that stays inside its box, and each event as a card with its buttons underneath. See [Calendar View → Mobile layout](./features/calendar/calendar-view.md#mobile-layout).
 
 ### Fixed
 

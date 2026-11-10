@@ -211,7 +211,7 @@ export function AssignmentForm({ items, config, preSelected, onSubmit, onCancel 
 						setSearch(e.target.value);
 						setHighlightedIndex(-1);
 					}}
-					autoFocus={shouldAutoFocus()}
+					autoFocus={shouldAutoFocus("desktop")}
 					data-testid={tid("assign-search")}
 				/>
 			</div>

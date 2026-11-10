@@ -167,7 +167,7 @@ const PromptEditForm = memo(function PromptEditForm({ existing, onSave, onCancel
 				value={title}
 				onChange={(e) => setTitle(e.target.value)}
 				data-testid={tid("settings-ai-prompt-title")}
-				autoFocus={shouldAutoFocus()}
+				autoFocus={shouldAutoFocus("always")}
 			/>
 			<label className={cls("filter-label")}>Content</label>
 			<textarea

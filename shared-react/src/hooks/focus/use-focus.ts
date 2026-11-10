@@ -2,15 +2,25 @@ import { Platform } from "obsidian";
 import { useEffect, type RefObject } from "react";
 
 /**
- * Whether opening a surface may move focus into an input. Never on a phone or
- * tablet: focusing raises the on-screen keyboard over the very content the user
- * opened. See [[decision-mobile-ui-conventions]].
+ * How freely an opened surface may move focus into an input. With a physical
+ * keyboard focus is free, so anything likely to be typed into gets it; on a
+ * phone or tablet focusing raises the on-screen keyboard over the content, so
+ * only typing that is the reason the surface opened earns it.
+ * See [[decision-mobile-ui-conventions]].
  */
-export function shouldAutoFocus(): boolean {
-	return !Platform.isMobile;
+export type AutoFocusPolicy =
+	/** Typing is why the surface opened (naming a new event), or the target is not a text input. */
+	| "always"
+	/** Likely but not certain to be typed into (a search box) — physical keyboards only. */
+	| "desktop";
+
+export function shouldAutoFocus(policy: AutoFocusPolicy): boolean {
+	return policy === "always" || !Platform.isMobile;
 }
 
 export interface UseFocusOnMountOptions {
+	/** Required so every call site decides; see {@link AutoFocusPolicy}. */
+	policy: AutoFocusPolicy;
 	/** Delay before calling `.focus()`, in ms. 0 = immediately when the effect runs. Defaults to 0. */
 	delayMs?: number;
 	/** When false the effect is a no-op. Useful when the ref's owner mounts unconditionally but should only focus when "open". Defaults to true. */
@@ -41,12 +51,12 @@ export interface UseFocusOnMountOptions {
  */
 export function useFocusOnMount<T extends HTMLElement>(
 	ref: RefObject<T | null>,
-	options?: UseFocusOnMountOptions
+	options: UseFocusOnMountOptions
 ): void {
-	const { delayMs = 0, enabled = true, retryMs = 0 } = options ?? {};
+	const { policy, delayMs = 0, enabled = true, retryMs = 0 } = options;
 
 	useEffect(() => {
-		if (!enabled || !shouldAutoFocus()) return;
+		if (!enabled || !shouldAutoFocus(policy)) return;
 
 		let cancelled = false;
 		let userInterrupted = false;
@@ -103,7 +113,7 @@ export function useFocusOnMount<T extends HTMLElement>(
 				doc.removeEventListener("keydown", stopForUserInteraction, true);
 			}
 		};
-	}, [ref, enabled, delayMs, retryMs]);
+	}, [ref, policy, enabled, delayMs, retryMs]);
 }
 
 /**

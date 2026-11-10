@@ -135,7 +135,7 @@ export const UntrackedEventsDropdown = memo(
 			)
 		);
 
-		useFocusOnMount(searchInputRef, { delayMs: SEARCH_FOCUS_DELAY_MS, enabled: isOpen });
+		useFocusOnMount(searchInputRef, { policy: "desktop", delayMs: SEARCH_FOCUS_DELAY_MS, enabled: isOpen });
 
 		useEffect(() => {
 			if (!isOpen) return;

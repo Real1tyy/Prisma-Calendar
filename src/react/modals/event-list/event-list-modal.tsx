@@ -76,7 +76,7 @@ export const EventListModal = memo(function EventListModal({
 		return isFiltered ? `${shown} of ${total} ${noun}${suffix}` : `${total} ${noun}${suffix}`;
 	}, [filtered.length, items.length, countSuffix]);
 
-	useFocusOnMount(searchRef, { delayMs: 50 });
+	useFocusOnMount(searchRef, { policy: "desktop", delayMs: 50 });
 
 	useEffect(() => setActiveIndex(-1), [filtered]);
 

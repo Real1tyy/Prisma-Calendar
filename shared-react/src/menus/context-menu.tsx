@@ -94,7 +94,7 @@ export const ContextMenu = memo(function ContextMenu({
 
 	useOutsideClick([menuRef], onDismiss);
 
-	useFocusOnMount(menuRef);
+	useFocusOnMount(menuRef, { policy: "always" });
 
 	let focusableIdx = -1;
 

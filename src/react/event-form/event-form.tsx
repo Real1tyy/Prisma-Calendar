@@ -1,11 +1,5 @@
 import { parseFrontmatterRecord, serializeFrontmatterValue, toLocalISOString } from "@real1ty/obsidian-plugins";
-import {
-	shouldAutoFocus,
-	useFocusOnMount,
-	useHandleKeyDown,
-	useSettingsFields,
-	useZodForm,
-} from "@real1ty/obsidian-plugins-react";
+import { useFocusOnMount, useHandleKeyDown, useSettingsFields, useZodForm } from "@real1ty/obsidian-plugins-react";
 import { Notice } from "obsidian";
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { useController, useWatch, type UseFormReturn } from "react-hook-form";
@@ -331,8 +325,10 @@ export const EventForm = memo(function EventForm({
 	// Retry focus for ~500ms — Obsidian's leaf-then-modal activation can
 	// outlast a single focus call when Create is triggered from outside the
 	// calendar (command palette, ribbon, hotkey). Stops on first user
-	// interaction so we never steal focus from a deliberate click.
-	useFocusOnMount(titleInputRef, { retryMs: 500 });
+	// interaction so we never steal focus from a deliberate click. A new event
+	// must be named, so it focuses even on a phone; an edit rarely starts with
+	// the title, so there only a physical keyboard gets it.
+	useFocusOnMount(titleInputRef, { policy: mode === "create" ? "always" : "desktop", retryMs: 500 });
 	useHandleKeyDown({ key: "n", shift: true, mod: true }, jumpToContent);
 
 	return (
@@ -503,7 +499,6 @@ function TitleField({
 					onChange={(e) => field.onChange(e.target.value)}
 					onBlur={onBlur}
 					data-testid="prisma-event-control-title"
-					autoFocus={shouldAutoFocus()}
 				/>
 			</div>
 		</PrismaSettingItem>
