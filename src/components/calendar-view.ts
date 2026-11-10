@@ -76,6 +76,7 @@ import {
 	isAllDayCapableView,
 	nextAllDayMode,
 	resolveAllDayOptions,
+	resolveDayMaxEvents,
 	type AllDayMode,
 } from "../utils/calendar/all-day-mode";
 import {
@@ -397,7 +398,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			slotEventOverlap: settings.slotEventOverlap,
 			eventMaxStack: settings.eventMaxStack,
 
-			dayMaxEvents: this.isMobileView() ? settings.mobileMaxEventsPerDay : settings.desktopMaxEventsPerDay || false,
+			dayMaxEvents: resolveDayMaxEvents(settings, this.isMobileView()),
 
 			moreLinkClick: handleMoreLinkClick,
 

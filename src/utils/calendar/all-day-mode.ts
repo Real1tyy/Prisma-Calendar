@@ -40,6 +40,12 @@ export function allDayModeLabel(mode: AllDayMode): string {
 	return ALL_DAY_MODE_LABELS[mode];
 }
 
+/** Both settings document 0 as "unlimited", which FullCalendar spells `false`. */
+export function resolveDayMaxEvents(settings: MaxEventsSettings, isMobile: boolean): number | false {
+	const cap = isMobile ? settings.mobileMaxEventsPerDay : settings.desktopMaxEventsPerDay;
+	return cap > 0 ? cap : false;
+}
+
 /** Only `timeGrid` views have an all-day strip; month / year / list have nothing to act on. */
 export function isAllDayCapableView(viewType: string): boolean {
 	return viewType.startsWith("timeGrid");
@@ -57,7 +63,7 @@ export function resolveAllDayOptions(
 	settings: MaxEventsSettings,
 	isMobile: boolean
 ): AllDayOptions {
-	const defaultMaxEvents = isMobile ? settings.mobileMaxEventsPerDay : settings.desktopMaxEventsPerDay || false;
+	const defaultMaxEvents = resolveDayMaxEvents(settings, isMobile);
 	const fallback: AllDayOptions = { allDaySlot: true, dayMaxEvents: defaultMaxEvents, expanded: false };
 
 	if (!isAllDayCapableView(viewType)) return fallback;
