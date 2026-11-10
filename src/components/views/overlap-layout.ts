@@ -43,7 +43,7 @@ export function applyOverlapLayout(container: HTMLElement, { slotEventOverlap, w
 // re-renders change the layout.
 function isLayoutMutation(record: MutationRecord): boolean {
 	if (record.type === "childList") return true;
-	return record.target instanceof HTMLElement && record.target.classList.contains(HARNESS);
+	return record.target.instanceOf(HTMLElement) && record.target.classList.contains(HARNESS);
 }
 
 function relayoutOverlaps(container: HTMLElement): void {
@@ -127,7 +127,7 @@ function markCoveredHarnesses(container: HTMLElement): void {
 	for (const column of columns) {
 		const harnesses = Array.from(column.children).filter(
 			(el): el is HTMLElement =>
-				el instanceof HTMLElement && el.classList.contains(HARNESS) && el.querySelector(".fc-event-mirror") === null
+				el.instanceOf(HTMLElement) && el.classList.contains(HARNESS) && el.querySelector(".fc-event-mirror") === null
 		);
 		for (const harness of harnesses) harness.classList.remove(COVERED);
 
