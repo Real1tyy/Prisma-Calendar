@@ -408,13 +408,9 @@
 			},
 			"output": {
 				"$schema": "https://json-schema.org/draft/2020-12/schema",
-				"anyOf": [
-					{
-						"type": "string"
-					},
-					{
-						"type": "null"
-					}
+				"type": [
+					"string",
+					"null"
 				]
 			},
 			"http": {
@@ -548,13 +544,9 @@
 			},
 			"output": {
 				"$schema": "https://json-schema.org/draft/2020-12/schema",
-				"anyOf": [
-					{
-						"type": "string"
-					},
-					{
-						"type": "null"
-					}
+				"type": [
+					"string",
+					"null"
 				]
 			},
 			"http": {
@@ -583,13 +575,9 @@
 			},
 			"output": {
 				"$schema": "https://json-schema.org/draft/2020-12/schema",
-				"anyOf": [
-					{
-						"type": "string"
-					},
-					{
-						"type": "null"
-					}
+				"type": [
+					"string",
+					"null"
 				]
 			},
 			"http": {
