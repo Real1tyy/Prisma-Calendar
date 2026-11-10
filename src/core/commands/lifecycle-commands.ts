@@ -15,7 +15,7 @@ import { getFrontMatterInfo, parseYaml, TFile, type App } from "obsidian";
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
 import { computeMovePath, ensureFileHasZettelId, generateUniqueEventPath } from "../../utils/events/file-naming";
 import { buildCalendarTitleLink, extractCleanDisplayName } from "../../utils/events/naming";
-import { removeZettelId } from "../../utils/events/zettel-id";
+import { removeZettelId, toZettelIdFrontmatterValue } from "../../utils/events/zettel-id";
 import { applyStartEndOffsets } from "../../utils/frontmatter/basics";
 import { enforceEventPropertyOrder, getOrderedPropertyNames } from "../../utils/frontmatter/ordering";
 import { removeNonCloneableProperties } from "../../utils/frontmatter/props";
@@ -81,7 +81,7 @@ async function prepareFileCopy(
 	const body = extractContentAfterFrontmatter(content);
 
 	if (settings.zettelIdProp) {
-		frontmatter[settings.zettelIdProp] = zettelId;
+		frontmatter[settings.zettelIdProp] = toZettelIdFrontmatterValue(zettelId);
 	}
 
 	return { fullPath, zettelId, frontmatter, body };
@@ -108,7 +108,7 @@ export class CreateEventCommand extends CreatedFileCommand {
 		const frontmatter = { ...this.eventData.preservedFrontmatter };
 
 		if (settings.zettelIdProp) {
-			frontmatter[settings.zettelIdProp] = zettelId;
+			frontmatter[settings.zettelIdProp] = toZettelIdFrontmatterValue(zettelId);
 		}
 		// Written now so the background update finds nothing to add: a note
 		// rewritten right after creation is what an editor or sync merge can

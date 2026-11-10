@@ -19,6 +19,18 @@ export const extractZettelId = (text: string): string | null => {
 	return match ? match[1] : null;
 };
 
+/**
+ * The value the ZettelID property stores. A digits-only string is quoted by
+ * Obsidian's YAML writer, so the id goes in as a number. The exception is an
+ * id the number would alter: a leading zero (hash-derived ids) or digits past
+ * 2^53 (the collision fallback). Those stay strings, so frontmatter and the
+ * filename never disagree.
+ */
+export const toZettelIdFrontmatterValue = (zettelId: string): number | string => {
+	const numeric = Number(zettelId);
+	return Number.isSafeInteger(numeric) && String(numeric) === zettelId ? numeric : zettelId;
+};
+
 export const removeZettelId = (text: string): string => {
 	return text
 		.replace(/-\d{14}$/, "")

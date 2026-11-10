@@ -13,7 +13,12 @@ import type { RecurrenceType } from "../../types/recurring";
 import { generateUniqueEventPath } from "../../utils/events/file-naming";
 import { assignListToFrontmatter, setEventBasics } from "../../utils/events/frontmatter";
 import { autoAssignCategories } from "../../utils/events/matching";
-import { deriveSyncedNoteId, extractZettelId, removeZettelId } from "../../utils/events/zettel-id";
+import {
+	deriveSyncedNoteId,
+	extractZettelId,
+	removeZettelId,
+	toZettelIdFrontmatterValue,
+} from "../../utils/events/zettel-id";
 import { compileFrontmatterFilter } from "../../utils/filters/logic";
 import { enforceEventPropertyOrder } from "../../utils/frontmatter/ordering";
 import type { CalendarBundle } from "../calendar-bundle";
@@ -555,7 +560,7 @@ export async function createEventNoteFromImportedEvent(
 	);
 
 	if (calendarSettings.zettelIdProp) {
-		frontmatter[calendarSettings.zettelIdProp] = zettelId;
+		frontmatter[calendarSettings.zettelIdProp] = toZettelIdFrontmatterValue(zettelId);
 	}
 
 	if (additionalFrontmatter) {

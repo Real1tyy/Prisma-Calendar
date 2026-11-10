@@ -3,7 +3,7 @@ import type { App, TFile } from "obsidian";
 
 import type { CalendarEventSource } from "../../types/event-source";
 import type { SingleCalendarConfig } from "../../types/settings";
-import { extractZettelId, hasTimestamp, removeZettelId } from "./zettel-id";
+import { extractZettelId, hasTimestamp, removeZettelId, toZettelIdFrontmatterValue } from "./zettel-id";
 
 /**
  * Generates a unique ZettelID by checking if the resulting path already exists.
@@ -97,7 +97,7 @@ export const ensureFileHasZettelId = async (
 		if (zettelIdProp) {
 			await repo.writeFrontmatter(file.path, (fm) => {
 				if (!fm[zettelIdProp]) {
-					fm[zettelIdProp] = existingZettelId;
+					fm[zettelIdProp] = toZettelIdFrontmatterValue(existingZettelId);
 				}
 			});
 		}
@@ -118,7 +118,7 @@ export const ensureFileHasZettelId = async (
 
 	if (zettelIdProp) {
 		await repo.writeFrontmatter(file.path, (fm) => {
-			fm[zettelIdProp] = zettelId;
+			fm[zettelIdProp] = toZettelIdFrontmatterValue(zettelId);
 		});
 	}
 
