@@ -146,7 +146,7 @@ const GeneralSettingsSchema = z
 		virtualEventsFileName: z
 			.string()
 			.catch("Virtual Events")
-			.describe("File name for the virtual events storage file (without .md extension)"),
+			.describe("Legacy virtual events file name to migrate into Prisma.md (without .md extension)"),
 		eventPresets: z.array(EventPresetSchema).catch([]),
 		defaultPresetId: z.string().optional(),
 		exportFolder: z.string().catch("Prisma-Exports").describe("Folder where exported .ics files are saved"),
@@ -1090,7 +1090,7 @@ export const CustomCalendarSettingsSchema = z
 		ai: AISettingsSchema.catch(AISettingsSchema.parse({})),
 		caldav: CalDAVSettingsSchema.catch(CalDAVSettingsSchema.parse({})),
 		icsSubscriptions: ICSSubscriptionSettingsSchema.catch(ICSSubscriptionSettingsSchema.parse({})),
-		integrationDeletionTombstones: z.array(IntegrationDeletionTombstoneSchema).catch([]),
+		integrationDeletionTombstones: z.array(IntegrationDeletionTombstoneSchema).optional().catch(undefined),
 		// Universal — every plugin carries it under this key so the shared General
 		// section can bind to it. See [[spec-logging-config-sinks-and-instrumentation]].
 		logging: LoggingSettingsSchema.catch(LoggingSettingsSchema.parse({})),

@@ -256,6 +256,11 @@ export default class CustomCalendarPlugin extends Plugin {
 		for (const bundle of this.calendarBundles) {
 			await bundle.initialize();
 		}
+		const settings = this.settingsStore.currentSettings;
+		const allDirectoriesMigrated = settings.calendars.every((calendar) => calendar.enabled && calendar.directory);
+		if (settings.integrationDeletionTombstones && allDirectoriesMigrated && this.deviceRoleStore.role === "writer") {
+			await this.settingsStore.updateSettings(({ integrationDeletionTombstones: _legacy, ...current }) => current);
+		}
 	}
 
 	private async ensureMinimumCalendars(): Promise<void> {

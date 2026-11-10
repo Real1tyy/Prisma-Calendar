@@ -220,7 +220,15 @@ A synced note remembers which account or subscription created it. If that id no 
 
 ### Removing a synced event locally
 
-Deleting a CalDAV or ICS subscription event from Prisma Calendar keeps it removed. Prisma saves the source event identity with your settings, so later syncs do not recreate that note. Undoing the deletion restores the note and allows its integration to sync it again. This only affects the local note; the remote event remains unchanged.
+Deleting a CalDAV or ICS subscription event from Prisma Calendar keeps it removed. Prisma saves the source event identity in the `prisma-deleted-events` section of `Prisma.md` inside your planning folder, so later syncs do not recreate that note. Undoing the deletion restores the note and allows its integration to sync it again. This only affects the local note; the remote event remains unchanged.
+
+Deletion history has no expiry. Undo keeps a newer restoration record so an older synced deletion does not suppress the restored event. Identical UIDs in another account, calendar or subscription remain independent. Batch deletion saves history together before removing the notes.
+
+`Prisma.md` also holds manual virtual events. Planning systems pointing at the same folder share the file. Sync this Markdown file alongside your event notes with Obsidian Sync or your vault synchronization tool; exclude neither the folder nor the file. No extra JSON-file sync option is required. Keep the same integration configuration across devices. Reader devices receive the file from a writer; they do not automatically create or migrate it.
+
+Existing settings-based history is copied before its settings field is removed. If a calendar is disabled or has no directory, that field remains a migration backup until all configured calendars can migrate. Records in `Prisma.md` take precedence over that backup, including undo records.
+
+Let synchronization complete before editing from another device. Prisma merges deletion records already known to a running device by revision; simultaneous delete and undo at the same revision prefer deletion. A sync provider can still discard an unseen file version, and concurrent offline virtual-event edits need its conflict handling. Retain backups and resolve conflict copies without dropping either data section. Malformed JSON or duplicate managed sections block edits to the affected section until repaired. Deleting `Prisma.md` removes persistent history and virtual-event data.
 
 ## CalDAV Integration
 

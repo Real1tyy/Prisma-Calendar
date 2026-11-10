@@ -1,5 +1,6 @@
-import type { Frontmatter, PrismaCalendarSettingsStore, SingleCalendarConfig } from "../../types";
+import type { Frontmatter, SingleCalendarConfig } from "../../types";
 import type { IntegrationDeletionTombstone } from "../../types/integrations";
+import type { CalendarBundle } from "../calendar-bundle";
 import { CalDAVSyncMetadataSchema } from "./caldav/types";
 import { ICSSubscriptionSyncMetadataSchema } from "./ics-subscription/types";
 
@@ -24,17 +25,19 @@ export class IntegrationDeletionIndex {
 }
 
 export function createIntegrationDeletionLifecycle(
-	settingsStore: PrismaCalendarSettingsStore,
-	settings: SingleCalendarConfig
+	bundle: Pick<CalendarBundle, "prismaDataFile" | "settingsStore" | "fileRepository">
 ) {
+	const settings = bundle.settingsStore.currentSettings;
+	const data = bundle.prismaDataFile;
+	const gate = () => bundle.fileRepository.assertWritable("integration deletion history");
 	return {
 		async onDelete(snapshot: { data: Frontmatter }): Promise<void> {
-			const tombstone = getIntegrationDeletionTombstone(snapshot.data, settings);
-			if (tombstone) await addIntegrationDeletionTombstone(settingsStore, tombstone);
+			const identity = getIntegrationDeletionTombstone(snapshot.data, settings);
+			if (identity) await data.setDeleted([identity], true, gate);
 		},
 		async onUndo(snapshot: { data: Frontmatter }): Promise<void> {
-			const tombstone = getIntegrationDeletionTombstone(snapshot.data, settings);
-			if (tombstone) await removeIntegrationDeletionTombstone(settingsStore, tombstone);
+			const identity = getIntegrationDeletionTombstone(snapshot.data, settings);
+			if (identity) await data.setDeleted([identity], false, gate);
 		},
 	};
 }
@@ -59,43 +62,4 @@ export function getIntegrationDeletionTombstone(
 	}
 
 	return null;
-}
-
-export function sameIntegrationDeletionTombstone(
-	left: IntegrationDeletionTombstone,
-	right: IntegrationDeletionTombstone
-): boolean {
-	if (left.kind !== right.kind || left.uid !== right.uid) return false;
-	switch (left.kind) {
-		case "caldav":
-			return right.kind === "caldav" && left.accountId === right.accountId && left.calendarHref === right.calendarHref;
-		case "ics-subscription":
-			return right.kind === "ics-subscription" && left.subscriptionId === right.subscriptionId;
-	}
-}
-
-export async function addIntegrationDeletionTombstone(
-	settingsStore: PrismaCalendarSettingsStore,
-	tombstone: IntegrationDeletionTombstone
-): Promise<void> {
-	await settingsStore.updateSettings((settings) => {
-		if (
-			settings.integrationDeletionTombstones.some((existing) => sameIntegrationDeletionTombstone(existing, tombstone))
-		) {
-			return settings;
-		}
-		return { ...settings, integrationDeletionTombstones: [...settings.integrationDeletionTombstones, tombstone] };
-	});
-}
-
-export async function removeIntegrationDeletionTombstone(
-	settingsStore: PrismaCalendarSettingsStore,
-	tombstone: IntegrationDeletionTombstone
-): Promise<void> {
-	await settingsStore.updateSettings((settings) => ({
-		...settings,
-		integrationDeletionTombstones: settings.integrationDeletionTombstones.filter(
-			(existing) => !sameIntegrationDeletionTombstone(existing, tombstone)
-		),
-	}));
 }

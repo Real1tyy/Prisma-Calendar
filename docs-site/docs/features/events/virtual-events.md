@@ -79,11 +79,15 @@ Toggle the **Virtual** pill in the modal header (next to the title). When active
 
 ### Storage
 
-Manual virtual events are stored in a `Virtual Events.md` file inside your calendar folder. The file contains a `prisma-virtual-events` code fence with JSON data. Opening the file shows an interactive table of all virtual events.
+Manual virtual events are stored in a `Prisma.md` file inside your calendar folder. The file contains a `prisma-virtual-events` code fence with JSON data. Opening the file shows an interactive table of all virtual events.
+
+Calendars pointing at the same folder share this file and its manual virtual events. The separate `prisma-deleted-events` section stores [integration deletion history](../advanced/integrations#removing-a-synced-event-locally). Keep both sections when editing the file.
+
+On a writer device, existing virtual-event files migrate automatically after vault indexing. Event IDs and properties stay intact; the original file keeps its surrounding text and a link to `Prisma.md`. Readers use the file synchronized from a writer.
 
 Each virtual event stores: title, start/end datetime, all-day flag, and frontmatter properties.
 
-When you change the calendar directory in settings, the plugin waits **3 seconds** after the last keystroke before creating the `Virtual Events.md` file at the new path. This prevents stray files from appearing at half-typed directories while you're still editing the path.
+When you change the calendar directory in settings, the plugin waits **3 seconds** after the last keystroke before creating the `Prisma.md` file at the new path. This prevents stray files from appearing at half-typed directories while you're still editing the path.
 
 ### Converting Between Virtual and Physical
 
@@ -117,7 +121,7 @@ Use the standard undo/redo hotkeys or the plugin's undo command to reverse any o
 
 ### Open Virtual Events File
 
-Use the command palette command **"Open virtual events file"** to navigate directly to the `Virtual Events.md` file for a calendar. You can assign a hotkey to this command in Settings → Hotkeys.
+Use the command palette command **"Open virtual events file"** to navigate directly to the `Prisma.md` file for a calendar. You can assign a hotkey to this command in Settings → Hotkeys.
 
 ### Context Menu
 

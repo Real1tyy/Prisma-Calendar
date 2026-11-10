@@ -175,11 +175,7 @@ function buildBarMenuItems(
 			section: "danger",
 			onAction: act((ev) =>
 				runCmd(
-					new DeleteEventCommand(
-						bundle.fileRepository,
-						ev.ref.filePath,
-						createIntegrationDeletionLifecycle(bundle.plugin.settingsStore, bundle.settingsStore.currentSettings)
-					)
+					new DeleteEventCommand(bundle.fileRepository, ev.ref.filePath, createIntegrationDeletionLifecycle(bundle))
 				)
 			),
 		},

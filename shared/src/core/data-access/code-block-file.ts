@@ -17,6 +17,8 @@ export interface CodeBlockFileConfig<T> {
 export class CodeBlockFile<T> {
 	private readonly codeFence: string;
 	private readonly itemSchema: z.ZodType<T>;
+	private cachedRaw: string | undefined;
+	private cachedItems: T[] = [];
 
 	constructor(config: CodeBlockFileConfig<T>) {
 		this.codeFence = config.codeFence;
@@ -57,6 +59,14 @@ export class CodeBlockFile<T> {
 	// =========================================================================
 
 	parse(raw: string): T[] {
+		if (raw === this.cachedRaw) return this.cachedItems;
+		const items = this.parseItems(raw);
+		this.cachedRaw = raw;
+		this.cachedItems = items;
+		return items;
+	}
+
+	private parseItems(raw: string): T[] {
 		try {
 			const parsed: unknown = JSON.parse(raw);
 			if (!Array.isArray(parsed)) return [];
@@ -79,7 +89,10 @@ export class CodeBlockFile<T> {
 	async extractRaw(vault: Vault, file: TFile): Promise<string | null> {
 		try {
 			const content = await vault.read(file);
-			const regex = new RegExp(`\`\`\`${this.codeFence}\\n([\\s\\S]*?)\`\`\``, "");
+			const regex = new RegExp(
+				`^\`\`\`${this.codeFence}[^\\S\\r\\n]*\\r?\\n([\\s\\S]*?)^\`\`\`[^\\S\\r\\n]*(?=\\r?$)`,
+				"m"
+			);
 			const match = content.match(regex);
 			return match?.[1] ?? null;
 		} catch (error) {
@@ -118,7 +131,7 @@ export class CodeBlockFile<T> {
 
 		const content = await app.vault.read(file);
 		const updatedContent = content.replace(
-			new RegExp(`\`\`\`${this.codeFence}\\n[\\s\\S]*?\`\`\``, ""),
+			new RegExp(`\`\`\`${this.codeFence}[^\\S\\r\\n]*\\r?\\n[\\s\\S]*?\`\`\``, ""),
 			`\`\`\`${this.codeFence}\n${raw}\n\`\`\``
 		);
 

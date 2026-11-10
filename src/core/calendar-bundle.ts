@@ -46,6 +46,7 @@ import { createNavigationHistory, type NavigationEntry } from "./navigation-hist
 import type { NotificationManager } from "./notification-manager";
 import type { Parser } from "./parser";
 import type { PrerequisiteTracker } from "./prerequisite-tracker";
+import { getPrismaDataFile, type PrismaDataFile } from "./prisma-data-file";
 import type { RecurringEventManager } from "./recurring-event-manager";
 import { CalendarSettingsStore } from "./settings-store";
 import { VirtualEventStore } from "./virtual-event-store";
@@ -89,6 +90,10 @@ export class CalendarBundle {
 	public readonly virtualEventStore: VirtualEventStore;
 	public readonly viewType: string;
 	private readonly firstIndexNoticeStore = new FirstIndexNoticeStore();
+	get prismaDataFile(): PrismaDataFile {
+		return getPrismaDataFile(this.app, this.settingsStore.currentSettings.directory);
+	}
+
 	private app: App;
 	private directory: string;
 	private indexerRegistry: IndexerRegistry;
@@ -172,7 +177,12 @@ export class CalendarBundle {
 			},
 		});
 		this.holidayStore = new HolidayStore(this.app, this.settingsStore.currentSettings.holidays as HolidayConfig);
-		this.virtualEventStore = new VirtualEventStore(this.app, this.settingsStore.settings$);
+		this.virtualEventStore = new VirtualEventStore(this.app, this.settingsStore.settings$, {
+			assertWritable: () => this.fileRepository.assertWritable("Prisma data migration"),
+			whenReady: () => this.fileRepository.waitUntilReady(),
+			isReadOnly: () => this.fileRepository.isReadOnly,
+			legacyDeletions: () => this.mainSettingsStore.currentSettings.integrationDeletionTombstones ?? [],
+		});
 		this.eventStore.setHolidayStore(this.holidayStore);
 		this.eventStore.setVirtualEventStore(this.virtualEventStore);
 

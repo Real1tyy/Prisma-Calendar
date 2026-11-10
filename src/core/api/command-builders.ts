@@ -89,10 +89,6 @@ export function buildDeleteEventCommand(
 		return null;
 	}
 
-	const command = new DeleteEventCommand(
-		bundle.fileRepository,
-		file.path,
-		createIntegrationDeletionLifecycle(plugin.settingsStore, bundle.settingsStore.currentSettings)
-	);
+	const command = new DeleteEventCommand(bundle.fileRepository, file.path, createIntegrationDeletionLifecycle(bundle));
 	return { command, bundle };
 }

@@ -123,6 +123,9 @@ export class CodeBlockRepository<T> extends ReadableTableMixin<T, DataRow<T>> {
 		if (file) {
 			await this.load(app, file);
 			onChange?.();
+		} else if (this.rowMap.size > 0) {
+			this.populateIndex([]);
+			onChange?.();
 		}
 
 		const vaultRef = app.vault.on("modify", (modified) => {
@@ -137,12 +140,20 @@ export class CodeBlockRepository<T> extends ReadableTableMixin<T, DataRow<T>> {
 			}
 		});
 
+		// A synced file can arrive after the repository starts on a reader device.
+		const createRef = app.vault.on("create", (created) => {
+			if (created.path !== filePath) return;
+			const current = this.file.resolveFile(app, filePath);
+			if (current) void this.load(app, current).then(() => onChange?.());
+		});
+
 		let detached = false;
 		return {
 			unsubscribe: () => {
 				if (detached) return;
 				detached = true;
 				app.vault.offref(vaultRef);
+				app.vault.offref(createRef);
 			},
 		};
 	}
@@ -162,6 +173,7 @@ export class CodeBlockRepository<T> extends ReadableTableMixin<T, DataRow<T>> {
 		this.sortedRows = [];
 		this.sortedDirty = false;
 		this.boundFile = null;
+		options?.onChange?.();
 		return this.bind(app, filePath, options);
 	}
 

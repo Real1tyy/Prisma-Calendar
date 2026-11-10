@@ -840,7 +840,7 @@ export type PrismaCalendarGetSettingsOutput = {
 	 */
 	untrackedFilterExpressions: string[];
 	/**
-	 * File name for the virtual events storage file (without .md extension)
+	 * Legacy virtual events file name to migrate into Prisma.md (without .md extension)
 	 */
 	virtualEventsFileName: string;
 	weekCreateGutter: WeekViewCreateGutter;
@@ -2132,7 +2132,7 @@ export interface PrismaCalendarUpdateSettingsInput {
 		 */
 		untrackedFilterExpressions?: string[];
 		/**
-		 * File name for the virtual events storage file (without .md extension)
+		 * Legacy virtual events file name to migrate into Prisma.md (without .md extension)
 		 */
 		virtualEventsFileName?: string;
 		weekCreateGutter?: WeekViewCreateGutter;

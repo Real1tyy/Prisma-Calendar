@@ -1,15 +1,17 @@
 import { CodeBlockRepository, debounceMsForEnv, type CodeBlockBinding } from "@real1ty/obsidian-plugins";
 import type { DateTime } from "luxon";
-import type { App } from "obsidian";
+import { normalizePath, type App } from "obsidian";
 import { BehaviorSubject, debounceTime, type Subscription } from "rxjs";
 import { v4 as uuidv4 } from "uuid";
 
 import { VIRTUAL_EVENTS_CODE_FENCE } from "../constants";
 import { VirtualEventDataSchema, type VirtualEventData } from "../types/calendar";
 import type { EventSaveData } from "../types/event-boundaries";
+import type { IntegrationDeletionTombstone } from "../types/integrations";
 import type { SingleCalendarConfig } from "../types/settings";
 import { allDayEnd } from "../utils/dates/all-day";
 import { log } from "./logging";
+import { getPrismaDataFile } from "./prisma-data-file";
 
 // Wait for the user to stop typing the directory in settings before binding
 // (and creating) the virtual events file. Without this, every intermediate
@@ -33,7 +35,13 @@ export class VirtualEventStore {
 
 	constructor(
 		private app: App,
-		settingsStore: BehaviorSubject<SingleCalendarConfig>
+		settingsStore: BehaviorSubject<SingleCalendarConfig>,
+		private readonly dataOptions: {
+			assertWritable: () => void;
+			whenReady?: () => Promise<void>;
+			isReadOnly?: () => boolean;
+			legacyDeletions?: () => readonly IntegrationDeletionTombstone[];
+		} = { assertWritable: () => {} }
 	) {
 		const settings = settingsStore.value;
 		this.directory = settings.directory;
@@ -59,11 +67,15 @@ export class VirtualEventStore {
 
 				if (this.binding) {
 					const epoch = ++this.bindEpoch;
-					this.repo
-						.rebind(this.binding, this.app, this.getFilePath(), {
-							onChange: () => this.emit(),
-							createIfMissing: true,
-						})
+					const previous = this.binding;
+					const target = this.getFilePath();
+					this.prepareDataFile()
+						.then(() =>
+							this.repo.rebind(previous, this.app, target, {
+								onChange: () => this.emit(),
+								createIfMissing: false,
+							})
+						)
 						.then((b) => {
 							// Drop stale rebinds: if another rebind (or destroy) ran after us,
 							// unsubscribe this fresh binding rather than let it leak or shadow
@@ -87,9 +99,11 @@ export class VirtualEventStore {
 
 	async initialize(): Promise<void> {
 		if (!this.directory) return;
+		await this.prepareDataFile();
+		if (this.destroyed) return;
 		this.binding = await this.repo.bind(this.app, this.getFilePath(), {
 			onChange: () => this.emit(),
-			createIfMissing: true,
+			createIfMissing: false,
 		});
 	}
 
@@ -130,13 +144,13 @@ export class VirtualEventStore {
 
 	async add(data: Omit<VirtualEventData, "id">): Promise<VirtualEventData> {
 		const event: VirtualEventData = { ...data, id: uuidv4() };
-		await this.repo.create(event);
+		await this.insert(event);
 		this.emit();
 		return event;
 	}
 
 	async addWithId(data: VirtualEventData): Promise<void> {
-		await this.repo.create(data);
+		await this.insert(data);
 		this.emit();
 	}
 
@@ -145,7 +159,10 @@ export class VirtualEventStore {
 	}
 
 	async update(id: string, patch: Partial<Omit<VirtualEventData, "id">>): Promise<void> {
-		await this.repo.update(id, patch);
+		await this.mutate((events) => {
+			if (!events.some((event) => event.id === id)) throw new Error(`Item with ID "${id}" not found`);
+			return events.map((event) => (event.id === id ? { ...event, ...patch } : event));
+		});
 		this.emit();
 	}
 
@@ -154,14 +171,40 @@ export class VirtualEventStore {
 	}
 
 	async remove(id: string): Promise<void> {
-		await this.repo.delete(id);
+		await this.mutate((events) => events.filter((event) => event.id !== id));
 		this.emit();
 	}
 
 	// ─── Query ────────────────────────────────────────────────────
 
 	getFilePath(): string {
-		return this.directory ? `${this.directory}/${this.fileName}.md` : `${this.fileName}.md`;
+		return getPrismaDataFile(this.app, this.directory).path;
+	}
+
+	private async prepareDataFile(): Promise<void> {
+		await this.dataOptions.whenReady?.();
+		if (this.destroyed || this.dataOptions.isReadOnly?.()) return;
+		return getPrismaDataFile(this.app, this.directory).ensure(
+			normalizePath(`${this.directory}/${this.fileName}.md`),
+			this.dataOptions.legacyDeletions?.() ?? [],
+			this.dataOptions.assertWritable
+		);
+	}
+
+	private insert(event: VirtualEventData): Promise<void> {
+		return this.mutate((events) => {
+			if (events.some((existing) => existing.id === event.id))
+				throw new Error(`Item with ID "${event.id}" already exists`);
+			return [...events, event];
+		});
+	}
+
+	private mutate(update: (events: VirtualEventData[]) => VirtualEventData[]): Promise<void> {
+		return getPrismaDataFile(this.app, this.directory).mutateVirtual(
+			this.repo,
+			this.dataOptions.assertWritable,
+			update
+		);
 	}
 
 	private emit(): void {

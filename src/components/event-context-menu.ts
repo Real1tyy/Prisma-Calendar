@@ -852,10 +852,7 @@ export class EventContextMenu {
 						new DeleteEventCommand(
 							this.bundle.fileRepository,
 							filePath,
-							createIntegrationDeletionLifecycle(
-								this.bundle.plugin.settingsStore,
-								this.bundle.settingsStore.currentSettings
-							)
+							createIntegrationDeletionLifecycle(this.bundle)
 						),
 					{
 						success: "Event deleted successfully",
