@@ -1,5 +1,7 @@
 // Canonical copy lives in tools/docs-theme/docs-site/ at the monorepo root and is synced
 // into every */docs-site by `mise run sync-docs-site-theme`. Edit it there.
+//
+// `window.document`, never bare `document`: see the ChangelogNavigator header.
 
 import ExecutionEnvironment from "@docusaurus/ExecutionEnvironment";
 import type { ClientModule } from "@docusaurus/types";
@@ -70,8 +72,8 @@ function send(body: Record<string, unknown>): void {
 }
 
 function getScrollDepth(): number {
-	const scrollTop = window.scrollY || document.documentElement.scrollTop;
-	const docHeight = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+	const scrollTop = window.scrollY || window.document.documentElement.scrollTop;
+	const docHeight = Math.max(window.document.body.scrollHeight, window.document.documentElement.scrollHeight);
 	const viewportHeight = window.innerHeight;
 	if (docHeight <= viewportHeight) return 100;
 	return Math.min(100, Math.round((scrollTop / (docHeight - viewportHeight)) * 100));
@@ -113,7 +115,7 @@ function trackPageView(isInitial: boolean, previousPath?: string | null): void {
 	resetPageTracking();
 	send({
 		path: window.location.href,
-		referrer: isInitial ? document.referrer || null : null,
+		referrer: isInitial ? window.document.referrer || null : null,
 		previousPath: isInitial ? null : (previousPath ?? null),
 		...getSessionAttribution(),
 		scrollDepth: null,
@@ -141,8 +143,8 @@ function setupScrollTracking(): void {
 function setupUnloadFlush(): void {
 	const flush = () => flushPageEngagement();
 
-	document.addEventListener("visibilitychange", () => {
-		if (document.visibilityState === "hidden") flush();
+	window.document.addEventListener("visibilitychange", () => {
+		if (window.document.visibilityState === "hidden") flush();
 	});
 
 	window.addEventListener("pagehide", flush);

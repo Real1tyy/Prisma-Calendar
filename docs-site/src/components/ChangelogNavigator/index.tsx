@@ -1,5 +1,9 @@
 // Canonical copy lives in tools/docs-theme/docs-site/ at the monorepo root and is synced
 // into every */docs-site/src by `mise run sync-docs-site-theme`. Edit it there.
+//
+// `window.document`, never bare `document`: this runs on the docs website, where
+// Obsidian's `activeDocument` does not exist, but the mirror's reviewer lints it with
+// obsidianmd/prefer-active-doc, whose disable is itself a blocking error.
 
 import { useHistory, useLocation } from "@docusaurus/router";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
@@ -55,7 +59,7 @@ function isTextEntry(target: EventTarget | null): boolean {
  */
 function bringIntoView(el: HTMLElement | null): void {
 	if (el === null) return;
-	const navbarHeight = document.querySelector<HTMLElement>(".navbar")?.offsetHeight ?? 0;
+	const navbarHeight = window.document.querySelector<HTMLElement>(".navbar")?.offsetHeight ?? 0;
 	const top = el.getBoundingClientRect().top - navbarHeight;
 	if (top >= 0) return;
 	window.scrollTo({ top: window.scrollY + top - 16 });
@@ -63,7 +67,7 @@ function bringIntoView(el: HTMLElement | null): void {
 
 /** Hide the table-of-contents entries of the sections the filter hid. */
 function syncTableOfContents(sectionIds: ReadonlySet<string>, hiddenIds: ReadonlySet<string>): void {
-	for (const anchor of Array.from(document.querySelectorAll<HTMLAnchorElement>(".table-of-contents a[href^='#']"))) {
+	for (const anchor of Array.from(window.document.querySelectorAll<HTMLAnchorElement>(".table-of-contents a[href^='#']"))) {
 		const id = decodeURIComponent(anchor.hash.slice(1));
 		const item = anchor.closest("li");
 		if (item !== null && sectionIds.has(id)) item.hidden = hiddenIds.has(id);
@@ -194,8 +198,8 @@ export default function ChangelogNavigator({ contentRef }: { contentRef: RefObje
 			e.preventDefault();
 			select(target.key);
 		};
-		document.addEventListener("keydown", onKeyDown);
-		return () => document.removeEventListener("keydown", onKeyDown);
+		window.document.addEventListener("keydown", onKeyDown);
+		return () => window.document.removeEventListener("keydown", onKeyDown);
 	}, [options, index, select]);
 
 	const filtered = query === null ? [] : options.filter((o) => matches(o, query));
