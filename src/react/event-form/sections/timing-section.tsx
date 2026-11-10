@@ -18,6 +18,7 @@ export const TimingSection = memo(function TimingSection({ form, showDurationFie
 	const { field: startField } = useController({ control: form.control, name: "start" });
 	const { field: endField } = useController({ control: form.control, name: "end" });
 	const { field: dateField } = useController({ control: form.control, name: "date" });
+	const { field: endDayField } = useController({ control: form.control, name: "endDay" });
 
 	const isAllDay = useWatch({ control: form.control, name: "allDay" });
 
@@ -27,13 +28,16 @@ export const TimingSection = memo(function TimingSection({ form, showDurationFie
 			if (checked) {
 				if (startField.value) {
 					dateField.onChange(formatDateOnly(startField.value));
+					endDayField.onChange(formatDateOnly(endField.value || startField.value));
 				}
 			} else if (dateField.value) {
 				startField.onChange(`${dateField.value}T09:00`);
-				endField.onChange(`${dateField.value}T10:00`);
+				endField.onChange(
+					`${endDayField.value && endDayField.value >= dateField.value ? endDayField.value : dateField.value}T10:00`
+				);
 			}
 		},
-		[allDayField, startField, endField, dateField]
+		[allDayField, startField, endField, dateField, endDayField]
 	);
 
 	const handleNow = useCallback(
@@ -140,6 +144,16 @@ export const TimingSection = memo(function TimingSection({ form, showDurationFie
 							value={dateField.value}
 							onChange={(e) => dateField.onChange(e.target.value)}
 							data-testid="prisma-event-control-date"
+						/>
+					</PrismaSettingItem>
+					<PrismaSettingItem name="End day" testId="prisma-event-field-end-day">
+						<input
+							type="date"
+							className="prisma-setting-item-control"
+							value={endDayField.value || dateField.value}
+							min={dateField.value}
+							onChange={(e) => endDayField.onChange(e.target.value)}
+							data-testid="prisma-event-control-end-day"
 						/>
 					</PrismaSettingItem>
 				</div>

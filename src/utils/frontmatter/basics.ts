@@ -2,8 +2,9 @@ import { ensureISOSuffix } from "@real1ty/obsidian-plugins";
 import { DateTime, type DurationLike } from "luxon";
 
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
+import { buildEventSchemaInput, resolveTemporalKind } from "../../types/event-schemas";
+import { allDayEnd } from "../dates/all-day";
 import { stripZ } from "../dates/iso";
-import { isAllDayFrontmatterValue } from "./predicates";
 
 const normalizesTimedEvents = (mode: string): boolean =>
 	["startDate", "endDate", "allStartDate", "allEndDate"].includes(mode);
@@ -57,12 +58,14 @@ export const applyStartEndOffsets = (
 	startOffset?: DurationLike,
 	endOffset?: DurationLike
 ) => {
-	const { startProp, endProp, dateProp, allDayProp } = settings;
+	const { startProp, endProp, dateProp, endDayProp } = settings;
 
-	if (isAllDayFrontmatterValue(fm[allDayProp])) {
-		if (fm[dateProp]) {
-			fm[dateProp] = shiftISO(fm[dateProp], startOffset);
-		}
+	if (
+		resolveTemporalKind(buildEventSchemaInput({ filePath: "", folder: "", frontmatter: fm }, settings)) === "allDay"
+	) {
+		const anchorProp = fm[dateProp] ? dateProp : startProp;
+		if (fm[anchorProp]) fm[anchorProp] = shiftISO(fm[anchorProp], startOffset);
+		if (fm[endDayProp]) fm[endDayProp] = shiftISO(fm[endDayProp], startOffset);
 	} else {
 		if (fm[startProp]) fm[startProp] = shiftISO(fm[startProp], startOffset);
 		if (fm[endProp]) fm[endProp] = shiftISO(fm[endProp], endOffset);
@@ -80,7 +83,7 @@ export const setEventBasics = (
 		zettelId?: number | undefined;
 	}
 ) => {
-	const { titleProp, startProp, endProp, dateProp, allDayProp, zettelIdProp } = settings;
+	const { titleProp, startProp, endProp, dateProp, endDayProp, allDayProp, zettelIdProp } = settings;
 
 	if (titleProp && data.title) fm[titleProp] = data.title;
 
@@ -90,9 +93,13 @@ export const setEventBasics = (
 
 	if (data.allDay) {
 		fm[dateProp] = dateOnly;
+		const endDay = allDayEnd(data.start, data.end).slice(0, 10);
+		if (endDay > allDayEnd(data.start).slice(0, 10)) fm[endDayProp] = endDay;
+		else Reflect.deleteProperty(fm, endDayProp);
 		fm[startProp] = "";
 		fm[endProp] = "";
 	} else {
+		Reflect.deleteProperty(fm, endDayProp);
 		fm[startProp] = ensureISOSuffix(data.start);
 		if (data.end) fm[endProp] = ensureISOSuffix(data.end);
 		fm[dateProp] = "";
@@ -108,5 +115,6 @@ export const setUntrackedEventBasics = (fm: Frontmatter, settings: SingleCalenda
 	fm[settings.startProp] = "";
 	fm[settings.endProp] = "";
 	fm[settings.dateProp] = "";
+	Reflect.deleteProperty(fm, settings.endDayProp);
 	fm[settings.allDayProp] = "";
 };

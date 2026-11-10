@@ -96,6 +96,7 @@ export class HolidayStore {
 			title: holiday.name,
 			type: "allDay",
 			start: holiday.date,
+			end: DateTime.fromISO(holiday.date, WALL_CLOCK_PARSE_OPTS).plus({ days: 1 }).toISODate() ?? "",
 			allDay: true,
 			ref: { filePath: `holiday:${holiday.id}` },
 			virtualKind: "holiday" as const,

@@ -136,6 +136,13 @@ export const PROP_CLASSIFICATIONS: readonly PropClassification[] = [
 		notificationDedicatedUI: false,
 	},
 	{
+		settingsProp: "endDayProp",
+		system: true,
+		dedicatedUI: false,
+		notificationSystem: false,
+		notificationDedicatedUI: false,
+	},
+	{
 		settingsProp: "allDayProp",
 		system: true,
 		dedicatedUI: false,
@@ -342,6 +349,7 @@ export const PROP_CLASSIFICATIONS: readonly PropClassification[] = [
 // a unit test. See [[decision-deterministic-property-ordering]].
 export const DEFAULT_PROPERTY_ORDER: readonly SettingsPropKey[] = [
 	"dateProp",
+	"endDayProp",
 	"startProp",
 	"endProp",
 	"allDayProp",

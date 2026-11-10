@@ -104,6 +104,7 @@ export interface PrefillResult {
 	startProp: string;
 	endProp: string;
 	dateProp: string;
+	endDayProp: string;
 }
 
 export function computePrefill(suggestion: DirectorySuggestion): PrefillResult {
@@ -113,9 +114,10 @@ export function computePrefill(suggestion: DirectorySuggestion): PrefillResult {
 
 	const startProp = startMatch ?? dt.at(0) ?? "";
 	const endProp = endMatch ?? dt.find((p) => p !== startProp) ?? dt.at(1) ?? "";
-	const dateProp = suggestion.dateProps.at(0) ?? "";
+	const endDayProp = suggestion.dateProps.find((p) => p.toLowerCase().includes("end")) ?? "";
+	const dateProp = suggestion.dateProps.find((p) => p !== endDayProp) ?? "";
 
-	return { startProp, endProp, dateProp };
+	return { startProp, endProp, dateProp, endDayProp };
 }
 
 // ─── Suggestion list ────────────────────────────────────────────────────────
@@ -203,10 +205,12 @@ export interface PropertyFieldsProps {
 	startProp: string;
 	endProp: string;
 	dateProp: string;
+	endDayProp: string;
 	onStartPropChange: (value: string) => void;
 	onEndPropChange: (value: string) => void;
 	onDatePropChange: (value: string) => void;
-	placeholders: { startProp: string; endProp: string; dateProp: string };
+	onEndDayPropChange: (value: string) => void;
+	placeholders: { startProp: string; endProp: string; dateProp: string; endDayProp: string };
 	suggestion: DirectorySuggestion | null;
 	testIdPrefix: string;
 }
@@ -215,9 +219,11 @@ export const PropertyFields = memo(function PropertyFields({
 	startProp,
 	endProp,
 	dateProp,
+	endDayProp,
 	onStartPropChange,
 	onEndPropChange,
 	onDatePropChange,
+	onEndDayPropChange,
 	placeholders,
 	suggestion,
 	testIdPrefix,
@@ -279,6 +285,20 @@ export const PropertyFields = memo(function PropertyFields({
 						/>
 					) : null}
 				</div>
+			</Field>
+			<Field label="End day property" hint="Date-only exclusive end for all-day spans (the day after the last day).">
+				<TextInput
+					value={endDayProp}
+					onChange={onEndDayPropChange}
+					placeholder={placeholders.endDayProp}
+					debounceMs={0}
+					testId={tid("end-day-prop-input")}
+				/>
+				<PrefillButtons
+					props={suggestion?.dateProps ?? []}
+					onSelect={onEndDayPropChange}
+					testIdPrefix={tid("end-day-prefill")}
+				/>
 			</Field>
 		</>
 	);

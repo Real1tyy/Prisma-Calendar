@@ -1,4 +1,5 @@
-import { ensureISOSuffix } from "@real1ty/obsidian-plugins";
+import { ensureISOSuffix, WALL_CLOCK_PARSE_OPTS } from "@real1ty/obsidian-plugins";
+import { DateTime } from "luxon";
 
 import {
 	applyDateFieldsToFrontmatter,
@@ -33,7 +34,12 @@ export function buildEventSaveData(
 	if (formState.allDay) {
 		if (formState.date) {
 			start = `${formState.date}T00:00:00`;
-			end = `${formState.date}T23:59:59`;
+			end = DateTime.fromISO(
+				formState.endDay && formState.endDay >= formState.date ? formState.endDay : formState.date,
+				WALL_CLOCK_PARSE_OPTS
+			)
+				.plus({ days: 1 })
+				.toISODate();
 		} else {
 			isUntracked = true;
 		}

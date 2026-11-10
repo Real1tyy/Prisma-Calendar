@@ -6,7 +6,7 @@ import {
 import ICAL from "ical.js";
 import { Notice, TFile, type App } from "obsidian";
 
-import { isAllDayEvent, isTimedEvent, type CalendarEvent } from "../../types/calendar";
+import { isAllDayEvent, type CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { appendZ } from "../../utils/dates/iso";
 import { extractZettelId, PHYSICAL_INSTANCE_PATTERN, removeZettelId } from "../../utils/events/zettel-id";
@@ -34,6 +34,7 @@ export interface ICSExportOptions {
 		startProp: string;
 		endProp: string;
 		dateProp: string;
+		endDayProp: string;
 		allDayProp: string;
 		titleProp?: string | undefined;
 		calendarTitleProp?: string | undefined;
@@ -195,11 +196,9 @@ function parsedEventToVEvent(
 	const dtstart = dateToICALTime(startDate, event.allDay, timezone);
 	vevent.addPropertyWithValue("dtstart", dtstart);
 
-	if (isTimedEvent(event)) {
-		const endDate = new Date(appendZ(event.end));
-		const dtend = dateToICALTime(endDate, event.allDay, timezone);
-		vevent.addPropertyWithValue("dtend", dtend);
-	}
+	const endDate = new Date(appendZ(event.end));
+	const dtend = dateToICALTime(endDate, event.allDay, timezone);
+	vevent.addPropertyWithValue("dtend", dtend);
 
 	const noteContent = options.noteContents.get(event.ref.filePath);
 	if (noteContent) {
@@ -462,6 +461,7 @@ export async function exportCalendarAsICS(app: App, options: ExportOptions): Pro
 				startProp: settings.startProp,
 				endProp: settings.endProp,
 				dateProp: settings.dateProp,
+				endDayProp: settings.endDayProp,
 				allDayProp: settings.allDayProp,
 				titleProp: settings.titleProp,
 				calendarTitleProp: settings.calendarTitleProp,

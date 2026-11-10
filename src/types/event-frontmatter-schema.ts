@@ -46,6 +46,7 @@ const EventFrontmatterShape = {
 	start: optionalDateTimeTransform.catch(undefined),
 	end: optionalDateTimeTransform.catch(undefined),
 	date: optionalDateTransform.catch(undefined),
+	endDay: optionalDateTransform.catch(undefined),
 	allDay: allDayTransform,
 	title: optionalTrimmedString,
 	calendarTitle: optionalTrimmedString,

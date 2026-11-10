@@ -16,6 +16,7 @@ import {
 import type { CalendarEventSource, RawEventSource } from "../../types/event-source";
 import type { ISO } from "../../types/index";
 import type { SingleCalendarConfig } from "../../types/settings";
+import { allDayEnd } from "../../utils/dates/all-day";
 import { stripZ } from "../../utils/dates/iso";
 import type { EventSourceView } from "../event-source-view";
 import type { HolidayStore } from "../holidays";
@@ -42,10 +43,10 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	private eventsByStartTime = new BTree<string, TimedEvent>();
 	// Query BTrees — non-skipped events for range queries
 	private timedByEndTime = new BTree<string, TimedEvent>();
-	private allDayByDate = new BTree<string, AllDayEvent>();
+	private allDayByEndTime = new BTree<string, AllDayEvent>();
 	// Query BTrees — skipped events (separate so callers get exactly what they need)
 	private skippedTimedByEndTime = new BTree<string, TimedEvent>();
-	private skippedAllDayByDate = new BTree<string, AllDayEvent>();
+	private skippedAllDayByEndTime = new BTree<string, AllDayEvent>();
 	private holidayStore: HolidayStore | null = null;
 	private virtualEventStore: VirtualEventStore | null = null;
 	private virtualEventSubscription: Subscription | null = null;
@@ -186,7 +187,7 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	 */
 	countSkippedEvents(query: EventQuery): number {
 		let count = 0;
-		this.scanPhysicalFromTrees(query, this.skippedTimedByEndTime, this.skippedAllDayByDate, () => {
+		this.scanPhysicalFromTrees(query, this.skippedTimedByEndTime, this.skippedAllDayByEndTime, () => {
 			count++;
 		});
 		return count;
@@ -235,17 +236,17 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	// ─── Query Helpers ────────────────────────────────────────────
 
 	private queryNonSkippedPhysical(query: EventQuery): CalendarEvent[] {
-		return this.queryPhysicalFromTrees(query, this.timedByEndTime, this.allDayByDate);
+		return this.queryPhysicalFromTrees(query, this.timedByEndTime, this.allDayByEndTime);
 	}
 
 	private querySkippedPhysical(query: EventQuery): CalendarEvent[] {
-		return this.queryPhysicalFromTrees(query, this.skippedTimedByEndTime, this.skippedAllDayByDate);
+		return this.queryPhysicalFromTrees(query, this.skippedTimedByEndTime, this.skippedAllDayByEndTime);
 	}
 
 	/**
 	 * Queries physical events from the given BTree pair using range scans.
 	 * Timed: events whose [start, end) intersects [queryStart, queryEnd).
-	 * All-day: events whose start falls within [queryStart, queryEnd).
+	 * All-day: the same exclusive-end overlap rule as timed events.
 	 */
 	private queryPhysicalFromTrees(
 		query: EventQuery,
@@ -264,6 +265,7 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 		});
 
 		timedResults.sort(EventStore.compareByStart);
+		allDayResults.sort(EventStore.compareByStart);
 		return mergeSorted(timedResults, allDayResults, EventStore.compareByStart);
 	}
 
@@ -299,8 +301,9 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 		});
 
 		const allDayLowKey = `${queryStartNorm}${EventStore.SEP}`;
-		const allDayHighKey = `${queryEndNorm}${EventStore.SEP}`;
-		allDayTree.forRange(allDayLowKey, allDayHighKey, false, (_key, event) => visitor(event));
+		allDayTree.forRange(allDayLowKey, EventStore.MAX, true, (_key, event) => {
+			if (this.normIso(event.start) < queryEndNorm && this.normIso(event.end) > queryStartNorm) visitor(event);
+		});
 	}
 
 	// ─── Navigation ───────────────────────────────────────────────
@@ -360,11 +363,11 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 				this.eventsByStartTime.set(startKey, event);
 			}
 		} else {
-			const dateKey = this.makeTreeKey(this.normIso(event.start), event.ref.filePath);
+			const dateKey = this.makeTreeKey(this.normIso(event.end), event.ref.filePath);
 			if (event.skipped) {
-				this.skippedAllDayByDate.set(dateKey, event);
+				this.skippedAllDayByEndTime.set(dateKey, event);
 			} else {
-				this.allDayByDate.set(dateKey, event);
+				this.allDayByEndTime.set(dateKey, event);
 			}
 		}
 	}
@@ -380,11 +383,11 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 				this.eventsByStartTime.delete(startKey);
 			}
 		} else {
-			const dateKey = this.makeTreeKey(this.normIso(event.start), event.ref.filePath);
+			const dateKey = this.makeTreeKey(this.normIso(event.end), event.ref.filePath);
 			if (event.skipped) {
-				this.skippedAllDayByDate.delete(dateKey);
+				this.skippedAllDayByEndTime.delete(dateKey);
 			} else {
-				this.allDayByDate.delete(dateKey);
+				this.allDayByEndTime.delete(dateKey);
 			}
 		}
 	}
@@ -392,9 +395,9 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	private clearAllTrees(): void {
 		this.eventsByStartTime.clear();
 		this.timedByEndTime.clear();
-		this.allDayByDate.clear();
+		this.allDayByEndTime.clear();
 		this.skippedTimedByEndTime.clear();
-		this.skippedAllDayByDate.clear();
+		this.skippedAllDayByEndTime.clear();
 	}
 
 	// ─── Mark Done Periodic Scan ─────────────────────────────────
@@ -422,10 +425,7 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 
 		const now = DateTime.now();
 		const nowIso = now.toISO({ suppressMilliseconds: true, includeOffset: false });
-		// An all-day event's `start` is midnight of its day, so it is past once
-		// its day is over — i.e. it started before today's midnight. Comparing
-		// against the *end* of today marked today's all-day events done at 00:00,
-		// disagreeing with the indexer path (`isEventPastFromFrontmatter`).
+		// All-day spans become past at their exclusive midnight boundary.
 		const startOfTodayIso = now.startOf("day").toISO({ suppressMilliseconds: true, includeOffset: false });
 		const doneValue = this.settings.doneValue;
 		const minimizedFilePath = MinimizedModalManager.getState()?.filePath ?? null;
@@ -437,7 +437,7 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 			// Skip events actively being tracked by the stopwatch
 			if (event.ref.filePath === minimizedFilePath) continue;
 
-			const isPast = isTimedEvent(event) ? event.end < nowIso : event.start < startOfTodayIso;
+			const isPast = isTimedEvent(event) ? event.end < nowIso : event.end.slice(0, 19) <= startOfTodayIso;
 			if (!isPast) continue;
 
 			void this.eventSource.markFileAsDone(event.ref.filePath);
@@ -482,6 +482,7 @@ export function toCalendarEvent(data: VirtualEventData, virtualFilePath: string)
 				...base,
 				type: "allDay" as const,
 				start: data.start,
+				end: allDayEnd(data.start, data.end),
 				allDay: true as const,
 			}
 		: {

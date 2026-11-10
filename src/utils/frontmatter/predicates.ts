@@ -1,6 +1,8 @@
 import { parseAsLocalDate, toSafeString } from "@real1ty/obsidian-plugins";
 
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
+import { buildEventSchemaInput, resolveTemporalKind } from "../../types/event-schemas";
+import { allDayEnd } from "../dates/all-day";
 
 export const isAllDayFrontmatterValue = (allDayValue: unknown): boolean => {
 	return allDayValue === true || (typeof allDayValue === "string" && allDayValue.toLowerCase() === "true");
@@ -30,13 +32,18 @@ const frontmatterValueAsLocalDate = (value: unknown): Date | null => {
 
 /**
  * Returns true when the event represented by the given frontmatter is entirely in the past.
- * All-day events use end-of-day on the Date property; timed events use the End property.
+ * All-day events use their exclusive end day; timed events use the End property.
  */
 export const isEventPastFromFrontmatter = (frontmatter: Frontmatter, settings: SingleCalendarConfig): boolean => {
-	const isAllDay = isAllDayFrontmatterValue(frontmatter[settings.allDayProp]);
-	const date = frontmatterValueAsLocalDate(frontmatter[isAllDay ? settings.dateProp : settings.endProp]);
+	const isAllDay =
+		resolveTemporalKind(buildEventSchemaInput({ filePath: "", folder: "", frontmatter }, settings)) === "allDay";
+	const startValue = frontmatter[settings.dateProp] || frontmatter[settings.startProp];
+	const date = frontmatterValueAsLocalDate(isAllDay ? startValue : frontmatter[settings.endProp]);
 	if (!date) return false;
-	if (isAllDay) date.setHours(23, 59, 59, 999);
+	if (isAllDay) {
+		const end = allDayEnd(toSafeString(startValue) ?? "", toSafeString(frontmatter[settings.endDayProp]));
+		return (parseAsLocalDate(end)?.getTime() ?? Infinity) <= Date.now();
+	}
 	return date < new Date();
 };
 

@@ -325,11 +325,10 @@ function dateToTimezoneISO(date: Date, timezone: string): string {
 }
 
 /**
- * Converts a UTC Date to a date string (YYYY-MM-DD) in the specified timezone.
- * Important for all-day events to ensure the correct calendar date.
+ * DATE values have no timezone; icalTimeToDate encodes their calendar digits at UTC midnight.
  */
-function dateToTimezoneDate(date: Date, timezone: string): string {
-	const dt = DateTime.fromJSDate(date, { zone: "utc" }).setZone(timezone);
+function dateToTimezoneDate(date: Date): string {
+	const dt = DateTime.fromJSDate(date, { zone: "utc" });
 	return dt.toISODate() || date.toISOString().split("T")[0];
 }
 
@@ -364,9 +363,13 @@ export function buildFrontmatterFromImportedEvent(
 	const fm: Frontmatter = { ...event.frontmatter };
 
 	const startISO = event.allDay
-		? `${dateToTimezoneDate(event.start, timezone)}T00:00:00`
+		? `${dateToTimezoneDate(event.start)}T00:00:00`
 		: dateToTimezoneISO(event.start, timezone);
-	const endISO = event.end ? dateToTimezoneISO(event.end, timezone) : undefined;
+	const endISO = event.end
+		? event.allDay
+			? dateToTimezoneDate(event.end)
+			: dateToTimezoneISO(event.end, timezone)
+		: undefined;
 
 	setEventBasics(fm, settings, {
 		title: event.title,

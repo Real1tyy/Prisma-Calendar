@@ -8,6 +8,7 @@ import { VIRTUAL_EVENTS_CODE_FENCE } from "../constants";
 import { VirtualEventDataSchema, type VirtualEventData } from "../types/calendar";
 import type { EventSaveData } from "../types/event-boundaries";
 import type { SingleCalendarConfig } from "../types/settings";
+import { allDayEnd } from "../utils/dates/all-day";
 import { log } from "./logging";
 
 // Wait for the user to stop typing the directory in settings before binding
@@ -121,8 +122,9 @@ export class VirtualEventStore {
 		const endStr = end.toISO({ suppressMilliseconds: true, includeOffset: false }) ?? "";
 
 		return this.events$.value.filter((event) => {
-			const eventEnd = event.end ?? event.start;
-			return eventEnd >= startStr && event.start < endStr;
+			const eventEnd = event.allDay ? allDayEnd(event.start, event.end) : (event.end ?? event.start);
+			const eventStart = event.allDay ? `${event.start.slice(0, 10)}T00:00:00` : event.start;
+			return (event.allDay ? eventEnd > startStr : eventEnd >= startStr) && eventStart < endStr;
 		});
 	}
 

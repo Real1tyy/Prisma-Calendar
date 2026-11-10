@@ -843,7 +843,7 @@ button[class*=prisma-]:focus-visible {
 }
 .prisma-calendar-container .fc-daygrid-block-event {
   max-height: var(--all-day-event-height, 75px);
-  overflow: hidden auto;
+  overflow: visible;
 }
 .prisma-calendar-container .fc-daygrid-block-event .fc-event-main {
   overflow: hidden auto;

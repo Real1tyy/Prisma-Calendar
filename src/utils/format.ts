@@ -19,10 +19,18 @@ import { cleanupTitle } from "./events/naming";
 import { extractPropertyText, getDisplayProperties } from "./frontmatter/display";
 import { getInternalProperties } from "./frontmatter/props";
 
+export function formatAllDayDateRange(start: Date, end: Date | null, formatDate: (date: Date) => string): string {
+	const first = formatDate(start);
+	if (!end) return first;
+	const last = new Date(end);
+	last.setDate(last.getDate() - 1);
+	return last > start ? `${first} – ${formatDate(last)}` : first;
+}
+
 export function formatEventTimeInfo(event: CalendarEvent): string {
 	const startTime = DateTime.fromISO(event.start);
 	if (isAllDayEvent(event)) {
-		return `All Day - ${startTime.toFormat("MMM d, yyyy")}`;
+		return `All Day - ${formatAllDayDateRange(startTime.toJSDate(), DateTime.fromISO(event.end).toJSDate(), (date) => DateTime.fromJSDate(date).toFormat("MMM d, yyyy"))}`;
 	}
 	const endTime = isTimedEvent(event) ? DateTime.fromISO(event.end) : null;
 	if (endTime && endTime > startTime) {
@@ -82,13 +90,14 @@ export function formatDateOnlyDisplay(dateInput: string | Date): string {
 
 function formatEventDateSuffix(start: Date, end: Date | null, allDay: boolean, locale: string): string {
 	if (allDay) {
-		const dateStr = start.toLocaleDateString(locale, {
-			weekday: "short",
-			month: "short",
-			day: "numeric",
-			year: "numeric",
-		});
-		return ` - ${dateStr}`;
+		return ` - ${formatAllDayDateRange(start, end, (date) =>
+			date.toLocaleDateString(locale, {
+				weekday: "short",
+				month: "short",
+				day: "numeric",
+				year: "numeric",
+			})
+		)}`;
 	}
 
 	const startStr = formatLocaleTimeHm(start, locale);
@@ -107,7 +116,7 @@ export function buildEventTooltip(
 	const title = event.title;
 	const meta = "meta" in event ? event.meta : (event.extendedProps.frontmatterDisplayData ?? {});
 	const start = "ref" in event ? new Date(event.start) : event.start;
-	const end = "ref" in event ? (event.type === "timed" && event.end ? new Date(event.end) : null) : event.end;
+	const end = "ref" in event ? (event.end ? new Date(event.end) : null) : event.end;
 	const allDay = "ref" in event ? event.type === "allDay" : event.allDay;
 
 	if (!start) return cleanupTitle(title);

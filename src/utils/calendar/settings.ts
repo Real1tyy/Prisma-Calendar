@@ -4,7 +4,7 @@ import { SingleCalendarConfigSchema, type CustomCalendarSettings, type SingleCal
 const fields = <const T extends readonly (keyof SingleCalendarConfig)[]>(...keys: T): T => keys;
 
 // Field groups mirror the Properties settings tab sections.
-export const TIMING_FIELDS = fields("startProp", "endProp", "dateProp", "allDayProp");
+export const TIMING_FIELDS = fields("startProp", "endProp", "dateProp", "endDayProp", "allDayProp");
 export const IDENTITY_FIELDS = fields("titleProp", "calendarTitleProp", "zettelIdProp", "skipProp", "iconProp");
 export const RECURRENCE_FIELDS = fields(
 	"rruleProp",

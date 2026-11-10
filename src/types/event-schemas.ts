@@ -10,6 +10,7 @@ import {
 import { v5 as uuidv5 } from "uuid";
 
 import { PRISMA_CALENDAR_NAMESPACE } from "../constants";
+import { allDayEnd } from "../utils/dates/all-day";
 import { toInternalISO } from "../utils/dates/iso";
 import { cleanupTitle } from "../utils/events/naming";
 import { eventDefaults, type AllDayEvent, type ParsedEvent, type TimedEvent, type UntrackedEvent } from "./calendar";
@@ -18,7 +19,7 @@ import type { EventMetadata } from "./event-metadata";
 import type { Frontmatter, SingleCalendarConfig } from "./index";
 
 /**
- * Raw value-type classifications for the three temporal roles, captured from the
+ * Raw value-type classifications for the temporal roles, captured from the
  * *original* frontmatter strings before parsing. Luxon parsing collapses a
  * date-only value to midnight and loses the date-vs-datetime distinction, so the
  * resolver needs these raw classifications to decide timed-vs-all-day.
@@ -27,6 +28,7 @@ export interface TemporalKinds {
 	start: DateLikeKind | null;
 	end: DateLikeKind | null;
 	date: DateLikeKind | null;
+	endDay: DateLikeKind | null;
 }
 
 /**
@@ -132,6 +134,7 @@ function buildAllDayEvent(input: EventSchemaInput): AllDayEvent | null {
 		title: makeTitle(parsed, input.filePath),
 		type: "allDay",
 		start: toInternalISO(anchorWallClock(anchor).startOf("day")),
+		end: allDayEnd(toInternalISO(anchor), parsed.endDay ? toInternalISO(parsed.endDay) : undefined),
 		allDay: true,
 		skipped: metadata.skip ?? false,
 		metadata,
@@ -225,6 +228,7 @@ export function buildEventSchemaInput(
 	const temporalKinds: TemporalKinds = {
 		start: classifyDateLikeString(toSafeString(args.frontmatter[settings.startProp]) ?? ""),
 		end: classifyDateLikeString(toSafeString(args.frontmatter[settings.endProp]) ?? ""),
+		endDay: classifyDateLikeString(toSafeString(args.frontmatter[settings.endDayProp]) ?? ""),
 		date: classifyDateLikeString(toSafeString(args.frontmatter[settings.dateProp]) ?? ""),
 	};
 	return {

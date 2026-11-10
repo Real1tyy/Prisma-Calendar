@@ -38,6 +38,7 @@ export const TimedEventSchema = BaseEventSchema.extend({
 export const AllDayEventSchema = BaseEventSchema.extend({
 	type: z.literal("allDay"),
 	start: z.string(),
+	end: z.string(),
 	allDay: z.literal(true),
 	virtualKind: VirtualKindSchema.default("none"),
 	skipped: z.boolean(),

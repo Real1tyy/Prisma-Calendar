@@ -1877,6 +1877,12 @@
 								"description": "Enable event notifications. When disabled, all notification settings below are ignored.",
 								"type": "boolean"
 							},
+							"endDayProp": {
+								"default": "End Day",
+								"description": "Frontmatter property for the exclusive end day of all-day events",
+								"title": "End day property",
+								"type": "string"
+							},
 							"endProp": {
 								"default": "End Date",
 								"description": "Frontmatter property name for event end date/time (for timed events)",
@@ -3009,6 +3015,7 @@
 							"startProp",
 							"endProp",
 							"dateProp",
+							"endDayProp",
 							"allDayProp",
 							"sortingStrategy",
 							"sortDateProp",
@@ -4523,6 +4530,12 @@
 								"default": true,
 								"description": "Enable event notifications. When disabled, all notification settings below are ignored.",
 								"type": "boolean"
+							},
+							"endDayProp": {
+								"default": "End Day",
+								"description": "Frontmatter property for the exclusive end day of all-day events",
+								"title": "End day property",
+								"type": "string"
 							},
 							"endProp": {
 								"default": "End Date",

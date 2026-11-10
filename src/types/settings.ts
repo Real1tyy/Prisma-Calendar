@@ -179,6 +179,11 @@ const PropsSettingsSchema = z
 			.catch("End Date")
 			.describe("Frontmatter property name for event end date/time (for timed events)"),
 		dateProp: z.string().catch("Date").describe("Frontmatter property name for all-day events (date only, no time)"),
+		endDayProp: z
+			.string()
+			.catch("End Day")
+			.describe("Frontmatter property for the exclusive end day of all-day events")
+			.meta({ title: "End day property" }),
 		allDayProp: z.string().catch("All Day").describe("Frontmatter property name for all-day flag"),
 		sortingStrategy: z
 			.enum(["none", "startDate", "endDate", "allDayOnly", "allStartDate", "allEndDate"])

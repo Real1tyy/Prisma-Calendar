@@ -9,6 +9,7 @@ import type { CalendarEvent } from "../../../types/calendar";
 import type { SingleCalendarConfig } from "../../../types/settings";
 import { resolveEventColor } from "../../../utils/events/color";
 import { removeZettelId } from "../../../utils/events/zettel-id";
+import { formatAllDayDateRange } from "../../../utils/format";
 import type { EventListAction, EventListItemData } from "./event-list-item";
 import { EventListModal } from "./event-list-modal";
 
@@ -28,7 +29,7 @@ export function formatEventSubtitle(event: CalendarEvent): string {
 
 	const startDate = new Date(event.start);
 	if (event.allDay) {
-		parts.push(formatLocaleShortDate(startDate));
+		parts.push(formatAllDayDateRange(startDate, new Date(event.end), formatLocaleShortDate));
 	} else {
 		const dateStr = formatLocaleShortDate(startDate);
 		const startTimeStr = formatLocaleTimeHm(startDate);

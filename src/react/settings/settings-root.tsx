@@ -135,6 +135,7 @@ export const SettingsRoot = memo(function SettingsRoot({ plugin }: SettingsRootP
 				startProp: selectedCalendar.startProp,
 				endProp: selectedCalendar.endProp,
 				dateProp: selectedCalendar.dateProp,
+				endDayProp: selectedCalendar.endDayProp,
 			},
 			selectedCalendar
 		);

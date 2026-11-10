@@ -441,6 +441,7 @@ export default class CustomCalendarPlugin extends Plugin {
 				startProp: primaryCalendar.startProp,
 				endProp: primaryCalendar.endProp,
 				dateProp: primaryCalendar.dateProp,
+				endDayProp: primaryCalendar.endDayProp,
 			},
 			settingsStore: this.settingsStore,
 		});
@@ -463,6 +464,7 @@ export default class CustomCalendarPlugin extends Plugin {
 							startProp: result?.startProp ?? primaryCalendar.startProp,
 							endProp: result?.endProp ?? primaryCalendar.endProp,
 							dateProp: result?.dateProp ?? primaryCalendar.dateProp,
+							endDayProp: result?.endDayProp ?? primaryCalendar.endDayProp,
 						}
 					: calendar
 			),

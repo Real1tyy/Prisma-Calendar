@@ -1675,7 +1675,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			const displayColor = settings.colorMode === "off" ? settings.defaultNodeColor : primaryColor;
 
 			const start = stripZ(event.start);
-			const end = isTimedEvent(event) ? stripZ(event.end) : undefined;
+			const end = stripZ(event.end);
 
 			// Index color by date for O(1) color-dot lookup — only custom colors,
 			// not the default fallback (dots should highlight configured distinctions)
@@ -2287,6 +2287,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		propertyUpdates.set(settings.startProp, null);
 		propertyUpdates.set(settings.endProp, null);
 		propertyUpdates.set(settings.dateProp, null);
+		propertyUpdates.set(settings.endDayProp, null);
 		propertyUpdates.set(settings.allDayProp, null);
 
 		const command = updateFrontmatter(this.bundle, filePath, propertyUpdates);
@@ -2322,6 +2323,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 						propertyUpdates.set(settings.endProp, endDateTime);
 						propertyUpdates.set(settings.allDayProp, "false");
 						propertyUpdates.set(settings.dateProp, null);
+						propertyUpdates.set(settings.endDayProp, null);
 					}
 
 					const command = updateFrontmatter(this.bundle, filePath, propertyUpdates);

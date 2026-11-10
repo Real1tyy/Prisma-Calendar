@@ -488,6 +488,7 @@ export type PrismaCalendarGetSettingsOutput = {
 	 * Enable event notifications. When disabled, all notification settings below are ignored.
 	 */
 	enableNotifications: boolean;
+	endDayProp: EndDayProperty;
 	/**
 	 * Frontmatter property name for event end date/time (for timed events)
 	 */
@@ -944,6 +945,10 @@ export type DisplayDensity = "comfortable" | "compact";
  */
 export type DesktopEventsPerDay = number;
 /**
+ * Frontmatter property for the exclusive end day of all-day events
+ */
+export type EndDayProperty = string;
+/**
  * Maximum number of events to stack vertically before showing '+ more' link
  */
 export type EventStackLimit = number;
@@ -1334,6 +1339,10 @@ export type PrismaCalendarToggleSkipOutput = boolean;
 
 /**
  * Maximum events to show per day on desktop before showing '+more' link (0 = unlimited)
+ */
+
+/**
+ * Frontmatter property for the exclusive end day of all-day events
  */
 
 /**
@@ -1756,6 +1765,7 @@ export interface PrismaCalendarUpdateSettingsInput {
 		 * Enable event notifications. When disabled, all notification settings below are ignored.
 		 */
 		enableNotifications?: boolean;
+		endDayProp?: EndDayProperty;
 		/**
 		 * Frontmatter property name for event end date/time (for timed events)
 		 */

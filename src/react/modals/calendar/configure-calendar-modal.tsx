@@ -17,6 +17,7 @@ export interface ConfigureCalendarResult {
 	startProp: string;
 	endProp: string;
 	dateProp: string;
+	endDayProp: string;
 }
 
 export interface ConfigureCalendarControllerProps {
@@ -63,6 +64,7 @@ export const ConfigureCalendarController = memo(function ConfigureCalendarContro
 	const [startProp, setStartProp] = useState(initialValues.startProp);
 	const [endProp, setEndProp] = useState(initialValues.endProp);
 	const [dateProp, setDateProp] = useState(initialValues.dateProp);
+	const [endDayProp, setEndDayProp] = useState(initialValues.endDayProp);
 
 	const configureTid = (suffix: string) => tid("configure", suffix);
 	const matchedSuggestion = suggestions.find((s) => s.directory === directory.trim()) ?? null;
@@ -91,6 +93,7 @@ export const ConfigureCalendarController = memo(function ConfigureCalendarContro
 			setStartProp(prefill.startProp || initialValues.startProp);
 			setEndProp(prefill.endProp || initialValues.endProp);
 			setDateProp(prefill.dateProp || initialValues.dateProp);
+			setEndDayProp(prefill.endDayProp || initialValues.endDayProp);
 		},
 		[initialValues]
 	);
@@ -101,6 +104,7 @@ export const ConfigureCalendarController = memo(function ConfigureCalendarContro
 			startProp: startProp.trim() || initialValues.startProp,
 			endProp: endProp.trim() || initialValues.endProp,
 			dateProp: dateProp.trim() || initialValues.dateProp,
+			endDayProp: endDayProp.trim() || initialValues.endDayProp,
 		});
 	};
 
@@ -136,9 +140,11 @@ export const ConfigureCalendarController = memo(function ConfigureCalendarContro
 				startProp={startProp}
 				endProp={endProp}
 				dateProp={dateProp}
+				endDayProp={endDayProp}
 				onStartPropChange={setStartProp}
 				onEndPropChange={setEndProp}
 				onDatePropChange={setDateProp}
+				onEndDayPropChange={setEndDayProp}
 				placeholders={initialValues}
 				suggestion={matchedSuggestion}
 				testIdPrefix={configureTid("configure")}

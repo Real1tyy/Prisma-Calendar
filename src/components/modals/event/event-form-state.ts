@@ -38,6 +38,7 @@ export const EventFormStateSchema = z
 		start: z.string().default(""),
 		end: z.string().default(""),
 		date: z.string().default(""),
+		endDay: z.string().default(""),
 		categories: z.array(z.string()).default([]),
 		participants: z.array(z.string()).default([]),
 		prerequisites: z.array(z.string()).default([]),

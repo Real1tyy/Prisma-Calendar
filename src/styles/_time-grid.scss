@@ -86,7 +86,9 @@
 	// truth for `.prisma-calendar-container .fc-daygrid-event-harness`).
 	.fc-daygrid-block-event {
 		max-height: var(--all-day-event-height, 75px);
-		overflow: hidden auto;
+		// The inner content owns scrolling; a card scrollbar intercepts the
+		// horizontal resize handles and turns a resize into an event drag.
+		overflow: visible;
 
 		.fc-event-main {
 			overflow: hidden auto;

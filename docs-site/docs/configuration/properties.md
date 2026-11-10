@@ -74,9 +74,27 @@ Only Prisma's own properties are reordered; your keys keep their values and thei
 - **Start property** (required): default `Start Date`
 - **End property** (optional): default `End Date`
 - **All-day property** (optional): default `All Day`
-- **Date property** (optional): default `Date` (for all-day events)
+- **Date property** (optional): default `Date` (first day of an all-day event)
+- **End day property** (optional): default `End Day` (exclusive end of an all-day span)
 - **Title property** (optional): default `Title` (falls back to file name when missing). See [Title property](#title-property) below for details.
 - **Skip property**: property name to skip/hide event from calendar (default: `Skip`)
+
+### All-day spans: exclusive storage, inclusive display
+
+An all-day event covers its `Date` through the day **before** `End Day`:
+
+```yaml
+---
+Date: 2026-01-01
+End Day: 2026-01-08
+---
+```
+
+This event covers January 1–7. `End Day` stores January 8 to match iCalendar, Google Calendar and FullCalendar, which all use an exclusive end. The event form and tooltips show January 7, the last covered day. Select January 1 and January 7 in the form to create this span.
+
+Leave `End Day` absent for a single-day event. Saving a same-day range removes the property. An end equal to or before the start is treated as one day. Existing single-day notes need no migration.
+
+Drag the bar to move the entire span, or drag its right edge to change the last day. Undo restores the previous dates. Toggling **All day** preserves the first and last days. Heatmaps and statistics count the event on its start day. Recurring all-day events cover one day per occurrence.
 
 ### Title property
 
@@ -204,7 +222,7 @@ Event type is resolved in two steps. The `All Day` property is checked first; if
   ---
   ```
 
-- Otherwise, a **date-only** value (e.g. `2026-06-01`) in the Date property → **all-day event**.
+- Otherwise, a **date-only** value (e.g. `2026-06-01`) in the Date property → **all-day event**. `End Day` optionally extends it over several days; it does not affect event type.
 
   ```yaml
   ---
@@ -222,44 +240,11 @@ Event type is resolved in two steps. The `All Day` property is checked first; if
 
 A date-only value must go in the **Date property** to render. A date-only value in the **Start property** with no Date value is untracked — datetimes belong in Start, dates belong in Date.
 
-## Always Include Date and Time Properties
+## Date and Time Properties on Save
 
-Prisma Calendar automatically ensures that both date and time properties are always present in event frontmatter, regardless of whether the event is all-day or timed. This makes it easy to convert between all-day and timed events by manually editing the frontmatter.
+For all-day events, Prisma writes `Date` and sets `All Day: true`. `End Day` is present only for spans longer than one day. The timed `Start Date` and `End Date` properties are empty strings.
 
-**For all-day events:**
-- The `Date` property contains the date (e.g., `2025-02-15`)
-- The `Start` and `End` properties are empty strings
-- The `All Day` property is `true`
-
-**For timed events:**
-- The `Start` and `End` properties contain the full datetime (e.g., `2025-02-15T09:00:00`)
-- The `Date` property is an empty string by default
-- The `All Day` property is `false` (or unset)
-
-**Benefits:**
-- **Easy conversion**: Change an all-day event to timed by adding values to `Start`/`End` and setting `All Day: false`
-- **Consistent structure**: All events have the same property structure, making templates and scripts easier to write
-- **No missing properties**: You can always reference `Date`, `Start`, or `End` without checking if they exist
-
-```yaml
----
-Title: Holiday
-Date: 2025-12-25
-Start:
-End:
-All Day: true
----
-```
-
-```yaml
----
-Title: Meeting
-Date:
-Start: 2025-02-15T09:00:00
-End: 2025-02-15T10:30:00
-All Day: false
----
-```
+For timed events, `Start Date` and `End Date` hold datetimes, `Date` is empty and `All Day` is false. `End Day` is absent. Your configured property names apply throughout.
 
 ## Sorting Normalization for External Tools
 

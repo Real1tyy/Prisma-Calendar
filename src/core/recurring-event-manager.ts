@@ -1018,6 +1018,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 			? {
 					...baseEvent,
 					type: "allDay" as const,
+					end: toInternalISO(instanceStart.plus({ days: 1 }).startOf("day")),
 					allDay: true,
 				}
 			: {

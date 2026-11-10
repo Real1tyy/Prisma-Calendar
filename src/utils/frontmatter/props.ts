@@ -114,6 +114,7 @@ export const getBatchFrontmatterExcludedProps = (settings: SingleCalendarConfig)
 			settings.startProp,
 			settings.endProp,
 			settings.dateProp,
+			settings.endDayProp,
 			settings.sortDateProp,
 			settings.allDayProp,
 			settings.categoryProp,

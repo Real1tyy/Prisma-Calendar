@@ -27,6 +27,7 @@ const FormSchema = z.object({
 	startProp: z.string(),
 	endProp: z.string(),
 	dateProp: z.string(),
+	endDayProp: z.string(),
 });
 
 type FormValues = z.infer<typeof FormSchema>;
@@ -34,7 +35,7 @@ type FormValues = z.infer<typeof FormSchema>;
 // ─── Types (derived from schema) ─────────────────────────────────────────────
 
 export type FirstLaunchMode = FormValues["mode"];
-export type FirstLaunchInitialProps = Pick<FormValues, "startProp" | "endProp" | "dateProp">;
+export type FirstLaunchInitialProps = Pick<FormValues, "startProp" | "endProp" | "dateProp" | "endDayProp">;
 export type FirstLaunchInitialState = Partial<FormValues>;
 export type FirstLaunchModalResult = FormValues & {
 	selectedSuggestion: DirectorySuggestion | null;
@@ -160,6 +161,7 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 			startProp: initialState?.startProp ?? initialProps.startProp,
 			endProp: initialState?.endProp ?? initialProps.endProp,
 			dateProp: initialState?.dateProp ?? initialProps.dateProp,
+			endDayProp: initialState?.endDayProp ?? initialProps.endDayProp,
 		},
 	});
 
@@ -168,6 +170,7 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 	const currentStartProp = useWatch({ control, name: "startProp" });
 	const currentEndProp = useWatch({ control, name: "endProp" });
 	const currentDateProp = useWatch({ control, name: "dateProp" });
+	const currentEndDayProp = useWatch({ control, name: "endDayProp" });
 	const welcomeTid = (suffix: string) => tid("welcome", suffix);
 	const matchedSuggestion = suggestions.find((s) => s.directory === currentDirectory.trim()) ?? null;
 
@@ -200,6 +203,7 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 			setValue("startProp", prefill.startProp || initialProps.startProp);
 			setValue("endProp", prefill.endProp || initialProps.endProp);
 			setValue("dateProp", prefill.dateProp || initialProps.dateProp);
+			setValue("endDayProp", prefill.endDayProp || initialProps.endDayProp);
 		},
 		[setValue, initialProps]
 	);
@@ -214,6 +218,7 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 				startProp: primary.startProp,
 				endProp: primary.endProp,
 				dateProp: primary.dateProp,
+				endDayProp: primary.endDayProp,
 				selectedSuggestion: null,
 				importedSettings: true,
 			});
@@ -228,6 +233,7 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 			startProp: values.startProp.trim() || initialProps.startProp,
 			endProp: values.endProp.trim() || initialProps.endProp,
 			dateProp: values.dateProp.trim() || initialProps.dateProp,
+			endDayProp: values.endDayProp.trim() || initialProps.endDayProp,
 			selectedSuggestion: matchedSuggestion,
 			importedSettings: false,
 		});
@@ -274,6 +280,7 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 						setValue("startProp", initialProps.startProp);
 						setValue("endProp", initialProps.endProp);
 						setValue("dateProp", initialProps.dateProp);
+						setValue("endDayProp", initialProps.endDayProp);
 					}}
 				/>
 				<ModeCard
@@ -287,6 +294,7 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 						setValue("startProp", initialProps.startProp);
 						setValue("endProp", initialProps.endProp);
 						setValue("dateProp", initialProps.dateProp);
+						setValue("endDayProp", initialProps.endDayProp);
 					}}
 				/>
 			</section>
@@ -343,9 +351,11 @@ export const FirstLaunchController = memo(function FirstLaunchController({
 					startProp={currentStartProp}
 					endProp={currentEndProp}
 					dateProp={currentDateProp}
+					endDayProp={currentEndDayProp}
 					onStartPropChange={(v) => setValue("startProp", v)}
 					onEndPropChange={(v) => setValue("endProp", v)}
 					onDatePropChange={(v) => setValue("dateProp", v)}
+					onEndDayPropChange={(v) => setValue("endDayProp", v)}
 					placeholders={initialProps}
 					suggestion={currentMode === "existing" ? matchedSuggestion : null}
 					testIdPrefix={welcomeTid("welcome")}
