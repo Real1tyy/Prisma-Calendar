@@ -1,7 +1,30 @@
+// Canonical copy lives in tools/docs-theme/docs-site/ at the monorepo root and is synced
+// into every */docs-site by `mise run sync-docs-site-theme`. Edit it there.
+//
+// Self-contained on purpose: @docusaurus/tsconfig 3.8.1 inlined, not extended. The public
+// mirrors ship docs-site/ without its node_modules, so an `extends` of a package resolves
+// to nothing there and TypeScript falls back to ES5 defaults — which is what Obsidian's
+// reviewer type-checks against (no `replaceAll`, untyped hooks, a wall of no-unsafe-*).
+// The Docusaurus entries in `paths` point at src/types/docusaurus (router.d.ts says why).
 {
-	"extends": "@docusaurus/tsconfig",
 	"compilerOptions": {
-		"baseUrl": "."
+		"allowJs": true,
+		"esModuleInterop": true,
+		"jsx": "preserve",
+		"target": "ES2022",
+		"lib": ["ES2022", "DOM"],
+		"moduleResolution": "bundler",
+		"module": "esnext",
+		"noEmit": true,
+		"baseUrl": ".",
+		"paths": {
+			"@site/*": ["./*"],
+			"@docusaurus/router": ["./src/types/docusaurus/router"],
+			"@docusaurus/useDocusaurusContext": ["./src/types/docusaurus/useDocusaurusContext"],
+			"@docusaurus/useBaseUrl": ["./src/types/docusaurus/useBaseUrl"],
+			"@docusaurus/ExecutionEnvironment": ["./src/types/docusaurus/ExecutionEnvironment"]
+		},
+		"skipLibCheck": true
 	},
 	"exclude": [".docusaurus", "build"]
 }

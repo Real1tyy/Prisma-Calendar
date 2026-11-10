@@ -1,5 +1,20 @@
+// Canonical copy lives in tools/docs-theme/docs-site/ at the monorepo root and is synced
+// into every */docs-site by `mise run sync-docs-site-theme`. Edit it there.
+
 import ExecutionEnvironment from "@docusaurus/ExecutionEnvironment";
 import type { ClientModule } from "@docusaurus/types";
+
+// Typed here rather than inferred from `ClientModule`: @docusaurus/types is a real package,
+// absent where the site's dependencies are not installed (the public mirror Obsidian's
+// reviewer lints), and an unresolved `ClientModule` leaves these parameters `any`.
+interface RouteLocation {
+	pathname: string;
+}
+
+interface RouteUpdate {
+	location: RouteLocation;
+	previousLocation: RouteLocation | null;
+}
 
 const ANALYTICS_ENDPOINT = "https://h.matejvavroproductivity.com/b";
 const TRACKING_PARAMS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "ref"];
@@ -56,10 +71,7 @@ function send(body: Record<string, unknown>): void {
 
 function getScrollDepth(): number {
 	const scrollTop = window.scrollY || document.documentElement.scrollTop;
-	const docHeight = Math.max(
-		document.body.scrollHeight,
-		document.documentElement.scrollHeight,
-	);
+	const docHeight = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
 	const viewportHeight = window.innerHeight;
 	if (docHeight <= viewportHeight) return 100;
 	return Math.min(100, Math.round((scrollTop / (docHeight - viewportHeight)) * 100));
@@ -102,7 +114,7 @@ function trackPageView(isInitial: boolean, previousPath?: string | null): void {
 	send({
 		path: window.location.href,
 		referrer: isInitial ? document.referrer || null : null,
-		previousPath: isInitial ? null : previousPath ?? null,
+		previousPath: isInitial ? null : (previousPath ?? null),
 		...getSessionAttribution(),
 		scrollDepth: null,
 		duration: null,
@@ -136,7 +148,6 @@ function setupUnloadFlush(): void {
 	window.addEventListener("pagehide", flush);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- Docusaurus ExecutionEnvironment is untyped
 if (ExecutionEnvironment.canUseDOM) {
 	getSessionAttribution();
 	cleanTrackingParams();
@@ -146,14 +157,10 @@ if (ExecutionEnvironment.canUseDOM) {
 }
 
 const clientModule: ClientModule = {
-	onRouteDidUpdate({ location, previousLocation }) {
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- Docusaurus ClientModule location types are untyped
+	onRouteDidUpdate({ location, previousLocation }: RouteUpdate) {
 		if (location.pathname !== previousLocation?.pathname) {
 			flushPageEngagement();
-			const prevFullUrl = previousLocation
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- see above
-				? `${window.location.origin}${previousLocation.pathname}`
-				: null;
+			const prevFullUrl = previousLocation ? `${window.location.origin}${previousLocation.pathname}` : null;
 			trackPageView(false, prevFullUrl);
 		}
 	},

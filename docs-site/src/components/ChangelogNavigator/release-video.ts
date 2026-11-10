@@ -11,7 +11,10 @@ export type { ReleaseVideo };
 /** Every failure — a 404, CORS, offline, a malformed body — is simply "no videos". */
 export async function fetchReleaseVideos(slug: string): Promise<Map<string, ReleaseVideo>> {
 	try {
-		const response = await fetch(`${RELEASES_API_BASE_URL}${releasesPath(slug)}`);
+		// `window.fetch`, not bare `fetch`: this runs on the docs website, where Obsidian's
+		// `requestUrl` does not exist, but the mirror's reviewer lints it with the plugin
+		// preset, which bans the bare global.
+		const response = await window.fetch(`${RELEASES_API_BASE_URL}${releasesPath(slug)}`);
 		if (response.status !== 200) return new Map();
 		return parseReleasesPayload(await response.json());
 	} catch {

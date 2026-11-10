@@ -3,7 +3,15 @@
 
 import { useHistory, useLocation } from "@docusaurus/router";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
-import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type RefObject } from "react";
+import {
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+	type KeyboardEvent as ReactKeyboardEvent,
+	type RefObject,
+} from "react";
 
 import { fetchReleaseVideos, type ReleaseVideo } from "./release-video";
 import { pluginSlugFromSiteUrl } from "./site";
@@ -178,7 +186,7 @@ export default function ChangelogNavigator({ contentRef }: { contentRef: RefObje
 	// ← / → do what the ‹ / › buttons do, as in the plugins' changelog modal —
 	// except while typing, where the arrows move the caret.
 	useEffect(() => {
-		const onKeyDown = (e: globalThis.KeyboardEvent) => {
+		const onKeyDown = (e: KeyboardEvent) => {
 			if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || isTextEntry(e.target)) return;
 			const step = e.key === "ArrowLeft" ? -1 : e.key === "ArrowRight" ? 1 : 0;
 			const target = options[index + step];
@@ -197,7 +205,7 @@ export default function ChangelogNavigator({ contentRef }: { contentRef: RefObje
 		setHighlight(0);
 	};
 
-	const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+	const handleKeyDown = (e: ReactKeyboardEvent<HTMLInputElement>) => {
 		if (e.key === "ArrowDown") {
 			e.preventDefault();
 			setHighlight((h) => Math.min(h + 1, Math.max(filtered.length - 1, 0)));
