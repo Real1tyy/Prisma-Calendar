@@ -108,6 +108,19 @@ export interface TabbedContainerProps {
 	tabBarInsertBefore?: Element | null;
 	/** Imperative escape hatch for keyboard commands and external orchestration. */
 	handleRef?: { current: TabbedContainerHandle | null };
+	/**
+	 * Collapse the tab bar at mobile width, hiding it behind a toggle. Default:
+	 * `true` — every consumer inherits the behaviour without opting in.
+	 */
+	collapseTabBarOnMobile?: boolean;
+	/** `sessionStorage` slot for the collapse flag. Defaults to `` `${cssPrefix}tab-bar-collapsed` ``. */
+	tabBarCollapseStorageKey?: string;
+	/**
+	 * Render the container's own toggle chip on mobile. Default: `true`, so a
+	 * plugin that does nothing still gets a working affordance. Set `false` when
+	 * the consumer drives the toggle from its own chrome via the handle.
+	 */
+	showMobileTabBarToggle?: boolean;
 }
 
 /** Imperative handle exposed for command registration and external orchestration. */
@@ -124,4 +137,8 @@ export interface TabbedContainerHandle {
 	readonly activeIndex: number;
 	readonly activeId: string;
 	readonly tabCount: number;
+	/** Always `false` above the mobile breakpoint — desktop never collapses. */
+	readonly tabBarCollapsed: boolean;
+	setTabBarCollapsed(collapsed: boolean): void;
+	toggleTabBar(): void;
 }

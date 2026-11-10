@@ -41,6 +41,17 @@ export function buildTabbedContainerStyles(p: string): string {
 	overflow-x: visible;
 	margin-top: 4px;
 }
+/* Collapsed: the bar is just the chip, so it shrinks to that chip's width instead
+   of stretching a mostly-empty pill across the pane. */
+.${p}tab-bar-collapsed {
+	width: fit-content;
+}
+.${p}tab-bar-toggle {
+	padding: 4px 8px;
+	color: var(--text-muted);
+	display: inline-flex;
+	align-items: center;
+}
 .${p}tab {
 	padding: 4px 12px;
 	font-size: var(--font-ui-smaller);

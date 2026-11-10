@@ -1,6 +1,11 @@
 export { registerTabCommands, type TabCommandUpdater } from "./commands";
 export { TabbedContainer } from "./tabbed-container";
 export { TabManagerContent, type TabManagerContentProps } from "./tab-manager-modal";
+export {
+	type MobileTabBarCollapse,
+	useMobileTabBarCollapse,
+	type UseMobileTabBarCollapseOptions,
+} from "./use-mobile-tab-bar-collapse";
 export { useTabbedContainer, type UseTabbedContainerOptions } from "./use-tabbed-container";
 export {
 	type GroupTabDefinition,

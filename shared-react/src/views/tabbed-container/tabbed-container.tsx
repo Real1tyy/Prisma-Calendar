@@ -14,11 +14,9 @@ import { createPortal } from "react-dom";
 
 import { AppContext } from "../../contexts/app-context";
 import { useDomEvent } from "../../hooks/dom/use-dom-event";
-import { useMediaQuery } from "../../hooks/dom/use-media-query";
 import { isTypingTarget } from "../../hooks/keyboard/is-typing-target";
 import { useInjectedStyles } from "../../hooks/styles/use-styles";
 import { ObsidianIcon } from "../../primitives/atoms/obsidian-icon";
-import { MOBILE_MEDIA_QUERY } from "../../responsive";
 import { appearanceStyle, type Appearance } from "../../utils/appearance";
 import { cx } from "../../utils/cx";
 import { GroupDropdown } from "./group-dropdown";
@@ -33,6 +31,7 @@ import {
 	type TabDefinition,
 	type TabEntry,
 } from "./types";
+import { useMobileTabBarCollapse } from "./use-mobile-tab-bar-collapse";
 import { useTabbedContainer } from "./use-tabbed-container";
 
 export const TabbedContainer = memo(function TabbedContainer({
@@ -49,6 +48,9 @@ export const TabbedContainer = memo(function TabbedContainer({
 	tabBarContainer,
 	tabBarInsertBefore,
 	handleRef,
+	collapseTabBarOnMobile = true,
+	tabBarCollapseStorageKey,
+	showMobileTabBarToggle = true,
 }: TabbedContainerProps) {
 	useInjectedStyles(`${cssPrefix}tabbed-container-styles`, buildTabbedContainerStyles(cssPrefix));
 
@@ -64,6 +66,16 @@ export const TabbedContainer = memo(function TabbedContainer({
 
 	const [managerOpen, setManagerOpen] = useState(false);
 	const closeManager = useCallback(() => setManagerOpen(false), []);
+
+	const {
+		isMobile: isNarrow,
+		collapsed: tabBarCollapsed,
+		setCollapsed: setTabBarCollapsed,
+		toggle: toggleTabBar,
+	} = useMobileTabBarCollapse({
+		storageKey: tabBarCollapseStorageKey ?? `${cssPrefix}tab-bar-collapsed`,
+		enabled: collapseTabBarOnMobile,
+	});
 
 	const containerRef = useRef<HTMLDivElement>(null);
 	const tabBarRef = useRef<HTMLDivElement>(null);
@@ -106,8 +118,23 @@ export const TabbedContainer = memo(function TabbedContainer({
 			get tabCount() {
 				return visibleTabs.length;
 			},
+			get tabBarCollapsed() {
+				return tabBarCollapsed;
+			},
+			setTabBarCollapsed,
+			toggleTabBar,
 		}),
-		[actions, getState, getVisibleLabels, currentIndex, state.activeId, visibleTabs.length]
+		[
+			actions,
+			getState,
+			getVisibleLabels,
+			currentIndex,
+			state.activeId,
+			visibleTabs.length,
+			tabBarCollapsed,
+			setTabBarCollapsed,
+			toggleTabBar,
+		]
 	);
 
 	useEffect(() => {
@@ -118,9 +145,30 @@ export const TabbedContainer = memo(function TabbedContainer({
 		};
 	}, [handleRef, handle]);
 
-	const tabBar = (
+	// The chip lives in the bar when expanded and stands alone when collapsed, so
+	// the affordance that hid the tabs is also the one that brings them back.
+	const collapseChip =
+		isNarrow && collapseTabBarOnMobile && showMobileTabBarToggle ? (
+			<button
+				type="button"
+				className={cx(`${cssPrefix}tab`, `${cssPrefix}tab-bar-toggle`)}
+				onClick={toggleTabBar}
+				aria-expanded={!tabBarCollapsed}
+				aria-label={tabBarCollapsed ? "Show tabs" : "Hide tabs"}
+				data-testid={`${cssPrefix}tab-bar-toggle`}
+			>
+				<ObsidianIcon icon={tabBarCollapsed ? "chevron-right" : "chevron-down"} />
+			</button>
+		) : null;
+
+	// Collapsed renders no TabBar at all rather than hiding it — a hidden bar still
+	// mounts every tab button and costs the layout pass we collapsed to reclaim.
+	const tabBar = tabBarCollapsed ? (
+		collapseChip && <div className={cx(`${cssPrefix}tab-bar`, `${cssPrefix}tab-bar-collapsed`)}>{collapseChip}</div>
+	) : (
 		<TabBar
 			ref={tabBarRef}
+			leading={collapseChip}
 			cssPrefix={cssPrefix}
 			visibleTabs={visibleTabs}
 			currentIndex={currentIndex}
@@ -144,7 +192,8 @@ export const TabbedContainer = memo(function TabbedContainer({
 	// mobile width we skip the portal and render the bar inline in the content
 	// pane (where it can wrap freely and every tab stays reachable). Reactive, so
 	// rotating or resizing across the breakpoint moves the bar to the right place.
-	const isNarrow = useMediaQuery(MOBILE_MEDIA_QUERY);
+	// `isNarrow` comes from useMobileTabBarCollapse above — one media subscription
+	// answers both "portal or inline?" and "collapsible?".
 	const tabBarRendered = useTabBarPortal(
 		tabBar,
 		tabBarContainer ?? null,
@@ -228,6 +277,8 @@ function useTabBarPortal(
 
 interface TabBarProps {
 	ref: RefObject<HTMLDivElement | null>;
+	/** Rendered before the first tab — the mobile collapse chip, when there is one. */
+	leading: ReactNode;
 	cssPrefix: string;
 	visibleTabs: TabEntry[];
 	currentIndex: number;
@@ -247,6 +298,7 @@ interface TabBarProps {
 
 const TabBar = memo(function TabBar({
 	ref,
+	leading,
 	cssPrefix,
 	visibleTabs,
 	currentIndex,
@@ -265,6 +317,7 @@ const TabBar = memo(function TabBar({
 }: TabBarProps) {
 	return (
 		<div ref={ref} className={`${cssPrefix}tab-bar`} role="tablist">
+			{leading}
 			{visibleTabs.map((entry, index) => {
 				const isActive = index === currentIndex;
 				if (isGroupTab(entry)) {
