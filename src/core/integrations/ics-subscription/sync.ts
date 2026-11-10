@@ -127,7 +127,7 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 					this.bundle.settingsStore.currentSettings,
 					this.subscription.timezone
 				),
-				userDeletedEvents: this.bundle.integrationDeletionStore?.getDeletedEvents?.() ?? [],
+				userDeletedEvents: this.bundle.integrationDeletionStore.getDeletedEvents(),
 			});
 
 			let processedCount = 0;

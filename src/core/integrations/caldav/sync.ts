@@ -206,7 +206,7 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 			// subsequent response carries authoritative RFC 6578 tombstones.
 			const tombstonedObjectHrefs = usedFullResync ? [] : deleted;
 
-			const userDeletedEvents = this.bundle.integrationDeletionStore?.getDeletedEvents?.() ?? [];
+			const userDeletedEvents = this.bundle.integrationDeletionStore.getDeletedEvents();
 			const plan = computeCaldavSyncPlan({
 				accountId: this.account.id,
 				calendarHref: this.calendar.url,

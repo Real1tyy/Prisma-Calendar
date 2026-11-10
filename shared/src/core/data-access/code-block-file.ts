@@ -123,11 +123,11 @@ export class CodeBlockFile<T> {
 	}
 
 	async writeRaw(app: App, file: TFile, raw: string, onBeforeWrite?: () => void): Promise<void> {
-		const activeView = app.workspace?.getActiveViewOfType?.(MarkdownView);
+		const activeView = app.workspace.getActiveViewOfType(MarkdownView);
 		const shouldPreserveEditorState = activeView?.file?.path === file.path;
 
-		const cursor = shouldPreserveEditorState ? activeView?.editor?.getCursor() : null;
-		const scrollInfo = shouldPreserveEditorState ? activeView?.editor?.getScrollInfo() : null;
+		const cursor = shouldPreserveEditorState ? activeView.editor.getCursor() : null;
+		const scrollInfo = shouldPreserveEditorState ? activeView.editor.getScrollInfo() : null;
 
 		const content = await app.vault.read(file);
 		const regex = new RegExp(`\`\`\`${this.codeFence}[^\\S\\r\\n]*\\r?\\n[\\s\\S]*?\`\`\``, "");
@@ -141,11 +141,11 @@ export class CodeBlockFile<T> {
 		if (shouldPreserveEditorState && cursor && scrollInfo) {
 			await new Promise<void>((resolve) => window.setTimeout(resolve, 0));
 			window.requestAnimationFrame?.(() => {
-				const viewAfter = app.workspace?.getActiveViewOfType?.(MarkdownView);
-				if (viewAfter?.file?.path !== file.path) return;
+				const viewAfter = app.workspace.getActiveViewOfType(MarkdownView);
+				if (!viewAfter || viewAfter.file?.path !== file.path) return;
 
-				viewAfter?.editor?.setCursor(cursor);
-				viewAfter?.editor?.scrollTo(scrollInfo.left, scrollInfo.top);
+				viewAfter.editor.setCursor(cursor);
+				viewAfter.editor.scrollTo(scrollInfo.left, scrollInfo.top);
 			});
 		}
 	}
