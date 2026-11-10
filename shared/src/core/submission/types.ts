@@ -38,10 +38,11 @@ export type StarRating = 0.5 | 1 | 1.5 | 2 | 2.5 | 3 | 3.5 | 4 | 4.5 | 5;
 export type ReviewSubmission = Pick<ReviewRequest, "text"> & { rating: StarRating };
 
 /**
- * What a user can send. Deliberately not "question": submission is one-way, so
- * a type that asks for an answer promises a reply we have no channel to send.
- * Questions are routed to the docs and the Help Center instead. The server still
- * accepts `question` for older builds; this list is the subset the UI offers.
+ * What a user can send. Deliberately not "question": a reply reaches only those
+ * who leave a channel (a license key or an email), so a type that asks for an
+ * answer would promise one to everyone else. Questions are routed to the docs
+ * and the Help Center instead. The server still accepts `question` for older
+ * builds; this list is the subset the UI offers.
  *
  * One route with a discriminator rather than three routes — the payload shape
  * is identical and the server's triage is a column, not an endpoint
@@ -64,9 +65,12 @@ export type ScreenshotAttachment = FeedbackScreenshot & { name: string };
 /**
  * `health` is the Doctor's verdict and `debugBundle` the raw evidence; each is
  * attached only when the user leaves its checkbox on
- * ([[spec-doctor-health-and-quick-debug-export]]).
+ * ([[spec-doctor-health-and-quick-debug-export]]). `email` is where to reply,
+ * typed by the user, and offered only when no license key rides along — the
+ * key already names an account to answer
+ * ([[spec-optional-reply-email-on-feedback-when-no-license-key-is-attached]]).
  */
-export type FeedbackSubmission = Pick<PluginFeedbackRequest, "text" | "health" | "screenshots"> & {
+export type FeedbackSubmission = Pick<PluginFeedbackRequest, "text" | "health" | "screenshots" | "email"> & {
 	type: FeedbackType;
 	debugBundle?: DebugBundle;
 };
@@ -88,7 +92,8 @@ export type SubmissionContextField =
 /**
  * Plugin/runtime context stamped onto every submission. The license key is
  * included when the user has one so a submission can be attributed to a known
- * customer; nothing else identifying is — no vault content, no name, no email.
+ * customer; nothing else identifying is — no vault content, no name. (An email
+ * the user types into the feedback form is payload, not context.)
  * Whatever is here must be reflected in the user-facing docs.
  */
 export type SubmissionContext = Pick<ReviewRequest, SubmissionContextField> &

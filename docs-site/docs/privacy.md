@@ -29,12 +29,15 @@ Everything else — a log excerpt, a debug report, a bug report — leaves your 
 | The plugin version, your Obsidian version, and your platform (`windows`, `macos`, `linux`, `android`, `ios`) | The redacted diagnostic bundle, when **Include recent logs** is ticked — recent warnings and errors plus the last fifteen minutes of activity |
 | An anonymous, vault-local id so a duplicate submission can be collapsed | Screenshots you attach, up to three |
 | | Your license key, on an activated Pro install — see below |
+| | Your email address, when you type one into the **Email** field — see below |
 
 The health check and the logs are **separate choices**, because they answer different questions: the health check is what the plugin thinks is wrong, the logs are the evidence behind it. Both are ticked for a bug report and cleared for anything else, and you can untick either one on its own. Both are redacted the same way as everything else described below.
 
 **On a Pro install, your license key is attached by default** so the report can be linked to your account and answered against your subscription. The modal shows a checkbox saying so; clear it before submitting and the key stays on your device. On the free tier there is no key and no checkbox.
 
-Nothing else identifying is sent: not your name, email, vault name, note contents, or settings. Expand **Review what's attached** in the modal to read the bundle before you send it.
+**When no license key is attached, the form offers an optional Email field** — on the free tier, or on Pro once you clear the license checkbox. Fill it in if you'd like a reply or don't mind a follow-up question, and I'll use it only to write back about that report. Leave it empty and no address is sent. While the license key is attached, the field is hidden: the key already links the report to your account, so I can reach you through it.
+
+Nothing else identifying is sent: not your name, vault name, note contents, or settings. Expand **Review what's attached** in the modal to read the bundle before you send it.
 
 ## What diagnostics contain
 

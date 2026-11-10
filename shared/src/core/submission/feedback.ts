@@ -13,6 +13,18 @@ export const FEEDBACK_MAX_TEXT_CHARS = 4000;
 export const FEEDBACK_MAX_SCREENSHOTS = 3;
 export const FEEDBACK_MAX_SCREENSHOT_BYTES = 2_000_000;
 export const FEEDBACK_MAX_ATTACHMENT_BYTES = 5_000_000;
+/** RFC 5321's path limit — a longer address cannot be delivered to. */
+export const FEEDBACK_MAX_EMAIL_CHARS = 254;
+
+// Deliberately loose: the address is never verified, so this only catches the
+// typo that makes a reply impossible (no `@`, no domain), not every RFC corner.
+const PLAUSIBLE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** An empty value is acceptable — the field is optional. */
+export function isAcceptableReplyEmail(email: string): boolean {
+	const trimmed = email.trim();
+	return trimmed === "" || (trimmed.length <= FEEDBACK_MAX_EMAIL_CHARS && PLAUSIBLE_EMAIL.test(trimmed));
+}
 
 function megabytes(bytes: number): string {
 	return `${(bytes / 1_000_000).toFixed(1)} MB`;
@@ -62,6 +74,8 @@ export interface FeedbackDraft {
 	screenshots?: readonly ScreenshotAttachment[] | undefined;
 	/** The user's explicit "share real names with someone I trust" choice. Secrets go either way. */
 	fullDetail?: boolean | undefined;
+	/** Where to reply. Blank means no reply is wanted, and is dropped. */
+	email?: string | undefined;
 }
 
 /**
@@ -80,8 +94,10 @@ export function buildFeedbackSubmission({
 	debugBundle,
 	screenshots,
 	fullDetail = false,
+	email,
 }: FeedbackDraft): FeedbackSubmission {
 	const trimmed = text.trim().slice(0, FEEDBACK_MAX_TEXT_CHARS);
+	const replyTo = email?.trim() ?? "";
 	return {
 		type,
 		// The user wrote this deliberately, so paths and note names stay; rule 1
@@ -103,5 +119,7 @@ export function buildFeedbackSubmission({
 					})),
 				}
 			: {}),
+		// Not redacted: the address is the one value this field exists to send.
+		...(replyTo !== "" ? { email: replyTo } : {}),
 	};
 }

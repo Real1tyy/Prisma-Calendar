@@ -56,7 +56,7 @@ Three commands open the same form without leaving what you're doing — run them
 - **Prisma Calendar: Report a bug** — opens on the bug type, with debug info ticked.
 - **Prisma Calendar: Take a screenshot & report a bug** — grabs the Obsidian window first, then opens a bug report with that picture already attached and the cursor in the description. One keystroke from "this is broken" to a report with a picture of it.
 
-Submissions are one-way, so this is the wrong place for a question you need answered: nothing comes back to the plugin.
+**Getting a reply.** Nothing comes back to the plugin, but I can write to you. On Pro, leave **Include my license key** ticked and the report is linked to your account. Otherwise, type your address into the optional **Email** field — it appears whenever no license key is attached — if you'd like a reply or don't mind a follow-up question. Leave it empty and the report stays one-way.
 
 **Looking for an answer?** Start with the [FAQ](./faq), the [troubleshooting guide](./troubleshooting), or the in-app **Open help center** button next to this one. If none of them covers it, ask on GitHub, where I can reply and the answer stays visible for the next person with the same question:
 

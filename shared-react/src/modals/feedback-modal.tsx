@@ -1,8 +1,10 @@
 import {
 	acceptScreenshot,
 	buildFeedbackSubmission,
+	FEEDBACK_MAX_EMAIL_CHARS,
 	FEEDBACK_MAX_SCREENSHOTS,
 	FEEDBACK_TYPES,
+	isAcceptableReplyEmail,
 	serializeForExport,
 	type DebugBundle,
 	type FeedbackSubmission,
@@ -47,6 +49,23 @@ const TYPE_INTROS: Record<FeedbackType, string> = {
 /** `form` collects, `sending` is in flight, `sent` is terminal — and terminal is what blocks a double submit. */
 type Phase = "form" | "sending" | "sent";
 
+/** How — if at all — I can answer the report that was just sent. */
+type ReplyChannel = { via: "license" } | { via: "email"; address: string } | { via: "none" };
+
+// First person on purpose: one maintainer reads these, and saying so plainly is
+// worth more than describing the arrangement in the third person.
+function thanksBody(channel: ReplyChannel): string {
+	const read = "I read every single one of these, and it shapes what gets worked on next.";
+	switch (channel.via) {
+		case "license":
+			return `${read} It's linked to your Pro account, so if I have a question or an answer, I'll reach you there. Thank you once again.`;
+		case "email":
+			return `${read} If I have a question or an answer, I'll write to ${channel.address}. Thank you once again.`;
+		case "none":
+			return `${read} You left no way to reach you, so if you need an answer, please ask on GitHub. Thank you once again.`;
+	}
+}
+
 export interface FeedbackModalProps {
 	/** UTM-tracked privacy page. Omitted when the plugin publishes none, which hides the disclaimer. */
 	privacyUrl?: string | undefined;
@@ -88,6 +107,8 @@ export interface FeedbackFormState {
 	includeHealth: boolean;
 	includeDebug: boolean;
 	includeLicenseKey: boolean;
+	/** Kept even while the field is hidden, so ticking the license box back off restores it. */
+	email: string;
 	fullDetail: boolean;
 	screenshots: AttachedScreenshot[];
 	/** A rejected attachment survives minimize, so the user still learns why it isn't there. */
@@ -130,8 +151,14 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 }: FeedbackModalProps) {
 	const { cls, tid } = useScopedStyles("feedback", buildFeedbackStyles);
 	const { patch, setState, finish, close: onClose } = form;
-	const { type, text, includeHealth, includeDebug, includeLicenseKey, fullDetail, screenshots, attachError } =
+	const { type, text, includeHealth, includeDebug, includeLicenseKey, email, fullDetail, screenshots, attachError } =
 		form.state;
+
+	// A license key already names an account to answer, so the email is asked for
+	// only when no key will ride along — including when a Pro user clears the box
+	// ([[spec-optional-reply-email-on-feedback-when-no-license-key-is-attached]]).
+	const attachesLicense = licenseAttributionAvailable && includeLicenseKey;
+	const emailInvalid = !attachesLicense && !isAcceptableReplyEmail(email);
 
 	// Named setters over the shell's one state object, so the form reads the same
 	// as it would with its own `useState` — the difference is only in who owns it.
@@ -139,6 +166,7 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 	const setIncludeHealth = useCallback((next: boolean) => patch({ includeHealth: next }), [patch]);
 	const setIncludeDebug = useCallback((next: boolean) => patch({ includeDebug: next }), [patch]);
 	const setIncludeLicenseKey = useCallback((next: boolean) => patch({ includeLicenseKey: next }), [patch]);
+	const setEmail = useCallback((next: string) => patch({ email: next }), [patch]);
 	const setFullDetail = useCallback((next: boolean) => patch({ fullDetail: next }), [patch]);
 	const setAttachError = useCallback((next: string | null) => patch({ attachError: next }), [patch]);
 	const setScreenshots = useCallback(
@@ -153,6 +181,7 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 	// Ephemeral: none of it is worth carrying across a close.
 	const [preview, setPreview] = useState<AttachedScreenshot | null>(null);
 	const [phase, setPhase] = useState<Phase>("form");
+	const [sentChannel, setSentChannel] = useState<ReplyChannel>({ via: "none" });
 	const [error, setError] = useState<string | null>(null);
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
 	const textRef = useRef<HTMLTextAreaElement | null>(null);
@@ -245,28 +274,36 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 	const closePreview = useCallback(() => setPreview(null), []);
 
 	const handleSubmit = useCallback(async () => {
-		if (text.trim() === "" || inFlightRef.current) return;
+		if (text.trim() === "" || emailInvalid || inFlightRef.current) return;
 		inFlightRef.current = true;
 		setPhase("sending");
 		setError(null);
 
-		const result = await submit(
-			buildFeedbackSubmission({
-				type,
-				text,
-				...(health !== null ? { health } : {}),
-				...(bundle !== null ? { debugBundle: bundle } : {}),
-				screenshots,
-				fullDetail,
-			}),
-			licenseAttributionAvailable && includeLicenseKey
-		);
+		// A hidden field is never sent, even if it still holds what was typed
+		// before the license box was ticked.
+		const submission = buildFeedbackSubmission({
+			type,
+			text,
+			...(health !== null ? { health } : {}),
+			...(bundle !== null ? { debugBundle: bundle } : {}),
+			screenshots,
+			fullDetail,
+			...(attachesLicense ? {} : { email }),
+		});
+		const result = await submit(submission, attachesLicense);
 
 		inFlightRef.current = false;
 		if (result.ok) {
 			// It has been sent — there is nothing left to keep for the user, so the
 			// shell must not preserve it on the way out.
 			finish();
+			setSentChannel(
+				attachesLicense
+					? { via: "license" }
+					: submission.email !== undefined
+						? { via: "email", address: submission.email }
+						: { via: "none" }
+			);
 			setPhase("sent");
 			return;
 		}
@@ -274,31 +311,15 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 		// the user nothing, so "Try again" resubmits exactly what they assembled.
 		setPhase("form");
 		setError(result.message);
-	}, [
-		bundle,
-		finish,
-		fullDetail,
-		health,
-		includeLicenseKey,
-		licenseAttributionAvailable,
-		screenshots,
-		submit,
-		text,
-		type,
-	]);
+	}, [attachesLicense, bundle, email, emailInvalid, finish, fullDetail, health, screenshots, submit, text, type]);
 
 	if (phase === "sent") {
 		return (
 			<div data-testid={tid("modal")}>
 				<div className={cls("thanks")} data-testid={tid("thanks")}>
 					<div className={cls("thanks-title")}>Thank you</div>
-					{/* First person on purpose: one maintainer reads these, and saying so
-					    plainly is worth more than describing the arrangement in the third
-					    person. Same voice as TYPE_INTROS above. */}
-					<div className={cls("thanks-body")}>
-						{
-							"I read every single one of these, and it shapes what gets worked on next. There is no reply to this form, so if you need an answer, please ask on GitHub. Thank you once again."
-						}
+					<div className={cls("thanks-body")} data-testid={tid("thanks-body")}>
+						{thanksBody(sentChannel)}
 					</div>
 					<Button variant="primary" onClick={onClose} testId={tid("close")}>
 						Close
@@ -380,6 +401,30 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 					/>
 					<span>Include my license key so this report can be linked to my Pro account</span>
 				</label>
+			)}
+
+			{!attachesLicense && (
+				<label className={cls("email")}>
+					<span className={cls("email-label")}>
+						Email (optional) — leave it if you'd like a reply, or don't mind a follow-up question.
+					</span>
+					<input
+						type="email"
+						autoComplete="email"
+						placeholder="you@example.com"
+						maxLength={FEEDBACK_MAX_EMAIL_CHARS}
+						value={email}
+						aria-invalid={emailInvalid}
+						onChange={(event) => setEmail(event.target.value)}
+						data-testid={tid("email")}
+					/>
+				</label>
+			)}
+
+			{emailInvalid && (
+				<p className={cls("error")} role="alert" data-testid={tid("email-error")}>
+					{"That doesn't look like an email address — fix it, or clear it to send without one."}
+				</p>
 			)}
 
 			{(bundle !== null || health !== null) && (
@@ -472,7 +517,7 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 				</Button>
 				<Button
 					variant="primary"
-					disabled={text.trim() === "" || phase === "sending"}
+					disabled={text.trim() === "" || emailInvalid || phase === "sending"}
 					onClick={() => void handleSubmit()}
 					testId={tid("submit")}
 				>
@@ -491,6 +536,7 @@ export function blankFeedbackForm(licenseAttributionAvailable = false): Feedback
 		includeHealth: true,
 		includeDebug: true,
 		includeLicenseKey: licenseAttributionAvailable,
+		email: "",
 		fullDetail: false,
 		screenshots: [],
 		attachError: null,

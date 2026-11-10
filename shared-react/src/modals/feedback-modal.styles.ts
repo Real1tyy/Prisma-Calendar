@@ -91,6 +91,22 @@ export function buildFeedbackStyles(p: string): string {
 	margin-top: 0.2rem;
 	flex: 0 0 auto;
 }
+.${p}feedback-email {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+	margin: 0 0 0.9rem;
+}
+.${p}feedback-email-label {
+	color: var(--text-normal);
+	font-size: var(--font-ui-small);
+	line-height: 1.45;
+}
+.${p}feedback-email input {
+	width: 100%;
+	padding: 0.45rem 0.7rem;
+	font-size: var(--font-ui-small);
+}
 .${p}feedback-disclosure {
 	color: var(--text-muted);
 	cursor: pointer;

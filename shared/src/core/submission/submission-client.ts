@@ -43,7 +43,7 @@ export type SubmissionPayloadFields = PayloadFieldsAgainst<SubmissionBodies>;
  */
 export const SUBMISSION_PAYLOAD_FIELDS = {
 	review: ["rating", "text"],
-	feedback: ["type", "text", "health", "debugBundle", "screenshots"],
+	feedback: ["type", "text", "health", "debugBundle", "screenshots", "email"],
 } as const satisfies SubmissionPayloadFields;
 
 const SUBMISSION_CONTEXT_FIELDS = [
