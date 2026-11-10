@@ -28,17 +28,15 @@ export async function transformLegacyVirtualEventsFiles(
 			const match = legacyContent.match(regex);
 			if (match?.[1]) {
 				try {
-					const legacyEvents = JSON.parse(match[1]);
+					const legacyEvents: unknown = JSON.parse(match[1]);
 					if (Array.isArray(legacyEvents) && legacyEvents.length > 0) {
 						const targetContent = await app.vault.read(targetFile);
 						const targetMatch = targetContent.match(regex);
-						const existingEvents = targetMatch?.[1] ? JSON.parse(targetMatch[1]) : [];
-						const existingIds = new Set(
-							Array.isArray(existingEvents) ? existingEvents.map((e: { id?: string }) => e.id) : []
-						);
-						const merged = Array.isArray(existingEvents) ? [...existingEvents] : [];
-						for (const ev of legacyEvents) {
-							if (!existingIds.has(ev.id)) merged.push(ev);
+						const existingEvents: unknown = targetMatch?.[1] ? JSON.parse(targetMatch[1]) : [];
+						const merged: unknown[] = Array.isArray(existingEvents) ? [...(existingEvents as unknown[])] : [];
+						const existingIds = new Set(merged.map(eventId));
+						for (const ev of legacyEvents as unknown[]) {
+							if (!existingIds.has(eventId(ev))) merged.push(ev);
 						}
 						const updatedContent = targetMatch
 							? targetContent.replace(
@@ -55,4 +53,8 @@ export async function transformLegacyVirtualEventsFiles(
 			await app.fileManager.trashFile(legacyFile);
 		}
 	}
+}
+
+function eventId(event: unknown): unknown {
+	return typeof event === "object" && event !== null ? (event as { id?: unknown }).id : undefined;
 }
