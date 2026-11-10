@@ -1904,12 +1904,6 @@
 								"title": "Event stack limit",
 								"type": "integer"
 							},
-							"eventOverlap": {
-								"default": true,
-								"description": "Allow events with overlapping times to render on top of each other. When disabled, overlapping events render side-by-side in columns (like Google Calendar). Applies to all views.",
-								"title": "Allow event overlap",
-								"type": "boolean"
-							},
 							"eventPresets": {
 								"default": [],
 								"items": {
@@ -2819,8 +2813,8 @@
 							},
 							"slotEventOverlap": {
 								"default": true,
-								"description": "In week/day time-grid views, allow events that share the exact same time-slot boundaries to render on top of each other. When disabled, events with identical start/end times are placed in separate columns within the slot. Has no effect when event overlap is disabled.",
-								"title": "Allow slot event overlap",
+								"description": "In week and day time-grid views, render concurrent timed events on top of one another. When disabled, concurrent events render side-by-side in columns.",
+								"title": "Visually overlap timed events",
 								"type": "boolean"
 							},
 							"snapDurationMinutes": {
@@ -3117,7 +3111,6 @@
 							"highlightUpcomingEvent",
 							"thickerHourLines",
 							"pastEventContrast",
-							"eventOverlap",
 							"slotEventOverlap",
 							"weekCreateGutter",
 							"dayCreateGutter",
@@ -4584,12 +4577,6 @@
 								"title": "Event stack limit",
 								"type": "integer"
 							},
-							"eventOverlap": {
-								"default": true,
-								"description": "Allow events with overlapping times to render on top of each other. When disabled, overlapping events render side-by-side in columns (like Google Calendar). Applies to all views.",
-								"title": "Allow event overlap",
-								"type": "boolean"
-							},
 							"eventPresets": {
 								"default": [],
 								"items": {
@@ -5499,8 +5486,8 @@
 							},
 							"slotEventOverlap": {
 								"default": true,
-								"description": "In week/day time-grid views, allow events that share the exact same time-slot boundaries to render on top of each other. When disabled, events with identical start/end times are placed in separate columns within the slot. Has no effect when event overlap is disabled.",
-								"title": "Allow slot event overlap",
+								"description": "In week and day time-grid views, render concurrent timed events on top of one another. When disabled, concurrent events render side-by-side in columns.",
+								"title": "Visually overlap timed events",
 								"type": "boolean"
 							},
 							"snapDurationMinutes": {

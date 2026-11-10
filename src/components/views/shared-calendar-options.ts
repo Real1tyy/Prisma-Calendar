@@ -72,7 +72,7 @@ export function buildCoreCalendarOptions(settings: SingleCalendarConfig): Partia
 		snapDuration: formatDuration(settings.snapDurationMinutes),
 		weekends: !settings.hideWeekends,
 		firstDay: settings.firstDayOfWeek,
-		eventOverlap: settings.eventOverlap,
+		eventOverlap: true,
 		slotEventOverlap: settings.slotEventOverlap,
 		moreLinkClick: handleMoreLinkClick,
 	};
@@ -87,7 +87,7 @@ export function syncCalendarSettings(calendar: Calendar, settings: SingleCalenda
 	calendar.setOption("slotMaxTime", `${String(settings.hourEnd).padStart(2, "0")}:00:00`);
 	calendar.setOption("slotDuration", formatDuration(settings.slotDurationMinutes));
 	calendar.setOption("snapDuration", formatDuration(settings.snapDurationMinutes));
-	calendar.setOption("eventOverlap", settings.eventOverlap);
+	calendar.setOption("eventOverlap", true);
 	calendar.setOption("slotEventOverlap", settings.slotEventOverlap);
 }
 

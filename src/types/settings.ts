@@ -684,20 +684,13 @@ const CalendarSettingsSchema = z
 			.max(100)
 			.catch(70)
 			.describe("Visual contrast of past events (0% = invisible, 100% = normal)"),
-		eventOverlap: z
-			.boolean()
-			.catch(true)
-			.describe(
-				"Allow events with overlapping times to render on top of each other. When disabled, overlapping events render side-by-side in columns (like Google Calendar). Applies to all views."
-			)
-			.meta({ title: "Allow event overlap" }),
 		slotEventOverlap: z
 			.boolean()
 			.catch(true)
 			.describe(
-				"In week/day time-grid views, allow events that share the exact same time-slot boundaries to render on top of each other. When disabled, events with identical start/end times are placed in separate columns within the slot. Has no effect when event overlap is disabled."
+				"In week and day time-grid views, render concurrent timed events on top of one another. When disabled, concurrent events render side-by-side in columns."
 			)
-			.meta({ title: "Allow slot event overlap" }),
+			.meta({ title: "Visually overlap timed events" }),
 		weekCreateGutter: createGutterSchema(
 			3.5,
 			"Week view",

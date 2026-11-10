@@ -44,8 +44,7 @@ These settings control the calendar's view modes, time display, visual appearanc
 
 ## Event Overlap
 
-- **Allow event overlap**: allow events with overlapping times to render on top of each other. When disabled, overlapping events render side-by-side in columns (like Google Calendar). Applies to all calendar views (default: enabled)
-- **Allow slot event overlap**: in week/day time-grid views, allow events that share the exact same time-slot boundaries to render on top of each other. When disabled, events with identical start/end times are placed in separate columns within the slot. Has no effect when event overlap is disabled (default: enabled)
+- **Visually overlap timed events**: in week/day time-grid views, render concurrent timed events on top of one another. Turn it off to place concurrent events side-by-side in columns. Dragging and resizing remain available in either layout (default: enabled)
 - **Overlapping event width**: choose how much horizontal space the forward event uses in overlapping week/day time-grid events. Choose 50%, 60%, two-thirds, 70%, three-quarters, or 80%; wider events leave more room for text and cover more of the event behind them (default: 50%)
 - **Event stack limit**: maximum events to stack before "+more" link (1–10, default: 1)
 - **Desktop max events per day**: maximum events per day on desktop before "+more" (0–20, 0 = unlimited, default: 0)

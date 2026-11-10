@@ -404,8 +404,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			weekends: !settings.hideWeekends,
 			firstDay: settings.firstDayOfWeek,
 
-			// Event overlap settings
-			eventOverlap: settings.eventOverlap,
+			// Visual overlap is configurable, but concurrent events must remain movable.
+			eventOverlap: true,
 			slotEventOverlap: settings.slotEventOverlap,
 			eventMaxStack: settings.eventMaxStack,
 
@@ -657,8 +657,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.calendar.setOption("nowIndicator", settings.nowIndicator);
 		this.calendar.setOption("stickyHeaderDates", settings.stickyDayHeaders);
 
-		// Update event overlap settings
-		this.calendar.setOption("eventOverlap", settings.eventOverlap);
+		// Keep FullCalendar's collision policy permissive; `slotEventOverlap` owns only layout.
+		this.calendar.setOption("eventOverlap", true);
 		this.calendar.setOption("slotEventOverlap", settings.slotEventOverlap);
 		this.calendar.setOption("eventMaxStack", settings.eventMaxStack);
 		this.applyAllDayOptions();
