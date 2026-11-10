@@ -12,6 +12,7 @@ import {
 
 export type { ContextMenuProps } from "./context-menu";
 export {
+	type ContextMenuShowOptions,
 	type ContextMenuState,
 	ContextMenuStateSchema,
 	createCustomizableContextMenu,
@@ -22,6 +23,7 @@ export {
 	CustomizableMenuStore,
 	type CustomizableMenuStoreOptions,
 	ItemManagerContent,
+	type PinnedContextMenuItem,
 	type ItemManagerContentProps,
 	openItemManagerModal,
 	type OpenItemManagerOptions,

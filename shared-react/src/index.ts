@@ -111,6 +111,7 @@ export type {
 	ContextMenuItemDef,
 	ContextMenuProps,
 	ContextMenuSeparatorDef,
+	ContextMenuShowOptions,
 	ContextMenuState,
 	ContextMenuSubmenuDef,
 	CustomizableContextMenuConfig,
@@ -120,6 +121,7 @@ export type {
 	CustomizableMenuStoreOptions,
 	ItemManagerContentProps,
 	OpenItemManagerOptions,
+	PinnedContextMenuItem,
 } from "./menus";
 export {
 	ContextMenu,

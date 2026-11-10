@@ -324,7 +324,7 @@ const GanttBody = memo(function GanttBody() {
 				const titleOverrides: Record<string, string> = {};
 				if (done) titleOverrides["mark-done"] = "Mark as undone";
 
-				barContextMenu.show(e, undefined, titleOverrides);
+				barContextMenu.show(e, { titleOverrides });
 			},
 			onArrowContextMenu: showArrowContextMenu,
 		};

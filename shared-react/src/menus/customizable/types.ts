@@ -43,17 +43,28 @@ export interface CustomizableContextMenuConfig {
 	app: App;
 }
 
+/** An item fixed at the top of one invocation — outside the user's customization. */
+export interface PinnedContextMenuItem {
+	id: string;
+	label: string;
+	icon?: string;
+	onAction: () => void;
+}
+
+export interface ContextMenuShowOptions {
+	/** Return false to hide a configured item for this invocation. */
+	filter?: (id: string) => boolean;
+	/** Per-item titles for this invocation (e.g., "Mark as done" vs "Mark as undone"). */
+	titleOverrides?: Record<string, string>;
+	/** Rendered first, then a separator, ahead of the configured items. */
+	pinned?: readonly PinnedContextMenuItem[];
+}
+
 export interface CustomizableContextMenuHandle {
-	/**
-	 * Shows the context menu at the given position or mouse event.
-	 * @param filterFn Optional runtime filter — return false to hide an item for this invocation.
-	 * @param titleOverrides Optional per-item title overrides for this invocation (e.g., "Mark as done" vs "Mark as undone").
-	 */
-	show(
-		eOrPosition: MouseEvent | { x: number; y: number },
-		filterFn?: (id: string) => boolean,
-		titleOverrides?: Record<string, string>
-	): void;
+	/** Shows the context menu at the given position or mouse event. */
+	show(eOrPosition: MouseEvent | { x: number; y: number }, options?: ContextMenuShowOptions): void;
+	/** Closes the menu this handle last opened, if it is still open. */
+	hide(): void;
 	/** Hides an item by ID. No-op if only one item visible. */
 	hideItem(id: string): void;
 	/** Restores a hidden item by ID. */

@@ -3,6 +3,7 @@ import { Menu, type MenuItem as ObsidianMenuItem } from "obsidian";
 import { openItemManagerModal } from "./item-manager-modal";
 import { CustomizableMenuStore } from "./store";
 import type {
+	ContextMenuShowOptions,
 	ContextMenuState,
 	CustomizableContextMenuConfig,
 	CustomizableContextMenuHandle,
@@ -52,20 +53,35 @@ export function createCustomizableContextMenu(config: CustomizableContextMenuCon
 		openItemManagerModal({ app, store, cssPrefix });
 	};
 
-	function show(
-		eOrPosition: MouseEvent | { x: number; y: number },
-		filterFn?: (id: string) => boolean,
-		titleOverrides?: Record<string, string>
-	): void {
+	let openMenu: Menu | null = null;
+	function hide(): void {
+		openMenu?.hide();
+		openMenu = null;
+	}
+
+	function show(eOrPosition: MouseEvent | { x: number; y: number }, options: ContextMenuShowOptions = {}): void {
 		if (destroyed) return;
+		hide();
+		const { filter, titleOverrides, pinned = [] } = options;
 
 		const menu = new Menu();
+		openMenu = menu;
 		const testIdPrefix = `${cssPrefix}context-menu-item-`;
 		const snapshot = store.getSnapshot();
 		let lastSection: string | undefined;
 
+		for (const item of pinned) {
+			menu.addItem((menuItem) => {
+				menuItem.setTitle(item.label).onClick(() => item.onAction());
+				if (item.icon) menuItem.setIcon(item.icon);
+				getMenuItemDom(menuItem)?.setAttribute("data-testid", `${testIdPrefix}${item.id}`);
+			});
+		}
+		// Forces a separator before the first configured item.
+		if (pinned.length > 0) lastSection = "\u0000pinned";
+
 		for (const item of snapshot.visibleItems) {
-			if (filterFn && !filterFn(item.id)) continue;
+			if (filter && !filter(item.id)) continue;
 
 			const section = store.getSection(item);
 			if (lastSection !== undefined && section !== lastSection) {
@@ -110,6 +126,7 @@ export function createCustomizableContextMenu(config: CustomizableContextMenuCon
 
 	return {
 		show,
+		hide,
 		hideItem(id) {
 			if (destroyed) return;
 			store.hideItem(id);
@@ -131,6 +148,7 @@ export function createCustomizableContextMenu(config: CustomizableContextMenuCon
 		},
 		destroy() {
 			if (destroyed) return;
+			hide();
 			destroyed = true;
 		},
 	};

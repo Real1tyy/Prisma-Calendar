@@ -92,6 +92,7 @@ import {
 	hiddenEventsMenuItems,
 	titleFormatFor,
 } from "../utils/calendar/toolbar-layout";
+import { isTouchContextMenu } from "../utils/calendar/touch";
 import { stripZ } from "../utils/dates/iso";
 import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
 import {
@@ -153,7 +154,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	private filteredEventsCount = 0;
 	private skippedEventsCount = 0;
 	private selectedEventsCount = 0;
-	private dragEdgeScrollListener: ((e: PointerEvent) => void) | null = null;
+	private dragEdgeScrollListener: ((e: PointerEvent | TouchEvent) => void) | null = null;
+	private dragTouchTarget: EventTarget | null = null;
 	private dragEdgeScrollTimeout: number | null = null;
 	private lastEdgeScrollTime = 0;
 	private dragVerticalScroller: HTMLElement | null = null;
@@ -459,8 +461,9 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			},
 
 			eventDragStart: (info) => {
+				this.eventContextMenu.hide();
 				this.dragNavigatedInterval = false;
-				this.setupDragEdgeScrolling();
+				this.setupDragEdgeScrolling(info.jsEvent.target);
 				const filePath = info.event.extendedProps["filePath"] as unknown;
 				const filePathString = typeof filePath === "string" ? filePath : "";
 				this.isDraggingCalendarEvent = isFileBackedEvent(info.event) && filePathString.length > 0;
@@ -889,10 +892,14 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 		info.el.addEventListener("contextmenu", (e) => {
 			e.preventDefault();
+			// A touch long-press is the start of a drag — a tap already opens the menu.
+			// Obsidian mobile emits `contextmenu` for it, and the menu sheet would cover
+			// the calendar before FullCalendar's touch drag begins.
+			if (isTouchContextMenu(e)) return;
 			if (this.healIfOrphanEvent(info.event)) {
 				return;
 			}
-			this.eventContextMenu.show(e, info, info.el, this.container);
+			this.eventContextMenu.show(e, info, info.el, this.container, { pinOpen: this.isMobileView() });
 		});
 
 		if (isFileBackedEvent(info.event)) {
@@ -1995,7 +2002,9 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		// Single tap — show context menu
 		this.lastMobileTapTime = currentTime;
 		const rect = eventEl.getBoundingClientRect();
-		this.eventContextMenu.show({ x: rect.left + rect.width / 2, y: rect.top }, { event }, eventEl, this.container);
+		this.eventContextMenu.show({ x: rect.left + rect.width / 2, y: rect.top }, { event }, eventEl, this.container, {
+			pinOpen: true,
+		});
 	}
 
 	private handleDateClick(info: { date: Date; allDay: boolean }): void {
@@ -2324,7 +2333,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		}
 	}
 
-	private setupDragEdgeScrolling(): void {
+	private setupDragEdgeScrolling(touchTarget: EventTarget | null): void {
 		if (!this.calendar) return;
 
 		const viewType = this.calendar.view.type;
@@ -2343,14 +2352,17 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		// can land on an off-screen time.
 		this.dragVerticalScroller = this.findVerticalScroller();
 
-		// pointermove (not mousemove) so edge-scroll fires under touch drags too — a
-		// FullCalendar touch drag emits pointer events, never mousemove.
-		this.dragEdgeScrollListener = (e: PointerEvent) => {
+		// FullCalendar can detach the original touch target while rendering its
+		// drag mirror. Its touchmove events then never reach document, so retain
+		// the target just as FullCalendar does for its own touch tracking.
+		this.dragEdgeScrollListener = (e: PointerEvent | TouchEvent) => {
 			if (!this.calendar) return;
+			const point = "touches" in e ? e.touches.item(0) : e;
+			if (!point) return;
 
 			if (this.dragVerticalScroller) {
 				const vRect = this.dragVerticalScroller.getBoundingClientRect();
-				this.dragVerticalScrollDir = verticalEdgeScrollDirection(e.clientY, vRect, EDGE_THRESHOLD);
+				this.dragVerticalScrollDir = verticalEdgeScrollDirection(point.clientY, vRect, EDGE_THRESHOLD);
 				if (this.dragVerticalScrollDir) this.ensureVerticalScrollLoop();
 			}
 
@@ -2359,7 +2371,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 				return;
 			}
 
-			const direction = edgeScrollDirection(e.clientX, this.container.getBoundingClientRect(), EDGE_THRESHOLD);
+			const direction = edgeScrollDirection(point.clientX, this.container.getBoundingClientRect(), EDGE_THRESHOLD);
 			if (!direction) return;
 
 			this.lastEdgeScrollTime = now;
@@ -2371,6 +2383,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		};
 
 		activeDocument.addEventListener("pointermove", this.dragEdgeScrollListener);
+		this.dragTouchTarget = touchTarget ?? activeDocument;
+		this.dragTouchTarget.addEventListener("touchmove", this.dragEdgeScrollListener as EventListener, { passive: true });
 	}
 
 	/**
@@ -2442,6 +2456,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.unpinAllDaySectionForDrag();
 		if (this.dragEdgeScrollListener) {
 			activeDocument.removeEventListener("pointermove", this.dragEdgeScrollListener);
+			this.dragTouchTarget?.removeEventListener("touchmove", this.dragEdgeScrollListener as EventListener);
+			this.dragTouchTarget = null;
 			this.dragEdgeScrollListener = null;
 		}
 		if (this.dragEdgeScrollTimeout) {

@@ -11,6 +11,7 @@ import {
 	type ContextMenuState,
 	type CustomizableContextMenuHandle,
 	type CustomizableContextMenuItem,
+	type PinnedContextMenuItem,
 } from "@real1ty/obsidian-plugins-react";
 import { Notice, type App } from "obsidian";
 
@@ -121,11 +122,17 @@ export class EventContextMenu {
 
 	// ─── Menu Display ─────────────────────────────────────────────
 
+	/**
+	 * `pinOpen`: the tap-opened (mobile) menu has no left-click to open the note, so
+	 * an **Open** item is fixed at the top and the configurable `openFile` is left out.
+	 * See [[spec-mobile-event-tap-opens-a-pinned-open-and-hold-drags]].
+	 */
 	show(
 		eOrPosition: MouseEvent | { x: number; y: number },
 		info: { event: CalendarEventInfo },
 		targetEl?: HTMLElement,
-		containerEl?: HTMLElement
+		containerEl?: HTMLElement,
+		{ pinOpen = false }: { pinOpen?: boolean } = {}
 	): void {
 		const event = info.event;
 		this.currentEvent = event;
@@ -153,9 +160,13 @@ export class EventContextMenu {
 			titleOverrides["toggleRecurring"] = "Enable recurring event";
 		}
 
-		this.handle.show(
-			eOrPosition,
-			(id) => {
+		const pinned = pinOpen && isNormal && filePath ? [this.pinnedOpenItem(filePath)] : [];
+
+		this.handle.show(eOrPosition, {
+			pinned,
+			titleOverrides,
+			filter: (id) => {
+				if (pinned.length > 0 && id === "openFile") return false;
 				switch (id) {
 					case "preview":
 						return isNormal && !!filePath && !!targetEl && !!containerEl;
@@ -204,12 +215,24 @@ export class EventContextMenu {
 						return true;
 				}
 			},
-			titleOverrides
-		);
+		});
+	}
+
+	hide(): void {
+		this.handle.hide();
 	}
 
 	destroy(): void {
 		this.handle.destroy();
+	}
+
+	private pinnedOpenItem(filePath: string): PinnedContextMenuItem {
+		return {
+			id: "pinnedOpen",
+			label: "Open",
+			icon: "file-text",
+			onAction: () => void this.app.workspace.openLinkText(filePath, "", "tab"),
+		};
 	}
 
 	// ─── State Resolution ─────────────────────────────────────────

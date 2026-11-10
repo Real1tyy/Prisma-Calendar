@@ -5,9 +5,11 @@ export { ItemManagerContent, openItemManagerModal } from "./item-manager-modal";
 export type { CustomizableMenuSnapshot, CustomizableMenuStoreOptions } from "./store";
 export { CustomizableMenuStore } from "./store";
 export {
+	type ContextMenuShowOptions,
 	type ContextMenuState,
 	ContextMenuStateSchema,
 	type CustomizableContextMenuConfig,
 	type CustomizableContextMenuHandle,
 	type CustomizableContextMenuItem,
+	type PinnedContextMenuItem,
 } from "./types";
