@@ -39,6 +39,8 @@ import {
 	ContextMenuItemSchema,
 	DAY_CELL_COLORING_OPTIONS,
 	DENSITY_OPTIONS,
+	EVENT_OVERLAP_WIDTH_OPTIONS,
+	EventOverlapWidthSchema,
 	FileMenuActionSchema,
 	LOCALE_KEYS,
 	LOCALE_OPTIONS,
@@ -706,6 +708,11 @@ const CalendarSettingsSchema = z
 			"Day view",
 			"Percentage of the Day view column kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable."
 		),
+		overlappingEventWidth: EventOverlapWidthSchema.catch("50%")
+			.describe(
+				"Width of the forward event when timed events overlap in week and day views. Larger widths leave more room for text and cover more of the event behind it."
+			)
+			.meta({ title: "Overlapping event width", enumLabels: EVENT_OVERLAP_WIDTH_OPTIONS }),
 		eventMaxStack: z
 			.number()
 			.int()

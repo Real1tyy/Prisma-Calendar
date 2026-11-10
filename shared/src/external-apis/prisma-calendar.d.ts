@@ -680,6 +680,7 @@ export type PrismaCalendarGetSettingsOutput = {
 	notDoneValue: string;
 	notificationSound: PlayNotificationSound;
 	nowIndicator: ShowCurrentTimeIndicator;
+	overlappingEventWidth: OverlappingEventWidth;
 	pageHeaderState?: {
 		backgroundColorOverrides?: {
 			[k: string]: string;
@@ -1052,6 +1053,10 @@ export type PlayNotificationSound = boolean;
  * Display a line showing the current time in weekly and daily views
  */
 export type ShowCurrentTimeIndicator = boolean;
+/**
+ * Width of the forward event when timed events overlap in week and day views. Larger widths leave more room for text and cover more of the event behind it.
+ */
+export type OverlappingEventWidth = "50%" | "60%" | "66.6667%" | "70%" | "75%" | "80%";
 /**
  * Ordered list of Prisma property keys controlling the on-disk frontmatter order. Every write regroups Prisma's properties into this order (other properties are left untouched) so files stay byte-identical across synced devices. Empty means the built-in semantic default.
  */
@@ -1450,6 +1455,10 @@ export type PrismaCalendarToggleSkipOutput = boolean;
 
 /**
  * Display a line showing the current time in weekly and daily views
+ */
+
+/**
+ * Width of the forward event when timed events overlap in week and day views. Larger widths leave more room for text and cover more of the event behind it.
  */
 
 /**
@@ -1972,6 +1981,7 @@ export interface PrismaCalendarUpdateSettingsInput {
 		notDoneValue?: string;
 		notificationSound?: PlayNotificationSound;
 		nowIndicator?: ShowCurrentTimeIndicator;
+		overlappingEventWidth?: OverlappingEventWidth;
 		pageHeaderState?: {
 			backgroundColorOverrides?: {
 				[k: string]: string;

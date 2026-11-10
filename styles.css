@@ -519,6 +519,10 @@ button[class*=prisma-]:focus-visible {
   flex-direction: column;
   overflow: hidden;
 }
+.prisma-calendar-container .fc-timegrid-event-harness-inset {
+  width: var(--overlapping-event-width, 50%);
+  right: auto !important;
+}
 
 .prisma-calendar-container .fc-list {
   border: none;

@@ -699,6 +699,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		container.style.setProperty("--all-day-event-height", `${settings.allDayEventHeight}px`);
 		container.style.setProperty("--week-create-gutter", `${settings.weekCreateGutter}%`);
 		container.style.setProperty("--day-create-gutter", `${settings.dayCreateGutter}%`);
+		container.style.setProperty("--overlapping-event-width", settings.overlappingEventWidth);
 	}
 
 	private initializeToolbarComponents(toolbarButtons: string[]): void {

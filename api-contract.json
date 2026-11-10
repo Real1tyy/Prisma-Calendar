@@ -408,9 +408,13 @@
 			},
 			"output": {
 				"$schema": "https://json-schema.org/draft/2020-12/schema",
-				"type": [
-					"string",
-					"null"
+				"anyOf": [
+					{
+						"type": "string"
+					},
+					{
+						"type": "null"
+					}
 				]
 			},
 			"http": {
@@ -544,9 +548,13 @@
 			},
 			"output": {
 				"$schema": "https://json-schema.org/draft/2020-12/schema",
-				"type": [
-					"string",
-					"null"
+				"anyOf": [
+					{
+						"type": "string"
+					},
+					{
+						"type": "null"
+					}
 				]
 			},
 			"http": {
@@ -575,9 +583,13 @@
 			},
 			"output": {
 				"$schema": "https://json-schema.org/draft/2020-12/schema",
-				"type": [
-					"string",
-					"null"
+				"anyOf": [
+					{
+						"type": "string"
+					},
+					{
+						"type": "null"
+					}
 				]
 			},
 			"http": {
@@ -2576,6 +2588,28 @@
 								"title": "Show current time indicator",
 								"type": "boolean"
 							},
+							"overlappingEventWidth": {
+								"default": "50%",
+								"description": "Width of the forward event when timed events overlap in week and day views. Larger widths leave more room for text and cover more of the event behind it.",
+								"enum": [
+									"50%",
+									"60%",
+									"66.6667%",
+									"70%",
+									"75%",
+									"80%"
+								],
+								"enumLabels": {
+									"50%": "50% (half)",
+									"60%": "60%",
+									"66.6667%": "66.7% (two-thirds)",
+									"70%": "70%",
+									"75%": "75% (three-quarters)",
+									"80%": "80%"
+								},
+								"title": "Overlapping event width",
+								"type": "string"
+							},
 							"pageHeaderState": {
 								"additionalProperties": false,
 								"properties": {
@@ -3087,6 +3121,7 @@
 							"slotEventOverlap",
 							"weekCreateGutter",
 							"dayCreateGutter",
+							"overlappingEventWidth",
 							"eventMaxStack",
 							"desktopMaxEventsPerDay",
 							"mobileMaxEventsPerDay",
@@ -5232,6 +5267,28 @@
 								"description": "Display a line showing the current time in weekly and daily views",
 								"title": "Show current time indicator",
 								"type": "boolean"
+							},
+							"overlappingEventWidth": {
+								"default": "50%",
+								"description": "Width of the forward event when timed events overlap in week and day views. Larger widths leave more room for text and cover more of the event behind it.",
+								"enum": [
+									"50%",
+									"60%",
+									"66.6667%",
+									"70%",
+									"75%",
+									"80%"
+								],
+								"enumLabels": {
+									"50%": "50% (half)",
+									"60%": "60%",
+									"66.6667%": "66.7% (two-thirds)",
+									"70%": "70%",
+									"75%": "75% (three-quarters)",
+									"80%": "80%"
+								},
+								"title": "Overlapping event width",
+								"type": "string"
 							},
 							"pageHeaderState": {
 								"additionalProperties": false,

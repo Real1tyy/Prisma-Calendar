@@ -96,6 +96,7 @@ export function applyContainerStyles(container: HTMLElement, settings: SingleCal
 	toggleCls(container, "sticky-all-day-events", settings.stickyAllDayEvents);
 	toggleCls(container, "sticky-day-headers", settings.stickyDayHeaders);
 	container.style.setProperty("--all-day-event-height", `${settings.allDayEventHeight}px`);
+	container.style.setProperty("--overlapping-event-width", settings.overlappingEventWidth);
 }
 
 export function buildSharedEventContent(

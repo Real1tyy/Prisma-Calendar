@@ -410,4 +410,11 @@
 		flex-direction: column;
 		overflow: hidden;
 	}
+
+	// FullCalendar writes inline left/right coordinates for this generated harness.
+	// Keep its calculated leading edge while replacing only the forward event's width.
+	.fc-timegrid-event-harness-inset {
+		width: var(--overlapping-event-width, 50%);
+		right: auto !important;
+	}
 }
