@@ -1,4 +1,4 @@
-import type { Calendar, CalendarOptions, EventContentArg } from "@fullcalendar/core";
+import type { Calendar, CalendarApi, CalendarOptions, EventContentArg } from "@fullcalendar/core";
 import allLocales from "@fullcalendar/core/locales-all";
 import { calculateDuration, formatDuration, toLocalISOString, type ColorEvaluator } from "@real1ty/obsidian-plugins";
 import { Platform, type App } from "obsidian";
@@ -179,6 +179,20 @@ export function buildSharedEventContent(
 interface SharedEventMountInfo {
 	el: HTMLElement;
 	event: CalendarEventData & { id: string };
+	view: { calendar: Pick<CalendarApi, "getEventById"> };
+}
+
+/**
+ * A resize or drag mutates FullCalendar's store but keeps the rendered
+ * element, so an `EventApi` captured at mount or hover still holds the
+ * pre-drag times until the written note is re-indexed and the block is
+ * re-rendered. Re-read it by id so every action sees what the user sees.
+ */
+export function toLiveEvent(
+	calendar: Pick<CalendarApi, "getEventById"> | null | undefined,
+	event: CalendarEventData & { id: string }
+): CalendarEventData {
+	return calendar?.getEventById(event.id) ?? event;
 }
 
 export function buildSharedEventDidMount(
@@ -226,7 +240,7 @@ export function buildSharedEventDidMount(
 		// Context menu
 		el.addEventListener("contextmenu", (e) => {
 			e.preventDefault();
-			eventContextMenu.show(e, info, el, deps.container);
+			eventContextMenu.show(e, { event: toLiveEvent(info.view.calendar, event) }, el, deps.container);
 		});
 
 		// Hover preview

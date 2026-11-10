@@ -128,6 +128,7 @@ import { PrerequisiteSelectionManager } from "./prerequisite-selection-manager";
 import { createStickyBanner, type StickyBannerHandle } from "./sticky-banner";
 import { mountExpressionFilter, mountSearchFilter, type ToolbarFilterHandle } from "./toolbar-filter-mount";
 import { UntrackedEventsDropdown } from "./untracked-events-dropdown";
+import { toLiveEvent } from "./views/shared-calendar-options";
 
 export class CalendarComponent extends MountableComponent(Component, "prisma") implements CalendarHost {
 	calendar: Calendar | null = null;
@@ -896,7 +897,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			// Obsidian mobile emits `contextmenu` for it, and the menu sheet would cover
 			// the calendar before FullCalendar's touch drag begins.
 			if (isTouchContextMenu(e)) return;
-			const event = this.toLiveEvent(info.event);
+			const event = toLiveEvent(this.calendar, info.event);
 			if (this.healIfOrphanEvent(event)) {
 				return;
 			}
@@ -2077,7 +2078,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			return;
 		}
 
-		const event = this.toLiveEvent(this.lastFocusedEventInfo);
+		const event = toLiveEvent(this.calendar, this.lastFocusedEventInfo);
 
 		const eventInfo =
 			event.extendedProps.virtualKind === "recurring"
@@ -2144,7 +2145,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			return;
 		}
 
-		const event = this.toLiveEvent(this.lastFocusedEventInfo);
+		const event = toLiveEvent(this.calendar, this.lastFocusedEventInfo);
 
 		if (isAnyVirtual(getVirtualKind(event))) {
 			return;
@@ -2164,16 +2165,6 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const propertyName = propertyGetter(settings);
 
 		void this.bundle.commandManager.executeCommand(fillTime(this.bundle, filePath, propertyName, timeValue));
-	}
-
-	/**
-	 * A resize or drag mutates FullCalendar's store but keeps the rendered
-	 * element, so an `EventApi` captured at mount or hover still holds the
-	 * pre-drag times until the written note is re-indexed and the block is
-	 * re-rendered. Re-read it by id so every action sees what the user sees.
-	 */
-	private toLiveEvent(event: EventApi): CalendarEventData {
-		return this.calendar?.getEventById(event.id) ?? event;
 	}
 
 	// ─── Drag & Drop ─────────────────────────────────────────────
