@@ -819,8 +819,13 @@ body .modal.prisma-weekly-stats-modal {
 
 	// Obsidian gives selects an intrinsic min-width wider than a phone's filter
 	// box, so the select must be allowed to shrink into the row it shares.
+	.prisma-recurring-events-type-filter {
+		min-width: 0;
+	}
+
 	.prisma-recurring-events-type-select {
-		flex: 1 1 auto;
+		flex: 1 1 0;
+		width: 0;
 		min-width: 0;
 	}
 

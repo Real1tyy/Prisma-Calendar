@@ -6270,8 +6270,12 @@ body .modal.prisma-weekly-stats-modal {
     align-items: stretch;
     gap: 0.75rem;
   }
+  .prisma-recurring-events-type-filter {
+    min-width: 0;
+  }
   .prisma-recurring-events-type-select {
-    flex: 1 1 auto;
+    flex: 1 1 0;
+    width: 0;
     min-width: 0;
   }
   .prisma-recurring-event-title-row {
