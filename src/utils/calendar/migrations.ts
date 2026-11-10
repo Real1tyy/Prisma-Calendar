@@ -86,7 +86,7 @@ function migrateTemporalPropKeys(data: RawSettings): boolean {
 		for (const [oldKey, newKey] of Object.entries(RENAMED_TEMPORAL_KEYS)) {
 			const legacy = cal[oldKey];
 			if (cal[newKey] === undefined && isUsableName(legacy)) cal[newKey] = legacy;
-			delete cal[oldKey];
+			Reflect.deleteProperty(cal, oldKey);
 		}
 		if (!isUsableName(cal["startDayProp"])) cal["startDayProp"] = LEGACY_START_DAY_PROP;
 		const order = cal["propertyOrder"];
