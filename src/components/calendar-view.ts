@@ -128,11 +128,13 @@ import { PrerequisiteSelectionManager } from "./prerequisite-selection-manager";
 import { createStickyBanner, type StickyBannerHandle } from "./sticky-banner";
 import { mountExpressionFilter, mountSearchFilter, type ToolbarFilterHandle } from "./toolbar-filter-mount";
 import { UntrackedEventsDropdown } from "./untracked-events-dropdown";
+import { buildEventOverlapRule, type FindCalendarEvent } from "./views/event-overlap-rule";
 import { applyOverlapLayout } from "./views/overlap-layout";
 import { toLiveEvent } from "./views/shared-calendar-options";
 
 export class CalendarComponent extends MountableComponent(Component, "prisma") implements CalendarHost {
 	calendar: Calendar | null = null;
+	private readonly findCalendarEvent: FindCalendarEvent = (id) => this.calendar?.getEventById(id) ?? null;
 	private eventContextMenu: EventContextMenu;
 	private colorEvaluator: ColorEvaluator<SingleCalendarConfig>;
 	private batchSelectionManager: BatchSelectionManager | null = null;
@@ -406,7 +408,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			firstDay: settings.firstDayOfWeek,
 
 			// Independent despite the names: `eventOverlap` is FullCalendar's drop rule, `slotEventOverlap` the layout.
-			eventOverlap: settings.eventOverlap,
+			eventOverlap: buildEventOverlapRule(settings.eventOverlap, this.findCalendarEvent),
 			slotEventOverlap: settings.slotEventOverlap,
 			eventMaxStack: settings.eventMaxStack,
 
@@ -658,7 +660,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.calendar.setOption("nowIndicator", settings.nowIndicator);
 		this.calendar.setOption("stickyHeaderDates", settings.stickyDayHeaders);
 
-		this.calendar.setOption("eventOverlap", settings.eventOverlap);
+		this.calendar.setOption("eventOverlap", buildEventOverlapRule(settings.eventOverlap, this.findCalendarEvent));
 		this.calendar.setOption("slotEventOverlap", settings.slotEventOverlap);
 		this.calendar.setOption("eventMaxStack", settings.eventMaxStack);
 		this.applyAllDayOptions();
@@ -699,10 +701,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		container.style.setProperty("--all-day-event-height", `${settings.allDayEventHeight}px`);
 		container.style.setProperty("--week-create-gutter", `${settings.weekCreateGutter}%`);
 		container.style.setProperty("--day-create-gutter", `${settings.dayCreateGutter}%`);
-		applyOverlapLayout(container, {
-			slotEventOverlap: settings.slotEventOverlap,
-			width: settings.overlappingEventWidth,
-		});
+		applyOverlapLayout(container, settings.slotEventOverlap);
 	}
 
 	private initializeToolbarComponents(toolbarButtons: string[]): void {

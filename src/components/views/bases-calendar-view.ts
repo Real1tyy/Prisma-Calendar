@@ -279,7 +279,7 @@ class PrismaBasesView extends BasesView {
 		);
 
 		const settings = bundle.settingsStore.currentSettings;
-		const coreOptions = buildCoreCalendarOptions(settings);
+		const coreOptions = buildCoreCalendarOptions(settings, (id) => this.calendar?.getEventById(id) ?? null);
 		const viewType = this.resolveView();
 		this.currentViewType = viewType;
 

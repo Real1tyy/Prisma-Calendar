@@ -680,7 +680,6 @@ export type PrismaCalendarGetSettingsOutput = {
 	notDoneValue: string;
 	notificationSound: PlayNotificationSound;
 	nowIndicator: ShowCurrentTimeIndicator;
-	overlappingEventWidth: OverlappingEventWidth;
 	pageHeaderState?: {
 		backgroundColorOverrides?: {
 			[k: string]: string;
@@ -949,7 +948,7 @@ export type EndDayProperty = string;
  */
 export type EventStackLimit = number;
 /**
- * Allow dragging or resizing an event onto a time another event already occupies. When disabled, those drops are refused, so events can never be moved into a double booking. Does not change how events are drawn.
+ * Allow dragging or resizing an event onto a time another event already occupies. When disabled, those drops are refused, so events can never be moved into a new double booking; an event that already overlaps another can still be moved away from it. Does not change how events are drawn.
  */
 export type AllowEventOverlap = boolean;
 /**
@@ -1053,10 +1052,6 @@ export type PlayNotificationSound = boolean;
  * Display a line showing the current time in weekly and daily views
  */
 export type ShowCurrentTimeIndicator = boolean;
-/**
- * Only with slot event overlap on: the width of the front-most event in each stack. Wider gives that event more room and leaves less of the events behind it visible.
- */
-export type OverlappingEventWidth = "50%" | "60%" | "66.6667%" | "70%" | "75%" | "80%";
 /**
  * Ordered list of Prisma property keys controlling the on-disk frontmatter order. Every write regroups Prisma's properties into this order (other properties are left untouched) so files stay byte-identical across synced devices. Empty means the built-in semantic default.
  */
@@ -1362,7 +1357,7 @@ export type PrismaCalendarToggleSkipOutput = boolean;
  */
 
 /**
- * Allow dragging or resizing an event onto a time another event already occupies. When disabled, those drops are refused, so events can never be moved into a double booking. Does not change how events are drawn.
+ * Allow dragging or resizing an event onto a time another event already occupies. When disabled, those drops are refused, so events can never be moved into a new double booking; an event that already overlaps another can still be moved away from it. Does not change how events are drawn.
  */
 
 /**
@@ -1455,10 +1450,6 @@ export type PrismaCalendarToggleSkipOutput = boolean;
 
 /**
  * Display a line showing the current time in weekly and daily views
- */
-
-/**
- * Only with slot event overlap on: the width of the front-most event in each stack. Wider gives that event more room and leaves less of the events behind it visible.
  */
 
 /**
@@ -1981,7 +1972,6 @@ export interface PrismaCalendarUpdateSettingsInput {
 		notDoneValue?: string;
 		notificationSound?: PlayNotificationSound;
 		nowIndicator?: ShowCurrentTimeIndicator;
-		overlappingEventWidth?: OverlappingEventWidth;
 		pageHeaderState?: {
 			backgroundColorOverrides?: {
 				[k: string]: string;

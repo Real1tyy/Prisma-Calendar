@@ -116,7 +116,8 @@ export function createDailyCalendar(
 	}));
 
 	const settings = bundle.settingsStore.currentSettings;
-	const coreOptions = buildCoreCalendarOptions(settings);
+	// The callback only runs during a drag, long after `calendar` below is assigned.
+	const coreOptions = buildCoreCalendarOptions(settings, (id) => calendar.getEventById(id));
 
 	const calendar = new Calendar(calendarContainer, {
 		...coreOptions,

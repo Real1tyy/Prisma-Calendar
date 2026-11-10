@@ -1,8 +1,6 @@
-import { cls, toggleCls } from "../../constants";
-import { DEFAULT_OVERLAPPING_EVENT_WIDTH, type EventOverlapWidth } from "../../types/view";
+import { cls } from "../../constants";
 
 const HARNESS = "fc-timegrid-event-harness";
-const FORWARD = cls("overlap-forward");
 const COVERED = cls("overlap-covered");
 const CONTENT = cls("fc-event-content-wrapper");
 const VISIBLE_WIDTH_VAR = "--prisma-overlap-visible-width";
@@ -11,17 +9,9 @@ const EDGE_EPSILON_PX = 1;
 
 const layoutObservers = new WeakMap<HTMLElement, MutationObserver>();
 
-export interface OverlapLayoutOptions {
-	slotEventOverlap: boolean;
-	width: EventOverlapWidth;
-}
-
 // Stacked layout only: FullCalendar's side-by-side columns never cover one another. The layout is
 // re-applied whenever FullCalendar rewrites a harness's inline geometry or re-renders a column.
-export function applyOverlapLayout(container: HTMLElement, { slotEventOverlap, width }: OverlapLayoutOptions): void {
-	toggleCls(container, "custom-overlapping-event-width", slotEventOverlap && width !== DEFAULT_OVERLAPPING_EVENT_WIDTH);
-	container.style.setProperty("--overlapping-event-width", width);
-
+export function applyOverlapLayout(container: HTMLElement, slotEventOverlap: boolean): void {
 	const observer = layoutObservers.get(container);
 	if (!slotEventOverlap) {
 		observer?.disconnect();
@@ -31,12 +21,12 @@ export function applyOverlapLayout(container: HTMLElement, { slotEventOverlap, w
 	}
 	if (!observer) {
 		const next = new MutationObserver((records) => {
-			if (records.some(isLayoutMutation)) relayoutOverlaps(container);
+			if (records.some(isLayoutMutation)) markCoveredHarnesses(container);
 		});
 		next.observe(container, { subtree: true, childList: true, attributes: true, attributeFilter: ["style"] });
 		layoutObservers.set(container, next);
 	}
-	relayoutOverlaps(container);
+	markCoveredHarnesses(container);
 }
 
 // Our own writes land on the content wrapper; only FullCalendar's harness geometry and
@@ -46,34 +36,15 @@ function isLayoutMutation(record: MutationRecord): boolean {
 	return record.target.instanceOf(HTMLElement) && record.target.classList.contains(HARNESS);
 }
 
-function relayoutOverlaps(container: HTMLElement): void {
-	if (container.classList.contains(cls("custom-overlapping-event-width"))) markForwardHarnesses(container);
-	else for (const harness of harnessesIn(container)) toggleCls(harness, "overlap-forward", false);
-	markCoveredHarnesses(container);
-}
-
 function clearOverlapMarks(container: HTMLElement): void {
 	for (const harness of harnessesIn(container)) {
-		harness.classList.remove(FORWARD, COVERED);
+		harness.classList.remove(COVERED);
 		harness.querySelector<HTMLElement>(`.${CONTENT}`)?.style.removeProperty(VISIBLE_WIDTH_VAR);
 	}
 }
 
 function harnessesIn(root: ParentNode): HTMLElement[] {
 	return Array.from(root.querySelectorAll<HTMLElement>(`.${HARNESS}`));
-}
-
-// FullCalendar puts `-inset` on every placed harness, so its inline percentages are the only
-// signal: the forward event reaches the far edge from a non-zero near edge. Drag mirrors are
-// positioned in px, so they never qualify.
-export function markForwardHarnesses(container: HTMLElement): void {
-	for (const harness of harnessesIn(container)) {
-		const rtl = harness.closest(".fc-direction-rtl") !== null;
-		const near = rtl ? harness.style.right : harness.style.left;
-		const far = rtl ? harness.style.left : harness.style.right;
-		const isForward = near.endsWith("%") && Number.parseFloat(near) > 0 && Number.parseFloat(far) === 0;
-		toggleCls(harness, "overlap-forward", isForward);
-	}
 }
 
 /** One event in a day column, in px, with the inline axis normalised so `start` is the near edge. */

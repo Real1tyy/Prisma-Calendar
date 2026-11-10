@@ -42,7 +42,6 @@ const OVERLAP_FIELDS = [
 	"slotEventOverlap",
 	"weekCreateGutter",
 	"dayCreateGutter",
-	"overlappingEventWidth",
 	"eventMaxStack",
 	"desktopMaxEventsPerDay",
 	"mobileMaxEventsPerDay",

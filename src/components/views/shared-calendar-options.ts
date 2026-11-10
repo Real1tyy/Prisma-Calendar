@@ -36,6 +36,7 @@ import type { CalendarHost } from "../calendar-host";
 import { handleMoreLinkClick } from "../calendar-more-popover";
 import type { EventContextMenu } from "../event-context-menu";
 import { showEventPreviewModal } from "../modals";
+import { buildEventOverlapRule, type FindCalendarEvent } from "./event-overlap-rule";
 import { applyOverlapLayout } from "./overlap-layout";
 
 export interface ModalContext {
@@ -50,7 +51,10 @@ export interface SharedCalendarDeps extends ModalContext {
 	getCalendarIconCache: () => Map<string, string | undefined>;
 }
 
-export function buildCoreCalendarOptions(settings: SingleCalendarConfig): Partial<CalendarOptions> {
+export function buildCoreCalendarOptions(
+	settings: SingleCalendarConfig,
+	findCalendarEvent: FindCalendarEvent
+): Partial<CalendarOptions> {
 	return {
 		locales: allLocales,
 		locale: settings.locale,
@@ -74,7 +78,7 @@ export function buildCoreCalendarOptions(settings: SingleCalendarConfig): Partia
 		weekends: !settings.hideWeekends,
 		firstDay: settings.firstDayOfWeek,
 		// Independent despite the names: `eventOverlap` is FullCalendar's drop rule, `slotEventOverlap` the layout.
-		eventOverlap: settings.eventOverlap,
+		eventOverlap: buildEventOverlapRule(settings.eventOverlap, findCalendarEvent),
 		slotEventOverlap: settings.slotEventOverlap,
 		moreLinkClick: handleMoreLinkClick,
 	};
@@ -89,7 +93,10 @@ export function syncCalendarSettings(calendar: Calendar, settings: SingleCalenda
 	calendar.setOption("slotMaxTime", `${String(settings.hourEnd).padStart(2, "0")}:00:00`);
 	calendar.setOption("slotDuration", formatDuration(settings.slotDurationMinutes));
 	calendar.setOption("snapDuration", formatDuration(settings.snapDurationMinutes));
-	calendar.setOption("eventOverlap", settings.eventOverlap);
+	calendar.setOption(
+		"eventOverlap",
+		buildEventOverlapRule(settings.eventOverlap, (id) => calendar.getEventById(id))
+	);
 	calendar.setOption("slotEventOverlap", settings.slotEventOverlap);
 }
 
@@ -98,10 +105,7 @@ export function applyContainerStyles(container: HTMLElement, settings: SingleCal
 	toggleCls(container, "sticky-all-day-events", settings.stickyAllDayEvents);
 	toggleCls(container, "sticky-day-headers", settings.stickyDayHeaders);
 	container.style.setProperty("--all-day-event-height", `${settings.allDayEventHeight}px`);
-	applyOverlapLayout(container, {
-		slotEventOverlap: settings.slotEventOverlap,
-		width: settings.overlappingEventWidth,
-	});
+	applyOverlapLayout(container, settings.slotEventOverlap);
 }
 
 export function buildSharedEventContent(

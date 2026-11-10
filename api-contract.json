@@ -1894,7 +1894,7 @@
 							},
 							"eventOverlap": {
 								"default": true,
-								"description": "Allow dragging or resizing an event onto a time another event already occupies. When disabled, those drops are refused, so events can never be moved into a double booking. Does not change how events are drawn.",
+								"description": "Allow dragging or resizing an event onto a time another event already occupies. When disabled, those drops are refused, so events can never be moved into a new double booking; an event that already overlaps another can still be moved away from it. Does not change how events are drawn.",
 								"title": "Allow event overlap",
 								"type": "boolean"
 							},
@@ -2576,28 +2576,6 @@
 								"title": "Show current time indicator",
 								"type": "boolean"
 							},
-							"overlappingEventWidth": {
-								"default": "50%",
-								"description": "Only with slot event overlap on: the width of the front-most event in each stack. Wider gives that event more room and leaves less of the events behind it visible.",
-								"enum": [
-									"50%",
-									"60%",
-									"66.6667%",
-									"70%",
-									"75%",
-									"80%"
-								],
-								"enumLabels": {
-									"50%": "50% (half)",
-									"60%": "60%",
-									"66.6667%": "66.7% (two-thirds)",
-									"70%": "70%",
-									"75%": "75% (three-quarters)",
-									"80%": "80%"
-								},
-								"title": "Overlapping event width",
-								"type": "string"
-							},
 							"pageHeaderState": {
 								"additionalProperties": false,
 								"properties": {
@@ -2806,7 +2784,7 @@
 								"type": "integer"
 							},
 							"slotEventOverlap": {
-								"default": false,
+								"default": true,
 								"description": "In week and day views, stack overlapping timed events like cards: later events are drawn on top of earlier ones, offset to the right, and the text of each covered event wraps into the part that stays visible. When disabled, overlapping events share the column side by side, each in its own column.",
 								"title": "Allow slot event overlap",
 								"type": "boolean"
@@ -3109,7 +3087,6 @@
 							"slotEventOverlap",
 							"weekCreateGutter",
 							"dayCreateGutter",
-							"overlappingEventWidth",
 							"eventMaxStack",
 							"desktopMaxEventsPerDay",
 							"mobileMaxEventsPerDay",
@@ -4574,7 +4551,7 @@
 							},
 							"eventOverlap": {
 								"default": true,
-								"description": "Allow dragging or resizing an event onto a time another event already occupies. When disabled, those drops are refused, so events can never be moved into a double booking. Does not change how events are drawn.",
+								"description": "Allow dragging or resizing an event onto a time another event already occupies. When disabled, those drops are refused, so events can never be moved into a new double booking; an event that already overlaps another can still be moved away from it. Does not change how events are drawn.",
 								"title": "Allow event overlap",
 								"type": "boolean"
 							},
@@ -5256,28 +5233,6 @@
 								"title": "Show current time indicator",
 								"type": "boolean"
 							},
-							"overlappingEventWidth": {
-								"default": "50%",
-								"description": "Only with slot event overlap on: the width of the front-most event in each stack. Wider gives that event more room and leaves less of the events behind it visible.",
-								"enum": [
-									"50%",
-									"60%",
-									"66.6667%",
-									"70%",
-									"75%",
-									"80%"
-								],
-								"enumLabels": {
-									"50%": "50% (half)",
-									"60%": "60%",
-									"66.6667%": "66.7% (two-thirds)",
-									"70%": "70%",
-									"75%": "75% (three-quarters)",
-									"80%": "80%"
-								},
-								"title": "Overlapping event width",
-								"type": "string"
-							},
 							"pageHeaderState": {
 								"additionalProperties": false,
 								"properties": {
@@ -5486,7 +5441,7 @@
 								"type": "integer"
 							},
 							"slotEventOverlap": {
-								"default": false,
+								"default": true,
 								"description": "In week and day views, stack overlapping timed events like cards: later events are drawn on top of earlier ones, offset to the right, and the text of each covered event wraps into the part that stays visible. When disabled, overlapping events share the column side by side, each in its own column.",
 								"title": "Allow slot event overlap",
 								"type": "boolean"

@@ -21,26 +21,6 @@ export const DENSITY_OPTIONS: Record<string, string> = {
 	compact: "Compact",
 };
 
-export const EVENT_OVERLAP_WIDTH_OPTIONS = {
-	"50%": "50% (half)",
-	"60%": "60%",
-	"66.6667%": "66.7% (two-thirds)",
-	"70%": "70%",
-	"75%": "75% (three-quarters)",
-	"80%": "80%",
-} as const;
-
-const EVENT_OVERLAP_WIDTH_KEYS = Object.keys(EVENT_OVERLAP_WIDTH_OPTIONS) as [
-	keyof typeof EVENT_OVERLAP_WIDTH_OPTIONS,
-	...(keyof typeof EVENT_OVERLAP_WIDTH_OPTIONS)[],
-];
-
-export const EventOverlapWidthSchema = z.enum(EVENT_OVERLAP_WIDTH_KEYS);
-
-export type EventOverlapWidth = z.infer<typeof EventOverlapWidthSchema>;
-
-export const DEFAULT_OVERLAPPING_EVENT_WIDTH: EventOverlapWidth = "50%";
-
 export const DAY_CELL_COLORING_OPTIONS: Record<string, string> = {
 	off: "Off",
 	uniform: "Uniform",

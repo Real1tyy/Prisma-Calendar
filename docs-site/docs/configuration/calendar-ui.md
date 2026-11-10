@@ -44,9 +44,8 @@ These settings control the calendar's view modes, time display, visual appearanc
 
 ## Event Overlap
 
-- **Allow slot event overlap**: in week and day views, draw overlapping timed events as a cascade, later events on top and offset to the right, with each covered event's text wrapped into the part that stays visible. When disabled, each event gets its own column side by side (default: disabled)
-- **Overlapping event width**: with slot event overlap enabled, how much of the column the front-most event in each stack takes: 50%, 60%, two-thirds, 70%, three-quarters, or 80%. Wider gives it more room and leaves less of the events behind it visible (default: 50%)
-- **Allow event overlap**: whether you can drag or resize an event onto a time another event already occupies. When disabled, those drops are refused, so events never move into a double booking. Does not change how events are drawn (default: enabled)
+- **Allow slot event overlap**: in week and day views, draw overlapping timed events as a cascade, later events on top and offset to the right, with each covered event's text wrapped into the part that stays visible. When disabled, each event gets its own column side by side (default: enabled)
+- **Allow event overlap**: whether you can drag or resize an event onto a time another event already occupies. When disabled, a drop that would create a new double booking is refused; an event that already overlaps another can still be moved out of it. Does not change how events are drawn (default: enabled)
 - **Event stack limit**: maximum events to stack before "+more" link (1–10, default: 4)
 - **Desktop max events per day**: maximum events per day on desktop before "+more" (0–20, 0 = unlimited, default: 0)
 - **Mobile max events per day**: maximum events per day on mobile before "+more" (0–20, 0 = unlimited, default: 4)
