@@ -1,5 +1,5 @@
 import { toLocalISOString } from "@real1ty/obsidian-plugins";
-import { useObservable } from "@real1ty/obsidian-plugins-react";
+import { MOBILE_MEDIA_QUERY, useMediaQuery, useObservable } from "@real1ty/obsidian-plugins-react";
 import { memo, useImperativeHandle, useMemo, useState, type Ref } from "react";
 import { combineLatest, from, of } from "rxjs";
 import { debounceTime, map, startWith, switchMap } from "rxjs/operators";
@@ -28,11 +28,18 @@ interface CapacityVM {
 	tooltip: string;
 }
 
-function buildVM(events: CalendarEvent[], settings: SingleCalendarConfig, start: Date, end: Date): CapacityVM {
+function buildVM(
+	events: CalendarEvent[],
+	settings: SingleCalendarConfig,
+	start: Date,
+	end: Date,
+	compact: boolean
+): CapacityVM {
 	const capacity = calculateCapacityFromEvents(events, start, end, settings.hourStart, settings.hourEnd);
 	const fmt = pickDurationFormatter(settings);
+	const label = formatCapacityLabel(capacity, settings.showDecimalHours, compact);
 	return {
-		label: `⏱ ${formatCapacityLabel(capacity, settings.showDecimalHours)} (${capacity.percentUsed.toFixed(0)}%)`,
+		label: `⏱ ${label} (${capacity.percentUsed.toFixed(0)}%)`,
 		tooltip: `Bounds: ${formatBoundaryRange(capacity)}\nRemaining: ${fmt(capacity.remainingMs)}`,
 	};
 }
@@ -43,6 +50,8 @@ export const CapacityIndicator = memo(function CapacityIndicator({
 	rangeEnd,
 }: CapacityIndicatorProps) {
 	const bundle = useBundle();
+	// A phone header shares its row with the ▾ and the page actions, so minutes go.
+	const compact = useMediaQuery(MOBILE_MEDIA_QUERY);
 	const initialRange = useMemo(() => getDayBounds(new Date()), []);
 	const [imperativeRange, setImperativeRange] = useState<{ start: Date; end: Date }>(initialRange);
 
@@ -77,10 +86,10 @@ export const CapacityIndicator = memo(function CapacityIndicator({
 								start: toLocalISOString(startDate),
 								end: toLocalISOString(endDate),
 							})
-						).pipe(map((events) => buildVM(events, settings, startDate, endDate)))
+						).pipe(map((events) => buildVM(events, settings, startDate, endDate, compact)))
 			)
 		);
-	}, [bundle.eventStore, bundle.settingsStore, startMs, endMs]);
+	}, [bundle.eventStore, bundle.settingsStore, startMs, endMs, compact]);
 
 	const vm = useObservable(vm$);
 	if (!vm) return null;

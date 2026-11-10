@@ -1688,6 +1688,19 @@ button[class*=prisma-]:focus-visible {
   .view-header-title-container:has(.prisma-capacity-indicator) .view-header-title {
     display: none;
   }
+  .prisma-view-header-title-container {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+  .prisma-capacity-indicator-host {
+    min-width: 0;
+  }
+  .prisma-capacity-indicator {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
 }
 .prisma-header-expand-chevron-host {
   display: contents;
@@ -1695,6 +1708,7 @@ button[class*=prisma-]:focus-visible {
 
 .prisma-header-expand-chevron {
   display: none;
+  flex-shrink: 0;
   margin-left: 6px;
   padding: 2px 10px;
   font-size: 13px;

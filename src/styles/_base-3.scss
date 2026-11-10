@@ -121,6 +121,24 @@
 	.view-header-title-container:has(.prisma-capacity-indicator) .view-header-title {
 		display: none;
 	}
+
+	// When the row is tight, the figure gives way — never the ▾ beside it. The
+	// container may shrink here: on a phone the tab bar is not portalled beside it.
+	.prisma-view-header-title-container {
+		flex-shrink: 1;
+		min-width: 0;
+	}
+
+	.prisma-capacity-indicator-host {
+		min-width: 0;
+	}
+
+	.prisma-capacity-indicator {
+		min-width: 0;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
 }
 
 // The collapsed phone header's ▾, in the view header. Shown only while the visible
@@ -132,6 +150,7 @@
 
 .prisma-header-expand-chevron {
 	display: none;
+	flex-shrink: 0;
 	margin-left: 6px;
 	padding: 2px 10px;
 	font-size: 13px;

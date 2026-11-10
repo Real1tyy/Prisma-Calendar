@@ -1,5 +1,5 @@
 import { isTimedEvent, type CalendarEvent } from "../../types/calendar";
-import { getEventDurationInRange, pickDurationFormatter } from "./duration";
+import { formatDurationCompact, getEventDurationInRange, pickDurationFormatter } from "./duration";
 
 export interface CapacityResult {
 	capacityMs: number;
@@ -106,8 +106,9 @@ export function calculateCapacityFromEvents(
 	return calculateCapacity(events, periodStart, periodEnd, startHour, endHour);
 }
 
-export function formatCapacityLabel(result: CapacityResult, showDecimalHours: boolean): string {
-	const fmt = pickDurationFormatter({ showDecimalHours });
+/** `compact` drops minutes (the phone header); decimal hours are already short and ignore it. */
+export function formatCapacityLabel(result: CapacityResult, showDecimalHours: boolean, compact = false): string {
+	const fmt = !showDecimalHours && compact ? formatDurationCompact : pickDurationFormatter({ showDecimalHours });
 	return `${fmt(result.usedMs)} / ${fmt(result.capacityMs)}`;
 }
 

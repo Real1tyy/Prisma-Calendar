@@ -100,6 +100,18 @@ export function formatDuration(ms: number): string {
 	return parts.join(" ") || "0m";
 }
 
+const MS_PER_HOUR = 3_600_000;
+
+/**
+ * Whole hours for space-tight readouts ("1d 12h"), rounded to the nearest hour.
+ * Under an hour keeps its minutes, so a little time does not read as none.
+ */
+export function formatDurationCompact(ms: number): string {
+	if (ms === 0) return "0h";
+	if (ms < MS_PER_HOUR) return formatDuration(ms);
+	return formatDuration(Math.round(ms / MS_PER_HOUR) * MS_PER_HOUR);
+}
+
 /**
  * Formats duration in milliseconds to decimal hours.
  * Example: 90000000ms (25 hours) -> "25.0h"
