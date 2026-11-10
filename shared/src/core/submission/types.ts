@@ -1,12 +1,12 @@
+import type { HttpTransport } from "../../billing-api/transport";
+import { BILLING_API_OPERATIONS } from "../../generated/billing-api-operations/operations";
 import {
 	ReviewRequestPluginId,
 	type PluginFeedbackRequest,
 	type PluginFeedbackRequestScreenshotsItem,
 	type PluginFeedbackRequestType,
 	type ReviewRequest,
-} from "../../billing-api/generated/model";
-import { BILLING_API_OPERATIONS } from "../../billing-api/generated/operations";
-import type { HttpTransport } from "../../billing-api/transport";
+} from "../../generated/billing-api/model";
 import type { DebugBundle } from "../logging/debug-bundle";
 
 /**

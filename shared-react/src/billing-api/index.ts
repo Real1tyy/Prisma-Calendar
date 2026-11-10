@@ -1,2 +1,2 @@
-export * from "./generated/hooks";
+export * from "../generated/billing-api/hooks";
 export * from "./request";

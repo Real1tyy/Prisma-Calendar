@@ -1,5 +1,5 @@
-import { submitPluginFeedback, submitReview } from "../../billing-api/generated/client";
 import type { BillingApiRequestOptions } from "../../billing-api/request";
+import { submitPluginFeedback, submitReview } from "../../generated/billing-api/client";
 import type {
 	SubmissionBodies,
 	SubmissionClientOptions,

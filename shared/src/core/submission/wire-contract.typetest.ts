@@ -4,7 +4,7 @@
  * typecheck if its line ever stops being an error
  * ([[spec-typed-billing-api-client-generated-from-the-published-openapi-spec]]).
  */
-import type { PluginFeedbackRequest, ReviewRequest } from "../../billing-api/generated/model";
+import type { PluginFeedbackRequest, ReviewRequest } from "../../generated/billing-api/model";
 import {
 	SUBMISSION_PAYLOAD_FIELDS,
 	type PayloadFieldsAgainst,

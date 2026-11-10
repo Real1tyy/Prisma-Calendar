@@ -2,8 +2,8 @@ import { errors, importSPKI, jwtVerify } from "jose";
 import { apiVersion, type App } from "obsidian";
 import { BehaviorSubject, type Observable } from "rxjs";
 
-import { deactivateLicense, verifyLicense } from "../../billing-api/generated/client";
-import type { LicenseError, LicenseVerifySuccess } from "../../billing-api/generated/model";
+import { deactivateLicense, verifyLicense } from "../../generated/billing-api/client";
+import type { LicenseError, LicenseVerifySuccess } from "../../generated/billing-api/model";
 import type { NoticeLink } from "../../utils/notice";
 import { getDeviceName, getPlatformId } from "../../utils/platform";
 import { getOrCreateStoredId } from "../submission/client-id";

@@ -4,7 +4,7 @@ import type {
 	LicenseErrorCode,
 	LicenseVerifySuccessCode,
 	LicenseVerifySuccessEntitlementStatus,
-} from "../../billing-api/generated/model";
+} from "../../generated/billing-api/model";
 import type { ShowLinkNotice } from "../../utils/notice";
 
 // The request and response shapes are the billing API's generated model

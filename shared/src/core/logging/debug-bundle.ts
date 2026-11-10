@@ -1,4 +1,4 @@
-import type { PluginFeedbackRequestDebugBundle } from "../../billing-api/generated/model";
+import type { PluginFeedbackRequestDebugBundle } from "../../generated/billing-api/model";
 import type { LogEntry, LogLevel } from "./types";
 
 /**

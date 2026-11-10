@@ -1,4 +1,4 @@
-import type { PluginFeedbackRequestHealthItem } from "../../billing-api/generated/model";
+import type { PluginFeedbackRequestHealthItem } from "../../generated/billing-api/model";
 import { describeError } from "../../utils/errors";
 
 export const HEALTH_STATUSES = ["ok", "warn", "fail"] as const satisfies readonly HealthReportRow["status"][];

@@ -40,7 +40,7 @@ export default defineConfig([
 			"**/styles.css",
 			"**/*.d.ts",
 			// Orval output from the pinned billing-API document; never hand-edited, drift-gated instead.
-			"src/billing-api/generated/**",
+			"src/generated/**",
 			"**/docs-site/**",
 			"**/.obsidian/**",
 			"**/build/**",
