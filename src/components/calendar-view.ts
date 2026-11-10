@@ -1474,7 +1474,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	private applyStatusMenuButtonState(): void {
 		if (!this.calendar) return;
 		const btn = this.container.querySelector(".fc-statusMenu-button");
-		if (!(btn instanceof HTMLElement)) return;
+		if (!btn || !btn.instanceOf(HTMLElement)) return;
 		const items = hiddenEventsMenuItems(this.filteredEventsCount, this.skippedEventsCount);
 		if (!btn.querySelector("svg")) setIcon(btn, "eye-off");
 		btn.setAttribute("aria-label", items.length > 0 ? items.map((item) => item.label).join(", ") : "No hidden events");
