@@ -37,9 +37,7 @@ interface BodiesBeforeTheHealthFix {
 	feedback: Omit<PluginFeedbackRequest, "health">;
 }
 
-function fieldsAgainst<Bodies extends BodiesBeforeTheHealthFix>(fields: PayloadFieldsAgainst<Bodies>): void {
-	void fields;
-}
+function fieldsAgainst<Bodies extends BodiesBeforeTheHealthFix>(_fields: PayloadFieldsAgainst<Bodies>): void {}
 
 // @ts-expect-error -- the shipped list names `health`, which that spec lacks.
 fieldsAgainst<BodiesBeforeTheHealthFix>(SUBMISSION_PAYLOAD_FIELDS);

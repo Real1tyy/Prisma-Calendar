@@ -42,6 +42,10 @@ export const HEARTBEAT_JITTER_MS = 5 * 60 * 1000;
 // Docs / Get Pro links before it fades.
 const PRO_GATE_NOTICE_MS = 10000;
 
+// Compile-time exhaustiveness: a `LicenseError` code added to the billing contract without
+// a `case` stops compiling here instead of silently falling through to the default.
+function assertHandled(_code: never): void {}
+
 export class LicenseManager {
 	private app: App;
 	private getLicenseKeySecretName: () => string;
@@ -237,8 +241,7 @@ export class LicenseManager {
 				await this.handleNetworkFailure();
 				return;
 			default: {
-				const unhandled: never = code;
-				void unhandled;
+				assertHandled(code);
 				await this.handleNetworkFailure();
 			}
 		}
