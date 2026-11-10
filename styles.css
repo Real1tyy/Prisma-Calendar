@@ -773,6 +773,20 @@ button[class*=prisma-]:focus-visible {
   background: var(--interactive-hover);
   color: var(--text-accent-hover);
 }
+.prisma-calendar-container .fc-timegrid-more-link {
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-accent);
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  box-shadow: 0 0 0 1px var(--background-primary);
+  transition: all 0.15s ease;
+}
+.prisma-calendar-container .fc-timegrid-more-link:hover {
+  background: var(--interactive-hover);
+  color: var(--text-accent-hover);
+}
 .prisma-calendar-container .fc-popover {
   background: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
