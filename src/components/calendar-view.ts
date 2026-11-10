@@ -1,4 +1,4 @@
-import { Calendar, type EventMountArg } from "@fullcalendar/core";
+import { Calendar, type EventApi, type EventMountArg } from "@fullcalendar/core";
 import allLocales from "@fullcalendar/core/locales-all";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin, { type DropArg } from "@fullcalendar/interaction";
@@ -166,7 +166,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	private get navigationHistory() {
 		return this.bundle.navigationHistory;
 	}
-	private lastFocusedEventInfo: CalendarEventData | null = null;
+	private lastFocusedEventInfo: EventApi | null = null;
 	private mouseDownTime = 0;
 	private isHandlingSelection = false;
 	private isDraggingCalendarEvent = false;
@@ -896,10 +896,11 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			// Obsidian mobile emits `contextmenu` for it, and the menu sheet would cover
 			// the calendar before FullCalendar's touch drag begins.
 			if (isTouchContextMenu(e)) return;
-			if (this.healIfOrphanEvent(info.event)) {
+			const event = this.toLiveEvent(info.event);
+			if (this.healIfOrphanEvent(event)) {
 				return;
 			}
-			this.eventContextMenu.show(e, info, info.el, this.container, { pinOpen: this.isMobileView() });
+			this.eventContextMenu.show(e, { event }, info.el, this.container, { pinOpen: this.isMobileView() });
 		});
 
 		if (isFileBackedEvent(info.event)) {
@@ -2076,7 +2077,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			return;
 		}
 
-		const event = this.lastFocusedEventInfo;
+		const event = this.toLiveEvent(this.lastFocusedEventInfo);
 
 		const eventInfo =
 			event.extendedProps.virtualKind === "recurring"
@@ -2143,7 +2144,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			return;
 		}
 
-		const event = this.lastFocusedEventInfo;
+		const event = this.toLiveEvent(this.lastFocusedEventInfo);
 
 		if (isAnyVirtual(getVirtualKind(event))) {
 			return;
@@ -2163,6 +2164,16 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const propertyName = propertyGetter(settings);
 
 		void this.bundle.commandManager.executeCommand(fillTime(this.bundle, filePath, propertyName, timeValue));
+	}
+
+	/**
+	 * A resize or drag mutates FullCalendar's store but keeps the rendered
+	 * element, so an `EventApi` captured at mount or hover still holds the
+	 * pre-drag times until the written note is re-indexed and the block is
+	 * re-rendered. Re-read it by id so every action sees what the user sees.
+	 */
+	private toLiveEvent(event: EventApi): CalendarEventData {
+		return this.calendar?.getEventById(event.id) ?? event;
 	}
 
 	// ─── Drag & Drop ─────────────────────────────────────────────
