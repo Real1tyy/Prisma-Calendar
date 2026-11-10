@@ -239,7 +239,7 @@ export function RecurringEventsModalPanel({
 								data-event-file-path={item.filePath}
 								style={categoryColor ? ({ "--category-color": categoryColor } as CSSProperties) : undefined}
 								onClick={(e) => {
-									if (e.target instanceof HTMLButtonElement) return;
+									if ((e.target as Node).instanceOf(HTMLButtonElement)) return;
 									if (e.ctrlKey || e.metaKey) {
 										void openFileInNewTab(bundle.plugin.app, item.filePath);
 									} else {

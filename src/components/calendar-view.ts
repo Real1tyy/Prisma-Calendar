@@ -297,11 +297,11 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.untrackedEventsDropdown?.destroy();
 
 		if (this.refreshRafId !== null) {
-			cancelAnimationFrame(this.refreshRafId);
+			window.cancelAnimationFrame(this.refreshRafId);
 			this.refreshRafId = null;
 		}
 		if (this.stickyOffsetsRafId !== null) {
-			cancelAnimationFrame(this.stickyOffsetsRafId);
+			window.cancelAnimationFrame(this.stickyOffsetsRafId);
 			this.stickyOffsetsRafId = null;
 		}
 
@@ -975,7 +975,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		];
 		for (const [selector, testId] of map) {
 			const el = root.querySelector(selector);
-			if (el instanceof HTMLElement) {
+			if (el?.instanceOf(HTMLElement)) {
 				el.setAttribute("data-testid", testId);
 			}
 		}
@@ -1248,7 +1248,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 	private updateMobileControlsToggleButtonElement(): void {
 		const btn = this.container.querySelector(".fc-mobileControls-button");
-		if (!(btn instanceof HTMLElement)) return;
+		if (!btn?.instanceOf(HTMLElement)) return;
 
 		btn.classList.add(cls("mobile-controls-toggle"));
 		btn.classList.toggle(cls("mobile-controls-toggle-expanded"), !this.mobileControlsCollapsed);
@@ -1281,13 +1281,13 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 	private updateStickyOffsets(): void {
 		const toolbar = this.container.querySelector(".fc-header-toolbar.fc-toolbar");
-		const toolbarEl = toolbar instanceof HTMLElement ? toolbar : null;
+		const toolbarEl = toolbar?.instanceOf(HTMLElement) ? toolbar : null;
 		const toolbarRect = toolbarEl?.getBoundingClientRect();
 		const toolbarHeight = toolbarRect ? Math.round(toolbarRect.height) : 0;
 		const stickyToolbarOffset = Math.round(toolbarHeight);
 
 		const dayHeaderCell = this.container.querySelector(".fc-col-header-cell");
-		const dayHeaderEl = dayHeaderCell instanceof HTMLElement ? dayHeaderCell : null;
+		const dayHeaderEl = dayHeaderCell?.instanceOf(HTMLElement) ? dayHeaderCell : null;
 		const dayHeaderHeight = dayHeaderEl ? Math.round(dayHeaderEl.getBoundingClientRect().height) : 0;
 
 		this.container.style.setProperty("--prisma-sticky-toolbar-offset", `${stickyToolbarOffset}px`);
@@ -1322,7 +1322,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 	private updateButtonElement(selector: string, text: string, isVisible: boolean, tooltip?: string): void {
 		const btn = this.container.querySelector(selector);
-		if (!(btn instanceof HTMLElement)) {
+		if (!btn?.instanceOf(HTMLElement)) {
 			return;
 		}
 
@@ -1347,7 +1347,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	private cleanupEventCountButtons(): void {
 		const cleanupButton = (selector: string) => {
 			const btn = this.container.querySelector(selector);
-			if (btn instanceof HTMLElement) {
+			if (btn?.instanceOf(HTMLElement)) {
 				btn.textContent = "";
 				btn.title = "";
 				btn.classList.remove(cls("fc-button-visible"));

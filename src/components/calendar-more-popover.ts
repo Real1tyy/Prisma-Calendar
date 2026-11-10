@@ -80,7 +80,7 @@ export function scheduleMorePopoverExpand(root: ParentNode, win: Window, remaini
  */
 export function handleMoreLinkClick(arg: MoreLinkArg): "popover" {
 	const target = arg.jsEvent.target as Element | null;
-	const doc = target?.ownerDocument ?? document;
+	const doc = target?.ownerDocument ?? activeDocument;
 	const win = doc.defaultView;
 	// FullCalendar portals the popover into the clicked link's view harness, so
 	// searching from there can't pick up another leaf's (or another window's).

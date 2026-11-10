@@ -298,7 +298,7 @@ export class ConnectionRenderer {
 		this.resizeObserver.disconnect();
 		this.unobserveTiles();
 		this.settingsSub?.unsubscribe();
-		if (this.rafId !== null) cancelAnimationFrame(this.rafId);
+		if (this.rafId !== null) window.cancelAnimationFrame(this.rafId);
 		if (this.scrollHandler) {
 			this.container.removeEventListener("scroll", this.scrollHandler, { capture: true });
 			for (const target of this.scrollTargets) {

@@ -350,7 +350,7 @@ export function createDailyCalendar(
 		destroy: () => {
 			resizeObserver.disconnect();
 			if (refreshRafId !== null) {
-				cancelAnimationFrame(refreshRafId);
+				window.cancelAnimationFrame(refreshRafId);
 				refreshRafId = null;
 			}
 			for (const sub of subscriptions) sub.unsubscribe();
