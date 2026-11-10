@@ -31,7 +31,11 @@ import {
 	computeSystemPropKeys,
 } from "../utils/frontmatter/classifications";
 import { AI_DEFAULTS } from "./ai";
-import { CalDAVSettingsSchema, ICSSubscriptionSettingsSchema } from "./integrations";
+import {
+	CalDAVSettingsSchema,
+	ICSSubscriptionSettingsSchema,
+	IntegrationDeletionTombstoneSchema,
+} from "./integrations";
 import {
 	CALENDAR_VIEW_OPTIONS,
 	CalendarViewTypeSchema,
@@ -1086,6 +1090,7 @@ export const CustomCalendarSettingsSchema = z
 		ai: AISettingsSchema.catch(AISettingsSchema.parse({})),
 		caldav: CalDAVSettingsSchema.catch(CalDAVSettingsSchema.parse({})),
 		icsSubscriptions: ICSSubscriptionSettingsSchema.catch(ICSSubscriptionSettingsSchema.parse({})),
+		integrationDeletionTombstones: z.array(IntegrationDeletionTombstoneSchema).catch([]),
 		// Universal — every plugin carries it under this key so the shared General
 		// section can bind to it. See [[spec-logging-config-sinks-and-instrumentation]].
 		logging: LoggingSettingsSchema.catch(LoggingSettingsSchema.parse({})),

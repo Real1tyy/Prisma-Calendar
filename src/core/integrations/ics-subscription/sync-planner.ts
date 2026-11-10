@@ -1,3 +1,5 @@
+import type { IntegrationDeletionTombstone } from "../../../types/integrations";
+import { isIntegrationEventDeleted } from "../deleted-event-tombstones";
 import type { ImportedEvent } from "../ics-import";
 import type { ICSSubscriptionSyncMetadata } from "./types";
 
@@ -17,6 +19,7 @@ export type SyncPlanAction =
 	| { kind: "skip-missing-uid"; title: string }
 	| { kind: "skip-filtered"; uid: string }
 	| { kind: "skip-foreign-uid"; uid: string; ownedBy: string }
+	| { kind: "skip-user-deleted"; uid: string }
 	| { kind: "delete"; uid: string; filePath: string };
 
 export interface SyncPlan {
@@ -48,6 +51,7 @@ export interface PlanInputs {
 	 * foreign. Omit to treat every other id as a live foreign owner.
 	 */
 	knownSubscriptionIds?: readonly string[];
+	userDeletedEvents?: readonly IntegrationDeletionTombstone[];
 }
 
 /**
@@ -80,6 +84,7 @@ export function computeIcsSubscriptionSyncPlan(inputs: PlanInputs): SyncPlan {
 		findImportedByUid,
 		knownSubscriptionIds,
 		isIncluded = () => true,
+		userDeletedEvents = [],
 	} = inputs;
 	const actions: SyncPlanAction[] = [];
 	const remoteUids = new Set<string>();
@@ -94,6 +99,10 @@ export function computeIcsSubscriptionSyncPlan(inputs: PlanInputs): SyncPlan {
 		}
 		if (!isIncluded(event)) {
 			actions.push({ kind: "skip-filtered", uid });
+			continue;
+		}
+		if (isIntegrationEventDeleted(userDeletedEvents, { kind: "ics-subscription", subscriptionId, uid })) {
+			actions.push({ kind: "skip-user-deleted", uid });
 			continue;
 		}
 		remoteUids.add(uid);
@@ -158,6 +167,7 @@ export function computeIcsSubscriptionSyncPlan(inputs: PlanInputs): SyncPlan {
 		else if (action.kind === "skip-unchanged") summary.skipUnchanged++;
 		else if (action.kind === "skip-missing-uid") summary.skipMissingUid++;
 		else if (action.kind === "skip-filtered") summary.skipFiltered++;
+		else if (action.kind === "skip-user-deleted") continue;
 		else summary.skipForeignUid++;
 	}
 

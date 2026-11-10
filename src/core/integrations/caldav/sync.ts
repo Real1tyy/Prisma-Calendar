@@ -218,6 +218,7 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 				// An invalid expression throws out of the planner, so the sync fails
 				// before any action runs instead of deleting every synced note.
 				isIncluded: this.createEventFilter(filterExpression),
+				userDeletedEvents: this.mainSettingsStore.currentSettings.integrationDeletionTombstones,
 			});
 
 			let processedCount = 0;

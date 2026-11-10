@@ -30,6 +30,7 @@ import {
 	toggleSkip,
 	updateFrontmatter,
 } from "../core/commands";
+import { createIntegrationDeletionLifecycle } from "../core/integrations/deleted-event-tombstones";
 import { MinimizedModalManager } from "../core/minimized-modal-manager";
 import {
 	openCategoryAssignModal,
@@ -846,10 +847,21 @@ export class EventContextMenu {
 			const rruleId = isSourceRecurring ? this.getRRuleId(event) : null;
 
 			await this.handlePhysicalInstancesIfNeeded(rruleId, async () => {
-				await this.runCommand(() => new DeleteEventCommand(this.bundle.fileRepository, filePath), {
-					success: "Event deleted successfully",
-					error: "Failed to delete event",
-				});
+				await this.runCommand(
+					() =>
+						new DeleteEventCommand(
+							this.bundle.fileRepository,
+							filePath,
+							createIntegrationDeletionLifecycle(
+								this.bundle.plugin.settingsStore,
+								this.bundle.settingsStore.currentSettings
+							)
+						),
+					{
+						success: "Event deleted successfully",
+						error: "Failed to delete event",
+					}
+				);
 			});
 		});
 	}

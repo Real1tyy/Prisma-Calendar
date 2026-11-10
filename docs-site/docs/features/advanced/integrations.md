@@ -218,6 +218,10 @@ Manual ICS imports record each event's UID. Importing the same file again skips 
 
 A synced note remembers which account or subscription created it. If that id no longer exists on the device you are syncing from — the plugin settings have not synced yet, or you removed and re-added the account — the current account adopts the note on its next sync and keeps updating and deleting it as usual. A note that belongs to *another* account still configured on the device is left to that account.
 
+### Removing a synced event locally
+
+Deleting a CalDAV or ICS subscription event from Prisma Calendar keeps it removed. Prisma saves the source event identity with your settings, so later syncs do not recreate that note. Undoing the deletion restores the note and allows its integration to sync it again. This only affects the local note; the remote event remains unchanged.
+
 ## CalDAV Integration
 
 ### Overview

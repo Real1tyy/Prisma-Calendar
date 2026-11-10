@@ -1,3 +1,5 @@
+import type { IntegrationDeletionTombstone } from "../../../types/integrations";
+import { isIntegrationEventDeleted } from "../deleted-event-tombstones";
 import type { CalDAVFetchedEvent } from "./client";
 import type { CalDAVSyncMetadata } from "./types";
 
@@ -18,7 +20,8 @@ export type SyncPlanAction =
 	| { kind: "skip-missing-uid"; url: string }
 	| { kind: "skip-tombstone-untracked"; objectHref: string }
 	| { kind: "skip-foreign-uid"; uid: string; ownedBy: { accountId: string; calendarHref: string } }
-	| { kind: "skip-filtered"; uid: string };
+	| { kind: "skip-filtered"; uid: string }
+	| { kind: "skip-user-deleted"; uid: string };
 
 export interface SyncPlan {
 	actions: SyncPlanAction[];
@@ -46,6 +49,7 @@ export interface PlanInputs {
 	 * skipped as foreign. Omit to treat every other id as a live foreign owner.
 	 */
 	knownAccountIds?: readonly string[];
+	userDeletedEvents?: readonly IntegrationDeletionTombstone[];
 	/**
 	 * Events the server reports as created or updated in this sync window.
 	 * On a full sync (no prior token) this is the complete calendar; on an
@@ -125,6 +129,7 @@ export function computeCaldavSyncPlan(inputs: PlanInputs): SyncPlan {
 		findByObjectHref,
 		knownAccountIds,
 		isIncluded = () => true,
+		userDeletedEvents = [],
 	} = inputs;
 	const actions: SyncPlanAction[] = [];
 
@@ -132,6 +137,17 @@ export function computeCaldavSyncPlan(inputs: PlanInputs): SyncPlan {
 		const uid = event.uid ?? "";
 		if (!uid) {
 			actions.push({ kind: "skip-missing-uid", url: event.url });
+			continue;
+		}
+		if (
+			isIntegrationEventDeleted(userDeletedEvents, {
+				kind: "caldav",
+				accountId: inputs.accountId,
+				calendarHref: inputs.calendarHref,
+				uid,
+			})
+		) {
+			actions.push({ kind: "skip-user-deleted", uid });
 			continue;
 		}
 
@@ -215,6 +231,7 @@ export function computeCaldavSyncPlan(inputs: PlanInputs): SyncPlan {
 		else if (action.kind === "skip-missing-uid") summary.skipMissingUid++;
 		else if (action.kind === "skip-tombstone-untracked") summary.skipTombstoneUntracked++;
 		else if (action.kind === "skip-filtered") summary.skipFiltered++;
+		else if (action.kind === "skip-user-deleted") continue;
 		else summary.skipForeignUid++;
 	}
 

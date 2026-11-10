@@ -33,6 +33,11 @@ export interface EventData {
 	content?: string | undefined;
 }
 
+export interface DeleteEventLifecycle {
+	onDelete(snapshot: FrontmatterSnapshot): Promise<void>;
+	onUndo(snapshot: FrontmatterSnapshot): Promise<void>;
+}
+
 /** Shared base for commands that create a new file and support undo by trashing it. */
 abstract class CreatedFileCommand implements Command {
 	protected createdFilePath: string | null = null;
@@ -147,7 +152,8 @@ export class DeleteEventCommand implements Command {
 
 	constructor(
 		private repo: EventFileRepository,
-		private filePath: string
+		private filePath: string,
+		private lifecycle?: DeleteEventLifecycle
 	) {}
 
 	async execute(): Promise<void> {
@@ -159,12 +165,19 @@ export class DeleteEventCommand implements Command {
 		// not re-deleted. The original snapshot is what we want to be able to
 		// restore back to anyway.
 		this.snapshot ??= await this.repo.snapshotByPath(this.filePath);
-		await this.repo.deleteByPath(this.filePath);
+		await this.lifecycle?.onDelete(this.snapshot);
+		try {
+			await this.repo.deleteByPath(this.filePath);
+		} catch (error) {
+			await this.lifecycle?.onUndo(this.snapshot);
+			throw error;
+		}
 	}
 
 	async undo(): Promise<void> {
 		if (!this.snapshot) throw new Error("Cannot undo: no snapshot stored");
 		await this.repo.restoreSnapshot(this.snapshot);
+		await this.lifecycle?.onUndo(this.snapshot);
 	}
 
 	getType() {

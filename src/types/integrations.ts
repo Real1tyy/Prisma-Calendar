@@ -149,6 +149,22 @@ export const ICSSubscriptionSchema = z
 
 export type ICSSubscription = z.infer<typeof ICSSubscriptionSchema>;
 
+export const IntegrationDeletionTombstoneSchema = z.discriminatedUnion("kind", [
+	z.object({
+		kind: z.literal("caldav"),
+		accountId: z.string(),
+		calendarHref: z.string(),
+		uid: z.string(),
+	}),
+	z.object({
+		kind: z.literal("ics-subscription"),
+		subscriptionId: z.string(),
+		uid: z.string(),
+	}),
+]);
+
+export type IntegrationDeletionTombstone = z.infer<typeof IntegrationDeletionTombstoneSchema>;
+
 export const ICSSubscriptionSettingsSchema = z
 	.object({
 		subscriptions: z.array(ICSSubscriptionSchema).catch([]),

@@ -6,6 +6,7 @@ import type { Frontmatter } from "../../types";
 import type { CalendarBundle } from "../calendar-bundle";
 import { CreateEventCommand, DeleteEventCommand, type EventData } from "../commands/lifecycle-commands";
 import { EditEventCommand } from "../commands/update-commands";
+import { createIntegrationDeletionLifecycle } from "../integrations/deleted-event-tombstones";
 import { resolveBundleOrNotice } from "./bundle-resolver";
 import { buildFrontmatterFromInput, patchEditFrontmatter } from "./frontmatter-helpers";
 import type { PrismaCreateEventInput, PrismaDeleteEventInput, PrismaEditEventInput } from "./types";
@@ -88,6 +89,10 @@ export function buildDeleteEventCommand(
 		return null;
 	}
 
-	const command = new DeleteEventCommand(bundle.fileRepository, file.path);
+	const command = new DeleteEventCommand(
+		bundle.fileRepository,
+		file.path,
+		createIntegrationDeletionLifecycle(plugin.settingsStore, bundle.settingsStore.currentSettings)
+	);
 	return { command, bundle };
 }
