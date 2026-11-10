@@ -2,9 +2,9 @@ import { ensureISOSuffix } from "@real1ty/obsidian-plugins";
 import { DateTime, type DurationLike } from "luxon";
 
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
-import { buildEventSchemaInput, resolveTemporalKind } from "../../types/event-schemas";
 import { allDayEnd } from "../dates/all-day";
 import { stripZ } from "../dates/iso";
+import { allDayStartProp, isAllDayFrontmatter } from "./predicates";
 
 const normalizesTimedEvents = (mode: string): boolean =>
 	["startDate", "endDate", "allStartDate", "allEndDate"].includes(mode);
@@ -58,12 +58,10 @@ export const applyStartEndOffsets = (
 	startOffset?: DurationLike,
 	endOffset?: DurationLike
 ) => {
-	const { startDateProp, endDateProp, startDayProp, endDayProp } = settings;
+	const { startDateProp, endDateProp, endDayProp } = settings;
 
-	if (
-		resolveTemporalKind(buildEventSchemaInput({ filePath: "", folder: "", frontmatter: fm }, settings)) === "allDay"
-	) {
-		const anchorProp = fm[startDayProp] ? startDayProp : startDateProp;
+	if (isAllDayFrontmatter(fm, settings)) {
+		const anchorProp = allDayStartProp(fm, settings);
 		if (fm[anchorProp]) fm[anchorProp] = shiftISO(fm[anchorProp], startOffset);
 		if (fm[endDayProp]) fm[endDayProp] = shiftISO(fm[endDayProp], startOffset);
 	} else {

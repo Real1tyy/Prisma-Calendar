@@ -30,14 +30,25 @@ const frontmatterValueAsLocalDate = (value: unknown): Date | null => {
 	return raw ? parseAsLocalDate(raw) : null;
 };
 
+/** Whether the parser renders this frontmatter as an all-day event — the one rule every writer must agree with. */
+export const isAllDayFrontmatter = (frontmatter: Frontmatter, settings: SingleCalendarConfig): boolean =>
+	resolveTemporalKind(buildEventSchemaInput({ filePath: "", folder: "", frontmatter }, settings)) === "allDay";
+
+/**
+ * The property holding an all-day event's first day. Normally Start Day; a note
+ * flagged `All Day: true` with only a Start Date renders on that value's date
+ * (the parser's documented fallback), so reads and writes must use the same property.
+ */
+export const allDayStartProp = (frontmatter: Frontmatter, settings: SingleCalendarConfig): string =>
+	frontmatter[settings.startDayProp] ? settings.startDayProp : settings.startDateProp;
+
 /**
  * Returns true when the event represented by the given frontmatter is entirely in the past.
  * All-day events use their exclusive end day; timed events use the End property.
  */
 export const isEventPastFromFrontmatter = (frontmatter: Frontmatter, settings: SingleCalendarConfig): boolean => {
-	const isAllDay =
-		resolveTemporalKind(buildEventSchemaInput({ filePath: "", folder: "", frontmatter }, settings)) === "allDay";
-	const startValue = frontmatter[settings.startDayProp] || frontmatter[settings.startDateProp];
+	const isAllDay = isAllDayFrontmatter(frontmatter, settings);
+	const startValue = frontmatter[allDayStartProp(frontmatter, settings)];
 	const date = frontmatterValueAsLocalDate(isAllDay ? startValue : frontmatter[settings.endDateProp]);
 	if (!date) return false;
 	if (isAllDay) {

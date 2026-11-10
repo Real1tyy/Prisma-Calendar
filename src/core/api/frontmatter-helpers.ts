@@ -1,9 +1,9 @@
 import { ensureISOSuffix, toSafeString } from "@real1ty/obsidian-plugins";
 
 import type { Frontmatter } from "../../types";
-import { buildEventSchemaInput, resolveTemporalKind } from "../../types/event-schemas";
 import { autoAssignCategories } from "../../utils/events/matching";
 import { setEventBasics, setUntrackedEventBasics } from "../../utils/frontmatter/basics";
+import { allDayStartProp, isAllDayFrontmatter } from "../../utils/frontmatter/predicates";
 import { assignListToFrontmatter, parseCustomDoneProperty } from "../../utils/frontmatter/props";
 import type { CalendarBundle } from "../calendar-bundle";
 import type { PrismaEditEventInput, PrismaEventInput } from "./types";
@@ -92,13 +92,10 @@ export function patchEditFrontmatter(
 	bundle: CalendarBundle,
 	input: PrismaEditEventInput
 ): void {
-	const allDay =
-		input.allDay ??
-		resolveTemporalKind(buildEventSchemaInput({ filePath: "", folder: "", frontmatter }, settings)) === "allDay";
+	const allDay = input.allDay ?? isAllDayFrontmatter(frontmatter, settings);
 	if (allDay && (input.start !== undefined || input.end !== undefined || input.allDay !== undefined)) {
 		setEventBasics(frontmatter, settings, {
-			start:
-				input.start ?? toSafeString(frontmatter[settings.startDayProp] || frontmatter[settings.startDateProp]) ?? "",
+			start: input.start ?? toSafeString(frontmatter[allDayStartProp(frontmatter, settings)]) ?? "",
 			end: input.end ?? toSafeString(frontmatter[settings.endDayProp]) ?? undefined,
 			allDay: true,
 		});
