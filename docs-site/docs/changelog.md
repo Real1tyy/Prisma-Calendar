@@ -33,6 +33,7 @@ All notable changes to this project will be documented here.
 - **Calendars in popout windows**: in a calendar moved to a popout window, the toolbar's event-count buttons and mobile controls toggle update, the sticky header keeps its offset, and clicking a button on a row of the **Recurring events** list no longer also opens that event — the same as in the main window.
 - **Mobile events per day: 0 now means unlimited**: setting **Mobile events per day** to 0 did not lift the cap on phones, even though the setting says 0 is unlimited. It now behaves like **Desktop events per day**. See [Calendar UI](./configuration/calendar-ui.md).
 - **ZettelID property is written as a number**: events created, cloned, imported, synced or auto-named now store `ZettelID: 20261023174414` rather than the quoted `"20261023174414"`, so tools that read the property as a number see the value they expect. Existing notes keep whatever value they already have.
+- **Mobile all-day creation**: Tapping the pinned all-day strip after scrolling on a phone opens a new all-day event instead of selecting the timed event underneath. See [Calendar View](./features/calendar/calendar-view.md).
 
 ---
 
