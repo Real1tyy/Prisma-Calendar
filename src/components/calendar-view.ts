@@ -71,11 +71,20 @@ import {
 } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/index";
 import {
+	allDayModeLabel,
+	DEFAULT_ALL_DAY_MODE,
+	isAllDayCapableView,
+	nextAllDayMode,
+	resolveAllDayOptions,
+	type AllDayMode,
+} from "../utils/calendar/all-day-mode";
+import {
 	edgeScrollDirection,
 	verticalEdgeScrollDirection,
 	type VerticalEdgeScrollDirection,
 } from "../utils/calendar/edge-scroll";
 import { getCalendarRenderingKey } from "../utils/calendar/settings";
+import { batchSelectLabel, buildHeaderToolbarChunks } from "../utils/calendar/toolbar-layout";
 import { stripZ } from "../utils/dates/iso";
 import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
 import {
@@ -156,6 +165,11 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	private dragNavigatedInterval = false;
 	private isMobileLayout = false;
 	private mobileControlsCollapsed = false;
+	/** Mobile master collapse — the whole header behind one chevron. Collapsed on open. */
+	private headerCollapsed = false;
+	/** Mobile: is the view-switcher row revealed? Hidden on open. */
+	private viewsExpanded = false;
+	private allDayMode: AllDayMode = DEFAULT_ALL_DAY_MODE;
 	private renderedEvents = new Map<string, string>();
 	private hasPerformedInitialLoad = false;
 	private previousEventRenderingKey: string | null = null;
@@ -324,7 +338,9 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 		this.isMobileLayout = this.isMobileView();
 		this.mobileControlsCollapsed = this.isMobileLayout;
+		this.headerCollapsed = this.isMobileLayout;
 		this.applyMobileControlsCollapsedState();
+		this.applyHeaderCollapsedState();
 
 		this.rebuildCalendarIconCache();
 
@@ -510,11 +526,17 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 				}
 
 				const view = this.calendar?.view;
+				const previousViewType = this.viewType$.value;
 				if (view) {
 					this.bundle.viewRef.capacityIndicatorHandle?.setRange(view.activeStart, view.activeEnd);
 					this.currentViewStart = view.activeStart;
 					this.currentViewEnd = view.activeEnd;
 					this.viewType$.next(view.type);
+				}
+				// Deferred: `datesSet` also fires on plain navigation, and re-applying
+				// the all-day options there would setOption() on every prev/next.
+				if (view && view.type !== previousViewType) {
+					void afterRender().then(() => this.handleViewTypeChange(previousViewType, view.type));
 				}
 
 				this.recordNavigationState();
@@ -626,10 +648,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.calendar.setOption("eventOverlap", settings.eventOverlap);
 		this.calendar.setOption("slotEventOverlap", settings.slotEventOverlap);
 		this.calendar.setOption("eventMaxStack", settings.eventMaxStack);
-		this.calendar.setOption(
-			"dayMaxEvents",
-			this.isMobileView() ? settings.mobileMaxEventsPerDay : settings.desktopMaxEventsPerDay || false
-		);
+		this.applyAllDayOptions();
 
 		this.applyContainerStyles(this.container, settings);
 		this.scheduleStickyOffsetsUpdate();
@@ -811,23 +830,29 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private handleWindowResize(): void {
-		const currentSettings = this.bundle.settingsStore.currentSettings;
 		const isMobile = this.isMobileView();
 		const didMobileBreakpointChange = isMobile !== this.isMobileLayout;
 		if (isMobile !== this.isMobileLayout) {
 			this.isMobileLayout = isMobile;
 			if (isMobile) {
 				this.mobileControlsCollapsed = true;
+				// Same reset as the filter controls: crossing into the narrow layout
+				// re-applies the mobile defaults rather than inheriting whatever the
+				// desktop header happened to be showing.
+				this.headerCollapsed = true;
+				this.viewsExpanded = false;
 			}
 		}
 		this.applyMobileControlsCollapsedState();
+		this.applyHeaderCollapsedState();
 		if (didMobileBreakpointChange) {
 			this.updateToolbar();
+			// Only the ⋮ dropdown is re-mounted here, not every toolbar component:
+			// re-mounting the search / expression filters would silently clear
+			// whatever the user had typed.
+			if (this.untrackedEventsDropdown) this.mountUntrackedEventsDropdown();
 		}
-		this.calendar?.setOption(
-			"dayMaxEvents",
-			this.isMobileView() ? currentSettings.mobileMaxEventsPerDay : currentSettings.desktopMaxEventsPerDay || false
-		);
+		this.applyAllDayOptions();
 		this.scheduleStickyOffsetsUpdate();
 	}
 
@@ -889,6 +914,10 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 		this.calendar.setOption("headerToolbar", headerToolbar);
 		this.calendar.setOption("customButtons", customButtons);
+		// The batch toolbar replaces the whole header, chevron included — so the
+		// mobile collapse CSS has to go inert or it would hide the batch actions
+		// (they live in the same chunk as the view switchers).
+		this.container.classList.toggle(cls("batch-mode"), inSelectionMode);
 		this.applyMobileControlsCollapsedState();
 		this.scheduleStickyOffsetsUpdate();
 
@@ -949,6 +978,10 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			[".fc-filteredEvents-button", "prisma-cal-toolbar-filtered-events"],
 			[".fc-skippedEvents-button", "prisma-cal-toolbar-skipped-events"],
 			[".fc-mobileControls-button", "prisma-cal-toolbar-mobile-controls"],
+			[".fc-headerCollapse-button", "prisma-cal-toolbar-header-collapse"],
+			[".fc-tabsToggle-button", "prisma-cal-toolbar-tabs-toggle"],
+			[".fc-viewsToggle-button", "prisma-cal-toolbar-views-toggle"],
+			[".fc-allDayMode-button", "prisma-cal-toolbar-all-day-mode"],
 			// Batch-mode toolbar buttons — only rendered while selection mode is on.
 			// Key off FC's own `fc-<customButtonKey>-button` class (e.g. `batchCounter`
 			// → `.fc-batchCounter-button`). The `className` on these CustomButtonInput
@@ -985,8 +1018,6 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		headerToolbar: { left: string; center: string; right: string };
 		customButtons: Record<string, ExtendedButtonInput>;
 	} {
-		const viewSwitchers = "multiMonthYear,dayGridMonth,timeGridWeek,timeGridDay,listWeek";
-
 		if (inSelectionMode) {
 			const left = "prev,next today";
 			const settings = this.bundle.settingsStore.currentSettings;
@@ -1004,39 +1035,40 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const isMobile = this.isMobileView();
 		const toolbarButtons = new Set(isMobile ? settings.mobileToolbarButtons : settings.toolbarButtons);
 
-		const leftItems: string[] = [];
-		if (toolbarButtons.has("prevNext")) {
-			leftItems.push("prev", "next");
-		}
-		if (toolbarButtons.has("today")) {
-			leftItems.push("today");
-		}
-		if (toolbarButtons.has("now")) {
-			leftItems.push("now");
-		}
-		if (toolbarButtons.has("createEvent")) {
-			leftItems.push("createEvent");
-		}
-		if (toolbarButtons.has("zoomLevel")) {
-			leftItems.push("zoomLevel");
-		}
-		if (isMobile && this.shouldShowMobileControlsToggle(toolbarButtons)) {
-			leftItems.push("mobileControls");
-		}
-
-		const left = leftItems.length > 0 ? leftItems.join(" ") : "";
-		const rightItems = ["filteredEvents", "eventsButton"];
-		rightItems.push("skippedEvents", "batchSelect");
-		const right = `${rightItems.join(" ")} ${viewSwitchers}`;
-
 		return {
-			headerToolbar: { left, center: "title", right },
+			headerToolbar: buildHeaderToolbarChunks({
+				isMobile,
+				enabledButtons: toolbarButtons,
+				showMobileControlsToggle: this.shouldShowMobileControlsToggle(toolbarButtons),
+				showAllDayMode: isAllDayCapableView(this.calendar?.view.type ?? this.viewType$.value),
+			}),
 			customButtons: this.buildRegularButtons(),
 		};
 	}
 
 	private buildRegularButtons(): Record<string, ExtendedButtonInput> {
+		const isMobile = this.isMobileView();
 		return {
+			// Mobile-only chrome. FullCalendar only renders a custom button when the
+			// header layout names it, so these cost nothing on desktop and stay out
+			// of the user-configurable `toolbarButtons` list deliberately — they are
+			// structural, not preferences.
+			headerCollapse: {
+				text: this.headerCollapsed ? "▾" : "▴",
+				click: () => this.setHeaderCollapsed(!this.headerCollapsed),
+			},
+			tabsToggle: {
+				text: "Tabs",
+				click: () => this.bundle.viewRef.tabbedHandle?.toggleTabBar(),
+			},
+			viewsToggle: {
+				text: "Views",
+				click: () => this.setViewsExpanded(!this.viewsExpanded),
+			},
+			allDayMode: {
+				text: allDayModeLabel(this.allDayMode),
+				click: () => this.cycleAllDayMode(),
+			},
 			createEvent: {
 				text: "Create",
 				click: () => this.openCreateEventModal(),
@@ -1052,7 +1084,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 				className: cls("mobile-controls-toggle"),
 			},
 			batchSelect: {
-				text: "Batch Select",
+				text: batchSelectLabel(isMobile),
 				click: () => this.toggleBatchSelection(),
 			},
 			filteredEvents: {
@@ -1226,17 +1258,85 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			},
 			{
 				id: "untrackedEvents",
-				init: () => {
-					this.untrackedEventsDropdown = new UntrackedEventsDropdown(this.app, this.bundle);
-					this.untrackedEventsDropdown.initialize(this.calendar, this.container);
-				},
+				init: () => this.mountUntrackedEventsDropdown(),
 			},
 		];
+	}
+
+	/**
+	 * Mobile packs the action buttons into the centre chunk beside the title, so
+	 * that is where the ⋮ dropdown has to land too. Re-mountable: which chunk is
+	 * right changes with the form factor, so a breakpoint cross re-runs this
+	 * rather than leaving the dropdown stranded in the chunk it was injected into.
+	 */
+	private mountUntrackedEventsDropdown(): void {
+		this.untrackedEventsDropdown?.destroy();
+		this.untrackedEventsDropdown = new UntrackedEventsDropdown(this.app, this.bundle);
+		this.untrackedEventsDropdown.initialize(this.calendar, this.container, this.isMobileView() ? "center" : "right");
 	}
 
 	private setMobileControlsCollapsed(collapsed: boolean): void {
 		this.mobileControlsCollapsed = collapsed;
 		this.applyMobileControlsCollapsedState();
+	}
+
+	private setHeaderCollapsed(collapsed: boolean): void {
+		this.headerCollapsed = collapsed;
+		// Collapsing is a master switch: the two rows it hides must not come back
+		// revealed when the user expands again, or "expanded" would mean four rows
+		// on the second open.
+		if (collapsed) {
+			this.viewsExpanded = false;
+			this.bundle.viewRef.tabbedHandle?.setTabBarCollapsed(true);
+		}
+		this.applyHeaderCollapsedState();
+		this.updateToolbar();
+	}
+
+	private setViewsExpanded(expanded: boolean): void {
+		this.viewsExpanded = expanded;
+		this.applyHeaderCollapsedState();
+	}
+
+	private applyHeaderCollapsedState(): void {
+		const isMobile = this.isMobileView();
+		this.container.classList.toggle(cls("header-collapsed"), isMobile && this.headerCollapsed);
+		this.container.classList.toggle(cls("views-row-expanded"), isMobile && this.viewsExpanded);
+		this.scheduleStickyOffsetsUpdate();
+	}
+
+	/**
+	 * The remembered all-day mode is inert outside `timeGrid`, so crossing that
+	 * boundary both re-resolves the options and reshapes the toolbar (the
+	 * `allDayMode` button is only rendered where it means something).
+	 */
+	private handleViewTypeChange(previousViewType: string, viewType: string): void {
+		if (!this.calendar) return;
+		this.applyAllDayOptions();
+		if (isAllDayCapableView(previousViewType) !== isAllDayCapableView(viewType)) {
+			this.updateToolbar();
+		}
+	}
+
+	private cycleAllDayMode(): void {
+		this.allDayMode = nextAllDayMode(this.allDayMode);
+		this.applyAllDayOptions();
+		this.updateToolbar();
+	}
+
+	/**
+	 * Single writer for `allDaySlot` / `dayMaxEvents` / the expanded container
+	 * class. Every path that could change the answer — settings edit, view change,
+	 * breakpoint cross, mode cycle — routes here, so the three can't drift apart.
+	 */
+	private applyAllDayOptions(): void {
+		if (!this.calendar) return;
+		const settings = this.bundle.settingsStore.currentSettings;
+		const options = resolveAllDayOptions(this.allDayMode, this.calendar.view.type, settings, this.isMobileView());
+		this.calendar.setOption("allDaySlot", options.allDaySlot);
+		this.calendar.setOption("dayMaxEvents", options.dayMaxEvents);
+		this.container.classList.toggle(cls("all-day-expanded"), options.expanded);
+		this.scheduleStickyOffsetsUpdate();
 	}
 
 	private applyMobileControlsCollapsedState(): void {

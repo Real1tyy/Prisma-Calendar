@@ -96,6 +96,21 @@ See [Filtering](../organization/filtering) for full documentation on search, exp
 | Button | Action |
 |--------|--------|
 | **Untracked Events** | Opens a dropdown showing events without date properties. See [Untracked Events](../events/untracked-events). |
+| **All-day** | Cycles how the all-day strip is displayed in week and day views. See [All-Day Display Modes](#all-day-display-modes). |
+
+### All-Day Display Modes
+
+In week and day views, the **All-day** toolbar button cycles the all-day strip through three modes. The button label shows the current one, and the mode lasts until you close the view.
+
+| Label | All-day strip |
+|--------|--------|
+| **All-day** | The default — the strip caps at your events-per-day limit and the rest hide behind a **+N more** link. |
+| **All-day: full** | The strip stretches to fit every all-day event. No **+N more**, and tall events are no longer clipped. |
+| **All-day: off** | The strip isn't shown at all, and the timed grid takes the full height. |
+
+The cap in the first mode comes from **Settings → Calendar → Desktop events per day** / **Mobile events per day**.
+
+Month, year, and list views have no all-day strip, so the button isn't shown there and those views keep their own **+N more** behavior. Return to week or day view and the mode you left it on comes back.
 
 <div style={{"textAlign": "center", "marginBottom": "2em"}}>
 
@@ -294,7 +309,9 @@ The same overlay reappears (labelled **Re-indexing calendar events…**) if Pris
 
 On a phone — or any pane narrower than 768px — the calendar adapts so every view stays usable:
 
-- **The view tabs wrap onto multiple rows** instead of running off the right edge, so every tab (including Dual Daily and Dashboard) stays visible and tappable.
+- **The header opens collapsed to a single row.** Tap the chevron on the left and it opens to exactly two rows: navigation, **Create**, **Filters** and **Tabs** on the first; the untracked-events menu, **Events**, the date, **Batch**, the all-day control and **Views** on the second. Tap the chevron again and everything folds away, giving the grid the whole screen.
+- **The tab bar and the view switchers are each one tap away.** **Tabs** shows or hides the view tabs above the header; **Views** shows or hides the **year / month / week / day / list** row below it. Both start hidden, and collapsing the header hides them again. **Batch Select** is shortened to **Batch** to keep the row on one line.
+- **The view tabs wrap onto multiple rows** when shown, instead of running off the right edge, so every tab (including Dual Daily and Dashboard) stays visible and tappable.
 - **View toolbars wrap instead of clipping.** On Timeline, Heatmap, and Gantt the filter controls and the **Search events…** box move onto their own row rather than being cut off the right edge, so the search stays reachable.
 - **The view-header actions trim to fit.** The header shows only as many action buttons as fit the available width and always keeps the **Manage** button reachable, instead of letting the buttons overflow off the edge. The hidden ones stay one tap away in the action manager. This applies on desktop too — a narrow pane shows fewer buttons.
 - **Split views stack vertically and scroll.** Dual Daily, Daily + Stats, Monthly + Stats, and the Dashboard show their panels in a single full-width column you scroll through, and each panel scrolls to reveal its full distribution chart instead of cropping the bottom. The chart's legend is hidden at phone width so the pie itself stays visible — the figures remain in the table below it and in each slice's tooltip.

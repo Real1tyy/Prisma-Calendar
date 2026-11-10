@@ -62,6 +62,56 @@
 			}
 		}
 
+		// Mobile header, expanded: exactly two rows. Row 1 is the left chunk (nav +
+		// Tabs); row 2 is the centre chunk, which carries action buttons on BOTH
+		// sides of the title — space-between with the title flexing is what folds
+		// the old "August 14" row into the button row.
+		.fc-toolbar-chunk:nth-child(2) {
+			justify-content: space-between;
+			flex-wrap: nowrap;
+			gap: 4px;
+
+			.fc-toolbar-title {
+				flex: 1 1 auto;
+				min-width: 0;
+				text-align: center;
+				font-size: 13px;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+		}
+
+		// Row 3 (the view switchers) is opt-in behind the "Views" button. Both this
+		// and the master collapse below are scoped away from batch mode, whose
+		// toolbar replaces the whole header — its action buttons live in this same
+		// chunk and there is no chevron to un-collapse it with.
+		&:not(.prisma-batch-mode) .fc-toolbar-chunk:last-child {
+			display: none;
+		}
+
+		&.prisma-views-row-expanded:not(.prisma-batch-mode) .fc-toolbar-chunk:last-child {
+			display: flex;
+		}
+
+		// Master collapse: everything but the chevron goes, leaving one row. The
+		// chunks themselves stay laid out so the chevron keeps its position.
+		&.prisma-header-collapsed:not(.prisma-batch-mode) {
+			.fc-toolbar-chunk:not(:first-child) {
+				display: none;
+			}
+
+			.fc-toolbar-chunk:first-child > *:not(.fc-headerCollapse-button) {
+				display: none;
+			}
+		}
+
+		.fc-headerCollapse-button {
+			font-size: 13px;
+			padding: 2px 10px;
+			line-height: 1;
+		}
+
 		// Mobile: "Filters" toggle button affordance
 		.fc-mobileControls-button.prisma-mobile-controls-toggle {
 			position: relative;

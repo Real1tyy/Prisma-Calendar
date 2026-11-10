@@ -258,6 +258,10 @@ function setupTabbedContainer({
 			tabBarContainer: headerEl,
 			...(titleContainer ? { tabBarInsertBefore: titleContainer } : {}),
 			editable: true,
+			// The calendar toolbar owns the mobile tabs affordance (its own "Tabs"
+			// button drives the handle), so the container must not render a second
+			// chip above the header.
+			showMobileTabBarToggle: false,
 			app,
 			...(savedState ? { currentState: savedState } : {}),
 			defaults: defaultState,

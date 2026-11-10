@@ -92,6 +92,18 @@
 		}
 	}
 
+	// All-day "full" mode: the strip stretches to fit every event, so the
+	// per-event height cap has to go too — capping each event would just move the
+	// cropping from the strip down into the individual rows. `dayMaxEvents: false`
+	// (set in JS) removes the "+N more" link; this removes the leftover clipping.
+	&.prisma-all-day-expanded .fc-timegrid {
+		.fc-daygrid-block-event,
+		.fc-daygrid-block-event .fc-event-main {
+			max-height: none;
+			overflow: visible;
+		}
+	}
+
 	// All-day events as columns in daily view — events sit side by side when there
 	// is enough horizontal space. Wraps to new rows when events don't fit.
 	// Uses auto basis so width is proportional to content, not forced equal.
