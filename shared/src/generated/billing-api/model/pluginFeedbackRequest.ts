@@ -3,7 +3,7 @@
  * Do not edit manually.
  * Matej Vavro Productivity plugin API
  * The routes Obsidian plugins call directly. Generated from the billing worker's Zod schemas; never edit by hand.
- * OpenAPI spec version: 1.0.0
+ * OpenAPI spec version: 1.1.0
  */
 import type { PluginFeedbackRequestDebugBundle } from './pluginFeedbackRequestDebugBundle';
 import type { PluginFeedbackRequestHealthItem } from './pluginFeedbackRequestHealthItem';

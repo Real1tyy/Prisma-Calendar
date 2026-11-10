@@ -1,3 +1,4 @@
+import { SubmitPluginFeedbackBody, submitPluginFeedbackBodyEmailMax } from "../../generated/billing-api-zod/zod";
 import type { HealthReportRow } from "../diagnostics/health";
 import type { DebugBundle } from "../logging/debug-bundle";
 import { redact, redactText } from "../logging/redact";
@@ -13,17 +14,16 @@ export const FEEDBACK_MAX_TEXT_CHARS = 4000;
 export const FEEDBACK_MAX_SCREENSHOTS = 3;
 export const FEEDBACK_MAX_SCREENSHOT_BYTES = 2_000_000;
 export const FEEDBACK_MAX_ATTACHMENT_BYTES = 5_000_000;
-/** RFC 5321's path limit — a longer address cannot be delivered to. */
-export const FEEDBACK_MAX_EMAIL_CHARS = 254;
+export const FEEDBACK_MAX_EMAIL_CHARS = submitPluginFeedbackBodyEmailMax;
 
-// Deliberately loose: the address is never verified, so this only catches the
-// typo that makes a reply impossible (no `@`, no domain), not every RFC corner.
-const PLAUSIBLE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-/** An empty value is acceptable — the field is optional. */
+/**
+ * An empty value is acceptable — the field is optional. Anything else must pass
+ * the worker's own rule, taken from the generated contract, so the modal never
+ * lets through an address that would come back as a `400` after Send.
+ */
 export function isAcceptableReplyEmail(email: string): boolean {
 	const trimmed = email.trim();
-	return trimmed === "" || (trimmed.length <= FEEDBACK_MAX_EMAIL_CHARS && PLAUSIBLE_EMAIL.test(trimmed));
+	return trimmed === "" || SubmitPluginFeedbackBody.shape.email.safeParse(trimmed).success;
 }
 
 function megabytes(bytes: number): string {

@@ -62,7 +62,7 @@ function thanksBody(channel: ReplyChannel): string {
 		case "email":
 			return `${read} If I have a question or an answer, I'll write to ${channel.address}. Thank you once again.`;
 		case "none":
-			return `${read} You left no way to reach you, so if you need an answer, please ask on GitHub. Thank you once again.`;
+			return `${read} Without an email I can't reply here, so if you need an answer, please ask on GitHub. Thank you once again.`;
 	}
 }
 
@@ -182,6 +182,9 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 	const [preview, setPreview] = useState<AttachedScreenshot | null>(null);
 	const [phase, setPhase] = useState<Phase>("form");
 	const [sentChannel, setSentChannel] = useState<ReplyChannel>({ via: "none" });
+	// Every address is malformed halfway through typing it, so the complaint
+	// waits until the user leaves the field; Submit stays gated either way.
+	const [editingEmail, setEditingEmail] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
 	const textRef = useRef<HTMLTextAreaElement | null>(null);
@@ -416,12 +419,14 @@ export const FeedbackModalContent = memo(function FeedbackModalContent({
 						value={email}
 						aria-invalid={emailInvalid}
 						onChange={(event) => setEmail(event.target.value)}
+						onFocus={() => setEditingEmail(true)}
+						onBlur={() => setEditingEmail(false)}
 						data-testid={tid("email")}
 					/>
 				</label>
 			)}
 
-			{emailInvalid && (
+			{emailInvalid && !editingEmail && (
 				<p className={cls("error")} role="alert" data-testid={tid("email-error")}>
 					{"That doesn't look like an email address — fix it, or clear it to send without one."}
 				</p>

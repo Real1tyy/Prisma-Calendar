@@ -3,7 +3,7 @@
  * Do not edit manually.
  * Matej Vavro Productivity plugin API
  * The routes Obsidian plugins call directly. Generated from the billing worker's Zod schemas; never edit by hand.
- * OpenAPI spec version: 1.0.0
+ * OpenAPI spec version: 1.1.0
  */
 import * as zod from 'zod';
 
@@ -95,7 +95,7 @@ export const SubmitPluginFeedbackBody = zod.strictObject({
   "kind": zod.enum(['feedback']),
   "type": zod.enum(['bug', 'feature', 'question', 'general']),
   "text": zod.string().max(submitPluginFeedbackBodyTextMax).describe('Server-enforced: must be non-empty unless `screenshots` carries at least one image. Trimmed before the check.'),
-  "pluginId": zod.enum(['prisma-calendar', 'periodix-planner', 'fusion-goals', 'notes-manipulator', 'bases-improvements', 'nexus-properties', 'people-manager', 'page-header-manager', 'core-finance', 'reality-custom']),
+  "pluginId": zod.enum(['prisma-calendar', 'periodix-planner', 'fusion-goals', 'notes-manipulator', 'bases-improvements', 'nexus-properties', 'people-manager', 'page-header-manager', 'core-finance', 'reality-custom', 'core-nutrition']),
   "pluginVersion": zod.string().min(1).max(submitPluginFeedbackBodyPluginVersionMax),
   "obsidianVersion": zod.string().min(1).max(submitPluginFeedbackBodyObsidianVersionMax),
   "platform": zod.enum(['macos', 'windows', 'linux', 'ios', 'android', 'unknown']),
@@ -171,7 +171,7 @@ export const SubmitReviewBody = zod.strictObject({
   "kind": zod.enum(['review']),
   "rating": zod.number().describe('Server-enforced: a half-star value, i.e. a multiple of 0.5 from 0.5 to 5 inclusive.'),
   "text": zod.string().max(submitReviewBodyTextMax).optional(),
-  "pluginId": zod.enum(['prisma-calendar', 'periodix-planner', 'fusion-goals', 'notes-manipulator', 'bases-improvements', 'nexus-properties', 'people-manager', 'page-header-manager', 'core-finance', 'reality-custom']),
+  "pluginId": zod.enum(['prisma-calendar', 'periodix-planner', 'fusion-goals', 'notes-manipulator', 'bases-improvements', 'nexus-properties', 'people-manager', 'page-header-manager', 'core-finance', 'reality-custom', 'core-nutrition']),
   "pluginVersion": zod.string().min(1).max(submitReviewBodyPluginVersionMax),
   "obsidianVersion": zod.string().min(1).max(submitReviewBodyObsidianVersionMax),
   "platform": zod.enum(['macos', 'windows', 'linux', 'ios', 'android', 'unknown']),

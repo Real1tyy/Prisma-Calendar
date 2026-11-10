@@ -3,7 +3,7 @@
  * Do not edit manually.
  * Matej Vavro Productivity plugin API
  * The routes Obsidian plugins call directly. Generated from the billing worker's Zod schemas; never edit by hand.
- * OpenAPI spec version: 1.0.0
+ * OpenAPI spec version: 1.1.0
  */
 import {
   useMutation
@@ -147,6 +147,7 @@ export const PluginFeedbackRequestPluginId = {
   'page-header-manager': 'page-header-manager',
   'core-finance': 'core-finance',
   'reality-custom': 'reality-custom',
+  'core-nutrition': 'core-nutrition',
 } as const;
 
 export type PluginFeedbackRequestPlatform = typeof PluginFeedbackRequestPlatform[keyof typeof PluginFeedbackRequestPlatform];
@@ -317,6 +318,7 @@ export const ReviewRequestPluginId = {
   'page-header-manager': 'page-header-manager',
   'core-finance': 'core-finance',
   'reality-custom': 'reality-custom',
+  'core-nutrition': 'core-nutrition',
 } as const;
 
 export type ReviewRequestPlatform = typeof ReviewRequestPlatform[keyof typeof ReviewRequestPlatform];
