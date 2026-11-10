@@ -812,15 +812,15 @@ button[class*=prisma-]:focus-visible {
   z-index: 14;
   border-top: 1px solid var(--background-modifier-border);
 }
-.prisma-calendar-container.prisma-sticky-all-day-events .fc-scrollgrid-section-body:first-of-type {
+.prisma-calendar-container.prisma-sticky-all-day-events .fc-scrollgrid-section-body:first-of-type > * {
   position: sticky;
   z-index: 11;
   background-color: var(--background-primary);
 }
-.prisma-calendar-container.prisma-sticky-day-headers.prisma-sticky-all-day-events .fc-scrollgrid-section-body:first-of-type {
+.prisma-calendar-container.prisma-sticky-day-headers.prisma-sticky-all-day-events .fc-scrollgrid-section-body:first-of-type > * {
   top: calc(var(--prisma-sticky-toolbar-offset) + var(--prisma-sticky-day-header-height) + 1px);
 }
-.prisma-calendar-container.prisma-sticky-all-day-events:not(.prisma-sticky-day-headers) .fc-scrollgrid-section-body:first-of-type {
+.prisma-calendar-container.prisma-sticky-all-day-events:not(.prisma-sticky-day-headers) .fc-scrollgrid-section-body:first-of-type > * {
   top: calc(var(--prisma-sticky-toolbar-offset) + 1px);
 }
 .prisma-calendar-container.prisma-drag-allday-pinned .fc-timegrid .fc-scrollgrid-section-body:first-of-type .fc-scroller {

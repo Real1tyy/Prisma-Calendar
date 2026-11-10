@@ -19,7 +19,9 @@
 		border-top: 1px solid var(--background-modifier-border);
 	}
 
-	&.prisma-sticky-all-day-events .fc-scrollgrid-section-body:first-of-type {
+	// Pin the cells, as FullCalendar does for its sticky headers. Mobile WebViews
+	// can paint a sticky table row while still hit-testing its original position.
+	&.prisma-sticky-all-day-events .fc-scrollgrid-section-body:first-of-type > * {
 		position: sticky;
 		z-index: 11;
 		background-color: var(--background-primary);
@@ -27,12 +29,12 @@
 
 	// Position all-day section below sticky day headers when both are enabled
 	// FullCalendar's sticky headers are at a higher z-index, so we position below them
-	&.prisma-sticky-day-headers.prisma-sticky-all-day-events .fc-scrollgrid-section-body:first-of-type {
+	&.prisma-sticky-day-headers.prisma-sticky-all-day-events .fc-scrollgrid-section-body:first-of-type > * {
 		top: calc(var(--prisma-sticky-toolbar-offset) + var(--prisma-sticky-day-header-height) + 1px);
 	}
 
 	// Position all-day section at top when only sticky all-day is enabled
-	&.prisma-sticky-all-day-events:not(.prisma-sticky-day-headers) .fc-scrollgrid-section-body:first-of-type {
+	&.prisma-sticky-all-day-events:not(.prisma-sticky-day-headers) .fc-scrollgrid-section-body:first-of-type > * {
 		top: calc(var(--prisma-sticky-toolbar-offset) + 1px);
 	}
 
