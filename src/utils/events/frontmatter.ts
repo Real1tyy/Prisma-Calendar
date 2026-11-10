@@ -1,11 +1,9 @@
 import {
-	ensureISOSuffix,
 	parseIntoList,
 	serializeFrontmatterValue,
 	toSafeString,
 	type FrontmatterDiff,
 } from "@real1ty/obsidian-plugins";
-import { DateTime, type DurationLike } from "luxon";
 import { TFile, type App } from "obsidian";
 
 import { INTERNAL_FRONTMATTER_PROPERTIES } from "../../constants";
@@ -26,7 +24,6 @@ import {
 	NOTIFICATION_SYSTEM_PROP_KEYS,
 	SYSTEM_PROP_KEYS,
 } from "../../types/settings";
-import { stripZ } from "../dates/iso";
 import { computeSortDateValue } from "../frontmatter/basics";
 import { getFileAndFrontmatter } from "../obsidian";
 
@@ -116,79 +113,6 @@ export const applyDateNormalizationToFile = async (
 	} catch (error) {
 		log.error("parser", "Failed to write the sort date", { filePath, error });
 	}
-};
-
-const shiftISO = (iso: unknown, duration?: DurationLike) => {
-	if (!iso || typeof iso !== "string" || !duration) return iso;
-	const stripped = stripZ(iso);
-	const dt = DateTime.fromISO(stripped);
-	if (!dt.isValid) return iso;
-	const shifted = dt.plus(duration);
-	if (!stripped.includes("T")) {
-		return shifted.toISODate();
-	}
-	const bare = shifted.toISO({ suppressMilliseconds: true, includeOffset: false });
-	return iso.endsWith("Z") ? ensureISOSuffix(bare) : bare;
-};
-
-export const applyStartEndOffsets = (
-	fm: Frontmatter,
-	settings: SingleCalendarConfig,
-	startOffset?: DurationLike,
-	endOffset?: DurationLike
-) => {
-	const { startProp, endProp, dateProp, allDayProp } = settings;
-
-	if (isAllDayEvent(fm[allDayProp])) {
-		if (fm[dateProp]) {
-			fm[dateProp] = shiftISO(fm[dateProp], startOffset);
-		}
-	} else {
-		if (fm[startProp]) fm[startProp] = shiftISO(fm[startProp], startOffset);
-		if (fm[endProp]) fm[endProp] = shiftISO(fm[endProp], endOffset);
-	}
-};
-
-export const setEventBasics = (
-	fm: Frontmatter,
-	settings: SingleCalendarConfig,
-	data: {
-		title?: string | undefined;
-		start: string;
-		end?: string | undefined;
-		allDay?: boolean | undefined;
-		zettelId?: number | undefined;
-	}
-) => {
-	const { titleProp, startProp, endProp, dateProp, allDayProp, zettelIdProp } = settings;
-
-	if (titleProp && data.title) fm[titleProp] = data.title;
-
-	if (data.allDay !== undefined) fm[allDayProp] = data.allDay;
-
-	const dateOnly = data.start.split("T")[0];
-
-	if (data.allDay) {
-		fm[dateProp] = dateOnly;
-		fm[startProp] = "";
-		fm[endProp] = "";
-	} else {
-		fm[startProp] = ensureISOSuffix(data.start);
-		if (data.end) fm[endProp] = ensureISOSuffix(data.end);
-		fm[dateProp] = "";
-	}
-
-	const sortResult = computeSortDateValue(settings, data.start, data.end, data.allDay);
-	if (sortResult) fm[sortResult.targetProp] = sortResult.value;
-
-	if (zettelIdProp && data.zettelId) fm[zettelIdProp] = data.zettelId;
-};
-
-export const setUntrackedEventBasics = (fm: Frontmatter, settings: SingleCalendarConfig): void => {
-	fm[settings.startProp] = "";
-	fm[settings.endProp] = "";
-	fm[settings.dateProp] = "";
-	fm[settings.allDayProp] = "";
 };
 
 export const isEventDone = (app: App, filePath: string, statusProperty: string, doneValue: string): boolean => {

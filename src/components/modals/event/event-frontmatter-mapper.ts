@@ -1,7 +1,7 @@
 import type { Frontmatter } from "../../../types";
 import { NonNegativeInt, PositiveInt, type EventEditableFormFields } from "../../../types/event-boundaries";
 import type { SingleCalendarConfig } from "../../../types/settings";
-import { setEventBasics, setUntrackedEventBasics } from "../../../utils/events/frontmatter";
+import { setEventBasics, setUntrackedEventBasics } from "../../../utils/frontmatter/basics";
 import { setBooleanProp } from "../../../utils/frontmatter/writer";
 import type { RecurringFormState } from "./event-form-state";
 

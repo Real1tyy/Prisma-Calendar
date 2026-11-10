@@ -11,7 +11,7 @@ import { TFile, type App } from "obsidian";
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
 import type { RecurrenceType } from "../../types/recurring";
 import { generateUniqueEventPath } from "../../utils/events/file-naming";
-import { assignListToFrontmatter, setEventBasics } from "../../utils/events/frontmatter";
+import { assignListToFrontmatter } from "../../utils/events/frontmatter";
 import { autoAssignCategories } from "../../utils/events/matching";
 import {
 	deriveSyncedNoteId,
@@ -20,6 +20,7 @@ import {
 	toZettelIdFrontmatterValue,
 } from "../../utils/events/zettel-id";
 import { compileFrontmatterFilter } from "../../utils/filters/logic";
+import { setEventBasics } from "../../utils/frontmatter/basics";
 import { enforceEventPropertyOrder } from "../../utils/frontmatter/ordering";
 import type { CalendarBundle } from "../calendar-bundle";
 import { log } from "../logging";

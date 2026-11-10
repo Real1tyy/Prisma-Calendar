@@ -41,10 +41,10 @@ import {
 	applyFrontmatterChangesToInstance,
 	filterExcludedPropsFromDiff,
 	getExcludedProps,
-	setEventBasics,
 	type TimePropagationDiff,
 } from "../utils/events/frontmatter";
 import { hashRRuleIdToZettelFormat, removeZettelId } from "../utils/events/zettel-id";
+import { setEventBasics } from "../utils/frontmatter/basics";
 import { enforceEventPropertyOrder } from "../utils/frontmatter/ordering";
 import { batchedPromiseAll, deleteFilesByPaths, getFileAndFrontmatter, getFileByPathOrThrow } from "../utils/obsidian";
 import type { CategoryTracker } from "./category-tracker";
