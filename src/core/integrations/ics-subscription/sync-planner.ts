@@ -1,5 +1,5 @@
 import type { IntegrationDeletionTombstone } from "../../../types/integrations";
-import { isIntegrationEventDeleted } from "../deleted-event-tombstones";
+import { IntegrationDeletionIndex } from "../deleted-event-tombstones";
 import type { ImportedEvent } from "../ics-import";
 import type { ICSSubscriptionSyncMetadata } from "./types";
 
@@ -87,6 +87,7 @@ export function computeIcsSubscriptionSyncPlan(inputs: PlanInputs): SyncPlan {
 		userDeletedEvents = [],
 	} = inputs;
 	const actions: SyncPlanAction[] = [];
+	const deletionIndex = new IntegrationDeletionIndex(userDeletedEvents);
 	const remoteUids = new Set<string>();
 	// O(1) lookup for tracked events by UID, since we'll be doing 1+ lookups per remote event.
 	const ownTrackedByUid = new Map(trackedBySubscription.map((t) => [t.metadata.uid, t]));
@@ -102,7 +103,7 @@ export function computeIcsSubscriptionSyncPlan(inputs: PlanInputs): SyncPlan {
 			continue;
 		}
 		remoteUids.add(uid);
-		if (isIntegrationEventDeleted(userDeletedEvents, { kind: "ics-subscription", subscriptionId, uid })) {
+		if (deletionIndex.has({ kind: "ics-subscription", subscriptionId, uid })) {
 			actions.push({ kind: "skip-user-deleted", uid });
 			continue;
 		}

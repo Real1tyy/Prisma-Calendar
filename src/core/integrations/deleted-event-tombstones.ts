@@ -3,6 +3,26 @@ import type { IntegrationDeletionTombstone } from "../../types/integrations";
 import { CalDAVSyncMetadataSchema } from "./caldav/types";
 import { ICSSubscriptionSyncMetadataSchema } from "./ics-subscription/types";
 
+export function integrationDeletionKey(identity: IntegrationDeletionTombstone): string {
+	return JSON.stringify(
+		identity.kind === "caldav"
+			? [identity.kind, identity.accountId, identity.calendarHref, identity.uid]
+			: [identity.kind, identity.subscriptionId, identity.uid]
+	);
+}
+
+export class IntegrationDeletionIndex {
+	private readonly keys: Set<string>;
+
+	constructor(identities: readonly IntegrationDeletionTombstone[] = []) {
+		this.keys = new Set(identities.map(integrationDeletionKey));
+	}
+
+	has(identity: IntegrationDeletionTombstone): boolean {
+		return this.keys.has(integrationDeletionKey(identity));
+	}
+}
+
 export function createIntegrationDeletionLifecycle(
 	settingsStore: PrismaCalendarSettingsStore,
 	settings: SingleCalendarConfig
@@ -78,11 +98,4 @@ export async function removeIntegrationDeletionTombstone(
 			(existing) => !sameIntegrationDeletionTombstone(existing, tombstone)
 		),
 	}));
-}
-
-export function isIntegrationEventDeleted(
-	tombstones: readonly IntegrationDeletionTombstone[],
-	tombstone: IntegrationDeletionTombstone
-): boolean {
-	return tombstones.some((existing) => sameIntegrationDeletionTombstone(existing, tombstone));
 }

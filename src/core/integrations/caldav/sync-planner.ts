@@ -1,5 +1,5 @@
 import type { IntegrationDeletionTombstone } from "../../../types/integrations";
-import { isIntegrationEventDeleted } from "../deleted-event-tombstones";
+import { IntegrationDeletionIndex } from "../deleted-event-tombstones";
 import type { CalDAVFetchedEvent } from "./client";
 import type { CalDAVSyncMetadata } from "./types";
 
@@ -132,6 +132,7 @@ export function computeCaldavSyncPlan(inputs: PlanInputs): SyncPlan {
 		userDeletedEvents = [],
 	} = inputs;
 	const actions: SyncPlanAction[] = [];
+	const deletionIndex = new IntegrationDeletionIndex(userDeletedEvents);
 
 	for (const event of remoteEvents) {
 		const uid = event.uid ?? "";
@@ -140,7 +141,7 @@ export function computeCaldavSyncPlan(inputs: PlanInputs): SyncPlan {
 			continue;
 		}
 		if (
-			isIntegrationEventDeleted(userDeletedEvents, {
+			deletionIndex.has({
 				kind: "caldav",
 				accountId: inputs.accountId,
 				calendarHref: inputs.calendarHref,
