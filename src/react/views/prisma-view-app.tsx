@@ -28,6 +28,7 @@ import { DailyStatsTab, type DailyStatsTabHandle } from "./daily-stats-tab";
 import { buildDashboardChildren } from "./dashboard-tab";
 import { DualDailyTab, type DualDailyTabHandle } from "./dual-daily-tab";
 import { GanttTab } from "./gantt-tab";
+import { HeaderExpandChevron } from "./header-expand-chevron";
 import { HeatmapMonthlyStatsTab, type HeatmapMonthlyStatsTabHandle } from "./heatmap-monthly-stats-tab";
 import { HeatmapTab, type HeatmapTabHandle } from "./heatmap-tab";
 import { makeReactTab } from "./make-react-tab";
@@ -314,6 +315,20 @@ function setupCapacityIndicator(titleContainer: HTMLElement, mountCtx: MountCtx,
 	};
 }
 
+function setupHeaderExpandChevron(titleContainer: HTMLElement, mountCtx: MountCtx, viewRef: PrismaViewRef): () => void {
+	const host = titleContainer.createDiv(`${CSS_PREFIX}header-expand-chevron-host`);
+	const unmount = renderReactInline(
+		host,
+		<HeaderExpandChevron onExpand={() => viewRef.calendarComponent?.expandHeader()} />,
+		mountCtx.app,
+		{ cssPrefix: CSS_PREFIX }
+	);
+	return () => {
+		unmount();
+		host.remove();
+	};
+}
+
 function setupPageHeader(mountCtx: MountCtx, viewRef: PrismaViewRef): () => void {
 	const { app, plugin, bundle, leaf } = mountCtx;
 	const savedState = bundle.settingsStore.currentSettings.pageHeaderState;
@@ -370,11 +385,13 @@ export const PrismaViewApp = memo(function PrismaViewApp({
 			refs,
 		});
 		const teardownCapacity = titleContainer ? setupCapacityIndicator(titleContainer, mountCtx, viewRef) : null;
+		const teardownChevron = titleContainer ? setupHeaderExpandChevron(titleContainer, mountCtx, viewRef) : null;
 		const teardownPageHeader = setupPageHeader(mountCtx, viewRef);
 
 		return () => {
 			viewRef.calendarComponent?.unload();
 			viewRef.calendarComponent = null;
+			teardownChevron?.();
 			teardownCapacity?.();
 			viewRef.capacityIndicatorHandle = null;
 			teardownPageHeader();

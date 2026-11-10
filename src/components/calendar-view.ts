@@ -19,7 +19,7 @@ import {
 	toLocalISOString,
 } from "@real1ty/obsidian-plugins";
 import { renderReactInline } from "@real1ty/obsidian-plugins-react";
-import { Component, Notice, Platform, TFile, type App, type WorkspaceLeaf } from "obsidian";
+import { Component, Menu, Notice, Platform, setIcon, TFile, type App, type WorkspaceLeaf } from "obsidian";
 import { createElement } from "react";
 import { BehaviorSubject } from "rxjs";
 
@@ -85,7 +85,13 @@ import {
 	type VerticalEdgeScrollDirection,
 } from "../utils/calendar/edge-scroll";
 import { getCalendarRenderingKey } from "../utils/calendar/settings";
-import { batchSelectLabel, buildHeaderToolbarChunks, titleFormatFor } from "../utils/calendar/toolbar-layout";
+import {
+	batchSelectLabel,
+	buildBatchToolbarChunks,
+	buildHeaderToolbarChunks,
+	hiddenEventsMenuItems,
+	titleFormatFor,
+} from "../utils/calendar/toolbar-layout";
 import { stripZ } from "../utils/dates/iso";
 import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
 import {
@@ -170,6 +176,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	private headerCollapsed = false;
 	/** Mobile: is the view-switcher row revealed? Hidden on open. */
 	private viewsExpanded = false;
+	/** Mobile: is the Nav row (Today, Now, the date) revealed? Hidden on open. */
+	private navExpanded = false;
 	private allDayMode: AllDayMode = DEFAULT_ALL_DAY_MODE;
 	private renderedEvents = new Map<string, string>();
 	private hasPerformedInitialLoad = false;
@@ -932,7 +940,11 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			if (!inSelectionMode) {
 				this.applyFilteredEventsButtonState();
 				this.applySkippedEventsButtonState();
+				this.applyStatusMenuButtonState();
 				this.mountZoomControl();
+				const navBreak = this.container.querySelector(".fc-navBreak-button");
+				navBreak?.setAttribute("tabindex", "-1");
+				navBreak?.setAttribute("aria-hidden", "true");
 			}
 			this.scheduleStickyOffsetsUpdate();
 			this.stampToolbarTestIds();
@@ -982,6 +994,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			[".fc-headerCollapse-button", "prisma-cal-toolbar-header-collapse"],
 			[".fc-tabsToggle-button", "prisma-cal-toolbar-tabs-toggle"],
 			[".fc-viewsToggle-button", "prisma-cal-toolbar-views-toggle"],
+			[".fc-navToggle-button", "prisma-cal-toolbar-nav-toggle"],
+			[".fc-statusMenu-button", "prisma-cal-toolbar-status-menu"],
 			[".fc-allDayMode-button", "prisma-cal-toolbar-all-day-mode"],
 			// Batch-mode toolbar buttons — only rendered while selection mode is on.
 			// Key off FC's own `fc-<customButtonKey>-button` class (e.g. `batchCounter`
@@ -1020,14 +1034,11 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		customButtons: Record<string, ExtendedButtonInput>;
 	} {
 		if (inSelectionMode) {
-			const left = "prev,next today";
-			const settings = this.bundle.settingsStore.currentSettings;
-
-			const rightButtons = ["batchCounter", ...settings.batchActionButtons, "batchExit"];
-			const right = rightButtons.join(" ");
-
 			return {
-				headerToolbar: { left, center: "title", right },
+				headerToolbar: buildBatchToolbarChunks({
+					isMobile: this.isMobileView(),
+					actionButtons: this.bundle.settingsStore.currentSettings.batchActionButtons,
+				}),
 				customButtons: this.buildBatchButtons(),
 			};
 		}
@@ -1065,6 +1076,17 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			viewsToggle: {
 				text: "Views",
 				click: () => this.setViewsExpanded(!this.viewsExpanded),
+			},
+			navToggle: {
+				text: "Nav",
+				click: () => this.setNavExpanded(!this.navExpanded),
+			},
+			// Zero-height, full-width: CSS turns it into the line break that starts the
+			// Nav row inside the left chunk.
+			navBreak: { text: "", click: () => {} },
+			statusMenu: {
+				text: "",
+				click: (ev) => this.openStatusMenu(ev),
 			},
 			allDayMode: {
 				text: allDayModeLabel(this.allDayMode),
@@ -1281,13 +1303,19 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.applyMobileControlsCollapsedState();
 	}
 
+	/** The view header's ▾ calls this: while collapsed, the toolbar's own chevron is not rendered. */
+	expandHeader(): void {
+		this.setHeaderCollapsed(false);
+	}
+
 	private setHeaderCollapsed(collapsed: boolean): void {
 		this.headerCollapsed = collapsed;
-		// Collapsing is a master switch: the two rows it hides must not come back
-		// revealed when the user expands again, or "expanded" would mean four rows
+		// Collapsing is a master switch: the rows it hides must not come back
+		// revealed when the user expands again, or "expanded" would mean five rows
 		// on the second open.
 		if (collapsed) {
 			this.viewsExpanded = false;
+			this.navExpanded = false;
 			this.bundle.viewRef.tabbedHandle?.setTabBarCollapsed(true);
 		}
 		this.applyHeaderCollapsedState();
@@ -1299,10 +1327,39 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.applyHeaderCollapsedState();
 	}
 
+	private setNavExpanded(expanded: boolean): void {
+		this.navExpanded = expanded;
+		this.applyHeaderCollapsedState();
+	}
+
+	private openStatusMenu(ev: MouseEvent): void {
+		const menu = new Menu();
+		for (const item of hiddenEventsMenuItems(this.filteredEventsCount, this.skippedEventsCount)) {
+			menu.addItem((menuItem) =>
+				menuItem
+					.setTitle(item.label)
+					.setIcon(item.kind === "filtered" ? "filter" : "eye-off")
+					.onClick(() =>
+						item.kind === "filtered"
+							? openFilteredEventsModal(this.app, this.bundle, this.filteredEvents)
+							: this.showSkippedEventsModal()
+					)
+			);
+		}
+		const target = ev.currentTarget;
+		if (target instanceof HTMLElement) {
+			const rect = target.getBoundingClientRect();
+			menu.showAtPosition({ x: rect.left, y: rect.bottom + 4 });
+		} else {
+			menu.showAtMouseEvent(ev);
+		}
+	}
+
 	private applyHeaderCollapsedState(): void {
 		const isMobile = this.isMobileView();
 		this.container.classList.toggle(cls("header-collapsed"), isMobile && this.headerCollapsed);
 		this.container.classList.toggle(cls("views-row-expanded"), isMobile && this.viewsExpanded);
+		this.container.classList.toggle(cls("nav-row-expanded"), isMobile && this.navExpanded);
 		this.scheduleStickyOffsetsUpdate();
 	}
 
@@ -1404,11 +1461,25 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	private updateSkippedEventsButton(count: number): void {
 		this.skippedEventsCount = count;
 		this.applySkippedEventsButtonState();
+		this.applyStatusMenuButtonState();
 	}
 
 	private updateFilteredEventsButton(count: number): void {
 		this.filteredEventsCount = count;
 		this.applyFilteredEventsButtonState();
+		this.applyStatusMenuButtonState();
+	}
+
+	/** Phone only: the one icon that stands in for the filtered and skipped counts. */
+	private applyStatusMenuButtonState(): void {
+		if (!this.calendar) return;
+		const btn = this.container.querySelector(".fc-statusMenu-button");
+		if (!(btn instanceof HTMLElement)) return;
+		const items = hiddenEventsMenuItems(this.filteredEventsCount, this.skippedEventsCount);
+		if (!btn.querySelector("svg")) setIcon(btn, "eye-off");
+		btn.setAttribute("aria-label", items.length > 0 ? items.map((item) => item.label).join(", ") : "No hidden events");
+		btn.classList.toggle(cls("fc-button-visible"), items.length > 0);
+		btn.classList.toggle(cls("fc-button-hidden"), items.length === 0);
 	}
 
 	private applyFilteredEventsButtonState(): void {

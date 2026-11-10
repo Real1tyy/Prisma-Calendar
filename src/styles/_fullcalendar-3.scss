@@ -82,24 +82,60 @@
 			}
 		}
 
-		// Mobile header, expanded: exactly two rows. Row 1 is the left chunk (nav +
-		// Tabs); row 2 is the centre chunk, which carries action buttons on BOTH
-		// sides of the title — space-between with the title flexing is what folds
-		// the old "August 14" row into the button row.
+		// Mobile header, expanded: two rows. Row 1 is the left chunk, row 2 the centre
+		// chunk. Row 2 wraps rather than clipping when it cannot fit — a clipped row
+		// hides its last button off the edge.
 		.fc-toolbar-chunk:nth-child(2) {
-			justify-content: space-between;
-			flex-wrap: nowrap;
-			gap: 4px;
+			flex-wrap: wrap;
+			justify-content: center;
+		}
+
+		// The Nav row lives in the left chunk after a zero-height, full-width
+		// `navBreak`, so it always starts its own line. `order` keeps it above the
+		// Filters controls that are appended to the same chunk.
+		&:not(.prisma-batch-mode) .fc-toolbar-chunk:first-child {
+			.fc-navBreak-button {
+				flex-basis: 100%;
+				height: 0;
+				padding: 0;
+				margin: 0;
+				border: 0;
+				box-shadow: none;
+				background: none;
+			}
+
+			.fc-navBreak-button,
+			.fc-today-button,
+			.fc-now-button,
+			.fc-toolbar-title {
+				order: 1;
+			}
+
+			.prisma-fc-filter-preset-wrapper,
+			.prisma-fc-filter-wrapper {
+				order: 2;
+			}
 
 			.fc-toolbar-title {
-				flex: 1 1 auto;
-				min-width: 0;
-				text-align: center;
 				font-size: 13px;
 				white-space: nowrap;
-				overflow: hidden;
-				text-overflow: ellipsis;
 			}
+		}
+
+		&:not(.prisma-nav-row-expanded):not(.prisma-batch-mode) .fc-toolbar-chunk:first-child {
+			.fc-navBreak-button,
+			.fc-today-button,
+			.fc-now-button,
+			.fc-toolbar-title {
+				display: none;
+			}
+		}
+
+		// The status button stands in for "N filtered" / "N skipped"; icon only.
+		.fc-statusMenu-button svg {
+			width: 14px;
+			height: 14px;
+			vertical-align: middle;
 		}
 
 		// Row 3 (the view switchers) is opt-in behind the "Views" button. Both this
@@ -114,16 +150,10 @@
 			display: flex;
 		}
 
-		// Master collapse: everything but the chevron goes, leaving one row. The
-		// chunks themselves stay laid out so the chevron keeps its position.
-		&.prisma-header-collapsed:not(.prisma-batch-mode) {
-			.fc-toolbar-chunk:not(:first-child) {
-				display: none;
-			}
-
-			.fc-toolbar-chunk:first-child > *:not(.fc-headerCollapse-button) {
-				display: none;
-			}
+		// Master collapse: the whole toolbar goes. Its ▾ lives in the view header,
+		// beside the capacity readout (`HeaderExpandChevron`), so collapsed costs no row.
+		&.prisma-header-collapsed:not(.prisma-batch-mode) .fc-header-toolbar {
+			display: none;
 		}
 
 		.fc-headerCollapse-button {

@@ -306,14 +306,16 @@ const TAB_OVERFLOW_ACTIVE_ATTR = "data-tab-overflow-active";
 const TAB_ID_ATTR = "data-tab-id";
 
 /**
- * Keep the tab bar to one row: hide trailing tabs until the row's last visible control
- * (the overflow trigger, then Manage) fits inside the bar, and flag the bar so CSS
- * reveals the trigger. Same position-based model as the page header's
- * `usePackActionRow` — measuring real rects is right whatever the host flexbox does
- * with the bar's width, where width arithmetic is not.
+ * Keep the tab bar to one row. When everything does not fit, flag the bar so CSS
+ * reveals the overflow trigger, then fill the row first-fit in tab order: each tab is
+ * shown and kept only if the row's last visible control (the trigger, then Manage)
+ * still fits inside the bar. A tab too wide is skipped rather than ending the row, so
+ * a narrower one after it still gets the space. Same position-based model as the page
+ * header's `usePackActionRow` — measuring real rects is right whatever the host
+ * flexbox does with the bar's width, where width arithmetic is not.
  *
- * The active tab is skipped so it can never be trimmed: hiding it would leave the
- * user on a tab with no visible marker of where they are.
+ * The active tab is never hidden: hiding it would leave the user on a tab with no
+ * visible marker of where they are.
  *
  * `revision` must change whenever the tab set, a label, or the active tab changes,
  * since each moves the fit.
@@ -344,9 +346,11 @@ function usePackTabRow(barRef: RefObject<HTMLDivElement | null>, revision: strin
 			if (rightmostVisibleEdge() <= limit) return;
 
 			bar.setAttribute(TAB_OVERFLOW_ACTIVE_ATTR, "true");
-			for (let i = tabs.length - 1; i >= 0 && rightmostVisibleEdge() > limit; i--) {
-				if (tabs[i].getAttribute("aria-selected") === "true") continue;
-				tabs[i].setAttribute(TAB_OVERFLOW_ATTR, "true");
+			const candidates = tabs.filter((tab) => tab.getAttribute("aria-selected") !== "true");
+			for (const tab of candidates) tab.setAttribute(TAB_OVERFLOW_ATTR, "true");
+			for (const tab of candidates) {
+				tab.removeAttribute(TAB_OVERFLOW_ATTR);
+				if (rightmostVisibleEdge() > limit) tab.setAttribute(TAB_OVERFLOW_ATTR, "true");
 			}
 		};
 

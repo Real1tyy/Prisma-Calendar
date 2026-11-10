@@ -946,18 +946,42 @@ button[class*=prisma-]:focus-visible {
     display: none;
   }
   .prisma-calendar-container .fc-toolbar-chunk:nth-child(2) {
-    justify-content: space-between;
-    flex-wrap: nowrap;
-    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: center;
   }
-  .prisma-calendar-container .fc-toolbar-chunk:nth-child(2) .fc-toolbar-title {
-    flex: 1 1 auto;
-    min-width: 0;
-    text-align: center;
+  .prisma-calendar-container:not(.prisma-batch-mode) .fc-toolbar-chunk:first-child .fc-navBreak-button {
+    flex-basis: 100%;
+    height: 0;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    box-shadow: none;
+    background: none;
+  }
+  .prisma-calendar-container:not(.prisma-batch-mode) .fc-toolbar-chunk:first-child .fc-navBreak-button,
+  .prisma-calendar-container:not(.prisma-batch-mode) .fc-toolbar-chunk:first-child .fc-today-button,
+  .prisma-calendar-container:not(.prisma-batch-mode) .fc-toolbar-chunk:first-child .fc-now-button,
+  .prisma-calendar-container:not(.prisma-batch-mode) .fc-toolbar-chunk:first-child .fc-toolbar-title {
+    order: 1;
+  }
+  .prisma-calendar-container:not(.prisma-batch-mode) .fc-toolbar-chunk:first-child .prisma-fc-filter-preset-wrapper,
+  .prisma-calendar-container:not(.prisma-batch-mode) .fc-toolbar-chunk:first-child .prisma-fc-filter-wrapper {
+    order: 2;
+  }
+  .prisma-calendar-container:not(.prisma-batch-mode) .fc-toolbar-chunk:first-child .fc-toolbar-title {
     font-size: 13px;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  }
+  .prisma-calendar-container:not(.prisma-nav-row-expanded):not(.prisma-batch-mode) .fc-toolbar-chunk:first-child .fc-navBreak-button,
+  .prisma-calendar-container:not(.prisma-nav-row-expanded):not(.prisma-batch-mode) .fc-toolbar-chunk:first-child .fc-today-button,
+  .prisma-calendar-container:not(.prisma-nav-row-expanded):not(.prisma-batch-mode) .fc-toolbar-chunk:first-child .fc-now-button,
+  .prisma-calendar-container:not(.prisma-nav-row-expanded):not(.prisma-batch-mode) .fc-toolbar-chunk:first-child .fc-toolbar-title {
+    display: none;
+  }
+  .prisma-calendar-container .fc-statusMenu-button svg {
+    width: 14px;
+    height: 14px;
+    vertical-align: middle;
   }
   .prisma-calendar-container:not(.prisma-batch-mode) .fc-toolbar-chunk:last-child {
     display: none;
@@ -965,10 +989,7 @@ button[class*=prisma-]:focus-visible {
   .prisma-calendar-container.prisma-views-row-expanded:not(.prisma-batch-mode) .fc-toolbar-chunk:last-child {
     display: flex;
   }
-  .prisma-calendar-container.prisma-header-collapsed:not(.prisma-batch-mode) .fc-toolbar-chunk:not(:first-child) {
-    display: none;
-  }
-  .prisma-calendar-container.prisma-header-collapsed:not(.prisma-batch-mode) .fc-toolbar-chunk:first-child > *:not(.fc-headerCollapse-button) {
+  .prisma-calendar-container.prisma-header-collapsed:not(.prisma-batch-mode) .fc-header-toolbar {
     display: none;
   }
   .prisma-calendar-container .fc-headerCollapse-button {
@@ -1668,6 +1689,26 @@ button[class*=prisma-]:focus-visible {
     display: none;
   }
 }
+.prisma-header-expand-chevron-host {
+  display: contents;
+}
+
+.prisma-header-expand-chevron {
+  display: none;
+  margin-left: 6px;
+  padding: 2px 10px;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.workspace-leaf-content:has(.prisma-tab-panel:not(.prisma-tab-panel-hidden) .prisma-calendar-container.prisma-header-collapsed:not(.prisma-batch-mode)) .prisma-header-expand-chevron {
+  display: inline-flex;
+}
+
+.prisma-batch-mode .prisma-untracked-dropdown-wrapper {
+  display: none;
+}
+
 .prisma-settings-search {
   margin-left: auto;
   flex-shrink: 0;

@@ -122,3 +122,32 @@
 		display: none;
 	}
 }
+
+// The collapsed phone header's ▾, in the view header. Shown only while the visible
+// calendar tab's header is collapsed (the class is set on phones only), so it never
+// appears on desktop or on another tab. See [[spec-mobile-calendar-header-row-economy]].
+.prisma-header-expand-chevron-host {
+	display: contents;
+}
+
+.prisma-header-expand-chevron {
+	display: none;
+	margin-left: 6px;
+	padding: 2px 10px;
+	font-size: 13px;
+	line-height: 1;
+}
+
+.workspace-leaf-content:has(
+		.prisma-tab-panel:not(.prisma-tab-panel-hidden)
+			.prisma-calendar-container.prisma-header-collapsed:not(.prisma-batch-mode)
+	)
+	.prisma-header-expand-chevron {
+	display: inline-flex;
+}
+
+// Selecting events has nothing to do with untracked ones, and on a phone the
+// button pushed the date off-centre.
+.prisma-batch-mode .prisma-untracked-dropdown-wrapper {
+	display: none;
+}

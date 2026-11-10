@@ -29,10 +29,12 @@ export interface ToolbarLayoutInput {
 }
 
 /**
- * Mobile packs action buttons into the *centre* chunk alongside the title.
- * FullCalendar accepts arbitrary button names there, and it is the only way to
- * get buttons on both sides of the title without a third row — which is the
- * whole point of the collapse (five rows of chrome on a phone).
+ * FullCalendar has three chunks and a phone header needs four rows, so the mobile
+ * left chunk carries two: row 1, then — after `navBreak`, a zero-height
+ * full-width item CSS turns into a line break — the Nav row (Today, Now, the
+ * date), hidden until **Nav** is pressed. The centre chunk is row 2, the right
+ * chunk the view switchers. Filtered/skipped counts fold into one `statusMenu`
+ * icon there. See [[spec-mobile-calendar-header-row-economy]].
  */
 export function buildHeaderToolbarChunks({
 	isMobile,
@@ -40,31 +42,38 @@ export function buildHeaderToolbarChunks({
 	showMobileControlsToggle,
 	showAllDayMode,
 }: ToolbarLayoutInput): HeaderToolbarChunks {
-	const navItems: string[] = [];
-	if (enabledButtons.has("prevNext")) navItems.push("prev", "next");
-	if (enabledButtons.has("today")) navItems.push("today");
-	if (enabledButtons.has("now")) navItems.push("now");
-	if (enabledButtons.has("createEvent")) navItems.push("createEvent");
-	if (enabledButtons.has("zoomLevel")) navItems.push("zoomLevel");
-	if (isMobile && showMobileControlsToggle) navItems.push("mobileControls");
+	const prevNext = enabledButtons.has("prevNext") ? ["prev", "next"] : [];
+	const today = enabledButtons.has("today") ? ["today"] : [];
+	const now = enabledButtons.has("now") ? ["now"] : [];
+	const create = enabledButtons.has("createEvent") ? ["createEvent"] : [];
+	const zoom = enabledButtons.has("zoomLevel") ? ["zoomLevel"] : [];
 
 	if (isMobile) {
-		const center = [
-			"filteredEvents",
-			"skippedEvents",
+		const row1 = [
+			"headerCollapse",
+			...prevNext,
+			...create,
+			...zoom,
+			...(showMobileControlsToggle ? ["mobileControls"] : []),
+			"tabsToggle",
+			"navToggle",
+		];
+		const navRow = ["navBreak", ...today, ...now, "title"];
+		const row2 = [
+			"statusMenu",
 			"eventsButton",
-			"title",
 			"batchSelect",
 			...(showAllDayMode ? ["allDayMode"] : []),
 			"viewsToggle",
 		];
 		return {
-			left: ["headerCollapse", ...navItems, "tabsToggle"].join(" "),
-			center: center.join(" "),
+			left: [...row1, ...navRow].join(" "),
+			center: row2.join(" "),
 			right: VIEW_SWITCHER_BUTTONS,
 		};
 	}
 
+	const navItems = [...prevNext, ...today, ...now, ...create, ...zoom];
 	const right = [
 		"filteredEvents",
 		"eventsButton",
@@ -74,6 +83,34 @@ export function buildHeaderToolbarChunks({
 		VIEW_SWITCHER_BUTTONS,
 	];
 	return { left: navItems.join(" "), center: "title", right: right.join(" ") };
+}
+
+export interface BatchToolbarInput {
+	isMobile: boolean;
+	/** The batch action buttons the user enabled, in order. */
+	actionButtons: readonly string[];
+}
+
+/** On a phone, Exit rides beside the date rather than ending a row of its own. */
+export function buildBatchToolbarChunks({ isMobile, actionButtons }: BatchToolbarInput): HeaderToolbarChunks {
+	const left = "prev,next today";
+	if (isMobile) {
+		return { left, center: "title batchExit", right: ["batchCounter", ...actionButtons].join(" ") };
+	}
+	return { left, center: "title", right: ["batchCounter", ...actionButtons, "batchExit"].join(" ") };
+}
+
+export interface HiddenEventsMenuItem {
+	kind: "filtered" | "skipped";
+	label: string;
+}
+
+/** What the phone status button lists: only the counts that are non-zero. */
+export function hiddenEventsMenuItems(filtered: number, skipped: number): HiddenEventsMenuItem[] {
+	const items: HiddenEventsMenuItem[] = [];
+	if (filtered > 0) items.push({ kind: "filtered", label: `${filtered} filtered` });
+	if (skipped > 0) items.push({ kind: "skipped", label: `${skipped} skipped` });
+	return items;
 }
 
 /** "Batch Select" does not fit a phone row next to the date; "Batch" does. */
