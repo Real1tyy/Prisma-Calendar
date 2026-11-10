@@ -161,7 +161,7 @@ export class TitleInputSuggest extends AbstractInputSuggest<TitleSuggestion> {
 		if (!parent) return;
 
 		// appendChild defocuses the element it moves — preserve focus so
-		// React's autoFocus survives the reparent.
+		// the form's focus-on-open survives the reparent.
 		const wasFocused = inputEl.ownerDocument.activeElement === inputEl;
 
 		this.wrapperEl = parent.createDiv(cls("title-input-wrapper"));
