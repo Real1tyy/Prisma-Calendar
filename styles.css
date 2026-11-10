@@ -526,6 +526,10 @@ button[class*=prisma-]:focus-visible {
   left: 0 !important;
   right: calc(100% - var(--overlapping-event-width)) !important;
 }
+.prisma-calendar-container .prisma-overlap-covered .prisma-fc-event-content-wrapper {
+  max-width: var(--prisma-overlap-visible-width);
+  box-sizing: border-box;
+}
 
 .prisma-calendar-container .fc-list {
   border: none;

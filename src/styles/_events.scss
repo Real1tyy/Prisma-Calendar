@@ -421,4 +421,11 @@
 		left: 0 !important;
 		right: calc(100% - var(--overlapping-event-width)) !important;
 	}
+
+	// `markCoveredHarnesses` measures the strip no forward event covers; the text wraps inside it
+	// so stacked titles never sit under one another.
+	.prisma-overlap-covered .prisma-fc-event-content-wrapper {
+		max-width: var(--prisma-overlap-visible-width);
+		box-sizing: border-box;
+	}
 }

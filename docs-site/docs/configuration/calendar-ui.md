@@ -44,9 +44,9 @@ These settings control the calendar's view modes, time display, visual appearanc
 
 ## Event Overlap
 
-- **Allow event overlap**: in week/day time-grid views, render overlapping timed events on top of each other. When disabled, they render side-by-side in columns (like Google Calendar). You can drag and resize events onto occupied times in either layout (default: enabled)
-- **Allow slot event overlap**: in week/day time-grid views, let events that share time slots render on top of each other. When disabled, overlapping timed events render side-by-side in columns. Has no effect when event overlap is disabled (default: enabled)
-- **Overlapping event width**: choose how much of the column the forward event takes when timed events overlap in week/day time-grid views; the event behind it keeps the full column. Choose 50%, 60%, two-thirds, 70%, three-quarters, or 80%; wider events leave more room for text and cover more of the event behind them (default: 50%)
+- **Allow slot event overlap**: in week and day views, draw overlapping timed events as a cascade, later events on top and offset to the right, with each covered event's text wrapped into the part that stays visible. When disabled, each event gets its own column side by side (default: disabled)
+- **Overlapping event width**: with slot event overlap enabled, how much of the column the front-most event in each stack takes: 50%, 60%, two-thirds, 70%, three-quarters, or 80%. Wider gives it more room and leaves less of the events behind it visible (default: 50%)
+- **Allow event overlap**: whether you can drag or resize an event onto a time another event already occupies. When disabled, those drops are refused, so events never move into a double booking. Does not change how events are drawn (default: enabled)
 - **Event stack limit**: maximum events to stack before "+more" link (1–10, default: 1)
 - **Desktop max events per day**: maximum events per day on desktop before "+more" (0–20, 0 = unlimited, default: 0)
 - **Mobile max events per day**: maximum events per day on mobile before "+more" (0–20, 0 = unlimited, default: 4)

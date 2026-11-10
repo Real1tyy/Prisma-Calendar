@@ -274,10 +274,13 @@ Drops stay precise across a page: after the calendar pages to another week, the 
 
 ## Event Overlap
 
-Control how events display when they share the same time:
+Control how events display when they share the same time, and whether you can schedule one on top of another:
 
-- **Allow event overlap**: in week/day time-grid views, render overlapping timed events on top of each other. When disabled, they render side-by-side in columns (like Google Calendar). You can drag and resize events onto occupied times in either layout (default: enabled)
-- **Allow slot event overlap**: in week/day time-grid views, let events that share time slots render on top of each other. When disabled, overlapping timed events render side-by-side in columns. Has no effect when event overlap is disabled (default: enabled)
+- **Allow slot event overlap**: how week and day views draw timed events that overlap (default: disabled).
+  - **Disabled**: each event gets its own column, side by side, and nothing covers anything.
+  - **Enabled**: events cascade like cards, the way Google Calendar and Notion Calendar draw a busy afternoon. Later events are drawn on top, offset to the right, and the earliest event keeps the most width. Each covered event's text wraps inside the part that stays visible, so no title runs underneath another event.
+- **Overlapping event width**: with slot event overlap enabled, how much of the column the front-most event in each stack takes: 50%, 60%, two-thirds, 70%, three-quarters, or 80%. Wider gives that event more room and leaves a narrower visible strip for the events behind it (default: 50%)
+- **Allow event overlap**: whether you can drag or resize an event onto a time another event already occupies. When disabled, those drops are refused: the cursor shows a no-entry sign and the event springs back, so events can never be moved into a double booking. It does not change how events are drawn (default: enabled)
 - **Event stack limit**: Maximum events to stack before showing "+more" link (1–10, default: 1)
 - **Desktop max events per day**: Maximum events per day on desktop before "+more" (0–20, 0 = unlimited, default: 0)
 - **Mobile max events per day**: Maximum events per day on mobile before "+more" (0–20, 0 = unlimited, default: 4)

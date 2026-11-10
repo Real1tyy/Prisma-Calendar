@@ -49,6 +49,9 @@ import {
 	ToolbarButtonSchema,
 } from "./view";
 
+/** Ids of settings migrations that must run once per vault, never again after the user changes the result. */
+export const ONE_SHOT_SETTINGS_MIGRATIONS = ["slot-event-overlap-off"] as const;
+
 // Use library's HolidayType definition
 const HolidayTypeSchema = z.enum(["public", "bank", "school", "observance", "optional"]);
 
@@ -689,14 +692,14 @@ const CalendarSettingsSchema = z
 			.boolean()
 			.catch(true)
 			.describe(
-				"In week and day views, render overlapping timed events on top of each other. When disabled, they render side-by-side in columns (like Google Calendar). Events stay draggable onto occupied times either way."
+				"Allow dragging or resizing an event onto a time another event already occupies. When disabled, those drops are refused, so events can never be moved into a double booking. Does not change how events are drawn."
 			)
 			.meta({ title: "Allow event overlap" }),
 		slotEventOverlap: z
 			.boolean()
-			.catch(true)
+			.catch(false)
 			.describe(
-				"In week and day views, let events that share time slots render on top of each other. When disabled, overlapping timed events render side-by-side in columns. Has no effect when event overlap is disabled."
+				"In week and day views, stack overlapping timed events like cards: later events are drawn on top of earlier ones, offset to the right, and the text of each covered event wraps into the part that stays visible. When disabled, overlapping events share the column side by side, each in its own column."
 			)
 			.meta({ title: "Allow slot event overlap" }),
 		weekCreateGutter: createGutterSchema(
@@ -711,7 +714,7 @@ const CalendarSettingsSchema = z
 		),
 		overlappingEventWidth: EventOverlapWidthSchema.catch(DEFAULT_OVERLAPPING_EVENT_WIDTH)
 			.describe(
-				"Width of the forward event when timed events overlap in week and day views. Larger widths leave more room for text and cover more of the event behind it."
+				"Only with slot event overlap on: the width of the front-most event in each stack. Wider gives that event more room and leaves less of the events behind it visible."
 			)
 			.meta({ title: "Overlapping event width", enumLabels: EVENT_OVERLAP_WIDTH_OPTIONS }),
 		eventMaxStack: z
@@ -1064,6 +1067,8 @@ export const CustomCalendarSettingsSchema = z
 		version: z.string().catch("1.1.0"),
 		logsPageHeaderState: PageHeaderStateSchema.optional().catch(undefined), // Persisted Logs view header button state
 		tutorialCompleted: z.boolean().catch(false),
+		// A fresh install starts with every one-shot step done: its defaults already match.
+		completedSettingsMigrations: z.array(z.string()).catch([...ONE_SHOT_SETTINGS_MIGRATIONS]),
 		checkForReleaseUpdates: z
 			.boolean()
 			.catch(true)

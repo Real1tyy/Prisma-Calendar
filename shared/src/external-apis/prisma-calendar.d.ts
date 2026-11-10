@@ -949,7 +949,7 @@ export type EndDayProperty = string;
  */
 export type EventStackLimit = number;
 /**
- * In week and day views, render overlapping timed events on top of each other. When disabled, they render side-by-side in columns (like Google Calendar). Events stay draggable onto occupied times either way.
+ * Allow dragging or resizing an event onto a time another event already occupies. When disabled, those drops are refused, so events can never be moved into a double booking. Does not change how events are drawn.
  */
 export type AllowEventOverlap = boolean;
 /**
@@ -1054,7 +1054,7 @@ export type PlayNotificationSound = boolean;
  */
 export type ShowCurrentTimeIndicator = boolean;
 /**
- * Width of the forward event when timed events overlap in week and day views. Larger widths leave more room for text and cover more of the event behind it.
+ * Only with slot event overlap on: the width of the front-most event in each stack. Wider gives that event more room and leaves less of the events behind it visible.
  */
 export type OverlappingEventWidth = "50%" | "60%" | "66.6667%" | "70%" | "75%" | "80%";
 /**
@@ -1098,7 +1098,7 @@ export type ShowTimeTrackerInEventModal = boolean;
  */
 export type SkipNewlyCreatedEvents = boolean;
 /**
- * In week and day views, let events that share time slots render on top of each other. When disabled, overlapping timed events render side-by-side in columns. Has no effect when event overlap is disabled.
+ * In week and day views, stack overlapping timed events like cards: later events are drawn on top of earlier ones, offset to the right, and the text of each covered event wraps into the part that stays visible. When disabled, overlapping events share the column side by side, each in its own column.
  */
 export type AllowSlotEventOverlap = boolean;
 /**
@@ -1362,7 +1362,7 @@ export type PrismaCalendarToggleSkipOutput = boolean;
  */
 
 /**
- * In week and day views, render overlapping timed events on top of each other. When disabled, they render side-by-side in columns (like Google Calendar). Events stay draggable onto occupied times either way.
+ * Allow dragging or resizing an event onto a time another event already occupies. When disabled, those drops are refused, so events can never be moved into a double booking. Does not change how events are drawn.
  */
 
 /**
@@ -1458,7 +1458,7 @@ export type PrismaCalendarToggleSkipOutput = boolean;
  */
 
 /**
- * Width of the forward event when timed events overlap in week and day views. Larger widths leave more room for text and cover more of the event behind it.
+ * Only with slot event overlap on: the width of the front-most event in each stack. Wider gives that event more room and leaves less of the events behind it visible.
  */
 
 /**
@@ -1502,7 +1502,7 @@ export type PrismaCalendarToggleSkipOutput = boolean;
  */
 
 /**
- * In week and day views, let events that share time slots render on top of each other. When disabled, overlapping timed events render side-by-side in columns. Has no effect when event overlap is disabled.
+ * In week and day views, stack overlapping timed events like cards: later events are drawn on top of earlier ones, offset to the right, and the text of each covered event wraps into the part that stays visible. When disabled, overlapping events share the column side by side, each in its own column.
  */
 
 /**

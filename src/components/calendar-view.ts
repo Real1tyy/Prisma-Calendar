@@ -128,8 +128,8 @@ import { PrerequisiteSelectionManager } from "./prerequisite-selection-manager";
 import { createStickyBanner, type StickyBannerHandle } from "./sticky-banner";
 import { mountExpressionFilter, mountSearchFilter, type ToolbarFilterHandle } from "./toolbar-filter-mount";
 import { UntrackedEventsDropdown } from "./untracked-events-dropdown";
-import { applyOverlappingEventWidth } from "./views/overlapping-event-width";
-import { buildOverlapOptions, toLiveEvent } from "./views/shared-calendar-options";
+import { applyOverlapLayout } from "./views/overlap-layout";
+import { toLiveEvent } from "./views/shared-calendar-options";
 
 export class CalendarComponent extends MountableComponent(Component, "prisma") implements CalendarHost {
 	calendar: Calendar | null = null;
@@ -405,7 +405,9 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			weekends: !settings.hideWeekends,
 			firstDay: settings.firstDayOfWeek,
 
-			...buildOverlapOptions(settings),
+			// Independent despite the names: `eventOverlap` is FullCalendar's drop rule, `slotEventOverlap` the layout.
+			eventOverlap: settings.eventOverlap,
+			slotEventOverlap: settings.slotEventOverlap,
 			eventMaxStack: settings.eventMaxStack,
 
 			dayMaxEvents: resolveDayMaxEvents(settings, this.isMobileView()),
@@ -656,9 +658,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.calendar.setOption("nowIndicator", settings.nowIndicator);
 		this.calendar.setOption("stickyHeaderDates", settings.stickyDayHeaders);
 
-		const overlap = buildOverlapOptions(settings);
-		this.calendar.setOption("eventOverlap", overlap.eventOverlap);
-		this.calendar.setOption("slotEventOverlap", overlap.slotEventOverlap);
+		this.calendar.setOption("eventOverlap", settings.eventOverlap);
+		this.calendar.setOption("slotEventOverlap", settings.slotEventOverlap);
 		this.calendar.setOption("eventMaxStack", settings.eventMaxStack);
 		this.applyAllDayOptions();
 
@@ -698,7 +699,10 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		container.style.setProperty("--all-day-event-height", `${settings.allDayEventHeight}px`);
 		container.style.setProperty("--week-create-gutter", `${settings.weekCreateGutter}%`);
 		container.style.setProperty("--day-create-gutter", `${settings.dayCreateGutter}%`);
-		applyOverlappingEventWidth(container, settings.overlappingEventWidth);
+		applyOverlapLayout(container, {
+			slotEventOverlap: settings.slotEventOverlap,
+			width: settings.overlappingEventWidth,
+		});
 	}
 
 	private initializeToolbarComponents(toolbarButtons: string[]): void {
