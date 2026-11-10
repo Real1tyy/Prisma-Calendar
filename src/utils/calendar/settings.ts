@@ -134,6 +134,7 @@ export function getCalendarRenderingKey(settings: SingleCalendarConfig): string 
 		settings.sourceRecurringMarker,
 		settings.physicalRecurringMarker,
 		settings.pastEventContrast,
+		settings.eventOverlap,
 		settings.slotEventOverlap,
 		settings.eventMaxStack,
 		settings.desktopMaxEventsPerDay,

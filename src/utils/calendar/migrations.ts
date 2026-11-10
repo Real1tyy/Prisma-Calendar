@@ -4,8 +4,6 @@ import type { Plugin } from "obsidian";
 import { log } from "../../core/logging";
 
 interface LegacyCalendar {
-	eventOverlap?: unknown;
-	slotEventOverlap?: unknown;
 	excludedRecurringPropagatedProps?: unknown;
 	excludedRecurringInstanceProps?: unknown;
 	excludedNameSeriesProps?: unknown;
@@ -26,32 +24,21 @@ function migrateSharedExcludedProps(data: RawSettings): boolean {
 	const calendars = data["calendars"];
 	if (!Array.isArray(calendars)) return false;
 
-	let migratedExcludedProps = 0;
-	let migratedEventOverlap = 0;
+	let migrated = 0;
 	for (const cal of calendars as LegacyCalendar[]) {
 		const shared = cal.excludedRecurringPropagatedProps;
-		if (shared) {
-			if (!cal.excludedRecurringInstanceProps) cal.excludedRecurringInstanceProps = shared;
-			if (!cal.excludedNameSeriesProps) cal.excludedNameSeriesProps = shared;
-			if (!cal.excludedCategorySeriesProps) cal.excludedCategorySeriesProps = shared;
-			delete cal.excludedRecurringPropagatedProps;
-			migratedExcludedProps++;
-		}
+		if (!shared) continue;
 
-		// `eventOverlap` was presented as a visual setting but FullCalendar uses it to
-		// reject drops onto occupied times. Its false value meant side-by-side layout,
-		// so preserve that intent with the actual TimeGrid layout option instead.
-		if (cal.eventOverlap === false) cal.slotEventOverlap = false;
-		if ("eventOverlap" in cal) {
-			delete cal.eventOverlap;
-			migratedEventOverlap++;
-		}
+		if (!cal.excludedRecurringInstanceProps) cal.excludedRecurringInstanceProps = shared;
+		if (!cal.excludedNameSeriesProps) cal.excludedNameSeriesProps = shared;
+		if (!cal.excludedCategorySeriesProps) cal.excludedCategorySeriesProps = shared;
+		delete cal.excludedRecurringPropagatedProps;
+		migrated++;
 	}
 
-	if (migratedExcludedProps === 0 && migratedEventOverlap === 0) return false;
-	log.info("settings", "Migrated legacy calendar settings", {
-		excludedRecurringProps: migratedExcludedProps,
-		eventOverlap: migratedEventOverlap,
+	if (migrated === 0) return false;
+	log.info("settings", "Migrated excludedRecurringPropagatedProps into the three per-type fields", {
+		calendars: migrated,
 	});
 	return true;
 }

@@ -487,6 +487,7 @@ export type PrismaCalendarGetSettingsOutput = {
 	endDateProp: EndDateProperty;
 	endDayProp: EndDayProperty;
 	eventMaxStack: EventStackLimit;
+	eventOverlap: AllowEventOverlap;
 	eventPresets: {
 		allDay?: boolean;
 		breakMinutes?: number;
@@ -773,7 +774,7 @@ export type PrismaCalendarGetSettingsOutput = {
 	 * Duration of time slots in the calendar grid (1-60 minutes)
 	 */
 	slotDurationMinutes: number;
-	slotEventOverlap: VisuallyOverlapTimedEvents;
+	slotEventOverlap: AllowSlotEventOverlap;
 	/**
 	 * Snap interval when dragging or resizing events (1-60 minutes)
 	 */
@@ -948,6 +949,10 @@ export type EndDayProperty = string;
  */
 export type EventStackLimit = number;
 /**
+ * In week and day views, render overlapping timed events on top of each other. When disabled, they render side-by-side in columns (like Google Calendar). Events stay draggable onto occupied times either way.
+ */
+export type AllowEventOverlap = boolean;
+/**
  * Align event text within calendar event tiles
  */
 export type EventTextAlignment = "left" | "center" | "right";
@@ -1093,9 +1098,9 @@ export type ShowTimeTrackerInEventModal = boolean;
  */
 export type SkipNewlyCreatedEvents = boolean;
 /**
- * In week and day time-grid views, render concurrent timed events on top of one another. When disabled, concurrent events render side-by-side in columns.
+ * In week and day views, let events that share time slots render on top of each other. When disabled, overlapping timed events render side-by-side in columns. Has no effect when event overlap is disabled.
  */
-export type VisuallyOverlapTimedEvents = boolean;
+export type AllowSlotEventOverlap = boolean;
 /**
  * How many minutes to snooze a notification when pressing the Snooze button. The notification will be triggered again after this duration.
  */
@@ -1357,6 +1362,10 @@ export type PrismaCalendarToggleSkipOutput = boolean;
  */
 
 /**
+ * In week and day views, render overlapping timed events on top of each other. When disabled, they render side-by-side in columns (like Google Calendar). Events stay draggable onto occupied times either way.
+ */
+
+/**
  * Align event text within calendar event tiles
  */
 
@@ -1493,7 +1502,7 @@ export type PrismaCalendarToggleSkipOutput = boolean;
  */
 
 /**
- * In week and day time-grid views, render concurrent timed events on top of one another. When disabled, concurrent events render side-by-side in columns.
+ * In week and day views, let events that share time slots render on top of each other. When disabled, overlapping timed events render side-by-side in columns. Has no effect when event overlap is disabled.
  */
 
 /**
@@ -1779,6 +1788,7 @@ export interface PrismaCalendarUpdateSettingsInput {
 		endDateProp?: EndDateProperty;
 		endDayProp?: EndDayProperty;
 		eventMaxStack?: EventStackLimit;
+		eventOverlap?: AllowEventOverlap;
 		eventPresets?: {
 			allDay?: boolean;
 			breakMinutes?: number;
@@ -2065,7 +2075,7 @@ export interface PrismaCalendarUpdateSettingsInput {
 		 * Duration of time slots in the calendar grid (1-60 minutes)
 		 */
 		slotDurationMinutes?: number;
-		slotEventOverlap?: VisuallyOverlapTimedEvents;
+		slotEventOverlap?: AllowSlotEventOverlap;
 		/**
 		 * Snap interval when dragging or resizing events (1-60 minutes)
 		 */

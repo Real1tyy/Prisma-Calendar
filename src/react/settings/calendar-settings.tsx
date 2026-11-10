@@ -38,6 +38,7 @@ const TIME_GRID_FIELDS = [
 ];
 
 const OVERLAP_FIELDS = [
+	"eventOverlap",
 	"slotEventOverlap",
 	"weekCreateGutter",
 	"dayCreateGutter",

@@ -38,6 +38,7 @@ import {
 	COLOR_MODE_OPTIONS,
 	ContextMenuItemSchema,
 	DAY_CELL_COLORING_OPTIONS,
+	DEFAULT_OVERLAPPING_EVENT_WIDTH,
 	DENSITY_OPTIONS,
 	EVENT_OVERLAP_WIDTH_OPTIONS,
 	EventOverlapWidthSchema,
@@ -684,13 +685,20 @@ const CalendarSettingsSchema = z
 			.max(100)
 			.catch(70)
 			.describe("Visual contrast of past events (0% = invisible, 100% = normal)"),
+		eventOverlap: z
+			.boolean()
+			.catch(true)
+			.describe(
+				"In week and day views, render overlapping timed events on top of each other. When disabled, they render side-by-side in columns (like Google Calendar). Events stay draggable onto occupied times either way."
+			)
+			.meta({ title: "Allow event overlap" }),
 		slotEventOverlap: z
 			.boolean()
 			.catch(true)
 			.describe(
-				"In week and day time-grid views, render concurrent timed events on top of one another. When disabled, concurrent events render side-by-side in columns."
+				"In week and day views, let events that share time slots render on top of each other. When disabled, overlapping timed events render side-by-side in columns. Has no effect when event overlap is disabled."
 			)
-			.meta({ title: "Visually overlap timed events" }),
+			.meta({ title: "Allow slot event overlap" }),
 		weekCreateGutter: createGutterSchema(
 			3.5,
 			"Week view",
@@ -701,7 +709,7 @@ const CalendarSettingsSchema = z
 			"Day view",
 			"Percentage of the Day view column kept empty on the right, beside its events. Click it to create a new event at that time, even when events already fill the slot. Set 0 to disable."
 		),
-		overlappingEventWidth: EventOverlapWidthSchema.catch("50%")
+		overlappingEventWidth: EventOverlapWidthSchema.catch(DEFAULT_OVERLAPPING_EVENT_WIDTH)
 			.describe(
 				"Width of the forward event when timed events overlap in week and day views. Larger widths leave more room for text and cover more of the event behind it."
 			)

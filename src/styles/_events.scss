@@ -411,10 +411,14 @@
 		overflow: hidden;
 	}
 
-	// FullCalendar writes inline left/right coordinates for this generated harness.
-	// Keep its calculated leading edge while replacing only the forward event's width.
-	.fc-timegrid-event-harness-inset {
-		width: var(--overlapping-event-width, 50%);
-		right: auto !important;
+	// `markForwardHarnesses` tags the forward event; widen it toward the event behind it, whose
+	// FullCalendar geometry stays untouched. `!important` beats FullCalendar's inline offsets.
+	&.prisma-custom-overlapping-event-width .prisma-overlap-forward {
+		left: calc(100% - var(--overlapping-event-width)) !important;
+	}
+
+	&.prisma-custom-overlapping-event-width.fc-direction-rtl .prisma-overlap-forward {
+		left: 0 !important;
+		right: calc(100% - var(--overlapping-event-width)) !important;
 	}
 }
