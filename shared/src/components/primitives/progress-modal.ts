@@ -184,6 +184,10 @@ export function showProgressModal(config: ProgressModalConfig): ProgressModalHan
 		},
 	});
 
+	const setBarWidth = (percentage: number): void => {
+		progressBar.setCssProps({ width: `${percentage}%` });
+	};
+
 	const scheduleClose = (delay: number): void => {
 		pendingTimer = window.setTimeout(() => {
 			pendingTimer = null;
@@ -196,7 +200,7 @@ export function showProgressModal(config: ProgressModalConfig): ProgressModalHan
 			if (isComplete) return;
 			const clamped = Math.max(0, Math.min(current, safeTotal));
 			const percentage = Math.round((clamped / safeTotal) * 100);
-			progressBar.setCssProps({ width: `${percentage}%` });
+			setBarWidth(percentage);
 			statusText.setText(formatStatus(clamped));
 			if (detail) {
 				detailsText.setText(detail);
@@ -206,7 +210,7 @@ export function showProgressModal(config: ProgressModalConfig): ProgressModalHan
 		showComplete(summaryLines: string[]): void {
 			if (isComplete) return;
 			isComplete = true;
-			progressBar.setCssProps({ width: "100%" });
+			setBarWidth(100);
 			css.addCls(progressBar, "progress-complete");
 			statusText.setText(baseTitle + " complete");
 			detailsText.setText(summaryLines.join("  •  "));

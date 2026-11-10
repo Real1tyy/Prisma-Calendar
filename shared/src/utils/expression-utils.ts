@@ -1,3 +1,5 @@
+import { matchesNotPrecededBy, precededByAnyOf, replaceNotPrecededBy } from "./string/not-preceded-by";
+
 /**
  * Sanitizes a property name for use as a JavaScript function parameter
  * by replacing spaces and special characters with underscores.
@@ -83,10 +85,9 @@ export function extractExpressionIdentifiers(expression: string): string[] {
 	const withoutStrings = expression.replace(/(["'])(?:(?!\1).)*\1/g, "");
 
 	// Match bare identifiers (not preceded by a dot to avoid object property access like obj.prop)
-	const identifierRegex = /(?<![.\w])([a-zA-Z_$][a-zA-Z0-9_$]*)(?!\s*:(?!:))/g;
+	const identifierRegex = /([a-zA-Z_$][a-zA-Z0-9_$]*)(?!\s*:(?!:))/g;
 	const identifiers = new Set<string>();
-	let match;
-	while ((match = identifierRegex.exec(withoutStrings)) !== null) {
+	for (const match of matchesNotPrecededBy(withoutStrings, identifierRegex, precededByAnyOf(/[.\w]/))) {
 		const id = match[1];
 		if (!JS_RESERVED.has(id) && !id.startsWith("prop_")) {
 			identifiers.add(id);
@@ -122,10 +123,16 @@ export function sanitizeExpression(expression: string, propertyMapping: Map<stri
 		.sort((a, b) => b.length - a.length)
 		.map((key) => key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
 		.join("|");
-	// Lookarounds instead of `\b` so keys with special characters like "My-Property" still match
-	const tokenRegex = new RegExp(`(?<!\\w)(${keyAlternation})(?!\\w)|${STRING_LITERAL_SOURCE}`, "g");
+	// Word-character guards instead of `\b` so keys with special characters like "My-Property"
+	// still match; the leading guard applies to keys only, never to a literal.
+	const tokenRegex = new RegExp(`(${keyAlternation})(?!\\w)|${STRING_LITERAL_SOURCE}`, "g");
+	// Group 1 is unset when the literal alternative matched; lib.d.ts types it `string`.
+	const matchedKey = (match: RegExpExecArray): string | undefined => match.at(1);
+	const keyAfterWordChar = (preceding: string, match: RegExpExecArray): boolean =>
+		matchedKey(match) !== undefined && /\w/.test(preceding);
 
-	return expression.replace(tokenRegex, (match, key: string | undefined) =>
-		key === undefined ? match : (replacements.get(key) ?? match)
-	);
+	return replaceNotPrecededBy(expression, tokenRegex, keyAfterWordChar, (match) => {
+		const key = matchedKey(match);
+		return key === undefined ? match[0] : (replacements.get(key) ?? match[0]);
+	});
 }

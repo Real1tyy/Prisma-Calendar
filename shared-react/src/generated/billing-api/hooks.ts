@@ -282,6 +282,8 @@ export interface PluginFeedbackRequest {
      * @maxLength 128
      */
   licenseKey?: string;
+  /** @maxLength 254 */
+  email?: string;
   /** @minItems 1 */
   health?: PluginFeedbackRequestHealthItem[];
   debugBundle?: PluginFeedbackRequestDebugBundle;

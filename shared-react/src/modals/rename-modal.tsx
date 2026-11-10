@@ -44,7 +44,7 @@ export const RenameModalContent = memo(function RenameModalContent({
 			inputRef.current?.focus();
 			inputRef.current?.select();
 		});
-		return () => cancelAnimationFrame(id);
+		return () => window.cancelAnimationFrame(id);
 	}, []);
 
 	const handleSubmit = useCallback(() => {

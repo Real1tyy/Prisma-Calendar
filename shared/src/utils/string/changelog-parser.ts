@@ -1,3 +1,5 @@
+import { precededByAnyOf, replaceNotPrecededBy } from "./not-preceded-by";
+
 interface VersionSection {
 	version: string;
 	content: string;
@@ -126,11 +128,14 @@ export function withDocsUtm(target: URL, documentationBaseUrl: string): URL {
 	return resolved;
 }
 
+const RELATIVE_LINK = /\[([^\]]+)\]\((\.[^)]+)\)/g;
+
 export function resolveRelativeDocLinks(markdown: string, documentationBaseUrl: string): string {
 	const baseUrl = new URL(documentationBaseUrl);
 	const cleanBase = `${baseUrl.origin}${baseUrl.pathname}`.replace(/\/$/, "");
 
-	return markdown.replace(/(?<!!)\[([^\]]+)\]\((\.[^)]+)\)/g, (_match, text: string, rawPath: string) => {
+	// An image (`![alt](./x.png)`) is not a doc link.
+	return replaceNotPrecededBy(markdown, RELATIVE_LINK, precededByAnyOf(/!/), ([, text, rawPath]) => {
 		const cleaned = rawPath.replace(/^\.\//, "").replace(/\.md(?=#|$)/, "");
 		const path = cleaned.startsWith("/") ? cleaned : `/${cleaned}`;
 		const hashIndex = path.indexOf("#");

@@ -46,9 +46,9 @@ function renderSingleValue(container: HTMLElement, value: unknown, config: Prope
 }
 
 export function createTextNode(text: string): Text {
-	return document.createTextNode(text);
+	return activeDocument.createTextNode(text);
 }
 
 export function createDefaultSeparator(): Text {
-	return document.createTextNode(", ");
+	return activeDocument.createTextNode(", ");
 }

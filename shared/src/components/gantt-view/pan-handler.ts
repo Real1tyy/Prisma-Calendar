@@ -63,13 +63,14 @@ export function createPanHandler(
 		bodyWrapper.removeClass(panningCls);
 	};
 
+	const ownerDoc = bodyWrapper.ownerDocument;
 	bodyWrapper.addEventListener("pointerdown", onPointerDown);
-	document.addEventListener("pointermove", onPointerMove);
-	document.addEventListener("pointerup", onPointerUp);
+	ownerDoc.addEventListener("pointermove", onPointerMove);
+	ownerDoc.addEventListener("pointerup", onPointerUp);
 
 	return () => {
 		bodyWrapper.removeEventListener("pointerdown", onPointerDown);
-		document.removeEventListener("pointermove", onPointerMove);
-		document.removeEventListener("pointerup", onPointerUp);
+		ownerDoc.removeEventListener("pointermove", onPointerMove);
+		ownerDoc.removeEventListener("pointerup", onPointerUp);
 	};
 }

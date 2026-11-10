@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
 
-import { SharedReactThemeProvider } from "../contexts/theme-context";
+import { SharedReactThemeProvider, useOwnerDocument } from "../contexts/theme-context";
 import { useScopedStyles } from "../hooks/styles/use-styles";
 import { Button } from "../primitives/atoms/button";
 import { buildCaptureBarStyles } from "./capture-bar.styles";
@@ -27,6 +27,7 @@ export const CaptureBar = memo(function CaptureBar({ onCapture, onCancel, afterP
 	const barRef = useRef<HTMLDivElement | null>(null);
 	const captureRef = useRef<HTMLButtonElement | null>(null);
 	const firedRef = useRef(false);
+	const ownerDocument = useOwnerDocument();
 
 	// The bar is on top of the app it is about to photograph, so it hides itself
 	// and waits for that to reach the screen — the capture reads pixels, not the
@@ -52,9 +53,9 @@ export const CaptureBar = memo(function CaptureBar({ onCapture, onCancel, afterP
 				capture();
 			}
 		};
-		document.addEventListener("keydown", onKeyDown, true);
-		return () => document.removeEventListener("keydown", onKeyDown, true);
-	}, [capture, onCancel]);
+		ownerDocument.addEventListener("keydown", onKeyDown, true);
+		return () => ownerDocument.removeEventListener("keydown", onKeyDown, true);
+	}, [capture, onCancel, ownerDocument]);
 
 	return (
 		<div ref={barRef} className={cls("root")} role="dialog" aria-label="Take a screenshot" data-testid={tid("root")}>
@@ -94,7 +95,7 @@ export interface CaptureBarHandle {
  */
 export function showCaptureBar({
 	cssPrefix,
-	ownerDocument = document,
+	ownerDocument = activeDocument,
 	onCapture,
 	onCancel,
 }: ShowCaptureBarOptions): CaptureBarHandle {

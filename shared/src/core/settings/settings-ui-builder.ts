@@ -644,7 +644,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 					.setButtonText(addButtonText)
 					.setCta()
 					.onClick(async () => {
-						const input = document.getElementById(inputId) as HTMLInputElement;
+						const input = button.buttonEl.ownerDocument.getElementById(inputId) as HTMLInputElement;
 						const newItem = input.value.trim();
 
 						if (!newItem) {

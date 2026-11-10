@@ -109,9 +109,7 @@ export class LicenseManager {
 		if (typeof window !== "undefined" && typeof window.removeEventListener === "function") {
 			window.removeEventListener("focus", this.onHeartbeatTrigger);
 			window.removeEventListener("online", this.onHeartbeatTrigger);
-		}
-		if (typeof document !== "undefined" && typeof document.removeEventListener === "function") {
-			document.removeEventListener("visibilitychange", this.onHeartbeatTrigger);
+			window.document.removeEventListener("visibilitychange", this.onHeartbeatTrigger);
 		}
 	}
 
@@ -332,9 +330,9 @@ export class LicenseManager {
 		if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
 			window.addEventListener("focus", this.onHeartbeatTrigger);
 			window.addEventListener("online", this.onHeartbeatTrigger);
-		}
-		if (typeof document !== "undefined" && typeof document.addEventListener === "function") {
-			document.addEventListener("visibilitychange", this.onHeartbeatTrigger);
+			// The heartbeat is app-wide, so it follows the main window — which lives
+			// as long as the app — never a popout that had focus and may close.
+			window.document.addEventListener("visibilitychange", this.onHeartbeatTrigger);
 		}
 	}
 

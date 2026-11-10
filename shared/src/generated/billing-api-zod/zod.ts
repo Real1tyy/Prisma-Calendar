@@ -78,6 +78,8 @@ export const submitPluginFeedbackBodyClientIdMax = 128;
 
 export const submitPluginFeedbackBodyLicenseKeyMax = 128;
 
+export const submitPluginFeedbackBodyEmailMax = 254;
+
 
 export const submitPluginFeedbackBodyScreenshotsItemMimeTypeMax = 128;
 
@@ -99,6 +101,7 @@ export const SubmitPluginFeedbackBody = zod.strictObject({
   "platform": zod.enum(['macos', 'windows', 'linux', 'ios', 'android', 'unknown']),
   "clientId": zod.string().min(1).max(submitPluginFeedbackBodyClientIdMax),
   "licenseKey": zod.string().min(1).max(submitPluginFeedbackBodyLicenseKeyMax).optional(),
+  "email": zod.email().max(submitPluginFeedbackBodyEmailMax).optional(),
   "health": zod.array(zod.strictObject({
   "id": zod.string(),
   "label": zod.string(),

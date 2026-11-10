@@ -29,7 +29,7 @@ function adoptedSheets(doc: Document): CSSStyleSheet[] {
 /** Forget documents whose window is gone (closed pop-outs) so they can GC. */
 function pruneClosedDocuments(): void {
 	for (const doc of REGISTRIES.keys()) {
-		if (doc !== document && doc.defaultView === null) REGISTRIES.delete(doc);
+		if (doc.defaultView === null) REGISTRIES.delete(doc);
 	}
 }
 
@@ -42,7 +42,7 @@ function registryFor(doc: Document): Map<string, CSSStyleSheet> {
 	return registry;
 }
 
-export function injectStyleSheet(id: string, css: string, targetDoc: Document = document): void {
+export function injectStyleSheet(id: string, css: string, targetDoc: Document): void {
 	pruneClosedDocuments();
 	const registry = registryFor(targetDoc);
 
@@ -62,7 +62,7 @@ export function injectStyleSheet(id: string, css: string, targetDoc: Document = 
 	}
 }
 
-export function removeInjectedStyleSheet(id: string, targetDoc: Document = document): void {
+export function removeInjectedStyleSheet(id: string, targetDoc: Document): void {
 	const registry = REGISTRIES.get(targetDoc);
 	const sheet = registry?.get(id);
 	if (!registry || !sheet) return;
@@ -72,7 +72,7 @@ export function removeInjectedStyleSheet(id: string, targetDoc: Document = docum
 }
 
 /** The CSS currently adopted under `id`, or undefined if nothing is adopted. */
-export function readInjectedStyleSheet(id: string, targetDoc: Document = document): string | undefined {
+export function readInjectedStyleSheet(id: string, targetDoc: Document): string | undefined {
 	const sheet = REGISTRIES.get(targetDoc)?.get(id);
 	if (!sheet) return undefined;
 	if (typeof sheet.replace !== "function" && "cssText" in sheet) {
@@ -85,7 +85,7 @@ export function readInjectedStyleSheet(id: string, targetDoc: Document = documen
 
 export function clearInjectedStyles(): void {
 	for (const [doc, registry] of REGISTRIES) {
-		if (doc !== document && doc.defaultView === null) continue;
+		if (doc.defaultView === null) continue;
 		const owned = new Set(registry.values());
 		doc.adoptedStyleSheets = adoptedSheets(doc).filter((s) => !owned.has(s));
 	}

@@ -26,9 +26,9 @@ export function useEnterToSubmit<T extends HTMLElement = HTMLDivElement>(
 	return useCallback((event: KeyboardEvent<T>) => {
 		if (event.key !== "Enter") return;
 		const target = event.target as HTMLElement | null;
-		if (target instanceof HTMLTextAreaElement) return;
-		if (target instanceof HTMLButtonElement) return;
-		if (target instanceof HTMLSelectElement) return;
+		if (target?.instanceOf(HTMLTextAreaElement)) return;
+		if (target?.instanceOf(HTMLButtonElement)) return;
+		if (target?.instanceOf(HTMLSelectElement)) return;
 		event.preventDefault();
 		submitRef.current();
 	}, []);

@@ -150,8 +150,9 @@ export class FolderCollapser {
 	private app: App;
 	private config: Required<FolderCollapserConfig>;
 	private cls: PrefixedClasses;
-	private observer: MutationObserver | null = null;
 	private readonly styleSheetId: string;
+	/** Each window's document the collapser is attached to, with what undoes it there. */
+	private readonly windows = new Map<Document, () => void>();
 	private originalRevealInFolder: ((file: unknown) => void) | null = null;
 	private initialized = false;
 
@@ -176,12 +177,9 @@ export class FolderCollapser {
 		if (this.initialized) return;
 		this.initialized = true;
 
-		this.injectStyles();
-		document.body.classList.add(this.cls.bodyActive);
-
+		this.attachToOpenWindows();
+		this.registerWindowEvents();
 		this.applyToAllFolders();
-		this.startObserving();
-		this.registerClickHandler();
 		this.registerVaultEvents();
 
 		if (this.config.patchRevealInFolder) {
@@ -222,21 +220,71 @@ export class FolderCollapser {
 		if (!this.initialized) return;
 		this.initialized = false;
 
-		this.observer?.disconnect();
-		this.observer = null;
-
-		removeInjectedStyleSheet(this.styleSheetId);
-
-		document.body.classList.remove(this.cls.bodyActive);
+		for (const detach of this.windows.values()) detach();
+		this.windows.clear();
 
 		this.restoreRevealInFolder();
 		this.removeAllClasses();
 	}
 
-	// ─── CSS Injection ───────────────────────────────────────────────────
+	// ─── Windows ─────────────────────────────────────────────────────────
 
-	private injectStyles(): void {
-		injectStyleSheet(this.styleSheetId, buildStyleRules(this.cls));
+	/**
+	 * The file explorer can be dragged into a popout window, and stylesheets,
+	 * body classes, listeners and observers never cross a window boundary — so
+	 * each is set up, and torn down, in every window's document.
+	 */
+	private attachToOpenWindows(): void {
+		const leafDocs: Document[] = [];
+		this.app.workspace.iterateAllLeaves((leaf) => {
+			leafDocs.push(leaf.view.containerEl.ownerDocument);
+		});
+		for (const doc of [document, ...leafDocs]) this.attachToDocument(doc);
+	}
+
+	private registerWindowEvents(): void {
+		this.plugin.registerEvent(
+			this.app.workspace.on("window-open", (workspaceWindow) => {
+				this.attachToDocument(workspaceWindow.doc);
+				this.applyToAllFolders();
+			})
+		);
+		this.plugin.registerEvent(
+			this.app.workspace.on("window-close", (workspaceWindow) => {
+				this.windows.get(workspaceWindow.doc)?.();
+				this.windows.delete(workspaceWindow.doc);
+			})
+		);
+	}
+
+	private attachToDocument(doc: Document): void {
+		if (this.windows.has(doc)) return;
+
+		injectStyleSheet(this.styleSheetId, buildStyleRules(this.cls), doc);
+		doc.body.classList.add(this.cls.bodyActive);
+
+		const onClick = (evt: MouseEvent): void => this.handleClick(evt);
+		const onAuxClick = (evt: MouseEvent): void => {
+			if (evt.button === 2) return;
+			this.handleClick(evt);
+		};
+		doc.addEventListener("click", onClick, true);
+		doc.addEventListener("auxclick", onAuxClick, true);
+
+		const observer = new MutationObserver((mutations) => this.handleMutations(mutations));
+		observer.observe(doc.body, { childList: true, subtree: true });
+
+		this.windows.set(doc, () => {
+			observer.disconnect();
+			doc.removeEventListener("click", onClick, true);
+			doc.removeEventListener("auxclick", onAuxClick, true);
+			doc.body.classList.remove(this.cls.bodyActive);
+			removeInjectedStyleSheet(this.styleSheetId, doc);
+		});
+	}
+
+	private setBodyActive(active: boolean): void {
+		for (const doc of this.windows.keys()) doc.body.classList.toggle(this.cls.bodyActive, active);
 	}
 
 	// ─── Class Application ───────────────────────────────────────────────
@@ -343,21 +391,6 @@ export class FolderCollapser {
 
 	// ─── Click Interception ──────────────────────────────────────────────
 
-	private registerClickHandler(): void {
-		const handler = (evt: MouseEvent) => this.handleClick(evt);
-
-		this.plugin.registerDomEvent(document, "click", handler, true);
-		this.plugin.registerDomEvent(
-			document,
-			"auxclick",
-			(evt: MouseEvent) => {
-				if (evt.button === 2) return;
-				this.handleClick(evt);
-			},
-			true
-		);
-	}
-
 	private handleClick(evt: MouseEvent): void {
 		if (evt.shiftKey) return;
 
@@ -387,17 +420,13 @@ export class FolderCollapser {
 
 	// ─── MutationObserver ────────────────────────────────────────────────
 
-	private startObserving(): void {
-		this.observer = new MutationObserver((mutations) => {
-			for (const mutation of mutations) {
-				for (const node of Array.from(mutation.addedNodes)) {
-					if (!node.instanceOf(HTMLElement)) continue;
-					this.processAddedNode(node);
-				}
+	private handleMutations(mutations: MutationRecord[]): void {
+		for (const mutation of mutations) {
+			for (const node of Array.from(mutation.addedNodes)) {
+				if (!node.instanceOf(HTMLElement)) continue;
+				this.processAddedNode(node);
 			}
-		});
-
-		this.observer.observe(document.body, { childList: true, subtree: true });
+		}
 	}
 
 	private processAddedNode(node: HTMLElement): void {
@@ -472,11 +501,9 @@ export class FolderCollapser {
 				if (primaryFile && primaryFile.path === file.path) {
 					const folder = this.app.vault.getAbstractFileByPath(parentPath);
 					if (folder) {
-						document.body.classList.remove(this.cls.bodyActive);
+						this.setBodyActive(false);
 						originalRevealInFolder.call(fileExplorerPlugin, folder);
-						window.setTimeout(() => {
-							document.body.classList.add(this.cls.bodyActive);
-						}, 100);
+						window.setTimeout(() => this.setBodyActive(true), 100);
 						return;
 					}
 				}

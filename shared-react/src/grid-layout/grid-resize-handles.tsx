@@ -78,7 +78,7 @@ export const GridResizeHandles = memo(function GridResizeHandles({
 		}
 
 		return () => {
-			cancelAnimationFrame(raf);
+			window.cancelAnimationFrame(raf);
 			observer?.disconnect();
 			positionHandlesRef.current = null;
 		};

@@ -73,7 +73,7 @@ export function useTestIdPrefix(): string {
 
 /** The document this React subtree is mounted into (main window or a pop-out). */
 export function useOwnerDocument(): Document {
-	return useContext(ThemeContext).ownerDocument ?? document;
+	return useContext(ThemeContext).ownerDocument ?? activeDocument;
 }
 
 /**

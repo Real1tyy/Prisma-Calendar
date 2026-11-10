@@ -1,3 +1,4 @@
+import { precededByAnyOf, replaceNotPrecededBy } from "../../utils/string/not-preceded-by";
 import type { LogEntry } from "./types";
 
 /**
@@ -262,9 +263,10 @@ const URL_USERINFO_IN_TEXT = /(:\/\/)[^\s/@:]+:[^\s/@]+@/g;
 const AUTHORIZATION_IN_TEXT = /\b(authorization)(\s*[:=]\s*)(?:(Bearer|Basic)\s+)?("[^"]*"|'[^']*'|[^\s,;)}\]]+)/gi;
 const KEY_VALUE_IN_TEXT =
 	/\b(token|secret|password|passwd|api[_-]?key|license[_-]?key|access[_-]?token|refresh[_-]?token|client[_-]?secret)\b(\s*[:=]\s*)(?!\[redacted)("[^"]*"|'[^']*'|[^\s,;)}\]]+)/gi;
-// The lookbehind refuses a path that starts right after `:` or `/`, so a URL's
-// `//host/…` tail and `app://obsidian.md/…` are left alone.
-const ABSOLUTE_PATH_IN_TEXT = /(?<![\w:/.])(?:[A-Za-z]:)?(?:[\\/][^\s"'`<>|*?,;()[\]{}]+)+/g;
+// A path starting right after `:` or `/` is refused, so a URL's `//host/…` tail and
+// `app://obsidian.md/…` are left alone.
+const ABSOLUTE_PATH_IN_TEXT = /(?:[A-Za-z]:)?(?:[\\/][^\s"'`<>|*?,;()[\]{}]+)+/g;
+const ABSOLUTE_PATH_REFUSED_AFTER = precededByAnyOf(/[\w:/.]/);
 // A note reference in prose. Two shapes: a token with a `/`, where a space may
 // continue the path only if the next word still looks like one (`Client X/meeting.md`
 // — the lookahead is what stops "data.json and Notes/a.md" being swallowed as one
@@ -273,9 +275,10 @@ const ABSOLUTE_PATH_IN_TEXT = /(?<![\w:/.])(?:[A-Za-z]:)?(?:[\\/][^\s"'`<>|*?,;(
 // tell a folder from a verb. Callers put paths in structured `data`, which is exact.
 const PATH_CHAR = "[^\\s\"'`<>|*?,;()[\\]{}]";
 const NOTE_REF_IN_TEXT = new RegExp(
-	`(?<![\\w/{])(?:${PATH_CHAR}*\\/(?:${PATH_CHAR}|\\s(?=${PATH_CHAR}*[/.]))*?|${PATH_CHAR}+)\\.(?:md|canvas|base)\\b(?:#[^\\s\\]|)]+)?`,
+	`(?:${PATH_CHAR}*\\/(?:${PATH_CHAR}|\\s(?=${PATH_CHAR}*[/.]))*?|${PATH_CHAR}+)\\.(?:md|canvas|base)\\b(?:#[^\\s\\]|)]+)?`,
 	"gi"
 );
+const NOTE_REF_REFUSED_AFTER = precededByAnyOf(/[\w/{]/);
 const MARKED_PATH_IN_TEXT = new RegExp(
 	`\\b(?:vault|home|unc):\\/\\/(?:${PATH_CHAR}|\\s(?=${PATH_CHAR}*[/.]))*?\\.[A-Za-z0-9]{1,8}\\b(?![\\\\/])(?::\\d+(?::\\d+)?)?(?:#[^\\s\\]|)]+)?`,
 	"gi"
@@ -355,7 +358,7 @@ function stripSecretsFromText(text: string): string {
 }
 
 function abbreviatePathsInText(text: string, vaultPath: string | undefined): string {
-	return collapseVaultRoot(text, vaultPath)
+	const withMarkedPathsAndLinks = collapseVaultRoot(text, vaultPath)
 		.replace(MARKED_PATH_IN_TEXT, (match) => {
 			const location = /:\d+(?::\d+)?$/.exec(match)?.[0] ?? "";
 			const path = location ? match.slice(0, -location.length) : match;
@@ -365,11 +368,16 @@ function abbreviatePathsInText(text: string, vaultPath: string | undefined): str
 			const headingPart = heading ? `#{${stableHash(heading.slice(1))}}` : "";
 			const aliasPart = alias ? `|{${stableHash(alias.slice(1))}}` : "";
 			return `[[${hashSegments(target)}${headingPart}${aliasPart}]]`;
-		})
-		.replace(ABSOLUTE_PATH_IN_TEXT, (match) => abbreviatePath(match, vaultPath))
-		.replace(NOTE_REF_IN_TEXT, (match) =>
-			match.includes("://") && !PATH_MARKER.test(match) ? match : abbreviatePath(match, vaultPath)
-		);
+		});
+	const withAbsolutePaths = replaceNotPrecededBy(
+		withMarkedPathsAndLinks,
+		ABSOLUTE_PATH_IN_TEXT,
+		ABSOLUTE_PATH_REFUSED_AFTER,
+		([match]) => abbreviatePath(match, vaultPath)
+	);
+	return replaceNotPrecededBy(withAbsolutePaths, NOTE_REF_IN_TEXT, NOTE_REF_REFUSED_AFTER, ([match]) =>
+		match.includes("://") && !PATH_MARKER.test(match) ? match : abbreviatePath(match, vaultPath)
+	);
 }
 
 /** Redact free text — a log message, an error message, a stack trace. */

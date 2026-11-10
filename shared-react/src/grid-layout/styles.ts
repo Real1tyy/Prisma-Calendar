@@ -415,6 +415,6 @@ export function buildGridStyles(p: string): string {
 `;
 }
 
-export function injectGridStyles(prefix: string, targetDoc: Document = document): void {
+export function injectGridStyles(prefix: string, targetDoc: Document): void {
 	injectStyleSheet(`${prefix}grid-styles`, buildGridStyles(prefix), targetDoc);
 }
