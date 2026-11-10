@@ -14,16 +14,11 @@ import { DateTime } from "luxon";
 import type { Frontmatter } from "../types";
 import { isAllDayEvent, isTimedEvent, type CalendarEvent, type CalendarEventData } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/settings";
+import { lastAllDayDate } from "./dates/all-day";
 import { stripZ } from "./dates/iso";
 import { cleanupTitle } from "./events/naming";
 import { extractPropertyText, getDisplayProperties } from "./frontmatter/display";
 import { getInternalProperties } from "./frontmatter/props";
-
-export function lastAllDayDate(end: Date): Date {
-	const last = new Date(end);
-	last.setDate(last.getDate() - 1);
-	return last;
-}
 
 export function formatAllDayDateRange(start: Date, end: Date | null, formatDate: (date: Date) => string): string {
 	const first = formatDate(start);

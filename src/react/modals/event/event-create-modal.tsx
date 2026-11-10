@@ -1,16 +1,15 @@
 import { showReactModal } from "@real1ty/obsidian-plugins-react";
-import { DateTime } from "luxon";
 import type { App } from "obsidian";
 
 import {
 	applyPresetToState,
 	createDefaultState,
+	toTemporalFormFields,
 	type EventFormState,
 } from "../../../components/modals/event/event-form-state";
 import { CSS_PREFIX } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { MinimizedModalManager, type MinimizedModalState } from "../../../core/minimized-modal-manager";
-import { formatDateOnly, formatDateTimeForInput } from "../../../utils/format";
 import { openFileInNewTab } from "../../../utils/obsidian";
 import { buildEventSaveData } from "../../event-form/build-event-save-data";
 import { EventForm, type EventFormValues } from "../../event-form/event-form";
@@ -52,13 +51,7 @@ export function openEventCreateModal(
 		...createDefaultState(),
 		title: eventData.title || "",
 		allDay: eventData.allDay ?? false,
-		startDate: eventData.start ? toInputFormat(eventData.start) : "",
-		endDate: eventData.end ? toInputFormat(eventData.end) : "",
-		endDay:
-			eventData.allDay && eventData.end
-				? (DateTime.fromISO(formatDateOnly(eventData.end)).minus({ days: 1 }).toISODate() ?? "")
-				: "",
-		startDay: eventData.allDay && eventData.start ? toDateOnly(eventData.start) : "",
+		...toTemporalFormFields(eventData),
 	};
 
 	if (!options.restoreState && settings.defaultPresetId) {
@@ -143,14 +136,4 @@ function handleCreateSubmit(
 			}
 		})
 		.catch((error: unknown) => console.error("[EventCreate] Error creating event:", error));
-}
-
-function toInputFormat(value: string | Date | null | undefined): string {
-	if (!value) return "";
-	return formatDateTimeForInput(value);
-}
-
-function toDateOnly(value: string | Date | null | undefined): string {
-	if (!value) return "";
-	return formatDateOnly(value);
 }

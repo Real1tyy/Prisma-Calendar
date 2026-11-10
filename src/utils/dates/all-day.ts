@@ -27,3 +27,27 @@ export function allDaySpanEnd(start: string, end?: string | null): string | unde
 export function optionalEnd(end: string | undefined): { end?: string } {
 	return end ? { end } : {};
 }
+
+/** A form's inclusive last day, never before `startDay` (an empty or earlier value means the start day). */
+export function clampLastDay(startDay: string, lastDay?: string | null): string {
+	return lastDay && lastDay >= startDay ? lastDay : startDay;
+}
+
+/** Inclusive last day (`YYYY-MM-DD`) → stored exclusive end day: the day after. */
+export function exclusiveEndDay(startDay: string, lastDay?: string | null): string {
+	return allDayEnd(clampLastDay(startDay, lastDay)).slice(0, 10);
+}
+
+/** Stored exclusive end → the inclusive last day (`YYYY-MM-DD`) shown to the user. */
+export function lastDayOfSpan(exclusiveEnd: string): string {
+	return toInternalISO(
+		DateTime.fromISO(stripZ(exclusiveEnd), WALL_CLOCK_PARSE_OPTS).startOf("day").minus({ days: 1 })
+	).slice(0, 10);
+}
+
+/** `Date` twin of `lastDayOfSpan`, for display code that already holds `Date`s. */
+export function lastAllDayDate(exclusiveEnd: Date): Date {
+	const last = new Date(exclusiveEnd);
+	last.setDate(last.getDate() - 1);
+	return last;
+}

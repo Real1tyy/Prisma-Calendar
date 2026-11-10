@@ -3,6 +3,7 @@ import { memo, useCallback } from "react";
 import { useController, useWatch, type UseFormReturn } from "react-hook-form";
 
 import type { EventFormState } from "../../../components/modals/event/event-form-state";
+import { clampLastDay } from "../../../utils/dates/all-day";
 import { formatDateOnly, formatDateTimeForInput } from "../../../utils/format";
 import { PrismaCheckbox } from "../prisma-checkbox";
 import { PrismaSettingItem } from "../prisma-setting-item";
@@ -32,9 +33,7 @@ export const TimingSection = memo(function TimingSection({ form, showDurationFie
 				}
 			} else if (startDayField.value) {
 				startDateField.onChange(`${startDayField.value}T09:00`);
-				endDateField.onChange(
-					`${endDayField.value && endDayField.value >= startDayField.value ? endDayField.value : startDayField.value}T10:00`
-				);
+				endDateField.onChange(`${clampLastDay(startDayField.value, endDayField.value)}T10:00`);
 			}
 		},
 		[allDayField, startDateField, endDateField, startDayField, endDayField]

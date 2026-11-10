@@ -9,6 +9,8 @@ import {
 } from "../../../types/event-boundaries";
 import { DEFAULT_RECURRENCE_TYPE } from "../../../types/recurring";
 import type { EventPreset } from "../../../types/settings";
+import { lastDayOfSpan } from "../../../utils/dates/all-day";
+import { formatDateOnly, formatDateTimeForInput } from "../../../utils/format";
 
 export const RecurringFormStateSchema = z.object({
 	enabled: z.boolean().default(false),
@@ -116,4 +118,24 @@ export function extractPresetFromState(state: EventFormState): Partial<EventPres
 	}
 
 	return preset;
+}
+
+type TemporalFormFields = Pick<EventFormState, "startDate" | "endDate" | "startDay" | "endDay">;
+
+/**
+ * The form's timing fields for an event being opened. All-day events show the
+ * inclusive last day; the stored end is exclusive ([[decision-all-day-spans-use-exclusive-end-dates]]).
+ */
+export function toTemporalFormFields(event: {
+	start: string | Date | null;
+	end?: string | Date | null | undefined;
+	allDay?: boolean | undefined;
+}): TemporalFormFields {
+	const { start, end, allDay } = event;
+	return {
+		startDate: start ? formatDateTimeForInput(start) : "",
+		endDate: end ? formatDateTimeForInput(end) : "",
+		startDay: allDay && start ? formatDateOnly(start) : "",
+		endDay: allDay && end ? lastDayOfSpan(formatDateOnly(end)) : "",
+	};
 }

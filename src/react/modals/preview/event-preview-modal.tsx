@@ -7,13 +7,9 @@ import { createRoot } from "react-dom/client";
 import { cls, CSS_PREFIX, tid } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { Frontmatter } from "../../../types";
+import { lastAllDayDate } from "../../../utils/dates/all-day";
 import { removeZettelId } from "../../../utils/events/zettel-id";
-import {
-	categorizeProperties,
-	formatDateOnlyDisplay,
-	formatDateTimeDisplay,
-	lastAllDayDate,
-} from "../../../utils/format";
+import { categorizeProperties, formatDateOnlyDisplay, formatDateTimeDisplay } from "../../../utils/format";
 
 export interface PreviewEventData {
 	title: string;

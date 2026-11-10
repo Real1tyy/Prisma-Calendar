@@ -1,5 +1,4 @@
-import { ensureISOSuffix, WALL_CLOCK_PARSE_OPTS } from "@real1ty/obsidian-plugins";
-import { DateTime } from "luxon";
+import { ensureISOSuffix } from "@real1ty/obsidian-plugins";
 
 import {
 	applyDateFieldsToFrontmatter,
@@ -9,6 +8,7 @@ import {
 import type { Frontmatter } from "../../types";
 import { FormToFieldsSchema, type EventSaveData } from "../../types/event-boundaries";
 import type { SingleCalendarConfig } from "../../types/settings";
+import { exclusiveEndDay } from "../../utils/dates/all-day";
 import { isWeekdaySupported } from "../../utils/dates/recurring";
 import { writeMetadataToFrontmatter } from "../../utils/frontmatter/writer";
 import type { EventFormValues } from "./event-form";
@@ -34,12 +34,7 @@ export function buildEventSaveData(
 	if (formState.allDay) {
 		if (formState.startDay) {
 			start = `${formState.startDay}T00:00:00`;
-			end = DateTime.fromISO(
-				formState.endDay && formState.endDay >= formState.startDay ? formState.endDay : formState.startDay,
-				WALL_CLOCK_PARSE_OPTS
-			)
-				.plus({ days: 1 })
-				.toISODate();
+			end = exclusiveEndDay(formState.startDay, formState.endDay);
 		} else {
 			isUntracked = true;
 		}

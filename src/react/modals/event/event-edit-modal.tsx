@@ -1,11 +1,11 @@
 import { parseIntoList, serializeFrontmatterValue } from "@real1ty/obsidian-plugins";
 import { openConfirmation, showReactModal } from "@real1ty/obsidian-plugins-react";
-import { DateTime } from "luxon";
 import type { App } from "obsidian";
 
 import {
 	createDefaultState,
 	DEFAULT_RECURRING_FORM_STATE,
+	toTemporalFormFields,
 	type EventFormState,
 } from "../../../components/modals/event/event-form-state";
 import { loadSimpleFieldValues } from "../../../components/modals/event/event-frontmatter-mapper";
@@ -17,7 +17,7 @@ import type { UpdateEventData } from "../../../types/event-boundaries";
 import type { SingleCalendarConfig } from "../../../types/settings";
 import { isWeekdaySupported, parseRecurrenceType } from "../../../utils/dates/recurring";
 import { extractInstanceDate, extractZettelId, removeZettelId } from "../../../utils/events/zettel-id";
-import { categorizeProperties, formatDateOnly, formatDateTimeForInput } from "../../../utils/format";
+import { categorizeProperties, formatDateOnly } from "../../../utils/format";
 import { getVirtualKind } from "../../../utils/frontmatter/extended-props";
 import { getCategoriesFromFilePath, getFileAndFrontmatter } from "../../../utils/obsidian";
 import { buildEventSaveData } from "../../event-form/build-event-save-data";
@@ -90,13 +90,7 @@ export function deriveEditFormState(
 		title: displayTitle,
 		allDay: eventData.allDay ?? false,
 		virtual: eventData.extendedProps?.["virtualKind"] === "manual",
-		startDate: eventData.start ? formatDateTimeForInput(eventData.start) : "",
-		endDate: eventData.end ? formatDateTimeForInput(eventData.end) : "",
-		endDay:
-			eventData.allDay && eventData.end
-				? (DateTime.fromISO(formatDateOnly(eventData.end)).minus({ days: 1 }).toISODate() ?? "")
-				: "",
-		startDay: eventData.allDay && eventData.start ? formatDateOnly(eventData.start) : "",
+		...toTemporalFormFields(eventData),
 		categories,
 		participants,
 		prerequisites,
