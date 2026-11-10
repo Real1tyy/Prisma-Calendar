@@ -1,10 +1,12 @@
 import { calculateEventStatistics } from "@real1ty/obsidian-plugins";
 import { useSettingsFields } from "@real1ty/obsidian-plugins-react";
 import { DateTime } from "luxon";
+import { Platform } from "obsidian";
 import { useDeferredValue, useMemo, useRef } from "react";
 
 import { cls, tid } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
+import { withShortcutHint } from "../../../utils/responsive";
 import { EventSeriesEventRow } from "./event-series-event-row";
 import type { EventListOptions, EventRowItem } from "./event-series-types";
 
@@ -111,7 +113,7 @@ export function EventSeriesInstancesList({
 					<input
 						ref={searchRef}
 						type="text"
-						placeholder="Search instances... (Ctrl/Cmd+F)"
+						placeholder={withShortcutHint("Search instances...", "Ctrl/Cmd+F", Platform.isMobile)}
 						className={cls("generic-event-search-input")}
 						data-testid={tid("series-search")}
 						value={searchQuery}

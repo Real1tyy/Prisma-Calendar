@@ -6,18 +6,38 @@
 			gap: 8px;
 		}
 
+		// FullCalendar spaces toolbar items with its own `margin-left: .75em` on
+		// top of the chunk gap — on a phone that is what pushed row 1 onto a
+		// second line. The gap alone spaces them; this has to out-rank FC's
+		// `.fc-direction-ltr .fc-toolbar > * > :not(:first-child)`.
+		.fc-header-toolbar .fc-toolbar-chunk > :not(:first-child) {
+			margin-left: 0;
+		}
+
 		.fc-toolbar-chunk {
 			display: flex;
 			flex-wrap: wrap;
 			justify-content: center;
-			gap: 6px;
+			gap: 4px;
 			width: 100%;
 			padding: 0 4px;
+			align-items: center;
 
 			// Mobile: Make buttons smaller
 			.fc-button {
 				font-size: 11px;
-				padding: 4px 8px;
+				padding: 4px 6px;
+			}
+
+			// FC sizes its arrow glyphs at 1.5em, which makes ‹ › the widest
+			// buttons in a row that has to hold eight.
+			.fc-prev-button,
+			.fc-next-button {
+				padding: 4px;
+
+				.fc-icon {
+					font-size: 1.1em;
+				}
 			}
 
 			// Mobile: Navigation buttons stay compact

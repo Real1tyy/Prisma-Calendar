@@ -85,7 +85,7 @@ import {
 	type VerticalEdgeScrollDirection,
 } from "../utils/calendar/edge-scroll";
 import { getCalendarRenderingKey } from "../utils/calendar/settings";
-import { batchSelectLabel, buildHeaderToolbarChunks } from "../utils/calendar/toolbar-layout";
+import { batchSelectLabel, buildHeaderToolbarChunks, titleFormatFor } from "../utils/calendar/toolbar-layout";
 import { stripZ } from "../utils/dates/iso";
 import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
 import {
@@ -1337,6 +1337,9 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.calendar.setOption("allDaySlot", options.allDaySlot);
 		this.calendar.setOption("dayMaxEvents", options.dayMaxEvents);
 		this.container.classList.toggle(cls("all-day-expanded"), options.expanded);
+		// Same triggers (view change, breakpoint cross), so it rides here rather
+		// than growing a second set of call sites.
+		this.calendar.setOption("titleFormat", titleFormatFor(this.calendar.view.type, this.isMobileView()));
 		this.scheduleStickyOffsetsUpdate();
 	}
 

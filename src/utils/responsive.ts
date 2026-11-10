@@ -32,3 +32,11 @@ export function shouldUseMobileLayout({
 }: MobileLayoutInput): boolean {
 	return isPlatformMobile || width <= breakpoint;
 }
+
+/**
+ * A keyboard-shortcut hint belongs on a label only where there is a keyboard;
+ * on a phone it truncates the label it was meant to help. Pass `Platform.isMobile`.
+ */
+export function withShortcutHint(label: string, shortcut: string, isPlatformMobile: boolean): string {
+	return isPlatformMobile ? label : `${label} (${shortcut})`;
+}

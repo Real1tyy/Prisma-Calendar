@@ -216,11 +216,18 @@
 
 // Mobile responsiveness
 @media (width <= 768px) {
+	// A sheet pinned to the screen, not the button: anchored below a button near
+	// the left edge, the old centre-on-button rule pushed half the panel
+	// off-screen. Insets clear Obsidian's mobile top bar and bottom toolbar.
+	// See [[decision-mobile-ui-conventions]].
 	.prisma-untracked-dropdown {
-		width: calc(100vw - 32px);
-		max-height: 400px;
-		left: 50%;
-		transform: translateX(-50%);
+		position: fixed;
+		top: calc(var(--safe-area-inset-top, 0px) + 56px);
+		bottom: calc(var(--safe-area-inset-bottom, 0px) + 72px);
+		left: 12px;
+		right: 12px;
+		width: auto;
+		max-height: none;
 
 		&-button {
 			padding: 4px 8px;

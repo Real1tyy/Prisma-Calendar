@@ -1,4 +1,5 @@
 import { useFocusOnMount, VirtualList, type VirtualListHandle } from "@real1ty/obsidian-plugins-react";
+import { Platform } from "obsidian";
 import React, {
 	memo,
 	useCallback,
@@ -12,6 +13,7 @@ import React, {
 
 import { cls, tid } from "../../../constants";
 import { removeZettelId } from "../../../utils/events/zettel-id";
+import { withShortcutHint } from "../../../utils/responsive";
 import { EventListItem, type EventListAction, type EventListItemData } from "./event-list-item";
 
 export interface EventListModalProps {
@@ -36,7 +38,7 @@ export const EventListModal = memo(function EventListModal({
 	items,
 	title,
 	subtitle,
-	searchPlaceholder = "Search events... (Ctrl/Cmd+F)",
+	searchPlaceholder = withShortcutHint("Search events...", "Ctrl/Cmd+F", Platform.isMobile),
 	searchFields = ["title"],
 	countSuffix,
 	actions,

@@ -118,6 +118,8 @@ Properties render with proper formatting — links are clickable, lists are comm
 
 Filter untracked events by typing in the search bar at the top of the dropdown. Searches event titles (case-insensitive), ignores ZettelIDs, and updates instantly.
 
+On desktop the cursor is placed in the search bar as soon as the dropdown opens. On a phone it isn't, so the keyboard doesn't cover the list — tap the bar when you want to search. On a phone the dropdown also opens as a full-height panel centred on the screen rather than below the button.
+
 ## Configuration
 
 - **[Configuration Guide](../../configuration/general#parsing)** — Enable/disable, display properties, default duration

@@ -66,6 +66,8 @@ A Gantt chart showing events as horizontal bars with dependency arrows between p
 
 Tab state — active tab, visibility, order, custom names, icon overrides, icon-color overrides, and text-color overrides — persists across sessions.
 
+The tab bar always takes a single row. When the tabs don't all fit — in a narrow pane, or a header crowded with actions — the bar shows as many as fit and ends with **⋯**, which lists the rest; a hidden group lists each of its sub-views. The tab you're on is never moved into **⋯**.
+
 On a phone — or any pane narrower than 768px — the tab bar starts hidden so the views get the whole screen. Tap **Tabs** in the calendar header to show it, and tap again to hide it. Whether it's showing is remembered for the rest of the session and resets to hidden the next time you start Obsidian; it isn't a setting and never affects the desktop layout.
 
 ## Tab Icons and colors

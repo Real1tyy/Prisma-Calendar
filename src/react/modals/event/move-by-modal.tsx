@@ -1,4 +1,4 @@
-import { ModalForm, openReactModal, SettingItem } from "@real1ty/obsidian-plugins-react";
+import { ModalForm, openReactModal, SettingItem, shouldAutoFocus } from "@real1ty/obsidian-plugins-react";
 import type { App } from "obsidian";
 import React, { useCallback, useRef, useState } from "react";
 
@@ -62,7 +62,7 @@ export function MoveByForm({ onSubmit, onCancel }: MoveByFormProps) {
 							className={cls("move-by-input")}
 							onChange={handleInputChange}
 							data-testid={tid("move-by-value")}
-							autoFocus
+							autoFocus={shouldAutoFocus()}
 						/>
 						<button
 							type="button"

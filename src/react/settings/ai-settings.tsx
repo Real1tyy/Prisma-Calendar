@@ -1,4 +1,4 @@
-import { SettingHeading, useSchemaField } from "@real1ty/obsidian-plugins-react";
+import { SettingHeading, shouldAutoFocus, useSchemaField } from "@real1ty/obsidian-plugins-react";
 import { memo, useCallback, useState } from "react";
 
 import { cls, tid } from "../../constants";
@@ -167,7 +167,7 @@ const PromptEditForm = memo(function PromptEditForm({ existing, onSave, onCancel
 				value={title}
 				onChange={(e) => setTitle(e.target.value)}
 				data-testid={tid("settings-ai-prompt-title")}
-				autoFocus
+				autoFocus={shouldAutoFocus()}
 			/>
 			<label className={cls("filter-label")}>Content</label>
 			<textarea

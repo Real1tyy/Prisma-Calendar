@@ -1,5 +1,11 @@
 import { parseFrontmatterRecord, serializeFrontmatterValue, toLocalISOString } from "@real1ty/obsidian-plugins";
-import { useFocusOnMount, useHandleKeyDown, useSettingsFields, useZodForm } from "@real1ty/obsidian-plugins-react";
+import {
+	shouldAutoFocus,
+	useFocusOnMount,
+	useHandleKeyDown,
+	useSettingsFields,
+	useZodForm,
+} from "@real1ty/obsidian-plugins-react";
 import { Notice } from "obsidian";
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { useController, useWatch, type UseFormReturn } from "react-hook-form";
@@ -497,7 +503,7 @@ function TitleField({
 					onChange={(e) => field.onChange(e.target.value)}
 					onBlur={onBlur}
 					data-testid="prisma-event-control-title"
-					autoFocus
+					autoFocus={shouldAutoFocus()}
 				/>
 			</div>
 		</PrismaSettingItem>

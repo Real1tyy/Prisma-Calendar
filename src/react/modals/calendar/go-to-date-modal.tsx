@@ -1,5 +1,5 @@
 import { formatDateInputValue, parseDateInputValue } from "@real1ty/obsidian-plugins";
-import { ModalForm, openReactModal, SettingItem } from "@real1ty/obsidian-plugins-react";
+import { ModalForm, openReactModal, SettingItem, shouldAutoFocus } from "@real1ty/obsidian-plugins-react";
 import type { App } from "obsidian";
 import { useCallback, useState } from "react";
 
@@ -30,7 +30,7 @@ export function GoToDateForm({ initialDate, onSubmit, onCancel }: GoToDateFormPr
 					value={value}
 					onChange={(e) => setValue(e.target.value)}
 					data-testid={tid("go-to-date-value")}
-					autoFocus
+					autoFocus={shouldAutoFocus()}
 				/>
 			</SettingItem>
 		</ModalForm>

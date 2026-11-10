@@ -1,10 +1,11 @@
-import { showReactModal } from "@real1ty/obsidian-plugins-react";
-import type { App } from "obsidian";
+import { shouldAutoFocus, showReactModal } from "@real1ty/obsidian-plugins-react";
+import { Platform, type App } from "obsidian";
 import { useCallback, useDeferredValue, useMemo, useState, type KeyboardEvent, type ReactNode } from "react";
 
 import type { CalendarComponent } from "../../../components/calendar-view";
 import { cls, tid } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
+import { withShortcutHint } from "../../../utils/responsive";
 import { openEventSeriesModal } from "./event-series-modal-content";
 import {
 	EVENTS_MODAL_SORT_OPTIONS,
@@ -148,12 +149,12 @@ function EventsModalContent({
 			<div className={cls("generic-event-list-search")}>
 				<input
 					type="text"
-					placeholder="Search events... (Ctrl/Cmd+F)"
+					placeholder={withShortcutHint("Search events...", "Ctrl/Cmd+F", Platform.isMobile)}
 					className={cls("generic-event-search-input")}
 					data-testid={tid("events-modal-search")}
 					value={searchQuery}
 					onChange={(e) => setSearchQuery(e.target.value)}
-					autoFocus
+					autoFocus={shouldAutoFocus()}
 				/>
 				<select
 					className={cls("events-modal-sort-select")}

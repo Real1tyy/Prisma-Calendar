@@ -113,3 +113,12 @@
 	flex-grow: unset;
 	flex-shrink: 0;
 }
+
+// A phone header has room for one readout: the capacity figure when tracking
+// is on (the indicator renders nothing otherwise), else the view's name.
+// See [[decision-mobile-ui-conventions]].
+@media (width <= 768px) {
+	.view-header-title-container:has(.prisma-capacity-indicator) .view-header-title {
+		display: none;
+	}
+}

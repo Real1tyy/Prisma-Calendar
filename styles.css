@@ -890,17 +890,29 @@ button[class*=prisma-]:focus-visible {
     flex-direction: column;
     gap: 8px;
   }
+  .prisma-calendar-container .fc-header-toolbar .fc-toolbar-chunk > :not(:first-child) {
+    margin-left: 0;
+  }
   .prisma-calendar-container .fc-toolbar-chunk {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 6px;
+    gap: 4px;
     width: 100%;
     padding: 0 4px;
+    align-items: center;
   }
   .prisma-calendar-container .fc-toolbar-chunk .fc-button {
     font-size: 11px;
-    padding: 4px 8px;
+    padding: 4px 6px;
+  }
+  .prisma-calendar-container .fc-toolbar-chunk .fc-prev-button,
+  .prisma-calendar-container .fc-toolbar-chunk .fc-next-button {
+    padding: 4px;
+  }
+  .prisma-calendar-container .fc-toolbar-chunk .fc-prev-button .fc-icon,
+  .prisma-calendar-container .fc-toolbar-chunk .fc-next-button .fc-icon {
+    font-size: 1.1em;
   }
   .prisma-calendar-container .fc-toolbar-chunk .fc-button-group {
     flex-shrink: 0;
@@ -1647,6 +1659,11 @@ button[class*=prisma-]:focus-visible {
   flex-shrink: 0;
 }
 
+@media (width <= 768px) {
+  .view-header-title-container:has(.prisma-capacity-indicator) .view-header-title {
+    display: none;
+  }
+}
 .prisma-settings-search {
   margin-left: auto;
   flex-shrink: 0;
@@ -4086,6 +4103,26 @@ button[class*=prisma-]:focus-visible {
   flex-shrink: 0;
 }
 
+@media (width <= 768px) {
+  .prisma-event-series-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .prisma-event-series-tabs .prisma-event-series-tab-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+  .prisma-generic-event-list-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  .prisma-generic-event-list-item .prisma-generic-event-actions button {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
 .prisma-recurring-events-list-modal {
   padding: 1.5rem;
 }
@@ -6230,8 +6267,12 @@ body .modal.prisma-weekly-stats-modal {
 @media (width <= 768px) {
   .prisma-recurring-events-modal-filters {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 0.75rem;
+  }
+  .prisma-recurring-events-type-select {
+    flex: 1 1 auto;
+    min-width: 0;
   }
   .prisma-recurring-event-title-row {
     flex-direction: column;
@@ -6925,10 +6966,13 @@ body .modal.prisma-weekly-stats-modal {
 
 @media (width <= 768px) {
   .prisma-untracked-dropdown {
-    width: calc(100vw - 32px);
-    max-height: 400px;
-    left: 50%;
-    transform: translateX(-50%);
+    position: fixed;
+    top: calc(var(--safe-area-inset-top, 0px) + 56px);
+    bottom: calc(var(--safe-area-inset-bottom, 0px) + 72px);
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-height: none;
   }
   .prisma-untracked-dropdown-button {
     padding: 4px 8px;

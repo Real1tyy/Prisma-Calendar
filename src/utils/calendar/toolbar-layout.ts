@@ -80,3 +80,22 @@ export function buildHeaderToolbarChunks({
 export function batchSelectLabel(isMobile: boolean): string {
 	return isMobile ? "Batch" : "Batch Select";
 }
+
+export interface TitleFormat {
+	year?: "numeric";
+	month?: "short";
+	day?: "numeric";
+}
+
+/**
+ * The phone header shares one row between the date and five buttons, so the
+ * year goes wherever the view makes it obvious ("Nov 4", "Nov 2 – 8",
+ * "Nov 2026"). `undefined` on desktop hands the choice back to FullCalendar's
+ * own per-view default — `titleFormat` cannot be set per view at runtime.
+ */
+export function titleFormatFor(viewType: string, isMobile: boolean): TitleFormat | undefined {
+	if (!isMobile) return undefined;
+	if (viewType.startsWith("multiMonth")) return { year: "numeric" };
+	if (viewType === "dayGridMonth") return { month: "short", year: "numeric" };
+	return { month: "short", day: "numeric" };
+}

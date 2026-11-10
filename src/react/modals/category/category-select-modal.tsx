@@ -1,4 +1,4 @@
-import { ModalForm, openReactModal } from "@real1ty/obsidian-plugins-react";
+import { ModalForm, openReactModal, shouldAutoFocus } from "@real1ty/obsidian-plugins-react";
 import type { App } from "obsidian";
 import React, { memo, useCallback, useMemo, useState } from "react";
 
@@ -72,7 +72,7 @@ export function CategorySelectForm({ allCategories, onSelect, onCancel }: Catego
 						value={search}
 						onChange={(e) => setSearch(e.target.value)}
 						onKeyDown={handleKeyDown}
-						autoFocus
+						autoFocus={shouldAutoFocus()}
 						data-testid={tid("category-search")}
 					/>
 					<div className={cls("category-list")}>

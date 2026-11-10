@@ -1,4 +1,4 @@
-import { ModalDescription, openReactModal, VirtualList } from "@real1ty/obsidian-plugins-react";
+import { ModalDescription, openReactModal, shouldAutoFocus, VirtualList } from "@real1ty/obsidian-plugins-react";
 import type { App } from "obsidian";
 import React, { memo, useCallback, useDeferredValue, useMemo, useRef, useState } from "react";
 
@@ -211,7 +211,7 @@ export function AssignmentForm({ items, config, preSelected, onSubmit, onCancel 
 						setSearch(e.target.value);
 						setHighlightedIndex(-1);
 					}}
-					autoFocus
+					autoFocus={shouldAutoFocus()}
 					data-testid={tid("assign-search")}
 				/>
 			</div>
