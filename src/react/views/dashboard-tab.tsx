@@ -48,10 +48,8 @@ const DashboardSection = memo(function DashboardSection({ id, buildData }: Dashb
 	const bundle = useBundle();
 	const extra = useMemo(() => [bundle.categoryTracker.categories$], [bundle]);
 	const renderToken = useBundleChanges(bundle, { debounceMs: REFRESH_DEBOUNCE_MS, extra });
-	const data = useMemo(() => {
-		void renderToken;
-		return buildData();
-	}, [buildData, renderToken]);
+	// eslint-disable-next-line react-hooks/exhaustive-deps -- renderToken is the invalidation key: buildData reads live bundle state the memo cannot see
+	const data = useMemo(() => buildData(), [buildData, renderToken]);
 
 	const gridState = usePersistedGridStateById(bundle.settingsStore, "dashboardGridState", id, DASHBOARD_GRID_DEFAULTS);
 

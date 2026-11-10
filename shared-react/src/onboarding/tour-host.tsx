@@ -21,7 +21,13 @@ export function toJoyrideStep(step: TourStep): Step {
 		hideOverlay: interaction === "page",
 		skipScroll: step.disableScroll === true,
 		...(step.title !== undefined ? { title: step.title } : {}),
-		...(step.before ? { before: async (): Promise<void> => void (await step.before?.()) } : {}),
+		...(step.before
+			? {
+					before: async (): Promise<void> => {
+						await step.before?.();
+					},
+				}
+			: {}),
 		...(step.id !== undefined ? { id: step.id } : {}),
 	};
 }

@@ -242,7 +242,7 @@ const GanttBody = memo(function GanttBody() {
 		if (!el) return;
 
 		let renderer: GanttRendererHandle | null = null;
-		let wrapperEl: HTMLElement | null = null;
+		let wrapperEl: HTMLElement | null;
 		let eventsByPath = new Map<string, CalendarEvent>();
 		let colorEvaluator: ColorEvaluator<SingleCalendarConfig> | null = null;
 		let barContextMenu: CustomizableContextMenuHandle | null = null;

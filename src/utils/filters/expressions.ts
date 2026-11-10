@@ -42,9 +42,7 @@ function extractPropertiesFromExpressions(expressions: string[]): {
 		// Match patterns like "Property.includes(" or "Property?.includes("
 		// This catches the specific case that causes errors: Category.includes('X')
 		const includesPattern = /\b([A-Za-z_][A-Za-z0-9_]*)\??\.includes\(/g;
-		let match: RegExpExecArray | null = null;
-		// biome-ignore lint/suspicious/noAssignInExpressions: Required for regex.exec() iteration pattern
-		while ((match = includesPattern.exec(expression)) !== null) {
+		for (const match of expression.matchAll(includesPattern)) {
 			const propName = match[1];
 			// Skip JavaScript built-in methods
 			if (propName !== "Array" && propName !== "String") {
