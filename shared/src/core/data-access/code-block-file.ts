@@ -140,7 +140,7 @@ export class CodeBlockFile<T> {
 
 		if (shouldPreserveEditorState && cursor && scrollInfo) {
 			await new Promise<void>((resolve) => window.setTimeout(resolve, 0));
-			window.requestAnimationFrame?.(() => {
+			window.requestAnimationFrame(() => {
 				const viewAfter = app.workspace.getActiveViewOfType(MarkdownView);
 				if (!viewAfter || viewAfter.file?.path !== file.path) return;
 
