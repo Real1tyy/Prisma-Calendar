@@ -106,6 +106,8 @@ If **Title property** is blank, the event's title is derived from the filename (
 
 Priority when resolving an event's display title: `Title property` (user-controlled) → `Calendar title property` (auto-computed back-link) → filename.
 
+The event API also accepts and returns the exclusive all-day `end`. Converting a note to a virtual event preserves the same span.
+
 ## Sorting Normalization
 
 - **Sorting normalization strategy**: write a normalized datetime to a dedicated sort property so external tools (Bases, Dataview) can sort all event types by a single field. See [Sorting Normalization for External Tools](#sorting-normalization-for-external-tools) below for full details.
@@ -185,8 +187,6 @@ project: Q4 Planning
 ```
 
 **See Also**: [Untracked Events documentation](../features/events/untracked-events.md) for details on the untracked events dropdown
-
-The event API also accepts and returns the exclusive all-day `end`. Converting a note to a virtual event preserves the same span.
 
 ## How Prisma decides event type
 
