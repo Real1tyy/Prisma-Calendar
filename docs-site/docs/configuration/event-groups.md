@@ -59,8 +59,8 @@ The following Prisma-managed properties are **always** excluded from propagation
 
 | Property | Default name | Why excluded |
 |----------|-------------|--------------|
-| Start | `Start` | Per-instance timing |
-| End | `End` | Per-instance timing |
+| Start Date | `Start Date` | Per-instance timing |
+| End Date | `End Date` | Per-instance timing |
 | Start Day | `Start Day` | Per-instance timing |
 | End Day | `End Day` | Per-instance timing |
 | Break | `Break` | Per-instance timing |

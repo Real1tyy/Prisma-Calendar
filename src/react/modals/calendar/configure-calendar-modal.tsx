@@ -14,8 +14,8 @@ import { computePrefill, Field, PropertyFields, SuggestionList } from "./propert
 
 export interface ConfigureCalendarResult {
 	directory: string;
-	startProp: string;
-	endProp: string;
+	startDateProp: string;
+	endDateProp: string;
 	startDayProp: string;
 	endDayProp: string;
 }
@@ -61,8 +61,8 @@ export const ConfigureCalendarController = memo(function ConfigureCalendarContro
 	const [isLoading, setIsLoading] = useState(true);
 
 	const [directory, setDirectory] = useState(initialValues.directory);
-	const [startProp, setStartProp] = useState(initialValues.startProp);
-	const [endProp, setEndProp] = useState(initialValues.endProp);
+	const [startDateProp, setStartDateProp] = useState(initialValues.startDateProp);
+	const [endDateProp, setEndDateProp] = useState(initialValues.endDateProp);
 	const [startDayProp, setStartDayProp] = useState(initialValues.startDayProp);
 	const [endDayProp, setEndDayProp] = useState(initialValues.endDayProp);
 
@@ -90,8 +90,8 @@ export const ConfigureCalendarController = memo(function ConfigureCalendarContro
 		(suggestion: DirectorySuggestion): void => {
 			setDirectory(suggestion.directory);
 			const prefill = computePrefill(suggestion);
-			setStartProp(prefill.startProp || initialValues.startProp);
-			setEndProp(prefill.endProp || initialValues.endProp);
+			setStartDateProp(prefill.startDateProp || initialValues.startDateProp);
+			setEndDateProp(prefill.endDateProp || initialValues.endDateProp);
 			setStartDayProp(prefill.startDayProp || initialValues.startDayProp);
 			setEndDayProp(prefill.endDayProp || initialValues.endDayProp);
 		},
@@ -101,8 +101,8 @@ export const ConfigureCalendarController = memo(function ConfigureCalendarContro
 	const handleSubmit = (): void => {
 		onSubmit({
 			directory: directory.trim() || initialValues.directory,
-			startProp: startProp.trim() || initialValues.startProp,
-			endProp: endProp.trim() || initialValues.endProp,
+			startDateProp: startDateProp.trim() || initialValues.startDateProp,
+			endDateProp: endDateProp.trim() || initialValues.endDateProp,
 			startDayProp: startDayProp.trim() || initialValues.startDayProp,
 			endDayProp: endDayProp.trim() || initialValues.endDayProp,
 		});
@@ -137,12 +137,12 @@ export const ConfigureCalendarController = memo(function ConfigureCalendarContro
 			</div>
 
 			<PropertyFields
-				startProp={startProp}
-				endProp={endProp}
+				startDateProp={startDateProp}
+				endDateProp={endDateProp}
 				startDayProp={startDayProp}
 				endDayProp={endDayProp}
-				onStartPropChange={setStartProp}
-				onEndPropChange={setEndProp}
+				onStartDatePropChange={setStartDateProp}
+				onEndDatePropChange={setEndDateProp}
 				onStartDayPropChange={setStartDayProp}
 				onEndDayPropChange={setEndDayProp}
 				placeholders={initialValues}

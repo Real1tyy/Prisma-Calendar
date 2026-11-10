@@ -58,17 +58,17 @@ export const applyStartEndOffsets = (
 	startOffset?: DurationLike,
 	endOffset?: DurationLike
 ) => {
-	const { startProp, endProp, startDayProp, endDayProp } = settings;
+	const { startDateProp, endDateProp, startDayProp, endDayProp } = settings;
 
 	if (
 		resolveTemporalKind(buildEventSchemaInput({ filePath: "", folder: "", frontmatter: fm }, settings)) === "allDay"
 	) {
-		const anchorProp = fm[startDayProp] ? startDayProp : startProp;
+		const anchorProp = fm[startDayProp] ? startDayProp : startDateProp;
 		if (fm[anchorProp]) fm[anchorProp] = shiftISO(fm[anchorProp], startOffset);
 		if (fm[endDayProp]) fm[endDayProp] = shiftISO(fm[endDayProp], startOffset);
 	} else {
-		if (fm[startProp]) fm[startProp] = shiftISO(fm[startProp], startOffset);
-		if (fm[endProp]) fm[endProp] = shiftISO(fm[endProp], endOffset);
+		if (fm[startDateProp]) fm[startDateProp] = shiftISO(fm[startDateProp], startOffset);
+		if (fm[endDateProp]) fm[endDateProp] = shiftISO(fm[endDateProp], endOffset);
 	}
 };
 
@@ -83,7 +83,7 @@ export const setEventBasics = (
 		zettelId?: number | undefined;
 	}
 ) => {
-	const { titleProp, startProp, endProp, startDayProp, endDayProp, allDayProp, zettelIdProp } = settings;
+	const { titleProp, startDateProp, endDateProp, startDayProp, endDayProp, allDayProp, zettelIdProp } = settings;
 
 	if (titleProp && data.title) fm[titleProp] = data.title;
 
@@ -96,12 +96,12 @@ export const setEventBasics = (
 		const endDay = allDayEnd(data.start, data.end).slice(0, 10);
 		if (endDay > allDayEnd(data.start).slice(0, 10)) fm[endDayProp] = endDay;
 		else Reflect.deleteProperty(fm, endDayProp);
-		fm[startProp] = "";
-		fm[endProp] = "";
+		fm[startDateProp] = "";
+		fm[endDateProp] = "";
 	} else {
 		Reflect.deleteProperty(fm, endDayProp);
-		fm[startProp] = ensureISOSuffix(data.start);
-		if (data.end) fm[endProp] = ensureISOSuffix(data.end);
+		fm[startDateProp] = ensureISOSuffix(data.start);
+		if (data.end) fm[endDateProp] = ensureISOSuffix(data.end);
 		fm[startDayProp] = "";
 	}
 
@@ -112,8 +112,8 @@ export const setEventBasics = (
 };
 
 export const setUntrackedEventBasics = (fm: Frontmatter, settings: SingleCalendarConfig): void => {
-	fm[settings.startProp] = "";
-	fm[settings.endProp] = "";
+	fm[settings.startDateProp] = "";
+	fm[settings.endDateProp] = "";
 	fm[settings.startDayProp] = "";
 	Reflect.deleteProperty(fm, settings.endDayProp);
 	fm[settings.allDayProp] = "";

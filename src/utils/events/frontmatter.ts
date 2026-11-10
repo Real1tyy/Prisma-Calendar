@@ -36,7 +36,7 @@ export function parseEventFrontmatter(
 	frontmatter: Frontmatter,
 	settings: SingleCalendarConfig
 ): { datetime: CalendarEventFrontmatter; metadata: EventMetadata } | null {
-	const { startProp, endProp, startDayProp, allDayProp, titleProp } = settings;
+	const { startDateProp, endDateProp, startDayProp, allDayProp, titleProp } = settings;
 	const metadata = parseEventMetadata(frontmatter, settings);
 
 	if (isAllDayEvent(frontmatter[allDayProp])) {
@@ -51,8 +51,8 @@ export function parseEventFrontmatter(
 	}
 
 	const candidateData = {
-		startTime: frontmatter[startProp],
-		endTime: frontmatter[endProp],
+		startTime: frontmatter[startDateProp],
+		endTime: frontmatter[endDateProp],
 		allDay: false as const,
 		title: titleProp ? frontmatter[titleProp] : undefined,
 	};
@@ -263,8 +263,8 @@ export const applyFrontmatterChangesToInstance = async (
 export const getBatchFrontmatterExcludedProps = (settings: SingleCalendarConfig): Set<string> => {
 	return new Set(
 		[
-			settings.startProp,
-			settings.endProp,
+			settings.startDateProp,
+			settings.endDateProp,
 			settings.startDayProp,
 			settings.sortDateProp,
 			settings.allDayProp,
@@ -397,8 +397,8 @@ export function extractTimeDiffFromFrontmatterDiff(
 	diff: FrontmatterDiff,
 	settings: SingleCalendarConfig
 ): TimePropagationDiff | null {
-	const startChange = findStringChange(diff, settings.startProp);
-	const endChange = findStringChange(diff, settings.endProp);
+	const startChange = findStringChange(diff, settings.startDateProp);
+	const endChange = findStringChange(diff, settings.endDateProp);
 
 	if (!startChange && !endChange) return null;
 

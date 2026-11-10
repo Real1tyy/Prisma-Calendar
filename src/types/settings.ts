@@ -173,11 +173,16 @@ const GeneralSettingsSchema = z
 
 const PropsSettingsSchema = z
 	.object({
-		startProp: z.string().catch("Start Date").describe("Frontmatter property name for event start date/time"),
-		endProp: z
+		startDateProp: z
+			.string()
+			.catch("Start Date")
+			.describe("Frontmatter property for the start date and time of timed events")
+			.meta({ title: "Start date property" }),
+		endDateProp: z
 			.string()
 			.catch("End Date")
-			.describe("Frontmatter property name for event end date/time (for timed events)"),
+			.describe("Frontmatter property for the end date and time of timed events")
+			.meta({ title: "End date property" }),
 		startDayProp: z
 			.string()
 			.catch("Start Day")

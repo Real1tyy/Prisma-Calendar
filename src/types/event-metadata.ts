@@ -115,14 +115,14 @@ export interface PropClassification {
 export const PROP_CLASSIFICATIONS: readonly PropClassification[] = [
 	// ── Datetime & Identity (system-only, no metadata key) ──
 	{
-		settingsProp: "startProp",
+		settingsProp: "startDateProp",
 		system: true,
 		dedicatedUI: false,
 		notificationSystem: false,
 		notificationDedicatedUI: false,
 	},
 	{
-		settingsProp: "endProp",
+		settingsProp: "endDateProp",
 		system: true,
 		dedicatedUI: false,
 		notificationSystem: false,
@@ -350,8 +350,8 @@ export const PROP_CLASSIFICATIONS: readonly PropClassification[] = [
 export const DEFAULT_PROPERTY_ORDER: readonly SettingsPropKey[] = [
 	"startDayProp",
 	"endDayProp",
-	"startProp",
-	"endProp",
+	"startDateProp",
+	"endDateProp",
 	"allDayProp",
 	"sortDateProp",
 	"titleProp",

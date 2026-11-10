@@ -28,7 +28,7 @@ The **Current Interval View** filters events by the **Sort date property**. This
 
 All Bases views include these columns by default:
 - **File name**: Link to the event note
-- **Date property**: The configured date/time property (sorted by this column)
+- **Sort date property**: The configured `Sort Date` property (sorted by this column)
 - **Status**: Current event status
 
 ## Custom Columns

@@ -25,8 +25,8 @@ export function extractTimeDiffFromFrontmatterDiff(
 	diff: FrontmatterDiff,
 	settings: SingleCalendarConfig
 ): TimePropagationDiff | null {
-	const startChange = findStringChange(diff, settings.startProp);
-	const endChange = findStringChange(diff, settings.endProp);
+	const startChange = findStringChange(diff, settings.startDateProp);
+	const endChange = findStringChange(diff, settings.endDateProp);
 
 	if (!startChange && !endChange) return null;
 

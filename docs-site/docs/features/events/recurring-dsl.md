@@ -41,7 +41,7 @@ This makes it instantly clear which events are source templates versus generated
 **Physical Events**: Actual note files (controlled by "Future instances count")
 **[Virtual Events](./virtual-events)**: Read-only calendar entries beyond generation horizon
 
-**Inheritance**: All frontmatter properties, complete file content, exact formatting. Only `Start`/`End` dates and `RRuleID` are adjusted automatically.
+**Inheritance**: All frontmatter properties, complete file content, exact formatting. Only `Start Date`/`End Date` (or `Start Day`) and `RRuleID` are adjusted automatically.
 
 **Templater Support**: When a [Templater template](../advanced/templater.md) is configured, generated instances use it — the template renders first and source body content is appended after. See [Templater Integration — Recurring Event Instances](../advanced/templater.md#recurring-event-instances).
 
@@ -120,7 +120,7 @@ When you change the start or end time of a source recurring event (e.g., moving 
 
 ### Start Date as Calculation Point
 
-For `weekly`/`bi-weekly`/`weekdays`/`weekends`, system finds first day matching `RRuleSpec` on or after `Start` date. For `daily`/`monthly`/`quarterly`/`semi-annual`/`yearly`, `Start` is typically the first instance.
+For `weekly`/`bi-weekly`/`weekdays`/`weekends`, system finds first day matching `RRuleSpec` on or after the `Start Date`. For `daily`/`monthly`/`quarterly`/`semi-annual`/`yearly`, `Start` is typically the first instance.
 
 ### RRuleID Management
 

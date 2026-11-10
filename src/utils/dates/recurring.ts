@@ -93,15 +93,15 @@ export function parseRRuleFromFrontmatter(
 	frontmatter: Frontmatter,
 	settings: SingleCalendarConfig
 ): RRuleFrontmatter | null {
-	const { rruleProp, rruleSpecProp, rruleUntilProp, startDayProp, startProp, endProp, allDayProp } = settings;
+	const { rruleProp, rruleSpecProp, rruleUntilProp, startDayProp, startDateProp, endDateProp, allDayProp } = settings;
 
 	const candidateData = {
 		type: frontmatter[rruleProp],
 		weekdays: frontmatter[rruleSpecProp],
 		until: frontmatter[rruleUntilProp],
 		date: frontmatter[startDayProp],
-		startTime: frontmatter[startProp],
-		endTime: frontmatter[endProp],
+		startTime: frontmatter[startDateProp],
+		endTime: frontmatter[endDateProp],
 		allDay: frontmatter[allDayProp],
 	};
 	const result = RRuleFrontmatterSchema.safeParse(candidateData);

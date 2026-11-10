@@ -64,8 +64,8 @@ function dropped(reasonCategory: DropReasonCategory, reason: string): RowClassif
  * the settings tally and the (future) Doctor without any I/O.
  */
 export function classifyRow(frontmatter: Frontmatter, settings: SingleCalendarConfig): RowClassification {
-	const { startProp, startDayProp } = settings;
-	const startVal = frontmatter[startProp];
+	const { startDateProp, startDayProp } = settings;
+	const startVal = frontmatter[startDateProp];
 	const dateVal = frontmatter[startDayProp];
 
 	if (isPresent(startVal)) {
@@ -73,7 +73,7 @@ export function classifyRow(frontmatter: Frontmatter, settings: SingleCalendarCo
 			? { kind: "timed" }
 			: dropped(
 					"unparseable-date",
-					`\`${startProp}: ${previewValue(startVal)}\` isn't a recognised date format — expected YYYY-MM-DD or YYYY-MM-DDThh:mm.`
+					`\`${startDateProp}: ${previewValue(startVal)}\` isn't a recognised date format — expected YYYY-MM-DD or YYYY-MM-DDThh:mm.`
 				);
 	}
 
@@ -91,7 +91,7 @@ export function classifyRow(frontmatter: Frontmatter, settings: SingleCalendarCo
 	const trailingSpaceKey = Object.entries(frontmatter).find(
 		([key, value]) =>
 			key !== key.trim() &&
-			(key.trim() === startProp ||
+			(key.trim() === startDateProp ||
 				key.trim() === startDayProp ||
 				(typeof value === "string" && classifyDateLikeString(value) !== null))
 	);
@@ -101,12 +101,15 @@ export function classifyRow(frontmatter: Frontmatter, settings: SingleCalendarCo
 
 	const unmappedDateKey = Object.entries(frontmatter).find(
 		([key, value]) =>
-			key !== startProp && key !== startDayProp && typeof value === "string" && classifyDateLikeString(value) !== null
+			key !== startDateProp &&
+			key !== startDayProp &&
+			typeof value === "string" &&
+			classifyDateLikeString(value) !== null
 	);
 	if (unmappedDateKey) {
 		return dropped(
 			"unmapped-date-prop",
-			`No \`${startProp}\` or \`${startDayProp}\` property found — your note uses \`${unmappedDateKey[0]}\`. Map it?`
+			`No \`${startDateProp}\` or \`${startDayProp}\` property found — your note uses \`${unmappedDateKey[0]}\`. Map it?`
 		);
 	}
 

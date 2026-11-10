@@ -390,11 +390,11 @@ export class RecurringEventManager extends DebouncedNotifier {
 	}
 
 	private extractTimeDiffFromFrontmatter(oldFm: Frontmatter, newFm: Frontmatter): TimePropagationDiff | null {
-		const { startProp, endProp } = this.settings;
-		const oldStart = oldFm[startProp];
-		const newStart = newFm[startProp];
-		const oldEnd = oldFm[endProp];
-		const newEnd = newFm[endProp];
+		const { startDateProp, endDateProp } = this.settings;
+		const oldStart = oldFm[startDateProp];
+		const newStart = newFm[startDateProp];
+		const oldEnd = oldFm[endDateProp];
+		const newEnd = newFm[endDateProp];
 
 		const startChange =
 			typeof oldStart === "string" && typeof newStart === "string" && oldStart !== newStart
@@ -415,14 +415,14 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 		if (timeDiff.startChange) {
 			changes.push({
-				prop: this.settings.startProp,
+				prop: this.settings.startDateProp,
 				oldTimePart: getISOTimePart(timeDiff.startChange.oldValue),
 				newTimePart: getISOTimePart(timeDiff.startChange.newValue),
 			});
 		}
 		if (timeDiff.endChange) {
 			changes.push({
-				prop: this.settings.endProp,
+				prop: this.settings.endDateProp,
 				oldTimePart: getISOTimePart(timeDiff.endChange.oldValue),
 				newTimePart: getISOTimePart(timeDiff.endChange.newValue),
 			});

@@ -37,8 +37,8 @@ const frontmatterValueAsLocalDate = (value: unknown): Date | null => {
 export const isEventPastFromFrontmatter = (frontmatter: Frontmatter, settings: SingleCalendarConfig): boolean => {
 	const isAllDay =
 		resolveTemporalKind(buildEventSchemaInput({ filePath: "", folder: "", frontmatter }, settings)) === "allDay";
-	const startValue = frontmatter[settings.startDayProp] || frontmatter[settings.startProp];
-	const date = frontmatterValueAsLocalDate(isAllDay ? startValue : frontmatter[settings.endProp]);
+	const startValue = frontmatter[settings.startDayProp] || frontmatter[settings.startDateProp];
+	const date = frontmatterValueAsLocalDate(isAllDay ? startValue : frontmatter[settings.endDateProp]);
 	if (!date) return false;
 	if (isAllDay) {
 		const end = allDayEnd(toSafeString(startValue) ?? "", toSafeString(frontmatter[settings.endDayProp]));

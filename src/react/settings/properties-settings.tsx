@@ -108,7 +108,7 @@ const PropertyOrderIntro = memo(function PropertyOrderIntro({ settings }: { sett
 				<strong>Before</strong>
 				<pre className={cls("settings-info-box-example")}>{`---
 Project: Website Redesign
-${settings.startProp}: 2024-01-15T09:00
+${settings.startDateProp}: 2024-01-15T09:00
 Tags: [work]
 ${settings.sortDateProp}: 2024-01-15T09:00
 ---`}</pre>
@@ -117,7 +117,7 @@ ${settings.sortDateProp}: 2024-01-15T09:00
 				<strong>After the next save</strong>
 				<pre className={cls("settings-info-box-example")}>{`---
 Project: Website Redesign
-${settings.startProp}: 2024-01-15T09:00
+${settings.startDateProp}: 2024-01-15T09:00
 ${settings.sortDateProp}: 2024-01-15T09:00
 Tags: [work]
 ---`}</pre>
@@ -134,7 +134,7 @@ Tags: [work]
 					below — or delete them — and the block takes the top of the frontmatter.
 				</p>
 				<pre className={cls("settings-info-box-example")}>{`---
-${settings.startProp}: 2024-01-15T09:00
+${settings.startDateProp}: 2024-01-15T09:00
 ${settings.sortDateProp}: 2024-01-15T09:00
 Project: Website Redesign
 Tags: [work]
@@ -156,8 +156,8 @@ const EventTypesInfo = memo(function EventTypesInfo({ settings }: { settings: Si
 			<div>
 				<strong>Timed event example:</strong>
 				<pre className={cls("settings-info-box-example")}>{`---
-${settings.startProp}: 2024-01-15T09:00
-${settings.endProp}: 2024-01-15T10:30
+${settings.startDateProp}: 2024-01-15T09:00
+${settings.endDateProp}: 2024-01-15T10:30
 ${settings.allDayProp}: false
 ---
 
@@ -188,8 +188,8 @@ const RecurringEventsInfo = memo(function RecurringEventsInfo({ settings }: { se
 			<div>
 				<strong>Example</strong>
 				<pre className={cls("settings-info-box-example")}>{`---
-${settings.startProp}: 2024-01-15T09:00
-${settings.endProp}: 2024-01-15T10:30
+${settings.startDateProp}: 2024-01-15T09:00
+${settings.endDateProp}: 2024-01-15T10:30
 ${settings.rruleProp}: weekly
 ${settings.rruleSpecProp}: monday, wednesday, friday
 ${settings.rruleUntilProp}: 2024-05-31

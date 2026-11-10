@@ -97,16 +97,17 @@ export function patchEditFrontmatter(
 		resolveTemporalKind(buildEventSchemaInput({ filePath: "", folder: "", frontmatter }, settings)) === "allDay";
 	if (allDay && (input.start !== undefined || input.end !== undefined || input.allDay !== undefined)) {
 		setEventBasics(frontmatter, settings, {
-			start: input.start ?? toSafeString(frontmatter[settings.startDayProp] || frontmatter[settings.startProp]) ?? "",
+			start:
+				input.start ?? toSafeString(frontmatter[settings.startDayProp] || frontmatter[settings.startDateProp]) ?? "",
 			end: input.end ?? toSafeString(frontmatter[settings.endDayProp]) ?? undefined,
 			allDay: true,
 		});
 	} else if (!allDay) {
 		if (input.start !== undefined) {
-			frontmatter[settings.startProp] = ensureISOSuffix(input.start);
+			frontmatter[settings.startDateProp] = ensureISOSuffix(input.start);
 			Reflect.deleteProperty(frontmatter, settings.startDayProp);
 		}
-		if (input.end !== undefined) frontmatter[settings.endProp] = ensureISOSuffix(input.end);
+		if (input.end !== undefined) frontmatter[settings.endDateProp] = ensureISOSuffix(input.end);
 		if (input.allDay === false) Reflect.deleteProperty(frontmatter, settings.endDayProp);
 	}
 	if (input.allDay !== undefined) {

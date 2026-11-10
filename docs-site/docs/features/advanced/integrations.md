@@ -18,7 +18,7 @@ Prisma Calendar offers three integration methods:
 
 **ICS Format**: When exporting or importing ICS files, you select a timezone for conversion. Prisma Calendar converts between ICS timestamps and your local times during import/export to ensure events display correctly in any calendar application.
 
-**All-day events**: ICS export, import, URL subscriptions and CalDAV preserve the `Start Day` and, for multi-day events, the exclusive `End Day`. A single-day event is exported with only its start day (no `DTEND`), which every calendar app reads as one day. Date-only events keep their calendar dates regardless of the selected timezone. The form and tooltips show the last covered day; see [All-day spans](../../configuration/properties.md#all-day-spans-exclusive-storage-inclusive-display).
+**All-day events**: ICS export, import, URL subscriptions and CalDAV preserve the `Start Day` and, for multi-day events, the exclusive `End Day`. Every exported all-day event carries an exclusive `DTEND` — the following day for a single-day event. Date-only events keep their calendar dates regardless of the selected timezone. The form and tooltips show the last covered day; see [All-day spans](../../configuration/properties.md#all-day-spans-exclusive-storage-inclusive-display).
 
 **Compatible with**: Google Calendar, Apple Calendar (iCal), Microsoft Outlook, Nextcloud Calendar, Thunderbird, and any application supporting ICS/iCalendar format.
 

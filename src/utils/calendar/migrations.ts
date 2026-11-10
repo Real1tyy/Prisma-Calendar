@@ -56,27 +56,50 @@ function migrateLoggingFileLevel(data: RawSettings): boolean {
 /** The single-day all-day property this calendar was created with, before `Start Day` became the default. */
 const LEGACY_START_DAY_PROP = "Date";
 
+/** Old settings key → new key; `propertyOrder` stores these keys too. */
+const RENAMED_TEMPORAL_KEYS: Readonly<Record<string, string>> = {
+	dateProp: "startDayProp",
+	startProp: "startDateProp",
+	endProp: "endDateProp",
+};
+
+function isUsableName(value: unknown): value is string {
+	return typeof value === "string" && value.trim() !== "";
+}
+
 /**
- * `dateProp` becomes `startDayProp`. Every stored calendar predates the rename,
- * so one that never saved the key read the old `Date` default and keeps it —
- * only calendars created after the rename get `Start Day`
- * ([[decision-all-day-events-use-start-day-and-end-day]]).
+ * The temporal keys become `startDateProp` / `endDateProp` / `startDayProp`,
+ * pairing by event type ([[decision-all-day-events-use-start-day-and-end-day]]).
+ * Every stored calendar predates the rename, so one that never saved `dateProp`
+ * read the old `Date` default and keeps it — only calendars created afterwards
+ * get `Start Day`. The timed defaults did not change, so an absent `startProp` /
+ * `endProp` stays absent. `startDayProp` is always written, which marks the
+ * calendar as migrated.
  */
-function migrateDatePropToStartDayProp(data: RawSettings): boolean {
+function migrateTemporalPropKeys(data: RawSettings): boolean {
 	const calendars = data["calendars"];
 	if (!Array.isArray(calendars)) return false;
 
 	let migrated = 0;
 	for (const cal of calendars as unknown[]) {
 		if (!isObject(cal) || typeof cal["startDayProp"] === "string") continue;
-		const legacy = cal["dateProp"];
-		cal["startDayProp"] = typeof legacy === "string" && legacy.trim() ? legacy : LEGACY_START_DAY_PROP;
-		delete cal["dateProp"];
+		for (const [oldKey, newKey] of Object.entries(RENAMED_TEMPORAL_KEYS)) {
+			const legacy = cal[oldKey];
+			if (cal[newKey] === undefined && isUsableName(legacy)) cal[newKey] = legacy;
+			delete cal[oldKey];
+		}
+		if (!isUsableName(cal["startDayProp"])) cal["startDayProp"] = LEGACY_START_DAY_PROP;
+		const order = cal["propertyOrder"];
+		if (Array.isArray(order)) {
+			cal["propertyOrder"] = order.map((key: unknown) =>
+				typeof key === "string" ? (RENAMED_TEMPORAL_KEYS[key] ?? key) : key
+			);
+		}
 		migrated++;
 	}
 
 	if (migrated === 0) return false;
-	log.info("settings", "Renamed dateProp to startDayProp, keeping each calendar's property name", {
+	log.info("settings", "Renamed the temporal property settings, keeping each calendar's property names", {
 		calendars: migrated,
 	});
 	return true;
@@ -86,7 +109,7 @@ function migrateDatePropToStartDayProp(data: RawSettings): boolean {
 const SETTINGS_MIGRATIONS: readonly SettingsMigration[] = [
 	migrateSharedExcludedProps,
 	migrateLoggingFileLevel,
-	migrateDatePropToStartDayProp,
+	migrateTemporalPropKeys,
 ];
 
 /**

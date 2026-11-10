@@ -112,10 +112,10 @@ function buildActiveNoteEventData(
 		? (frontmatter[settings.startDayProp] as string | undefined)
 			? `${String(frontmatter[settings.startDayProp])}T00:00:00`
 			: toLocalISOString(roundedStart)
-		: ((frontmatter[settings.startProp] as string | undefined) ?? toLocalISOString(roundedStart));
+		: ((frontmatter[settings.startDateProp] as string | undefined) ?? toLocalISOString(roundedStart));
 	const endValue = allDay
 		? null
-		: ((frontmatter[settings.endProp] as string | undefined) ?? toLocalISOString(defaultEnd));
+		: ((frontmatter[settings.endDateProp] as string | undefined) ?? toLocalISOString(defaultEnd));
 
 	return {
 		title: activeFile.basename,

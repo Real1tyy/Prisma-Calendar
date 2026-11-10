@@ -152,8 +152,8 @@ Edit the event note directly and add the category property:
 ```yaml
 ---
 Category: Work
-Start: 2025-01-15T09:00:00
-End: 2025-01-15T10:00:00
+Start Date: 2025-01-15T09:00:00
+End Date: 2025-01-15T10:00:00
 ---
 ```
 

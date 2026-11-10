@@ -25,7 +25,7 @@ Each calendar watches a folder for event notes.
 
 ## How notes become events
 
-- Notes with a valid Start property (per your Properties Settings) appear on the calendar
+- Notes with a valid Start date property (per your Properties Settings) appear on the calendar
 - Optional End/AllDay/Title are read if present
 
 ### Example
@@ -42,7 +42,7 @@ All Day: false
 
 You don't have to restructure anything to use Prisma. Point it at a folder that already contains dated notes, then tell Prisma which frontmatter keys hold your dates — it reads them as-is.
 
-The property names are entirely yours. If your existing notes use `due` and `finish` instead of `Start Date` and `End Date`, set the **Start property** to `due` and the **End property** to `finish` in [Properties Settings](../../configuration/properties), and those notes render immediately — no edits to the notes themselves.
+The property names are entirely yours. If your existing notes use `due` and `finish` instead of `Start Date` and `End Date`, set the **Start date property** to `due` and the **End date property** to `finish` in [Properties Settings](../../configuration/properties), and those notes render immediately — no edits to the notes themselves.
 
 ```yaml
 ---
@@ -54,7 +54,7 @@ status: In Progress
 Existing note body — links, tasks, anything. Untouched.
 ```
 
-An **all-day** note only needs the Start Day property you mapped:
+An **all-day** note only needs the Start day property you mapped:
 
 ```yaml
 ---

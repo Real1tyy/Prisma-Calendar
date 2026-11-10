@@ -44,12 +44,12 @@ Choose **Use notes you already have** and Prisma scans your vault for folders th
 - **Datetime properties** — values with a time component (e.g. `2025-06-15T09:00`), used for timed events.
 - **Date properties** — date-only values (e.g. `2025-06-15`), used for all-day events.
 
-Click a folder to select it. Prisma makes its best guess at the mapping — a datetime property whose name contains "start" becomes your **Start property**, one containing "end" becomes your **End property**, and a date-only property becomes your **Start day property** (one containing "end" becomes your **End day property**). The property names this planning system already uses — and Prisma's defaults (`Start Date`, `End Date`, `Start Day`, `End Day`) — are always offered first, even if some other dated property appears in more notes; properties Prisma writes itself (`RRuleUntil`, `Sort Date`, and the other recurrence fields) are never offered, and vault bookkeeping like `Created` or `Modified` is offered last. Every guess is editable: each field has inline **Use** buttons listing the detected properties, so you can fix the mapping in one click — or just type a name yourself.
+Click a folder to select it. Prisma makes its best guess at the mapping — a datetime property whose name contains "start" becomes your **Start date property**, one containing "end" becomes your **End date property**, and a date-only property becomes your **Start day property** (one containing "end" becomes your **End day property**). The property names this planning system already uses — and Prisma's defaults (`Start Date`, `End Date`, `Start Day`, `End Day`) — are always offered first, even if some other dated property appears in more notes; properties Prisma writes itself (`RRuleUntil`, `Sort Date`, and the other recurrence fields) are never offered, and vault bookkeeping like `Created` or `Modified` is offered last. Every guess is editable: each field has inline **Use** buttons listing the detected properties, so you can fix the mapping in one click — or just type a name yourself.
 
 You're mapping four things:
 
-- **Start property** — the datetime a timed event begins (e.g. your existing `start`, `due`, or `Start Date` field).
-- **End property** — the datetime a timed event ends.
+- **Start date property** — the datetime a timed event begins (e.g. your existing `start`, `due`, or `Start Date` field).
+- **End date property** — the datetime a timed event ends.
 - **Start day property** — the date-only first day of all-day events.
 - **End day property** — the date-only exclusive end of multi-day all-day events.
 
@@ -68,7 +68,7 @@ project: Q1 Planning
 Agenda, notes, decisions — whatever you already keep in the note.
 ```
 
-Point Prisma at `Meetings/`, set **Start property** to `start` and **End property** to `end`, and finish setup. Every note in that folder immediately shows up on the calendar as a timed event — **no edits to your notes required**. Your `attendees`, `project`, and the note body are left exactly as they were; Prisma only reads the two date fields you mapped.
+Point Prisma at `Meetings/`, set **Start date property** to `start` and **End date property** to `end`, and finish setup. Every note in that folder immediately shows up on the calendar as a timed event — **no edits to your notes required**. Your `attendees`, `project`, and the note body are left exactly as they were; Prisma only reads the two date fields you mapped.
 
 If no dated folders are detected, the modal tells you so — you can still type a folder path manually and set the property names yourself.
 
@@ -82,8 +82,8 @@ Choose **Start with a clean setup** and Prisma pre-fills a dedicated folder (def
 
 | Field | Default property |
 | --- | --- |
-| Start property | `Start Date` |
-| End property | `End Date` |
+| Start date property | `Start Date` |
+| End date property | `End Date` |
 | Start day property | `Start Day` |
 | End day property | `End Day` |
 

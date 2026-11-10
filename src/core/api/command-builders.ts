@@ -59,8 +59,8 @@ export function buildEditEventCommand(
 		? frontmatter[settings.startDayProp]
 			? `${String(frontmatter[settings.startDayProp])}T00:00:00`
 			: ""
-		: (frontmatter[settings.startProp] as string);
-	const existingEnd = frontmatter[settings.endProp] as string | undefined;
+		: (frontmatter[settings.startDateProp] as string);
+	const existingEnd = frontmatter[settings.endDateProp] as string | undefined;
 
 	const eventData: EventData = {
 		filePath: file.path,

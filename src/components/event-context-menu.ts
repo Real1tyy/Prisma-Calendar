@@ -946,7 +946,7 @@ export class EventContextMenu {
 		const settings = this.bundle.settingsStore.currentSettings;
 		await this.fillTimeFromAdjacent(event, {
 			direction: "next",
-			propertyName: settings.endProp,
+			propertyName: settings.endDateProp,
 			getTimeValue: (adj) => adj.start,
 			successMessage: "End time filled from next event",
 			errorMessage: "Failed to fill end time",
@@ -957,7 +957,7 @@ export class EventContextMenu {
 		const settings = this.bundle.settingsStore.currentSettings;
 		await this.fillTimeFromAdjacent(event, {
 			direction: "previous",
-			propertyName: settings.startProp,
+			propertyName: settings.startDateProp,
 			getTimeValue: (adj) => (isTimedEvent(adj) ? adj.end : undefined),
 			successMessage: "Start time filled from previous event",
 			errorMessage: "Failed to fill start time",
@@ -974,7 +974,7 @@ export class EventContextMenu {
 
 	private async fillTimeFromNow(event: CalendarEventInfo, field: "start" | "end"): Promise<void> {
 		const settings = this.bundle.settingsStore.currentSettings;
-		const propName = field === "start" ? settings.startProp : settings.endProp;
+		const propName = field === "start" ? settings.startDateProp : settings.endDateProp;
 		await this.withFilePath(event, `fill ${field} time`, async (filePath) => {
 			const now = toLocalISOString(new Date());
 			await this.runCommand(() => fillTime(this.bundle, filePath, propName, now), {
@@ -1078,8 +1078,8 @@ export class EventContextMenu {
 		await this.withFilePath(event, "make event untracked", async (filePath) => {
 			const settings = this.bundle.settingsStore.currentSettings;
 			const propertyUpdates = new Map<string, string | null>([
-				[settings.startProp, null],
-				[settings.endProp, null],
+				[settings.startDateProp, null],
+				[settings.endDateProp, null],
 				[settings.startDayProp, null],
 				[settings.allDayProp, null],
 			]);

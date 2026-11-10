@@ -438,8 +438,8 @@ export default class CustomCalendarPlugin extends Plugin {
 			app: this.app,
 			loadSuggestions: () => scannedSuggestionsPromise,
 			initialProps: {
-				startProp: primaryCalendar.startProp,
-				endProp: primaryCalendar.endProp,
+				startDateProp: primaryCalendar.startDateProp,
+				endDateProp: primaryCalendar.endDateProp,
 				startDayProp: primaryCalendar.startDayProp,
 				endDayProp: primaryCalendar.endDayProp,
 			},
@@ -461,8 +461,8 @@ export default class CustomCalendarPlugin extends Plugin {
 					? {
 							...calendar,
 							directory,
-							startProp: result?.startProp ?? primaryCalendar.startProp,
-							endProp: result?.endProp ?? primaryCalendar.endProp,
+							startDateProp: result?.startDateProp ?? primaryCalendar.startDateProp,
+							endDateProp: result?.endDateProp ?? primaryCalendar.endDateProp,
 							startDayProp: result?.startDayProp ?? primaryCalendar.startDayProp,
 							endDayProp: result?.endDayProp ?? primaryCalendar.endDayProp,
 						}

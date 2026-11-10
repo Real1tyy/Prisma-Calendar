@@ -445,7 +445,7 @@ export class CalendarBundle {
 			return false;
 		}
 
-		const dateValue: unknown = frontmatter[settings.startProp] || frontmatter[settings.startDayProp];
+		const dateValue: unknown = frontmatter[settings.startDateProp] || frontmatter[settings.startDayProp];
 
 		const parsedDate = intoDate(dateValue);
 

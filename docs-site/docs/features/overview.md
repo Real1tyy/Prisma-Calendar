@@ -141,8 +141,8 @@ Export/import ICS files with timezone selection, skip filtering, and broad compa
 ```yaml
 ---
 Title: Sprint Planning
-Start: 2025-02-03T10:00
-End: 2025-02-03T11:00
+Start Date: 2025-02-03T10:00
+End Date: 2025-02-03T11:00
 RRule: bi-weekly
 RRuleSpec: monday
 Project: Work

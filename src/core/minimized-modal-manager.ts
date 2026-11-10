@@ -182,7 +182,7 @@ class MinimizedModalManagerClass {
 		const now = new Date();
 		const nowIso = ensureISOSuffix(toLocalISOString(now));
 		await this.bundle.fileRepository.automaticWriteFrontmatter(this.savedState.filePath, (fm: Frontmatter) => {
-			fm[settings.endProp] = nowIso;
+			fm[settings.endDateProp] = nowIso;
 		});
 
 		// Mirror the write into the snapshot: restore reads formState.endDate, not the
@@ -254,8 +254,8 @@ class MinimizedModalManagerClass {
 				location: metadata.location,
 				participants: metadata.participants?.join(", "),
 				date: frontmatter[settings.startDayProp] as string | undefined,
-				startDate: frontmatter[settings.startProp] as string | undefined,
-				endDate: frontmatter[settings.endProp] as string | undefined,
+				startDate: frontmatter[settings.startDateProp] as string | undefined,
+				endDate: frontmatter[settings.endDateProp] as string | undefined,
 				allDay: event.source.isAllDay,
 			});
 		});
@@ -343,8 +343,8 @@ class MinimizedModalManagerClass {
 		if (!(file instanceof TFile) || !this.bundle) return;
 		try {
 			await this.bundle.fileRepository.writeFrontmatter(file.path, (fm: Frontmatter) => {
-				fm[settings.startProp] = ensureISOSuffix(startIso);
-				fm[settings.endProp] = ensureISOSuffix(endIso);
+				fm[settings.startDateProp] = ensureISOSuffix(startIso);
+				fm[settings.endDateProp] = ensureISOSuffix(endIso);
 				if (settings.allDayProp && fm[settings.allDayProp]) {
 					fm[settings.allDayProp] = false;
 				}

@@ -140,7 +140,7 @@ Go to Properties Settings and set your Start/End/AllDay/Title keys.
 <details>
 <summary>Why did my weekly recurring event start on a different day than its Start date?</summary>
 
-The `Start` date is a **calculation starting point**, not always the first event's date. For weekly/bi-weekly rules, the system finds the first day **on or after** the `Start` date that matches your `RRuleSpec` (e.g., the first "sunday"). If your start date is a Friday but the rule is for every Sunday, the first event will be created on the following Sunday.
+The `Start Date` is a **calculation starting point**, not always the first event's date. For weekly/bi-weekly rules, the system finds the first day **on or after** the `Start` date that matches your `RRuleSpec` (e.g., the first "sunday"). If your start date is a Friday but the rule is for every Sunday, the first event will be created on the following Sunday.
 
 </details>
 

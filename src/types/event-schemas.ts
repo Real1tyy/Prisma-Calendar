@@ -25,8 +25,8 @@ import type { Frontmatter, SingleCalendarConfig } from "./index";
  * resolver needs these raw classifications to decide timed-vs-all-day.
  */
 export interface TemporalKinds {
-	start: DateLikeKind | null;
-	end: DateLikeKind | null;
+	startDate: DateLikeKind | null;
+	endDate: DateLikeKind | null;
 	startDay: DateLikeKind | null;
 	endDay: DateLikeKind | null;
 }
@@ -93,7 +93,7 @@ export function buildMetadata(parsed: ParsedEventFrontmatter): EventMetadata {
 
 function buildTimedEvent(input: EventSchemaInput, settings: SingleCalendarConfig): TimedEvent | null {
 	const { parsed } = input;
-	const start = parsed.start ?? parsed.startDay;
+	const start = parsed.startDate ?? parsed.startDay;
 	if (!start) return null;
 
 	const startIso = toInternalISO(start);
@@ -101,8 +101,8 @@ function buildTimedEvent(input: EventSchemaInput, settings: SingleCalendarConfig
 	// it), so the arithmetic runs on the wall clock rather than in whatever zone
 	// the start was anchored in — adding an hour across a spring-forward
 	// boundary otherwise skips one on the transitioning device only.
-	const endIso = parsed.end
-		? toInternalISO(parsed.end)
+	const endIso = parsed.endDate
+		? toInternalISO(parsed.endDate)
 		: toInternalISO(anchorWallClock(start).plus({ minutes: settings.defaultDurationMinutes }));
 
 	const metadata = buildMetadata(parsed);
@@ -123,7 +123,7 @@ function buildTimedEvent(input: EventSchemaInput, settings: SingleCalendarConfig
 
 function buildAllDayEvent(input: EventSchemaInput): AllDayEvent | null {
 	const { parsed } = input;
-	const anchor = parsed.startDay ?? parsed.start;
+	const anchor = parsed.startDay ?? parsed.startDate;
 	if (!anchor) return null;
 
 	const metadata = buildMetadata(parsed);
@@ -144,7 +144,7 @@ function buildAllDayEvent(input: EventSchemaInput): AllDayEvent | null {
 
 function buildUntrackedEvent(input: EventSchemaInput): UntrackedEvent | null {
 	const { parsed } = input;
-	if (parsed.start || parsed.startDay) return null;
+	if (parsed.startDate || parsed.startDay) return null;
 
 	const metadata = buildMetadata(parsed);
 	return {
@@ -180,9 +180,9 @@ export function resolveTemporalKind(input: EventSchemaInput): TemporalKind {
 	const { parsed, temporalKinds } = input;
 
 	if (parsed.allDay === true) return "allDay";
-	if (parsed.allDay === false) return parsed.start ? "timed" : "untracked";
+	if (parsed.allDay === false) return parsed.startDate ? "timed" : "untracked";
 
-	if (temporalKinds.start === "datetime" && temporalKinds.end !== "date") return "timed";
+	if (temporalKinds.startDate === "datetime" && temporalKinds.endDate !== "date") return "timed";
 	if (temporalKinds.startDay === "date" && parsed.startDay) return "allDay";
 	return "untracked";
 }
@@ -226,8 +226,8 @@ export function buildEventSchemaInput(
 	const schema = createEventFrontmatterSchema(settings);
 	const parsed = schema.parse(args.frontmatter);
 	const temporalKinds: TemporalKinds = {
-		start: classifyDateLikeString(toSafeString(args.frontmatter[settings.startProp]) ?? ""),
-		end: classifyDateLikeString(toSafeString(args.frontmatter[settings.endProp]) ?? ""),
+		startDate: classifyDateLikeString(toSafeString(args.frontmatter[settings.startDateProp]) ?? ""),
+		endDate: classifyDateLikeString(toSafeString(args.frontmatter[settings.endDateProp]) ?? ""),
 		endDay: classifyDateLikeString(toSafeString(args.frontmatter[settings.endDayProp]) ?? ""),
 		startDay: classifyDateLikeString(toSafeString(args.frontmatter[settings.startDayProp]) ?? ""),
 	};

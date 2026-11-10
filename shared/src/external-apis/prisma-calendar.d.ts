@@ -484,11 +484,8 @@ export type PrismaCalendarGetSettingsOutput = {
 	 * Enable event notifications. When disabled, all notification settings below are ignored.
 	 */
 	enableNotifications: boolean;
+	endDateProp: EndDateProperty;
 	endDayProp: EndDayProperty;
-	/**
-	 * Frontmatter property name for event end date/time (for timed events)
-	 */
-	endProp: string;
 	eventMaxStack: EventStackLimit;
 	eventOverlap: AllowEventOverlap;
 	eventPresets: {
@@ -795,11 +792,8 @@ export type PrismaCalendarGetSettingsOutput = {
 	 * Symbol/emoji to display on source recurring events in the top-right corner.
 	 */
 	sourceRecurringMarker: string;
+	startDateProp: StartDateProperty;
 	startDayProp: StartDayProperty;
-	/**
-	 * Frontmatter property name for event start date/time
-	 */
-	startProp: string;
 	/**
 	 * Frontmatter property name for event status (used when automatically marking past events as done)
 	 */
@@ -941,6 +935,10 @@ export type DisplayDensity = "comfortable" | "compact";
  * Maximum events to show per day on desktop before showing '+more' link (0 = unlimited)
  */
 export type DesktopEventsPerDay = number;
+/**
+ * Frontmatter property for the end date and time of timed events
+ */
+export type EndDateProperty = string;
 /**
  * Frontmatter property for the exclusive end day of multi-day all-day events
  */
@@ -1112,6 +1110,10 @@ export type SortingNormalizationStrategy =
 	| "allDayOnly"
 	| "allStartDate"
 	| "allEndDate";
+/**
+ * Frontmatter property for the start date and time of timed events
+ */
+export type StartDateProperty = string;
 /**
  * Frontmatter property for the first day of all-day events (date only, no time)
  */
@@ -1343,6 +1345,10 @@ export type PrismaCalendarToggleSkipOutput = boolean;
  */
 
 /**
+ * Frontmatter property for the end date and time of timed events
+ */
+
+/**
  * Frontmatter property for the exclusive end day of multi-day all-day events
  */
 
@@ -1496,6 +1502,10 @@ export type PrismaCalendarToggleSkipOutput = boolean;
 
 /**
  * Write a normalized datetime to a dedicated sort property so external tools (Bases, Dataview) can sort all event types by a single field. Timed events use the full datetime. All-day events get T00:00:00 appended for consistent cross-type sorting. The value is written to the sort date property configured below.
+ */
+
+/**
+ * Frontmatter property for the start date and time of timed events
  */
 
 /**
@@ -1766,11 +1776,8 @@ export interface PrismaCalendarUpdateSettingsInput {
 		 * Enable event notifications. When disabled, all notification settings below are ignored.
 		 */
 		enableNotifications?: boolean;
+		endDateProp?: EndDateProperty;
 		endDayProp?: EndDayProperty;
-		/**
-		 * Frontmatter property name for event end date/time (for timed events)
-		 */
-		endProp?: string;
 		eventMaxStack?: EventStackLimit;
 		eventOverlap?: AllowEventOverlap;
 		eventPresets?: {
@@ -2077,11 +2084,8 @@ export interface PrismaCalendarUpdateSettingsInput {
 		 * Symbol/emoji to display on source recurring events in the top-right corner.
 		 */
 		sourceRecurringMarker?: string;
+		startDateProp?: StartDateProperty;
 		startDayProp?: StartDayProperty;
-		/**
-		 * Frontmatter property name for event start date/time
-		 */
-		startProp?: string;
 		/**
 		 * Frontmatter property name for event status (used when automatically marking past events as done)
 		 */

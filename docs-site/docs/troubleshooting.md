@@ -59,9 +59,9 @@ Prisma Calendar is designed to handle large vaults without issues. If you're exp
 
 - Plugin enabled and vault reloaded
 - Calendar Directory points to the correct folder (subfolders included)
-- Note has a valid `Start` property (ISO format recommended, e.g., `2025-02-10T14:00`)
+- Note has a valid `Start Date` property (or a date-only `Start Day` for all-day events) (ISO format recommended, e.g., `2025-02-10T14:00`)
 - Filters aren't excluding your note (Rules → Event Filtering)
-- Frontmatter keys match your Properties Settings (e.g., `Start` vs `start`)
+- Frontmatter keys match your Properties Settings (e.g., `Start Date` vs `start date`)
 - **Try refreshing**: Open command palette (Ctrl/Cmd+P) and run "Refresh calendar" to force a full resync
 
 </details>
@@ -108,7 +108,7 @@ When the copies held two *different* values, the earlier one is replaced. The Do
 
 **Problem**: You duplicate a timed event, but the duplicate appears as an all-day event. Or you have events that show start/end times in frontmatter but display as all-day on the calendar.
 
-**Root Cause**: The `All Day` property is the **source of truth** for determining event type. Prisma ignores `Start`/`End` properties when `All Day: true` is set, and ignores the `Start Day` property when `All Day: false`.
+**Root Cause**: The `All Day` property is the **source of truth** for determining event type. Prisma ignores `Start Date`/`End Date` properties when `All Day: true` is set, and ignores the `Start Day` property when `All Day: false`.
 
 </details>
 

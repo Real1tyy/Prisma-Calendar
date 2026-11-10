@@ -75,15 +75,15 @@ There are no rigid schemas or predefined structures — just your data, your rul
 
 Prisma reads notes inside a folder you choose and turns them into events based on their frontmatter properties:
 
-- **Start / End** — datetime values for timed events (e.g. `Start: 2025-06-15T09:00`)
-- **Date** — a date value for all-day events (e.g. `Date: 2025-06-15`)
+- **Start Date / End Date** — datetime values for timed events (e.g. `Start Date: 2025-06-15T09:00`)
+- **Start Day / End Day** — date values for all-day events (e.g. `Start Day: 2025-06-15`); `End Day` only for events spanning several days
 
 You choose which property names Prisma should look for during setup. If you already have notes with date-like properties, Prisma picks them up and visualizes them automatically — no migration, no restructuring, no new system to learn.
 
 ```yaml
 ---
-Start: 2025-06-15T09:00
-End: 2025-06-15T10:30
+Start Date: 2025-06-15T09:00
+End Date: 2025-06-15T10:30
 AllDay: false
 Status: In Progress
 Project: Q1 Planning

@@ -40,8 +40,8 @@ function toClassifiableString(value: unknown): string | null {
  * here rather than importing it keeps the settings module out of `core/`.
  */
 export interface ScanPropNames {
-	startProp: string;
-	endProp: string;
+	startDateProp: string;
+	endDateProp: string;
 	startDayProp: string;
 	sortDateProp: string;
 	rruleProp: string;
@@ -100,8 +100,8 @@ function buildRankingTables(propNames?: ScanPropNames): RankingTables {
 
 	if (propNames) {
 		canonical.date.add(normalizeKey(propNames.startDayProp));
-		canonical.datetime.add(normalizeKey(propNames.startProp));
-		canonical.datetime.add(normalizeKey(propNames.endProp));
+		canonical.datetime.add(normalizeKey(propNames.startDateProp));
+		canonical.datetime.add(normalizeKey(propNames.endDateProp));
 
 		for (const name of [
 			propNames.sortDateProp,
@@ -114,7 +114,7 @@ function buildRankingTables(propNames?: ScanPropNames): RankingTables {
 			managed.add(normalizeKey(name));
 		}
 
-		for (const own of [propNames.startDayProp, propNames.startProp, propNames.endProp]) {
+		for (const own of [propNames.startDayProp, propNames.startDateProp, propNames.endDateProp]) {
 			managed.delete(normalizeKey(own));
 		}
 	}

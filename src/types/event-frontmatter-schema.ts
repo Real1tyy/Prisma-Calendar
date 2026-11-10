@@ -43,8 +43,8 @@ const EventFrontmatterShape = {
 	// ── Timing & identity (convention: `${key}Prop`) ──
 	// Date/time fields catch parse failures → undefined so the unified envelope
 	// always succeeds; downstream event schemas decide validity based on presence.
-	start: optionalDateTimeTransform.catch(undefined),
-	end: optionalDateTimeTransform.catch(undefined),
+	startDate: optionalDateTimeTransform.catch(undefined),
+	endDate: optionalDateTimeTransform.catch(undefined),
 	startDay: optionalDateTransform.catch(undefined),
 	endDay: optionalDateTransform.catch(undefined),
 	allDay: allDayTransform,

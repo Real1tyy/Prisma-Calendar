@@ -2103,21 +2103,21 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 	setFocusedEventStartToNow(): void {
 		this.fillFocusedEventTime(
-			(settings) => settings.startProp,
+			(settings) => settings.startDateProp,
 			() => toLocalISOString(new Date())
 		);
 	}
 
 	setFocusedEventEndToNow(): void {
 		this.fillFocusedEventTime(
-			(settings) => settings.endProp,
+			(settings) => settings.endDateProp,
 			() => toLocalISOString(new Date())
 		);
 	}
 
 	fillFocusedEventStartFromPrevious(): void {
 		this.fillFocusedEventTime(
-			(settings) => settings.startProp,
+			(settings) => settings.startDateProp,
 			(event, filePath) => {
 				const previousEvent = findAdjacentEvent(this.bundle.eventStore, event.start, filePath, "previous");
 				return previousEvent && isTimedEvent(previousEvent) ? previousEvent.end : undefined;
@@ -2127,7 +2127,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 	fillFocusedEventEndFromNext(): void {
 		this.fillFocusedEventTime(
-			(settings) => settings.endProp,
+			(settings) => settings.endDateProp,
 			(event, filePath) => {
 				const nextEvent = findAdjacentEvent(this.bundle.eventStore, event.start, filePath, "next");
 				return nextEvent?.start;
@@ -2284,8 +2284,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const settings = this.bundle.settingsStore.currentSettings;
 
 		const propertyUpdates = new Map<string, string | null>();
-		propertyUpdates.set(settings.startProp, null);
-		propertyUpdates.set(settings.endProp, null);
+		propertyUpdates.set(settings.startDateProp, null);
+		propertyUpdates.set(settings.endDateProp, null);
 		propertyUpdates.set(settings.startDayProp, null);
 		propertyUpdates.set(settings.endDayProp, null);
 		propertyUpdates.set(settings.allDayProp, null);
@@ -2312,15 +2312,15 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 					if (info.allDay) {
 						propertyUpdates.set(settings.startDayProp, dateStr);
 						propertyUpdates.set(settings.allDayProp, "true");
-						propertyUpdates.set(settings.startProp, null);
-						propertyUpdates.set(settings.endProp, null);
+						propertyUpdates.set(settings.startDateProp, null);
+						propertyUpdates.set(settings.endDateProp, null);
 					} else {
 						const startDateTime = `${dateStr}T${timeStr}`;
 						const endTime = calculateEndTime(timeStr, settings.defaultDurationMinutes);
 						const endDateTime = `${dateStr}T${endTime}`;
 
-						propertyUpdates.set(settings.startProp, startDateTime);
-						propertyUpdates.set(settings.endProp, endDateTime);
+						propertyUpdates.set(settings.startDateProp, startDateTime);
+						propertyUpdates.set(settings.endDateProp, endDateTime);
 						propertyUpdates.set(settings.allDayProp, "false");
 						propertyUpdates.set(settings.startDayProp, null);
 						propertyUpdates.set(settings.endDayProp, null);

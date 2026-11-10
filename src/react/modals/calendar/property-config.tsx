@@ -101,8 +101,8 @@ export function PrefillButtons({
 // ─── Smart prefill logic ────────────────────────────────────────────────────
 
 export interface PrefillResult {
-	startProp: string;
-	endProp: string;
+	startDateProp: string;
+	endDateProp: string;
 	startDayProp: string;
 	endDayProp: string;
 }
@@ -112,12 +112,12 @@ export function computePrefill(suggestion: DirectorySuggestion): PrefillResult {
 	const startMatch = dt.find((p) => p.toLowerCase().includes("start"));
 	const endMatch = dt.find((p) => p.toLowerCase().includes("end"));
 
-	const startProp = startMatch ?? dt.at(0) ?? "";
-	const endProp = endMatch ?? dt.find((p) => p !== startProp) ?? dt.at(1) ?? "";
+	const startDateProp = startMatch ?? dt.at(0) ?? "";
+	const endDateProp = endMatch ?? dt.find((p) => p !== startDateProp) ?? dt.at(1) ?? "";
 	const endDayProp = suggestion.dateProps.find((p) => p.toLowerCase().includes("end")) ?? "";
 	const startDayProp = suggestion.dateProps.find((p) => p !== endDayProp) ?? "";
 
-	return { startProp, endProp, startDayProp, endDayProp };
+	return { startDateProp, endDateProp, startDayProp, endDayProp };
 }
 
 // ─── Suggestion list ────────────────────────────────────────────────────────
@@ -202,26 +202,26 @@ export const SuggestionList = memo(function SuggestionList({
 // ─── Property fields row (input + prefill) ──────────────────────────────────
 
 export interface PropertyFieldsProps {
-	startProp: string;
-	endProp: string;
+	startDateProp: string;
+	endDateProp: string;
 	startDayProp: string;
 	endDayProp: string;
-	onStartPropChange: (value: string) => void;
-	onEndPropChange: (value: string) => void;
+	onStartDatePropChange: (value: string) => void;
+	onEndDatePropChange: (value: string) => void;
 	onStartDayPropChange: (value: string) => void;
 	onEndDayPropChange: (value: string) => void;
-	placeholders: { startProp: string; endProp: string; startDayProp: string; endDayProp: string };
+	placeholders: { startDateProp: string; endDateProp: string; startDayProp: string; endDayProp: string };
 	suggestion: DirectorySuggestion | null;
 	testIdPrefix: string;
 }
 
 export const PropertyFields = memo(function PropertyFields({
-	startProp,
-	endProp,
+	startDateProp,
+	endDateProp,
 	startDayProp,
 	endDayProp,
-	onStartPropChange,
-	onEndPropChange,
+	onStartDatePropChange,
+	onEndDatePropChange,
 	onStartDayPropChange,
 	onEndDayPropChange,
 	placeholders,
@@ -232,37 +232,37 @@ export const PropertyFields = memo(function PropertyFields({
 
 	return (
 		<>
-			<Field label="Start property" hint="Starting datetime value for timed events.">
+			<Field label="Start date property" hint="Start date and time of timed events.">
 				<div className={cls("first-launch-field-row")}>
 					<TextInput
-						value={startProp}
-						placeholder={placeholders.startProp}
-						onChange={onStartPropChange}
+						value={startDateProp}
+						placeholder={placeholders.startDateProp}
+						onChange={onStartDatePropChange}
 						debounceMs={0}
 						testId={tid("start-prop")}
 					/>
 					{suggestion ? (
 						<PrefillButtons
 							props={suggestion.datetimeProps}
-							onSelect={onStartPropChange}
+							onSelect={onStartDatePropChange}
 							testIdPrefix={tid("prefill-start")}
 						/>
 					) : null}
 				</div>
 			</Field>
-			<Field label="End property" hint="Ending datetime value for timed events.">
+			<Field label="End date property" hint="End date and time of timed events.">
 				<div className={cls("first-launch-field-row")}>
 					<TextInput
-						value={endProp}
-						placeholder={placeholders.endProp}
-						onChange={onEndPropChange}
+						value={endDateProp}
+						placeholder={placeholders.endDateProp}
+						onChange={onEndDatePropChange}
 						debounceMs={0}
 						testId={tid("end-prop")}
 					/>
 					{suggestion ? (
 						<PrefillButtons
 							props={suggestion.datetimeProps}
-							onSelect={onEndPropChange}
+							onSelect={onEndDatePropChange}
 							testIdPrefix={tid("prefill-end")}
 						/>
 					) : null}
@@ -286,7 +286,7 @@ export const PropertyFields = memo(function PropertyFields({
 					) : null}
 				</div>
 			</Field>
-			<Field label="End day property" hint="Date-only exclusive end for all-day spans (the day after the last day).">
+			<Field label="End day property" hint="Exclusive end of multi-day all-day events (the day after the last day).">
 				<TextInput
 					value={endDayProp}
 					onChange={onEndDayPropChange}

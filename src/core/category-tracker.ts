@@ -41,7 +41,7 @@ type EventKind = "timed" | "allDay" | "untracked";
  * Grouping is split by event kind so per-category stats are O(1) — three
  * reactive multi-groups (timed / all-day / untracked) auto-update as the
  * indexer fires row events. Classification is read straight off the row's
- * frontmatter using the configured startProp / startDayProp; a file with no
+ * frontmatter using the configured startDateProp / startDayProp; a file with no
  * date or time keys is "untracked", same definition the indexer applies.
  */
 export class CategoryTracker extends VaultTableView<Frontmatter> {
@@ -99,9 +99,9 @@ export class CategoryTracker extends VaultTableView<Frontmatter> {
 		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
 			const categoryPropChanged = newSettings.categoryProp !== this.settings.categoryProp;
 			const dateClassChanged =
-				newSettings.startProp !== this.settings.startProp ||
+				newSettings.startDateProp !== this.settings.startDateProp ||
 				newSettings.startDayProp !== this.settings.startDayProp ||
-				newSettings.endProp !== this.settings.endProp;
+				newSettings.endDateProp !== this.settings.endDateProp;
 			this.settings = newSettings;
 			if (categoryPropChanged || dateClassChanged) {
 				this.updateFilter((row) => this.hasCategoryValues(row.data, newSettings.categoryProp));
@@ -204,7 +204,7 @@ export class CategoryTracker extends VaultTableView<Frontmatter> {
 	}
 
 	private classifyRow(data: Frontmatter): EventKind {
-		if (data[this.settings.startProp] != null && data[this.settings.startProp] !== "") return "timed";
+		if (data[this.settings.startDateProp] != null && data[this.settings.startDateProp] !== "") return "timed";
 		if (data[this.settings.startDayProp] != null && data[this.settings.startDayProp] !== "") return "allDay";
 		return "untracked";
 	}

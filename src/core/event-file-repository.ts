@@ -520,7 +520,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 		}
 
 		if (this.tableReady) {
-			const isUntracked = !row.data[this.settings.startProp] && !row.data[this.settings.startDayProp];
+			const isUntracked = !row.data[this.settings.startDateProp] && !row.data[this.settings.startDayProp];
 			this.runBackgroundUpdates(row.file, row.data, isUntracked);
 		} else {
 			this.deferredBackgroundFiles.add(row.filePath);
@@ -617,7 +617,7 @@ export class EventFileRepository implements CalendarEventSource, FrontmatterRepo
 		for (const path of paths) {
 			const row = this.table.get(this.toKey(path));
 			if (!row) continue;
-			const isUntracked = !row.data[settings.startProp] && !row.data[settings.startDayProp];
+			const isUntracked = !row.data[settings.startDateProp] && !row.data[settings.startDayProp];
 			this.runBackgroundUpdates(row.file, row.data, isUntracked);
 		}
 	}

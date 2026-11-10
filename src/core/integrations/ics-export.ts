@@ -8,6 +8,7 @@ import { Notice, TFile, type App } from "obsidian";
 
 import { isAllDayEvent, type CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
+import { allDayEnd } from "../../utils/dates/all-day";
 import { appendZ } from "../../utils/dates/iso";
 import { extractZettelId, PHYSICAL_INSTANCE_PATTERN, removeZettelId } from "../../utils/events/zettel-id";
 import { compileFrontmatterFilter, InvalidFilterExpressionError } from "../../utils/filters/logic";
@@ -31,8 +32,8 @@ export interface ICSExportOptions {
 	notifications: NotificationSettings;
 	/** Property names that are already exported via standard ICS fields and should be excluded from X-PRISMA-FM-* */
 	excludeProps: {
-		startProp: string;
-		endProp: string;
+		startDateProp: string;
+		endDateProp: string;
 		startDayProp: string;
 		endDayProp: string;
 		allDayProp: string;
@@ -196,12 +197,10 @@ function parsedEventToVEvent(
 	const dtstart = dateToICALTime(startDate, event.allDay, timezone);
 	vevent.addPropertyWithValue("dtstart", dtstart);
 
-	// A single-day all-day event has no end; RFC 5545 reads a DATE DTSTART without DTEND as one day.
-	if (event.end) {
-		const endDate = new Date(appendZ(event.end));
-		const dtend = dateToICALTime(endDate, event.allDay, timezone);
-		vevent.addPropertyWithValue("dtend", dtend);
-	}
+	// Every exported event gets an explicit DTEND; a single-day all-day event resolves to the next day.
+	const end = isAllDayEvent(event) ? allDayEnd(event.start, event.end) : event.end;
+	const dtend = dateToICALTime(new Date(appendZ(end)), event.allDay, timezone);
+	vevent.addPropertyWithValue("dtend", dtend);
 
 	const noteContent = options.noteContents.get(event.ref.filePath);
 	if (noteContent) {
@@ -242,8 +241,8 @@ function parsedEventToVEvent(
 	{
 		const excludedProps = new Set<string>([
 			// Standard ICS field properties
-			options.excludeProps.startProp,
-			options.excludeProps.endProp,
+			options.excludeProps.startDateProp,
+			options.excludeProps.endDateProp,
 			options.excludeProps.startDayProp,
 			options.excludeProps.allDayProp,
 			options.categoryProp,
@@ -461,8 +460,8 @@ export async function exportCalendarAsICS(app: App, options: ExportOptions): Pro
 				defaultDaysBefore: settings.defaultDaysBefore,
 			},
 			excludeProps: {
-				startProp: settings.startProp,
-				endProp: settings.endProp,
+				startDateProp: settings.startDateProp,
+				endDateProp: settings.endDateProp,
 				startDayProp: settings.startDayProp,
 				endDayProp: settings.endDayProp,
 				allDayProp: settings.allDayProp,

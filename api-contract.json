@@ -1872,15 +1872,16 @@
 								"description": "Enable event notifications. When disabled, all notification settings below are ignored.",
 								"type": "boolean"
 							},
+							"endDateProp": {
+								"default": "End Date",
+								"description": "Frontmatter property for the end date and time of timed events",
+								"title": "End date property",
+								"type": "string"
+							},
 							"endDayProp": {
 								"default": "End Day",
 								"description": "Frontmatter property for the exclusive end day of multi-day all-day events",
 								"title": "End day property",
-								"type": "string"
-							},
-							"endProp": {
-								"default": "End Date",
-								"description": "Frontmatter property name for event end date/time (for timed events)",
 								"type": "string"
 							},
 							"eventMaxStack": {
@@ -2840,15 +2841,16 @@
 								"description": "Symbol/emoji to display on source recurring events in the top-right corner.",
 								"type": "string"
 							},
+							"startDateProp": {
+								"default": "Start Date",
+								"description": "Frontmatter property for the start date and time of timed events",
+								"title": "Start date property",
+								"type": "string"
+							},
 							"startDayProp": {
 								"default": "Start Day",
 								"description": "Frontmatter property for the first day of all-day events (date only, no time)",
 								"title": "Start day property",
-								"type": "string"
-							},
-							"startProp": {
-								"default": "Start Date",
-								"description": "Frontmatter property name for event start date/time",
 								"type": "string"
 							},
 							"statusProperty": {
@@ -3013,8 +3015,8 @@
 							"enableKeyboardNavigation",
 							"autoAssignZettelId",
 							"indexSubdirectories",
-							"startProp",
-							"endProp",
+							"startDateProp",
+							"endDateProp",
 							"startDayProp",
 							"endDayProp",
 							"allDayProp",
@@ -4527,15 +4529,16 @@
 								"description": "Enable event notifications. When disabled, all notification settings below are ignored.",
 								"type": "boolean"
 							},
+							"endDateProp": {
+								"default": "End Date",
+								"description": "Frontmatter property for the end date and time of timed events",
+								"title": "End date property",
+								"type": "string"
+							},
 							"endDayProp": {
 								"default": "End Day",
 								"description": "Frontmatter property for the exclusive end day of multi-day all-day events",
 								"title": "End day property",
-								"type": "string"
-							},
-							"endProp": {
-								"default": "End Date",
-								"description": "Frontmatter property name for event end date/time (for timed events)",
 								"type": "string"
 							},
 							"eventMaxStack": {
@@ -5495,15 +5498,16 @@
 								"description": "Symbol/emoji to display on source recurring events in the top-right corner.",
 								"type": "string"
 							},
+							"startDateProp": {
+								"default": "Start Date",
+								"description": "Frontmatter property for the start date and time of timed events",
+								"title": "Start date property",
+								"type": "string"
+							},
 							"startDayProp": {
 								"default": "Start Day",
 								"description": "Frontmatter property for the first day of all-day events (date only, no time)",
 								"title": "Start day property",
-								"type": "string"
-							},
-							"startProp": {
-								"default": "Start Date",
-								"description": "Frontmatter property name for event start date/time",
 								"type": "string"
 							},
 							"statusProperty": {

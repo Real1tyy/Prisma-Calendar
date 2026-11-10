@@ -111,8 +111,8 @@ export const filterExcludedPropsFromDiff = (diff: FrontmatterDiff, excludedProps
 export const getBatchFrontmatterExcludedProps = (settings: SingleCalendarConfig): Set<string> => {
 	return new Set(
 		[
-			settings.startProp,
-			settings.endProp,
+			settings.startDateProp,
+			settings.endDateProp,
 			settings.startDayProp,
 			settings.endDayProp,
 			settings.sortDateProp,
