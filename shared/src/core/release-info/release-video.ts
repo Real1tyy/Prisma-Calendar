@@ -1,8 +1,8 @@
 import { requestUrl } from "obsidian";
 
+import { resolveApiBaseUrl } from "../../billing-api/base-url";
 import { parseReleasesPayload, releasesPath, type ReleaseVideo } from "../../docs-site/releases";
 import type { PluginSlug } from "../../utils/utm";
-import { resolveApiBaseUrl } from "../submission/api-base-url";
 
 /**
  * Release videos are served by the worker rather than bundled, so a video

@@ -1,3 +1,4 @@
+import type { PluginFeedbackRequestDebugBundle } from "../../billing-api/generated/model";
 import type { LogEntry, LogLevel } from "./types";
 
 /**
@@ -12,12 +13,7 @@ export const DEBUG_BUNDLE_MAX_ENTRIES = 200;
 
 const PROBLEM_LEVELS: ReadonlySet<LogLevel> = new Set<LogLevel>(["warn", "error"]);
 
-export interface DebugEnvironment {
-	pluginId: string;
-	pluginVersion: string;
-	obsidianVersion: string;
-	platform: string;
-}
+export type DebugEnvironment = PluginFeedbackRequestDebugBundle["environment"];
 
 /**
  * The structured context a support request needs, in a stable shape both the
@@ -25,14 +21,13 @@ export interface DebugEnvironment {
  * applied at each exit (`serializeForExport` for the clipboard,
  * `buildFeedbackSubmission` for the wire) so there is exactly one gate per
  * destination rather than a half-redacted object floating around in memory.
+ *
+ * It extends the feedback route's generated `debugBundle` shape, so the bundle
+ * can only grow a field the server already accepts. `capturedAt` is the ISO-8601
+ * of the injected clock; `counts` is over the whole buffer, so a truncated bundle
+ * still reports real totals.
  */
-export interface DebugBundle {
-	/** ISO-8601 of the injected clock — a bundle is a snapshot, never a stream. */
-	capturedAt: string;
-	windowMs: number;
-	environment: DebugEnvironment;
-	/** Counted over the whole buffer, so a truncated bundle still reports real totals. */
-	counts: { buffered: number; warnings: number; errors: number };
+export interface DebugBundle extends PluginFeedbackRequestDebugBundle {
 	/** Every warn/error still buffered, oldest-first, newest kept when capped. */
 	problems: LogEntry[];
 	/** Everything logged inside the window, oldest-first, newest kept when capped. */

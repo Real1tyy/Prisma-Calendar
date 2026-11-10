@@ -6,8 +6,11 @@ import {
 	FEEDBACK_MAX_SCREENSHOT_BYTES,
 	getElectronWindow,
 	getOrCreateAnonymousClientId,
+	getPlatformId,
+	isSubmissionPluginId,
 	SubmissionClient,
 	toHealthReportRows,
+	unsupportedPluginError,
 	type DebugBundle,
 	type DebugEnvironment,
 	type FeedbackSubmission,
@@ -92,9 +95,13 @@ export function createFeedbackSession({
 	const submit = async (submission: FeedbackSubmission, includeLicenseKey: boolean): Promise<SubmissionResult> => {
 		// Re-check entitlement and the secret at send time. If either changed
 		// while the modal was open, the key stays on the device.
+		if (!isSubmissionPluginId(slug)) return unsupportedPluginError(slug);
 		const licenseKey = includeLicenseKey ? await getAttributableLicenseKey(licenseManager) : null;
 		const context: SubmissionContext = {
-			...environment,
+			pluginId: slug,
+			pluginVersion,
+			obsidianVersion: environment.obsidianVersion,
+			platform: getPlatformId(),
 			clientId: getOrCreateAnonymousClientId(app),
 			...(licenseKey !== null ? { licenseKey } : {}),
 		};

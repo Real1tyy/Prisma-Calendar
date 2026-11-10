@@ -1,8 +1,9 @@
+import type { PluginFeedbackRequestHealthItem } from "../../billing-api/generated/model";
 import { describeError } from "../../utils/errors";
 
-export const HEALTH_STATUSES = ["ok", "warn", "fail"] as const;
+export const HEALTH_STATUSES = ["ok", "warn", "fail"] as const satisfies readonly HealthReportRow["status"][];
 
-export type HealthStatus = (typeof HEALTH_STATUSES)[number];
+export type HealthStatus = HealthReportRow["status"];
 
 /** Ascending severity. The worst row is the page's overall verdict. */
 export const HEALTH_STATUS_SEVERITY: Record<HealthStatus, number> = {
@@ -36,14 +37,11 @@ export type HealthCheckProvider = () => HealthCheck | readonly HealthCheck[] | n
 /**
  * A check as it travels off the page — to the clipboard, or attached to a bug
  * report. The `fix` callback is dropped, which is what makes the row plain
- * data rather than a live handle into the running plugin.
+ * data rather than a live handle into the running plugin. The shape is the
+ * feedback route's own `health` item, so a row the server would refuse can't
+ * be built.
  */
-export interface HealthReportRow {
-	id: string;
-	label: string;
-	status: HealthStatus;
-	detail: string;
-}
+export type HealthReportRow = PluginFeedbackRequestHealthItem;
 
 export function toHealthReportRows(checks: readonly HealthCheck[]): HealthReportRow[] {
 	return checks.map(({ id, label, status, detail }) => ({ id, label, status, detail }));

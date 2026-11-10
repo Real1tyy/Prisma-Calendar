@@ -1,81 +1,89 @@
-import type { HealthReportRow } from "../diagnostics/health";
+import {
+	ReviewRequestPluginId,
+	type PluginFeedbackRequest,
+	type PluginFeedbackRequestScreenshotsItem,
+	type PluginFeedbackRequestType,
+	type ReviewRequest,
+} from "../../billing-api/generated/model";
+import { BILLING_API_OPERATIONS } from "../../billing-api/generated/operations";
+import type { HttpTransport } from "../../billing-api/transport";
 import type { DebugBundle } from "../logging/debug-bundle";
 
-export const SUBMISSION_API_BASE_URL = "https://api.matejvavroproductivity.com";
-
 /**
- * Endpoint paths are configuration so the worker's final path can be flipped
- * here without reshaping the client ([[spec-in-app-rating-and-review]]). New
- * submission kinds (feedback, bug reports) register their path here and their
- * payload in {@link SubmissionPayloads} + `SUBMISSION_PAYLOAD_FIELDS`.
+ * Every wire shape here is derived from the billing API's generated model
+ * ([[spec-typed-billing-api-client-generated-from-the-published-openapi-spec]]).
+ * What stays hand-written is only where the client is deliberately narrower
+ * than the server (the star steps, the feedback types it offers) or richer
+ * (a screenshot's display name, which never leaves the device).
+ *
+ * Requests go through the generated client; this table names the same routes
+ * for code that only needs the path (the showrunner mock).
  */
 export const SUBMISSION_ENDPOINTS = {
-	review: "/api/review",
-	// `/api/feedback` is the website's own proxy; the plugin route the worker
-	// serves is `/api/feedback/plugin`. Posting to the proxy from here silently
-	// files reports through the wrong door, so the suffix is load-bearing.
-	feedback: "/api/feedback/plugin",
+	review: BILLING_API_OPERATIONS.submitReview.path,
+	feedback: BILLING_API_OPERATIONS.submitPluginFeedback.path,
 } as const;
 
 export type SubmissionKind = keyof typeof SUBMISSION_ENDPOINTS;
 
+/** The request body the server accepts for each kind, exactly as the published spec declares it. */
+export interface SubmissionBodies {
+	review: ReviewRequest;
+	feedback: PluginFeedbackRequest;
+}
+
 /** Ratings use full- or half-star increments from 0.5 through 5. */
 export type StarRating = 0.5 | 1 | 1.5 | 2 | 2.5 | 3 | 3.5 | 4 | 4.5 | 5;
 
-export interface ReviewSubmission {
-	rating: StarRating;
-	text?: string;
-}
+export type ReviewSubmission = Pick<ReviewRequest, "text"> & { rating: StarRating };
 
 /**
  * What a user can send. Deliberately not "question": submission is one-way, so
  * a type that asks for an answer promises a reply we have no channel to send.
- * Questions are routed to the docs and the Help Center instead.
+ * Questions are routed to the docs and the Help Center instead. The server still
+ * accepts `question` for older builds; this list is the subset the UI offers.
  *
  * One route with a discriminator rather than three routes — the payload shape
  * is identical and the server's triage is a column, not an endpoint
  * ([[spec-in-app-feedback-and-bug-reports]]).
  */
-export const FEEDBACK_TYPES = ["bug", "feature", "general"] as const;
+export const FEEDBACK_TYPES = ["bug", "feature", "general"] as const satisfies readonly PluginFeedbackRequestType[];
 
 export type FeedbackType = (typeof FEEDBACK_TYPES)[number];
-
-/** What the modal holds while the user is still deciding — the name labels the thumbnail. */
-export interface ScreenshotAttachment {
-	name: string;
-	mimeType: string;
-	/** Base64 image bytes, without the `data:` URL prefix. */
-	dataBase64: string;
-	byteSize: number;
-}
 
 /**
  * What actually ships. The file name is dropped rather than redacted: it can be
  * a full vault path or a note title, it tells us nothing the image doesn't, and
  * a field that never leaves cannot leak.
  */
-export type FeedbackScreenshot = Omit<ScreenshotAttachment, "name">;
+export type FeedbackScreenshot = PluginFeedbackRequestScreenshotsItem;
 
-export interface FeedbackSubmission {
+/** What the modal holds while the user is still deciding — the name labels the thumbnail. */
+export type ScreenshotAttachment = FeedbackScreenshot & { name: string };
+
+/**
+ * `health` is the Doctor's verdict and `debugBundle` the raw evidence; each is
+ * attached only when the user leaves its checkbox on
+ * ([[spec-doctor-health-and-quick-debug-export]]).
+ */
+export type FeedbackSubmission = Pick<PluginFeedbackRequest, "text" | "health" | "screenshots"> & {
 	type: FeedbackType;
-	text: string;
-	/**
-	 * The Doctor's verdict — which checks pass, warn or fail, in one line each.
-	 * Attached only when the user leaves "Include a health check" on. Separate
-	 * from `debugBundle` because they answer different questions: this is what
-	 * the plugin thinks is wrong, that is the raw evidence
-	 * ([[spec-doctor-health-and-quick-debug-export]]).
-	 */
-	health?: HealthReportRow[];
-	/** Attached only when the user leaves "Include recent logs" on. */
 	debugBundle?: DebugBundle;
-	screenshots?: FeedbackScreenshot[];
-}
+};
 
 export interface SubmissionPayloads {
 	review: ReviewSubmission;
 	feedback: FeedbackSubmission;
 }
+
+/** The context keys both submission bodies share. */
+export type SubmissionContextField =
+	| "pluginId"
+	| "pluginVersion"
+	| "obsidianVersion"
+	| "platform"
+	| "clientId"
+	| "licenseKey";
 
 /**
  * Plugin/runtime context stamped onto every submission. The license key is
@@ -83,17 +91,22 @@ export interface SubmissionPayloads {
  * customer; nothing else identifying is — no vault content, no name, no email.
  * Whatever is here must be reflected in the user-facing docs.
  */
-export interface SubmissionContext {
-	pluginId: string;
-	pluginVersion: string;
-	obsidianVersion: string;
-	platform: string;
-	clientId: string;
-	/** Present only for a licensed install — absent on the free tier. */
-	licenseKey?: string;
+export type SubmissionContext = Pick<ReviewRequest, SubmissionContextField> &
+	Pick<PluginFeedbackRequest, SubmissionContextField>;
+
+export type SubmissionPluginId = SubmissionContext["pluginId"];
+
+const SUBMISSION_PLUGIN_IDS: ReadonlySet<string> = new Set(Object.values(ReviewRequestPluginId));
+
+/**
+ * Whether the server knows this plugin. A plugin slug it doesn't list is a
+ * guaranteed `400`, so callers refuse it locally with a sentence the user can read.
+ */
+export function isSubmissionPluginId(slug: string): slug is SubmissionPluginId {
+	return SUBMISSION_PLUGIN_IDS.has(slug);
 }
 
-export type SubmissionFailure = "offline" | "network" | "timeout" | "server";
+export type SubmissionFailure = "offline" | "network" | "timeout" | "server" | "unsupported";
 
 export interface SubmissionSuccess {
 	readonly ok: true;
@@ -118,31 +131,11 @@ export interface SubmissionError {
 
 export type SubmissionResult = SubmissionSuccess | SubmissionError;
 
-export interface SubmissionRequest {
-	url: string;
-	method: "POST";
-	headers: Record<string, string>;
-	body: string;
-}
-
-export interface SubmissionResponse {
-	status: number;
-	/**
-	 * Raw response body. Carried for the failure path only: a 4xx from our API
-	 * names the field it rejected, and dropping it leaves the user staring at a
-	 * bare status code with nothing to act on.
-	 */
-	body?: string;
-}
-
-/** Injectable HTTP seam — defaults to Obsidian's `requestUrl` (no CORS, works on mobile). */
-export type SubmissionTransport = (request: SubmissionRequest) => Promise<SubmissionResponse>;
-
 export interface SubmissionClientOptions {
 	baseUrl?: string;
 	timeoutMs?: number;
 	maxAttempts?: number;
 	retryDelayMs?: number;
-	transport?: SubmissionTransport;
+	transport?: HttpTransport;
 	isOnline?: () => boolean;
 }

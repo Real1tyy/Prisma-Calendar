@@ -38,6 +38,8 @@ export default defineConfig([
 			"**/main.js",
 			"**/styles.css",
 			"**/*.d.ts",
+			// Orval output from the pinned billing-API document; never hand-edited, drift-gated instead.
+			"src/billing-api/generated/**",
 			"**/docs-site/**",
 			"**/.obsidian/**",
 			"**/build/**",

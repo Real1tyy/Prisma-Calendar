@@ -38,6 +38,7 @@
 		"jsdom": "^29.1.1",
 		"json-schema-to-typescript": "^15.0.4",
 		"obsidian-launcher": "^3.1.0",
+		"orval": "^8.47.0",
 		"prettier": "^3.4.2",
 		"tsx": "^4.21.0",
 		"typescript": "^5.9.3",

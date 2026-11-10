@@ -5,6 +5,7 @@
 	"main": "./src/index.ts",
 	"dependencies": {
 		"@real1ty/obsidian-plugins": "file:../shared",
+		"@tanstack/react-query": "^5.107.1",
 		"@tanstack/react-virtual": "^3.10.9",
 		"obsidian": "^1.13.1",
 		"react": "^19.2.5",

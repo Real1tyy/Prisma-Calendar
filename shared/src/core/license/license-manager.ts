@@ -1,23 +1,20 @@
 import { errors, importSPKI, jwtVerify } from "jose";
-import { apiVersion, requestUrl, type App } from "obsidian";
+import { apiVersion, type App } from "obsidian";
 import { BehaviorSubject, type Observable } from "rxjs";
 
+import { deactivateLicense, verifyLicense } from "../../billing-api/generated/client";
+import type { LicenseError, LicenseVerifySuccess } from "../../billing-api/generated/model";
 import type { NoticeLink } from "../../utils/notice";
 import { getDeviceName, getPlatformId } from "../../utils/platform";
 import { getOrCreateStoredId } from "../submission/client-id";
 import {
 	LicenseStatusSchema,
+	toEntitlementStatus,
 	type CachedLicenseData,
 	type EntitlementStatus,
-	type LicenseDeactivateResponse,
-	type LicenseErrorResponse,
 	type LicenseManagerConfig,
 	type LicenseStatus,
-	type LicenseVerifyResponse,
 } from "./types";
-
-const LICENSE_API_URL = "https://api.matejvavroproductivity.com/api/license/verify";
-const LICENSE_DEACTIVATE_URL = "https://api.matejvavroproductivity.com/api/license/deactivate";
 
 const LICENSE_PUBLIC_KEY_PEM = `-----BEGIN PUBLIC KEY-----
 MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAExdFpvC2Gq9VcCFfulGa69NyrNw2k
@@ -162,70 +159,90 @@ export class LicenseManager {
 		this.lastVerifyAttemptAt = Date.now();
 
 		try {
-			const response = await requestUrl({
-				url: LICENSE_API_URL,
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					licenseKey,
-					deviceId: this.deviceId,
-					deviceName: getDeviceName(),
-					pluginVersion: this.pluginVersion,
-					obsidianVersion: apiVersion,
-					platform: getPlatformId(),
-				}),
-				throw: false,
+			const response = await verifyLicense({
+				licenseKey,
+				deviceId: this.deviceId,
+				deviceName: getDeviceName(),
+				pluginVersion: this.pluginVersion,
+				obsidianVersion: apiVersion,
+				platform: getPlatformId(),
 			});
-
-			const data = response.json as (LicenseVerifyResponse & Partial<LicenseErrorResponse>) | undefined;
-			switch (data?.code) {
-				case "OK": {
-					const tokenResult = await this.verifyToken(data.token);
-					if (tokenResult !== "valid") {
-						this.updateStatus("error", "License token verification failed.");
-						return;
-					}
-					this.cacheToken(data);
-					this.activateLicense({
-						activationsCurrent: data.activations.current,
-						activationsLimit: data.activations.limit,
-						expiresAt: data.expiresAt,
-						entitlementStatus: data.entitlementStatus ?? null,
-						currentPeriodEnd: data.currentPeriodEnd ?? null,
-						cancelAt: data.cancelAt ?? null,
-						trialEndsAt: data.trialEndsAt ?? null,
-					});
+			switch (response.status) {
+				case 200:
+					await this.acceptVerification(response.data);
 					return;
-				}
-				case "KEY_INVALID_OR_REVOKED":
-					this.clearCachedToken();
-					this.updateStatus("invalid", "This license key is no longer valid. Check the key in settings.");
+				case 401:
+				case 403:
+					await this.applyRefusal(response.data);
 					return;
-				case "ENTITLEMENT_INACTIVE":
-					this.clearCachedToken();
-					this.updateStatus(
-						"entitlement_inactive",
-						"Your subscription isn't active. Check your billing on the account page."
-					);
-					return;
-				case "SEAT_LIMIT_REACHED": {
-					this.clearCachedToken();
-					const limit = data.activations.limit;
-					this.updateStatus(
-						"device_limit",
-						`Device limit reached (${limit} devices). Deactivate a device to free a seat.`,
-						{
-							activationsCurrent: data.activations.current,
-							activationsLimit: limit,
-						}
-					);
-					return;
-				}
 				default:
 					await this.handleNetworkFailure();
 			}
 		} catch {
+			// A body that isn't the promised shape (a proxy's HTML page) lands here
+			// too: it is a transient failure, and the cached grace token still holds.
 			await this.handleNetworkFailure();
+		}
+	}
+
+	private async acceptVerification(data: LicenseVerifySuccess): Promise<void> {
+		const tokenResult = await this.verifyToken(data.token);
+		if (tokenResult !== "valid") {
+			this.updateStatus("error", "License token verification failed.");
+			return;
+		}
+		this.cacheToken(data);
+		this.activateLicense({
+			activationsCurrent: data.activations.current,
+			activationsLimit: data.activations.limit,
+			expiresAt: data.expiresAt,
+			entitlementStatus: toEntitlementStatus(data.entitlementStatus),
+			currentPeriodEnd: data.currentPeriodEnd ?? null,
+			cancelAt: data.cancelAt ?? null,
+			trialEndsAt: data.trialEndsAt ?? null,
+		});
+	}
+
+	/**
+	 * A 401/403 is the server's definitive verdict, so the cached token goes too.
+	 * The switch is exhaustive over the generated `code` enum: a code the server
+	 * adds fails `tsc` here until it is given a meaning.
+	 */
+	private async applyRefusal(error: LicenseError): Promise<void> {
+		const code = error.code;
+		switch (code) {
+			case "KEY_INVALID_OR_REVOKED":
+				this.clearCachedToken();
+				this.updateStatus("invalid", "This license key is no longer valid. Check the key in settings.");
+				return;
+			case "ENTITLEMENT_INACTIVE":
+				this.clearCachedToken();
+				this.updateStatus(
+					"entitlement_inactive",
+					"Your subscription isn't active. Check your billing on the account page."
+				);
+				return;
+			case "SEAT_LIMIT_REACHED": {
+				this.clearCachedToken();
+				const activations = error.activations;
+				this.updateStatus(
+					"device_limit",
+					activations
+						? `Device limit reached (${activations.limit} devices). Deactivate a device to free a seat.`
+						: "Device limit reached. Deactivate a device to free a seat.",
+					activations ? { activationsCurrent: activations.current, activationsLimit: activations.limit } : {}
+				);
+				return;
+			}
+			case "DEVICE_NOT_FOUND":
+			case "INTERNAL_ERROR":
+				await this.handleNetworkFailure();
+				return;
+			default: {
+				const unhandled: never = code;
+				void unhandled;
+				await this.handleNetworkFailure();
+			}
 		}
 	}
 
@@ -239,15 +256,9 @@ export class LicenseManager {
 		const licenseKey = await this.getLicenseKey();
 		if (!licenseKey) return false;
 		try {
-			const response = await requestUrl({
-				url: LICENSE_DEACTIVATE_URL,
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ licenseKey, deviceId: this.deviceId }),
-				throw: false,
-			});
-			const data = response.json as LicenseDeactivateResponse | undefined;
-			if (data?.code === "OK" || data?.code === "DEVICE_NOT_FOUND") {
+			// `DEVICE_NOT_FOUND` is a 200 too: deactivation is idempotent.
+			const response = await deactivateLicense({ licenseKey, deviceId: this.deviceId });
+			if (response.status === 200) {
 				this.clearCachedToken();
 				this.updateStatus("deactivated", "This device was deactivated. Click Verify to re-activate it.");
 				return true;
@@ -408,13 +419,13 @@ export class LicenseManager {
 		return this.cachedPublicKey;
 	}
 
-	private cacheToken(data: LicenseVerifyResponse): void {
+	private cacheToken(data: LicenseVerifySuccess): void {
 		const cached: CachedLicenseData = {
 			token: data.token,
 			expiresAt: data.expiresAt,
 			activationsCurrent: data.activations.current,
 			activationsLimit: data.activations.limit,
-			entitlementStatus: data.entitlementStatus ?? null,
+			entitlementStatus: toEntitlementStatus(data.entitlementStatus),
 			currentPeriodEnd: data.currentPeriodEnd ?? null,
 			cancelAt: data.cancelAt ?? null,
 			trialEndsAt: data.trialEndsAt ?? null,

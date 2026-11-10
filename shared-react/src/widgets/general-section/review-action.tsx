@@ -1,7 +1,9 @@
 import {
 	getOrCreateAnonymousClientId,
 	getPlatformId,
+	isSubmissionPluginId,
 	SubmissionClient,
+	unsupportedPluginError,
 	type LicenseManager,
 	type PluginSlug,
 	type ReviewSubmission,
@@ -52,6 +54,7 @@ export const ReviewAction = memo(function ReviewAction({
 		async (submission: ReviewSubmission, includeLicenseKey: boolean): Promise<SubmissionResult> => {
 			// Re-check entitlement and the secret at send time. If either changed
 			// while the modal was open, the key stays on the device.
+			if (!isSubmissionPluginId(slug)) return unsupportedPluginError(slug);
 			const licenseKey = includeLicenseKey ? await getAttributableLicenseKey(licenseManager) : null;
 			const context: SubmissionContext = {
 				pluginId: slug,
