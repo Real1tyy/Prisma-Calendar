@@ -129,7 +129,7 @@ import { createStickyBanner, type StickyBannerHandle } from "./sticky-banner";
 import { mountExpressionFilter, mountSearchFilter, type ToolbarFilterHandle } from "./toolbar-filter-mount";
 import { UntrackedEventsDropdown } from "./untracked-events-dropdown";
 import { buildEventOverlapRule, type FindCalendarEvent } from "./views/event-overlap-rule";
-import { applyOverlapLayout } from "./views/overlap-layout";
+import { applyOverlapLayout, refreshOverlapLayout } from "./views/overlap-layout";
 import { toLiveEvent } from "./views/shared-calendar-options";
 
 export class CalendarComponent extends MountableComponent(Component, "prisma") implements CalendarHost {
@@ -269,6 +269,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.observeResize(this.container, () => {
 			this.calendar?.updateSize();
 			this.scheduleStickyOffsetsUpdate();
+			refreshOverlapLayout(this.container);
 		});
 
 		// Settings subscription

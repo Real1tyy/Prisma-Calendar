@@ -29,6 +29,13 @@ export function applyOverlapLayout(container: HTMLElement, slotEventOverlap: boo
 	markCoveredHarnesses(container);
 }
 
+/** Re-runs the geometry pass on container resize, where %-positioned harnesses stay unchanged on disk. */
+export function refreshOverlapLayout(container: HTMLElement): void {
+	if (layoutObservers.has(container)) {
+		markCoveredHarnesses(container);
+	}
+}
+
 // Our own writes land on the content wrapper; only FullCalendar's harness geometry and
 // re-renders change the layout.
 function isLayoutMutation(record: MutationRecord): boolean {
