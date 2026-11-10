@@ -6,12 +6,7 @@ import { CSS_PREFIX } from "../constants";
 import type { PrismaCalendarSettingsStore } from "../types";
 
 export { LicenseManager };
-export type {
-	CachedLicenseData,
-	LicenseManagerConfig,
-	LicenseStatus,
-	LicenseVerifyResponse,
-} from "@real1ty/obsidian-plugins";
+export type { CachedLicenseData, LicenseManagerConfig, LicenseStatus } from "@real1ty/obsidian-plugins";
 
 export const FREE_MAX_CALENDARS = 3;
 export const FREE_MAX_EVENT_PRESETS = 2;
