@@ -8,6 +8,8 @@ All notable changes to this project will be documented here.
 
 ## Unreleased
 
+> **TLDR:** Multi-day all-day events now pair Start Day and End Day so you can schedule vacations or conferences across several days and resize them on the grid. Mobile gets a major overhaul with a collapsible calendar header, single-row tab navigation and dedicated touch interactions, and week and day views gain four all-day display modes. You can now filter CalDAV, ICS subscriptions and calendar exports using expressions and saved presets.
+
 ### Added
 - Added **Week view create gutter (%)** and **Day view create gutter (%)** settings: the empty space on the right of each day column, where you click to create an event beside ones already filling the slot. Week defaults to 3.5% and Day to 1.5%; each takes any percentage (decimals included), and 0 turns it off.
 - **Filter what you import, export and sync**: exporting or importing an `.ics` file, and every CalDAV account and ICS subscription, now takes a **Filter expression** — the same JavaScript-style rule the calendar's expression filter uses, e.g. `Category.includes('Work')` — plus a **Filter preset** dropdown that fills it from the calendar's saved presets. Only matching events are exported or imported, and the import preview shows how many of the file's events match. On a sync the filter is saved with the account or subscription: events that don't match are never created, and a previously synced note that stops matching is removed on the next sync. An invalid expression is reported instead of filtering everything out, and a sync with one changes nothing. See [Filtering imports, exports and syncs](./features/advanced/integrations.md#filtering-imports-exports-and-syncs).
