@@ -36,6 +36,7 @@ All notable changes to this project will be documented here.
 - **Mobile events per day: 0 now means unlimited**: setting **Mobile events per day** to 0 did not lift the cap on phones, even though the setting says 0 is unlimited. It now behaves like **Desktop events per day**. See [Calendar UI](./configuration/calendar-ui.md).
 - **ZettelID property is written as a number**: events created, cloned, imported, synced or auto-named now store `ZettelID: 20261023174414` rather than the quoted `"20261023174414"`, so tools that read the property as a number see the value they expect. Existing notes keep whatever value they already have.
 - **Mobile all-day creation**: Tapping the pinned all-day strip after scrolling on a phone opens a new all-day event instead of selecting the timed event underneath. See [Calendar View](./features/calendar/calendar-view.md).
+- **Edit Event shows an event's new times right after you resize or drag it**: opening Edit Event from the right-click menu (in the calendar, Daily + Stats or a Bases calendar view) or the "Edit last focused event" command straight after stretching or moving an event could show its old start, end and duration — and saving would quietly undo the drag.
 
 ---
 
